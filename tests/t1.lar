@@ -1,0 +1,11 @@
+#print '---- Larch test 1'
+x = sqrt(11)
+y = cos(x)
+print 'x,y = ', x, y
+n = 1
+while n<8:
+   print ' Loop', n
+   n = n + 1
+endwhile
+
+

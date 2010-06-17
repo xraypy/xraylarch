@@ -1,0 +1,19 @@
+x = 1.0
+y = 3.0
+
+try:
+    y =  7/(x-1)
+except MemoryError:
+    print 'mem error'
+except KeyboardInterrupt:
+    print  'kb error'
+except IOError:
+    print  'io error!!'
+except ArithmeticError:
+     print  'arithmetic error!!'
+except:
+    print 'other error'
+#endtry
+
+print y
+    

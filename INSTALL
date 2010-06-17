@@ -1,0 +1,11 @@
+required packages:
+
+   numpy
+   matplolib
+   wx
+   docutlils
+
+recommended packages:
+   scipy
+
+

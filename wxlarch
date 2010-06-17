@@ -1,0 +1,12 @@
+#!/usr/bin/python
+
+import larch
+import wx
+from larch.wx import larchframe
+
+app = wx.PySimpleApp()
+frame = larchframe.LarchFrame(None)
+frame.Show()
+app.MainLoop()
+
+

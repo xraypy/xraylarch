@@ -1,0 +1,20 @@
+x = sqrt(11) =  3.31662479036
+y = cos(x)   =  -0.984720943124
+ x =  4.0 4.0
+ this is f1  2 1.22474487139 2.01
+ in f1 : x = 4.923474, _main.x = 4.000000
+ error at function f1:: q=  0.25
+after calling f1, y = 4.923474, x=4.000000
+ and now a runtime error:
+ this is f1  2 2 10
+ in f1 : x = 40.000000, _main.x = 4.000000
+ error at function f1:: q=  0.25
+43
+== Error ==
+extra keyword arguments for Procedure f1 (d):  t4.lar, line number 17
+     def f1(a,b,c=1):
+ t4.lar, line number 39
+     print  3 + f1(a,2,d=10)
+===========
+
+

@@ -1,0 +1,42 @@
+#print '---- TDL test 1'
+x = sqrt(11)
+y = cos(x)
+
+print 'x = sqrt(11) = ', x
+print 'y = cos(x)   = ',y
+
+# n = 1
+# while n<8:
+#     print ' Loop', n
+#     n = n + 1
+# #endwhile
+
+x = 3
+_main.x = 4.0
+print  ' x = ', x, _main.x
+def f1(a,b,c=1):
+    print  ' this is f1 ', a, b,c 
+    if c < 0:  c = -c
+    x = a*b*c
+    # print show_group('_main')
+ 
+    print ' in f1 : x = %f, _main.x = %f' % (x, _main.x)
+    print " error at function f1:: q= ",  a/(_main.x + 4)
+    return x
+enddef
+
+c0xx  = 3.4
+# print 'c0xx = ' , c0xx
+
+a = 2
+b = 3
+
+y = f1(a,sqrt(b/a),c=2.01)
+
+print "after calling f1, y = %f, x=%f" % (y,x)
+# 
+print ' and now a runtime error:'
+print  3 + f1(a,2,c=10)
+print  3 + f1(a,2,d=10)
+
+print 'X"'
