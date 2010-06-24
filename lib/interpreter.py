@@ -16,7 +16,7 @@ from .symboltable import SymbolTable, Group, isgroup
 from .util import LarchExceptionHolder, Procedure, DefinedVariable
 from .closure import Closure
 
-__version__ = '0.9.3'
+__version__ = '0.9.4'
 
 OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.IsNot:  lambda a, b: a is not b,
@@ -53,6 +53,7 @@ def iscallable(obj):
 if sys.version_info[0] == 2:
     def iscallable(obj):
         return callable(obj) or hasattr(obj, '__call__')
+
         
 class Interpreter:
     """larch program compiler and interpreter.
@@ -698,26 +699,28 @@ class Interpreter:
                 if larchname in os.listdir(dirname):
                     islarch = True
                     modname = os.path.abspath(os.path.join(dirname, larchname))
+                    ret = builts._run_file(modname, larch=self,
+                                           new_module=True)
                     # print(" isLarch!!", name, modname)
                     # save current module group
                     #  create new group, set as moduleGroup and localGroup
-                    symtable.save_frame()
-                    st_sys.modules[name] = thismod = Group(name=name)
-                    symtable.set_frame((thismod, thismod))
-                    
-                    ##thismod = symtable.new_modulegroup(name)
-                    ##print("B ", thismod)
-                    text = open(modname).read()
-                    inptext = inputText.InputText()
-                    inptext.put(text, filename=modname)
-
-                    while inptext:
-                        block, fname, lineno = inptext.get()
-                        self.eval(block, fname=fname, lineno=lineno)
-                        if self.error:
-                            print(self.error)
-                            break
-                    symtable.restore_frame()
+#                     symtable.save_frame()
+#                     st_sys.modules[name] = thismod = Group(name=name)
+#                     symtable.set_frame((thismod, thismod))
+#                     
+#                     ##thismod = symtable.new_modulegroup(name)
+#                     ##print("B ", thismod)
+#                     text = open(modname).read()
+#                     inptext = inputText.InputText()
+#                     inptext.put(text, filename=modname)
+#                     
+#                     while inptext:
+#                         block, fname, lineno = inptext.get()
+#                         self.eval(block, fname=fname, lineno=lineno)
+#                         if self.error:
+#                             print(self.error)
+#                             break
+#                     symtable.restore_frame()
             if len(self.error) > 0:
                 st_sys.modules.pop(name)
                 # thismod = None
@@ -736,7 +739,7 @@ class Interpreter:
                 thismod = st_sys.modules[name]
             elif name in sys.modules:
                 thismod = sys.modules[name]               
-               
+              
         # now we install thismodule into the current moduleGroup
         # import full module
         # print("IM: from ", fromlist, asname)

@@ -132,7 +132,7 @@ class SymbolTable(Group):
             pass
 
     def set_frame(self, groups):
-        "set current frame (localGroup, moduleGroup)"
+        "set current execution frame (localGroup, moduleGroup)"
         self._sys.localGroup, self._sys.moduleGroup  = groups
         self._fix_searchGroups()
         

@@ -89,23 +89,73 @@ def _showgroup(gname=None,larch=None):
 def _copy(obj,**kw):
     return copy.deepcopy(obj)
 
-def _run(name, larch=None, **kw):
-    "run a larch file"
+def _run_file(filename, larch=None,
+              new_module=False, printall=False):
+    """execute the larch text in a file as larch code. options:
+       larch:       larch interpreter instance
+       new_module:  create new "module" frame
+       printall:    whether to print all outputs
+    """
     if larch is None:
+        print "must provide interpreter!"
         raise Warning("cannot run file '%s' -- larch broken?" % name)
-        
-    try:
-        inpf = open(name, 'r')
-    except:
-        raise Warning("cannot run file '%s' -- file not found" % name)        
 
 
-    larch.inptext.interactive = False
-    for itxt, txt in enumerate(inpf.readlines()):
-        larch.inptext.put(txt[:-1], lineno=itxt,  filename=name)
-    larch.execute('')
-    larch.inptext.interactive = True
-    inpf.close()
+    symtable = larch.symtable
+    leval    = larch.eval
+    st_sys   = larch.symtable._sys
+    text     = None
+    if isinstance(filename, file):
+        text = filename.read()
+        filename = filename.name
+    elif (isinstance(filename, str) and
+          os.path.exists(filename) and
+          os.path.isfile(filename)):
+        text = open(filename).read()
+
+    print filename, text, leval
+    if text is not None:
+        inptext = inputText.InputText()
+        inptext.put(text, filename=filename)
+    
+        if new_module:
+            # save current module group
+            #  create new group, set as moduleGroup and localGroup
+            symtable.save_frame()
+            st_sys.modules[name] = thismod = Group(name=name)
+            symtable.set_frame((thismod, thismod))
+
+        output = []
+        while inptext:
+            block, fname, lineno = inptext.get()
+            print block, fname, lineno
+            ret = leval(block, fname=fname, lineno=lineno)
+            print ' == > ' ,ret
+            if callable(ret) and not isinstance(ret, type):
+                try:
+                    if 1 == len(block.split()):
+                        ret = ret()
+                except:
+                    pass
+            if larch.error:
+                err = larch.error.pop(0)
+                fname, lineno = err.fname, err.lineno
+                out.append("%s:\n%s" % err.get_error())
+                for err in larch.error:
+                    if ((err.fname != fname or err.lineno != lineno) and
+                        err.lineno > 0 and lineno > 0):
+                        output.append("%s" % (err.get_error()[1]))
+                self.input.clear()
+                break
+            elif printall and ret is not None:
+                output.append("%s" % ret)
+
+        if new_module:
+            symtable.restore_frame()
+            
+        if len(output) > 0:
+            return "\n".join(output)
+    return
 
 
 def _which(name, larch=None, **kw):
@@ -231,9 +281,10 @@ local_funcs = {'group':_group,
                'more': _more,
                'ls': _ls,
                'cd': _cd,
-               'run': _run,
+               'run': _run_file,
                'which': _which,                
                'cwd': _cwd, 
                'help': _help,
                }
+
        
