@@ -5,6 +5,8 @@ import copy
 from glob import glob
 import help
 
+from . import inputText
+
 helper = help.Helper()
 
 # inherit these from python's __builtins__
@@ -89,8 +91,7 @@ def _showgroup(gname=None,larch=None):
 def _copy(obj,**kw):
     return copy.deepcopy(obj)
 
-def _run_file(filename, larch=None,
-              new_module=False, printall=False):
+def _run(filename, larch=None, new_module=None, printall=False):
     """execute the larch text in a file as larch code. options:
        larch:       larch interpreter instance
        new_module:  create new "module" frame
@@ -100,10 +101,10 @@ def _run_file(filename, larch=None,
         print "must provide interpreter!"
         raise Warning("cannot run file '%s' -- larch broken?" % name)
 
-
     symtable = larch.symtable
+    Group    = symtable.create_group
     leval    = larch.eval
-    st_sys   = larch.symtable._sys
+    st_sys   = symtable._sys
     text     = None
     if isinstance(filename, file):
         text = filename.read()
@@ -113,24 +114,25 @@ def _run_file(filename, larch=None,
           os.path.isfile(filename)):
         text = open(filename).read()
 
-    print filename, text, leval
+    # print '-->_run: ', filename, len(text), leval
+    output = None
     if text is not None:
         inptext = inputText.InputText()
         inptext.put(text, filename=filename)
     
-        if new_module:
+        if new_module is not None:
             # save current module group
             #  create new group, set as moduleGroup and localGroup
             symtable.save_frame()
-            st_sys.modules[name] = thismod = Group(name=name)
+            thismod = Group(name=new_module)
+            st_sys.modules[new_module] = thismod
             symtable.set_frame((thismod, thismod))
 
         output = []
         while inptext:
             block, fname, lineno = inptext.get()
-            print block, fname, lineno
+            # print ': block:', block, fname, lineno
             ret = leval(block, fname=fname, lineno=lineno)
-            print ' == > ' ,ret
             if callable(ret) and not isinstance(ret, type):
                 try:
                     if 1 == len(block.split()):
@@ -150,12 +152,16 @@ def _run_file(filename, larch=None,
             elif printall and ret is not None:
                 output.append("%s" % ret)
 
-        if new_module:
+        # for a "newly created module" (as on import),
+        # the module group is the return value
+        if new_module is not None:
             symtable.restore_frame()
-            
-        if len(output) > 0:
-            return "\n".join(output)
-    return
+            output = thismod
+        elif len(output) > 0:
+            output = "\n".join(output)
+        else:
+            output = None
+    return output
 
 
 def _which(name, larch=None, **kw):
@@ -281,7 +287,7 @@ local_funcs = {'group':_group,
                'more': _more,
                'ls': _ls,
                'cd': _cd,
-               'run': _run_file,
+               'run': _run,
                'which': _which,                
                'cwd': _cwd, 
                'help': _help,

@@ -699,28 +699,11 @@ class Interpreter:
                 if larchname in os.listdir(dirname):
                     islarch = True
                     modname = os.path.abspath(os.path.join(dirname, larchname))
-                    ret = builts._run_file(modname, larch=self,
-                                           new_module=True)
+                    thismod = builtins._run(modname, larch=self,
+                                                new_module=name)
                     # print(" isLarch!!", name, modname)
                     # save current module group
                     #  create new group, set as moduleGroup and localGroup
-#                     symtable.save_frame()
-#                     st_sys.modules[name] = thismod = Group(name=name)
-#                     symtable.set_frame((thismod, thismod))
-#                     
-#                     ##thismod = symtable.new_modulegroup(name)
-#                     ##print("B ", thismod)
-#                     text = open(modname).read()
-#                     inptext = inputText.InputText()
-#                     inptext.put(text, filename=modname)
-#                     
-#                     while inptext:
-#                         block, fname, lineno = inptext.get()
-#                         self.eval(block, fname=fname, lineno=lineno)
-#                         if self.error:
-#                             print(self.error)
-#                             break
-#                     symtable.restore_frame()
             if len(self.error) > 0:
                 st_sys.modules.pop(name)
                 # thismod = None

@@ -1,5 +1,5 @@
 print 'hello'
 x = 12
 for i in range(x):
-    print i, x, x*x/3.
-end
+    print i, i*x/sqrt(3.)
+endfor
