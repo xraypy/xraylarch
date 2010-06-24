@@ -1,0 +1,5 @@
+print 'hello'
+x = 12
+for i in range(x):
+    print i, x, x*x/3.
+end
