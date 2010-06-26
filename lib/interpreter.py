@@ -139,7 +139,7 @@ class Interpreter:
             lineno = self.lineno
 
         if len(self.error) > 0 and not isinstance(node, ast.Module):
-            msg = 'Extra Error (%s)' % msg
+            msg = '%s' % msg
 
         if py_exc is None:
             etype, evalue = None, None
@@ -218,7 +218,7 @@ class Interpreter:
         # print("COMPILE ", ast.dump(node))
         out = None
         if len(self.error) > 0:
-            self.raise_exception(node, msg='Eval Error', expr=expr,
+            self.raise_exception(node, msg='Syntax Error', expr=expr,
                                  fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
         else:            
@@ -699,8 +699,12 @@ class Interpreter:
                 if larchname in os.listdir(dirname):
                     islarch = True
                     modname = os.path.abspath(os.path.join(dirname, larchname))
-                    thismod = builtins._run(modname, larch=self,
+                    try:
+                        thismod = builtins._run(modname, larch=self,
                                                 new_module=name)
+                    except:
+                        self.raise_exception(None, msg='Import Error',
+                                             py_exc=sys.exc_info())
                     # print(" isLarch!!", name, modname)
                     # save current module group
                     #  create new group, set as moduleGroup and localGroup
@@ -725,7 +729,7 @@ class Interpreter:
               
         # now we install thismodule into the current moduleGroup
         # import full module
-        # print("IM: from ", fromlist, asname)
+        # proint("IM: from ", fromlist, asname)
         if fromlist is None:
             if asname is None:
                 asname = name

@@ -6,7 +6,7 @@ from glob import glob
 import help
 
 from . import inputText
-
+from .util import LarchExceptionHolder
 helper = help.Helper()
 
 # inherit these from python's __builtins__
@@ -91,7 +91,8 @@ def _showgroup(gname=None,larch=None):
 def _copy(obj,**kw):
     return copy.deepcopy(obj)
 
-def _run(filename, larch=None, new_module=None, printall=False):
+def _run(filename, larch=None, new_module=None, interactive=False,
+         printall=False):
     """execute the larch text in a file as larch code. options:
        larch:       larch interpreter instance
        new_module:  create new "module" frame
@@ -118,8 +119,10 @@ def _run(filename, larch=None, new_module=None, printall=False):
     output = None
     if text is not None:
         inptext = inputText.InputText()
-        inptext.put(text, filename=filename)
-    
+        inptext.interactive = interactive
+        complete = inptext.put(text, filename=filename)
+
+        # print 'TEXT: ',  complete, len(inptext), len(inptext.input_buff)
         if new_module is not None:
             # save current module group
             #  create new group, set as moduleGroup and localGroup
@@ -131,7 +134,6 @@ def _run(filename, larch=None, new_module=None, printall=False):
         output = []
         while inptext:
             block, fname, lineno = inptext.get()
-            # print ': block:', block, fname, lineno
             ret = leval(block, fname=fname, lineno=lineno)
             if callable(ret) and not isinstance(ret, type):
                 try:
@@ -140,17 +142,29 @@ def _run(filename, larch=None, new_module=None, printall=False):
                 except:
                     pass
             if larch.error:
-                err = larch.error.pop(0)
-                fname, lineno = err.fname, err.lineno
-                out.append("%s:\n%s" % err.get_error())
-                for err in larch.error:
-                    if ((err.fname != fname or err.lineno != lineno) and
-                        err.lineno > 0 and lineno > 0):
-                        output.append("%s" % (err.get_error()[1]))
-                self.input.clear()
                 break
-            elif printall and ret is not None:
-                output.append("%s" % ret)
+        if not complete:
+            larch.raise_exception(None,
+                                  msg='Syntax Error -- input incomplete',
+                                  expr="\n".join(inptext.block),
+                                  fname=fname, lineno=lineno)
+
+        if larch.error:
+            err = larch.error.pop(0)
+            fname, lineno = err.fname, err.lineno
+            output.append("%s:\n%s" % err.get_error())
+            for err in larch.error:
+                if ((err.fname != fname or err.lineno != lineno) and
+                    err.lineno > 0 and lineno > 0):
+                    output.append("%s" % (err.get_error()[1]))
+            larch.raise_exception(None,
+                                  msg='Syntax Error -- input incomplete',
+                                  expr="\n".join(inptext.block),
+                                  fname=fname, lineno=lineno)
+            inptext.clear()
+        
+        elif printall and ret is not None:
+            output.append("%s" % ret)
 
         # for a "newly created module" (as on import),
         # the module group is the return value
@@ -161,6 +175,7 @@ def _run(filename, larch=None, new_module=None, printall=False):
             output = "\n".join(output)
         else:
             output = None
+
     return output
 
 

@@ -135,8 +135,8 @@ class InputText:
             self.lineno = lineno
 
         def addText(text, lineno=None):
-            self.input_complete = self.__isComplete(text)                    
             for txt in text.split('\n'):
+                self.input_complete = self.__isComplete(txt)                    
                 self.input_buff.append((txt, self.input_complete,
                                         fname, self.lineno))
                 self.lineno += 1
@@ -150,9 +150,12 @@ class InputText:
                 if len(t0) > 0:
                     addText(t)
 
+        nkeys, nblock = self.convert()
+
         if self.input_complete:
             self.prompt = self.ps1            
-            nkeys, nblock = self.convert()
+
+        return self.input_complete
 
     def get(self):
         """get compile-able block of python code"""
@@ -177,13 +180,15 @@ class InputText:
         oneliner  = False
         startkeys = self.block_friends.keys()
 
-        self.input_buff.reverse()
-        
+        # self.input_buff.reverse()
         while self.input_buff:
-            text,complete,fname,lineno = self.input_buff.pop()
+            text,complete,fname,lineno = self.input_buff.pop(0)
             while not complete:
-                tnext,complete,fname,lineno2 = self.input_buff.pop()
-                text = "%s\n  %s%s" % (text,self.indent*(indent_level+1),tnext)
+                try:
+                    tnext,complete,fname,lineno2 = self.input_buff.pop(0)
+                    text = "%s\n  %s%s" % (text,self.indent*(indent_level+1),tnext)
+                except:
+                    complete=True
 
             text  = text.strip().rstrip()
             txt   = text.replace('(',' (').replace(')',' )')
