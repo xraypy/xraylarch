@@ -5,8 +5,6 @@ import copy
 from glob import glob
 import help
 
-from . import inputText
-from .util import LarchExceptionHolder
 helper = help.Helper()
 
 # inherit these from python's __builtins__
@@ -66,7 +64,7 @@ numpy_renames ={'ln':'log',
                  'acosh':'arccosh',
                  'asin':'arcsin',
                  'asinh':'arcsinh'}
-
+                 
 ##
 ## More builtin commands, to set up the larch language:
 ##
@@ -90,6 +88,25 @@ def _showgroup(gname=None,larch=None):
 
 def _copy(obj,**kw):
     return copy.deepcopy(obj)
+
+def _xrun(name, larch=None, **kw):
+    "run a larch file"
+    if larch is None:
+        raise Warning("cannot run file '%s' -- larch broken?" % name)
+        
+    try:
+        inpf = open(name, 'r')
+    except:
+        raise Warning("cannot run file '%s' -- file not found" % name)        
+
+
+    larch.inptext.interactive = False
+    for itxt, txt in enumerate(inpf.readlines()):
+        larch.inptext.put(txt[:-1], lineno=itxt,  filename=name)
+    larch.execute('')
+    larch.inptext.interactive = True
+    inpf.close()
+
 
 def _run(filename=None, larch=None, new_module=None,
          interactive=False,   printall=False):
@@ -171,7 +188,6 @@ def _run(filename=None, larch=None, new_module=None,
             output = None
     return output
 
-
 def _which(name, larch=None, **kw):
     "print out fully resolved name of a symbol"
     if larch is None:
@@ -179,8 +195,8 @@ def _which(name, larch=None, **kw):
 
     print("Find symbol %s" % name)
     print( larch.symbtable.get_parent(name))
-
-
+    
+    
 
 
 
@@ -195,9 +211,9 @@ def _reload(mod,larch=None,**kw):
         for k,v in sys.modules.items():
             if v == mod: modname = k
     elif (mod in larch.symtable._sys.modules.keys() or
-          mod in sys.modules.keys()):
+          mod in sys.modules.keys()):          
         modname = mod
-
+    
     if modname is not None:
         return larch.import_module(modname,do_reload=True)
 
@@ -240,7 +256,6 @@ def _ls(dir='.', **kws):
             ret[i] = ret[i].replace('\\','/')
     return ret
 
-
 def _cwd(x=None, **kws):
     "return current working directory"
     ret = os.getcwd()
@@ -272,7 +287,7 @@ def _more(name,pagelength=24,**kws):
         f.close()
     show_more(l,filename=name,pagelength=pagelength)
 
-
+    
 def _help(*args,**kws):
     "show help on topic or object"
     helper.buffer = []
@@ -287,7 +302,7 @@ def _help(*args,**kws):
 
     return helper.getbuffer()
 
-
+    
 local_funcs = {'group':_group,
                'showgroup':_showgroup,
                'reload':_reload,
@@ -296,9 +311,8 @@ local_funcs = {'group':_group,
                'ls': _ls,
                'cd': _cd,
                'run': _run,
-               'which': _which,
-               'cwd': _cwd,
+               'which': _which,                
+               'cwd': _cwd, 
                'help': _help,
                }
-
-
+       

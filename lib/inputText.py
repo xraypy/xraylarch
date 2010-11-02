@@ -135,8 +135,8 @@ class InputText:
             self.lineno = lineno
 
         def addText(text, lineno=None):
+            self.input_complete = self.__isComplete(text)                    
             for txt in text.split('\n'):
-                self.input_complete = self.__isComplete(txt)                    
                 self.input_buff.append((txt, self.input_complete,
                                         fname, self.lineno))
                 self.lineno += 1
@@ -150,13 +150,11 @@ class InputText:
                 if len(t0) > 0:
                     addText(t)
 
-        nkeys, nblock = self.convert()
-
         if self.input_complete:
             self.prompt = self.ps1            
+            nkeys, nblock = self.convert()
 
-        return self.input_complete
-
+            
     def get(self):
         """get compile-able block of python code"""
         if len(self) > 0:
@@ -167,7 +165,6 @@ class InputText:
                 return  self._fifo[0].pop()
             except IndexError:
                 raise IndexError('InputText out of complete text')
-
         return self.empty_frame
     
     def convert(self):
@@ -180,15 +177,15 @@ class InputText:
         oneliner  = False
         startkeys = self.block_friends.keys()
 
-        # self.input_buff.reverse()
+        # print('Convert! -- ' , startkeys, len(self.input_buff))
+
+        self.input_buff.reverse()
+        
         while self.input_buff:
-            text,complete,fname,lineno = self.input_buff.pop(0)
+            text,complete,fname,lineno = self.input_buff.pop()
             while not complete:
-                try:
-                    tnext,complete,fname,lineno2 = self.input_buff.pop(0)
-                    text = "%s\n  %s%s" % (text,self.indent*(indent_level+1),tnext)
-                except:
-                    complete=True
+                tnext,complete,fname,lineno2 = self.input_buff.pop()
+                text = "%s\n  %s%s" % (text,self.indent*(indent_level+1),tnext)
 
             text  = text.strip().rstrip()
             txt   = text.replace('(',' (').replace(')',' )')
@@ -196,12 +193,14 @@ class InputText:
             # note here the trick of replacing '#end' with '&end' so
             # that it is not removed by strip_comments.  then below,
             # we look for '&end' as an end-of-block token.
-            if txt.startswith('#end'): txt = '&end%s\n' % txt[4:]
+            if txt.startswith('#end'):
+                txt = '&end%s' % txt[4:]
 
             txt   = strip_comments(txt)
             # thiskey, word2 = (txt.split() + [''])[0:2]
             words = txt.split(' ', 1)
-            thiskey = words.pop(0)
+            thiskey = words.pop(0).strip()
+
             word2 = ''
             if len(words) > 0:
                 word2 = words[0].replace(',', ' ').split()[0]
@@ -232,12 +231,12 @@ class InputText:
                         self.keys.append(thiskey)
                         self.friends = self.block_friends[thiskey]
                         self.endkeys = ('end',  'end%s'% thiskey,
-                                   '&end','&end%s'% thiskey)
+                                        '&end','&end%s'% thiskey)
                     else: # one-liner form 
                         oneliner = True
-
             elif thiskey in self.endkeys: # end of block
-                if not thiskey.startswith('&'): # note '#end' name mangling
+                #print( self.keys)
+                if not thiskey.startswith('&'):
                     prefix = '#'
                 if len(self.keys) != 0:
                     self.current = None
@@ -247,7 +246,7 @@ class InputText:
                         self.current = self.keys[-1]
                         self.friends = self.block_friends[self.current]
                         self.endkeys = ('end',  'end%s'%self.current,
-                                        '&end','&end%s'%self.current)
+                                        '&end', '&end%s'%self.current)
                 
             elif not text.endswith(')') and self.__isCommand(thiskey,word2):
                 # handle 'command format', including 'print'
@@ -267,6 +266,8 @@ class InputText:
                 if '\n' in outtext:  outtext = outtext  + '\n'
                 self._fifo[1].append((outtext,fname,1+lineno-len(self.block)))
                 self.block=[]
+        #print('Convert: ', len(self.keys), len(self.block))
+        
         return len(self.keys), len(self.block)
 
     def clear(self):
@@ -306,8 +307,11 @@ class InputText:
         closes  = ''.join(parens.values())
         quotes,bslash = '\'"', '\\'
         prev_char = ''
+ 
+        # txt  = strip_comments(text)
+        txt = text
+        # print('->STRIP COMM2 ', text, txt)
 
-        txt  = strip_comments(text)
         ends_without_bslash = not txt.rstrip().endswith(bslash)
         for i,c in enumerate(txt):
             if c in opens + closes + quotes:

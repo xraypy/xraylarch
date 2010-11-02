@@ -27,7 +27,7 @@ def strip_comments(sinp, char='#'):
     "find character in a string, skipping over quoted text"
     if sinp.find(char) < 0:
         return sinp    
-    i = 0    
+    i = 0
     while i < len(sinp):
         tchar = sinp[i]
         if tchar in ('"',"'"):

@@ -7,7 +7,6 @@ import numpy
 
 from .interpreter import Interpreter, __version__
 from .inputText import InputText
-from .builtins import _run
 
 HISTFILE = '.larch_history'
 BANNER = """  Larch %s  M. Newville, T. Trainor (2009)
@@ -91,57 +90,6 @@ class shell(cmd.Cmd):
     def do_shell(self, arg):
         os.system(arg)
 
-    def olddefault(self,text):
-        text = text.strip()
-        if text in ('quit','exit','EOF'):
-            return 1
-
-        if text.startswith('help'):
-            arg = text[4:]
-            if arg.startswith('(') and arg.endswith(')'): arg = arg[1:-1]
-            if arg.startswith("'") and arg.endswith("'"): arg = arg[1:-1]
-            if arg.startswith('"') and arg.endswith('"'): arg = arg[1:-1]
-            text  = "help(%s)"% (repr(arg))
-        if text.startswith('!'):
-            os.system(text[1:])
-        else:
-            ret = None
-            self.input.put(text,lineno=0)
-            
-            self.prompt = self.ps2
-            while len(self.input) > 0:
-                block,fname,lineno = self.input.get()
-                ret = self.larch.eval(block, fname=fname, lineno=lineno)
-                if callable(ret) and not isinstance(ret, type):
-                    try:
-                        if 1 == len(block.split()):
-                            ret = ret()
-                    except:
-                        pass
-                if self.larch.error:
-                    err = self.larch.error.pop(0)
-                    fname, lineno = err.fname, err.lineno
-                    sys.stdout.write("%s:\n%s\n" % err.get_error())
-                    for err in self.larch.error:
-                        if self.debug or ((err.fname != fname or err.lineno != lineno)
-                                     and err.lineno > 0 and lineno > 0):
-                            sys.stdout.write("%s\n" % (err.get_error()[1]))
-                    self.input.clear()
-                    self.prompt = self.ps1                    
-                    if  self.debug: 
-                        for err in self.larch.error:
-                            fname, lineno = err.fname, err.lineno
-                            sys.stdout.write("%s:\n%s\n" % err.get_error())
-                            for err in self.larch.error:
-                                if self.debug or ((err.fname != fname or err.lineno != lineno)
-                                                  and err.lineno > 0 and lineno > 0):
-                                    sys.stdout.write("%s\n" % (err.get_error()[1]))
-                    
-                    break
-                elif ret is not None:
-                    sys.stdout.write("%s\n" % ret)
-                self.prompt = self.ps1
-
     def default(self,text):
         text = text.strip()
         if text in ('quit','exit','EOF'):
@@ -160,8 +108,10 @@ class shell(cmd.Cmd):
             self.input.put(text,lineno=0)
             
             self.prompt = self.ps2
+            # print 'Input done ', self.input._fifo
             while len(self.input) > 0:
                 block,fname,lineno = self.input.get()
+                # print('Shell: block ', block )
                 ret = self.larch.eval(block, fname=fname, lineno=lineno)
                 if callable(ret) and not isinstance(ret, type):
                     try:
