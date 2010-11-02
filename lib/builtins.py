@@ -31,7 +31,7 @@ from_builtin= ('ArithmeticError', 'AssertionError', 'AttributeError',
                 'complex', 'delattr', 'dict', 'dir', 'divmod', 'enumerate',
                 'file', 'filter', 'float', 'format', 'frozenset',
                 'getattr', 'hasattr', 'hash', 'hex', 'id', 'int',
-                'isinstance', 'len', 'list', 'map', 'max', 'min', 
+                'isinstance', 'len', 'list', 'map', 'max', 'min',
                 'oct', 'open', 'ord', 'pow', 'property', 'range',
                 'raw_input', 'reduce', 'repr', 'reversed', 'round', 'set',
                 'setattr', 'slice', 'sorted', 'str', 'sum', 'tuple',
@@ -66,7 +66,7 @@ numpy_renames ={'ln':'log',
                  'acosh':'arccosh',
                  'asin':'arcsin',
                  'asinh':'arcsinh'}
-                 
+
 ##
 ## More builtin commands, to set up the larch language:
 ##
@@ -91,8 +91,8 @@ def _showgroup(gname=None,larch=None):
 def _copy(obj,**kw):
     return copy.deepcopy(obj)
 
-def _run(filename, larch=None, new_module=None, interactive=False,
-         printall=False):
+def _run(filename=None, larch=None, new_module=None,
+         interactive=False,   printall=False):
     """execute the larch text in a file as larch code. options:
        larch:       larch interpreter instance
        new_module:  create new "module" frame
@@ -103,9 +103,6 @@ def _run(filename, larch=None, new_module=None, interactive=False,
         raise Warning("cannot run file '%s' -- larch broken?" % name)
 
     symtable = larch.symtable
-    Group    = symtable.create_group
-    leval    = larch.eval
-    st_sys   = symtable._sys
     text     = None
     if isinstance(filename, file):
         text = filename.read()
@@ -118,23 +115,21 @@ def _run(filename, larch=None, new_module=None, interactive=False,
     # print '-->_run: ', filename, len(text), leval
     output = None
     if text is not None:
-        inptext = inputText.InputText()
-        inptext.interactive = interactive
+        inptext = inputText.InputText(interactive=interactive)
         complete = inptext.put(text, filename=filename)
-
         # print 'TEXT: ',  complete, len(inptext), len(inptext.input_buff)
         if new_module is not None:
             # save current module group
             #  create new group, set as moduleGroup and localGroup
             symtable.save_frame()
-            thismod = Group(name=new_module)
-            st_sys.modules[new_module] = thismod
+            thismod = symtable.create_group(name=new_module)
+            symtable._sys.modules[new_module] = thismod
             symtable.set_frame((thismod, thismod))
 
         output = []
         while inptext:
             block, fname, lineno = inptext.get()
-            ret = leval(block, fname=fname, lineno=lineno)
+            ret = larch.eval(block, fname=fname, lineno=lineno)
             if callable(ret) and not isinstance(ret, type):
                 try:
                     if 1 == len(block.split()):
@@ -162,7 +157,6 @@ def _run(filename, larch=None, new_module=None, interactive=False,
                                   expr="\n".join(inptext.block),
                                   fname=fname, lineno=lineno)
             inptext.clear()
-        
         elif printall and ret is not None:
             output.append("%s" % ret)
 
@@ -175,7 +169,6 @@ def _run(filename, larch=None, new_module=None, interactive=False,
             output = "\n".join(output)
         else:
             output = None
-
     return output
 
 
@@ -186,8 +179,8 @@ def _which(name, larch=None, **kw):
 
     print("Find symbol %s" % name)
     print( larch.symbtable.get_parent(name))
-    
-    
+
+
 
 
 
@@ -202,9 +195,9 @@ def _reload(mod,larch=None,**kw):
         for k,v in sys.modules.items():
             if v == mod: modname = k
     elif (mod in larch.symtable._sys.modules.keys() or
-          mod in sys.modules.keys()):          
+          mod in sys.modules.keys()):
         modname = mod
-    
+
     if modname is not None:
         return larch.import_module(modname,do_reload=True)
 
@@ -279,7 +272,7 @@ def _more(name,pagelength=24,**kws):
         f.close()
     show_more(l,filename=name,pagelength=pagelength)
 
-    
+
 def _help(*args,**kws):
     "show help on topic or object"
     helper.buffer = []
@@ -294,7 +287,7 @@ def _help(*args,**kws):
 
     return helper.getbuffer()
 
-    
+
 local_funcs = {'group':_group,
                'showgroup':_showgroup,
                'reload':_reload,
@@ -303,9 +296,9 @@ local_funcs = {'group':_group,
                'ls': _ls,
                'cd': _cd,
                'run': _run,
-               'which': _which,                
-               'cwd': _cwd, 
+               'which': _which,
+               'cwd': _cwd,
                'help': _help,
                }
 
-       
+

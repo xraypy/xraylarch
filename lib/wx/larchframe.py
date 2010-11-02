@@ -1,6 +1,5 @@
 #!/usr/bin/python
 #
-# test the MotorPanel
 
 import sys
 import os
@@ -13,6 +12,7 @@ import larch
 from readlinetextctrl import ReadlineTextCtrl
 from larchfilling import Filling
 
+from larch.plugins import plotter, shellutils
 from larch.plugins import plotter, shellutils
 
 PLUGINS = [plotter.registerPlugin, shellutils.registerPlugin]
@@ -74,12 +74,7 @@ class LarchWxShell(object):
             # self.output.SetInsertionPointEnd()
 
             self.output.ShowPosition(self.output.GetLastPosition()-100)
-            print 'Write ', color,self.output.GetLastPosition(),   self.output.GetNumberOfLines(), self.output.GetSize()
             # print self.output.PositionToXY()
-            
-            
-
-            
             
     def execute(self, text=None):
         if text is not None:

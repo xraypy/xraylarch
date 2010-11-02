@@ -700,7 +700,7 @@ class Interpreter:
                     islarch = True
                     modname = os.path.abspath(os.path.join(dirname, larchname))
                     try:
-                        thismod = builtins._run(modname, larch=self,
+                        thismod = builtins._run(filename=modname, larch=self,
                                                 new_module=name)
                     except:
                         self.raise_exception(None, msg='Import Error',

@@ -52,11 +52,13 @@ class ImagePanel(BasePanel):
         if x is not None: self.data_range[:1] = [min(x),max(x)]
         if y is not None: self.data_range[2:] = [min(y),max(y)]
 
-        print 'Hello ', d.shape, self.data_range
+        # print 'imagepanel Display: ', d.shape, self.data_range, self.conf.cmap
 
-        self.conf.image = self.axes.imshow(d,cmap=colormap.gray,
-                                           interpolation='nearest', origin='lower')
+        self.conf.image = self.axes.imshow(d,cmap=self.conf.cmap,
+                                           interpolation=self.conf.interp,
+                                           origin='lower')
         self.axes.set_axis_off()
+        self.canvas.draw()        
         
     def set_xylims(self, xyrange,autoscale=True):
         """ update xy limits of a plot"""
@@ -88,7 +90,6 @@ class ImagePanel(BasePanel):
         """ zoom out full data range """
         self.zoom_lims = [None]
         self.unzoom(event,set_bounds=False)
-        
 
        
     def unzoom(self,event=None,set_bounds=True):
@@ -97,7 +98,7 @@ class ImagePanel(BasePanel):
         if len(self.zoom_lims) > 1:
             self.zoom_lims.pop()
             lims = self.zoom_lims[-1]
-        print 'UNZOOM lims: ', lims, self.data_range
+        print 'Debugging UNZOOM lims: ', lims, self.data_range
         print 'Current X ', self.axes.get_xlim() 
         print 'Current Y ', self.axes.get_ylim()       
         if lims is None: # auto scale
