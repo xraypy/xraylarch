@@ -1,7 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 
 import wx
-import larch
+try:
+    import lib as larch
+except ImportError:
+    import larch
+
 from larch.wx import larchframe
 
 app = wx.PySimpleApp()
