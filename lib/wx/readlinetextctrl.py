@@ -98,7 +98,6 @@ class ReadlineTextCtrl(wx.TextCtrl):
             cb_txt = wx.TextDataObject()
             wx.TheClipboard.Open()
             if wx.TheClipboard.IsOpened():
-                print 'Ctrl-C ', entry, type(entry)
                 cb_txt.SetData(str(entry))
                 wx.TheClipboard.SetData(cb_txt)
                 wx.TheClipboard.Close()                
@@ -137,7 +136,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
                 wx.TheClipboard.Close()
                 self.SetValue('')
         elif ctrl:
-            print 'CTRL ', key
+            pass # print 'CTRL ', key
         self.Refresh()
         if do_skip:
             event.Skip()
