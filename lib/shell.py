@@ -140,7 +140,7 @@ class shell(cmd.Cmd):
                     
                     break
                 elif ret is not None:
-                    sys.stdout.write("%s\n" % ret)
+                    sys.stdout.write("%s\n" % repr(ret))
                 self.prompt = self.ps1
             
 if __name__ == '__main__':
