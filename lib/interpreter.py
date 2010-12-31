@@ -4,6 +4,7 @@ from __future__ import division, print_function
 import os
 import sys
 import ast
+import math
 try:
     import numpy
     HAS_NUMPY = True
@@ -16,7 +17,7 @@ from .symboltable import SymbolTable, Group, isgroup
 from .util import LarchExceptionHolder, Procedure, DefinedVariable
 from .closure import Closure
 
-__version__ = '0.9.4'
+__version__ = '0.9.5'
 
 OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.IsNot:  lambda a, b: a is not b,
@@ -93,6 +94,9 @@ class Interpreter:
         self.lineno    = -5
         builtingroup = getattr(symtable,'_builtin')
         mathgroup    = getattr(symtable,'_math')
+        setattr(mathgroup, 'j', 1j)
+        for sym in builtins.from_math:
+            setattr(mathgroup, sym, getattr(math, sym))
 
         for sym in builtins.from_builtin:
             setattr(builtingroup, sym, __builtins__[sym])

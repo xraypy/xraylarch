@@ -35,9 +35,18 @@ from_builtin= ('ArithmeticError', 'AssertionError', 'AttributeError',
                 'setattr', 'slice', 'sorted', 'str', 'sum', 'tuple',
                 'type', 'unichr', 'unicode', 'zip')
 
-# inherit these from numpy
+# inherit these from math (many will be overridden by numpy
 
+from_math= ('acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
+            'ceil', 'copysign', 'cos', 'cosh', 'degrees', 'e', 'exp', 'fabs',
+            'factorial',
+            'floor', 'fmod', 'frexp', 'fsum', 'hypot', 'isinf',
+            'isnan', 'ldexp', 'log', 'log10', 'log1p', 'modf', 'pi', 'pow',
+            'radians', 'sin',  'sinh', 'sqrt', 'tan', 'tanh', 'trunc')
+
+# inherit these from numpy
 from_numpy = ('pi','e', 'array','sin','cos','tan','exp','log','log10',
+              'ldexp', 'log1p', 'copysign', 'isnan', 'isinf', 'frexp', 
                'sqrt','arange', 'arccos', 'arccosh', 'arcsin', 'arcsinh',
                'arctan', 'arctan2', 'arctanh', 'argmax', 'argmin',
                'argsort', 'array', 'cosh', 'fabs', 'floor', 'floor_divide',
@@ -55,16 +64,17 @@ from_numpy = ('pi','e', 'array','sin','cos','tan','exp','log','log10',
                'reshape', 'resize', 'right_shift', 'searchsorted', 'shape',
                'size', 'sometrue', 'sort', 'subtract', 'sum', 'swapaxes',
                'trace', 'transpose', 'true_divide', 'vdot', 'where',
-               'zeros','linspace')
+               'zeros','linspace', 'trunc', 'degrees', 'radians')
 
 numpy_renames ={'ln':'log',
-                 'atan':'arctan',
-                 'atan2':'arctan2',
-                 'acos':'arccos',
-                 'acosh':'arccosh',
-                 'asin':'arcsin',
-                 'asinh':'arcsinh'}
-                 
+                'atan':'arctan',
+                'atan2':'arctan2',
+                'atanh':'arctanh',
+                'acos':'arccos',
+                'acosh':'arccosh',
+                'asin':'arcsin',
+                'asinh':'arcsinh'}
+                
 ##
 ## More builtin commands, to set up the larch language:
 ##
