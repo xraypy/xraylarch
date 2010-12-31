@@ -44,7 +44,8 @@ class LarchWxShell(object):
     def __init__(self, wxparent=None,   writer=None,
                  prompt=None, output=None, input=None):
         self.larch  = larch.Interpreter()
-        self.inptext  = larch.InputText(prompt=self.ps1, interactive=False)
+        self.inptext  = larch.InputText(prompt=self.ps1,
+                                        interactive=False)
         self.symtable = self.larch.symtable
         self.prompt = prompt
         self.output = output
@@ -157,8 +158,8 @@ class LarchFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=(600,400),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('WXLarch')
-        self.SetFont(wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, False))
-        sfont = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, False)
+        self.SetFont(wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, False))
+        sfont = wx.Font(12,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
         sbar = self.CreateStatusBar(2, wx.CAPTION|wx.THICK_FRAME)
 
         self.SetStatusWidths([-2,-1])
@@ -241,6 +242,7 @@ class LarchFrame(wx.Frame):
         else:
             self.input.AddToHistory(text)
             wx.CallAfter(self.larchshell.execute, text) 
+            wx.CallAfter(self.datapanel.tree.display)
         event.Skip()
         
     def onResize(self, event=None):
