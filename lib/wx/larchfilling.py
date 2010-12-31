@@ -9,6 +9,7 @@ __cvsid__ = "$Id: filling.py 37633 2006-02-18 21:40:57Z RD $"
 __revision__ = "$Revision: 37633 $"
 
 import wx
+import numpy
 import wx.html as html
 import sys
 import types
@@ -24,24 +25,16 @@ from larch.closure import Closure
 
 VERSION = '0.9.5(Larch)'
 
-COMMONTYPES = [getattr(types, t) for t in dir(types) \
-               if not t.startswith('_') \
-               and t not in ('ClassType', 'InstanceType', 'ModuleType')]
+COMMONTYPES = (int, float, complex, bool, str, unicode, dict, list, tuple, numpy.ndarray)
+
+TYPE_HELPS = {}
+for t in COMMONTYPES:
+    TYPE_HELPS[t] = 'help on %s' % t
 
 DOCTYPES = ('BuiltinFunctionType', 'BuiltinMethodType', 'ClassType',
             'FunctionType', 'GeneratorType', 'InstanceType',
             'LambdaType', 'MethodType', 'ModuleType',
             'UnboundMethodType', 'method-wrapper')
-
-SIMPLETYPES = [getattr(types, t) for t in dir(types) \
-               if not t.startswith('_') and t not in DOCTYPES]
-
-del t
-
-try:
-    COMMONTYPES.append(type(''.__repr__))  # Method-wrapper in version 2.2.x.
-except AttributeError:
-    pass
 
 from docutils.core import publish_string
 from docutils.writers.html4css1 import Writer,HTMLTranslator
@@ -114,7 +107,7 @@ class FillingTree(wx.TreeCtrl):
         if self.IsExpanded(item):
             return
         self.addChildren(item)
-#        self.SelectItem(item)
+        self.SelectItem(item)
 
     def OnItemCollapsed(self, event):
         """Remove all children from the item."""
@@ -140,41 +133,48 @@ class FillingTree(wx.TreeCtrl):
 
     def objHasChildren(self, obj):
         """Return true if object has children."""
-        if self.objGetChildren(obj):
+        if isinstance(self.objGetChildren(obj), dict):
             return True
         else:
             return False
 
     def objGetChildren(self, obj):
         """Return dictionary with attributes or contents of object."""
+        print 'objGetChildren ', obj
         busy = wx.BusyCursor()
         otype = type(obj)
         d = {}
         self.ntop = 0
-        if isinstance(obj, SymbolTable)   or isinstance(obj, Group):
-            return obj._publicmembers()
-        if isinstance(obj, (int, float, bool)) or (isinstance(obj, dict) and hasattr(obj, 'keys')):
-            return obj
+        if isinstance(obj, SymbolTable) or isinstance(obj, Group):
+            d = obj._publicmembers()
+        if isinstance(obj, COMMONTYPES):
+            d = obj
         elif isinstance(obj, (list, tuple)):
             for n in range(len(obj)):
                 key = '[' + str(n) + ']'
                 d[key] = obj[n]
-            
         elif not hasattr(obj, '__call__'):
             for key in introspect.getAttributeNames(obj):
                 # Believe it or not, some attributes can disappear,
                 # such as the exc_traceback attribute of the sys
                 # module. So this is nested in a try block.
                 try:
-                    if not (key.startswith('__') and key.endswith('__')):
-                        d[key] = getattr(obj, key)
+                    if not ((key.startswith('__') and key.endswith('__')) or
+                            key.startswith('_SymbolTable') or
+                            key == '_main'):
+                        a = getattr(obj, key)
+                        if not hasattr(a, '__call__'):
+                            d[key] = a
+                    else:
+                        print 'ignoring key = ', key
                 except:
-                    pass
+                    print 'exceptoin at key ' , key
         return d
 
     def addChildren(self, item):
         self.DeleteChildren(item)
         obj = self.GetPyData(item)
+
         children = self.objGetChildren(obj)
         if not children:
             return
@@ -219,9 +219,14 @@ class FillingTree(wx.TreeCtrl):
         text.append("%s\n" % self.getFullName(item))
 
         needs_doc = False
-        if isinstance(obj, (str, dict, list, tuple, int, float)):
-            text.append('Type: %s' % str(otype))
+        if isinstance(obj, COMMONTYPES):
+            text.append('Type: %s' % otype.__name__)
             text.append('Value = %s' % repr(obj))
+            try:
+                text.append('\n %s' % TYPE_HELPS[otype])
+            except KeyError:
+                pass
+            
         elif hasattr(obj, '__call__'):
             text.append('Function:')
             needs_doc = True
