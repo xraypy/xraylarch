@@ -22,15 +22,18 @@ class BasePanel(wx.Panel):
     """
     def __init__(self, parent, messenger=None,
                  show_config_popup=True, **kw):
+
         self.is_macosx = False
         if os.name == 'posix':
-            if os.uname()[0] == 'Darwin': self.is_macosx = True
+            if os.uname()[0] == 'Darwin':
+                self.is_macosx = True
 
         self.messenger = messenger
-        if messenger is None: self.messenger = self.__def_messenger
+        if messenger is None:
+            self.messenger = self.__def_messenger
 
-        self.cursor_mode='cursor'
-        self.cursor_save='cursor'
+        self.cursor_mode = 'cursor'
+        self.cursor_save = 'cursor'
         self._yfmt = '%.4f'
         self._xfmt = '%.4f'
         self.use_dates = False
@@ -38,19 +41,22 @@ class BasePanel(wx.Panel):
         self.show_config_popup = show_config_popup
         self.launch_dir  = os.getcwd()
 
-        self.mouse_uptime= time.time()
-
+        self.mouse_uptime = time.time()
         self.zoom_lims = [None]
-        self.old_zoomdc= (None,(0,0),(0,0))
-        self.parent    = parent
+        self.old_zoomdc = (None, (0, 0), (0, 0))
+        self.parent = parent
         self.printer = Printer(self)
 
     def addCanvasEvents(self):
         # use matplotlib events
-        self.canvas.mpl_connect("motion_notify_event",  self.__onMouseMotionEvent)
-        self.canvas.mpl_connect("button_press_event",   self.__onMouseButtonEvent)
-        self.canvas.mpl_connect("button_release_event", self.__onMouseButtonEvent)
-        self.canvas.mpl_connect("key_press_event",      self.__onKeyEvent)
+        self.canvas.mpl_connect("motion_notify_event",
+                                self.__onMouseMotionEvent)
+        self.canvas.mpl_connect("button_press_event",
+                                self.__onMouseButtonEvent)
+        self.canvas.mpl_connect("button_release_event",
+                                self.__onMouseButtonEvent)
+        self.canvas.mpl_connect("key_press_event",
+                                self.__onKeyEvent)
 
         # build pop-up menu for right-click display
         self.popup_unzoom_all = wx.NewId()        
@@ -78,33 +84,36 @@ class BasePanel(wx.Panel):
         self.conf.ylabel = ''
         self.conf.title  = ''
 
-    def unzoom_all(self,event=None):
+    def unzoom_all(self, event=None):
         """ zoom out full data range """
         self.zoom_lims = [None]
         self.unzoom(event)
         
-    def unzoom(self,event=None,set_bounds=True):
+    def unzoom(self, event=None, set_bounds=True):
         """ zoom out 1 level, or to full data range """
         lims = None
         if len(self.zoom_lims) > 1:
             self.zoom_lims.pop()
             lims = self.zoom_lims[-1]
 
+        ax = self.axes
         if lims is None: # auto scale
             self.zoom_lims = [None]
-            xmin,xmax,ymin,ymax = self.data_range
-            self.axes.set_xlim((xmin,xmax),emit=True)
-            self.axes.set_ylim((ymin,ymax),emit=True)
+            xmin, xmax, ymin, ymax = self.data_range
+            ax.set_xlim((xmin, xmax), emit=True)
+            ax.set_ylim((ymin, ymax), emit=True)
             if set_bounds:
-                self.axes.update_datalim(((xmin,ymin),(xmax,ymax)))
-                self.axes.set_xbound(self.axes.xaxis.get_major_locator().view_limits(xmin,xmax))
-                self.axes.set_ybound(self.axes.yaxis.get_major_locator().view_limits(ymin,ymax))            
+                ax.update_datalim(((xmin, ymin), (xmax, ymax)))
+                ax.set_xbound(ax.xaxis.get_major_locator(
+                    ).view_limits(xmin, xmax))
+                ax.set_ybound(ax.yaxis.get_major_locator(
+                    ).view_limits(ymin, ymax))
         else:
-            self.axes.set_xlim(lims[:2])
-            self.axes.set_ylim(lims[2:])
-        self.old_zoomdc = (None,(0,0),(0,0))
+            ax.set_xlim(lims[:2])
+            ax.set_ylim(lims[2:])
+        self.old_zoomdc = (None, (0, 0), (0, 0))
         txt = ''
-        if len(self.zoom_lims)>1:
+        if len(self.zoom_lims) > 1:
             txt = 'zoom level %i' % (len(self.zoom_lims))
         self.write_message(txt)
         self.canvas.draw()
@@ -112,36 +121,39 @@ class BasePanel(wx.Panel):
     def get_xylims(self):
         x = self.axes.get_xlim()
         y = self.axes.get_ylim()
-        return (x,y)
+        return x, y
 
-    def set_title(self,s):
+    def set_title(self, s):
         "set plot title"
         self.conf.title = s
         self.conf.relabel()
         
-    def set_xlabel(self,s):
+    def set_xlabel(self, s):
         "set plot xlabel"
         self.conf.xlabel = s
         self.conf.relabel()
 
-    def set_ylabel(self,s):
+    def set_ylabel(self, s):
         "set plot ylabel"
         self.conf.ylabel = s
         self.conf.relabel()
 
-    def write_message(self,s,panel=0):
-        """ write message to message handler (possibly going to GUI statusbar)"""
+    def write_message(self, s, panel=0):
+        """ write message to message handler
+        (possibly going to GUI statusbar)"""
         self.messenger(s, panel=panel)
 
-    def save_figure(self,event=None):
+    def save_figure(self, event=None):
         """ save figure image to file"""
         file_choices = "PNG (*.png)|*.png" 
         ofile = self.conf.title.strip()
-        if len(ofile)>64: ofile=ofile[:63].strip()
-        if len(ofile)<1:  ofile = 'plot'
+        if len(ofile) > 64:
+            ofile = ofile[:63].strip()
+        if len(ofile) < 1:
+            ofile = 'plot'
         
         for c in ' :";|/\\': # "
-            ofile = ofile.replace(c,'_')
+            ofile = ofile.replace(c, '_')
 
         ofile = ofile + '.png'
         
@@ -153,25 +165,28 @@ class BasePanel(wx.Panel):
 
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
-            self.canvas.print_figure(path,dpi=300)
+            self.canvas.print_figure(path, dpi=300)
             if (path.find(self.launch_dir) ==  0):
                 path = path[len(self.launch_dir)+1:]
             self.write_message('Saved plot to %s' % path)
             
-    def set_bg(self,color= None):
-        if color is None: color = '#F7F7E0'
+    def set_bg(self, color= None):
+        if color is None:
+            color = '#F7F7E0'
         self.fig.set_facecolor(color)
 
     ####
     ## GUI events
     ####
-    def reportLeftDown(self,event=None,**kw):
-        if event == None: return                
-        self.write_message("%f, %f" % (event.xdata,event.ydata), panel=1)
+    def reportLeftDown(self, event=None, **kw):
+        if event == None:
+            return                
+        self.write_message("%f, %f" % (event.xdata, event.ydata), panel=1)
         
-    def onLeftDown(self,event=None):
+    def onLeftDown(self, event=None):
         """ left button down: report x,y coords, start zooming mode"""
-        if event == None: return
+        if event == None:
+            return
         self.conf.zoom_x = event.x
         self.conf.zoom_y = event.y
         # print 'LD: ', event.x, event.y,event.xdata,event.ydata,event.inaxes
@@ -179,18 +194,20 @@ class BasePanel(wx.Panel):
             self.conf.zoom_init = (event.xdata, event.ydata)
             self.reportLeftDown(event=event)
         else:
-            self.conf.zoom_init = self.axes.transData.inverted().transform((event.x, event.y))                
+            self.conf.zoom_init = self.axes.transData.inverted(
+                ).transform((event.x, event.y))                
         self.cursor_mode = 'zoom'
         self.__drawZoombox(self.old_zoomdc)
-        self.old_zoomdc = (None, (0,0),(0,0))                                  
+        self.old_zoomdc = (None, (0, 0), (0, 0))
         self.ForwardEvent(event=event.guiEvent)
 
-    def zoom_OK(self,start,stop):
+    def zoom_OK(self, start, stop):
         return True
     
-    def onLeftUp(self,event=None):
+    def onLeftUp(self, event=None):
         """ left button up: zoom in on selected region?? """
-        if event == None: return
+        if event == None:
+            return
         # print 'onLeftUp ', event
         dx = abs(self.conf.zoom_x - event.x)
         dy = abs(self.conf.zoom_y - event.y)
@@ -199,22 +216,23 @@ class BasePanel(wx.Panel):
             self.cursor_mode == 'zoom'):
             self.mouse_uptime = t0
             if event.inaxes is not None:
-                _end = (event.xdata,event.ydata)
+                _end = (event.xdata, event.ydata)
             else: # allows zooming in to go slightly out of range....
-                _end =  self.axes.transData.inverted().transform((event.x, event.y))
+                _end =  self.axes.transData.inverted(
+                    ).transform((event.x, event.y))
             try:
                 _ini = self.conf.zoom_init
-                _lim = (min(_ini[0],_end[0]),max(_ini[0],_end[0]),
-                        min(_ini[1],_end[1]),max(_ini[1],_end[1]))
+                _lim = (min(_ini[0], _end[0]), max(_ini[0], _end[0]),
+                        min(_ini[1], _end[1]), max(_ini[1], _end[1]))
 
-                if self.zoom_OK(_ini, _end):
+                if self.zoom_OK(_ini,  _end):
                     self.set_xylims(_lim, autoscale=False)
                     self.zoom_lims.append(_lim)
                     txt = 'zoom level %i ' % (len(self.zoom_lims)-1)
-                    self.write_message(txt,panel=1)
+                    self.write_message(txt, panel=1)
             except:
                 self.write_message("Cannot Zoom")
-        self.old_zoomdc = (None,(0,0),(0,0))
+        self.old_zoomdc = (None, (0, 0), (0, 0))
         self.cursor_mode = 'cursor'
         self.canvas.draw()
         self.ForwardEvent(event=event.guiEvent)
@@ -230,30 +248,32 @@ class BasePanel(wx.Panel):
                     pass
         # 
 
-    def onRightDown(self,event=None):
+    def onRightDown(self, event=None):
         """ right button down: show pop-up"""
-        if event is None: return      
+        if event is None:
+            return      
         self.cursor_mode = 'cursor'
         # note that the matplotlib event location have to be converted
         if event.inaxes:
             pos = event.guiEvent.GetPosition()
-            wx.CallAfter(self.PopupMenu,self.popup_menu,pos)
+            wx.CallAfter(self.PopupMenu, self.popup_menu, pos)
         self.ForwardEvent(event=event.guiEvent)
             
-    def onRightUp(self,event=None):
+    def onRightUp(self, event=None):
         """ right button up: put back to cursor mode"""
-        if event is None: return
+        if event is None:
+            return
         self.cursor_mode = 'cursor'
         self.ForwardEvent(event=event.guiEvent)
 
     ####
     ## private methods
     ####
-    def __def_messenger(self,s,panel=0):
+    def __def_messenger(self, s, panel=0):
         """ default, generic messenger: write to stdout"""
         sys.stdout.write(s)
 
-    def __date_format(self,x):
+    def __date_format(self, x):
         """ formatter for date x-data. primitive, and probably needs
         improvement, following matplotlib's date methods.        
         """
@@ -261,23 +281,26 @@ class BasePanel(wx.Panel):
         ticks = self.axes.xaxis.get_major_locator()()
         span = max(interval) - min(interval)
         fmt = "%m/%d"
-        if span < 1800:     fmt = "%I%p \n%M:%S"
-        elif span < 86400*5:  fmt = "%m/%d \n%H:%M"
-        elif span < 86400*20: fmt = "%m/%d"
+        if span < 1800:
+            fmt = "%I%p \n%M:%S"
+        elif span < 86400*5:
+            fmt = "%m/%d \n%H:%M"
+        elif span < 86400*20:
+            fmt = "%m/%d"
         # print 'date formatter  span: ', span, fmt
-        s = time.strftime(fmt,time.localtime(x))
+        s = time.strftime(fmt, time.localtime(x))
         return s
         
-    def xformatter(self,x,pos):
+    def xformatter(self, x, pos):
         " x-axis formatter "
         if self.use_dates:
             return self.__date_format(x)
         else:
-            return self.__format(x,type='x')
+            return self.__format(x, type='x')
     
-    def yformatter(self,y,pos):
+    def yformatter(self, y, pos):
         " y-axis formatter "        
-        return self.__format(y,type='y')
+        return self.__format(y, type='y')
 
     def __format(self, x, type='x'):
         """ home built tick formatter to use with FuncFormatter():
@@ -286,7 +309,7 @@ class BasePanel(wx.Panel):
 
         also sets self._yfmt/self._xfmt for statusbar
         """
-        fmt,v = '%1.5g','%1.5g'
+        fmt, v = '%1.5g','%1.5g'
         if type == 'y':
             ax = self.axes.yaxis
         else:
@@ -302,72 +325,94 @@ class BasePanel(wx.Panel):
         except:
             pass
         # print ' tick ' , type, dtick, ' -> ', 
-        if   dtick > 99999:     fmt,v = ('%1.6e', '%1.7g')
-        elif dtick > 0.99:      fmt,v = ('%1.0f', '%1.2f')
-        elif dtick > 0.099:     fmt,v = ('%1.1f', '%1.3f')
-        elif dtick > 0.0099:    fmt,v = ('%1.2f', '%1.4f')
-        elif dtick > 0.00099:   fmt,v = ('%1.3f', '%1.5f')
-        elif dtick > 0.000099:  fmt,v = ('%1.4f', '%1.6e')
-        elif dtick > 0.0000099: fmt,v = ('%1.5f', '%1.6e')
-
+        if   dtick > 99999:
+            fmt, v = ('%1.6e', '%1.7g')
+        elif dtick > 0.99:
+            fmt, v = ('%1.0f', '%1.2f')
+        elif dtick > 0.099:
+            fmt, v = ('%1.1f', '%1.3f')
+        elif dtick > 0.0099:
+            fmt, v = ('%1.2f', '%1.4f')
+        elif dtick > 0.00099:
+            fmt, v = ('%1.3f', '%1.5f')
+        elif dtick > 0.000099:
+            fmt, v = ('%1.4f', '%1.6e')
+        elif dtick > 0.0000099:
+            fmt, v = ('%1.5f', '%1.6e')
 
         s =  fmt % x
         s.strip()
         s = s.replace('+', '')
-        while s.find('e0')>0: s = s.replace('e0','e')
-        while s.find('-0')>0: s = s.replace('-0','-')
-        if type == 'y': self._yfmt = v
-        if type == 'x': self._xfmt = v
+        while s.find('e0')>0:
+            s = s.replace('e0','e')
+        while s.find('-0')>0:
+            s = s.replace('-0','-')
+        if type == 'y':
+            self._yfmt = v
+        if type == 'x':
+            self._xfmt = v
         return s
 
-    def __drawZoombox(self,dc):
+    def __drawZoombox(self, dc):
         """ system-dependent hack to call wx.ClientDC.DrawRectangle
         with the right arguments"""
-        if dc[0] is None: return
+        if dc[0] is None:
+            return
         xpos  = dc[1]
         xsize = dc[2]
-        dc[0].DrawRectangle(xpos[0],xpos[1],xsize[0],xsize[1])
-        return (None, (0,0),(0,0))
+        dc[0].DrawRectangle(xpos[0], xpos[1], xsize[0], xsize[1])
+        return (None, (0, 0), (0, 0))
 
-    def __onKeyEvent(self,event=None):
+    def __onKeyEvent(self, event=None):
         """ handles key events on canvas
         """
-        if event is None: return
+        if event is None:
+            return
         # print 'KeyEvent ', event
         key = event.guiEvent.GetKeyCode()
-        if (key < wx.WXK_SPACE or  key > 255):  return
-        mod  = event.guiEvent.ControlDown()
+        if (key < wx.WXK_SPACE or  key > 255):
+            return
         ckey = chr(key)
-        if self.is_macosx: mod = event.guiEvent.MetaDown()
-        if (mod and ckey=='C'): self.canvas.Copy_to_Clipboard(event)
-        if (mod and ckey=='S'): self.save_figure(event)
-        if (mod and ckey=='K'): self.configure(event)
-        if (mod and ckey=='Z'): self.unzoom_all(event)
-        if (mod and ckey=='P'): self.canvas.printer.Print(event)
+        mod  = event.guiEvent.ControlDown()
+        if self.is_macosx:
+            mod = event.guiEvent.MetaDown()
+        if mod:
+            if ckey == 'C':
+                self.canvas.Copy_to_Clipboard(event)
+            elif ckey == 'S':
+                self.save_figure(event)
+            elif ckey == 'K':
+                self.configure(event)
+            elif ckey == 'Z':
+                self.unzoom_all(event)
+            elif ckey == 'P':
+                self.canvas.printer.Print(event)
 
-    def __onMouseButtonEvent(self,event=None):
+    def __onMouseButtonEvent(self, event=None):
         """ general mouse press/release events. Here, event is
         a MplEvent from matplotlib.  This routine just dispatches
         to the appropriate onLeftDown, onLeftUp, onRightDown, onRightUp....
         methods.
         """
-        if event is None: return
+        if event is None:
+            return
         # print 'MouseButtonEvent ', event, event.button
         button = event.button or 1
-        handlers = {(1,'button_press_event'):   self.onLeftDown,
-                   (1,'button_release_event'): self.onLeftUp,
-                   (3,'button_press_event'):   self.onRightDown,
+        handlers = {(1, 'button_press_event'):   self.onLeftDown,
+                    (1, 'button_release_event'): self.onLeftUp,
+                    (3, 'button_press_event'):   self.onRightDown,
                     }
         # (3,'button_release_event'): self.onRightUp}
 
-        handle_event = handlers.get((button,event.name),None)
+        handle_event = handlers.get((button, event.name), None)
         if callable(handle_event): handle_event(event)
         
 
     def __onMouseMotionEvent(self, event=None):
         """Draw a cursor over the axes"""
-        if event is None: return
-        
+        if event is None:
+            return
+       
         if self.cursor_mode == 'cursor':
             if event.inaxes is not None:
                 self.conf.zoom_init = (event.xdata, event.ydata)
@@ -380,7 +425,7 @@ class BasePanel(wx.Panel):
             return
         
         self.__drawZoombox(self.old_zoomdc)
-        self.old_zoomdc = (None, (0,0),(0,0))            
+        self.old_zoomdc = (None, (0, 0), (0, 0))            
         x0     = min(x, self.conf.zoom_x)
         ymax   = max(y, self.conf.zoom_y)
         width  = abs(x -self.conf.zoom_x)
@@ -394,17 +439,17 @@ class BasePanel(wx.Panel):
         self.old_zoomdc = (zdc, (x0, y0), (width, height))
         self.__drawZoombox(self.old_zoomdc)
 
-    def reportMotion(self,event=None):
+    def reportMotion(self, event=None):
         fmt = "X,Y= %s, %s" % (self._xfmt, self._yfmt)
-        self.write_message(fmt % (event.xdata,event.ydata), panel=1)
+        self.write_message(fmt % (event.xdata, event.ydata), panel=1)
         
         
-    def Print(self,event=None,**kw):
-        self.printer.Print(event=event,**kw)
+    def Print(self, event=None, **kw):
+        self.printer.Print(event=event, **kw)
 
-    def PrintPreview(self,event=None,**kw):
+    def PrintPreview(self, event=None, **kw):
         self.printer.Preview(event=event, **kw)        
         
-    def PrintSetup(self,event=None,**kw):
+    def PrintSetup(self, event=None, **kw):
         self.printer.Setup(event=event, **kw)        
         
