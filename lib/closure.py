@@ -26,6 +26,7 @@ class Closure(object):
         return "<function %s>" % (self.func.__name__)
     __str__ = __repr__
 
+    @property
     def __doc__(self):
         return self.func.__doc__
     

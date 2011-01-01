@@ -306,7 +306,7 @@ class SymbolTable(Group):
 
     def show_group(self, gname=None):
         "show groups"
-
+        print('SYMTABLE show group ', gname)
         if gname is None:
             gname = '_main'
         if isgroup(gname): 
@@ -363,12 +363,13 @@ class SymbolTable(Group):
                 "cannot create subgroup of non-group '%s'" % grp)
             else:
                 setattr(grp, nam, Group())
-        if HAS_NUMPY and isinstance(value, list):
-            try:
-                v1 = numpy.array(value)
-                value = v1
-            except:
-                pass
+        if HAS_NUMPY and isinstance(value, list) and len(value) > 1:
+            if all(isinstance(elt, (int, float, complex)) for elt in value):
+                try:
+                    vtmp = numpy.array(value)
+                    value = vtmp
+                except:
+                    pass
 
         setattr(grp, child, value)
         return getattr(grp, child)        

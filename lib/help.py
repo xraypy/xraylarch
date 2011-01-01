@@ -10,25 +10,25 @@ class Helper(object):
     TypeNames = {'<numpy.ndarray>': '<array>',
                  '<interpreter.Procedure>': '<procedure>'}
     
-                 
     def __init__(self,*args,**kws):
         self.larch = None
         self.buff = []
 
-    def help(self,*args):
+    def help(self, *args):
         "return help text for a series of arguments"
 
         for arg in args:
-            if arg is None: continue
-            if isinstance(arg,(str,unicode)) and arg in Help_topics:
+            if arg is None:
+                continue
+            if isinstance(arg, (str, unicode)) and str(arg) in Help_topics:
                 self.addtext(Help_topics[arg])
             else:
                 self.show_symbol(arg)
 
     def show_symbol(self,arg):
         "show help for a symbol in the symbol table"
-        if isinstance(arg, str):
-            sym = self.larch.symtable.getSymbol(arg,create=False)
+        if isinstance(arg, (str, unicode)):
+            sym = self.larch.symtable.get_symbol(arg, create=False)
             out = None
         else:
             out = sym = arg
@@ -37,14 +37,12 @@ class Helper(object):
             self.addtext(" '%s' not found"  % (arg))
         atype = str(type(sym))
         atype = atype.replace('type ','').replace('class ','').replace("'",'')
-        atype = self.TypeNames.get(atype,atype)
+        atype = self.TypeNames.get(atype, atype)
 
         if out is None:
-            if callable(sym) and len(sym.__doc__) > 1:
-                hout = sym.__doc__
-            else:
-                hout = repr(sym)
-            out = "%s = %s" % (arg,hout)
+            out = repr(sym)
+            if hasattr(sym, '__call__') and len(sym.__doc__) > 1:
+                out = sym.__doc__
 
         if atype in ('<tuple>','<list>','<dict>','<array>'):
             out = "%s %s" % (out,atype)

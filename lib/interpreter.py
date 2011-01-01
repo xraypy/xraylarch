@@ -230,7 +230,6 @@ class Interpreter:
             # print(" -> interp ", node, expr,  fname, lineno)
             out = self.interp(node, expr=expr,
                               fname=fname, lineno=lineno)
-
         if len(self.error) > 0:
             self.raise_exception(node, msg='Eval Error', expr=expr,
                                  fname=fname, lineno=lineno,

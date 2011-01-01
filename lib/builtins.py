@@ -69,56 +69,34 @@ from_numpy = ('pi','e', 'array','sin','cos','tan','exp','log','log10',
                'zeros','linspace', 'trunc', 'degrees', 'radians')
 
 numpy_renames ={'ln':'log',
+                'asin':'arcsin',
+                'acos':'arccos',
                 'atan':'arctan',
                 'atan2':'arctan2',
                 'atanh':'arctanh',
-                'acos':'arccos',
                 'acosh':'arccosh',
-                'asin':'arcsin',
                 'asinh':'arcsinh'}
                 
 ##
 ## More builtin commands, to set up the larch language:
 ##
-def _group(larch=None,**kw):
+def _group(larch=None, gname=None, **kw):
     """create a group"""
-    # try:
     g = larch.symtable.create_group()
-    for k,v in kw.items():
-        setattr(g,k,v)
+    for k, v in kw.items():
+        setattr(g, k, v)
     return g
-#     except:
-#         return None
 
-def _showgroup(gname=None,larch=None):
+def _showgroup(gname=None, larch=None):
     if larch is None:
         raise Warning("cannot show group -- larch broken?")
-
     if gname is None:
         gname = '_main'
-    return larch.symtable.show_group(gname)
+    print '_showgroup ', larch.writer
+    larch.writer.write("%s\n" % larch.symtable.show_group(gname))
 
 def _copy(obj,**kw):
     return copy.deepcopy(obj)
-
-def _xrun(name, larch=None, **kw):
-    "run a larch file"
-    if larch is None:
-        raise Warning("cannot run file '%s' -- larch broken?" % name)
-        
-    try:
-        inpf = open(name, 'r')
-    except:
-        raise Warning("cannot run file '%s' -- file not found" % name)        
-
-
-    larch.inptext.interactive = False
-    for itxt, txt in enumerate(inpf.readlines()):
-        larch.inptext.put(txt[:-1], lineno=itxt,  filename=name)
-    larch.execute('')
-    larch.inptext.interactive = True
-    inpf.close()
-
 
 def _run(filename=None, larch=None, new_module=None,
          interactive=False,   printall=False):
@@ -128,7 +106,6 @@ def _run(filename=None, larch=None, new_module=None,
        printall:    whether to print all outputs
     """
     if larch is None:
-        print "must provide interpreter!"
         raise Warning("cannot run file '%s' -- larch broken?" % name)
 
     symtable = larch.symtable
@@ -203,11 +180,10 @@ def _which(name, larch=None, **kw):
     "print out fully resolved name of a symbol"
     if larch is None:
         raise Warning("cannot locate symobol '%s' -- larch broken?" % name)
-    print("Find symbol %s" % name)
-    print( larch.symbtable.get_parent(name))
+    print(larch.symbtable.get_parent(name))
     
 
-def _reload(mod,larch=None,**kw):
+def _reload(mod, larch=None, **kw):
     """reload a module, either larch or python"""
     if larch is None: return None
     modname = None
@@ -224,21 +200,26 @@ def _reload(mod,larch=None,**kw):
     if modname is not None:
         return larch.import_module(modname,do_reload=True)
 
-def show_more(text,filename=None,writer=None,pagelength=30,prefix=''):
+def show_more(text, filename=None, writer=None,
+              pagelength=30, prefix='', larch=None, **kws):
     """show lines of text in the style of more """
     txt = text[:]
-    if isinstance(txt,str): txt = txt.split('\n')
-    if len(txt) <1: return
+    if isinstance(txt, (str, unicode)):
+        txt = txt.split('\n')
+    if len(txt) <1:
+        return
     prompt = '== hit return for more, q to quit'
     ps = "%s (%%.2f%%%%) == " % prompt
-    if filename: ps = "%s (%%.2f%%%%  of %s) == " % (prompt,filename)
+    if filename:
+        ps = "%s (%%.2f%%%%  of %s) == " % (prompt, filename)
 
-    if writer is None:  writer = sys.stdout
+    if writer is None:
+        writer = sys.stdout
 
     i = 0
     for i in range(len(txt)):
         if txt[i].endswith('\n'):
-            writer.write("%s%s" % (prefix,txt[i]))
+            larch.writer.write("%s%s" % (prefix, txt[i]))
         else:
             writer.write("%s%s\n" % (prefix,txt[i]))
         i = i + 1
@@ -270,8 +251,9 @@ def _cwd(x=None, **kws):
         ret = ret.replace('\\','/')
     return ret
 
-def _cd(name,**kwds):
-    "change directorty"
+def _cd(name, **kwds):
+    """change directory
+    """
     name = name.strip()
     if name:
         os.chdir(name)
@@ -281,37 +263,53 @@ def _cd(name,**kwds):
         ret = ret.replace('\\','/')
     return ret
 
-def _more(name,pagelength=24,**kws):
+def _more(fname, pagelength=32, larch=None, **kws):
     "list file contents"
-    try:
-        f = open(name)
-        l = f.readlines()
+    if larch is None:
+        output = sys.stdout.write
+    else:
+        output = larch.writer.write
 
-    except IOError:
-        print "cannot open file: %s." % name
+    if not os.path.exists(fname):
+        output("File '%s' not found.\n" % fname)
         return
-    finally:
-        f.close()
-    show_more(l,filename=name,pagelength=pagelength)
+    
+    elif not os.path.isfile(fname):
+        output("'%s' not a file.\n" % fname)
+        return
+    
+    try:
+        text = open(fname, 'r').readlines()
+    except IOError:
+        output("cannot open file: %s\n" % fname)
+        return
+
+    show_more(text, filename=fname, larch=larch, 
+              pagelength=pagelength, **kws)
 
     
-def _help(*args,**kws):
+def _help(*args, **kws):
     "show help on topic or object"
     helper.buffer = []
     larch = kws.get('larch',None)
-    if helper.larch is None and larch is not None:  helper.larch = larch
+    if helper.larch is None and larch is not None:
+        helper.larch = larch
     if args == ('',):
         args = ('help',)
     if helper.larch is None:
         helper.addtext('cannot start help system!')
     else:
-        [helper.help(a.strip()) for a in args]
+        for a in args:
+            
+            helper.help(a.strip())
 
-    return helper.getbuffer()
-
+    if helper.larch is not None:
+        helper.larch.writer.write("%s\n" % helper.getbuffer())
+    else:
+        return helper.getbuffer()
     
 local_funcs = {'group':_group,
-               'showgroup':_showgroup,
+               'show_group':_showgroup,
                'reload':_reload,
                'copy': _copy,
                'more': _more,

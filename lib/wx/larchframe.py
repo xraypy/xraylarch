@@ -87,7 +87,6 @@ class LarchWxShell(object):
                 if arg.startswith("'") and arg.endswith("'"): arg = arg[1:-1]
                 if arg.startswith('"') and arg.endswith('"'): arg = arg[1:-1]
                 text  = "help(%s)"% (repr(arg))
-                print 'Would Show help: ', text
             if text.startswith('!'):
                 return os.system(text[1:])
             else:
