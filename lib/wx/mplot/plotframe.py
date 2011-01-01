@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 ##
 ## MPlot PlotFrame: a wx.Frame for 2D line plotting, using matplotlib
 ##

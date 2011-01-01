@@ -246,7 +246,8 @@ class PlotPanel(BasePanel):
 
         # define zoom box properties
         self.conf.zoombrush = wx.Brush('#E8E8E8',  wx.SOLID)
-        self.conf.zoompen   = wx.Pen('#E0E0E0', 2, wx.SOLID) # SOLID)
+        self.conf.zoombrush = wx.Brush('#68A8A8',  wx.SOLID)        
+        self.conf.zoompen   = wx.Pen('#E0E0E0', 1, wx.SOLID) # SOLID)
 
         self.addCanvasEvents()
 

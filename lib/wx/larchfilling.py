@@ -133,17 +133,20 @@ class FillingTree(wx.TreeCtrl):
 
     def objHasChildren(self, obj):
         """Return true if object has children."""
-        if isinstance(self.objGetChildren(obj), dict):
-            return True
+        children = self.objGetChildren(obj)
+        if isinstance(children, dict):
+            return len(children) > 1
         else:
             return False
 
     def objGetChildren(self, obj):
         """Return dictionary with attributes or contents of object."""
-        print 'objGetChildren ', obj
+        # print 'objGetChildren ', obj
         busy = wx.BusyCursor()
         otype = type(obj)
         d = {}
+        if (obj is None or obj is False or obj is True):
+            return d
         self.ntop = 0
         if isinstance(obj, SymbolTable) or isinstance(obj, Group):
             d = obj._publicmembers()
@@ -153,28 +156,24 @@ class FillingTree(wx.TreeCtrl):
             for n in range(len(obj)):
                 key = '[' + str(n) + ']'
                 d[key] = obj[n]
-        elif not hasattr(obj, '__call__'):
-            for key in introspect.getAttributeNames(obj):
-                # Believe it or not, some attributes can disappear,
-                # such as the exc_traceback attribute of the sys
-                # module. So this is nested in a try block.
-                try:
-                    if not ((key.startswith('__') and key.endswith('__')) or
-                            key.startswith('_SymbolTable') or
-                            key == '_main'):
-                        a = getattr(obj, key)
-                        if not hasattr(a, '__call__'):
-                            d[key] = a
-                    else:
-                        print 'ignoring key = ', key
-                except:
-                    print 'exceptoin at key ' , key
+        elif (not isinstance(obj, wx.Object)
+              and not hasattr(obj, '__call__')):
+            d = self.GetAttr(obj)
         return d
+
+    def GetAttr(self, obj):
+        out = {}
+        for key in dir(obj):
+            if not ((key.startswith('__') and key.endswith('__')) or
+                    key.startswith('_SymbolTable') or
+                    key == '_main'):
+                a = getattr(obj, key)
+                out[key] = a
+        return out
 
     def addChildren(self, item):
         self.DeleteChildren(item)
         obj = self.GetPyData(item)
-
         children = self.objGetChildren(obj)
         if not children:
             return

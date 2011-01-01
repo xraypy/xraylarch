@@ -436,6 +436,7 @@ class BasePanel(wx.Panel):
         zdc.SetBrush(self.conf.zoombrush)
         zdc.SetPen(self.conf.zoompen)
         zdc.SetLogicalFunction(wx.XOR)
+        # zdc.SetLogicalFunction(wx.OR)
         self.old_zoomdc = (zdc, (x0, y0), (width, height))
         self.__drawZoombox(self.old_zoomdc)
 

@@ -53,7 +53,7 @@ class PlotDisplay(PlotFrame):
             return
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)        
-       
+      
 
 class ImageDisplay(ImageFrame):
     def __init__(self, parent=None, wid=1, larch=None, **kws):

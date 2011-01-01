@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 ##
 ## MPlot PlotFrame: a wx.Frame for 2D line plotting, using matplotlib
 ##
@@ -180,7 +180,8 @@ Matt Newville <newville@cars.uchicago.edu>"""
         self.Bind(wx.EVT_CLOSE,self.onExit)
 
     def BindMenuToPanel(self, panel=None):
-        if panel is None: panel = self.panel
+        if panel is None:
+            panel = self.panel
         if panel is not None:
             p = panel
             mids = self.menuIDs

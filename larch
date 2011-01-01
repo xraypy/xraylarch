@@ -26,6 +26,7 @@ parser.add_option("-e", "--exec", dest="exec_script_only", action="store_true",
 
 t = larch.shell(debug=options.debug,userbanner=userbanner)
 
+
 if len(args)>0:
     for s in args:
         if s.endswith('.py'):
