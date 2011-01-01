@@ -115,7 +115,7 @@ class SymbolTable(Group):
         for gname in self.core_groups:
             self._sys.modules[gname] = getattr(self, gname)
         self._fix_searchGroups()
-    
+
     def save_frame(self):
         " save current local/module group"
         self._sys.frames.append((self._sys.localGroup,

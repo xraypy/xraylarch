@@ -4,16 +4,18 @@
 import distutils
 from distutils.core import setup, Extension
 
-setup(
-    name = 'larch',
-    version = '0.9.4',
-    author = 'Matthew Newville',
-    author_email = 'newville@cars.uchicago.edu',
-    license = 'Python',
-    description = 'A data processing macro language for python',
-    package_dir = {'larch': 'lib'},
-    packages = ['larch','larch.plugins','larch.modules',
-                'larch.wx', 'larch.wx.mplot'],
-    package_data = {'larch.modules':['startup.lar']},
-    data_files  = [('bin',['larch', 'wxlarch'])],)
+import glob
 
+modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
+
+setup(name = 'larch',
+      version = '0.9.5',
+      author = 'Matthew Newville',
+      author_email = 'newville@cars.uchicago.edu',
+      license = 'Python',
+      description = 'A data processing language for python',
+      package_dir = {'larch': 'lib'},
+      packages = ['larch','larch.plugins',
+                  'larch.wx', 'larch.wx.mplot'],
+      data_files  = [('bin',['larch', 'wxlarch']),
+                     ('share/larch/modules', modfiles)],)

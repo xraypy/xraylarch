@@ -5,6 +5,8 @@ import copy
 from glob import glob
 import help
 
+from . import inputText
+
 helper = help.Helper()
 
 # inherit these from python's __builtins__
@@ -144,7 +146,6 @@ def _run(filename=None, larch=None, new_module=None,
     if text is not None:
         inptext = inputText.InputText(interactive=interactive)
         complete = inptext.put(text, filename=filename)
-        # print 'TEXT: ',  complete, len(inptext), len(inptext.input_buff)
         if new_module is not None:
             # save current module group
             #  create new group, set as moduleGroup and localGroup
@@ -202,13 +203,9 @@ def _which(name, larch=None, **kw):
     "print out fully resolved name of a symbol"
     if larch is None:
         raise Warning("cannot locate symobol '%s' -- larch broken?" % name)
-
     print("Find symbol %s" % name)
     print( larch.symbtable.get_parent(name))
     
-    
-
-
 
 def _reload(mod,larch=None,**kw):
     """reload a module, either larch or python"""

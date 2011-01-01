@@ -6,41 +6,48 @@
 
 import os
 import sys
-_base_unix = os.path.join(sys.prefix,'share','larch')
 
-_base_win  = 'C:\\Program Files\\larch'
+join = os.path.join
+exists = os.path.exists
 
-# yes, user home *should* be overwritten   
-base_path = _base_unix
-user_home = _base_unix
+
+# general-use system path
+base_path = ['/usr/local/share/']
+user_homedirs = [os.environ.get('HOME', '.')]
 
 if os.name == 'nt':
-    base_path = _base_win
-    user_home = _base_win
+    base_path = ['C:\\Program Files']
+    for profile in ('USERPROFILE', 'ALLUSERSPROFILE'):
+        hdir = os.environ.get(profile, '.')
+        if hdir not in user_homedirs:
+            user_homedirs.append(hdir)
 
-try:
-    user_home = os.environ.get('HOME',user_home)
-except:
-    pass
+base_path.insert(0, join(sys.prefix, 'share'))
 
 module_path = ['.']
+for lardir in  base_path:
+    sdir = join(lardir, 'larch', 'modules')
+    if exists(sdir) and sdir not in module_path:
+        module_path.append(sdir)
+
+for lardir  in ('larch', '.larch'):
+    for uhome in user_homedirs:
+        sdir = join(uhome, lardir)
+    if exists(sdir) and sdir not in module_path:
+        module_path.append(sdir)
+
 if 'LARCHPATH' in os.environ:
     module_path.extend(os.environ['LARCHPATH'].split(':'))
-
-module_path.append(os.path.join(base_path,'modules'))
 
 # initial larch files run at startup
 init_files = []
 
-sys_init = os.path.join(base_path,'init.lar')
-if os.path.exists(sys_init):
-    init_files.append(sys_init)
+for lardir in module_path:
+    ifile = join(lardir, 'init.lar')
+    if exists(ifile):
+        init_files.append(ifile)
 
 if 'LARCHSTARTUP' in os.environ:
-    user_init = os.environ['LARCHSTARTUP']
-else:
-    user_init = os.path.join(user_home,'.larch_init')
-if os.path.exists(user_init):
-    init_files.append(user_init)    
-
+    if exists(os.environ['LARCHSTARTUP']):
+        init_files.insert(0, os.environ['LARCHSTARTUP'])
 

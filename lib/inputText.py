@@ -154,7 +154,8 @@ class InputText:
             self.prompt = self.ps1            
             nkeys, nblock = self.convert()
 
-            
+        return self.input_complete
+    
     def get(self):
         """get compile-able block of python code"""
         if len(self) > 0:

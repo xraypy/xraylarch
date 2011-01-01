@@ -13,6 +13,7 @@ except ImportError:
 
 from . import inputText
 from . import builtins
+from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
 from .util import LarchExceptionHolder, Procedure, DefinedVariable
 from .closure import Closure
@@ -661,7 +662,6 @@ class Interpreter:
             asname.append(tnode.asname)
         self.import_module(node.module,
                            asname=asname, fromlist=fromlist)
-
 
     def import_module(self, name, asname=None,
                       fromlist=None, do_reload=False):

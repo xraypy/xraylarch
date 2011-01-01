@@ -53,6 +53,8 @@ class LarchWxShell(object):
         self.symtable.AddPlugins(PLUGINS, parent=wxparent,
                                  larch=self.larch)
         self.SetPrompt()
+        for fname in larch.site_config.init_files:
+            self.execute("run('%s')" % fname)
 
     def SetPrompt(self, partial=False):
         if self.prompt is not None:

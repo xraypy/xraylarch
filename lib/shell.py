@@ -7,6 +7,7 @@ import numpy
 
 from .interpreter import Interpreter, __version__
 from .inputText import InputText
+from . import site_config
 
 HISTFILE = '.larch_history'
 BANNER = """  Larch %s  M. Newville, T. Trainor (2009)
@@ -53,12 +54,14 @@ class shell(cmd.Cmd):
 
             if userbanner is not None:
                 sys.stdout.write("%s\n" % userbanner)
-            
-        
+                
         self.larch  = Interpreter()
         self.input  = InputText(prompt=self.ps1)
         self.prompt = self.ps1
-        
+
+        for fname in site_config.init_files:
+            self.default("run('%s')" % fname)
+            
     def __del__(self):
         if (self.rdline):
             self.rdline.set_history_length(1000)
