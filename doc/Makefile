@@ -7,7 +7,7 @@ SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
 
-INSTALLDIR = /www/apache/htdocs/software/python/xraylarch
+INSTALLDIR = /www/apache/htdocs/software/python/larch
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -22,14 +22,14 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-epics.pdf: latex
+larch.pdf: latex
 	cd $(BUILDDIR)/latex && make all-pdf
-	cp -pr $(BUILDDIR)/latex/xraylarch.pdf .
+	cp -pr $(BUILDDIR)/latex/larch.pdf .
 
-all: html epics.pdf
+all: html larch.pdf
 
 install: all
-	cp -pr xraylarch.pdf $(INSTALLDIR)/xraylarch.pdf
+	cp -pr larch.pdf $(INSTALLDIR)/larch.pdf
 	rm -rf  $(INSTALLDIR)/doc_old
 	mv  $(INSTALLDIR)/doc  $(INSTALLDIR)/doc_old
 	cp -pr  $(BUILDDIR)/html $(INSTALLDIR)/doc
@@ -76,15 +76,6 @@ htmlhelp:
 	@echo
 	@echo "Build finished; now you can run HTML Help Workshop with the" \
 	      ".hhp project file in $(BUILDDIR)/htmlhelp."
-
-qthelp:
-	$(SPHINXBUILD) -b qthelp $(ALLSPHINXOPTS) $(BUILDDIR)/qthelp
-	@echo
-	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
-	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/epics.qhcp"
-	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/epics.qhc"
 
 latex:
 	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex

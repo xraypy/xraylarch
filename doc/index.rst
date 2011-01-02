@@ -4,35 +4,55 @@
 Documentation for Larch
 =====================================
 
-Larch is a set of tools 
-writing to Epics Process Variables via the CA protocol. 
+Larch is a scientific data processing language written that is designed to
+be::
 
-The Epics package consists of a fairly complete and *thin* interface to the
-low-level CA library in the :mod:`ca` module that is base of all other
-functionality.  The :mod:`PV` class provides a high-level `PV` object for
-an object-oriented approach.  There is a very simple, functional approach
-to CA similar to EZCA and the Unix command-line tools.  In addition, there
-are classes for an epics :mod:`Device`, epics :mod:`Motor`, :mod:`Alarm`,
-and special code for wxPython widgets.
+    * easy to use for novices.
+    * complete enough for intermediate to advanced data processing.
+    * data-centric, so that arrays of data are easy to manage and use.
+    * easily extensible with python. 
 
-For download, see  `PyEpics3 Home Page
-<http://cars9.uchicago.edu/software/python/pyepics3/>`_.
+Larch is targeted at tools and algorithms for analyzing x-ray spectroscopic
+and scattering data, especially the sets of data collected at modern
+synchrotrons.  It has several related target applications, all meant to be
+better connected through a common macro language for dealing with
+scientific data sets.
 
-This documentation is also available in  `PDF Format
-<http://cars9.uchicago.edu/software/python/pyepics3/pyepics3.pdf>`_.
+Many data collection, visualization, and analysis programs have an ad-hoc
+macro languages built in that allow some amount of customization,
+automation, and extension of the fundamental operations supported by the
+programs.  These macro languages are rarely used in more than one program,
+making communication and sharing between programs very hard.
 
+Larch is an attempt to make a common macro language for such applications,
+so that the algorithms and techniques for visualization and analysis can be
+better shared between analysis programs and fields.  In this respect, Larch
+is meant to be the foundation or framework upon which data collection,
+visualization, and analysis programs can be written.  By having a common,
+extensible macro language and analysis environment, the hope is that it
+will be easier to make data collection, visualization, and analysis
+programs interact.
+
+Larch is written in Python, is quite close to Python in syntax, and makes
+use of many great efforts in Python, especially for scientific computing.
+These include numpy, scipy, and matplotlib.
+
+The initial target application areas for Larch are
+
+  * XAFS analysis, becoming Ifeffit v2
+  * tools for micro-XRF mapping visualization and analysis.
+  * quantitative XRF analysis.
+  * X-ray standing waves and surface scattering analysis. 
 
 Contents:
 
 .. toctree::
    :maxdepth: 3
 
-   overview
-   pv
-   ca
-   advanced
-   devices
-   wx
+   tutorial
+   language
+   xafs
+   xrf
    installation
    
 Indices and tables

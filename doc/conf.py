@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# epics documentation build configuration file, created by
+# larch documentation build configuration file, created by
 # sphinx-quickstart on Fri Feb 12 01:10:08 2010.
 #
 # This file is execfile()d with the current directory set to its containing dir.
@@ -37,8 +37,8 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'epics'
-copyright = u'2010, Matthew Newville'
+project = u'larch'
+copyright = u'2011, Matthew Newville'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -162,8 +162,7 @@ html_static_path = ['_static']
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'epicsdoc'
-
+htmlhelp_basename = 'larchdoc'
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -176,7 +175,7 @@ htmlhelp_basename = 'epicsdoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'epics.tex', u'epics Documentation',
+  ('index', 'larch.tex', u'Larch Documentation',
    u'Matthew Newville', 'manual'),
 ]
 
