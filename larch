@@ -41,5 +41,5 @@ if len(args)>0:
             t.input.interactive = True
             
 if not options.exec_script_only:
-       t.cmdloop()
+    t.cmdloop()
 

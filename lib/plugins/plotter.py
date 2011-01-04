@@ -11,7 +11,7 @@ Exposed functions here are
 '''
 import wx
 import time
-from larch.wx.mplot import PlotFrame, ImageFrame
+from larch.mplot import PlotFrame, ImageFrame
 
 MODNAME = '_plotter'
 
