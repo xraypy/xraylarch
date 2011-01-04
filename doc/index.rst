@@ -1,11 +1,12 @@
 .. xraylarch documentation master file, 
 
 
-Documentation for Larch
+=====================================
+Larch
 =====================================
 
 Larch is a scientific data processing language written that is designed to
-be::
+be
 
     * easy to use for novices.
     * complete enough for intermediate to advanced data processing.
