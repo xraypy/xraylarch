@@ -13,7 +13,6 @@ from readlinetextctrl import ReadlineTextCtrl
 from larchfilling import Filling
 
 from larch.plugins import plotter, shellutils
-from larch.plugins import plotter, shellutils
 
 PLUGINS = [plotter.registerPlugin, shellutils.registerPlugin]
 

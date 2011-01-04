@@ -16,6 +16,6 @@ setup(name = 'larch',
       description = 'A data processing language for python',
       package_dir = {'larch': 'lib'},
       packages = ['larch','larch.plugins',
-                  'larch.wx', 'larch.wx.mplot'],
+                  'larch.wx', 'larch.mplot'],
       data_files  = [('bin',['larch', 'wxlarch']),
                      ('share/larch/modules', modfiles)],)
