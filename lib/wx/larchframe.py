@@ -139,8 +139,9 @@ class LarchFrame(wx.Frame):
         self.prompt = wx.StaticText(panel, -1, 'Larch>',
                                     size = (65,-1),
                                     style = pstyle)
+        histFile= larch.site_config.history_file
         self.input = ReadlineTextCtrl(panel, -1,  '', size=(500,-1),
-                                 historyfile=None, mode='emacs',
+                                 historyfile=histFile, mode='emacs',
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
         
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)

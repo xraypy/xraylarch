@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.6
+#!/usr/bin/env python
 #
 import cmd
 import os
@@ -9,7 +9,6 @@ from .interpreter import Interpreter, __version__
 from .inputText import InputText
 from . import site_config
 
-HISTFILE = '.larch_history'
 BANNER = """  Larch %s  M. Newville, T. Trainor (2009)
   using python %s, numpy %s
 """
@@ -31,7 +30,7 @@ class shell(cmd.Cmd):
         cmd.Cmd.__init__(self,completekey='tab')
         homedir = os.environ.get('HOME', os.getcwd())
 
-        self.historyfile = os.path.join(homedir, HISTFILE)
+        self.historyfile = site_config.history_file
         if self.rdline is not None:
             try:
                 self.rdline.read_history_file(self.historyfile)
@@ -59,8 +58,9 @@ class shell(cmd.Cmd):
         self.input  = InputText(prompt=self.ps1)
         self.prompt = self.ps1
 
-        for fname in site_config.init_files:
-            self.default("run('%s')" % fname)
+        self.larch.run_init_scripts()
+        # for fname in site_config.init_files:
+        #     self.default("run('%s')" % fname)
             
     def __del__(self):
         if (self.rdline):
@@ -96,6 +96,9 @@ class shell(cmd.Cmd):
     def default(self,text):
         text = text.strip()
         if text in ('quit','exit','EOF'):
+            n = self.rdline.get_current_history_length()
+            if text in ('quit','exit'):
+                self.rdline.remove_history_item(n-1)
             return 1
 
         if text.startswith('help'):
