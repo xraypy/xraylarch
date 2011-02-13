@@ -85,6 +85,11 @@ class SymbolTable(Group):
     top_group   = '_main'
     core_groups = ('_sys', '_builtin', '_math')
     __invalid_name = InvalidName()
+    _private_methods = ('save_frame', 'restore_frame', 'set_frame',
+                        'has_symbol', 'has_group', 'get_group',
+                        'show_group', 'create_group', 'new_group',
+                        'get_symbol', 'set_symbol',  'del_symbol',
+                        'get_parent', 'AddPlugins')
 
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
@@ -249,7 +254,7 @@ class SymbolTable(Group):
         if len(parts) == 1:
             for grp in searchGroups:
                 if hasattr(grp, name):
-                    if grp is not self or name in dir(self):
+                    if not (grp is self and name in self._private_methods):
                         return getattr(grp, name)
 
         # more complex case: not immediately found in Local or Module Group
@@ -262,9 +267,9 @@ class SymbolTable(Group):
         else:
             for grp in searchGroups:
                 if hasattr(grp, top):
-                    if grp is not self or name in dir(self):
+                    if not (grp is self and name in self._private_methods):
                         out = getattr(grp, top)
-
+                        
         if out is self.__invalid_name:
             raise LookupError("cannot locate symbol '%s'" % name)
 
