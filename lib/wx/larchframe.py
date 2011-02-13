@@ -49,7 +49,7 @@ class LarchWxShell(object):
         self.prompt = prompt
         self.output = output
         self.larch.writer = self
-        self.symtable.AddPlugins(PLUGINS, parent=wxparent,
+        self.symtable.AddPlugins(PLUGINS, wxparent=wxparent,
                                  larch=self.larch)
         self.SetPrompt()
         for fname in larch.site_config.init_files:
