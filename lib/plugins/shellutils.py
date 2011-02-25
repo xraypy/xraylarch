@@ -10,9 +10,9 @@ def ensuremod(larch):
         if not symtable.has_group(MODNAME):
             symtable.newgroup(MODNAME)
     
-def _gcd(parent=None, larch=None, **kws):
+def _gcd(wxparent=None, larch=None, **kws):
     """Directory Browser to Change Directory"""
-    dlg = wx.DirDialog(parent, message='Choose Directory',
+    dlg = wx.DirDialog(wxparent, message='Choose Directory',
                        style = wx.DD_DEFAULT_STYLE)
     path = None
     if dlg.ShowModal() == wx.ID_OK:
@@ -22,7 +22,7 @@ def _gcd(parent=None, larch=None, **kws):
         os.chdir(path)
     return os.getcwd()
 
-def _fileprompt(parent=None, larch=None,
+def _fileprompt(wxparent=None, larch=None,
                 mode='open', multi=True, 
                 message = None, 
                 fname=None, choices=None, **kws):
@@ -56,8 +56,8 @@ def _fileprompt(parent=None, larch=None,
         style = wx.SAVE|wx.CHANGE_DIR
         if message is None:
             message = 'Save As '
-    # print 'FileDialog ', parent, message, fname , choices, style
-    dlg = wx.FileDialog(parent=parent, message=message, 
+    # print 'FileDialog ', wxparent, message, fname , choices, style
+    dlg = wx.FileDialog(parent=wxparent, message=message, 
                         defaultDir = os.getcwd(),
                         defaultFile= fname,
                         wildcard = choices,
@@ -70,9 +70,6 @@ def _fileprompt(parent=None, larch=None,
     return path
     
 def registerPlugin():
-    return ('_shell', True,
-            {'gcd': _gcd,
-             'fileprompt': _fileprompt})
-
-
-        
+    return (MODNAME, True, {'gcd': _gcd,
+                            'fileprompt': _fileprompt}
+            )

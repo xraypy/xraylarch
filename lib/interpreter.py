@@ -96,6 +96,7 @@ class Interpreter:
         builtingroup = getattr(symtable,'_builtin')
         mathgroup    = getattr(symtable,'_math')
         setattr(mathgroup, 'j', 1j)
+        
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
 
@@ -108,7 +109,6 @@ class Interpreter:
                     setattr(mathgroup, sym, getattr(numpy, sym))
                 except AttributeError:
                     pass
-                
             for fname, sym in list(builtins.numpy_renames.items()):
                 setattr(mathgroup, fname, getattr(numpy, sym))
 
@@ -121,7 +121,6 @@ class Interpreter:
         self.node_handlers = {}
         for tnode in self.supported_nodes:
             self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
-
 
     def set_definedvariable(self, name, expr):
         """define a defined variable (re-evaluate on access)"""
@@ -181,6 +180,7 @@ class Interpreter:
         """executes compiled Ast representation for an expression"""
         # Note: keep the 'node is None' test: internal code here may run
         #    interp(None) and expect a None in return.
+        # print(" Interp", node, expr)
         if node is None:
             return None
         if isinstance(node, str):
@@ -239,6 +239,16 @@ class Interpreter:
                                  py_exc=sys.exc_info())
         return out
         
+    def run_init_scripts(self):
+        for fname in site_config.init_files:
+            if os.path.exists(fname):
+                try:
+                    builtins._run(filename=fname, larch=self,
+                                  printall = True)
+                except:
+                    self.raise_exception(None, msg='Initialization Error',
+                                         py_exc=sys.exc_info())
+                    
     def dump(self, node, **kw):
         "simple ast dumper"
         return ast.dump(node, **kw)
@@ -604,7 +614,6 @@ class Interpreter:
         "function/procedure execution"
         # ('func', 'args', 'keywords', 'starargs', 'kwargs')
         func = self.interp(node.func)
-
         if not iscallable(func):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
@@ -622,6 +631,7 @@ class Interpreter:
             keywords[key.arg] = self.interp(key.value)
         if node.kwargs is not None:
             keywords.update(self.interp(node.kwargs))
+
         return func(*args, **keywords)
     
     def on_functiondef(self, node):
@@ -664,6 +674,7 @@ class Interpreter:
             asname.append(tnode.asname)
         self.import_module(node.module,
                            asname=asname, fromlist=fromlist)
+
 
     def import_module(self, name, asname=None,
                       fromlist=None, do_reload=False):

@@ -1,16 +1,16 @@
+""" Builtins for larch"""
 
 import os
 import sys
 import copy
 from glob import glob
-import help
-
+from helper import Helper
 from . import inputText
 
-helper = help.Helper()
+helper = Helper()
 
 # inherit these from python's __builtins__
-from_builtin= ('ArithmeticError', 'AssertionError', 'AttributeError',
+from_builtin = ('ArithmeticError', 'AssertionError', 'AttributeError',
                 'BaseException', 'BufferError', 'BytesWarning',
                 'DeprecationWarning', 'EOFError', 'EnvironmentError',
                 'Exception', 'False', 'FloatingPointError',
@@ -39,7 +39,7 @@ from_builtin= ('ArithmeticError', 'AssertionError', 'AttributeError',
 
 # inherit these from math (many will be overridden by numpy
 
-from_math= ('acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
+from_math = ('acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
             'ceil', 'copysign', 'cos', 'cosh', 'degrees', 'e', 'exp', 'fabs',
             'factorial',
             'floor', 'fmod', 'frexp', 'fsum', 'hypot', 'isinf',
@@ -47,55 +47,57 @@ from_math= ('acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
             'radians', 'sin',  'sinh', 'sqrt', 'tan', 'tanh', 'trunc')
 
 # inherit these from numpy
-from_numpy = ('pi','e', 'array','sin','cos','tan','exp','log','log10',
-              'ldexp', 'log1p', 'copysign', 'isnan', 'isinf', 'frexp', 
-               'sqrt','arange', 'arccos', 'arccosh', 'arcsin', 'arcsinh',
-               'arctan', 'arctan2', 'arctanh', 'argmax', 'argmin',
-               'argsort', 'array', 'cosh', 'fabs', 'floor', 'floor_divide',
-               'fmod', 'tanh', 'sign', 'sinh', 'identity', 'take',
-               'choose', 'add', 'allclose', 'alltrue', 'around', 'asarray',
-               'average', 'bitwise_and', 'bitwise_or', 'bitwise_xor',
-               'ceil', 'clip', 'compress', 'concatenate', 'conjugate',
-               'convolve', 'cumproduct', 'cumsum', 'diagonal', 'divide',
-               'dot', 'equal', 'greater', 'greater_equal', 'hypot',
-               'indices', 'invert', 'left_shift', 'less', 'less_equal',
-               'logical_and', 'logical_not', 'logical_or', 'logical_xor',
-               'maximum', 'minimum', 'multiply', 'negative', 'nonzero',
-               'not_equal', 'ones', 'outer', 'power', 'product', 'put',
-               'putmask', 'rank', 'ravel', 'remainder', 'repeat',
-               'reshape', 'resize', 'right_shift', 'searchsorted', 'shape',
-               'size', 'sometrue', 'sort', 'subtract', 'sum', 'swapaxes',
-               'trace', 'transpose', 'true_divide', 'vdot', 'where',
-               'zeros','linspace', 'trunc', 'degrees', 'radians')
 
-numpy_renames ={'ln':'log',
-                'asin':'arcsin',
-                'acos':'arccos',
-                'atan':'arctan',
-                'atan2':'arctan2',
-                'atanh':'arctanh',
-                'acosh':'arccosh',
-                'asinh':'arcsinh'}
+from_numpy = ('pi', 'e', 'array', 'sin', 'cos', 'tan', 'exp', 'log',
+              'log10', 'ldexp', 'log1p', 'copysign', 'isnan', 'isinf',
+              'frexp', 'sqrt','arange', 'arccos', 'arccosh', 'arcsin',
+              'arcsinh', 'arctan', 'arctan2', 'arctanh', 'argmax',
+              'argmin', 'argsort', 'array', 'cosh', 'fabs', 'floor',
+              'floor_divide', 'fmod', 'tanh', 'sign', 'sinh', 'identity',
+              'take', 'choose', 'add', 'allclose', 'alltrue', 'around',
+              'asarray', 'average', 'bitwise_and', 'bitwise_or',
+              'bitwise_xor', 'ceil', 'clip', 'compress', 'concatenate',
+              'conjugate', 'convolve', 'cumproduct', 'cumsum', 'diagonal',
+              'divide', 'dot', 'equal', 'greater', 'greater_equal',
+              'hypot', 'indices', 'invert', 'left_shift', 'less',
+              'less_equal', 'logical_and', 'logical_not', 'logical_or',
+              'logical_xor', 'maximum', 'minimum', 'multiply', 'negative',
+              'nonzero', 'not_equal', 'ones', 'outer', 'power', 'product',
+              'put', 'putmask', 'rank', 'ravel', 'remainder', 'repeat',
+              'reshape', 'resize', 'right_shift', 'searchsorted', 'shape',
+              'size', 'sometrue', 'sort', 'subtract', 'sum', 'swapaxes',
+              'trace', 'transpose', 'true_divide', 'vdot', 'where',
+              'zeros','linspace', 'trunc', 'degrees', 'radians')
+
+numpy_renames = {'ln':'log',
+                 'asin':'arcsin',
+                 'acos':'arccos',
+                 'atan':'arctan',
+                 'atan2':'arctan2',
+                 'atanh':'arctanh',
+                 'acosh':'arccosh',
+                 'asinh':'arcsinh'}
                 
 ##
 ## More builtin commands, to set up the larch language:
 ##
-def _group(larch=None, gname=None, **kw):
+def _group(larch=None, **kws):
     """create a group"""
-    g = larch.symtable.create_group()
-    for k, v in kw.items():
-        setattr(g, k, v)
-    return g
+    group = larch.symtable.create_group()
+    for key, val in kws.items():
+        setattr(group, key, val)
+    return group
 
-def _showgroup(gname=None, larch=None):
+def _showgroup(gname, larch=None, **kws):
+    """display group elements"""
     if larch is None:
         raise Warning("cannot show group -- larch broken?")
     if gname is None:
         gname = '_main'
-    print '_showgroup ', larch.writer
     larch.writer.write("%s\n" % larch.symtable.show_group(gname))
 
-def _copy(obj,**kw):
+def _copy(obj, **kws):
+    """copy an object"""
     return copy.deepcopy(obj)
 
 def _run(filename=None, larch=None, new_module=None,
@@ -106,7 +108,7 @@ def _run(filename=None, larch=None, new_module=None,
        printall:    whether to print all outputs
     """
     if larch is None:
-        raise Warning("cannot run file '%s' -- larch broken?" % name)
+        raise Warning("cannot run file '%s' -- larch broken?" % filename)
 
     symtable = larch.symtable
     text     = None
@@ -118,11 +120,10 @@ def _run(filename=None, larch=None, new_module=None,
           os.path.isfile(filename)):
         text = open(filename).read()
 
-    # print '-->_run: ', filename, len(text), leval
     output = None
     if text is not None:
         inptext = inputText.InputText(interactive=interactive)
-        complete = inptext.put(text, filename=filename)
+        is_complete = inptext.put(text, filename=filename)
         if new_module is not None:
             # save current module group
             #  create new group, set as moduleGroup and localGroup
@@ -135,7 +136,7 @@ def _run(filename=None, larch=None, new_module=None,
         while inptext:
             block, fname, lineno = inptext.get()
             ret = larch.eval(block, fname=fname, lineno=lineno)
-            if callable(ret) and not isinstance(ret, type):
+            if hasattr(ret, '__call__') and not isinstance(ret, type):
                 try:
                     if 1 == len(block.split()):
                         ret = ret()
@@ -143,7 +144,7 @@ def _run(filename=None, larch=None, new_module=None,
                     pass
             if larch.error:
                 break
-        if not complete:
+        if not is_complete:
             larch.raise_exception(None,
                                   msg='Syntax Error -- input incomplete',
                                   expr="\n".join(inptext.block),
@@ -183,22 +184,24 @@ def _which(name, larch=None, **kw):
     print(larch.symbtable.get_parent(name))
     
 
-def _reload(mod, larch=None, **kw):
+def _reload(mod, larch=None, **kws):
     """reload a module, either larch or python"""
     if larch is None: return None
     modname = None
     if mod in larch.symtable._sys.modules.values():
-        for k,v in larch.symtable._sys.modules.items():
-            if v == mod: modname = k
+        for k, v in larch.symtable._sys.modules.items():
+            if v == mod:
+                modname = k
     elif mod in sys.modules.values():
-        for k,v in sys.modules.items():
-            if v == mod: modname = k
+        for k, v in sys.modules.items():
+            if v == mod:
+                modname = k
     elif (mod in larch.symtable._sys.modules.keys() or
           mod in sys.modules.keys()):          
         modname = mod
     
     if modname is not None:
-        return larch.import_module(modname,do_reload=True)
+        return larch.import_module(modname, do_reload=True)
 
 def show_more(text, filename=None, writer=None,
               pagelength=30, prefix='', larch=None, **kws):
@@ -221,7 +224,7 @@ def show_more(text, filename=None, writer=None,
         if txt[i].endswith('\n'):
             larch.writer.write("%s%s" % (prefix, txt[i]))
         else:
-            writer.write("%s%s\n" % (prefix,txt[i]))
+            writer.write("%s%s\n" % (prefix, txt[i]))
         i = i + 1
         if i % pagelength == 0:
             try:
@@ -231,27 +234,28 @@ def show_more(text, filename=None, writer=None,
                 writer.write("\n")
                 return
 
-def _ls(dir='.', **kws):
+def _ls(direc='.', **kws):
     " return list of files in the current directory "
-    dir.strip()
-    if len(dir) == 0: arg = '.'
-    if os.path.isdir(dir):
-        ret = os.listdir(dir)
+    direc.strip()
+    if len(dir) == 0:
+        arg = '.'
+    if os.path.isdir(direc):
+        ret = os.listdir(direc)
     else:
-        ret = glob(dir)
+        ret = glob(direc)
     if sys.platform == 'win32':
-        for i, r in enumerate(ret):
+        for i in range(len(ret)):
             ret[i] = ret[i].replace('\\','/')
     return ret
 
-def _cwd(x=None, **kws):
+def _cwd(**kws):
     "return current working directory"
     ret = os.getcwd()
     if sys.platform == 'win32':
         ret = ret.replace('\\','/')
     return ret
 
-def _cd(name, **kwds):
+def _cd(name, **kws):
     """change directory
     """
     name = name.strip()
@@ -291,7 +295,7 @@ def _more(fname, pagelength=32, larch=None, **kws):
 def _help(*args, **kws):
     "show help on topic or object"
     helper.buffer = []
-    larch = kws.get('larch',None)
+    larch = kws.get('larch', None)
     if helper.larch is None and larch is not None:
         helper.larch = larch
     if args == ('',):

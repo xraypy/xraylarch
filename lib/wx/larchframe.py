@@ -49,7 +49,7 @@ class LarchWxShell(object):
         self.prompt = prompt
         self.output = output
         self.larch.writer = self
-        self.symtable.AddPlugins(PLUGINS, parent=wxparent,
+        self.symtable.AddPlugins(PLUGINS, wxparent=wxparent,
                                  larch=self.larch)
         self.SetPrompt()
         for fname in larch.site_config.init_files:
@@ -139,8 +139,9 @@ class LarchFrame(wx.Frame):
         self.prompt = wx.StaticText(panel, -1, 'Larch>',
                                     size = (65,-1),
                                     style = pstyle)
+        histFile= larch.site_config.history_file
         self.input = ReadlineTextCtrl(panel, -1,  '', size=(500,-1),
-                                 historyfile=None, mode='emacs',
+                                 historyfile=histFile, mode='emacs',
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
         
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)

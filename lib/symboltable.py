@@ -85,6 +85,11 @@ class SymbolTable(Group):
     top_group   = '_main'
     core_groups = ('_sys', '_builtin', '_math')
     __invalid_name = InvalidName()
+    _private_methods = ('save_frame', 'restore_frame', 'set_frame',
+                        'has_symbol', 'has_group', 'get_group',
+                        'show_group', 'create_group', 'new_group',
+                        'get_symbol', 'set_symbol',  'del_symbol',
+                        'get_parent', 'AddPlugins')
 
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
@@ -105,6 +110,7 @@ class SymbolTable(Group):
                                  'searchNames':None, 'searchGroups': None}
 
         self._sys.path         = ['.']
+        self._sys.historyfile = site_config.history_file
         
         if site_config.module_path is not None:
             for idir in site_config.module_path:
@@ -209,7 +215,7 @@ class SymbolTable(Group):
             cache['searchGroups'] = sgroups[:]
         return cache
 
-    def list_groups(self, group=None):
+    def _list_groups(self, group=None):
         "list groups"
         if group in (self.top_group, None):
             grp = self
@@ -236,7 +242,6 @@ class SymbolTable(Group):
         """looks up symbol in search path
         returns symbol given symbol name,
         creating symbol if needed (and create=True)"""
-
         cache = self._fix_searchGroups()
 
         searchGroups = [cache['localGroup'], cache['moduleGroup']]
@@ -249,7 +254,8 @@ class SymbolTable(Group):
         if len(parts) == 1:
             for grp in searchGroups:
                 if hasattr(grp, name):
-                    return getattr(grp, name)
+                    if not (grp is self and name in self._private_methods):
+                        return getattr(grp, name)
 
         # more complex case: not immediately found in Local or Module Group
 
@@ -261,10 +267,14 @@ class SymbolTable(Group):
         else:
             for grp in searchGroups:
                 if hasattr(grp, top):
-                    out = getattr(grp, top)
-
+                    if not (grp is self and name in self._private_methods):
+                        out = getattr(grp, top)
+                        
         if out is self.__invalid_name:
             raise LookupError("cannot locate symbol '%s'" % name)
+
+        if len(parts) == 0:
+            return out
 
         while parts:
             prt = parts.pop()
@@ -306,7 +316,6 @@ class SymbolTable(Group):
 
     def show_group(self, gname=None):
         "show groups"
-        print('SYMTABLE show group ', gname)
         if gname is None:
             gname = '_main'
         if isgroup(gname): 
