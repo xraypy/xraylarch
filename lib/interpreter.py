@@ -104,10 +104,13 @@ class Interpreter:
 
         if HAS_NUMPY:
             for sym in builtins.from_numpy:
-                setattr(mathgroup, sym, getattr(numpy, sym))
-            
-                for fname, sym in list(builtins.numpy_renames.items()):
-                    setattr(mathgroup, fname, getattr(numpy, sym))
+                try:
+                    setattr(mathgroup, sym, getattr(numpy, sym))
+                except AttributeError:
+                    pass
+                
+            for fname, sym in list(builtins.numpy_renames.items()):
+                setattr(mathgroup, fname, getattr(numpy, sym))
 
         for fname, fcn in list(builtins.local_funcs.items()):
             setattr(builtingroup, fname,
