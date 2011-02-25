@@ -109,14 +109,22 @@ class SymbolTable(Group):
         self._sys.groupCache  = {'localGroup':None, 'moduleGroup':None,
                                  'searchNames':None, 'searchGroups': None}
 
-        self._sys.path         = ['.']
+        self._sys.path         = [os.path.abspath('.')]
         self._sys.historyfile = site_config.history_file
+        orig_sys_path = sys.path[:]
         
         if site_config.module_path is not None:
             for idir in site_config.module_path:
-                if idir not in self._sys.path and os.path.exists(idir):
-                    self._sys.path.append(idir)
+                idirfull = os.path.abspath(idir)
+                if idirfull not in self._sys.path and os.path.exists(idirfull):
+                    self._sys.path.append(idirfull)
 
+        sys.path = self._sys.path[:]
+        for idir in orig_sys_path:
+            idirfull = os.path.abspath(idir)
+            if idirfull not in sys.path:
+                sys.path.append(idirfull)
+                
         self._sys.modules      = {'_main':self}
         for gname in self.core_groups:
             self._sys.modules[gname] = getattr(self, gname)
