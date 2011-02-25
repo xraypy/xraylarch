@@ -244,7 +244,6 @@ class LarchFrame(wx.Frame):
             self.input.AddToHistory(text)
             wx.CallAfter(self.larchshell.execute, text) 
             wx.CallAfter(self.datapanel.tree.display)
-        event.Skip()
         
     def onResize(self, event=None):
         size = event.GetSize()

@@ -48,11 +48,13 @@ class ReadlineTextCtrl(wx.TextCtrl):
 
     def onKillFocus(self, event=None):
         self.__GetMark()
+        print ' kill Focus'
         if event is not None:
             event.Skip()
 
     def onSetFocus(self, event=None):
         self.__SetMark()
+        print ' set Focus'
         if event is not None:
             event.Skip()
       
@@ -65,14 +67,14 @@ class ReadlineTextCtrl(wx.TextCtrl):
         ctrl = event.ControlDown()
         # really, the order here is important:
         # 1. return sends to ValidateEntry
-        if key == wx.WXK_RETURN:
+        if key == wx.WXK_RETURN and len(entry) > 0:
             pass
-        
         # 2. other non-text characters are passed without change
-        elif key == wx.WXK_UP:
+        if key == wx.WXK_UP:
             self.hist_mark = max(0, self.hist_mark-1)
             self.SetValue(self.hist_buff[self.hist_mark])
             self.SetInsertionPointEnd()
+            do_skip = False
         elif key == wx.WXK_DOWN:
             self.hist_mark += 1
             if self.hist_mark >= len(self.hist_buff):
@@ -105,6 +107,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
             mark = self.GetSelection()[1]
             self.SetValue("%s%s" % (entry[:mark], entry[mark+1:]))
             self.SetSelection(mark, mark)
+            do_skip = False
         elif ctrl and  key == 6: # f  
             mark = self.GetSelection()[1]
             self.SetSelection(mark+1, mark+1)
@@ -136,7 +139,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
                 wx.TheClipboard.Close()
                 self.SetValue('')
         elif ctrl:
-            pass # print 'CTRL ', key
+            print ' OTHER CTRL ', key
         self.Refresh()
         if do_skip:
             event.Skip()
@@ -168,8 +171,9 @@ class ReadlineTextCtrl(wx.TextCtrl):
 
     def def_onText(self, event=None):
         if event is None:
-            return 
+            return
         txt = event.GetString()
+        print 'def onText! ', event, txt
         if len(txt.strip()) > 0:
             self.hist_buff.append(txt)
             self.hist_mark = len(self.hist_buff)
