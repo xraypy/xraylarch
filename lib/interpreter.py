@@ -697,6 +697,7 @@ class Interpreter:
         # print("IMPORT MOD ", name, asname, fromlist)
         symtable = self.symtable
         st_sys     = symtable._sys
+
         for idir in st_sys.path:
             if idir not in sys.path and os.path.exists(idir):
                 sys.path.append(idir)

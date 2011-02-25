@@ -1,10 +1,18 @@
 #!/usr/bin/env python
 
-
 import distutils
 from distutils.core import setup, Extension
 
+import os
 import glob
+from lib import site_configdata
+
+share_basedir = site_configdata.unix_installdir
+if os.name == 'nt':
+    share_basedir = site_configdata.win_installdir
+    
+mod_dir = os.path.join(share_basedir, 'modules')
+
 
 modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
 
@@ -18,4 +26,4 @@ setup(name = 'larch',
       packages = ['larch','larch.plugins',
                   'larch.wx', 'larch.mplot'],
       data_files  = [('bin',['larch', 'wxlarch']),
-                     ('share/larch/modules', modfiles)],)
+                     (mod_dir, modfiles)],)

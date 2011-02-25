@@ -66,7 +66,7 @@ history_file = join(home_dir, '.larch_history')
 if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')    
 
-#print 'history_file: ', history_file
-#print 'module_path: ', module_path
-#print 'init_files: ', init_files
+print 'history_file: ', history_file
+print 'module_path: ', module_path
+print 'init_files: ', init_files
 
