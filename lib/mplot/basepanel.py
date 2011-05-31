@@ -15,7 +15,7 @@ class BasePanel(wx.Panel):
     wx.Panel component shared by PlotPanel and ImagePanel.
 
     provides:
-         Basic support Zooming / Unzooming 
+         Basic support Zooming / Unzooming
          support for Printing
          popup menu
          bindings for keyboard short-cuts
@@ -59,10 +59,10 @@ class BasePanel(wx.Panel):
                                 self.__onKeyEvent)
 
         # build pop-up menu for right-click display
-        self.popup_unzoom_all = wx.NewId()        
+        self.popup_unzoom_all = wx.NewId()
         self.popup_unzoom_one = wx.NewId()
         self.popup_config     = wx.NewId()
-        self.popup_save   = wx.NewId()        
+        self.popup_save   = wx.NewId()
         self.popup_menu = wx.Menu()
         self.popup_menu.Append(self.popup_unzoom_one, 'Zoom out 1 level')
         self.popup_menu.Append(self.popup_unzoom_all, 'Zoom all the way out')
@@ -88,7 +88,7 @@ class BasePanel(wx.Panel):
         """ zoom out full data range """
         self.zoom_lims = [None]
         self.unzoom(event)
-        
+
     def unzoom(self, event=None, set_bounds=True):
         """ zoom out 1 level, or to full data range """
         lims = None
@@ -117,7 +117,7 @@ class BasePanel(wx.Panel):
             txt = 'zoom level %i' % (len(self.zoom_lims))
         self.write_message(txt)
         self.canvas.draw()
-        
+
     def get_xylims(self):
         x = self.axes.get_xlim()
         y = self.axes.get_ylim()
@@ -127,7 +127,7 @@ class BasePanel(wx.Panel):
         "set plot title"
         self.conf.title = s
         self.conf.relabel()
-        
+
     def set_xlabel(self, s):
         "set plot xlabel"
         self.conf.xlabel = s
@@ -145,18 +145,18 @@ class BasePanel(wx.Panel):
 
     def save_figure(self, event=None):
         """ save figure image to file"""
-        file_choices = "PNG (*.png)|*.png" 
+        file_choices = "PNG (*.png)|*.png"
         ofile = self.conf.title.strip()
         if len(ofile) > 64:
             ofile = ofile[:63].strip()
         if len(ofile) < 1:
             ofile = 'plot'
-        
+
         for c in ' :";|/\\': # "
             ofile = ofile.replace(c, '_')
 
         ofile = ofile + '.png'
-        
+
         dlg = wx.FileDialog(self, message='Save Plot Figure as...',
                             defaultDir = os.getcwd(),
                             defaultFile=ofile,
@@ -169,10 +169,11 @@ class BasePanel(wx.Panel):
             if (path.find(self.launch_dir) ==  0):
                 path = path[len(self.launch_dir)+1:]
             self.write_message('Saved plot to %s' % path)
-            
+
     def set_bg(self, color= None):
         if color is None:
-            color = '#F7F7E0'
+            color = '#FCFDFA'
+        print 'basepanel set_bg ', color
         self.fig.set_facecolor(color)
 
     ####
@@ -180,9 +181,9 @@ class BasePanel(wx.Panel):
     ####
     def reportLeftDown(self, event=None, **kw):
         if event == None:
-            return                
+            return
         self.write_message("%f, %f" % (event.xdata, event.ydata), panel=1)
-        
+
     def onLeftDown(self, event=None):
         """ left button down: report x,y coords, start zooming mode"""
         if event == None:
@@ -195,7 +196,7 @@ class BasePanel(wx.Panel):
             self.reportLeftDown(event=event)
         else:
             self.conf.zoom_init = self.axes.transData.inverted(
-                ).transform((event.x, event.y))                
+                ).transform((event.x, event.y))
         self.cursor_mode = 'zoom'
         self.__drawZoombox(self.old_zoomdc)
         self.old_zoomdc = (None, (0, 0), (0, 0))
@@ -203,7 +204,7 @@ class BasePanel(wx.Panel):
 
     def zoom_OK(self, start, stop):
         return True
-    
+
     def onLeftUp(self, event=None):
         """ left button up: zoom in on selected region?? """
         if event == None:
@@ -246,19 +247,19 @@ class BasePanel(wx.Panel):
                     self.ReleaseMouse()
                 except:
                     pass
-        # 
+        #
 
     def onRightDown(self, event=None):
         """ right button down: show pop-up"""
         if event is None:
-            return      
+            return
         self.cursor_mode = 'cursor'
         # note that the matplotlib event location have to be converted
         if event.inaxes:
             pos = event.guiEvent.GetPosition()
             wx.CallAfter(self.PopupMenu, self.popup_menu, pos)
         self.ForwardEvent(event=event.guiEvent)
-            
+
     def onRightUp(self, event=None):
         """ right button up: put back to cursor mode"""
         if event is None:
@@ -275,7 +276,7 @@ class BasePanel(wx.Panel):
 
     def __date_format(self, x):
         """ formatter for date x-data. primitive, and probably needs
-        improvement, following matplotlib's date methods.        
+        improvement, following matplotlib's date methods.
         """
         interval = self.axes.xaxis.get_view_interval()
         ticks = self.axes.xaxis.get_major_locator()()
@@ -290,16 +291,16 @@ class BasePanel(wx.Panel):
         # print 'date formatter  span: ', span, fmt
         s = time.strftime(fmt, time.localtime(x))
         return s
-        
+
     def xformatter(self, x, pos):
         " x-axis formatter "
         if self.use_dates:
             return self.__date_format(x)
         else:
             return self.__format(x, type='x')
-    
+
     def yformatter(self, y, pos):
-        " y-axis formatter "        
+        " y-axis formatter "
         return self.__format(y, type='y')
 
     def __format(self, x, type='x'):
@@ -314,7 +315,7 @@ class BasePanel(wx.Panel):
             ax = self.axes.yaxis
         else:
             ax = self.axes.xaxis
-            
+
         try:
             dtick = 0.1 * ax.get_view_interval().span()
         except:
@@ -324,7 +325,7 @@ class BasePanel(wx.Panel):
             dtick = abs(ticks[1] - ticks[0])
         except:
             pass
-        # print ' tick ' , type, dtick, ' -> ', 
+        # print ' tick ' , type, dtick, ' -> ',
         if   dtick > 99999:
             fmt, v = ('%1.6e', '%1.7g')
         elif dtick > 0.99:
@@ -406,13 +407,13 @@ class BasePanel(wx.Panel):
 
         handle_event = handlers.get((button, event.name), None)
         if callable(handle_event): handle_event(event)
-        
+
 
     def __onMouseMotionEvent(self, event=None):
         """Draw a cursor over the axes"""
         if event is None:
             return
-       
+
         if self.cursor_mode == 'cursor':
             if event.inaxes is not None:
                 self.conf.zoom_init = (event.xdata, event.ydata)
@@ -423,9 +424,9 @@ class BasePanel(wx.Panel):
         except:
             self.cursor_mode == 'cursor'
             return
-        
+
         self.__drawZoombox(self.old_zoomdc)
-        self.old_zoomdc = (None, (0, 0), (0, 0))            
+        self.old_zoomdc = (None, (0, 0), (0, 0))
         x0     = min(x, self.conf.zoom_x)
         ymax   = max(y, self.conf.zoom_y)
         width  = abs(x -self.conf.zoom_x)
@@ -443,14 +444,14 @@ class BasePanel(wx.Panel):
     def reportMotion(self, event=None):
         fmt = "X,Y= %s, %s" % (self._xfmt, self._yfmt)
         self.write_message(fmt % (event.xdata, event.ydata), panel=1)
-        
-        
+
+
     def Print(self, event=None, **kw):
         self.printer.Print(event=event, **kw)
 
     def PrintPreview(self, event=None, **kw):
-        self.printer.Preview(event=event, **kw)        
-        
+        self.printer.Preview(event=event, **kw)
+
     def PrintSetup(self, event=None, **kw):
-        self.printer.Setup(event=event, **kw)        
-        
+        self.printer.Setup(event=event, **kw)
+

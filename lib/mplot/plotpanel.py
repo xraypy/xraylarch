@@ -37,7 +37,7 @@ class PlotPanel(BasePanel):
         matplotlib.rc('grid',  linewidth=0.5, linestyle='-')
 
         self.conf = PlotConfig()
-
+        self.data_range = None
         self.win_config = None
         self.cursor_callback = None
         self.parent    = parent
@@ -60,7 +60,7 @@ class PlotPanel(BasePanel):
         if xlabel is not None:
             self.set_xlabel(xlabel)
         if ylabel is not None:
-            self.set_ylabel(ylabel)            
+            self.set_ylabel(ylabel)
         if title  is not None:
             self.set_title(title)
         if use_dates is not None:
@@ -70,13 +70,13 @@ class PlotPanel(BasePanel):
 
         if grid:
             self.conf.show_grid = grid
-        
+
         return self.oplot(xdata, ydata, label=label,
                           color=color, style=style,
                           drawstyle=drawstyle,
                           linewidth=linewidth, dy=dy,
                           marker=marker, markersize=markersize,  **kw)
-        
+
     def oplot(self, xdata, ydata, label=None, color=None, style=None,
               linewidth=None, marker=None, markersize=None,
               drawstyle=None, dy=None,
@@ -92,7 +92,11 @@ class PlotPanel(BasePanel):
             _lines = self.axes.plot(xdata, ydata, drawstyle=drawstyle)
         else:
             _lines = self.axes.errorbar(xdata, ydata, yerr=dy)
-        
+
+        if self.data_range is None:
+            self.data_range   = [min(xdata), max(xdata),
+                                 min(ydata), max(ydata)]
+
         self.data_range    = [min((self.data_range[0], min(xdata))),
                               max((self.data_range[1], max(xdata))),
                               min((self.data_range[2], min(ydata))),
@@ -100,12 +104,12 @@ class PlotPanel(BasePanel):
 
         cnf  = self.conf
         n    = cnf.ntrace
-        
+
         if label == None:
             label = 'trace %i' % (n+1)
         cnf.set_trace_label(label)
         cnf.lines[n] = _lines
-        
+
         if color:
             cnf.set_trace_color(color)
         if style:
@@ -113,10 +117,10 @@ class PlotPanel(BasePanel):
         if marker:
             cnf.set_trace_marker(marker)
         if linewidth is not None:
-            cnf.set_trace_linewidth(linewidth)        
+            cnf.set_trace_linewidth(linewidth)
         if markersize is not None:
             cnf.set_trace_markersize(markersize)
-        
+
         self.axes.yaxis.set_major_formatter(FuncFormatter(self.yformatter))
         self.axes.xaxis.set_major_formatter(FuncFormatter(self.xformatter))
 
@@ -132,7 +136,7 @@ class PlotPanel(BasePanel):
             for i in self.axes.get_xgridlines()+self.axes.get_ygridlines():
                 i.set_color(self.conf.grid_color)
             self.axes.grid(True)
-        
+
         self.canvas.draw()
         cnf.ntrace = cnf.ntrace + 1
         return _lines
@@ -145,7 +149,7 @@ class PlotPanel(BasePanel):
                 xmin, xmax = self.data_range[0], self.data_range[1]
             if scaley:
                 ymin, ymax = self.data_range[2], self.data_range[3]
-            
+
         self.axes.set_xlim((xmin, xmax), emit=True)
         self.axes.set_ylim((ymin, ymax), emit=True)
         self.axes.update_datalim(((xmin, ymin), (xmax, ymax)))
@@ -155,8 +159,8 @@ class PlotPanel(BasePanel):
                     ).view_limits(xmin,xmax))
             if scaley:
                 self.axes.set_ybound(self.axes.yaxis.get_major_locator(
-                    ).view_limits(ymin,ymax))            
-            
+                    ).view_limits(ymin,ymax))
+
     def clear(self):
         """ clear plot """
         self.axes.cla()
@@ -164,12 +168,12 @@ class PlotPanel(BasePanel):
         self.conf.xlabel = ''
         self.conf.ylabel = ''
         self.conf.title  = ''
-  
+
     def unzoom_all(self, event=None):
         """ zoom out full data range """
         self.zoom_lims = [None]
         self.unzoom(event)
-        
+
     def unzoom(self, event=None):
         """ zoom out 1 level, or to full data range """
         lims = None
@@ -186,19 +190,19 @@ class PlotPanel(BasePanel):
             self.axes.set_xbound(self.axes.xaxis.get_major_locator(
                 ).view_limits(xmin,xmax))
             self.axes.set_ybound(self.axes.yaxis.get_major_locator(
-                ).view_limits(ymin,ymax))            
+                ).view_limits(ymin,ymax))
 
         else:
             self.axes.set_xlim(lims[:2])
             self.axes.set_ylim(lims[2:])
-        
+
         self.old_zoomdc = (None, (0, 0), (0, 0))
         txt = ''
         if len(self.zoom_lims)>1:
             txt = 'zoom level %i' % (len(self.zoom_lims))
         self.write_message(txt)
         self.canvas.draw()
-        
+
     def set_ylabel(self, s):
         "set plot ylabel"
         self.conf.ylabel = s
@@ -211,7 +215,7 @@ class PlotPanel(BasePanel):
             self.win_config = PlotConfigFrame(self.conf)
 
     ####
-    ## create GUI 
+    ## create GUI
     ####
     def BuildPanel(self, **kwds):
         """ builds basic GUI panel and popup menu"""
@@ -219,9 +223,9 @@ class PlotPanel(BasePanel):
         wx.Panel.__init__(self, self.parent, -1, **kwds)
 
         self.fig   = Figure(self.figsize, dpi=self.dpi)
-        
+
         self.axes  = self.fig.add_axes([0.12, 0.12, 0.80, 0.80],
-                                       axisbg='#FFFFFA')
+                                       axisbg='#FFFFFE')
 
         self.canvas = FigureCanvas(self, -1, self.fig)
         self.printer.canvas = self.canvas
@@ -245,10 +249,8 @@ class PlotPanel(BasePanel):
         self.Fit()
 
         # define zoom box properties
-        self.conf.zoombrush = wx.Brush('#E8E8E8',  wx.SOLID)
-        self.conf.zoombrush = wx.Brush('#68A8A8',  wx.SOLID)        
-        self.conf.zoompen   = wx.Pen('#E0E0E0', 1, wx.SOLID) # SOLID)
-
+        self.conf.zoombrush = wx.Brush('#A828A8',  wx.SOLID)
+        self.conf.zoompen   = wx.Pen('#E030E0', 1, wx.SOLID) # SOLID)
         self.addCanvasEvents()
 
     def update_line(self, trace, xdata, ydata):
@@ -269,9 +271,9 @@ class PlotPanel(BasePanel):
     ####
     def reportLeftDown(self, event=None):
         if event == None:
-            return        
+            return
         fmt = "X,Y= %s, %s" % (self._xfmt, self._yfmt)
         self.write_message(fmt % (event.xdata, event.ydata), panel=0)
         if hasattr(self.cursor_callback , '__call__'):
             self.cursor_callback(x=event.xdata, y=event.ydata)
-        
+

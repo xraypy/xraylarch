@@ -21,10 +21,10 @@ def ensuremod(larch):
         if not symtable.has_group(MODNAME):
             symtable.newgroup(MODNAME)
         return symtable
-    
+
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, wid=1, larch=None, **kws):
-        PlotFrame.__init__(self, parent=wxparent, 
+        PlotFrame.__init__(self, parent=wxparent,
                                  exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
@@ -36,7 +36,7 @@ class PlotDisplay(PlotFrame):
         symtable = ensuremod(self.larch)
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
-        
+
     def onExit(self, o, **kw):
         try:
             symtable = self.larch.symtable
@@ -52,8 +52,8 @@ class PlotDisplay(PlotFrame):
 
             return
         symtable.set_symbol('%s_x'  % self.symname, x)
-        symtable.set_symbol('%s_y'  % self.symname, y)        
-      
+        symtable.set_symbol('%s_y'  % self.symname, y)
+
 
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, wid=1, larch=None, **kws):
@@ -69,7 +69,7 @@ class ImageDisplay(ImageFrame):
         symtable = ensuremod(self.larch)
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
-        
+
     def onExit(self, o, **kw):
         try:
             symtable = self.larch.symtable
@@ -78,7 +78,7 @@ class ImageDisplay(ImageFrame):
         except:
             pass
         self.Destroy()
-        
+
     def onCursor(self,x=None, y=None, ix=None, iy=None,
                  val=None, **kw):
         symtable = ensuremod(self.larch)
@@ -87,14 +87,14 @@ class ImageDisplay(ImageFrame):
         if x is not None:
             symtable.set_symbol('%s_x' % self.symname, x)
         if y is not None:
-            symtable.set_symbol('%s_y' % self.symname, y)            
+            symtable.set_symbol('%s_y' % self.symname, y)
         if ix is not None:
             symtable.set_symbol('%s_ix' % self.symname, ix)
         if iy is not None:
-            symtable.set_symbol('%s_iy' % self.symname, iy)            
+            symtable.set_symbol('%s_iy' % self.symname, iy)
         if val is not None:
-            symtable.set_symbol('%s_val' % self.symname, val)            
-        
+            symtable.set_symbol('%s_val' % self.symname, val)
+
 
 def _getDisplay(win=1, larch=None, wxparent=None, image=False):
     """make a plotter"""
@@ -140,7 +140,7 @@ def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
         ylabel: y-axis label
         ylog_scale: whether to show y-axis as log-scale (True or False)
         grid: whether to draw background grid (True or False)
-        
+
         color: color for trace (name such as 'red', or '#RRGGBB' hex string)
         style: trace linestyle (one of 'solid', 'dashed', 'dotted', 'dot-dash')
         linewidth:  integer width of line
@@ -148,31 +148,35 @@ def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
         markersize: integer size of marker
 
         drawstyle: ?
-        
+
         dy: array for error bars in y (must be same size as y!)
         yaxis='left'??
-        use_dates 
+        use_dates
 
     See Also:
     ---------
 
         oplot
-    
+
     """
     # print '_plot: ', win, larch, wxparent, kws
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
+
+    wx.CallAfter(plotter.Raise)
+    time.sleep(0.01)
+
     if plotter is not None:
         plotter.plot(x, y, **kws)
 
 def _oplot(x,y, win=1, larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=0], options])
-    
+
     Plot 2-D trace of x, y arrays in a Plot Frame, over-plotting any plot currently in the Plot Frame.
 
     See Also:
     -----------
     plot
-    
+
     """
 
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
@@ -181,7 +185,7 @@ def _oplot(x,y, win=1, larch=None, wxparent=None, **kws):
 
 def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     """imshow(map[, options])
-    
+
     Display an image for a 2-D array, as a map
 
     map: 2-dimensional array for map
@@ -189,7 +193,7 @@ def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     img = _getDisplay(wxparent=wxparent, win=win, larch=larch, image=True)
     if img is not None:
         img.display(map, **kws)
-    
+
 def registerPlugin():
     return (MODNAME, True, {'plot':_plot,
                             'oplot': _oplot,

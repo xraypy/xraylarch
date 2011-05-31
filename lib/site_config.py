@@ -1,9 +1,9 @@
 ##
 ## site configuration for larch:
-##  
+##
 ##   init_files:  list of larch files run (in order) on startup
 ##   module_path: list of directories to search for larch code
-##   history_file: 
+##   history_file:
 import os
 import sys
 import site_configdata
@@ -34,7 +34,7 @@ if 'LARCHDIR' in os.environ:
     usr_larchdir = os.environ['LARCHDIR']
 else:
     usr_larchdir = abspath(join(home_dir, usr_larchdir))
-    
+
 # module_path / larch_dir
 #  1. determine the search path for modules
 #  2. determin the "larch directory"
@@ -44,7 +44,7 @@ for folder in (sys_larchdir, usr_larchdir):
     mod_dir = join(folder, 'modules')
     if exists(mod_dir):
         module_path.append(mod_dir)
-        
+
 if 'LARCHPATH' in os.environ:
     for mod_dir in os.environ['LARCHPATH'].split(':'):
         if exists(mod_dir) and mod_dir not in module_path:
@@ -64,9 +64,9 @@ if 'LARCHSTARTUP' in os.environ:
 # history file:
 history_file = join(home_dir, '.larch_history')
 if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
-    history_file = join(usr_larchdir, 'history.lar')    
+    history_file = join(usr_larchdir, 'history.lar')
 
-print 'history_file: ', history_file
-print 'module_path: ', module_path
-print 'init_files: ', init_files
+# print 'history_file: ', history_file
+# print 'module_path: ', module_path
+# print 'init_files: ', init_files
 

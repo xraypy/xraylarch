@@ -77,10 +77,8 @@ numpy_renames = {'ln':'log',
                  'atanh':'arctanh',
                  'acosh':'arccosh',
                  'asinh':'arcsinh'}
-                
 ##
 ## More builtin commands, to set up the larch language:
-##
 def _group(larch=None, **kws):
     """create a group"""
     group = larch.symtable.create_group()
@@ -88,8 +86,8 @@ def _group(larch=None, **kws):
         setattr(group, key, val)
     return group
 
-def _showgroup(gname, larch=None, **kws):
-    """display group elements"""
+def _show_group(gname=None, larch=None, **kws):
+    """display group members"""
     if larch is None:
         raise Warning("cannot show group -- larch broken?")
     if gname is None:
@@ -182,7 +180,7 @@ def _which(name, larch=None, **kw):
     if larch is None:
         raise Warning("cannot locate symobol '%s' -- larch broken?" % name)
     print(larch.symbtable.get_parent(name))
-    
+
 
 def _reload(mod, larch=None, **kws):
     """reload a module, either larch or python"""
@@ -197,9 +195,9 @@ def _reload(mod, larch=None, **kws):
             if v == mod:
                 modname = k
     elif (mod in larch.symtable._sys.modules.keys() or
-          mod in sys.modules.keys()):          
+          mod in sys.modules.keys()):
         modname = mod
-    
+
     if modname is not None:
         return larch.import_module(modname, do_reload=True)
 
@@ -234,10 +232,10 @@ def show_more(text, filename=None, writer=None,
                 writer.write("\n")
                 return
 
-def _ls(direc='.', **kws):
-    " return list of files in the current directory "
+def _ls(direc='.', larch=None, **kws):
+    """return a list of files in the current directory"""
     direc.strip()
-    if len(dir) == 0:
+    if len(direc) == 0:
         arg = '.'
     if os.path.isdir(direc):
         ret = os.listdir(direc)
@@ -256,8 +254,7 @@ def _cwd(**kws):
     return ret
 
 def _cd(name, **kws):
-    """change directory
-    """
+    """change directory to specified directory"""
     name = name.strip()
     if name:
         os.chdir(name)
@@ -268,7 +265,13 @@ def _cd(name, **kws):
     return ret
 
 def _more(fname, pagelength=32, larch=None, **kws):
-    "list file contents"
+    """list file contents:
+    > more('file.txt')
+by default, the file is shown 32 lines at a time.
+You can specify the number of lines to show at a time
+with the  pagelength option:
+    > more('file.txt', pagelength=10)
+    """
     if larch is None:
         output = sys.stdout.write
     else:
@@ -277,21 +280,20 @@ def _more(fname, pagelength=32, larch=None, **kws):
     if not os.path.exists(fname):
         output("File '%s' not found.\n" % fname)
         return
-    
+
     elif not os.path.isfile(fname):
         output("'%s' not a file.\n" % fname)
         return
-    
+
     try:
         text = open(fname, 'r').readlines()
     except IOError:
         output("cannot open file: %s\n" % fname)
         return
 
-    show_more(text, filename=fname, larch=larch, 
+    show_more(text, filename=fname, larch=larch,
               pagelength=pagelength, **kws)
 
-    
 def _help(*args, **kws):
     "show help on topic or object"
     helper.buffer = []
@@ -304,24 +306,24 @@ def _help(*args, **kws):
         helper.addtext('cannot start help system!')
     else:
         for a in args:
-            
+
             helper.help(a.strip())
 
     if helper.larch is not None:
         helper.larch.writer.write("%s\n" % helper.getbuffer())
     else:
         return helper.getbuffer()
-    
+
 local_funcs = {'group':_group,
-               'show_group':_showgroup,
+               'show_group':_show_group,
                'reload':_reload,
                'copy': _copy,
                'more': _more,
                'ls': _ls,
                'cd': _cd,
                'run': _run,
-               'which': _which,                
-               'cwd': _cwd, 
+               'which': _which,
+               'cwd': _cwd,
                'help': _help,
                }
-       
+

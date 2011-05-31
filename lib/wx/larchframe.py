@@ -59,25 +59,26 @@ class LarchWxShell(object):
         if self.prompt is not None:
             if partial:
                 self.prompt.SetLabel(self.ps2)
-                self.prompt.SetForegroundColour('#E00075')                
+                self.prompt.SetForegroundColour('#E00075')
             else:
                 self.prompt.SetLabel(self.ps1)
                 self.prompt.SetForegroundColour('#000075')
 
+
             self.prompt.Refresh()
-            
+
     def write(self, text, color=None):
         if self.output is not None:
             prev_color = self.output.GetForegroundColour()
             if color is not None:
                 self.output.SetForegroundColour(color)
             self.output.WriteText(text)
-            self.output.SetForegroundColour(prev_color)            
+            self.output.SetForegroundColour(prev_color)
             # self.output.SetInsertionPointEnd()
 
             self.output.ShowPosition(self.output.GetLastPosition()-100)
             # print self.output.PositionToXY()
-            
+
     def execute(self, text=None):
         if text is not None:
             if  text.startswith('help'):
@@ -90,7 +91,7 @@ class LarchWxShell(object):
                 return os.system(text[1:])
             else:
                 self.inptext.put(text,lineno=0)
-                
+
         if not self.inptext.input_complete:
             self.SetPrompt(partial = True)
             return None
@@ -102,7 +103,7 @@ class LarchWxShell(object):
             block, fname, lineno = self.inptext.get()
             ret = self.larch.eval(block,
                                   fname=fname, lineno=lineno)
-            
+
             if hasattr(ret, '__call__') and not isinstance(ret,type):
                 try:
                     if 1 == len(block.split()):
@@ -143,10 +144,10 @@ class LarchFrame(wx.Frame):
         self.input = ReadlineTextCtrl(panel, -1,  '', size=(500,-1),
                                  historyfile=histFile, mode='emacs',
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
-        
+
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
         self.input.notebooks = self.nbook
-        
+
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         sizer.Add(self.prompt,  0, wx.BOTTOM|wx.CENTER)
@@ -154,7 +155,7 @@ class LarchFrame(wx.Frame):
         panel.SetSizer(sizer)
         sizer.Fit(panel)
         return panel
-        
+
     def BuildFrame(self, parent=None, **kwds):
         wx.Frame.__init__(self, parent, -1, size=(600,400),
                           style= wx.DEFAULT_FRAME_STYLE)
@@ -168,18 +169,18 @@ class LarchFrame(wx.Frame):
 
         self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.BuildMenus()
-        
+
         nbook = wx.Notebook(self, -1, style=wx.BK_DEFAULT)
         nbook.SetBackgroundColour('#E9E9EA')
-        self.SetBackgroundColour('#E9EEE0')        
-        
+        self.SetBackgroundColour('#E9EEE0')
+
         self.output = wx.TextCtrl(nbook, -1,  BANNER,
                              style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
 
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
         self.output.SetFont(sfont)
-        
+
         self.helppanel = wx.TextCtrl(nbook, -1,  ' ',
                                      style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
 
@@ -187,22 +188,22 @@ class LarchFrame(wx.Frame):
 
         nbook.AddPage(self.output,      'Output', select=1)
         nbook.AddPage(self.datapanel,   'Data')
-        nbook.AddPage(self.helppanel,   'Help')        
+        nbook.AddPage(self.helppanel,   'Help')
 
         self.nbook = nbook
-        
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND,
                     border=2)
 
         sizer.Add(nbook,  1, **opts)
         sizer.Add(self.InputPanel(self),  0, **opts)
-        
+
         self.SetSizer(sizer)
         self.Refresh()
 
         self.SetStatusText("Ready", 0)
-    
+
     def BuildMenus(self):
         ID_ABOUT = wx.NewId()
         ID_CLOSE  = wx.NewId()
@@ -215,7 +216,7 @@ class LarchFrame(wx.Frame):
 
         fmenu = wx.Menu()
         fmenu.Append(ID_FREAD, "&Read", "Read Configuration File")
-        fmenu.Append(ID_FSAVE, "&Save", "Save Configuration File")        
+        fmenu.Append(ID_FSAVE, "&Save", "Save Configuration File")
         fmenu.AppendSeparator()
         fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
         fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
@@ -242,13 +243,13 @@ class LarchFrame(wx.Frame):
             self.onClose()
         else:
             self.input.AddToHistory(text)
-            wx.CallAfter(self.larchshell.execute, text) 
+            wx.CallAfter(self.larchshell.execute, text)
             wx.CallAfter(self.datapanel.tree.display)
-        
+
     def onResize(self, event=None):
         size = event.GetSize()
-        nsize = self.notebooks.GetSize()        
-        self.notebooks.SetSize(size)        
+        nsize = self.notebooks.GetSize()
+        self.notebooks.SetSize(size)
         self.notebooks.Refresh()
         nsize = self.notebooks.GetSize()
 
@@ -268,17 +269,17 @@ class LarchFrame(wx.Frame):
             except:
                 print 'cannot set size'
             p.Refresh()
-            
+
 #             print p.SetSize.__doc__
 #             print k, size, p
-# # 
-            
+# #
+
         event.Skip()
 
     def onAbout(self, event=None):
         about_msg =  """wxLarch:
         %s""" % (INFO)
-            
+
         dlg = wx.MessageDialog(self, about_msg,
                                "About wxLarch", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()

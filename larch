@@ -3,7 +3,7 @@
 try:
     import lib as larch
     userbanner = '=== DEBUG Version ==='
-    
+
 except ImportError:
     import larch
     userbanner = None
@@ -38,7 +38,7 @@ if len(args)>0:
             finp.close()
             t.larch_execute('')
             t.input.interactive = True
-            
+
 if not options.exec_script_only:
     t.cmdloop()
 

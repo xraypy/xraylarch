@@ -20,7 +20,7 @@ class shell(cmd.Cmd):
     def __init__(self,  completekey='tab',   debug=False,
                  stdin=None, stdout=None, quiet=False,
                  userbanner=None):
-        
+
         self.debug  = debug
         try:
             import readline
@@ -53,7 +53,7 @@ class shell(cmd.Cmd):
 
             if userbanner is not None:
                 sys.stdout.write("%s\n" % userbanner)
-                
+
         self.larch  = Interpreter()
         self.input  = InputText(prompt=self.ps1)
         self.prompt = self.ps1
@@ -61,7 +61,7 @@ class shell(cmd.Cmd):
         self.larch.run_init_scripts()
         # for fname in site_config.init_files:
         #     self.default("run('%s')" % fname)
-            
+
     def __del__(self):
         if (self.rdline):
             self.rdline.set_history_length(1000)
@@ -112,7 +112,7 @@ class shell(cmd.Cmd):
         else:
             ret = None
             self.input.put(text,lineno=0)
-            
+
             self.prompt = self.ps2
             # print 'Input done ', self.input._fifo
             while len(self.input) > 0:
@@ -134,8 +134,8 @@ class shell(cmd.Cmd):
                                      and err.lineno > 0 and lineno > 0):
                             sys.stdout.write("%s\n" % (err.get_error()[1]))
                     self.input.clear()
-                    self.prompt = self.ps1                    
-                    if  self.debug: 
+                    self.prompt = self.ps1
+                    if  self.debug:
                         for err in self.larch.error:
                             fname, lineno = err.fname, err.lineno
                             sys.stdout.write("%s:\n%s\n" % err.get_error())
@@ -143,12 +143,12 @@ class shell(cmd.Cmd):
                                 if self.debug or ((err.fname != fname or err.lineno != lineno)
                                                   and err.lineno > 0 and lineno > 0):
                                     sys.stdout.write("%s\n" % (err.get_error()[1]))
-                    
+
                     break
                 elif ret is not None:
                     sys.stdout.write("%s\n" % repr(ret))
                 self.prompt = self.ps1
-            
+
 if __name__ == '__main__':
     fout = open('larch.out', 'w')
     t = shell(debug=True, stdout=fout).cmdloop()
