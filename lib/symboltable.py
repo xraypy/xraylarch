@@ -418,7 +418,7 @@ class SymbolTable(Group):
 
     def AddPlugins(self, plugins, **kw):
         """Add a list of plugins"""
-        print('ADDING PLUGINS ',  plugins)
+        # print('ADDING PLUGINS ',  plugins)
         for plugin in plugins:
             groupname, insearchGroup, syms = plugin()
             sym = None

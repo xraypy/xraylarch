@@ -163,7 +163,7 @@ def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
 
     wx.CallAfter(plotter.Raise)
-    time.sleep(0.01)
+    time.sleep(0.001)
 
     if plotter is not None:
         plotter.plot(x, y, **kws)
