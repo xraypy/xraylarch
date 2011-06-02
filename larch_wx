@@ -64,6 +64,7 @@ class timerApp(wx.App):
         'Create the main window and insert the custom frame'
         self.wxtimer = MiniTimer(None)
         self.wxtimer.Show(False)
+        self.wxtimer.Start()
         return True
 
     def Start(self):
@@ -161,7 +162,7 @@ class LarchShell(threading.Thread):
             self.rdline.set_history_length(1000)
             self.rdline.write_history_file(self.historyfile)
 
-        self.wxapp.Stop()
+        # self.wxapp.Stop()
         time.sleep(0.05)
         wx.CallAfter(self.wxapp.ExitMainLoop)
         time.sleep(0.05)
@@ -169,7 +170,6 @@ class LarchShell(threading.Thread):
     def mainloop(self):
         self.start()
         wxloop = hijack_wx()
-        self.wxapp.Start()
         wxloop(self.wxapp)
         self.join()
 
