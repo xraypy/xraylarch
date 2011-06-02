@@ -10,7 +10,7 @@ from lib import site_configdata
 share_basedir = site_configdata.unix_installdir
 if os.name == 'nt':
     share_basedir = site_configdata.win_installdir
-    
+
 mod_dir = os.path.join(share_basedir, 'modules')
 
 
@@ -25,5 +25,5 @@ setup(name = 'larch',
       package_dir = {'larch': 'lib'},
       packages = ['larch','larch.plugins',
                   'larch.wx', 'larch.mplot'],
-      data_files  = [('bin',['larch', 'wxlarch']),
+      data_files  = [('bin',['larch', 'larch_wx', 'larch_gui']),
                      (mod_dir, modfiles)],)
