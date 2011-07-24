@@ -43,7 +43,7 @@ class BasePanel(wx.Panel):
 
         self.mouse_uptime = time.time()
         self.zoom_lims = [None]
-        self.old_zoomdc = (None, (0, 0), (0, 0))
+        self.zoomdc = (None, (0, 0, 0, 0))
         self.parent = parent
         self.printer = Printer(self)
 
@@ -58,6 +58,7 @@ class BasePanel(wx.Panel):
         self.canvas.mpl_connect("key_press_event",
                                 self.__onKeyEvent)
 
+        self.zdc = None
         # build pop-up menu for right-click display
         self.popup_unzoom_all = wx.NewId()
         self.popup_unzoom_one = wx.NewId()
@@ -111,7 +112,7 @@ class BasePanel(wx.Panel):
         else:
             ax.set_xlim(lims[:2])
             ax.set_ylim(lims[2:])
-        self.old_zoomdc = (None, (0, 0), (0, 0))
+        self.zoomdc = (None, (0, 0, 0, 0))
         txt = ''
         if len(self.zoom_lims) > 1:
             txt = 'zoom level %i' % (len(self.zoom_lims))
@@ -172,8 +173,7 @@ class BasePanel(wx.Panel):
 
     def set_bg(self, color= None):
         if color is None:
-            color = '#FCFDFA'
-        print 'basepanel set_bg ', color
+            color = '#FDFDFB'
         self.fig.set_facecolor(color)
 
     ####
@@ -190,7 +190,7 @@ class BasePanel(wx.Panel):
             return
         self.conf.zoom_x = event.x
         self.conf.zoom_y = event.y
-        # print 'LD: ', event.x, event.y,event.xdata,event.ydata,event.inaxes
+        # print 'basepaneel LeftDown: ', event.x, event.y,event.xdata,event.ydata,event.inaxes
         if event.inaxes is not None:
             self.conf.zoom_init = (event.xdata, event.ydata)
             self.reportLeftDown(event=event)
@@ -198,8 +198,9 @@ class BasePanel(wx.Panel):
             self.conf.zoom_init = self.axes.transData.inverted(
                 ).transform((event.x, event.y))
         self.cursor_mode = 'zoom'
-        self.__drawZoombox(self.old_zoomdc)
-        self.old_zoomdc = (None, (0, 0), (0, 0))
+        self.__drawZoombox(self.zoomdc)
+        print 'onLeftDown.  zoomdc was ', self.zoomdc
+        self.zoomdc = (None, (0, 0, 0, 0))
         self.ForwardEvent(event=event.guiEvent)
 
     def zoom_OK(self, start, stop):
@@ -209,9 +210,12 @@ class BasePanel(wx.Panel):
         """ left button up: zoom in on selected region?? """
         if event == None:
             return
-        # print 'onLeftUp ', event
-        dx = abs(self.conf.zoom_x - event.x)
-        dy = abs(self.conf.zoom_y - event.y)
+        #print 'onLeftUp ', event
+        try:
+            dx = abs(self.conf.zoom_x - event.x)
+            dy = abs(self.conf.zoom_y - event.y)
+        except:
+            dx, dy = 0, 0
         t0 = time.time()
         if ((dx > 6) and (dy > 6) and (t0-self.mouse_uptime)>0.1 and
             self.cursor_mode == 'zoom'):
@@ -228,12 +232,13 @@ class BasePanel(wx.Panel):
 
                 if self.zoom_OK(_ini,  _end):
                     self.set_xylims(_lim, autoscale=False)
+                    print 'append lims ', _lim, ' to zoom_lims'
                     self.zoom_lims.append(_lim)
                     txt = 'zoom level %i ' % (len(self.zoom_lims)-1)
                     self.write_message(txt, panel=1)
             except:
                 self.write_message("Cannot Zoom")
-        self.old_zoomdc = (None, (0, 0), (0, 0))
+        self.zoomdc = (None, (0, 0, 0, 0))
         self.cursor_mode = 'cursor'
         self.canvas.draw()
         self.ForwardEvent(event=event.guiEvent)
@@ -357,12 +362,9 @@ class BasePanel(wx.Panel):
     def __drawZoombox(self, dc):
         """ system-dependent hack to call wx.ClientDC.DrawRectangle
         with the right arguments"""
-        if dc[0] is None:
-            return
-        xpos  = dc[1]
-        xsize = dc[2]
-        dc[0].DrawRectangle(xpos[0], xpos[1], xsize[0], xsize[1])
-        return (None, (0, 0), (0, 0))
+        if dc[0] is not None:
+            dc[0].DrawRectangle(*dc[1])
+        return (None, (0, 0, 0, 0))
 
     def __onKeyEvent(self, event=None):
         """ handles key events on canvas
@@ -425,21 +427,25 @@ class BasePanel(wx.Panel):
             self.cursor_mode == 'cursor'
             return
 
-        self.__drawZoombox(self.old_zoomdc)
-        self.old_zoomdc = (None, (0, 0), (0, 0))
+        # self.__drawZoombox(self.zoomdc)
+        # self.zoomdc = (None, (0, 0, 0, 0))
+        # print 'wait, why do we draw zoombox twice?'
         x0     = min(x, self.conf.zoom_x)
         ymax   = max(y, self.conf.zoom_y)
         width  = abs(x -self.conf.zoom_x)
         height = abs(y -self.conf.zoom_y)
         y0     = self.canvas.figure.bbox.height - ymax
 
+        brush = self.conf.zoombrush
+
         zdc = wx.ClientDC(self.canvas)
         zdc.SetBrush(self.conf.zoombrush)
         zdc.SetPen(self.conf.zoompen)
-        zdc.SetLogicalFunction(wx.XOR)
+
+        # zdc.SetLogicalFunction(wx.XOR)
         # zdc.SetLogicalFunction(wx.OR)
-        self.old_zoomdc = (zdc, (x0, y0), (width, height))
-        self.__drawZoombox(self.old_zoomdc)
+        self.zoomdc = (zdc, (x0, y0, width, height))
+        self.__drawZoombox(self.zoomdc)
 
     def reportMotion(self, event=None):
         fmt = "X,Y= %s, %s" % (self._xfmt, self._yfmt)

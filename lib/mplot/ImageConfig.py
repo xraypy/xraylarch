@@ -10,7 +10,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from LabelEntry import LabelEntry
 
 ColorMap_List = ('gray', 'jet', 'hsv', 'Reds', 'Greens', 'Blues', 'hot',
-                 'cool', 'copper', 'spring', 'summer', 'autumn', 'winter', 
+                 'cool', 'copper', 'spring', 'summer', 'autumn', 'winter',
                  'Spectral', 'Accent', 'Set1', 'Set2', 'Set3')
 
 Interp_List = ('nearest', 'bilinear', 'bicubic', 'spline16', 'spline36',
@@ -30,8 +30,8 @@ class ImageConfig:
         self.cmap_lo = 0
         self.cmap_hi = self.cmap_range = 100
         # self.zoombrush = wx.Brush('#141430',  wx.SOLID)
-        self.zoombrush = wx.Brush('#040410',  wx.SOLID)
-        self.zoompen   = wx.Pen('#101090',  3, wx.SOLID)
+        self.zoombrush = wx.Brush('#F8F8F000',  wx.SOLID)
+        self.zoompen   = wx.Pen(  '#F4F4B080',  2, wx.SOLID)
 
         f0 =  FontProperties()
         self.titlefont = f0.copy()
@@ -58,10 +58,10 @@ class ImageConfigFrame(wx.Frame):
         self.DrawPanel()
 
     def DrawPanel(self):
-        style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL 
+        style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
         wx.Frame.__init__(self, None,-1, 'Configure Images', style=style)
         wx.Frame.SetBackgroundColour(self,"#F8F8F0")
-        
+
         panel = wx.Panel(self, -1)
         panel.SetBackgroundColour( "#F8F8F0")
 
@@ -73,7 +73,7 @@ class ImageConfigFrame(wx.Frame):
         label = wx.StaticText(panel, -1, 'ImagePanel Configuration',
                               style=labstyle)
         label.SetFont(Font)
-        
+
         sizer.Add(label,(0,0),(1,5),  labstyle,2)
 
         self.wid_title = LabelEntry(panel, self.conf.title,
@@ -87,11 +87,11 @@ class ImageConfigFrame(wx.Frame):
         row = 2
         interp_choice =  wx.Choice(panel, -1, choices=Interp_List, size=(130,-1))
         interp_choice.Bind(wx.EVT_CHOICE,  self.onInterp)
-        
+
         interp_choice.SetStringSelection(self.conf.interp)
 
         sizer.Add(wx.StaticText(panel,label='Smoothing'), (row,0), (1,1), labstyle,3)
-        sizer.Add(interp_choice,   (row,1), (1,4), labstyle,3)        
+        sizer.Add(interp_choice,   (row,1), (1,4), labstyle,3)
         #
         row = row+1
         cmap_choice =  wx.Choice(panel, -1, choices=ColorMap_List, size=(130,-1))
@@ -141,9 +141,9 @@ class ImageConfigFrame(wx.Frame):
         row = row+1
         cmap_save = wx.Button(panel, -1, 'Save Colormap Image')
         cmap_save.Bind(wx.EVT_BUTTON, self.onCMapSave)
-        sizer.Add(cmap_save,   (row,0), (1,3), labstyle,3)        
+        sizer.Add(cmap_save,   (row,0), (1,3), labstyle,3)
 
-        
+
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         a = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.BOTTOM|wx.EXPAND
         mainsizer.Add(sizer,0, a, 5)
@@ -163,7 +163,7 @@ class ImageConfigFrame(wx.Frame):
     def onCMapSave(self,event=None):
         file_choices = "PNG (*.png)|*.png"
         ofile = 'Colormap.png'
-       
+
         dlg = wx.FileDialog(self, message='Save Plot Figure as...',
                             defaultDir = os.getcwd(),
                             defaultFile=ofile,
@@ -173,23 +173,23 @@ class ImageConfigFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             self.cmap_canvas.print_figure(path,dpi=300)
-        
+
     def onInterp(self,event=None):
         self.conf.interp =  event.GetString()
         self.conf.image.set_interpolation(self.conf.interp)
         self.canvas.draw()
-        
+
     def onStretchLow(self,event=None):
         lo =  event.GetInt()
         hi = self.cmap_hi_val.GetValue()
         self.StretchCMap(lo,hi)
-        
+
     def onStretchHigh(self,event=None):
         hi = event.GetInt()
         lo = self.cmap_lo_val.GetValue()
-        
+
         self.StretchCMap(lo,hi)
-        
+
     def StretchCMap(self,low, high):
         lo,hi = min(low,high), max(low,high)
         self.cmap_lo_val.SetValue(lo)
@@ -205,7 +205,7 @@ class ImageConfigFrame(wx.Frame):
         img = cmax * self.conf.data/(1.0*self.conf.data.max())
         self.conf.image.set_data(numpy.clip((cmax*(img-lo)/(hi-lo+1.e-5)), 0, int(cmax-1))/cmax)
         self.canvas.draw()
-        
+
     def onCMap(self,event=None):
         self.update_cmap(event.GetString())
 
@@ -214,20 +214,20 @@ class ImageConfigFrame(wx.Frame):
         cmap_name = self.conf.cmap.name
         if  cmap_name.endswith('_r'): cmap_name = cmap_name[:-2]
         self.update_cmap(cmap_name)
-        
+
     def update_cmap(self, cmap_name):
         if  self.conf.cmap_reverse:  cmap_name = cmap_name + '_r'
         self.conf.cmap = getattr(colormap, cmap_name)
-        
+
         self.conf.image.set_cmap(self.conf.cmap)
-        self.cmap_image.set_cmap(self.conf.cmap)        
+        self.cmap_image.set_cmap(self.conf.cmap)
         self.canvas.draw()
-        self.cmap_canvas.draw()        
+        self.cmap_canvas.draw()
 
     def onTitle(self, event,argu=''):
         s = ''
         if (wx.EVT_TEXT_ENTER.evtType[0] == event.GetEventType()):
-            s = str(event.GetString()).strip()        
+            s = str(event.GetString()).strip()
         elif (wx.EVT_KILL_FOCUS.evtType[0] == event.GetEventType()):
             self.conf.title = self.wid_title.GetValue().strip()
 

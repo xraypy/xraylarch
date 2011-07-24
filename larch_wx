@@ -8,15 +8,21 @@ import sys
 import os
 from time import sleep
 import threading
-
 import wx
-import numpy
 
-import lib as larch
-from lib.plugins import plotter, shellutils
+DEBUG = False
+
+if DEBUG:
+    import lib as larch
+    from lib.plugins import plotter, shellutils
+else:
+    import larch
+    from larch.plugins import plotter, shellutils
 
 PS1 = "larch> "
 PS2 = ".....> "
+
+import numpy
 
 PLUGINS = [plotter.registerPlugin, shellutils.registerPlugin]
 BANNER = """  Larch %s  M. Newville, T. Trainor (2011)
@@ -202,11 +208,12 @@ class WxLarchShell(threading.Thread):
         self.start()
         sys.stdout.write(BANNER)
         sys.stdout.flush()
+
         self.app.wxtimer.Start()
+
         self.app.MainLoop()
-        # wxloop = hijack_wx()
-        # wxloop(self.app)
         self.join()
 
 if __name__ == '__main__':
-    WxLarchShell().mainloop()
+    ws = WxLarchShell()
+    ws.mainloop()

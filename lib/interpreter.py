@@ -56,7 +56,7 @@ if sys.version_info[0] == 2:
     def iscallable(obj):
         return callable(obj) or hasattr(obj, '__call__')
 
-        
+
 class Interpreter:
     """larch program compiler and interpreter.
   This module compiles expressions and statements to AST representation,
@@ -68,7 +68,7 @@ class Interpreter:
 
   The following Python syntax is not supported:
       Exec, Lambda, Class, Global, Generators, Yield, Decorators
-        
+
   In addition, Function is greatly altered so as to allow a Larch procedure.
   """
 
@@ -83,12 +83,12 @@ class Interpreter:
 
     def __init__(self, symtable=None, writer=None):
         self.writer = writer or sys.stdout
-       
+
         if symtable is None:
             symtable = SymbolTable(larch=self)
         self.symtable   = symtable
         self._interrupt = None
-        self.error      = [] 
+        self.error      = []
         self.expr       = None
         self.retval     = None
         self.fname     = '<StdInput>'
@@ -96,7 +96,7 @@ class Interpreter:
         builtingroup = getattr(symtable,'_builtin')
         mathgroup    = getattr(symtable,'_math')
         setattr(mathgroup, 'j', 1j)
-        
+
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
 
@@ -117,7 +117,7 @@ class Interpreter:
                     Closure(func=fcn, larch=self))
         setattr(builtingroup, 'definevar',
                 Closure(func=self.set_definedvariable))
-        
+
         self.node_handlers = {}
         for tnode in self.supported_nodes:
             self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
@@ -141,7 +141,7 @@ class Interpreter:
         if expr  is None:
             expr  = self.expr
         if fname is None:
-            fname = self.fname        
+            fname = self.fname
         if lineno is None:
             lineno = self.lineno
 
@@ -161,7 +161,7 @@ class Interpreter:
         self.symtable._sys.last_error = err
 
         # print("_Raise ", self.error)
-        
+
     # main entry point for Ast node evaluation
     #  compile:  string statement -> ast
     #  interp :  ast -> result
@@ -175,7 +175,7 @@ class Interpreter:
             self.raise_exception(None, msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
-            
+
     def interp(self, node, expr=None, fname=None, lineno=None):
         """executes compiled Ast representation for an expression"""
         # Note: keep the 'node is None' test: internal code here may run
@@ -191,7 +191,7 @@ class Interpreter:
             self.fname  = fname
         if expr   is not None:
             self.expr   = expr
-       
+
         # get handler for this node:
         #   on_xxx with handle nodes of type 'xxx', etc
         try:
@@ -211,14 +211,14 @@ class Interpreter:
         except:
             self.raise_exception(node, msg='Runtime Error',
                                  expr=expr, fname=fname, lineno=lineno,
-                                 py_exc=sys.exc_info())              
-            
+                                 py_exc=sys.exc_info())
+
     def __call__(self, expr, **kw):
         return self.eval(expr, **kw)
-        
+
     def eval(self, expr, fname=None, lineno=0):
         """evaluates a single statement"""
-        self.fname = fname        
+        self.fname = fname
         self.lineno = lineno
         self.error = []
 
@@ -229,7 +229,7 @@ class Interpreter:
             self.raise_exception(node, msg='Syntax Error', expr=expr,
                                  fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
-        else:            
+        else:
             # print(" -> interp ", node, expr,  fname, lineno)
             out = self.interp(node, expr=expr,
                               fname=fname, lineno=lineno)
@@ -238,7 +238,7 @@ class Interpreter:
                                  fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
         return out
-        
+
     def run_init_scripts(self):
         for fname in site_config.init_files:
             if os.path.exists(fname):
@@ -248,7 +248,7 @@ class Interpreter:
                 except:
                     self.raise_exception(None, msg='Initialization Error',
                                          py_exc=sys.exc_info())
-                    
+
     def dump(self, node, **kw):
         "simple ast dumper"
         return ast.dump(node, **kw)
@@ -266,12 +266,12 @@ class Interpreter:
         "return statement"
         self.retval = self.interp(node.value)
         return
-    
+
     def on_repr(self, node):
         "repr "
         return repr(self.interp(node.value))  # ('value',)
 
-    def on_module(self, node):    # ():('body',) 
+    def on_module(self, node):    # ():('body',)
         "module def"
         out = None
         for tnode in node.body:
@@ -280,11 +280,11 @@ class Interpreter:
 
     def on_expression(self, node):
         "basic expression"
-        return self.on_module(node) # ():('body',) 
+        return self.on_module(node) # ():('body',)
 
     def on_pass(self, node):
         "pass statement"
-        return None  # () 
+        return None  # ()
 
     def on_ellipsis(self, node):
         "ellipses"
@@ -302,7 +302,7 @@ class Interpreter:
 
     def on_continue(self, node):
         "continue"
-        return self.on_interrupt(node)    
+        return self.on_interrupt(node)
 
     def on_assert(self, node):    # ('test', 'msg')
         "assert statement"
@@ -317,7 +317,7 @@ class Interpreter:
     def on_tuple(self, node):    # ('elts', 'ctx')
         "tuple"
         return tuple(self.on_list(node))
-    
+
     def on_dict(self, node):    # ('keys', 'values')
         "dictionary"
         nodevals = list(zip(node.keys, node.values))
@@ -326,7 +326,7 @@ class Interpreter:
 
     def on_num(self, node):
         'return number'
-        return node.n  # ('n',) 
+        return node.n  # ('n',)
 
     def on_str(self, node):
         'return string'
@@ -359,7 +359,7 @@ class Interpreter:
                 self.raise_exception(nod, errmsg)
 
             setattr(self.interp(nod.value), nod.attr, val)
-            
+
         elif nod.__class__ == ast.Subscript:
             sym    = self.interp(nod.value)
             xslice = self.interp(nod.slice)
@@ -389,7 +389,7 @@ class Interpreter:
                 return val
             else:
                 obj = self.interp(node.value)
-                fmt = "%s does not have member '%s'"                
+                fmt = "%s does not have member '%s'"
                 if not isgroup(obj):
                     obj = obj.__class__
                     fmt = "%s does not have attribute '%s'"
@@ -401,13 +401,13 @@ class Interpreter:
             return delattr(sym, node.attr)
         elif ctx == ast.Store:
             msg = "attribute for storage: shouldn't be here!"
-            self.raise_exception(node, msg=msg, py_exc=sys.exc_info())        
+            self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
 
     def on_assign(self, node):    # ('targets', 'value')
         "simple assignment"
         val = self.interp(node.value)
         if len(self.error) > 0:
-            return        
+            return
         for tnode in node.targets:
             self.node_assign(tnode, val)
         return # return val
@@ -419,7 +419,7 @@ class Interpreter:
                                          value=ast.BinOp(left = node.target,
                                                          op   = node.op,
                                                          right= node.value)))
-       
+
     def on_slice(self, node):    # ():('lower', 'upper', 'step')
         "simple slice"
         return slice(self.interp(node.lower), self.interp(node.upper),
@@ -428,8 +428,8 @@ class Interpreter:
     def on_extslice(self, node):    # ():('dims',)
         "extended slice"
         return tuple([self.interp(tnode) for tnode in node.dims])
-    
-    def on_subscript(self, node):    # ('value', 'slice', 'ctx') 
+
+    def on_subscript(self, node):    # ('value', 'slice', 'ctx')
         "subscript handling -- one of the tricky parts"
         # print("on_subscript: ", ast.dump(node))
         val    = self.interp(node.value)
@@ -461,11 +461,11 @@ class Interpreter:
             else:
                 msg = "could not delete symbol"
                 self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
-            
+
     def on_unaryop(self, node):    # ('op', 'operand')
         "unary operator"
         return OPERATORS[node.op.__class__](self.interp(node.operand))
-    
+
     def on_binop(self, node):    # ('left', 'op', 'right')
         "binary operator"
         return OPERATORS[node.op.__class__](self.interp(node.left),
@@ -481,7 +481,7 @@ class Interpreter:
                 if (is_and and not val) or (not is_and and val):
                     break
         return val
-    
+
     def on_compare(self, node):    # ('left', 'ops', 'comparators')
         "comparison operators"
         lval = self.interp(node.left)
@@ -508,7 +508,7 @@ class Interpreter:
         out = [self.interp(tnode) for tnode in node.values]
         if out and len(self.error)==0:
             print(*out, file=dest, end=end)
-        
+
     def on_if(self, node):    # ('test', 'body', 'orelse')
         "regular if-then-else statement"
         block = node.orelse
@@ -544,12 +544,12 @@ class Interpreter:
         for val in self.interp(node.iter):
             self.node_assign(node.target, val)
             if len(self.error) > 0:
-                return            
+                return
             self._interrupt = None
             for tnode in node.body:
                 self.interp(tnode)
                 if len(self.error) > 0:
-                    return                
+                    return
                 if self._interrupt is not None:
                     break
             if isinstance(self._interrupt, ast.Break):
@@ -559,7 +559,7 @@ class Interpreter:
                 self.interp(tnode)
         self._interrupt = None
 
-    def on_listcomp(self, node):    # ('elt', 'generators') 
+    def on_listcomp(self, node):    # ('elt', 'generators')
         "list comprehension"
         out = []
         for tnode in node.generators:
@@ -567,7 +567,7 @@ class Interpreter:
                 for val in self.interp(tnode.iter):
                     self.node_assign(tnode.target, val)
                     if len(self.error) > 0:
-                        return                    
+                        return
                     add = True
                     for cond in tnode.ifs:
                         add = add and self.interp(cond)
@@ -581,7 +581,7 @@ class Interpreter:
         "exception handler..."
         # print("except handler %s / %s " % (node.type, ast.dump(node.name)))
         return (self.interp(node.type), node.name, node.body)
-    
+
     def on_tryexcept(self, node):    # ('body', 'handlers', 'orelse')
         "try/except blocks"
         for tnode in node.body:
@@ -609,7 +609,7 @@ class Interpreter:
                           self.interp(node.inst))
         self.raise_exception(node.type, msg=msg,
                              py_exc=sys.exc_info())
-                    
+
     def on_call(self, node):
         "function/procedure execution"
         # ('func', 'args', 'keywords', 'starargs', 'kwargs')
@@ -621,22 +621,22 @@ class Interpreter:
         args = [self.interp(targ) for targ in node.args]
         if node.starargs is not None:
             args = args + self.interp(node.starargs)
-        
+
         keywords = {}
         for key in node.keywords:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
                 self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
-            
+
             keywords[key.arg] = self.interp(key.value)
         if node.kwargs is not None:
             keywords.update(self.interp(node.kwargs))
 
         return func(*args, **keywords)
-    
+
     def on_functiondef(self, node):
         "define procedures"
-        # ('name', 'args', 'body', 'decorator_list') 
+        # ('name', 'args', 'body', 'decorator_list')
         if node.decorator_list != []:
             print("Warning: decorated procedures not supported!")
 
@@ -651,7 +651,7 @@ class Interpreter:
         if isinstance(node.body[0], ast.Expr):
             docnode = node.body.pop(0)
             doc = self.interp(docnode.value)
-        # 
+        #
         proc = Procedure(node.name, larch= self, doc= doc,
                          body   = node.body,
                          fname  = self.fname,   lineno = self.lineno,
@@ -665,7 +665,7 @@ class Interpreter:
         "simple import"
         for tnode in node.names:
             self.import_module(tnode.name, asname=tnode.asname)
-        
+
     def on_importfrom(self, node):    # ('module', 'names', 'level')
         "import/from"
         fromlist, asname = [], []
@@ -707,8 +707,9 @@ class Interpreter:
         #   or  st_sys.modules for larch modules
         # reload takes effect here in the normal python way:
         if (do_reload or
-            (name not in st_sys.modules and name not in sys.modules)):
+            ((name not in st_sys.modules) and (name not in sys.modules))):
             # first look for "name.lar"
+            # print('import_mod A ', name)
             islarch = False
             larchname = "%s.lar" % name
             for dirname in st_sys.path:
@@ -731,8 +732,9 @@ class Interpreter:
                 # thismod = None
                 return
             # or, if not a larch module, load as a regular python module
-            if not islarch:
+            if not islarch and name not in sys.modules:
                 try:
+                    # print('import_mod: py import! ', name)
                     __import__(name)
                     thismod = sys.modules[name]
                 except:
@@ -740,14 +742,15 @@ class Interpreter:
                                          py_exc=sys.exc_info())
                     return
         else: # previously loaded module, just do lookup
+            # print("prev loaded?")
             if name in st_sys.modules:
                 thismod = st_sys.modules[name]
             elif name in sys.modules:
-                thismod = sys.modules[name]               
-              
+                thismod = sys.modules[name]
+
         # now we install thismodule into the current moduleGroup
         # import full module
-        # proint("IM: from ", fromlist, asname)
+        # print("IM: from ", fromlist, asname)
         if fromlist is None:
             if asname is None:
                 asname = name
@@ -762,7 +765,7 @@ class Interpreter:
             setattr(targetgroup, asname, thismod)
         # import-from construct
         else:
-            
+
             if asname is None:
                 asname = [None]*len(fromlist)
             targetgroup = st_sys.moduleGroup
@@ -770,6 +773,5 @@ class Interpreter:
                 if alias is None:
                     alias = sym
                 setattr(targetgroup, alias, getattr(thismod, sym))
-        # print("DONE")
     # end of import_module
 

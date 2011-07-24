@@ -4,15 +4,14 @@
 ##
 
 import wx
-import matplotlib
 
+import matplotlib
 from matplotlib.figure import Figure
 from matplotlib.ticker import FuncFormatter
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg as FigureCanvas
 
 from PlotConfig import PlotConfig
 from PlotConfigFrame import PlotConfigFrame
-
 from basepanel import BasePanel
 
 class PlotPanel(BasePanel):
@@ -196,7 +195,7 @@ class PlotPanel(BasePanel):
             self.axes.set_xlim(lims[:2])
             self.axes.set_ylim(lims[2:])
 
-        self.old_zoomdc = (None, (0, 0), (0, 0))
+        self.zoomdc = (None, (0, 0, 0, 0))
         txt = ''
         if len(self.zoom_lims)>1:
             txt = 'zoom level %i' % (len(self.zoom_lims))
@@ -249,8 +248,9 @@ class PlotPanel(BasePanel):
         self.Fit()
 
         # define zoom box properties
-        self.conf.zoombrush = wx.Brush('#A828A8',  wx.SOLID)
-        self.conf.zoompen   = wx.Pen('#E030E0', 1, wx.SOLID) # SOLID)
+        self.conf.zoombrush = wx.Brush('#F8F8F000',  wx.SOLID)
+        self.conf.zoompen   = wx.Pen(  wx.BLACK,  2, wx.SOLID)
+
         self.addCanvasEvents()
 
     def update_line(self, trace, xdata, ydata):

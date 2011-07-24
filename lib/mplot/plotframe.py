@@ -16,11 +16,11 @@ class PlotFrame(BaseFrame):
         self.panel = PlotPanel(self, parent)
         BaseFrame.__init__(self,parent=parent, panel=self.panel, size=size)
         self.BuildFrame(size=size, **kwds)
-        
+
     def plot(self,x,y,**kw):
-        """plot after clearing current plot """        
+        """plot after clearing current plot """
         self.panel.plot(x,y,**kw)
-        
+
     def oplot(self,x,y,**kw):
         """generic plotting method, overplotting any existing plot """
         self.panel.oplot(x,y,**kw)

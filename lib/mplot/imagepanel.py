@@ -58,14 +58,14 @@ class ImagePanel(BasePanel):
                                            interpolation=self.conf.interp,
                                            origin='lower')
         self.axes.set_axis_off()
-        self.canvas.draw()        
-        
+        self.canvas.draw()
+
     def set_xylims(self, xyrange,autoscale=True):
         """ update xy limits of a plot"""
         xmin,xmax,ymin,ymax = xyrange
         if autoscale:
             xmin,xmax,ymin,ymax = self.data_range
-            
+
         if abs(xmax-xmin) < 1.90:
             xmin  = 0.5*(xmax+xmin) - 1
             xmax = 0.5*(xmax+xmin) + 1
@@ -79,7 +79,7 @@ class ImagePanel(BasePanel):
         self.axes.update_datalim(((xmin,ymin),(xmax,ymax)))
         if autoscale:
             self.axes.set_xbound(self.axes.xaxis.get_major_locator().view_limits(xmin,xmax))
-            self.axes.set_ybound(self.axes.yaxis.get_major_locator().view_limits(ymin,ymax))            
+            self.axes.set_ybound(self.axes.yaxis.get_major_locator().view_limits(ymin,ymax))
 
     def clear(self):
         """ clear plot """
@@ -91,30 +91,29 @@ class ImagePanel(BasePanel):
         self.zoom_lims = [None]
         self.unzoom(event,set_bounds=False)
 
-       
-    def unzoom(self,event=None,set_bounds=True):
+    def unzoom(self, event=None, set_bounds=True):
         """ zoom out 1 level, or to full data range """
         lims = None
         if len(self.zoom_lims) > 1:
             self.zoom_lims.pop()
             lims = self.zoom_lims[-1]
-        print 'Debugging UNZOOM lims: ', lims, self.data_range
-        print 'Current X ', self.axes.get_xlim() 
-        print 'Current Y ', self.axes.get_ylim()       
+        print 'Debugging UNZOOM lims:  lims=', lims, ' data range: =', self.data_range
+        #print 'Current X ', self.axes.get_xlim()
+        #print 'Current Y ', self.axes.get_ylim()
         if lims is None: # auto scale
             self.zoom_lims = [None]
             ymin,ymax, xmin,xmax   = self.data_range
             self.axes.set_xlim((xmin,xmax),emit=True)
             self.axes.set_ylim((ymin,ymax),emit=True)
             if set_bounds:
-                print 'Setting Bounds ' 
+                print 'Setting Bounds '
                 self.axes.update_datalim(((xmin,ymin),(xmax,ymax)))
                 self.axes.set_xbound(self.axes.xaxis.get_major_locator().view_limits(xmin,xmax))
-                self.axes.set_ybound(self.axes.yaxis.get_major_locator().view_limits(ymin,ymax))            
+                self.axes.set_ybound(self.axes.yaxis.get_major_locator().view_limits(ymin,ymax))
         else:
             self.axes.set_ylim(lims[:2])
             self.axes.set_xlim(lims[2:])
-        self.old_zoomdc = (None,(0,0),(0,0))
+        self.zoomdc = (None, (0,0,0,0))
         txt = ''
         if len(self.zoom_lims)>1:
             txt = 'zoom level %i' % (len(self.zoom_lims))
@@ -128,7 +127,7 @@ class ImagePanel(BasePanel):
             self.win_config = ImageConfigFrame(conf=self.conf)
 
     ####
-    ## create GUI 
+    ## create GUI
     ####
     def BuildPanel(self, **kwds):
         """ builds basic GUI panel and popup menu"""
@@ -137,10 +136,10 @@ class ImagePanel(BasePanel):
         self.fig   = Figure(self.figsize,dpi=self.dpi)
         self.axes  = self.fig.add_axes([0.08,0.08,0.90,0.90],
                                        axisbg='#FEFEFE')
-                                      
+
         self.canvas = FigureCanvasWxAgg(self, -1, self.fig)
         self.fig.set_facecolor('#FBFBF8')
-        
+
         self.conf.axes  = self.axes
         self.conf.fig   = self.fig
         self.conf.canvas= self.canvas
@@ -160,9 +159,9 @@ class ImagePanel(BasePanel):
     ####
     def reportMotion(self,event=None):
         pass
-    
+
     def reportLeftDown(self,event=None):
-        if event == None: return        
+        if event == None: return
         ix, iy = round(event.xdata), round(event.ydata)
 
         if (ix > -1 and ix < self.conf.data.shape[1] and
@@ -174,11 +173,11 @@ class ImagePanel(BasePanel):
                 x, y = None, None
                 val = self.conf.data[iy,ix]
                 self.cursor_callback(ix=ix, iy=iy, val=val)
-                
 
-    def zoom_OK(self, start,stop):
+
+    def zoom_OK(self, start, stop):
         """ returns whether a requested zoom is acceptable: rejects zooms that are too small"""
-        print 'zoom ok ', start, stop, self.data_range
+        print 'Zoom ok ', start, stop, self.data_range
         xmax = self.data_range[1]
         ymax = self.data_range[3]
         return  ((start[0] > 0    or stop[0] > 0) and

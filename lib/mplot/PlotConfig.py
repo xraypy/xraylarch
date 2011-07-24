@@ -67,7 +67,7 @@ class LineProperties:
             if markercolor is None: markercolor=self.color
             # self.set_markeredgecolor(markercolor, line=line)
             # self.set_markerfacecolor(markercolor, line=line)
-            
+
             self.set_label(self.label, line=line)
             self.set_color(self.color, line=line)
             self.set_style(self.style, line=line)
@@ -79,8 +79,8 @@ class LineProperties:
         self.color = color
         c = colors.hexcolor(color)
         def _setc(aline, col):
-            aline.set_color(col)                    
-            
+            aline.set_color(col)
+
         if line:
             for lx in line:
                 if isinstance(lx, (list, tuple)):
@@ -88,7 +88,7 @@ class LineProperties:
                         _setc(sublx, c)
                 else:
                     _setc(lx, c)
-                    
+
     def set_label(self, label,line=None):
         self.label = label
         if line:
@@ -115,7 +115,7 @@ class LineProperties:
         self.marker = sym
         if line:
             line[0].set_marker(MarkerMap[sym])
-            
+
     def set_markersize(self,markersize,line=None):
         self.markersize=markersize
         if line:
@@ -129,7 +129,7 @@ class LineProperties:
                     l.set_linewidth(self.linewidth/2.0)
                 except:
                     pass
-                 
+
 class PlotConfig:
     """ MPlot Configuration for 2D Plots... holder class for most configuration data """
     def __init__(self):
@@ -138,8 +138,8 @@ class PlotConfig:
         self.fig    = None
         self.zoom_x = 0
         self.zoom_y = 0
-        self.zoom_init = (0,1)
-        
+        self.zoom_init = (0, 1)
+
         self.title  = ' '
         self.xlabel = ' '
         self.ylabel = ' '
@@ -190,7 +190,7 @@ class PlotConfig:
         self._init_trace(17,None, 'maroon'   ,'dotted',2,None,8)
         self._init_trace(18,None, 'blue'     ,'solid',1,'+',8)
         self._init_trace(19,None, 'red'      ,'solid',1,'+',8)
-        
+
     def _init_trace(self,n,label,color,style,
                   linewidth,marker,markersize):
         """ used for building set of traces"""
@@ -210,7 +210,7 @@ class PlotConfig:
         n = max(0,int(trace))
         while n >= len(self.traces): self.traces.append(LineProperties())
         try:
-            return self.lines[n]        
+            return self.lines[n]
         except:
             return None
 
@@ -218,7 +218,7 @@ class PlotConfig:
         " re draw labels (title, x,y labels)"
         n = self.labelfont.get_size()
         n = self.labelfont.get_size()
-                
+
         self.axes.set_xlabel(self.xlabel,
                              fontproperties=self.labelfont)
         self.axes.set_ylabel(self.ylabel,
@@ -231,11 +231,11 @@ class PlotConfig:
     def refresh_trace(self,trace=None):
         if trace is None: trace = self.ntrace
         self.traces[trace].update(self.__mpline(trace))
-        
+
     def set_trace_color(self,color,trace=None):
         if trace is None: trace = self.ntrace
         self.traces[trace].set_color(color,line=self.__mpline(trace))
-        
+
     def set_trace_label(self,label,trace=None):
         if trace is None: trace = self.ntrace
         self.traces[trace].set_label(label,line=self.__mpline(trace))
@@ -257,6 +257,6 @@ class PlotConfig:
         self.traces[trace].set_linewidth(linewidth,line=self.__mpline(trace))
 
     def get_mpl_line(self,trace=None):
-        if trace is None: trace = self.ntrace        
+        if trace is None: trace = self.ntrace
         return self.__mpline(trace)[0]
 

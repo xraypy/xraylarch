@@ -9,11 +9,13 @@ Exposed functions here are
    imshow: display a false-color map from array data on
            a configurable Image Display Frame.
 '''
-import wx
 import time
+import wx
 from larch.mplot import PlotFrame, ImageFrame
 
 MODNAME = '_plotter'
+IMG_DISPLAYS = {}
+PLOT_DISPLAYS = {}
 
 def ensuremod(larch):
     if larch is not None:
@@ -23,19 +25,21 @@ def ensuremod(larch):
         return symtable
 
 class PlotDisplay(PlotFrame):
-    def __init__(self, wxparent=None, wid=1, larch=None, **kws):
+    def __init__(self, wxparent=None, window=1, larch=None, **kws):
         PlotFrame.__init__(self, parent=wxparent,
                                  exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
         self.cursor_pos = []
         self.panel.cursor_callback = self.onCursor
-        self.wid = int(wid)
+        self.window = int(window)
         self.larch = larch
-        self.symname = '%s.plot%i' % (MODNAME, self.wid)
+        self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self.larch)
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
+        if window not in PLOT_DISPLAYS:
+            PLOT_DISPLAYS[window] = self
 
     def onExit(self, o, **kw):
         try:
@@ -44,6 +48,9 @@ class PlotDisplay(PlotFrame):
                 symtable.del_symbol(self.symname)
         except:
             pass
+        if self.window in PLOT_DISPLAYS:
+            PLOT_DISPLAYS.pop(self.window)
+
         self.Destroy()
 
     def onCursor(self,x=None, y=None,**kw):
@@ -56,27 +63,36 @@ class PlotDisplay(PlotFrame):
 
 
 class ImageDisplay(ImageFrame):
-    def __init__(self, wxparent=None, wid=1, larch=None, **kws):
+    def __init__(self, wxparent=None, window=1, larch=None, **kws):
+        print 'ImageDisplay, ', window, wxparent
         ImageFrame.__init__(self, parent=wxparent,
                                   exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
         self.cursor_pos = []
         self.panel.cursor_callback = self.onCursor
-        self.wid = int(wid)
-        self.symname = '%s.img%i' % (MODNAME, self.wid)
+        self.window = int(window)
+        self.symname = '%s.img%i' % (MODNAME, self.window)
         self.larch = larch
         symtable = ensuremod(self.larch)
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
+        if self.window not in IMG_DISPLAYS:
+            IMG_DISPLAYS[self.window] = self
 
     def onExit(self, o, **kw):
+        print 'ImageDisplay Exit ', self.symname, o, kw
+        for k, v in IMG_DISPLAYS.items():
+            print 'IMG DISP: ',  k, v
         try:
             symtable = self.larch.symtable
+            symtable.has_group(MODNAME), self.symname
             if symtable.has_group(MODNAME):
                 symtable.del_symbol(self.symname)
         except:
             pass
+        if self.window in IMG_DISPLAYS:
+            IMG_DISPLAYS.pop(self.window)
         self.Destroy()
 
     def onCursor(self,x=None, y=None, ix=None, iy=None,
@@ -98,26 +114,29 @@ class ImageDisplay(ImageFrame):
 
 def _getDisplay(win=1, larch=None, wxparent=None, image=False):
     """make a plotter"""
+    # global PLOT_DISPLAYS, IMG_DISPlAYS
     if larch is None:
         return
     win = max(1, int(abs(win)))
     title   = 'Larch Plot Display Window %i' % win
     symname = '%s.plot%i' % (MODNAME, win)
     creator = PlotDisplay
+    display_dict = PLOT_DISPLAYS
     if image:
         creator = ImageDisplay
+        display_dict = IMG_DISPLAYS
         title   = 'Larch Image Display Window %i' % win
         symname = '%s.img%i' % (MODNAME, win)
-    display = larch.symtable.get_symbol(symname, create=True)
+
+    if win in display_dict:
+        display = display_dict[win]
+    else:
+        display = larch.symtable.get_symbol(symname, create=True)
+
     if display is None:
-        display = creator(wid=win, wxparent=wxparent, larch=larch)
+        display = creator(window=win, wxparent=wxparent, larch=larch)
         larch.symtable.set_symbol(symname, display)
-        t0 = time.time()
-        while display is None:
-            display = larch.symtable.get_symbol(symname)
-            time.sleep(0.05)
-            if t0 - time.time() > 5.0:
-                break
+
     if display is not None:
         display.SetTitle(title)
     return display
@@ -159,12 +178,8 @@ def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
         oplot
 
     """
-    # print '_plot: ', win, larch, wxparent, kws
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
-
     wx.CallAfter(plotter.Raise)
-    time.sleep(0.001)
-
     if plotter is not None:
         plotter.plot(x, y, **kws)
 
@@ -178,10 +193,12 @@ def _oplot(x,y, win=1, larch=None, wxparent=None, **kws):
     plot
 
     """
-
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
+
     if plotter is not None:
         plotter.oplot(x, y, **kws)
+    else:
+        print 'dont have plotter yet?'
 
 def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     """imshow(map[, options])
@@ -191,6 +208,7 @@ def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     map: 2-dimensional array for map
     """
     img = _getDisplay(wxparent=wxparent, win=win, larch=larch, image=True)
+    print 'imshow getdisplay -> ', img
     if img is not None:
         img.display(map, **kws)
 

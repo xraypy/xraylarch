@@ -101,15 +101,15 @@ class SymbolTable(Group):
         for gname in self.core_groups:
             setattr(self, gname, Group(name=gname))
 
-        self._sys.frames = []
-        self._sys.searchNames  = []
+        self._sys.frames      = []
+        self._sys.searchNames = []
         self._sys.searchGroups = []
-        self._sys.localGroup   = self
-        self._sys.moduleGroup  = self
+        self._sys.path        = ['.']
+        self._sys.localGroup  = self
+        self._sys.moduleGroup = self
         self._sys.groupCache  = {'localGroup':None, 'moduleGroup':None,
                                  'searchNames':None, 'searchGroups': None}
 
-        self._sys.path         = [os.path.abspath('.')]
         self._sys.historyfile = site_config.history_file
         orig_sys_path = sys.path[:]
 

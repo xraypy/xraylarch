@@ -19,7 +19,7 @@ ColorMap_List = ('gray', 'jet', 'hsv', 'Reds', 'Greens', 'Blues', 'hot',
 Interp_List = ('nearest', 'bilinear', 'bicubic', 'spline16', 'spline36',
                'hanning', 'hamming', 'hermite', 'kaiser', 'quadric',
                'catrom', 'gaussian', 'bessel', 'mitchell', 'sinc',
-               'lanczos')   
+               'lanczos')
 
 class ImageFrame(BaseFrame):
     """
@@ -40,24 +40,24 @@ class ImageFrame(BaseFrame):
         BaseFrame.__init__(self, parent=parent,
                            panel=self.img_panel, size=size)
         self.BuildFrame(size=size, **kwds)
-        
+
     def display(self,img,**kw):
-        """plot after clearing current plot """        
+        """plot after clearing current plot """
         self.img_panel.display(img,**kw)
-      
+
     def BuildCustomMenus(self):
         mids = self.menuIDs
         mids.SAVE_CMAP = wx.NewId()
         m = wx.Menu()
         m.Append(mids.UNZOOM, "Zoom Out\tCtrl+Z",
                  "Zoom out to full data range")
-        m.AppendSeparator()        
+        m.AppendSeparator()
         m.Append(mids.SAVE_CMAP, "Save Colormap Image")
 
         self.user_menus  = [('&Options',m)]
 
     def BindCustomMenus(self):
-        mids = self.menuIDs        
+        mids = self.menuIDs
         self.Bind(wx.EVT_MENU, self.onCMapSave, id=mids.SAVE_CMAP)
 
     def BuildFrame(self, size=(550,450), **kwds):
@@ -77,7 +77,7 @@ class ImageFrame(BaseFrame):
         self.BuildCustomMenus()
         self.BuildMenu()
         mainsizer = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         if self.config_on_frame:
             lpanel = self.BuildConfigPanel()
             mainsizer.Add(lpanel, 0,
@@ -91,11 +91,11 @@ class ImageFrame(BaseFrame):
 
             self.BindMenuToPanel()
             self.BindCustomMenus()
-            
+
         self.SetAutoLayout(True)
         self.SetSizer(mainsizer)
         self.Fit()
-            
+
     def BuildConfigPanel(self):
         """config panel for left-hand-side of frame"""
         lpanel = wx.Panel(self)
@@ -106,7 +106,7 @@ class ImageFrame(BaseFrame):
 
         interp_choice =  wx.Choice(lpanel, choices=Interp_List)
         interp_choice.Bind(wx.EVT_CHOICE,  self.onInterp)
-        
+
         interp_choice.SetStringSelection(self.conf.interp)
         s = wx.StaticText(lpanel,label=' Smoothing:')
         s.SetForegroundColour('Blue')
@@ -140,7 +140,7 @@ class ImageFrame(BaseFrame):
         self.cmap_fig   = Figure((0.350, 1.75), dpi=100)
         self.cmap_axes  = self.cmap_fig.add_axes([0,0,1,1])
         self.cmap_axes.set_axis_off()
-        
+
         self.cmap_canvas = FigureCanvasWxAgg(lpanel, -1,
                                              figure=self.cmap_fig)
 
@@ -152,7 +152,7 @@ class ImageFrame(BaseFrame):
                                                 interpolation='bilinear')
 
         self.cmap_axes.set_ylim((0,cmax),emit=True)
-        
+
         self.cmap_lo_val = wx.Slider(lpanel, -1,
                                      self.conf.cmap_lo,0,
                                      self.conf.cmap_range,
@@ -193,27 +193,27 @@ class ImageFrame(BaseFrame):
         cmap_name = self.conf.cmap.name
         if  cmap_name.endswith('_r'): cmap_name = cmap_name[:-2]
         self.update_cmap(cmap_name)
-        
+
     def update_cmap(self, cmap_name):
         if  self.conf.cmap_reverse:  cmap_name = cmap_name + '_r'
         self.conf.cmap = getattr(colormap, cmap_name)
-        
+
         self.conf.image.set_cmap(self.conf.cmap)
-        self.cmap_image.set_cmap(self.conf.cmap)        
+        self.cmap_image.set_cmap(self.conf.cmap)
         self.conf.canvas.draw()
-        self.cmap_canvas.draw()        
-        
+        self.cmap_canvas.draw()
+
     def onStretchLow(self,event=None):
         lo =  event.GetInt()
         hi = self.cmap_hi_val.GetValue()
         self.StretchCMap(lo,hi)
-        
+
     def onStretchHigh(self,event=None):
         hi = event.GetInt()
         lo = self.cmap_lo_val.GetValue()
-        
+
         self.StretchCMap(lo,hi)
-        
+
     def StretchCMap(self,low, high):
         lo,hi = min(low,high), max(low,high)
         if (hi-lo)<2:
@@ -233,7 +233,7 @@ class ImageFrame(BaseFrame):
 
         wid=numpy.ones(cmax/8)
 
-        # color table altered into a set of 3 linear segments: 
+        # color table altered into a set of 3 linear segments:
         # Intensity = 0.0:0.1  between 0 and lo
         # Intensity = 0.1:0.9  between lo and hi
         # Intensity = 0.9:1.0  between hi and cmap_range (highest value)
@@ -242,8 +242,8 @@ class ImageFrame(BaseFrame):
         # self.cmap_data[hi:,:] = numpy.outer(numpy.linspace(0.9,1.0,cmax-hi),wid)
         # ex = self.cmap_data[:,0]
         # print ex, len(ex), lo, hi
-        
-        self.cmap_data[:lo,:] = 0  
+
+        self.cmap_data[:lo,:] = 0
         self.cmap_data[lo:hi] = numpy.outer(numpy.linspace(0.0,1.0,hi-lo),wid)
         self.cmap_data[hi:,:] = 1
 
@@ -259,7 +259,7 @@ class ImageFrame(BaseFrame):
             cmimg = numpy.log(self.cmap_data+cmap_fill_val/5.0)
             cmimg = (cmimg-cmimg.min()) / abs(cmimg.max()-cmimg.min())
             self.cmap_data = cmimg
-            
+
         cmap_max = self.cmap_data.max()
 
         self.cmap_image.set_data(self.cmap_data)
@@ -271,12 +271,12 @@ class ImageFrame(BaseFrame):
     def onLogScale(self,event=None):
         self.conf.log_scale = event.IsChecked()
         self.UpdateImages()
-        
+
     def onCMapSave(self,event=None):
         """save color table image"""
         file_choices = "PNG (*.png)|*.png"
         ofile = 'Colormap.png'
-       
+
         dlg = wx.FileDialog(self, message='Save Colormap as...',
                             defaultDir = os.getcwd(),
                             defaultFile=ofile,
