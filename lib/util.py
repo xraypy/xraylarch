@@ -26,7 +26,7 @@ def PrintExceptErr(err_str, print_trace=True):
 def strip_comments(sinp, char='#'):
     "find character in a string, skipping over quoted text"
     if sinp.find(char) < 0:
-        return sinp    
+        return sinp
     i = 0
     while i < len(sinp):
         tchar = sinp[i]
@@ -85,7 +85,7 @@ class DefinedVariable(object):
 
     def __repr__(self):
         return "<DefinedVariable: '%s'>" % (self.expr)
-        
+
     def compile(self):
         """compile to ast"""
         if self.larch is not None and self.expr is not None:
@@ -98,9 +98,9 @@ class DefinedVariable(object):
         if self.ast is None:
             msg = "Cannot compile '%s'"  % (self.expr)
             raise Warning(msg)
-            
+
         if hasattr(self.larch, 'interp'):
-            # save current localGroup/moduleGroup 
+            # save current localGroup/moduleGroup
             self.larch.symtable.save_frame()
             rval = self.larch.interp(self.ast, expr=self.expr)
             self.larch.symtable.restore_frame()
@@ -126,7 +126,7 @@ class Procedure(object):
         self.__doc__  = doc
         self.lineno   = lineno
         self.fname    = fname
-        
+
     def __repr__(self):
         sig = ""
         if len(self.argnames) > 0:
@@ -135,7 +135,7 @@ class Procedure(object):
             sig = "%s, *%s" % (sig, self.vararg)
         if len(self.kwargs) > 0:
             if len(sig) > 0:
-                sig = "%s, " % sig            
+                sig = "%s, " % sig
             _kw = ["%s=%s" % (k, v) for k, v in self.kwargs]
             sig = "%s%s" % (sig, ', '.join(_kw))
 
@@ -148,7 +148,7 @@ class Procedure(object):
 
     def __call__(self, *args, **kwargs):
         # msg = 'Cannot run Procedure %s' % self.name
-        # self.larch.on_except(None, msg=msg, expr='<>',
+        # self.larch.raise_exception(None, msg=msg, expr='<>',
         #                     fname=self.fname, lineno=self.lineno,
         #                     py_exc=sys.exc_info())
 
@@ -160,15 +160,15 @@ class Procedure(object):
 
         if n_args != n_expected:
             msg = None
-            if n_args < n_expected:            
+            if n_args < n_expected:
                 msg = 'not enough arguments for Procedure %s' % self.name
                 msg = '%s (expected %i, got %i)'% (msg,
                                                    n_expected,
                                                    n_args)
-                self.larch.on_except(None, msg=msg, expr='<>',
+                self.larch.raise_exception(None, msg=msg, expr='<>',
                                      fname=self.fname, lineno=self.lineno,
                                      py_exc=sys.exc_info())
-                
+
             msg = "too many arguments for Procedure %s" % self.name
 
         for argname in self.argnames:
@@ -179,7 +179,7 @@ class Procedure(object):
             for t_a, t_kw in zip(args, self.kwargs):
                 if t_kw[0] in kwargs:
                     msg = msg % (t_kw[0], self.name)
-                    self.larch.on_except(None, msg=msg, expr='<>',
+                    self.larch.raise_exception(None, msg=msg, expr='<>',
                                          fname=self.fname,
                                          lineno=self.lineno,
                                          py_exc=sys.exc_info())
@@ -200,17 +200,17 @@ class Procedure(object):
             elif len(kwargs) > 0:
                 msg = 'extra keyword arguments for Procedure %s (%s)'
                 msg = msg % (self.name, ','.join(list(kwargs.keys())))
-                self.larch.on_except(None, msg=msg, expr='<>',
+                self.larch.raise_exception(None, msg=msg, expr='<>',
                                      fname=self.fname, lineno=self.lineno,
                                      py_exc=sys.exc_info())
-                
-        except (ValueError, LookupError, TypeError, 
+
+        except (ValueError, LookupError, TypeError,
                 NameError, AttributeError):
             msg = 'incorrect arguments for Procedure %s' % self.name
-            self.larch.on_except(None, msg=msg, expr='<>',
+            self.larch.raise_exception(None, msg=msg, expr='<>',
                                  fname=self.fname,   lineno=self.lineno,
-                                 py_exc=sys.exc_info())            
-            
+                                 py_exc=sys.exc_info())
+
         stable.save_frame()
         stable.set_frame((lgroup, self.modgroup))
         retval = None
@@ -218,7 +218,7 @@ class Procedure(object):
 
         for node in self.body:
             self.larch.interp(node, expr='<>',
-                              fname=self.fname, lineno=self.lineno)            
+                              fname=self.fname, lineno=self.lineno)
             if len(self.larch.error) > 0:
                 break
             if self.larch.retval is not None:
@@ -228,7 +228,7 @@ class Procedure(object):
         self.larch.retval = None
         del lgroup
         return retval
-    
+
 class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node, msg='', fname='<StdInput>',
@@ -252,10 +252,10 @@ class LarchExceptionHolder:
             try:
                 node_lineno = node.lineno
                 node_col_offset = self.node.col_offset
-            except: 
+            except:
                 pass
-            
-        lineno = self.lineno + node_lineno 
+
+        lineno = self.lineno + node_lineno
         exc_text = str(self.exc_info[1])
         if exc_text in (None, 'None'):
             exc_text = ''
@@ -275,12 +275,12 @@ class LarchExceptionHolder:
             py_etype, py_eval = self.py_exc
             if py_etype is not None and py_eval is not None:
                 out.append("%s: %s" % (py_etype, py_eval))
-                
+
         if self.fname == '<StdInput>' and self.lineno <= 0:
             out.append('<StdInput>')
         else:
             out.append("%s, line number %i" % (self.fname, 1+self.lineno))
-            
+
         out.append("    %s" % expr)
         if node_col_offset > 0:
             out.append("    %s^^^" % ((node_col_offset)*' '))
