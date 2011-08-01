@@ -11,14 +11,13 @@ try:
 except ImportError:
     HAS_NUMPY = False
 
-from . import inputText
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
 from .util import LarchExceptionHolder, Procedure, DefinedVariable
 from .closure import Closure
 
-__version__ = '0.9.5'
+__version__ = '0.9.6'
 
 OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.IsNot:  lambda a, b: a is not b,
@@ -48,14 +47,6 @@ OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.Not:    lambda a: not a,
              ast.UAdd:   lambda a: +a,
              ast.USub:   lambda a: -a}
-
-def iscallable(obj):
-    return hasattr(obj, '__call__')
-
-if sys.version_info[0] == 2:
-    def iscallable(obj):
-        return callable(obj) or hasattr(obj, '__call__')
-
 
 class Interpreter:
     """larch program compiler and interpreter.
@@ -614,7 +605,7 @@ class Interpreter:
         "function/procedure execution"
         # ('func', 'args', 'keywords', 'starargs', 'kwargs')
         func = self.interp(node.func)
-        if not iscallable(func):
+        if not hasattr(func, '__call__'):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
 
@@ -774,4 +765,3 @@ class Interpreter:
                     alias = sym
                 setattr(targetgroup, alias, getattr(thismod, sym))
     # end of import_module
-
