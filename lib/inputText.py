@@ -254,7 +254,7 @@ class InputText:
                         self.endkeys = ('end',  'end%s'%self.current,
                                         '&end', '&end%s'%self.current)
 
-            elif not text.endswith(')') and self.__isCommand(thiskey, eword2):
+            elif not text.endswith(')') and self.__isCommand(thiskey, word2):
                 # handle 'command format', including 'print'
                 text = '%s(%s)' % (thiskey, text[len(thiskey):].strip())
 
@@ -274,7 +274,6 @@ class InputText:
                 self._fifo[1].append((outtext, fname,
                                       1+lineno-len(self.block)))
                 self.block = []
-        #print('Convert: ', len(self.keys), len(self.block))
 
         return len(self.keys), len(self.block)
 
