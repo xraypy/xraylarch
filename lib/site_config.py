@@ -35,15 +35,21 @@ if 'LARCHDIR' in os.environ:
 else:
     usr_larchdir = abspath(join(home_dir, usr_larchdir))
 
-# module_path / larch_dir
-#  1. determine the search path for modules
-#  2. determin the "larch directory"
+# module_path
+#  determine the search path for modules
 module_path = ['.']
 
-for folder in (sys_larchdir, usr_larchdir):
+# plugin_path
+#  determine the search path for plugins
+plugins_path = []
+
+for folder in (usr_larchdir, sys_larchdir):
     mod_dir = join(folder, 'modules')
     if exists(mod_dir):
         module_path.append(mod_dir)
+    plug_dir = join(folder, 'plugins')
+    if exists(plug_dir):
+        plug_path.append(mod_dir)
 
 if 'LARCHPATH' in os.environ:
     for mod_dir in os.environ['LARCHPATH'].split(':'):
@@ -66,7 +72,7 @@ history_file = join(home_dir, '.larch_history')
 if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')
 
-# print 'history_file: ', history_file
-# print 'module_path: ', module_path
-# print 'init_files: ', init_files
+print 'history_file: ', history_file
+print 'module_path: ', module_path
+print 'init_files: ', init_files
 
