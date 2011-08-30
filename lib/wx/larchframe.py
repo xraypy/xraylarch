@@ -12,9 +12,7 @@ import larch
 from readlinetextctrl import ReadlineTextCtrl
 from larchfilling import Filling
 
-from larch.plugins import plotter, shellutils
-
-PLUGINS = [plotter.registerPlugin, shellutils.registerPlugin]
+PLUGINS = ['plotter']
 
 INFO = """  Larch version %s    using python %s  and numpy %s
   Copyright M. Newville, T. Trainor (2010)"""
