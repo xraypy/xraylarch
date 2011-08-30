@@ -15,6 +15,7 @@ from larch.mplot import PlotFrame, ImageFrame
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
+MODNAME = '_plotter'
 
 def ensuremod(larch):
     if larch is not None:
@@ -212,6 +213,6 @@ def _imshow(map, win=1, larch=None, wxparent=None, **kws):
         img.display(map, **kws)
 
 def registerLarchPlugin():
-    return ('_plotter', {'plot':_plot,
-                         'oplot': _oplot,
-                         'imshow':_imshow} )
+    return (MODNAME, {'plot':_plot,
+                      'oplot': _oplot,
+                      'imshow':_imshow} )

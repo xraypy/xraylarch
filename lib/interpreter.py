@@ -122,31 +122,22 @@ class Interpreter:
 
     def add_plugins(self, plugindir, **kws):
         """add plugin components from plugin directory"""
-        print("Larch Add Plugin ", plugindir)
+        # print("Larch Add Plugin ", plugindir)
         kws.update(dict(larch=self))
-        print("   -- ", kws)
-        print("  BEG len(syspath) = ", len(sys.path))
+
         # finally remove plugins from sys.path
         for pdir in reversed(site_config.plugins_path[:]):
             sys.path.insert(0, pdir)
 
-        print("  MID len(syspath) = ", len(sys.path))
-
         top = __import__('plugins.%s' % plugindir)
-        print(top)
-        print(dir(top))
         pdir = getattr(top, plugindir)
-        for component in dir(pdir):
-            if not component.startswith('__'):
-                print('ADD COMP ',  component)
-                print(' --- ', getattr(pdir, component))
-                self.symtable.add_plugin(getattr(pdir, component), **kws)
+        for modname in dir(pdir):
+            if not modname.startswith('__'):
+                self.symtable.add_plugin(getattr(pdir, modname), **kws)
 
         # finally remove plugins from sys.path
         for i in site_config.plugins_path:
             sys.path.pop(0)
-
-        print("  END len(syspath) = ", len(sys.path))
 
     def set_definedvariable(self, name, expr):
         """define a defined variable (re-evaluate on access)"""

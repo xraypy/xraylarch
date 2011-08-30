@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-import distutils
-from distutils.core import setup, Extension
+from distutils.core import setup, setup_keywords
 
 import os
 import glob
@@ -49,8 +48,3 @@ setup(name = 'larch',
       package_dir = {'larch': 'lib'},
       packages = ['larch', 'larch.wx', 'larch.mplot'],
       data_files  = data_files)
-
-
-for x, y in data_files:
-    print ' == ', x
-    print ' ==> ', y

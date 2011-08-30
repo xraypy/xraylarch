@@ -2,6 +2,8 @@ import wx
 import time
 import os
 
+MODNAME = '_shell'
+
 def ensuremod(larch):
     if larch is not None:
         symtable = larch.symtable
@@ -68,6 +70,6 @@ def _fileprompt(wxparent=None, larch=None,
     return path
 
 def registerLarchPlugin():
-    return ('_shell', {'gcd': _gcd,
-                       'fileprompt': _fileprompt})
+    return (MODNAME, {'gcd': _gcd,
+                      'fileprompt': _fileprompt})
 

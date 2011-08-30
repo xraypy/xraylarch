@@ -2,8 +2,6 @@
 
 import os
 import sys
-import copy
-from glob import glob
 from helper import Helper
 from . import inputText
 
@@ -137,8 +135,8 @@ from_numpy = ('ComplexWarning', 'Inf', 'NAN', 'abs', 'absolute', 'add',
               'sinh', 'size', 'sometrue', 'sort', 'sort_complex', 'source',
               'spacing', 'split', 'sqrt', 'square', 'squeeze', 'std',
               'str', 'str_', 'string0', 'string_', 'subtract', 'sum',
-              'swapaxes', 'take', 'tan', 'tanh', 'tensordot', 'test',
-              'testing', 'tile', 'trace', 'transpose', 'trapz', 'tri',
+              'swapaxes', 'take', 'tan', 'tanh', 'tensordot',
+              'tile', 'trace', 'transpose', 'trapz', 'tri',
               'tril', 'tril_indices', 'tril_indices_from', 'trim_zeros',
               'triu', 'triu_indices', 'triu_indices_from', 'true_divide',
               'trunc', 'typeDict', 'typeNA', 'typecodes', 'typename',
@@ -170,9 +168,6 @@ def _show_group(gname=None, larch=None, **kws):
         gname = '_main'
     larch.writer.write("%s\n" % larch.symtable.show_group(gname))
 
-def _copy(obj, **kws):
-    """copy an object"""
-    return copy.deepcopy(obj)
 
 def _run(filename=None, larch=None, new_module=None,
          interactive=False,   printall=False):
@@ -251,12 +246,6 @@ def _run(filename=None, larch=None, new_module=None,
             output = None
     return output
 
-def _which(name, larch=None, **kw):
-    "print out fully resolved name of a symbol"
-    if larch is None:
-        raise Warning("cannot locate symobol '%s' -- larch broken?" % name)
-    print(larch.symbtable.get_parent(name))
-
 
 def _reload(mod, larch=None, **kws):
     """reload a module, either larch or python"""
@@ -276,99 +265,6 @@ def _reload(mod, larch=None, **kws):
 
     if modname is not None:
         return larch.import_module(modname, do_reload=True)
-
-def show_more(text, filename=None, writer=None,
-              pagelength=30, prefix='', larch=None, **kws):
-    """show lines of text in the style of more """
-    txt = text[:]
-    if isinstance(txt, (str, unicode)):
-        txt = txt.split('\n')
-    if len(txt) <1:
-        return
-    prompt = '== hit return for more, q to quit'
-    ps = "%s (%%.2f%%%%) == " % prompt
-    if filename:
-        ps = "%s (%%.2f%%%%  of %s) == " % (prompt, filename)
-
-    if writer is None:
-        writer = sys.stdout
-
-    i = 0
-    for i in range(len(txt)):
-        if txt[i].endswith('\n'):
-            larch.writer.write("%s%s" % (prefix, txt[i]))
-        else:
-            writer.write("%s%s\n" % (prefix, txt[i]))
-        i = i + 1
-        if i % pagelength == 0:
-            try:
-                x = raw_input(ps %  (100.*i/len(txt)))
-                if x in ('q','Q'): return
-            except KeyboardInterrupt:
-                writer.write("\n")
-                return
-
-def _ls(direc='.', larch=None, **kws):
-    """return a list of files in the current directory"""
-    direc.strip()
-    if len(direc) == 0:
-        arg = '.'
-    if os.path.isdir(direc):
-        ret = os.listdir(direc)
-    else:
-        ret = glob(direc)
-    if sys.platform == 'win32':
-        for i in range(len(ret)):
-            ret[i] = ret[i].replace('\\','/')
-    return ret
-
-def _cwd(**kws):
-    "return current working directory"
-    ret = os.getcwd()
-    if sys.platform == 'win32':
-        ret = ret.replace('\\','/')
-    return ret
-
-def _cd(name, **kws):
-    """change directory to specified directory"""
-    name = name.strip()
-    if name:
-        os.chdir(name)
-
-    ret = os.getcwd()
-    if sys.platform == 'win32':
-        ret = ret.replace('\\','/')
-    return ret
-
-def _more(fname, pagelength=32, larch=None, **kws):
-    """list file contents:
-    > more('file.txt')
-by default, the file is shown 32 lines at a time.
-You can specify the number of lines to show at a time
-with the  pagelength option:
-    > more('file.txt', pagelength=10)
-    """
-    if larch is None:
-        output = sys.stdout.write
-    else:
-        output = larch.writer.write
-
-    if not os.path.exists(fname):
-        output("File '%s' not found.\n" % fname)
-        return
-
-    elif not os.path.isfile(fname):
-        output("'%s' not a file.\n" % fname)
-        return
-
-    try:
-        text = open(fname, 'r').readlines()
-    except IOError:
-        output("cannot open file: %s\n" % fname)
-        return
-
-    show_more(text, filename=fname, larch=larch,
-              pagelength=pagelength, **kws)
 
 def _help(*args, **kws):
     "show help on topic or object"
@@ -393,13 +289,7 @@ def _help(*args, **kws):
 local_funcs = {'group':_group,
                'show_group':_show_group,
                'reload':_reload,
-               'copy': _copy,
-               'more': _more,
-               'ls': _ls,
-               'cd': _cd,
                'run': _run,
-               'which': _which,
-               'cwd': _cwd,
                'help': _help,
                }
 

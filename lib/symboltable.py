@@ -246,7 +246,7 @@ class SymbolTable(Group):
             msg = '%s is not a Subgroup' % group
         return "%s\n" % msg  ### self.__writer("%s\n" % msg)
 
-    def _lookup(self, name=None, create=False):
+    def _lookup(self, name=None, return_parent=False, create=False):
         """looks up symbol in search path
         returns symbol given symbol name,
         creating symbol if needed (and create=True)"""
@@ -263,6 +263,8 @@ class SymbolTable(Group):
             for grp in searchGroups:
                 if hasattr(grp, name):
                     if not (grp is self and name in self._private_methods):
+                        if return_parent:
+                            return grp
                         return getattr(grp, name)
 
         # more complex case: not immediately found in Local or Module Group
@@ -276,7 +278,9 @@ class SymbolTable(Group):
             for grp in searchGroups:
                 if hasattr(grp, top):
                     if not (grp is self and name in self._private_methods):
-                        out = getattr(grp, top)
+                        out = getattr(grp, name)
+                        if return_parent:
+                            out = grp
 
         if out is self.__invalid_name:
             raise LookupError("cannot locate symbol '%s'" % name)
@@ -417,29 +421,25 @@ class SymbolTable(Group):
         return sym, child
 
     def add_plugin(self, plugin, **kw):
-        """Add a list of plugins"""
-        print('SYMTABLE ADDING PLUGIN ',  plugin)
+        """Add a plugin: a module that includes a
+        registerLarchPlugin function that returns
+        larch_group_name, dict_of_symbol/functions
+        """
         if not isinstance(plugin, types.ModuleType):
             raise Warning(" %s is not a valid larch plugin" % repr(plugin))
 
-        plugname = plugin.__name__
         registrar = getattr(plugin, 'registerLarchPlugin', None)
         if registrar is None:
-            raise Warning(" %s has not registerLarchPlugin method" % plugname)
+            raise Warning(" %s has no registerLarchPlugin method" %
+                          plugin.__name_)
 
         groupname, syms = registrar()
-        print(" SYMTAB add plugin ", groupname, syms)
-        sym = None
-        try:
-            sym = self._lookup(groupname, create=False)
-        except LookupError:
-            pass
-        if sym is None:
+
+        if not self.has_group(groupname):
             self.new_group(groupname)
 
         self._sys.searchGroups.append(groupname)
         self._fix_searchGroups()
-
         for key, val in syms.items():
             if callable(val):
                 val = Closure(func=val, **kw)

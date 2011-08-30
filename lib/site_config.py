@@ -72,8 +72,10 @@ history_file = join(home_dir, '.larch_history')
 if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')
 
-print 'SiteConf history_file: ', history_file
-print 'module_path: ', module_path
-print 'plugins_path: ', plugins_path
-print 'init_files: ', init_files
+debug = False
+if debug:
+    print 'SiteConf history_file: ', history_file
+    print 'module_path: ', module_path
+    print 'plugins_path: ', plugins_path
+    print 'init_files: ', init_files
 
