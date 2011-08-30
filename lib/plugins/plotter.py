@@ -13,7 +13,6 @@ import time
 import wx
 from larch.mplot import PlotFrame, ImageFrame
 
-MODNAME = '_plotter'
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 
@@ -212,8 +211,7 @@ def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     if img is not None:
         img.display(map, **kws)
 
-def registerPlugin():
-    return (MODNAME, True, {'plot':_plot,
-                            'oplot': _oplot,
-                            'imshow':_imshow}
-            )
+def registerLarchPlugin():
+    return ('_plotter', {'plot':_plot,
+                         'oplot': _oplot,
+                         'imshow':_imshow} )
