@@ -89,7 +89,7 @@ class SymbolTable(Group):
                         'has_symbol', 'has_group', 'get_group',
                         'show_group', 'create_group', 'new_group',
                         'get_symbol', 'set_symbol',  'del_symbol',
-                        'get_parent', 'AddPlugins')
+                        'get_parent', 'add_plugin')
 
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
@@ -416,28 +416,35 @@ class SymbolTable(Group):
             sym = self._lookup('.'.join(tnam))
         return sym, child
 
-    def AddPlugins(self, plugins, **kw):
+    def add_plugin(self, plugin, **kw):
         """Add a list of plugins"""
-        # print('ADDING PLUGINS ',  plugins)
-        for plugin in plugins:
-            groupname, insearchGroup, syms = plugin()
-            sym = None
-            try:
-                sym = self._lookup(groupname, create=False)
-            except LookupError:
-                pass
-            if sym is None:
-                self.new_group(groupname)
+        # print('SYM ADDING PLUGIN ',  plugin)
+        if not isinstance(plugin, types.ModuleType):
+            raise Warning(" %s is not a valid larch plugin" % repr(plugin))
 
-            # print("Add Plugin! ", groupname, insearchGroup, syms)
-            if insearchGroup:
-                self._sys.searchGroups.append(groupname)
-                self._fix_searchGroups()
+        plugname = plugin.__name__
+        registrar = getattr(plugin, 'registerLarchPlugin', None)
+        if registar is None:
+            raise Warning(" %s has not registerLarchPlugin method" % plugname)
 
-            for key, val in syms.items():
-                if callable(val):
-                    val = Closure(func=val, **kw)
-                self.set_symbol("%s.%s" % (groupname, key), val)
+        groupname, syms = registrar()
+        sym = None
+        try:
+            sym = self._lookup(groupname, create=False)
+        except LookupError:
+            pass
+        if sym is None:
+            self.new_group(groupname)
+
+        # print("Add Plugin! ", groupname, insearchGroup, syms)
+        if insearchGroup:
+            self._sys.searchGroups.append(groupname)
+            self._fix_searchGroups()
+
+        for key, val in syms.items():
+            if callable(val):
+                val = Closure(func=val, **kw)
+            self.set_symbol("%s.%s" % (groupname, key), val)
 
 
 # if __name__ == '__main__':

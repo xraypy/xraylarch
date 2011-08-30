@@ -1,4 +1,5 @@
-'''Main Larch interpreter
+'''
+   Main Larch interpreter
 '''
 from __future__ import division, print_function
 import os
@@ -239,6 +240,12 @@ class Interpreter:
                 except:
                     self.raise_exception(None, msg='Initialization Error',
                                          py_exc=sys.exc_info())
+
+    def add_plugin(self, plugin, **kws):
+        """add plugin component"""
+        print("Larch Add Plugin ", plugin)
+        kws.update(dict(larch=self))
+        self.symtable.add_plugin(plugin, **kws)
 
     def dump(self, node, **kw):
         "simple ast dumper"
@@ -629,7 +636,8 @@ class Interpreter:
         "define procedures"
         # ('name', 'args', 'body', 'decorator_list')
         if node.decorator_list != []:
-            print("Warning: decorated procedures not supported!")
+            raise Warning("decorated procedures not supported!")
+
 
         kwargs = []
         while node.args.defaults:
@@ -686,12 +694,12 @@ class Interpreter:
         or from-import, use of asname) and so is fairly long.
         """
         # print("IMPORT MOD ", name, asname, fromlist)
-        symtable = self.symtable
-        st_sys     = symtable._sys
-
+        st_sys = self.symtable._sys
         for idir in st_sys.path:
             if idir not in sys.path and os.path.exists(idir):
                 sys.path.append(idir)
+        #print( " (import  ", name, " )" )
+        #print( " st path", st_sys.path)
 
         # step 1  import the module to a global location
         #   either sys.modules for python modules
