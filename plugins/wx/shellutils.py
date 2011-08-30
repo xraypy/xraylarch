@@ -2,7 +2,6 @@ import wx
 import time
 import os
 
-
 def ensuremod(larch):
     if larch is not None:
         symtable = larch.symtable

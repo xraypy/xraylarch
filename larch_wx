@@ -14,17 +14,14 @@ DEBUG = False
 
 if DEBUG:
     import lib as larch
-    from lib.plugins.wx import plotter, shellutils
 else:
     import larch
-    from larch.plugins import plotter, shellutils
 
 PS1 = "larch> "
 PS2 = ".....> "
 
 import numpy
 
-WXPLUGINS = [plotter, shellutils]
 BANNER = """  Larch %s  M. Newville, T. Trainor (2011)
   using python %s, numpy %s, wx-enabled: version %s
 """ %  (larch.__version__,
@@ -62,12 +59,6 @@ class LarchShell(object):
         self.larch = larch.Interpreter()
         self.input = larch.InputText(prompt=PS1, interactive=False)
         self.larch.writer = sys.stdout
-
-    def add_wx_components(self, parent=None):
-        """add wx enabled symbols to larch -- need a wx parent Window"""
-        # self.larch.symtable.AddPlugins(WXPLUGINS, wxparent=parent, larch=self.larch)
-        for plug in WXPLUGINS:
-            self.larch.add_plugin(plug, wxparent=parent)
 
     def execute(self):
         """run actual larch code (built up and stored in self.input)"""
@@ -154,9 +145,9 @@ class WxShellTimer(wx.MiniFrame):
     def Start(self):
         """Add wx components to shell, start timer to execute shell code"""
         self.in_progress = True
-        self.shell.add_wx_components(self)
-        self.larch.run_init_scripts()
-        self.execute()
+        self.shell.larch.add_plugins('wx', wxparent=self)
+        self.shell.larch.run_init_scripts()
+        self.shell.execute()
 
         self.timer.Start(50)
         self.in_progress = False

@@ -418,16 +418,17 @@ class SymbolTable(Group):
 
     def add_plugin(self, plugin, **kw):
         """Add a list of plugins"""
-        # print('SYM ADDING PLUGIN ',  plugin)
+        print('SYMTABLE ADDING PLUGIN ',  plugin)
         if not isinstance(plugin, types.ModuleType):
             raise Warning(" %s is not a valid larch plugin" % repr(plugin))
 
         plugname = plugin.__name__
         registrar = getattr(plugin, 'registerLarchPlugin', None)
-        if registar is None:
+        if registrar is None:
             raise Warning(" %s has not registerLarchPlugin method" % plugname)
 
         groupname, syms = registrar()
+        print(" SYMTAB add plugin ", groupname, syms)
         sym = None
         try:
             sym = self._lookup(groupname, create=False)
@@ -436,10 +437,8 @@ class SymbolTable(Group):
         if sym is None:
             self.new_group(groupname)
 
-        # print("Add Plugin! ", groupname, insearchGroup, syms)
-        if insearchGroup:
-            self._sys.searchGroups.append(groupname)
-            self._fix_searchGroups()
+        self._sys.searchGroups.append(groupname)
+        self._fix_searchGroups()
 
         for key, val in syms.items():
             if callable(val):

@@ -39,7 +39,7 @@ else:
 #  determine the search path for modules
 module_path = ['.']
 
-# plugin_path
+# plugins_path
 #  determine the search path for plugins
 plugins_path = []
 
@@ -47,9 +47,9 @@ for folder in (usr_larchdir, sys_larchdir):
     mod_dir = join(folder, 'modules')
     if exists(mod_dir):
         module_path.append(mod_dir)
-    plug_dir = join(folder, 'plugins')
-    if exists(plug_dir):
-        plug_path.append(mod_dir)
+
+    if exists(join(folder, 'plugins')):
+        plugins_path.append(folder)
 
 if 'LARCHPATH' in os.environ:
     for mod_dir in os.environ['LARCHPATH'].split(':'):
@@ -72,7 +72,8 @@ history_file = join(home_dir, '.larch_history')
 if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')
 
-print 'history_file: ', history_file
+print 'SiteConf history_file: ', history_file
 print 'module_path: ', module_path
+print 'plugins_path: ', plugins_path
 print 'init_files: ', init_files
 
