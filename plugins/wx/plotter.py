@@ -64,7 +64,6 @@ class PlotDisplay(PlotFrame):
 
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, larch=None, **kws):
-        print 'ImageDisplay, ', window, wxparent
         ImageFrame.__init__(self, parent=wxparent,
                                   exit_callback=self.onExit, **kws)
         self.Show()
@@ -81,9 +80,9 @@ class ImageDisplay(ImageFrame):
             IMG_DISPLAYS[self.window] = self
 
     def onExit(self, o, **kw):
-        print 'ImageDisplay Exit ', self.symname, o, kw
-        for k, v in IMG_DISPLAYS.items():
-            print 'IMG DISP: ',  k, v
+        #print 'ImageDisplay Exit ', self.symname, o, kw
+        #for k, v in IMG_DISPLAYS.items():
+        #    print 'IMG DISP: ',  k, v
         try:
             symtable = self.larch.symtable
             symtable.has_group(MODNAME), self.symname
@@ -116,6 +115,7 @@ def _getDisplay(win=1, larch=None, wxparent=None, image=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if larch is None:
+        #print("Could not find larch?")
         return
     win = max(1, int(abs(win)))
     title   = 'Larch Plot Display Window %i' % win
@@ -179,6 +179,7 @@ def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
 
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
+
     wx.CallAfter(plotter.Raise)
     if plotter is not None:
         plotter.plot(x, y, **kws)
@@ -208,7 +209,7 @@ def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     map: 2-dimensional array for map
     """
     img = _getDisplay(wxparent=wxparent, win=win, larch=larch, image=True)
-    print 'imshow getdisplay -> ', img
+
     if img is not None:
         img.display(map, **kws)
 

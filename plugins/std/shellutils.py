@@ -3,7 +3,7 @@ import sys
 from copy import deepcopy
 from glob import glob
 
-MODNAME = '_shell'
+MODNAME = '_builtin'
 
 def _copy(obj, **kws):
     """copy an object"""
@@ -12,9 +12,7 @@ def _copy(obj, **kws):
 
 def _parent(name, larch=None, **kw):
     "print out parent group name of an object"
-    print(larch.symtable._lookup(name, return_parent=True, create=False))
-
-
+    print(larch.symtable._lookup(name, create=False))
 
 def _ls(directory='.', larch=None, **kws):
     """return a list of files in the current directory"""

@@ -88,7 +88,6 @@ class ImagePanel(BasePanel):
 
     def unzoom_all(self,event=None):
         """ zoom out full data range """
-        self.zoom_lims = [None]
         self.unzoom(event,set_bounds=False)
 
     def unzoom(self, event=None, set_bounds=True):
@@ -97,16 +96,17 @@ class ImagePanel(BasePanel):
         if len(self.zoom_lims) > 1:
             self.zoom_lims.pop()
             lims = self.zoom_lims[-1]
-        print 'Debugging UNZOOM lims:  lims=', lims, ' data range: =', self.data_range
-        #print 'Current X ', self.axes.get_xlim()
-        #print 'Current Y ', self.axes.get_ylim()
+
+        # force all unzooms to be all the way out:
+        self.zoom_lims = [None]
+
         if lims is None: # auto scale
             self.zoom_lims = [None]
             ymin,ymax, xmin,xmax   = self.data_range
             self.axes.set_xlim((xmin,xmax),emit=True)
             self.axes.set_ylim((ymin,ymax),emit=True)
             if set_bounds:
-                print 'Setting Bounds '
+                # print 'Setting Bounds '
                 self.axes.update_datalim(((xmin,ymin),(xmax,ymax)))
                 self.axes.set_xbound(self.axes.xaxis.get_major_locator().view_limits(xmin,xmax))
                 self.axes.set_ybound(self.axes.yaxis.get_major_locator().view_limits(ymin,ymax))
@@ -177,7 +177,7 @@ class ImagePanel(BasePanel):
 
     def zoom_OK(self, start, stop):
         """ returns whether a requested zoom is acceptable: rejects zooms that are too small"""
-        print 'Zoom ok ', start, stop, self.data_range
+        # print 'Zoom ok ', start, stop, self.data_range
         xmax = self.data_range[1]
         ymax = self.data_range[3]
         return  ((start[0] > 0    or stop[0] > 0) and

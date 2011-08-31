@@ -6,6 +6,7 @@ import os
 import sys
 import types
 from .closure import Closure
+from .util import fixName
 from . import site_config
 try:
     import numpy
@@ -78,6 +79,10 @@ class InvalidName:
     """ used to create a value that will NEVER be a useful symbol.
     symboltable._lookup() uses this to check for invalid names"""
     pass
+
+
+##
+
 
 class SymbolTable(Group):
     """Main Symbol Table for Larch.
@@ -246,7 +251,7 @@ class SymbolTable(Group):
             msg = '%s is not a Subgroup' % group
         return "%s\n" % msg  ### self.__writer("%s\n" % msg)
 
-    def _lookup(self, name=None, return_parent=False, create=False):
+    def _lookup(self, name=None, create=False):
         """looks up symbol in search path
         returns symbol given symbol name,
         creating symbol if needed (and create=True)"""
@@ -263,8 +268,6 @@ class SymbolTable(Group):
             for grp in searchGroups:
                 if hasattr(grp, name):
                     if not (grp is self and name in self._private_methods):
-                        if return_parent:
-                            return grp
                         return getattr(grp, name)
 
         # more complex case: not immediately found in Local or Module Group
@@ -278,9 +281,8 @@ class SymbolTable(Group):
             for grp in searchGroups:
                 if hasattr(grp, top):
                     if not (grp is self and name in self._private_methods):
-                        out = getattr(grp, name)
-                        if return_parent:
-                            out = grp
+                        out = getattr(grp, top)
+
 
         if out is self.__invalid_name:
             raise LookupError("cannot locate symbol '%s'" % name)
@@ -374,7 +376,7 @@ class SymbolTable(Group):
         grp = self._fix_searchGroups()['localGroup']
         if group is not None:
             grp = self.get_group(group)
-        names = name.split('.')
+        names = [fixName(n) for n in name.split('.')]
         child = names.pop()
         for nam in names:
             if hasattr(grp, nam):
@@ -425,6 +427,7 @@ class SymbolTable(Group):
         registerLarchPlugin function that returns
         larch_group_name, dict_of_symbol/functions
         """
+        # print(" SYMTAB ADD PLUGIN ", plugin)
         if not isinstance(plugin, types.ModuleType):
             raise Warning(" %s is not a valid larch plugin" % repr(plugin))
 
@@ -434,14 +437,14 @@ class SymbolTable(Group):
                           plugin.__name_)
 
         groupname, syms = registrar()
-
+        # print(" SYMTAB :: ", groupname, syms)
         if not self.has_group(groupname):
             self.new_group(groupname)
 
         self._sys.searchGroups.append(groupname)
         self._fix_searchGroups()
         for key, val in syms.items():
-            if callable(val):
+            if hasattr(val, '__call__'):
                 val = Closure(func=val, **kw)
             self.set_symbol("%s.%s" % (groupname, key), val)
 

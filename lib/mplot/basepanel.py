@@ -65,7 +65,7 @@ class BasePanel(wx.Panel):
         self.popup_config     = wx.NewId()
         self.popup_save   = wx.NewId()
         self.popup_menu = wx.Menu()
-        self.popup_menu.Append(self.popup_unzoom_one, 'Zoom out 1 level')
+        self.popup_menu.Append(self.popup_unzoom_one, 'Unzoom')
         self.popup_menu.Append(self.popup_unzoom_all, 'Zoom all the way out')
         self.popup_menu.AppendSeparator()
         if self.show_config_popup:
@@ -199,7 +199,7 @@ class BasePanel(wx.Panel):
                 ).transform((event.x, event.y))
         self.cursor_mode = 'zoom'
         self.__drawZoombox(self.zoomdc)
-        print 'onLeftDown.  zoomdc was ', self.zoomdc
+
         self.zoomdc = (None, (0, 0, 0, 0))
         self.ForwardEvent(event=event.guiEvent)
 
@@ -210,7 +210,7 @@ class BasePanel(wx.Panel):
         """ left button up: zoom in on selected region?? """
         if event == None:
             return
-        #print 'onLeftUp ', event
+
         try:
             dx = abs(self.conf.zoom_x - event.x)
             dy = abs(self.conf.zoom_y - event.y)
@@ -232,7 +232,6 @@ class BasePanel(wx.Panel):
 
                 if self.zoom_OK(_ini,  _end):
                     self.set_xylims(_lim, autoscale=False)
-                    print 'append lims ', _lim, ' to zoom_lims'
                     self.zoom_lims.append(_lim)
                     txt = 'zoom level %i ' % (len(self.zoom_lims)-1)
                     self.write_message(txt, panel=1)
