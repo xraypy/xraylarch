@@ -274,7 +274,6 @@ class InputText:
                 self._fifo[1].append((outtext, fname,
                                       1+lineno-len(self.block)))
                 self.block = []
-        #print('Convert: ', len(self.keys), len(self.block))
 
         return len(self.keys), len(self.block)
 
