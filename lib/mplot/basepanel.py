@@ -44,6 +44,7 @@ class BasePanel(wx.Panel):
         self.mouse_uptime = time.time()
         self.zoom_lims = [None]
         self.zoomdc = (None, (0, 0, 0, 0))
+        self.rbbox = None
         self.parent = parent
         self.printer = Printer(self)
 
@@ -117,6 +118,8 @@ class BasePanel(wx.Panel):
         if len(self.zoom_lims) > 1:
             txt = 'zoom level %i' % (len(self.zoom_lims))
         self.write_message(txt)
+        #
+        print 'unzoom '
         self.canvas.draw()
 
     def get_xylims(self):
@@ -238,6 +241,7 @@ class BasePanel(wx.Panel):
             except:
                 self.write_message("Cannot Zoom")
         self.zoomdc = (None, (0, 0, 0, 0))
+        self.rbbox = None
         self.cursor_mode = 'cursor'
         self.canvas.draw()
         self.ForwardEvent(event=event.guiEvent)
@@ -362,6 +366,7 @@ class BasePanel(wx.Panel):
         """ system-dependent hack to call wx.ClientDC.DrawRectangle
         with the right arguments"""
         if dc[0] is not None:
+            print '_drawZoon ', dc
             dc[0].DrawRectangle(*dc[1])
         return (None, (0, 0, 0, 0))
 
@@ -426,26 +431,23 @@ class BasePanel(wx.Panel):
             self.cursor_mode == 'cursor'
             return
 
-        # self.__drawZoombox(self.zoomdc)
-        # self.zoomdc = (None, (0, 0, 0, 0))
-        # print 'wait, why do we draw zoombox twice?'
         x0     = min(x, self.conf.zoom_x)
         ymax   = max(y, self.conf.zoom_y)
         width  = abs(x -self.conf.zoom_x)
         height = abs(y -self.conf.zoom_y)
         y0     = self.canvas.figure.bbox.height - ymax
 
-        brush = self.conf.zoombrush
-
         zdc = wx.ClientDC(self.canvas)
-        zdc.SetBrush(self.conf.zoombrush)
-        zdc.SetPen(self.conf.zoompen)
+        zdc.SetBrush(wx.TRANSPARENT_BRUSH)
+        zdc.SetPen(wx.Pen('WHITE', 2, wx.SOLID))
+        zdc.SetLogicalFunction(wx.XOR)
+        if self.rbbox:
+            zdc.DrawRectangle(*self.rbbox)
+        self.rbbox = (x0, y0, width, height)
 
-        # zdc.SetLogicalFunction(wx.XOR)
-        # zdc.SetLogicalFunction(wx.OR)
-        self.zoomdc = (zdc, (x0, y0, width, height))
-        self.__drawZoombox(self.zoomdc)
+        event.guiEvent.Skip()
 
+        
     def reportMotion(self, event=None):
         fmt = "X,Y= %s, %s" % (self._xfmt, self._yfmt)
         self.write_message(fmt % (event.xdata, event.ydata), panel=1)

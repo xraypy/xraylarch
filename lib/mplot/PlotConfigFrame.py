@@ -80,11 +80,11 @@ class PlotConfigFrame(wx.Frame):
         bstyle=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ST_NO_AUTORESIZE
 
         col = mpl_color(self.axes.get_axis_bgcolor(),default=(255,255,252))
-        bgcol = csel.ColourSelect(panel,  -1, "Background", col, size=wx.DefaultSize)
+        bgcol = csel.ColourSelect(panel,  -1, "Background", col, size=(110, 25))
 
         col = mpl_color(self.axes.get_xgridlines()[0].get_color(),default=(240,240,240))
-        gridcol = csel.ColourSelect(panel, -1, "Grid",col, size=wx.DefaultSize)
-
+        gridcol = csel.ColourSelect(panel, -1, "Grid",col, size=(45, 25))
+        
         bgcol.Bind(csel.EVT_COLOURSELECT,  Closure(self.onColor,argu='bg'))
         gridcol.Bind(csel.EVT_COLOURSELECT,Closure(self.onColor,argu='grid'))
 

@@ -6,9 +6,10 @@ command-line larch shell with wx-widgets (plotting!) enabled.
 
 import sys
 import os
-from time import sleep
+import time
 import threading
 import wx
+import gc
 
 DEBUG = False
 
@@ -98,7 +99,7 @@ class LarchShell(object):
         # if there is already input and it is complete,
         # wait for it to be executed by wxtimer thread.
         while self.input.input_complete and len(self.input)>0:
-            sleep(0.001)
+            time.sleep(0.001)
         # in_progess suggests code is still being executed
         if self.in_progress:
             return True
@@ -115,7 +116,7 @@ class LarchShell(object):
         if text in ('quit', 'exit', 'EOF'):
             if hasattr(self.atexit, '__call__'):
                 self.atexit()
-                return False
+            return False
         if text.startswith('help'):
             arg = text[4:]
             if ((arg.startswith('(') and arg.endswith(')')) or
@@ -155,7 +156,7 @@ class WxShellTimer(wx.MiniFrame):
     def OnTimer(self, event=None):
         """timer events -- here we execute any un-executed shell code"""
         if (self.shell.input.input_complete):
-            sleep(0.001)
+            time.sleep(0.001)
             self.shell.execute()
 
 class WxLarchShell(threading.Thread):
@@ -185,27 +186,26 @@ class WxLarchShell(threading.Thread):
         if self.app is not None:
             self.app.wxtimer.timer.Stop()
             self.app.ExitMainLoop()
-
+            
     def run(self):
         """run for main thread: just get input for shell.
         note that wxtimer events cause LarchShell.execute"""
         while self.shell.in_progress:
-            sleep(0.001)
+            time.sleep(0.001)
 
         while self.shell.get_input():
             continue
-
+        
     def mainloop(self):
         """mainloop for WxShell"""
         self.start()
         sys.stdout.write(BANNER)
         sys.stdout.flush()
-
         self.app.wxtimer.Start()
-
+        
         self.app.MainLoop()
         self.join()
-
+        
 if __name__ == '__main__':
     ws = WxLarchShell()
     ws.mainloop()
