@@ -15,10 +15,10 @@ except ImportError:
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .util import LarchExceptionHolder, Procedure, DefinedVariable
+from .larchlib import LarchExceptionHolder, Procedure, DefinedVariable
 from .closure import Closure
 
-__version__ = '0.9.6'
+__version__ = '0.9.7'
 
 OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.IsNot:  lambda a, b: a is not b,
@@ -48,6 +48,7 @@ OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.Not:    lambda a: not a,
              ast.UAdd:   lambda a: +a,
              ast.USub:   lambda a: -a}
+
 
 class Interpreter:
     """larch program compiler and interpreter.
