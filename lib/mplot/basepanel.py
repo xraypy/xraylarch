@@ -444,9 +444,11 @@ class BasePanel(wx.Panel):
         if self.rbbox:
             zdc.DrawRectangle(*self.rbbox)
         self.rbbox = (x0, y0, width, height)
+        self.canvas.blit(self.axes.bbox)
 
-        event.guiEvent.Skip()
-
+        self.canvas.draw_idle()
+        # event.guiEvent.Skip()
+        
         
     def reportMotion(self, event=None):
         fmt = "X,Y= %s, %s" % (self._xfmt, self._yfmt)

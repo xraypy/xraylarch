@@ -137,6 +137,7 @@ class PlotPanel(BasePanel):
             self.axes.grid(True)
 
         self.canvas.draw()
+        self.canvas.Refresh()
         cnf.ntrace = cnf.ntrace + 1
         return _lines
 
