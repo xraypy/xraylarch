@@ -1,6 +1,6 @@
 #!/usr/bin/python
 #
-# MPlot GUI to Configure (2D) Plots
+#  GUI for Plot Configuration (2D) Plots
 #
 import wx
 import wx.lib.colourselect  as csel
@@ -40,7 +40,7 @@ class PlotConfigFrame(wx.Frame):
 
     def DrawPanel(self):
         style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
-        wx.Frame.__init__(self, None,-1, 'Configure MPlot', style=style)
+        wx.Frame.__init__(self, None,-1, 'Plot Configuration', style=style)
         wx.Frame.SetBackgroundColour(self,"#F8F8F0")
 
         panel = wx.Panel(self, -1)
@@ -51,7 +51,7 @@ class PlotConfigFrame(wx.Frame):
 
         topsizer  = wx.GridBagSizer(5,5)
         labstyle= wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-        ltitle = wx.StaticText(panel, -1, 'MPlot Configuration',
+        ltitle = wx.StaticText(panel, -1, 'Plot Configuration',
                               style=labstyle)
         ltitle.SetFont(Font)
         ltitle.SetForegroundColour("Blue")
@@ -84,7 +84,7 @@ class PlotConfigFrame(wx.Frame):
 
         col = mpl_color(self.axes.get_xgridlines()[0].get_color(),default=(240,240,240))
         gridcol = csel.ColourSelect(panel, -1, "Grid",col, size=(45, 25))
-        
+
         bgcol.Bind(csel.EVT_COLOURSELECT,  Closure(self.onColor,argu='bg'))
         gridcol.Bind(csel.EVT_COLOURSELECT,Closure(self.onColor,argu='grid'))
 

@@ -196,7 +196,6 @@ class PlotPanel(BasePanel):
             self.axes.set_xlim(lims[:2])
             self.axes.set_ylim(lims[2:])
 
-        self.zoomdc = (None, (0, 0, 0, 0))
         txt = ''
         if len(self.zoom_lims)>1:
             txt = 'zoom level %i' % (len(self.zoom_lims))
