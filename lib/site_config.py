@@ -27,6 +27,7 @@ if os.name == 'nt':
         for profile in ('ALLUSERSPROFILE', 'USERPROFILE'):
             home_dir = os.environ.get(profile, None)
 
+    
 if home_dir is None:
     home_dir = '.'
 
@@ -34,7 +35,7 @@ if 'LARCHDIR' in os.environ:
     usr_larchdir = os.environ['LARCHDIR']
 else:
     usr_larchdir = abspath(join(home_dir, usr_larchdir))
-
+    
 # module_path
 #  determine the search path for modules
 module_path = ['.']
@@ -74,8 +75,10 @@ if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
 
 debug = False
 if debug:
-    print 'SiteConf history_file: ', history_file
-    print 'module_path: ', module_path
+    print 'home dir: ',     home_dir
+    print 'usrlarch dir: ', usr_larchdir
+    print 'history_file: ', history_file
+    print 'module_path: ',  module_path
     print 'plugins_path: ', plugins_path
-    print 'init_files: ', init_files
+    print 'init_files: ',   init_files    
 

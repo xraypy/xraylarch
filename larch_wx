@@ -23,6 +23,8 @@ PS2 = ".....> "
 
 import numpy
 
+MAXHIST = 1000
+
 BANNER = """  Larch %s  M. Newville, T. Trainor (2011)
   using python %s, numpy %s, wx-enabled: version %s
 """ %  (larch.__version__,
@@ -179,13 +181,22 @@ class WxLarchShell(threading.Thread):
         1. write readline history
         2. exit wx mainloop
         """
-        shell = self.shell
-        if shell.rdline is not None:
-            shell.rdline.set_history_length(1000)
-            shell.rdline.write_history_file(shell.historyfile)
+        rdline = self.shell.rdline
+        if rdline is not None:
+            nhist = rdline.get_current_history_length()
+            last_cmd = rdline.get_history_item(nhist)
+            if last_cmd.lower() in ('quit', 'exit', 'EOF'):
+                try:
+                    rdline.remove_history_item(nhist-1)
+                except (ValueError, AttributeError):
+                    pass
+            rdline.set_history_length(MAXHIST)
+            rdline.write_history_file(self.shell.historyfile)
+
         if self.app is not None:
             self.app.wxtimer.timer.Stop()
             self.app.ExitMainLoop()
+
             
     def run(self):
         """run for main thread: just get input for shell.
