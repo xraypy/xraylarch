@@ -431,7 +431,7 @@ class BasePanel(wx.Panel):
         zdc = wx.ClientDC(self.canvas)
         zdc.SetLogicalFunction(wx.XOR)
         zdc.SetBrush(wx.TRANSPARENT_BRUSH)
-        zdc.SetPen(wx.Pen('Black', 2, wx.SOLID))
+        zdc.SetPen(wx.Pen('WHITE', 2, wx.SOLID))
         zdc.ResetBoundingBox()
         zdc.BeginDrawing()
 
