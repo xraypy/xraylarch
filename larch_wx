@@ -11,7 +11,7 @@ import threading
 import wx
 import gc
 
-DEBUG = True # False
+DEBUG = False
 
 if DEBUG:
     import lib as larch
