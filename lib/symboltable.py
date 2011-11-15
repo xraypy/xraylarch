@@ -347,7 +347,15 @@ class SymbolTable(Group):
             if not (item.startswith('_Group__') or
                     item == '__name__' or
                     item.startswith('_SymbolTable__')):
-                out.append('  %s: %s' % (item, repr(getattr(grp, item))))
+                # out.append('  %s: %s' % (item, repr(getattr(grp, item))))
+                obj = getattr(grp, item)
+                dval = repr(obj)                
+                if HAS_NUMPY and isinstance(obj, numpy.ndarray):
+                    if len(obj) > 20 or len(obj.shape)>1:
+                        dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
+                                                             repr(obj.dtype))
+                out.append('  %s: %s' % (item, dval))
+
         msg = '\n'.join(out)
         return "%s\n" % msg
 
