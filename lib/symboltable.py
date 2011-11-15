@@ -99,7 +99,7 @@ class SymbolTable(Group):
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
         # self.__writer = writer  or sys.stdout.write
-        self.__interpreter = larch
+        self._larch = larch
         self._sys = None
         setattr(self, self.top_group, self)
 
@@ -118,8 +118,8 @@ class SymbolTable(Group):
         self._sys.historyfile = site_config.history_file
         orig_sys_path = sys.path[:]
 
-        if site_config.module_path is not None:
-            for idir in site_config.module_path:
+        if site_config.modules_path is not None:
+            for idir in site_config.modules_path:
                 idirfull = os.path.abspath(idir)
                 if idirfull not in self._sys.path and os.path.exists(idirfull):
                     self._sys.path.append(idirfull)
@@ -175,17 +175,10 @@ class SymbolTable(Group):
         sys = self._sys
         cache = self._sys.groupCache
 
-        #  print('FIX SG1 ', sys.localGroup   == cache['localGroup'],
-        #         sys.moduleGroup  == cache['moduleGroup'],
-        #         sys.searchGroups == cache['searchNames'])
 
         if (sys.localGroup   != cache['localGroup'] or
             sys.moduleGroup  != cache['moduleGroup'] or
             sys.searchGroups != cache['searchNames']):
-
-            # print('FIX SG2 ', sys.localGroup,
-            # sys.moduleGroup,
-            #       sys.searchGroups, cache['searchNames'])
 
             if sys.moduleGroup is None:
                 sys.moduleGroup = self.top_group
@@ -422,30 +415,37 @@ class SymbolTable(Group):
             sym = self._lookup('.'.join(tnam))
         return sym, child
 
-    def add_plugin(self, plugin, **kw):
+    def add_plugin(self, plugin, **kws):
         """Add a plugin: a module that includes a
         registerLarchPlugin function that returns
         larch_group_name, dict_of_symbol/functions
         """
-        # print(" SYMTAB ADD PLUGIN ", plugin)
         if not isinstance(plugin, types.ModuleType):
             raise Warning(" %s is not a valid larch plugin" % repr(plugin))
 
         registrar = getattr(plugin, 'registerLarchPlugin', None)
         if registrar is None:
             raise Warning(" %s has no registerLarchPlugin method" %
-                          plugin.__name_)
-
+                          plugin.__name__)
+        
         groupname, syms = registrar()
-        # print(" SYMTAB :: ", groupname, syms)
         if not self.has_group(groupname):
             self.new_group(groupname)
 
         self._sys.searchGroups.append(groupname)
         self._fix_searchGroups()
+        
         for key, val in syms.items():
             if hasattr(val, '__call__'):
-                val = Closure(func=val, **kw)
+                # test whether plugin func has a 'larch' kw arg
+                #    func_code.co_flags & 8 == 'uses **kws'
+                nvars = val.func_code.co_argcount
+                if ((val.func_code.co_flags &8 != 0) or
+                    'larch' in val.func_code.co_varnames[:nvars]):
+                    val = Closure(func=val, larch=self._larch, **kws)
+                else:
+                    val = Closure(func=val, **kws)
+
             self.set_symbol("%s.%s" % (groupname, key), val)
 
 

@@ -11,8 +11,8 @@ import site_configdata
 join = os.path.join
 exists = os.path.exists
 abspath = os.path.abspath
+curdir = abspath('.')
 
-#
 # general-use system path
 home_dir = os.environ.get('HOME', None)
 sys_larchdir = site_configdata.unix_installdir
@@ -27,35 +27,31 @@ if os.name == 'nt':
         for profile in ('ALLUSERSPROFILE', 'USERPROFILE'):
             home_dir = os.environ.get(profile, None)
 
-    
 if home_dir is None:
-    home_dir = '.'
+    home_dir = curdir
 
 if 'LARCHDIR' in os.environ:
     usr_larchdir = os.environ['LARCHDIR']
 else:
     usr_larchdir = abspath(join(home_dir, usr_larchdir))
-    
-# module_path
+
+# modules_path, plugins_path
 #  determine the search path for modules
-module_path = ['.']
 
-# plugins_path
-#  determine the search path for plugins
-plugins_path = []
-
-for folder in (usr_larchdir, sys_larchdir):
-    mod_dir = join(folder, 'modules')
-    if exists(mod_dir):
-        module_path.append(mod_dir)
-
-    if exists(join(folder, 'plugins')):
-        plugins_path.append(folder)
-
+modules_path, plugins_path = [], []
+modpath = [sys_larchdir]
 if 'LARCHPATH' in os.environ:
-    for mod_dir in os.environ['LARCHPATH'].split(':'):
-        if exists(mod_dir) and mod_dir not in module_path:
-            module_path.append(mod_dir)
+    modpath.append(os.environ['LARCHPATH'].split(':'))
+else:
+    modpath.append(usr_larchdir)
+
+for mp in modpath:
+    mdir = join(mp, 'modules')
+    if exists(mdir) and mdir not in modules_path:
+        modules_path.append(mdir)
+
+sys_plugins_dir = os.path.join(sys_larchdir, 'plugins')
+usr_plugins_dir = os.path.join(usr_larchdir, 'plugins')
 
 # initialization larch files to be run on startup
 init_files = []
@@ -73,12 +69,14 @@ history_file = join(home_dir, '.larch_history')
 if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')
 
-debug = False
+debug = True # False
 if debug:
+    print '----------------------------------------'
     print 'home dir: ',     home_dir
     print 'usrlarch dir: ', usr_larchdir
     print 'history_file: ', history_file
-    print 'module_path: ',  module_path
-    print 'plugins_path: ', plugins_path
-    print 'init_files: ',   init_files    
-
+    print 'modules_path: ', modules_path
+    print 'plugins_path: ', sys_plugins_dir
+    print 'plugins_path: ', usr_plugins_dir
+    print 'init_files: ',   init_files
+    print '----------------------------------------'

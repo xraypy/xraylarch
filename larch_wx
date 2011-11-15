@@ -11,7 +11,7 @@ import threading
 import wx
 import gc
 
-DEBUG = False
+DEBUG = True # False
 
 if DEBUG:
     import lib as larch
@@ -148,7 +148,7 @@ class WxShellTimer(wx.MiniFrame):
     def Start(self):
         """Add wx components to shell, start timer to execute shell code"""
         self.in_progress = True
-        self.shell.larch.add_plugins('wx', wxparent=self)
+        self.shell.larch.add_plugin('wx', wxparent=self)
         self.shell.larch.run_init_scripts()
         self.shell.execute()
 

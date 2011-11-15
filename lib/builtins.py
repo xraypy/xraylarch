@@ -1,9 +1,11 @@
 """ Builtins for larch"""
 
 import os
+import imp
 import sys
 from helper import Helper
 from . import inputText
+from . import site_config
 
 helper = Helper()
 
@@ -286,10 +288,48 @@ def _help(*args, **kws):
     else:
         return helper.getbuffer()
 
+
+def _addplugin(plugin, system=False, larch=None, **kws):
+    """add plugin components from plugin directory"""
+    if larch is None:
+        raise Warning("cannot add plugind. larch broken?")
+
+    errmsg = 'is not a valid larch plugin\n'
+    pjoin = os.path.join
+
+    p_path = site_config.usr_plugins_dir
+    if system:
+        p_path = site_config.sys_plugins_dir
+    def _plugin_file(plugin, p_path):
+        is_package, fh, desc = False, None, [None, None, None]
+        try:
+            fh, modpath, desc = imp.find_module(plugin, [p_path])
+        except ImportError:
+            is_package = os.path.isdir(pjoin(p_path, plugin))
+        if is_package or (desc[2] == imp.PKG_DIRECTORY):
+            moddir = pjoin(p_path, plugin)
+            for fname in os.listdir(moddir):
+                if fname.endswith('.py') and len(fname) > 3:
+                    try:
+                        _plugin_file(fname[:-3], moddir)
+                    except Warning:
+                        larch.writer.write(' Warning: %s %s' %
+                                           (pjoin(moddir, fname), errmsg))
+                        
+        else:
+            out = imp.load_module(plugin, fh, modpath, desc)
+            larch.symtable.add_plugin(out, **kws)
+        if fh is not None:
+            fh.close()
+        return
+    _plugin_file(plugin, p_path)
+
+
 local_funcs = {'group':_group,
                'show_group':_show_group,
                'reload':_reload,
                'run': _run,
                'help': _help,
+               'add_plugin':_addplugin,
                }
 

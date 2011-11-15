@@ -74,8 +74,7 @@ class Interpreter:
                        'print', 'raise', 'repr', 'return', 'slice', 'str',
                        'subscript', 'tryexcept', 'tuple', 'unaryop', 'while')
 
-    def __init__(self, symtable=None, plugins=None, writer=None):
-        '''plugins is a list of plugin directory names'''
+    def __init__(self, symtable=None, writer=None):
         self.writer = writer or sys.stdout
 
         if symtable is None:
@@ -116,29 +115,12 @@ class Interpreter:
         for tnode in self.supported_nodes:
             self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
 
-        self.add_plugins('std')
-        if plugins is not None:
-            for p in plugins:
-                self.add_plugins(p)
 
-    def add_plugins(self, plugindir, **kws):
+        self.add_plugin('std', system=True)
+
+    def add_plugin(self, mod, system=True, **kws):
         """add plugin components from plugin directory"""
-        # print("Larch Add Plugin ", plugindir)
-        kws.update(dict(larch=self))
-
-        # finally remove plugins from sys.path
-        for pdir in reversed(site_config.plugins_path[:]):
-            sys.path.insert(0, pdir)
-
-        top = __import__('plugins.%s' % plugindir)
-        pdir = getattr(top, plugindir)
-        for modname in dir(pdir):
-            if not modname.startswith('__'):
-                self.symtable.add_plugin(getattr(pdir, modname), **kws)
-
-        # finally remove plugins from sys.path
-        for i in site_config.plugins_path:
-            sys.path.pop(0)
+        builtins._addplugin(mod, larch=self, system=system, **kws)
 
     def set_definedvariable(self, name, expr):
         """define a defined variable (re-evaluate on access)"""
@@ -170,7 +152,6 @@ class Interpreter:
             etype, evalue = None, None
         else:
             etype, evalue, tback = py_exc
-        # print( "RAISE ", msg, tback)
         err = LarchExceptionHolder(node, msg=msg, expr= expr,
                                    fname= fname, lineno=lineno,
                                    py_exc=(etype, evalue) )
