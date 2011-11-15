@@ -79,6 +79,7 @@ class PlotPanel(BasePanel):
     def oplot(self, xdata, ydata, label=None, color=None, style=None,
               linewidth=None, marker=None, markersize=None,
               drawstyle=None, dy=None,
+              xmin=None, xmax=None, ymin=None, ymax=None,
               autoscale=True, refresh=True, yaxis='left', **kw):
         """ basic plot method, overplotting any existing plot """
         # set y scale to log/linear
@@ -100,7 +101,15 @@ class PlotPanel(BasePanel):
                               max((self.data_range[1], max(xdata))),
                               min((self.data_range[2], min(ydata))),
                               max((self.data_range[3], max(ydata)))]
-
+        if xmin is not None:
+            self.data_range[0] = max(xmin, self.data_range[0])
+        if xmax is not None:
+            self.data_range[1] = min(xmax, self.data_range[1])
+        if ymin is not None:
+            self.data_range[2] = max(ymin, self.data_range[2])
+        if ymax is not None:
+            self.data_range[3] = min(ymax, self.data_range[3])
+        
         cnf  = self.conf
         n    = cnf.ntrace
 
@@ -127,9 +136,13 @@ class PlotPanel(BasePanel):
             cnf.refresh_trace(n)
             cnf.relabel()
 
-        if autoscale:
+        if autoscale and (xmin is None and xmax is None and
+                          ymin is None and ymax is None):
             self.axes.autoscale_view()
             self.zoom_lims = [None]
+        else:
+            self.set_xylims(self.data_range, autoscale=False)
+            
         if self.conf.show_grid:
             # I'm sure there's a better way...
             for i in self.axes.get_xgridlines()+self.axes.get_ygridlines():
