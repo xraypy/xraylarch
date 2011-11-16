@@ -321,44 +321,6 @@ class SymbolTable(Group):
             raise LookupError(
                 "symbol '%s' found, but not a group" % (gname))
 
-    def show_group(self, gname=None):
-        "show groups"
-        if gname is None:
-            gname = '_main'
-        if isgroup(gname):
-            grp = gname
-            title = repr(grp)[1:-1]
-        elif isinstance(gname, types.ModuleType):
-            grp = gname
-            title = gname.__name__
-        else:
-            grp = self._lookup(gname, create=False)
-            title = gname
-
-        if title.startswith(self.top_group):
-            title = title[6:]
-
-        if grp == self:
-            title = 'SymbolTable _main'
-
-        mem = dir(grp)
-        out = ['== %s: %i symbols ==' % (title, len(mem))]
-        for item in mem:
-            if not (item.startswith('_Group__') or
-                    item == '__name__' or
-                    item.startswith('_SymbolTable__')):
-                # out.append('  %s: %s' % (item, repr(getattr(grp, item))))
-                obj = getattr(grp, item)
-                dval = repr(obj)                
-                if HAS_NUMPY and isinstance(obj, numpy.ndarray):
-                    if len(obj) > 20 or len(obj.shape)>1:
-                        dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
-                                                             repr(obj.dtype))
-                out.append('  %s: %s' % (item, dval))
-
-        msg = '\n'.join(out)
-        return "%s\n" % msg
-
     def create_group(self, **kw):
         "create a new Group, not placed anywhere in symbol table"
         return Group(**kw)

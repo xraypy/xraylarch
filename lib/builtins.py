@@ -162,15 +162,6 @@ def _group(larch=None, **kws):
         setattr(group, key, val)
     return group
 
-def _show_group(gname=None, larch=None, **kws):
-    """display group members"""
-    if larch is None:
-        raise Warning("cannot show group -- larch broken?")
-    if gname is None:
-        gname = '_main'
-    larch.writer.write("%s\n" % larch.symtable.show_group(gname))
-
-
 def _run(filename=None, larch=None, new_module=None,
          interactive=False,   printall=False):
     """execute the larch text in a file as larch code. options:
@@ -326,7 +317,6 @@ def _addplugin(plugin, system=False, larch=None, **kws):
 
 
 local_funcs = {'group':_group,
-               'show':_show_group,
                'reload':_reload,
                'run': _run,
                'help': _help,
