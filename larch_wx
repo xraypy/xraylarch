@@ -11,9 +11,24 @@ import threading
 import wx
 import gc
 
-DEBUG = False
+from optparse import OptionParser
 
-if DEBUG:
+usage = "usage: %prog [options] file"
+parser = OptionParser(usage=usage,
+                      prog="larch_wx",
+                      version="0.1")
+
+parser.add_option("-d", "--debug", dest="debug", action="store_true",
+                  default=False, help="set debug mode, default = False")
+
+parser.add_option("-e", "--exec", dest="exec_script_only", action="store_true",
+                  default=False, help="execute script only, default = False")
+
+(options, args) = parser.parse_args()
+
+print options
+if options.debug:
+
     import lib as larch
 else:
     import larch
@@ -48,7 +63,8 @@ class LarchShell(object):
         self.in_progress = True
         self.rdline = None
         try:
-            import readline
+            import readline, rlcompleter
+            readline.parse_and_bind("tab: complete")
             self.rdline = readline
         except ImportError:
             pass
