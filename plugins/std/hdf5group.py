@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+"""
+  Larch hdf5group() function
+"""
+
 import h5py
 import numpy
 from larch.closure import Closure

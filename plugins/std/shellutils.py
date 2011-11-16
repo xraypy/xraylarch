@@ -1,3 +1,12 @@
+#!/usr/bin/env python
+"""
+  Larch shell utilities:
+    more()
+    ls()
+    cwd()
+    cd()
+"""
+
 import os
 import sys
 from copy import deepcopy

@@ -1,3 +1,8 @@
+#!/usr/bin/env python
+"""
+  Larch column file reader: read_ascii)_
+"""
+
 import numpy
 from larch.util import fixName
 
