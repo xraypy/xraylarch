@@ -315,7 +315,7 @@ def _addplugin(plugin, system=False, larch=None, **kws):
                     except Warning:
                         larch.writer.write(' Warning: %s %s' %
                                            (pjoin(moddir, fname), errmsg))
-                        
+
         else:
             out = imp.load_module(plugin, fh, modpath, desc)
             larch.symtable.add_plugin(out, **kws)
@@ -326,7 +326,7 @@ def _addplugin(plugin, system=False, larch=None, **kws):
 
 
 local_funcs = {'group':_group,
-               'show_group':_show_group,
+               'show':_show_group,
                'reload':_reload,
                'run': _run,
                'help': _help,
