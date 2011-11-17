@@ -11,7 +11,7 @@ Exposed functions here are
 '''
 import time
 import wx
-from larch.mplot import PlotFrame, ImageFrame
+from mplot import PlotFrame, ImageFrame
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
