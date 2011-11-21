@@ -11,7 +11,7 @@ Exposed functions here are
 '''
 import time
 import wx
-from mplot import PlotFrame, ImageFrame
+from wxmplot import PlotFrame, ImageFrame
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
@@ -108,7 +108,7 @@ class ImageDisplay(ImageFrame):
         if iy is not None:
             symtable.set_symbol('%s_iy' % self.symname, iy)
         if val is not None:
-            symtable.set_symbol('%s_val' % self.symname, val)
+            symtable.set_symbol('%s_val' % self.symname, val)ZAzazb
 
 
 def _getDisplay(win=1, larch=None, wxparent=None, image=False):
@@ -118,14 +118,14 @@ def _getDisplay(win=1, larch=None, wxparent=None, image=False):
         #print("Could not find larch?")
         return
     win = max(1, int(abs(win)))
-    title   = 'Larch Plot Display Window %i' % win
+    title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (MODNAME, win)
     creator = PlotDisplay
     display_dict = PLOT_DISPLAYS
     if image:
         creator = ImageDisplay
         display_dict = IMG_DISPLAYS
-        title   = 'Larch Image Display Window %i' % win
+        title   = 'Image Window %i' % win
         symname = '%s.img%i' % (MODNAME, win)
 
     if win in display_dict:
@@ -209,7 +209,6 @@ def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     map: 2-dimensional array for map
     """
     img = _getDisplay(wxparent=wxparent, win=win, larch=larch, image=True)
-
     if img is not None:
         img.display(map, **kws)
 
