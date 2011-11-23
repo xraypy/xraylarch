@@ -5,12 +5,10 @@
 import sys
 import types
 import numpy
-
-from larch.symboltable import isgroup, HAS_NUMPY
+from larch.symboltable import HAS_NUMPY
 
 def _show(sym=None, larch=None, **kws):
     """display group members"""
-    print "SHOW !!" , sym, type(sym)
     if larch is None:
         raise Warning("cannot show group -- larch broken?")
     if sym is None:
@@ -18,7 +16,7 @@ def _show(sym=None, larch=None, **kws):
     group = None
     symtable = larch.symtable
     title = sym
-    if isgroup(sym):
+    if symtable.isgroup(sym):
         group = sym
         title = repr(sym)[1:-1]
     elif isinstance(sym, types.ModuleType):
@@ -26,8 +24,6 @@ def _show(sym=None, larch=None, **kws):
         title = sym.__name__
     elif isinstance(sym, (str, unicode)):
         group = symtable._lookup(sym, create=False)
-
-    print 'sym/group ', sym , group, isgroup(sym), isinstance(sym, types.ModuleType), type(sym)
 
     if group is None:
         larch.writer.write("%s\n" % repr(sym))
@@ -41,9 +37,7 @@ def _show(sym=None, larch=None, **kws):
 
     members = dir(group)
     out = ['== %s: %i symbols ==' % (title, len(members))]
-    print 'XX SHOW ', members
     for item in members:
-
         if not (item.startswith('_Group__') or
                 item == '__name__' or
                 item.startswith('_SymbolTable__')):
@@ -61,4 +55,4 @@ def _show(sym=None, larch=None, **kws):
 
 
 def registerLarchPlugin():
-    return ('_builtin', {'show': _show})
+    return ('_builtin', {'pshow': _show})

@@ -73,8 +73,6 @@ class Group(object):
 
 def isgroup(grp):
     "tests if input is a Group"
-    print( "SYMT isgroup: ", grp, Group)
-    print(  isinstance(grp, Group) )
     return isinstance(grp, Group)
 
 
@@ -315,6 +313,9 @@ class SymbolTable(Group):
         except LookupError:
             return False
 
+    def isgroup(self, sym):
+        return isgroup(sym)
+
     def get_group(self, gname):
         "find group by name"
         sym = self._lookup(gname, create=False)
@@ -326,10 +327,7 @@ class SymbolTable(Group):
 
     def create_group(self, **kw):
         "create a new Group, not placed anywhere in symbol table"
-        out = Group(**kw)
-        print('created group: ', out)
-        print(' is group? ', isgroup(out))
-        return out
+        return Group(**kw)
 
     def new_group(self, name, **kw):
         g = Group(__name__ = name, **kw)
