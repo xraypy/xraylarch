@@ -87,3 +87,29 @@ def isLiteralStr(inp):
             (inp.startswith('"') and inp.endswith('"')))
 
 
+def find_delims(s, delim='"',match=None):
+    """find matching delimeters (quotes, braces, etc) in a string.
+    returns
+      True, index1, index2 if a match is found
+      False, index1, len(s) if a match is not found
+    the delimiter can be set with the keyword arg delim,
+    and the matching delimiter with keyword arg match.
+
+    if match is None (default), match is set to delim.
+
+    >>> find_delims(mystr, delim=":")
+    >>> find_delims(mystr, delim='<', match='>')
+    """
+    esc = "\\"
+    if match is None:
+        match = delim
+    j = s.find(delim)
+    if j > -1 and s[j:j+len(delim)] == delim:
+        p, k = None, j
+        while k < j+len(s[j+1:]):
+            k = k+1
+            if s[k:k+len(match)] == match and p != esc:
+                return True, j, k+len(match)-1
+            p = s[k:k+1]
+    return False, j, len(s)
+

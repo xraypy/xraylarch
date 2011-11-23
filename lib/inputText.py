@@ -3,7 +3,7 @@
 """
 from __future__ import print_function
 
-from util import isValidName, isNumber, isLiteralStr, strip_comments
+from util import isValidName, isNumber, isLiteralStr, strip_comments, find_delims
 
 def get_DefVar(text):
     """
@@ -186,13 +186,22 @@ class InputText:
         self.input_buff.reverse()
         while self.input_buff:
             text, complete, fname, lineno = self.input_buff.pop()
+
+            sindent = self.indent*(indent_level+1)
             while not complete:
                 tnext, complete, fname, lineno2 = self.input_buff.pop()
-                text = "%s\n  %s%s" % (text, self.indent*(indent_level+1),
-                                       tnext)
+                text = "%s\n  %s%s" % (text, sindend, tnext)
 
             text  = text.strip().rstrip()
             txt   = text.replace('(', ' (').replace(')', ' )')
+
+            if text.startswith('"') or text.startswith("'"):
+                delim = text[0]
+                if text[0:3] == text[0]*3:
+                    delim = text[0:3]
+                while not find_delims(text, delim=delim)[0]:
+                    tnext, complete, fname, lineno2 = self.input_buff.pop()
+                    text = "%s\n %s%s" % (text, sindent, tnext)
 
             # note here the trick of replacing '#end' with '&end' so
             # that it is not removed by strip_comments.  then below,
@@ -212,7 +221,7 @@ class InputText:
             if thiskey.endswith(':'):
                 thiskey = thiskey[:-1]
 
-            prefix, oneliner = '',False
+            prefix, oneliner = '', False
 
             if thiskey in startkeys:
                 # check for defined variables

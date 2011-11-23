@@ -108,8 +108,7 @@ class ImageDisplay(ImageFrame):
         if iy is not None:
             symtable.set_symbol('%s_iy' % self.symname, iy)
         if val is not None:
-            symtable.set_symbol('%s_val' % self.symname, val)ZAzazb
-
+            symtable.set_symbol('%s_val' % self.symname, val)
 
 def _getDisplay(win=1, larch=None, wxparent=None, image=False):
     """make a plotter"""

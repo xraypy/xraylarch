@@ -639,7 +639,6 @@ class Interpreter:
         if node.decorator_list != []:
             raise Warning("decorated procedures not supported!")
 
-
         kwargs = []
         while node.args.defaults:
             defval = self.interp(node.args.defaults.pop())
@@ -650,8 +649,11 @@ class Interpreter:
         doc = None
         if isinstance(node.body[0], ast.Expr):
             docnode = node.body.pop(0)
-            doc = self.interp(docnode.value)
-        #
+            if isinstance(docnode.value, ast.Str):
+                doc = docnode.value.s
+            else:
+                doc = self.interp(docnode.value)
+
         proc = Procedure(node.name, larch= self, doc= doc,
                          body   = node.body,
                          fname  = self.fname,   lineno = self.lineno,

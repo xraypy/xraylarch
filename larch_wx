@@ -26,9 +26,8 @@ parser.add_option("-e", "--exec", dest="exec_script_only", action="store_true",
 
 (options, args) = parser.parse_args()
 
-print options
-if options.debug:
 
+if options.debug:
     import lib as larch
 else:
     import larch
@@ -213,7 +212,7 @@ class WxLarchShell(threading.Thread):
             self.app.wxtimer.timer.Stop()
             self.app.ExitMainLoop()
 
-            
+
     def run(self):
         """run for main thread: just get input for shell.
         note that wxtimer events cause LarchShell.execute"""
@@ -222,17 +221,17 @@ class WxLarchShell(threading.Thread):
 
         while self.shell.get_input():
             continue
-        
+
     def mainloop(self):
         """mainloop for WxShell"""
         self.start()
         sys.stdout.write(BANNER)
         sys.stdout.flush()
         self.app.wxtimer.Start()
-        
+
         self.app.MainLoop()
         self.join()
-        
+
 if __name__ == '__main__':
     ws = WxLarchShell()
     ws.mainloop()

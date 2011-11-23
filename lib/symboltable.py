@@ -14,10 +14,6 @@ try:
 except ImportError:
     HAS_NUMPY = False
 
-def isgroup(grp):
-    "tests if input is a Group"
-    return isinstance(grp, Group)
-
 class Group(object):
     """Group: a container for variables, modules, and subgroups.
 
@@ -74,6 +70,13 @@ class Group(object):
                     key == '_main' or key == '__name__'):
                 r[key] = self.__dict__[key]
         return r
+
+def isgroup(grp):
+    "tests if input is a Group"
+    print( "SYMT isgroup: ", grp, Group)
+    print(  isinstance(grp, Group) )
+    return isinstance(grp, Group)
+
 
 class InvalidName:
     """ used to create a value that will NEVER be a useful symbol.
@@ -323,7 +326,10 @@ class SymbolTable(Group):
 
     def create_group(self, **kw):
         "create a new Group, not placed anywhere in symbol table"
-        return Group(**kw)
+        out = Group(**kw)
+        print('created group: ', out)
+        print(' is group? ', isgroup(out))
+        return out
 
     def new_group(self, name, **kw):
         g = Group(__name__ = name, **kw)
@@ -397,14 +403,14 @@ class SymbolTable(Group):
         if registrar is None:
             raise Warning(" %s has no registerLarchPlugin method" %
                           plugin.__name__)
-        
+
         groupname, syms = registrar()
         if not self.has_group(groupname):
             self.new_group(groupname)
 
         self._sys.searchGroups.append(groupname)
         self._fix_searchGroups()
-        
+
         for key, val in syms.items():
             if hasattr(val, '__call__'):
                 # test whether plugin func has a 'larch' kw arg
