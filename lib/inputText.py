@@ -181,8 +181,6 @@ class InputText:
         oneliner  = False
         startkeys = self.block_friends.keys()
 
-        # print('Convert! -- ' , startkeys, len(self.input_buff))
-
         self.input_buff.reverse()
         while self.input_buff:
             text, complete, fname, lineno = self.input_buff.pop()
@@ -190,7 +188,7 @@ class InputText:
             sindent = self.indent*(indent_level+1)
             while not complete:
                 tnext, complete, fname, lineno2 = self.input_buff.pop()
-                text = "%s\n  %s%s" % (text, sindend, tnext)
+                text = "%s\n  %s%s" % (text, sindent, tnext)
 
             text  = text.strip().rstrip()
             txt   = text.replace('(', ' (').replace(')', ' )')
