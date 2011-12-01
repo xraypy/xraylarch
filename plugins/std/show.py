@@ -55,4 +55,4 @@ def _show(sym=None, larch=None, **kws):
 
 
 def registerLarchPlugin():
-    return ('_builtin', {'pshow': _show})
+    return ('_builtin', {'show': _show})
