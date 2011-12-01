@@ -175,8 +175,6 @@ class WxShellTimer(wx.MiniFrame):
         self.timer.Stop()
         self.in_progress = False
         self.shell.larch = None
-        self.shell = None
-        gc.collect()
         self.Destroy()
         
     def OnTimer(self, event=None):
