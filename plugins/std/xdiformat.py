@@ -13,7 +13,8 @@ def xdigroup(fname, larch=None):
     if larch is None:
         raise Warning("cannot read xdigroup -- larch broken?")
         
-    group = larch.symtable.new_group(name='XDI file %s' % fname)
+    group = larch.symtable.create_group()
+    group.__name__ ='XDI file %s' % fname
     for key, val in x.__dict__.items():
         if not key.startswith('_'):
             setattr(group, key, val)
