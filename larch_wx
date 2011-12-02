@@ -179,9 +179,10 @@ class WxShellTimer(wx.MiniFrame):
         
     def OnTimer(self, event=None):
         """timer events -- here we execute any un-executed shell code"""
-        if (self.shell.input.input_complete):
-            time.sleep(0.001)
+        if self.shell.input.input_complete:
             self.shell.execute()
+        time.sleep(0.001)
+
 
 class WxLarchShell(threading.Thread):
     """wx-enabled Larch Shell"""
