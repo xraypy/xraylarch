@@ -48,13 +48,11 @@ class ReadlineTextCtrl(wx.TextCtrl):
 
     def onKillFocus(self, event=None):
         self.__GetMark()
-        print ' kill Focus'
         if event is not None:
             event.Skip()
 
     def onSetFocus(self, event=None):
         self.__SetMark()
-        print ' set Focus'
         if event is not None:
             event.Skip()
       
@@ -139,7 +137,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
                 wx.TheClipboard.Close()
                 self.SetValue('')
         elif ctrl:
-            print ' OTHER CTRL ', key
+            pass
         self.Refresh()
         if do_skip:
             event.Skip()
@@ -173,7 +171,6 @@ class ReadlineTextCtrl(wx.TextCtrl):
         if event is None:
             return
         txt = event.GetString()
-        print 'def onText! ', event, txt
         if len(txt.strip()) > 0:
             self.hist_buff.append(txt)
             self.hist_mark = len(self.hist_buff)

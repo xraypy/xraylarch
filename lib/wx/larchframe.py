@@ -12,8 +12,6 @@ import larch
 from readlinetextctrl import ReadlineTextCtrl
 from larchfilling import Filling
 
-PLUGINS = ['plotter']
-
 INFO = """  Larch version %s    using python %s  and numpy %s
   Copyright M. Newville, T. Trainor (2010)"""
 
@@ -47,8 +45,8 @@ class LarchWxShell(object):
         self.prompt = prompt
         self.output = output
         self.larch.writer = self
-        self.symtable.AddPlugins(PLUGINS, wxparent=wxparent,
-                                 larch=self.larch)
+        self.larch.add_plugin('wx', wxparent=wxparent)
+        
         self.SetPrompt()
         for fname in larch.site_config.init_files:
             self.execute("run('%s')" % fname)
@@ -73,9 +71,8 @@ class LarchWxShell(object):
             self.output.WriteText(text)
             self.output.SetForegroundColour(prev_color)
             # self.output.SetInsertionPointEnd()
-
             self.output.ShowPosition(self.output.GetLastPosition()-100)
-            # print self.output.PositionToXY()
+
 
     def execute(self, text=None):
         if text is not None:
@@ -158,8 +155,8 @@ class LarchFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=(600,400),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('WXLarch')
-        self.SetFont(wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, False))
-        sfont = wx.Font(12,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
+        self.SetFont(wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, False))
+        sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
         sbar = self.CreateStatusBar(2, wx.CAPTION|wx.THICK_FRAME)
 
         self.SetStatusWidths([-2,-1])
@@ -254,11 +251,6 @@ class LarchFrame(wx.Frame):
         # self.notebooks.SetBestFittingSize()
         self.notebooks.Refresh()
         nsize = self.notebooks.GetSize()
-        #         o = []
-        #         for i in dir(self.notebooks):
-        #             if 'ize' in i:
-        #                 o.append(i)
-        #         print " | ".join(o)
 
         for k in range(self.notebooks.GetPageCount()):
             p = self.notebooks.GetPage(k)
@@ -268,9 +260,7 @@ class LarchFrame(wx.Frame):
                 print 'cannot set size'
             p.Refresh()
 
-#             print p.SetSize.__doc__
-#             print k, size, p
-# #
+
 
         event.Skip()
 
