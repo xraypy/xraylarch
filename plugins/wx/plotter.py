@@ -30,12 +30,13 @@ class PlotDisplay(PlotFrame):
                                  exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
-        self.cursor_pos = []
+        self.cursor_pos = None
         self.panel.cursor_callback = self.onCursor
         self.window = int(window)
         self.larch = larch
         self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self.larch)
+
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
         if window not in PLOT_DISPLAYS:
@@ -53,15 +54,20 @@ class PlotDisplay(PlotFrame):
 
         self.Destroy()
 
-    def onCursor(self,x=None, y=None,**kw):
+    def onCursor(self, x=None, y=None, **kw):
         symtable = ensuremod(self.larch)
         if symtable is None:
-
             return
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
-
-
+        self.cursor_pos = (x, y)
+        
+                                             
+    def get_cursor(self):
+        """return most recent cursor position"""
+        return self.cursor_pos        
+        
+        
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, larch=None, **kws):
         ImageFrame.__init__(self, parent=wxparent,
@@ -183,8 +189,8 @@ def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
     if plotter is not None:
         plotter.plot(x, y, **kws)
 
-def _oplot(x,y, win=1, larch=None, wxparent=None, **kws):
-    """oplot(x, y[, win=0], options])
+def _oplot(x, y, win=1, larch=None, wxparent=None, **kws):
+    """oplot(x, y[, win=1[, options]])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, over-plotting any plot currently in the Plot Frame.
 
@@ -197,6 +203,18 @@ def _oplot(x,y, win=1, larch=None, wxparent=None, **kws):
 
     if plotter is not None:
         plotter.oplot(x, y, **kws)
+    else:
+        print 'dont have plotter yet?'
+
+def _getcursor(win=1, larch=None, wxparent=None, **kws):
+    """get_cursor(win=1)
+
+    return most recent x, y position of cursor clicked on plot window
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
+
+    if plotter is not None:
+        return plotter.get_cursor()
     else:
         print 'dont have plotter yet?'
 
@@ -214,4 +232,5 @@ def _imshow(map, win=1, larch=None, wxparent=None, **kws):
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
                       'oplot': _oplot,
+                      'get_cursor': _getcursor,
                       'imshow':_imshow} )
