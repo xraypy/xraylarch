@@ -5,14 +5,14 @@ Read/Write XAS Data Interchange Format for larch
 install the xdi python module from
     https://github.com/XraySpectroscopy/XAS-Data-Interchange
 """
-from xdi import XDIFile
+from xdifile import XDIFile
 
 def xdigroup(fname, larch=None):
     """simple mapping of XDI file to larch groups"""
-    x = XDIFile(fname)
     if larch is None:
         raise Warning("cannot read xdigroup -- larch broken?")
         
+    x = XDIFile(fname)
     group = larch.symtable.create_group()
     group.__name__ ='XDI file %s' % fname
     for key, val in x.__dict__.items():
