@@ -9,14 +9,11 @@ import os
 import time
 import threading
 import wx
-import gc
-
+import numpy
 from optparse import OptionParser
 
 usage = "usage: %prog [options] file"
-parser = OptionParser(usage=usage,
-                      prog="larch_wx",
-                      version="0.1")
+parser = OptionParser(usage=usage, prog="larch_wx", version="0.1")
 
 parser.add_option("-d", "--debug", dest="debug", action="store_true",
                   default=False, help="set debug mode, default = False")
@@ -26,7 +23,6 @@ parser.add_option("-e", "--exec", dest="exec_script_only", action="store_true",
 
 (options, args) = parser.parse_args()
 
-
 if options.debug:
     import lib as larch
 else:
@@ -34,16 +30,14 @@ else:
 
 PS1 = "larch> "
 PS2 = ".....> "
-
-import numpy
-
 MAXHIST = 1000
-
 BANNER = """  Larch %s  M. Newville, T. Trainor (2011)
   using python %s, numpy %s, wx-enabled: version %s
 """ %  (larch.__version__,
         '%i.%i.%i' % sys.version_info[:3],
         numpy.__version__, wx.__version__)
+
+PLUGINS = ('xafs',)
 
 def hijack_wx():
     """borrowed from IPython's hijack_wx"""
@@ -165,7 +159,8 @@ class WxShellTimer(wx.MiniFrame):
         """Add wx components to shell, start timer to execute shell code"""
         self.in_progress = True
         self.shell.larch.add_plugin('wx', wxparent=self)
-        self.shell.larch.add_plugin('xafs')
+        for p in PLUGINS:
+            self.shell.larch.add_plugin(p)
         self.shell.larch.run_init_scripts()
         self.shell.execute()
 
