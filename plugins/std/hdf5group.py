@@ -9,7 +9,8 @@ from larch.closure import Closure
 
 def h5group(fname, larch=None):
     """simple mapping of hdf5 file to larch groups"""
-
+    if larch is None:
+        raise Warning("cannot read h5group -- larch broken?")
     fh = h5py.File(fname, 'r')
     group = larch.symtable.create_group
     def add_component(key, val, top):
