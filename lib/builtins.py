@@ -283,7 +283,7 @@ def _help(*args, **kws):
 def _addplugin(plugin, system=False, larch=None, **kws):
     """add plugin components from plugin directory"""
     if larch is None:
-        raise Warning("cannot add plugind. larch broken?")
+        raise Warning("cannot add plugins. larch broken?")
 
     errmsg = 'is not a valid larch plugin\n'
     pjoin = os.path.join
@@ -292,11 +292,12 @@ def _addplugin(plugin, system=False, larch=None, **kws):
     if system:
         p_path = site_config.sys_plugins_dir
     def _plugin_file(plugin, p_path):
-        is_package, fh, desc = False, None, [None, None, None]
+        is_package, fh, modpath, desc = False, None, None, [None, None, None]
         try:
             fh, modpath, desc = imp.find_module(plugin, [p_path])
         except ImportError:
             is_package = os.path.isdir(pjoin(p_path, plugin))
+
         if is_package or (desc[2] == imp.PKG_DIRECTORY):
             moddir = pjoin(p_path, plugin)
             for fname in os.listdir(moddir):
@@ -304,12 +305,16 @@ def _addplugin(plugin, system=False, larch=None, **kws):
                     try:
                         _plugin_file(fname[:-3], moddir)
                     except Warning:
-                        larch.writer.write(' Warning: %s %s' %
+                        larch.writer.write('Warning: %s %s\n' %
                                            (pjoin(moddir, fname), errmsg))
 
         else:
-            out = imp.load_module(plugin, fh, modpath, desc)
-            larch.symtable.add_plugin(out, **kws)
+            try:
+                out = imp.load_module(plugin, fh, modpath, desc)
+                larch.symtable.add_plugin(out, **kws)
+            except:
+                larch.writer.write('Warning: could not find plugin %s!\n' %
+                                   plugin)
         if fh is not None:
             fh.close()
         return
