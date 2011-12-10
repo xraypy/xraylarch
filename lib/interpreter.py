@@ -115,7 +115,6 @@ class Interpreter:
         for tnode in self.supported_nodes:
             self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
 
-
         self.add_plugin('std', system=True)
 
     def add_plugin(self, mod, system=True, **kws):
@@ -229,7 +228,7 @@ class Interpreter:
                                  fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
         else:
-            # print(" -> interp ", node, expr,  fname, lineno)
+            # print("-> interp ", node, expr,  fname, lineno)
             out = self.interp(node, expr=expr,
                               fname=fname, lineno=lineno)
         if len(self.error) > 0:
@@ -467,6 +466,7 @@ class Interpreter:
 
     def on_binop(self, node):    # ('left', 'op', 'right')
         "binary operator"
+        # print( 'BINARY  OP! ', node.left, node.right, node.op)
         return OPERATORS[node.op.__class__](self.interp(node.left),
                                             self.interp(node.right))
 
@@ -488,9 +488,11 @@ class Interpreter:
         for oper, rnode in zip(node.ops, node.comparators):
             comp = OPERATORS[oper.__class__]
             rval = self.interp(rnode)
-            out  = out and  comp(lval, rval)
+            out  = comp(lval, rval)
             lval = rval
-            if not out:
+            if HAS_NUMPY and isinstance(out, numpy.ndarray) and out.any():
+                break
+            elif not out:
                 break
         return out
 
@@ -611,7 +613,7 @@ class Interpreter:
 
     def on_call(self, node):
         "function/procedure execution"
-        # ('func', 'args', 'keywords', 'starargs', 'kwargs')
+        #  ('func', 'args', 'keywords', 'starargs', 'kwargs')
         func = self.interp(node.func)
         if not hasattr(func, '__call__'):
             msg = "'%s' is not callable!!" % (func)
