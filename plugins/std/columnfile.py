@@ -8,7 +8,7 @@ from larch.util import fixName
 
 MODNAME = '_io'
 
-def _read_ascii(fname, delim='#;*%', use_labels=True, larch=None):
+def _read_ascii(fname, delim='#;*%', labels=None, larch=None):
     """read a column ascii column file.
     The delim argument (#;* by default) sets the first character
     to mark the header lines.
@@ -23,13 +23,12 @@ def _read_ascii(fname, delim='#;*%', use_labels=True, larch=None):
     these will be parsed into a 'attributes' dictionary
     in the returned group.
 
-    If use_labels=True and the column labels can be used as the
-    variable names, they will be.  Variables from extra columns
-    will be called 'col1', 'col2'.
+    If labels is left the default value of None, column labels will be used
+    as the variable names. Variables from extra, unnamed columns will be
+    called 'col1', 'col2'.
 
-    If use_labels=False, the 'data' variable will contain the
-    2-dimensional data.   
-        """
+    If labels=False, the 'data' variable will contain the 2-dimensional data.
+    """
     kws = {}
     finp = open(fname, 'r')
     kws['filename'] = fname
@@ -66,8 +65,13 @@ def _read_ascii(fname, delim='#;*%', use_labels=True, larch=None):
     kws['header'] = '\n'.join(header_txt)
     kws['attributes'] = header_kws
 
-    if use_labels:
+    if labels is None:
         labels = kws['column_labels']
+    elif labels:
+        labels = labels.replace(',', ' ').split(' ')
+    if not labels:
+        kws['data'] = data
+    else:
         for icol, col in enumerate(labels):
             kws[fixName(col.strip().lower())] = data[icol]
             if data.shape[0] >  len(labels):
@@ -75,8 +79,7 @@ def _read_ascii(fname, delim='#;*%', use_labels=True, larch=None):
                     colname = 'col%i' % (1+len(labels)+icol)
                     kws[colname] = data[icol]
                     kws['column_labels'].append(colname)
-    else:
-        kws['data'] = data
+
     group = larch.symtable.new_group(name='ascii_file %s' % fname)
     for key, val in kws.items():
         setattr(group, key, val)
