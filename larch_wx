@@ -165,6 +165,7 @@ class WxShellTimer(wx.MiniFrame):
         """Add wx components to shell, start timer to execute shell code"""
         self.in_progress = True
         self.shell.larch.add_plugin('wx', wxparent=self)
+        self.shell.larch.add_plugin('xafs')
         self.shell.larch.run_init_scripts()
         self.shell.execute()
 
@@ -176,7 +177,7 @@ class WxShellTimer(wx.MiniFrame):
         self.in_progress = False
         self.shell.larch = None
         self.Destroy()
-        
+
     def OnTimer(self, event=None):
         """timer events -- here we execute any un-executed shell code"""
         if self.shell.input.input_complete:
@@ -220,7 +221,7 @@ class WxLarchShell(threading.Thread):
             self.app.wxtimer.Stop()
             self.app.ProcessIdle()
             self.app.ExitMainLoop()
-        
+
     def run(self):
         """run for main thread: just get input for shell.
         note that wxtimer events cause LarchShell.execute"""
@@ -228,7 +229,7 @@ class WxLarchShell(threading.Thread):
             time.sleep(0.001)
         while self.shell.get_input():
             continue
-        
+
     def mainloop(self):
         """mainloop for WxShell"""
         self.start()
@@ -237,7 +238,7 @@ class WxLarchShell(threading.Thread):
         self.app.wxtimer.Start()
         self.app.MainLoop()
 
-        
+
 if __name__ == '__main__':
     ws = WxLarchShell()
     ws.mainloop()
