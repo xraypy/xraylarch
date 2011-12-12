@@ -364,7 +364,15 @@ class Interpreter:
             if isinstance(nod.slice, ast.Index):
                 sym.__setitem__(xslice, val)
             elif isinstance(nod.slice, ast.Slice):
-                sym.__setslice__(xslice.start, xslice.stop, val)
+                i = xslice.start
+                if i is None: i = 0
+                j = xslice.stop
+                if j is None: j = len(sym)
+                if xslice.step is None:
+                    sym.__setslice__(i, j, val)
+                else:
+                    for ival, isym in enumerate(range(i, j , xslice.step)):
+                        sym.__setitem__(isym, val[ival])
             elif isinstance(nod.slice, ast.ExtSlice):
                 sym[(xslice)] = val
         elif nod.__class__ in (ast.Tuple, ast.List):
