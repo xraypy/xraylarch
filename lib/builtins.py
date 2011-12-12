@@ -28,7 +28,7 @@ from_builtin = ('ArithmeticError', 'AssertionError', 'AttributeError',
                 'Warning', 'ZeroDivisionError', 'abs', 'all', 'any',
                 'apply', 'basestring', 'bin', 'bool', 'buffer',
                 'bytearray', 'bytes', 'callable', 'chr', 'cmp', 'coerce',
-                'complex', 'delattr', 'dict', 'dir', 'divmod', 'enumerate',
+                'complex', 'delattr', 'dict', 'divmod', 'enumerate',
                 'file', 'filter', 'float', 'format', 'frozenset',
                 'getattr', 'hasattr', 'hash', 'hex', 'id', 'int',
                 'isinstance', 'len', 'list', 'map', 'max', 'min',
@@ -242,7 +242,9 @@ def _run(filename=None, larch=None, new_module=None,
 
 def _reload(mod, larch=None, **kws):
     """reload a module, either larch or python"""
-    if larch is None: return None
+    if larch is None:
+        raise Warning("cannot reload module '%s' -- larch broken?" % mod)
+
     modname = None
     if mod in larch.symtable._sys.modules.values():
         for k, v in larch.symtable._sys.modules.items():
@@ -321,7 +323,19 @@ def _addplugin(plugin, system=False, larch=None, **kws):
     _plugin_file(plugin, p_path)
 
 
+
+def _dir(obj=None, larch=None, **kws):
+    "return directory of an object -- thin wrapper about python builtin"
+    if larch is None:
+        raise Warning("cannot run dir() -- larch broken?")
+
+    if obj is None:
+        obj = larch.symtable
+    
+    return dir(obj)
+
 local_funcs = {'group':_group,
+               'dir': _dir,
                'reload':_reload,
                'run': _run,
                'help': _help,
