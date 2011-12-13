@@ -27,7 +27,7 @@ def find_e0(energy, mu, group=None, larch=None):
     return energy[idmu_max+1]
 
 def pre_edge(energy, mu, group=None, e0=None, step=None,
-             nnorm=3, form='victoreen', pre1=None, pre2=-50,
+             nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, larch=None, **kws):
     """pre edge, normalization for XAFS
 
@@ -50,9 +50,6 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
 
-    nvict = 0
-    if form == 'victoreen':
-        nvict = 2
     omu  = mu*energy**nvict
     coefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
     pre_edge = (coefs[0] * energy + coefs[1]) * energy**(-nvict)
