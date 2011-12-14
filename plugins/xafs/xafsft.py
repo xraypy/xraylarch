@@ -2,12 +2,11 @@
 """
   XAFS Fourier transforms
 """
-
 import numpy as np
+from numpy import (pi, arange, zeros, ones, sin, cos,
+                   exp, log, sqrt, where, interp)
+from numpy.fft import fft, ifft
 from scipy.special import i0
-
-fftmod = np.fft
-halfpi = np.pi/2
 
 MODNAME = '_xafs'
 
@@ -19,10 +18,10 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     if larch is None:
         raise Warning("cannot do ftwindow -- larch broken?")
 
-    swin = window.strip().lower()[:3]
-    WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin']
-    iwin = 0
-    if swin in WINDOWS: iwin = WINDOWS.index(swin)
+    nam = window.strip().lower()[:3]
+    VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin']
+    if nam not in VALID_WINDOWS:
+        raise RuntimeError("invalid window name %s" % window)
 
     dx1 = dx
     if dx2 is None:  dx2 = dx1
@@ -35,14 +34,14 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     x2 = xmin + dx1 / 2.0  + xeps
     x3 = xmax - dx2 / 2.0  - xeps
     x4 = min(max(x), xmax + dx2 / 2.0)
-    if iwin == 1:
+    if nam == 'fha':
         if dx1 < 0: dx1 = 0
         if dx2 > 1: dx2 = 1
         x2 = x1 + xeps + dx1*(xmax-xmin)/2.0
         x3 = x4 - xeps - dx2*(xmax-xmin)/2.0
-    elif iwin == 2:
+    elif nam == 'gau':
         dx1 = max(dx1, xeps)
-    elif iwin == 6:
+    elif nam == 'sin':
         x1 = xmin - dx1
         x4 = xmax + dx2
 
@@ -50,34 +49,31 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     i1, i2, i3, i4 = asint(x1), asint(x2), asint(x3), asint(x4)
 
     # initial window
-    owin = np.zeros(len(x))
-    owin[i2:i3] = np.ones(i3-i2)
+    fwin =  zeros(len(x))
+    fwin[i2:i3] = ones(i3-i2)
 
     # now finish making window
-    if iwin < 2: # hanning
-        owin[i1:i2] = np.sin(halfpi*(x[i1:i2]-x1) / (x2-x1))**2
-        owin[i3:i4] = np.cos(halfpi*(x[i3:i4]-x3) / (x4-x3))**2
-    elif iwin == 2: # gaussian
-        owin =  np.exp(-(((x - dx2)**2)/(2*dx1*dx1)))
-    elif iwin == 3: #  Kaiser-Bessel window
+    if nam in ('han', 'fha'):
+        fwin[i1:i2] = sin((pi/2)*(x[i1:i2]-x1) / (x2-x1))**2
+        fwin[i3:i4] = cos((pi/2)*(x[i3:i4]-x3) / (x4-x3))**2
+    elif nam == 'par':
+        fwin[i1:i2] = (x[i1:i2]-x1) / (x2-x1)
+        fwin[i3:i4] = 1 - (x[i3:i4]-x3) / (x4-x3)
+    elif nam == 'wel':
+        fwin[i1:i2] = 1 - ((x[i1:i2]-x2) / (x2-x1))**2
+        fwin[i3:i4] = 1 - ((x[i3:i4]-x3) / (x4-x3))**2
+    elif nam == 'kai': 
         cen  = (x4+x1)/2
         wid  = (x4-x1)/2
         arg  = wid**2 - (x-cen)**2
-        arg[np.where(arg<0)] = 0
-        owin = i0((dx/wid) * np.sqrt(arg)) / i0(dx1)
-    elif iwin == 4: # parzen
-        owin[i1:i2] = (x[i1:i2]-x1) / (x2-x1)
-        owin[i3:i4] = 1 - (x[i3:i4]-x3) / (x4-x3)
-    elif iwin == 5: # welch
-        owin[i1:i2] = 1 - ((x[i1:i2]-x2) / (x2-x1))**2
-        owin[i3:i4] = 1 - ((x[i3:i4]-x3) / (x4-x3))**2
-    elif iwin == 6: # sine
-        owin[i1:i4] = np.sin(np.pi*(x4-x[i1:i4]) / (x4-x1))
-    elif iwin == 7:
-        owin = np.exp(- (dx1 * (x- dx2)**2))
-    else:
-        print 'no window found'
-    return owin
+        arg[where(arg<0)] = 0
+        fwin = i0((dx/wid) * sqrt(arg)) / i0(dx1)
+    elif nam == 'sin':
+        fwin[i1:i4] = sin(pi*(x4-x[i1:i4]) / (x4-x1))
+    elif nam == 'gau':
+        fwin =  exp(-(((x - dx2)**2)/(2*dx1*dx1)))
+
+    return fwin
 
 def xafsift(k, chi, group=None, kmin=0, kmax=20, kw=2,
            dk=1, dk2=None, window='kaiser',
@@ -100,22 +96,27 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2,
         raise Warning("cannot do xafsft -- larch broken?")
 
     ikmax = max(k)/kstep
-    mk   = kstep * np.arange(nfft, dtype='f8')
+    k_   = kstep * arange(nfft, dtype='f8')
 
-    mchi = np.zeros(nfft, dtype='complex128')
-    mchi[0:ikmax] = np.interp(mk[:ikmax], k, chi)
+    chi_ = zeros(nfft, dtype='complex128')
+    chi_[0:ikmax] = interp(k_[:ikmax], k, chi)
 
-    out = fftmod.fft(mchi * mk**kw) [:nfft/2]
-    r   = np.arange(nfft/2) * np.pi/ (kstep * nfft)
+    win = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2,
+                window=window, larch=larch)
+
+    out = kstep*sqrt(pi) * fft(win*chi_*k_**kw)[:nfft/2]
 
     if larch.symtable.isgroup(group):
+        r   = arange(nfft/2) * pi/ (kstep * nfft)
+        mag = sqrt(out.real**2 + out.imag**2)
         setattr(group, 'r', r)
         setattr(group, 'chir',   out)
-        setattr(group, 'chir_mag',  np.sqrt(out.real**2 + out.imag**2))
+        setattr(group, 'kwin',   win)        
+        setattr(group, 'chir_mag',  mag)
         setattr(group, 'chir_re', out.real)
         setattr(group, 'chir_im', out.imag)
 
-    return chir
+    return out
 
 
 def xafsft_fast(chi, nfft=2048, larch=None, **kws):
@@ -131,9 +132,9 @@ def xafsft_fast(chi, nfft=2048, larch=None, **kws):
     if larch is None:
         raise Warning("cannot do xafsft_fast -- larch broken?")
 
-    cchi = np.zeros(nfft, dtype='complex128')
+    cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chi)] = chi
-    return fftmod.fft(cchi) [:nfft/2]
+    return fft(cchi)[:nfft/2]
 
 def registerLarchPlugin():
     return (MODNAME, {'xafsft': xafsft,
