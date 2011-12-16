@@ -53,7 +53,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     omu  = mu*energy**nvict
     coefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
     pre_edge = (coefs[0] * energy + coefs[1]) * energy**(-nvict)
-
+    uu = energy**(-nvict)
     # normalization
     p1 = min(np.where(energy >= norm1+e0)[0])
     p2 = max(np.where(energy <= norm2+e0)[0])
@@ -68,11 +68,11 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     edge_step = post_edge[ie0] - pre_edge[ie0]
     norm  = (mu - pre_edge)/edge_step
     if larch.symtable.isgroup(group):
-        setattr(group, 'e0', e0)
-        setattr(group, 'pre_edge', pre_edge)
-        setattr(group, 'post_edge', post_edge)
-        setattr(group, 'edge_step', edge_step)
-        setattr(group, 'norm', norm)
+        setattr(group, 'e0',         e0)
+        setattr(group, 'edge_step',  edge_step)
+        setattr(group, 'norm',       norm)
+        setattr(group, 'pre_edge',   pre_edge)
+        setattr(group, 'post_edged', post_edge)
     return edge_step, e0
 
 def registerLarchPlugin():
