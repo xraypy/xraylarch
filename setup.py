@@ -10,7 +10,8 @@ share_basedir = site_configdata.unix_installdir
 if os.name == 'nt':
     share_basedir = site_configdata.win_installdir
 
-data_files  = [('bin', ['larch', 'larch_wx', 'larch_gui'])]
+data_files  = [('bin', ['larch', 'larch_nographics', 'larch_gui'])]
+
 
 mod_dir = os.path.join(share_basedir, 'modules')
 modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
