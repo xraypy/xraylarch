@@ -1,20 +1,19 @@
 #!/usr/bin/env python
+"""
+command-line larch shell with wx-widgets (plotting!) enabled.
 
-try:
-    import lib as larch
-    userbanner = '=== DEBUG Version ==='
+"""
 
-except ImportError:
-    import larch
-    userbanner = None
-import sys, os
+import sys
+import os
+import time
+import threading
+import wx
+import numpy
 from optparse import OptionParser
 
 usage = "usage: %prog [options] file"
-parser = OptionParser(usage=usage, prog="larch",
-                      version="%s" % larch.__version__)
-parser.add_option("-q", "--quiet", dest="quiet", action="store_true",
-                  default=False, help="set quiet mode, default = False")
+parser = OptionParser(usage=usage, prog="larch_wx", version="0.1")
 
 parser.add_option("-d", "--debug", dest="debug", action="store_true",
                   default=False, help="set debug mode, default = False")
@@ -24,21 +23,217 @@ parser.add_option("-e", "--exec", dest="exec_script_only", action="store_true",
 
 (options, args) = parser.parse_args()
 
-t = larch.shell(debug=options.debug,userbanner=userbanner)
+if options.debug:
+    import lib as larch
+else:
+    import larch
 
-if len(args)>0:
-    for s in args:
-        if s.endswith('.py'):
-            t.default("import %s" %  s[:-3])
-        else:
-            t.input.interactive = False
-            finp = open(s,'r')
-            for itxt, txt in enumerate(finp.readlines()):
-                t.input.put(txt[:-1], lineno=itxt, filename=s)
-            finp.close()
-            t.larch_execute('')
-            t.input.interactive = True
+PS1 = "larch> "
+PS2 = ".....> "
+MAXHIST = 1000
+BANNER = """  Larch %s  M. Newville, T. Trainor (2011)
+  using python %s, numpy %s, wx-enabled: version %s
+""" %  (larch.__version__,
+        '%i.%i.%i' % sys.version_info[:3],
+        numpy.__version__, wx.__version__)
 
-if not options.exec_script_only:
-    t.cmdloop()
+PLUGINS = ('xafs',)
 
+def hijack_wx():
+    """borrowed from IPython's hijack_wx"""
+    def dummyloop(*args, **kw):
+        "dummy main loop"
+        pass
+    orig_wxloop = wx._core_.PyApp_MainLoop
+    wx._core_.PyApp_MainLoop = dummyloop
+    return orig_wxloop
+
+class LarchShell(object):
+    """Basic Larch Execution Shell"""
+    def __init__(self, atexit=None):
+        self.buff = []
+        self.atexit = atexit
+        self.in_progress = True
+        self.rdline = None
+        try:
+            import readline, rlcompleter
+            readline.parse_and_bind("tab: complete")
+            self.rdline = readline
+        except ImportError:
+            pass
+        self.historyfile = larch.site_config.history_file
+        if self.rdline is not None:
+            try:
+                self.rdline.read_history_file(self.historyfile)
+            except IOError:
+                pass
+
+        self.larch = larch.Interpreter()
+        self.input = larch.InputText(prompt=PS1, interactive=False)
+        self.larch.writer = sys.stdout
+
+    def execute(self):
+        """run actual larch code (built up and stored in self.input)"""
+        if not self.input.input_complete:
+            return
+        self.in_progress = True
+        while len(self.input) > 0:
+            block, fname, lineno = self.input.get()
+            ret = self.larch.eval(block, fname=fname, lineno=lineno)
+            if callable(ret) and not isinstance(ret, type):
+                try:
+                    if 1 == len(block.split()):
+                        ret = ret()
+                except:
+                    pass
+            if self.larch.error:
+                err = self.larch.error.pop(0)
+                fname, lineno = err.fname, err.lineno
+                sys.stdout.write("%s:\n%s\n" % err.get_error())
+                for err in self.larch.error:
+                    if ((err.fname != fname or err.lineno != lineno) and
+                        err.lineno > 0 and lineno > 0):
+                        sys.stdout.write("%s\n" % (err.get_error()[1]))
+                self.input.clear()
+                break
+            elif ret is not None:
+                sys.stdout.write("%s\n" % repr(ret))
+        self.in_progress = False
+
+    def get_input(self):
+        """ get input from shell (with raw_input)
+        look for exit, quit, Ctrl-D, and also look for help
+        and shell commands.
+
+        returns False when ready to exit, otherwise True
+        """
+        # if there is already input and it is complete,
+        # wait for it to be executed by wxtimer thread.
+        while self.input.input_complete and len(self.input)>0:
+            time.sleep(0.001)
+        # in_progess suggests code is still being executed
+        if self.in_progress:
+            return True
+        # set prompt
+        prompt = PS1
+        if not self.input.input_complete:
+            prompt = PS2
+        # get raw input
+        try:
+            text = raw_input(prompt)
+        except EOFError:
+            text = 'EOF'
+
+        if text in ('quit', 'exit', 'EOF'):
+            self.in_progress = False
+            if hasattr(self.atexit, '__call__'):
+                self.atexit()
+            return False
+        if text.startswith('help'):
+            arg = text[4:]
+            if ((arg.startswith('(') and arg.endswith(')')) or
+                (arg.startswith("'") and arg.endswith("'")) or
+                (arg.startswith('"') and arg.endswith('"'))):
+                arg = arg[1:-1]
+            text  = "help(%s)"% (repr(arg))
+        if text.startswith('!'):
+            os.system(text[1:])
+        elif len(text) > 0:
+            self.input.put(text, lineno=0)
+        return True
+
+class WxShellTimer(wx.MiniFrame):
+    """hidden wx frame that contains a timer widget.
+    This timer widget is what executes Shell code.
+    """
+    def __init__(self):
+        wx.MiniFrame.__init__(self, None, -1, '')
+        self.Show(False)
+        tid = wx.NewId()
+        self.timer = wx.Timer(self, tid)
+        wx.EVT_TIMER(self,  tid, self.OnTimer)
+        self.shell = None
+        self.in_progress = True
+
+    def Start(self):
+        """Add wx components to shell, start timer to execute shell code"""
+        self.in_progress = True
+        self.shell.larch.add_plugin('wx', wxparent=self)
+        for p in PLUGINS:
+            self.shell.larch.add_plugin(p)
+        self.shell.larch.run_init_scripts()
+        self.shell.execute()
+
+        self.timer.Start(50)
+        self.in_progress = False
+
+    def Stop(self):
+        self.timer.Stop()
+        self.in_progress = False
+        self.shell.larch = None
+        self.Destroy()
+
+    def OnTimer(self, event=None):
+        """timer events -- here we execute any un-executed shell code"""
+        if self.shell.input.input_complete:
+            self.shell.execute()
+        time.sleep(0.001)
+
+
+class WxLarchShell(threading.Thread):
+    """wx-enabled Larch Shell"""
+    def __init__(self):
+        self.shell = LarchShell(atexit=self.atexit)
+        class App(wx.App):
+            """very basic wxApp, holding a WxShellTimer"""
+            def OnInit(self):
+                'Create the main window and insert the custom frame'
+                self.wxtimer = WxShellTimer()
+                self.wxtimer.Show(False)
+                return True
+        self.app = App(redirect=False)
+        self.app.wxtimer.shell = self.shell
+        threading.Thread.__init__(self)
+
+    def atexit(self, *args):
+        """run at exit of main shell:
+        1. write readline history
+        2. exit wx mainloop
+        """
+        rdline = self.shell.rdline
+        if rdline is not None:
+            nhist = rdline.get_current_history_length()
+            last_cmd = rdline.get_history_item(nhist)
+            if last_cmd.lower() in ('quit', 'exit', 'EOF'):
+                try:
+                    rdline.remove_history_item(nhist-1)
+                except (ValueError, AttributeError):
+                    pass
+            rdline.set_history_length(MAXHIST)
+            rdline.write_history_file(self.shell.historyfile)
+
+        if self.app is not None:
+            self.app.wxtimer.Stop()
+            self.app.ProcessIdle()
+            self.app.ExitMainLoop()
+
+    def run(self):
+        """run for main thread: just get input for shell.
+        note that wxtimer events cause LarchShell.execute"""
+        while self.shell.in_progress:
+            time.sleep(0.001)
+        while self.shell.get_input():
+            continue
+
+    def mainloop(self):
+        """mainloop for WxShell"""
+        self.start()
+        sys.stdout.write(BANNER)
+        sys.stdout.flush()
+        self.app.wxtimer.Start()
+        self.app.MainLoop()
+
+
+if __name__ == '__main__':
+    ws = WxLarchShell()
+    ws.mainloop()
