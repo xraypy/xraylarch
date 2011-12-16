@@ -3,6 +3,7 @@
 import os
 import imp
 import sys
+import traceback
 from helper import Helper
 from . import inputText
 from . import site_config
@@ -315,8 +316,18 @@ def _addplugin(plugin, system=False, larch=None, **kws):
                 out = imp.load_module(plugin, fh, modpath, desc)
                 larch.symtable.add_plugin(out, **kws)
             except:
-                larch.writer.write('Warning: could not find plugin %s!\n' %
-                                   plugin)
+                msg = 'Warning: could not load plugin %s!\n' % plugin
+                larch.raise_exception(None, msg=msg, py_exc=sys.exc_info())
+
+        if larch.error:
+            err = larch.error.pop(0)
+            fname, lineno = err.fname, err.lineno
+            output = []
+            for err in larch.error:
+                if ((err.fname != fname or err.lineno != lineno) and
+                    err.lineno > 0 and lineno > 0):
+                    output.append("%s" % (err.get_error()[1]))
+            print '\n'.join(output)
         if fh is not None:
             fh.close()
         return
@@ -331,7 +342,7 @@ def _dir(obj=None, larch=None, **kws):
 
     if obj is None:
         obj = larch.symtable
-    
+
     return dir(obj)
 
 local_funcs = {'group':_group,
