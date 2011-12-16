@@ -62,7 +62,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     elif nam == 'wel':
         fwin[i1:i2] = 1 - ((x[i1:i2]-x2) / (x2-x1))**2
         fwin[i3:i4] = 1 - ((x[i3:i4]-x3) / (x4-x3))**2
-    elif nam == 'kai': 
+    elif nam == 'kai':
         cen  = (x4+x1)/2
         wid  = (x4-x1)/2
         arg  = wid**2 - (x-cen)**2
@@ -105,18 +105,19 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2,
                 window=window, larch=larch)
 
     out = kstep*sqrt(pi) * fft(win*chi_*k_**kw)[:nfft/2]
-
+    delr = pi/(kstep*nfft)
+    irmax = min(nfft/2, 1 + int(rmax_out/delr))
     if larch.symtable.isgroup(group):
-        r   = arange(nfft/2) * pi/ (kstep * nfft)
+        r   = delr * arange(irmax)
         mag = sqrt(out.real**2 + out.imag**2)
-        setattr(group, 'r', r)
-        setattr(group, 'chir',   out)
-        setattr(group, 'kwin',   win)        
-        setattr(group, 'chir_mag',  mag)
-        setattr(group, 'chir_re', out.real)
-        setattr(group, 'chir_im', out.imag)
-
-    return out
+        setattr(group, 'r', r[:irmax])
+        setattr(group, 'chir',   out[:irmax])
+        setattr(group, 'kwin',   win[:irmax])
+        setattr(group, 'chir_mag',  mag[:irmax])
+        setattr(group, 'chir_re', out.real[:irmax])
+        setattr(group, 'chir_im', out.imag[:irmax])
+    else:
+        return out[:irmax]
 
 
 def xafsft_fast(chi, nfft=2048, larch=None, **kws):
