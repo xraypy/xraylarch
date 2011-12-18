@@ -1,0 +1,49 @@
+
+def read_mapfile(fname):
+   out = h5group(fname)
+   if not 'xrf_map' in dir(out):
+       print 'Warning - not a valid GSE HDF5 map file'
+       out = None
+   #endif
+   return out
+#enddef
+
+def roimap(g, roiname, win=1):
+    """display a 2D-map for named ROI from group read from a mapfile
+         g        = group as read with   g = read_mapfile('myfile.h5')
+         roiname  = name of ROI      'Fe Ka', etc
+         win      = index of image window to use
+       note that if roiname is not an exact match, a guess is made, so that
+         roimap(g, 'fe')
+       will probably work.
+    """
+
+    fname = g.xrf_map.config.scan.filename.value
+    scan = g.xrf_map.scan
+    x = scan.pos[0, :, 0]
+    y = scan.pos[:, 0, 1]
+
+    iroi = -1
+    if roiname in scan.sum_name:
+        iroi = scan.sum_name.index(roiname)
+    else:
+        rname = roiname.lower()
+        for i, sname in enumerate(scan.sum_name):
+            if sname.lower().startswith(rname):
+                iroi = i
+                roiname = sname
+                break
+            #endif
+        #endfor
+    #endif
+    if iroi > 0:
+        imshow(scan.sum_dtcorr[:,:,iroi],
+               x=x, y=y, win=win,
+               title="%s: %s  " % (fname, roiname))
+    else:
+        print "couldn't find roi '%s' " % roiname
+        print "should be one of:"
+        print scan.sum_name
+    #endif
+#enddef
+

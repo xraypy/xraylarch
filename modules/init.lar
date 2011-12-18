@@ -1,4 +1,0 @@
-##
-## add custom startup code here.
-## 
-print 'Default Larch Startup'
