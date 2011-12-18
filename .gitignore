@@ -1,0 +1,8 @@
+*.pyc
+*~
+*#
+doc/_build
+doc/*.pdf
+build
+dist
+NonGit/
