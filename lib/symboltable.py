@@ -86,11 +86,11 @@ class SymbolTable(Group):
     top_group   = '_main'
     core_groups = ('_sys', '_builtin', '_math')
     __invalid_name = InvalidName()
-    _private_methods = ('save_frame', 'restore_frame', 'set_frame',
-                        'has_symbol', 'has_group', 'get_group',
-                        'show_group', 'create_group', 'new_group',
-                        'get_symbol', 'set_symbol',  'del_symbol',
-                        'get_parent', 'add_plugin')
+    _private = ('save_frame', 'restore_frame', 'set_frame',
+                'has_symbol', 'has_group', 'get_group',
+                'show_group', 'create_group', 'new_group',
+                'get_symbol', 'set_symbol',  'del_symbol',
+                'get_parent', 'add_plugin', 'path')
 
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
@@ -245,19 +245,21 @@ class SymbolTable(Group):
         returns symbol given symbol name,
         creating symbol if needed (and create=True)"""
         cache = self._fix_searchGroups()
-
         searchGroups = [cache['localGroup'], cache['moduleGroup']]
         searchGroups.extend(cache['searchGroups'])
 
         if self not in searchGroups:
             searchGroups.append(self)
 
+        def public_attr(grp, name):
+            return (hasattr(grp, name)  and
+                    not (grp is self and name in self._private))
+
         parts = name.split('.')
         if len(parts) == 1:
             for grp in searchGroups:
-                if hasattr(grp, name):
-                    if not (grp is self and name in self._private_methods):
-                        return getattr(grp, name)
+                if public_attr(grp, name):
+                    return getattr(grp, name)
 
         # more complex case: not immediately found in Local or Module Group
 
@@ -268,11 +270,8 @@ class SymbolTable(Group):
             out = self
         else:
             for grp in searchGroups:
-                if hasattr(grp, top):
-                    if not (grp is self and name in self._private_methods):
-                        out = getattr(grp, top)
-
-
+                if public_attr(grp, top):
+                    out = getattr(grp, top)
         if out is self.__invalid_name:
             raise LookupError("cannot locate symbol '%s'" % name)
 

@@ -38,7 +38,7 @@ def _show(sym=None, larch=None, **kws):
     out = ['== %s: %i symbols ==' % (title, len(members))]
     for item in members:
         if not (item.startswith('_Group__') or
-                item == '__name__' or
+                item == '__name__' or item == '_larch' or
                 item.startswith('_SymbolTable__')):
             obj = getattr(group, item)
             dval = None
