@@ -5,7 +5,7 @@
 import sys
 import types
 import numpy
-from larch.symboltable import HAS_NUMPY
+from larch.interpreter import HAS_NUMPY
 
 def _show(sym=None, larch=None, **kws):
     """display group members"""
@@ -16,7 +16,6 @@ def _show(sym=None, larch=None, **kws):
     group = None
     symtable = larch.symtable
     title = sym
-
     if symtable.isgroup(sym):
         group = sym
         title = repr(sym)[1:-1]
@@ -29,7 +28,6 @@ def _show(sym=None, larch=None, **kws):
     if group is None:
         larch.writer.write("%s\n" % repr(sym))
         return
-
     if title.startswith(symtable.top_group):
         title = title[6:]
 
@@ -42,7 +40,6 @@ def _show(sym=None, larch=None, **kws):
         if not (item.startswith('_Group__') or
                 item == '__name__' or
                 item.startswith('_SymbolTable__')):
-            # out.append('  %s: %s' % (item, repr(getattr(group, item))))
             obj = getattr(group, item)
             dval = None
             if HAS_NUMPY and isinstance(obj, numpy.ndarray):

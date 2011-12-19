@@ -29,49 +29,52 @@ def _read_ascii(fname, delim='#;*%', labels=None, larch=None):
 
     If labels=False, the 'data' variable will contain the 2-dimensional data.
     """
-    kws = {}
     finp = open(fname, 'r')
-    kws['filename'] = fname
+    kws = {'filename': fname}
+    _labels = None
     text = finp.readlines()
     finp.close()
     data = []
     header_txt = []
     header_kws = {}
-    mode = 'Header'
-    for line in text:
+    islabel = False
+    for iline, line in enumerate(text):
         line = line[:-1].strip()
-        isheader = line[0] in delim
-        if mode == 'Label':
-            kws['column_labels'] = [u.lower() for u in line[1:].split()]
-            mode = 'Data'
-        elif mode == 'Data':
+        if line[0] in delim:
+            if islabel:
+                _labels = line[1:].strip()
+                islabel = False
+            elif line[2:].strip().startswith('---'):
+                islabel = True
+            else:
+                words = line[1:].split(':', 1)
+                key = fixName(words[0].strip())
+                if key.startswith('_'):
+                    key = key[1:]
+                if len(words) == 1:
+                    header_txt.append(words[0].strip())
+                else:
+                    header_kws[key] = words[1].strip()
+        else:
             words = line.split()
             data.append([float(w) for w in words])
 
-        if isheader and line[1:].startswith('-----'):
-            mode = 'Label'
 
-        elif isheader:
-            words = line[1:].split(':', 1)
-            key = fixName(words[0].strip())
-            if key.startswith('_'):
-                key = key[1:]
-            if len(words) == 1:
-                header_txt.append(words[0].strip())
-            else:
-                header_kws[key] = words[1].strip()
-
-    data = numpy.array(data).transpose()
     kws['header'] = '\n'.join(header_txt)
     kws['attributes'] = header_kws
-
     if labels is None:
-        labels = kws['column_labels']
-    elif labels:
-        labels = labels.replace(',', ' ').split(' ')
+        labels = _labels
+    if labels is None:
+        labels = header_txt.pop()
+
+    data = numpy.array(data).transpose()
     if not labels:
         kws['data'] = data
     else:
+        try:
+            labels = labels.replace(',', ' ').split()
+        except:
+            labels = []
         for icol, col in enumerate(labels):
             kws[fixName(col.strip().lower())] = data[icol]
             if data.shape[0] >  len(labels):
