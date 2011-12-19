@@ -2,11 +2,8 @@
 Language Reference
 ============================
 
-This chapter describes further details of Larch language.  An important
-point for the discussion here is the fact that Larch is implemented using
-Python.  In addition to being implemented in Python, the Larch syntax is 
-heavily dependent on Python, and all the data in Larch are Python objects.
-In addition, Python is the principle way to extend Larch programs.
+This chapter describes further details of Larch language.  The most
+important here is the fact that Larch is closely related to Python.
 
 Of course, Python is well-documented and much of the Python documentation
 can be used for Larch.  Thus the discussion here focusses on the
