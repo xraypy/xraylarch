@@ -8,11 +8,6 @@ import types
 from .closure import Closure
 from .util import fixName
 from . import site_config
-try:
-    import numpy
-    HAS_NUMPY = True
-except ImportError:
-    HAS_NUMPY = False
 
 class Group(object):
     """Group: a container for variables, modules, and subgroups.
@@ -353,13 +348,6 @@ class SymbolTable(Group):
                 "cannot create subgroup of non-group '%s'" % grp)
             else:
                 setattr(grp, nam, Group())
-        if HAS_NUMPY and isinstance(value, list) and len(value) > 1:
-            if all(isinstance(elt, (int, float, complex)) for elt in value):
-                try:
-                    vtmp = numpy.array(value)
-                    value = vtmp
-                except:
-                    pass
 
         setattr(grp, child, value)
         return getattr(grp, child)
