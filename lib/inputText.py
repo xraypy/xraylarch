@@ -141,7 +141,7 @@ class InputText:
             self.input_complete = self.__isComplete(text)
             for txt in text.split('\n'):
                 self.input_buff.append((txt, self.input_complete,
-                                        fname, self.lineno))
+                                        self.eos, fname, self.lineno))
                 self.lineno += 1
 
         addText(text)
@@ -176,19 +176,20 @@ class InputText:
         Convert input buff (in self.input_buff) to valid python code
         and stores this (text, filename, lineno) into _fifo buffer
         """
-
         indent_level = 0
         oneliner  = False
         startkeys = self.block_friends.keys()
-
         self.input_buff.reverse()
         while self.input_buff:
-            text, complete, fname, lineno = self.input_buff.pop()
-
+            text, complete, eos, fname, lineno = self.input_buff.pop()
+            long_text = eos in '"\''
             sindent = self.indent*(indent_level+1)
             while not complete:
-                tnext, complete, fname, lineno2 = self.input_buff.pop()
-                text = "%s\n  %s%s" % (text, sindent, tnext)
+                tnext, complete, xeos, fname, lineno2 = self.input_buff.pop()
+                if long_text:
+                    text = "%s\n%s" % (text, tnext)
+                else:
+                    text = "%s\n  %s%s" % (text, sindent, tnext)
 
             text  = text.strip().rstrip()
             txt   = text.replace('(', ' (').replace(')', ' )')
@@ -198,7 +199,7 @@ class InputText:
                 if text[0:3] == text[0]*3:
                     delim = text[0:3]
                 while not find_delims(text, delim=delim)[0]:
-                    tnext, complete, fname, lineno2 = self.input_buff.pop()
+                    tnext, complete, eos, fname, lineno2 = self.input_buff.pop()
                     text = "%s\n %s%s" % (text, sindent, tnext)
 
             # note here the trick of replacing '#end' with '&end' so
@@ -311,7 +312,7 @@ class InputText:
         """returns whether input text is a complete:
         that is: does not contains unclosed parens or quotes
         and does not end with a backslash
-        tores state information from previous textline in
+        stores state information from previous textline in
             self.eos    = char(s) to look for 'end of string' ("" == string complete)
             self.delims = current list of closing delims being waited for
         """
