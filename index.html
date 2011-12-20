@@ -1,77 +1,196 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset='utf-8'>
 
-  <title>newville/xraylarch @ GitHub</title>
 
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #5ac46c;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #000000;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #a53b93; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #a53b93; }
-    h3 { text-align: center; color: #a53b93; }
-    a { color: #a53b93; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
-</head>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<body>
-  <a href="http://github.com/newville/xraylarch"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
 
-  <div id="container">
-
-    <div class="download">
-      <a href="http://github.com/newville/xraylarch/zipball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/newville/xraylarch/tarball/master">
-        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Larch &mdash; larch 0.9.7 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.7 documentation" href="#" />
+    <link rel="next" title="Larch Tutorial" href="tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="Larch Tutorial"
+             accesskey="N">next</a> |</li>
+        <li><a href="#">larch 0.9.7 documentation</a> &raquo;</li> 
+      </ul>
     </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Downloads</h3>
+<p>Current version: <b>0.9.7</b></p>
+<p>Downloads:
+<ul>
+  <li>&nbsp; &nbsp; <a href="http://cars.uchicago.edu/software/python/larch/src/">cars.uchicago.edu</a>
+</ul>
+<p>
 
-    <h1><a href="http://github.com/newville/xraylarch">xraylarch</a>
-      <span class="small">by <a href="http://github.com/newville">newville</a></span></h1>
+Development version: <br> &nbsp; &nbsp; <a href="https://github.com/xraypy/xraylarch/">github.com</a> <br>
 
-    <div class="description">
-      X-ray Analysis Applications with Larch and Python
+<h3>Documentation</h3>
+
+<a href="larch.pdf">  PDF Format</a>
+<hr>
+<p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="larch">
+<h1>Larch<a class="headerlink" href="#larch" title="Permalink to this headline">¶</a></h1>
+<p>Larch is a scientific data processing language that is designed to be</p>
+<blockquote>
+<div><ul class="simple">
+<li>easy to use for novices.</li>
+<li>complete enough for intermediate to advanced data processing.</li>
+<li>data-centric, so that arrays of data are easy to manage and use.</li>
+<li>easily extensible with python.</li>
+</ul>
+</div></blockquote>
+<p>Larch is targeted at tools and algorithms for analyzing x-ray spectroscopic
+and scattering data, especially the sets of data collected at modern
+synchrotrons.  It has several related target applications, all meant to be
+better connected through a common <em>macro language</em> for dealing with
+scientific data sets.</p>
+<p>Many data collection, visualization, and analysis programs have an ad-hoc
+macro languages built in that allow some amount of customization,
+automation, scripting, and extension of the fundamental operations
+supported by the programs.  These macro languages are rarely used in more
+than one program, making communication and sharing data between programs
+very hard.</p>
+<p>Larch is an attempt to make a macro language that can be used for many such
+applications, so that the algorithms and techniques for visualization and
+analysis can be better shared between different programs and fields.  In
+this respect, Larch is meant to be the foundation or framework upon which
+data collection, visualization, and analysis programs can be written.  By
+having a common, extensible macro language and analysis environment, the
+hope is that it will be easier to make data collection, visualization, and
+analysis programs interact.</p>
+<p>Larch is written in Python, has syntax that is quite closely related to
+Python, and makes use of many great efforts in Python, especially for
+scientific computing.  These include numpy, scipy, and matplotlib.</p>
+<p>The initial target application areas for Larch are</p>
+<blockquote>
+<div><ul class="simple">
+<li>XAFS analysis, becoming Ifeffit verversio 2</li>
+<li>tools for micro-XRF mapping visualization and analysis.</li>
+<li>quantitative XRF analysis.</li>
+<li>X-ray standing waves and surface scattering analysis.</li>
+</ul>
+</div></blockquote>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Larch Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#getting-started">Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#larch-as-a-basic-calculator">Larch as a Basic Calculator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#basic-data-types">Basic Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#more-complex-data-structures-lists-arrays-dictionaries">More Complex Data Structures:  Lists, Arrays, Dictionaries</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial.html#lists">Lists</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial.html#tuples">Tuples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial.html#a-second-look-at-strings">A second look at Strings</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial.html#arrays">Arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial.html#dictionaries">Dictionaries</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#conditional-execution-and-control-flow">Conditional Execution and Control-Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#object-and-groups">Object and Groups</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial.html#objects">Objects</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#reading-and-writing-data">Reading and Writing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#plotting-and-displaying-data">Plotting and Displaying Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#procedures">Procedures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#dealing-with-errors">Dealing With Errors</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="language.html">Language Reference</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="language.html#language">Language</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xafs.html">XAFS Analysis with Larch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xrf.html">XRF Analysis with Larch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Downloading and Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installation.html#license">License</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
     </div>
-
-    <h2>Authors</h2>
-<p>Matt Newville (newville@cars.uchicago.edu)<br/><br/>      </p>
-<h2>Contact</h2>
-<p>Matt Newville (matt.newville@gmail.com)<br/>      </p>
-
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="http://github.com/newville/xraylarch/zipball/master">zip</a> or
-      <a href="http://github.com/newville/xraylarch/tarball/master">tar</a> formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/newville/xraylarch</pre>
-    </p>
-
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial.html" title="Larch Tutorial"
+             >next</a> |</li>
+        <li><a href="#">larch 0.9.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
     <div class="footer">
-      get the source code on GitHub : <a href="http://github.com/newville/xraylarch">newville/xraylarch</a>
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
     </div>
-
-  </div>
-
-  
-</body>
+  </body>
 </html>
