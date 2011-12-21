@@ -68,11 +68,11 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     edge_step = post_edge[ie0] - pre_edge[ie0]
     norm  = (mu - pre_edge)/edge_step
     if larch.symtable.isgroup(group):
-        setattr(group, 'e0',         e0)
-        setattr(group, 'edge_step',  edge_step)
-        setattr(group, 'norm',       norm)
-        setattr(group, 'pre_edge',   pre_edge)
-        setattr(group, 'post_edged', post_edge)
+        setattr(group, 'e0',        e0)
+        setattr(group, 'edge_step', edge_step)
+        setattr(group, 'norm',      norm)
+        setattr(group, 'pre_edge',  pre_edge)
+        setattr(group, 'post_edge', post_edge)
     return edge_step, e0
 
 def registerLarchPlugin():
