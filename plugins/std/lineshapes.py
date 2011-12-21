@@ -1,16 +1,12 @@
 #!/usr/bin/env python
 """
-Some common lineshapes
+Some common lineshapes and distribution functions
 """
-import numpy as np
-import scipy
-from scipy.special import gamma
+from numpy import pi, log, exp, sqrt
 
-log2 = np.log(2)
-pi = np.pi
-log = np.log
-exp = np.exp
-sqrt = np.sqrt
+from scipy.special import gamma, beta
+
+log2 = log(2)
 
 def gaussian(x, amp, cen, sigma, larch=None):
     "1 dimensional gaussian"
@@ -26,7 +22,8 @@ def pvoigt(x, amp, cen, sigma, frac, larch=None):
                   lorentzian(x, frac,    cen, sigma))
 
 def pearson7(x, amp, cen, sigma, expon, larch=None):
-    "pearson7 lineshape"
+    """"pearson7 lineshape, according to NIST StRD
+    though it seems wikpedia gives a different formula... """
     scale = amp * gamma(expon) * sqrt((2**(1/expon) -1)) / (gamma(expon-0.5)) / (sigma*sqrt(pi))
     return scale / (1 + ( ((1.0*x-cen)/sigma)**2) * (2**(1/expon) -1) )**expon
 
