@@ -134,7 +134,8 @@ folder (say, $HOME/.larch/plugins/ on Unix), then::
 
    larch> add_plugin('myplugin')
 
-will add a top-level group 'mymod' with an 'f1' function, so that
+will add a top-level group 'mymod' with an 'f1' function, so that::
+
    larch> g1 = mymod.f1(10, 'yes')
    larch> print g1
    <Group created by f1!>
