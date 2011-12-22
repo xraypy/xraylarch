@@ -113,7 +113,47 @@ Python.   The principle differences with Python are:</p>
 <li>Not implementing several python concepts, notably Class, and lambda.</li>
 </ol>
 </div></blockquote>
-<p>These are discussed in more detail below</p>
+<p>Each of these is discussed in more detail below.</p>
+<p>Some background and discussion of Larch implementation may help inform the
+discussion below, and help describe many of the design decisions made in
+Larch.  First and foremost, Larch is designed to be a domain-specific macro
+language that makes heavy use of Python&#8217;s wonderful tools for processing
+scientific data.  Having a macro language that was similar to Python was
+not the primary goal.  The first version of Larch actually had much weaker
+correspondance to Python.  It turned out that the implementation was much
+easier and more robust when using syntax close to Python.</p>
+<p>When larch code is run, the text is first <em>translated into Python code</em> and
+then parsed by Python&#8217;s own  <em>ast</em> module which parses Python code into an
+<em>abstract syntax tree</em> that is much more convenient for a machine to
+execute.   As a brief description of what this module does, the statement:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="p">)</span><span class="o">+</span><span class="n">c</span>
+</pre></div>
+</div>
+<p>will be parsed and translated into something like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">Add</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">),</span> <span class="n">Mult</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">),</span> <span class="n">Call</span><span class="p">(</span><span class="n">Name</span><span class="p">(</span><span class="s">&#39;sin&#39;</span><span class="p">),</span> <span class="n">Args</span><span class="p">([</span><span class="n">Mult</span><span class="p">(</span><span class="n">Num</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">Name</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">))]))))</span>
+</pre></div>
+</div>
+<p>Larch then walks through this tree, executing each Add, Mult, etc on its
+arguments.  If you&#8217;ve ever done any text processing or thought about how a
+compiler works, you&#8217;ll see that having this translation step done by proven
+tools is a huge benefit.  For one thing, using Python&#8217;s own interpreter
+means that Larch simply does not having parsing errors &#8211; any problem would
+be translation of Larch code into Python, or in executing the compiled code
+above.  This also makes the core code implementing Larch much easier (the
+core functionality is fewer than 3000 lines of code).</p>
+<p>Given this main implementation feature of Larch, you can probably see where
+and how the differences with Python arise:</p>
+<blockquote>
+<div><ul class="simple">
+<li>The Larch-to-Python translation step converts the &#8216;end*&#8217; keywords into
+significant whitespace (&#8216;commenting out &#8216;endif&#8217; etc if needed).</li>
+<li>The lookup for symbols in <strong>Name(&#8216;c&#8217;)</strong> is done at run-time, allowing
+changes from the standard Python name lookup rules.</li>
+<li>Unimplemented Python constructs (class, lambda, etc) are parsed, but</li>
+</ul>
+</div></blockquote>
+<p>You can also see that Python&#8217;s syntax is followed very closely, so that the
+translation from Larch-to-Python is minimal.</p>
 <div class="section" id="code-blocks-with-end">
 <h3>Code Blocks with &#8216;end*&#8217;<a class="headerlink" href="#code-blocks-with-end" title="Permalink to this headline">¶</a></h3>
 <p>Larch does not use significant whitespace to define blocks.  There, that
@@ -171,7 +211,7 @@ exhaustive list):</p>
 </div>
 <div class="section" id="modules">
 <h2>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
-<p>Larch can import modules written in Larch (with a &#8216;.lar&#8217; extension) or
+<p>Larch can import modules either written in Larch (with a &#8216;.lar&#8217; extension) or
 Python (with a &#8216;.py&#8217; extension).  When importing a Python module, the full
 set of Python objects is imported as a module, which looks and acts exactly
 like a Group.</p>
@@ -190,24 +230,31 @@ module needs a <cite>larch</cite> keyword argument, which will be used to pass i
 instance of the current larch interpreter.  Normally, you will only need
 the <cite>symtable</cite> attribute of the <cite>larch</cite> variable, which is the symbol table
 used.</p>
-<p>In addition, all functions to be added to Larch need to be <em>registered</em>,
-by defining a function call <tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> that returns a
-tuple containing the name of the group containing the added functions, and
-a dictionary of Larch symbol names and functions.   Thus a simply plugin
-module would look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<p>In addition, all functions to be added to Larch need to be <em>registered</em>, by
+defining a function call <tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> that returns a tuple
+containing the name of the group containing the added functions, and a
+dictionary of Larch symbol names and functions.  A simple plugin module
+would look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  <span class="c"># Note:  larch instance passed in with keyword</span>
     <span class="k">if</span> <span class="n">larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
     <span class="n">group</span> <span class="o">=</span> <span class="n">larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;created by f1&#39;</span><span class="p">)</span>
-    <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="c"># add symbols by &quot;setting attributes&quot;</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
     <span class="k">return</span> <span class="n">group</span>
 
-<span class="k">def</span> <span class="nf">registerLarchPlugin</span><span class="p">():</span>
+<span class="k">def</span> <span class="nf">registerLarchPlugin</span><span class="p">():</span> <span class="c"># must have a function with this name!</span>
     <span class="k">return</span> <span class="p">(</span><span class="s">&#39;mymod&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;f1&#39;</span><span class="p">:</span> <span class="n">_f1</span><span class="p">})</span>
 </pre></div>
 </div>
+<p>This is a fairly trivial example, simply putting data into a Group.  Of
+course, the main point of a plugin is that you can do much more complicated
+work inside the function.</p>
 <p>If this is placed in a file called &#8216;myplugin.py&#8217; in the larch plugins
-folder (say, $HOME/.larch/plugins/ on Unix), then:</p>
+folder (either $HOME/.larch/plugins/ or /usr/local/share/larch/plugins on
+Unix, or C:UsersMElarchplugins or C:Program Fileslarchplugins on
+Windows), then:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s">&#39;myplugin&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -218,8 +265,8 @@ larch&gt; print g1
 larch&gt; print g1.x, g1.y
 (10, 'yes')</pre>
 </div>
-<p>Of course the point is that you can do much more complicated work in the
-plugin function.</p>
+<p>For commonly used plugins, the <tt class="xref py py-func docutils literal"><span class="pre">add_plugin()</span></tt> call can be added to your
+startup script.</p>
 </div>
 </div>
 
