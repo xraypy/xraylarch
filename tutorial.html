@@ -3,16 +3,13 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Larch Tutorial &mdash; larch 0.9.7 documentation</title>
-    
+    <title>Larch Tutorial &mdash; larch v0.9.7 documentation</title>
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
@@ -25,9 +22,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.7 documentation" href="index.html" />
-    <link rel="next" title="Language Reference" href="language.html" />
-    <link rel="prev" title="Larch" href="index.html" /> 
+    <link rel="top" title="larch v0.9.7 documentation" href="index.html" />
+    <link rel="next" title="Larch for Developers" href="developers.html" />
+    <link rel="prev" title="Downloading and Installation" href="installation.html" /> 
   </head>
   <body>
     <div class="related">
@@ -37,12 +34,12 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="language.html" title="Language Reference"
+          <a href="developers.html" title="Larch for Developers"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Larch"
+          <a href="installation.html" title="Downloading and Installation"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">larch 0.9.7 documentation</a> &raquo;</li> 
+        <li><a href="index.html">larch v0.9.7 documentation</a> &raquo;</li> 
       </ul>
     </div>
       <div class="sphinxsidebar">
@@ -75,11 +72,11 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">Larch</a></p>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Downloading and Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="language.html"
-                        title="next chapter">Language Reference</a></p>
+  <p class="topless"><a href="developers.html"
+                        title="next chapter">Larch for Developers</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/tutorial.txt"
@@ -88,7 +85,7 @@
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
+      <input type="text" name="q" size="18" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
@@ -231,8 +228,8 @@ cannot concatenate 'str' and 'int' objects
 <span class="s">&#39;stringstring&#39;</span>
 </pre></div>
 </div>
-<p>Larch has special variables for boolean or logical operations: <tt class="docutils literal"><span class="pre">True</span></tt> and
-<tt class="docutils literal"><span class="pre">False</span></tt>.  These are actually equal to 1 and 0, respectively, but are
+<p>Larch has special variables for boolean or logical operations: <tt class="xref docutils literal"><span class="pre">True</span></tt> and
+<tt class="xref docutils literal"><span class="pre">False</span></tt>.  These are actually equal to 1 and 0, respectively, but are
 mostly used in logical operations, which include operators &#8216;and&#8217;, &#8216;or&#8217;, and
 &#8216;not&#8217;, as well as comparison operators &#8216;&gt;&#8217;, &#8216;&gt;=&#8217;, &#8216;&lt;&#8217;, &#8216;&lt;=&#8217;, &#8216;==&#8217;, &#8216;!=&#8217;, and
 &#8216;is&#8217;.  Note that &#8216;is&#8217; expresses identity, which is a slightly stricter test
@@ -243,7 +240,7 @@ than &#8216;==&#8217; (equality), and is most useful for complex objects.:</p>
 <span class="bp">True</span>
 </pre></div>
 </div>
-<p>The special value <tt class="docutils literal"><span class="pre">None</span></tt> is used as a null value throughout Larch and
+<p>The special value <tt class="xref docutils literal"><span class="pre">None</span></tt> is used as a null value throughout Larch and
 Python.</p>
 <p>Finally, Larch knows about complex numbers, using a &#8216;j&#8217; to indicate the
 imaginary part of the number:</p>
@@ -325,7 +322,7 @@ object.  All lists will have an &#8216;append&#8217; method, as well as several 
 </ul>
 </div></blockquote>
 <p>Note that the methods that change the list do so <em>IN PLACE</em> and return
-<tt class="docutils literal"><span class="pre">None</span></tt>.  That is, to sort a list, do:</p>
+<tt class="xref docutils literal"><span class="pre">None</span></tt>.  That is, to sort a list, do:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -445,17 +442,17 @@ Strings can be indexed and sliced as with lists and tuples:</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="language.html" title="Language Reference"
+          <a href="developers.html" title="Larch for Developers"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Larch"
+          <a href="installation.html" title="Downloading and Installation"
              >previous</a> |</li>
-        <li><a href="index.html">larch 0.9.7 documentation</a> &raquo;</li> 
+        <li><a href="index.html">larch v0.9.7 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2011, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
     </div>
   </body>
 </html>

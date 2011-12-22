@@ -1,0 +1,253 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Larch for Developers &mdash; larch v0.9.7 documentation</title>
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.7',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="larch v0.9.7 documentation" href="index.html" />
+    <link rel="next" title="Language Reference" href="language.html" />
+    <link rel="prev" title="Larch Tutorial" href="tutorial.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="language.html" title="Language Reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Larch Tutorial"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">larch v0.9.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Larch for Developers</a><ul>
+<li><a class="reference internal" href="#larch-vs-python">Larch vs Python</a><ul>
+<li><a class="reference internal" href="#code-blocks-with-end">Code Blocks with &#8216;end*&#8217;</a></li>
+<li><a class="reference internal" href="#groups-vs-modules">Groups vs Modules</a></li>
+<li><a class="reference internal" href="#symbol-lookup-rules">Symbol Lookup Rules</a></li>
+<li><a class="reference internal" href="#unimplemented-features">Unimplemented features</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#modules">Modules</a></li>
+<li><a class="reference internal" href="#plugins">Plugins</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="previous chapter">Larch Tutorial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="language.html"
+                        title="next chapter">Language Reference</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/developers.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" size="18" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="larch-for-developers">
+<h1>Larch for Developers<a class="headerlink" href="#larch-for-developers" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes details of Larch language for developers and
+programmers wanting to extend Larch.  This document will assume you have
+some familiarity with Python.</p>
+<div class="section" id="larch-vs-python">
+<h2>Larch vs Python<a class="headerlink" href="#larch-vs-python" title="Permalink to this headline">¶</a></h2>
+<p>Larch is very similar to Python but there are some very important
+difffernces, especially for someone familiar with Python.  These
+differences are not because we feel Python is somehow inadequate or
+imperfect, but because Larch is a domain-specific-language.  It is really
+something of an implementation detail that Larch&#8217;s syntax is so close to
+Python.   The principle differences with Python are:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>Using &#8216;end*&#8217; instead of significant white-space for code blocks.</li>
+<li>Groups versus Modules</li>
+<li>Changing the lookup rules for symbol names</li>
+<li>Not implementing several python concepts, notably Class, and lambda.</li>
+</ol>
+</div></blockquote>
+<p>These are discussed in more detail below</p>
+<div class="section" id="code-blocks-with-end">
+<h3>Code Blocks with &#8216;end*&#8217;<a class="headerlink" href="#code-blocks-with-end" title="Permalink to this headline">¶</a></h3>
+<p>Larch does not use significant whitespace to define blocks.  There, that
+was easy.   Instead, Larch uses &#8220;end blocks&#8221;, of the form:</p>
+<div class="highlight-python"><pre>if test:
+   &lt;block&gt;
+endif</pre>
+</div>
+<p>Each of the Keywords <em>if</em>, <em>while</em>, <em>for</em>, <em>def</em>, and <em>try</em> must be matched
+with a corresponding &#8216;end&#8217; keyword: <em>endif</em>, <em>endwhile</em>, <em>endfor</em>,
+<em>enddef</em>, and <em>endtry</em>.  You do not need an <em>endelse</em>, <em>endelif</em>,
+<em>endexcept</em>, etc, as this is not ambiguous.</p>
+<p>As a special note, you can place a &#8216;#&#8217; in front of &#8216;end&#8217;. Note that this
+means exactly 1 &#8216;#&#8217; and exactly in front of &#8216;end&#8217;, so that &#8216;#endif&#8217; is
+allowed but not &#8216;####endif&#8217; or &#8216;# endfor&#8217;.  This allows you to follow
+Python&#8217;s indenting rules and write code that is valid Larch and valid
+Python, which can be useful in translating code.</p>
+</div>
+<div class="section" id="groups-vs-modules">
+<h3>Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this headline">¶</a></h3>
+<p>This is at least partly a semantic distinction.  Larch organizes data and
+code into Groups &#8211; simple containers that hold data, functions, and other
+groups.  These are implemented as a simple, empty class that is part of the
+symbol table.</p>
+</div>
+<div class="section" id="symbol-lookup-rules">
+<h3>Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this headline">¶</a></h3>
+<p>The name lookups in Python are quite straightforward and strict: local,
+module, global.  They are also fairly focused on <em>code</em> rather than <em>data</em>.
+There is a tendency with Python scripts to use something like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<p>in quick-and-dirty scripts, though many experienced developers will tell
+you to avoid this like the plague.</p>
+<p>In Larch, there is a list of Groups
+namespaces that are</p>
+</div>
+<div class="section" id="unimplemented-features">
+<h3>Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this headline">¶</a></h3>
+<p>A domain-specific-language like Larch does not need to be as full-featured
+as Python, so we left a few things out.  These include (this may not be an
+exhaustive list):</p>
+<blockquote>
+<div><ul class="simple">
+<li>eval &#8211; Larch <em>is</em> sort of a Python eval</li>
+<li>lambda</li>
+<li>class</li>
+<li>global</li>
+<li>generators, yield</li>
+<li>decorators</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="modules">
+<h2>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
+<p>Larch can import modules written in Larch (with a &#8216;.lar&#8217; extension) or
+Python (with a &#8216;.py&#8217; extension).  When importing a Python module, the full
+set of Python objects is imported as a module, which looks and acts exactly
+like a Group.</p>
+</div>
+<div class="section" id="plugins">
+<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
+<p>Plugins are a powerful feature of Larch that allow it to be easily extended
+without the requiring detailed knowledge of all of Larch&#8217;s internals.  A
+plugin is a specially written Python module that is meant to add
+functionality to Larch at run-time.  Generally speaking, plugins will be
+python modules which define new or customized versions of functions to
+create or manipulate Groups.</p>
+<p>Plugins need access to Larch&#8217;s symbol table and need to tell Larch how to
+use them.  To do this, each function to be added to Larch in a plugin
+module needs a <cite>larch</cite> keyword argument, which will be used to pass in the
+instance of the current larch interpreter.  Normally, you will only need
+the <cite>symtable</cite> attribute of the <cite>larch</cite> variable, which is the symbol table
+used.</p>
+<p>In addition, all functions to be added to Larch need to be <em>registered</em>,
+by defining a function call <tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> that returns a
+tuple containing the name of the group containing the added functions, and
+a dictionary of Larch symbol names and functions.   Thus a simply plugin
+module would look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;created by f1&#39;</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">group</span>
+
+<span class="k">def</span> <span class="nf">registerLarchPlugin</span><span class="p">():</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s">&#39;mymod&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;f1&#39;</span><span class="p">:</span> <span class="n">_f1</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>If this is placed in a file called &#8216;myplugin.py&#8217; in the larch plugins
+folder (say, $HOME/.larch/plugins/ on Unix), then:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s">&#39;myplugin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="docutils">
+<dt>will add a top-level group &#8216;mymod&#8217; with an &#8216;f1&#8217; function, so that</dt>
+<dd>larch&gt; g1 = mymod.f1(10, &#8216;yes&#8217;)
+larch&gt; print g1
+&lt;Group created by f1!&gt;
+larch&gt; print g1.x, g1.y
+(10, &#8216;yes&#8217;)</dd>
+</dl>
+<p>Of course the point is that you can do much more complicated work in the
+plugin function.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="language.html" title="Language Reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Larch Tutorial"
+             >previous</a> |</li>
+        <li><a href="index.html">larch v0.9.7 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.0.7.
+    </div>
+  </body>
+</html>
