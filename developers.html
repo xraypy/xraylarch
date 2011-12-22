@@ -211,14 +211,13 @@ folder (say, $HOME/.larch/plugins/ on Unix), then:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s">&#39;myplugin&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<dl class="docutils">
-<dt>will add a top-level group &#8216;mymod&#8217; with an &#8216;f1&#8217; function, so that</dt>
-<dd>larch&gt; g1 = mymod.f1(10, &#8216;yes&#8217;)
+<p>will add a top-level group &#8216;mymod&#8217; with an &#8216;f1&#8217; function, so that:</p>
+<div class="highlight-python"><pre>larch&gt; g1 = mymod.f1(10, 'yes')
 larch&gt; print g1
 &lt;Group created by f1!&gt;
 larch&gt; print g1.x, g1.y
-(10, &#8216;yes&#8217;)</dd>
-</dl>
+(10, 'yes')</pre>
+</div>
 <p>Of course the point is that you can do much more complicated work in the
 plugin function.</p>
 </div>
