@@ -50,11 +50,12 @@ Contents:
 .. toctree::
    :maxdepth: 3
 
+   installation
    tutorial
+   developers
    language
    xafs
    xrf
-   installation
 
 Indices and tables
 ~~~~~~~~~~~~~~~~~~~~~~
