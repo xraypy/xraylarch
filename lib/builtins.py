@@ -3,6 +3,7 @@
 import os
 import imp
 import sys
+import time
 import numpy as np
 from helper import Helper
 from . import inputText
@@ -160,11 +161,10 @@ def _deriv(arr, larch=None, **kws):
     """take numerical derivitive of an array:"""
     if not isinstance(arr, np.ndarray):
         raise Warning("cannot take derivative of non-numeric array")
-
     n = len(arr)
     out  = np.zeros(n)
     out[0] = arr[1] - arr[0]
-    out[n-1] = arr[n-1] - arr[n-2]    
+    out[n-1] = arr[n-1] - arr[n-2]
     out[1:n-2] = [(arr[i+1] - arr[i-1])/2.0 for i in range(1, n-2)]
     return out
 
@@ -221,8 +221,7 @@ def _run(filename=None, larch=None, new_module=None,
             if larch.error:
                 break
         if not is_complete:
-            larch.raise_exception(None,
-                                  msg='Syntax Error -- input incomplete',
+            larch.raise_exception(msg='Syntax Error -- input incomplete',
                                   expr="\n".join(inptext.block),
                                   fname=fname, lineno=lineno)
 
@@ -234,8 +233,7 @@ def _run(filename=None, larch=None, new_module=None,
                 if ((err.fname != fname or err.lineno != lineno) and
                     err.lineno > 0 and lineno > 0):
                     output.append("%s" % (err.get_error()[1]))
-            larch.raise_exception(None,
-                                  msg='Syntax Error -- input incomplete',
+            larch.raise_exception(msg='Syntax Error -- input incomplete',
                                   expr="\n".join(inptext.block),
                                   fname=fname, lineno=lineno)
             inptext.clear()
@@ -330,7 +328,7 @@ def _addplugin(plugin, system=False, larch=None, **kws):
                 larch.symtable.add_plugin(out, **kws)
             except:
                 msg = 'Warning: could not load plugin %s!\n' % plugin
-                larch.raise_exception(None, msg=msg, py_exc=sys.exc_info())
+                larch.raise_exception(msg=msg, py_exc=sys.exc_info())
 
         if larch.error:
             err = larch.error.pop(0)
@@ -352,14 +350,24 @@ def _dir(obj=None, larch=None, **kws):
     "return directory of an object -- thin wrapper about python builtin"
     if larch is None:
         raise Warning("cannot run dir() -- larch broken?")
-
     if obj is None:
         obj = larch.symtable
-
     return dir(obj)
+
+def _pause(msg='Hit return to continue', larch=None):
+    if larch is None:
+        raise Warning("cannot pause() -- larch broken?")
+    return raw_input(msg)
+
+def _sleep(t=0, larch=None):
+    if larch is None:
+        raise Warning("cannot sleep() -- larch broken?")
+    return time.sleep(t)
 
 local_funcs = {'group':_group,
                'dir': _dir,
+               'pause': _pause,
+               'sleep': _sleep,
                'deriv': _deriv,
                'reload':_reload,
                'run': _run,

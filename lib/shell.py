@@ -16,11 +16,10 @@ BANNER = """  Larch %s  M. Newville, T. Trainor (2009)
 class shell(cmd.Cmd):
     ps1    = "larch> "
     ps2    = ".....> "
-    max_save_lines = 5000
     def __init__(self,  completekey='tab',   debug=False,
                  stdin=None, stdout=None, quiet=False,
-                 userbanner=None):
-
+                 banner_msg=None, maxhist=5000):
+        self.maxhist = maxhist
         self.debug  = debug
         try:
             import readline
@@ -46,25 +45,23 @@ class shell(cmd.Cmd):
         self.stdin = sys.stdin
         self.stdout = sys.stdout
 
-        if not quiet:
-            sys.stdout.write(BANNER % (__version__,
-                                       '%i.%i.%i' % sys.version_info[:3],
-                                       numpy.__version__))
+        if banner_msg is None:
+            banner_msg = BANNER % (__version__,
+                                   '%i.%i.%i' % sys.version_info[:3],
+                                   numpy.__version__)
 
-            if userbanner is not None:
-                sys.stdout.write("%s\n" % userbanner)
+        if not quiet:
+            sys.stdout.write("%s\n" % banner_msg)
 
         self.larch  = Interpreter()
-        self.input  = InputText(prompt=self.ps1)
+        self.input  = InputText(prompt=self.ps1, larch=self.larch)
         self.prompt = self.ps1
 
         self.larch.run_init_scripts()
-        # for fname in site_config.init_files:
-        #     self.default("run('%s')" % fname)
 
     def __del__(self):
         if (self.rdline):
-            self.rdline.set_history_length(1000)
+            self.rdline.set_history_length(self.maxhist)
             self.rdline.write_history_file(self.historyfile)
 
     def emptyline(self):
@@ -111,13 +108,10 @@ class shell(cmd.Cmd):
             os.system(text[1:])
         else:
             ret = None
-            self.input.put(text,lineno=0)
-
+            self.input.put(text, lineno=0)
             self.prompt = self.ps2
-            # print 'Input done ', self.input._fifo
             while len(self.input) > 0:
                 block,fname,lineno = self.input.get()
-                # print('Shell: block ', block )
                 ret = self.larch.eval(block, fname=fname, lineno=lineno)
                 if callable(ret) and not isinstance(ret, type):
                     try:
@@ -133,17 +127,9 @@ class shell(cmd.Cmd):
                         if self.debug or ((err.fname != fname or err.lineno != lineno)
                                      and err.lineno > 0 and lineno > 0):
                             sys.stdout.write("%s\n" % (err.get_error()[1]))
+
                     self.input.clear()
                     self.prompt = self.ps1
-                    if  self.debug:
-                        for err in self.larch.error:
-                            fname, lineno = err.fname, err.lineno
-                            sys.stdout.write("%s:\n%s\n" % err.get_error())
-                            for err in self.larch.error:
-                                if self.debug or ((err.fname != fname or err.lineno != lineno)
-                                                  and err.lineno > 0 and lineno > 0):
-                                    sys.stdout.write("%s\n" % (err.get_error()[1]))
-
                     break
                 elif ret is not None:
                     sys.stdout.write("%s\n" % repr(ret))

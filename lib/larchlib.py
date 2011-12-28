@@ -53,7 +53,6 @@ class LarchExceptionHolder:
             py_etype, py_eval = self.py_exc
             if py_etype is not None and py_eval is not None:
                 out.append("%s: %s" % (py_etype, py_eval))
-
         if self.fname == '<StdInput>' and self.lineno <= 0:
             out.append('<StdInput>')
         else:
@@ -63,8 +62,6 @@ class LarchExceptionHolder:
         if node_col_offset > 0:
             out.append("    %s^^^" % ((node_col_offset)*' '))
         return (self.msg, '\n'.join(out))
-
-
 
 class Procedure(object):
     """larch procedure:  function """
@@ -105,9 +102,7 @@ class Procedure(object):
 
     def __call__(self, *args, **kwargs):
         # msg = 'Cannot run Procedure %s' % self.name
-        # self.larch.raise_exception(None, msg=msg, expr='<>',
-        #                     fname=self.fname, lineno=self.lineno,
-        #                     py_exc=sys.exc_info())
+
 
         stable  = self.larch.symtable
         lgroup  = Group()
@@ -122,7 +117,7 @@ class Procedure(object):
                 msg = '%s (expected %i, got %i)'% (msg,
                                                    n_expected,
                                                    n_args)
-                self.larch.raise_exception(None, msg=msg, expr='<>',
+                self.larch.raise_exception(msg=msg, expr='<>',
                                      fname=self.fname, lineno=self.lineno,
                                      py_exc=sys.exc_info())
 
@@ -136,7 +131,7 @@ class Procedure(object):
             for t_a, t_kw in zip(args, self.kwargs):
                 if t_kw[0] in kwargs:
                     msg = msg % (t_kw[0], self.name)
-                    self.larch.raise_exception(None, msg=msg, expr='<>',
+                    self.larch.raise_exception(msg=msg, expr='<>',
                                          fname=self.fname,
                                          lineno=self.lineno,
                                          py_exc=sys.exc_info())
@@ -157,14 +152,14 @@ class Procedure(object):
             elif len(kwargs) > 0:
                 msg = 'extra keyword arguments for Procedure %s (%s)'
                 msg = msg % (self.name, ','.join(list(kwargs.keys())))
-                self.larch.raise_exception(None, msg=msg, expr='<>',
+                self.larch.raise_exception(msg=msg, expr='<>',
                                      fname=self.fname, lineno=self.lineno,
                                      py_exc=sys.exc_info())
 
         except (ValueError, LookupError, TypeError,
                 NameError, AttributeError):
             msg = 'incorrect arguments for Procedure %s' % self.name
-            self.larch.raise_exception(None, msg=msg, expr='<>',
+            self.larch.raise_exception(msg=msg, expr='<>',
                                  fname=self.fname,   lineno=self.lineno,
                                  py_exc=sys.exc_info())
 

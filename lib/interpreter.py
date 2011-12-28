@@ -128,11 +128,11 @@ class Interpreter:
 
     def unimplemented(self, node):
         "unimplemented nodes"
-        self.raise_exception(node,
-                             "'%s' not supported" % (node.__class__.__name__),
+        msg = "'%s' not supported" % (node.__class__.__name__)
+        self.raise_exception(node=node, msg=msg,
                              py_exc=sys.exc_info())
 
-    def raise_exception(self, node, msg='', expr=None,
+    def raise_exception(self, node=None, msg='', expr=None,
                         fname=None, lineno=-1, py_exc=None):
         "add an exception"
         if self.error is None:
@@ -170,7 +170,7 @@ class Interpreter:
         try:
             return ast.parse(text)
         except:
-            self.raise_exception(None, msg='Syntax Error',
+            self.raise_exception(msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
 
@@ -207,7 +207,7 @@ class Interpreter:
             return ret
 
         except:
-            self.raise_exception(node, msg='Runtime Error',
+            self.raise_exception(node=node, msg='Runtime Error',
                                  expr=expr, fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
 
@@ -224,7 +224,7 @@ class Interpreter:
         # print("COMPILE ", ast.dump(node))
         out = None
         if len(self.error) > 0:
-            self.raise_exception(node, msg='Syntax Error', expr=expr,
+            self.raise_exception(node=node, msg='Syntax Error', expr=expr,
                                  fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
         else:
@@ -232,7 +232,7 @@ class Interpreter:
             out = self.interp(node, expr=expr,
                               fname=fname, lineno=lineno)
         if len(self.error) > 0:
-            self.raise_exception(node, msg='Eval Error', expr=expr,
+            self.raise_exception(node=node, msg='Eval Error', expr=expr,
                                  fname=fname, lineno=lineno,
                                  py_exc=sys.exc_info())
         return out
@@ -244,7 +244,7 @@ class Interpreter:
                     builtins._run(filename=fname, larch=self,
                                   printall = True)
                 except:
-                    self.raise_exception(None, msg='Initialization Error',
+                    self.raise_exception(msg='Initialization Error',
                                          py_exc=sys.exc_info())
 
     def dump(self, node, **kw):
@@ -354,7 +354,7 @@ class Interpreter:
         elif nod.__class__ == ast.Attribute:
             if nod.ctx.__class__  == ast.Load:
                 errmsg = "cannot assign to attribute %s" % nod.attr
-                self.raise_exception(nod, errmsg)
+                self.raise_exception(node=nod, msg=errmsg)
 
             setattr(self.interp(nod.value), nod.attr, val)
 
@@ -401,13 +401,13 @@ class Interpreter:
                     fmt = "%s does not have attribute '%s'"
                 msg = fmt % (obj, node.attr)
 
-                self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
+                self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
 
         elif ctx == ast.Del:
             return delattr(sym, node.attr)
         elif ctx == ast.Store:
             msg = "attribute for storage: shouldn't be here!"
-            self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
+            self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
 
     def on_assign(self, node):    # ('targets', 'value')
         "simple assignment"
@@ -448,7 +448,7 @@ class Interpreter:
                 return val[(nslice)]
         else:
             msg = "subscript with unknown context"
-            self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
+            self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
 
     def on_delete(self, node):    # ('targets',)
         "delete statement"
@@ -466,7 +466,7 @@ class Interpreter:
                 self.symtable.del_symbol('.'.join(children))
             else:
                 msg = "could not delete symbol"
-                self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
+                self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
 
     def on_unaryop(self, node):    # ('op', 'operand')
         "unary operator"
@@ -616,7 +616,7 @@ class Interpreter:
         "raise statement"
         msg = "%s: %s" % (self.interp(node.type).__name__,
                           self.interp(node.inst))
-        self.raise_exception(node.type, msg=msg,
+        self.raise_exception(node=node.type, msg=msg,
                              py_exc=sys.exc_info())
 
     def on_call(self, node):
@@ -625,7 +625,7 @@ class Interpreter:
         func = self.interp(node.func)
         if not hasattr(func, '__call__'):
             msg = "'%s' is not callable!!" % (func)
-            self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
+            self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
 
         args = [self.interp(targ) for targ in node.args]
         if node.starargs is not None:
@@ -635,7 +635,7 @@ class Interpreter:
         for key in node.keywords:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
-                self.raise_exception(node, msg=msg, py_exc=sys.exc_info())
+                self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
 
             keywords[key.arg] = self.interp(key.value)
         if node.kwargs is not None:
@@ -734,7 +734,7 @@ class Interpreter:
                         thismod = builtins._run(filename=modname, larch=self,
                                                 new_module=name)
                     except:
-                        self.raise_exception(None, msg='Import Error',
+                        self.raise_exception(msg='Import Error',
                                              py_exc=sys.exc_info())
                     # print(" isLarch!!", name, modname)
                     # save current module group
@@ -750,7 +750,7 @@ class Interpreter:
                     __import__(name)
                     thismod = sys.modules[name]
                 except:
-                    self.raise_exception(None, msg='Import Error',
+                    self.raise_exception(msg='Import Error',
                                          py_exc=sys.exc_info())
                     return
         else: # previously loaded module, just do lookup
