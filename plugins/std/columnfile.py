@@ -62,12 +62,13 @@ def _read_ascii(fname, delim='#;*%', labels=None, larch=None):
 
     kws['header'] = '\n'.join(header_txt)
     kws['attributes'] = header_kws
+    kws['column_labels'] = []
     if labels is None:
         labels = _labels
     if labels is None:
         labels = header_txt.pop()
-
     data = numpy.array(data).transpose()
+    ncol, nrow = data.shape
     if not labels:
         kws['data'] = data
     else:
@@ -75,13 +76,12 @@ def _read_ascii(fname, delim='#;*%', labels=None, larch=None):
             labels = labels.replace(',', ' ').split()
         except:
             labels = []
-        for icol, col in enumerate(labels):
-            kws[fixName(col.strip().lower())] = data[icol]
-            if data.shape[0] >  len(labels):
-                for icol in range(data.shape[0] - len(labels)):
-                    colname = 'col%i' % (1+len(labels)+icol)
-                    kws[colname] = data[icol]
-                    kws['column_labels'].append(colname)
+        for icol in range(ncol):
+            colname = 'col%i' % (1+icol)
+            if icol < len(labels):
+                colname = fixName(labels[icol].strip().lower())
+            kws[colname] = data[icol]
+            kws['column_labels'].append(colname)
 
     group = larch.symtable.new_group(name='ascii_file %s' % fname)
     for key, val in kws.items():
