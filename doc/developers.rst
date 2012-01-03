@@ -37,7 +37,7 @@ then parsed by Python's own  *ast* module which parses Python code into an
 *abstract syntax tree* that is much more convenient for a machine to
 execute.   As a brief description of what this module does, the statement::
 
-    a*sin(2*b)+c 
+    a*sin(2*b)+c
 
 will be parsed and translated into something like::
 
@@ -56,10 +56,10 @@ Given this main implementation feature of Larch, you can probably see where
 and how the differences with Python arise:
 
    * The Larch-to-Python translation step converts the 'end*' keywords into
-     significant whitespace ('commenting out 'endif' etc if needed).  
+     significant whitespace ('commenting out 'endif' etc if needed).
    * The lookup for symbols in **Name('c')** is done at run-time, allowing
-     changes from the standard Python name lookup rules. 
-   * Unimplemented Python constructs (class, lambda, etc) are parsed, but 
+     changes from the standard Python name lookup rules.
+   * Unimplemented Python constructs (class, lambda, etc) are parsed, but
 
 You can also see that Python's syntax is followed very closely, so that the
 translation from Larch-to-Python is minimal.
@@ -83,7 +83,7 @@ As a special note, you can place a '#' in front of 'end'. Note that this
 means exactly 1 '#' and exactly in front of 'end', so that '#endif' is
 allowed but not '####endif' or '# endfor'.  This allows you to follow
 Python's indenting rules and write code that is valid Larch and valid
-Python, which can be useful in translating code. 
+Python, which can be useful in translating code.
 
 Groups vs Modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -91,7 +91,7 @@ Groups vs Modules
 This is at least partly a semantic distinction.  Larch organizes data and
 code into Groups -- simple containers that hold data, functions, and other
 groups.  These are implemented as a simple, empty class that is part of the
-symbol table. 
+symbol table.
 
 
 Symbol Lookup Rules
@@ -100,16 +100,16 @@ Symbol Lookup Rules
 The name lookups in Python are quite straightforward and strict: local,
 module, global.  They are also fairly focused on *code* rather than *data*.
 There is a tendency with Python scripts to use something like::
-    
+
     from numpy import *
 
 in quick-and-dirty scripts, though many experienced developers will tell
-you to avoid this like the plague.    
+you to avoid this like the plague.
 
-In Larch, there is a list of Groups 
-namespaces that are 
+In Larch, there is a list of Groups
+namespaces that are
 
-    
+
 
 
 Unimplemented features
@@ -122,7 +122,7 @@ exhaustive list):
     * eval -- Larch *is* sort of a Python eval
     * lambda
     * class
-    * global 
+    * global
     * generators, yield
     * decorators
 
@@ -151,7 +151,7 @@ use them.  To do this, each function to be added to Larch in a plugin
 module needs a `larch` keyword argument, which will be used to pass in the
 instance of the current larch interpreter.  Normally, you will only need
 the `symtable` attribute of the `larch` variable, which is the symbol table
-used.   
+used.
 
 In addition, all functions to be added to Larch need to be *registered*, by
 defining a function call :func:`registerLarchPlugin` that returns a tuple
@@ -167,17 +167,17 @@ would look like::
         setattr(group, 'y', y)
 
 	return group
- 
+
     def registerLarchPlugin(): # must have a function with this name!
         return ('mymod', {'f1': _f1})
 
 This is a fairly trivial example, simply putting data into a Group.  Of
 course, the main point of a plugin is that you can do much more complicated
-work inside the function. 
+work inside the function.
 
 If this is placed in a file called 'myplugin.py' in the larch plugins
 folder (either $HOME/.larch/plugins/ or /usr/local/share/larch/plugins on
-Unix, or C:\Users\ME\larch\plugins or C:\Program Files\larch\plugins on
+Unix, or C:\\Users\\ME\\larch\\plugins or C:\\Program Files\\larch\\plugins on
 Windows), then::
 
    larch> add_plugin('myplugin')
@@ -191,4 +191,4 @@ will add a top-level group 'mymod' with an 'f1' function, so that::
    (10, 'yes')
 
 For commonly used plugins, the :func:`add_plugin` call can be added to your
-startup script. 
+startup script.
