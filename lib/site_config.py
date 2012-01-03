@@ -39,19 +39,24 @@ else:
 #  determine the search path for modules
 
 modules_path, plugins_path = [], []
-modpath = [sys_larchdir]
+modpath = []
+
 if 'LARCHPATH' in os.environ:
     modpath.append(os.environ['LARCHPATH'].split(':'))
 else:
     modpath.append(usr_larchdir)
+
+modpath.append(sys_larchdir)
 
 for mp in modpath:
     mdir = join(mp, 'modules')
     if exists(mdir) and mdir not in modules_path:
         modules_path.append(mdir)
 
-sys_plugins_dir = os.path.join(sys_larchdir, 'plugins')
-usr_plugins_dir = os.path.join(usr_larchdir, 'plugins')
+for mp in (usr_larchdir, sys_larchdir):
+    mdir = join(mp, 'plugins')
+    if exists(mdir) and mdir not in plugins_path:
+        plugins_path.append(mdir)
 
 # initialization larch files to be run on startup
 init_files = []
@@ -69,14 +74,17 @@ history_file = join(home_dir, '.larch_history')
 if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')
 
-debug = False
-if debug:
-    print '----------------------------------------'
-    print 'home dir: ',     home_dir
-    print 'usrlarch dir: ', usr_larchdir
-    print 'history_file: ', history_file
-    print 'modules_path: ', modules_path
-    print 'plugins_path: ', sys_plugins_dir
-    print 'plugins_path: ', usr_plugins_dir
-    print 'init_files: ',   init_files
-    print '----------------------------------------'
+def show_site_config():
+    print """===  Larch Configuration 
+  users home directory: %s
+  users larch dir:      %s
+  users history_file:   %s
+  users startup files:  %s
+  modules search path:  %s
+  plugins search path:  %s
+========================
+""" % (home_dir, usr_larchdir, history_file, init_files,
+       modules_path, plugins_path)
+
+if __name__ == '__main__':
+    show_site_config()

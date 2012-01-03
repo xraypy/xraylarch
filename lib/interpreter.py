@@ -115,11 +115,11 @@ class Interpreter:
         for tnode in self.supported_nodes:
             self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
 
-        self.add_plugin('std', system=True)
+        self.add_plugin('std')
 
-    def add_plugin(self, mod, system=True, **kws):
+    def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
-        builtins._addplugin(mod, larch=self, system=system, **kws)
+        builtins._addplugin(mod, larch=self, **kws)
 
     def set_definedvariable(self, name, expr):
         """define a defined variable (re-evaluate on access)"""

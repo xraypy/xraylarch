@@ -13,10 +13,12 @@ wxWidgets has not yet been ported to Python 3.X.
 In addition, numpy, matplotlib, and wxPython are required.  These are
 simply installed as standard packages on almost all platforms.
 
+.. _larch github repository:   http://github.com/xraypy/xralarch
+
 All development is done through the `larch github repository`_.  To get a
 read-only copy of the atest version, use::
 
-   git clone http://github.com/newville/xraylarch.git
+   git clone http://github.com/xraypy/xraylarch.git
 
 
 Installation
@@ -26,6 +28,9 @@ Installation from source on any platform is::
 
    python setup.py install
 
+
+We'll build and distribute Windows binaries and use the Python Package
+Index soon....
 
 License
 ~~~~~~~~~~~~~~~~~

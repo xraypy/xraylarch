@@ -294,35 +294,56 @@ def _help(*args, **kws):
         return helper.getbuffer()
 
 
-def _addplugin(plugin, system=False, larch=None, **kws):
+def _addplugin(plugin, larch=None, **kws):
     """add plugin components from plugin directory"""
     if larch is None:
         raise Warning("cannot add plugins. larch broken?")
-
+    write = larch.writer.write
     errmsg = 'is not a valid larch plugin\n'
     pjoin = os.path.join
 
-    p_path = site_config.usr_plugins_dir
-    if system:
-        p_path = site_config.sys_plugins_dir
-    def _plugin_file(plugin, p_path):
-        is_package, fh, modpath, desc = False, None, None, [None, None, None]
+    def _find_plugin(plugin, p_path):
+        """find the plugin from path
+        returns True, package name for packages
+                False, (fh, modpath, desc) for imported modules
+                None, None for Not Found
+        """
+        mod, is_pkg = None, False
         try:
-            fh, modpath, desc = imp.find_module(plugin, [p_path])
+            mod = imp.find_module(plugin, [p_path])
         except ImportError:
-            is_package = os.path.isdir(pjoin(p_path, plugin))
-
-        if is_package or (desc[2] == imp.PKG_DIRECTORY):
-            moddir = pjoin(p_path, plugin)
-            for fname in os.listdir(moddir):
+            is_pkg = os.path.isdir(pjoin(p_path, plugin))
+        if is_pkg or (mod is not None and
+                      mod[2][2] == imp.PKG_DIRECTORY):
+            return True, pjoin(p_path, plugin)
+        elif mod is not None:
+            return False, mod
+        else:
+            return None, None
+            
+    def _plugin_file(plugin, path=None):
+        "defined here to allow recursive imports for packages"
+        fh = None
+        if path is None:
+            path = site_config.plugins_path
+        for p_path in path:
+            is_pkg, mod = _find_plugin(plugin, p_path)
+            if is_pkg is not None:
+                break
+        if is_pkg is None and mod is None:
+            write('Warning: plugin %s not found\n' % plugin)
+            return
+        if is_pkg:
+            for fname in os.listdir(mod):
                 if fname.endswith('.py') and len(fname) > 3:
                     try:
-                        _plugin_file(fname[:-3], moddir)
-                    except Warning:
-                        larch.writer.write('Warning: %s %s\n' %
-                                           (pjoin(moddir, fname), errmsg))
+                        _plugin_file(fname[:-3], path=[mod])
+                    except:
+                        write('Warning: %s is not a valid plugin\n' %
+                              pjoin(mod, fname))
 
         else:
+            fh, modpath, desc = mod
             try:
                 out = imp.load_module(plugin, fh, modpath, desc)
                 larch.symtable.add_plugin(out, **kws)
@@ -342,7 +363,7 @@ def _addplugin(plugin, system=False, larch=None, **kws):
         if fh is not None:
             fh.close()
         return
-    _plugin_file(plugin, p_path)
+    _plugin_file(plugin)
 
 
 
