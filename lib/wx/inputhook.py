@@ -7,22 +7,17 @@ tweaked by M Newville, based on reading modified inputhookwx from IPython
 """
 
 import sys
-from time import sleep
 import wx
+from time import sleep
+from select import select
 from ctypes import c_void_p, c_int, cast, CFUNCTYPE, pythonapi
 
-if sys.platform == 'win32':
-    from msvcrt import kbhit
-else:
-    from select import select
-
 def stdin_ready():
-    if sys.platform == 'win32':
-        return kbhit()
-    else:
-        inp, out, err = select([sys.stdin],[],[],0)
-        # return inp != []
-        return len(inp) > 0
+    inp, out, err = select([sys.stdin],[],[],0)
+    return len(inp) > 0
+
+if sys.platform == 'win32':
+    from msvcrt import kbhit as stdin_ready
 
 POLLTIME = 0.05
 ON_INTERRUPT = None
@@ -51,8 +46,6 @@ def input_handler():
             except KeyboardInterrupt:
                 if hasattr(ON_INTERRUPT, '__call__'):
                     ON_INTERRUPT()
-                #else:
-                #  return 0
         activator = None
         # del activator
     return 0
