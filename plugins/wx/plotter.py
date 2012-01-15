@@ -194,7 +194,7 @@ def _oplot(x, y, win=1, larch=None, wxparent=None, **kws):
 
     See Also: plot
     """
-    _plot(x, y, win=win, new=False, larch=larch, wxparent, **kws)
+    _plot(x, y, win=win, new=False, larch=larch, wxparent=wxparent, **kws)
 
 def _getcursor(win=1, larch=None, wxparent=None, **kws):
     """get_cursor(win=1)
