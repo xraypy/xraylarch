@@ -129,34 +129,23 @@ class Interpreter:
     def unimplemented(self, node):
         "unimplemented nodes"
         msg = "'%s' not supported" % (node.__class__.__name__)
-        self.raise_exception(node=node, msg=msg,
-                             py_exc=sys.exc_info())
+        self.raise_exception(node=node, msg=msg)
 
     def raise_exception(self, node=None, msg='', expr=None,
-                        fname=None, lineno=-1, py_exc=None):
+                        fname=None, lineno=-1, func=None):
         "add an exception"
-        if self.error is None:
-            self.error = []
-        if expr  is None:
-            expr  = self.expr
-        if fname is None:
-            fname = self.fname
-        if lineno is None:
-            lineno = self.lineno
+        if self.error is None: self.error = []
+        if expr  is None:   expr  = self.expr
+        if fname is None:   fname = self.fname
+        if lineno is None:  lineno = self.lineno
 
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
-
-        if py_exc is None:
-            etype, evalue = None, None
-        else:
-            etype, evalue, tback = py_exc
-        err = LarchExceptionHolder(node, msg=msg, expr= expr,
-                                   fname= fname, lineno=lineno,
-                                   py_exc=(etype, evalue) )
-        self._interrupt = ast.Break()
+        err = LarchExceptionHolder(node, msg=msg, expr=expr,
+                                   fname=fname, lineno=lineno, func=func)
         self.error.append(err)
         self.symtable._sys.last_error = err
+        self._interrupt = ast.Break()
 
         # print("_Raise ", self.error)
 
@@ -171,8 +160,7 @@ class Interpreter:
             return ast.parse(text)
         except:
             self.raise_exception(msg='Syntax Error',
-                                 expr=text, fname=fname, lineno=lineno,
-                                 py_exc=sys.exc_info())
+                                 expr=text, fname=fname, lineno=lineno)
 
     def interp(self, node, expr=None, fname=None, lineno=None):
         """executes compiled Ast representation for an expression"""
@@ -208,8 +196,7 @@ class Interpreter:
 
         except:
             self.raise_exception(node=node, msg='Runtime Error',
-                                 expr=expr, fname=fname, lineno=lineno,
-                                 py_exc=sys.exc_info())
+                                 expr=expr, fname=fname, lineno=lineno)
 
     def __call__(self, expr, **kw):
         return self.eval(expr, **kw)
@@ -225,16 +212,14 @@ class Interpreter:
         out = None
         if len(self.error) > 0:
             self.raise_exception(node=node, msg='Syntax Error', expr=expr,
-                                 fname=fname, lineno=lineno,
-                                 py_exc=sys.exc_info())
+                                 fname=fname, lineno=lineno)
         else:
             # print("-> interp ", node, expr,  fname, lineno)
             out = self.interp(node, expr=expr,
                               fname=fname, lineno=lineno)
-        if len(self.error) > 0:
-            self.raise_exception(node=node, msg='Eval Error', expr=expr,
-                                 fname=fname, lineno=lineno,
-                                 py_exc=sys.exc_info())
+        #if len(self.error) > 0:
+        #  self.raise_exception(node=node, msg='Eval Error', expr=expr,
+        #                      fname=fname, lineno=lineno)
         return out
 
     def run_init_scripts(self):
@@ -244,8 +229,7 @@ class Interpreter:
                     builtins._run(filename=fname, larch=self,
                                   printall = True)
                 except:
-                    self.raise_exception(msg='Initialization Error',
-                                         py_exc=sys.exc_info())
+                    self.raise_exception(msg='Initialization Error')
 
     def dump(self, node, **kw):
         "simple ast dumper"
@@ -401,13 +385,13 @@ class Interpreter:
                     fmt = "%s does not have attribute '%s'"
                 msg = fmt % (obj, node.attr)
 
-                self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
+                self.raise_exception(node=node, msg=msg)
 
         elif ctx == ast.Del:
             return delattr(sym, node.attr)
         elif ctx == ast.Store:
             msg = "attribute for storage: shouldn't be here!"
-            self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
+            self.raise_exception(node=node, msg=msg)
 
     def on_assign(self, node):    # ('targets', 'value')
         "simple assignment"
@@ -448,7 +432,7 @@ class Interpreter:
                 return val[(nslice)]
         else:
             msg = "subscript with unknown context"
-            self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
+            self.raise_exception(node=node, msg=msg)
 
     def on_delete(self, node):    # ('targets',)
         "delete statement"
@@ -466,7 +450,7 @@ class Interpreter:
                 self.symtable.del_symbol('.'.join(children))
             else:
                 msg = "could not delete symbol"
-                self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
+                self.raise_exception(node=node, msg=msg)
 
     def on_unaryop(self, node):    # ('op', 'operand')
         "unary operator"
@@ -596,7 +580,7 @@ class Interpreter:
         for tnode in node.body:
             self.interp(tnode)
             if self.error:
-                e_type, e_value = self.error[-1].py_exc
+                e_type, e_value, e_tb = self.error[-1].exc_info
                 this_exc = e_type()
                 # print("Look for except: ", this_exc)
                 # print("out of handlers: ", node.handlers)
@@ -616,8 +600,7 @@ class Interpreter:
         "raise statement"
         msg = "%s: %s" % (self.interp(node.type).__name__,
                           self.interp(node.inst))
-        self.raise_exception(node=node.type, msg=msg,
-                             py_exc=sys.exc_info())
+        self.raise_exception(node=node.type, msg=msg)
 
     def on_call(self, node):
         "function/procedure execution"
@@ -625,7 +608,7 @@ class Interpreter:
         func = self.interp(node.func)
         if not hasattr(func, '__call__'):
             msg = "'%s' is not callable!!" % (func)
-            self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
+            self.raise_exception(node=node, msg=msg)
 
         args = [self.interp(targ) for targ in node.args]
         if node.starargs is not None:
@@ -635,13 +618,17 @@ class Interpreter:
         for key in node.keywords:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
-                self.raise_exception(node=node, msg=msg, py_exc=sys.exc_info())
+                self.raise_exception(node=node, msg=msg)
 
             keywords[key.arg] = self.interp(key.value)
         if node.kwargs is not None:
             keywords.update(self.interp(node.kwargs))
 
-        return func(*args, **keywords)
+        try:
+            return func(*args, **keywords)
+        except:
+            self.raise_exception(node=node, func=func,
+                                 msg = "Error running %s" % (func))
 
     def on_functiondef(self, node):
         "define procedures"
@@ -734,8 +721,7 @@ class Interpreter:
                         thismod = builtins._run(filename=modname, larch=self,
                                                 new_module=name)
                     except:
-                        self.raise_exception(msg='Import Error',
-                                             py_exc=sys.exc_info())
+                        self.raise_exception(msg='Import Error')
                     # print(" isLarch!!", name, modname)
                     # save current module group
                     #  create new group, set as moduleGroup and localGroup
@@ -750,8 +736,7 @@ class Interpreter:
                     __import__(name)
                     thismod = sys.modules[name]
                 except:
-                    self.raise_exception(msg='Import Error',
-                                         py_exc=sys.exc_info())
+                    self.raise_exception(msg='Import Error')
                     return
         else: # previously loaded module, just do lookup
             # print("prev loaded?")

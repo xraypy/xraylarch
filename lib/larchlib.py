@@ -3,20 +3,20 @@ Helper classes for larch interpreter
 '''
 
 import sys
-
+import traceback
+import inspect
+from .closure import Closure
 from .symboltable import Group
-
 
 class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node, msg='', fname='<StdInput>',
-                 py_exc=(None, None),
-                 expr=None, lineno=-3):
+                 func=None, expr=None, lineno=-3):
         self.node   = node
         self.fname  = fname
+        self.func   = func
         self.expr   = expr
         self.msg    = msg
-        self.py_exc = py_exc
         self.lineno = lineno
         self.exc_info = sys.exc_info()
 
@@ -25,6 +25,7 @@ class LarchExceptionHolder:
         node = self.node
         node_lineno = 0
         node_col_offset = 0
+        e_type, e_val, e_tb = self.exc_info
 
         if node is not None:
             try:
@@ -34,7 +35,7 @@ class LarchExceptionHolder:
                 pass
 
         lineno = self.lineno + node_lineno
-        exc_text = str(self.exc_info[1])
+        exc_text = str(e_val)
         if exc_text in (None, 'None'):
             exc_text = ''
         expr = self.expr
@@ -47,14 +48,24 @@ class LarchExceptionHolder:
                 pass
 
         out = []
+        if self.func is not None:
+            func = self.func
+            if isinstance(func, Closure): func = func.func
+            fname = inspect.getmodule(func).__file__
+            if fname.endswith('.pyc'): fname = fname[:-1]
+            found = False
+            for tb in traceback.extract_tb(e_tb):
+                found = found or tb[0].startswith(fname)
+                if found:
+                    out.append('  File "%s", line %i, in %s\n    %s' % tb)
+
         if len(exc_text) > 0:
             out.append(exc_text)
         else:
-            py_etype, py_eval = self.py_exc
-            if py_etype is not None and py_eval is not None:
-                out.append("%s: %s" % (py_etype, py_eval))
-        if self.fname == '<StdInput>' and self.lineno <= 0:
-            out.append('<StdInput>')
+            if e_type is not None and e_val is not None:
+                out.append("%s: %s" % (e_type, e_val))
+        if (self.fname == '<StdInput>' and self.lineno <= 0):
+            out.append("<StdInput>")
         else:
             out.append("%s, line number %i" % (self.fname, 1+self.lineno))
 
@@ -102,8 +113,6 @@ class Procedure(object):
 
     def __call__(self, *args, **kwargs):
         # msg = 'Cannot run Procedure %s' % self.name
-
-
         stable  = self.larch.symtable
         lgroup  = Group()
         args   = list(args)
@@ -118,8 +127,7 @@ class Procedure(object):
                                                    n_expected,
                                                    n_args)
                 self.larch.raise_exception(msg=msg, expr='<>',
-                                     fname=self.fname, lineno=self.lineno,
-                                     py_exc=sys.exc_info())
+                                     fname=self.fname, lineno=self.lineno)
 
             msg = "too many arguments for Procedure %s" % self.name
 
@@ -133,8 +141,7 @@ class Procedure(object):
                     msg = msg % (t_kw[0], self.name)
                     self.larch.raise_exception(msg=msg, expr='<>',
                                          fname=self.fname,
-                                         lineno=self.lineno,
-                                         py_exc=sys.exc_info())
+                                         lineno=self.lineno)
                 else:
                     kwargs[t_a] = t_kw[1]
 
@@ -153,15 +160,13 @@ class Procedure(object):
                 msg = 'extra keyword arguments for Procedure %s (%s)'
                 msg = msg % (self.name, ','.join(list(kwargs.keys())))
                 self.larch.raise_exception(msg=msg, expr='<>',
-                                     fname=self.fname, lineno=self.lineno,
-                                     py_exc=sys.exc_info())
+                                     fname=self.fname, lineno=self.lineno)
 
         except (ValueError, LookupError, TypeError,
                 NameError, AttributeError):
             msg = 'incorrect arguments for Procedure %s' % self.name
             self.larch.raise_exception(msg=msg, expr='<>',
-                                 fname=self.fname,   lineno=self.lineno,
-                                 py_exc=sys.exc_info())
+                                 fname=self.fname,   lineno=self.lineno)
 
         stable.save_frame()
         stable.set_frame((lgroup, self.modgroup))
