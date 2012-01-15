@@ -220,23 +220,24 @@ def _run(filename=None, larch=None, new_module=None,
                     pass
             if larch.error:
                 break
-        if not is_complete:
-            larch.raise_exception(msg='Syntax Error -- input incomplete',
-                                  expr="\n".join(inptext.block),
-                                  fname=fname, lineno=lineno)
-
         if larch.error:
-            err = larch.error.pop(0)
-            fname, lineno = err.fname, err.lineno
-            output.append("%s:\n%s" % err.get_error())
-            for err in larch.error:
-                if ((err.fname != fname or err.lineno != lineno) and
-                    err.lineno > 0 and lineno > 0):
-                    output.append("%s" % (err.get_error()[1]))
+            inptext.clear()
+            #            pass
+            #err = larch.error.pop(0)
+            #fname, lineno = err.fname, err.lineno
+            #output.append("%s:\n%s" % err.get_error())
+            #for err in larch.error:
+            #    if ((err.fname != fname or err.lineno != lineno) and
+            #        err.lineno > 0 and lineno > 0):
+            #        output.append("%s" % (err.get_error()[1]))
+            # larch.raise_exception(msg='Syntax Error -- input incomplete',
+            #                 expr="\n".join(inptext.block),
+            #                 fname=fname, lineno=lineno)
+
+        elif not is_complete:
             larch.raise_exception(msg='Syntax Error -- input incomplete',
                                   expr="\n".join(inptext.block),
                                   fname=fname, lineno=lineno)
-            inptext.clear()
         elif printall and ret is not None:
             output.append("%s" % ret)
 

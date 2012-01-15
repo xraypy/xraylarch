@@ -132,7 +132,7 @@ class Interpreter:
         self.raise_exception(node=node, msg=msg)
 
     def raise_exception(self, node=None, msg='', expr=None,
-                        fname=None, lineno=-1, func=None):
+                        fname=None, lineno=None, func=None):
         "add an exception"
         if self.error is None: self.error = []
         if expr  is None:   expr  = self.expr
@@ -208,18 +208,12 @@ class Interpreter:
         self.error = []
 
         node = self.compile(expr, fname=fname, lineno=lineno)
-        # print("COMPILE ", ast.dump(node))
         out = None
         if len(self.error) > 0:
             self.raise_exception(node=node, msg='Syntax Error', expr=expr,
                                  fname=fname, lineno=lineno)
         else:
-            # print("-> interp ", node, expr,  fname, lineno)
-            out = self.interp(node, expr=expr,
-                              fname=fname, lineno=lineno)
-        #if len(self.error) > 0:
-        #  self.raise_exception(node=node, msg='Eval Error', expr=expr,
-        #                      fname=fname, lineno=lineno)
+            out = self.interp(node, expr=expr, fname=fname, lineno=lineno)
         return out
 
     def run_init_scripts(self):
