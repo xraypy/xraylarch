@@ -59,10 +59,17 @@ class shell(cmd.Cmd):
 
         self.larch.run_init_scripts()
 
-    def __del__(self):
-        if (self.rdline):
+    def __del__(self, *args):
+        self.__write_history()
+
+    def __write_history(self):
+        if self.rdline is None:
+            return
+        try:
             self.rdline.set_history_length(self.maxhist)
             self.rdline.write_history_file(self.historyfile)
+        except:
+            pass
 
     def emptyline(self):
         pass
@@ -90,12 +97,16 @@ class shell(cmd.Cmd):
     def do_shell(self, arg):
         os.system(arg)
 
-    def default(self,text):
+    def default(self, text):
         text = text.strip()
-        if text in ('quit','exit','EOF'):
+        if text in ('quit', 'exit', 'EOF'):
             n = self.rdline.get_current_history_length()
-            if text in ('quit','exit'):
-                self.rdline.remove_history_item(n-1)
+            if text in ('quit', 'exit'):
+                try:
+                    self.rdline.remove_history_item(n-1)
+                except:
+                    pass
+            self.__write_history()
             return 1
 
         if text.startswith('help'):

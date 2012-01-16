@@ -4,7 +4,7 @@ import larch
 
 ETOK = 0.26246851088
 
-sys.path.insert(0, os.path.join(larch.site_config.sys_plugins_dir, 'xafs'))
+sys.path.insert(0, os.path.join(larch.site_config.plugins_path[1], 'xafs'))
 from xafsft import ftwindow, xafsft_fast
 from pre_edge import find_e0
 from scipy.signal import cspline1d, cspline1d_eval

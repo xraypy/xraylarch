@@ -132,7 +132,7 @@ html_static_path = ['_static']
 
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
-#html_use_smartypants = True
+html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
 html_sidebars = {'index': ['indexsidebar.html','searchbox.html']}
@@ -181,7 +181,7 @@ latex_documents = [
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
-latex_logo = 'images/LarchCone_Four.jpg'
+latex_logo = '_static/larchcones.png'
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.

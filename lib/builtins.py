@@ -220,23 +220,24 @@ def _run(filename=None, larch=None, new_module=None,
                     pass
             if larch.error:
                 break
-        if not is_complete:
-            larch.raise_exception(msg='Syntax Error -- input incomplete',
-                                  expr="\n".join(inptext.block),
-                                  fname=fname, lineno=lineno)
-
         if larch.error:
-            err = larch.error.pop(0)
-            fname, lineno = err.fname, err.lineno
-            output.append("%s:\n%s" % err.get_error())
-            for err in larch.error:
-                if ((err.fname != fname or err.lineno != lineno) and
-                    err.lineno > 0 and lineno > 0):
-                    output.append("%s" % (err.get_error()[1]))
+            inptext.clear()
+            #            pass
+            #err = larch.error.pop(0)
+            #fname, lineno = err.fname, err.lineno
+            #output.append("%s:\n%s" % err.get_error())
+            #for err in larch.error:
+            #    if ((err.fname != fname or err.lineno != lineno) and
+            #        err.lineno > 0 and lineno > 0):
+            #        output.append("%s" % (err.get_error()[1]))
+            # larch.raise_exception(msg='Syntax Error -- input incomplete',
+            #                 expr="\n".join(inptext.block),
+            #                 fname=fname, lineno=lineno)
+
+        elif not is_complete:
             larch.raise_exception(msg='Syntax Error -- input incomplete',
                                   expr="\n".join(inptext.block),
                                   fname=fname, lineno=lineno)
-            inptext.clear()
         elif printall and ret is not None:
             output.append("%s" % ret)
 
@@ -313,6 +314,7 @@ def _addplugin(plugin, larch=None, **kws):
             mod = imp.find_module(plugin, [p_path])
         except ImportError:
             is_pkg = os.path.isdir(pjoin(p_path, plugin))
+
         if is_pkg or (mod is not None and
                       mod[2][2] == imp.PKG_DIRECTORY):
             return True, pjoin(p_path, plugin)
@@ -320,7 +322,7 @@ def _addplugin(plugin, larch=None, **kws):
             return False, mod
         else:
             return None, None
-            
+
     def _plugin_file(plugin, path=None):
         "defined here to allow recursive imports for packages"
         fh = None
@@ -348,18 +350,20 @@ def _addplugin(plugin, larch=None, **kws):
                 out = imp.load_module(plugin, fh, modpath, desc)
                 larch.symtable.add_plugin(out, **kws)
             except:
-                msg = 'Warning: could not load plugin %s!\n' % plugin
-                larch.raise_exception(msg=msg, py_exc=sys.exc_info())
-
+                msg='Warning: could not load plugin %s!\n' % plugin
+                larch.raise_exception(msg=msg)
         if larch.error:
             err = larch.error.pop(0)
             fname, lineno = err.fname, err.lineno
-            output = []
+            output = ["Error Adding Plugin %s from file %s" % (plugin, fname),
+                      "%s" % (err.get_error()[1])]
+
             for err in larch.error:
                 if ((err.fname != fname or err.lineno != lineno) and
                     err.lineno > 0 and lineno > 0):
                     output.append("%s" % (err.get_error()[1]))
-            print '\n'.join(output)
+            larch.writer.write('\n'.join(output))
+
         if fh is not None:
             fh.close()
         return

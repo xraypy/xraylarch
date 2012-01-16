@@ -1,0 +1,27 @@
+{% extends "!layout.html" %}
+
+{% block rootrellink %}
+   <li><a href="{{ pathto('installation') }}">download</a>|&nbsp;</li>
+   <li><a href="{{ pathto('tutorial') }}">tutorial</a>|&nbsp;</li>
+   <li><a href="{{ pathto('reference') }}">reference</a>|&nbsp;</li>
+   <li><a href="{{ pathto('developers') }}">develop</a>|&nbsp;</li>
+   <li><a href="{{ pathto('xafs') }}">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="{{ pathto('xrf') }}">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="{{ pathto('search') }}">search docs</a>&nbsp;</li>
+{% endblock %}
+
+{% block relbar1 %}
+<div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
+  <font size=28px> <a href="{{ pathto('index') }}">
+      <img src="{{pathto("_static/larchcones.png", 1) }}"
+                height=65 border="0" alt="larch"/>
+    &nbsp; Larch: X-ray Data Analysis</a>
+  </font>
+</div>
+{{ super() }}
+{% endblock %}
+
+{# put the sidebar before the body #}
+{% block sidebar1 %}{{ sidebar() }}{% endblock %}
+{% block sidebar2 %}{% endblock %}
+

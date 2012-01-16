@@ -61,13 +61,11 @@ class PlotDisplay(PlotFrame):
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
         self.cursor_pos = (x, y)
-        
-                                             
+
     def get_cursor(self):
         """return most recent cursor position"""
-        return self.cursor_pos        
-        
-        
+        return self.cursor_pos
+
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, larch=None, **kws):
         ImageFrame.__init__(self, parent=wxparent,
@@ -105,16 +103,12 @@ class ImageDisplay(ImageFrame):
         symtable = ensuremod(self.larch)
         if symtable is None:
             return
-        if x is not None:
-            symtable.set_symbol('%s_x' % self.symname, x)
-        if y is not None:
-            symtable.set_symbol('%s_y' % self.symname, y)
-        if ix is not None:
-            symtable.set_symbol('%s_ix' % self.symname, ix)
-        if iy is not None:
-            symtable.set_symbol('%s_iy' % self.symname, iy)
-        if val is not None:
-            symtable.set_symbol('%s_val' % self.symname, val)
+        set = symtable.set_symbol
+        if x is not None:   set('%s_x' % self.symname, x)
+        if y is not None:   set('%s_y' % self.symname, y)
+        if ix is not None:  set('%s_ix' % self.symname, ix)
+        if iy is not None:  set('%s_iy' % self.symname, iy)
+        if val is not None: set('%s_val' % self.symname, val)
 
 def _getDisplay(win=1, larch=None, wxparent=None, image=False):
     """make a plotter"""
@@ -146,7 +140,7 @@ def _getDisplay(win=1, larch=None, wxparent=None, image=False):
         display.SetTitle(title)
     return display
 
-def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
+def _plot(x,y, win=1, new=False, larch=None, wxparent=None, **kws):
     """plot(x, y[, win=1], options])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any plot currently in the Plot Frame.
@@ -157,7 +151,7 @@ def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
         y :  array of abscissa values (x and y must be same size!)
 
         win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
-
+        new: flag (True/False, default False) for whether to start a new plot.
         label: label for trace
         title:  title for Plot
         xlabel: x-axis label
@@ -177,34 +171,30 @@ def _plot(x,y, win=1, larch=None, wxparent=None, **kws):
         yaxis='left'??
         use_dates
 
-    See Also:
-    ---------
-
-        oplot
-
+    See Also: oplot
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
-
+    if plotter is None:
+        larch.raise_exception(msg='No Plotter defined')
     wx.CallAfter(plotter.Raise)
-    if plotter is not None:
+
+    if new:
         plotter.plot(x, y, **kws)
+    else:
+        plotter.oplot(x, y, **kws)
 
 def _oplot(x, y, win=1, larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
-    Plot 2-D trace of x, y arrays in a Plot Frame, over-plotting any plot currently in the Plot Frame.
+    Plot 2-D trace of x, y arrays in a Plot Frame, over-plotting any
+    plot currently in the Plot Frame.
 
-    See Also:
-    -----------
-    plot
+    This is equivalent to
+    plot(x, y[, win=1[, new=False[, options]]])
 
+    See Also: plot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
-
-    if plotter is not None:
-        plotter.oplot(x, y, **kws)
-    else:
-        print 'dont have plotter yet?'
+    _plot(x, y, win=win, new=False, larch=larch, wxparent=wxparent, **kws)
 
 def _getcursor(win=1, larch=None, wxparent=None, **kws):
     """get_cursor(win=1)
@@ -212,11 +202,9 @@ def _getcursor(win=1, larch=None, wxparent=None, **kws):
     return most recent x, y position of cursor clicked on plot window
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
-
-    if plotter is not None:
-        return plotter.get_cursor()
-    else:
-        print 'dont have plotter yet?'
+    if plotter is None:
+        larch.raise_exception(msg='No Plotter defined')
+    return plotter.get_cursor()
 
 def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     """imshow(map[, options])
