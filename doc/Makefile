@@ -4,7 +4,6 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-PAPER         =
 BUILDDIR      = _build
 
 INSTALLDIR = /www/apache/htdocs/software/python/larch
@@ -12,6 +11,7 @@ INSTALLDIR = /www/apache/htdocs/software/python/larch
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
+PAPER           = letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 .PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex changes linkcheck doctest

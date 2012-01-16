@@ -1,5 +1,4 @@
-.. xraylarch documentation master file,
-
+.. xraylarch documentation master file
 
 =====================================
 Larch
@@ -63,5 +62,4 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
 
