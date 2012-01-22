@@ -9,14 +9,16 @@ from numpy.fft import fft, ifft
 from scipy.special import i0
 
 MODNAME = '_xafs'
+VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin']
 
 def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
              window='hanning', larch=None, **kws):
     """
     calculate and return XAFS FT Window function
     """
+    if window is None:
+        window = VALID_WINDOWS[0]
     nam = window.strip().lower()[:3]
-    VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin']
     if nam not in VALID_WINDOWS:
         raise RuntimeError("invalid window name %s" % window)
 
