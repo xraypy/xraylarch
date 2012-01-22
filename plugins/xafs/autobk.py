@@ -84,21 +84,16 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     fit.leastsq()
 
     coefs = [p.value for p in fparams.values()]
-    bkg   = splev(energy, [eknots, coefs, order])
-    chi   = UnivariateSpline(kraw, (mu[ie0:] - bkg[ie0:]), s=0)(kout)
-
-    bkg[:ie0] = mu[:ie0]
-    chie = mu-bkg
+    bkg   = splev(kraw, [eknots, coefs, order])
+    chi   = UnivariateSpline(kraw, (mu[ie0:] - bkg), s=0)(kout)
+    bkgf  = mu[:]
+    bkgf[ie0:] = bkg
+    chie  = mu - bkgf
     if larch.symtable.isgroup(group):
-        setattr(group, 'bkg',  bkg)
-        setattr(group, 'bkg0',  bkg0)
-        setattr(group, 'sple', spl_k)
-        setattr(group, 'sply', spl_y)
-
+        setattr(group, 'bkg',  bkgf)
         setattr(group, 'k',   kout)
         setattr(group, 'chi',  chi)
-        setattr(group, 'ke',   kraw)
         setattr(group, 'chie',  chie)
 
 def registerLarchPlugin():
-    return ('_xafs', {'autobk': spline})
+    return ('_xafs', {'autobk': autobk})
