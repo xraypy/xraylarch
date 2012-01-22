@@ -638,17 +638,17 @@ class Interpreter:
         kwargs.reverse()
         args = [tnode.id for tnode in node.args.args]
         doc = None
-        if isinstance(node.body[0], ast.Expr):
+        if (isinstance(node.body[0], ast.Expr) and
+            isinstance(node.body[0].value, ast.Str)):
             docnode = node.body.pop(0)
-            if isinstance(docnode.value, ast.Str):
-                doc = docnode.value.s
-            else:
-                doc = self.interp(docnode.value)
+            doc = docnode.value.s
 
         proc = Procedure(node.name, larch= self, doc= doc,
                          body   = node.body,
-                         fname  = self.fname,   lineno = self.lineno,
-                         args   = args,   kwargs = kwargs,
+                         fname  = self.fname,
+                         lineno = self.lineno,
+                         args   = args,
+                         kwargs = kwargs,
                          vararg = node.args.vararg,
                          varkws = node.args.kwarg)
         self.symtable.set_symbol(node.name, value=proc)
