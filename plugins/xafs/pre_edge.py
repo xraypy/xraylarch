@@ -53,7 +53,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     omu  = mu*energy**nvict
     coefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
     pre_edge = (coefs[0] * energy + coefs[1]) * energy**(-nvict)
-    uu = energy**(-nvict)
+
     # normalization
     p1 = min(np.where(energy >= norm1+e0)[0])
     p2 = max(np.where(energy <= norm2+e0)[0])
