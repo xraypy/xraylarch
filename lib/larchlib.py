@@ -5,7 +5,7 @@ Helper classes for larch interpreter
 import sys
 import traceback
 import inspect
-from .closure import Closure
+from .utils import Closure
 from .symboltable import Group
 
 class LarchExceptionHolder:

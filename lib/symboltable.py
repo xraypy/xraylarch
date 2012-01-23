@@ -5,8 +5,7 @@ from __future__ import print_function
 import os
 import sys
 import types
-from .closure import Closure
-from .util import fixName
+from .utils import Closure, fixName
 from . import site_config
 
 class Group(object):

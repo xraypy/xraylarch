@@ -16,7 +16,7 @@ from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
 from .larchlib import LarchExceptionHolder, Procedure, DefinedVariable
-from .closure import Closure
+from .utils import Closure
 
 __version__ = '0.9.7'
 
