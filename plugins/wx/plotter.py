@@ -171,7 +171,7 @@ def _plot(x,y, win=1, new=False, larch=None, wxparent=None, **kws):
         yaxis='left'??
         use_dates
 
-    See Also: oplot
+    See Also: oplot, newplot
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
     if plotter is None:
@@ -192,9 +192,23 @@ def _oplot(x, y, win=1, larch=None, wxparent=None, **kws):
     This is equivalent to
     plot(x, y[, win=1[, new=False[, options]]])
 
-    See Also: plot
+    See Also: plot, newplot
     """
     _plot(x, y, win=win, new=False, larch=larch, wxparent=wxparent, **kws)
+
+def _newplot(x, y, win=1, larch=None, wxparent=None, **kws):
+    """newplot(x, y[, win=1[, options]])
+
+    Plot 2-D trace of x, y arrays in a Plot Frame, clearing any
+    plot currently in the Plot Frame.
+
+    This is equivalent to
+    plot(x, y[, win=1[, new=True[, options]]])
+
+    See Also: plot, oplot
+    """
+    _plot(x, y, win=win, new=True, larch=larch, wxparent=wxparent, **kws)
+
 
 def _getcursor(win=1, larch=None, wxparent=None, **kws):
     """get_cursor(win=1)
@@ -219,6 +233,7 @@ def _imshow(map, win=1, larch=None, wxparent=None, **kws):
 
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
+                      'newplot':_newplot,
                       'oplot': _oplot,
                       'get_cursor': _getcursor,
                       'imshow':_imshow} )
