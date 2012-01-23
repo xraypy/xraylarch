@@ -9,17 +9,16 @@ from numpy.fft import fft, ifft
 from scipy.special import i0
 
 MODNAME = '_xafs'
+VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin']
 
 def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
-             window='hanning', larch=None):
+             window='hanning', larch=None, **kws):
     """
     calculate and return XAFS FT Window function
     """
-    if larch is None:
-        raise Warning("cannot do ftwindow -- larch broken?")
-
+    if window is None:
+        window = VALID_WINDOWS[0]
     nam = window.strip().lower()[:3]
-    VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin']
     if nam not in VALID_WINDOWS:
         raise RuntimeError("invalid window name %s" % window)
 
@@ -72,7 +71,6 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         fwin[i1:i4] = sin(pi*(x4-x[i1:i4]) / (x4-x1))
     elif nam == 'gau':
         fwin =  exp(-(((x - dx2)**2)/(2*dx1*dx1)))
-
     return fwin
 
 def xafsift(k, chi, group=None, kmin=0, kmax=20, kw=2,
@@ -102,7 +100,7 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2,
     chi_[0:ikmax] = interp(k_[:ikmax], k, chi)
 
     win = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2,
-                window=window, larch=larch)
+                window=window)
 
     out = kstep*sqrt(pi) * fft(win*chi_*k_**kw)[:nfft/2]
     delr = pi/(kstep*nfft)
@@ -130,9 +128,6 @@ def xafsft_fast(chi, nfft=2048, larch=None, **kws):
 
     This is useful for repeated FTs, as inside loops.
     """
-    if larch is None:
-        raise Warning("cannot do xafsft_fast -- larch broken?")
-
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chi)] = chi
     return fft(cchi)[:nfft/2]

@@ -6,17 +6,17 @@
 
 #
 import sys
+## require that numpy be available right away!!
+import numpy
+
 major, minor = sys.version_info[0], sys.version_info[1]
 if major < 2 or (major == 2 and minor < 6):
     raise EnvironmentError('requires python 2.6 or higher')
-
-## require that numpy be available right away!!
-import numpy
 
 from .symboltable import Group, SymbolTable
 from .shell import shell
 from .interpreter import Interpreter, __version__
 from .inputText import InputText
+from .utils import Closure
 
-# __version__ = interpreter.__version__
-__date__    = '08-May-2010'
+__date__   = '22-Jan-2012'

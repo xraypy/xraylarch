@@ -2,8 +2,7 @@
 """handle input Text for Larch -- inclides translation to Python text
 """
 from __future__ import print_function
-
-from util import isValidName, isNumber, isLiteralStr, strip_comments, find_delims
+from utils import isValidName, isNumber, isLiteralStr, strip_comments, find_delims
 
 def get_DefVar(text):
     """
