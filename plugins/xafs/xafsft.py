@@ -108,10 +108,9 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2,
     if larch.symtable.isgroup(group):
         r   = delr * arange(irmax)
         mag = sqrt(out.real**2 + out.imag**2)
-        setattr(group, 'kwindow', win)
+        setattr(group, 'kwin',   win[:len(chi)])
         setattr(group, 'r', r[:irmax])
         setattr(group, 'chir',   out[:irmax])
-        setattr(group, 'kwin',   win[:irmax])
         setattr(group, 'chir_mag',  mag[:irmax])
         setattr(group, 'chir_re', out.real[:irmax])
         setattr(group, 'chir_im', out.imag[:irmax])

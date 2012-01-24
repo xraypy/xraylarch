@@ -73,7 +73,8 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         setattr(group, 'norm',      norm)
         setattr(group, 'pre_edge',  pre_edge)
         setattr(group, 'post_edge', post_edge)
-    return edge_step, e0
+    else:
+        return edge_step, e0
 
 def registerLarchPlugin():
     return (MODNAME, {'find_e0': find_e0,
