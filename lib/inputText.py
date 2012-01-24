@@ -136,21 +136,24 @@ class InputText:
         if lineno is not None:
             self.lineno = lineno
 
-        def addText(text, lineno=None):
-            self.input_complete = self.__isComplete(text)
-            for txt in text.split('\n'):
-                self.input_buff.append((txt, self.input_complete,
-                                        self.eos, fname, self.lineno))
-                self.lineno += 1
-
-        addText(text)
-        self.prompt = self.ps2
+        def addTextInput(thisline, fname):
+            self.input_complete = self.__isComplete(thisline)
+            self.input_buff.append((thisline, self.input_complete,
+                                    self.eos, fname, self.lineno))
+            self.lineno += 1
+            
+        text = text.split('\n')
+        text.reverse()
+        while len(text) > 0:
+            addTextInput(text.pop(), fname)
+                
         if self.interactive:
-            while not self.input_complete :
+            self.prompt = self.ps2
+            while not self.input_complete:
                 t = self.input()
                 t0 = t.strip()
                 if len(t0) > 0:
-                    addText(t)
+                    addTextInput(t, fname)
 
         if self.input_complete:
             self.prompt = self.ps1
@@ -255,7 +258,6 @@ class InputText:
                     else: # one-liner form
                         oneliner = True
             elif thiskey in self.endkeys: # end of block
-                #print( self.keys)
                 if not thiskey.startswith('&'):
                     prefix = '#'
                 if len(self.keys) != 0:

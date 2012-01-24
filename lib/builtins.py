@@ -198,7 +198,7 @@ def _run(filename=None, larch=None, new_module=None,
 
     output = None
     if text is not None:
-        inptext = inputText.InputText(interactive=interactive)
+        inptext = inputText.InputText(interactive=False, larch=larch)
         is_complete = inptext.put(text, filename=filename)
         if new_module is not None:
             # save current module group
@@ -209,7 +209,7 @@ def _run(filename=None, larch=None, new_module=None,
             symtable.set_frame((thismod, thismod))
 
         output = []
-        while inptext:
+        while len(inptext) > 0:
             block, fname, lineno = inptext.get()
             ret = larch.eval(block, fname=fname, lineno=lineno)
             if hasattr(ret, '__call__') and not isinstance(ret, type):

@@ -177,7 +177,7 @@ def _plot(x,y, win=1, new=False, larch=None, wxparent=None, **kws):
     if plotter is None:
         larch.raise_exception(msg='No Plotter defined')
     wx.CallAfter(plotter.Raise)
-
+    
     if new:
         plotter.plot(x, y, **kws)
     else:

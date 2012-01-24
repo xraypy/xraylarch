@@ -105,7 +105,7 @@ if len(args)>0:
             shell.default("import %s" %  arg[:-3])
         else:
             shell.input.interactive = False
-            finp = open(s, 'r')
+            finp = open(arg, 'r')
             for itxt, txt in enumerate(finp.readlines()):
                 shell.input.put(txt[:-1], lineno=itxt, filename=arg)
             finp.close()
