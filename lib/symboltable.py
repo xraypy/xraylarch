@@ -296,7 +296,7 @@ class SymbolTable(Group):
         try:
             g = self.get_symbol(symname)
             return True
-        except ValueError, LookupError:
+        except (LookupError, ValueError):
             return False
 
     def has_group(self, gname):
