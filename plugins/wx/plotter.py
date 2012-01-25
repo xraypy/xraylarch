@@ -24,6 +24,34 @@ def ensuremod(larch):
             symtable.newgroup(MODNAME)
         return symtable
 
+class CursorFrame(wx.MiniFrame):
+    """hidden wx frame that simply waits for cursor to be set
+    """
+    def __init__(self, parent, larch=None, win=None, **kws):
+        wx.MiniFrame.__init__(self, parent, -1, '')
+        self.Show(False)
+
+        self.symtable = ensuremod(larch)
+        self.xval = '%s.plot%i_x' % (MODNAME, win)
+        self.yval = '%s.plot%i_y' % (MODNAME, win)
+        if self.symtable.has_symbol(self.xval):
+            self.symtable.del_symbol(self.xval)
+        if self.symtable.has_symbol(self.yval):
+            self.symtable.del_symbol(self.yval)
+
+    def get_cursor(self, timeout=60.0):
+        """return most recent cursor position"""
+        t0 = time.time()
+        while (not self.symtable.has_symbol(self.xval) and
+               time.time() - t0 < timeout):
+            time.sleep(0.1)
+            wx.Yield()
+        ret = None
+        if self.symtable.has_symbol(self.xval):
+            ret = (self.symtable.get_symbol(self.xval),
+                   self.symtable.get_symbol(self.yval))
+        return ret
+
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, larch=None, **kws):
         PlotFrame.__init__(self, parent=wxparent,
@@ -177,7 +205,7 @@ def _plot(x,y, win=1, new=False, larch=None, wxparent=None, **kws):
     if plotter is None:
         larch.raise_exception(msg='No Plotter defined')
     wx.CallAfter(plotter.Raise)
-    
+
     if new:
         plotter.plot(x, y, **kws)
     else:
@@ -210,15 +238,14 @@ def _newplot(x, y, win=1, larch=None, wxparent=None, **kws):
     _plot(x, y, win=win, new=True, larch=larch, wxparent=wxparent, **kws)
 
 
-def _getcursor(win=1, larch=None, wxparent=None, **kws):
-    """get_cursor(win=1)
+def _getcursor(win=1, timeout=60, larch=None, wxparent=None, **kws):
+    """get_cursor(win=1, timeout=60)
 
-    return most recent x, y position of cursor clicked on plot window
+    waits (up to timeout) for cursor click in selected plot window, and returns
+    x, y position of cursor.
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
-    if plotter is None:
-        larch.raise_exception(msg='No Plotter defined')
-    return plotter.get_cursor()
+    conn = CursorFrame(wxparent, larch=larch, win=win, **kws)
+    return conn.get_cursor(timeout=timeout)
 
 def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     """imshow(map[, options])
