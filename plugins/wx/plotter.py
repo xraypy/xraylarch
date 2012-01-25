@@ -244,8 +244,10 @@ def _getcursor(win=1, timeout=60, larch=None, wxparent=None, **kws):
     waits (up to timeout) for cursor click in selected plot window, and returns
     x, y position of cursor.
     """
-    conn = CursorFrame(wxparent, larch=larch, win=win, **kws)
-    return conn.get_cursor(timeout=timeout)
+    cframe = CursorFrame(wxparent, larch=larch, win=win, **kws)
+    out  = cframe.get_cursor(timeout=timeout)
+    cframe.Destroy()
+    return out
 
 def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     """imshow(map[, options])
