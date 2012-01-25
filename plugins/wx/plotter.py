@@ -11,7 +11,11 @@ Exposed functions here are
 '''
 import time
 import wx
+import  wx.lib.newevent
 from wxmplot import PlotFrame, ImageFrame
+import thread
+
+(CursorEvent, EVT_PLOT_CURSOR) = wx.lib.newevent.NewEvent()
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
@@ -24,34 +28,74 @@ def ensuremod(larch):
             symtable.newgroup(MODNAME)
         return symtable
 
+class CursorThread:
+    def __init__(self, parent, plotwin):
+        self.parent = parent
+        self.plotwin = plotwin
+
+    def Start(self):
+        self.keepGoing = self.running = True
+        thread.start_new_thread(self.Run, ())
+
+    def Stop(self):
+        self.keepGoing = False
+
+    def Run(self):
+        self.running = True
+        while self.keepGoing:
+            wx.PostEvent(self.parent, CursorEvent(win=self.plotwin))
+            time.sleep(0.1)
+        self.running = False
+
 class CursorFrame(wx.MiniFrame):
     """hidden wx frame that simply waits for cursor to be set
     """
-    def __init__(self, parent, larch=None, win=None, **kws):
+    def __init__(self, parent, larch=None, win=None, plotter=None, **kws):
         wx.MiniFrame.__init__(self, parent, -1, '')
         self.Show(False)
-
+        self.plotter = plotter
         self.symtable = ensuremod(larch)
         self.xval = '%s.plot%i_x' % (MODNAME, win)
         self.yval = '%s.plot%i_y' % (MODNAME, win)
         if self.symtable.has_symbol(self.xval):
             self.symtable.del_symbol(self.xval)
-        if self.symtable.has_symbol(self.yval):
-            self.symtable.del_symbol(self.yval)
 
-    def get_cursor(self, timeout=60.0):
-        """return most recent cursor position"""
+        self.has_cursor = False
+        self.Bind(EVT_PLOT_CURSOR, self.onUpdate)
+        self.Bind(wx.EVT_CLOSE, self.onClose)
+        self.thread = CursorThread(self, win)
+        self.thread.Start()
+        
+    def onClose(self, evt=None):
+        wx.Yield()
+        self.thread.Stop()
+        while self.thread.running:
+            time.sleep(0.1)
+        
+    def onUpdate(self, evt=None):
+        self.has_cursor = self.symtable.has_symbol(self.xval) 
+        
+    def wait_for_cursor(self, timeout=60.0):
+        """wait for and return most recent cursor position"""
+        self.has_cursor = False
         t0 = time.time()
-        while (not self.symtable.has_symbol(self.xval) and
+        if self.symtable.has_symbol(self.xval):
+            self.symtable.del_symbol(self.xval)
+
+        app = wx.GetApp()
+        # note that evtloop.Dispatch() seems to be very
+        # important for allowing other windows to update!
+        evtloop = wx.EventLoop()
+        while (not self.has_cursor and
                time.time() - t0 < timeout):
             time.sleep(0.1)
             wx.Yield()
-        ret = None
-        if self.symtable.has_symbol(self.xval):
-            ret = (self.symtable.get_symbol(self.xval),
-                   self.symtable.get_symbol(self.yval))
-        return ret
+            app.ProcessIdle()
+            while evtloop.Pending():
+                evtloop.Dispatch()
+        self.thread.Stop()
 
+        
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, larch=None, **kws):
         PlotFrame.__init__(self, parent=wxparent,
@@ -238,16 +282,27 @@ def _newplot(x, y, win=1, larch=None, wxparent=None, **kws):
     _plot(x, y, win=win, new=True, larch=larch, wxparent=wxparent, **kws)
 
 
-def _getcursor(win=1, timeout=60, larch=None, wxparent=None, **kws):
+def _getcursor(win=1, timeout=10, larch=None, wxparent=None, **kws):
     """get_cursor(win=1, timeout=60)
 
     waits (up to timeout) for cursor click in selected plot window, and returns
     x, y position of cursor.
     """
-    cframe = CursorFrame(wxparent, larch=larch, win=win, **kws)
-    out  = cframe.get_cursor(timeout=timeout)
+    plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
+    symtable = ensuremod(larch)
+    xval = '%s.plot%i_x' % (MODNAME, win)
+    yval = '%s.plot%i_y' % (MODNAME, win)
+
+    cframe =CursorFrame(wxparent, larch=larch, win=win,
+                         plotter=plotter)
+    cframe.wait_for_cursor(timeout=timeout)
+    cframe.Close()
     cframe.Destroy()
-    return out
+
+    try:
+        return (symtable.get_symbol(xval), symtable.get_symbol(yval))
+    except:
+        return None
 
 def _imshow(map, win=1, larch=None, wxparent=None, **kws):
     """imshow(map[, options])
