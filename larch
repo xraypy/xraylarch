@@ -65,9 +65,6 @@ if not options.nowx:
     except ImportError:
         HAS_WX = False
 
-# standard plugins
-PLUGINS = ('xafs', )
-
 BANNER = """  Larch %s  M. Newville, T. Trainor (2011)
   using python %s, numpy %s"""  %  (larch.__version__,
                                     '%i.%i.%i' % sys.version_info[:3],
@@ -94,9 +91,6 @@ if HAS_WX:
     app = wx.App(redirect=False, clearSigInt=False)
     shell.larch.add_plugin('wx', wxparent=None)
     inputhook.ON_INTERRUPT = onCtrlC
-# load standard plugins
-for plugin in PLUGINS:
-    shell.larch.add_plugin(plugin)
 
 # execute scripts listed on command-line
 if len(args)>0:

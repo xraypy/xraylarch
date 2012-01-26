@@ -282,7 +282,7 @@ def _newplot(x, y, win=1, larch=None, wxparent=None, **kws):
     _plot(x, y, win=win, new=True, larch=larch, wxparent=wxparent, **kws)
 
 
-def _getcursor(win=1, timeout=10, larch=None, wxparent=None, **kws):
+def _getcursor(win=1, timeout=60, larch=None, wxparent=None, **kws):
     """get_cursor(win=1, timeout=60)
 
     waits (up to timeout) for cursor click in selected plot window, and returns

@@ -114,8 +114,13 @@ class Interpreter:
         self.node_handlers = {}
         for tnode in self.supported_nodes:
             self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
-
-        self.add_plugin('std')
+            
+        # add all plugins in standard plugins folder 
+        plugins_dir = os.path.join(site_config.sys_larchdir, 'plugins')
+        for pname in os.listdir(plugins_dir):
+            pdir = os.path.join(plugins_dir, pname)
+            if os.path.isdir(pdir):
+                self.add_plugin(pdir)
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
