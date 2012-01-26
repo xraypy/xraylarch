@@ -2,7 +2,7 @@ import wx
 import time
 import os
 
-MODNAME = '_shell'
+MODNAME = '_builtin'
 
 def ensuremod(larch):
     if larch is not None:
