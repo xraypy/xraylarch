@@ -107,7 +107,7 @@ class Interpreter:
 
         for fname, fcn in list(builtins.local_funcs.items()):
             setattr(builtingroup, fname,
-                    Closure(func=fcn, larch=self))
+                    Closure(func=fcn, larch=self, _name=fname))
         setattr(builtingroup, 'definevar',
                 Closure(func=self.set_definedvariable))
 

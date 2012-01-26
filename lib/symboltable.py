@@ -239,6 +239,18 @@ class SymbolTable(Group):
             msg = '%s is not a Subgroup' % group
         return "%s\n" % msg  ### self.__writer("%s\n" % msg)
 
+    def get_parentpath(self, sym):
+        """ get parent path for a symbol"""
+        obj = self._lookup(sym)
+        if obj is None:
+            return
+        out = []
+        for s in reversed(self._parents):
+            if s.__name__ is not '_main' or '_main' not in out:
+                out.append(s.__name__)
+        out.reverse()
+        return '.'.join(out)
+
     def _lookup(self, name=None, create=False):
         """looks up symbol in search path
         returns symbol given symbol name,
@@ -246,7 +258,7 @@ class SymbolTable(Group):
         cache = self._fix_searchGroups()
         searchGroups = [cache['localGroup'], cache['moduleGroup']]
         searchGroups.extend(cache['searchGroups'])
-
+        self._parents = []
         if self not in searchGroups:
             searchGroups.append(self)
 
@@ -258,10 +270,10 @@ class SymbolTable(Group):
         if len(parts) == 1:
             for grp in searchGroups:
                 if public_attr(grp, name):
+                    self._parents.append(grp)
                     return getattr(grp, name)
 
         # more complex case: not immediately found in Local or Module Group
-
         parts.reverse()
         top   = parts.pop()
         out   = self.__invalid_name
@@ -270,6 +282,7 @@ class SymbolTable(Group):
         else:
             for grp in searchGroups:
                 if public_attr(grp, top):
+                    self._parents.append(grp)
                     out = getattr(grp, top)
         if out is self.__invalid_name:
             raise LookupError("cannot locate symbol '%s'" % name)
@@ -402,9 +415,9 @@ class SymbolTable(Group):
                 nvars = val.func_code.co_argcount
                 if ((val.func_code.co_flags &8 != 0) or
                     'larch' in val.func_code.co_varnames[:nvars]):
-                    val = Closure(func=val, larch=self._larch, **kws)
+                    val = Closure(func=val, larch=self._larch, _name=key, **kws)
                 else:
-                    val = Closure(func=val, **kws)
+                    val = Closure(func=val, _name=key, **kws)
 
             self.set_symbol("%s.%s" % (groupname, key), val)
 

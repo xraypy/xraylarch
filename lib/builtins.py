@@ -8,6 +8,7 @@ import numpy as np
 from helper import Helper
 from . import inputText
 from . import site_config
+from .utils import Closure
 
 helper = Helper()
 
@@ -379,6 +380,22 @@ def _dir(obj=None, larch=None, **kws):
         obj = larch.symtable
     return dir(obj)
 
+def _which(sym, larch=None, **kws):
+    "return full path of object"
+    if larch is None:
+        raise Warning("cannot run which() -- larch broken?")
+    stable = larch.symtable
+    out = []
+    if hasattr(sym, '__name__'):
+        sym = sym.__name__
+    if isinstance(sym, (str, unicode)) and stable.has_symbol(sym):
+        obj = stable.get_symbol(sym)
+        if obj is not None:
+            return '%s.%s' % (stable.get_parentpath(sym), sym)
+
+    return 'not found'
+
+
 def _pause(msg='Hit return to continue', larch=None):
     if larch is None:
         raise Warning("cannot pause() -- larch broken?")
@@ -391,6 +408,7 @@ def _sleep(t=0, larch=None):
 
 local_funcs = {'group':_group,
                'dir': _dir,
+               'which': _which,
                'pause': _pause,
                'sleep': _sleep,
                'deriv': _deriv,
