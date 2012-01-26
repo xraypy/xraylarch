@@ -122,16 +122,10 @@ class shell(cmd.Cmd):
             self.input.put(text, lineno=0)
             self.prompt = self.ps2
             while len(self.input) > 0:
-                block,fname,lineno = self.input.get()
+                block, fname, lineno = self.input.get()
                 if len(block) == 0:
                     continue
                 ret = self.larch.eval(block, fname=fname, lineno=lineno)
-                if callable(ret) and not isinstance(ret, type):
-                    try:
-                        if 1 == len(block.split()):
-                            ret = ret()
-                    except:
-                        pass
                 if self.larch.error:
                     err = self.larch.error.pop(0)
                     fname, lineno = err.fname, err.lineno

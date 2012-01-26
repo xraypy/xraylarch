@@ -90,7 +90,7 @@ class Procedure(object):
         self.varkws   = varkws
         self.__doc__  = doc
         self.lineno   = lineno
-        self.fname    = fname
+        self.__file__ = fname
 
     def __repr__(self):
         sig = ""
@@ -106,7 +106,7 @@ class Procedure(object):
 
         if self.varkws is not None:
             sig = "%s, **%s" % (sig, self.varkws)
-        sig = "<Procedure %s(%s), file=%s>" % (self.name, sig, self.fname)
+        sig = "<procedure %s(%s), file=%s>" % (self.name, sig, self.__file__)
         if self.__doc__ is not None:
             sig = "%s\n  %s" % (sig, self.__doc__)
         return sig
@@ -122,25 +122,25 @@ class Procedure(object):
         if n_args != n_expected:
             msg = None
             if n_args < n_expected:
-                msg = 'not enough arguments for Procedure %s' % self.name
+                msg = 'not enough arguments for procedure %s' % self.name
                 msg = '%s (expected %i, got %i)'% (msg,
                                                    n_expected,
                                                    n_args)
                 self.larch.raise_exception(msg=msg, expr='<>',
-                                     fname=self.fname, lineno=self.lineno)
+                                     fname=self.__file__, lineno=self.lineno)
 
-            msg = "too many arguments for Procedure %s" % self.name
+            msg = "too many arguments for procedure %s" % self.name
 
         for argname in self.argnames:
             setattr(lgroup, argname, args.pop(0))
 
         if len(args) > 0 and self.kwargs is not None:
-            msg = "got multiple values for keyword argument '%s' Procedure %s"
+            msg = "got multiple values for keyword argument '%s' procedure %s"
             for t_a, t_kw in zip(args, self.kwargs):
                 if t_kw[0] in kwargs:
                     msg = msg % (t_kw[0], self.name)
                     self.larch.raise_exception(msg=msg, expr='<>',
-                                         fname=self.fname,
+                                         fname=self.__file__,
                                          lineno=self.lineno)
                 else:
                     kwargs[t_a] = t_kw[1]
@@ -157,16 +157,16 @@ class Procedure(object):
             if self.varkws is not None:
                 setattr(lgroup, self.varkws, kwargs)
             elif len(kwargs) > 0:
-                msg = 'extra keyword arguments for Procedure %s (%s)'
+                msg = 'extra keyword arguments for procedure %s (%s)'
                 msg = msg % (self.name, ','.join(list(kwargs.keys())))
                 self.larch.raise_exception(msg=msg, expr='<>',
-                                     fname=self.fname, lineno=self.lineno)
+                                     fname=self.__file__, lineno=self.lineno)
 
         except (ValueError, LookupError, TypeError,
                 NameError, AttributeError):
-            msg = 'incorrect arguments for Procedure %s' % self.name
+            msg = 'incorrect arguments for procedure %s' % self.name
             self.larch.raise_exception(msg=msg, expr='<>',
-                                 fname=self.fname,   lineno=self.lineno)
+                                 fname=self.__file__,   lineno=self.lineno)
 
         stable.save_frame()
         stable.set_frame((lgroup, self.modgroup))
@@ -175,7 +175,7 @@ class Procedure(object):
 
         for node in self.body:
             self.larch.interp(node, expr='<>',
-                              fname=self.fname, lineno=self.lineno)
+                              fname=self.__file__, lineno=self.lineno)
             if len(self.larch.error) > 0:
                 break
             if self.larch.retval is not None:

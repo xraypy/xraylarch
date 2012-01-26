@@ -25,13 +25,21 @@ class Closure(object):
         if _name is None:
             self.__name__ = self.func.__name__
 
+
     def __repr__(self):
-        return "<function %s>" % (self.__name__)
+        return "<function %s, file=%s>" % (self.__name__, self.__file__)
+
     __str__ = __repr__
 
     @property
     def __doc__(self):
-        return self.func.__doc__
+        if self.func is not None:
+            return self.func.__doc__
+
+    @property
+    def __file__(self):
+        return self.func.func_code.co_filename
+            
 
     def __call__(self, *args, **c_kwds):
         if self.func is None:
