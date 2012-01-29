@@ -65,16 +65,16 @@ class CursorFrame(wx.MiniFrame):
         self.Bind(wx.EVT_CLOSE, self.onClose)
         self.thread = CursorThread(self, win)
         self.thread.Start()
-        
+
     def onClose(self, evt=None):
         wx.Yield()
         self.thread.Stop()
         while self.thread.running:
             time.sleep(0.1)
-        
+
     def onUpdate(self, evt=None):
-        self.has_cursor = self.symtable.has_symbol(self.xval) 
-        
+        self.has_cursor = self.symtable.has_symbol(self.xval)
+
     def wait_for_cursor(self, timeout=60.0):
         """wait for and return most recent cursor position"""
         self.has_cursor = False
@@ -95,7 +95,7 @@ class CursorFrame(wx.MiniFrame):
                 evtloop.Dispatch()
         self.thread.Stop()
 
-        
+
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, larch=None, **kws):
         PlotFrame.__init__(self, parent=wxparent,
@@ -212,7 +212,8 @@ def _getDisplay(win=1, larch=None, wxparent=None, image=False):
         display.SetTitle(title)
     return display
 
-def _plot(x,y, win=1, new=False, larch=None, wxparent=None, **kws):
+def _plot(x,y, win=1, new=False, larch=None, wxparent=None,
+          force_draw=False, **kws):
     """plot(x, y[, win=1], options])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any plot currently in the Plot Frame.
@@ -248,12 +249,20 @@ def _plot(x,y, win=1, new=False, larch=None, wxparent=None, **kws):
     plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
     if plotter is None:
         larch.raise_exception(msg='No Plotter defined')
-    wx.CallAfter(plotter.Raise)
-
+    plotter.Raise()
     if new:
         plotter.plot(x, y, **kws)
     else:
         plotter.oplot(x, y, **kws)
+    if force_draw:
+        update()
+
+def update():
+    app = wx.GetApp()
+    evtloop = wx.EventLoop()
+    activator = wx.EventLoopActivator(evtloop)
+    while evtloop.Pending():   evtloop.Dispatch()
+    app.ProcessIdle()
 
 def _oplot(x, y, win=1, larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=1[, options]])
