@@ -43,7 +43,7 @@ class Parameter(object):
     The value and min/max values will be set to floats.
     """
     def __init__(self, name=None, value=None, vary=True,
-                 min=None, max=None, expr=None, **kws):
+                 min=None, max=None, expr=None, larch=None, **kws):
         self.name = name
         self.value = value
         self.init_value = value
@@ -55,6 +55,10 @@ class Parameter(object):
         self.stderr = None
         self.correl = None
         self.defvar = None
+        if self.expr is not None and larch is not None:
+            self.defvar = DefinedVariable(self.expr, larch=larch)
+            self.vary = False
+            self.value = self.defvar.evaluate()
 
     def __repr__(self):
         s = []
@@ -283,9 +287,9 @@ def minimize(fcn, group,  args=None, kws=None,
 
     return fitter.leastsq()
 
-def parameter(larch=None, **kws):
+def parameter(**kws):
     "create a fitting Parameter as a Variable"
-    return Parameters(**kws)
+    return Parameter(**kws)
 
 def guess(value, min=None, max=None, larch=None, **kws):
     """create a fitting Parameter as a Variable.
@@ -293,7 +297,8 @@ def guess(value, min=None, max=None, larch=None, **kws):
        x = guess(10, min=0)
        y = guess(1.2, min=1, max=2)
     """
-    return Parameter(value=value, min=min, max=max, vary=True, larch=larch)
+    return Parameter(value=value, min=min, max=max, vary=True,
+                     larch=larch, expr=None)
 
 def registerLarchPlugin():
     return ('_math', {'minimize': minimize,
