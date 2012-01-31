@@ -114,8 +114,8 @@ class Interpreter:
         self.node_handlers = {}
         for tnode in self.supported_nodes:
             self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
-            
-        # add all plugins in standard plugins folder 
+
+        # add all plugins in standard plugins folder
         plugins_dir = os.path.join(site_config.sys_larchdir, 'plugins')
         for pname in os.listdir(plugins_dir):
             pdir = os.path.join(plugins_dir, pname)
@@ -463,10 +463,10 @@ class Interpreter:
 
     def on_boolop(self, node):    # ('op', 'values')
         "boolean operator"
-        val = self.interp(node.values.pop(0))
-        is_and = ast.Or != node.op.__class__
+        val = self.interp(node.values[0])
+        is_and = ast.And == node.op.__class__
         if (is_and and val) or (not is_and and not val):
-            for n in node.values:
+            for n in node.values[1:]:
                 val =  OPERATORS[node.op.__class__](val, self.interp(n))
                 if (is_and and not val) or (not is_and and val):
                     break
