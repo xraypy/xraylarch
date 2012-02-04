@@ -634,20 +634,19 @@ class Interpreter:
         # ('name', 'args', 'body', 'decorator_list')
         if node.decorator_list != []:
             raise Warning("decorated procedures not supported!")
-
         kwargs = []
-        while node.args.defaults:
-            defval = self.interp(node.args.defaults.pop())
-            key    = self.interp(node.args.args.pop())
-            kwargs.append((key, defval))
-        kwargs.reverse()
-        args = [tnode.id for tnode in node.args.args]
+        offset = len(node.args.args) - len(node.args.defaults)
+        for idef, defnode in enumerate(node.args.defaults):
+            defval = self.interp(defnode)
+            keyval = self.interp(node.args.args[idef+offset])
+            kwargs.append((keyval, defval))
+        # kwargs.reverse()
+        args = [tnode.id for tnode in node.args.args[:offset]]
         doc = None
         if (isinstance(node.body[0], ast.Expr) and
             isinstance(node.body[0].value, ast.Str)):
-            docnode = node.body.pop(0)
+            docnode = node.body[0]
             doc = docnode.value.s
-
         proc = Procedure(node.name, larch= self, doc= doc,
                          body   = node.body,
                          fname  = self.fname,
@@ -746,7 +745,6 @@ class Interpreter:
 
         # now we install thismodule into the current moduleGroup
         # import full module
-        # print("IM: from ", fromlist, asname)
         if fromlist is None:
             if asname is None:
                 asname = name
@@ -761,7 +759,6 @@ class Interpreter:
             setattr(targetgroup, asname, thismod)
         # import-from construct
         else:
-
             if asname is None:
                 asname = [None]*len(fromlist)
             targetgroup = st_sys.moduleGroup
