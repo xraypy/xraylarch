@@ -6,7 +6,7 @@ ETOK = 0.26246851088
 
 # put this plugin directory in sys.path to make sure
 # that other functions from this directory can be imported
-thisdir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'xafs'))
+thisdir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'xafs')
 sys.path.insert(0, thisdir)
 
 # now we can reliably import other xafs modules...
