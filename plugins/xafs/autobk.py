@@ -4,11 +4,16 @@ import larch
 
 ETOK = 0.26246851088
 
-sys.path.insert(0, os.path.join(larch.site_config.plugins_path[1], 'xafs'))
+# put this plugin directory in sys.path to make sure
+# that other functions from this directory can be imported
+thisdir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'xafs'))
+sys.path.insert(0, thisdir)
 
+# now we can reliably import other xafs modules...
 from xafsft import ftwindow, xafsft_fast
 from pre_edge import find_e0
 from xafsutils import nearest_index, realimag
+
 from scipy.interpolate import splrep, splev, UnivariateSpline
 
 from lmfit import Parameters, Minimizer
