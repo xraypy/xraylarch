@@ -34,6 +34,7 @@ GUI interpreter::
 
 For Windows and Mac OS X users, executable applications will be available.
 
+
 Larch as a Basic Calculator
 ================================
 
@@ -139,11 +140,11 @@ and you can multiply a string by an integer::
    'stringstring'
 
 Larch has special variables for boolean or logical operations: ``True`` and
-``False``.  These are actually equal to 1 and 0, respectively, but are
-mostly used in logical operations, which include operators 'and', 'or', and
-'not', as well as comparison operators '>', '>=', '<', '<=', '==', '!=', and
-'is'.  Note that 'is' expresses identity, which is a slightly stricter test
-than '==' (equality), and is most useful for complex objects.::
+``False``.  These are equal to 1 and 0, respectively, but are mostly used
+in logical operations, which include operators 'and', 'or', and 'not', as
+well as comparison operators '>', '>=', '<', '<=', '==', '!=', and 'is'.
+Note that 'is' expresses identity, which is a slightly stricter test than
+'==' (equality), and is most useful for complex objects.::
 
    larch> 2 > 3
    False
@@ -156,7 +157,6 @@ Python.
 Finally, Larch knows about complex numbers, using a 'j' to indicate the
 imaginary part of the number::
 
-   larch> sin(-1)
    larch> sqrt(-1)
    Warning: invalid value encountered in sqrt
    nan
@@ -170,11 +170,159 @@ imaginary part of the number::
    larch> print x.imag
    0.63496391478473613
 
-
 To be clear, all these primitive data types in Larch are derived from the
 corresponding Python objects, so you can consult python documentation for
 further details and notes.
 
+Objects and Groups
+======================
+
+Since Larch is built upon Python, an object-oriented programming language,
+all named quantities or **variables** in Larch are python objects.  Because
+of this, most Larch variables come with built-in functionality derived from
+their python objects. Though Larch does not provide a way for the user to
+define their own new objects, this can be done with the Python interface.
+
+Objects
+~~~~~~~~~~
+
+All Larch variables are Python objects, and so have a well-defined **type**
+and a set of **attributes** and **methods** that go with it.   To see the
+Python type of any variable, use the builtin :func:`type` function::
+
+   larch> type(1)
+   <type 'int'>
+   larch> type('1')
+   <type 'str'>
+   larch> type(1.0)
+   <type 'float'>
+   larch> type(1+0j)
+   <type 'complex'>
+   larch> type(sin)
+   <type 'numpy.ufunc'>
+
+The attributes and methods differ for each type of object, but are all
+accessed the same way -- with a '.' (dot) separating the variable name or
+value from the name of the attribute or method.   As above, complex data
+have :attr:`real` and :attr:`imag` attributes for the real and imaginary
+parts,  which can be accessed::
+
+   larch> x = sin(1+1j)
+   larch> print x
+   (1.2984575814159773+0.63496391478473613j)
+   larch> print x.imag
+   0.63496391478473613
+
+Methods are functions that belong to an object (and so know about the data
+in that object).  They are also objects themselves (and so have attributes
+and methods), but can be called using parentheses '()', possibly with
+arguments inside the parentheses to change the methods behavior.  For
+example, a complex number has a :meth:`conjugate` method::
+
+   larch> x.conjugate
+   <built-in method conjugate of complex object at 0x178e54b8>
+   larch> x.conjugate()
+   (1.2984575814159773-0.63496391478473613j)
+
+Strings and other data types have many more attributes and methods, as
+we'll see below.
+
+To get a listing of all the attributes and methods of a object, use the
+builtin :func:`dir` function::
+
+   larch> dir(1)
+   ['__abs__', '__add__', '__and__', '__class__', '__cmp__', '__coerce__', '__delattr__', '__div__', '__divmod__', '__doc__', '__float__', '__floordiv__', '__format__', '__getattribute__', '__getnewargs__', '__hash__', '__hex__', '__index__', '__init__', '__int__', '__invert__', '__long__', '__lshift__', '__mod__', '__mul__', '__neg__', '__new__', '__nonzero__', '__oct__', '__or__', '__pos__', '__pow__', '__radd__', '__rand__', '__rdiv__', '__rdivmod__', '__reduce__', '__reduce_ex__', '__repr__', '__rfloordiv__', '__rlshift__', '__rmod__', '__rmul__', '__ror__', '__rpow__', '__rrshift__', '__rshift__', '__rsub__', '__rtruediv__', '__rxor__', '__setattr__', '__sizeof__', '__str__', '__sub__', '__subclasshook__', '__truediv__', '__trunc__', '__xor__', 'conjugate', 'denominator', 'imag', 'numerator', 'real']
+   larch> dir('a string')
+   ['__add__', '__class__', '__contains__', '__delattr__', '__doc__', '__eq__', '__format__', '__ge__', '__getattribute__', '__getitem__', '__getnewargs__', '__getslice__', '__gt__', '__hash__', '__init__', '__le__', '__len__', '__lt__', '__mod__', '__mul__', '__ne__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__rmod__', '__rmul__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '_formatter_field_name_split', '_formatter_parser', 'capitalize', 'center', 'count', 'decode', 'encode', 'endswith', 'expandtabs', 'find', 'format', 'index', 'isalnum', 'isalpha', 'isdigit', 'islower', 'isspace', 'istitle', 'isupper', 'join', 'ljust', 'lower', 'lstrip', 'partition', 'replace', 'rfind', 'rindex', 'rjust', 'rpartition', 'rsplit', 'rstrip', 'split', 'splitlines', 'startswith', 'strip', 'swapcase', 'title', 'translate', 'upper', 'zfill']
+
+Again, we'll see properties of objects below, as we look into more
+interesting data types, or you can look into Python documentation.
+
+Groups
+~~~~~~~~~~
+
+In addition to using basic Python objects, Larch organizes data into
+Groups.  A Group is simply a named container for variables of any kind,
+including other Groups.  In this way, Groups have a hierarchical structure,
+much like a directory of files.   Each Larch variable belongs to a Group,
+and can be accessed by its full Group name.   The top-level Group is called
+'_main'.  You'll rarely need to use that, but it's there::
+
+   larch> myvar = 22.13
+   larch> print _main.myvar
+   22.13
+   larch> print myvar
+   22.13
+
+You can create your own groups and add data to it with the builtin
+:meth:`group` function::
+
+    larch> g = group()
+    larch> g
+    <Group>
+
+You can add variables to your Group 'g', using the '.' (dot) to separate
+the parent group from the child object::
+
+    larch> g.x = 1002.8
+    larch> g.name = 'here is a string'
+    larch> g.data = arange(100)
+    larch> print g.x/5
+    200.56
+
+(:func:`arange` is a builtin function to create an array of numbers).  As
+from the above discussion of objects, the '.' (dot) notation implies that
+'x', 'name', and 'data' are attributes of 'g' -- that's entirely correct.
+Groups have no other properties than the data attributes (and functions)
+you add to them.  Since they're objects, you can use the :func:`dir`
+function as above::
+
+    larch> dir(g)
+    ['data', 'name', 'x']
+
+(Note that the order shown may vary).  You can also use the builtin
+:func:`show` function to get a slightly more complete view of the group's
+contents::
+
+    larch> show(g)
+    == Group: 3 symbols ==
+      data: array<shape=(100,), type=dtype('int32')>
+      name: 'here is a string'
+      x: 1002.8
+
+The :func:`group` function can take arguments of attribute names and
+values, so that this group could have been created with a single call::
+
+    larch> g = group(x=1002.8, name='here is a string', data=arange(100))
+
+Many Larch functions will return groups or take a 'group' argument to
+write data into.  That is, a function that reads data from a file will
+almost certainly organize that data into a group, and simply return the
+group for you to name, perhaps something like::
+
+    larch> cu = read_ascii('cu_150k.xmu')
+
+
+Builtin Larch Groups
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Larch starts up with several groups, organizing builtin functionality into
+different groups.   The top-level '_main' group begins with 3 principle
+subgroups::
+
+  _builtin  -- basic builtin functions, mostly inherited from Python
+  _math     -- mathematical and array functionality, mostly inherited from numpy.
+  _sys      -- larch-specific system-wide variables
+
+In addition, a few groups will be created by standard plugins that will
+almost certainly be installed with Larch, including::
+
+  _io  -- file input/output functionality
+  _plot  -- plotting and image display functionality
+
+
+How Larch finds variable names
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 More Complex Data Structures:  Lists, Arrays, Dictionaries
 ===========================================================
@@ -185,16 +333,13 @@ built up to construct very complex structures.  These are all described in
 some detail here.  But as these are all closely related to Python objects,
 further details can be found in the standard Python documentation.
 
-Here, the word "object" is used frequently.  Each piece of data in Larch is
-a Python object, which is to say it has a value and may have specific
-functions that go with it.
-
 Lists
 ~~~~~~
 
-A list is a sequence of other data types.  The data types do not have to be
-the same type.  A list is constructed using brackets, with commas to
-separate the individual::
+A list is an ordered sequence of other data types.  They are
+**heterogeneous** -- they can be made up of data with different types.  A
+list is constructed using brackets, with commas to separate the
+individual::
 
     larch> my_list1 = [1, 2, 3]
     larch> my_list2 = [1, 'string', sqrt(7)]
@@ -220,15 +365,16 @@ can replace an element in a list::
     larch> my_list1
     ['hello', 2, 3]
 
-You can also change a list by appending to it with the 'append' method::
+As above, lists are python **objects**, and so come with methods for
+interacting with them.  For example, you can also change a list by
+appending to it with the 'append' method::
 
     larch> my_list1.append('number 4, the larch')
     larch> my_list1
     ['hello', 2, 3, 'number 4, the larch']
 
 
-The syntax using a '.' indicates a method -- a function specific to that
-object.  All lists will have an 'append' method, as well as several others:
+All lists will have an 'append' method, as well as several others:
 
     * count -- to return the number of times a particular element occurss in the list
     * extend -- to extend a list with another list
@@ -240,11 +386,11 @@ object.  All lists will have an 'append' method, as well as several others:
     * sort -- sort the elements.
 
 Note that the methods that change the list do so *IN PLACE* and return
-``None``.  That is, to sort a list, do::
+``None``.  That is, to sort a list, do this::
 
      larch> my_list.sort()
 
-but not::
+but not this::
 
      larch> my_list = my_list.sort()  # WRONG!!
 
@@ -259,7 +405,7 @@ and test whether a particular element is in a list with the `in` operator::
     larch> 'e' in my_list
     True
 
-You can access a sub-selection of elements with a *slice*, giving starting
+You can access a sub-selection of elements with a **slice**, giving starting
 and ending indices between brackets, separated by a colon.  Of course, the counting
 for a slice starts at 0. It also excludesthe final index::
 
@@ -333,11 +479,7 @@ Conditional Execution and Control-Flow
 ===========================================
 
 
-Object and Groups
-======================
 
-Objects
-~~~~~~~~~~
 
 Reading and Writing Data
 ============================

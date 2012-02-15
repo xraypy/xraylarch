@@ -114,8 +114,8 @@ class Interpreter:
         self.node_handlers = {}
         for tnode in self.supported_nodes:
             self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
-            
-        # add all plugins in standard plugins folder 
+
+        # add all plugins in standard plugins folder
         plugins_dir = os.path.join(site_config.sys_larchdir, 'plugins')
         for pname in os.listdir(plugins_dir):
             pdir = os.path.join(plugins_dir, pname)
@@ -463,10 +463,10 @@ class Interpreter:
 
     def on_boolop(self, node):    # ('op', 'values')
         "boolean operator"
-        val = self.interp(node.values.pop(0))
-        is_and = ast.Or != node.op.__class__
+        val = self.interp(node.values[0])
+        is_and = ast.And == node.op.__class__
         if (is_and and val) or (not is_and and not val):
-            for n in node.values:
+            for n in node.values[1:]:
                 val =  OPERATORS[node.op.__class__](val, self.interp(n))
                 if (is_and and not val) or (not is_and and val):
                     break
@@ -634,20 +634,19 @@ class Interpreter:
         # ('name', 'args', 'body', 'decorator_list')
         if node.decorator_list != []:
             raise Warning("decorated procedures not supported!")
-
         kwargs = []
-        while node.args.defaults:
-            defval = self.interp(node.args.defaults.pop())
-            key    = self.interp(node.args.args.pop())
-            kwargs.append((key, defval))
-        kwargs.reverse()
-        args = [tnode.id for tnode in node.args.args]
+        offset = len(node.args.args) - len(node.args.defaults)
+        for idef, defnode in enumerate(node.args.defaults):
+            defval = self.interp(defnode)
+            keyval = self.interp(node.args.args[idef+offset])
+            kwargs.append((keyval, defval))
+        # kwargs.reverse()
+        args = [tnode.id for tnode in node.args.args[:offset]]
         doc = None
         if (isinstance(node.body[0], ast.Expr) and
             isinstance(node.body[0].value, ast.Str)):
-            docnode = node.body.pop(0)
+            docnode = node.body[0]
             doc = docnode.value.s
-
         proc = Procedure(node.name, larch= self, doc= doc,
                          body   = node.body,
                          fname  = self.fname,
@@ -746,7 +745,6 @@ class Interpreter:
 
         # now we install thismodule into the current moduleGroup
         # import full module
-        # print("IM: from ", fromlist, asname)
         if fromlist is None:
             if asname is None:
                 asname = name
@@ -761,7 +759,6 @@ class Interpreter:
             setattr(targetgroup, asname, thismod)
         # import-from construct
         else:
-
             if asname is None:
                 asname = [None]*len(fromlist)
             targetgroup = st_sys.moduleGroup

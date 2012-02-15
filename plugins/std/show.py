@@ -37,18 +37,18 @@ def _show(sym=None, larch=None, **kws):
     members = dir(group)
     out = ['== %s: %i symbols ==' % (title, len(members))]
     for item in members:
-        if not (item.startswith('_Group__') or
-                item == '__name__' or item == '_larch' or
-                item.startswith('_SymbolTable__')):
-            obj = getattr(group, item)
-            dval = None
-            if HAS_NUMPY and isinstance(obj, numpy.ndarray):
-                if len(obj) > 10 or len(obj.shape)>1:
-                    dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
+        obj = getattr(group, item)
+        dval = None
+        if HAS_NUMPY and isinstance(obj, numpy.ndarray):
+            if len(obj) > 10 or len(obj.shape)>1:
+                dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
                                                          repr(obj.dtype))
-            if dval is None:
-                dval = repr(obj)
-            out.append('  %s: %s' % (item, dval))
+        if dval is None:
+            dval = repr(obj)
+        out.append('  %s: %s' % (item, dval))
+#         if not (item.startswith('_Group__') or
+#                 item == '__name__' or item == '_larch' or
+#                 item.startswith('_SymbolTable__')):
 
     larch.writer.write("%s\n" % '\n'.join(out))
 

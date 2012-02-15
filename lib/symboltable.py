@@ -41,10 +41,10 @@ class Group(object):
     def __dir__(self):
         "return sorted list of names of member"
         return sorted([key for key in list(self.__dict__.keys())
-                       if (not key.startswith('_Group__') and
-                           not key.startswith('_SymbolTable__') and
-                           not key == '_main' and
-                           not key == '__name__')])
+                       if (not key.startswith('_Group') and
+                           not key.startswith('_SymbolTable') and
+                           key != '_main' and key != '_larch' and
+                           key != '__parents' )])
 
     def _subgroups(self):
         "return sorted list of names of members that are sub groups"
@@ -58,11 +58,8 @@ class Group(object):
     def _publicmembers(self):
         "sorted member list"
         r = {}
-        for key in self._members():
-            if not (key.startswith('_Group__') or
-                    key.startswith('_SymbolTable__') or
-                    key == '_main' or key == '__name__'):
-                r[key] = self.__dict__[key]
+        for key in self.__dir__():
+            r[key] = self.__dict__[key]
         return r
 
 def isgroup(grp):
@@ -75,10 +72,6 @@ class InvalidName:
     symboltable._lookup() uses this to check for invalid names"""
     pass
 
-
-##
-
-
 class SymbolTable(Group):
     """Main Symbol Table for Larch.
     """
@@ -89,7 +82,7 @@ class SymbolTable(Group):
                 'has_symbol', 'has_group', 'get_group',
                 'show_group', 'create_group', 'new_group',
                 'get_symbol', 'set_symbol',  'del_symbol',
-                'get_parent', 'add_plugin', 'path')
+                'get_parent', 'add_plugin', 'path', '__parents')
 
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
@@ -245,7 +238,7 @@ class SymbolTable(Group):
         if obj is None:
             return
         out = []
-        for s in reversed(self._parents):
+        for s in reversed(self.__parents):
             if s.__name__ is not '_main' or '_main' not in out:
                 out.append(s.__name__)
         out.reverse()
@@ -258,7 +251,7 @@ class SymbolTable(Group):
         cache = self._fix_searchGroups()
         searchGroups = [cache['localGroup'], cache['moduleGroup']]
         searchGroups.extend(cache['searchGroups'])
-        self._parents = []
+        self.__parents = []
         if self not in searchGroups:
             searchGroups.append(self)
 
@@ -270,7 +263,7 @@ class SymbolTable(Group):
         if len(parts) == 1:
             for grp in searchGroups:
                 if public_attr(grp, name):
-                    self._parents.append(grp)
+                    self.__parents.append(grp)
                     return getattr(grp, name)
 
         # more complex case: not immediately found in Local or Module Group
@@ -282,7 +275,7 @@ class SymbolTable(Group):
         else:
             for grp in searchGroups:
                 if public_attr(grp, top):
-                    self._parents.append(grp)
+                    self.__parents.append(grp)
                     out = getattr(grp, top)
         if out is self.__invalid_name:
             raise LookupError("cannot locate symbol '%s'" % name)

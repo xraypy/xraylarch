@@ -8,7 +8,7 @@ Larch is a scientific data processing language that is designed to be
 
     * easy to use for novices.
     * complete enough for intermediate to advanced data processing.
-    * data-centric, so that arrays of data are easy to manage and use.
+    * data-centric, so that arrays of scientific data are easy to use and organize.
     * easily extensible with python.
 
 Larch is targeted at tools and algorithms for analyzing x-ray spectroscopic
@@ -18,7 +18,7 @@ better connected through a common *macro language* for dealing with
 scientific data sets.
 
 Many data collection, visualization, and analysis programs have an ad-hoc
-macro languages built in that allow some amount of customization,
+macro languages built into them that allow some amount of customization,
 automation, scripting, and extension of the fundamental operations
 supported by the programs.  These macro languages are rarely used in more
 than one program, making communication and sharing data between programs
@@ -39,7 +39,7 @@ scientific computing.  These include numpy, scipy, and matplotlib.
 
 The initial target application areas for Larch are
 
-  * XAFS analysis, becoming Ifeffit verversio 2
+  * XAFS analysis, becoming version 2 of Ifeffit.
   * tools for micro-XRF mapping visualization and analysis.
   * quantitative XRF analysis.
   * X-ray standing waves and surface scattering analysis.
