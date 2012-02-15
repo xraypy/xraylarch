@@ -605,7 +605,7 @@ class Interpreter:
         "function/procedure execution"
         #  ('func', 'args', 'keywords', 'starargs', 'kwargs')
         func = self.interp(node.func)
-        if not hasattr(func, '__call__'):
+        if not hasattr(func, '__call__') and not hasattr(func, '__init__'):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node=node, msg=msg)
 
