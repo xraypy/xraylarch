@@ -53,9 +53,9 @@ class LarchExceptionHolder:
             if isinstance(func, Closure): func = func.func
             try:
                 fname = inspect.getmodule(func).__file__
-            except:
+            except AttributeError:
                 fname = 'unknown'
-            
+
             if fname.endswith('.pyc'): fname = fname[:-1]
             found = False
             for tb in traceback.extract_tb(e_tb):
