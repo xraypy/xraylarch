@@ -18,7 +18,7 @@ from .symboltable import SymbolTable, Group, isgroup
 from .larchlib import LarchExceptionHolder, Procedure, DefinedVariable
 from .utils import Closure
 
-__version__ = '0.9.7'
+__version__ = '0.9.8'
 
 OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.IsNot:  lambda a, b: a is not b,
