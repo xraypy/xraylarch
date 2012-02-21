@@ -6,7 +6,7 @@ This chapter describes the Larch language and provides an introduction into
 processing data using Larch.  An important goal of Larch is to make writing
 and modifying data analysis as simple as possible.  The tutorial here tries
 to make few assumptions about your experience with scientific
-programming. On the other hand, Larch is a language for processing of
+programming.  On the other hand, Larch is a language for processing of
 scientific data, the expected audience is expected to have a technical
 background, familiarity with using programs for scientific data analysis.
 In addition, some understanding of the concepts of how scientific data is
@@ -60,12 +60,35 @@ values, and then use these in calculations::
    11.402879992850263
 
 Note that parentheses are used to group multiplication and division, and
-also to hold the arguments to functions like ``sin``.
+also to hold the arguments to functions like :func:`sin`.
 
 Variable names must start with a letter or underscore ('_'), followed by
 any number of letters, underscores, or numbers.  You may notice that a dot
-('.') may appear to be in many variable names.  We'll get to this in a
-later section.
+('.') may appear to be in many variable names.  This indicates an
+*attribute*  of a variable -- we'll get to this in a later section.
+
+If you're familiar with other programming langauges, an important point for
+Larch (owing to its Python origins) is that variables are created
+*dynamically*, they are not pre-defined to have some particular data type.
+In fact, the a variable name (say, 'angle' above) can hold any type of
+data, and its type can be changed easily::
+
+    larch> angle = 'now I am a string'
+
+Although the types of values for a variable can be changed dynamically,
+values in Larch (Python) do have a definite and clear type, and conversion
+between types is rigidly defined -- you can add an integer and a real
+number to give a real number, but you cannot add a string and a real
+number.   In fact, athough writing::
+
+   larch> angle = asin(hc/(10000*2*d))*180/pi
+
+is usually described as "create a variable 'angle' and set its value to the
+result calculated (11.4...)", this is a bit misleading.   A better way to
+think about it is that the calculation results in a value (11.4...) and
+we've assigned the name 'angle' to point to that value.  The distinction
+may seem subtle, but has some profound results, as we'll see below when
+discussing lists.
 
 
 Basic Data Types
@@ -243,9 +266,9 @@ Groups
 
 In addition to using basic Python objects, Larch organizes data into
 Groups.  A Group is simply a named container for variables of any kind,
-including other Groups.  In this way, Groups have a hierarchical structure,
-much like a directory of files.   Each Larch variable belongs to a Group,
-and can be accessed by its full Group name.   The top-level Group is called
+including other Groups.  In this way, Groups have a heirarchical structure,
+much like a directory of files.  Each Larch variable belongs to a Group,
+and can be accessed by its full Group name.  The top-level Group is called
 '_main'.  You'll rarely need to use that, but it's there::
 
    larch> myvar = 22.13
@@ -307,22 +330,64 @@ Builtin Larch Groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Larch starts up with several groups, organizing builtin functionality into
-different groups.   The top-level '_main' group begins with 3 principle
-subgroups::
+different groups.  The top-level '_main' group begins with 3 principle
+subgroups, '_builtin', '_sys', and '_math' for basic functionality.  For
+almost all uses of Larch, several additional groups are created for more
+specific functionality are created on startup by Larch plugins.  The
+principle starting groups are describe in
+:ref:`Table of Basic Larch Groups <tutor_topgroups_table>`
 
-  _builtin  -- basic builtin functions, mostly inherited from Python
-  _math     -- mathematical and array functionality, mostly inherited from numpy.
-  _sys      -- larch-specific system-wide variables
+.. _tutor_topgroups_table:
 
-In addition, a few groups will be created by standard plugins that will
-almost certainly be installed with Larch, including::
+   Table of Basic Larch Groups.  These groups are listed in order of how
+   they will be searched for functions and data.
 
-  _io  -- file input/output functionality
-  _plot  -- plotting and image display functionality
+  ==================== =================================================
+   **Group Name**       **description**
+  ==================== =================================================
+    _builtin             basic builtin functions.
+    _math                mathematical and array functions.
+    _sys                 larch sstem-wide variables.
+    _io                  file input/output functions.
+    _plotter             plotting and image display functions.
+    _xafs                XAFS-specific functions.
+  ==================== =================================================
+
+The functions in '_builtin'  are mostly inherited from Python's own
+built-in functions.  The functions in '_math' are mostly inherited from
+Numpy, and contain basic array handling and math.
 
 
 How Larch finds variable names
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With several builtin groups, and even more groups created to store your own
+data to be processed, Larch ends up with a complex heirarchy of data.  This
+gives a good way of organizing data, but it also leads to a question of how
+variable names are found.  Of course, you can always access a function or
+data object by its full name::
+
+   larch> print _math.sin(_math.pi/2)
+   1.0
+
+but that's too painful to use, and of course, one needs to be able to do::
+
+   larch> print sin(pi/2)
+   1.0
+
+and have Larch know that when you say :func:`sin`, you mean
+:func:`_math.sin`.  The way this look-up of names works is that Larch keeps
+a list of groups that it will search through for names.  This list is held
+in the variable :data:`_sys.searchGroups`, and can be viewed and modified
+during a Lach session.  On startup, this list has the groups listed in
+:ref:`Table of Basic Larch Groups <tutor_topgroups_table>`, in the order
+shown.  To be clear, if there was a variable named :data:`_sys.something`
+and a :data:`_math.something`, typing 'something' would resolve to
+:data:`_sys.something`, and to access :data:`_math.something` you would
+have to give the full name.   For the builtin functions and variables, such
+clashes are not so likely, but they are likely if you read in many data
+sets as groups, and want to access the contents of the different groups.
+
 
 More Complex Data Structures:  Lists, Arrays, Dictionaries
 ===========================================================
@@ -372,7 +437,6 @@ appending to it with the 'append' method::
     larch> my_list1.append('number 4, the larch')
     larch> my_list1
     ['hello', 2, 3, 'number 4, the larch']
-
 
 All lists will have an 'append' method, as well as several others:
 
@@ -426,6 +490,42 @@ element of a list.  You can also add an optional third value to the slice for a 
     larch> my_list[1::2]  # every other element, starting at 1
     ['b', 'd', 'f', 'h', 'j']
 
+A final important property of lists, and of basic variable creation in
+Larch (and Python) is related to the discussion above about variable
+creation and assignment.  There we said that 'creating a variable'::
+
+    larch> my_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+
+was best thought of as creating a value (here, the
+literal list "['a', 'b', ..., 'j']") and then assigning the name 'my_list'
+to point to that value.  Here's why we make that distinction.   If you
+now say::
+
+    larch> your_list = my_list
+
+the variable 'your_list' now points to the same value -- the same list.
+That is, it does not make a copy of the list. Since the list is mutable,
+changing 'your_list' will also change 'my_list'::
+
+    larch> your_list[0] = 500
+    larch> print my_list[:3]
+    [500, 'b', 'c']                # changed!!
+
+You can make a copy of a list, by selecting a full slice::
+
+    larch> your_list = my_list[:]
+    larch> your_list[0] = 3.2444
+    larch> print my_list[:3]
+    [500, 'b', 'c']                 # now unchanged
+
+    larch> your_list[0] == my_list[0]
+    False
+
+Note that this behavior doesn't happen for immutable data types, including
+the more primitive data types such as integers, floats and strings.  This
+is essentially because you cannot assign to parts of those data types, only
+set its entire value.
+
 As always, consult the Python documentation for more details.
 
 Tuples
@@ -433,8 +533,9 @@ Tuples
 
 Like lists, tuples are sequences of heterogenous objects.  The principle
 difference is that tuples are **immutable** -- they cannot be changed once
-they are created.  The syntax for tuples uses parentheses in place of
-brackets::
+they are created.  Instead, tuples are a simple ordered container of data.
+The syntax for tuples uses comma separated values inside (optional!)
+parentheses in place of brackets::
 
      larch> my_tuple = (1, 'H', 'hydrogen')
 
@@ -446,11 +547,30 @@ Like lists, tuples can be indexed and sliced::
      'hydrogen'
 
 Due to their immutability, tuples have only a few methods ('count' and
-'index' with similar functionality as for list).  Though they may seem less
-powerful than lists, tuples are actually used widely with Larch and Python,
-as once created a tuple has a predictable size and order to its elements.
-Thus, as with the example above, it can be used as a simple ordered
-container of data.
+'index' with similar functionality as for list).
+
+Though tuples they may seem less powerful than lists, and they are actually
+used widely with Larch and Python.  In addition to the example above using
+a tuple for a short, fixed data structure, many functions will return a
+tuple of values.  For this case, the simplicity an immutability of tuples
+is a strength becaues, once created, a tuple has a predictable size and
+order to its elements, which is not true for lists.  That is, if a larch
+procedure (which we'll see more of below) returns two values as a tuple::
+
+    larch> def sumdiff(x, y):
+    .....>     return x+y, x-y
+    .....> enddef
+    larch> x = sumdiff(3, 2)
+    larch> print x[0], x[1]
+    5 1
+
+Because the returned tuple has a fixed structure, you can also assign
+the it directly to a set of (the correct number of) variables::
+
+    larch> plus, minus = sumdiff(10, 3)
+    larch> print plus, minus
+    13 7
+
 
 A second look at Strings
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -465,33 +585,225 @@ Strings can be indexed and sliced as with lists and tuples::
      larch> name[:4]
      'Mont'
 
-Strings have many methods...
+Strings have many methods -- over 30 of them, in fact.  To convert a string
+to lower case, use its :meth:`lower` method, and so on::
 
+    larch> 'Here is a String'.lower()
+    'here is a string'
+    larch> 'Here is a String'.upper()
+    'HERE IS A STRING'
+    larch> 'Here is a String'.title()
+    'Here Is A String'
+
+This aslo shows that the methods are associated with strings themselves --
+even literal strings, and simply with variable names.
+
+Strings can be split into words with the :meth:`split` method, which splits
+a string on whitespace by default, but can take an argument to change the
+character (or substring) to use to split the string::
+
+    larch> 'Here is a String'.split()
+    ['Here', 'is', 'a', 'String']
+
+    larch> 'Here is a String'.split('i')
+    ['Here ', 's a Str', 'ng']
+
+
+As above, this is really only touching the tip of the iceberg of string
+functionality, and consulting standard Python documentation is recommended
+for more information.
 
 Arrays
 ~~~~~~~
 
+Wherea lists are sequences of heterogeneous objects that can grow and
+shrink, and included deeply nested structures, they are not well suited for
+holding numerical data.  Arrays are sequences of the same primitive data
+type, and so are much closer to arrays in C or Fortran.  This makes them
+much more suitable for numeric calculations, and so are extremely important
+in Larch.  There are many ways to create arrays, including the builtin
+:func:`array` function which will attempt to convert a list or tuple of
+numbers into an Array.  You can also use the builtin :func:`arange`
+function to create an ordered sequence of indices ([1, 2, 3, ...]), and
+several other methods listed in
+
+:ref:`Table of Array Creation Functions <tutor_arraycreate_table>`
+
+.. _tutor_arraycreate_table:
+
+   Table of Array Creation Functions.  These functions can all be used to
+   create arrays in Larch.
+
+  ==================== ========================= ===========================
+   **Function Name**     **description**           **example**
+  ==================== ========================= ===========================
+    array                array from list          arr = array([1,2,3])
+    arange               indices 0, N-1           arr = arange(10)
+    zeros                fill with N zeros        arr = zeros(10)
+    ones                 fill with N ones         arr = ones(10)
+    linspace             fill with bounds and N   arra = linspace(0, 1, 11)
+  ==================== ========================= ===========================
+
+Some examples of using these functions are needed::
+
+    larch> i = arange(10)
+    larch> i
+    array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+    larch> f = arange(10, dtype='f8')
+    larch> f
+    array([0., 1., 2., 3., 4., 5., 6., 7., 8., 9.])
+    larch> c = arange(10, dtype='c16')
+    larch> c
+    array([ 0.+0.j,  1.+0.j,  2.+0.j,  3.+0.j,  4.+0.j,  5.+0.j,  6.+0.j,
+            7.+0.j,  8.+0.j,  9.+0.j])
+
+
+Here, the **dtype** argument sets the data type for the array members -- in
+this case 'f8' means '8 byte floating point' and 'c16' means '16 byte
+complex' (i.e, double precision, and double precision complex,
+respectively).
+
+The :func:`linspace` function is particularly useful for creating arrays,
+as it takes a starting value, ending value, and number of points between
+these::
+
+    larch> s = linspace(0, 10, 21)
+    larch> s
+    array([  0. ,   0.5,   1. ,   1.5,   2. ,   2.5,   3. ,   3.5,   4. ,
+             4.5,   5. ,   5.5,   6. ,   6.5,   7. ,   7.5,   8. ,   8.5,
+             9. ,   9.5,  10. ])
+
+Several variants are possible.  For more information, consult the numpy
+tutorials, or use the online help system within Larch (which will print out
+the documentation string from the underlying numpy function)::
+
+    larch> help(linspace)
+
+        Return evenly spaced numbers over a specified interval.
+
+        Returns `num` evenly spaced samples, calculated over the
+        interval [`start`, `stop` ].
+
+        The endpoint of the interval can optionally be excluded.
+
+        Parameters
+        ----------
+        start : scalar
+            The starting value of the sequence.
+        stop : scalar
+            The end value of the sequence, unless `endpoint` is set to False.
+            In that case, the sequence consists of all but the last of ``num + 1``
+            evenly spaced samples, so that `stop` is excluded.  Note that the step
+            size changes when `endpoint` is False.
+        num : int, optional
+            Number of samples to generate. Default is 50.
+        endpoint : bool, optional
+            If True, `stop` is the last sample. Otherwise, it is not included.
+            Default is True.
+        retstep : bool, optional
+            If True, return (`samples`, `step`), where `step` is the spacing
+            between samples.
+
+	....
+
+
 Dictionaries
 ~~~~~~~~~~~~~~
 
+Our final basic data-structure is the dictionary, which is a container that
+maps values to keys.  This is sometimes called a hash or associative array.
+Like a list, a dictionary holds many heterogeneous values, and can be
+altered in place.  Unlike a list, the elements of a dictionary have no
+guaranteed order, and are not selected by integer index, and multiple
+values cannot be selected by a slice.  Instead, the elements of a
+dictionary are accessed by key, which is normally a string, but can also be
+an integer or floating point number, or even a tuple or some other objects
+-- any **immutable** object can be used.   Dictionaries are delimited by
+curly braces, with colons (':') separating key and value, and commas
+separating different elements::
+
+    larch> atomic_weight = {'H': 1.008, 'He': 4.0026, 'Li': 6.9, 'Be': 9.012}
+    larch> print atomic_weight['He']
+    4.0026
+
+You can also add more elements to a dictionary by assigning to a new key::
+
+    larch> atomic_weight['B']  = 10.811
+    larch> atomic_weight['C']  = 12.01
+
+Dictionaries have several methods, such as to return all the keys or all
+the values, with::
+
+    larch> atomic_weight.keys()
+    ['Be', 'C', 'B', 'H', 'Li', 'He']
+    larch> atomic_weight.values()
+    [9.0120000000000005, 12.01, 10.811, 1.008, 6.9000000000000004, 4.0026000000000002]
+
+Note that the keys and values are not in the order they were entered in,
+but do have the same order.
+
+As with lists, dictionaries are mutable, and the values in a dictionary can
+be any object, including other lists and dictionaries, so that a dictionary
+can end up with a very complex structure.  Dictionaries are quite useful,
+and are in fact used throughout python.
 
 Conditional Execution and Control-Flow
 ===========================================
 
+Two important needs for a scripting language are the ability to run
+different statements under different conditions, and to repeat
+calculations.  This is generally called 'flow control', as these statements
+control how the program will flow through the text of the script.  Here we
+introduce a few new concepts.
+
+So far all the stuff written to the Larch command line has been a single
+line of text that is immediately run, either printing output to the
+terminal or assigning a value to a variable.  These are both examples of
+**statements**, which are the basic pieces pf text you send to the program.
+So far we've seen three types of statements
+
+    1.  simple statements or expressions, such as::
+
+            larch> 1+sqrt(3)
+
+        or::
+
+            larch> atomic_weight.keys()
+
+        where we have an expression evaluated.  At the command line, these
+        values are printed -- in a script they would not be printed.
+
+    2.  print statements, such as::
+
+            larch> print sqrt(3)
+
+        where we explicitly command larch to print the evaluated
+        expression -- this would print if run from a script.
+
+    3.  assignment statements, such as::
+
+            larch> x = sqrt(3)
+
+        where we assign the name 'x' to hold the evaluated expression.
+
+Here, we will introduce a few more statement types, including compound
+statements that take up more than one line of test.
 
 
+Writing Procedures (functions)
+===================================
 
 Reading and Writing Data
 ============================
 
+
 Plotting and Displaying Data
 =================================
+
 
 Procedures
 ==============
 
+
 Dealing With Errors
 =======================
-
-
-
