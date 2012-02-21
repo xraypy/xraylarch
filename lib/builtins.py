@@ -4,11 +4,12 @@ import os
 import imp
 import sys
 import time
-import numpy as np
+
 from helper import Helper
 from . import inputText
 from . import site_config
 from .utils import Closure
+from .symboltable import isgroup
 
 helper = Helper()
 
@@ -369,6 +370,15 @@ def _dir(obj=None, larch=None, **kws):
         obj = larch.symtable
     return dir(obj)
 
+def _subgroups(obj, larch=None, **kws):
+    "return list of subgroups"
+    if larch is None:
+        raise Warning("cannot run subgroups() -- larch broken?")
+    if isgroup(obj):
+        return obj._subgroups()
+    else:
+        raise Warning("subgroups() argument must be a group")
+
 def _which(sym, larch=None, **kws):
     "return full path of object"
     if larch is None:
@@ -398,6 +408,7 @@ def _sleep(t=0, larch=None):
 local_funcs = {'group':_group,
                'dir': _dir,
                'which': _which,
+               'subgroups': _subgroups,
                'pause': _pause,
                'sleep': _sleep,
                'reload':_reload,
