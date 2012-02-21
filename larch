@@ -70,7 +70,7 @@ BANNER = """  Larch %s  M. Newville, T. Trainor (2011)
                                     '%i.%i.%i' % sys.version_info[:3],
                                     numpy.__version__)
 if HAS_WX:
-    BANNER = "%s, wx-enabled, wx versiont %s" % (BANNER, wx.__version__)
+    BANNER = "%s, wx-enabled, wx version %s" % (BANNER, wx.__version__)
 else:
     BANNER = "%s, NO wx graphics!"
 
