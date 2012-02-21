@@ -1,6 +1,6 @@
-'''SymbolTable for Larch interpreter
 '''
-
+SymbolTable for Larch interpreter
+'''
 from __future__ import print_function
 import os
 import sys
@@ -13,11 +13,10 @@ class Group(object):
 
     Methods
     ----------
-       _subgroups(): return sorted list of subgroups
-       _members():   return sorted list of all members
-       _publicmembers():   return sorted list of 'public' members
-
+       _subgroups(): return list of subgroups
+       _members():   return dict of members
     """
+    __private = ('_main', '_larch', '_parents', '__name__', '__private')
     def __init__(self, name=None, **kws):
         self.__name__ = name
         for key, val in kws.items():
@@ -32,31 +31,24 @@ class Group(object):
         return '<Group>'
 
     def __id__(self):
-        return (id(self))
+        return id(self)
 
     def __setattr__(self, attr, val):
         """set group attributes."""
         self.__dict__[attr] = val
 
     def __dir__(self):
-        "return sorted list of names of member"
-        return sorted([key for key in list(self.__dict__.keys())
-                       if (not key.startswith('_Group') and
-                           not key.startswith('_SymbolTable') and
-                           key != '_main' and key != '_larch' and
-                           key != '__parents' )])
+        "return list of member names"
+        return [key for key in list(self.__dict__.keys())
+                if (not key.startswith('_SymbolTable_') and
+                    key not in self.__private)]
 
     def _subgroups(self):
-        "return sorted list of names of members that are sub groups"
-        return sorted([k for k, v in list(self.__dict__.items())
-                       if isgroup(v)])
+        "return list of names of members that are sub groups"
+        return [k for k in dir(self) if isgroup(self.__dict__[k])]
 
     def _members(self):
-        "sorted member list"
-        return sorted(list(self.__dict__.keys()))
-
-    def _publicmembers(self):
-        "sorted member list"
+        "return members"
         r = {}
         for key in self.__dir__():
             r[key] = self.__dict__[key]
@@ -65,7 +57,6 @@ class Group(object):
 def isgroup(grp):
     "tests if input is a Group"
     return isinstance(grp, Group)
-
 
 class InvalidName:
     """ used to create a value that will NEVER be a useful symbol.
@@ -80,7 +71,7 @@ class SymbolTable(Group):
     __invalid_name = InvalidName()
     _private = ('save_frame', 'restore_frame', 'set_frame',
                 'has_symbol', 'has_group', 'get_group',
-                'show_group', 'create_group', 'new_group',
+                'create_group', 'new_group',
                 'get_symbol', 'set_symbol',  'del_symbol',
                 'get_parent', 'add_plugin', 'path', '__parents')
 
@@ -95,13 +86,12 @@ class SymbolTable(Group):
             setattr(self, gname, Group(name=gname))
 
         self._sys.frames      = []
-        self._sys.searchNames = []
         self._sys.searchGroups = []
         self._sys.path        = ['.']
         self._sys.localGroup  = self
         self._sys.moduleGroup = self
         self._sys.groupCache  = {'localGroup':None, 'moduleGroup':None,
-                                 'searchNames':None, 'searchGroups': None}
+                                 'searchGroups':None, 'searchGroupObjects': None}
 
         self._sys.historyfile = site_config.history_file
         orig_sys_path = sys.path[:]
@@ -162,11 +152,9 @@ class SymbolTable(Group):
         # check (and cache) whether searchGroups needs to be changed.
         sys = self._sys
         cache = self._sys.groupCache
-
-
         if (sys.localGroup   != cache['localGroup'] or
             sys.moduleGroup  != cache['moduleGroup'] or
-            sys.searchGroups != cache['searchNames']):
+            sys.searchGroups != cache['searchGroups']):
 
             if sys.moduleGroup is None:
                 sys.moduleGroup = self.top_group
@@ -176,17 +164,17 @@ class SymbolTable(Group):
             cache['localGroup']  = sys.localGroup
             cache['moduleGroup'] = sys.moduleGroup
 
-            if cache['searchNames'] is None:
-                cache['searchNames'] = []
+            if cache['searchGroups'] is None:
+                cache['searchGroups'] = []
 
             for gname in sys.searchGroups:
-                if gname not in cache['searchNames']:
-                    cache['searchNames'].append(gname)
+                if gname not in cache['searchGroups']:
+                    cache['searchGroups'].append(gname)
             for gname in self.core_groups:
-                if gname not in cache['searchNames']:
-                    cache['searchNames'].append(gname)
+                if gname not in cache['searchGroups']:
+                    cache['searchGroups'].append(gname)
 
-            sys.searchGroups = cache['searchNames'][:]
+            sys.searchGroups = cache['searchGroups'][:]
             #
             sgroups = []
             smod_keys = list(self._sys.modules.keys())
@@ -206,31 +194,8 @@ class SymbolTable(Group):
                 if grp is not None and grp not in sgroups:
                     sgroups.append(grp)
 
-            cache['searchGroups'] = sgroups[:]
+            cache['searchGroupObjects'] = sgroups[:]
         return cache
-
-    def _list_groups(self, group=None):
-        "list groups"
-        if group in (self.top_group, None):
-            grp = self
-            group = 'SymbolTable'
-        elif hasattr(self, group):
-            grp = getattr(self, group)
-        else:
-            grp = None
-            msg = '%s not found' % group
-
-        if isgroup(grp):
-            names = dir(grp)
-            out = ['== %s ==' % group]
-            for item in names:
-                if not (item.startswith('_Group__') or
-                        item.startswith('_SymbolTable__')):
-                    out.append('  %s: %s' % (item, repr(getattr(grp, item))))
-            msg = '\n'.join(out)
-        else:
-            msg = '%s is not a Subgroup' % group
-        return "%s\n" % msg  ### self.__writer("%s\n" % msg)
 
     def get_parentpath(self, sym):
         """ get parent path for a symbol"""
@@ -250,7 +215,7 @@ class SymbolTable(Group):
         creating symbol if needed (and create=True)"""
         cache = self._fix_searchGroups()
         searchGroups = [cache['localGroup'], cache['moduleGroup']]
-        searchGroups.extend(cache['searchGroups'])
+        searchGroups.extend(cache['searchGroupObjects'])
         self.__parents = []
         if self not in searchGroups:
             searchGroups.append(self)
@@ -356,7 +321,6 @@ class SymbolTable(Group):
         setattr(grp, child, value)
         return getattr(grp, child)
 
-
     def del_symbol(self, name):
         "delete a symbol"
         sym = self._lookup(name, create=False)
@@ -413,7 +377,6 @@ class SymbolTable(Group):
                     val = Closure(func=val, _name=key, **kws)
 
             self.set_symbol("%s.%s" % (groupname, key), val)
-
 
 # if __name__ == '__main__':
 #     symtab = SymbolTable()
