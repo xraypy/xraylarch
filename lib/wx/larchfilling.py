@@ -57,11 +57,11 @@ def rst2html(text):
         return publish_string(text, writer = html_fragment_writer )
     except:
         return "<br>".join(text.split('\n'))
-    
+
 
 class FillingTree(wx.TreeCtrl):
     """FillingTree based on TreeCtrl."""
-    
+
     name = 'Larch Filling Tree'
     revision = __revision__
 
@@ -92,7 +92,7 @@ class FillingTree(wx.TreeCtrl):
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed, id=self.GetId())
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, id=self.GetId())
         self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnItemActivated, id=self.GetId())
-        self.Bind(wx.EVT_RIGHT_DOWN, self.OnSelChanged, id=self.GetId() )        
+        self.Bind(wx.EVT_RIGHT_DOWN, self.OnSelChanged, id=self.GetId() )
         if not self.static:
             dispatcher.connect(receiver=self.push, signal='Interpreter.push')
 
@@ -149,7 +149,7 @@ class FillingTree(wx.TreeCtrl):
             return d
         self.ntop = 0
         if isinstance(obj, SymbolTable) or isinstance(obj, Group):
-            d = obj._publicmembers()
+            d = obj._members()
         if isinstance(obj, COMMONTYPES):
             d = obj
         elif isinstance(obj, (list, tuple)):
@@ -204,7 +204,7 @@ class FillingTree(wx.TreeCtrl):
         obj = self.GetPyData(item)
         if isinstance(obj, Closure):
             obj = obj.func
-            
+
         if self.IsExpanded(item):
             self.addChildren(item)
         self.setText('')
@@ -225,7 +225,7 @@ class FillingTree(wx.TreeCtrl):
                 text.append('\n %s' % TYPE_HELPS[otype])
             except KeyError:
                 pass
-            
+
         elif hasattr(obj, '__call__'):
             text.append('Function:')
             needs_doc = True
@@ -245,7 +245,7 @@ class FillingTree(wx.TreeCtrl):
                     break
             for d in doclines:
                 text.append(d[indent:])
-        text.append('\n')        
+        text.append('\n')
         self.setText('\n'.join(text))
 
     def getFullName(self, item, partial=''):
@@ -330,7 +330,7 @@ class FillingRST(html.HtmlWindow):
                  static=False):
         """Create FillingRST instance."""
         html.HtmlWindow.__init__(self, parent, id, style=wx.NO_FULL_REPAINT_ON_RESIZE)
-        
+
         # Configure various defaults and user preferences.
         if not static:
             dispatcher.connect(receiver=self.push, signal='Interpreter.push')
@@ -364,9 +364,9 @@ class Filling(wx.SplitterWindow):
                                 static=static)
         # self.text = FillingRST(parent=self, static=static)
         self.text = FillingText(parent=self, static=static)
-        
+
         wx.FutureCall(1, self.SplitVertically, self.tree, self.text, 200)
-        
+
         self.SetMinimumPaneSize(1)
 
         # Override the filling so that descriptions go to FillingText.
@@ -381,10 +381,10 @@ class Filling(wx.SplitterWindow):
 
     def SetRootObject(self, rootObject=None):
         self.tree.setRootObject(rootObject)
-        if self.tree.root is not None:        
+        if self.tree.root is not None:
             self.tree.SelectItem(self.tree.root)
             self.tree.display()
-        
+
     def OnChanged(self, event):
         #this is important: do not evaluate this event=> otherwise, splitterwindow behaves strange
         #event.Skip()
