@@ -1,0 +1,209 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial: Getting Started &mdash; larch 0.9.8 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.8',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
+    <link rel="up" title="Larch Tutorial" href="tutorial.html" />
+    <link rel="next" title="Tutorial: Basic and Complex Data Types" href="tutorial_datatypes.html" />
+    <link rel="prev" title="Larch Tutorial" href="tutorial.html" /> 
+  </head>
+  <body>
+<div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
+  <font size=28px> <a href="index.html">
+      <img src="_static/larchcones.png"
+                height=65 border="0" alt="larch"/>
+    &nbsp; Larch: X-ray Data Analysis</a>
+  </font>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_datatypes.html" title="Tutorial: Basic and Complex Data Types"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Larch Tutorial"
+             accesskey="P">previous</a> |</li>
+   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
+   <li><a href="reference.html">reference</a>|&nbsp;</li>
+   <li><a href="developers.html">develop</a>|&nbsp;</li>
+   <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search docs</a>&nbsp;</li>
+
+          <li><a href="tutorial.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial: Getting Started</a><ul>
+<li><a class="reference internal" href="#larch-as-a-basic-calculator">Larch as a Basic Calculator</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="previous chapter">Larch Tutorial</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_datatypes.html"
+                        title="next chapter">Tutorial: Basic and Complex Data Types</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial_start.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial-getting-started">
+<h1>Tutorial: Getting Started<a class="headerlink" href="#tutorial-getting-started" title="Permalink to this headline">¶</a></h1>
+<p>This tutorial expects that you already have Larch installed and can run
+either the program larch, basic Larch interpreter, or larch_gui, the
+enhanced GUI interpreter:</p>
+<div class="highlight-python"><pre>C:&gt; larch
+  Larch 0.9.7  M. Newville, T. Trainor (2011)
+  using python 2.6.5, numpy 1.5.1
+larch&gt;</pre>
+</div>
+<p>For Windows and Mac OS X users, executable applications will be available.</p>
+<div class="section" id="larch-as-a-basic-calculator">
+<h2>Larch as a Basic Calculator<a class="headerlink" href="#larch-as-a-basic-calculator" title="Permalink to this headline">¶</a></h2>
+<p>To start with, Larch can be used as a simple calculator:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="mi">3</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">4.e5</span><span class="p">)</span>
+<span class="mf">632.45553203367592</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+<span class="mf">0.8660254037844386</span>
+</pre></div>
+</div>
+<p>You can create your own variables holding values, by assigning names to
+values, and then use these in calculations:</p>
+<div class="highlight-python"><pre>larch&gt; hc = 12398.419
+larch&gt; d = 3.13556
+larch&gt; energy = (hc/(2*d)) / sin(10.0*pi/180)
+larch&gt; print energy
+11385.470119348252
+larch&gt; angle = asin(hc/(10000*2*d))*180/pi
+larch&gt; print angle
+11.402879992850263</pre>
+</div>
+<p>Note that parentheses are used to group multiplication and division, and
+also to hold the arguments to functions like <tt class="xref py py-func docutils literal"><span class="pre">sin()</span></tt>.</p>
+<p>Variable names must start with a letter or underscore (&#8216;_&#8217;), followed by
+any number of letters, underscores, or numbers.  You may notice that a dot
+(&#8216;.&#8217;) may appear to be in many variable names.  This indicates an
+<em>attribute</em>  of a variable &#8211; we&#8217;ll get to this in a later section.</p>
+<p>If you&#8217;re familiar with other programming langauges, an important point for
+Larch (owing to its Python origins) is that variables are created
+<em>dynamically</em>, they are not pre-defined to have some particular data type.
+In fact, the a variable name (say, &#8216;angle&#8217; above) can hold any type of
+data, and its type can be changed easily:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="s">&#39;now I am a string&#39;</span>
+</pre></div>
+</div>
+<p>Although the types of values for a variable can be changed dynamically,
+values in Larch (Python) do have a definite and clear type, and conversion
+between types is rigidly defined &#8211; you can add an integer and a real
+number to give a real number, but you cannot add a string and a real
+number.   In fact, writing:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">asin</span><span class="p">(</span><span class="n">hc</span><span class="o">/</span><span class="p">(</span><span class="mi">10000</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">d</span><span class="p">))</span><span class="o">*</span><span class="mi">180</span><span class="o">/</span><span class="n">pi</span>
+</pre></div>
+</div>
+<p>is usually described as &#8220;create a variable &#8216;angle&#8217; and set its value to the
+result calculated (11.4...)&#8221;.  For those used to working in C or Fortran,
+in which variables are static and must be of a pre-declared type, this
+description is a bit misleading.  A better way to think about it is that
+the calculation on the right-hand-side of the equal sign results in a value
+(11.4...) and we&#8217;ve assigned the name &#8216;angle&#8217; to hold this value.  The
+distinction may seem subtle, but it can have some profound results, as
+we&#8217;ll see in the following section when discussing lists and other dynamic
+values.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_datatypes.html" title="Tutorial: Basic and Complex Data Types"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Larch Tutorial"
+             >previous</a> |</li>
+   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
+   <li><a href="reference.html">reference</a>|&nbsp;</li>
+   <li><a href="developers.html">develop</a>|&nbsp;</li>
+   <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search docs</a>&nbsp;</li>
+
+          <li><a href="tutorial.html" >Larch Tutorial</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

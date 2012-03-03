@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Larch for Developers &mdash; larch 0.9.7 documentation</title>
+    <title>Larch for Developers &mdash; larch 0.9.8 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.7',
+        VERSION:     '0.9.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,9 +25,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.7 documentation" href="index.html" />
+    <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
     <link rel="next" title="Language Reference" href="language.html" />
-    <link rel="prev" title="Larch Tutorial" href="tutorial.html" /> 
+    <link rel="prev" title="Tutorial: Plotting and Displaying Data" href="tutorial_plotting.html" /> 
   </head>
   <body>
 <div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
@@ -48,7 +48,7 @@
           <a href="language.html" title="Language Reference"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorial.html" title="Larch Tutorial"
+          <a href="tutorial_plotting.html" title="Tutorial: Plotting and Displaying Data"
              accesskey="P">previous</a> |</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
@@ -66,8 +66,8 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Larch for Developers</a><ul>
-<li><a class="reference internal" href="#larch-vs-python">Larch vs Python</a><ul>
-<li><a class="reference internal" href="#code-blocks-with-end">Code Blocks with &#8216;end*&#8217;</a></li>
+<li><a class="reference internal" href="#differences-between-larch-and-python">Differences between Larch and Python</a><ul>
+<li><a class="reference internal" href="#code-block-ends">Code Block Ends</a></li>
 <li><a class="reference internal" href="#groups-vs-modules">Groups vs Modules</a></li>
 <li><a class="reference internal" href="#symbol-lookup-rules">Symbol Lookup Rules</a></li>
 <li><a class="reference internal" href="#unimplemented-features">Unimplemented features</a></li>
@@ -80,8 +80,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="tutorial.html"
-                        title="previous chapter">Larch Tutorial</a></p>
+  <p class="topless"><a href="tutorial_plotting.html"
+                        title="previous chapter">Tutorial: Plotting and Displaying Data</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="language.html"
                         title="next chapter">Language Reference</a></p>
@@ -116,8 +116,8 @@
 <p>This chapter describes details of Larch language for developers and
 programmers wanting to extend Larch.  This document will assume you have
 some familiarity with Python.</p>
-<div class="section" id="larch-vs-python">
-<h2>Larch vs Python<a class="headerlink" href="#larch-vs-python" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="differences-between-larch-and-python">
+<span id="python-diffs-section"></span><h2>Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h2>
 <p>Larch is very similar to Python but there are some very important
 difffernces, especially for someone familiar with Python.  These
 differences are not because we feel Python is somehow inadequate or
@@ -173,12 +173,12 @@ changes from the standard Python name lookup rules.</li>
 </div></blockquote>
 <p>You can also see that Python&#8217;s syntax is followed very closely, so that the
 translation from Larch-to-Python is minimal.</p>
-<div class="section" id="code-blocks-with-end">
-<h3>Code Blocks with &#8216;end*&#8217;<a class="headerlink" href="#code-blocks-with-end" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="code-block-ends">
+<span id="id1"></span><h3>Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h3>
 <p>Larch does not use significant whitespace to define blocks.  There, that
 was easy.   Instead, Larch uses &#8220;end blocks&#8221;, of the form:</p>
 <div class="highlight-python"><pre>if test:
-   &lt;block&gt;
+   &lt;block of statements&gt;
 endif</pre>
 </div>
 <p>Each of the Keywords <em>if</em>, <em>while</em>, <em>for</em>, <em>def</em>, and <em>try</em> must be matched
@@ -305,7 +305,7 @@ startup script.</p>
           <a href="language.html" title="Language Reference"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorial.html" title="Larch Tutorial"
+          <a href="tutorial_plotting.html" title="Tutorial: Plotting and Displaying Data"
              >previous</a> |</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>

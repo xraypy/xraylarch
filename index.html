@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Larch &mdash; larch 0.9.7 documentation</title>
+    <title>Larch &mdash; larch 0.9.8 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.7',
+        VERSION:     '0.9.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.7 documentation" href="#" />
+    <link rel="top" title="larch 0.9.8 documentation" href="#" />
     <link rel="next" title="Downloading and Installation" href="installation.html" /> 
   </head>
   <body>
@@ -59,7 +59,7 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper"><h3>Downloads</h3>
-<p>Current version: <b>0.9.7</b></p>
+<p>Current version: <b>0.9.8</b></p>
 <p>Downloads:
 <ul>
   <li>&nbsp; &nbsp; <a href="http://cars.uchicago.edu/software/python/larch/src/">cars.uchicago.edu</a>
@@ -101,7 +101,7 @@ Development version: <br> &nbsp; &nbsp; <a href="https://github.com/xraypy/xrayl
 <div><ul class="simple">
 <li>easy to use for novices.</li>
 <li>complete enough for intermediate to advanced data processing.</li>
-<li>data-centric, so that arrays of data are easy to manage and use.</li>
+<li>data-centric, so that arrays of scientific data are easy to use and organize.</li>
 <li>easily extensible with python.</li>
 </ul>
 </div></blockquote>
@@ -111,7 +111,7 @@ synchrotrons.  It has several related target applications, all meant to be
 better connected through a common <em>macro language</em> for dealing with
 scientific data sets.</p>
 <p>Many data collection, visualization, and analysis programs have an ad-hoc
-macro languages built in that allow some amount of customization,
+macro languages built into them that allow some amount of customization,
 automation, scripting, and extension of the fundamental operations
 supported by the programs.  These macro languages are rarely used in more
 than one program, making communication and sharing data between programs
@@ -130,7 +130,7 @@ scientific computing.  These include numpy, scipy, and matplotlib.</p>
 <p>The initial target application areas for Larch are</p>
 <blockquote>
 <div><ul class="simple">
-<li>XAFS analysis, becoming Ifeffit verversio 2</li>
+<li>XAFS analysis, becoming version 2 of Ifeffit.</li>
 <li>tools for micro-XRF mapping visualization and analysis.</li>
 <li>quantitative XRF analysis.</li>
 <li>X-ray standing waves and surface scattering analysis.</li>
@@ -146,36 +146,16 @@ scientific computing.  These include numpy, scipy, and matplotlib.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="tutorial.html">Larch Tutorial</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#getting-started">Getting Started</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#larch-as-a-basic-calculator">Larch as a Basic Calculator</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#basic-data-types">Basic Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#more-complex-data-structures-lists-arrays-dictionaries">More Complex Data Structures:  Lists, Arrays, Dictionaries</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial.html#lists">Lists</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial.html#tuples">Tuples</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial.html#a-second-look-at-strings">A second look at Strings</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial.html#arrays">Arrays</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tutorial.html#dictionaries">Dictionaries</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#conditional-execution-and-control-flow">Conditional Execution and Control-Flow</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#object-and-groups">Object and Groups</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="tutorial.html#objects">Objects</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#reading-and-writing-data">Reading and Writing Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#plotting-and-displaying-data">Plotting and Displaying Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#procedures">Procedures</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorial.html#dealing-with-errors">Dealing With Errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_start.html">Tutorial: Getting Started</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_datatypes.html">Tutorial: Basic and Complex Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_flow.html">Tutorial: Conditional Execution and Flow Control</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_procedures.html">Tutorial: Writing Procedures</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_io.html">Tutorial: Reading and Writing Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_plotting.html">Tutorial: Plotting and Displaying Data</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="developers.html">Larch for Developers</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="developers.html#larch-vs-python">Larch vs Python</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="developers.html#code-blocks-with-end">Code Blocks with &#8216;end*&#8217;</a></li>
-<li class="toctree-l3"><a class="reference internal" href="developers.html#groups-vs-modules">Groups vs Modules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="developers.html#symbol-lookup-rules">Symbol Lookup Rules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="developers.html#unimplemented-features">Unimplemented features</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="developers.html#differences-between-larch-and-python">Differences between Larch and Python</a></li>
 <li class="toctree-l2"><a class="reference internal" href="developers.html#modules">Modules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="developers.html#plugins">Plugins</a></li>
 </ul>

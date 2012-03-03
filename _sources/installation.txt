@@ -6,17 +6,19 @@ Prerequisites
 ~~~~~~~~~~~~~~~
 
 Larch requires Python version 2.6 or higher.  Support for Python 3.X is
-partial, in that the core of Larch does work but is not well-tested, and
-numpy, and scipy are ported to Python 3.X.  The graphical system, based on
-wxWidgets has not yet been ported to Python 3.X.
+partial, in that the core of Larch does work, and numpy, and scipy, and
+matplotlib have all been ported to Python 3.X.  But the testing for Python
+3.X has been minimal, and the graphical interfaces, based on wxWidgets, has
+not yet been ported to Python 3.X.
 
-In addition, numpy, matplotlib, and wxPython are required.  These are
+Numpy, matplotlib, and wxPython are all required for Larch, and scipy is
+strongly encouraged (and some functionality depends on it).  These are
 simply installed as standard packages on almost all platforms.
 
 .. _larch github repository:   http://github.com/xraypy/xralarch
 
-All development is done through the `larch github repository`_.  To get a
-read-only copy of the atest version, use::
+All development is being done through the `larch github repository`_.  To
+get a read-only copy of the atest version, use::
 
    git clone http://github.com/xraypy/xraylarch.git
 
@@ -40,5 +42,3 @@ BSD License:
 
 
 .. literalinclude:: ../COPYING
-
-

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Larch Tutorial &mdash; larch 0.9.7 documentation</title>
+    <title>Larch Tutorial &mdash; larch 0.9.8 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.7',
+        VERSION:     '0.9.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,8 +25,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.7 documentation" href="index.html" />
-    <link rel="next" title="Larch for Developers" href="developers.html" />
+    <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
+    <link rel="next" title="Tutorial: Getting Started" href="tutorial_start.html" />
     <link rel="prev" title="Downloading and Installation" href="installation.html" /> 
   </head>
   <body>
@@ -45,7 +45,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="developers.html" title="Larch for Developers"
+          <a href="tutorial_start.html" title="Tutorial: Getting Started"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="installation.html" title="Downloading and Installation"
@@ -63,39 +63,12 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">Larch Tutorial</a><ul>
-<li><a class="reference internal" href="#getting-started">Getting Started</a></li>
-<li><a class="reference internal" href="#larch-as-a-basic-calculator">Larch as a Basic Calculator</a></li>
-<li><a class="reference internal" href="#basic-data-types">Basic Data Types</a></li>
-<li><a class="reference internal" href="#more-complex-data-structures-lists-arrays-dictionaries">More Complex Data Structures:  Lists, Arrays, Dictionaries</a><ul>
-<li><a class="reference internal" href="#lists">Lists</a></li>
-<li><a class="reference internal" href="#tuples">Tuples</a></li>
-<li><a class="reference internal" href="#a-second-look-at-strings">A second look at Strings</a></li>
-<li><a class="reference internal" href="#arrays">Arrays</a></li>
-<li><a class="reference internal" href="#dictionaries">Dictionaries</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#conditional-execution-and-control-flow">Conditional Execution and Control-Flow</a></li>
-<li><a class="reference internal" href="#object-and-groups">Object and Groups</a><ul>
-<li><a class="reference internal" href="#objects">Objects</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#reading-and-writing-data">Reading and Writing Data</a></li>
-<li><a class="reference internal" href="#plotting-and-displaying-data">Plotting and Displaying Data</a></li>
-<li><a class="reference internal" href="#procedures">Procedures</a></li>
-<li><a class="reference internal" href="#dealing-with-errors">Dealing With Errors</a></li>
-</ul>
-</li>
-</ul>
-
   <h4>Previous topic</h4>
   <p class="topless"><a href="installation.html"
                         title="previous chapter">Downloading and Installation</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="developers.html"
-                        title="next chapter">Larch for Developers</a></p>
+  <p class="topless"><a href="tutorial_start.html"
+                        title="next chapter">Tutorial: Getting Started</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/tutorial.txt"
@@ -128,7 +101,7 @@
 processing data using Larch.  An important goal of Larch is to make writing
 and modifying data analysis as simple as possible.  The tutorial here tries
 to make few assumptions about your experience with scientific
-programming. On the other hand, Larch is a language for processing of
+programming.  On the other hand, Larch is a language for processing of
 scientific data, the expected audience is expected to have a technical
 background, familiarity with using programs for scientific data analysis.
 In addition, some understanding of the concepts of how scientific data is
@@ -140,311 +113,27 @@ also be learning Python, which can be used to extend Larch.  Alternatively,
 knowledge of Python will make Larch easy to learn.  For further details on
 Python, including tutorials, see the Python documentation at
 <a class="reference external" href="http://python.org/">http://python.org/</a></p>
-<div class="section" id="getting-started">
-<h2>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline">¶</a></h2>
-<p>This tutorial expects that you already have Larch installed and can run
-either the program larch, basic Larch interpreter, or larch_gui, the enhanced
-GUI interpreter:</p>
-<div class="highlight-python"><pre>C:&gt; larch
-  Larch 0.9.7  M. Newville, T. Trainor (2011)
-  using python 2.6.5, numpy 1.5.1
-larch&gt;</pre>
-</div>
-<p>For Windows and Mac OS X users, executable applications will be available.</p>
-</div>
-<div class="section" id="larch-as-a-basic-calculator">
-<h2>Larch as a Basic Calculator<a class="headerlink" href="#larch-as-a-basic-calculator" title="Permalink to this headline">¶</a></h2>
-<p>To start with, Larch can be used as a simple calculator:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span>
-<span class="mi">3</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">sqrt</span><span class="p">(</span><span class="mf">4.e5</span><span class="p">)</span>
-<span class="mf">632.45553203367592</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">sin</span><span class="p">(</span><span class="n">pi</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
-<span class="mf">0.8660254037844386</span>
-</pre></div>
-</div>
-<p>You can create your own variables holding values, by assigning names to
-values, and then use these in calculations:</p>
-<div class="highlight-python"><pre>larch&gt; hc = 12398.419
-larch&gt; d = 3.13556
-larch&gt; energy = (hc/(2*d)) / sin(10.0*pi/180)
-larch&gt; print energy
-11385.470119348252
-larch&gt; angle = asin(hc/(10000*2*d))*180/pi
-larch&gt; print angle
-11.402879992850263</pre>
-</div>
-<p>Note that parentheses are used to group multiplication and division, and
-also to hold the arguments to functions like <tt class="docutils literal"><span class="pre">sin</span></tt>.</p>
-<p>Variable names must start with a letter or underscore (&#8216;_&#8217;), followed by
-any number of letters, underscores, or numbers.  You may notice that a dot
-(&#8216;.&#8217;) may appear to be in many variable names.  We&#8217;ll get to this in a
-later section.</p>
-</div>
-<div class="section" id="basic-data-types">
-<h2>Basic Data Types<a class="headerlink" href="#basic-data-types" title="Permalink to this headline">¶</a></h2>
-<p>As with most programming languages, Larch has several built-in data types
-to express different kinds of data.  These include the usual integers,
-floating point numbers, and strings common to many programming languages.
-A variable name can hold any of these types (or any of the other more
-complex types we&#8217;ll get to later), and does not need to be declared
-beforehand or to change its value or type.  Some examples:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="mf">2.50</span>
-</pre></div>
-</div>
-<p>The normal &#8216;+&#8217;, &#8216;-&#8216;, &#8216;*&#8217;, and &#8216;/&#8217; operations work on numerical values for
-addition, subtraction, multiplication, and division.  Exponentiation is
-signified by &#8216;**&#8217;, and modulus by &#8216;%&#8217;.  Larch uses the &#8216;/&#8217; symbol for
-division or &#8216;true division&#8217;, giving a floating point value if needed, even
-if the numerator and denominator are integers, and &#8216;//&#8217; for integer or
-&#8216;floor&#8217; division.  Thus:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">a</span>
-<span class="mi">5</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">b</span><span class="o">*</span><span class="mi">2</span>
-<span class="mf">5.0</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="mi">3</span><span class="o">/</span><span class="mi">2</span>
-<span class="mf">1.5</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="mi">3</span><span class="o">//</span><span class="mi">2</span>
-<span class="mi">1</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="mi">7</span> <span class="o">%</span> <span class="mi">3</span>
-<span class="mi">1</span>
-</pre></div>
-</div>
-<p>Several other operators are supported for bit manipulation.</p>
-<p>Literal strings are created with either matched closing single or double
-quotes:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="s">&#39;a string&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;a different string&quot;</span>
-</pre></div>
-</div>
-<p>A string can include a &#8216;n&#8217; character (for newline) or &#8216;t&#8217; (for tab) and
-several other control characters as in many languages.  For strings that
-may span over more than 1 line, a special &#8220;triple quoted&#8221; syntax is
-supported, so that:</p>
-<div class="highlight-python"><pre>larch&gt; long_string = """Now is the time for all good men
-.....&gt; to come to the aid of their party"""
-larch&gt; print long_string
-Now is the time for all good men
-to come to the aid of their party</pre>
-</div>
-<p>It is important to keep in mind that mixing data types in a calculation may
-or may not make sense to Larch.  For example, a string cannot be added to a
-integer:</p>
-<div class="highlight-python"><pre>larch&gt; '1' + 1
-Runtime Error:
-cannot concatenate 'str' and 'int' objects
-&lt;StdInput&gt;
-     '1' + 1</pre>
-</div>
-<p>but you can add an integer and a float:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="mf">2.5</span>
-<span class="mf">3.5</span>
-</pre></div>
-</div>
-<p>and you can multiply a string by an integer:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="s">&#39;string&#39;</span> <span class="o">*</span> <span class="mi">2</span>
-<span class="s">&#39;stringstring&#39;</span>
-</pre></div>
-</div>
-<p>Larch has special variables for boolean or logical operations: <tt class="docutils literal"><span class="pre">True</span></tt> and
-<tt class="docutils literal"><span class="pre">False</span></tt>.  These are actually equal to 1 and 0, respectively, but are
-mostly used in logical operations, which include operators &#8216;and&#8217;, &#8216;or&#8217;, and
-&#8216;not&#8217;, as well as comparison operators &#8216;&gt;&#8217;, &#8216;&gt;=&#8217;, &#8216;&lt;&#8217;, &#8216;&lt;=&#8217;, &#8216;==&#8217;, &#8216;!=&#8217;, and
-&#8216;is&#8217;.  Note that &#8216;is&#8217; expresses identity, which is a slightly stricter test
-than &#8216;==&#8217; (equality), and is most useful for complex objects.:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="mi">3</span>
-<span class="bp">False</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="p">(</span><span class="n">b</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">b</span> <span class="o">&lt;=</span> <span class="mi">10</span><span class="p">)</span>
-<span class="bp">True</span>
-</pre></div>
-</div>
-<p>The special value <tt class="docutils literal"><span class="pre">None</span></tt> is used as a null value throughout Larch and
-Python.</p>
-<p>Finally, Larch knows about complex numbers, using a &#8216;j&#8217; to indicate the
-imaginary part of the number:</p>
-<div class="highlight-python"><pre>larch&gt; sin(-1)
-larch&gt; sqrt(-1)
-Warning: invalid value encountered in sqrt
-nan
-larch&gt; sqrt(-1+0j)
-1j
-larch&gt; 1j*1j
-(-1+0j)
-larch&gt; x = sin(1+1j)
-larch&gt; print x
-(1.2984575814159773+0.63496391478473613j)
-larch&gt; print x.imag
-0.63496391478473613</pre>
-</div>
-<p>To be clear, all these primitive data types in Larch are derived from the
-corresponding Python objects, so you can consult python documentation for
-further details and notes.</p>
-</div>
-<div class="section" id="more-complex-data-structures-lists-arrays-dictionaries">
-<h2>More Complex Data Structures:  Lists, Arrays, Dictionaries<a class="headerlink" href="#more-complex-data-structures-lists-arrays-dictionaries" title="Permalink to this headline">¶</a></h2>
-<p>Larch has many more data types built on top of the primitive types above.
-These are generally useful for storing collections of data, and can be
-built up to construct very complex structures.  These are all described in
-some detail here.  But as these are all closely related to Python objects,
-further details can be found in the standard Python documentation.</p>
-<p>Here, the word &#8220;object&#8221; is used frequently.  Each piece of data in Larch is
-a Python object, which is to say it has a value and may have specific
-functions that go with it.</p>
-<div class="section" id="lists">
-<h3>Lists<a class="headerlink" href="#lists" title="Permalink to this headline">¶</a></h3>
-<p>A list is a sequence of other data types.  The data types do not have to be
-the same type.  A list is constructed using brackets, with commas to
-separate the individual:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;string&#39;</span><span class="p">,</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">7</span><span class="p">)]</span>
-</pre></div>
-</div>
-<p>A list can contain a list as one of its elements:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">nested_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="s">&#39;g&#39;</span><span class="p">]]]</span>
-</pre></div>
-</div>
-<p>You can access the elements of a list using brackets and the integer index
-(starting from 0):</p>
-<div class="highlight-python"><pre>larch&gt; print my_list2[1]
-'string'
-larch&gt; print nested_list[2]
-['c', 'd', ['e', 'f', 'g']]
-larch&gt; print nested_list[2][0]
-'c'</pre>
-</div>
-<p>Lists are <strong>mutable</strong> &#8211; they can be changed, in place.   To do this, you
-can replace an element in a list:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;hello&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span>
-<span class="p">[</span><span class="s">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>You can also change a list by appending to it with the &#8216;append&#8217; method:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;number 4, the larch&#39;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span>
-<span class="p">[</span><span class="s">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;number 4, the larch&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>The syntax using a &#8216;.&#8217; indicates a method &#8211; a function specific to that
-object.  All lists will have an &#8216;append&#8217; method, as well as several others:</p>
-<blockquote>
-<div><ul class="simple">
-<li>count &#8211; to return the number of times a particular element occurss in the list</li>
-<li>extend &#8211; to extend a list with another list</li>
-<li>index &#8211; to find the first occurance of an element</li>
-<li>insert &#8211; to insert an element in a particular place.</li>
-<li>pop &#8211; to remove and return the last element (or other specified index).</li>
-<li>remove &#8211; remove a particular element</li>
-<li>reverse &#8211; reverse the order of elements</li>
-<li>sort &#8211; sort the elements.</li>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_start.html">Tutorial: Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_start.html#larch-as-a-basic-calculator">Larch as a Basic Calculator</a></li>
 </ul>
-</div></blockquote>
-<p>Note that the methods that change the list do so <em>IN PLACE</em> and return
-<tt class="docutils literal"><span class="pre">None</span></tt>.  That is, to sort a list, do:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>but not:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="n">my_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>  <span class="c"># WRONG!!</span>
-</pre></div>
-</div>
-<p>as that will set &#8216;my_list&#8217; to None.</p>
-<p>You can get the length of a list with the built-in <tt class="xref py py-func docutils literal"><span class="pre">len()</span></tt> function,
-and test whether a particular element is in a list with the <cite>in</cite> operator:</p>
-<div class="highlight-python"><pre>larch&gt; my_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
-larch&gt; print len(my_list)
-10
-larch&gt; 'e' in my_list
-True</pre>
-</div>
-<p>You can access a sub-selection of elements with a <em>slice</em>, giving starting
-and ending indices between brackets, separated by a colon.  Of course, the counting
-for a slice starts at 0. It also excludesthe final index:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
-<span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>   <span class="c"># Note implied 0!</span>
-<span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>You can count backwards, and using &#8216;-1&#8217; is a convenient way to get the last
-element of a list.  You can also add an optional third value to the slice for a step:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="s">&#39;j&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span>
-<span class="p">[</span><span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="s">&#39;i&#39;</span><span class="p">,</span> <span class="s">&#39;j&#39;</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>  <span class="c"># every other element, starting at 0</span>
-<span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="s">&#39;g&#39;</span><span class="p">,</span> <span class="s">&#39;i&#39;</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>  <span class="c"># every other element, starting at 1</span>
-<span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="s">&#39;j&#39;</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>As always, consult the Python documentation for more details.</p>
-</div>
-<div class="section" id="tuples">
-<h3>Tuples<a class="headerlink" href="#tuples" title="Permalink to this headline">¶</a></h3>
-<p>Like lists, tuples are sequences of heterogenous objects.  The principle
-difference is that tuples are <strong>immutable</strong> &#8211; they cannot be changed once
-they are created.  The syntax for tuples uses parentheses in place of
-brackets:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="s">&#39;hydrogen&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Like lists, tuples can be indexed and sliced:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_tuple</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
-<span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;H&#39;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_tuple</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-<span class="s">&#39;hydrogen&#39;</span>
-</pre></div>
-</div>
-<p>Due to their immutability, tuples have only a few methods (&#8216;count&#8217; and
-&#8216;index&#8217; with similar functionality as for list).  Though they may seem less
-powerful than lists, tuples are actually used widely with Larch and Python,
-as once created a tuple has a predictable size and order to its elements.
-Thus, as with the example above, it can be used as a simple ordered
-container of data.</p>
-</div>
-<div class="section" id="a-second-look-at-strings">
-<h3>A second look at Strings<a class="headerlink" href="#a-second-look-at-strings" title="Permalink to this headline">¶</a></h3>
-<p>Though discussed earlier in the basic data types, strings are closely
-related to lists as well &#8211; they are best thought of as a sequence of
-characters.  Like tuples, strings are actually immutable, in that you
-cannot change part of a string, instead you must create a new string.
-Strings can be indexed and sliced as with lists and tuples:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">name</span> <span class="o">=</span> <span class="s">&#39;Montaigne&#39;</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">name</span><span class="p">[:</span><span class="mi">4</span><span class="p">]</span>
-<span class="s">&#39;Mont&#39;</span>
-</pre></div>
-</div>
-<p>Strings have many methods...</p>
-</div>
-<div class="section" id="arrays">
-<h3>Arrays<a class="headerlink" href="#arrays" title="Permalink to this headline">¶</a></h3>
-</div>
-<div class="section" id="dictionaries">
-<h3>Dictionaries<a class="headerlink" href="#dictionaries" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="conditional-execution-and-control-flow">
-<h2>Conditional Execution and Control-Flow<a class="headerlink" href="#conditional-execution-and-control-flow" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="object-and-groups">
-<h2>Object and Groups<a class="headerlink" href="#object-and-groups" title="Permalink to this headline">¶</a></h2>
-<div class="section" id="objects">
-<h3>Objects<a class="headerlink" href="#objects" title="Permalink to this headline">¶</a></h3>
-</div>
-</div>
-<div class="section" id="reading-and-writing-data">
-<h2>Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="plotting-and-displaying-data">
-<h2>Plotting and Displaying Data<a class="headerlink" href="#plotting-and-displaying-data" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="procedures">
-<h2>Procedures<a class="headerlink" href="#procedures" title="Permalink to this headline">¶</a></h2>
-</div>
-<div class="section" id="dealing-with-errors">
-<h2>Dealing With Errors<a class="headerlink" href="#dealing-with-errors" title="Permalink to this headline">¶</a></h2>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_datatypes.html">Tutorial: Basic and Complex Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_datatypes.html#basic-data-types">Basic Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_datatypes.html#objects-and-groups">Objects and Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_flow.html">Tutorial: Conditional Execution and Flow Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial_flow.html#conditional-execution-and-control-flow">Conditional Execution and Control-Flow</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_procedures.html">Tutorial: Writing Procedures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_io.html">Tutorial: Reading and Writing Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial_plotting.html">Tutorial: Plotting and Displaying Data</a></li>
+</ul>
 </div>
 </div>
 
@@ -461,7 +150,7 @@ Strings can be indexed and sliced as with lists and tuples:</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="developers.html" title="Larch for Developers"
+          <a href="tutorial_start.html" title="Tutorial: Getting Started"
              >next</a> |</li>
         <li class="right" >
           <a href="installation.html" title="Downloading and Installation"

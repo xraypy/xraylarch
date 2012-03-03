@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Downloading and Installation &mdash; larch 0.9.7 documentation</title>
+    <title>Downloading and Installation &mdash; larch 0.9.8 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.7',
+        VERSION:     '0.9.8',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.7 documentation" href="index.html" />
+    <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
     <link rel="next" title="Larch Tutorial" href="tutorial.html" />
     <link rel="prev" title="Larch" href="index.html" /> 
   </head>
@@ -110,13 +110,15 @@
 <div class="section" id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <p>Larch requires Python version 2.6 or higher.  Support for Python 3.X is
-partial, in that the core of Larch does work but is not well-tested, and
-numpy, and scipy are ported to Python 3.X.  The graphical system, based on
-wxWidgets has not yet been ported to Python 3.X.</p>
-<p>In addition, numpy, matplotlib, and wxPython are required.  These are
+partial, in that the core of Larch does work, and numpy, and scipy, and
+matplotlib have all been ported to Python 3.X.  But the testing for Python
+3.X has been minimal, and the graphical interfaces, based on wxWidgets, has
+not yet been ported to Python 3.X.</p>
+<p>Numpy, matplotlib, and wxPython are all required for Larch, and scipy is
+strongly encouraged (and some functionality depends on it).  These are
 simply installed as standard packages on almost all platforms.</p>
-<p>All development is done through the <a class="reference external" href="http://github.com/xraypy/xralarch">larch github repository</a>.  To get a
-read-only copy of the atest version, use:</p>
+<p>All development is being done through the <a class="reference external" href="http://github.com/xraypy/xralarch">larch github repository</a>.  To
+get a read-only copy of the atest version, use:</p>
 <div class="highlight-python"><pre>git clone http://github.com/xraypy/xraylarch.git</pre>
 </div>
 </div>

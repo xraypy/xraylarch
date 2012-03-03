@@ -1,0 +1,360 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.8 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.8',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
+    <link rel="up" title="Larch Tutorial" href="tutorial.html" />
+    <link rel="next" title="Tutorial: Writing Procedures" href="tutorial_procedures.html" />
+    <link rel="prev" title="Tutorial: Basic and Complex Data Types" href="tutorial_datatypes.html" /> 
+  </head>
+  <body>
+<div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
+  <font size=28px> <a href="index.html">
+      <img src="_static/larchcones.png"
+                height=65 border="0" alt="larch"/>
+    &nbsp; Larch: X-ray Data Analysis</a>
+  </font>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="tutorial_procedures.html" title="Tutorial: Writing Procedures"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_datatypes.html" title="Tutorial: Basic and Complex Data Types"
+             accesskey="P">previous</a> |</li>
+   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
+   <li><a href="reference.html">reference</a>|&nbsp;</li>
+   <li><a href="developers.html">develop</a>|&nbsp;</li>
+   <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search docs</a>&nbsp;</li>
+
+          <li><a href="tutorial.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial: Conditional Execution and Flow Control</a><ul>
+<li><a class="reference internal" href="#conditional-execution-and-control-flow">Conditional Execution and Control-Flow</a><ul>
+<li><a class="reference internal" href="#conditional-evaluation-with-if-and-else">Conditional Evaluation with if and else</a></li>
+<li><a class="reference internal" href="#for-loops">For loops</a></li>
+<li><a class="reference internal" href="#while-loops">While loops</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tutorial_datatypes.html"
+                        title="previous chapter">Tutorial: Basic and Complex Data Types</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial_procedures.html"
+                        title="next chapter">Tutorial: Writing Procedures</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/tutorial_flow.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial-conditional-execution-and-flow-control">
+<h1>Tutorial: Conditional Execution and Flow Control<a class="headerlink" href="#tutorial-conditional-execution-and-flow-control" title="Permalink to this headline">¶</a></h1>
+<p>Two important needs for a full-featured language are the ability to run
+different statements under different conditions, and to repeat certain
+calculations.  These are generally called &#8216;flow control&#8217;, as these
+statements control how the program will flow through the text of the
+script.  Here we introduce a few new concepts, and discuss</p>
+<div class="section" id="conditional-execution-and-control-flow">
+<h2>Conditional Execution and Control-Flow<a class="headerlink" href="#conditional-execution-and-control-flow" title="Permalink to this headline">¶</a></h2>
+<p>So far all the stuff written to the Larch command line has been a single
+line of text that is immediately run, either printing output to the
+terminal or assigning a value to a variable.  These are both examples of
+<strong>statements</strong>, which are the basic pieces pf text you send to the program.
+So far we&#8217;ve seen three types of statements:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">simple statements or expressions, such as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span><span class="o">+</span><span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>where we have an expression evaluated.  At the command line, these
+values are printed &#8211; in a script they would not be printed.</p>
+</li>
+<li><p class="first">print statements, such as:</p>
+<div class="highlight-python"><pre>larch&gt; print sqrt(3)</pre>
+</div>
+<p>where we explicitly command larch to print the evaluated
+expression &#8211; this would print if run from a script.</p>
+</li>
+<li><p class="first">assignment statements, such as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where we assign the name &#8216;x&#8217; to hold the evaluated expression.</p>
+</li>
+</ol>
+</div></blockquote>
+<p>In fact, though these are the most common types of statements, there are
+many more types of statements.  We will introduce a few more statement
+types here, including compound statements that take up more than one line
+of test.</p>
+<div class="section" id="conditional-evaluation-with-if-and-else">
+<h3>Conditional Evaluation with if and else<a class="headerlink" href="#conditional-evaluation-with-if-and-else" title="Permalink to this headline">¶</a></h3>
+<p>A fundamental need is to be able to execute some statement(s) when some
+condition is met.  This is done with the <strong>if</strong> statement, an example of
+which is:</p>
+<div class="highlight-python"><pre>larch&gt; if x == 0: print 'x is 0!'</pre>
+</div>
+<p>Which will print &#8216;x is 0!&#8217; if the value of <em>x</em> is equal to 0.  The <cite>x == 0</cite>
+in this if statement is called the <strong>test</strong>.  A test is a Boolean
+mathematical expression.  While most usual mathematical expressions use
+operators such as &#8216;+&#8217;, &#8216;-&#8216;, a Boolean expression uses the operators listed
+in <a class="reference internal" href="#tut-boolop-table"><em>Table of Boolean Operators</em></a> to evaluate to a
+value of <tt class="docutils literal"><span class="pre">True</span></tt> or <tt class="docutils literal"><span class="pre">False</span></tt>.</p>
+<dl class="docutils">
+<dt>A single-line if statement as above looks like this::</dt>
+<dd>if &lt;test&gt;:  statement</dd>
+</dl>
+<p>The &#8216;if&#8217; and &#8216;:&#8217; are important, while &#8216;&lt;test&gt;&#8217; can be any Boolean
+expression.  If the test evaluates to <tt class="docutils literal"><span class="pre">True</span></tt>, the statement is executed.</p>
+<p>If statements can execute multiple statements by putting the statements
+into a &#8220;block of code&#8221;:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;x is equal to 0!&#39;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">endif</span>
+</pre></div>
+</div>
+<p>Which is to say that the multiple-line form of the if statement looks like
+this:</p>
+<div class="highlight-python"><pre>if &lt;test&gt;:
+  &lt;statements&gt;
+endif</pre>
+</div>
+<p>where &#8216;&lt;statements&gt;&#8217; here means a list of statements, and the &#8216;endif&#8217; is
+required (see <a class="reference internal" href="developers.html#code-block-ends"><em>Code Block Ends</em></a>). For the above, two statements will be run if x
+is equal to 0 &#8211; there is no restriction on how many statements can be run.</p>
+<p>An &#8216;else&#8217; statement can be added to execute code if the test is False:</p>
+<div class="highlight-python"><pre>if x == 0:
+    print 'x is equal to 0!'
+    x = 1
+else
+    print 'x is not 0'
+endif</pre>
+</div>
+<p>Multiple tests can be chained together with the &#8216;elif&#8217; (a contraction of
+&#8216;else if&#8217;):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;x is equal to 0!&#39;</span>
+<span class="k">elif</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;x is positive&#39;</span>
+<span class="k">elif</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">10</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;x is a small negative number&#39;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;x is negative&#39;</span>
+<span class="n">endif</span>
+</pre></div>
+</div>
+<p>Here the &#8216;x &gt; 0&#8217; test will be executed if the &#8216;x == 0&#8217; test fails, and the
+&#8216;x &gt; -10&#8217; test will be tried if that fails.</p>
+<p id="tut-boolop-table"><strong>Table of Boolean Operators</strong>  The operators here all take the form
+<em>right OP left</em> where OP is one of the operators below.  Note the
+distinction between &#8216;==&#8217; and &#8216;is&#8217;.  The former compares <em>values</em> while the
+latter compares the identity of two objects.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="40%" />
+<col width="60%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">boolean operator</th>
+<th class="head">meaning</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>==</td>
+<td>has equal value</td>
+</tr>
+<tr class="row-odd"><td>!=</td>
+<td>has unequal value</td>
+</tr>
+<tr class="row-even"><td>&gt;</td>
+<td>has greater value</td>
+</tr>
+<tr class="row-odd"><td>&gt;=</td>
+<td>has greater or equal value</td>
+</tr>
+<tr class="row-even"><td>&lt;</td>
+<td>has smaller value</td>
+</tr>
+<tr class="row-odd"><td>&lt;=</td>
+<td>has smaller or equal value</td>
+</tr>
+<tr class="row-even"><td>is</td>
+<td>is identical to</td>
+</tr>
+<tr class="row-odd"><td>not</td>
+<td>is not <tt class="docutils literal"><span class="pre">True</span></tt></td>
+</tr>
+<tr class="row-even"><td>and</td>
+<td>both operands are <tt class="docutils literal"><span class="pre">True</span></tt></td>
+</tr>
+<tr class="row-odd"><td>or</td>
+<td>either operand is <tt class="docutils literal"><span class="pre">True</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Note that in Larch, as in Python, any value can be used as a test, not just
+values that are <tt class="docutils literal"><span class="pre">True</span></tt> or <tt class="docutils literal"><span class="pre">False</span></tt>.  As you might expect, for example,
+the value 0 is treated as <tt class="docutils literal"><span class="pre">False</span></tt>.  An empty string is also treated as
+<tt class="docutils literal"><span class="pre">False</span></tt>, as is an empty list or dictionary.  Most other values are
+interpreted as <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+</div>
+<div class="section" id="for-loops">
+<h3>For loops<a class="headerlink" href="#for-loops" title="Permalink to this headline">¶</a></h3>
+<p>It is often necessary to repeat a calculation multiple times.  A common
+method of doing this is to use a <strong>loop</strong>, including using a loop counter
+to iterates over some set of values.  In Larch, this is done with a <strong>for
+loop</strong>.  For those familiar with other languages, a Larch for loop is a bit
+different from a C for loop or Fortran do loop.  A for loop in Larch
+iterates over an ordered set of values as from a list, tuple, or array, or
+over the keys from a dictionary.   Thus a loop like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">):</span>
+    <span class="k">print</span> <span class="n">x</span>
+<span class="n">endfor</span>
+</pre></div>
+</div>
+<p>will go through values &#8216;a&#8217;, &#8216;b&#8217;, and &#8216;c&#8217;,  assigning each value to <em>x</em>,
+then printing the value of x, which will result in printing out:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">a</span>
+<span class="n">b</span>
+<span class="n">c</span>
+</pre></div>
+</div>
+<p>Similar to the the <em>if</em> statement above, the for loop has the form:</p>
+<div class="highlight-python"><pre>for &lt;varlist&gt; in &lt;sequence&gt;:
+    &lt;statements&gt;
+endfor</pre>
+</div>
+<p>Compared to a C for loop or Fortran do loop, the Larch for loop is much
+more like a  <em>foreach</em> loop.  The common C / Fortran use case of interating
+over a set of integers can be emulated using the builtin <tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt>
+function which generates a sequence of integers.   Thus:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
+   <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">/</span><span class="mf">2.0</span>
+<span class="n">endfor</span>
+</pre></div>
+</div>
+<p>will result in:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span>
+<span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span>
+<span class="mi">2</span><span class="p">,</span> <span class="mf">1.0</span>
+<span class="mi">3</span><span class="p">,</span> <span class="mf">1.5</span>
+<span class="mi">4</span><span class="p">,</span> <span class="mf">2.0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="while-loops">
+<h3>While loops<a class="headerlink" href="#while-loops" title="Permalink to this headline">¶</a></h3>
+<p>While a for loop generally walks through a pre-defined set of values, a
+<em>while</em> loop executes as long as some test is <tt class="docutils literal"><span class="pre">True</span></tt>.
+Dealing With Errors
+=======================</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="tutorial_procedures.html" title="Tutorial: Writing Procedures"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_datatypes.html" title="Tutorial: Basic and Complex Data Types"
+             >previous</a> |</li>
+   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
+   <li><a href="reference.html">reference</a>|&nbsp;</li>
+   <li><a href="developers.html">develop</a>|&nbsp;</li>
+   <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search docs</a>&nbsp;</li>
+
+          <li><a href="tutorial.html" >Larch Tutorial</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
