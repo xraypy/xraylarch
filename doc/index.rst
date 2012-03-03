@@ -47,7 +47,7 @@ The initial target application areas for Larch are
 Contents:
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 2
 
    installation
    tutorial
