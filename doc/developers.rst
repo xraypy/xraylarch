@@ -6,8 +6,10 @@ This chapter describes details of Larch language for developers and
 programmers wanting to extend Larch.  This document will assume you have
 some familiarity with Python.
 
-Larch vs Python
-==================
+.. _python_diffs_section:
+
+Differences between Larch and Python
+=============================================
 
 Larch is very similar to Python but there are some very important
 difffernces, especially for someone familiar with Python.  These
@@ -65,13 +67,16 @@ You can also see that Python's syntax is followed very closely, so that the
 translation from Larch-to-Python is minimal.
 
 
-Code Blocks with 'end*'
-~~~~~~~~~~~~~~~~~~~~~~~~~
+.. _code-block-ends:
+
+Code Block Ends
+~~~~~~~~~~~~~~~~~~~~~~~
+
 Larch does not use significant whitespace to define blocks.  There, that
 was easy.   Instead, Larch uses "end blocks", of the form::
 
    if test:
-      <block>
+      <block of statements>
    endif
 
 Each of the Keywords *if*, *while*, *for*, *def*, and *try* must be matched

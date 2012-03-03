@@ -1,3 +1,3 @@
 =======================================================
-Larch Tutorial: Reading and Writing Data
+Tutorial: Reading and Writing Data
 =======================================================

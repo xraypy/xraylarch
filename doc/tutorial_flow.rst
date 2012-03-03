@@ -1,14 +1,12 @@
 =======================================================
-Larch Tutorial: Conditional Execution and Flow Control
+Tutorial: Conditional Execution and Flow Control
 =======================================================
-
 
 Two important needs for a full-featured language are the ability to run
 different statements under different conditions, and to repeat certain
 calculations.  These are generally called 'flow control', as these
 statements control how the program will flow through the text of the
 script.  Here we introduce a few new concepts, and discuss
-
 
 Conditional Execution and Control-Flow
 ===========================================
@@ -78,9 +76,16 @@ into a "block of code"::
         x = 1
     endif
 
-Here, two statements will be run if x is equal to 0 -- there is no
-restriction on how many statements can be run.
+Which is to say that the multiple-line form of the if statement looks like
+this::
 
+    if <test>:
+      <statements>
+    endif
+
+where '<statements>' here means a list of statements, and the 'endif' is
+required (see :ref:`code-block-ends`). For the above, two statements will be run if x
+is equal to 0 -- there is no restriction on how many statements can be run.
 
 An 'else' statement can be added to execute code if the test is False::
 
@@ -149,6 +154,53 @@ interpreted as ``True``.
 For loops
 ~~~~~~~~~~~~~
 
+It is often necessary to repeat a calculation multiple times.  A common
+method of doing this is to use a **loop**, including using a loop counter
+to iterates over some set of values.  In Larch, this is done with a **for
+loop**.  For those familiar with other languages, a Larch for loop is a bit
+different from a C for loop or Fortran do loop.  A for loop in Larch
+iterates over an ordered set of values as from a list, tuple, or array, or
+over the keys from a dictionary.   Thus a loop like this::
 
+    for x in ('a', 'b', 'c'):
+        print x
+    endfor
+
+will go through values 'a', 'b', and 'c',  assigning each value to *x*,
+then printing the value of x, which will result in printing out::
+
+    a
+    b
+    c
+
+Similar to the the *if* statement above, the for loop has the form::
+
+   for <varlist> in <sequence>:
+       <statements>
+   endfor
+
+Compared to a C for loop or Fortran do loop, the Larch for loop is much
+more like a  *foreach* loop.  The common C / Fortran use case of interating
+over a set of integers can be emulated using the builtin :func:`range`
+function which generates a sequence of integers.   Thus::
+
+   for i in range(5):
+      print i, i/2.0
+   endfor
+
+will result in::
+
+   0, 0.0
+   1, 0.5
+   2, 1.0
+   3, 1.5
+   4, 2.0
+
+
+While loops
+~~~~~~~~~~~~~
+
+While a for loop generally walks through a pre-defined set of values, a
+*while* loop executes as long as some test is ``True``.
 Dealing With Errors
 =======================

@@ -1,4 +1,4 @@
 =======================================================
-Larch Tutorial: Plotting and Displaying Data
+Tutorial: Plotting and Displaying Data
 =======================================================
 

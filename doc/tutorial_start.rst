@@ -1,5 +1,5 @@
 =================================
-Larch Tutorial: Getting Started
+Tutorial: Getting Started
 =================================
 
 This tutorial expects that you already have Larch installed and can run

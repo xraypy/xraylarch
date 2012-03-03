@@ -1,3 +1,3 @@
 =======================================================
-Larch Tutorial: Writing Procedures
+Tutorial: Writing Procedures
 =======================================================

@@ -1,6 +1,6 @@
-==============================================
-Larch Tutorial: Basic and Complex Data Types
-==============================================
+============================================
+Tutorial: Basic and Complex Data Types
+============================================
 
 This section of the Larch tutorial describes the types of data that Larch
 has, and how to use them.
