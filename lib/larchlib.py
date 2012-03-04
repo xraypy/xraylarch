@@ -26,7 +26,6 @@ class LarchExceptionHolder:
         node_lineno = 0
         node_col_offset = 0
         e_type, e_val, e_tb = self.exc_info
-
         if node is not None:
             try:
                 node_lineno = node.lineno
@@ -34,8 +33,28 @@ class LarchExceptionHolder:
             except:
                 pass
 
+
         lineno = self.lineno + node_lineno
-        exc_text = str(e_val)
+        if isinstance(e_val, SyntaxError):
+            exc_text = 'SyntaxError'
+        else:
+            exc_text = repr(e_val)
+        if exc_text in (None, 'None'):
+            try:
+                exc_text = "%s: %s" % (e_val.__class__.__name__, e_val.args[0])
+            except:
+                exc_text = e_val
+        else:
+            words = exc_text.split('(')
+            if len(words) > 1:
+                if words[1].endswith(')'):
+                    words[1] = words[1][:-1]
+                if words[1].endswith(','):
+                    words[1] = words[1][:-1]
+                if words[1].startswith("'") and words[1].endswith("'"):
+                    words[1] = words[1][1:-1]
+            exc_text = ": ".join(words)
+
         if exc_text in (None, 'None'):
             exc_text = ''
         expr = self.expr
@@ -63,6 +82,7 @@ class LarchExceptionHolder:
                 if found:
                     out.append('  File "%s", line %i, in %s\n    %s' % tb)
 
+
         if len(exc_text) > 0:
             out.append(exc_text)
         else:
@@ -76,7 +96,7 @@ class LarchExceptionHolder:
         out.append("    %s" % expr)
         if node_col_offset > 0:
             out.append("    %s^^^" % ((node_col_offset)*' '))
-        return (self.msg, '\n'.join(out))
+        return '\n'.join(out)
 
 class Procedure(object):
     """larch procedure:  function """

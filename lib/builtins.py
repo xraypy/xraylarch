@@ -213,17 +213,6 @@ def _run(filename=None, larch=None, new_module=None,
                 break
         if larch.error:
             inptext.clear()
-            #            pass
-            #err = larch.error.pop(0)
-            #fname, lineno = err.fname, err.lineno
-            #output.append("%s:\n%s" % err.get_error())
-            #for err in larch.error:
-            #    if ((err.fname != fname or err.lineno != lineno) and
-            #        err.lineno > 0 and lineno > 0):
-            #        output.append("%s" % (err.get_error()[1]))
-            # larch.raise_exception(msg='Syntax Error -- input incomplete',
-            #                 expr="\n".join(inptext.block),
-            #                 fname=fname, lineno=lineno)
 
         elif not is_complete:
             larch.raise_exception(msg='Syntax Error -- input incomplete',
@@ -347,12 +336,12 @@ def _addplugin(plugin, larch=None, **kws):
             err = larch.error.pop(0)
             fname, lineno = err.fname, err.lineno
             output = ["Error Adding Plugin %s from file %s" % (plugin, fname),
-                      "%s" % (err.get_error()[1])]
+                      "%s" % (err.get_error())]
 
             for err in larch.error:
                 if ((err.fname != fname or err.lineno != lineno) and
                     err.lineno > 0 and lineno > 0):
-                    output.append("%s" % (err.get_error()[1]))
+                    output.append("%s" % (err.get_error()))
             larch.writer.write('\n'.join(output))
 
         if fh is not None:
