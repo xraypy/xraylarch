@@ -83,9 +83,11 @@ def _read_ascii(fname, delim='#;*%', labels=None, larch=None):
             kws[colname] = data[icol]
             kws['column_labels'].append(colname)
 
-    group = larch.symtable.new_group(name='ascii_file %s' % fname)
-    for key, val in kws.items():
-        setattr(group, key, val)
+    group = kws
+    if larch is not None:
+        group = larch.symtable.new_group(name='ascii_file %s' % fname)
+        for key, val in kws.items():
+            setattr(group, key, val)
     return group
 
 def registerLarchPlugin():
