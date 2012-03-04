@@ -188,9 +188,20 @@ def _run(filename=None, larch=None, new_module=None,
         text = open(filename).read()
 
     output = None
+    fname = filename
+    lineno = 0
     if text is not None:
         inptext = inputText.InputText(interactive=False, larch=larch)
         is_complete = inptext.put(text, filename=filename)
+        if not is_complete:
+            exc = (None, 'Syntax Error: input is incomplete', None)
+            inptext.input_buff.reverse()
+            lline, lineno = 'unknown line', 0
+            for tline, complete, eos, fname, lineno in inptext.input_buff:
+                if complete: break
+                lline = tline
+            larch.raise_exception(expr=lline, fname=fname, exc=exc,
+                                  lineno=lineno+1)
         if new_module is not None:
             # save current module group
             #  create new group, set as moduleGroup and localGroup
@@ -198,6 +209,7 @@ def _run(filename=None, larch=None, new_module=None,
             thismod = symtable.create_group(name=new_module)
             symtable._sys.modules[new_module] = thismod
             symtable.set_frame((thismod, thismod))
+
 
         output = []
         while len(inptext) > 0:
@@ -213,11 +225,6 @@ def _run(filename=None, larch=None, new_module=None,
                 break
         if larch.error:
             inptext.clear()
-
-        elif not is_complete:
-            larch.raise_exception(msg='Syntax Error -- input incomplete',
-                                  expr="\n".join(inptext.block),
-                                  fname=fname, lineno=lineno)
         elif printall and ret is not None:
             output.append("%s" % ret)
 

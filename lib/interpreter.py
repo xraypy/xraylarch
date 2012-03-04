@@ -136,7 +136,7 @@ class Interpreter:
         msg = "'%s' not supported" % (node.__class__.__name__)
         self.raise_exception(node=node, msg=msg)
 
-    def raise_exception(self, node=None, msg='', expr=None,
+    def raise_exception(self, node=None, msg='', expr=None, exc=None,
                         fname=None, lineno=None, func=None):
         "add an exception"
         if self.error is None: self.error = []
@@ -146,7 +146,7 @@ class Interpreter:
 
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
-        err = LarchExceptionHolder(node, msg=msg, expr=expr,
+        err = LarchExceptionHolder(node, msg=msg, expr=expr, exc=exc,
                                    fname=fname, lineno=lineno, func=func)
         self.error.append(err)
         self.symtable._sys.last_error = err

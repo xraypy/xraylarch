@@ -11,14 +11,17 @@ from .symboltable import Group
 class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node, msg='', fname='<StdInput>',
-                 func=None, expr=None, lineno=-3):
+                 func=None, expr=None, exc=None, lineno=-1):
         self.node   = node
         self.fname  = fname
         self.func   = func
         self.expr   = expr
         self.msg    = msg
         self.lineno = lineno
-        self.exc_info = sys.exc_info()
+        if exc is None:
+            self.exc_info = sys.exc_info()
+        else:
+            self.exc_info = exc
 
     def get_error(self):
         "retrieve error data"
@@ -33,12 +36,14 @@ class LarchExceptionHolder:
             except:
                 pass
 
-
         lineno = self.lineno + node_lineno
         if isinstance(e_val, SyntaxError):
             exc_text = 'SyntaxError'
+        elif isinstance(e_val, (str, unicode)):
+            exc_text = e_val
         else:
             exc_text = repr(e_val)
+
         if exc_text in (None, 'None'):
             try:
                 exc_text = "%s: %s" % (e_val.__class__.__name__, e_val.args[0])
@@ -67,6 +72,8 @@ class LarchExceptionHolder:
                 pass
 
         out = []
+        if self.msg not in ('Runtime Error', 'Syntax Error') and len(self.msg)>0:
+            out = [self.msg]
         if self.func is not None:
             func = self.func
             if isinstance(func, Closure): func = func.func
@@ -82,7 +89,6 @@ class LarchExceptionHolder:
                 if found:
                     out.append('  File "%s", line %i, in %s\n    %s' % tb)
 
-
         if len(exc_text) > 0:
             out.append(exc_text)
         else:
@@ -93,7 +99,8 @@ class LarchExceptionHolder:
         else:
             out.append("%s, line number %i" % (self.fname, 1+self.lineno))
 
-        out.append("    %s" % expr)
+        if expr is not None and len(expr)>0:
+            out.append("    %s" % expr)
         if node_col_offset > 0:
             out.append("    %s^^^" % ((node_col_offset)*' '))
         return '\n'.join(out)
