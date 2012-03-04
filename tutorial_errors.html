@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Plotting and Displaying Data &mdash; larch 0.9.8 documentation</title>
+    <title>Tutorial: Dealing With Errors &mdash; larch 0.9.8 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -27,8 +27,8 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
     <link rel="up" title="Larch Tutorial" href="tutorial.html" />
-    <link rel="next" title="Larch for Developers" href="developers.html" />
-    <link rel="prev" title="Tutorial: Reading and Writing Data" href="tutorial_io.html" /> 
+    <link rel="next" title="Tutorial: Writing Procedures" href="tutorial_procedures.html" />
+    <link rel="prev" title="Tutorial: Conditional Execution and Flow Control" href="tutorial_flow.html" /> 
   </head>
   <body>
 <div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
@@ -46,10 +46,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="developers.html" title="Larch for Developers"
+          <a href="tutorial_procedures.html" title="Tutorial: Writing Procedures"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorial_io.html" title="Tutorial: Reading and Writing Data"
+          <a href="tutorial_flow.html" title="Tutorial: Conditional Execution and Flow Control"
              accesskey="P">previous</a> |</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
@@ -65,15 +65,25 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial: Dealing With Errors</a><ul>
+<li><a class="reference internal" href="#syntax-errors">Syntax Errors</a></li>
+<li><a class="reference internal" href="#exceptions">Exceptions</a></li>
+<li><a class="reference internal" href="#try-and-except">try and except</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
-  <p class="topless"><a href="tutorial_io.html"
-                        title="previous chapter">Tutorial: Reading and Writing Data</a></p>
+  <p class="topless"><a href="tutorial_flow.html"
+                        title="previous chapter">Tutorial: Conditional Execution and Flow Control</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="developers.html"
-                        title="next chapter">Larch for Developers</a></p>
+  <p class="topless"><a href="tutorial_procedures.html"
+                        title="next chapter">Tutorial: Writing Procedures</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/tutorial_plotting.txt"
+    <li><a href="_sources/tutorial_errors.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -97,10 +107,31 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="tutorial-plotting-and-displaying-data">
-<h1>Tutorial: Plotting and Displaying Data<a class="headerlink" href="#tutorial-plotting-and-displaying-data" title="Permalink to this headline">¶</a></h1>
-<p>Plotting and Visualizing data is vital to a scientific analysis package,
-and Larch provides several methods for data visualization.</p>
+  <div class="section" id="tutorial-dealing-with-errors">
+<h1>Tutorial: Dealing With Errors<a class="headerlink" href="#tutorial-dealing-with-errors" title="Permalink to this headline">¶</a></h1>
+<p>When an error exists in the syntax of your script, or an erro happens when
+running your script, an <em>Error</em> or <em>Exception</em> is generated, and the
+execution of your script is stopped.</p>
+<div class="section" id="syntax-errors">
+<h2>Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
+<p>Syntax errors result from incomplete or ill-formed larch syntax.</p>
+</div>
+<div class="section" id="exceptions">
+<h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<p>Even if the syntax of your script is correct, it might cause an error at
+run time:</p>
+<div class="highlight-python"><pre>larch&gt; n = 1
+larch&gt; print 4.0 / ( n - 1)
+ZeroDivisionError: float division
+&lt;StdInput&gt;
+    print 4.0/(n-1)
+          ^^^</pre>
+</div>
+<p>which is saying that you can&#8217;t divide by 0.</p>
+</div>
+<div class="section" id="try-and-except">
+<h2>try and except<a class="headerlink" href="#try-and-except" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -116,10 +147,10 @@ and Larch provides several methods for data visualization.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="developers.html" title="Larch for Developers"
+          <a href="tutorial_procedures.html" title="Tutorial: Writing Procedures"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorial_io.html" title="Tutorial: Reading and Writing Data"
+          <a href="tutorial_flow.html" title="Tutorial: Conditional Execution and Flow Control"
              >previous</a> |</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>

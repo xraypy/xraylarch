@@ -175,8 +175,8 @@ changes from the standard Python name lookup rules.</li>
 translation from Larch-to-Python is minimal.</p>
 <div class="section" id="code-block-ends">
 <span id="id1"></span><h3>Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h3>
-<p>Larch does not use significant whitespace to define blocks.  There, that
-was easy.   Instead, Larch uses &#8220;end blocks&#8221;, of the form:</p>
+<p>Unlike Python, Larch does not use significant whitespace to define blocks.
+There, that was easy.  Instead, Larch uses &#8220;end blocks&#8221;, of the form:</p>
 <div class="highlight-python"><pre>if test:
    &lt;block of statements&gt;
 endif</pre>
@@ -189,7 +189,12 @@ with a corresponding &#8216;end&#8217; keyword: <em>endif</em>, <em>endwhile</em
 means exactly 1 &#8216;#&#8217; and exactly in front of &#8216;end&#8217;, so that &#8216;#endif&#8217; is
 allowed but not &#8216;####endif&#8217; or &#8216;# endfor&#8217;.  This allows you to follow
 Python&#8217;s indenting rules and write code that is valid Larch and valid
-Python, which can be useful in translating code.</p>
+Python, which can be useful in translating code:</p>
+<div class="highlight-python"><pre>for i in range(5)
+    print(i, i/2.0)
+#endfor</pre>
+</div>
+<p>This code is both valid Larch and valid Python.</p>
 </div>
 <div class="section" id="groups-vs-modules">
 <h3>Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this headline">¶</a></h3>
