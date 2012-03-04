@@ -6,10 +6,11 @@ import numpy as np
 from numpy import (pi, arange, zeros, ones, sin, cos,
                    exp, log, sqrt, where, interp)
 from numpy.fft import fft, ifft
-from scipy.special import i0
+from scipy.special import i0 as bessel0
+from scipy.special import j0 as bessel_0
 
 MODNAME = '_xafs'
-VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin']
+VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin', 'bes']
 
 def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
              window='hanning', larch=None, **kws):
@@ -61,12 +62,18 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     elif nam == 'wel':
         fwin[i1:i2] = 1 - ((x[i1:i2]-x2) / (x2-x1))**2
         fwin[i3:i4] = 1 - ((x[i3:i4]-x3) / (x4-x3))**2
-    elif nam == 'kai':
+    elif nam in ('kai', 'bes'):
         cen  = (x4+x1)/2
         wid  = (x4-x1)/2
         arg  = wid**2 - (x-cen)**2
         arg[where(arg<0)] = 0
-        fwin = i0((dx/wid) * sqrt(arg)) / i0(dx1)
+        fwin = bessel0((dx/wid) * sqrt(arg)) / bessel0(dx1)
+        if nam == 'kai':
+            fwin[where(x<=x1)] = 0
+            fwin[where(x>=x4)] = 0
+        else:
+            off = min(fwin)
+            fwin = (fwin - off) / (1.0 - off)
     elif nam == 'sin':
         fwin[i1:i4] = sin(pi*(x4-x[i1:i4]) / (x4-x1))
     elif nam == 'gau':
