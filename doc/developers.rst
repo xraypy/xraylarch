@@ -72,8 +72,8 @@ translation from Larch-to-Python is minimal.
 Code Block Ends
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-Larch does not use significant whitespace to define blocks.  There, that
-was easy.   Instead, Larch uses "end blocks", of the form::
+Unlike Python, Larch does not use significant whitespace to define blocks.
+There, that was easy.  Instead, Larch uses "end blocks", of the form::
 
    if test:
       <block of statements>
@@ -88,7 +88,14 @@ As a special note, you can place a '#' in front of 'end'. Note that this
 means exactly 1 '#' and exactly in front of 'end', so that '#endif' is
 allowed but not '####endif' or '# endfor'.  This allows you to follow
 Python's indenting rules and write code that is valid Larch and valid
-Python, which can be useful in translating code.
+Python, which can be useful in translating code::
+
+    for i in range(5)
+        print(i, i/2.0)
+    #endfor
+
+This code is both valid Larch and valid Python.
+
 
 Groups vs Modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~

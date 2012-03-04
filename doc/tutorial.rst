@@ -28,6 +28,7 @@ Contents:
    tutorial_start
    tutorial_datatypes
    tutorial_flow
+   tutorial_errors
    tutorial_procedures
    tutorial_io
    tutorial_plotting

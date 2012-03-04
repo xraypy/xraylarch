@@ -6,14 +6,12 @@ Two important needs for a full-featured language are the ability to run
 different statements under different conditions, and to repeat certain
 calculations.  These are generally called 'flow control', as these
 statements control how the program will flow through the text of the
-script.  Here we introduce a few new concepts, and discuss
+script.  In the discussion here,  we will also introduce a few new concepts
+and Larch statements.
 
-Conditional Execution and Control-Flow
-===========================================
-
-So far all the stuff written to the Larch command line has been a single
-line of text that is immediately run, either printing output to the
-terminal or assigning a value to a variable.  These are both examples of
+So far in this tutorial, all the text written to the Larch command line has
+been a single line of text that is immediately run, either printing output to
+the terminal or assigning a value to a variable. These are both examples of
 **statements**, which are the basic pieces pf text you send to the program.
 So far we've seen three types of statements:
 
@@ -47,7 +45,7 @@ types here, including compound statements that take up more than one line
 of test.
 
 Conditional Evaluation with if and else
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+==========================================
 
 A fundamental need is to be able to execute some statement(s) when some
 condition is met.  This is done with the **if** statement, an example of
@@ -84,8 +82,9 @@ this::
     endif
 
 where '<statements>' here means a list of statements, and the 'endif' is
-required (see :ref:`code-block-ends`). For the above, two statements will be run if x
-is equal to 0 -- there is no restriction on how many statements can be run.
+required (see :ref:`code-block-ends`). For the above, two statements will
+be run if x is equal to 0 -- there is no restriction on how many statements
+can be run.
 
 An 'else' statement can be added to execute code if the test is False::
 
@@ -152,7 +151,7 @@ the value 0 is treated as ``False``.  An empty string is also treated as
 interpreted as ``True``.
 
 For loops
-~~~~~~~~~~~~~
+=============
 
 It is often necessary to repeat a calculation multiple times.  A common
 method of doing this is to use a **loop**, including using a loop counter
@@ -196,11 +195,180 @@ will result in::
    3, 1.5
    4, 2.0
 
+Note that the builtin :func:`range` function generates a sequence of
+integers, and can take more than 1 argument to indicate a starting value
+and step.  It is important to note that the sequence that is iterated order
+does not be generated from the :func:`range` function, but can be any list,
+array, or Python sequence.  Importantly, this includes strings(!) so that::
+
+    for char in 'hello':  print char
+
+will print::
+
+    h
+    e
+    l
+    l
+    o
+
+This can cause a common sort of error, in that you might expect some
+variabe to hold a list of string values, but it actually holds a single
+string.   Notice that::
+
+    filelist = ('file1', 'file2')
+    for fname in filelist:
+        fh = open(fname)
+        process_file(fh)
+        fh.close()
+    endfor
+
+would act very differently if filelist was changed to 'file1'!
+
+Multiple values can be assigned in each iteration of the for loop.  Thus,
+iterating over a sequence of equal-length tuples, as in::
+
+   for a, b in (('a', 1), ('b', 2), ('c', 3)):
+       print a, b
+   endfor
+
+will print::
+
+   a, 1
+   b, 2
+   c, 3
+
+This may seem to be mostly of curious interest, but can be extremely useful
+especially when dealing with dictionaries or with arrays or lists of equal
+length.   For a dictionary *d*, *d.items()* will return a list of
+two-element tuples as above of key, value.  Thus::
+
+   mydict = {'a':1, 'b':2, 'c':3, 'd':4}
+   for key, val in mydict.items():
+       print key, val
+   endfor
+
+will print (note that dictionaries do no preserve order, but the (key, val)
+pairs match::
+
+   a 1
+   c 3
+   b 2
+   d 4
+
+The builtin :func:`zip` function is similarly useful, turning a sequence of
+lists or arrays into a sequence of tuples of the corresponding elements of
+the lists or arrays.  Thus::
+
+   larch> a = range(10)
+   larch> b = sin(a)
+   larch> c = cos(a)
+   larch> print zip(a, b, c)
+   [(0, 0.0, 1.0), (1, 0.8414709848078965, 0.54030230586813977),
+    (2, 0.90929742682568171, -0.41614683654714241), ....]
+
+(Note that for arrays or lists of unequal length, :func:`zip` will return
+tuples until any of its arguments runs out of elements).   Thus a for loop
+can make use of the :func:`zip` function to iterate over multiple arrays::
+
+   larch> a = arange(101)/10.0
+   larch> print 'X   SIN(X)  SIN(Y)\n================\n'
+   larch> for a, sval, cval in zip(a, sin(a), cos(a)):
+   .....>     print '%.3f, %.5f, %.5f' % (a, sval, cval)
+   .....> endfor
+
+will print a table of sine and cosine values.
+
+A final utility of note for loops is :func:`enumerate` which will return a
+tuple of (index, value) for a sequence.   That is::
+
+   larch> for i, a in ('a', b', 'c'):
+   .....>     print i, a
+   .....> endfor
+
+will print::
+
+   0, a
+   1, b
+   2, c
+
+
+It is sometimes useful to jump out of a for loop, or go onto the next value
+in the sequence.   The *break* statement will exit a for loop immediately::
+
+   for fname in filelist:
+       status = get_status(fname)
+       if status < 0:
+          break
+       endif
+       more_processing(fname)
+   endfor
+   print 'processed up to i = ', i
+
+may jump out of the loop before the sequence generated by 'range(10)' is
+complete.  The variable 'i' will have the final used value.
+
+To skipover an iteration of a loop but continue on, use the *continue*
+statement::
+
+   for fname in filelist:
+       status = get_status(fname)
+       if status < 0:
+          continue
+       endif
+       more_processing(fname)
+   endfor
+
 
 While loops
-~~~~~~~~~~~~~
+=============
 
 While a for loop generally walks through a pre-defined set of values, a
-*while* loop executes as long as some test is ``True``.
-Dealing With Errors
-=======================
+*while* loop executes as long as some test is ``True``.   The basic form
+is::
+
+   while <test>:
+      <statements>
+   endwhile
+
+Here, the test works as for *if* -- it is a Boolean expression, evaluated at
+each iteration of the loop. Generally, the expression will test something
+that has been changed inside the loop (even if implicitly).   The classic
+while loop increases a counter at each iteration::
+
+   counter = 0
+   while counter < 10:
+      do_something(counter)
+      counter =+ 1
+   endwhile
+
+A while loop is easily turned into an infinite loop, simply by not
+incrementing the counter.   Then again, the above loop would easily be
+converted into a for loop, as the counter is incremented by a fixed amout at
+each iteration.   A more realistic use would be::
+
+   n = 1
+   while n < 100:
+      n = (n + 0.1) * n
+      print n
+   endwhile
+
+An additional use for a while loop is to use an implicit or external
+condition, such as time::
+
+   now = time.time() # return the time in seconds since Unix epoch
+   while time.time() - now < 15:   # That is 'for 15 seconds'
+      do_someting()
+   endwhile
+
+The *break* and *continue* statements also work for while loops, just as they
+do with for loops.   These can be used as ways to exit an other-wise infinite
+while loop::
+
+   while True:  # will never exit without break!
+      answer = raw_input('guess my favorite color>')
+      if answer == 'lime':
+          break
+      else:
+          print 'Nope, try again'
+      endif
+   endwhile
