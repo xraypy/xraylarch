@@ -4,15 +4,19 @@ import larch
 
 ETOK = 0.26246851088
 
-# put this plugin directory in sys.path to make sure
-# that other functions from this directory can be imported
+# put the 'std' and 'xafs' (this!) plugin directories into
+# sys.path to make sure module from these directories can be imported
+stddir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'std')
+sys.path.insert(0, stddir)
+
 thisdir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'xafs')
 sys.path.insert(0, thisdir)
 
-# now we can reliably import other xafs modules...
+# now we can reliably import other std and xafs modules...
+from mathutils import _index_nearest, realimag
+
 from xafsft import ftwindow, xafsft_fast
 from pre_edge import find_e0
-from xafsutils import nearest_index, realimag
 
 from scipy.interpolate import splrep, splev, UnivariateSpline
 
@@ -42,7 +46,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     irbkg = int(1.01 + rbkg/rgrid)
     if e0 is None:
         e0 = find_e0(energy, mu, group=group, larch=larch)
-    ie0 = nearest_index(energy, e0)
+    ie0 = _index_nearest(energy, e0)
 
     # save ungridded k (kraw) and grided k (kout)
     # and ftwin (*k-weighting) for FT in residual
@@ -59,7 +63,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     spl_k  = np.zeros(nspline)
     for i in range(nspline):
         q = kmin + i*(kmax-kmin)/(nspline - 1)
-        ik = nearest_index(kraw, q)
+        ik = _index_nearest(kraw, q)
         i1 = min(len(kraw)-1, ik + 5)
         i2 = max(0, ik - 5)
         spl_k[i] = kraw[ik]
