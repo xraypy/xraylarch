@@ -44,7 +44,8 @@ The initial target application areas for Larch are
   * quantitative XRF analysis.
   * X-ray standing waves and surface scattering analysis.
 
-Contents:
+=====================================================
+
 
 .. toctree::
    :maxdepth: 2
