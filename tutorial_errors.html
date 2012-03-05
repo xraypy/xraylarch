@@ -57,7 +57,7 @@
    <li><a href="developers.html">develop</a>|&nbsp;</li>
    <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
    <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search docs</a>&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
 
           <li><a href="tutorial.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
       </ul>
@@ -70,7 +70,8 @@
 <li><a class="reference internal" href="#">Tutorial: Dealing With Errors</a><ul>
 <li><a class="reference internal" href="#syntax-errors">Syntax Errors</a></li>
 <li><a class="reference internal" href="#exceptions">Exceptions</a></li>
-<li><a class="reference internal" href="#try-and-except">try and except</a></li>
+<li><a class="reference internal" href="#try-and-except">Try and Except</a></li>
+<li><a class="reference internal" href="#raising-your-own-exceptions">Raising your own exceptions</a></li>
 </ul>
 </li>
 </ul>
@@ -114,23 +115,122 @@ running your script, an <em>Error</em> or <em>Exception</em> is generated, and t
 execution of your script is stopped.</p>
 <div class="section" id="syntax-errors">
 <h2>Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
-<p>Syntax errors result from incomplete or ill-formed larch syntax.</p>
+<p>Syntax errors result from incomplete or ill-formed larch syntax.  For
+example:</p>
+<div class="highlight-python"><pre>larch&gt; x = 3 *
+SyntaxError
+&lt;StdInput&gt;
+    x = 3  *</pre>
+</div>
+<p>This indicates that the Larch interpreter could not understand the meaning
+of the statement &#8216;x = 3 <em>&#8216;, because it excepts a value after the &#8216;</em>&#8216;.
+Syntax errors are spotted and raised before the interpreter tries to
+evaluate the expression.  That is because Larch first fully parses any
+statements (or block of statements if you&#8217;re entering multiple statements
+or loading a script from a file) into a partially compiled, executable form
+before executing.  Because of this two-step approach (first parse to intermediate
+form, then execute that intermediate form), syntax errors are sometimes
+referred to as a parsing errors.</p>
 </div>
 <div class="section" id="exceptions">
 <h2>Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
-<p>Even if the syntax of your script is correct, it might cause an error at
-run time:</p>
+<p>Even if the syntax of your script is correct, the logic might not be.  In addition,
+even if the logic is correct for most cases, it might not be correct for
+all.  For example, certain values might cause an error run time:</p>
 <div class="highlight-python"><pre>larch&gt; n = 1
 larch&gt; print 4.0 / ( n - 1)
-ZeroDivisionError: float division
+ZeroDivisionError('float division')
 &lt;StdInput&gt;
     print 4.0/(n-1)
           ^^^</pre>
 </div>
-<p>which is saying that you can&#8217;t divide by 0.</p>
+<p>which is saying that you can&#8217;t divide by 0.  This is known as a <strong>Runtime
+Exception</strong>.  It might indicate a programming error, for example that you
+didn&#8217;t test if the denominator was 0 before doing the division.</p>
+<p>Larch (as inherited from Python) has many different types of exceptions, so
+that dividing by zero, as above, is detected as a different exception from,
+say, trying to open a file that doesn&#8217;t exist:</p>
+<div class="highlight-python"><pre>larch&gt; fh = open('foo', 'r')
+Error running &lt;built-in function open&gt;
+IOError(2, 'No such file or directory')
+&lt;StdInput&gt;
+    fh = open('foo', 'r')
+         ^^^</pre>
+</div>
+<p>or trying to add an integer and a string together:</p>
+<div class="highlight-python"><pre>larch&gt; 4 + 'a'
+TypeError("unsupported operand type(s) for +: 'int' and 'str'")
+&lt;StdInput&gt;
+    4 + 'a'</pre>
+</div>
+<p>Though they are called exceptions, such problems are fairly common when
+developing programs or writing scripts.  Having a built-in way to test for
+and handle different kinds of exceptions is an important part of many
+modern computer languages, and Larch has this capability with
+its <strong>try</strong> and <strong>except</strong> statements.</p>
 </div>
 <div class="section" id="try-and-except">
-<h2>try and except<a class="headerlink" href="#try-and-except" title="Permalink to this headline">¶</a></h2>
+<h2>Try and Except<a class="headerlink" href="#try-and-except" title="Permalink to this headline">¶</a></h2>
+<p>The <strong>try</strong> statement will execute a block of code and look for certain
+types of exceptions.  One or more <strong>except</strong> statements can be added to
+specify blocks of code to execute if the specified exception occurs.
+As a simple example:</p>
+<div class="highlight-python"><pre>try:
+    x = a/b
+except ZeroDivisionError:
+    print 'saw a divide by zero!
+    x = 0
+endtry
+&lt;more statements&gt;</pre>
+</div>
+<p>If b is not 0, x is set to the value of a/b.  If b is 0, executing <em>x =
+a/b</em> will cause a ZeroDivisionError (as we saw above), so the block with
+the print statement and setting x to 0 will be executed.  In either of
+these cases (no exception, or a handled exception), execution will continue
+as normal.  If a different problem occurs &#8211; an &#8220;unhandled exception&#8221; &#8211;
+such as the case if <em>a</em> holds a string value with <em>b</em> holds an integer, then
+execution will stop and the corresponding exception will be raised.</p>
+<p>There can be several <strong>except</strong> statements for each <strong>try</strong> statement,
+to check for multiple types of problems.  These will be checked in order.  For example:</p>
+<div class="highlight-python"><pre>try:
+    x = a/b
+except ZeroDivisionError:
+    print 'saw a divide by zero!
+    x = 0
+except TypeError:
+    print "a and b are of different types -- can't divide"
+endtry
+&lt;more statements&gt;</pre>
+</div>
+<p>It is sometimes useful to run certain code only when a looked-for error has
+not occurred.  For example, it is often agood idea to test when opening a
+file for IOError (which covers a range of issues such as the file not being
+found), and only reading that file if it actually opened.  For example, to
+read in a file into a list of lines, the recommended practice is to do:</p>
+<div class="highlight-python"><pre>try:
+    fh = open(filename, 'r')
+except IOError:
+    print 'cannot open file %s!' % filename
+    datalines = []
+else:
+    datalines = fh.readlines()
+    fh.close()
+endtry
+&lt;operate on datalines&gt;</pre>
+</div>
+<p>There is a very large number of exception types built into Larch, all
+inherited from Python.   See the standard Python documentation for more
+details.</p>
+</div>
+<div class="section" id="raising-your-own-exceptions">
+<h2>Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Permalink to this headline">¶</a></h2>
+<p>In certain cases, you may want to cause an exception to occur.  This need is
+most likely to happen when writing your own procedures, and want to ensure
+that the input arguments can be handled correctly.</p>
+<p>To cause an exception, you use the <strong>raise</strong> statement, and you are said to
+be &#8220;raising an exception&#8221;:</p>
+<div class="highlight-python"><pre>larch&gt; raise TypeError("wrong data type")</pre>
+</div>
 </div>
 </div>
 
@@ -158,7 +258,7 @@ ZeroDivisionError: float division
    <li><a href="developers.html">develop</a>|&nbsp;</li>
    <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
    <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search docs</a>&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
 
           <li><a href="tutorial.html" >Larch Tutorial</a> &raquo;</li> 
       </ul>

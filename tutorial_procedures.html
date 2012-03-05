@@ -57,7 +57,7 @@
    <li><a href="developers.html">develop</a>|&nbsp;</li>
    <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
    <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search docs</a>&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
 
           <li><a href="tutorial.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
       </ul>
@@ -65,6 +65,18 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial: Writing Procedures</a><ul>
+<li><a class="reference internal" href="#def-statement">Def statement</a></li>
+<li><a class="reference internal" href="#namespace-and-scope-inside-a-procedure">Namespace and &#8220;Scope&#8221; inside a Procedure</a></li>
+<li><a class="reference internal" href="#the-return-statement-and-multiple-return-values">The return statement, and multiple Return values</a></li>
+<li><a class="reference internal" href="#keyword-arguments">Keyword arguments</a></li>
+<li><a class="reference internal" href="#documentation-strings">Documentation Strings</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="tutorial_errors.html"
                         title="previous chapter">Tutorial: Dealing With Errors</a></p>
@@ -99,6 +111,239 @@
             
   <div class="section" id="tutorial-writing-procedures">
 <h1>Tutorial: Writing Procedures<a class="headerlink" href="#tutorial-writing-procedures" title="Permalink to this headline">¶</a></h1>
+<p>Any moderately complex script will eventually include calcluations that
+need to be repeated.  The preferred way to do this is write your own
+function or <strong>procedure</strong>, which can be called exactly as the built-in
+functions.  For clarification, here we use the word <strong>procedure</strong> for a
+function written in Larch, leaving <strong>function</strong> to imply a Python function.
+In fact, as we will see, there is very little difference in practical use.</p>
+<p>Once you&#8217;re ready to write procedures, you&#8217;ll almost certainly want to read
+about running Larch scripts and modules in the next section of this tutorial.</p>
+<div class="section" id="def-statement">
+<h2>Def statement<a class="headerlink" href="#def-statement" title="Permalink to this headline">¶</a></h2>
+<p>To define a procedure, you use the <strong>def</strong> statement, and write a block of
+code.  This looks much like the <strong>if</strong>, <strong>for</strong>, and <strong>while</strong> blocks
+discussed earlier. A simple example would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">sayhello</span><span class="p">():</span>
+    <span class="k">print</span> <span class="s">&#39;hello!&#39;</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>With this definition, one can then run this procedure as you would run any
+other built-in function, by writing:</p>
+<div class="highlight-python"><pre>larch&gt; sayhello()
+hello!</pre>
+</div>
+<p>Of course, you can write procedures that take input arguments, such as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+     <span class="k">print</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+     <span class="k">print</span> <span class="s">&#39;Did you want sqrt(</span><span class="si">%f</span><span class="s">) = </span><span class="si">%f</span><span class="s">?&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">,</span>  <span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+  <span class="n">endif</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>Here <em>x</em> will hold whatever value is passed to it, so that:</p>
+<div class="highlight-python"><pre>larch&gt; safe_sqrt(4)
+2.0
+larch&gt; safe_sqrt(-9)
+Did you want sqrt(9.000000) = 3.000000?</pre>
+</div>
+<p>Of course, you will most often want a procedure to return a value.  This is
+done with the <strong>return</strong> statement.   This can be put anywhere in a
+procedure definition.  When encountered, it will cause the procedure to
+immediately exist, passing back any indicated value(s).  If no <strong>return</strong>
+statement is given in a procedure, it will return <tt class="docutils literal"><span class="pre">None</span></tt> when the
+procedure has fully executed.  An example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+  <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+     <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+     <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">)</span>
+  <span class="n">endif</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>which can no be used as:</p>
+<div class="highlight-python"><pre>larch&gt; print safe_sqrt(4)
+2.0
+larch&gt; x = safe_sqrt(-10)
+larch&gt; print x
+3.16227766017</pre>
+</div>
+<p>Multiple arguments can be specified, separated by a comma:</p>
+<div class="highlight-python"><pre>larch&gt; def my_add(x, y):
+.....&gt;    return x + y
+.....&gt; enddef
+larch&gt; print my_add(1, 2.2)
+3.2</pre>
+</div>
+<p>Formally, the definition of a procedure looks like:</p>
+<div class="highlight-python"><pre>def &lt;procedure_name&gt;(&lt;arguments&gt;):
+    &lt;block of statements&gt;
+enddef</pre>
+</div>
+</div>
+<div class="section" id="namespace-and-scope-inside-a-procedure">
+<h2>Namespace and &#8220;Scope&#8221; inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this headline">¶</a></h2>
+<p>While inside a procedure, and important consideration is &#8220;what variables
+does this procedure have access to?&#8221;.  Generally speaking, there is no
+reason to expect it to know about any variables that are not passed in as
+arguments or created inside the procedure definition.</p>
+</div>
+<div class="section" id="the-return-statement-and-multiple-return-values">
+<h2>The return statement, and multiple Return values<a class="headerlink" href="#the-return-statement-and-multiple-return-values" title="Permalink to this headline">¶</a></h2>
+<p>As seen above, the <strong>return</strong> statement will exist a procedure, and send
+back a value to the calling code.    The return value can be either a
+single value or a tuple of values, which gives a convenient way to return
+multiple values from a single procedure.  Thus:</p>
+<div class="highlight-python"><pre>larch&gt; def my_divmod(x, y):
+.....&gt;    return (x // y, x % y)  # note use of // for integer division!
+.....&gt; enddef
+larch&gt; print my_divmod(100, 7)
+14, 2</pre>
+</div>
+<p>But be careful when assigning the return value to variable(s).  You can
+do:</p>
+<div class="highlight-python"><pre>larch&gt; xdiv, xmod = my_divmod(100, 7)
+larch&gt; print xdiv
+14</pre>
+</div>
+<p>or:</p>
+<div class="highlight-python"><pre>larch&gt; result = my_divmod(100, 7)
+larch&gt; print result[0], result[1]
+14, 2</pre>
+</div>
+<p>Because a return value from a procedure can hold many values, it is best to
+be careful when writing a procedure that you document what the return value
+is, and when using a procedure that you&#8217;re getting the correct number of
+values.</p>
+</div>
+<div class="section" id="keyword-arguments">
+<h2>Keyword arguments<a class="headerlink" href="#keyword-arguments" title="Permalink to this headline">¶</a></h2>
+<p>For the procedures defined so far, the arguments have been both required
+and in a fixed order.  Sometimes, you&#8217;ll want to give a procedure optional
+arguments, and perhaps allow some flexibility in the order of the
+arguments.  Larch allows this with <strong>keyword</strong> arguments.  In a procedure
+definition, you add an argument name with a default value,  like this:</p>
+<div class="highlight-python"><pre>def xlog(a, base=e):
+    """return log(a) with base = base (default=e=2.71828...)
+    """
+     if base &gt; 1:
+        return log(a) /log(base)
+    else:
+        print 'cannot calculate log base %f' % base
+    endif
+enddef</pre>
+</div>
+<p>Unless passed in, the value of <em>base</em> will take the default value of <em>e</em>.
+This can then be used as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+<span class="mf">2.7725887222397811</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="mf">1.2041199826559246</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">xlog</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">base</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="mf">4.0</span>
+</pre></div>
+</div>
+<p>You can supply many keyword arguments, but they must all come <em>after</em> the
+positional arguments.</p>
+<p>A procedure can be written to take an unspecified number of positional and
+keyword parameters, using a special syntax for unspecified positional
+arguments and for unspecified keyword arguments.  To use unspecified
+positional arguments, a procedure definition takes an argument preceded by
+a &#8216;*&#8217; after all the named positional arguments, like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">addall</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;add all (at least 2!!) arguments given&quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+    <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">+</span> <span class="n">c</span>
+    <span class="n">endfor</span>
+    <span class="k">return</span> <span class="n">out</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>Here, the <strong>&#8216;*args&#8217;</strong> arguments means to use the variable &#8216;args&#8217; to hold
+any number of positional arguments beyond those explicitly given.  Inside
+the procedure, a tuple named &#8216;args&#8217; will hold any positional parameters
+included in the call to &#8216;addall&#8217; past the first two (which will be held by
+&#8216;a&#8217; and &#8216;b&#8217;).  Thus, this procedure can be used as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>         <span class="c"># args = ()</span>
+<span class="mi">5</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">addall</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>   <span class="c"># args = (5, 7)</span>
+<span class="mi">17</span>
+</pre></div>
+</div>
+<p>To add support for unspecified keyword parameters, one adds a named
+argument to the procedure definition preceded by two asterisks:
+<strong>&#8216;**keywords&#8217;</strong>.  For example:</p>
+<div class="highlight-python"><pre>def operate(a, b, **options):
+    """perform operation on a and b"""
+    debug = options.get('debug', True)
+    verbose = options.get('verbose', False)
+    op  = options.get('op', 'add')
+    if verbose:
+       print 'op == %s ' % op
+    endif
+    if op == 'add':
+        return a + b
+   elif op == 'sub':
+        return a - b
+   elif op == 'mul':
+        return a * b
+   elif op == 'div':
+        return a / b
+   else:
+        if debug:  print 'unsupported operation!'
+   endif
+enddef</pre>
+</div>
+<p>As you may have figured out, inside the procedure, &#8216;options&#8217; will hold a
+dictionary of keyword names/values passed into it.  With this (perhaps
+contrived) definition, you can call &#8216;operate&#8217; many ways to change its
+behavior:</p>
+<div class="highlight-python"><pre>larch&gt; operate(3, 2, op='add')
+5
+larch&gt; operate(3, 2, op='add', verbose=True)
+op == add
+5
+larch&gt; operate(3, 2, op='mul', verbose=True)
+op == mul
+6
+larch&gt; operate(3, 2, op='xxx', verbose=True)
+op == xxx
+unsupported operation!
+larch&gt; operate(3, 2, op='xxx', debug=False)
+op == xxx</pre>
+</div>
+<p>As with the <strong>&#8216;*args&#8217;</strong>, the <strong>&#8216;**options&#8217;</strong> in the procedure definition must
+appear after any named keyword parameters, and will not include the named
+keyword parameters.</p>
+</div>
+<div class="section" id="documentation-strings">
+<h2>Documentation Strings<a class="headerlink" href="#documentation-strings" title="Permalink to this headline">¶</a></h2>
+<p>Of course, it is a good idea to document your procedures so that you and
+others can read what it is meant to do and how to use it.   Larch has a
+built-in mechanism for supporting procedure documentaion.  If the first
+statement in a procedure is a <strong>bare string</strong>  (that is, a string that is
+not assigned to a variable), then this will be used as the procedure
+documentation.  You can use triple-quoted strings for multi-line
+documentation strings.   This doc string will be used by the built-in help
+mechanism, or when viewing details of the procedure.  For example:</p>
+<div class="highlight-python"><pre>def safe_sqrt(x):
+  """safe sqrt function:
+ returns sqrt(abs(x))
+ """
+ return sqrt(abs(x))
+enddef</pre>
+</div>
+<p>With this definition:</p>
+<div class="highlight-python"><pre>larch&gt; help(safe_sqrt)
+  safe sqrt function:
+     returns sqrt(abs(x))</pre>
+</div>
+</div>
 </div>
 
 
@@ -125,7 +370,7 @@
    <li><a href="developers.html">develop</a>|&nbsp;</li>
    <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
    <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search docs</a>&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
 
           <li><a href="tutorial.html" >Larch Tutorial</a> &raquo;</li> 
       </ul>

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XRF Analysis with Larch &mdash; larch 0.9.8 documentation</title>
+    <title>Larch Reference &mdash; larch 0.9.8 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -26,7 +26,8 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
-    <link rel="prev" title="XAFS Analysis with Larch" href="xafs.html" /> 
+    <link rel="next" title="Larch for Developers" href="developers.html" />
+    <link rel="prev" title="Tutorial: Plotting and Displaying Data" href="tutorial_plotting.html" /> 
   </head>
   <body>
 <div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
@@ -44,14 +45,17 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xafs.html" title="XAFS Analysis with Larch"
+          <a href="developers.html" title="Larch for Developers"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_plotting.html" title="Tutorial: Plotting and Displaying Data"
              accesskey="P">previous</a> |</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
-   <li><a href="reference.html">reference</a>|&nbsp;</li>
+   <li><a href="#">reference</a>|&nbsp;</li>
    <li><a href="developers.html">develop</a>|&nbsp;</li>
    <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="#">XRF analysis</a>|&nbsp;</li>
+   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
  
       </ul>
@@ -59,12 +63,23 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Larch Reference</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
-  <p class="topless"><a href="xafs.html"
-                        title="previous chapter">XAFS Analysis with Larch</a></p>
+  <p class="topless"><a href="tutorial_plotting.html"
+                        title="previous chapter">Tutorial: Plotting and Displaying Data</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="developers.html"
+                        title="next chapter">Larch for Developers</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/xrf.txt"
+    <li><a href="_sources/reference.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -88,9 +103,25 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="xrf-analysis-with-larch">
-<h1>XRF Analysis with Larch<a class="headerlink" href="#xrf-analysis-with-larch" title="Permalink to this headline">¶</a></h1>
-<p>X-ray Fluorescence Data can be maniuplated and displayed with Larch.</p>
+  <div class="section" id="larch-reference">
+<h1>Larch Reference<a class="headerlink" href="#larch-reference" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes further details of Larch language, intending to act
+as a reference manual.  As discussed elsewhere, the single most important
+fact about Larch is that it implemented with and closely related to Python.
+Of course, Python is very well documented, and much of the Python
+documentation can be applied to Larch.  Thus the discussion here focuses on
+the differences betwen Larch and Python, and on the functionality unique to
+Larch.</p>
+<p>Much of the discussion here will expect a familiarity with programming and
+a willingness to consult the on-line Python documentation when necessary.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Larch requires Python version 2.6 or higher.  Support for Python 3.X is
+partial, in that the core of Larch does work but is not particularly
+well-tested.  Importantly, wxPython, the principle GUI toolkit used by
+Larch, has not yet been ported to Python 3.X, and so no graphical or
+plotting capabilities are available yet for Larch using Python 3.</p>
+</div>
 </div>
 
 
@@ -106,14 +137,17 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xafs.html" title="XAFS Analysis with Larch"
+          <a href="developers.html" title="Larch for Developers"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tutorial_plotting.html" title="Tutorial: Plotting and Displaying Data"
              >previous</a> |</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
-   <li><a href="reference.html">reference</a>|&nbsp;</li>
+   <li><a href="#">reference</a>|&nbsp;</li>
    <li><a href="developers.html">develop</a>|&nbsp;</li>
    <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="#">XRF analysis</a>|&nbsp;</li>
+   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
  
       </ul>

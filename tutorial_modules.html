@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Reading and Writing Data &mdash; larch 0.9.8 documentation</title>
+    <title>Tutorial: Running Larch Scripts, and Modules &mdash; larch 0.9.8 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
     <link rel="up" title="Larch Tutorial" href="tutorial.html" />
-    <link rel="next" title="Tutorial: Plotting and Displaying Data" href="tutorial_plotting.html" />
+    <link rel="next" title="Tutorial: Reading and Writing Data" href="tutorial_io.html" />
     <link rel="prev" title="Tutorial: Writing Procedures" href="tutorial_procedures.html" /> 
   </head>
   <body>
@@ -46,7 +46,7 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="tutorial_plotting.html" title="Tutorial: Plotting and Displaying Data"
+          <a href="tutorial_io.html" title="Tutorial: Reading and Writing Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="tutorial_procedures.html" title="Tutorial: Writing Procedures"
@@ -65,15 +65,25 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial: Running Larch Scripts, and Modules</a><ul>
+<li><a class="reference internal" href="#running-a-script-with-run">Running a script with run</a></li>
+<li><a class="reference internal" href="#importing-a-larch-module">Importing a Larch Module</a></li>
+<li><a class="reference internal" href="#namespaces-again">Namespaces, again</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="tutorial_procedures.html"
                         title="previous chapter">Tutorial: Writing Procedures</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="tutorial_plotting.html"
-                        title="next chapter">Tutorial: Plotting and Displaying Data</a></p>
+  <p class="topless"><a href="tutorial_io.html"
+                        title="next chapter">Tutorial: Reading and Writing Data</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/tutorial_io.txt"
+    <li><a href="_sources/tutorial_modules.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -97,9 +107,62 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="tutorial-reading-and-writing-data">
-<h1>Tutorial: Reading and Writing Data<a class="headerlink" href="#tutorial-reading-and-writing-data" title="Permalink to this headline">¶</a></h1>
-<p>Larch has several built-in functions</p>
+  <div class="section" id="tutorial-running-larch-scripts-and-modules">
+<h1>Tutorial: Running Larch Scripts, and Modules<a class="headerlink" href="#tutorial-running-larch-scripts-and-modules" title="Permalink to this headline">¶</a></h1>
+<p>Once you&#8217;ve done any significant amount of work with Larch, you&#8217;ll want to
+save what you&#8217;ve done to a file of Larch code, and run it over again,
+perhaps changing some input.  There are a few ways to do this.  Writing
+procedures that can be re-used is a highly recommended approach.</p>
+<div class="section" id="running-a-script-with-run">
+<h2>Running a script with run<a class="headerlink" href="#running-a-script-with-run" title="Permalink to this headline">¶</a></h2>
+<p>If you have a file of Larch code, you can run it with the built-in <strong>run</strong>
+function:</p>
+<div class="highlight-python"><pre># file  myscript.lar
+print 'hello from myscript.lar!
+for i in range(5):
+   print i, sqrt(a)
+endfor
+#</pre>
+</div>
+<p>To run this, you simply type:</p>
+<div class="highlight-python"><pre>larch&gt; run('myscript.lar')
+hello from myscript.lar!
+0 0.0
+1 1.0
+2 1.41421356237
+3 1.73205080757
+4 2.0</pre>
+</div>
+<p>A script can contain any Larch code, including procedure definitions.
+After running the script, any variables assigned in the script will exist
+in your larch session.  For example, after the loop in <em>myscript.lar</em>, the
+variable <em>i</em> will be 4, and  you can access this variable:</p>
+<div class="highlight-python"><pre>larch&gt; print i
+4</pre>
+</div>
+<p>This is to say that the script runs in the &#8220;top-level namespace&#8221;, about which
+we&#8217;ll see more below.</p>
+</div>
+<div class="section" id="importing-a-larch-module">
+<h2>Importing a Larch Module<a class="headerlink" href="#importing-a-larch-module" title="Permalink to this headline">¶</a></h2>
+<p>A larch script can also be <strong>imported</strong> using the <strong>import</strong> statement:</p>
+<div class="highlight-python"><pre>larch&gt; import myscript</pre>
+</div>
+<p>Notice a few differences.  First, the &#8216;.lar&#8217; suffix was removed.  Second,
+the name is <strong>NOT IN QUOTES</strong> as one my expect for a string containing a
+file name.  This is because the <strong>import</strong> statement knows what extensions
+to look for:</p>
+<blockquote>
+<div><ul class="simple">
+<li>module lookup</li>
+<li>import as..</li>
+<li>from xx import yy as zz</li>
+</ul>
+</div></blockquote>
+</div>
+<div class="section" id="namespaces-again">
+<h2>Namespaces, again<a class="headerlink" href="#namespaces-again" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -115,7 +178,7 @@
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="tutorial_plotting.html" title="Tutorial: Plotting and Displaying Data"
+          <a href="tutorial_io.html" title="Tutorial: Reading and Writing Data"
              >next</a> |</li>
         <li class="right" >
           <a href="tutorial_procedures.html" title="Tutorial: Writing Procedures"
