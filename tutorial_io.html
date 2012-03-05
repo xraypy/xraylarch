@@ -46,6 +46,9 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="tutorial_plotting.html" title="Tutorial: Plotting and Displaying Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -111,7 +114,7 @@
 <p>Larch has several built-in functions for reading scientific data.  The
 intention that the types of supported files will increase.  In addition,
 many Python modules for reading standard image data can be used.</p>
-<div class="section" id="simple-ascii-column-files">
+<span class="target" id="module-_io"></span><div class="section" id="simple-ascii-column-files">
 <h2>Simple ASCII Column Files<a class="headerlink" href="#simple-ascii-column-files" title="Permalink to this headline">¶</a></h2>
 <p>A simple way to store, and one that is widely used in the XAFS community,
 is to store data in plaintext (ASCII encoded) data files, with whitespace
@@ -128,7 +131,13 @@ used to signify header information.  For instance:</p>
   6926.8344  -0.45165576E-01  277292.00
   6931.7399  -0.47365589E-01  265707.00</pre>
 </div>
-<p>This file can be read with the builtin <strong>read_ascii()</strong> function.</p>
+<p>This file can be read with the builtin <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><tt class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></tt></a> function.</p>
+<dl class="function">
+<dt id="_io.read_ascii">
+<tt class="descclassname">_io.</tt><tt class="descname">read_ascii</tt><big>(</big><em>filename</em>, <em>...</em><big>)</big><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
+<dd><p>open and read an plaintext data file, returning a new Group.</p>
+</dd></dl>
+
 </div>
 <div class="section" id="using-hdf5-files">
 <h2>Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
@@ -150,6 +159,9 @@ efficiently hold very large arrays in a heirarchical format that holds
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="tutorial_plotting.html" title="Tutorial: Plotting and Displaying Data"
              >next</a> |</li>

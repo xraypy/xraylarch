@@ -118,33 +118,46 @@ broken into a few separate steps.  For XAFS these are:</p>
 <li>Fitting XAFS <img class="math" src="_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to FEFF paths.</li>
 </ol>
 </div></blockquote>
-<p>As of this writing, many of these steps are supported in Larch.  All the
+<span class="target" id="module-_xafs"></span><p>As of this writing, many of these steps are supported in Larch.  All the
 XAFS-specific functions are kept in the <a class="reference internal" href="#module-_xafs" title="_xafs: Basic XAFS Functions"><tt class="xref py py-data docutils literal"><span class="pre">_xafs</span></tt></a> Group, and can be
-easily accessed as this is in the default search path.</p>
-<span class="target" id="module-_xafs"></span><dl class="function">
+easily accessed as this is in the default search path.  Note that many of
+the functions below take a <strong>group</strong> argument, which is the group to write
+resulting data into.If this is omitted, most of the functions below will
+return the most fundamental result, but this will be a minimal subset of
+the possible outputs.</p>
+<dl class="function">
 <dt id="_xafs.pre_edge">
 <tt class="descclassname">_xafs.</tt><tt class="descname">pre_edge</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.pre_edge" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Pre-edge subtraction and normalization.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="_xafs.find_e0">
 <tt class="descclassname">_xafs.</tt><tt class="descname">find_e0</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.find_e0" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Guess E0 (<img class="math" src="_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/>, the energy threshold of the absorption edge)
+from the arrays energy and mu.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="_xafs.autobk">
-<tt class="descclassname">_xafs.</tt><tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descclassname">_xafs.</tt><tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Determine the post-edge background function, <img class="math" src="_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>,
+according the the &#8220;AUTOBK&#8221; algorithm, in which a spline function is
+matched to the low-<em>R</em> components of the resulting <img class="math" src="_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="_xafs.ftwindow">
-<tt class="descclassname">_xafs.</tt><tt class="descname">ftwindow</tt><big>(</big><em>k</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.ftwindow" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<tt class="descclassname">_xafs.</tt><tt class="descname">ftwindow</tt><big>(</big><em>k</em>, <em>xmin=0</em>, <em>xmax=None</em>, <em>dk=1</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.ftwindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a Fourier transform window function.</p>
+</dd></dl>
 
 <dl class="function">
 <dt id="_xafs.xafsft">
 <tt class="descclassname">_xafs.</tt><tt class="descname">xafsft</tt><big>(</big><em>k</em>, <em>chi</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.xafsft" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>perform an &#8220;XAFS Fourier transform&#8221; from <img class="math" src="_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to
+<img class="math" src="_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>, using common XAFS conventions.</p>
+</dd></dl>
 
 </div>
 
