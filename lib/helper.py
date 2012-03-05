@@ -6,10 +6,10 @@ Help_topics = helpTopics.generate()
 class Helper(object):
     """Helper looks up an displays help topics
     and/or pydoc help on larch/python objects"""
-    
+
     TypeNames = {'<numpy.ndarray>': '<array>',
                  '<interpreter.Procedure>': '<procedure>'}
-    
+
     def __init__(self,*args,**kws):
         self.larch = None
         self.buff = []
@@ -32,7 +32,7 @@ class Helper(object):
             out = None
         else:
             out = sym = arg
-            
+
         if sym is None:
             self.addtext(" '%s' not found"  % (arg))
         atype = str(type(sym))
@@ -41,14 +41,14 @@ class Helper(object):
 
         if out is None:
             out = repr(sym)
-            if hasattr(sym, '__call__') and len(sym.__doc__) > 1:
+            if hasattr(sym, '__call__') and sym.__doc__ is not None:
                 out = sym.__doc__
 
         if atype in ('<tuple>','<list>','<dict>','<array>'):
             out = "%s %s" % (out,atype)
         self.addtext("  %s" % out)
-                        
-                
+
+
     def addtext(self,text):
         self.buff.append(text)
 
@@ -56,21 +56,21 @@ class Helper(object):
         out = delim.join(self.buff)
         self.buff = []
         return out
-        
+
 
 #     "show help on topic or object"
 #     outbuff = []
 #     has_larch = larch is not None
-# 
+#
 #     for a in args:
-#         
+#
 #             outbuff.append(pydoc.help(a))
 #     else:
-#         
+#
 #     try:
 #         f = open(name)
 #         l = f.readlines()
-# 
+#
 #     except IOError:
 #         print "cannot open file: %s." % name
 #         return

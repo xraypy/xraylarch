@@ -49,16 +49,8 @@ class LarchExceptionHolder:
                 exc_text = "%s: %s" % (e_val.__class__.__name__, e_val.args[0])
             except:
                 exc_text = e_val
-        else:
-            words = exc_text.split('(')
-            if len(words) > 1:
-                if words[1].endswith(')'):
-                    words[1] = words[1][:-1]
-                if words[1].endswith(','):
-                    words[1] = words[1][:-1]
-                if words[1].startswith("'") and words[1].endswith("'"):
-                    words[1] = words[1][1:-1]
-            exc_text = ": ".join(words)
+        elif exc_text.endswith(',)'):
+            exc_text = "%s)" % exc_text[:-2]
 
         if exc_text in (None, 'None'):
             exc_text = ''
