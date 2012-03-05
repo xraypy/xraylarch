@@ -503,9 +503,9 @@ class Interpreter:
 
     def on_if(self, node):    # ('test', 'body', 'orelse')
         "regular if-then-else statement"
-        block = node.orelse
-        if self.interp(node.test):
-            block = node.body
+        block = node.body
+        if not self.interp(node.test):
+            block = node.orelse
         for tnode in block:
             self.interp(tnode)
 
@@ -576,13 +576,13 @@ class Interpreter:
 
     def on_tryexcept(self, node):    # ('body', 'handlers', 'orelse')
         "try/except blocks"
+        no_errors = True
         for tnode in node.body:
             self.interp(tnode)
+            no_errors = no_errors and len(self.error) == 0
             if self.error:
                 e_type, e_value, e_tb = self.error[-1].exc_info
                 this_exc = e_type()
-                # print("Look for except: ", this_exc)
-                # print("out of handlers: ", node.handlers)
                 for hnd in node.handlers:
                     htype = None
                     if hnd.type is not None:
@@ -594,12 +594,20 @@ class Interpreter:
                         for tline in hnd.body:
                             self.interp(tline)
                         break
+        if no_errors:
+            for tnode in node.orelse:
+                self.interp(tnode)
+
 
     def on_raise(self, node):    # ('type', 'inst', 'tback')
         "raise statement"
-        msg = "%s: %s" % (self.interp(node.type).__name__,
-                          self.interp(node.inst))
-        self.raise_exception(node=node.type, msg=msg)
+        # print(" ON RAISE ", node.type, node.inst, node.tback)
+        if node.type.__class__ == ast.Name:
+            msg = "%s: %s" % (self.interp(node.type).__name__,
+                              self.interp(node.inst))
+        elif node.type.__class__ == ast.Call:
+            msg = "%s" % (repr(self.interp(node.type)))
+        self.raise_exception(node=node.type, exc=(None, msg, None))
 
     def on_call(self, node):
         "function/procedure execution"
