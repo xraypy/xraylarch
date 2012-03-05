@@ -1,17 +1,25 @@
 ============================
-Language Reference
+Larch Reference
 ============================
 
-This chapter describes further details of Larch language.  The most
-important here is the fact that Larch is closely related to Python.
+This chapter describes further details of Larch language, intending to act
+as a reference manual.  As discussed elsewhere, the single most important
+fact about Larch is that it implemented with and closely related to Python.
+Of course, Python is very well documented, and much of the Python
+documentation can be applied to Larch.  Thus the discussion here focuses on
+the differences betwen Larch and Python, and on the functionality unique to
+Larch.
 
-Of course, Python is well-documented and much of the Python documentation
-can be used for Larch.  Thus the discussion here focusses on the
-differences with Python,
+Much of the discussion here will expect a familiarity with programming and
+a willingness to consult the on-line Python documentation when necessary.
 
 
-Language
-==================
+Overview
+===================
 
 Larch requires Python version 2.6 or higher.  Support for Python 3.X is
-partial, in that the core of Larch does work but is not well-tested, and
+partial, in that the core of Larch does work but is not particularly
+well-tested.  Importantly, wxPython, the principle GUI toolkit used by
+Larch, has not yet been ported to Python 3.X, and so no graphical or
+plotting capabilities are available yet for Larch using Python 3.
+

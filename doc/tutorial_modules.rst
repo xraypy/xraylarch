@@ -52,7 +52,11 @@ A larch script can also be **imported** using the **import** statement::
 Notice a few differences.  First, the '.lar' suffix was removed.  Second,
 the name is **NOT IN QUOTES** as one my expect for a string containing a
 file name.  This is because the **import** statement knows what extensions
-to look for: in this case, it will first look
+to look for:
+
+  * module lookup
+  * import as..
+  * from xx import yy as zz
 
 
 Namespaces, again

@@ -30,5 +30,6 @@ Contents:
    tutorial_flow
    tutorial_errors
    tutorial_procedures
+   tutorial_modules
    tutorial_io
    tutorial_plotting

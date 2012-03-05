@@ -51,8 +51,8 @@ Contents:
 
    installation
    tutorial
+   reference
    developers
-   language
    xafs
    xrf
 
