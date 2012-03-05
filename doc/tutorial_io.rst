@@ -6,6 +6,11 @@ Larch has several built-in functions for reading scientific data.  The
 intention that the types of supported files will increase.  In addition,
 many Python modules for reading standard image data can be used.
 
+
+.. module:: _io
+   :synopsis: Basic Input/Output Functions
+
+
 Simple ASCII Column Files
 ============================
 
@@ -25,7 +30,11 @@ used to signify header information.  For instance::
      6926.8344  -0.45165576E-01  277292.00
      6931.7399  -0.47365589E-01  265707.00
 
-This file can be read with the builtin **read_ascii()** function.
+This file can be read with the builtin :func:`read_ascii` function.
+
+.. function:: read_ascii(filename, ...)
+
+   open and read an plaintext data file, returning a new Group.
 
 
 Using HDF5 Files
