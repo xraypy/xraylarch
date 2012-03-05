@@ -1,0 +1,18 @@
+
+import Ifeffit
+iff = Ifeffit.Ifeffit()
+iff.iff_exec('my.k = range(0, 20, 0.05)')
+
+kmin, kmax, dk = 4, 16, 3
+
+iff.iff_exec("window(my.k, kmin=%f, kmax=%f, dk=%f, kwindow='kai')" % (kmin, kmax, dk) )
+kiff = iff.get_array('my.k')
+wiff = iff.get_array('my.win')
+
+add_plugin('xafsft')
+newplot(kiff, wiff, label='ifeffit', xlabel='k',
+        title='Kaiser-Bessel Windows [%.2f, %.2f], dk=%.2f' % (kmin, kmax, dk),
+        show_legend=True)
+plot(kiff, ftwindow(kiff, xmin=kmin, xmax=kmax, dx=dk, window='bes'), label='bessel (new)', color='red')
+plot(kiff, ftwindow(kiff, xmin=kmin, xmax=kmax, dx=dk, window='kai'), label='kaiser-comp)', marker='+', linewidth=0)
+plot(kiff, ftwindow(kiff, xmin=kmin, xmax=kmax, dx=dk/3, window='bes'), label='bessel dk/3', marker='--', linewidth=1, color='black')

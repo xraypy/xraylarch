@@ -1,0 +1,15 @@
+cu2s = read_ascii('data/cu2s_xafs.dat', labels='e mu')
+pre_edge(cu2s.e, cu2s.mu, group=cu2s)
+
+plot(cu2s.e, cu2s.mu)
+oplot(cu2s.e, cu2s.pre_edge)
+oplot(cu2s.e, cu2s.post_edge)
+
+print 'has a plot happened?'
+sleep(0.01)
+pause()
+
+autobk(cu2s.e, cu2s.mu, e0=cu2s.e0, group=cu2s)
+oplot(cu2s.e, cu2s.bkg)
+
+
