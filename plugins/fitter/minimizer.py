@@ -229,7 +229,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         elif ier == 5:
             message = self.err_maxfev % lskws['maxfev']
         else:
-            message = 'Tolerance seems to be too small.'
+            message = 'Fit tolerance may to be too small.'
         if cov is None:
             message = '%s Could not estimate error-bars' % message
 
@@ -261,15 +261,17 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
                         par.correl[name2] = (cov[ivar, jvar]/
                                              (par.stderr * sqrt(cov[jvar, jvar])))
 
-        setattr(group, 'errorbars', errorbars)
-        setattr(group, 'covariance', cov)
+        setattr(group, 'errorbars',  errorbars)
+        setattr(group, 'covar_vars', self.var_names)
+        setattr(group, 'covar',      cov)
         setattr(group, 'lmdif_status', ier)
-        setattr(group, 'nfcn_calls', infodict['nfev'])
+        setattr(group, 'nfcn_calls',  infodict['nfev'])
         setattr(group, 'residual',   resid)
         setattr(group, 'message',    message)
         setattr(group, 'chi_square', chisqr)
         setattr(group, 'chi_reduced', redchi)
         setattr(group, 'nfree', nfree)
+        print infodict.keys()
         return success
 
 def minimize(fcn, group,  args=None, kws=None,
