@@ -1,4 +1,5 @@
-"""Positioner for Step Scan
+"""
+Positioner for Step Scan
 """
 
 from epics import PV
