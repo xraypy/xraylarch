@@ -197,8 +197,8 @@ class Procedure(object):
         self.larch.retval = None
 
         for node in self.body:
-            self.larch.interp(node, expr='<>',
-                              fname=self.__file__, lineno=self.lineno)
+            self.larch.run(node, expr='<>',
+                           fname=self.__file__, lineno=self.lineno)
             if len(self.larch.error) > 0:
                 break
             if self.larch.retval is not None:
@@ -228,7 +228,7 @@ class DefinedVariable(object):
     def compile(self):
         """compile to ast"""
         if self.larch is not None and self.expr is not None:
-            self.ast = self.larch.compile(self.expr)
+            self.ast = self.larch.parse(self.expr)
 
     def evaluate(self):
         "actually evaluate ast to a value"
@@ -238,10 +238,10 @@ class DefinedVariable(object):
             msg = "Cannot compile '%s'"  % (self.expr)
             raise Warning(msg)
 
-        if hasattr(self.larch, 'interp'):
+        if hasattr(self.larch, 'run'):
             # save current localGroup/moduleGroup
             self.larch.symtable.save_frame()
-            rval = self.larch.interp(self.ast, expr=self.expr)
+            rval = self.larch.run(self.ast, expr=self.expr)
             self.larch.symtable.restore_frame()
             return rval
         else:

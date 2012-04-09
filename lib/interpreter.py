@@ -1,16 +1,19 @@
-'''
+"""
    Main Larch interpreter
-'''
+
+Safe(ish) evaluator of python expressions, using ast module.
+The emphasis here is on mathematical expressions, and so
+numpy functions are imported if available and used.
+
+   
+"""
 from __future__ import division, print_function
 import os
 import sys
 import ast
 import math
-try:
-    import numpy
-    HAS_NUMPY = True
-except ImportError:
-    HAS_NUMPY = False
+import numpy
+
 
 from . import builtins
 from . import site_config
@@ -65,14 +68,16 @@ class Interpreter:
   In addition, Function is greatly altered so as to allow a Larch procedure.
   """
 
-    supported_nodes = ('assert', 'assign', 'attribute', 'augassign', 'binop',
-                       'boolop', 'break', 'call', 'compare', 'continue',
-                       'delete', 'dict', 'ellipsis', 'excepthandler', 'expr',
-                       'expression', 'extslice', 'for', 'functiondef', 'if',
-                       'ifexp', 'import', 'importfrom', 'index', 'interrupt',
-                       'list', 'listcomp', 'module', 'name', 'num', 'pass',
+    supported_nodes = ('arg', 'assert', 'assign', 'attribute', 'augassign',
+                       'binop', 'boolop', 'break', 'call', 'compare',
+                       'continue', 'delete', 'dict', 'ellipsis',
+                       'excepthandler', 'expr', 'expression', 'extslice',
+                       'for', 'functiondef', 'if', 'ifexp', 'import',
+                       'importfrom', 'index', 'interrupt', 'list',
+                       'listcomp', 'module', 'name', 'num', 'pass',
                        'print', 'raise', 'repr', 'return', 'slice', 'str',
-                       'subscript', 'tryexcept', 'tuple', 'unaryop', 'while')
+                       'subscript', 'tryexcept', 'tuple', 'unaryop',
+                       'while')
 
     def __init__(self, symtable=None, writer=None):
         self.writer = writer or sys.stdout
@@ -96,14 +101,13 @@ class Interpreter:
         for sym in builtins.from_builtin:
             setattr(builtingroup, sym, __builtins__[sym])
 
-        if HAS_NUMPY:
-            for sym in builtins.from_numpy:
-                try:
-                    setattr(mathgroup, sym, getattr(numpy, sym))
-                except AttributeError:
-                    pass
-            for fname, sym in list(builtins.numpy_renames.items()):
-                setattr(mathgroup, fname, getattr(numpy, sym))
+        for sym in builtins.from_numpy:
+            try:
+                setattr(mathgroup, sym, getattr(numpy, sym))
+            except AttributeError:
+                pass
+        for fname, sym in list(builtins.numpy_renames.items()):
+            setattr(mathgroup, fname, getattr(numpy, sym))
 
         for fname, fcn in list(builtins.local_funcs.items()):
             setattr(builtingroup, fname,
@@ -111,16 +115,15 @@ class Interpreter:
         setattr(builtingroup, 'definevar',
                 Closure(func=self.set_definedvariable))
 
-        self.node_handlers = {}
-        for tnode in self.supported_nodes:
-            self.node_handlers[tnode] = getattr(self, "on_%s" % tnode)
-
         # add all plugins in standard plugins folder
         plugins_dir = os.path.join(site_config.sys_larchdir, 'plugins')
         for pname in os.listdir(plugins_dir):
             pdir = os.path.join(plugins_dir, pname)
             if os.path.isdir(pdir):
                 self.add_plugin(pdir)
+
+        self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
+                                   for node in self.supported_nodes))
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
@@ -155,11 +158,11 @@ class Interpreter:
         # print("_Raise ", self.error)
 
     # main entry point for Ast node evaluation
-    #  compile:  string statement -> ast
-    #  interp :  ast -> result
-    #  eval   :  string statement -> result = interp(compile(statement))
-    def compile(self, text, fname=None, lineno=-4):
-        """compile statement/expression to Ast representation    """
+    #  parse:  text of statements -> ast
+    #  run:    ast -> result
+    #  eval:   string statement -> result = run(parse(statement))
+    def parse(self, text, fname=None, lineno=-1):
+        """parse statement/expression to Ast representation    """
         self.expr  = text
         try:
             return ast.parse(text)
@@ -167,15 +170,15 @@ class Interpreter:
             self.raise_exception(msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno)
 
-    def interp(self, node, expr=None, fname=None, lineno=None):
-        """executes compiled Ast representation for an expression"""
+    def run(self, node, expr=None, fname=None, lineno=None):
+        """executes parsed Ast representation for an expression"""
         # Note: keep the 'node is None' test: internal code here may run
-        #    interp(None) and expect a None in return.
-        # print(" Interp", node, expr)
+        #    run(None) and expect a None in return.
+        # print(" Run", node, expr)
         if node is None:
             return None
         if isinstance(node, str):
-            node = self.compile(node)
+            node = self.parse(node)
         if lineno is not None:
             self.lineno = lineno
         if fname  is not None:
@@ -191,9 +194,8 @@ class Interpreter:
             return self.unimplemented(node)
 
         # run the handler:  this will likely generate
-        # recursive calls into this interp method.
+        # recursive calls into this run method.
         try:
-            #print(" Interp NODE ", ast.dump(node))
             ret = handler(node)
             if isinstance(ret, enumerate):
                 ret = list(ret)
@@ -212,13 +214,13 @@ class Interpreter:
         self.lineno = lineno
         self.error = []
 
-        node = self.compile(expr, fname=fname, lineno=lineno)
+        node = self.parse(expr, fname=fname, lineno=lineno)
         out = None
         if len(self.error) > 0:
             self.raise_exception(node=node, msg='Syntax Error', expr=expr,
                                  fname=fname, lineno=lineno)
         else:
-            out = self.interp(node, expr=expr, fname=fname, lineno=lineno)
+            out = self.run(node, expr=expr, fname=fname, lineno=lineno)
         return out
 
     def run_init_scripts(self):
@@ -237,26 +239,26 @@ class Interpreter:
     # handlers for ast components
     def on_expr(self, node):
         "expression"
-        return self.interp(node.value)  # ('value',)
+        return self.run(node.value)  # ('value',)
 
     def on_index(self, node):
         "index"
-        return self.interp(node.value)  # ('value',)
+        return self.run(node.value)  # ('value',)
 
     def on_return(self, node): # ('value',)
         "return statement"
-        self.retval = self.interp(node.value)
+        self.retval = self.run(node.value)
         return
 
     def on_repr(self, node):
         "repr "
-        return repr(self.interp(node.value))  # ('value',)
+        return repr(self.run(node.value))  # ('value',)
 
     def on_module(self, node):    # ():('body',)
         "module def"
         out = None
         for tnode in node.body:
-            out = self.interp(tnode)
+            out = self.run(tnode)
         return out
 
     def on_expression(self, node):
@@ -287,13 +289,13 @@ class Interpreter:
 
     def on_assert(self, node):    # ('test', 'msg')
         "assert statement"
-        if not self.interp(node.test):
-            raise AssertionError(self.interp(node.msg()))
+        if not self.run(node.test):
+            raise AssertionError(self.run(node.msg()))
         return True
 
     def on_list(self, node):    # ('elt', 'ctx')
         "list"
-        return [self.interp(e) for e in node.elts]
+        return [self.run(e) for e in node.elts]
 
     def on_tuple(self, node):    # ('elts', 'ctx')
         "tuple"
@@ -302,8 +304,8 @@ class Interpreter:
     def on_dict(self, node):    # ('keys', 'values')
         "dictionary"
         nodevals = list(zip(node.keys, node.values))
-        interp = self.interp
-        return dict([(interp(k), interp(v)) for k, v in nodevals])
+        run = self.run
+        return dict([(run(k), run(v)) for k, v in nodevals])
 
     def on_num(self, node):
         'return number'
@@ -339,11 +341,11 @@ class Interpreter:
                 errmsg = "cannot assign to attribute %s" % nod.attr
                 self.raise_exception(node=nod, msg=errmsg)
 
-            setattr(self.interp(nod.value), nod.attr, val)
+            setattr(self.run(nod.value), nod.attr, val)
 
         elif nod.__class__ == ast.Subscript:
-            sym    = self.interp(nod.value)
-            xslice = self.interp(nod.slice)
+            sym    = self.run(nod.value)
+            xslice = self.run(nod.slice)
             if isinstance(nod.slice, ast.Index):
                 sym.__setitem__(xslice, val)
             elif isinstance(nod.slice, ast.Slice):
@@ -370,14 +372,14 @@ class Interpreter:
         ctx = node.ctx.__class__
         # print("on_attribute",node.value,node.attr,ctx)
         if ctx == ast.Load:
-            sym = self.interp(node.value)
+            sym = self.run(node.value)
             if hasattr(sym, node.attr):
                 val = getattr(sym, node.attr)
                 if isinstance(val, DefinedVariable):
                     val = val.evaluate()
                 return val
             else:
-                obj = self.interp(node.value)
+                obj = self.run(node.value)
                 fmt = "%s does not have member '%s'"
                 if not isgroup(obj):
                     obj = obj.__class__
@@ -394,7 +396,7 @@ class Interpreter:
 
     def on_assign(self, node):    # ('targets', 'value')
         "simple assignment"
-        val = self.interp(node.value)
+        val = self.run(node.value)
         if len(self.error) > 0:
             return
         for tnode in node.targets:
@@ -411,18 +413,18 @@ class Interpreter:
 
     def on_slice(self, node):    # ():('lower', 'upper', 'step')
         "simple slice"
-        return slice(self.interp(node.lower), self.interp(node.upper),
-                     self.interp(node.step))
+        return slice(self.run(node.lower), self.run(node.upper),
+                     self.run(node.step))
 
     def on_extslice(self, node):    # ():('dims',)
         "extended slice"
-        return tuple([self.interp(tnode) for tnode in node.dims])
+        return tuple([self.run(tnode) for tnode in node.dims])
 
     def on_subscript(self, node):    # ('value', 'slice', 'ctx')
         "subscript handling -- one of the tricky parts"
         # print("on_subscript: ", ast.dump(node))
-        val    = self.interp(node.value)
-        nslice = self.interp(node.slice)
+        val    = self.run(node.value)
+        nslice = self.run(node.slice)
         ctx = node.ctx.__class__
         if ctx in ( ast.Load, ast.Store):
             if isinstance(node.slice, (ast.Index, ast.Slice, ast.Ellipsis)):
@@ -453,35 +455,35 @@ class Interpreter:
 
     def on_unaryop(self, node):    # ('op', 'operand')
         "unary operator"
-        return OPERATORS[node.op.__class__](self.interp(node.operand))
+        return OPERATORS[node.op.__class__](self.run(node.operand))
 
     def on_binop(self, node):    # ('left', 'op', 'right')
         "binary operator"
         # print( 'BINARY  OP! ', node.left, node.right, node.op)
-        return OPERATORS[node.op.__class__](self.interp(node.left),
-                                            self.interp(node.right))
+        return OPERATORS[node.op.__class__](self.run(node.left),
+                                            self.run(node.right))
 
     def on_boolop(self, node):    # ('op', 'values')
         "boolean operator"
-        val = self.interp(node.values[0])
+        val = self.run(node.values[0])
         is_and = ast.And == node.op.__class__
         if (is_and and val) or (not is_and and not val):
             for n in node.values[1:]:
-                val =  OPERATORS[node.op.__class__](val, self.interp(n))
+                val =  OPERATORS[node.op.__class__](val, self.run(n))
                 if (is_and and not val) or (not is_and and val):
                     break
         return val
 
     def on_compare(self, node):    # ('left', 'ops', 'comparators')
         "comparison operators"
-        lval = self.interp(node.left)
+        lval = self.run(node.left)
         out  = True
         for oper, rnode in zip(node.ops, node.comparators):
             comp = OPERATORS[oper.__class__]
-            rval = self.interp(rnode)
+            rval = self.run(rnode)
             out  = comp(lval, rval)
             lval = rval
-            if HAS_NUMPY and isinstance(out, numpy.ndarray) and out.any():
+            if isinstance(out, numpy.ndarray) and out.any():
                 break
             elif not out:
                 break
@@ -493,53 +495,53 @@ class Interpreter:
         should look for and translate print -> print_() to become
         a customized function call.
         """
-        dest = self.interp(node.dest) or self.writer
+        dest = self.run(node.dest) or self.writer
         end = ''
         if node.nl:
             end = '\n'
-        out = [self.interp(tnode) for tnode in node.values]
+        out = [self.run(tnode) for tnode in node.values]
         if out and len(self.error)==0:
             print(*out, file=dest, end=end)
 
     def on_if(self, node):    # ('test', 'body', 'orelse')
         "regular if-then-else statement"
         block = node.body
-        if not self.interp(node.test):
+        if not self.run(node.test):
             block = node.orelse
         for tnode in block:
-            self.interp(tnode)
+            self.run(tnode)
 
     def on_ifexp(self, node):    # ('test', 'body', 'orelse')
         "if expressions"
         expr = node.orelse
-        if self.interp(node.test):
+        if self.run(node.test):
             expr = node.body
-        return self.interp(expr)
+        return self.run(expr)
 
     def on_while(self, node):    # ('test', 'body', 'orelse')
         "while blocks"
-        while self.interp(node.test):
+        while self.run(node.test):
             self._interrupt = None
             for tnode in node.body:
-                self.interp(tnode)
+                self.run(tnode)
                 if self._interrupt is not None:
                     break
             if isinstance(self._interrupt, ast.Break):
                 break
         else:
             for tnode in node.orelse:
-                self.interp(tnode)
+                self.run(tnode)
         self._interrupt = None
 
     def on_for(self, node):    # ('target', 'iter', 'body', 'orelse')
         "for blocks"
-        for val in self.interp(node.iter):
+        for val in self.run(node.iter):
             self.node_assign(node.target, val)
             if len(self.error) > 0:
                 return
             self._interrupt = None
             for tnode in node.body:
-                self.interp(tnode)
+                self.run(tnode)
                 if len(self.error) > 0:
                     return
                 if self._interrupt is not None:
@@ -548,7 +550,7 @@ class Interpreter:
                 break
         else:
             for tnode in node.orelse:
-                self.interp(tnode)
+                self.run(tnode)
         self._interrupt = None
 
     def on_listcomp(self, node):    # ('elt', 'generators')
@@ -556,15 +558,15 @@ class Interpreter:
         out = []
         for tnode in node.generators:
             if tnode.__class__ == ast.comprehension:
-                for val in self.interp(tnode.iter):
+                for val in self.run(tnode.iter):
                     self.node_assign(tnode.target, val)
                     if len(self.error) > 0:
                         return
                     add = True
                     for cond in tnode.ifs:
-                        add = add and self.interp(cond)
+                        add = add and self.run(cond)
                     if add:
-                        out.append(self.interp(node.elt))
+                        out.append(self.run(node.elt))
         return out
 
 
@@ -572,13 +574,13 @@ class Interpreter:
     def on_excepthandler(self, node): # ('type', 'name', 'body')
         "exception handler..."
         # print("except handler %s / %s " % (node.type, ast.dump(node.name)))
-        return (self.interp(node.type), node.name, node.body)
+        return (self.run(node.type), node.name, node.body)
 
     def on_tryexcept(self, node):    # ('body', 'handlers', 'orelse')
         "try/except blocks"
         no_errors = True
         for tnode in node.body:
-            self.interp(tnode)
+            self.run(tnode)
             no_errors = no_errors and len(self.error) == 0
             if self.error:
                 e_type, e_value, e_tb = self.error[-1].exc_info
@@ -592,34 +594,34 @@ class Interpreter:
                         if hnd.name is not None:
                             self.node_assign(hnd.name, e_value)
                         for tline in hnd.body:
-                            self.interp(tline)
+                            self.run(tline)
                         break
         if no_errors:
             for tnode in node.orelse:
-                self.interp(tnode)
+                self.run(tnode)
 
 
     def on_raise(self, node):    # ('type', 'inst', 'tback')
         "raise statement"
         # print(" ON RAISE ", node.type, node.inst, node.tback)
         if node.type.__class__ == ast.Name:
-            msg = "%s: %s" % (self.interp(node.type).__name__,
-                              self.interp(node.inst))
+            msg = "%s: %s" % (self.run(node.type).__name__,
+                              self.run(node.inst))
         elif node.type.__class__ == ast.Call:
-            msg = "%s" % (repr(self.interp(node.type)))
+            msg = "%s" % (repr(self.run(node.type)))
         self.raise_exception(node=node.type, exc=(None, msg, None))
 
     def on_call(self, node):
         "function/procedure execution"
         #  ('func', 'args', 'keywords', 'starargs', 'kwargs')
-        func = self.interp(node.func)
+        func = self.run(node.func)
         if not hasattr(func, '__call__') and not hasattr(func, '__init__'):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node=node, msg=msg)
 
-        args = [self.interp(targ) for targ in node.args]
+        args = [self.run(targ) for targ in node.args]
         if node.starargs is not None:
-            args = args + self.interp(node.starargs)
+            args = args + self.run(node.starargs)
 
         keywords = {}
         for key in node.keywords:
@@ -627,9 +629,9 @@ class Interpreter:
                 msg = "keyword error in function call '%s'" % (func)
                 self.raise_exception(node=node, msg=msg)
 
-            keywords[key.arg] = self.interp(key.value)
+            keywords[key.arg] = self.run(key.value)
         if node.kwargs is not None:
-            keywords.update(self.interp(node.kwargs))
+            keywords.update(self.run(node.kwargs))
 
         try:
             return func(*args, **keywords)
@@ -645,8 +647,8 @@ class Interpreter:
         kwargs = []
         offset = len(node.args.args) - len(node.args.defaults)
         for idef, defnode in enumerate(node.args.defaults):
-            defval = self.interp(defnode)
-            keyval = self.interp(node.args.args[idef+offset])
+            defval = self.run(defnode)
+            keyval = self.run(node.args.args[idef+offset])
             kwargs.append((keyval, defval))
         # kwargs.reverse()
         args = [tnode.id for tnode in node.args.args[:offset]]

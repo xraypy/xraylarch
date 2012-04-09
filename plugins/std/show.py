@@ -7,6 +7,24 @@ import types
 import numpy
 from larch.interpreter import HAS_NUMPY
 
+def _get(sym=None, larch=None, **kws):
+    """get object from symbol table from symbol name"""
+    if larch is None:
+        raise Warning("cannot show group -- larch broken?")
+    if sym is None:
+        sym = '_main'
+    group = None
+    symtable = larch.symtable
+    if symtable.isgroup(sym):
+        group = sym
+    elif isinstance(sym, types.ModuleType):
+        group = sym
+    elif isinstance(sym, (str, unicode)):
+        group = symtable._lookup(sym, create=False)
+
+    return group
+
+    
 def _show(sym=None, larch=None, **kws):
     """display group members"""
     if larch is None:
@@ -52,6 +70,5 @@ def _show(sym=None, larch=None, **kws):
 
     larch.writer.write("%s\n" % '\n'.join(out))
 
-
 def registerLarchPlugin():
-    return ('_builtin', {'show': _show})
+    return ('_builtin', {'show': _show, 'get': _get})
