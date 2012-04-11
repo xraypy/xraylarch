@@ -67,7 +67,7 @@ class Counter(object):
 
 class DeviceCounter():
     """Generic Multi-PV Counter to be base class for
-    MotorCounter, ScalerCounter, MCACounter, etc
+    ScalerCounter, MCACounter, etc
     """
     invalid_device_msg = 'DeviceCounter of incorrect type'
     def __init__(self, prefix, rtype=None, fields=None, outpvs=None):
@@ -81,11 +81,12 @@ class DeviceCounter():
         self.set_counters(fields)
 
     def set_counters(self, fields):
-        self.counters = OrderedDict()
-        if not hasattr(fields, '__iter__'):
-            return
-        for suf, lab in fields:
-            self.counters[lab] = Counter("%s%s" % (self.prefix, suf), label=lab)
+        print 'dev counter set counters ', self.prefix, fields, hasattr(fields, '__itter__')
+        self.counters = []
+        if hasattr(fields, '__iter__'):
+            for suf, lab in fields:
+                self.counters.append(Counter("%s%s" % (self.prefix, suf),
+                                             label=lab))
 
     def postvalues(self):
         """post first N counter values to output PVs
@@ -94,35 +95,34 @@ class DeviceCounter():
         May want ot override this method....
         """
         if self.outpvs is not None:
-            for cname, pv in zip(self.counters, self.outpvs):
-                pv.put(self.counters[cname].buff)
+            for counter, pv in zip(self.counters, self.outpvs):
+                pv.put(counter.buff)
 
     def read(self):
         "read counters"
-        for c in self.counters.values():
+        for c in self.counters:
             c.read()
         self.postvalues()
 
     def clear(self):
         "clear counters"
-        for c in self.counters.values():
+        for c in self.counters:
             c.clear()
 
     def get_buffers(self):
         o = OrderedDict()
-        for cname in self.counters:
-            o[cname] = self.counters[cname].buff
+        for c in self.counters:
+            o[c.label] = c.buff
         return o
 
-class MotorCounter(DeviceCounter):
+class MotorCounter(Counter):
     """Motor Counter: save Readback value
     """
     invalid_device_msg = 'MotorCounter must use a motor'
-    def __init__(self, prefix, outpvs=None):
-        desc = "%s readback" % caget('%s.DESC' % prefix)
-        DeviceCounter.__init__(self, prefix, rtype='motor', outpvs=outpvs)
-        fields = [('.RBV', '%s readbback' % caget(self.prefix + '.DESC'))]
-        self.set_counters(fields)
+    def __init__(self, prefix):
+        label = "%s readback" % caget('%s.DESC' % prefix)
+        pvname = '%s.RBV' % prefix
+        Counter.__init__(self, pvname, label=label)
 
 class ScalerCounter(DeviceCounter):
     invalid_device_msg = 'ScalerCounter must use a scaler'
@@ -231,7 +231,8 @@ class ScalerDetector(DetectorMixin):
     def __init__(self, prefix, nchan=8, use_calc=True):
         DetectorMixin.__init__(self, prefix)
         self.scaler = Scaler(prefix, nchan=nchan)
-        self.counters = ScalerCounter(prefix, nchan=nchan, use_calc=use_calc)
+        self._counter = ScalerCounter(prefix, nchan=nchan, use_calc=use_calc)
+        self.counters = self._counter.counters
 
     def pre_scan(self, **kws):
         self.scaler.OneShotMode()
