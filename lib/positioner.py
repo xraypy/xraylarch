@@ -18,6 +18,14 @@ do a readback on this position -- add a ScanDetector for that!
         self.array = array
         self.extra_pvs = []
 
+    def __repr__(self):
+        out = "<Positioner '%s': %i points" % (self._pv.pvname, len(self.array))
+        if len(self.array) > 0:
+            amin = '%g' % (min(self.array))
+            amax = '%g' % (max(self.array))
+            out = "%s, range: [%s, %s]" % (out, amin, amax)
+        return "%s>" % out
+    
     def __onComplete(self, pvname=None, **kws):
         self.done = True
 
@@ -29,6 +37,8 @@ do a readback on this position -- add a ScanDetector for that!
         """return True if array is within the """
         array = self.array
         if array is None:
+            return True
+        if self._pv.upper_ctrl_limit == self._pv.lower_ctrl_limit:
             return True
         if ((self._pv.upper_ctrl_limit is not None and
              self._pv.upper_ctrl_limit < max(array)) or

@@ -37,7 +37,7 @@ Example usage:
         self.done = True
         self.runtime = time.time() - self._t0
 
-    def start(self, value=None):
+    def start(self, value=1):
         """triggers detector"""
         self.done = False
         self.runtime = -1
@@ -57,6 +57,7 @@ class Counter(object):
         self.clear()
 
     def read(self):
+        self.pv.poll()
         self.buff.append(self.pv.get())
 
     def clear(self):
@@ -81,7 +82,6 @@ class DeviceCounter():
         self.set_counters(fields)
 
     def set_counters(self, fields):
-        print 'dev counter set counters ', self.prefix, fields, hasattr(fields, '__itter__')
         self.counters = []
         if hasattr(fields, '__iter__'):
             for suf, lab in fields:
@@ -128,16 +128,20 @@ class ScalerCounter(DeviceCounter):
     invalid_device_msg = 'ScalerCounter must use a scaler'
     def __init__(self, prefix, outpvs=None, nchan=8,
                  use_calc=False,  use_unlabeled=False):
-        DeviceCounter.__init__(self, prefix, rtype='scaler', outpvs=outpvs)
+        DeviceCounter.__init__(self, prefix, rtype='scaler',
+                               outpvs=outpvs)
         prefix = self.prefix
         fields = []
+        extra_pvs = []
         for i in range(1, nchan+1):
             label = caget('%s.NM%i' % (prefix, i))
             if len(label) > 0 or use_unlabeled:
                 suff = '.S%i' % i
                 if use_calc:
                     suff = '_calc%i.VAL' % i
+                    extra_pvs.append('%s_calc%i.CALC' % (prefix, i))
                 fields.append((suff, label))
+        self.extra_pvs = extra_pvs
         self.set_counters(fields)
 
 class DXPCounter(DeviceCounter):
@@ -231,9 +235,12 @@ class ScalerDetector(DetectorMixin):
     def __init__(self, prefix, nchan=8, use_calc=True):
         DetectorMixin.__init__(self, prefix)
         self.scaler = Scaler(prefix, nchan=nchan)
-        self._counter = ScalerCounter(prefix, nchan=nchan, use_calc=use_calc)
+        self._counter = ScalerCounter(prefix, nchan=nchan,
+                                      use_calc=use_calc)
         self.counters = self._counter.counters
-
+        self.extra_pvs = ['%s.FREQ' % prefix, '%s.DLY' % prefix] 
+        self.extra_pvs.extend(self._counter.extra_pvs)
+        
     def pre_scan(self, **kws):
         self.scaler.OneShotMode()
 
