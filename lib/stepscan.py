@@ -83,15 +83,15 @@ with it.  It will use these for PVs to post data at each point of the scan.
 """
 
 import time
-from epics import PV
+from epics import PV, poll
 from ordereddict import OrderedDict
 from detectors import Counter, DeviceCounter
 
 class StepScan(object):
     def __init__(self, datafile=None):
-        self.pos_settle_time = 0
+        self.pos_settle_time = 1.e-6
         self.pos_maxmove_time = 3600.0
-        self.det_settle_time = 0
+        self.det_settle_time = 1.e-6
         self.det_maxcount_time = 86400.0
         self.extra_pvs = []
         self.positioners = []
@@ -109,11 +109,8 @@ class StepScan(object):
         "add simple counter"
         if isinstance(counter, str):
             counter = Counter(counter, label)
-        print 'add counter ', counter , label
-        print isinstance(counter, (Counter, DeviceCounter))
         if isinstance(counter, (Counter, DeviceCounter)):
             self.counters.append(counter)
-            print 'ADDED COUNTER ', counter
         else:
             print 'Cannot add Counter? ', counter
         self.verified = False
@@ -127,7 +124,7 @@ class StepScan(object):
 
     def add_positioner(self, pos):
         """ add a Positioner """
-        self.extra_pvs.extend(pos.extra_pvs)
+        self.add_extra_pvs(pos.extra_pvs)
         self.at_break_methods.append(pos.at_break)
         self.post_scan_methods.append(pos.post_scan)
         self.pre_scan_methods.append(pos.pre_scan)
@@ -136,20 +133,16 @@ class StepScan(object):
         
     def add_detector(self, det):
         """ add a Detector -- needs to be derived from Detector_Mixin"""
-        self.extra_pvs.extend(det.extra_pvs)
+        self.add_extra_pvs(det.extra_pvs)
         self.triggers.append(det.trigger)
         self.counters.extend(det.counters)
         self.at_break_methods.append(det.at_break)
         self.post_scan_methods.append(det.post_scan)
         self.pre_scan_methods.append(det.pre_scan)
         self.verified = False
-        print 'add det ', det
-        print det.counters
-        print 'COUNTER ', self.counters
 
     def at_break(self, breakpoint=0):
         out = [m() for m in self.at_break_methods]
-        self.read_extra_pvs()
         self.write_data(breakpoint=breakpoint)
 
     def pre_scan(self):
@@ -181,11 +174,9 @@ class StepScan(object):
 
     def check_outputs(self, out, msg='unknown'):
         """ check outputs of a previous command"""
-        print 'check outputs for %s' % msg
-        print out
-        ok = True
-        if not ok:
-            raise Warning('error!')
+        for i in out:
+            if i is not None and not i:
+                raise Warning('error on output: %s' % msg)
         
     def open_datafile(self, filename=None):
         if filename is not None:
@@ -195,16 +186,24 @@ class StepScan(object):
         self.datafile  = open(self.datafilename, 'w+')
                 
     def write_data(self, breakpoint=0, close_file=False):
-        print 'write data!! breakpoint= ', breakpoint
-        for counter in self.counters:
-            print counter.label, counter.buff
+        print '## EXTRA PVS: '
+        for pvn, val in self.read_extra_pvs():
+            print "# %s:\t %s" % (pvn, repr(val))
+        if breakpoint == 0:
+            return
+        else:
+            print '#---------------'
+            print '#', '\t'.join([c.label for c in self.counters])
+            n = len(self.counters[0].buff)
+            for i in range(n):
+                print '\t'.join([str(c.buff[i]) for c in self.counters])
+            [c.clear() for c in self.counters]                
         
     def read_extra_pvs(self):
-        print 'read extra pvs'
-        print self.extra_pvs
-    
+        return [(pv.pvname, pv.get()) for pv in self.extra_pvs]
+            
+        
     def run(self, filename=None):
-        print 'run scan!'
         if not self.verify_scan():
             print 'Cannot execute scan -- out of bounds'
             return
@@ -215,32 +214,35 @@ class StepScan(object):
         self.check_outputs(out, msg='move to start')
 
         self.open_datafile(filename)
-        self.read_extra_pvs()
+                
+        print ' -- > start scan '
         self.write_data(breakpoint=0)
 
-        print 'len of positioner arrays ' , self.positioners[0].array
         npts = len(self.positioners[0].array)
-        print 'Triggers: ', self.triggers
-        print 'Counters: ', self.counters
 
         for i in range(npts):
-            print ' Point ', i
             [p.move_to_pos(i) for p in self.positioners]
-            self.t0 = time.time()
+
+            # wait for moves to finish
+            t0 = time.time()
             while (not all([p.done for p in self.positioners]) and
-                   time.time() - self.t0 < self.pos_maxmove_time):
+                   time.time() - t0 < self.pos_maxmove_time):
                 time.sleep(0.001)
+            # print  "  move done in %.4fs" % (time.time()-t0)
             time.sleep(self.pos_settle_time)
-            [trig.start() for trig in self.triggers]
-            self.t0 = time.time()
+
+            # start triggers
+            [trig.start(1) for trig in self.triggers]
+
+            # wait for detectors to finish
+            t0 = time.time()
             while (not all([trig.done for trig in self.triggers]) and
-                   time.time() - self.t0 < self.det_maxcount_time):
+                   time.time() - t0 < self.det_maxcount_time):
                 time.sleep(0.001)
             time.sleep(self.det_settle_time)
             [c.read() for c in self.counters]
             if i in self.breakpoints:
-                self.at_break()
-                self.write_data(breakpoint=i)
+                self.at_break(breakpoint=i)
                 
-        self.write_data(close_file=True)
+        self.write_data(breakpoint=-1, close_file=True)
 
