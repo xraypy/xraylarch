@@ -27,6 +27,7 @@ do a readback on this position -- add a ScanDetector for that!
 
     def verify_array(self):
         """return True if array is within the """
+        array = self.array
         if array is None:
             return True
         if ((self._pv.upper_ctrl_limit is not None and
