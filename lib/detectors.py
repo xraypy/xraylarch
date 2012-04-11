@@ -119,9 +119,10 @@ class MotorCounter(Counter):
     """Motor Counter: save Readback value
     """
     invalid_device_msg = 'MotorCounter must use a motor'
-    def __init__(self, prefix):
-        label = "%s readback" % caget('%s.DESC' % prefix)
+    def __init__(self, prefix, label=None):
         pvname = '%s.RBV' % prefix
+        if label is None:
+            label = "%s (actual)" % caget('%s.DESC' % prefix)
         Counter.__init__(self, pvname, label=label)
 
 class ScalerCounter(DeviceCounter):
