@@ -293,6 +293,10 @@ class Interpreter:
             raise AssertionError(self.run(node.msg()))
         return True
 
+    def on_arg(self, node):
+        "arg for function definitions"
+        return node.arg
+
     def on_list(self, node):    # ('elt', 'ctx')
         "list"
         return [self.run(e) for e in node.elts]
