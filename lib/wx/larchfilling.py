@@ -21,7 +21,7 @@ import inspect
 
 from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
-from larch.closure import Closure
+from larch.utils import Closure
 
 VERSION = '0.9.5(Larch)'
 
