@@ -5,7 +5,6 @@
 import sys
 import types
 import numpy
-from larch.interpreter import HAS_NUMPY
 
 def _get(sym=None, larch=None, **kws):
     """get object from symbol table from symbol name"""
@@ -57,7 +56,7 @@ def _show(sym=None, larch=None, **kws):
     for item in members:
         obj = getattr(group, item)
         dval = None
-        if HAS_NUMPY and isinstance(obj, numpy.ndarray):
+        if isinstance(obj, numpy.ndarray):
             if len(obj) > 10 or len(obj.shape)>1:
                 dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
                                                          repr(obj.dtype))
