@@ -19,11 +19,11 @@ def _copy(obj, **kws):
     return deepcopy(obj)
 
 
-def _parent(name, larch=None, **kw):
+def _parent(name, _larch=None, **kw):
     "print out parent group name of an object"
-    print(larch.symtable._lookup(name, create=False))
+    print(_larch.symtable._lookup(name, create=False))
 
-def _ls(directory='.', larch=None, **kws):
+def _ls(directory='.', _larch=None, **kws):
     """return a list of files in the current directory"""
     directory.strip()
     if len(directory) == 0:
@@ -56,7 +56,7 @@ def _cd(name, **kws):
     return ret
 
 def show_more(text, filename=None, writer=None,
-              pagelength=30, prefix='', larch=None, **kws):
+              pagelength=30, prefix='', _larch=None, **kws):
     """show lines of text in the style of more """
     txt = text[:]
     if isinstance(txt, (str, unicode)):
@@ -74,7 +74,7 @@ def show_more(text, filename=None, writer=None,
     i = 0
     for i in range(len(txt)):
         if txt[i].endswith('\n'):
-            larch.writer.write("%s%s" % (prefix, txt[i]))
+            _larch.writer.write("%s%s" % (prefix, txt[i]))
         else:
             writer.write("%s%s\n" % (prefix, txt[i]))
         i = i + 1
@@ -86,7 +86,7 @@ def show_more(text, filename=None, writer=None,
                 writer.write("\n")
                 return
 
-def _more(fname, pagelength=32, larch=None, **kws):
+def _more(fname, pagelength=32, _larch=None, **kws):
     """list file contents:
     > more('file.txt')
 by default, the file is shown 32 lines at a time.
@@ -94,10 +94,9 @@ You can specify the number of lines to show at a time
 with the  pagelength option:
     > more('file.txt', pagelength=10)
     """
-    if larch is None:
-        output = sys.stdout.write
-    else:
-        output = larch.writer.write
+    output = sys.stdout.write
+    if _larch is not None:
+        output = _larch.writer.write
 
     if not os.path.exists(fname):
         output("File '%s' not found.\n" % fname)
@@ -113,9 +112,8 @@ with the  pagelength option:
         output("cannot open file: %s\n" % fname)
         return
 
-    show_more(text, filename=fname, larch=larch,
+    show_more(text, filename=fname, _larch=_larch,
               pagelength=pagelength, **kws)
-
 
 def registerLarchPlugin():
     return ('_builtin', {'copy': _copy,  'more': _more,

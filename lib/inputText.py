@@ -103,10 +103,10 @@ class InputText:
     empty_frame = (None, None, -1)
 
     def __init__(self, prompt=None, interactive=True, input=None,
-                 filename=None, larch=None):
+                 filename=None, _larch=None):
         self.prompt = prompt or self.ps1
         self.input = None
-        self.larch = larch
+        self._larch = _larch
         self.interactive = interactive
         self.lineno = 0
         self.filename = filename or '<StdInput>'
@@ -141,12 +141,12 @@ class InputText:
             self.input_buff.append((thisline, self.input_complete,
                                     self.eos, fname, self.lineno))
             self.lineno += 1
-            
+
         text = text.split('\n')
         text.reverse()
         while len(text) > 0:
             addTextInput(text.pop(), fname)
-                
+
         if self.interactive:
             self.prompt = self.ps2
             while not self.input_complete:
@@ -171,10 +171,10 @@ class InputText:
                 return  self._fifo[0].pop()
             except IndexError:
                 msg = 'InputText out of complete text'
-                if self.larch is None:
+                if self._larch is None:
                     raise IndexError(msg)
                 else:
-                    self.larch.raise_exception(msg=msg)
+                    self._larch.raise_exception(None, exc=IndexError, msg=msg)
         return self.empty_frame
 
     def convert(self):
@@ -245,10 +245,10 @@ class InputText:
                     if text.find(':') < 1:
                         msg = "%s statement needs a ':' at\n  %s" % (thiskey,
                                                                      text)
-                        if self.larch is None:
+                        if self._larch is None:
                             raise SyntaxError(msg)
                         else:
-                            self.larch.raise_exception(msg=msg, expr=text)
+                            self._larch.raise_exception(None, exc=SyntaxError, msg=msg, expr=text)
                     elif text.endswith(':'):
                         self.current = thiskey
                         self.keys.append(thiskey)
@@ -281,10 +281,10 @@ class InputText:
 
             if indent_level < 0:
                 msg = 'impossible indent level!'
-                if self.larch is None:
+                if self._larch is None:
                     raise SyntaxError(msg)
                 else:
-                    self.larch.raise_exception(msg=msg)
+                    self._larch.raise_exception(None, exc=SyntaxError, msg=msg)
 
             self.block.append('%s%s%s' % (self.indent*indent_level,
                                           prefix, text))

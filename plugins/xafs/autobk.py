@@ -36,8 +36,8 @@ def __resid(pars, knots=None, order=3, irbkg=1, nfft=2048,
 
 def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
            kmin=0, kmax=None, kw=1, dk=0, win=None, vary_e0=True,
-           chi_std=None, nfft=2048, kstep=0.05, larch=None):
-    if larch is None:
+           chi_std=None, nfft=2048, kstep=0.05, _larch=None):
+    if _larch is None:
         raise Warning("cannot calculate autobk spline -- larch broken?")
 
     # get array indices for rkbg and e0: irbkg, ie0
@@ -45,7 +45,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     if rbkg < 2*rgrid: rbkg = 2*rgrid
     irbkg = int(1.01 + rbkg/rgrid)
     if e0 is None:
-        e0 = find_e0(energy, mu, group=group, larch=larch)
+        e0 = find_e0(energy, mu, group=group, _larch=_larch)
     ie0 = _index_nearest(energy, e0)
 
     # save ungridded k (kraw) and grided k (kout)
@@ -89,7 +89,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     obkg  = np.zeros(len(mu))
     obkg[:ie0] = mu[:ie0]
     obkg[ie0:] = bkg
-    if larch.symtable.isgroup(group):
+    if _larch.symtable.isgroup(group):
         setattr(group, 'bkg',  obkg)
         setattr(group, 'chie', mu-obkg)
         setattr(group, 'k',    kout)

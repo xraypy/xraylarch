@@ -8,19 +8,19 @@ from scipy.special import gamma, beta
 
 log2 = log(2)
 
-def gaussian(x, cen=0, sigma=1, larch=None):
+def gaussian(x, cen=0, sigma=1, _larch=None):
     """1 dimensional gaussian:
     gaussian(x, cen, sigma)
     """
     return (sqrt(log2/pi) / sigma) * exp(-log2 * (1.0*x-cen) **2 / sigma**2)
 
-def lorentzian(x, cen=0, sigma=1, larch=None):
+def lorentzian(x, cen=0, sigma=1, _larch=None):
     """1 dimensional lorentzian
     lorenztian(x, cen, sigma)
     """
     return (1.  / (1 + ((1.0*x-cen)/sigma)**2) ) / (pi*sigma)
 
-def pvoigt(x, cen=0, sigma=1, frac=0.5, larch=None):
+def pvoigt(x, cen=0, sigma=1, frac=0.5, _larch=None):
     """1 dimensional pseudo-voight:
     pvoigt(x, cen, sigma, frac)
        = (1-frac)*gaussion(x,cen,sigma) + frac*lorentzian(x,cen, sigma)
@@ -28,7 +28,7 @@ def pvoigt(x, cen=0, sigma=1, frac=0.5, larch=None):
     return ((1-frac)*gaussiann(x, cen=cen, sigma=sigma) +
                 frac*lorentzian(x, cen=cen, sigma=sigma))
 
-def pearson7(x, cen=0, sigma=1, expon=0.5, larch=None):
+def pearson7(x, cen=0, sigma=1, expon=0.5, _larch=None):
     """pearson7 lineshape, according to NIST StRD
     though it seems wikpedia gives a different formula...
     pearson7(x, cen, sigma, expon)

@@ -7,13 +7,13 @@ install the xdi python module from
 """
 from xdifile import XDIFile
 
-def xdigroup(fname, larch=None):
+def xdigroup(fname, _larch=None):
     """simple mapping of XDI file to larch groups"""
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot read xdigroup -- larch broken?")
-        
+
     x = XDIFile(fname)
-    group = larch.symtable.create_group()
+    group = _larch.symtable.create_group()
     group.__name__ ='XDI file %s' % fname
     for key, val in x.__dict__.items():
         if not key.startswith('_'):

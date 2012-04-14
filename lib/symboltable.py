@@ -367,12 +367,12 @@ class SymbolTable(Group):
 
         for key, val in syms.items():
             if hasattr(val, '__call__'):
-                # test whether plugin func has a 'larch' kw arg
+                # test whether plugin func has a '_larch' kw arg
                 #    func_code.co_flags & 8 == 'uses **kws'
                 nvars = val.func_code.co_argcount
                 if ((val.func_code.co_flags &8 != 0) or
-                    'larch' in val.func_code.co_varnames[:nvars]):
-                    val = Closure(func=val, larch=self._larch, _name=key, **kws)
+                    '_larch' in val.func_code.co_varnames[:nvars]):
+                    val = Closure(func=val, _larch=self._larch, _name=key, **kws)
                 else:
                     val = Closure(func=val, _name=key, **kws)
 

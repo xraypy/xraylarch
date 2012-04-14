@@ -21,9 +21,9 @@ IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 MODNAME = '_plotter'
 
-def ensuremod(larch):
-    if larch is not None:
-        symtable = larch.symtable
+def ensuremod(_larch):
+    if _larch is not None:
+        symtable = _larch.symtable
         if not symtable.has_group(MODNAME):
             symtable.newgroup(MODNAME)
         return symtable
@@ -50,11 +50,11 @@ class CursorThread:
 class CursorFrame(wx.MiniFrame):
     """hidden wx frame that simply waits for cursor to be set
     """
-    def __init__(self, parent, larch=None, win=None, plotter=None, **kws):
+    def __init__(self, parent, _larch=None, win=None, plotter=None, **kws):
         wx.MiniFrame.__init__(self, parent, -1, '')
         self.Show(False)
         self.plotter = plotter
-        self.symtable = ensuremod(larch)
+        self.symtable = ensuremod(_larch)
         self.xval = '%s.plot%i_x' % (MODNAME, win)
         self.yval = '%s.plot%i_y' % (MODNAME, win)
         if self.symtable.has_symbol(self.xval):
@@ -97,7 +97,7 @@ class CursorFrame(wx.MiniFrame):
 
 
 class PlotDisplay(PlotFrame):
-    def __init__(self, wxparent=None, window=1, larch=None, **kws):
+    def __init__(self, wxparent=None, window=1, _larch=None, **kws):
         PlotFrame.__init__(self, parent=wxparent,
                                  exit_callback=self.onExit, **kws)
         self.Show()
@@ -105,9 +105,9 @@ class PlotDisplay(PlotFrame):
         self.cursor_pos = None
         self.panel.cursor_callback = self.onCursor
         self.window = int(window)
-        self.larch = larch
+        self._larch = _larch
         self.symname = '%s.plot%i' % (MODNAME, self.window)
-        symtable = ensuremod(self.larch)
+        symtable = ensuremod(self._larch)
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
@@ -116,7 +116,7 @@ class PlotDisplay(PlotFrame):
 
     def onExit(self, o, **kw):
         try:
-            symtable = self.larch.symtable
+            symtable = self._larch.symtable
             if symtable.has_group(MODNAME):
                 symtable.del_symbol(self.symname)
         except:
@@ -127,7 +127,7 @@ class PlotDisplay(PlotFrame):
         self.Destroy()
 
     def onCursor(self, x=None, y=None, **kw):
-        symtable = ensuremod(self.larch)
+        symtable = ensuremod(self._larch)
         if symtable is None:
             return
         symtable.set_symbol('%s_x'  % self.symname, x)
@@ -139,7 +139,7 @@ class PlotDisplay(PlotFrame):
         return self.cursor_pos
 
 class ImageDisplay(ImageFrame):
-    def __init__(self, wxparent=None, window=1, larch=None, **kws):
+    def __init__(self, wxparent=None, window=1, _larch=None, **kws):
         ImageFrame.__init__(self, parent=wxparent,
                                   exit_callback=self.onExit, **kws)
         self.Show()
@@ -148,8 +148,8 @@ class ImageDisplay(ImageFrame):
         self.panel.cursor_callback = self.onCursor
         self.window = int(window)
         self.symname = '%s.img%i' % (MODNAME, self.window)
-        self.larch = larch
-        symtable = ensuremod(self.larch)
+        self._larch = _larch
+        symtable = ensuremod(self._larch)
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
         if self.window not in IMG_DISPLAYS:
@@ -160,7 +160,7 @@ class ImageDisplay(ImageFrame):
         #for k, v in IMG_DISPLAYS.items():
         #    print 'IMG DISP: ',  k, v
         try:
-            symtable = self.larch.symtable
+            symtable = self._larch.symtable
             symtable.has_group(MODNAME), self.symname
             if symtable.has_group(MODNAME):
                 symtable.del_symbol(self.symname)
@@ -172,7 +172,7 @@ class ImageDisplay(ImageFrame):
 
     def onCursor(self,x=None, y=None, ix=None, iy=None,
                  val=None, **kw):
-        symtable = ensuremod(self.larch)
+        symtable = ensuremod(self._larch)
         if symtable is None:
             return
         set = symtable.set_symbol
@@ -182,10 +182,10 @@ class ImageDisplay(ImageFrame):
         if iy is not None:  set('%s_iy' % self.symname, iy)
         if val is not None: set('%s_val' % self.symname, val)
 
-def _getDisplay(win=1, larch=None, wxparent=None, image=False):
+def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
-    if larch is None:
+    if _larch is None:
         #print("Could not find larch?")
         return
     win = max(1, int(abs(win)))
@@ -202,17 +202,17 @@ def _getDisplay(win=1, larch=None, wxparent=None, image=False):
     if win in display_dict:
         display = display_dict[win]
     else:
-        display = larch.symtable.get_symbol(symname, create=True)
+        display = _larch.symtable.get_symbol(symname, create=True)
 
     if display is None:
-        display = creator(window=win, wxparent=wxparent, larch=larch)
-        larch.symtable.set_symbol(symname, display)
+        display = creator(window=win, wxparent=wxparent, _larch=_larch)
+        _larch.symtable.set_symbol(symname, display)
 
     if display is not None:
         display.SetTitle(title)
     return display
 
-def _plot(x,y, win=1, new=False, larch=None, wxparent=None,
+def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
           force_draw=False, **kws):
     """plot(x, y[, win=1], options])
 
@@ -246,9 +246,9 @@ def _plot(x,y, win=1, new=False, larch=None, wxparent=None,
 
     See Also: oplot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
     if plotter is None:
-        larch.raise_exception(msg='No Plotter defined')
+        _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
     if new:
         plotter.plot(x, y, **kws)
@@ -264,7 +264,7 @@ def update():
     while evtloop.Pending():   evtloop.Dispatch()
     app.ProcessIdle()
 
-def _oplot(x, y, win=1, larch=None, wxparent=None, **kws):
+def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, over-plotting any
@@ -275,9 +275,9 @@ def _oplot(x, y, win=1, larch=None, wxparent=None, **kws):
 
     See Also: plot, newplot
     """
-    _plot(x, y, win=win, new=False, larch=larch, wxparent=wxparent, **kws)
+    _plot(x, y, win=win, new=False, _larch=_larch, wxparent=wxparent, **kws)
 
-def _newplot(x, y, win=1, larch=None, wxparent=None, **kws):
+def _newplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """newplot(x, y[, win=1[, options]])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any
@@ -288,21 +288,21 @@ def _newplot(x, y, win=1, larch=None, wxparent=None, **kws):
 
     See Also: plot, oplot
     """
-    _plot(x, y, win=win, new=True, larch=larch, wxparent=wxparent, **kws)
+    _plot(x, y, win=win, new=True, _larch=_larch, wxparent=wxparent, **kws)
 
 
-def _getcursor(win=1, timeout=60, larch=None, wxparent=None, **kws):
+def _getcursor(win=1, timeout=60, _larch=None, wxparent=None, **kws):
     """get_cursor(win=1, timeout=60)
 
     waits (up to timeout) for cursor click in selected plot window, and returns
     x, y position of cursor.
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, larch=larch)
-    symtable = ensuremod(larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    symtable = ensuremod(_larch)
     xval = '%s.plot%i_x' % (MODNAME, win)
     yval = '%s.plot%i_y' % (MODNAME, win)
 
-    cframe =CursorFrame(wxparent, larch=larch, win=win,
+    cframe =CursorFrame(wxparent, _larch=_larch, win=win,
                          plotter=plotter)
     cframe.wait_for_cursor(timeout=timeout)
     cframe.Close()
@@ -313,14 +313,14 @@ def _getcursor(win=1, timeout=60, larch=None, wxparent=None, **kws):
     except:
         return None
 
-def _imshow(map, win=1, larch=None, wxparent=None, **kws):
+def _imshow(map, win=1, _larch=None, wxparent=None, **kws):
     """imshow(map[, options])
 
     Display an image for a 2-D array, as a map
 
     map: 2-dimensional array for map
     """
-    img = _getDisplay(wxparent=wxparent, win=win, larch=larch, image=True)
+    img = _getDisplay(wxparent=wxparent, win=win, _larch=_larch, image=True)
     if img is not None:
         img.display(map, **kws)
 

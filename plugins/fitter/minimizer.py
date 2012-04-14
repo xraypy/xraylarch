@@ -43,7 +43,7 @@ class Parameter(object):
     The value and min/max values will be set to floats.
     """
     def __init__(self, name=None, value=None, vary=True,
-                 min=None, max=None, expr=None, larch=None, **kws):
+                 min=None, max=None, expr=None, _larch=None, **kws):
         self.name = name
         self.value = value
         self.init_value = value
@@ -55,8 +55,8 @@ class Parameter(object):
         self.stderr = None
         self.correl = None
         self.defvar = None
-        if self.expr is not None and larch is not None:
-            self.defvar = DefinedVariable(self.expr, larch=larch)
+        if self.expr is not None and _larch is not None:
+            self.defvar = DefinedVariable(self.expr, _larch=_larch)
             self.vary = False
             self.value = self.defvar.evaluate()
 
@@ -93,7 +93,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
 
     def __init__(self, fcn, params, fcn_args=None, fcn_kws=None,
                  iter_cb=None, scale_covar=True,
-                 larch=None, jacfcn=None, **kws):
+                 _larch=None, jacfcn=None, **kws):
         self.userfcn = fcn
         self.paramgroup = params
         self.userargs = fcn_args
@@ -103,7 +103,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         self.userkws = fcn_kws
         if self.userkws is None:
             self.userkws = {}
-        self.larch = larch
+        self._larch = _larch
         self.iter_cb = iter_cb
         self.scale_covar = scale_covar
         self.kws = kws
@@ -173,7 +173,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             if not isinstance(par, Parameter):
                 continue
             if par.expr is not None:
-                par.defvar = DefinedVariable(par.expr, larch=self.larch)
+                par.defvar = DefinedVariable(par.expr, _larch=self._larch)
                 par.vary = False
                 self.defvars.append(name)
             elif par.vary:
@@ -275,7 +275,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         return success
 
 def minimize(fcn, group,  args=None, kws=None,
-             scale_covar=True, iter_cb=None, larch=None, **fit_kws):
+             scale_covar=True, iter_cb=None, _larch=None, **fit_kws):
     """simple minimization function,
     finding the values for the params which give the
     minimal sum-of-squares of the array return by fcn
@@ -285,7 +285,7 @@ def minimize(fcn, group,  args=None, kws=None,
 
     fitter = Minimizer(fcn, group, fcn_args=args, fcn_kws=kws,
                        iter_cb=iter_cb, scale_covar=scale_covar,
-                       larch=larch,  **fit_kws)
+                       _larch=_larch,  **fit_kws)
 
     return fitter.leastsq()
 
@@ -293,14 +293,14 @@ def parameter(**kws):
     "create a fitting Parameter as a Variable"
     return Parameter(**kws)
 
-def guess(value, min=None, max=None, larch=None, **kws):
+def guess(value, min=None, max=None, _larch=None, **kws):
     """create a fitting Parameter as a Variable.
     A minimum or maximum value for the variable value can be given:
        x = guess(10, min=0)
        y = guess(1.2, min=1, max=2)
     """
     return Parameter(value=value, min=min, max=max, vary=True,
-                     larch=larch, expr=None)
+                     _larch=_larch, expr=None)
 
 def registerLarchPlugin():
     return ('_math', {'minimize': minimize,

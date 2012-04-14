@@ -4,13 +4,13 @@ import os
 
 MODNAME = '_builtin'
 
-def ensuremod(larch):
-    if larch is not None:
-        symtable = larch.symtable
+def ensuremod(_larch):
+    if _larch is not None:
+        symtable = _larch.symtable
         if not symtable.has_group(MODNAME):
             symtable.newgroup(MODNAME)
 
-def _gcd(wxparent=None, larch=None, **kws):
+def _gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
     dlg = wx.DirDialog(wxparent, message='Choose Directory',
                        style = wx.DD_DEFAULT_STYLE)
@@ -22,7 +22,7 @@ def _gcd(wxparent=None, larch=None, **kws):
         os.chdir(path)
     return os.getcwd()
 
-def _fileprompt(wxparent=None, larch=None,
+def _fileprompt(wxparent=None, _larch=None,
                 mode='open', multi=True,
                 message = None,
                 fname=None, choices=None, **kws):
@@ -34,7 +34,7 @@ def _fileprompt(wxparent=None, larch=None,
        message: text to display in top window bar
 
     """
-    symtable = ensuremod(larch)
+    symtable = ensuremod(_larch)
     if fname is None:
         try:
             fname = symtable.get_symbol("%s.default_filename" % MODNAME)

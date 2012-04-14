@@ -13,7 +13,7 @@ MODNAME = '_xafs'
 VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin', 'bes']
 
 def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
-             window='hanning', larch=None, **kws):
+             window='hanning', _larch=None, **kws):
     """
     calculate and return XAFS FT Window function
     """
@@ -82,22 +82,22 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
 
 def xafsift(k, chi, group=None, kmin=0, kmax=20, kw=2,
            dk=1, dk2=None, window='kaiser',
-           rmax_out=10, nfft=2048, kstep=0.05, larch=None):
+           rmax_out=10, nfft=2048, kstep=0.05, _larch=None):
     """
     calculate reverse XAFS Fourier transform
     """
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot do xafsft -- larch broken?")
 
     print 'xafsift not implemented'
 
 def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2,
            dk=1, dk2=None, window='kaiser',
-           rmax_out=10, nfft=2048, kstep=0.05, larch=None):
+           rmax_out=10, nfft=2048, kstep=0.05, _larch=None):
     """
     calculate forward XAFS Fourier transform
     """
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot do xafsft -- larch broken?")
 
     ikmax = max(k)/kstep
@@ -112,7 +112,7 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2,
     out = kstep*sqrt(pi) * fft(win*chi_*k_**kw)[:nfft/2]
     delr = pi/(kstep*nfft)
     irmax = min(nfft/2, 1 + int(rmax_out/delr))
-    if larch.symtable.isgroup(group):
+    if _larch.symtable.isgroup(group):
         r   = delr * arange(irmax)
         mag = sqrt(out.real**2 + out.imag**2)
         setattr(group, 'kwin',   win[:len(chi)])
@@ -125,7 +125,7 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2,
         return out[:irmax]
 
 
-def xafsft_fast(chi, nfft=2048, larch=None, **kws):
+def xafsft_fast(chi, nfft=2048, _larch=None, **kws):
     """
     calculate forward XAFS Fourier transform.  Unlike xafsft(),
     this assumes that:

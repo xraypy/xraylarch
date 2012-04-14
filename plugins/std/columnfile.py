@@ -4,11 +4,11 @@
 """
 
 import numpy
-from larch.util import fixName
+from larch.utils import fixName
 
 MODNAME = '_io'
 
-def _read_ascii(fname, delim='#;*%', labels=None, larch=None):
+def _read_ascii(fname, delim='#;*%', labels=None, _larch=None):
     """read a column ascii column file.
     The delim argument (#;* by default) sets the first character
     to mark the header lines.
@@ -84,8 +84,8 @@ def _read_ascii(fname, delim='#;*%', labels=None, larch=None):
             kws['column_labels'].append(colname)
 
     group = kws
-    if larch is not None:
-        group = larch.symtable.new_group(name='ascii_file %s' % fname)
+    if _larch is not None:
+        group = _larch.symtable.new_group(name='ascii_file %s' % fname)
         for key, val in kws.items():
             setattr(group, key, val)
     return group

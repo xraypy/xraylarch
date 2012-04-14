@@ -5,14 +5,15 @@
 
 import h5py
 import numpy
-from larch.closure import Closure
+from larch.utils import Closure
 
-def h5group(fname, larch=None):
+def h5group(fname, _larch=None):
     """simple mapping of hdf5 file to larch groups"""
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot read h5group -- larch broken?")
     fh = h5py.File(fname, 'r')
-    group = larch.symtable.create_group
+    group = _larch.symtable.create_group
+
     def add_component(key, val, top):
         parents = key.split('/')
         current = parents.pop()

@@ -10,8 +10,8 @@ class Helper(object):
     TypeNames = {'<numpy.ndarray>': '<array>',
                  '<interpreter.Procedure>': '<procedure>'}
 
-    def __init__(self,*args,**kws):
-        self.larch = None
+    def __init__(self, _larch=None, *args, **kws):
+        self._larch = _larch
         self.buff = []
 
     def help(self, *args):
@@ -25,10 +25,10 @@ class Helper(object):
             else:
                 self.show_symbol(arg)
 
-    def show_symbol(self,arg):
+    def show_symbol(self, arg):
         "show help for a symbol in the symbol table"
         if isinstance(arg, (str, unicode)):
-            sym = self.larch.symtable.get_symbol(arg, create=False)
+            sym = self._larch.symtable.get_symbol(arg, create=False)
             out = None
         else:
             out = sym = arg
@@ -56,7 +56,6 @@ class Helper(object):
         out = delim.join(self.buff)
         self.buff = []
         return out
-
 
 #     "show help on topic or object"
 #     outbuff = []

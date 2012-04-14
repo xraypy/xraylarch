@@ -6,14 +6,14 @@ import sys
 import types
 import numpy
 
-def _get(sym=None, larch=None, **kws):
+def _get(sym=None, _larch=None, **kws):
     """get object from symbol table from symbol name"""
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot show group -- larch broken?")
     if sym is None:
         sym = '_main'
     group = None
-    symtable = larch.symtable
+    symtable = _larch.symtable
     if symtable.isgroup(sym):
         group = sym
     elif isinstance(sym, types.ModuleType):
@@ -23,15 +23,15 @@ def _get(sym=None, larch=None, **kws):
 
     return group
 
-    
-def _show(sym=None, larch=None, **kws):
+
+def _show(sym=None, _larch=None, **kws):
     """display group members"""
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot show group -- larch broken?")
     if sym is None:
         sym = '_main'
     group = None
-    symtable = larch.symtable
+    symtable = _larch.symtable
     title = sym
     if symtable.isgroup(sym):
         group = sym
@@ -43,7 +43,7 @@ def _show(sym=None, larch=None, **kws):
         group = symtable._lookup(sym, create=False)
 
     if group is None:
-        larch.writer.write("%s\n" % repr(sym))
+        _larch.writer.write("%s\n" % repr(sym))
         return
     if title.startswith(symtable.top_group):
         title = title[6:]
@@ -67,7 +67,7 @@ def _show(sym=None, larch=None, **kws):
 #                 item == '__name__' or item == '_larch' or
 #                 item.startswith('_SymbolTable__')):
 
-    larch.writer.write("%s\n" % '\n'.join(out))
+    _larch.writer.write("%s\n" % '\n'.join(out))
 
 def registerLarchPlugin():
     return ('_builtin', {'show': _show, 'get': _get})

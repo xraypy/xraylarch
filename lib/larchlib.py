@@ -12,22 +12,29 @@ class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node, msg='', fname='<StdInput>',
                  func=None, expr=None, exc=None, lineno=-1):
-        self.node   = node
+        self.node = node
         self.fname  = fname
-        self.func   = func
-        self.expr   = expr
-        self.msg    = msg
+        self.func = func
+        self.expr = expr
+        self.msg  = msg
+        self.exc  = exc
         self.lineno = lineno
-        if exc is None:
-            self.exc_info = sys.exc_info()
-        else:
-            self.exc_info = exc
+#         if exc is None:
+#             self.exc_info = sys.exc_info()
+#         else:
+#             self.exc_info = exc
+        self.exc_info = sys.exc_info()
+        if self.exc is None and self.exc_info[0] is not None:
+            self.exc = self.exc_info[0]
+        if self.msg is '' and self.exc_info[1] is not None:
+            self.msg = self.exc_info[1]
 
     def get_error(self):
         "retrieve error data"
         node = self.node
         node_lineno = 0
         node_col_offset = 0
+
         e_type, e_val, e_tb = self.exc_info
         if node is not None:
             try:
@@ -99,13 +106,13 @@ class LarchExceptionHolder:
 
 class Procedure(object):
     """larch procedure:  function """
-    def __init__(self, name, larch=None, doc=None,
+    def __init__(self, name, _larch=None, doc=None,
                  fname='<StdInput>', lineno=0,
                  body=None, args=None, kwargs=None,
                  vararg=None, varkws=None):
         self.name     = name
-        self.larch    = larch
-        self.modgroup = larch.symtable._sys.moduleGroup
+        self._larch    = _larch
+        self.modgroup = _larch.symtable._sys.moduleGroup
         self.body     = body
         self.argnames = args
         self.kwargs   = kwargs
@@ -136,7 +143,7 @@ class Procedure(object):
 
     def __call__(self, *args, **kwargs):
         # msg = 'Cannot run Procedure %s' % self.name
-        stable  = self.larch.symtable
+        stable  = self._larch.symtable
         lgroup  = Group()
         args   = list(args)
         n_args = len(args)
@@ -149,7 +156,7 @@ class Procedure(object):
                 msg = '%s (expected %i, got %i)'% (msg,
                                                    n_expected,
                                                    n_args)
-                self.larch.raise_exception(msg=msg, expr='<>',
+                self._larch.raise_exception(msg=msg, expr='<>',
                                      fname=self.__file__, lineno=self.lineno)
 
             msg = "too many arguments for procedure %s" % self.name
@@ -162,7 +169,7 @@ class Procedure(object):
             for t_a, t_kw in zip(args, self.kwargs):
                 if t_kw[0] in kwargs:
                     msg = msg % (t_kw[0], self.name)
-                    self.larch.raise_exception(msg=msg, expr='<>',
+                    self._larch.raise_exception(msg=msg, expr='<>',
                                          fname=self.__file__,
                                          lineno=self.lineno)
                 else:
@@ -182,30 +189,30 @@ class Procedure(object):
             elif len(kwargs) > 0:
                 msg = 'extra keyword arguments for procedure %s (%s)'
                 msg = msg % (self.name, ','.join(list(kwargs.keys())))
-                self.larch.raise_exception(msg=msg, expr='<>',
+                self._larch.raise_exception(msg=msg, expr='<>',
                                      fname=self.__file__, lineno=self.lineno)
 
         except (ValueError, LookupError, TypeError,
                 NameError, AttributeError):
             msg = 'incorrect arguments for procedure %s' % self.name
-            self.larch.raise_exception(msg=msg, expr='<>',
+            self._larch.raise_exception(msg=msg, expr='<>',
                                  fname=self.__file__,   lineno=self.lineno)
 
         stable.save_frame()
         stable.set_frame((lgroup, self.modgroup))
         retval = None
-        self.larch.retval = None
+        self._larch.retval = None
 
         for node in self.body:
-            self.larch.run(node, expr='<>',
+            self._larch.run(node, expr='<>',
                            fname=self.__file__, lineno=self.lineno)
-            if len(self.larch.error) > 0:
+            if len(self._larch.error) > 0:
                 break
-            if self.larch.retval is not None:
-                retval = self.larch.retval
+            if self._larch.retval is not None:
+                retval = self._larch.retval
                 break
         stable.restore_frame()
-        self.larch.retval = None
+        self._larch.retval = None
         del lgroup
         return retval
 
@@ -215,9 +222,9 @@ class DefinedVariable(object):
     Note that the localGroup/moduleGroup are cached
     at compile time, and restored for evaluation.
     """
-    def __init__(self, expr=None, larch=None):
+    def __init__(self, expr=None, _larch=None):
         self.expr = expr
-        self.larch = larch
+        self._larch = _larch
         self.ast = None
         self._groups = None, None
         self.compile()
@@ -227,8 +234,8 @@ class DefinedVariable(object):
 
     def compile(self):
         """compile to ast"""
-        if self.larch is not None and self.expr is not None:
-            self.ast = self.larch.parse(self.expr)
+        if self._larch is not None and self.expr is not None:
+            self.ast = self._larch.parse(self.expr)
 
     def evaluate(self):
         "actually evaluate ast to a value"
@@ -238,11 +245,11 @@ class DefinedVariable(object):
             msg = "Cannot compile '%s'"  % (self.expr)
             raise Warning(msg)
 
-        if hasattr(self.larch, 'run'):
+        if hasattr(self._larch, 'run'):
             # save current localGroup/moduleGroup
-            self.larch.symtable.save_frame()
-            rval = self.larch.run(self.ast, expr=self.expr)
-            self.larch.symtable.restore_frame()
+            self._larch.symtable.save_frame()
+            rval = self._larch.run(self.ast, expr=self.expr)
+            self._larch.symtable.restore_frame()
             return rval
         else:
             msg = "Cannot evaluate '%s'"  % (self.expr)

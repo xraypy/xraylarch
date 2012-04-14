@@ -19,6 +19,8 @@ import sys
 import numpy
 from optparse import OptionParser
 
+__extra__ = ''
+
 usage = "usage: %prog [options] file(s)"
 
 parser = OptionParser(usage=usage, prog="larch",
@@ -50,7 +52,8 @@ if options.server_mode:
 if options.debug:
     try:
         import lib as larch
-        print '-- using lib as larch'
+        __extra__ = '%s\n   ===> DEBUG, using lib as larch <===' % __extra__
+
     except ImportError:
         import larch
 else:
@@ -65,14 +68,18 @@ if not options.nowx:
     except ImportError:
         HAS_WX = False
 
-BANNER = """  Larch %s  M. Newville, T. Trainor (2011)
-  using python %s, numpy %s"""  %  (larch.__version__,
-                                    '%i.%i.%i' % sys.version_info[:3],
-                                    numpy.__version__)
+BANNER = """  Larch %s (%s) M. Newville, T. Trainor
+  using python %s, numpy %s"""  %  (larch.__version__, larch.__date__,
+                                         '%i.%i.%i' % sys.version_info[:3],
+                                         numpy.__version__)
 if HAS_WX:
     BANNER = "%s, wx-enabled, wx version %s" % (BANNER, wx.__version__)
 else:
-    BANNER = "%s, NO wx graphics!"
+    BANNER = "%s, NO wx graphics!" % BANNER
+
+if len(__extra__)  > 0:
+    BANNER = "%s %s" % (BANNER, __extra__)
+
 
 shell = larch.shell(banner_msg=BANNER,
                     quiet=options.quiet)

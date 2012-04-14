@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.6
 
 """
-  Larch: a data processing macro language for python
+  Larch: a scientific data processing macro language based on python
 """
 
 #
@@ -15,8 +15,7 @@ if major < 2 or (major == 2 and minor < 6):
 
 from .symboltable import Group, SymbolTable
 from .shell import shell
-from .interpreter import Interpreter, __version__
+from .interpreter import Interpreter
 from .inputText import InputText
-from .utils import Closure
-
-__date__   = '22-Jan-2012'
+from .utils import Closure, fixName
+from .version import __date__, __version__

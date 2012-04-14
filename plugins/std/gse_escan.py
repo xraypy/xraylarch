@@ -7,7 +7,7 @@ import time
 import gc
 
 try:
-    import numpy 
+    import numpy
 except ImportError:
     print "Error: Escan_data can't load numpy"
     sys.exit(1)
@@ -31,7 +31,7 @@ class EscanData:
                   '-----','=====','n_points',
                   'scan began at', 'scan ended at',
                   'column labels', 'scan regions','data')
-    
+
     h5_attrs = {'Version': '1.0.0',
                 'Title': 'Epics Scan Data',
                 'Beamline': 'GSECARS, 13-IDC / APS'}
@@ -49,7 +49,7 @@ class EscanData:
 
         if self.filename not in ('',None):
             self.read_data_file(fname=self.filename)
-        
+
     def clear_data(self):
         self.xdesc       = ''
         self.ydesc       = ''
@@ -90,11 +90,11 @@ class EscanData:
         self.roi_names  = []
         self.roi_llim   = []
         self.roi_hlim  = []
-        
+
         self.x = numpy.array(0)
         self.y = numpy.array(0)
         gc.collect()
-        
+
 
     def message_printer(self,s,val):
         sys.stdout.write("%s\n" % val)
@@ -102,7 +102,7 @@ class EscanData:
     def my_progress(self,val):
         sys.stdout.write("%f .. " % val)
         sys.stdout.flush()
-            
+
     def filetype(self,fname=None):
         """ checks file type of file, returning:
         'escan'  for  Epics Scan
@@ -119,7 +119,7 @@ class EscanData:
 
         return None
 
-    
+
     def get_map(self,name=None,norm=None):
         return self.get_data(name=name,norm=norm)
 
@@ -129,9 +129,9 @@ class EscanData:
         if dat is None: return data
         if norm is not None:
             norm = self._getarray(norm,correct=True)
-            dat  = dat/norm            
+            dat  = dat/norm
         return dat
-    
+
     def match_detector_name(self, str, strict=False):
         """return index in self.det_desc most closely matching supplied string"""
         s  = str.lower()
@@ -140,7 +140,7 @@ class EscanData:
         # look for exact match
         for i in b:
             if (s == i):  return b.index(i)
-        
+
         # look for inexact match 1: compare 1st words
         for i in b:
             sx = i.split()
@@ -168,7 +168,7 @@ class EscanData:
     def PrintMessage(self,s):
         sys.stdout.write(s)
         sys.stdout.flush()
-        
+
 
     def read_data_file(self,fname=None,use_h5=True):
         """generic data file reader"""
@@ -242,14 +242,14 @@ class EscanData:
 
         mainattrs = copy.deepcopy(self.h5_attrs)
         mainattrs.update({'Collection Time': self.start_time})
-        
+
         maingroup = add_group(fh,'data', attrs=mainattrs)
 
         g = add_group(maingroup,'environ')
         add_data(g,'desc',self.env_desc)
         add_data(g,'addr',self.env_addr)
         add_data(g,'val', self.env_val)
-        
+
         scan_attrs = {'dimension':self.dimension,
                       'stop_time':self.stop_time,
                       'start_time':self.start_time,
@@ -261,7 +261,7 @@ class EscanData:
         scan_data = ['det', 'pos', 'sums','sums_list', 'sums_names',
                      'scan_regions', 'user_titles', 'realtime',
                      'pos_desc', 'pos_addr', 'det_desc', 'det_addr']
-        
+
         for attr in scan_data:
             d = getattr(self,attr)
             if len(d)== 0 and isinstance(d,list): d.append('')
@@ -274,13 +274,13 @@ class EscanData:
 
 
         add_data(scangroup,'x', self.x, attrs={'desc':self.xdesc, 'addr':self.xaddr})
-        
+
         if self.dimension  > 1:
-            add_data(scangroup,'y', self.y, attrs={'desc':self.ydesc, 'addr':self.yaddr})            
+            add_data(scangroup,'y', self.y, attrs={'desc':self.ydesc, 'addr':self.yaddr})
 
         if self.has_fullxrf:
             en_attrs = {'units':'keV'}
-            
+
             xrf_shape = self.xrf_data.shape
             gattrs = {'dimension':self.dimension,'nmca':xrf_shape[-1]}
 
@@ -300,11 +300,11 @@ class EscanData:
             add_data(g, 'roi_labels',  self.roi_names)
             add_data(g, 'roi_lo_limit',self.roi_llim)
             add_data(g, 'roi_hi_limit',self.roi_hlim)
-            
+
         fh.close()
         return None
 
-        
+
     def read_h5file(self,h5name):
         fh = h5py.File(h5name,'r')
         root = fh['data']
@@ -327,7 +327,7 @@ class EscanData:
         self.env_addr    = g['addr'].value
         self.env_val     = g['val'].value
 
-        
+
         g = root['scan']
         self.stop_time  = g.attrs['stop_time']
         self.start_time = g.attrs['start_time']
@@ -355,7 +355,7 @@ class EscanData:
             setattr(self, 'det_corr',  g['det_corrected'].value)
             setattr(self, 'sums_corr', g['sums_corrected'].value)
 
-            
+
         self.has_fullxrf = 'full_xrf' in root.keys()
         if self.has_fullxrf:
             g = root['merged_xrf']
@@ -373,7 +373,7 @@ class EscanData:
 
         fh.close()
         return None
-        
+
     def _getarray(self,name=None,correct=True):
         i = None
         arr = None
@@ -391,10 +391,10 @@ class EscanData:
             if correct: arr = self.det_corr
         if i is not None:
             return arr[i]
-        
+
         return None
-        
-                
+
+
     def _open_ascii(self,fname=None):
         """open ascii file, return lines after some checking"""
         if fname is None: fname = self.filename
@@ -416,7 +416,7 @@ class EscanData:
             self.ShowMessage("Error: %s is not an Epics Scan file" % fname)
             return None
         return lines
-        
+
     def _getline(self,lines):
         "return mode keyword,"
         inp = lines.pop()
@@ -437,7 +437,7 @@ class EscanData:
                 except ValueError:
                     pass
         return (mode, inp)
-        
+
 
     def _make_arrays(self, tmp_dat, col_legend, col_details):
         # convert tmp_dat to numpy 2d array
@@ -463,8 +463,8 @@ class EscanData:
             else:
                 self.det_desc.append(label)
                 self.det_addr.append(pvname)
-                
-                
+
+
         # make sums of detectors with same name and isolate icr / ocr
         self.sums       = []
         self.sums_names = []
@@ -475,7 +475,7 @@ class EscanData:
         sum_name = None
         isum = -1
         for i, det in enumerate(self.det_desc):
-            thisname, thispv = det, self.det_addr[i]    
+            thisname, thispv = det, self.det_addr[i]
             if 'mca' in thisname and ':' in thisname:
                 thisname = thisname.replace('mca','').split(':')[1].strip()
             if thisname != sum_name:
@@ -487,10 +487,10 @@ class EscanData:
                 self.sums_list.append(o)
             else:
                 self.sums[isum] = self.sums[isum] + self.det[i][:]
-                
+
                 o.append(i)
                 self.sums_list[isum] = o
-            if 'inputcountrate' in thisname.lower(): 
+            if 'inputcountrate' in thisname.lower():
                 icr.append(self.det[i][:])
                 self.correct_deadtime = True
             if 'outputcountrate' in thisname.lower(): ocr.append(self.det[i][:])
@@ -513,7 +513,7 @@ class EscanData:
             self.det_desc   = self.det_desc[:-2*n_icr]
             self.det_addr   = self.det_addr[:-2*n_icr]
             self.correct_deadtime = True
-            
+
         if self.dimension == 2:
             print '2D ', len(self.y), len(tmp_dat)
             ny = len(self.y)
@@ -524,7 +524,7 @@ class EscanData:
             self.sums.shape = (self.sums.shape[0], ny, nx)
             if self.dt_factor is not None:
                 self.dt_factor.shape = (self.dt_factor.shape[0], ny, nx)
-           
+
             self.x = self.pos[0,0,:]
             try:
                 self.realtime = self.pos[2,:,:]
@@ -548,7 +548,7 @@ class EscanData:
         # finally, icr/ocr corrected sums
         self.det_corr  = 1.0 * self.det[:]
         self.sums_corr = 1.0 * self.sums[:]
-        
+
         if self.correct_deadtime:
             idet = -1
             for label,pvname in zip(self.det_desc,self.det_addr):
@@ -556,7 +556,7 @@ class EscanData:
                 if 'mca' in pvname:
                     nmca = int(pvname.split('mca')[1].split('.')[0]) -1
                     self.det_corr[idet,:] *= self.dt_factor[nmca,:]
-            
+
             isum = -1
             for sumlist in self.sums_list:
                 isum  = isum + 1
@@ -569,12 +569,12 @@ class EscanData:
                     self.sums_corr[isum] = self.det_corr[sumlist]
 
         return
-        
+
     def read_ascii(self,fname=None):
         """read ascii data file"""
         lines = self._open_ascii(fname=fname)
         if lines is None: return -1
-        
+
         maxlines = len(lines)
 
         iline = 1
@@ -604,21 +604,21 @@ class EscanData:
                 mode = None
                 if len(tmp_dat)>0:
                     ntotal_at_2d.append(len(tmp_dat))
-                
+
             elif mode == 'epics scan':             # real numeric column data
                 print 'Warning: file appears to have a second scan appended!'
                 break
-                
+
             elif mode == 'data':             # real numeric column data
                 tmp_dat.append(numpy.array([float(i) for i in raw.split()]))
 
             elif mode == '-----':
-                if col_legend is None:   
+                if col_legend is None:
                     col_legend = lines.pop()[1:].strip().split()
 
             elif mode in ( '=====', 'n_points'):
                 pass
-            
+
             elif mode == 'user titles':
                 self.user_titles.append(raw[1:].strip())
 
@@ -635,13 +635,13 @@ class EscanData:
                     if '(' in desc and desc.endswith(')'):
                         n = desc.rfind('(')
                         addr = desc[n+1:-1]
-                        desc = desc[:n].rstrip()        
+                        desc = desc[:n].rstrip()
                 except:
                     pass
                 self.env_addr.append(addr)
                 self.env_desc.append(desc)
                 self.env_val.append(val)
-                        
+
             elif mode == 'scan regions':
                 self.scan_regions.append(raw[1:].strip())
 
@@ -666,14 +666,14 @@ class EscanData:
                 print 'UNKOWN MODE = ',mode, raw[:20]
 
         del lines
-        
-        try:        
+
+        try:
             col_details.pop(0)
 
         except IndexError:
             print 'Empty Scan File'
             return -2
-        
+
         if len(self.user_titles) > 1: self.user_titles.pop(0)
         if len(self.scan_regions) > 1: self.scan_regions.pop(0)
 
@@ -697,17 +697,17 @@ class EscanData:
         # done reading file
         self._make_arrays(tmp_dat,col_legend,col_details)
         tmp_dat = None
-       
+
         self.xaddr = self.pos_addr[0].strip()
 
         for addr,desc in zip(self.env_addr,self.env_desc):
             if self.xaddr == addr: self.xdesc = desc
-            if self.yaddr == addr: self.ydesc = desc            
+            if self.yaddr == addr: self.ydesc = desc
 
         # print self.xaddr, self.xdesc
         # print self.yaddr, self.ydesc
-        
-        self.has_fullxrf = False        
+
+        self.has_fullxrf = False
         if os.path.exists("%s.fullxrf" %fname):
             self.read_fullxrf("%s.fullxrf" %fname, len(self.x), len(self.y))
 
@@ -715,7 +715,7 @@ class EscanData:
         inpf = open(xrfname,'r')
 
         atime = os.stat(xrfname)[8]
-    
+
         prefix = os.path.splitext(xrfname)[0]
         print 'Reading Full XRF spectra from %s'  % xrfname
 
@@ -724,7 +724,7 @@ class EscanData:
             print 'Warning: %s is not a QuadXRF File' % xrffile
             inpf.close()
             return
-        
+
         self.has_fullxrf = True
         isHeader= True
         nheader = 0
@@ -735,7 +735,7 @@ class EscanData:
 
         while isHeader:
             line = inpf.readline()
-            nheader = nheader + 1        
+            nheader = nheader + 1
             isHeader = line.startswith(';') and not line.startswith(';----')
             words = line[2:-1].split(':')
             if words[0] in header.keys():
@@ -747,7 +747,7 @@ class EscanData:
         # end of header: read one last line
         line = inpf.readline()
         nelem = self.nelem = len(header['CAL_OFFSET'])
-        
+
         nheader = nheader + 1
         # print '==rois==' , len(rois), len(rois)/nelem, nelem
 
@@ -772,7 +772,7 @@ class EscanData:
             self.roi_hlim.append(hi)
 
         roi_template ="""ROI_%i_LEFT:   %i %i %i %i
-ROI_%i_RIGHT:  %i %i %i %i 
+ROI_%i_RIGHT:  %i %i %i %i
 ROI_%i_LABEL:  %s & %s & %s & %s & """
 
         rout = []
@@ -809,7 +809,7 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
         for i in range(nelem):
             off   = header['CAL_OFFSET'][i]
             slope = header['CAL_SLOPE'][i]
-            quad  = header['CAL_QUAD'][i]            
+            quad  = header['CAL_QUAD'][i]
             self.xrf_energies.append(off + x_en * (slope + x_en * quad))
 
         self.xrf_energies = numpy.array(self.xrf_energies)
@@ -834,12 +834,12 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
                 iyold = iy
                 if iy>1: self.PrintMessage('. ')
             self.xrf_dict['%i/%i' % (ix,iy)] = dat
-        
+
         inpf.close()
-        
+
         xrf_shape =  (n_xin, nelem, n_energies)
         if self.dimension == 2:
-            xrf_shape =  (n_yin, n_xin, nelem, n_energies)            
+            xrf_shape =  (n_yin, n_xin, nelem, n_energies)
         # print 'xrf_shape ', xrf_shape
         self.xrf_data = -1*numpy.ones(xrf_shape)
         xrf_dt_factor = self.dt_factor * 1.0
@@ -860,7 +860,7 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
                 d = numpy.array(self.xrf_dict[key])
                 d.shape = (nelem, n_energies)
                 self.xrf_data[ix,:,:] = d
-            
+
         self.xrf_corr = self.xrf_data * xrf_dt_factor
 
         # merge XRF data
@@ -903,10 +903,10 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
         self.progress = progress_save
         inpf.close()
         self.xrf_dict = None
-        
 
 
-        
+
+
     def save_sums_ascii(self,fname=None, correct=True,extension='dat'):
         if fname is None: fname = self.filename
 
@@ -920,7 +920,7 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
         fout.write("# x positioner %s = %s\n" % (self.xaddr,self.xdesc))
         if self.dimension==2:
             fout.write("# y positioner %s = %s\n" % (self.yaddr,self.ydesc))
-            
+
         fout.write("# Dead Time Correction applied: %s\n" % correct)
         fout.write("#-----------------------------------------\n")
 
@@ -934,11 +934,11 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
         labels = ["%5s" % _cleanfile(l) for l in labels]
         olabel = '        '.join(labels)
         fout.write("#  %s\n" % olabel)
-        
+
         sums = self.sums
         if correct: sums = self.sums_corr
 
-        
+
         if self.dimension ==1:
             for i,x in enumerate(self.x):
                 o = ["%10.5f" % x]
@@ -947,33 +947,30 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
 
         else:
             for i,x in enumerate(self.x):
-                for j,y in enumerate(self.y):                
+                for j,y in enumerate(self.y):
                     o = [" %10.5f" % x, " %10.5f" % y]
                     o.extend(["%12g" % s for s in sums[:,j,i]])
                     fout.write(" %s\n" % " ".join(o))
 
-        
+
         fout.close()
 
 
-def gsescan_group(fname, larch=None, **kws):
+def gsescan_group(fname, _larch=None, **kws):
     """simple mapping of EscanData file to larch groups"""
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot read gsescan group -- larch broken?")
-        
+
     escan = EscanData(fname)
-    group = larch.symtable.create_group()
+    group = _larch.symtable.create_group()
     group.__name__ ='GSE Escan Data file %s' % fname
     for key, val in escan.__dict__.items():
         if not key.startswith('_'):
             setattr(group, key, val)
-    
-    setattr(group, 'get_data', escan.get_data)
-    
 
+    setattr(group, 'get_data', escan.get_data)
     return group
-    
-    
+
 def registerLarchPlugin():
     return ('_io', {'gsescan': gsescan_group})
 

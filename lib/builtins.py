@@ -160,25 +160,25 @@ numpy_renames = {'ln':'log', 'asin':'arcsin', 'acos':'arccos',
 ##
 ## More builtin commands, to set up the larch language:
 
-def _group(larch=None, **kws):
+def _group(_larch=None, **kws):
     """create a group"""
-    group = larch.symtable.create_group()
+    group = _larch.symtable.create_group()
     for key, val in kws.items():
         setattr(group, key, val)
     return group
 
-def _run(filename=None, larch=None, new_module=None,
+def _run(filename=None, _larch=None, new_module=None,
          interactive=False,   printall=False):
     """execute the larch text in a file as larch code. options:
-       larch:       larch interpreter instance
+       _larch:      larch interpreter instance
        new_module:  create new "module" frame
        printall:    whether to print all outputs
     """
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
 
-    symtable = larch.symtable
-    text     = None
+    symtable = _larch.symtable
+    text = None
     if isinstance(filename, file):
         text = filename.read()
         filename = filename.name
@@ -191,7 +191,7 @@ def _run(filename=None, larch=None, new_module=None,
     fname = filename
     lineno = 0
     if text is not None:
-        inptext = inputText.InputText(interactive=False, larch=larch)
+        inptext = inputText.InputText(interactive=False, _larch=_larch)
         is_complete = inptext.put(text, filename=filename)
         if not is_complete:
             exc = (None, 'Syntax Error: input is incomplete', None)
@@ -200,7 +200,7 @@ def _run(filename=None, larch=None, new_module=None,
             for tline, complete, eos, fname, lineno in inptext.input_buff:
                 if complete: break
                 lline = tline
-            larch.raise_exception(expr=lline, fname=fname, exc=exc,
+            _larch.raise_exception(expr=lline, fname=fname, exc=exc,
                                   lineno=lineno+1)
         if new_module is not None:
             # save current module group
@@ -214,16 +214,16 @@ def _run(filename=None, larch=None, new_module=None,
         output = []
         while len(inptext) > 0:
             block, fname, lineno = inptext.get()
-            ret = larch.eval(block, fname=fname, lineno=lineno)
+            ret = _larch.eval(block, fname=fname, lineno=lineno)
             if hasattr(ret, '__call__') and not isinstance(ret, type):
                 try:
                     if 1 == len(block.split()):
                         ret = ret()
                 except:
                     pass
-            if larch.error:
+            if _larch.error:
                 break
-        if larch.error:
+        if _larch.error:
             inptext.clear()
         elif printall and ret is not None:
             output.append("%s" % ret)
@@ -240,53 +240,51 @@ def _run(filename=None, larch=None, new_module=None,
     return output
 
 
-def _reload(mod, larch=None, **kws):
+def _reload(mod, _larch=None, **kws):
     """reload a module, either larch or python"""
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot reload module '%s' -- larch broken?" % mod)
 
     modname = None
-    if mod in larch.symtable._sys.modules.values():
-        for k, v in larch.symtable._sys.modules.items():
+    if mod in _larch.symtable._sys.modules.values():
+        for k, v in _larch.symtable._sys.modules.items():
             if v == mod:
                 modname = k
     elif mod in sys.modules.values():
         for k, v in sys.modules.items():
             if v == mod:
                 modname = k
-    elif (mod in larch.symtable._sys.modules.keys() or
+    elif (mod in _larch.symtable._sys.modules.keys() or
           mod in sys.modules.keys()):
         modname = mod
 
     if modname is not None:
-        return larch.import_module(modname, do_reload=True)
+        return _larch.import_module(modname, do_reload=True)
 
 def _help(*args, **kws):
     "show help on topic or object"
     helper.buffer = []
-    larch = kws.get('larch', None)
-    if helper.larch is None and larch is not None:
-        helper.larch = larch
+    _larch = kws.get('_larch', None)
+    if helper._larch is None and _larch is not None:
+        helper._larch = _larch
     if args == ('',):
         args = ('help',)
-    if helper.larch is None:
+    if helper._larch is None:
         helper.addtext('cannot start help system!')
     else:
         for a in args:
-
             helper.help(a.strip())
 
-    if helper.larch is not None:
-        helper.larch.writer.write("%s\n" % helper.getbuffer())
+    if helper._larch is not None:
+        helper._larch.writer.write("%s\n" % helper.getbuffer())
     else:
         return helper.getbuffer()
 
-
-def _addplugin(plugin, larch=None, **kws):
+def _addplugin(plugin, _larch=None, **kws):
     """add plugin components from plugin directory"""
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot add plugins. larch broken?")
-    write = larch.writer.write
+    write = _larch.writer.write
     errmsg = 'is not a valid larch plugin\n'
     pjoin = os.path.join
 
@@ -335,21 +333,21 @@ def _addplugin(plugin, larch=None, **kws):
             fh, modpath, desc = mod
             try:
                 out = imp.load_module(plugin, fh, modpath, desc)
-                larch.symtable.add_plugin(out, **kws)
+                _larch.symtable.add_plugin(out, **kws)
             except:
                 msg='Warning: could not load plugin %s!\n' % plugin
-                larch.raise_exception(msg=msg)
-        if larch.error:
-            err = larch.error.pop(0)
+                _larch.raise_exception(msg=msg)
+        if _larch.error:
+            err = _larch.error.pop(0)
             fname, lineno = err.fname, err.lineno
             output = ["Error Adding Plugin %s from file %s" % (plugin, fname),
                       "%s" % (err.get_error())]
 
-            for err in larch.error:
+            for err in _larch.error:
                 if ((err.fname != fname or err.lineno != lineno) and
                     err.lineno > 0 and lineno > 0):
                     output.append("%s" % (err.get_error()))
-            larch.writer.write('\n'.join(output))
+            _larch.writer.write('\n'.join(output))
 
         if fh is not None:
             fh.close()
@@ -358,28 +356,28 @@ def _addplugin(plugin, larch=None, **kws):
 
 
 
-def _dir(obj=None, larch=None, **kws):
+def _dir(obj=None, _larch=None, **kws):
     "return directory of an object -- thin wrapper about python builtin"
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot run dir() -- larch broken?")
     if obj is None:
-        obj = larch.symtable
+        obj = _larch.symtable
     return dir(obj)
 
-def _subgroups(obj, larch=None, **kws):
+def _subgroups(obj, _larch=None, **kws):
     "return list of subgroups"
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot run subgroups() -- larch broken?")
     if isgroup(obj):
         return obj._subgroups()
     else:
         raise Warning("subgroups() argument must be a group")
 
-def _which(sym, larch=None, **kws):
+def _which(sym, _larch=None, **kws):
     "return full path of object"
-    if larch is None:
+    if _larch is None:
         raise Warning("cannot run which() -- larch broken?")
-    stable = larch.symtable
+    stable = _larch.symtable
     out = []
     if hasattr(sym, '__name__'):
         sym = sym.__name__
@@ -391,13 +389,13 @@ def _which(sym, larch=None, **kws):
     return 'not found'
 
 
-def _pause(msg='Hit return to continue', larch=None):
-    if larch is None:
+def _pause(msg='Hit return to continue', _larch=None):
+    if _larch is None:
         raise Warning("cannot pause() -- larch broken?")
     return raw_input(msg)
 
-def _sleep(t=0, larch=None):
-    if larch is None:
+def _sleep(t=0, _larch=None):
+    if _larch is None:
         raise Warning("cannot sleep() -- larch broken?")
     return time.sleep(t)
 

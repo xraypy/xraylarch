@@ -5,7 +5,7 @@ Safe(ish) evaluator of python expressions, using ast module.
 The emphasis here is on mathematical expressions, and so
 numpy functions are imported if available and used.
 
-   
+
 """
 from __future__ import division, print_function
 import os
@@ -14,14 +14,11 @@ import ast
 import math
 import numpy
 
-
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
 from .larchlib import LarchExceptionHolder, Procedure, DefinedVariable
 from .utils import Closure
-
-__version__ = '0.9.8'
 
 OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.IsNot:  lambda a, b: a is not b,
@@ -111,7 +108,7 @@ class Interpreter:
 
         for fname, fcn in list(builtins.local_funcs.items()):
             setattr(builtingroup, fname,
-                    Closure(func=fcn, larch=self, _name=fname))
+                    Closure(func=fcn, _larch=self, _name=fname))
         setattr(builtingroup, 'definevar',
                 Closure(func=self.set_definedvariable))
 
@@ -127,34 +124,41 @@ class Interpreter:
 
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
-        builtins._addplugin(mod, larch=self, **kws)
+        builtins._addplugin(mod, _larch=self, **kws)
 
     def set_definedvariable(self, name, expr):
         """define a defined variable (re-evaluate on access)"""
         self.symtable.set_symbol(name,
-                                 DefinedVariable(expr=expr, larch=self))
+                                 DefinedVariable(expr=expr, _larch=self))
 
     def unimplemented(self, node):
         "unimplemented nodes"
-        msg = "'%s' not supported" % (node.__class__.__name__)
-        self.raise_exception(node=node, msg=msg)
+        self.raise_exception(node, exc=NotImplementedError,
+                             msg="'%s' not supported" % (node.__class__.__name__))
 
-    def raise_exception(self, node=None, msg='', expr=None, exc=None,
+    def raise_exception(self, node, exc=None, msg='', expr=None,
                         fname=None, lineno=None, func=None):
         "add an exception"
-        if self.error is None: self.error = []
-        if expr  is None:   expr  = self.expr
-        if fname is None:   fname = self.fname
-        if lineno is None:  lineno = self.lineno
+        if self.error is None:
+            self.error = []
+        if expr  is None:
+            expr  = self.expr
+        if fname is None:
+            fname = self.fname
+        if lineno is None:
+            lineno = self.lineno
 
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
-        err = LarchExceptionHolder(node, msg=msg, expr=expr, exc=exc,
+        err = LarchExceptionHolder(node, exc=exc, msg=msg, expr=expr,
                                    fname=fname, lineno=lineno, func=func)
+
+        # print("Raise Exception -- " , err)
+
         self.error.append(err)
         self.symtable._sys.last_error = err
         self._interrupt = ast.Break()
-
+        raise RuntimeError
         # print("_Raise ", self.error)
 
     # main entry point for Ast node evaluation
@@ -167,7 +171,7 @@ class Interpreter:
         try:
             return ast.parse(text)
         except:
-            self.raise_exception(msg='Syntax Error',
+            self.raise_exception(None, exc=SyntaxError, msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno)
 
     def run(self, node, expr=None, fname=None, lineno=None):
@@ -200,9 +204,9 @@ class Interpreter:
             if isinstance(ret, enumerate):
                 ret = list(ret)
             return ret
-
         except:
-            self.raise_exception(node=node, msg='Runtime Error',
+            self.raise_exception(node, exc=RuntimeError,
+                                 msg='Runtime Error',
                                  expr=expr, fname=fname, lineno=lineno)
 
     def __call__(self, expr, **kw):
@@ -213,24 +217,41 @@ class Interpreter:
         self.fname = fname
         self.lineno = lineno
         self.error = []
+        try:
+            node = self.parse(expr, fname=fname, lineno=lineno)
+        except RuntimeError:
+            errmsg = sys.exc_info()[1]
+            if len(self.error) > 0:
+                errmsg = "\n".join(self.error[0].get_error())
+            return
 
-        node = self.parse(expr, fname=fname, lineno=lineno)
         out = None
-        if len(self.error) > 0:
-            self.raise_exception(node=node, msg='Syntax Error', expr=expr,
-                                 fname=fname, lineno=lineno)
-        else:
-            out = self.run(node, expr=expr, fname=fname, lineno=lineno)
-        return out
+        try:
+            return self.run(node, expr=expr, fname=fname, lineno=lineno)
+        except RuntimeError:
+            errmsg = sys.exc_info()[1]
+            if len(self.error) > 0:
+                errmsg = "\n".join(self.error[0].get_error())
+            return
+#
+#         node = self.parse(expr, fname=fname, lineno=lineno)
+#         out = None
+#         if len(self.error) > 0:
+#             self.raise_exception(node=node, msg='Syntax Error', expr=expr,
+#                                  fname=fname, lineno=lineno)
+#         else:
+#             out = self.run(node, expr=expr, fname=fname, lineno=lineno)
+#         return out
 
     def run_init_scripts(self):
         for fname in site_config.init_files:
             if os.path.exists(fname):
                 try:
-                    builtins._run(filename=fname, larch=self,
+                    builtins._run(filename=fname, _larch=self,
                                   printall = True)
                 except:
-                    self.raise_exception(msg='Initialization Error')
+                    self.raise_exception(None, exc=RuntimeError,
+                                         msg='Initialization Error')
 
     def dump(self, node, **kw):
         "simple ast dumper"
@@ -287,15 +308,15 @@ class Interpreter:
         "continue"
         return self.on_interrupt(node)
 
-    def on_assert(self, node):    # ('test', 'msg')
-        "assert statement"
-        if not self.run(node.test):
-            raise AssertionError(self.run(node.msg()))
-        return True
-
     def on_arg(self, node):
         "arg for function definitions"
         return node.arg
+
+    def on_assert(self, node):    # ('test', 'msg')
+        "assert statement"
+        if not self.run(node.test):
+            self.raise_exception(node, exc=AssertionError, msg=node.msg)
+        return True
 
     def on_list(self, node):    # ('elt', 'ctx')
         "list"
@@ -328,45 +349,43 @@ class Interpreter:
             val = str(node.id)
         else:
             val = self.symtable.get_symbol(node.id)
+#             try:
+#                 val = self.symtable.get_symbol(node.id)
+#             except (LookupError, NameError):
+#                 msg = "name '%s' is not defined" % node.id
+#                 self.raise_exception(node, exc=NameError, msg=msg)
             if isinstance(val, DefinedVariable):
                 val = val.evaluate()
         return val
 
-    def node_assign(self, nod, val):
+    def node_assign(self, node, val):
         """here we assign a value (not the node.value object) to a node
         this is used by on_assign, but also by for, list comprehension, etc.
         """
         if len(self.error) > 0:
             return
-        if nod.__class__ == ast.Name:
-            sym = self.symtable.set_symbol(nod.id, value=val)
-        elif nod.__class__ == ast.Attribute:
-            if nod.ctx.__class__  == ast.Load:
-                errmsg = "cannot assign to attribute %s" % nod.attr
-                self.raise_exception(node=nod, msg=errmsg)
+        if node.__class__ == ast.Name:
+            sym = self.symtable.set_symbol(node.id, value=val)
+        elif node.__class__ == ast.Attribute:
+            if node.ctx.__class__  == ast.Load:
+                errmsg = "cannot assign to attribute %s" % node.attr
+                self.raise_exception(node, exc=AttributeError, msg=errmsg)
 
-            setattr(self.run(nod.value), nod.attr, val)
+            setattr(self.run(node.value), node.attr, val)
 
-        elif nod.__class__ == ast.Subscript:
-            sym    = self.run(nod.value)
-            xslice = self.run(nod.slice)
-            if isinstance(nod.slice, ast.Index):
-                sym.__setitem__(xslice, val)
-            elif isinstance(nod.slice, ast.Slice):
+        elif node.__class__ == ast.Subscript:
+            sym    = self.run(node.value)
+            xslice = self.run(node.slice)
+            if isinstance(node.slice, ast.Index):
+                sym[xslice] = val
+            elif isinstance(node.slice, ast.Slice):
                 i = xslice.start
-                if i is None: i = 0
-                j = xslice.stop
-                if j is None: j = len(sym)
-                if xslice.step is None:
-                    sym.__setslice__(i, j, val)
-                else:
-                    for ival, isym in enumerate(range(i, j , xslice.step)):
-                        sym.__setitem__(isym, val[ival])
-            elif isinstance(nod.slice, ast.ExtSlice):
+                sym[slice(xslice.start, xslice.stop)] = val
+            elif isinstance(node.slice, ast.ExtSlice):
                 sym[(xslice)] = val
-        elif nod.__class__ in (ast.Tuple, ast.List):
-            if len(val) == len(nod.elts):
-                for telem, tval in zip(nod.elts, val):
+        elif node.__class__ in (ast.Tuple, ast.List):
+            if len(val) == len(node.elts):
+                for telem, tval in zip(node.elts, val):
                     self.node_assign(telem, tval)
             else:
                 raise ValueError('too many values to unpack')
@@ -390,13 +409,13 @@ class Interpreter:
                     fmt = "%s does not have attribute '%s'"
                 msg = fmt % (obj, node.attr)
 
-                self.raise_exception(node=node, msg=msg)
+                self.raise_exception(node, exc=AttributeError, msg=msg)
 
         elif ctx == ast.Del:
             return delattr(sym, node.attr)
         elif ctx == ast.Store:
             msg = "attribute for storage: shouldn't be here!"
-            self.raise_exception(node=node, msg=msg)
+            self.raise_exception(node, exc=RuntimeError, msg=msg)
 
     def on_assign(self, node):    # ('targets', 'value')
         "simple assignment"
@@ -437,7 +456,7 @@ class Interpreter:
                 return val[(nslice)]
         else:
             msg = "subscript with unknown context"
-            self.raise_exception(node=node, msg=msg)
+            self.raise_exception(node, msg=msg)
 
     def on_delete(self, node):    # ('targets',)
         "delete statement"
@@ -455,7 +474,7 @@ class Interpreter:
                 self.symtable.del_symbol('.'.join(children))
             else:
                 msg = "could not delete symbol"
-                self.raise_exception(node=node, msg=msg)
+                self.raise_exception(node, msg=msg)
 
     def on_unaryop(self, node):    # ('op', 'operand')
         "unary operator"
@@ -608,20 +627,26 @@ class Interpreter:
     def on_raise(self, node):    # ('type', 'inst', 'tback')
         "raise statement"
         # print(" ON RAISE ", node.type, node.inst, node.tback)
-        if node.type.__class__ == ast.Name:
-            msg = "%s: %s" % (self.run(node.type).__name__,
-                              self.run(node.inst))
-        elif node.type.__class__ == ast.Call:
-            msg = "%s" % (repr(self.run(node.type)))
-        self.raise_exception(node=node.type, exc=(None, msg, None))
+        if sys.version_info[0] == 3:
+            excnode  = node.exc
+            msgnode  = node.cause
+        else:
+            excnode  = node.type
+            msgnode  = node.inst
+        out  = self.run(excnode)
+        msg = ' '.join(out.args)
+        msg2 = self.run(msgnode)
+        if msg2 not in (None, 'None'):
+            msg = "%s: %s" % (msg, msg2)
+        self.raise_exception(None, exc=out.__class__, msg=msg, expr='')
 
     def on_call(self, node):
         "function/procedure execution"
         #  ('func', 'args', 'keywords', 'starargs', 'kwargs')
         func = self.run(node.func)
-        if not hasattr(func, '__call__') and not hasattr(func, '__init__'):
+        if not hasattr(func, '__call__') and not isinstance(func, type):
             msg = "'%s' is not callable!!" % (func)
-            self.raise_exception(node=node, msg=msg)
+            self.raise_exception(node, exc=TypeError, msg=msg)
 
         args = [self.run(targ) for targ in node.args]
         if node.starargs is not None:
@@ -631,7 +656,7 @@ class Interpreter:
         for key in node.keywords:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
-                self.raise_exception(node=node, msg=msg)
+                self.raise_exception(node, exc=TypeError, msg=msg)
 
             keywords[key.arg] = self.run(key.value)
         if node.kwargs is not None:
@@ -640,7 +665,7 @@ class Interpreter:
         try:
             return func(*args, **keywords)
         except:
-            self.raise_exception(node=node, func=func,
+            self.raise_exception(node, exc=RuntimeError, func=func,
                                  msg = "Error running %s" % (func))
 
     def on_functiondef(self, node):
@@ -661,7 +686,7 @@ class Interpreter:
             isinstance(node.body[0].value, ast.Str)):
             docnode = node.body[0]
             doc = docnode.value.s
-        proc = Procedure(node.name, larch= self, doc= doc,
+        proc = Procedure(node.name, _larch=self, doc= doc,
                          body   = node.body,
                          fname  = self.fname,
                          lineno = self.lineno,
@@ -705,13 +730,10 @@ class Interpreter:
         this method covers a lot of cases (larch or python, import
         or from-import, use of asname) and so is fairly long.
         """
-        # print("IMPORT MOD ", name, asname, fromlist)
         st_sys = self.symtable._sys
         for idir in st_sys.path:
             if idir not in sys.path and os.path.exists(idir):
                 sys.path.append(idir)
-        #print( " (import  ", name, " )" )
-        #print( " st path", st_sys.path)
 
         # step 1  import the module to a global location
         #   either sys.modules for python modules
@@ -730,11 +752,11 @@ class Interpreter:
                     islarch = True
                     modname = os.path.abspath(os.path.join(dirname, larchname))
                     try:
-                        thismod = builtins._run(filename=modname, larch=self,
+                        thismod = builtins._run(filename=modname, _larch=self,
                                                 new_module=name)
                     except:
-                        self.raise_exception(msg='Import Error')
-                    # print(" isLarch!!", name, modname)
+                        self.raise_exception(None, exc=ImportError, msg='Import Error')
+
                     # save current module group
                     #  create new group, set as moduleGroup and localGroup
             if len(self.error) > 0:
@@ -748,7 +770,7 @@ class Interpreter:
                     __import__(name)
                     thismod = sys.modules[name]
                 except:
-                    self.raise_exception(msg='Import Error')
+                    self.raise_exception(None, exc=ImportError, msg='Import Error')
                     return
         else: # previously loaded module, just do lookup
             # print("prev loaded?")

@@ -5,11 +5,12 @@ import os
 import sys
 import numpy
 
-from .interpreter import Interpreter, __version__
+from .interpreter import Interpreter
 from .inputText import InputText
-from . import site_config
+from .site_config import history_file
+from .version import __version__, __date__
 
-BANNER = """  Larch %s  M. Newville, T. Trainor (2009)
+BANNER = """  Larch %s  M. Newville, T. Trainor -- %s
   using python %s, numpy %s
 """
 
@@ -29,10 +30,9 @@ class shell(cmd.Cmd):
         cmd.Cmd.__init__(self,completekey='tab')
         homedir = os.environ.get('HOME', os.getcwd())
 
-        self.historyfile = site_config.history_file
         if self.rdline is not None:
             try:
-                self.rdline.read_history_file(self.historyfile)
+                self.rdline.read_history_file(history_file)
             except IOError:
                 pass
 
@@ -46,7 +46,7 @@ class shell(cmd.Cmd):
         self.stdout = sys.stdout
 
         if banner_msg is None:
-            banner_msg = BANNER % (__version__,
+            banner_msg = BANNER % (__version__, __date__,
                                    '%i.%i.%i' % sys.version_info[:3],
                                    numpy.__version__)
 
@@ -54,7 +54,7 @@ class shell(cmd.Cmd):
             sys.stdout.write("%s\n" % banner_msg)
 
         self.larch  = Interpreter()
-        self.input  = InputText(prompt=self.ps1, larch=self.larch)
+        self.input  = InputText(prompt=self.ps1, _larch=self.larch)
         self.prompt = self.ps1
 
         self.larch.run_init_scripts()
@@ -67,7 +67,7 @@ class shell(cmd.Cmd):
             return
         try:
             self.rdline.set_history_length(self.maxhist)
-            self.rdline.write_history_file(self.historyfile)
+            self.rdline.write_history_file(history_file)
         except:
             pass
 

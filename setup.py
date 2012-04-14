@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from distutils.core import setup, setup_keywords
-
 import os
 import glob
 from lib import site_configdata
@@ -35,12 +34,10 @@ for pdir in pluginpaths:
             print "SUBDIR  !! Need to Walk!"
         else:
             pfiles.append(fname)
-
     data_files.append((os.path.join(share_basedir, pdir), pfiles))
 
-
 setup(name = 'larch',
-      version = '0.9.5',
+      version = '0.9.10',
       author = 'Matthew Newville',
       author_email = 'newville@cars.uchicago.edu',
       license = 'Python',
