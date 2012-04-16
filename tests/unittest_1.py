@@ -459,7 +459,7 @@ a = arange(7)''')
         self.assertTrue(errtype == 'NameError')
 
 
-    def xtest_tryexcept(self):
+    def test_tryexcept(self):
         "test try/except"
         self.session("""
 x = 5
@@ -505,10 +505,10 @@ def fcn(x, scale=2):
 
         self.session("a = fcn()")
         errtype, errmsg = self.session.error[0].get_error()
-        errmsg0, errmsg1 = errmsg.split('\n')
+        
+        errlines = errmsg.split('\n')
 
         self.assertTrue(errtype == 'TypeError')
-        self.assertTrue(errmsg1.startswith('not enough arg'))
 
         self.session("a = fcn(x, bogus=3)")
         errtype, errmsg = self.session.error[0].get_error()

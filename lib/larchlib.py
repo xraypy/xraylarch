@@ -36,6 +36,7 @@ class LarchExceptionHolder:
             except AttributeError:
                 pass
 
+        # print(" GET ERROR ", self.exc)
         try:
             exc_name = self.exc.__name__
         except AttributeError:
@@ -71,22 +72,28 @@ class LarchExceptionHolder:
 
         if self.expr == '<>':
             # denotes non-saved expression -- go fetch from file!
+            # print 'Trying to get non-saved expr ', self.fname
             lineno = self.lineno - 1
-            if node is not None:
+            if self.node is not None:
                 try:
-                    lineno += node.lineno
+                    lineno += self.node.lineno
                 except:
                     lineno += 1
             try:
                 ftmp = open(self.fname, 'r')
                 self.expr = ftmp.readlines()[lineno][:-1]
                 ftmp.close()
-            except IOError:
+            except (IOError, TypeError):
                 pass
-
-        out.append("    %s" % self.expr)
+        if '\n' in self.expr:
+            out.append("\n%s" % self.expr)
+        else:
+            out.append("    %s" % self.expr)
         if col_offset > 0:
-            out.append("    %s^^^" % ((col_offset)*' '))
+            if '\n' in self.expr:
+                out.append("%s^^^" % ((col_offset)*' '))
+            else:
+                out.append("    %s^^^" % ((col_offset)*' '))
         return (exc_name, '\n'.join(out))
 
     def xget_error(self):
@@ -94,7 +101,7 @@ class LarchExceptionHolder:
         node = self.node
         node_lineno = 1
         node_col_offset = 0
-        print ("EXTENDED GET ERROR ", self.exc, node, self.exc_info)
+        # print ("EXTENDED GET ERROR ", self.exc, node, self.exc_info)
         e_type, e_val, e_tb = self.exc_info
         if node is not None:
             try:
@@ -127,7 +134,7 @@ class LarchExceptionHolder:
                 ftmp = open(self.fname, 'r')
                 expr = ftmp.readlines()[lineno-1][:-1]
                 ftmp.close()
-            except IOError:
+            except (IOError, TypeError):
                 pass
 
         out = []
@@ -194,46 +201,54 @@ class Procedure(object):
             _kw = ["%s=%s" % (k, v) for k, v in self.kwargs]
             sig = "%s%s" % (sig, ', '.join(_kw))
 
-        if self.varkws is not None:
-            sig = "%s, **%s" % (sig, self.varkws)
-        sig = "<procedure %s(%s), file=%s>" % (self.name, sig, self.__file__)
+            if self.varkws is not None:
+                sig = "%s, **%s" % (sig, self.varkws)
+        sig = "<Procedure %s(%s), file=%s>" % (self.name, sig, self.__file__)
         if self.__doc__ is not None:
             sig = "%s\n  %s" % (sig, self.__doc__)
         return sig
 
+    def raise_exc(self, **kws):
+
+        akws = dict(expr='<>', lineno=self.lineno, fname=self.__file__)
+        akws.update(kws)
+        self._larch.raise_exception(None,  **akws)
+
     def __call__(self, *args, **kwargs):
         # msg = 'Cannot run Procedure %s' % self.name
-        stable  = self._larch.symtable
         lgroup  = Group()
-        args   = list(args)
-        n_args = len(args)
-        n_expected = len(self.argnames)
+        args    = list(args)
+        n_args  = len(args)
+        n_names = len(self.argnames)
+        n_kws   = len(kwargs)
 
-        if n_args != n_expected:
+        # may need to move kwargs to args if names align!
+        if (n_args < n_names) and n_kws > 0:
+            for name in self.argnames[n_args:]:
+                if name in kwargs:
+                    args.append(kwargs.pop(name))
+            n_args = len(args)
+            n_names = len(self.argnames)
+            n_kws = len(kwargs)
+
+        if len(self.argnames) > 0 and kwargs is not None:
+            msg = "%s() got multiple values for keyword argument '%s'"
+            for targ in self.argnames:
+                if targ in kwargs:
+                    self.raise_exc(exc=TypeError,
+                                   msg=msg % (targ, self.name))
+
+       
+        if n_args != n_names:
             msg = None
-            if n_args < n_expected:
-                msg = 'not enough arguments for procedure %s' % self.name
-                msg = '%s (expected %i, got %i)'% (msg,
-                                                   n_expected,
-                                                   n_args)
-                self._larch.raise_exception(msg=msg, expr='<>',
-                                     fname=self.__file__, lineno=self.lineno)
-
-            msg = "too many arguments for procedure %s" % self.name
+            if n_args < n_names:
+                msg = 'not enough arguments for %s() expected %i, got %i' 
+                msg = msg % (self.name, n_names, n_args)
+                # print '\n >>> raise exc ', msg
+                self.raise_exc(exc=TypeError, msg=msg)
 
         for argname in self.argnames:
             setattr(lgroup, argname, args.pop(0))
-
-        if len(args) > 0 and self.kwargs is not None:
-            msg = "got multiple values for keyword argument '%s' procedure %s"
-            for t_a, t_kw in zip(args, self.kwargs):
-                if t_kw[0] in kwargs:
-                    msg = msg % (t_kw[0], self.name)
-                    self._larch.raise_exception(msg=msg, expr='<>',
-                                         fname=self.__file__,
-                                         lineno=self.lineno)
-                else:
-                    kwargs[t_a] = t_kw[1]
 
         try:
             if self.vararg is not None:
@@ -249,15 +264,14 @@ class Procedure(object):
             elif len(kwargs) > 0:
                 msg = 'extra keyword arguments for procedure %s (%s)'
                 msg = msg % (self.name, ','.join(list(kwargs.keys())))
-                self._larch.raise_exception(msg=msg, expr='<>',
-                                     fname=self.__file__, lineno=self.lineno)
+                self.raise_exc(exc=TypeError, msg=msg)
 
         except (ValueError, LookupError, TypeError,
                 NameError, AttributeError):
             msg = 'incorrect arguments for procedure %s' % self.name
-            self._larch.raise_exception(msg=msg, expr='<>',
-                                 fname=self.__file__,   lineno=self.lineno)
+            self.raise_exc(msg=msg)
 
+        stable  = self._larch.symtable
         stable.save_frame()
         stable.set_frame((lgroup, self.modgroup))
         retval = None

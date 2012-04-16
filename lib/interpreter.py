@@ -139,7 +139,7 @@ class Interpreter:
     def raise_exception(self, node, exc=None, msg='', expr=None,
                         fname=None, lineno=None, func=None):
         "add an exception"
-        # print(" RAISE EXCEPTION" , node, exc, msg)
+        # print(" In RAISE EXCEPTION" , node, exc, msg, self.error)
         if self.error is None:
             self.error = []
         if expr  is None:
@@ -157,7 +157,7 @@ class Interpreter:
         self._interrupt = ast.Break()
         self.error.append(err)
         self.symtable._sys.last_error = err
-        raise RuntimeError
+        #raise RuntimeError
 
     # main entry point for Ast node evaluation
     #  parse:  text of statements -> ast
@@ -172,7 +172,7 @@ class Interpreter:
             self.raise_exception(None, exc=SyntaxError, msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno)
 
-    def run(self, node, expr=None, fname=None, lineno=None):
+    def run(self, node, expr=None, fname=None, lineno=None, with_raise=False):
         """executes parsed Ast representation for an expression"""
         # Note: keep the 'node is None' test: internal code here may run
         #    run(None) and expect a None in return.
@@ -185,7 +185,7 @@ class Interpreter:
             self.lineno = lineno
         if fname  is not None:
             self.fname  = fname
-        if expr   is not None:
+        if expr  is not None:
             self.expr   = expr
 
         # get handler for this node:
@@ -204,9 +204,9 @@ class Interpreter:
                 ret = list(ret)
             return ret
         except:
-            self.raise_exception(node,
-                                 expr=expr, fname=fname, lineno=lineno)
-
+            self.raise_exception(node, expr=self.expr,
+                                 fname=self.fname, lineno=self.lineno)
+            
     def __call__(self, expr, **kw):
         return self.eval(expr, **kw)
 
@@ -590,15 +590,22 @@ class Interpreter:
         "try/except blocks"
         no_errors = True
         for tnode in node.body:
+            # print(" Try Node: " , self.dump(tnode))
             self.run(tnode)
+            # print(" Error len: " , len(self.error))
             no_errors = no_errors and len(self.error) == 0
             if self.error:
                 e_type, e_value, e_tb = self.error[-1].exc_info
+                #print(" ERROR: ", e_type, e_value, e_tb)
+                #print("  ... ", self.error)
+                
                 this_exc = e_type()
+                
                 for hnd in node.handlers:
                     htype = None
                     if hnd.type is not None:
                         htype = __builtins__.get(hnd.type.id, None)
+                    # print(" ERR HANDLER ", htype)
                     if htype is None or isinstance(this_exc, htype):
                         self.error = []
                         if hnd.name is not None:
