@@ -61,7 +61,7 @@ def temp_set(*args): # pragma: no cover
 #------------------------------------------------------------------------------
 
 def call_logger(log):
-    '''returns a function that writes its calls into log. e.g., 
+    '''returns a function that writes its calls into log. e.g.,
         >>> log = []
         >>> f = call_logger(log)
         >>> f(1)
@@ -100,7 +100,7 @@ class TestCase(unittest.TestCase):
 
         if do_print: print(A, B)
         self.assert_(os.path.normpath(A) == os.path.normpath(B))
-    
+
     def assertNotRaises(self, excClass, *args, **kwargs):
         '''fails if an error is raised'''
 
@@ -112,7 +112,6 @@ class TestCase(unittest.TestCase):
     def setUp(self):
         self.stdout = tempfile.NamedTemporaryFile(delete=False, prefix='larch')
         self.li = larch.Interpreter(writer=self.stdout)
-        self.n = lambda : self.li.symtable.n
         self.s = self.li.symtable
 
     def tearDown(self):
@@ -121,21 +120,21 @@ class TestCase(unittest.TestCase):
         os.unlink(self.stdout.name)
 
     def eval(self, expr):
-        '''evaluates expr in a way that the interpreter sometimes can't, for
+        """evaluates expr in a way that the interpreter sometimes can't, for
         some reason. Appends a newline if necessary.
-        '''
+        """
 
         if not expr.endswith('\n'):
             expr += '\n'
 
-        return self.li.interp(ast.parse(expr))
+        return self.li.run(ast.parse(expr))
 
     @contextmanager
     def get_stdout(self, flush=True):
         '''returns what has been written to stdout since last get_stdout().
 
         By default, flushes stdout afterward.
-        ''' 
+        '''
 
         self.stdout.close()
         with open(self.stdout.name) as inf:

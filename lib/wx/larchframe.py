@@ -108,11 +108,11 @@ class LarchWxShell(object):
             if self.larch.error:
                 err = self.larch.error.pop(0)
                 fname, lineno = err.fname, err.lineno
-                self.write("%s\n" % err.get_error(), color='red')
+                self.write("%s\n" % err.get_error()[1], color='red')
                 for err in self.larch.error:
                     if ((err.fname != fname or err.lineno != lineno)
                         and err.lineno > 0 and lineno > 0):
-                        self.write("%s\n" % (err.get_error()), color='red')
+                        self.write("%s\n" % (err.get_error()[1]), color='red')
             elif ret is not None:
                 try:
                     self.write("%s\n" % repr(ret))

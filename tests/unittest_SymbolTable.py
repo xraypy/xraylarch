@@ -59,23 +59,23 @@ class TestSymbolTable(TestCase):
 
     def test_set_nested_symbol(self):
         '''set nested symbol in table'''
-
+        self.s.new_group('_main.foo')
+        self.s.new_group('_main.foo.bar')
         self.s.set_symbol('_main.foo.bar.baz', value=1)
+
         self.assert_(hasattr(self.s._main, 'foo'))
         self.assert_(isgroup(getattr(self.s._main, 'foo')))
-        print(" .... ", self.s._main)
-        print(" .... ", dir(self.s._main))
         self.assert_(hasattr(self.s._main.foo, 'bar'))
-        #self.assert_(isgroup(getattr(self.s._main.foo, 'bar')))
-        #self.assert_(hasattr(self.s._main.foo.bar, 'baz'))
-        #self.assert_(self.s._main.foo.bar.baz == 1)
+        self.assert_(isgroup(getattr(self.s._main.foo, 'bar')))
+        self.assert_(hasattr(self.s._main.foo.bar, 'baz'))
+        self.assert_(self.s._main.foo.bar.baz == 1)
 
     def test_set_symbol_as_array(self):
         '''convert to array and set symbol'''
 
-        self.s.set_symbol('_main.foo', range(10))
-        self.assert_(isinstance(self.s._main.foo, numpy.ndarray))
-        self.assertListEqual(self.s._main.foo, range(10))
+        self.s.set_symbol('_main.an_array', numpy.arange(10))
+        self.assert_(isinstance(self.s._main.an_array, numpy.ndarray))
+        self.assert_(all(self.s._main.an_array == numpy.arange(10)))
 
     def test_set_symbol_in_group(self):
         '''set symbol into group'''

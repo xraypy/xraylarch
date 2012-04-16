@@ -341,12 +341,12 @@ def _addplugin(plugin, _larch=None, **kws):
             err = _larch.error.pop(0)
             fname, lineno = err.fname, err.lineno
             output = ["Error Adding Plugin %s from file %s" % (plugin, fname),
-                      "%s" % (err.get_error())]
+                      "%s" % (err.get_error()[1])]
 
             for err in _larch.error:
                 if ((err.fname != fname or err.lineno != lineno) and
                     err.lineno > 0 and lineno > 0):
-                    output.append("%s" % (err.get_error()))
+                    output.append("%s" % (err.get_error()[1]))
             _larch.writer.write('\n'.join(output))
 
         if fh is not None:

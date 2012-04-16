@@ -86,8 +86,8 @@ class Interpreter:
         self.error      = []
         self.expr       = None
         self.retval     = None
-        self.fname     = '<StdInput>'
-        self.lineno    = -1
+        self.fname     = '<stdin>'
+        self.lineno    = 0
         builtingroup = getattr(symtable,'_builtin')
         mathgroup    = getattr(symtable,'_math')
         setattr(mathgroup, 'j', 1j)
@@ -139,6 +139,7 @@ class Interpreter:
     def raise_exception(self, node, exc=None, msg='', expr=None,
                         fname=None, lineno=None, func=None):
         "add an exception"
+        # print(" RAISE EXCEPTION" , node, exc, msg)
         if self.error is None:
             self.error = []
         if expr  is None:
@@ -150,16 +151,13 @@ class Interpreter:
 
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
+        # print("  Raise EXcep: ", exc, msg)
         err = LarchExceptionHolder(node, exc=exc, msg=msg, expr=expr,
                                    fname=fname, lineno=lineno, func=func)
-
-        # print("Raise Exception -- " , err)
-
+        self._interrupt = ast.Break()
         self.error.append(err)
         self.symtable._sys.last_error = err
-        self._interrupt = ast.Break()
         raise RuntimeError
-        # print("_Raise ", self.error)
 
     # main entry point for Ast node evaluation
     #  parse:  text of statements -> ast
@@ -192,10 +190,11 @@ class Interpreter:
 
         # get handler for this node:
         #   on_xxx with handle nodes of type 'xxx', etc
-        try:
-            handler = self.node_handlers[node.__class__.__name__.lower()]
-        except KeyError:
+        if node.__class__.__name__.lower() not in self.node_handlers:
             return self.unimplemented(node)
+
+        handler = self.node_handlers[node.__class__.__name__.lower()]
+
 
         # run the handler:  this will likely generate
         # recursive calls into this run method.
@@ -205,8 +204,7 @@ class Interpreter:
                 ret = list(ret)
             return ret
         except:
-            self.raise_exception(node, exc=RuntimeError,
-                                 msg='Runtime Error',
+            self.raise_exception(node,
                                  expr=expr, fname=fname, lineno=lineno)
 
     def __call__(self, expr, **kw):
@@ -222,26 +220,14 @@ class Interpreter:
         except RuntimeError:
             errmsg = sys.exc_info()[1]
             if len(self.error) > 0:
-                errmsg = "\n".join(self.error[0].get_error())
+                errtype, errmsg = self.error[0].get_error()
             return
 
         out = None
         try:
             return self.run(node, expr=expr, fname=fname, lineno=lineno)
         except RuntimeError:
-            errmsg = sys.exc_info()[1]
-            if len(self.error) > 0:
-                errmsg = "\n".join(self.error[0].get_error())
             return
-#
-#         node = self.parse(expr, fname=fname, lineno=lineno)
-#         out = None
-#         if len(self.error) > 0:
-#             self.raise_exception(node=node, msg='Syntax Error', expr=expr,
-#                                  fname=fname, lineno=lineno)
-#         else:
-#             out = self.run(node, expr=expr, fname=fname, lineno=lineno)
-#         return out
 
     def run_init_scripts(self):
         for fname in site_config.init_files:
@@ -314,7 +300,8 @@ class Interpreter:
 
     def on_assert(self, node):    # ('test', 'msg')
         "assert statement"
-        if not self.run(node.test):
+        testval = self.run(node.test)
+        if not testval:
             self.raise_exception(node, exc=AssertionError, msg=node.msg)
         return True
 
@@ -348,12 +335,12 @@ class Interpreter:
         elif ctx == ast.Param:  # for Function Def
             val = str(node.id)
         else:
-            val = self.symtable.get_symbol(node.id)
-#             try:
-#                 val = self.symtable.get_symbol(node.id)
-#             except (LookupError, NameError):
-#                 msg = "name '%s' is not defined" % node.id
-#                 self.raise_exception(node, exc=NameError, msg=msg)
+            # val = self.symtable.get_symbol(node.id)
+            try:
+                val = self.symtable.get_symbol(node.id)
+            except (NameError, LookupError):
+                msg = "name '%s' is not defined" % node.id
+                self.raise_exception(node, msg=msg)
             if isinstance(val, DefinedVariable):
                 val = val.evaluate()
         return val

@@ -46,7 +46,7 @@ for i in arange(10):
         self.eval("print 1")
 
         self.stdout.close()
-        
+
         with open(self.stdout.name) as inf:
             self.assert_(inf.read() == '1\n')
 
@@ -123,11 +123,13 @@ a = arange(7)''')
 
     def test_function_call(self):
         '''built-in functions'''
-        self.li('n = [11]')
-
-        self.assertTrue(isinstance(self.n(), numpy.ndarray))
-        self.assertTrue(len(self.li.symtable.n) == len([11]))
-        self.assertTrue(self.li.symtable.n[0] == 11)
+        print 'S '
+        self.li('xn = array[11]')
+        self.li('print xn,  array[11]')
+        n = self.s.get_symbol('xn')
+        print( 'NN = ', n)
+        self.assertTrue(isinstance(n, numpy.ndarray))
+        self.assertTrue(n == numpy.array[11])
 
     def test_convenience_imports(self):
         '''convenience imports
@@ -146,8 +148,8 @@ class TestParse(TestCase):
 
         larchcode = 'n = 5'
 
-        self.assertTrue(ast.dump(ast.parse(larchcode)) == 
-                ast.dump(self.li.compile(larchcode)))
+        self.assertTrue(ast.dump(ast.parse(larchcode)) ==
+                ast.dump(self.li.parse(larchcode)))
 
 class TestBuiltins(TestCase):
 
@@ -222,7 +224,7 @@ class TestBuiltins(TestCase):
         '''ls builtin, non-working directory'''
 
         dirname = self.li.symtable._sys.path[-1]
-        self.assertListEqual(self.eval("ls('%s')" % dirname), 
+        self.assertListEqual(self.eval("ls('%s')" % dirname),
                 os.listdir(dirname))
 
     def test_ls_glob(self):
@@ -230,7 +232,7 @@ class TestBuiltins(TestCase):
 
         from glob import glob
         dirname = os.path.join(os.path.dirname(larch.__file__), '*.py')
-        self.assertListEqual(sorted(map(os.path.normpath, glob(dirname))), 
+        self.assertListEqual(sorted(map(os.path.normpath, glob(dirname))),
                 sorted(map(os.path.normpath, self.eval("ls('%s')" % dirname))))
 
     def test_cwd(self):
@@ -264,7 +266,7 @@ class TestBuiltins(TestCase):
 
         self.eval('d = dict()')
         self.eval('cs(d)')
-        self.assert_('larch.symboltable.GroupAlias' in 
+        self.assert_('larch.symboltable.GroupAlias' in
                 str(self.s._sys.localGroup.__class__))
 
     def test_more(self):
@@ -293,4 +295,4 @@ class TestBuiltins(TestCase):
 if __name__ == '__main__':  # pragma: no cover
     for suite in (TestParse, TestLarchEval):
         suite = unittest.TestLoader().loadTestsFromTestCase(suite)
-        unittest.ColoredTextTestRunner(verbosity=2).run(suite)
+        unittest.TextTestRunner(verbosity=2).run(suite)

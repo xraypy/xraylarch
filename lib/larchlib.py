@@ -10,7 +10,7 @@ from .symboltable import Group
 
 class LarchExceptionHolder:
     "basic exception handler"
-    def __init__(self, node, msg='', fname='<StdInput>',
+    def __init__(self, node, msg='', fname='<stdin>',
                  func=None, expr=None, exc=None, lineno=-1):
         self.node = node
         self.fname  = fname
@@ -19,22 +19,82 @@ class LarchExceptionHolder:
         self.msg  = msg
         self.exc  = exc
         self.lineno = lineno
-#         if exc is None:
-#             self.exc_info = sys.exc_info()
-#         else:
-#             self.exc_info = exc
         self.exc_info = sys.exc_info()
-        if self.exc is None and self.exc_info[0] is not None:
+
+        if self.exc_info[0] is not None:
             self.exc = self.exc_info[0]
-        if self.msg is '' and self.exc_info[1] is not None:
+        if self.msg in ('', None) and self.exc_info[1] is not None:
             self.msg = self.exc_info[1]
 
     def get_error(self):
         "retrieve error data"
-        node = self.node
-        node_lineno = 0
-        node_col_offset = 0
+        col_offset = -1
+        e_type, e_val, e_tb = self.exc_info
+        if self.node is not None:
+            try:
+                col_offset = self.node.col_offset
+            except AttributeError:
+                pass
 
+        try:
+            exc_name = self.exc.__name__
+        except AttributeError:
+            exc_name = str(self.exc)
+        if exc_name in (None, 'None'):
+            exc_name = 'UnknownError'
+
+        out = []
+        if self.func is not None:
+            func = self.func
+            if isinstance(func, Closure): func = func.func
+            try:
+                fname = inspect.getmodule(func).__file__
+            except AttributeError:
+                fname = 'unknown'
+
+            if fname.endswith('.pyc'):
+                fname = fname[:-1]
+            found = False
+            for tb in traceback.extract_tb(self.exc_info[2]):
+                found = found or tb[0].startswith(fname)
+                if found:
+                    out.append('File "%s", line %i, in %s\n    %s' % tb)
+            self.msg = e_val
+
+        elif self.fname != '<stdin>' or self.lineno > 0:
+            out.append('file %s, line %i' % (self.fname, self.lineno))
+
+        tline = exc_name
+        if self.msg not in ('',  None):
+            tline = "%s: %s" % (exc_name, str(self.msg))
+        out.append(tline)
+
+        if self.expr == '<>':
+            # denotes non-saved expression -- go fetch from file!
+            lineno = self.lineno - 1
+            if node is not None:
+                try:
+                    lineno += node.lineno
+                except:
+                    lineno += 1
+            try:
+                ftmp = open(self.fname, 'r')
+                self.expr = ftmp.readlines()[lineno][:-1]
+                ftmp.close()
+            except IOError:
+                pass
+
+        out.append("    %s" % self.expr)
+        if col_offset > 0:
+            out.append("    %s^^^" % ((col_offset)*' '))
+        return (exc_name, '\n'.join(out))
+
+    def xget_error(self):
+        "retrieve error data"
+        node = self.node
+        node_lineno = 1
+        node_col_offset = 0
+        print ("EXTENDED GET ERROR ", self.exc, node, self.exc_info)
         e_type, e_val, e_tb = self.exc_info
         if node is not None:
             try:
@@ -71,7 +131,7 @@ class LarchExceptionHolder:
                 pass
 
         out = []
-        if self.msg not in ('Runtime Error', 'Syntax Error') and len(self.msg)>0:
+        if self.msg not in (None, 'Runtime Error', 'Syntax Error') and len(self.msg)>0:
             out = [self.msg]
         if self.func is not None:
             func = self.func
@@ -93,8 +153,8 @@ class LarchExceptionHolder:
         else:
             if e_type is not None and e_val is not None:
                 out.append("%s: %s" % (e_type, e_val))
-        if (self.fname == '<StdInput>' and self.lineno <= 0):
-            out.append("<StdInput>")
+        if (self.fname == '<stdin>' and self.lineno <= 0):
+            out.append("<stdin>")
         else:
             out.append("%s, line number %i" % (self.fname, 1+self.lineno))
 
@@ -107,7 +167,7 @@ class LarchExceptionHolder:
 class Procedure(object):
     """larch procedure:  function """
     def __init__(self, name, _larch=None, doc=None,
-                 fname='<StdInput>', lineno=0,
+                 fname='<stdin>', lineno=0,
                  body=None, args=None, kwargs=None,
                  vararg=None, varkws=None):
         self.name     = name

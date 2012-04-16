@@ -109,7 +109,7 @@ class InputText:
         self._larch = _larch
         self.interactive = interactive
         self.lineno = 0
-        self.filename = filename or '<StdInput>'
+        self.filename = filename or '<stdin>'
         if interactive:
             self.input = input or self.__defaultInput
         self._fifo     = [[], []]
@@ -132,7 +132,7 @@ class InputText:
 
     def put(self, text, filename=None, lineno=None ):
         """add line of input code text"""
-        fname = filename or self.filename or '<StdInput>'
+        fname = filename or self.filename or '<stdin>'
         if lineno is not None:
             self.lineno = lineno
 

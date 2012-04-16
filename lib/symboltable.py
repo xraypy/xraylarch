@@ -5,7 +5,7 @@ from __future__ import print_function
 import os
 import sys
 import types
-from .utils import Closure, fixName
+from .utils import Closure, fixName, isValidName
 from . import site_config
 
 class Group(object):
@@ -243,7 +243,7 @@ class SymbolTable(Group):
                     self.__parents.append(grp)
                     out = getattr(grp, top)
         if out is self.__invalid_name:
-            raise LookupError("cannot locate symbol '%s'" % name)
+            raise NameError("'%s' is not defined" % name)
 
         if len(parts) == 0:
             return out
@@ -267,14 +267,14 @@ class SymbolTable(Group):
         try:
             g = self.get_symbol(symname)
             return True
-        except (LookupError, ValueError):
+        except (LookupError, NameError, ValueError):
             return False
 
     def has_group(self, gname):
         try:
             g = self.get_group(gname)
             return True
-        except LookupError:
+        except (NameError, LookupError):
             return False
 
     def isgroup(self, sym):
@@ -307,7 +307,11 @@ class SymbolTable(Group):
         grp = self._fix_searchGroups()['localGroup']
         if group is not None:
             grp = self.get_group(group)
-        names = [fixName(n) for n in name.split('.')]
+        names = []
+        for n in name.split('.'):
+            if not isValidName(n):
+                raise SyntaxError("invalid symbol name '%s'" %s)
+            names.append(n)
         child = names.pop()
         for nam in names:
             if hasattr(grp, nam):

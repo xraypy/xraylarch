@@ -129,11 +129,11 @@ class shell(cmd.Cmd):
                 if self.larch.error:
                     err = self.larch.error.pop(0)
                     fname, lineno = err.fname, err.lineno
-                    sys.stdout.write("%s\n" % err.get_error())
+                    sys.stdout.write("%s\n" % err.get_error()[1])
                     for err in self.larch.error:
                         if self.debug or ((err.fname != fname or err.lineno != lineno)
                                      and err.lineno > 0 and lineno > 0):
-                            sys.stdout.write("%s\n" % (err.get_error()))
+                            sys.stdout.write("%s\n" % (err.get_error()[1]))
 
                     self.input.clear()
                     self.prompt = self.ps1

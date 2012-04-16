@@ -160,9 +160,9 @@ create or manipulate Groups.
 
 Plugins need access to Larch's symbol table and need to tell Larch how to
 use them.  To do this, each function to be added to Larch in a plugin
-module needs a `larch` keyword argument, which will be used to pass in the
+module needs a `_larch` keyword argument, which will be used to pass in the
 instance of the current larch interpreter.  Normally, you will only need
-the `symtable` attribute of the `larch` variable, which is the symbol table
+the `symtable` attribute of the `_larch` variable, which is the symbol table
 used.
 
 In addition, all functions to be added to Larch need to be *registered*, by
@@ -171,9 +171,9 @@ containing the name of the group containing the added functions, and a
 dictionary of Larch symbol names and functions.  A simple plugin module
 would look like::
 
-    def _f1(x, y, larch=None):  # Note:  larch instance passed in with keyword
-        if larch is None: return
-	group = larch.symtable.create_group(name='created by f1')
+    def _f1(x, y, _larch=None):  # Note:  larch instance passed in to '_larch'
+        if _larch is None: return
+	group = _larch.symtable.create_group(name='created by f1')
 
         setattr(group, 'x', x) # add symbols by "setting attributes"
         setattr(group, 'y', y)

@@ -38,21 +38,21 @@ def strip_comments(sinp, char='#'):
     return sinp
 
 
-RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'continue', 'def',
-                  'del', 'elif', 'else', 'except', 'finally', 'for',
-                  'from', 'if', 'import', 'in', 'is', 'not', 'or',
-                  'pass', 'print', 'raise', 'return', 'try', 'while',
-                  'group', 'end', 'endwhile', 'endif', 'endfor',
-                  'endtry', 'enddef', 'True', 'False', 'None')
+RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class', 'continue',
+                  'def', 'del', 'elif', 'else', 'eval', 'except', 'exec',
+                  'execfile', 'finally', 'for', 'from', 'global', 'if',
+                  'import', 'in', 'is', 'lambda', 'not', 'or', 'pass',
+                  'print', 'raise', 'return', 'try', 'while', 'with',
+                  'group', 'end', 'endwhile', 'endif', 'endfor', 'endtry',
+                  'enddef', 'True', 'False', 'None')
 
-
-NAME_MATCH = re.compile(r"[a-z_][a-z0-9_]*(\.[a-z_][a-z0-9_]*)*$").match
+NAME_MATCH = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$").match
 VALID_NAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._'
 def isValidName(name):
     "input is a valid name"
-    tnam = name[:].lower()
-    if tnam in RESERVED_WORDS:
+    if name in RESERVED_WORDS:
         return False
+    tnam = name[:].lower()
     return NAME_MATCH(tnam) is not None
 
 def fixName(name):
