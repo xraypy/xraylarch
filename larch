@@ -81,12 +81,10 @@ if len(__extra__)  > 0:
     BANNER = "%s %s" % (BANNER, __extra__)
 
 
-shell = larch.shell(banner_msg=BANNER,
-                    quiet=options.quiet)
+shell = larch.shell(banner_msg=BANNER, quiet=options.quiet)
 
 
 def onCtrlC(*args, **kws):
-    print 'onCtrlC !!\n'
     return 0
 
 # use inputhook to enable wx

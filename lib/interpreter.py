@@ -86,8 +86,9 @@ class Interpreter:
         self.error      = []
         self.expr       = None
         self.retval     = None
-        self.fname     = '<stdin>'
-        self.lineno    = 0
+        self.func       = None
+        self.fname      = '<stdin>'
+        self.lineno     = 0
         builtingroup = getattr(symtable,'_builtin')
         mathgroup    = getattr(symtable,'_math')
         setattr(mathgroup, 'j', 1j)
@@ -139,7 +140,6 @@ class Interpreter:
     def raise_exception(self, node, exc=None, msg='', expr=None,
                         fname=None, lineno=None, func=None):
         "add an exception"
-        # print(" In RAISE EXCEPTION" , node, exc, msg, self.error)
         if self.error is None:
             self.error = []
         if expr  is None:
@@ -149,9 +149,11 @@ class Interpreter:
         if lineno is None:
             lineno = self.lineno
 
+        if func is None:
+            func = self.func
+
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
-        # print("  Raise EXcep: ", exc, msg)
         err = LarchExceptionHolder(node, exc=exc, msg=msg, expr=expr,
                                    fname=fname, lineno=lineno, func=func)
         self._interrupt = ast.Break()
@@ -172,7 +174,8 @@ class Interpreter:
             self.raise_exception(None, exc=SyntaxError, msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno)
 
-    def run(self, node, expr=None, fname=None, lineno=None, with_raise=False):
+    def run(self, node, expr=None, func=None,
+            fname=None, lineno=None, with_raise=False):
         """executes parsed Ast representation for an expression"""
         # Note: keep the 'node is None' test: internal code here may run
         #    run(None) and expect a None in return.
@@ -187,7 +190,9 @@ class Interpreter:
             self.fname  = fname
         if expr  is not None:
             self.expr   = expr
-
+        if func is not None:
+            self.func = func
+            
         # get handler for this node:
         #   on_xxx with handle nodes of type 'xxx', etc
         if node.__class__.__name__.lower() not in self.node_handlers:
@@ -204,7 +209,7 @@ class Interpreter:
                 ret = list(ret)
             return ret
         except:
-            self.raise_exception(node, expr=self.expr,
+            self.raise_exception(node, expr=self.expr, 
                                  fname=self.fname, lineno=self.lineno)
             
     def __call__(self, expr, **kw):
@@ -656,12 +661,12 @@ class Interpreter:
         if node.kwargs is not None:
             keywords.update(self.run(node.kwargs))
 
-        try:
-            return func(*args, **keywords)
-        except:
-            self.raise_exception(node, exc=RuntimeError, func=func,
-                                 msg = "Error running %s" % (func))
-
+        return func(*args, **keywords)
+        # try:
+        # except:
+        #     self.raise_exception(node, exc=RuntimeError, func=func,
+        #                msg = "Error running %s" % (func))
+        
     def on_functiondef(self, node):
         "define procedures"
         # ('name', 'args', 'body', 'decorator_list')

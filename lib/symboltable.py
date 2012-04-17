@@ -293,10 +293,8 @@ class SymbolTable(Group):
         "create a new Group, not placed anywhere in symbol table"
         return Group(**kw)
 
-    def new_group(self, name, **kw):
-        g = Group(__name__ = name, **kw)
-        self.set_symbol(name, value=g)
-        return g
+    def new_group(self, name, **kws):
+        return Group(__name__ = name, **kws)
 
     def get_symbol(self, sym, create=False):
         "lookup and return a symbol by name"
@@ -308,9 +306,10 @@ class SymbolTable(Group):
         if group is not None:
             grp = self.get_group(group)
         names = []
+
         for n in name.split('.'):
             if not isValidName(n):
-                raise SyntaxError("invalid symbol name '%s'" %s)
+                raise SyntaxError("invalid symbol name '%s'" % n)
             names.append(n)
         child = names.pop()
         for nam in names:

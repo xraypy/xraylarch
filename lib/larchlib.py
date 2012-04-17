@@ -2,7 +2,8 @@
 Helper classes for larch interpreter
 '''
 
-import sys
+import ast 
+import sys, os
 import traceback
 import inspect
 from .utils import Closure
@@ -11,7 +12,7 @@ from .symboltable import Group
 class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node, msg='', fname='<stdin>',
-                 func=None, expr=None, exc=None, lineno=-1):
+                 func=None, expr=None, exc=None, lineno=0):
         self.node = node
         self.fname  = fname
         self.func = func
@@ -36,7 +37,8 @@ class LarchExceptionHolder:
             except AttributeError:
                 pass
 
-        # print(" GET ERROR ", self.exc)
+        #print(" GET ERROR ", self.exc, self.msg, self.expr,
+        #      self.fname, self.lineno)
         try:
             exc_name = self.exc.__name__
         except AttributeError:
@@ -45,14 +47,20 @@ class LarchExceptionHolder:
             exc_name = 'UnknownError'
 
         out = []
+        fname = self.fname
+        if fname != '<stdin>' or self.lineno > 0:
+            out.append('file %s, line %i' % (fname, self.lineno))
+
         if self.func is not None:
             func = self.func
-            if isinstance(func, Closure): func = func.func
-            try:
-                fname = inspect.getmodule(func).__file__
-            except AttributeError:
-                fname = 'unknown'
-
+            fname = self.fname 
+            if isinstance(func, Closure):
+                func = func.func
+            if fname is None:
+                try:
+                    fname = inspect.getmodule(func).__file__
+                except AttributeError:
+                    fname = 'unknown'
             if fname.endswith('.pyc'):
                 fname = fname[:-1]
             found = False
@@ -60,29 +68,24 @@ class LarchExceptionHolder:
                 found = found or tb[0].startswith(fname)
                 if found:
                     out.append('File "%s", line %i, in %s\n    %s' % tb)
-            self.msg = e_val
-
-        elif self.fname != '<stdin>' or self.lineno > 0:
-            out.append('file %s, line %i' % (self.fname, self.lineno))
+            # self.msg = e_val
 
         tline = exc_name
         if self.msg not in ('',  None):
             tline = "%s: %s" % (exc_name, str(self.msg))
         out.append(tline)
 
-        if self.expr == '<>':
+        call_expr = None
+        if self.expr == '<>' or fname not in (None, '', '<stdin>'):
             # denotes non-saved expression -- go fetch from file!
             # print 'Trying to get non-saved expr ', self.fname
-            lineno = self.lineno - 1
-            if self.node is not None:
-                try:
-                    lineno += self.node.lineno
-                except:
-                    lineno += 1
             try:
-                ftmp = open(self.fname, 'r')
-                self.expr = ftmp.readlines()[lineno][:-1]
-                ftmp.close()
+                if fname is not None and os.path.exists(fname):
+                    ftmp = open(fname, 'r')
+                    _expr = ftmp.readlines()[self.lineno-1][:-1]
+                    call_expr = self.expr
+                    self.expr = _expr
+                    ftmp.close()
             except (IOError, TypeError):
                 pass
         if '\n' in self.expr:
@@ -94,6 +97,9 @@ class LarchExceptionHolder:
                 out.append("%s^^^" % ((col_offset)*' '))
             else:
                 out.append("    %s^^^" % ((col_offset)*' '))
+        if call_expr is not None:
+            out.append('  %s' % call_expr)
+            
         return (exc_name, '\n'.join(out))
 
     def xget_error(self):
@@ -209,10 +215,10 @@ class Procedure(object):
         return sig
 
     def raise_exc(self, **kws):
-
-        akws = dict(expr='<>', lineno=self.lineno, fname=self.__file__)
-        akws.update(kws)
-        self._larch.raise_exception(None,  **akws)
+        ekws = dict(lineno=self.lineno, func=self, fname=self.__file__)
+        ekws.update(kws)
+        # print 'PROC  RAISE EXCEPTION " ', ekws
+        self._larch.raise_exception(None,  **ekws)
 
     def __call__(self, *args, **kwargs):
         # msg = 'Cannot run Procedure %s' % self.name
@@ -278,8 +284,8 @@ class Procedure(object):
         self._larch.retval = None
 
         for node in self.body:
-            self._larch.run(node, expr='<>',
-                           fname=self.__file__, lineno=self.lineno)
+            self._larch.run(node, fname=self.__file__, func=self,
+                            lineno=node.lineno+self.lineno, with_raise=False)
             if len(self._larch.error) > 0:
                 break
             if self._larch.retval is not None:
@@ -326,5 +332,4 @@ class DefinedVariable(object):
             self._larch.symtable.restore_frame()
             return rval
         else:
-            msg = "Cannot evaluate '%s'"  % (self.expr)
-            raise ValueError(msg)
+            raise ValueError("Cannot evaluate '%s'"  % (self.expr))

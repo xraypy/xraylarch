@@ -435,22 +435,13 @@ a = arange(7)''')
     def test_reservedwords(self):
         "test reserved words"
         for w in ('and', 'as', 'while', 'raise', 'else',
-                  'class', 'del', 'def', 'None'):
+                  'class', 'del', 'def', 'None', 'True', 'False'):
             self.session.error= []
             self.session("%s= 2" % w)
             self.assertTrue(len(self.session.error) > 0)
             errtype, errmsg = self.session.error[0].get_error()
             self.assertTrue(errtype=='SyntaxError')
-
-        for w in ('True', 'False'):
-            self.session.error= []
-            self.session("%s= 2" % w)
-            errtype, errmsg = self.session.error[0].get_error()
-            if version_info[0] == 3:
-                self.assertTrue(errtype=='SyntaxError')
-            else:
-                self.assertTrue(errtype=='NameError')
-
+            
     def test_raise(self):
         "test raise"
         self.session("raise NameError('bob')")
