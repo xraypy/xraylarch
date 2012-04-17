@@ -294,8 +294,11 @@ class SymbolTable(Group):
         return Group(**kw)
 
     def new_group(self, name, **kws):
-        return Group(__name__ = name, **kws)
-
+        name = fixName(name)
+        grp = Group(__name__ = name, **kws)
+        self.set_symbol(name, value=grp)
+        return grp
+        
     def get_symbol(self, sym, create=False):
         "lookup and return a symbol by name"
         return self._lookup(sym, create=create)
@@ -311,6 +314,7 @@ class SymbolTable(Group):
             if not isValidName(n):
                 raise SyntaxError("invalid symbol name '%s'" % n)
             names.append(n)
+
         child = names.pop()
         for nam in names:
             if hasattr(grp, nam):
@@ -348,18 +352,17 @@ class SymbolTable(Group):
             sym = self._lookup('.'.join(tnam))
         return sym, child
 
-    def add_plugin(self, plugin, **kws):
+    def add_plugin(self, plugin, on_error, **kws):
         """Add a plugin: a module that includes a
         registerLarchPlugin function that returns
         larch_group_name, dict_of_symbol/functions
         """
         if not isinstance(plugin, types.ModuleType):
-            raise Warning(" %s is not a valid larch plugin" % repr(plugin))
+            on_error("%s is not a valid larch plugin" % repr(plugin))
 
         registrar = getattr(plugin, 'registerLarchPlugin', None)
         if registrar is None:
-            raise Warning(" %s has no registerLarchPlugin method" %
-                          plugin.__name__)
+            on_error("%s has no registerLarchPlugin() method" %  plugin.__name__)
 
         groupname, syms = registrar()
         if not self.has_group(groupname):
@@ -373,9 +376,11 @@ class SymbolTable(Group):
                 # test whether plugin func has a '_larch' kw arg
                 #    func_code.co_flags & 8 == 'uses **kws'
                 nvars = val.func_code.co_argcount
+                tx = 'no'
                 if ((val.func_code.co_flags &8 != 0) or
                     '_larch' in val.func_code.co_varnames[:nvars]):
                     val = Closure(func=val, _larch=self._larch, _name=key, **kws)
+                    tx = 'yes'
                 else:
                     val = Closure(func=val, _name=key, **kws)
 

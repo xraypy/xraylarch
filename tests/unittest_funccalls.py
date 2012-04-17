@@ -50,8 +50,6 @@ def fcn(x, scale=2):
         errtype, errmsg = self.session.error[0].get_error()
         
         errlines = errmsg.split('\n')
-        print '---- test2 '
-        print errtype, errmsg
         
         self.assertTrue(errtype == 'TypeError')
         self.assertTrue('not enough arg' in errmsg)

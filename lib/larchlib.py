@@ -37,8 +37,8 @@ class LarchExceptionHolder:
             except AttributeError:
                 pass
 
-        #print(" GET ERROR ", self.exc, self.msg, self.expr,
-        #      self.fname, self.lineno)
+        # print(" GET ERROR ", self.exc, self.msg, self.expr,
+        #       self.fname, self.func, self.lineno)
         try:
             exc_name = self.exc.__name__
         except AttributeError:
@@ -47,15 +47,19 @@ class LarchExceptionHolder:
             exc_name = 'UnknownError'
 
         out = []
+        call_expr = None
         fname = self.fname
+        fline = None
         if fname != '<stdin>' or self.lineno > 0:
-            out.append('file %s, line %i' % (fname, self.lineno))
+            fline = 'file %s, line %i' % (fname, self.lineno)
 
         if self.func is not None:
             func = self.func
             fname = self.fname 
+
             if isinstance(func, Closure):
                 func = func.func
+                fname = inspect.getmodule(func).__file__                
             if fname is None:
                 try:
                     fname = inspect.getmodule(func).__file__
@@ -67,16 +71,26 @@ class LarchExceptionHolder:
             for tb in traceback.extract_tb(self.exc_info[2]):
                 found = found or tb[0].startswith(fname)
                 if found:
-                    out.append('File "%s", line %i, in %s\n    %s' % tb)
-            # self.msg = e_val
+                    u = 'File "%s", line %i, in %s\n    %s' % tb
+                    words = u.split('\n')
+                    fline = words[0]
+                    call_expr = self.expr
+                    self.expr = words[1]
+                    # 'File "%s", line %i, in %s\n    %s' % tb)
+            if not found and isinstance(self.func, Procedure):
+                pname = self.func.name
+                fline = "%s, in %s" % (fline, pname)
 
+        if fline is not None:
+            out.append(fline)
+            
         tline = exc_name
         if self.msg not in ('',  None):
             tline = "%s: %s" % (exc_name, str(self.msg))
         out.append(tline)
 
-        call_expr = None
-        if self.expr == '<>' or fname not in (None, '', '<stdin>'):
+        if call_expr is None and (self.expr == '<>' or
+                                  fname not in (None, '', '<stdin>')):
             # denotes non-saved expression -- go fetch from file!
             # print 'Trying to get non-saved expr ', self.fname
             try:
@@ -99,7 +113,6 @@ class LarchExceptionHolder:
                 out.append("    %s^^^" % ((col_offset)*' '))
         if call_expr is not None:
             out.append('  %s' % call_expr)
-            
         return (exc_name, '\n'.join(out))
 
     def xget_error(self):

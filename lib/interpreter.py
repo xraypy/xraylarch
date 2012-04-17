@@ -151,7 +151,7 @@ class Interpreter:
 
         if func is None:
             func = self.func
-
+        
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
         err = LarchExceptionHolder(node, exc=exc, msg=msg, expr=expr,
@@ -661,7 +661,11 @@ class Interpreter:
         if node.kwargs is not None:
             keywords.update(self.run(node.kwargs))
 
-        return func(*args, **keywords)
+        self.func = func
+        out = func(*args, **keywords)
+        self.func = None
+        return out
+    
         # try:
         # except:
         #     self.raise_exception(node, exc=RuntimeError, func=func,

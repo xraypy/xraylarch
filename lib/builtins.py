@@ -308,9 +308,14 @@ def _addplugin(plugin, _larch=None, **kws):
         else:
             return None, None
 
+    def on_error(msg):
+        _larch.raise_exception(None, exc=ImportError, msg=msg)
+       
+        
     def _plugin_file(plugin, path=None):
         "defined here to allow recursive imports for packages"
         fh = None
+        
         if path is None:
             path = site_config.plugins_path
         for p_path in path:
@@ -331,12 +336,9 @@ def _addplugin(plugin, _larch=None, **kws):
 
         else:
             fh, modpath, desc = mod
-            try:
-                out = imp.load_module(plugin, fh, modpath, desc)
-                _larch.symtable.add_plugin(out, **kws)
-            except:
-                msg='Warning: could not load plugin %s!\n' % plugin
-                _larch.raise_exception(msg=msg)
+            out = imp.load_module(plugin, fh, modpath, desc)
+            _larch.symtable.add_plugin(out, on_error, **kws)
+
         if _larch.error:
             err = _larch.error.pop(0)
             fname, lineno = err.fname, err.lineno
