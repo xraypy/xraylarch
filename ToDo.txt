@@ -1,0 +1,10 @@
+To Do list for step scanning:
+
+  1.  writing data to ASCII file
+  2.  handling waveform data (may need to write straight to HDF5?)
+  3.  writing data to HDF5
+
+  4.  Data Viewing Program that can parse scan files (ASCII or HDF5)
+
+  5. Scan Setup / Execute GUI
+
