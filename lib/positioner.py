@@ -25,9 +25,13 @@ do a readback on this position -- add a ScanDetector for that!
             amax = '%g' % (max(self.array))
             out = "%s, range: [%s, %s]" % (out, amin, amax)
         return "%s>" % out
-    
+
     def __onComplete(self, pvname=None, **kws):
         self.done = True
+
+    def set_array(self, start=None, stop=None, step=None, npts=None):
+        """set positioner array with start/stop/step/npts"""
+        print 'hello set array'
 
     def move_to_start(self, wait=False):
         """ move to starting position"""
