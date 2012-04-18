@@ -31,7 +31,11 @@ do a readback on this position -- add a ScanDetector for that!
 
     def move_to_start(self, wait=False):
         """ move to starting position"""
-        self.move_to_pos(0, wait=wait)
+        return self.move_to_pos(0, wait=wait)
+
+    def current(self):
+        "return current position"
+        return self._pv.get()
 
     def verify_array(self):
         """return True if array is within the """
