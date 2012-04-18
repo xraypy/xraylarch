@@ -57,7 +57,6 @@ class Counter(object):
         self.clear()
 
     def read(self):
-        self.pv.poll()
         self.buff.append(self.pv.get())
 
     def clear(self):

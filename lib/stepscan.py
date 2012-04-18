@@ -104,6 +104,7 @@ class StepScan(object):
         self.verified = False
         self.datafilename = datafile
         self.datafile  = None
+        self.pos_actual  = []
         
     def add_counter(self, counter, label=None):
         "add simple counter"
@@ -192,17 +193,20 @@ class StepScan(object):
         if breakpoint == 0:
             return
         else:
+            print '# POS ', self.positioners
             print '#---------------'
             print '#', '\t'.join([c.label for c in self.counters])
             n = len(self.counters[0].buff)
             for i in range(n):
-                print '\t'.join([str(c.buff[i]) for c in self.counters])
-            [c.clear() for c in self.counters]                
+                words =  [str(curpos) for curpos in self.pos_actual[i]]
+                words.extend([str(c.buff[i]) for c in self.counters])
+                print '\t'.join(words)
+            [c.clear() for c in self.counters]
+            self.pos_actual = []
         
     def read_extra_pvs(self):
         return [(pv.pvname, pv.get()) for pv in self.extra_pvs]
             
-        
     def run(self, filename=None):
         if not self.verify_scan():
             print 'Cannot execute scan -- out of bounds'
@@ -219,26 +223,27 @@ class StepScan(object):
         self.write_data(breakpoint=0)
 
         npts = len(self.positioners[0].array)
-
+        self.pos_actual  = []        
         for i in range(npts):
             [p.move_to_pos(i) for p in self.positioners]
-
+            
             # wait for moves to finish
             t0 = time.time()
             while (not all([p.done for p in self.positioners]) and
                    time.time() - t0 < self.pos_maxmove_time):
-                time.sleep(0.001)
+                poll()
             # print  "  move done in %.4fs" % (time.time()-t0)
             time.sleep(self.pos_settle_time)
-
             # start triggers
             [trig.start(1) for trig in self.triggers]
-
+            
             # wait for detectors to finish
             t0 = time.time()
+            self.pos_actual.append([p.current() for p in self.positioners])
+
             while (not all([trig.done for trig in self.triggers]) and
                    time.time() - t0 < self.det_maxcount_time):
-                time.sleep(0.001)
+                poll()
             time.sleep(self.det_settle_time)
             [c.read() for c in self.counters]
             if i in self.breakpoints:
