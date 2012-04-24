@@ -90,9 +90,9 @@ from .outputfile import ASCIIScanFile
 
 class StepScan(object):
     def __init__(self, datafile=None):
-        self.pos_settle_time = 1.e-6
+        self.pos_settle_time = 1.e-5
         self.pos_maxmove_time = 3600.0
-        self.det_settle_time = 1.e-6
+        self.det_settle_time = 1.e-5
         self.det_maxcount_time = 86400.0
         self.extra_pvs = []
         self.positioners = []
@@ -172,7 +172,7 @@ class StepScan(object):
         self.error_message = ''
         for p in self.positioners:
             if not p.verify_array():
-                self.error_message = 'Positioner %s array out of bounds' % p._pv.pvname
+                self.error_message = 'Positioner %s array out of bounds' % p.pv.pvname
                 return False
             if npts is None:
                 npts = len(p.array)

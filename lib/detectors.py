@@ -27,7 +27,7 @@ Example usage:
     <read detector data>
     """
     def __init__(self, pvname, value=1, label=None, **kws):
-        self._pv  = PV(pvname)
+        self.pv  = PV(pvname)
         self._val = value
         self.done = False
         self._t0 = 0
@@ -44,7 +44,7 @@ Example usage:
         self._t0 = time.time()
         if value is None:
             value = self._val
-        self._pv.put(value, callback=self.__onComplete)
+        self.pv.put(value, callback=self.__onComplete)
 
 class Counter(object):
     """simple scan counter object --
@@ -121,7 +121,7 @@ class MotorCounter(Counter):
     def __init__(self, prefix, label=None):
         pvname = '%s.RBV' % prefix
         if label is None:
-            label = "%s (actual)" % caget('%s.DESC' % prefix)
+            label = "%s(actual)" % caget('%s.DESC' % prefix)
         Counter.__init__(self, pvname, label=label)
 
 class ScalerCounter(DeviceCounter):
@@ -131,7 +131,7 @@ class ScalerCounter(DeviceCounter):
         DeviceCounter.__init__(self, prefix, rtype='scaler',
                                outpvs=outpvs)
         prefix = self.prefix
-        fields = []
+        fields = [('.T', 'CountTime')]
         extra_pvs = []
         for i in range(1, nchan+1):
             label = caget('%s.NM%i' % (prefix, i))
@@ -212,6 +212,8 @@ class DetectorMixin(object):
         if self.trigger_suffix is not None:
             self.trigger = Trigger("%s%s" % (prefix, self.trigger_suffix))
         self.counters = []
+        self.dwelltime_pv = None
+        self.dwelltime = None
         self.extra_pvs = []
 
     def pre_scan(self, **kws):
@@ -230,6 +232,15 @@ class SimpleDetector(DetectorMixin):
         DetectorMixin.__init__(self, prefix)
         self.counters = [Counter(prefix)]
 
+
+class MotorDetector(DetectorMixin):
+    "Motor Detector: a Counter for  Motor Readback, no trigger"
+    trigger_suffix = None
+    def __init__(self, prefix):
+        DetectorMixin.__init__(self, prefix)
+        self.counters = [MotorCounter(prefix)]
+
+
 class ScalerDetector(DetectorMixin):
     trigger_suffix = '.CNT'
 
@@ -238,6 +249,8 @@ class ScalerDetector(DetectorMixin):
         self.scaler = Scaler(prefix, nchan=nchan)
         self._counter = ScalerCounter(prefix, nchan=nchan,
                                       use_calc=use_calc)
+        self.dwelltime_pv = PV('%s.TP' % prefix)
+        self.dwelltime    = None
         self.counters = self._counter.counters
         self.extra_pvs = [('scaler frequency', '%s.FREQ' % prefix),
                           ('scaler read_delay', '%s.DLY' % prefix)]
@@ -245,6 +258,9 @@ class ScalerDetector(DetectorMixin):
         
     def pre_scan(self, **kws):
         self.scaler.OneShotMode()
+        if (self.dwelltime is not None and
+            isinstance(self.dwelltime_pv, PV)):
+            self.dwelltime_pv.put(self.dwelltime)
 
     def post_scan(self, **kws):
         self.scaler.AutoCountMode()
@@ -254,9 +270,14 @@ class McaDetector(DetectorMixin):
     def __init__(self, prefix, save_spectra=True):
         DetectorMixin.__init__(self, prefix)
         self.mca = Mca(prefix)
+        self.dwelltime_pv = PV('%s.PRTM' % prefix)
+        self.dwelltime    = None
         self.trigger = Trigger("%sEraseStart" % prefix)
         self.counters = ScalerCounter(prefix, nchan=nchan, use_calc=use_calc)
 
     def pre_scan(self, **kws):
-        pass
+        if (self.dwelltime is not None and
+            isinstance(self.dwelltime_pv, PV)):
+            self.dwelltime_pv.put(self.dwelltime)
+
 

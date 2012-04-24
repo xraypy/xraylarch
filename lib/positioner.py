@@ -10,9 +10,9 @@ This **ONLY** sets an ordinate value for scan, it does *NOT*
 do a readback on this position -- add a ScanDetector for that!
     """
     def __init__(self, pvname, label=None, array=None, **kws):
-        self._pv = PV(pvname)
-        self._pv.get()
-        self._pv.get_ctrlvars()
+        self.pv = PV(pvname)
+        self.pv.get()
+        self.pv.get_ctrlvars()
 
         self.label = label
         if label is None:
@@ -32,7 +32,7 @@ do a readback on this position -- add a ScanDetector for that!
         self.extra_pvs = []
 
     def __repr__(self):
-        out = "<Positioner '%s': %i points" % (self._pv.pvname, len(self.array))
+        out = "<Positioner '%s': %i points" % (self.pv.pvname, len(self.array))
         if len(self.array) > 0:
             amin = '%g' % (min(self.array))
             amax = '%g' % (max(self.array))
@@ -52,28 +52,28 @@ do a readback on this position -- add a ScanDetector for that!
 
     def current(self):
         "return current position"
-        return self._pv.get()
+        return self.pv.get()
 
     def verify_array(self):
         """return True if array is within the """
         array = self.array
         if array is None:
             return True
-        if self._pv.upper_ctrl_limit == self._pv.lower_ctrl_limit:
+        if self.pv.upper_ctrl_limit == self.pv.lower_ctrl_limit:
             return True
-        if ((self._pv.upper_ctrl_limit is not None and
-             self._pv.upper_ctrl_limit < max(array)) or
-            (self._pv.lower_ctrl_limit is not None and
-             self._pv.lower_ctrl_limit > min(array))):
+        if ((self.pv.upper_ctrl_limit is not None and
+             self.pv.upper_ctrl_limit < max(array)) or
+            (self.pv.lower_ctrl_limit is not None and
+             self.pv.lower_ctrl_limit > min(array))):
             return False
         return True
 
     def move_to_pos(self, i, wait=False, timeout=600):
         """move to i-th position in positioner array"""
-        if self.array is None or not self._pv.connected:
+        if self.array is None or not self.pv.connected:
             return
         self.done = False
-        self._pv.put(self.array[i], callback=self.__onComplete)
+        self.pv.put(self.array[i], callback=self.__onComplete)
         if wait:
             t0 = time.time()
             while not self.done and time.time()-t0 < timeout:
