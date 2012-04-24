@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python
 """
 Classes and Functions for simple step scanning for epics.
 
@@ -38,9 +38,9 @@ a Step Scan contains the following objects:
 
    breakpoints   a list of scan indices at which to pause and write data
                  collected so far to disk.
-   extra_pvs     a list of PVs that are not recorded at each step in the
-                 scan, but recorded at the beginning of scan, and at each
-                 breakpoint, and to be recorded to disk file.
+   extra_pvs     a list of (description, PV) tuples that are recorded at
+                 the beginning of scan, and at each breakpoint, to be
+                 recorded to disk file as metadata.
    pre_scan()    method to run prior to scan.
    post_scan()   method to run after scan.
    at_break()    method to run at each breakpoint.
@@ -85,7 +85,8 @@ with it.  It will use these for PVs to post data at each point of the scan.
 import time
 from epics import PV, poll
 from ordereddict import OrderedDict
-from detectors import Counter, DeviceCounter
+from .detectors import Counter, DeviceCounter
+from .outputfile import ASCIIScanFile
 
 class StepScan(object):
     def __init__(self, datafile=None):
@@ -102,8 +103,10 @@ class StepScan(object):
         self.pre_scan_methods = []
         self.post_scan_methods = []
         self.verified = False
-        self.datafilename = datafile
-        self.datafile  = None
+        self.datafile = None
+        if datafile is not None:
+            self.datafile = ASCIIFile(filename=datafile)
+
         self.pos_actual  = []
         
     def add_counter(self, counter, label=None):
@@ -116,12 +119,16 @@ class StepScan(object):
             print 'Cannot add Counter? ', counter
         self.verified = False
 
-    def add_extra_pvs(self, pvs):
-        """add extra pvs (list of pv names)"""
-        if isinstance(pvs, str):
-            self.extra_pvs.append(PV(pvs))
-        else:
-            self.extra_pvs.extend([PV(p) for p in pvs])
+    def add_extra_pvs(self, extra_pvs):
+        """add extra pvs (tuple of (desc, pvname))"""
+        if len(extra_pvs) == 0:
+            return
+        for desc, pvname in extra_pvs:
+            if isinstance(pvname, str):
+                pv = PV(pvname)
+            else:
+                pv = pvname
+            self.extra_pvs.append((desc, pv))
 
     def add_positioner(self, pos):
         """ add a Positioner """
@@ -143,8 +150,9 @@ class StepScan(object):
         self.verified = False
 
     def at_break(self, breakpoint=0):
-        out = [m() for m in self.at_break_methods]
-        self.write_data(breakpoint=breakpoint)
+        out = [m(breakpoint=breakpoint) for m in self.at_break_methods]
+        if self.datafile is not None:
+            self.datafile.write_data(breakpoint=breakpoint)
 
     def pre_scan(self):
         return [m() for m in self.pre_scan_methods]
@@ -179,35 +187,10 @@ class StepScan(object):
             if i is not None and not i:
                 raise Warning('error on output: %s' % msg)
         
-    def open_datafile(self, filename=None):
-        if filename is not None:
-            self.datafilename = filename
-        if self.datafilename is None:
-            self.datafilename = 'test.dat'
-        self.datafile  = open(self.datafilename, 'w+')
-                
-    def write_data(self, breakpoint=0, close_file=False):
-        print '## EXTRA PVS: '
-        for pvn, val in self.read_extra_pvs():
-            print "# %s:\t %s" % (pvn, repr(val))
-        if breakpoint == 0:
-            return
-        else:
-            print '# POS ', self.positioners
-            print '#---------------'
-            print '#', '\t'.join([c.label for c in self.counters])
-            n = len(self.counters[0].buff)
-            for i in range(n):
-                words =  [str(curpos) for curpos in self.pos_actual[i]]
-                words.extend([str(c.buff[i]) for c in self.counters])
-                print '\t'.join(words)
-            [c.clear() for c in self.counters]
-            self.pos_actual = []
-        
     def read_extra_pvs(self):
-        return [(pv.pvname, pv.get()) for pv in self.extra_pvs]
+        return [(desc, pv.pvname, pv.get()) for desc, pv in self.extra_pvs]
             
-    def run(self, filename=None):
+    def run(self, filename='test.dat'):
         if not self.verify_scan():
             print 'Cannot execute scan -- out of bounds'
             return
@@ -217,10 +200,10 @@ class StepScan(object):
         out = [p.move_to_start() for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
-        self.open_datafile(filename)
-                
-        print ' -- > start scan '
-        self.write_data(breakpoint=0)
+        self.datafile = ASCIIScanFile(filename=filename,
+                                      scan = self)
+
+        self.datafile.write_data(breakpoint=0)
 
         npts = len(self.positioners[0].array)
         self.pos_actual  = []        
@@ -249,5 +232,5 @@ class StepScan(object):
             if i in self.breakpoints:
                 self.at_break(breakpoint=i)
                 
-        self.write_data(breakpoint=-1, close_file=True)
+        self.datafile.write_data(breakpoint=-1, close_file=True)
 
