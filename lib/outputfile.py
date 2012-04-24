@@ -19,7 +19,7 @@ ScanFile supports several methods:
 
 which  can be overridden to create a new Output file type
 """
-
+import os
 import time
 
 class ScanFile(object):
@@ -31,8 +31,10 @@ class ScanFile(object):
         self.fh = None
         self.scan = scan
 
-    def open(self, mode='w+'):
+    def open(self, mode='a'):
         "open file"
+        if os.path.exists(self.filename) and '+' not in mode:
+            mode = mode + '+'
         self.fh = open(self.filename, mode)
         return self.fh
 
@@ -87,10 +89,10 @@ class ASCIIScanFile(ScanFile):
         self.comchar= comchar
         self.com2 = '%s%s' % (comchar, comchar)
         
-    def open(self, mode='w+'):
+    def open(self, mode='a'):
         "open file"
         self.fh = open(self.filename, mode)
-        self.write("%s Epics StepScan File /version=2.0\n" % self.com2)
+        self.write("%sEpics StepScan File /version=2.0\n" % self.com2)
         return self.fh
 
     def write_lines(self, buff):
@@ -125,7 +127,7 @@ class ASCIIScanFile(ScanFile):
             cols.append(" %s%s " % (key, ' '*7))            
             legend.append("%s %s = %s (%s)" % (self.comchar, key,
                                                pos.label,
-                                               pos._pv.pvname))
+                                               pos.pv.pvname))
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i)               
             cols.append(" %s%s " % (key, ' '*7))
@@ -158,7 +160,7 @@ class ASCIIScanFile(ScanFile):
         self.write_lines(out)
         if clear:
             [c.clear() for c in self.scan.counters]
-            self.pos_actual = []
+            self.scan.pos_actual = []
         
         if close_file:
             self.close()
