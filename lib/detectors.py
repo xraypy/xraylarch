@@ -139,7 +139,8 @@ class ScalerCounter(DeviceCounter):
                 suff = '.S%i' % i
                 if use_calc:
                     suff = '_calc%i.VAL' % i
-                    extra_pvs.append('%s_calc%i.CALC' % (prefix, i))
+                    extra_pvs.append(('scaler calc%i' % i,
+                                      '%s_calc%i.CALC' % (prefix, i)))
                 fields.append((suff, label))
         self.extra_pvs = extra_pvs
         self.set_counters(fields)
@@ -219,7 +220,7 @@ class DetectorMixin(object):
     def post_scan(self, **kws):
         pass
 
-    def at_break(self, **kws):
+    def at_break(self, breakpoint=None, **kws):
         pass
 
 class SimpleDetector(DetectorMixin):
@@ -238,7 +239,8 @@ class ScalerDetector(DetectorMixin):
         self._counter = ScalerCounter(prefix, nchan=nchan,
                                       use_calc=use_calc)
         self.counters = self._counter.counters
-        self.extra_pvs = ['%s.FREQ' % prefix, '%s.DLY' % prefix] 
+        self.extra_pvs = [('scaler frequency', '%s.FREQ' % prefix),
+                          ('scaler read_delay', '%s.DLY' % prefix)]
         self.extra_pvs.extend(self._counter.extra_pvs)
         
     def pre_scan(self, **kws):

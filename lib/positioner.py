@@ -2,7 +2,7 @@
 Positioner for Step Scan
 """
 
-from epics import PV
+from epics import PV, caget
 
 class Positioner(object):
     """a positioner for a scan
@@ -15,6 +15,19 @@ do a readback on this position -- add a ScanDetector for that!
         self._pv.get_ctrlvars()
 
         self.label = label
+        if label is None:
+            desc = pvname
+            if '.' in pvname:
+                idot = pvname.index('.')
+                descpv = pvname[:idot] + '.DESC'
+            else:
+                descpv = pvname + '.DESC'                
+            try:
+                desc = caget(descpv)
+            except:
+                pass
+            self.label = desc
+                        
         self.array = array
         self.extra_pvs = []
 
@@ -74,7 +87,7 @@ do a readback on this position -- add a ScanDetector for that!
         "method to run after to scan: override for real action"
         pass
 
-    def at_break(self):
+    def at_break(self, breakpoint=None):
         "method to run at break points: override for real action"
         pass
 
