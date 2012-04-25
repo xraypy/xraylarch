@@ -5,7 +5,7 @@ from distutils.core import setup, setup_keywords
 deps = ('wx', 'epics', 'numpy', 'matplotlib')
 
 setup(name = 'epicsapp_stepscan',
-      version = '0.1',
+      version = '0.2',
       author = 'Matthew Newville',
       author_email = 'newville@cars.uchicago.edu',
       license = 'BSD',
