@@ -104,6 +104,7 @@ class StepScan(object):
         self.post_scan_methods = []
         self.verified = False
         self.datafile = None
+        self.abort = False
         if datafile is not None:
             self.datafile = ASCIIFile(filename=datafile)
 
@@ -200,14 +201,16 @@ class StepScan(object):
         out = [p.move_to_start() for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
+        self.abort = False
         self.datafile = ASCIIScanFile(filename=filename,
                                       scan = self)
 
         self.datafile.write_data(breakpoint=0)
-
         npts = len(self.positioners[0].array)
         self.pos_actual  = []        
         for i in range(npts):
+            if self.abort:
+                break
             [p.move_to_pos(i) for p in self.positioners]
             
             # wait for moves to finish
@@ -233,4 +236,4 @@ class StepScan(object):
                 self.at_break(breakpoint=i)
                 
         self.datafile.write_data(breakpoint=-1, close_file=True)
-
+        self.abort = False

@@ -4,7 +4,7 @@ spec = lib.SpecScan()
 
 spec.add_motors(x='13IDE:m9', y='13IDE:m10', z='13IDE:m11')
 
-spec.add_detector('13IDE:scaler1', kind='scaler', use_calc=False)
+spec.add_detector('13IDE:scaler1', kind='scaler', use_calc=True)
 
 spec.add_extra_pvs((('Ring Current', 'S:SRcurrentAI.VAL'),
                     ('Ring Lifetime', 'S:SRlifeTimeHrsCC.VAL')))

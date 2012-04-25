@@ -83,13 +83,13 @@ class SpecScan(object):
             if mname not in self.motors:
                 raise Exception("Error: unknown motor name '%s'" % mname)
 
-    def _launch(self):
+    def _run(self, dwelltime):
         """internal function to start scans"""
         self._scan.counters = []
         self._scan.triggers = []
         for d in self.detectors:
             self._scan.add_detector(d)
-            d.dwelltime = dtime
+            d.dwelltime = dwelltime
         self._scan.run(filename=self.filename)
 
     def ascan(self, motor, start, finish, npts, dtime):
@@ -97,7 +97,7 @@ class SpecScan(object):
         self._checkmotors(motor)
         self._scan.positioners  = [self.motors[motor]]
         self._scan.positioners[0].array = linspace(start, finish, npts)
-        self._launch()
+        self._run(dtime)
 
     def dscan(self, motor, start, finish, npts, dtime):
         "dscan: relative scan"
@@ -114,7 +114,7 @@ class SpecScan(object):
         self._scan.positioners  = [self.motors[motor1], self.motors[motor2]]
         self._scan.positioners[0].array = linspace(start1, finish1, npts)
         self._scan.positioners[1].array = linspace(start2, finish2, npts)
-        self._launch()
+        self._run(dtime)
 
     def d2scan(self, motor1, start1, finish1,
                motor2, start2, finish2, npts, dtime):
@@ -142,7 +142,7 @@ class SpecScan(object):
         self._scan.positioners[0].array = linspace(start1, finish1, npts)
         self._scan.positioners[1].array = linspace(start2, finish2, npts)
         self._scan.positioners[2].array = linspace(start3, finish3, npts)
-        self._launch()
+        self._run(dtime)
 
     def d3scan(self, motor1, start1, finish1, motor2, start2, finish2,
                motor3, start3, finish3, npts, dtime):
@@ -187,5 +187,4 @@ class SpecScan(object):
             print 'finished row  %i of %i' % (1+(breakpoint/npts1), npts2)
             sleep(0.25)
         self._scan.at_break_methods.append(show_meshstatus)
-
-        self._launch()
+        self._run(dtime)
