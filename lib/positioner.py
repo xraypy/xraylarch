@@ -68,6 +68,11 @@ do a readback on this position -- add a ScanDetector for that!
             return False
         return True
 
+    def move_to(self, value, wait=False, timeout=600):
+        """move to a value, optionally waiting"""
+        self.pv.put(value, wait=wait, timeout=timeout)
+        
+
     def move_to_pos(self, i, wait=False, timeout=600):
         """move to i-th position in positioner array"""
         if self.array is None or not self.pv.connected:
