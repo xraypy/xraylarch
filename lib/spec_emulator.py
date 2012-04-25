@@ -32,13 +32,15 @@ from .stepscan   import StepScan
 from .outputfile import ASCIIScanFile
 from .positioner import Positioner
 from .detectors  import (SimpleDetector, MotorDetector,
-                         ScalerDetector, McaDetector)
+                         ScalerDetector, McaDetector,
+                         MultiMcaDetector, Counter)
 
 class SpecScan(object):
     """Spec Mode for StepScan"""
     def __init__(self, filename=None):
         self.motors  = {}
         self.detectors = []
+        self.bare_counters = []
         self.filename = filename
 
         self._scan = StepScan()
@@ -56,6 +58,10 @@ class SpecScan(object):
                 if p.connected:
                     self.add_detector(pvname, kind='motor')
 
+    def add_counter(self, name, label=None):
+        # self._scan.add_counter(name, label=label)
+        self.bare_counters.append(Counter(name, label=label))
+
     def add_detector(self, name, kind='scaler', **kws):
         "add detector, giving base name and detector type"
         builder = SimpleDetector
@@ -65,6 +71,8 @@ class SpecScan(object):
             builder = MotorDetector
         elif kind == 'mca':
             builder = MCADetector
+        elif kind == 'med':
+            builder = MultiMcaDetector            
         self.detectors.append(builder(name, **kws))
 
     def add_extra_pvs(self, extra_pvs):
@@ -90,6 +98,9 @@ class SpecScan(object):
         for d in self.detectors:
             self._scan.add_detector(d)
             d.dwelltime = dwelltime
+        for c in self.bare_counters:
+            self._scan.add_counter(c)
+            
         self._scan.run(filename=self.filename)
 
     def ascan(self, motor, start, finish, npts, dtime):
