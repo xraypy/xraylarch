@@ -1,10 +1,8 @@
 import numpy as np
-import lib 
+import lib
 spec = lib.SpecScan()
 
-spec.config_motors(('x', '13IDE:m9'),
-                   ('y', '13IDE:m10'),
-                   ('z', '13IDE:m11'))
+spec.add_motors(x='13IDE:m9', y='13IDE:m10', z='13IDE:m11')
 
 spec.add_detector('13IDE:scaler1', kind='scaler', use_calc=False)
 
