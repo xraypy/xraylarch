@@ -205,7 +205,9 @@ class StepScan(object):
             return
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
-        # print ' move to start...'
+        
+        orig_positions = [p.current() for p in self.positioners]
+
         out = [p.move_to_start() for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
@@ -243,6 +245,11 @@ class StepScan(object):
             if i in self.breakpoints:
                 self.at_break(breakpoint=i)
                 
+        
+        for val, pos in zip(orig_positions, self.positioners):
+            pos.move_to(val, wait=False)
+        
         self.datafile.write_data(breakpoint=-1, close_file=True)
         self.abort = False
         
+
