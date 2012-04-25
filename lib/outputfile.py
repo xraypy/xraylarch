@@ -21,6 +21,7 @@ which  can be overridden to create a new Output file type
 """
 import os
 import time
+from file_utils import new_filename
 
 class ScanFile(object):
     """base Scan File -- will need to inherti and
@@ -31,10 +32,12 @@ class ScanFile(object):
         self.fh = None
         self.scan = scan
 
-    def open(self, mode='a'):
+    def open(self, mode='a', new_file=True):
         "open file"
-        if os.path.exists(self.filename) and '+' not in mode:
-            mode = mode + '+'
+        if new_file:
+            self.filename = new_filename(self.filename)
+        if os.path.exists(self.filename) and mode != 'a':
+            mode = 'a'
         self.fh = open(self.filename, mode)
         return self.fh
 
@@ -89,8 +92,12 @@ class ASCIIScanFile(ScanFile):
         self.comchar= comchar
         self.com2 = '%s%s' % (comchar, comchar)
         
-    def open(self, mode='a'):
+    def open(self, mode='a', new_file=True):
         "open file"
+        if new_file:
+            self.filename = new_filename(self.filename)
+        if os.path.exists(self.filename) and mode != 'a':
+            mode = 'a'
         self.fh = open(self.filename, mode)
         self.write("%sEpics StepScan File /version=2.0\n" % self.com2)
         return self.fh
@@ -124,13 +131,13 @@ class ASCIIScanFile(ScanFile):
         legend = []
         for i, pos in enumerate(self.scan.positioners):
             key = 'p%i' % (i+1)
-            cols.append(" %s%s " % (key, ' '*7))            
+            cols.append("  %s " % (key))
             legend.append("%s %s = %s (%s)" % (self.comchar, key,
                                                pos.label,
                                                pos.pv.pvname))
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i)               
-            cols.append(" %s%s " % (key, ' '*7))
+            cols.append("  %s " % (key))
             legend.append("%s %s = %s (%s)" % (self.comchar, key,
                                                det.label,
                                                det.pv.pvname))
@@ -154,8 +161,8 @@ class ASCIIScanFile(ScanFile):
         
         n = len(self.scan.counters[0].buff)
         for i in range(n):
-            words =  ["%9f" % curpos for curpos in self.scan.pos_actual[i]]
-            words.extend(["%9f" % c.buff[i] for c in self.scan.counters])
+            words =  ["%g" % curpos for curpos in self.scan.pos_actual[i]]
+            words.extend(["%g" % c.buff[i] for c in self.scan.counters])
             out.append('\t'.join(words))
         self.write_lines(out)
         if clear:
@@ -163,4 +170,5 @@ class ASCIIScanFile(ScanFile):
             self.scan.pos_actual = []
         
         if close_file:
+            print "Wrote and closed %s" % self.filename
             self.close()
