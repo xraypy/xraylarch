@@ -2,7 +2,7 @@
 
 __version__ = '0.2'
 
-from detectors import Trigger, Counter, MotorCounter, SimpleDetector, ScalerDetector
+from detectors import Trigger, Counter, MotorCounter, SimpleDetector, ScalerDetector, MultiMcaDetector
 from positioner import Positioner
 from outputfile import ASCIIScanFile
 
