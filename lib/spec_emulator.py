@@ -22,9 +22,7 @@ yet to be implemented:
     -- th2th tth_start_rel tth_finish_rel intervals time
     -- automatic plotting
     -- save/read configuration
-
 """
-
 from time import sleep
 from numpy import array, linspace
 
@@ -58,7 +56,6 @@ class SpecScan(object):
                 if p.connected:
                     self.add_detector(pvname, kind='motor')
 
-
     def add_detector(self, name, kind='scaler', **kws):
         "add detector, giving base name and detector type"
         builder = SimpleDetector
@@ -80,15 +77,14 @@ class SpecScan(object):
         "set file name"
         self.filename = outputfile
 
+    def _checkmotors(self, *args):
+        "check that all args are motor names"
+        for mname in args:
+            if mname not in self.motors:
+                raise Exception("Error: unknown motor name '%s'" % mname)
 
-    def ascan(self, motor, start, finish, npts, dtime):
-        "ascan: absolute scan"
-        if motor not in self.motors:
-            print("Error: unknown motor name '%s'" % motor)
-
-        self._scan.positioners  = [self.motors[motor]]
-        self._scan.positioners[0].array = linspace(start, finish, npts)
-
+    def _launch(self):
+        """internal function to start scans"""
         self._scan.counters = []
         self._scan.triggers = []
         for d in self.detectors:
@@ -96,50 +92,34 @@ class SpecScan(object):
             d.dwelltime = dtime
         self._scan.run(filename=self.filename)
 
+    def ascan(self, motor, start, finish, npts, dtime):
+        "ascan: absolute scan"
+        self._checkmotors(motor)
+        self._scan.positioners  = [self.motors[motor]]
+        self._scan.positioners[0].array = linspace(start, finish, npts)
+        self._launch()
+
     def dscan(self, motor, start, finish, npts, dtime):
         "dscan: relative scan"
-        if motor not in self.motors:
-            print("Error: unknown motor name '%s'" % motor)
-
+        self._checkmotors(motor)
         current = self.motors[motor].current()
         start  += current
         finish += current
         self.ascan(motor, start, finish, npts, dtime)
 
-
     def a2scan(self, motor1, start1, finish1,
                motor2, start2, finish2, npts, dtime):
         "a2scan: absolute scan of 2 motors"
-        if motor1 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor1)
-
-        if motor2 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor2)
-
-        self._scan.positioners  = [self.motors[motor1],
-                                   self.motors[motor2]]
-
+        self._checkmotors(motor1, motor2)
+        self._scan.positioners  = [self.motors[motor1], self.motors[motor2]]
         self._scan.positioners[0].array = linspace(start1, finish1, npts)
         self._scan.positioners[1].array = linspace(start2, finish2, npts)
-
-        self._scan.counters = []
-        self._scan.triggers = []
-        for d in self.detectors:
-            self._scan.add_detector(d)
-            d.dwelltime = dtime
-
-        self._scan.run(filename=self.filename)
-
+        self._launch()
 
     def d2scan(self, motor1, start1, finish1,
                motor2, start2, finish2, npts, dtime):
         "d2scan: relative scan of 2 motors"
-        if motor1 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor1)
-
-        if motor2 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor2)
-
+        self._checkmotors(motor1, motor2)
         current1 = self.motors[motor1].current()
         start1  += current1
         finish1 += current1
@@ -148,53 +128,26 @@ class SpecScan(object):
         start2  += current2
         finish2 += current2
 
-        self.a2scan(self, motor1, start1, finish1,
+        self.a2scan(motor1, start1, finish1,
                     motor2, start2, finish2, npts, dtime)
 
-
-    def a3scan(self, motor1, start1, finish1,
-               motor2, start2, finish2,
+    def a3scan(self, motor1, start1, finish1, motor2, start2, finish2,
                motor3, start3, finish3, npts, dtime):
         "a3scan: absolute scan of 3 motors"
-        if motor1 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor1)
-
-        if motor2 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor2)
-
-        if motor3 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor3)
+        self._checkmotors(motor1, motor2, motor3)
 
         self._scan.positioners  = [self.motors[motor1],
                                    self.motors[motor2],
                                    self.motors[motor3]]
-
-
         self._scan.positioners[0].array = linspace(start1, finish1, npts)
         self._scan.positioners[1].array = linspace(start2, finish2, npts)
         self._scan.positioners[2].array = linspace(start3, finish3, npts)
+        self._launch()
 
-        self._scan.counters = []
-        self._scan.triggers = []
-        for d in self.detectors:
-            self._scan.add_detector(d)
-            d.dwelltime = dtime
-
-        self._scan.run(filename=self.filename)
-
-
-    def d3scan(self, motor1, start1, finish1,
-               motor2, start2, finish2,
+    def d3scan(self, motor1, start1, finish1, motor2, start2, finish2,
                motor3, start3, finish3, npts, dtime):
         "d3scan: relative scan of 3 motors"
-        if motor1 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor1)
-
-        if motor2 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor2)
-
-        if motor3 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor3)
+        self._checkmotors(motor1, motor2, motor3)
 
         current1 = self.motors[motor1].current()
         start1  += current1
@@ -208,48 +161,31 @@ class SpecScan(object):
         start3  += current3
         finish3 += current3
 
-        self.a2scan(self, motor1, start1, finish1,
+        self.a3scan(motor1, start1, finish1,
                     motor2, start2, finish2,
                     motor3, start3, finish3, npts, dtime)
-
 
     def mesh(self, motor1, start1, finish1, npts1,
                motor2, start2, finish2, npts2, dtime):
         """mesh scan: absolute scan of motor1 at each
         position for motor2"""
-        if motor1 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor1)
-        if motor2 not in self.motors:
-            print("Error: unknown motor name '%s'" % motor2)
+        self._checkmotors(motor1, motor2)
 
-        self._scan.positioners  = [self.motors[motor1],
-                                   self.motors[motor2]]
+        self._scan.positioners = [self.motors[motor1], self.motors[motor2]]
 
         fast = npts2* [linspace(start1, finish1, npts1)]
         slow = [[i]*npts1 for i in linspace(start2, finish2, npts2)]
 
-
         self._scan.positioners[0].array = array(fast).flatten()
         self._scan.positioners[1].array = array(slow).flatten()
 
-        self._scan.counters = []
-        self._scan.triggers = []
-        for d in self.detectors:
-            self._scan.add_detector(d)
-            d.dwelltime = dtime
+        # set breakpoints to be the end of each row
+        self._scan.breakpoints = [(i+1)*npts1 - 1 for i in range(npts2-1)]
 
-        npts = len(array(fast).flatten())
-        breakpoints = []
-        for i in range(npts2-1):
-            breakpoints.append((i+1)*npts1 - 1)
-
+        # add print statement at end of each row
         def show_meshstatus(breakpoint=None):
             print 'finished row  %i of %i' % (1+(breakpoint/npts1), npts2)
-            sleep(0.5)
-
+            sleep(0.25)
         self._scan.at_break_methods.append(show_meshstatus)
-        self._scan.breakpoints = breakpoints
 
-        self._scan.run(filename=self.filename)
-
-
+        self._launch()
