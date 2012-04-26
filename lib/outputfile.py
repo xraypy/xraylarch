@@ -131,13 +131,13 @@ class ASCIIScanFile(ScanFile):
         legend = []
         for i, pos in enumerate(self.scan.positioners):
             key = 'p%i' % (i+1)
-            cols.append("  %s " % (key))
+            cols.append("   %s  " % (key))
             legend.append("%s %s = %s (%s)" % (self.comchar, key,
                                                pos.label,
                                                pos.pv.pvname))
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i)               
-            cols.append("  %s " % (key))
+            cols.append("   %s  " % (key))
             legend.append("%s %s = %s (%s)" % (self.comchar, key,
                                                det.label,
                                                det.pv.pvname))
@@ -158,12 +158,11 @@ class ASCIIScanFile(ScanFile):
         self.write_extrapvs()
         out = ['%s%s' % (self.comchar, '-'*66)]
         out.append(self.column_label)
-        
-        n = len(self.scan.counters[0].buff)
-        for i in range(n):
-            words =  ["%g" % curpos for curpos in self.scan.pos_actual[i]]
-            words.extend(["%g" % c.buff[i] for c in self.scan.counters])
-            out.append('\t'.join(words))
+                
+        for i in range(len(self.scan.counters[0].buff)):
+            words =  self.scan.pos_actual[i][:]
+            words.extend([c.buff[i] for c in self.scan.counters])
+            out.append(' '.join(["%10f" % w for w in words]))
         self.write_lines(out)
         if clear:
             [c.clear() for c in self.scan.counters]
