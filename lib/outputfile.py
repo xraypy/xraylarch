@@ -9,7 +9,7 @@ parsable format.
 
 
 ScanFile supports several methods:
-  
+
   open()
   close()
   write_extrapvs()
@@ -50,14 +50,14 @@ class ScanFile(object):
 
     def flush(self):
         "flush file"
-        if self.fh is not None:        
+        if self.fh is not None:
             self.fh.flush()
 
     def write(self, s):
         "write to file"
-        if self.fh is not None:        
+        if self.fh is not None:
             self.fh.write(s)
-        
+
     def close(self):
         "close file"
         if self.fh is not None:
@@ -79,7 +79,7 @@ class ScanFile(object):
         "write data"
         pass
 
-        
+
 class ASCIIScanFile(ScanFile):
     """basis ASCII Column File, line-ending delimited,
     using '#' for comment lines
@@ -91,7 +91,7 @@ class ASCIIScanFile(ScanFile):
             self.filename = 'test.dat'
         self.comchar= comchar
         self.com2 = '%s%s' % (comchar, comchar)
-        
+
     def open(self, mode='a', new_file=True):
         "open file"
         if new_file:
@@ -107,7 +107,7 @@ class ASCIIScanFile(ScanFile):
         self.check_writeable()
         self.write('%s\n' % '\n'.join(buff))
         self.flush()
-        
+
     def write_extrapvs(self):
         "write extra PVS"
         self.check_writeable()
@@ -115,14 +115,15 @@ class ASCIIScanFile(ScanFile):
         for desc, pvname, val in self.scan.read_extra_pvs():
             out.append("%s %s (%s):\t %s" % (self.comchar,
                                              desc, pvname, repr(val)))
-            
+
         out.append('%sExtraPVs End' % (self.com2))
         self.write_lines(out)
 
     def write_timestamp(self):
         "write timestamp"
         self.check_writeable()
-        self.write("%sTime: %s\n" % (self.com2, time.ctime()))
+        self.write("%sTime: %s\n" % (self.com2,
+                                     time.strftime('%Y-%m-%d %H:%M:%S')))
 
     def write_legend(self):
         "write legend"
@@ -136,7 +137,7 @@ class ASCIIScanFile(ScanFile):
                                                pos.label,
                                                pos.pv.pvname))
         for i, det in enumerate(self.scan.counters):
-            key = 'd%i' % (i)               
+            key = 'd%i' % (i)
             cols.append("   %s  " % (key))
             legend.append("%s %s = %s (%s)" % (self.comchar, key,
                                                det.label,
@@ -146,7 +147,7 @@ class ASCIIScanFile(ScanFile):
             out.append(l)
         self.column_label = '%s %s' % (self.comchar, '\t'.join(cols))
         out.append('%sLegend End' % self.com2)
-        self.write_lines(out)        
+        self.write_lines(out)
 
     def write_data(self, breakpoint=0, clear=True, close_file=False):
         "write data"
@@ -154,11 +155,11 @@ class ASCIIScanFile(ScanFile):
         if breakpoint == 0:
             self.write_legend()
             return
-        
+
         self.write_extrapvs()
         out = ['%s%s' % (self.comchar, '-'*66)]
         out.append(self.column_label)
-                
+
         for i in range(len(self.scan.counters[0].buff)):
             words =  self.scan.pos_actual[i][:]
             words.extend([c.buff[i] for c in self.scan.counters])
@@ -167,7 +168,7 @@ class ASCIIScanFile(ScanFile):
         if clear:
             [c.clear() for c in self.scan.counters]
             self.scan.pos_actual = []
-        
+
         if close_file:
             print "Wrote and closed %s" % self.filename
             self.close()
