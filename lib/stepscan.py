@@ -79,7 +79,6 @@ Non-mesh scans are also possible.
 
 A step scan can have an Epics SScan Record or StepScan database associated
 with it.  It will use these for PVs to post data at each point of the scan.
-
 """
 
 import time
@@ -90,27 +89,57 @@ from .detectors import Counter, DeviceCounter
 from .outputfile import ASCIIScanFile
 
 class ScanMessenger(threading.Thread):
-    def __init__(self, func=None, scan=None, cpt=-1, npts=1e12):
+    """ Provides a way to run user-supplied functions per scan point,
+    in a separate thread so as to not delay scan operation.
+
+    Initialize a ScanMessenger with a function to call per point, and the
+    StepScan instance.   On .start(), a separate thread will createrd and
+    the .run() method run.  Here, this runs a loop, looking at the .cpt
+    attribute.  When this .cpt changes, the executing will run the user
+    supplied code with arguments of 'scan=scan instance', and 'cpt=cpt'
+
+    Thus, at each point in the scan the scanning process should set .cpt,
+    and the user-supplied func will execute.
+
+    To stop the thread, set .cpt to None.  The thread will also automatically
+    stop if .cpt has not changed in more than 1 hour
+    """
+    # number of seconds to wait for .cpt to change before exiting thread
+    timeout = 3600.
+    def __init__(self, func=None, scan=None,
+                 cpt=-1, npts=None, func_kws=None):
         threading.Thread.__init__(self)
         self.func = func
         self.scan = scan
         self.cpt = cpt
         self.npts = npts
-        
-    def run(self, **kws):
+        if func_kws is None:
+            func_kws = {}
+        self.func_kws = func_kws
+        self.func_kws['npts'] = npts
+
+    def run(self):
+        """execute thread, watching the .cpt attribute. Any chnage will
+        cause self.func(cpt=self.cpt, scan=self.scan) to be run.
+        The thread will stop when .pt == None or has not changed in
+        a time  > .timeout
+        """
         last_point = self.cpt
+        t0 = time.time()
         while True:
             time.sleep(0.001)
-            if self.cpt != last_point: 
-                last_point =  self.cpt 
+            if self.cpt != last_point:
+                last_point =  self.cpt
+                t0 = time.time()
                 if hasattr(self.func, '__call__'):
-                    self.func(scan=self.scan, cpt=self.cpt, **kws)
-            if self.cpt is None or self.cpt >= self.npts:
+                    self.func(cpt=self.cpt, scan=self.scan,
+                              **self.func_kws)
+            if self.cpt is None or time.time()-t0 > self.timeout:
                 return
 
-            
-
 class StepScan(object):
+    """General Step Scanning for Epics
+    """
     def __init__(self, datafile=None, messenger=None):
         self.pos_settle_time = 1.e-3
         self.pos_maxmove_time = 3600.0
@@ -125,16 +154,16 @@ class StepScan(object):
         self.at_break_methods = []
         self.pre_scan_methods = []
         self.post_scan_methods = []
+        self.pos_actual  = []
+
+        self.datafile = datafile
         self.verified = False
-        self.datafile = None
         self.abort = False
 
         self.message_thread = None
         self.messenger = messenger
         if datafile is not None:
             self.datafile = ASCIIFile(filename=datafile)
-
-        self.pos_actual  = []
 
     def add_counter(self, counter, label=None):
         "add simple counter"
@@ -163,18 +192,19 @@ class StepScan(object):
         self.at_break_methods.append(pos.at_break)
         self.post_scan_methods.append(pos.post_scan)
         self.pre_scan_methods.append(pos.pre_scan)
-        self.verified = False
         self.positioners.append(pos)
+        self.verified = False
 
     def add_detector(self, det):
         """ add a Detector -- needs to be derived from Detector_Mixin"""
         self.add_extra_pvs(det.extra_pvs)
-        self.triggers.append(det.trigger)
-        self.counters.extend(det.counters)
-        self._det.append(det)
         self.at_break_methods.append(det.at_break)
         self.post_scan_methods.append(det.post_scan)
         self.pre_scan_methods.append(det.pre_scan)
+
+        self.triggers.append(det.trigger)
+        self.counters.extend(det.counters)
+        self._det.append(det)
         self.verified = False
 
     def set_dwelltime(self, dtime):
@@ -186,13 +216,14 @@ class StepScan(object):
         out = [m(breakpoint=breakpoint) for m in self.at_break_methods]
         if self.datafile is not None:
             self.datafile.write_data(breakpoint=breakpoint)
+        return out
 
     def pre_scan(self):
         [pv.connect() for  (desc, pv) in self.extra_pvs]
         return [m() for m in self.pre_scan_methods]
 
     def post_scan(self):
-        return [m() for m in self.pre_scan_methods]
+        return [m() for m in self.post_scan_methods]
 
     def verify_scan(self):
         """ this does some simple checks of Scans, checking that
@@ -216,10 +247,13 @@ class StepScan(object):
         return True
 
     def check_outputs(self, out, msg='unknown'):
-        """ check outputs of a previous command"""
-        for i in out:
-            if i is not None and not i:
-                raise Warning('error on output: %s' % msg)
+        """ check outputs of a previous command
+            Any True value indicates an error
+        That is, return values must be None or evaluate to False
+        to indicate success.
+        """
+        if any(out):
+            raise Warning('error on output: %s' % msg)
 
     def read_extra_pvs(self):
         "read values for extra PVs"
@@ -227,10 +261,19 @@ class StepScan(object):
 
 
     def run(self, filename='test.dat'):
+        """ run the actual scan:
+           Verify, Save original positions,
+           Setup output files and messenger thread,
+           run pre_scan methods
+           Loop over points
+           run post_scan methods
+        """
         if not self.verify_scan():
             print 'Cannot execute scan'
             print self.error_message
             return
+        self.abort = False
+
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
 
@@ -239,12 +282,10 @@ class StepScan(object):
         out = [p.move_to_start() for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
-        self.abort = False
-        self.datafile = ASCIIScanFile(filename=filename,
-                                      scan = self)
+        self.datafile = ASCIIScanFile(filename=filename, scan=self)
         self.datafile.write_data(breakpoint=0)
+
         npts = len(self.positioners[0].array)
-        self.pos_actual  = []
 
         self.message_thread = None
         if hasattr(self.messenger, '__call__'):
@@ -258,7 +299,6 @@ class StepScan(object):
                 self.cpt = i+1
                 if self.abort:
                     break
-
                 # move to next position, wait for moves to finish
                 [p.move_to_pos(i) for p in self.positioners]
                 t0 = time.time()
@@ -290,10 +330,10 @@ class StepScan(object):
                     self.message_thread.cpt = self.cpt
 
                 if i in self.breakpoints:
-                    self.at_break(breakpoint=i)
+                    self.at_break(breakpoint=i, clear=True)
             except KeyboardInterrupt:
                 self.abort = True
-                
+
         # scan complete
         # if completed without abort, return to original positions, write data
         if not self.abort:
@@ -302,8 +342,12 @@ class StepScan(object):
             self.datafile.write_data(breakpoint=-1, close_file=True)
         self.abort = False
 
+        # run post_scan methods
+        out = self.post_scan()
+        self.check_outputs(out, msg='pre scan')
+
+        # end messenger thread
         if self.message_thread is not None:
             self.message_thread.cpt = None
             self.message_thread.join()
-
 
