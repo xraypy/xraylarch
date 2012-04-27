@@ -1,10 +1,40 @@
 To Do list for step scanning:
 
-  1.  writing data to ASCII file
-  2.  handling waveform data (may need to write straight to HDF5?)
-  3.  writing data to HDF5
+  - save/loadd configuration of scan parameters.   This could use an INI
+     file, or an SQLite database.  Prefer both.
 
-  4.  Data Viewing Program that can parse scan files (ASCII or HDF5)
+  - Spec Mode should be able to save/load a motor/detector configuration file
 
-  5. Scan Setup / Execute GUI
+  - Test Area Detectors -- so far I've only tested with Scalers and Multi-MCAs
+
+  - XAFS Scan setup routine, with save/load
+
+  - ASCII File writing works, but may need options (comment char, etc)
+
+  - Should be an option for 'file per scan, with auto-increment' or
+     'one long, spec-like file'.   How are mesh scans recorded with Spec?
+
+  - Writing a proper Spec file?
+
+  - Handling waveform data?   Writing to non-ASCII (HDF5?) files?
+
+  - Data Viewing Program that can parse scan files (ASCII or HDF5)
+
+  - Scan Setup / Execute GUI.  This should have form options for defining:
+       -- simple 1d  scans (spec ascan)
+       -- multi-positioner 1d scans
+       -- XAFS scans
+       -- 2-D mesh / map scans
+       -- simple 'filename', 'comments', 'start', 'abort', 'pause',  'resume'.
+
+       -- Use Sqlite db for saving configs (what positioners/detectors
+            are available) and individual scan definitions.
+
+       -- Macro window with do_scan(saved_definition)/ascan/etc.
+
+       -- Plotting of live scan, pull-downs for what to plot
+       -- Plotting simple peak analysis, derivative analysis,
+            move to position , etc.
+
+Need to choose GUI toolkit.
 
