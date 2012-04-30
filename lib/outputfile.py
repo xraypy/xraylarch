@@ -13,6 +13,7 @@ ScanFile supports several methods:
   open()
   close()
   write_extrapvs()
+  write_comments()
   write_legend()
   write_timestamp()
   write_data()
@@ -67,6 +68,10 @@ class ScanFile(object):
         "write extra PVS"
         pass
 
+    def write_comments(self):
+        "write legend"
+        pass
+
     def write_legend(self):
         "write legend"
         pass
@@ -84,13 +89,15 @@ class ASCIIScanFile(ScanFile):
     using '#' for comment lines
     """
     def __init__(self, name=None, scan=None,
-                 comchar='#', mode='increment'):
+                 comchar='#', comments=None,
+                 mode='increment'):
         ScanFile.__init__(self, name=name, scan=scan)
         if name is None:
             self.filename = 'test.dat'
         self.comchar= comchar
         self.com2 = '%s%s' % (comchar, comchar)
         self.filemode = mode
+        self.comments = comments
 
     def open(self, mode='a', new_file=None):
         "open file"
@@ -127,6 +134,15 @@ class ASCIIScanFile(ScanFile):
         self.check_writeable()
         self.write("%sTime: %s\n" % (self.com2, get_timestamp()))
 
+    def write_comments(self):
+        "write comment lines"
+        if self.comments is None:
+            return
+        self.check_writeable()
+        lines = self.comments.split('\n')
+        self.write_lines(['%s %s' % (self.comchar, l) for l in lines])
+
+
     def write_legend(self):
         "write legend"
         self.check_writeable()
@@ -155,6 +171,7 @@ class ASCIIScanFile(ScanFile):
         "write data"
         self.write_timestamp()
         if breakpoint == 0:
+            self.write_comments()
             self.write_legend()
             return
 
