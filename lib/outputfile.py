@@ -86,7 +86,7 @@ class ASCIIScanFile(ScanFile):
     def __init__(self, name=None, scan=None,
                  comchar='#', mode='increment'):
         ScanFile.__init__(self, name=name, scan=scan)
-        if filename is None:
+        if name is None:
             self.filename = 'test.dat'
         self.comchar= comchar
         self.com2 = '%s%s' % (comchar, comchar)
@@ -95,11 +95,11 @@ class ASCIIScanFile(ScanFile):
     def open(self, mode='a', new_file=None):
         "open file"
         if new_file is None:
-            new_file == ('increment' == self.filemode)
+            new_file = ('increment' == self.filemode)
         if new_file:
             self.filename = new_filename(self.filename)
-
-        is_new = os.path.exists(self.filename)
+        
+        is_new = not os.path.exists(self.filename)
         self.fh = open(self.filename, mode)
         if is_new:
             self.write("%sEpics StepScan File /version=2.0\n" % self.com2)
