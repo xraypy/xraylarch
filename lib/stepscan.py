@@ -131,7 +131,7 @@ class ScanMessenger(threading.Thread):
             if self.cpt != last_point:
                 last_point =  self.cpt
                 t0 = time.time()
-                if hasattr(self.func, '__call__'):
+                if self.cpt is not None and hasattr(self.func, '__call__'):
                     self.func(cpt=self.cpt, scan=self.scan,
                               **self.func_kws)
             if self.cpt is None or time.time()-t0 > self.timeout:
@@ -159,7 +159,7 @@ class StepScan(object):
         self.message_thread = None
         self.messenger = messenger
         if filename is not None:
-            self.open_output_file()
+            self.open_output_file(filename=filename)
 
         self.extra_pvs = []
         self.positioners = []
@@ -173,11 +173,14 @@ class StepScan(object):
         self.post_scan_methods = []
         self.pos_actual  = []
 
-    def open_output_file(self):
+    def open_output_file(self, filename=None):
         """opens the output file"""
-        creator = ASCIIFile
+        creator = ASCIIScanFile
         # if self.filetype == 'ASCII':
-        #     creator = ASCIIFile
+        #     creator = ASCIIScanFile
+        if filename is not None:
+            self.filename = filename
+        print 'open output file ', self.filename, self.filemode
         self.datafile = creator(name=self.filename,
                                 mode=self.filemode,
                                 scan=self)
@@ -276,7 +279,7 @@ class StepScan(object):
         "read values for extra PVs"
         return [(desc, pv.pvname, pv.get()) for desc, pv in self.extra_pvs]
 
-    def run(self, filename='test.dat'):
+    def run(self, filename=None):
         """ run the actual scan:
            Verify, Save original positions,
            Setup output files and messenger thread,
@@ -297,7 +300,7 @@ class StepScan(object):
         out = [p.move_to_start() for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
-        self.open_output_file()
+        self.open_output_file(filename=filename)
         self.datafile.write_data(breakpoint=0)
 
         npts = len(self.positioners[0].array)
@@ -351,11 +354,10 @@ class StepScan(object):
                 self.abort = True
 
         # scan complete
-        # if completed without abort, return to original positions, write data
-        if not self.abort:
-            for val, pos in zip(orig_positions, self.positioners):
-                pos.move_to(val, wait=False)
-            self.datafile.write_data(breakpoint=-1, close_file=True)
+        # return to original positions, write data
+        for val, pos in zip(orig_positions, self.positioners):
+            pos.move_to(val, wait=False)
+        self.datafile.write_data(breakpoint=-1, close_file=True)
         self.abort = False
 
         # run post_scan methods
