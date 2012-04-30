@@ -61,7 +61,7 @@ class Counter(object):
 
     def __repr__(self):
         return "<Counter %s (%s)>" % (self.label, self.pv.pvname)
-        
+
     def read(self):
         self.buff.append(self.pv.get())
 
@@ -204,7 +204,7 @@ class MultiMcaCounter(DeviceCounter):
                             "%s%s.CALQ" % (prefix, mcaname)),
                            ("Peaking Time (%s)" % (dxpname),
                             "%s%s:PeakingTime" % (prefix, dxpname))])
-                                                                                       
+
         for i in range(nrois):
             for imca in range(1, nmcas+1):
                 mcaname = 'mca%i' % imca
@@ -223,7 +223,7 @@ class MultiMcaCounter(DeviceCounter):
         for dsuff, dname in self._dxp_fields:
             for imca in range(1, nmcas +1):
                 suff = '%s:%s' %  (dxpname, dsuff)
-                label = '%s (%s)'% (dname, dxpname)                
+                label = '%s (%s)'% (dname, dxpname)
                 fields.append((suff, label)) # ... add dxp
 
         if use_full:
@@ -283,7 +283,7 @@ class ScalerDetector(DetectorMixin):
         self.extra_pvs = [('scaler frequency', '%s.FREQ' % prefix),
                           ('scaler read_delay', '%s.DLY' % prefix)]
         self.extra_pvs.extend(self._counter.extra_pvs)
-        
+
     def pre_scan(self, **kws):
         self.scaler.OneShotMode()
         if (self.dwelltime is not None and
@@ -309,8 +309,8 @@ class McaDetector(DetectorMixin):
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
-# 
-# 
+#
+#
 # class MultiMCACounter(DeviceCounter):
 #     invalid_device_msg = 'MCACounter must use a med'
 #     _dxp_fields = (('.InputCountRate', 'ICR'),
@@ -340,7 +340,7 @@ class McaDetector(DetectorMixin):
 #             if use_full:
 #                 fields.append((':%s.VAL' % mcaname, 'mca spectra (%s)' % mcaname))
 #         self.set_counters(fields)
-# 
+#
 # ;
 class MultiMcaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
@@ -349,7 +349,7 @@ class MultiMcaDetector(DetectorMixin):
     def __init__(self, prefix, nmcas=4, nrois=32, search_all=False,
                  use_net=False, use_unlabeled=False, use_full=True):
         DetectorMixin.__init__(self, prefix)
-        
+
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         self.prefix = prefix
@@ -357,24 +357,46 @@ class MultiMcaDetector(DetectorMixin):
         self.dwelltime    = None
         self.trigger = Trigger("%sEraseStart" % prefix)
         self._counter = MultiMcaCounter(prefix, nmcas=nmcas, nrois=nrois,
-                                        search_all=search_all, 
+                                        search_all=search_all,
                                         use_net=use_net,
                                         use_unlabeled=use_unlabeled,
                                         use_full=use_full)
 
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
-        
+
     def pre_scan(self, **kws):
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
         caput("%sCollectMode" % (self.prefix), 0)   # mca spectra
         caput("%sPresetMode"  % (self.prefix), 1)   # real time
-        caput("%sReadBaselineHistograms.SCAN" % (self.prefix), 0)        
-        caput("%sReadTraces.SCAN" % (self.prefix), 0)        
-        caput("%sReadLLParams.SCAN" % (self.prefix), 0)        
-        caput("%sReadAll.SCAN"   % (self.prefix), 9)        
-        caput("%sStatusAll.SCAN" % (self.prefix), 9)        
+        caput("%sReadBaselineHistograms.SCAN" % (self.prefix), 0)
+        caput("%sReadTraces.SCAN" % (self.prefix), 0)
+        caput("%sReadLLParams.SCAN" % (self.prefix), 0)
+        caput("%sReadAll.SCAN"   % (self.prefix), 9)
+        caput("%sStatusAll.SCAN" % (self.prefix), 9)
 
-
+def genericDetector(name, kind=None, **kws):
+    """returns best guess of which Detector class to use
+           Mca, MultiMca, Motor, Scaler, Simple
+    based on kind and/or record type.
+    """
+    if kind is None:
+        prefix = name
+        if prefix.endswith('.VAL'):
+            prefix = prefix[-4]
+        rtyp == caget("%s.RTYP", prefix)
+        if rtyp in ('motor', 'mca', 'scaler'):
+            kind = rtyp
+    builder = SimpleDetector
+    kind = kind.lower()
+    if kind == 'scaler':
+        builder = ScalerDetector
+    elif kind == 'motor':
+        builder = MotorDetector
+    elif kind == 'mca':
+        builder = MCADetector
+    elif kind in ('med', 'multimca'):
+        builder = MultiMcaDetector
+    return builder(name, **kws)
