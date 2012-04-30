@@ -29,11 +29,8 @@ from numpy import array, linspace
 from epics import PV, caget, poll
 
 from .stepscan   import StepScan
-from .outputfile import ASCIIScanFile
 from .positioner import Positioner
-from .detectors  import (SimpleDetector, MotorDetector,
-                         ScalerDetector, McaDetector,
-                         MultiMcaDetector, Counter)
+from .detectors  import genericDetector, Counter
 
 class SpecScan(object):
     """Spec Mode for StepScan"""
@@ -50,30 +47,14 @@ class SpecScan(object):
         """add motors as keyword=value pairs: label=EpicsPVName"""
         for label, pvname in motors.items():
             self.motors[label] = Positioner(pvname, label=label)
-            if '.' in pvname:
-                idot = pvname.index('.')
-                rbv_pv = pvname[:idot] + '.RBV'
-                p = PV(rbv_pv, connect=True)
-                poll(1.e-3, 1.0)
-                if p.connected:
-                    self.add_detector(pvname, kind='motor')
 
     def add_counter(self, name, label=None):
         # self._scan.add_counter(name, label=label)
         self.bare_counters.append(Counter(name, label=label))
 
-    def add_detector(self, name, kind='scaler', **kws):
+    def add_detector(self, name, kind=None, **kws):
         "add detector, giving base name and detector type"
-        builder = SimpleDetector
-        if kind == 'scaler':
-            builder = ScalerDetector
-        elif kind == 'motor':
-            builder = MotorDetector
-        elif kind == 'mca':
-            builder = MCADetector
-        elif kind == 'med':
-            builder = MultiMcaDetector            
-        self.detectors.append(builder(name, **kws))
+        self.detectors.append(genericDetector(name, kind=kind, **kws))
 
     def add_extra_pvs(self, extra_pvs):
         """add extra PVs to be recorded prior to each scan
@@ -100,7 +81,7 @@ class SpecScan(object):
             d.dwelltime = dwelltime
         for c in self.bare_counters:
             self._scan.add_counter(c)
-            
+
         self._scan.run(filename=self.filename)
 
     def ascan(self, motor, start, finish, npts, dtime):
