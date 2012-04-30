@@ -21,14 +21,14 @@ which  can be overridden to create a new Output file type
 """
 import os
 import time
-from file_utils import new_filename
+from file_utils import new_filename, get_timestamp
 
 class ScanFile(object):
     """base Scan File -- will need to inherti and
     overrwrite methods.
     """
-    def __init__(self, filename=None, scan=None):
-        self.filename = filename
+    def __init__(self, name=None, scan=None):
+        self.filename = name
         self.fh = None
         self.scan = scan
 
@@ -79,27 +79,30 @@ class ScanFile(object):
         "write data"
         pass
 
-
 class ASCIIScanFile(ScanFile):
     """basis ASCII Column File, line-ending delimited,
     using '#' for comment lines
     """
-    def __init__(self, filename=None, scan=None,
-                 comchar='#'):
-        ScanFile.__init__(self, filename=filename, scan=scan)
+    def __init__(self, name=None, scan=None,
+                 comchar='#', mode='increment'):
+        ScanFile.__init__(self, name=name, scan=scan)
         if filename is None:
             self.filename = 'test.dat'
         self.comchar= comchar
         self.com2 = '%s%s' % (comchar, comchar)
+        self.filemode = mode
 
-    def open(self, mode='a', new_file=True):
+    def open(self, mode='a', new_file=None):
         "open file"
+        if new_file is None:
+            new_file == ('increment' == self.filemode)
         if new_file:
             self.filename = new_filename(self.filename)
-        if os.path.exists(self.filename) and mode != 'a':
-            mode = 'a'
+
+        is_new = os.path.exists(self.filename)
         self.fh = open(self.filename, mode)
-        self.write("%sEpics StepScan File /version=2.0\n" % self.com2)
+        if is_new:
+            self.write("%sEpics StepScan File /version=2.0\n" % self.com2)
         return self.fh
 
     def write_lines(self, buff):
@@ -122,8 +125,7 @@ class ASCIIScanFile(ScanFile):
     def write_timestamp(self):
         "write timestamp"
         self.check_writeable()
-        self.write("%sTime: %s\n" % (self.com2,
-                                     time.strftime('%Y-%m-%d %H:%M:%S')))
+        self.write("%sTime: %s\n" % (self.com2, get_timestamp()))
 
     def write_legend(self):
         "write legend"
