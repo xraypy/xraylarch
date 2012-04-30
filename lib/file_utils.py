@@ -4,9 +4,29 @@ import os
 from string import printable, maketrans
 from random import seed, randrange
 
-
 BAD_FILECHARS = ';~,`!%$@?*#:"/|\'\\\t\r\n (){}[]<>'
 BAD_FILETABLE = maketrans(BAD_FILECHARS, '_'*len(BAD_FILECHARS))
+
+
+def get_timestamp():
+    """return ISO format of current timestamp:
+    2012-04-27 17:31:12
+    """
+    return time.strftime('%Y-%m-%d %H:%M:%S')
+
+def get_homedir():
+    """return home directory, or best approximation
+    On Windows, this returns the Roaming Profile APPDATA
+    (use CSIDL_LOCAL_APPDATA for Local Profile)
+    """
+    if os.name == 'posix':
+        return os.path.expanduser("~")
+    # For Windows, ask for parent of Roaming 'Application Data' directory
+    try:
+        from win32com.shell import shellcon, shell
+        return shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+    except ImportError: # if win32com is not found
+        return '.'
 
 def fix_filename(s):
     """fix string to be a 'good' filename.
@@ -21,13 +41,13 @@ def fix_filename(s):
 
 def unixpath(d):
     d = d.replace('\\','/')
-    if not d.endswith('/'): d = '%s/' % d        
+    if not d.endswith('/'): d = '%s/' % d
     return d
 
 def winpath(d):
     if d.startswith('//'): d = d[1:]
     d = d.replace('/','\\')
-    if not d.endswith('\\'): d = '%s\\' % d            
+    if not d.endswith('\\'): d = '%s\\' % d
     return d
 
 def nativepath(d):
@@ -53,7 +73,7 @@ def pathOf(dir, base, ext, delim='.'):
 def increment_filename(inpfile,ndigits=3, delim='.'):
     """
     increment a data filename, returning a new (non-existing) filename
- 
+
        first see if a number is after '.'.  if so, increment it.
        second look for number in the prefix. if so, increment it.
        lastly, insert a '_001' before the '.', preserving suffix.
@@ -68,7 +88,7 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
     'b_018.xrf'
     >>> increment_filename('x_10300243.dat')
     'x_10300244.dat'
-    
+
     >>> increment_filename('x.dat')
     'x_001.dat'
 
@@ -79,7 +99,7 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
     'a_002.dat'
     >>> increment_filename('a_6.dat')
     'a_007.dat'
-    
+
     >>> increment_filename('a_001.002')
     'a_001.003'
 
@@ -93,7 +113,7 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
     base = filename.split(delim, 1)
     if len(base) == 2:
         base, ext = base
-        
+
     if ext.startswith('.'):
         ext   = ext[1:]
     if ndigits < 3:
@@ -127,15 +147,15 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
 def new_filename(fname=None,ndigits=3):
     """ generate a new file name, either based on
     filename or generating a random one
-    
-    >>> new_filename(fname='x.001')   
+
+    >>> new_filename(fname='x.001')
     'x.002'
     # if 'x.001' exists
     """
     if fname is None:
         ext = ("%%.%ii" % ndigits) % 1
         fname = "%s.%s" % (random_string(6), ext)
-        
+
     if os.path.exists(fname):
         fname = increment_filename(fname, ndigits=ndigits)
 
@@ -144,19 +164,19 @@ def new_filename(fname=None,ndigits=3):
 def new_dirname(dirname=None, ndigits=3):
     """ generate a new subdirectory name (no '.' in name), either
     based on dirname or generating a random one
-    
-    >>> new_dirname('x.001')   
+
+    >>> new_dirname('x.001')
     'x_002'
     # if 'x_001' exists
     """
     if dirname is None:
         ext = ("%%_%ii" % ndigits) % 1
         dirname = "%s_%s" % (random_string(6), ext)
-        
+
     dirname = dirname.replace('.', '_')
     if os.path.exists(dirname):
         dirname = increment_filename(dirname, ndigits=ndigits, delim='_')
-        
+
 
     return dirname
 
