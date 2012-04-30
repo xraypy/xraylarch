@@ -142,11 +142,13 @@ class StepScan(object):
     General Step Scanning for Epics
     """
     def __init__(self, filename=None, filemode='increment',
-                 configdb=None, messenger=None):
+                 configdb=None, comments=None, messenger=None):
         self.pos_settle_time = 1.e-3
         self.det_settle_time = 1.e-3
         self.pos_maxmove_time = 3600.0
         self.det_maxcount_time = 86400.0
+
+        self.comments = comments
 
         self.filename = filename
         self.filemode = filemode
@@ -159,7 +161,7 @@ class StepScan(object):
         self.message_thread = None
         self.messenger = messenger
         if filename is not None:
-            self.open_output_file(filename=filename)
+            self.open_output_file(filename=filename, comments=comments)
 
         self.extra_pvs = []
         self.positioners = []
@@ -173,16 +175,19 @@ class StepScan(object):
         self.post_scan_methods = []
         self.pos_actual  = []
 
-    def open_output_file(self, filename=None):
+    def open_output_file(self, filename=None, comments=None):
         """opens the output file"""
         creator = ASCIIScanFile
         # if self.filetype == 'ASCII':
         #     creator = ASCIIScanFile
         if filename is not None:
             self.filename = filename
-        print 'open output file ', self.filename, self.filemode
+        if comments is not None:
+            self.comments = comments
+
         self.datafile = creator(name=self.filename,
                                 mode=self.filemode,
+                                comments=self.comments,
                                 scan=self)
 
     def add_counter(self, counter, label=None):
@@ -279,7 +284,7 @@ class StepScan(object):
         "read values for extra PVs"
         return [(desc, pv.pvname, pv.get()) for desc, pv in self.extra_pvs]
 
-    def run(self, filename=None):
+    def run(self, filename=None, comments=None):
         """ run the actual scan:
            Verify, Save original positions,
            Setup output files and messenger thread,
@@ -300,7 +305,7 @@ class StepScan(object):
         out = [p.move_to_start() for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
-        self.open_output_file(filename=filename)
+        self.open_output_file(filename=filename, comments=comments)
         self.datafile.write_data(breakpoint=0)
 
         npts = len(self.positioners[0].array)

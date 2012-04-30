@@ -53,5 +53,7 @@ def report(scan=None, cpt=0, **kws):
         
     
 sscan.messenger  = report
-    
-sscan.run(filename='out1.dat')
+comments = '''This is a test scan
+and this is the comment section
+'''
+sscan.run(filename='out1.dat', comments=comments)
