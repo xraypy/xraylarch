@@ -9,6 +9,9 @@ To Do list for step scanning:
 
   - XAFS Scan setup routine, with save/load
 
+  - Allow limiting ROIs from MCA detector(s) by name, so that 'save all' is
+    the default, but not the only option.
+
   - ASCII File writing works, but may need options (comment char, etc)
 
   - Should be an option for 'file per scan, with auto-increment' or

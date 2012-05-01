@@ -28,15 +28,18 @@ do a readback on this position -- add a ScanDetector for that!
                 pass
             self.label = desc
                         
+        if array is None: array  = []
         self.array = array
+        
         self.extra_pvs = []
 
     def __repr__(self):
-        out = "<Positioner '%s': %i points" % (self.pv.pvname, len(self.array))
+        out = "<Positioner '%s'" % (self.pv.pvname)
         if len(self.array) > 0:
+            npts = len(self.array)
             amin = '%g' % (min(self.array))
             amax = '%g' % (max(self.array))
-            out = "%s, range: [%s, %s]" % (out, amin, amax)
+            out = "%s: %i point, range: [%s, %s]" % (out, nps, amin, amax)
         return "%s>" % out
 
     def __onComplete(self, pvname=None, **kws):
