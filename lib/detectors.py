@@ -234,8 +234,11 @@ class MultiMcaCounter(DeviceCounter):
 
 class DetectorMixin(object):
     trigger_suffix = None
-    def __init__(self, prefix, **kws):
+    def __init__(self, prefix, label=None, **kws):
         self.prefix = prefix
+        self.label = label
+        if self.label is None:
+            self.label = self.prefix
         self.trigger = None
         if self.trigger_suffix is not None:
             self.trigger = Trigger("%s%s" % (prefix, self.trigger_suffix))
@@ -256,24 +259,24 @@ class DetectorMixin(object):
 class SimpleDetector(DetectorMixin):
     "Simple Detector: a single Counter without a trigger"
     trigger_suffix = None
-    def __init__(self, prefix):
-        DetectorMixin.__init__(self, prefix)
+    def __init__(self, prefix, **kws):
+        DetectorMixin.__init__(self, prefix, **kws)
         self.counters = [Counter(prefix)]
 
 
 class MotorDetector(DetectorMixin):
     "Motor Detector: a Counter for  Motor Readback, no trigger"
     trigger_suffix = None
-    def __init__(self, prefix):
-        DetectorMixin.__init__(self, prefix)
+    def __init__(self, prefix, **kws):
+        DetectorMixin.__init__(self, prefix, **kws)
         self.counters = [MotorCounter(prefix)]
 
 
 class ScalerDetector(DetectorMixin):
     trigger_suffix = '.CNT'
 
-    def __init__(self, prefix, nchan=8, use_calc=True):
-        DetectorMixin.__init__(self, prefix)
+    def __init__(self, prefix, nchan=8, use_calc=True, **kws):
+        DetectorMixin.__init__(self, prefix, **kws)
         self.scaler = Scaler(prefix, nchan=nchan)
         self._counter = ScalerCounter(prefix, nchan=nchan,
                                       use_calc=use_calc)
@@ -295,8 +298,8 @@ class ScalerDetector(DetectorMixin):
 
 class McaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
-    def __init__(self, prefix, save_spectra=True):
-        DetectorMixin.__init__(self, prefix)
+    def __init__(self, prefix, save_spectra=True, **kws):
+        DetectorMixin.__init__(self, prefix, **kws)
         self.mca = Mca(prefix)
         self.dwelltime_pv = PV('%s.PRTM' % prefix)
         self.dwelltime    = None
@@ -346,9 +349,10 @@ class MultiMcaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
     collect_mode = 'CollectMode'
 
-    def __init__(self, prefix, nmcas=4, nrois=32, search_all=False,
-                 use_net=False, use_unlabeled=False, use_full=True):
-        DetectorMixin.__init__(self, prefix)
+    def __init__(self, prefix, label=None, nmcas=4, nrois=32,
+                 search_all=False,  use_net=False,
+                 use_unlabeled=False, use_full=True):
+        DetectorMixin.__init__(self, prefix, label=label)
 
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
@@ -377,7 +381,7 @@ class MultiMcaDetector(DetectorMixin):
         caput("%sReadAll.SCAN"   % (self.prefix), 9)
         caput("%sStatusAll.SCAN" % (self.prefix), 9)
 
-def genericDetector(name, kind=None, **kws):
+def genericDetector(name, kind=None, label=None, **kws):
     """returns best guess of which Detector class to use
            Mca, MultiMca, Motor, Scaler, Simple
     based on kind and/or record type.
@@ -399,4 +403,4 @@ def genericDetector(name, kind=None, **kws):
         builder = MCADetector
     elif kind in ('med', 'multimca'):
         builder = MultiMcaDetector
-    return builder(name, **kws)
+    return builder(name, label=None, **kws)

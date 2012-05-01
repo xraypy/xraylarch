@@ -31,17 +31,46 @@ from epics import PV, caget, poll
 from .stepscan   import StepScan
 from .positioner import Positioner
 from .detectors  import genericDetector, Counter
+from .spec_config import SpecConfig
 
 class SpecScan(object):
     """Spec Mode for StepScan"""
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, configfile=None):
         self.motors  = {}
         self.detectors = []
         self.bare_counters = []
-        self.filename = filename
-
         self._scan = StepScan()
+
+        if configfile is not None:
+            self.configfile = configfile
+
+        self.read_config(filename=configfile)
+            
+        if filename is not None:
+            self.filename = filename
+                    
         self.lup = self.dscan
+
+    def read_config(self, filename=None):
+        " "
+        self.config = SpecConfig(filename=filename)
+        self.configfile = self.config.filename
+        for label, pvname in self.config.motors.items():
+            self.motors[label] = Positioner(pvname, label=label)
+
+        for label, pvname in self.config.counters.items():
+            self.bare_counters.append(Counter(pvname, label=label))            
+
+        self.add_extra_pvs(self.config.extra_pvs.items())
+        for label, val in self.config.detectors.items():
+            opts = {'label': label}
+            prefix = val[0]
+            if len(val) > 1:
+                pairs = [w.strip() for w in val[1].split(',')]
+                for s in pairs:
+                    skey, sval = s.split('=')
+                    opts[skey.strip()] = sval.strip()
+            self.add_detector(prefix, **opts)
 
     def add_motors(self, **motors):
         """add motors as keyword=value pairs: label=EpicsPVName"""
