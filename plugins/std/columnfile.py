@@ -85,7 +85,7 @@ def _read_ascii(fname, delim='#;*%', labels=None, _larch=None):
 
     group = kws
     if _larch is not None:
-        group = _larch.symtable.new_group(name='ascii_file %s' % fname)
+        group = _larch.symtable.create_group(name='ascii_file %s' % fname)
         for key, val in kws.items():
             setattr(group, key, val)
     return group
