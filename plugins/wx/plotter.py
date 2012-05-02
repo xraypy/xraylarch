@@ -261,7 +261,9 @@ def update():
     app = wx.GetApp()
     evtloop = wx.EventLoop()
     activator = wx.EventLoopActivator(evtloop)
-    while evtloop.Pending():   evtloop.Dispatch()
+    while evtloop.Pending():
+        evtloop.Dispatch()
+
     app.ProcessIdle()
 
 def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
@@ -328,5 +330,6 @@ def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
                       'newplot':_newplot,
                       'oplot': _oplot,
+                      'get_display':_getDisplay,
                       'get_cursor': _getcursor,
                       'imshow':_imshow} )
