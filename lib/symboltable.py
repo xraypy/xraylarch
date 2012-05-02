@@ -5,6 +5,8 @@ from __future__ import print_function
 import os
 import sys
 import types
+import numpy
+
 from .utils import Closure, fixName, isValidName
 from . import site_config
 
@@ -298,7 +300,7 @@ class SymbolTable(Group):
         grp = Group(__name__ = name, **kws)
         self.set_symbol(name, value=grp)
         return grp
-        
+
     def get_symbol(self, sym, create=False):
         "lookup and return a symbol by name"
         return self._lookup(sym, create=create)
@@ -385,6 +387,29 @@ class SymbolTable(Group):
                     val = Closure(func=val, _name=key, **kws)
 
             self.set_symbol("%s.%s" % (groupname, key), val)
+
+    def show_group(self, groupname):
+        """display group members --- simple version for tests"""
+        out = []
+        try:
+            group = self.get_group(groupname)
+        except (NameError, LookupError):
+            return 'Group %s not found' % groupname
+
+        title = group.__name__
+        members = dir(group)
+        out = ['== %s: %i symbols ==' % (title, len(members))]
+        for item in members:
+            obj = getattr(group, item)
+            dval = None
+            if isinstance(obj, numpy.ndarray):
+                if len(obj) > 10 or len(obj.shape)>1:
+                    dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
+                                                         repr(obj.dtype))
+            if dval is None:
+                dval = repr(obj)
+            out.append('  %s: %s' % (item, dval))
+        self._larch.writer.write("%s\n" % '\n'.join(out))
 
 # if __name__ == '__main__':
 #     symtab = SymbolTable()
