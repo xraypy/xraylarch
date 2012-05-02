@@ -123,8 +123,10 @@ class ASCIIScanFile(ScanFile):
         self.check_writeable()
         out = ['%sExtraPVs Start:' % (self.com2)]
         for desc, pvname, val in self.scan.read_extra_pvs():
-            out.append("%s %s (%s):\t %s" % (self.comchar,
-                                             desc, pvname, repr(val)))
+            if not isinstance(val, (str, unicode)):
+                val = repr(val)
+            out.append("%s %s:   %s (%s)" % (self.comchar,
+                                             desc, val, pvname))
 
         out.append('%sExtraPVs End' % (self.com2))
         self.write_lines(out)
@@ -151,13 +153,13 @@ class ASCIIScanFile(ScanFile):
         for i, pos in enumerate(self.scan.positioners):
             key = 'p%i' % (i+1)
             cols.append("   %s  " % (key))
-            legend.append("%s %s = %s (%s)" % (self.comchar, key,
+            legend.append("%s %s: %s (%s)" % (self.comchar, key,
                                                pos.label,
                                                pos.pv.pvname))
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i)
             cols.append("   %s  " % (key))
-            legend.append("%s %s = %s (%s)" % (self.comchar, key,
+            legend.append("%s %s: %s (%s)" % (self.comchar, key,
                                                det.label,
                                                det.pv.pvname))
         out = ['%sLegend Start:' % self.com2]
