@@ -296,6 +296,28 @@ class ScalerDetector(DetectorMixin):
     def post_scan(self, **kws):
         self.scaler.AutoCountMode()
 
+class AreaDetector(DetectorMixin):
+    """very simple area detector interface...
+    trigger / dwelltime, uses array counter as only counter
+    """
+    trigger_suffix = 'Acquire'
+    def __init__(self, prefix, save_spectra=True, **kws):
+        if not prefix.endswith(':'):
+            prefix = "%s:" % prefix
+        DetectorMixin.__init__(self, prefix, **kws)
+        self.dwelltime_pv = PV('%sAcquireTime' % prefix)
+        self.dwelltime    = None
+        self.counters = [Counter("%sArrayCounter_RBV" % prefix,
+                                 label='Image Counter')]
+
+    def pre_scan(self, **kws):
+        if (self.dwelltime is not None and
+            isinstance(self.dwelltime_pv, PV)):
+            self.dwelltime_pv.put(self.dwelltime)
+        caput("%sImageMode" % (self.prefix), 0)      # single image capture
+        caput("%sArrayCallbacks" % (self.prefix), 1) # enable callbacks
+        
+
 class McaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
     def __init__(self, prefix, save_spectra=True, **kws):
@@ -401,6 +423,8 @@ def genericDetector(name, kind=None, label=None, **kws):
         builder = MotorDetector
     elif kind == 'mca':
         builder = MCADetector
+    elif kind == 'area':
+        builder = AreaDetector
     elif kind in ('med', 'multimca'):
         builder = MultiMcaDetector
     return builder(name, label=None, **kws)
