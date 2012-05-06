@@ -7,8 +7,9 @@ SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
 
-INSTALLDIR = /www/apache/htdocs/software/python/pyepicsapps
+NAME = stepscan
 
+INSTALLDIR = /www/apache/htdocs/software/python/$(NAME)
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -23,14 +24,14 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-epicsapps.pdf: latex
+mypdf: latex
 	cd $(BUILDDIR)/latex && make all-pdf
-	cp -pr $(BUILDDIR)/latex/epicsapps.pdf ./
+	cp -pr $(BUILDDIR)/latex/$(NAME).pdf ./
 
-all: html epicsapps.pdf
+all: html mypdf
 
 install: all
-	cp -pr $(BUILDDIR)/latex/epicsapps.pdf $(INSTALLDIR)/.
+	cp -pr $(BUILDDIR)/latex/$(NAME).pdf  $(INSTALLDIR)/.
 	cp -pr $(BUILDDIR)/html/* $(INSTALLDIR)/.
 
 help:

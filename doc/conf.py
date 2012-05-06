@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Epics Applications doc
+# StepScan doc
 
 import sys, os
 
@@ -9,11 +9,16 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.append(os.path.abspath('.'))
 
+sys.path.append(os.path.abspath(os.path.join('..', 'lib')))
+## sys.path.append(os.path.abspath(os.path.join('.', 'ext')))
+
 # -- General configuration -----------------------------------------------------
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo', 'sphinx.ext.coverage', 'sphinx.ext.pngmath']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo',
+              'sphinx.ext.coverage', 'sphinx.ext.pngmath',
+              'numpydoc']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -28,7 +33,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'Epics Applications'
+project = u'Epics Step Scans'
 copyright = u'2012, Matthew Newville'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -97,10 +102,10 @@ html_theme = 'sphinxdoc'
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
 #html_title = None
-html_title = 'Python Epics Applications'
+html_title = 'Step Scanning and Data Acquisition with Python and Epics Channel Access'
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-html_short_title = 'Python Epics Applications'
+html_short_title = 'StepScan with PyEpics'
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -152,7 +157,7 @@ html_show_sourcelink = True
 #html_file_suffix = ''
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'epicsapps'
+htmlhelp_basename = 'stepscan'
 
 
 # -- Options for LaTeX output --------------------------------------------------
@@ -166,7 +171,7 @@ htmlhelp_basename = 'epicsapps'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'epicsapps.tex', u'Epics Applications using PyEpics',
+    ('index', 'stepscan.tex', u'Step Scanning and Data Acquisition with Python and Epics Channel Access',
      u'Matthew Newville', 'manual'),
     ]
 

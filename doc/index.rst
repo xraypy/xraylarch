@@ -19,8 +19,8 @@ helpful.
 .. toctree::
    :maxdepth: 2
 
-   stepscan_install
-   stepscan_concepts
-   stepscan_usage
-   stepscan_spec
-   stepscan_gui
+   install
+   concepts
+   usage
+   spec
+   gui
