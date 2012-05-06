@@ -1,0 +1,19 @@
+{% extends "!layout.html" %}
+{% block rootrellink %}
+   <li><a href="{{ pathto('installation') }}">download</a>|</li>
+   <li><a href="{{ pathto('ad_display') }}">AreaDetector</a>|</li>
+   <li><a href="{{ pathto('stepscan') }}">StepScan</a>|</li>
+   <li><a href="{{ pathto('stripchart') }}">StripChart</a>|</li>
+   <li><a href="{{ pathto('motorsetup') }}">MotorSetup</a>|</li>
+   <li><a href="{{ pathto('instrument') }}">Instruments</a>|</li>
+   &nbsp;&nbsp;<li><a href="{{ pathto('search') }}">search</a></li>
+{% endblock %}
+{% block relbar1 %}
+<div style="background-color: #E4EAED; text-align: left; padding: 0px 0px 15px 15px">
+ <h1> <a href="{{ pathto('index') }}">Epics Applications using PyEpics</a></h1>
+</div>
+{{ super() }}
+{% endblock %}
+{# put the sidebar before the body #}
+{% block sidebar1 %}{{ sidebar() }}{% endblock %}
+{% block sidebar2 %}{% endblock %}

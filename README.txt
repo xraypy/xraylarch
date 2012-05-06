@@ -1,4 +1,8 @@
-(Work in Progress)
+Epics Step Scan
+=============================
+
+Step scannng and data acquisition with pyepics
+
 
 
 Classes and Functions for simple step scanning for epics.
