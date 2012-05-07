@@ -4,12 +4,28 @@ import os
 
 MODNAME = '_builtin'
 
+def SafeWxCall(fcn):
+    """decorator to wrap function in a wx.CallAfter() so that
+    calls can be made in a separate thread, and asynchronously.
+    """
+    def wrapper(*args, **kwargs):
+        "callafter wrapper"
+        try:
+            wx.CallAfter(fcn, *args, **kwargs)
+        except PyDeadObjectError:
+            pass
+    wrapper.__doc__ = fcn.__doc__
+    wrapper.__name__ = fcn.__name__
+    wrapper.__dict__.update(fcn.__dict__)
+    return wrapper
+
 def ensuremod(_larch):
     if _larch is not None:
         symtable = _larch.symtable
         if not symtable.has_group(MODNAME):
             symtable.newgroup(MODNAME)
 
+@SafeWxCall
 def _gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
     dlg = wx.DirDialog(wxparent, message='Choose Directory',
@@ -22,6 +38,7 @@ def _gcd(wxparent=None, _larch=None, **kws):
         os.chdir(path)
     return os.getcwd()
 
+@SafeWxCall
 def _fileprompt(wxparent=None, _larch=None,
                 mode='open', multi=True,
                 message = None,
