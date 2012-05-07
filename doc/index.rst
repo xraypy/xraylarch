@@ -1,20 +1,26 @@
-=========================================
-StepScan:  Epics Scans with Python
-=========================================
+==========================================================================
+StepScan: Data Acquisition with Python and Epics Channel Access
+==========================================================================
 
-StepScan is a library and (soon...) GUI application for running
-simple to moderately complex step scans of Epics motors,
-detectors, and general variables.  Many concepts are borrowed from
-the Epics SScan record and from Spec, but neither of those are
-used by StepScan -- the scans happen in the python client
-application.
+Epics StepScan is a library and (soon...) set of command-line and GUI
+applications for data acquisition with Epics Channel Access using Python.
+StepScan allows you to define and run step scans, in which a motorized
+stage or other variable is changed through a set of pre-defined positions
+(or steps), and a set of detectors are measured at each position.  By using
+Epics Channel Access, nearly any motors, detectors, or Epics Process
+Variable can be scanned or counted in a StepScan.  Using concepts are
+borrowed from the Epics SScan record and from commonly used Spec software,
+simple to moderately complex step scans can be built and run.  With
+StepScan, the data collection happens in the python client, so that many
+other python libraries and environments can be coupled with Epics StepScan.
 
-With Epics, nearly any Process Variable can be scanned or counted
-during a scan, and so a Step Scan can be a fairly complex thing.
-Fortunately, simple things are still easy to do.  A description of
-some terms in the :ref:`scan_concepts-label` section may be
-helpful.
-
+Though StepScan allows nearly any Process Variable to be scanned or counted
+during a scan, and thus allows scans to become quite complex, the StepScan
+library and applications allow simple scans to still be simple to define
+and run.  A description of some terms in the :ref:`scan_concepts-label`
+section is given to clarify the concepts used in StepScan and this
+documentation.   Examples of simple scans and some more complex scans are
+given.
 
 .. toctree::
    :maxdepth: 2

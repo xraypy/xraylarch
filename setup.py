@@ -10,7 +10,7 @@ setup(name = 'stepscan',
       author_email = 'newville@cars.uchicago.edu',
       license = 'BSD',
       description = 'Epics Step Scanning library and applications',
-      package_dir = {'epics.stepscan': 'lib'}
+      package_dir = {'epics.stepscan': 'lib'},
       packages = ['epics.stepscan'],
       data_files  = [('bin', ['bin/stepscan.py'])])
 
