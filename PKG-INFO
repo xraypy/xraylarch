@@ -5,6 +5,6 @@ Summary: Step Scanning and Data Acquisition with PyEpics
 Home-page: http://pyepics.github.com/stepscan/
 Author: Matthew Newville
 Author-email: newville@cars.uchicago.edu
-License: Epics Open License
+License: BSD
 Description: Step Scanning and Data Acquisition with PyEpics
 Platform: UNKNOWN
