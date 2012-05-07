@@ -46,7 +46,7 @@ class EventLoopRunner(object):
             self.timer.Stop()
             self.evtloop.Exit()
 
-def input_handler():
+def input_handler1():
     """Run the wx event loop, polling for stdin.
 
     This version runs the wx eventloop for an undetermined amount of time,
@@ -123,6 +123,8 @@ def input_handler3():
     except KeyboardInterrupt:
         pass
     return 0
+
+input_handler = input_handler2
 
 print 'INPUT HOOK ', input_handler
 input_hook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
