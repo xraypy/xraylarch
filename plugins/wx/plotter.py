@@ -10,16 +10,37 @@ Exposed functions here are
            a configurable Image Display Frame.
 '''
 import time
-import wx
-import  wx.lib.newevent
-from wxmplot import PlotFrame, ImageFrame
+import os
+import sys
 import thread
+import wx
+import wx.lib.newevent
+
+import larch
+from wxmplot import PlotFrame, ImageFrame
+
+here = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'wx')
+sys.path.insert(0, here)
+
+# now we can reliably import other wx modules...
+from gui_utils import SafeWxCall
 
 (CursorEvent, EVT_PLOT_CURSOR) = wx.lib.newevent.NewEvent()
+(UpdateEvent, EVT_PLOT_UPDATE) = wx.lib.newevent.NewEvent()
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 MODNAME = '_plotter'
+
+def _post_update(wxparent=None, **kws):
+    wx.PostEvent(wxparent, UpdateEvent(foo='hi'))
+    app = wx.GetApp()
+    evtloop = wx.EventLoop()
+    time.sleep(0.001)
+    wx.Yield()
+    app.ProcessIdle()
+    while evtloop.Pending():
+        evtloop.Dispatch()
 
 def ensuremod(_larch):
     if _larch is not None:
@@ -109,10 +130,17 @@ class PlotDisplay(PlotFrame):
         self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self._larch)
 
+        self.Bind(EVT_PLOT_UPDATE, self.onUpdate)
+
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
+
+    def onUpdate(self, evt=None, **kws):
+        # print 'plot display update! ', self.panel
+        self.panel.draw()
+        wx_update()
 
     def onExit(self, o, **kw):
         try:
@@ -156,9 +184,6 @@ class ImageDisplay(ImageFrame):
             IMG_DISPLAYS[self.window] = self
 
     def onExit(self, o, **kw):
-        #print 'ImageDisplay Exit ', self.symname, o, kw
-        #for k, v in IMG_DISPLAYS.items():
-        #    print 'IMG DISP: ',  k, v
         try:
             symtable = self._larch.symtable
             symtable.has_group(MODNAME), self.symname
@@ -182,6 +207,7 @@ class ImageDisplay(ImageFrame):
         if iy is not None:  set('%s_iy' % self.symname, iy)
         if val is not None: set('%s_val' % self.symname, val)
 
+#  @SafeWxCall
 def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
@@ -198,20 +224,18 @@ def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
         display_dict = IMG_DISPLAYS
         title   = 'Image Window %i' % win
         symname = '%s.img%i' % (MODNAME, win)
-
     if win in display_dict:
         display = display_dict[win]
     else:
         display = _larch.symtable.get_symbol(symname, create=True)
-
     if display is None:
         display = creator(window=win, wxparent=wxparent, _larch=_larch)
         _larch.symtable.set_symbol(symname, display)
-
     if display is not None:
         display.SetTitle(title)
     return display
 
+# @SafeWxCall
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
           force_draw=False, **kws):
     """plot(x, y[, win=1], options])
@@ -255,9 +279,9 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
     else:
         plotter.oplot(x, y, **kws)
     if force_draw:
-        update()
+        wx_update()
 
-def update():
+def wx_update():
     app = wx.GetApp()
     evtloop = wx.EventLoop()
     activator = wx.EventLoopActivator(evtloop)
@@ -266,6 +290,7 @@ def update():
 
     app.ProcessIdle()
 
+# @SafeWxCall
 def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
@@ -279,6 +304,7 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """
     _plot(x, y, win=win, new=False, _larch=_larch, wxparent=wxparent, **kws)
 
+# @SafeWxCall
 def _newplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """newplot(x, y[, win=1[, options]])
 
@@ -315,6 +341,7 @@ def _getcursor(win=1, timeout=60, _larch=None, wxparent=None, **kws):
     except:
         return None
 
+# @SafeWxCall
 def _imshow(map, win=1, _larch=None, wxparent=None, **kws):
     """imshow(map[, options])
 
@@ -330,6 +357,7 @@ def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
                       'newplot':_newplot,
                       'oplot': _oplot,
+                      'post_update': _post_update,
                       'get_display':_getDisplay,
                       'get_cursor': _getcursor,
                       'imshow':_imshow} )
