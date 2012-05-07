@@ -37,6 +37,10 @@ def __resid(pars, knots=None, order=3, irbkg=1, nfft=2048,
 def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
            kmin=0, kmax=None, kw=1, dk=0, win=None, vary_e0=True,
            chi_std=None, nfft=2048, kstep=0.05, _larch=None):
+    """Use Autobk algorithm to remove XAFS background
+    Options are:
+      rbkg -- distance out to which the chi(R) is minimized
+    """
     if _larch is None:
         raise Warning("cannot calculate autobk spline -- larch broken?")
 
