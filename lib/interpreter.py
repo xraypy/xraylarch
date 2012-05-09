@@ -733,6 +733,7 @@ class Interpreter:
         this method covers a lot of cases (larch or python, import
         or from-import, use of asname) and so is fairly long.
         """
+        # print('import_mod A ', name, do_reload)
         st_sys = self.symtable._sys
         for idir in st_sys.path:
             if idir not in sys.path and os.path.exists(idir):
@@ -742,10 +743,15 @@ class Interpreter:
         #   either sys.modules for python modules
         #   or  st_sys.modules for larch modules
         # reload takes effect here in the normal python way:
-        if (do_reload or
-            ((name not in st_sys.modules) and (name not in sys.modules))):
+
+        thismod = None
+        if name in st_sys.modules:
+            thismod = st_sys.modules[name]
+        elif name in sys.modules:
+            thismod = sys.modules[name]
+
+        if (do_reload or thismod is None):
             # first look for "name.lar"
-            # print('import_mod A ', name)
             islarch = False
             larchname = "%s.lar" % name
             for dirname in st_sys.path:
@@ -764,24 +770,16 @@ class Interpreter:
                     #  create new group, set as moduleGroup and localGroup
             if len(self.error) > 0:
                 st_sys.modules.pop(name)
-                # thismod = None
                 return
             # or, if not a larch module, load as a regular python module
             if not islarch and name not in sys.modules:
                 try:
-                    # print('import_mod: py import! ', name)
                     __import__(name)
                     thismod = sys.modules[name]
                 except:
                     self.raise_exception(None, exc=ImportError, msg='Import Error')
                     return
-        else: # previously loaded module, just do lookup
-            # print("prev loaded?")
-            if name in st_sys.modules:
-                thismod = st_sys.modules[name]
-            elif name in sys.modules:
-                thismod = sys.modules[name]
-
+                
         # now we install thismodule into the current moduleGroup
         # import full module
         if fromlist is None:
