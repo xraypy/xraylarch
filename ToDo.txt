@@ -1,16 +1,18 @@
 To Do list for step scanning:
 
-  - save/loadd configuration of scan parameters.   This could use an INI
+  - save/load configuration of scan parameters.   This could use an INI
      file, or an SQLite database.  Prefer both.
 
-  - Spec Mode should be able to save/load a motor/detector configuration file
-
-  - Test Area Detectors -- so far I've only tested with Scalers and Multi-MCAs
+  - Area Detectors should always save ArrayCounter (I think it does).  It
+    would be nice to check which, if any, filesaving plugins are enabled.
 
   - XAFS Scan setup routine, with save/load
 
   - Allow limiting ROIs from MCA detector(s) by name, so that 'save all' is
-    the default, but not the only option.
+    the default, but not the only option.  Tricky part:  do you allow
+    'match the name "K"'? (careful to match "potassium" and not all "Ka"!)
+    or some other mechanism. Perhaps safest to require exact name or index 
+    matches with an 'exclude_rois=()' option, and let the GUI help do this.
 
   - ASCII File writing works, but may need options (comment char, etc)
 
@@ -19,7 +21,9 @@ To Do list for step scanning:
 
   - Writing a proper Spec file?
 
-  - Handling waveform data?   Writing to non-ASCII (HDF5?) files?
+  - Handling waveform data?  Should probably write a companion file
+    (netcdf? xdr?) with all data, and let only int/float scalars go to the
+    ASCII file. 
 
   - Data Viewing Program that can parse scan files (ASCII or HDF5)
 
@@ -36,8 +40,8 @@ To Do list for step scanning:
        -- Macro window with do_scan(saved_definition)/ascan/etc.
 
        -- Plotting of live scan, pull-downs for what to plot
+
        -- Plotting simple peak analysis, derivative analysis,
             move to position , etc.
 
-Need to choose GUI toolkit.
 
