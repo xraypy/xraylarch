@@ -85,7 +85,7 @@ import time
 import threading
 from epics import PV, poll
 
-from .detectors import Counter, DeviceCounter
+from .detectors import Counter, DeviceCounter, Trigger
 from .outputfile import ASCIIScanFile
 
 class ScanMessenger(threading.Thread):
@@ -194,10 +194,22 @@ class StepScan(object):
         "add simple counter"
         if isinstance(counter, str):
             counter = Counter(counter, label)
-        if isinstance(counter, (Counter, DeviceCounter)):
+        if (isinstance(counter, (Counter, DeviceCounter)) and
+            counter not in self.counters):
             self.counters.append(counter)
         else:
             print 'Cannot add Counter? ', counter
+        self.verified = False
+
+    def add_trigger(self, trigger, label=None, value=1):
+        "add simple detector trigger"
+        if isinstance(trigger, str):
+            trigger = Trigger(trigger, label=label, value=value)
+        if (isinstance(trigger, Trigger) and
+            trigger not in self.triggers):
+            self.triggers.append(trigger)
+        else:
+            print 'Cannot add Trigger? ', trigger
         self.verified = False
 
     def add_extra_pvs(self, extra_pvs):
@@ -209,7 +221,8 @@ class StepScan(object):
                 pv = PV(pvname)
             else:
                 pv = pvname
-            self.extra_pvs.append((desc, pv))
+            if (desc, pv) not in self.extra_pvs:
+                self.extra_pvs.append((desc, pv))
 
     def add_positioner(self, pos):
         """ add a Positioner """
@@ -217,7 +230,9 @@ class StepScan(object):
         self.at_break_methods.append(pos.at_break)
         self.post_scan_methods.append(pos.post_scan)
         self.pre_scan_methods.append(pos.pre_scan)
-        self.positioners.append(pos)
+
+        if pos not in self.positioners:
+            self.positioners.append(pos)
         self.verified = False
 
     def add_detector(self, det):
@@ -226,10 +241,11 @@ class StepScan(object):
         self.at_break_methods.append(det.at_break)
         self.post_scan_methods.append(det.post_scan)
         self.pre_scan_methods.append(det.pre_scan)
-
-        self.triggers.append(det.trigger)
-        self.counters.extend(det.counters)
-        self.detectors.append(det)
+        self.add_trigger(det.trigger)
+        for counter in det.counters:
+            self.add_counter(counter)
+        if det not in self.detectors:
+            self.detectors.append(det)
         self.verified = False
 
     def set_dwelltime(self, dtime):
