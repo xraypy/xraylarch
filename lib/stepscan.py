@@ -297,10 +297,10 @@ class StepScan(object):
             print self.error_message
             return
         self.abort = False
+        orig_positions = [p.current() for p in self.positioners]
+
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
-
-        orig_positions = [p.current() for p in self.positioners]
 
         out = [p.move_to_start() for p in self.positioners]
         self.check_outputs(out, msg='move to start')
