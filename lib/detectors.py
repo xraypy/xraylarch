@@ -7,8 +7,9 @@ from epics import PV, caget, caput
 from epics.devices import Scaler, Mca, Struck
 from ordereddict import OrderedDict
 
+from saveable import Saveable
 
-class Trigger(object):
+class Trigger(Saveable):
     """Detector Trigger for a scan. The interface is:
     trig = ScanTrigger(pvname, value=1)
            defines a trigger PV and trigger value
@@ -27,6 +28,7 @@ Example usage:
     <read detector data>
     """
     def __init__(self, pvname, value=1, label=None, **kws):
+        Saveable.__init__(self, pvname, label=label, value=value, **kws)
         self.pv  = PV(pvname)
         self._val = value
         self.done = False
@@ -49,10 +51,11 @@ Example usage:
             value = self._val
         self.pv.put(value, callback=self.__onComplete)
 
-class Counter(object):
+class Counter(Saveable):
     """simple scan counter object --
     a value that will be counted at each point in the scan"""
     def __init__(self, pvname, label=None):
+        Saveable.__init__(self, pvname, label=label)
         self.pv  = PV(pvname)
         if label is None:
             label = pvname
@@ -232,9 +235,10 @@ class MultiMcaCounter(DeviceCounter):
         self.extra_pvs = extras
         self.set_counters(fields)
 
-class DetectorMixin(object):
+class DetectorMixin(Saveable):
     trigger_suffix = None
     def __init__(self, prefix, label=None, **kws):
+        Saveable.__init__(self, prefix, label=label, **kws)
         self.prefix = prefix
         self.label = label
         if self.label is None:
