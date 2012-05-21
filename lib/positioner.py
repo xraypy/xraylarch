@@ -3,13 +3,16 @@ Positioner for Step Scan
 """
 
 from epics import PV, caget
+from saveable import Saveable
 
-class Positioner(object):
+class Positioner(Saveable):
     """a positioner for a scan
 This **ONLY** sets an ordinate value for scan, it does *NOT*
 do a readback on this position -- add a ScanDetector for that!
     """
     def __init__(self, pvname, label=None, array=None, **kws):
+        Saveable.__init__(self, pvname, label=label,
+                          array=array, **kws)
         if isinstance(pvname, PV):
             self.pv = pvname
         else:
@@ -31,7 +34,6 @@ do a readback on this position -- add a ScanDetector for that!
             except:
                 pass
             self.label = desc
-
         if array is None: array  = []
         self.array = array
         self.extra_pvs = []
@@ -42,7 +44,7 @@ do a readback on this position -- add a ScanDetector for that!
             npts = len(self.array)
             amin = '%g' % (min(self.array))
             amax = '%g' % (max(self.array))
-            out = "%s: %i point, range: [%s, %s]" % (out, nps, amin, amax)
+            out = "%s: %i points, min/max: [%s, %s]" % (out, npts, amin, amax)
         return "%s>" % out
 
     def __onComplete(self, pvname=None, **kws):
