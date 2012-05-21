@@ -24,19 +24,22 @@ class XAFS_Scan(StepScan):
         self.e0 = e0
         self.energies = []
         self.dwelltimes   = []
+        self.regions = []
         self.dtime = dtime
         StepScan.__init__(self, **kws)
-
         self.energy_pos = None
         self.set_energy_pv(energy_pv, read_pv=read_pv)
 
-    def set_energy_pv(energy_pv, read_pv=None):
+    def set_energy_pv(self, energy_pv, read_pv=None):
+        self.energy_pv = energy_pv
+        self.read_pv = read_pv
         if energy_pv is not None:
-            self.energy_pos = Positioner(energy_pv, label='Energy'))
+           
+            self.energy_pos = Positioner(energy_pv, label='Energy')
             self.positioners = []
             self.add_positioner(self.energy_pos)
         if read_pv is not None:
-            self.add_counter(read_pv, label='Energy (read)')
+            self.add_counter(read_pv, label='Energy_readback')
 
     def read_config_file(self, configfile):
         """read configuration from INI file"""
@@ -44,7 +47,14 @@ class XAFS_Scan(StepScan):
 
     def save_config_file(self, configfile):
         """write configuration from INI file"""
-        pass
+        print self.label
+        print self.e0, self.dtime
+        print self.energy_pv
+        print self.read_pv
+        print self.detectors
+        for r in self.regions:
+            print r
+
 
     def add_region(self, start, stop, step=None, npts=None,
                    relative=True, use_k=False, e0=None,
@@ -68,6 +78,13 @@ class XAFS_Scan(StepScan):
             npts = 1 + int(0.1  + abs(stop - start)/step)
 
         en_arr = list(np.linspace(start, stop, npts))
+        # note: save region definition using npts here,
+        # even though npts may be reduced below, this set
+        # will provide reproducible results, and so can be
+        # savd for later re-use.
+        self.regions.append((start, stop, npts, relative, use_k,
+                             e0, dtime, dtime_final, dtime_wt))
+
         if use_k:
             for i, k in enumerate(en_arr):
                 en_arr[i] = e0 + ktoe(k)
@@ -82,6 +99,7 @@ class XAFS_Scan(StepScan):
             en_arr = [e for e in en_arr if e > max(self.energies)]
 
         npts   = len(en_arr)
+
         dt_arr = [dtime]*npts
         # allow changing counting time linear or by a power law.
         if dtime_final is not None and dtime_wt > 0:
@@ -91,6 +109,7 @@ class XAFS_Scan(StepScan):
         self.dwelltimes.extend(dt_arr)
 
     def clear(self):
+        self.regions = []
         self.energies = []
         self.dwelltimes = []
 
@@ -104,8 +123,8 @@ class XAFS_Scan(StepScan):
         # set detector dwelltime array
         for d in self.detectors:
             if d.dwelltime_pv is not None:
-                thipos = None
-                for p in self.positoners:
+                thispos = None
+                for p in self.positioners:
                     if p.pv.pvname == d.dwelltime_pv.pvname:
                         thispos = p
                 if thispos is None:
@@ -114,7 +133,8 @@ class XAFS_Scan(StepScan):
                     self.add_positioner(thispos)
                 thispos.array = self.dwelltimes
         print 'Positioners: ', self.positioners
-        print 'Detectors: ', self.detectors
+        print 'Triggers: ', self.triggers
+        print 'Counters: ', self.counters
         self.set_dwelltime(self.dwelltimes[0])
         if self.energy_pre_scan not in self.pre_scan_methods:
             self.pre_scan_methods.append(self.energy_pre_scan)
