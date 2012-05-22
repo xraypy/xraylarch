@@ -94,8 +94,13 @@ if HAS_WX:
     else:
         from larch.wx import inputhook
     app = wx.App(redirect=False, clearSigInt=False)
-    shell.larch.add_plugin('wx', wxparent=None)
+    shell.larch.add_plugin('wx', wxparent=None,
+                           inputhandler=inputhook.input_handler)
+    shell.larch.symtable.set_symbol('_builtin.force_wxupdate', False)
+   
     inputhook.ON_INTERRUPT = onCtrlC
+    inputhook.WXLARCH_SYM = shell.larch.symtable
+
 
 # execute scripts listed on command-line
 if len(args)>0:

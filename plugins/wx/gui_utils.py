@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import wx
 import time
 import os
@@ -21,6 +23,14 @@ def _gcd(wxparent=None, _larch=None, **kws):
     if path is not None:
         os.chdir(path)
     return os.getcwd()
+
+def _wxupdate(wxparent=None, _larch=None, inputhandler=None, **kws):
+    """force an update of wxPython windows"""
+
+    if _larch is not None and inputhandler is not None:
+        symtable = _larch.symtable
+        symtable.set_symbol("%s.force_wxupdate" % MODNAME, True)
+        inputhandler()
 
 def _fileprompt(wxparent=None, _larch=None,
                 mode='open', multi=True,
@@ -71,5 +81,6 @@ def _fileprompt(wxparent=None, _larch=None,
 
 def registerLarchPlugin():
     return (MODNAME, {'gcd': _gcd,
-                      'fileprompt': _fileprompt})
+                      'fileprompt': _fileprompt,
+                      'wx_update': _wxupdate})
 

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
    Plotting functions for Larch, wrapping the mplot plotting
    widgets which use matplotlib
@@ -255,16 +256,10 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
     else:
         plotter.oplot(x, y, **kws)
     if force_draw:
-        update()
+        update(_larch=_larch)
 
-def update():
-    app = wx.GetApp()
-    evtloop = wx.EventLoop()
-    activator = wx.EventLoopActivator(evtloop)
-    while evtloop.Pending():
-        evtloop.Dispatch()
-
-    app.ProcessIdle()
+def update(_larch=None):
+    _larch.symtable.get_symbol('_builtin.wx_update')()
 
 def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=1[, options]])
