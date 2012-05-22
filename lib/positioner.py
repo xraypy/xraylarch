@@ -3,7 +3,7 @@ Positioner for Step Scan
 """
 
 from epics import PV, caget
-from saveable import Saveable
+from .saveable import Saveable
 
 class Positioner(Saveable):
     """a positioner for a scan

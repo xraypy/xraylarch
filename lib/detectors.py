@@ -7,7 +7,7 @@ from epics import PV, caget, caput
 from epics.devices import Scaler, Mca, Struck
 from ordereddict import OrderedDict
 
-from saveable import Saveable
+from .saveable import Saveable
 
 class Trigger(Saveable):
     """Detector Trigger for a scan. The interface is:
