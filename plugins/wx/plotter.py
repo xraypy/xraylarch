@@ -115,6 +115,24 @@ class PlotDisplay(PlotFrame):
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
 
+    def save_xylims(self, side='left'):
+        axes = self.panel.axes
+        if side == 'right':
+            axes = self.panel.get_right_axes()
+        self._xylims = self.panel.calc_xylims(axes)
+
+    def update_xylims(self, x, y, side='left'):
+        axes = self.panel.axes
+        if side == 'right':
+            axes = self.panel.get_right_axes()
+            
+        lims = ( min(min(x), self._xylims[0]),
+                 max(max(x), self._xylims[1]),
+                 min(min(y), self._xylims[2]),
+                 max(max(y), self._xylims[3]))
+        self._xylims = lims
+        self.panel.set_xylims(lims, autoscale=True)
+
     def onExit(self, o, **kw):
         try:
             symtable = self._larch.symtable
@@ -255,10 +273,25 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
         plotter.plot(x, y, **kws)
     else:
         plotter.oplot(x, y, **kws)
+    plotter.save_xylims()
     if force_draw:
         update(_larch=_larch)
 
-def update(_larch=None):
+
+def _update_line(x, y, trace=1, win=1, _larch=None, wxparent=None, **kws):
+    """update a plot trace with new data, avoiding complete redraw"""
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+    trace -= 1 # wxmplot counts traces from 0
+    
+    # print 'Update line ', trace, len(x), lims
+    plotter.panel.update_line(trace, x, y, draw=True)
+    plotter.update_xylims(x, y)
+    update(_larch)
+   
+def update(_larch=None, **kws):
     _larch.symtable.get_symbol('_builtin.wx_update')()
 
 def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
@@ -325,6 +358,7 @@ def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
                       'newplot':_newplot,
                       'oplot': _oplot,
+                      'update_line': _update_line,
                       'get_display':_getDisplay,
                       'get_cursor': _getcursor,
                       'imshow':_imshow} )
