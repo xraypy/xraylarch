@@ -1,6 +1,7 @@
-'''
+#!/usr/bin/env python
+"""
 Helper classes for larch interpreter
-'''
+"""
 
 import ast 
 import sys, os

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 main = """This is Larch main help"""
 
 import helpTopics

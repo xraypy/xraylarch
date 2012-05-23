@@ -1,9 +1,11 @@
-##
-## site configuration for larch:
-##
-##   init_files:  list of larch files run (in order) on startup
-##   module_path: list of directories to search for larch code
-##   history_file:
+#!/usr/bin/env python
+"""
+site configuration for larch:
+
+   init_files:  list of larch files run (in order) on startup
+   module_path: list of directories to search for larch code
+   history_file:
+"""
 import os
 import sys
 import site_configdata

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 '''
 SymbolTable for Larch interpreter
 '''

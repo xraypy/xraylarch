@@ -1,5 +1,6 @@
 #!/usr/bin/env python
-"""utilities for larch
+"""
+utilities for larch
 """
 from __future__ import print_function
 import re

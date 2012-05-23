@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import xmlrpclib
 proxy = xmlrpclib.ServerProxy('http://localhost:7112')

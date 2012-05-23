@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Enable wxPython to be used interacive by setting PyOS_InputHook.
 
