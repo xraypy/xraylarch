@@ -28,7 +28,7 @@ def ensuremod(_larch, modname):
             symtable.newgroup(modname)
         return symtable
 
-@SafeWxCall
+# @SafeWxCall
 def _gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
     dlg = wx.DirDialog(wxparent, message='Choose Directory',
@@ -41,16 +41,15 @@ def _gcd(wxparent=None, _larch=None, **kws):
         os.chdir(path)
     return os.getcwd()
 
-@SafeWxCall
+# @SafeWxCall
 def _wxupdate(wxparent=None, _larch=None, inputhandler=None, **kws):
     """force an update of wxPython windows"""
-
     if _larch is not None and inputhandler is not None:
         symtable = _larch.symtable
         symtable.set_symbol("%s.force_wxupdate" % MODNAME, True)
         inputhandler()
 
-@SafeWxCall
+# @SafeWxCall
 def _fileprompt(wxparent=None, _larch=None,
                 mode='open', multi=True,
                 message = None,

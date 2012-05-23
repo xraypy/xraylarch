@@ -34,15 +34,15 @@ class EventLoopTimer(wx.Timer):
         wx.Timer.__init__(self)
 
     def Notify(self):
-        try:        
+        try:
             self.func()
         except KeyboardInterrupt:
             print 'keyboard interrupt'
-           
+
 class EventLoopRunner(object):
     def __init__(self, larchsym=None):
         self.larchsym = larchsym
-                 
+
     def Run(self, time):
         self.evtloop = wx.EventLoop()
         self.timer = EventLoopTimer(self.check_stdin)
@@ -83,10 +83,10 @@ def input_handler1():
         if app is not None:
             assert wx.Thread_IsMain()
             elr = EventLoopRunner(larchsym=WXLARCH_SYM)
-            # As this time is made shorter, keyboard response improves, 
+            # As this time is made shorter, keyboard response improves,
             # but idle CPU load goes up.
             # 10 ms seems like a good compromise.
-            elr.Run(time=POLLTIME)  
+            elr.Run(time=POLLTIME)
     except KeyboardInterrupt:
         pass
     return 0
@@ -150,4 +150,4 @@ input_handler = input_handler1
 input_hook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
 cback = CFUNCTYPE(c_int)(input_handler)
 input_hook.value = cast(cback, c_void_p).value
-    
+
