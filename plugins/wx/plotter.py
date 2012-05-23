@@ -45,7 +45,7 @@ class CursorThread:
         self.running = True
         while self.keepGoing:
             wx.PostEvent(self.parent, CursorEvent(win=self.plotwin))
-            time.sleep(0.1)
+            time.sleep(0.05)
         self.running = False
 
 class CursorFrame(wx.MiniFrame):
@@ -71,7 +71,7 @@ class CursorFrame(wx.MiniFrame):
         wx.Yield()
         self.thread.Stop()
         while self.thread.running:
-            time.sleep(0.1)
+            time.sleep(0.05)
 
     def onUpdate(self, evt=None):
         self.has_cursor = self.symtable.has_symbol(self.xval)
@@ -89,7 +89,7 @@ class CursorFrame(wx.MiniFrame):
         evtloop = wx.EventLoop()
         while (not self.has_cursor and
                time.time() - t0 < timeout):
-            time.sleep(0.1)
+            time.sleep(0.05)
             wx.Yield()
             app.ProcessIdle()
             while evtloop.Pending():
@@ -100,7 +100,8 @@ class CursorFrame(wx.MiniFrame):
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, **kws):
         PlotFrame.__init__(self, parent=wxparent,
-                                 exit_callback=self.onExit, **kws)
+                           output_title='plot2d', 
+                           exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
         self.cursor_pos = None
