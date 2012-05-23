@@ -11,23 +11,28 @@ Exposed functions here are
            a configurable Image Display Frame.
 '''
 import time
-import wx
-import  wx.lib.newevent
-from wxmplot import PlotFrame, ImageFrame
+import os
+import sys
 import thread
+import wx
+import wx.lib.newevent
+
+import larch
+from wxmplot import PlotFrame, ImageFrame
+
+here = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'wx')
+sys.path.insert(0, here)
+
+# now we can reliably import other wx modules...
+from gui_utils import SafeWxCall, ensuremod, _wxupdate
 
 (CursorEvent, EVT_PLOT_CURSOR) = wx.lib.newevent.NewEvent()
+(UpdateEvent, EVT_PLOT_UPDATE) = wx.lib.newevent.NewEvent()
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 MODNAME = '_plotter'
 
-def ensuremod(_larch):
-    if _larch is not None:
-        symtable = _larch.symtable
-        if not symtable.has_group(MODNAME):
-            symtable.newgroup(MODNAME)
-        return symtable
 
 class CursorThread:
     def __init__(self, parent, plotwin):
@@ -55,7 +60,7 @@ class CursorFrame(wx.MiniFrame):
         wx.MiniFrame.__init__(self, parent, -1, '')
         self.Show(False)
         self.plotter = plotter
-        self.symtable = ensuremod(_larch)
+        self.symtable = ensuremod(_larch, MODNAME)
         self.xval = '%s.plot%i_x' % (MODNAME, win)
         self.yval = '%s.plot%i_y' % (MODNAME, win)
         if self.symtable.has_symbol(self.xval):
@@ -109,12 +114,19 @@ class PlotDisplay(PlotFrame):
         self.window = int(window)
         self._larch = _larch
         self.symname = '%s.plot%i' % (MODNAME, self.window)
-        symtable = ensuremod(self._larch)
+        symtable = ensuremod(self._larch, MODNAME)
+
+        self.Bind(EVT_PLOT_UPDATE, self.onUpdate)
 
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
+
+    def onUpdate(self, evt=None, **kws):
+        # print 'plot display update! ', self.panel
+        self.panel.draw()
+        update()
 
     def save_xylims(self, side='left'):
         axes = self.panel.axes
@@ -126,7 +138,7 @@ class PlotDisplay(PlotFrame):
         axes = self.panel.axes
         if side == 'right':
             axes = self.panel.get_right_axes()
-            
+
         lims = ( min(min(x), self._xylims[0]),
                  max(max(x), self._xylims[1]),
                  min(min(y), self._xylims[2]),
@@ -147,7 +159,7 @@ class PlotDisplay(PlotFrame):
         self.Destroy()
 
     def onCursor(self, x=None, y=None, **kw):
-        symtable = ensuremod(self._larch)
+        symtable = ensuremod(self._larch, MODNAME)
         if symtable is None:
             return
         symtable.set_symbol('%s_x'  % self.symname, x)
@@ -169,16 +181,13 @@ class ImageDisplay(ImageFrame):
         self.window = int(window)
         self.symname = '%s.img%i' % (MODNAME, self.window)
         self._larch = _larch
-        symtable = ensuremod(self._larch)
+        symtable = ensuremod(self._larch, MODNAME)
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
         if self.window not in IMG_DISPLAYS:
             IMG_DISPLAYS[self.window] = self
 
     def onExit(self, o, **kw):
-        #print 'ImageDisplay Exit ', self.symname, o, kw
-        #for k, v in IMG_DISPLAYS.items():
-        #    print 'IMG DISP: ',  k, v
         try:
             symtable = self._larch.symtable
             symtable.has_group(MODNAME), self.symname
@@ -192,7 +201,7 @@ class ImageDisplay(ImageFrame):
 
     def onCursor(self,x=None, y=None, ix=None, iy=None,
                  val=None, **kw):
-        symtable = ensuremod(self._larch)
+        symtable = ensuremod(self._larch, MODNAME)
         if symtable is None:
             return
         set = symtable.set_symbol
@@ -218,20 +227,18 @@ def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
         display_dict = IMG_DISPLAYS
         title   = 'Image Window %i' % win
         symname = '%s.img%i' % (MODNAME, win)
-
     if win in display_dict:
         display = display_dict[win]
     else:
         display = _larch.symtable.get_symbol(symname, create=True)
-
     if display is None:
         display = creator(window=win, wxparent=wxparent, _larch=_larch)
         _larch.symtable.set_symbol(symname, display)
-
     if display is not None:
         display.SetTitle(title)
     return display
 
+# @SafeWxCall
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
           force_draw=False, **kws):
     """plot(x, y[, win=1], options])
@@ -286,15 +293,16 @@ def _update_line(x, y, trace=1, win=1, _larch=None, wxparent=None, **kws):
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
     trace -= 1 # wxmplot counts traces from 0
-    
+
     # print 'Update line ', trace, len(x), lims
     plotter.panel.update_line(trace, x, y, draw=True)
     plotter.update_xylims(x, y)
     update(_larch)
-   
+
 def update(_larch=None, **kws):
     _larch.symtable.get_symbol('_builtin.wx_update')()
 
+# @SafeWxCall
 def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
@@ -308,6 +316,7 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """
     _plot(x, y, win=win, new=False, _larch=_larch, wxparent=wxparent, **kws)
 
+# @SafeWxCall
 def _newplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """newplot(x, y[, win=1[, options]])
 
@@ -329,7 +338,7 @@ def _getcursor(win=1, timeout=60, _larch=None, wxparent=None, **kws):
     x, y position of cursor.
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
-    symtable = ensuremod(_larch)
+    symtable = ensuremod(_larch, MODNAME)
     xval = '%s.plot%i_x' % (MODNAME, win)
     yval = '%s.plot%i_y' % (MODNAME, win)
 
@@ -344,6 +353,7 @@ def _getcursor(win=1, timeout=60, _larch=None, wxparent=None, **kws):
     except:
         return None
 
+# @SafeWxCall
 def _imshow(map, win=1, _larch=None, wxparent=None, **kws):
     """imshow(map[, options])
 
