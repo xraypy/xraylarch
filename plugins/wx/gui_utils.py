@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import wx
 import time
 import os
@@ -19,11 +21,12 @@ def SafeWxCall(fcn):
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
 
-def ensuremod(_larch):
+def ensuremod(_larch, modname):
     if _larch is not None:
         symtable = _larch.symtable
-        if not symtable.has_group(MODNAME):
-            symtable.newgroup(MODNAME)
+        if not symtable.has_group(modname):
+            symtable.newgroup(modname)
+        return symtable
 
 @SafeWxCall
 def _gcd(wxparent=None, _larch=None, **kws):
@@ -37,6 +40,15 @@ def _gcd(wxparent=None, _larch=None, **kws):
     if path is not None:
         os.chdir(path)
     return os.getcwd()
+
+@SafeWxCall
+def _wxupdate(wxparent=None, _larch=None, inputhandler=None, **kws):
+    """force an update of wxPython windows"""
+
+    if _larch is not None and inputhandler is not None:
+        symtable = _larch.symtable
+        symtable.set_symbol("%s.force_wxupdate" % MODNAME, True)
+        inputhandler()
 
 @SafeWxCall
 def _fileprompt(wxparent=None, _larch=None,
@@ -88,5 +100,6 @@ def _fileprompt(wxparent=None, _larch=None,
 
 def registerLarchPlugin():
     return (MODNAME, {'gcd': _gcd,
-                      'fileprompt': _fileprompt})
+                      'fileprompt': _fileprompt,
+                      'wx_update': _wxupdate})
 
