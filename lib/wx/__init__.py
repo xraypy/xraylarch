@@ -1,6 +1,6 @@
-
-"""wx widgets for Larch
-
+#!/usr/bin/env python
+"""
+wx widgets for Larch
 """
 import larchframe
 import larchfilling

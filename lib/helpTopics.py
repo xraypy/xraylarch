@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """Help topics for on-line documentation and help in larch
 
 The data here contain python variable holding text that

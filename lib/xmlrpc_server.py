@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 import os
 import socket

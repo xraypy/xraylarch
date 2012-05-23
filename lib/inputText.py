@@ -1,5 +1,6 @@
-#
-"""handle input Text for Larch -- inclides translation to Python text
+#!/usr/bin/env python
+"""
+handle input Text for Larch -- inclides translation to Python text
 """
 from __future__ import print_function
 from utils import isValidName, isNumber, isLiteralStr, strip_comments, find_delims

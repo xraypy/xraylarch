@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 unix_installdir = '/usr/share/larch'
 unix_userdir    = '.larch'
 
