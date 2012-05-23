@@ -24,7 +24,7 @@ here = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'wx')
 sys.path.insert(0, here)
 
 # now we can reliably import other wx modules...
-from gui_utils import SafeWxCall, ensuremod, _wxupdate
+from gui_utils import ensuremod
 
 (CursorEvent, EVT_PLOT_CURSOR) = wx.lib.newevent.NewEvent()
 (UpdateEvent, EVT_PLOT_UPDATE) = wx.lib.newevent.NewEvent()
