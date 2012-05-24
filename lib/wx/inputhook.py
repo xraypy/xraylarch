@@ -3,7 +3,6 @@
 Enable wxPython to be used interacive by setting PyOS_InputHook.
 
 Authors:  Robin Dunn and Brian Granger
-
 tweaked by M Newville, based on reading modified inputhookwx from IPython
 """
 
@@ -17,53 +16,46 @@ import larch
 
 def stdin_ready():
     inp, out, err = select([sys.stdin],[],[],0)
-    # return len(inp) > 0
     return bool(inp)
 
 if sys.platform == 'win32':
     from msvcrt import kbhit as stdin_ready
 
-POLLTIME = 10 # milliseconds
+POLLTIME = 25 # milliseconds
 ON_INTERRUPT = None
 WXLARCH_SYM = None
+UPDATE_VAR = '_builtin.force_wxupdate'
 
+def update_requested():
+    "check if update has been requested"
+    global WXLARCH_SYM, UPDATE_VAR
+    if WXLARCH_SYM is not None:
+        return WXLARCH_SYM.get_symbol(UPDATE_VAR)
+    return False
 
-class EventLoopTimer(wx.Timer):
-
-    def __init__(self, func):
-        self.func = func
-        wx.Timer.__init__(self)
-
-    def Notify(self):
-        try:
-            self.func()
-        except KeyboardInterrupt:
-            print 'keyboard interrupt'
+def clear_update_request():
+    "clear update request"
+    global WXLARCH_SYM, UPDATE_VAR
+    if WXLARCH_SYM is not None:
+        WXLARCH_SYM.set_symbol(UPDATE_VAR, False)
 
 class EventLoopRunner(object):
-    def __init__(self, larchsym=None):
-        self.larchsym = larchsym
+    def __init__(self, parent):
+        self.parent = parent
 
-    def Run(self, time):
+    def run(self, time):
         self.evtloop = wx.EventLoop()
-        self.timer = EventLoopTimer(self.check_stdin)
+        ID_TIMER = wx.NewId()
+        self.timer = wx.Timer(self.parent, ID_TIMER)
+        wx.EVT_TIMER(self.parent, ID_TIMER, self.check_stdin)
         self.timer.Start(time)
         self.evtloop.Run()
 
     def check_stdin(self, event=None):
-        try:
-            process = stdin_ready()
-            if self.larchsym is not None:
-                if self.larchsym.get_symbol('_builtin.force_wxupdate'):
-                    process = True
-            if process:
-                self.timer.Stop()
-                self.evtloop.Exit()
-            if self.larchsym is not None:
-                self.larchsym.set_symbol('_builtin.force_wxupdate', False)
-        except KeyboardInterrupt:
-            if hasattr(ON_INTERRUPT, '__call__'):
-                ON_INTERRUPT()
+        if stdin_ready() or update_requested():
+            self.timer.Stop()
+            self.evtloop.Exit()
+            clear_update_request()
 
 def input_handler1():
     """Run the wx event loop, polling for stdin.
@@ -72,24 +64,24 @@ def input_handler1():
     during which it periodically checks to see if anything is ready on
     stdin.  If anything is ready on stdin, the event loop exits.
 
-    The argument to elr.Run controls how often the event loop looks at stdin.
-    This determines the responsiveness at the keyboard.  A setting of 1000
-    enables a user to type at most 1 char per second.  I have found that a
-    setting of 10 gives good keyboard response.  We can shorten it further,
-    but eventually performance would suffer from calling select/kbhit too
-    often.
+    The argument to eloop.run controls how often the event loop looks at stdin.
+    This determines the responsiveness at the keyboard.  A setting of 20ms
+    gives decent keyboard response.  It can be shortened if we know the loop will
+    exit (as from update_requested()), but CPU usage of the idle process goes up
+    if we run this too frequently.
     """
+    global POLLTIME, ON_INTERRUPT
     try:
         app = wx.GetApp()
         if app is not None:
             assert wx.Thread_IsMain()
-            elr = EventLoopRunner(larchsym=WXLARCH_SYM)
-            # As this time is made shorter, keyboard response improves,
-            # but idle CPU load goes up.
-            # 10 ms seems like a good compromise.
-            elr.Run(time=POLLTIME)
+            eloop = EventLoopRunner(parent=app)
+            ptime = POLLTIME
+            if update_requested(): ptime /= 5
+            eloop.run(ptime)
     except KeyboardInterrupt:
-        pass
+        if hasattr(ON_INTERRUPT, '__call__'):
+            ON_INTERRUPT()
     return 0
 
 def input_handler2():
@@ -103,12 +95,12 @@ def input_handler2():
     app = wx.GetApp()
     global POLLTIME, ON_INTERRUPT
     if app is not None:
-        if not wx.Thread_IsMain():
-            raise Exception('wx thread is not the main thread')
+        assert wx.Thread_IsMain()
         evtloop = wx.EventLoop()
         activator = wx.EventLoopActivator(evtloop)
         t0 = time.time()
-        while not stdin_ready():
+
+        while update_requested() or not stdin_ready():
             while evtloop.Pending():
                 evtloop.Dispatch()
             app.ProcessIdle()
@@ -118,6 +110,8 @@ def input_handler2():
                 # print 'INTERRUPT', ON_INTERRUPT, hasattr(ON_INTERRUPT, '__call__')
                 if hasattr(ON_INTERRUPT, '__call__'):
                     ON_INTERRUPT()
+            clear_update_request()
+
         activator = None
         # del activator
     return 0
@@ -128,11 +122,11 @@ def input_handler3():
     This approach seems to work, but its performance is not great as it
     relies on having PyOS_InputHook called regularly.
     """
+    global ON_INTERRUPT
     try:
         app = wx.GetApp()
         if app is not None:
             assert wx.Thread_IsMain()
-
             # Make a temporary event loop and process system events until
             # there are no more waiting, then allow idle events (which
             # will also deal with pending or posted wx events.)
@@ -143,7 +137,8 @@ def input_handler3():
             app.ProcessIdle()
             del ea
     except KeyboardInterrupt:
-        pass
+        if hasattr(ON_INTERRUPT, '__call__'):
+            ON_INTERRUPT()
     return 0
 
 input_handler = input_handler1
