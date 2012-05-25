@@ -97,6 +97,7 @@ class SymbolTable(Group):
                                  'searchGroups':None, 'searchGroupObjects': None}
 
         self._sys.historyfile = site_config.history_file
+        self._callbacks = {}
         orig_sys_path = sys.path[:]
 
         if site_config.modules_path is not None:
@@ -329,6 +330,11 @@ class SymbolTable(Group):
                 setattr(grp, nam, Group())
 
         setattr(grp, child, value)
+        if (grp, child) in self._callbacks:
+            for func, args, kws in self._callbacks[(grp, child)]:
+                kws.update({'group': grp, 'value': value,
+                            'symbolname': child})
+                func(*args, **kws)
         return getattr(grp, child)
 
     def del_symbol(self, name):
@@ -339,7 +345,26 @@ class SymbolTable(Group):
             raise LookupError("symbol '%s' is a group" % (name))
         parent, child = self.get_parent(name)
         if child is not None:
+            if (parent, child) in self._callbacks:
+                self._callbacks.pop((parent, child))
             delattr(parent, child)
+
+    def add_callback(self, name, func, args=None, kws=None):
+        """set a callback to be called when set_symbol() is called
+        for a named variable
+        """
+        try:
+            var = self.get_symbol(name)
+        except NameError:
+            raise NameError(
+                "cannot locate symbol '%s' for callback" % (name))
+        key = self.get_parent(name)
+        if key not in self._callbacks:
+            self._callbacks[key] = []
+        if args is None: args = ()
+        if kws is None: kws = {}
+
+        self._callbacks[key].append((func, args, kws))
 
     def get_parent(self, name):
         """return parent group, child name for an absolute symbol name
