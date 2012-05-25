@@ -156,7 +156,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
 
 # @SafeWxCall
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
-          force_draw=False, **kws):
+          force_draw=True, **kws):
     """plot(x, y[, win=1], options])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any plot currently in the Plot Frame.
@@ -168,6 +168,10 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
 
         win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
         new: flag (True/False, default False) for whether to start a new plot.
+        force_draw: flag (True/False, default Tree) for whether force a draw.
+                    This will take a little extra time, and is not needed when
+                    typing at the command-line, but is needed for plots to update
+                    from inside scripts.
         label: label for trace
         title:  title for Plot
         xlabel: x-axis label
@@ -181,7 +185,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
         marker:  symbol to draw at eac point ('+', 'o', 'x', 'square', etc)
         markersize: integer size of marker
 
-        drawstyle: ?
+        drawstyle: style for joining line segments
 
         dy: array for error bars in y (must be same size as y!)
         yaxis='left'??
