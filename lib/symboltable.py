@@ -343,11 +343,19 @@ class SymbolTable(Group):
         parent, child = self.get_parent(name)
         if isgroup(sym):
             raise LookupError("symbol '%s' is a group" % (name))
+        self.clear_callbacks(name)
+        delattr(parent, child)
+
+    def clear_callbacks(self, name, index=None):
+        """clear 1 or all callbacks for a symbol
+        """
         parent, child = self.get_parent(name)
-        if child is not None:
-            if (parent, child) in self._callbacks:
-                self._callbacks.pop((parent, child))
-            delattr(parent, child)
+        if child is not None and (parent, child) in self._callbacks:
+            if index is not None and index <= len(self._callbacks[(parent, child)]):
+                self._callbacks[(parent, child)].pop(index)
+            else:
+                while self._callbacks[(parent, child)]:
+                    self._callbacks[(parent, child)].pop()
 
     def add_callback(self, name, func, args=None, kws=None):
         """set a callback to be called when set_symbol() is called
