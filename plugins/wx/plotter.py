@@ -26,107 +26,28 @@ sys.path.insert(0, here)
 # now we can reliably import other wx modules...
 from gui_utils import ensuremod
 
-(CursorEvent, EVT_PLOT_CURSOR) = wx.lib.newevent.NewEvent()
-(UpdateEvent, EVT_PLOT_UPDATE) = wx.lib.newevent.NewEvent()
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 MODNAME = '_plotter'
 
-
-class CursorThread:
-    def __init__(self, parent, plotwin):
-        self.parent = parent
-        self.plotwin = plotwin
-
-    def Start(self):
-        self.keepGoing = self.running = True
-        thread.start_new_thread(self.Run, ())
-
-    def Stop(self):
-        self.keepGoing = False
-
-    def Run(self):
-        self.running = True
-        while self.keepGoing:
-            wx.PostEvent(self.parent, CursorEvent(win=self.plotwin))
-            time.sleep(0.05)
-        self.running = False
-
-class CursorFrame(wx.MiniFrame):
-    """hidden wx frame that simply waits for cursor to be set
-    """
-    def __init__(self, parent, _larch=None, win=None, plotter=None, **kws):
-        wx.MiniFrame.__init__(self, parent, -1, '')
-        self.Show(False)
-        self.plotter = plotter
-        self.symtable = ensuremod(_larch, MODNAME)
-        self.xval = '%s.plot%i_x' % (MODNAME, win)
-        self.yval = '%s.plot%i_y' % (MODNAME, win)
-        if self.symtable.has_symbol(self.xval):
-            self.symtable.del_symbol(self.xval)
-
-        self.has_cursor = False
-        self.Bind(EVT_PLOT_CURSOR, self.onUpdate)
-        self.Bind(wx.EVT_CLOSE, self.onClose)
-        self.thread = CursorThread(self, win)
-        self.thread.Start()
-
-    def onClose(self, evt=None):
-        wx.Yield()
-        self.thread.Stop()
-        while self.thread.running:
-            time.sleep(0.05)
-
-    def onUpdate(self, evt=None):
-        self.has_cursor = self.symtable.has_symbol(self.xval)
-
-    def wait_for_cursor(self, timeout=60.0):
-        """wait for and return most recent cursor position"""
-        self.has_cursor = False
-        t0 = time.time()
-        if self.symtable.has_symbol(self.xval):
-            self.symtable.del_symbol(self.xval)
-
-        app = wx.GetApp()
-        # note that evtloop.Dispatch() seems to be very
-        # important for allowing other windows to update!
-        evtloop = wx.EventLoop()
-        while (not self.has_cursor and
-               time.time() - t0 < timeout):
-            time.sleep(0.05)
-            wx.Yield()
-            app.ProcessIdle()
-            while evtloop.Pending():
-                evtloop.Dispatch()
-        self.thread.Stop()
-
-
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, **kws):
         PlotFrame.__init__(self, parent=wxparent,
-                           output_title='plot2d', 
+                           output_title='plot2d',
                            exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
-        self.cursor_pos = None
         self.panel.cursor_callback = self.onCursor
         self.window = int(window)
         self._larch = _larch
         self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self._larch, MODNAME)
 
-        self.Bind(EVT_PLOT_UPDATE, self.onUpdate)
-
         if symtable is not None:
             symtable.set_symbol(self.symname, self)
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
-
-    def onUpdate(self, evt=None, **kws):
-        # print 'plot display update! ', self.panel
-        self.panel.draw()
-        update()
 
     def save_xylims(self, side='left'):
         axes = self.panel.axes
@@ -164,11 +85,6 @@ class PlotDisplay(PlotFrame):
             return
         symtable.set_symbol('%s_x'  % self.symname, x)
         symtable.set_symbol('%s_y'  % self.symname, y)
-        self.cursor_pos = (x, y)
-
-    def get_cursor(self):
-        """return most recent cursor position"""
-        return self.cursor_pos
 
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, **kws):
@@ -330,28 +246,43 @@ def _newplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """
     _plot(x, y, win=win, new=True, _larch=_larch, wxparent=wxparent, **kws)
 
+def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
+    """get_cursor(win=1, timeout=30)
 
-def _getcursor(win=1, timeout=60, _larch=None, wxparent=None, **kws):
-    """get_cursor(win=1, timeout=60)
+    waits (up to timeout) for cursor click in selected plot window, and
+    returns x, y position of cursor.  On timeout, returns the last known
+    cursor position, or (None, None)
 
-    waits (up to timeout) for cursor click in selected plot window, and returns
-    x, y position of cursor.
+    Note that _plotter.plotWIN_x and _plotter.plotWIN_y will be updated,
+    with each cursor click, and so can be used to read the last cursor
+    position without blocking.
+
+    For a more consistent programmatic approach, this routine can be called
+    with timeout <= 0 to read the most recently clicked cursor position.
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
     symtable = ensuremod(_larch, MODNAME)
-    xval = '%s.plot%i_x' % (MODNAME, win)
-    yval = '%s.plot%i_y' % (MODNAME, win)
+    sentinal = '%s.plot%i_cursorflag' % (MODNAME, win)
+    xsym = '%s.plot%i_x' % (MODNAME, win)
+    ysym = '%s.plot%i_y' % (MODNAME, win)
 
-    cframe =CursorFrame(wxparent, _larch=_larch, win=win,
-                         plotter=plotter)
-    cframe.wait_for_cursor(timeout=timeout)
-    cframe.Close()
-    cframe.Destroy()
+    xval = symtable.get_symbol(xsym, create=True)
+    yval = symtable.get_symbol(ysym, create=True)
+    symtable.set_symbol(sentinal, False)
 
-    try:
-        return (symtable.get_symbol(xval), symtable.get_symbol(yval))
-    except:
-        return None
+    def onChange(symbolname=None, **kws):
+        symtable.set_symbol(kws['sentinal'], True)
+
+    symtable.add_callback(xsym, onChange, kws={'sentinal': sentinal})
+
+    t0 = time.time()
+    while time.time() - t0 < timeout:
+        update(_larch)
+        if symtable.get_symbol(sentinal):
+            break
+    symtable.del_symbol(sentinal)
+    symtable.clear_callbacks(xsym)
+    return (symtable.get_symbol(xsym), symtable.get_symbol(ysym))
 
 # @SafeWxCall
 def _imshow(map, win=1, _larch=None, wxparent=None, **kws):
