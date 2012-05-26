@@ -45,11 +45,22 @@ class LarchWxShell(object):
         self.prompt = prompt
         self.output = output
         self.larch.writer = self
-        self.larch.add_plugin('wx', wxparent=wxparent)
+        self.larch.add_plugin('wx', wxparent=wxparent, inputhandler=self.onUpdate)
+        self.symtable.set_symbol('_builtin.force_wxupdate', False)
 
         self.SetPrompt()
         for fname in larch.site_config.init_files:
             self.execute("run('%s')" % fname)
+
+    def onUpdate(self, event=None):
+        symtable = self.symtable
+        if symtable.get_symbol('_builtin.force_wxupdate', create=True):
+            app = wx.GetApp()
+            evtloop = wx.EventLoop()
+            while evtloop.Pending():
+                evtloop.Dispatch()
+            app.ProcessIdle()
+        symtable.set_symbol('_builtin.force_wxupdate', False)
 
     def SetPrompt(self, partial=False):
         if self.prompt is not None:
@@ -125,9 +136,8 @@ class LarchFrame(wx.Frame):
         self.larchshell = LarchWxShell(wxparent=self,
                                        prompt = self.prompt,
                                        output  = self.output)
-
         self.datapanel.SetRootObject(self.larchshell.symtable)
-
+        #self.timer.Start(200)
 
     def InputPanel(self, parent):
         panel = wx.Panel(parent, -1)
@@ -191,13 +201,24 @@ class LarchFrame(wx.Frame):
         opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND,
                     border=2)
 
+        #ID_TIMER = wx.NewId()
+        #wx.EVT_TIMER(self, ID_TIMER, self.onTimer)
+        #self.timer = wx.Timer(self, ID_TIMER)
+
         sizer.Add(nbook,  1, **opts)
         sizer.Add(self.InputPanel(self),  0, **opts)
 
         self.SetSizer(sizer)
         self.Refresh()
-
         self.SetStatusText("Ready", 0)
+
+    def onTimer(self, event=None):
+        symtable = self.larchshell.symtable
+        # print 'On Timer ', symtable, symtable.get_symbol('_builtin.force_wxupdate')
+        #if symtable.get_symbol('_builtin.force_wxupdate', create=True):
+        #    print 'Update from Timer!!'
+        #    app = wx.GetApp()
+        #    app.ProcessIdle()
 
     def BuildMenus(self):
         ID_ABOUT = wx.NewId()

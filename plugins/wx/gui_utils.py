@@ -44,6 +44,7 @@ def _gcd(wxparent=None, _larch=None, **kws):
 # @SafeWxCall
 def _wxupdate(wxparent=None, _larch=None, inputhandler=None, **kws):
     """force an update of wxPython windows"""
+    # print 'wxupdate!! ', _larch, inputhandler
     if _larch is not None and inputhandler is not None:
         symtable = _larch.symtable
         symtable.set_symbol("%s.force_wxupdate" % MODNAME, True)
