@@ -41,6 +41,7 @@ class PlotDisplay(PlotFrame):
         self.panel.cursor_callback = self.onCursor
         self.window = int(window)
         self._larch = _larch
+        self._xylims = {}
         self.symname = '%s.plot%i' % (MODNAME, self.window)
         symtable = ensuremod(self._larch, MODNAME)
 
@@ -53,19 +54,20 @@ class PlotDisplay(PlotFrame):
         axes = self.panel.axes
         if side == 'right':
             axes = self.panel.get_right_axes()
-        self._xylims = self.panel.calc_xylims(axes)
+        self._xylims[axes] = self.panel.calc_xylims(axes)
 
-    def update_xylims(self, x, y, side='left'):
+    def update_xylims(self, x, y, side='left', redraw=False):
         axes = self.panel.axes
         if side == 'right':
             axes = self.panel.get_right_axes()
-
-        lims = ( min(min(x), self._xylims[0]),
-                 max(max(x), self._xylims[1]),
-                 min(min(y), self._xylims[2]),
-                 max(max(y), self._xylims[3]))
-        self._xylims = lims
-        self.panel.set_xylims(lims, autoscale=True)
+        lims = ( min(min(x), self._xylims[axes][0]),
+                 max(max(x), self._xylims[axes][1]),
+                 min(min(y), self._xylims[axes][2]),
+                 max(max(y), self._xylims[axes][3]))
+        self._xylims[axes] = lims
+        self.panel.set_xylims(lims, side=side, autoscale=True)
+        if redraw:
+            self.panel.draw()
 
     def onExit(self, o, **kw):
         try:
@@ -156,7 +158,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
 
 # @SafeWxCall
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
-          force_draw=True, **kws):
+          force_draw=True, side='left', **kws):
     """plot(x, y[, win=1], options])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any plot currently in the Plot Frame.
@@ -198,15 +200,16 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
     if new:
-        plotter.plot(x, y, **kws)
+        plotter.plot(x, y, side=side, **kws)
     else:
-        plotter.oplot(x, y, **kws)
-    plotter.save_xylims()
+        plotter.oplot(x, y, side=side, **kws)
+    plotter.save_xylims(side=side)
     if force_draw:
         update(_larch=_larch)
 
 
-def _update_line(x, y, trace=1, win=1, _larch=None, wxparent=None, **kws):
+def _update_line(x, y, trace=1, win=1, _larch=None, wxparent=None,
+                 side='left', redraw=False, **kws):
     """update a plot trace with new data, avoiding complete redraw"""
     plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
     if plotter is None:
@@ -214,10 +217,10 @@ def _update_line(x, y, trace=1, win=1, _larch=None, wxparent=None, **kws):
     plotter.Raise()
     trace -= 1 # wxmplot counts traces from 0
 
-    # print 'Update line ', trace, len(x), lims
-    plotter.panel.update_line(trace, x, y, draw=True)
-    plotter.update_xylims(x, y)
+    plotter.panel.update_line(trace, x, y, draw=True, side=side)
+    plotter.update_xylims(x, y, side=side, redraw=redraw)
     update(_larch)
+
 
 def update(_larch=None, **kws):
     _larch.symtable.get_symbol('_builtin.wx_update')()
