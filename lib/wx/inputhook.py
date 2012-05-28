@@ -25,6 +25,7 @@ POLLTIME = 25 # milliseconds
 ON_INTERRUPT = None
 WXLARCH_SYM = None
 UPDATE_VAR = '_builtin.force_wxupdate'
+ID_TIMER = wx.NewId()
 
 def update_requested():
     "check if update has been requested"
@@ -43,18 +44,21 @@ class EventLoopRunner(object):
     def __init__(self, parent):
         self.parent = parent
 
-    def run(self, time):
+    def run(self, poll_time=None):
+        global ID_TIMER
+        if poll_time is None:
+            poll_time = POLLTIME
         self.evtloop = wx.EventLoop()
-        ID_TIMER = wx.NewId()
         self.timer = wx.Timer(self.parent, ID_TIMER)
         wx.EVT_TIMER(self.parent, ID_TIMER, self.check_stdin)
-        self.timer.Start(time)
+        self.timer.Start(poll_time)
         self.evtloop.Run()
 
     def check_stdin(self, event=None):
         if stdin_ready() or update_requested():
             self.timer.Stop()
             self.evtloop.Exit()
+            del self.timer, self.evtloop
             clear_update_request()
 
 def input_handler1():
@@ -78,7 +82,7 @@ def input_handler1():
             eloop = EventLoopRunner(parent=app)
             ptime = POLLTIME
             if update_requested(): ptime /= 5
-            eloop.run(ptime)
+            eloop.run(poll_time=ptime)
     except KeyboardInterrupt:
         if hasattr(ON_INTERRUPT, '__call__'):
             ON_INTERRUPT()
