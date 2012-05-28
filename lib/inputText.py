@@ -137,9 +137,13 @@ class InputText:
         if lineno is not None:
             self.lineno = lineno
 
-        def addTextInput(thisline, fname):
-            self.input_complete = self.__isComplete(thisline)
-            self.input_buff.append((thisline, self.input_complete,
+        def addTextInput(txt, fname):
+            # strip comments (except '#end**') here. This allows
+            # testing all strings for matching quotes, etc later.
+            if txt.startswith('#') and not txt.startswith('#end'):
+                txt = '#'
+            self.input_complete = self.__isComplete(txt)
+            self.input_buff.append((txt, self.input_complete,
                                     self.eos, fname, self.lineno))
             self.lineno += 1
 
@@ -209,13 +213,13 @@ class InputText:
                     tnext, complete, eos, fname, lineno2 = self.input_buff.pop()
                     text = "%s\n %s%s" % (text, sindent, tnext)
 
-            # note here the trick of replacing '#end' with '&end' so
-            # that it is not removed by strip_comments.  then below,
-            # we look for '&end' as an end-of-block token.
+            # here we replace '#end' with '&end' so that it is not removed
+            # by strip_comments.  then below, we look for '&end' as an
+            # end-of-block token.
             if txt.startswith('#end'):
                 txt = '&end%s' % txt[4:]
+            txt = strip_comments(txt)
 
-            txt   = strip_comments(txt)
             # thiskey, word2 = (txt.split() + [''])[0:2]
             words = txt.split(' ', 1)
             thiskey = words.pop(0).strip()
