@@ -7,7 +7,7 @@ import numpy
 
 from .interpreter import Interpreter
 from .inputText import InputText
-from .site_config import history_file
+from .site_config import history_file, show_site_config
 from .version import __version__, __date__
 
 BANNER = """  Larch %s  M. Newville, T. Trainor -- %s
@@ -30,18 +30,15 @@ class shell(cmd.Cmd):
         cmd.Cmd.__init__(self,completekey='tab')
         homedir = os.environ.get('HOME', os.getcwd())
 
+        self.history_written = False
         if self.rdline is not None:
             try:
                 self.rdline.read_history_file(history_file)
             except IOError:
-                pass
+                print 'could not read history from ', history_file
 
-        if stdin is not None:
-            sys.stdin = stdin
-
-        if stdout is not None:
-            sys.stdout = stdout
-
+        if stdin is not None:   sys.stdin = stdin
+        if stdout is not None:  sys.stdout = stdout
         self.stdin = sys.stdin
         self.stdout = sys.stdout
 
@@ -67,7 +64,8 @@ class shell(cmd.Cmd):
             return
         try:
             self.rdline.set_history_length(self.maxhist)
-            self.rdline.write_history_file(history_file)
+            if history_file is not None and not self.history_written:
+                self.rdline.write_history_file(history_file)
         except:
             pass
 
@@ -100,13 +98,14 @@ class shell(cmd.Cmd):
     def default(self, text):
         text = text.strip()
         if text in ('quit', 'exit', 'EOF'):
-            n = self.rdline.get_current_history_length()
             if text in ('quit', 'exit'):
                 try:
+                    n = self.rdline.get_current_history_length()
                     self.rdline.remove_history_item(n-1)
                 except:
                     pass
             self.__write_history()
+            self.history_written = True
             return 1
 
         if text.startswith('help'):
