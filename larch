@@ -53,7 +53,7 @@ if options.debug:
     try:
         import lib as larch
         __extra__ = '%s\n   ===> DEBUG, using lib as larch <===' % __extra__
-
+        larch.site_config.show_site_config()
     except ImportError:
         import larch
 else:
@@ -97,7 +97,7 @@ if HAS_WX:
     shell.larch.add_plugin('wx', wxparent=None,
                            inputhandler=inputhook.input_handler)
     shell.larch.symtable.set_symbol('_builtin.force_wxupdate', False)
-   
+
     inputhook.ON_INTERRUPT = onCtrlC
     inputhook.WXLARCH_SYM = shell.larch.symtable
 
