@@ -94,10 +94,11 @@ if HAS_WX:
     else:
         from larch.wx import inputhook
     app = wx.App(redirect=False, clearSigInt=False)
-    shell.larch.add_plugin('wx', wxparent=None,
-                           inputhandler=inputhook.input_handler)
-    shell.larch.symtable.set_symbol('_builtin.force_wxupdate', False)
-
+    # print 'has group _sys.wx? ', shell.larch.symtable.has_group('_sys.wx')
+    shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
+    shell.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
+    shell.larch.symtable.set_symbol('_sys.wx.wxapp', app) # app.GetTopWindow())
+    shell.larch.symtable.set_symbol('_sys.wx.parent',None)
     inputhook.ON_INTERRUPT = onCtrlC
     inputhook.WXLARCH_SYM = shell.larch.symtable
 

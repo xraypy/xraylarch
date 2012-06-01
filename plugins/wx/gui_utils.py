@@ -4,7 +4,7 @@ import wx
 import time
 import os
 
-MODNAME = '_builtin'
+MODNAME = '_sys.wx'
 
 def SafeWxCall(fcn):
     """decorator to wrap function in a wx.CallAfter() so that
@@ -21,34 +21,41 @@ def SafeWxCall(fcn):
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
 
-def ensuremod(_larch, modname):
+def ensuremod(_larch, modname=None):
     if _larch is not None:
         symtable = _larch.symtable
-        if not symtable.has_group(modname):
+        if modname is not None and not symtable.has_group(modname):
             symtable.newgroup(modname)
         return symtable
 
 # @SafeWxCall
 def _gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
+    symtable = ensuremod(_larch, '_sys')
+    symtable = ensuremod(_larch, '_sys.wx')
+    if wxparent is None:
+        wxparent = symtable.get_symbol('_sys.wx.wxapp').TopWindow
+
     dlg = wx.DirDialog(wxparent, message='Choose Directory',
                        style = wx.DD_DEFAULT_STYLE)
     path = None
+    symtable.set_symbol('_sys.wx.force_wxupdate', True)
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
+
     dlg.Destroy()
     if path is not None:
         os.chdir(path)
     return os.getcwd()
 
-# @SafeWxCall
-def _wxupdate(wxparent=None, _larch=None, inputhandler=None, **kws):
+def _wxupdate(_larch=None, **kws):
     """force an update of wxPython windows"""
-    # print 'wxupdate!! ', _larch, inputhandler
-    if _larch is not None and inputhandler is not None:
-        symtable = _larch.symtable
-        symtable.set_symbol("%s.force_wxupdate" % MODNAME, True)
-        inputhandler()
+    symtable = ensuremod(_larch, '_sys')
+    symtable = ensuremod(_larch, '_sys.wx')
+    input_handler = symtable.get_symbol('_sys.wx.inputhook').input_handler
+    if input_handler is not None:
+        symtable.set_symbol("_sys.wx.force_wxupdate", True)
+        input_handler()
 
 # @SafeWxCall
 def _fileprompt(wxparent=None, _larch=None,
@@ -64,6 +71,8 @@ def _fileprompt(wxparent=None, _larch=None,
 
     """
     symtable = ensuremod(_larch)
+    if wxparent is None:
+        wxparent = symtable.get_symbol('_sys.wx.parent')
     if fname is None:
         try:
             fname = symtable.get_symbol("%s.default_filename" % MODNAME)

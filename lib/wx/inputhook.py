@@ -24,7 +24,7 @@ if sys.platform == 'win32':
 POLLTIME = 25 # milliseconds
 ON_INTERRUPT = None
 WXLARCH_SYM = None
-UPDATE_VAR = '_builtin.force_wxupdate'
+UPDATE_VAR = '_sys.wx.force_wxupdate'
 ID_TIMER = wx.NewId()
 
 def update_requested():
@@ -60,6 +60,16 @@ class EventLoopRunner(object):
             self.evtloop.Exit()
             del self.timer, self.evtloop
             clear_update_request()
+#         else:
+#             try:
+#                 t0 = time.time()
+#                 while self.evtloop.Pending() and time.time()-t0 < self.poll_time/2000.0:
+#                     self.evtloop.Dispatch()
+#                     time.sleep(self.poll_time/10000.0)
+#                 wx.GetApp().ProcessIdle()
+#             except:
+#                 pass
+
 
 def input_handler1():
     """Run the wx event loop, polling for stdin.
@@ -81,7 +91,8 @@ def input_handler1():
             assert wx.Thread_IsMain()
             eloop = EventLoopRunner(parent=app)
             ptime = POLLTIME
-            if update_requested(): ptime /= 5
+            if update_requested():
+                ptime /= 5
             eloop.run(poll_time=ptime)
     except KeyboardInterrupt:
         if hasattr(ON_INTERRUPT, '__call__'):
