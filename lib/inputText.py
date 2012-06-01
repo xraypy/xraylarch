@@ -2,8 +2,24 @@
 """
 handle input Text for Larch -- inclides translation to Python text
 """
-from __future__ import print_function
-from utils import isValidName, isNumber, isLiteralStr, strip_comments, find_delims
+# from __future__ import print_function
+from utils import isValidName, isNumber, isLiteralStr, find_delims
+
+def strip_comments(sinp, char='#'):
+    "find character in a string, skipping over quoted text"
+    if sinp.find(char) < 0:
+        return sinp
+    i = 0
+    while i < len(sinp):
+        tchar = sinp[i]
+        if tchar in ('"',"'"):
+            eoc = sinp[i+1:].find(tchar)
+            if eoc > 0:
+                i = i + eoc
+        elif tchar == char:
+            return sinp[:i].rstrip()
+        i = i + 1
+    return sinp
 
 def get_DefVar(text):
     """
@@ -30,6 +46,9 @@ def get_DefVar(text):
                 return words[0], t[iequal+1:].strip()
 
     return None, None
+
+
+OPENS, CLOSES, QUOTES, BSLASH, COMMENT = '{([', '})]', '\'"', '\\', '#'
 
 class InputText:
     """Input Larch Code:  handles loading and reading code text, and
@@ -96,7 +115,6 @@ class InputText:
                      'try':   ('else', 'except', 'finally'),
                      'while': ('else') }
 
-    parens = {'{':'}', '(':')', '[':']'}
     fcn_defvar = "_builtin.definevar"
     fcn_print = "_builtin._print_"
     nonkey = 'NONKEY'
@@ -119,7 +137,7 @@ class InputText:
         self.current   = None
         self.endkeys   = ()
         self.friends   = ()
-
+        self.parens = dict(zip(OPENS, CLOSES))
         self.delims = []
         self.eos = ''
         self.in_string   = False
@@ -133,32 +151,27 @@ class InputText:
 
     def put(self, text, filename=None, lineno=None ):
         """add line of input code text"""
-        fname = filename or self.filename or '<stdin>'
+        self.fname = filename or self.filename or '<stdin>'
         if lineno is not None:
             self.lineno = lineno
 
-        def addTextInput(txt, fname):
-            # strip comments (except '#end**') here. This allows
-            # testing all strings for matching quotes, etc later.
-            if txt.startswith('#') and not txt.startswith('#end'):
-                txt = '#'
-            self.input_complete = self.__isComplete(txt)
-            self.input_buff.append((txt, self.input_complete,
-                                    self.eos, fname, self.lineno))
+        def addTextInput(txt):
+            complete = self.__isComplete(txt)
+            self.input_buff.append((txt, complete,
+                                    self.eos, self.fname, self.lineno))
             self.lineno += 1
+            # print 'Add : ', self.lineno, complete, self.eos, self.delims, txt
+            return complete
 
-        text = text.split('\n')
-        text.reverse()
-        while len(text) > 0:
-            addTextInput(text.pop(), fname)
+        for t in text.split('\n'):
+            self.input_complete = addTextInput(t)
 
         if self.interactive:
             self.prompt = self.ps2
             while not self.input_complete:
                 t = self.input()
-                t0 = t.strip()
-                if len(t0) > 0:
-                    addTextInput(t, fname)
+                if len(t) > 0:
+                    self.input_complete = addTextInput(t)
 
         if self.input_complete:
             self.prompt = self.ps1
@@ -325,42 +338,56 @@ class InputText:
         return (isValidName(word2) or isNumber(word2) or
                 isLiteralStr(word2) )
 
-    def __isComplete(self, text):
+    def __isComplete(self, txt, verbose=False):
         """returns whether input text is a complete:
-        that is: does not contains unclosed parens or quotes
-        and does not end with a backslash
-        stores state information from previous textline in
-            self.eos    = char(s) to look for 'end of string' ("" == string complete)
-            self.delims = current list of closing delims being waited for
+        completeness here means the text (possibly multiline)
+        contains completed quotes, and parens, braces, brackets
+        are matched (including nesting) and the text does not
+        end with a backslash.
+
+        state information from previous text_complete() are stored in:
+           self.eos    = substring to look for 'end of string'
+                        (self.eos == "" means string is complete)
+           self.delims = current list of closing delims needed to match
+                         opening delims seen so far.
         """
-        parens  = self.parens
-        opens   = ''.join(parens.keys())
-        closes  = ''.join(parens.values())
-        quotes, bslash = '\'"', '\\'
-        prev_char = ''
 
-        # txt  = strip_comments(text)
-        txt = text
-        # print('->STRIP COMM2 ', text, txt)
+        def find_eostring(txt, eos, istart):
+            while True:
+                inext = txt[istart:].find(eos)
+                if inext < 0:  # reached end of text before match found
+                    return eos, len(txt)
+                elif txt[istart+inext-1] == BSLASH: # matched quote was escaped
+                    istart = istart+inext+len(eos)
+                else: # real match found! skip ahead in string
+                    return '', istart+inext+len(self.eos)-1
 
-        ends_without_bslash = not txt.rstrip().endswith(bslash)
-        for i, c in enumerate(txt):
-            if c in opens + closes + quotes:
-                if self.eos != '':
-                    if (prev_char != bslash and
-                        txt[i:i+1] == self.eos):
-                        self.eos = ''
-                elif c in quotes:
-                    self.eos = c
-                elif c in opens:
-                    self.delims.append(parens[c])
-                elif c in closes and len(self.delims)>0 and \
-                     c == self.delims[-1]:
-                    self.delims.pop()
-            prev_char = c
+        if self.eos != '':
+            self.eos, i = find_eostring(txt, self.eos, 0)
+            return self.eos == ''
 
-        return (self.eos == '' and ends_without_bslash and
-                len(self.delims) == 0)
+        i = 0
+        while i < len(txt):
+            c = txt[i]
+            if c in QUOTES:
+                self.eos = c
+                if txt[i:i+3] == c*3:
+                    self.eos = c*3
+                istart = i + len(self.eos)
+                self.eos, i = find_eostring(txt, self.eos, istart)
+            elif c in OPENS:
+                self.delims.append(self.parens[c])
+            elif c in CLOSES and len(self.delims)>0 and c == self.delims[-1]:
+                self.delims.pop()
+            elif c == COMMENT and self.eos == '': # comment char outside string
+                i = len(txt)
+            i += 1
+
+        complete = (self.eos == '' and len(self.delims) == 0 and
+                    not txt.rstrip().endswith(BSLASH))
+        if verbose:
+            print(' %s:%s:%i:%s ' % (complete, self.eos, len(self.delims), txt))
+        return complete
 
 
     def __len__(self):
@@ -377,25 +404,59 @@ if __name__ == '__main__':
     inp.put("x = 1;a = x/3.;b = sqrt(")
     inp.put("a)")
 
+    while inp:
+        print inp.get()
+    print 'done'
 
-    buff = [('x = 1', True, '<In>', 1),
-        ('y = x /2', True, '<In>', 2),
-        ('for i in range(10):', True, '<In>', 3),
-        (' print i', True, '<In>', 4),
-        ('    j = x *y * i', True, '<In>', 5),
-        ('#endfor', True, '<In>', 6),
-        ('print j ', True, '<In>', 7),
-        ('def x1a = x + y ', True, '<In>', 8),
-        ('if x < 1: ', True, '<In>', 9),
-        ('  u = x/2', True, '<In>', 10),
-        ('  if u < 1:  u = 2 ', True, '<In>', 11),
-        ('else: ', True, '<In>', 12),
-        ('  u = x/3', True, '<In>', 13),
-        ('end ', True, '<In>', 14),
-        ('set y = 22, z=29', True, '<In>', 15),
-        ]
+    buff = ['x = 1',
+            'y = x /2',
+            'for i in range(10):',
+            ' print i',
+            '    j = x *y * i',
+            '#endfor',
+            'print j ',
+            'def x1a = x + y ',
+            'if x < 1: ',
+            '  u = x/2',
+            '  if u < 1:  u = 2 ',
+            'else: ',
+            '  u = x/3',
+            '#endif ',
+            'set y = 22, z=29',
+                 '# comment!',
+                 '"quote"',
+                 '"escaped \\""',
+                 'x = "escaped \\" quote!"',
+                 '"""triple quote!"""',
+                 'x = """triple quote %s """ % ("x")',
+                 "x = {'H': 1, 'He':2}",
+                 '''""" this is a
+                 multiline
+                 triple-quote"""
+                 ''',
 
-    for t, x, y, z in buff:
+                 '''""" this is a
+                 multiline with 'quotes'
+                 of both 'single' and "double" flavors!
+                 and # a single commented 'quote
+                 and a non-comment single quote:
+                 we're on in this together quote...
+                 nice, huh!
+                 """
+                 ''',
+                 """x = {'a': '''multiline
+                  dict value''',
+                  'b':10,
+                 'c':20} """,
+
+            ]
+    buff = ['''  """x = {'a': 'value',
+    'b':10,
+    'c':20} """
+    ''']
+
+
+    for t in buff:
         inp.put(t)
 
     import ast
@@ -407,26 +468,34 @@ if __name__ == '__main__':
         a = ast.parse(text)
         print( ast.dump(a, include_attributes=False))
 
-    testcode = """
- y = 4
- z = 1
-# start my for loop
-for i in range(100):
-y = y * (1 + i) / 7.
-   while y < 9:
+    must_fail = [' " ',
+                 " we're all in this together ",
+                 ' ( # )',  ' {',
+                 'x = "e x\\"',
+                 'x = " a # and a () ',
+                 ]
 
-      y = y + 3
-# comment in a nested block
-      print 'XXX ', y
-      endwhile
-   if y > 4000: break
-   if (y < 20 and
-       y != 7):
-      y = y-2
-    endif
-print i, y
-endfor
-print 'final y = ', y
-"""
-#    for i in testcode.split('\n'):     inp.put(i.strip())
-
+#
+#     testcode = """
+#  y = 4
+#  z = 1
+# # start my for loop
+# for i in range(100):
+# y = y * (1 + i) / 7.
+#    while y < 9:
+#
+#       y = y + 3
+# # comment in a nested block
+#       print 'XXX ', y
+#       endwhile
+#    if y > 4000: break
+#    if (y < 20 and
+#        y != 7):
+#       y = y-2
+#     endif
+# print i, y
+# endfor
+# print 'final y = ', y
+# """
+# #    for i in testcode.split('\n'):     inp.put(i.strip())
+#
