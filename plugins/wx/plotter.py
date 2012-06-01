@@ -221,9 +221,8 @@ def _update_line(x, y, trace=1, win=1, _larch=None, wxparent=None,
     plotter.update_xylims(x, y, side=side, redraw=redraw)
     update(_larch)
 
-
 def update(_larch=None, **kws):
-    _larch.symtable.get_symbol('_builtin.wx_update')()
+    _larch.symtable.set_symbol('_sys.wx.force_wxupdate', True)
 
 # @SafeWxCall
 def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
