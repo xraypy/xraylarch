@@ -76,7 +76,7 @@ class SymbolTable(Group):
                 'has_symbol', 'has_group', 'get_group',
                 'create_group', 'new_group',
                 'get_symbol', 'set_symbol',  'del_symbol',
-                'get_parent', 'add_plugin', 'path', '__parents')
+                'get_parent', 'add_plugin', '_path', '__parents')
 
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
@@ -169,7 +169,7 @@ class SymbolTable(Group):
             cache['moduleGroup'] = sys.moduleGroup
 
             if cache['searchGroups'] is None:
-                cache['searchGroups'] = []
+                cache['searchGroups'] = [self.top_group]
 
             for gname in sys.searchGroups:
                 if gname not in cache['searchGroups']:
@@ -217,9 +217,15 @@ class SymbolTable(Group):
         """looks up symbol in search path
         returns symbol given symbol name,
         creating symbol if needed (and create=True)"""
+        debug = False # not ('force'in name)
+        # if debug:
+        #    print( '====\nLOOKUP ', name)
         cache = self._fix_searchGroups()
         searchGroups = [cache['localGroup'], cache['moduleGroup']]
         searchGroups.extend(cache['searchGroupObjects'])
+        #if debug:
+        #    print( ' .. ', cache)
+        #    print( ' .. ', searchGroups)
         self.__parents = []
         if self not in searchGroups:
             searchGroups.append(self)
@@ -229,8 +235,12 @@ class SymbolTable(Group):
                     not (grp is self and name in self._private))
 
         parts = name.split('.')
+        #if debug:
+        #    print( ' LOOKUP  PARTS ', parts)
         if len(parts) == 1:
             for grp in searchGroups:
+                #if debug:
+                #    print( '->grp ', grp, hasattr(grp, name), self._private)
                 if public_attr(grp, name):
                     self.__parents.append(grp)
                     return getattr(grp, name)
