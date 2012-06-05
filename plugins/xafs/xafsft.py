@@ -7,7 +7,6 @@ from numpy import (pi, arange, zeros, ones, sin, cos,
                    exp, log, sqrt, where, interp)
 from numpy.fft import fft, ifft
 from scipy.special import i0 as bessel0
-from scipy.special import j0 as bessel_0
 
 MODNAME = '_xafs'
 VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin', 'bes']

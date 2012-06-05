@@ -4,8 +4,6 @@ import numpy as np
 import sys, os
 import larch
 
-ETOK = 0.26246851088
-
 # put the 'std' and 'xafs' (this!) plugin directories into
 # sys.path to make sure module from these directories can be imported
 stddir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'std')
@@ -17,6 +15,7 @@ sys.path.insert(0, thisdir)
 # now we can reliably import other std and xafs modules...
 from mathutils import _index_nearest, realimag
 
+from xafsutils import ETOK
 from xafsft import ftwindow, xafsft_fast
 from pre_edge import find_e0
 
