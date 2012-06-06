@@ -45,7 +45,7 @@ class Parameter(object):
     def __init__(self, name=None, value=None, vary=True,
                  min=None, max=None, expr=None, _larch=None, **kws):
         self.name = name
-        self.value = value
+        self._val = value
         self.init_value = value
         self.min = min
         self.max = max
@@ -58,7 +58,21 @@ class Parameter(object):
         if self.expr is not None and _larch is not None:
             self.defvar = DefinedVariable(self.expr, _larch=_larch)
             self.vary = False
-            self.value = self.defvar.evaluate()
+            self._val = self.defvar.evaluate()
+
+    @property
+    def value(self):
+        if self.defvar is not None:
+            self._val = self.defvar.evaluate()
+        return self._val
+
+    @value.setter
+    def value(self, val):
+        self._val = val
+
+    @value.deleter
+    def value(self):
+        del self._val
 
     def __repr__(self):
         s = []
@@ -66,9 +80,11 @@ class Parameter(object):
             s.append("'%s'" % self.name)
         val = repr(self.value)
         if self.vary and self.stderr is not None:
-            val = "value=%s +/- %.3g" % (repr(self.value), self.stderr)
+            val = "value=%s +/- %.3g" % (val, self.stderr)
+        elif self.expr is not None:
+            val = "value=%s (from expr)" % (val)
         elif not self.vary:
-            val = "value=%s (fixed)" % (repr(self.value))
+            val = "value=%s (fixed)" % (val)
         s.append(val)
         s.append("bounds=[%s:%s]" % (repr(self.min), repr(self.max)))
         if self.expr is not None:
