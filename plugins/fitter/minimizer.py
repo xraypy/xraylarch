@@ -176,28 +176,31 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         determine which parameters are actually variables
         and which are defined expressions.
         """
+
         if self.__prepared:
             return
-        if not isgroup(self.paramgroup):
-            return 'param group is not a Larch Group'
+        if not self._larch.symtable.isgroup(self.paramgroup):#         if not isgroup(self.paramgroup):
+            print 'param group is not a Larch Group'
+            return 
         self.nfev_calls = 0
         self.var_names = []
         self.defvars = []
         self.vars = []
+        self.nvarys = 0
         for name in dir(self.paramgroup):
+            # print 'param? ', name
             par = getattr(self.paramgroup, name)
             if not isinstance(par, Parameter):
                 continue
             if par.expr is not None:
-                par.defvar = DefinedVariable(par.expr, _larch=self._larch)
+                par.defvar = Parameter(par.expr, _larch=self._larch)
                 par.vary = False
                 self.defvars.append(name)
             elif par.vary:
                 self.var_names.append(name)
                 self.vars.append(par.value)
-            if par.name is None:
+            if not hasattr(par, 'name') or par.name is None:
                 par.name = name
-
         self.nvarys = len(self.vars)
         # now evaluate make sure initial values are set
         # are used to set values of the defined expressions.
@@ -287,7 +290,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         setattr(group, 'chi_square', chisqr)
         setattr(group, 'chi_reduced', redchi)
         setattr(group, 'nfree', nfree)
-        print infodict.keys()
+        # print infodict.keys()
         return success
 
 def minimize(fcn, group,  args=None, kws=None,
@@ -296,7 +299,7 @@ def minimize(fcn, group,  args=None, kws=None,
     finding the values for the params which give the
     minimal sum-of-squares of the array return by fcn
     """
-    if not isgroup(group):
+    if not _larch.symtable.isgroup(group):
         return 'param group is not a Larch Group'
 
     fitter = Minimizer(fcn, group, fcn_args=args, fcn_kws=kws,
