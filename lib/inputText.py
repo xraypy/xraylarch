@@ -82,14 +82,14 @@ class InputText:
         where the token starts a line of text, followed by whitespace or
         a comment starting with a '#'.
 
-    2. Defined Variables:
-        larch uses 'def VarName = Expression' for a Defined Variable
+    2. Defined Parameters:
+        larch uses 'def VarName = Expression' for Defined Parameters
         (the expression is stored and accessing the VarName causes the
         expression to be re-evaluated)
 
         The tokens are found with "def" "varname" "=" "text of expression"
         and then translated into
-             _builtin._definevar_("varname", "text of expression")
+              param(name="varname", expr="text of expression")
 
     3. Command Syntax:
         larch allows lines of code which execute a function without return
@@ -98,6 +98,8 @@ class InputText:
              function(x, y)
         can be written as
              function x, y
+
+        Note that 'function' must be in _sys.valid_commands for this to work.
 
     4. Print:
         as a special case of rule 3, and because Python is going through
@@ -115,8 +117,8 @@ class InputText:
                      'try':   ('else', 'except', 'finally'),
                      'while': ('else') }
 
-    fcn_defvar = "_builtin.definevar"
-    fcn_print = "_builtin._print_"
+    defpar = "_builtin.param(expr='%s', name='%s')"
+    
     nonkey = 'NONKEY'
 
     empty_frame = (None, None, -1)
@@ -253,8 +255,7 @@ class InputText:
                     if dname is not None and dexpr is not None:
                         if "'" in dexpr:
                             dexpr.replace("'", "\'")
-                        text = "%s('%s', '%s')" % (self.fcn_defvar,
-                                                   dname, dexpr)
+                        text = self.defpar % (dexpr, dname)
                         thiskey = self.nonkey
 
                 # note that we **re-test** here,
@@ -291,7 +292,6 @@ class InputText:
             elif not text.endswith(')') and self.__isCommand(thiskey, word2):
                 # handle 'command format', including 'print'
                 text = '%s(%s)' % (thiskey, text[len(thiskey):].strip())
-
             indent_level = len(self.keys)
             if (not oneliner and len(thiskey)>0 and
                 (thiskey == self.current or thiskey in self.friends)):
@@ -333,6 +333,13 @@ class InputText:
             key.startswith('#') or
             len(key) < 1 or len(word2) < 1):
             return False
+
+
+        if self._larch is not None:
+            comms = self._larch.symtable.get_symbol('_sys.valid_commands',
+                                                    create=True)
+            if key not in comms:
+                return False
 
         # next test word2
         return (isValidName(word2) or isNumber(word2) or

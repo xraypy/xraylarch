@@ -3,8 +3,8 @@
 Helper classes for larch interpreter
 """
 
-import ast 
 import sys, os
+import numpy as np
 import traceback
 import inspect
 from .utils import Closure
@@ -116,80 +116,6 @@ class LarchExceptionHolder:
             out.append('  %s' % call_expr)
         return (exc_name, '\n'.join(out))
 
-    def xget_error(self):
-        "retrieve error data"
-        node = self.node
-        node_lineno = 1
-        node_col_offset = 0
-        # print ("EXTENDED GET ERROR ", self.exc, node, self.exc_info)
-        e_type, e_val, e_tb = self.exc_info
-        if node is not None:
-            try:
-                node_lineno = node.lineno
-                node_col_offset = self.node.col_offset
-            except:
-                pass
-
-        lineno = self.lineno + node_lineno
-        if isinstance(e_val, SyntaxError):
-            exc_text = 'SyntaxError'
-        elif isinstance(e_val, (str, unicode)):
-            exc_text = e_val
-        else:
-            exc_text = repr(e_val)
-
-        if exc_text in (None, 'None'):
-            try:
-                exc_text = "%s: %s" % (e_val.__class__.__name__, e_val.args[0])
-            except:
-                exc_text = e_val
-        elif exc_text.endswith(',)'):
-            exc_text = "%s)" % exc_text[:-2]
-
-        if exc_text in (None, 'None'):
-            exc_text = ''
-        expr = self.expr
-        if expr == '<>': # denotes non-saved expression -- go fetch from file!
-            try:
-                ftmp = open(self.fname, 'r')
-                expr = ftmp.readlines()[lineno-1][:-1]
-                ftmp.close()
-            except (IOError, TypeError):
-                pass
-
-        out = []
-        if self.msg not in (None, 'Runtime Error', 'Syntax Error') and len(self.msg)>0:
-            out = [self.msg]
-        if self.func is not None:
-            func = self.func
-            if isinstance(func, Closure): func = func.func
-            try:
-                fname = inspect.getmodule(func).__file__
-            except AttributeError:
-                fname = 'unknown'
-
-            if fname.endswith('.pyc'): fname = fname[:-1]
-            found = False
-            for tb in traceback.extract_tb(e_tb):
-                found = found or tb[0].startswith(fname)
-                if found:
-                    out.append('  File "%s", line %i, in %s\n    %s' % tb)
-
-        if len(exc_text) > 0:
-            out.append(exc_text)
-        else:
-            if e_type is not None and e_val is not None:
-                out.append("%s: %s" % (e_type, e_val))
-        if (self.fname == '<stdin>' and self.lineno <= 0):
-            out.append("<stdin>")
-        else:
-            out.append("%s, line number %i" % (self.fname, 1+self.lineno))
-
-        if expr is not None and len(expr)>0:
-            out.append("    %s" % expr)
-        if node_col_offset > 0:
-            out.append("    %s^^^" % ((node_col_offset)*' '))
-        return '\n'.join(out)
 
 class Procedure(object):
     """larch procedure:  function """
@@ -310,40 +236,142 @@ class Procedure(object):
         del lgroup
         return retval
 
-class DefinedVariable(object):
-    """defined variable: re-evaluate on access
 
-    Note that the localGroup/moduleGroup are cached
-    at compile time, and restored for evaluation.
-    """
-    def __init__(self, expr=None, _larch=None):
+class Parameter(float):
+    """parameter doc"""
+    __invalid = "Invalid expression for parameter: '%s'"
+
+    def __init__(self, val=0, min=None, max=None, vary=False, 
+                expr=None, _larch=None, name=None, **kws):
+        self._val = val
+        self.vary = vary
+        self.min = min
+        self.max = max
         self.expr = expr
-        self._larch = _larch
-        self.ast = None
-        self._groups = None, None
-        self.compile()
+        self._ast = None
+        self._larch = None
+        if (hasattr(_larch, 'run') and
+            hasattr(_larch, 'parse') and
+            hasattr(_larch, 'symtable')):
+            self._larch = _larch
+        if self._larch is not None and name is not None:
+            self._larch.symtable.set_symbol(name, self)
+                
+    def _getval(self): 
+        if self._larch is not None and self.expr is not None:
+            if self._ast is None:
+                self._ast = self._larch.parse(self.expr)
+                if self._ast is None:
+                    raise Warning(self.__invalid % self.exp)
+            if self._ast is not None:
+                self._val = self._larch.run(self._ast, expr=self.expr)
+                # self._larch.symtable.save_frame()
+                # self._larch.symtable.restore_frame()
+
+        if self.min is None: self.min = -np.inf
+        if self.max is None: self.max =  np.inf
+        if self.max < self.min:
+            self.max, self.min = self.min, self.max
+
+        if self._val is None:
+            self._val = np.nan
+        else:
+            try:
+                if self.min > -np.inf:
+                    self._val = max(self.min, self.val)
+                if self.max < np.inf:
+                    self._val = min(self.max, self.val)
+                
+            except TypeError, ValueError:
+                self._val = np.nan
+        return self._val
+
+    # for backward compatibility, a read/write .value attribute:
+    @property
+    def value(self):  return self._getval()
+
+    @value.setter
+    def value(self, val):  self._val = val
+    
+    def __hash__(self):
+        return hash((self._getval(), self.min, self.max,
+                     self.vary, self.expr))
 
     def __repr__(self):
-        return "<DefinedVariable: '%s'>" % (self.expr)
+        w = [repr(self._getval())]
+        if self.expr is not None:
+            w.append("expr='%s'" % self.expr)
+        elif self.vary:
+            w.append('vary=True')            
+        if self.min not in (None, -np.inf):
+            w.append('min=%s' % repr(self.min))
+        if self.max not in (None, np.inf):
+            w.append('max=%s' % repr(self.max))
+        return 'param(%s)' % ', '.join(w)
+    
+    def __new__(self, val=0, **kws):
+        return float.__new__(self, val)
 
-    def compile(self):
-        """compile to ast"""
-        if self._larch is not None and self.expr is not None:
-            self.ast = self._larch.parse(self.expr)
 
-    def evaluate(self):
-        "actually evaluate ast to a value"
-        if self.ast is None:
-            self.compile()
-        if self.ast is None:
-            msg = "Cannot compile '%s'"  % (self.expr)
-            raise Warning(msg)
+    # these are more or less straight emulation of float,
+    # but using _getval() to get current value
+    def __str__(self):         return self.__repr__()
 
-        if hasattr(self._larch, 'run'):
-            # save current localGroup/moduleGroup
-            self._larch.symtable.save_frame()
-            rval = self._larch.run(self.ast, expr=self.expr)
-            self._larch.symtable.restore_frame()
-            return rval
-        else:
-            raise ValueError("Cannot evaluate '%s'"  % (self.expr))
+    def __abs__(self):         return abs(self._getval())
+    def __neg__(self):         return -self._getval()
+    def __pos__(self):         return +self._getval()    
+    def __nonzero__(self):     return self._getval() != 0
+
+    def __int__(self):         return int(self._getval())
+    def __long__(self):        return long(self._getval())
+    def __float__(self):       return float(self._getval())
+    def __trunc__(self):       return self._getval().__trunc__()    
+    
+    def __add__(self, other):  return self._getval() + other
+    def __sub__(self, other):  return self._getval() - other
+    def __div__(self, other):  return self._getval() / other
+    def __truediv__(self, other): return self._getval() / other
+    def __floordiv__(self, other): return self._getval() // other
+    def __divmod__(self, other): return divmod(self._getval(), other)
+
+    def __mod__(self, other):  return self._getval() % other
+    def __mul__(self, other):  return self._getval() * other    
+    def __pow__(self, other):  return self._getval() ** other
+
+    def __gt__(self, other):   return self._getval() > other
+    def __ge__(self, other):   return self._getval() >= other
+    def __le__(self, other):   return self._getval() <= other
+    def __lt__(self, other):   return self._getval() < other
+    def __eq__(self, other):   return self._getval() == other
+    def __ne__(self, other):   return self._getval() != other
+
+    def __radd__(self, other):  return other + self._getval()
+    def __rdiv__(self, other):  return other / self._getval()
+    def __rdivmod__(self, other):  return divmod(other, self._getval())
+    def __rfloordiv__(self, other):  return other // self._getval()
+    def __rmod__(self, other):  return other % self._getval()
+    def __rmul__(self, other):  return other * self._getval()
+    def __rpow__(self, other):  return other ** self._getval()
+    def __rsub__(self, other):  return other - self._getval()
+    def __rtruediv__(self, other):  return other / self._getval()
+
+    # 
+    def as_integer_ratio(self):  return self._getval().as_integer_ratio()
+    def hex(self):         return self._getval().hex()
+    def is_integer(self):  return self._getval().is_integer()
+    def real(self):        return self._getval().real()
+    def imag(self):        return self._getval().imag()
+    def conjugate(self):   return self._getval().conjugate()
+
+    # def __format__(self, other):  return self._getval()
+    # def __getformat__(self, other):  return self._getval()
+    # def __getnewargs__(self, other):  return self._getval()
+    # def __reduce__(self, other):  return self._getval()
+    # def __reduce_ex__(self, other):  return self._getval()
+    # def __setattr__(self, other):  return self._getval()
+    # def __setformat__(self, other):  return self._getval()
+    # def __sizeof__(self, other):  return self._getval()
+
+    # def __subclasshook__(self, other):  return self._getval()
+    # def fromhex(self, other):  return self._getval()
+

@@ -18,7 +18,7 @@ import numpy
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .larchlib import LarchExceptionHolder, Procedure, DefinedVariable
+from .larchlib import LarchExceptionHolder, Procedure, Parameter
 from .utils import Closure
 
 OPERATORS = {ast.Is:     lambda a, b: a is b,
@@ -111,9 +111,9 @@ class Interpreter:
         for fname, fcn in list(builtins.local_funcs.items()):
             setattr(builtingroup, fname,
                     Closure(func=fcn, _larch=self, _name=fname))
-        setattr(builtingroup, 'definevar',
-                Closure(func=self.set_definedvariable))
-
+#         setattr(builtingroup, 'definevar',
+#                 Closure(func=self.define_parameter))
+# 
         # add all plugins in standard plugins folder
         plugins_dir = os.path.join(site_config.sys_larchdir, 'plugins')
         for pname in os.listdir(plugins_dir):
@@ -128,10 +128,10 @@ class Interpreter:
         """add plugin components from plugin directory"""
         builtins._addplugin(mod, _larch=self, **kws)
 
-    def set_definedvariable(self, name, expr):
-        """define a defined variable (re-evaluate on access)"""
-        self.symtable.set_symbol(name,
-                                 DefinedVariable(expr=expr, _larch=self))
+#     def define_parameter(self, name, expr):
+#         """define a defined variable (re-evaluate on access)"""
+#         self.symtable.set_symbol(name,
+#                                  Parameter(expr=expr, _larch=self))
 
     def unimplemented(self, node):
         "unimplemented nodes"
@@ -347,8 +347,8 @@ class Interpreter:
             except (NameError, LookupError):
                 msg = "name '%s' is not defined" % node.id
                 self.raise_exception(node, msg=msg)
-            if isinstance(val, DefinedVariable):
-                val = val.evaluate()
+            #if isinstance(val, Parameter):
+            #    val = val._getval()
         return val
 
     def node_assign(self, node, val):
@@ -391,8 +391,8 @@ class Interpreter:
             sym = self.run(node.value)
             if hasattr(sym, node.attr):
                 val = getattr(sym, node.attr)
-                if isinstance(val, DefinedVariable):
-                    val = val.evaluate()
+                # if isinstance(val, Parameter):
+                #    val = val._getval()
                 return val
             else:
                 obj = self.run(node.value)

@@ -92,6 +92,7 @@ class SymbolTable(Group):
         self._sys.searchGroups = []
         self._sys.path        = ['.']
         self._sys.localGroup  = self
+        self._sys.valid_commands = []
         self._sys.moduleGroup = self
         self._sys.groupCache  = {'localGroup':None, 'moduleGroup':None,
                                  'searchGroups':None, 'searchGroupObjects': None}

@@ -9,6 +9,7 @@ from helper import Helper
 from . import inputText
 from . import site_config
 from .utils import Closure
+from .larchlib import Parameter
 from .symboltable import isgroup
 
 helper = Helper()
@@ -401,6 +402,17 @@ def _sleep(t=0, _larch=None):
         raise Warning("cannot sleep() -- larch broken?")
     return time.sleep(t)
 
+def _parameter(*args, **kws):
+    "create a fitting Parameter as a Variable"
+    if len(args) > 0 and isinstance(args[0], (str, unicode)):
+        expr = args[0]
+        args = args[1:]
+        kws.update({'expr': expr})
+    out = Parameter(*args, **kws)
+    if 'name' not in kws:
+        return out
+        
+
 local_funcs = {'group':_group,
                'dir': _dir,
                'which': _which,
@@ -411,5 +423,6 @@ local_funcs = {'group':_group,
                'run': _run,
                'help': _help,
                'add_plugin':_addplugin,
+               'param': _parameter,
                }
 

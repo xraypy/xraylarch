@@ -15,7 +15,7 @@ creates a group that contains the chi(k) for the sum of paths.
 import numpy as np
 import sys, os
 import larch
-from larch.larchlib import DefinedVariable
+from larch.larchlib import Parameter
 
 stddir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'std')
 sys.path.insert(0, stddir)
@@ -163,12 +163,12 @@ class FeffPathGroup(larch.Group):
                             
             if isinstance(val, (str, unicode)):
                 setattr(self, param,
-                        DefinedVariable(expr=val, _larch=self._larch))
+                        Parameter(expr=val, _larch=self._larch))
                 
                 val = getattr(self, param)
                 
-            if isinstance(val, DefinedVariable):
-                out.append(val.evaluate())
+            if isinstance(val, Parameter):
+                out.append(val.value)
             else:
                 out.append(val)
                 setattr(self, param, val)

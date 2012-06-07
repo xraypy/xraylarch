@@ -32,64 +32,64 @@ from numpy import sqrt
 from scipy.optimize import leastsq
 import re
 from larch.utils import OrderedDict
-from larch.larchlib import Procedure, DefinedVariable
+from larch.larchlib import Procedure, Parameter
 from larch.symboltable import isgroup
-
-class Parameter(object):
-    """A Parameter is the basic Parameter going
-    into Fit Model.  The Parameter holds many attributes:
-    value, vary, max_value, min_value.
-    Note that constraints are set elsewhere (with Larch DefinedVariables)
-    The value and min/max values will be set to floats.
-    """
-    def __init__(self, name=None, value=None, vary=True,
-                 min=None, max=None, expr=None, _larch=None, **kws):
-        self.name = name
-        self._val = value
-        self.init_value = value
-        self.min = min
-        self.max = max
-        self.vary = vary
-        self.expr = expr
-
-        self.stderr = None
-        self.correl = None
-        self.defvar = None
-        if self.expr is not None and _larch is not None:
-            self.defvar = DefinedVariable(self.expr, _larch=_larch)
-            self.vary = False
-            self._val = self.defvar.evaluate()
-
-    @property
-    def value(self):
-        if self.defvar is not None:
-            self._val = self.defvar.evaluate()
-        return self._val
-
-    @value.setter
-    def value(self, val):
-        self._val = val
-
-    @value.deleter
-    def value(self):
-        del self._val
-
-    def __repr__(self):
-        s = []
-        if self.name is not None:
-            s.append("'%s'" % self.name)
-        val = repr(self.value)
-        if self.vary and self.stderr is not None:
-            val = "value=%s +/- %.3g" % (val, self.stderr)
-        elif self.expr is not None:
-            val = "value=%s (from expr)" % (val)
-        elif not self.vary:
-            val = "value=%s (fixed)" % (val)
-        s.append(val)
-        s.append("bounds=[%s:%s]" % (repr(self.min), repr(self.max)))
-        if self.expr is not None:
-            s.append("expr='%s'" % (self.expr))
-        return "<Parameter %s>" % ', '.join(s)
+ 
+# class Parameter(object):
+#     """A Parameter is the basic Parameter going
+#     into Fit Model.  The Parameter holds many attributes:
+#     value, vary, max_value, min_value.
+#     Note that constraints are set elsewhere (with Larch DefinedVariables)
+#     The value and min/max values will be set to floats.
+#     """
+#     def __init__(self, name=None, value=None, vary=True,
+#                  min=None, max=None, expr=None, _larch=None, **kws):
+#         self.name = name
+#         self._val = value
+#         self.init_value = value
+#         self.min = min
+#         self.max = max
+#         self.vary = vary
+#         self.expr = expr
+# 
+#         self.stderr = None
+#         self.correl = None
+#         self.defvar = None
+#         if self.expr is not None and _larch is not None:
+#             self.defvar = DefinedVariable(self.expr, _larch=_larch)
+#             self.vary = False
+#             self._val = self.defvar.evaluate()
+# 
+#     @property
+#     def value(self):
+#         if self.defvar is not None:
+#             self._val = self.defvar.evaluate()
+#         return self._val
+# 
+#     @value.setter
+#     def value(self, val):
+#         self._val = val
+# 
+#     @value.deleter
+#     def value(self):
+#         del self._val
+# 
+#     def __repr__(self):
+#         s = []
+#         if self.name is not None:
+#             s.append("'%s'" % self.name)
+#         val = repr(self.value)
+#         if self.vary and self.stderr is not None:
+#             val = "value=%s +/- %.3g" % (val, self.stderr)
+#         elif self.expr is not None:
+#             val = "value=%s (from expr)" % (val)
+#         elif not self.vary:
+#             val = "value=%s (fixed)" % (val)
+#         s.append(val)
+#         s.append("bounds=[%s:%s]" % (repr(self.min), repr(self.max)))
+#         if self.expr is not None:
+#             s.append("expr='%s'" % (self.expr))
+#         return "<Parameter %s>" % ', '.join(s)
 
 class MinimizerException(Exception):
     """General Purpose Exception"""
@@ -305,21 +305,15 @@ def minimize(fcn, group,  args=None, kws=None,
 
     return fitter.leastsq()
 
-def parameter(**kws):
-    "create a fitting Parameter as a Variable"
-    return Parameter(**kws)
-
-def guess(value, min=None, max=None, _larch=None, **kws):
+def guess(value, _larch=None, **kws):
     """create a fitting Parameter as a Variable.
     A minimum or maximum value for the variable value can be given:
        x = guess(10, min=0)
        y = guess(1.2, min=1, max=2)
     """
-    return Parameter(value=value, min=min, max=max, vary=True,
-                     _larch=_larch, expr=None)
+    return Parameter(value, vary=True,  _larch=_larch, **kws)
 
 def registerLarchPlugin():
     return ('_math', {'minimize': minimize,
-                      'param': parameter,
                       'guess': guess,
                       })
