@@ -261,36 +261,60 @@ def guess(value, _larch=None, **kws):
     """
     return Parameter(value, vary=True,  _larch=_larch, **kws)
 
-def fit_report(group, _larch=None, **kws):
-    """print fit report
+def fit_report(group, min_correl=0.1, _larch=None, **kws):
+    """print report of fit statistics given 'fit parameter group'
     """
     if not _larch.symtable.isgroup(group):
         print 'must pass Group to fit_report()'
         return
-    out = ['=================', '   Fit results',
-           '=================']
-
+    topline = '===================== FIT RESULTS ====================='
+    header = '[[%s]]'
+    varformat = '   %12s = % f +/- %f    (init = % f)'
+    out = [topline, header % 'Statistics']
 
     npts = len(group.residual)
-    out.append('  npoints, nvarys, nfree = %i, %i, %i' % (npts,
-                                                          group.nvarys,
-                                                          group.nfree))
-    out.append('  n_function calls = %i' % (group.nfcn_calls))
-    out.append('  chi_square = %f' % (group.chi_square))
-    out.append('  reduced chi_square = %f' % (group.chi_reduced))
-    out.append(' ') # =================')
+    out.append('   nvarys, nfree      = %i, %i' % (group.nvarys, group.nfree))
+    out.append('   npts, n_calls      = %i, %i' % (npts, group.nfcn_calls))
+    out.append('   chi_square         = %f' % (group.chi_square))
+    out.append('   reduced chi_square = %f' % (group.chi_reduced))
+    out.append(' ')
+    out.append(header % 'Variables')
     for name in dir(group):
         var = getattr(group, name)
-        iname = len(name)
-        if iname < 16:
-            name = name + ' '*(17-iname)[:16]
+        if len(name) < 14:
+            name = (name + ' '*14)[:14]
         if isinstance(var, Parameter):
             if var.vary:
-                out.append(' %s  %f +/- %f    (init = %f)'  % (name, var.value,
-                                                               var.stderr,
-                                                               var._initval))
+                out.append(varformat % (name, var.value,
+                                        var.stderr, var._initval))
 
+
+    covar_vars = getattr(group, 'covar_vars', [])
+    if len(covar_vars) > 0:
+        out.append(' ')
+        out.append(header % 'Correlations' +
+                   '    (unreported correlations are < % .3f)' % min_correl)
+        correls = {}
+        for i, name in enumerate(covar_vars):
+            par = getattr(group, name)
+            if not par.vary:
+                continue
+            if hasattr(par, 'correl') and par.correl is not None:
+                for name2 in covar_vars[i+1:]:
+                    if name != name2 and name2 in par.correl:
+                        correls["%s, %s" % (name, name2)] = par.correl[name2]
+
+        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
+        sort_correl.reverse()
+        for name, val in sort_correl:
+            if abs(val) < min_correl:
+                break
+            if len(name) < 20:
+                name = (name + ' '*20)[:20]
+            out.append('   %s = % .3f ' % (name, val))
+    out.append('='*len(topline))
     return '\n'.join(out)
+
 
 def registerLarchPlugin():
     return ('_math', {'minimize': minimize,

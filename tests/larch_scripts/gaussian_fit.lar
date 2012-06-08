@@ -33,3 +33,5 @@ status = resid(params, mdat, verbose=True)
 print 'Fit finishd: %i function calls' % params.nfcn_calls
 show(params)
 # plot(mdat.x, model)
+
+print fit_report(params)

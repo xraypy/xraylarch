@@ -24,9 +24,11 @@ newplot(mdat.x, mdat.y)
 plot(mdat.x, model)
 
 #
-minimize(resid, params, args=(mdat,))
+out = minimize(resid, params, args=(mdat,))
 
 # newplot(mdat.x, mdat.y)
 model = resid(params, mdat) + mdat.y
 newplot(mdat.x, mdat.y)
 plot(mdat.x, model)
+
+print fit_report(params)
