@@ -3,10 +3,10 @@ doc =  """
 """
 
 def resid(pars, data, verbose=False):
-    off = pars.offset.value
-    amp = pars.amp.value
-    cen = pars.cen.value
-    wid = pars.wid.value
+    off = pars.offset
+    amp = pars.amp
+    cen = pars.cen
+    wid = pars.wid
     model = off + amp*gaussian(data.x, cen, wid)
     if verbose:
         newplot(data.x, data.y)
@@ -27,7 +27,7 @@ params.wid = guess(0.2)
 
 model = mdat.y + resid(params, mdat)
 
-minimize(resid, params, args=(mdat,), kws={'verbose':False})
+x = minimize(resid, params, args=(mdat,), kws={'verbose':False})
 
 status = resid(params, mdat, verbose=True)
 print 'Fit finishd: %i function calls' % params.nfcn_calls

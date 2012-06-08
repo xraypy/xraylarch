@@ -4,8 +4,10 @@ def resid(pars, data):
     model = pars.slope.value * data.x + pars.offset.value
     print 'resid: ', pars.iter, pars.slope.value, pars.offset.value
     pars.iter = pars.iter+1
-    newplot(data.x, data.y)
-    plot(data.x, model, force_draw=True)
+    #if pars.iter <= 10:
+    #    plot(data.x, model) # force_draw=True
+
+    # update_line(data.x, model, trace=1) # , autoscale=True)
     return  model - data.y
 enddef
 
@@ -14,11 +16,17 @@ mdat.x = arange(100)
 mdat.y = -20 + 0.122*mdat.x + 6.e-7*(mdat.x-40)**2 + random.normal(size=100, scale=0.5)
 
 params = group()
-params.slope = guess(12)
+params.slope = guess(5)
 params.offset= guess(.001)
 params.iter = 0
 model = mdat.y + resid(params, mdat)
+newplot(mdat.x, mdat.y)
+plot(mdat.x, model)
 
+#
 minimize(resid, params, args=(mdat,))
 
-# plot(mdat.x, model)
+# newplot(mdat.x, mdat.y)
+model = resid(params, mdat) + mdat.y
+newplot(mdat.x, mdat.y)
+plot(mdat.x, model)
