@@ -261,7 +261,38 @@ def guess(value, _larch=None, **kws):
     """
     return Parameter(value, vary=True,  _larch=_larch, **kws)
 
+def fit_report(group, _larch=None, **kws):
+    """print fit report
+    """
+    if not _larch.symtable.isgroup(group):
+        print 'must pass Group to fit_report()'
+        return
+    out = ['=================', '   Fit results',
+           '=================']
+
+
+    npts = len(group.residual)
+    out.append('  npoints, nvarys, nfree = %i, %i, %i' % (npts,
+                                                          group.nvarys,
+                                                          group.nfree))
+    out.append('  n_function calls = %i' % (group.nfcn_calls))
+    out.append('  chi_square = %f' % (group.chi_square))
+    out.append('  reduced chi_square = %f' % (group.chi_reduced))
+    out.append(' ') # =================')
+    for name in dir(group):
+        var = getattr(group, name)
+        iname = len(name)
+        if iname < 16:
+            name = name + ' '*(17-iname)[:16]
+        if isinstance(var, Parameter):
+            if var.vary:
+                out.append(' %s  %f +/- %f    (init = %f)'  % (name, var.value,
+                                                               var.stderr,
+                                                               var._initval))
+
+    return '\n'.join(out)
+
 def registerLarchPlugin():
     return ('_math', {'minimize': minimize,
                       'guess': guess,
-                      })
+                      'fit_report': fit_report  })
