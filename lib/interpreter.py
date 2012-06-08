@@ -18,7 +18,7 @@ import numpy
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .larchlib import LarchExceptionHolder, Procedure, Parameter
+from .larchlib import LarchExceptionHolder, Procedure
 from .utils import Closure
 
 OPERATORS = {ast.Is:     lambda a, b: a is b,
@@ -111,9 +111,7 @@ class Interpreter:
         for fname, fcn in list(builtins.local_funcs.items()):
             setattr(builtingroup, fname,
                     Closure(func=fcn, _larch=self, _name=fname))
-#         setattr(builtingroup, 'definevar',
-#                 Closure(func=self.define_parameter))
-# 
+
         # add all plugins in standard plugins folder
         plugins_dir = os.path.join(site_config.sys_larchdir, 'plugins')
         for pname in os.listdir(plugins_dir):
@@ -127,11 +125,6 @@ class Interpreter:
     def add_plugin(self, mod, **kws):
         """add plugin components from plugin directory"""
         builtins._addplugin(mod, _larch=self, **kws)
-
-#     def define_parameter(self, name, expr):
-#         """define a defined variable (re-evaluate on access)"""
-#         self.symtable.set_symbol(name,
-#                                  Parameter(expr=expr, _larch=self))
 
     def unimplemented(self, node):
         "unimplemented nodes"
@@ -152,7 +145,7 @@ class Interpreter:
 
         if func is None:
             func = self.func
-        
+
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
         err = LarchExceptionHolder(node, exc=exc, msg=msg, expr=expr,
@@ -193,7 +186,7 @@ class Interpreter:
             self.expr   = expr
         if func is not None:
             self.func = func
-            
+
         # get handler for this node:
         #   on_xxx with handle nodes of type 'xxx', etc
         if node.__class__.__name__.lower() not in self.node_handlers:
@@ -210,9 +203,9 @@ class Interpreter:
                 ret = list(ret)
             return ret
         except:
-            self.raise_exception(node, expr=self.expr, 
+            self.raise_exception(node, expr=self.expr,
                                  fname=self.fname, lineno=self.lineno)
-            
+
     def __call__(self, expr, **kw):
         return self.eval(expr, **kw)
 
@@ -347,8 +340,6 @@ class Interpreter:
             except (NameError, LookupError):
                 msg = "name '%s' is not defined" % node.id
                 self.raise_exception(node, msg=msg)
-            #if isinstance(val, Parameter):
-            #    val = val._getval()
         return val
 
     def node_assign(self, node, val):
@@ -390,10 +381,7 @@ class Interpreter:
         if ctx == ast.Load:
             sym = self.run(node.value)
             if hasattr(sym, node.attr):
-                val = getattr(sym, node.attr)
-                # if isinstance(val, Parameter):
-                #    val = val._getval()
-                return val
+                return getattr(sym, node.attr)
             else:
                 obj = self.run(node.value)
                 fmt = "%s does not have member '%s'"
@@ -604,9 +592,9 @@ class Interpreter:
                 e_type, e_value, e_tb = self.error[-1].exc_info
                 #print(" ERROR: ", e_type, e_value, e_tb)
                 #print("  ... ", self.error)
-                
+
                 this_exc = e_type()
-                
+
                 for hnd in node.handlers:
                     htype = None
                     if hnd.type is not None:
@@ -666,12 +654,12 @@ class Interpreter:
         out = func(*args, **keywords)
         self.func = None
         return out
-    
+
         # try:
         # except:
         #     self.raise_exception(node, exc=RuntimeError, func=func,
         #                msg = "Error running %s" % (func))
-        
+
     def on_functiondef(self, node):
         "define procedures"
         # ('name', 'args', 'body', 'decorator_list')
@@ -780,7 +768,7 @@ class Interpreter:
                 except:
                     self.raise_exception(None, exc=ImportError, msg='Import Error')
                     return
-                
+
         # now we install thismodule into the current moduleGroup
         # import full module
         if fromlist is None:

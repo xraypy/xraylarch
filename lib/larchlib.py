@@ -56,11 +56,11 @@ class LarchExceptionHolder:
 
         if self.func is not None:
             func = self.func
-            fname = self.fname 
+            fname = self.fname
 
             if isinstance(func, Closure):
                 func = func.func
-                fname = inspect.getmodule(func).__file__                
+                fname = inspect.getmodule(func).__file__
             if fname is None:
                 try:
                     fname = inspect.getmodule(func).__file__
@@ -84,7 +84,7 @@ class LarchExceptionHolder:
 
         if fline is not None:
             out.append(fline)
-            
+
         tline = exc_name
         if self.msg not in ('',  None):
             tline = "%s: %s" % (exc_name, str(self.msg))
@@ -184,11 +184,11 @@ class Procedure(object):
                     self.raise_exc(exc=TypeError,
                                    msg=msg % (targ, self.name))
 
-       
+
         if n_args != n_names:
             msg = None
             if n_args < n_names:
-                msg = 'not enough arguments for %s() expected %i, got %i' 
+                msg = 'not enough arguments for %s() expected %i, got %i'
                 msg = msg % (self.name, n_names, n_args)
                 # print '\n >>> raise exc ', msg
                 self.raise_exc(exc=TypeError, msg=msg)
@@ -236,14 +236,26 @@ class Procedure(object):
         del lgroup
         return retval
 
-
 class Parameter(float):
-    """parameter doc"""
+    """returns a floating point parameter with bounds that can either
+    be flagged as a variabale for a fit or given an expression to use to
+    automatically evaluate its value (as a thunk).
+
+    >>> x = param(12.0, vary=True, min=0)
+    will set the value to 12.0, and allow it be varied by changing x._val,
+    but its returned value will never go below 0.
+
+    >>> x = param(expr='sqrt(2*a)')
+    will have a value of sqrt(2*a) even if the value of 'a' changes after
+    the creation of x
+    """
+
     __invalid = "Invalid expression for parameter: '%s'"
 
-    def __init__(self, val=0, min=None, max=None, vary=False, 
+    def __init__(self, val=0, min=None, max=None, vary=False,
                 expr=None, _larch=None, name=None, **kws):
         self._val = val
+        self._initval = val
         self.vary = vary
         self.min = min
         self.max = max
@@ -256,8 +268,8 @@ class Parameter(float):
             self._larch = _larch
         if self._larch is not None and name is not None:
             self._larch.symtable.set_symbol(name, self)
-                
-    def _getval(self): 
+
+    def _getval(self):
         if self._larch is not None and self.expr is not None:
             if self._ast is None:
                 self._ast = self._larch.parse(self.expr)
@@ -273,17 +285,14 @@ class Parameter(float):
         if self.max < self.min:
             self.max, self.min = self.min, self.max
 
-        if self._val is None:
+        try:
+            self._val = float(self._val)
+            if self.min > -np.inf:
+                self._val = max(self.min, self.val)
+            if self.max < np.inf:
+                self._val = min(self.max, self.val)
+        except TypeError, ValueError:
             self._val = np.nan
-        else:
-            try:
-                if self.min > -np.inf:
-                    self._val = max(self.min, self.val)
-                if self.max < np.inf:
-                    self._val = min(self.max, self.val)
-                
-            except TypeError, ValueError:
-                self._val = np.nan
         return self._val
 
     # for backward compatibility, a read/write .value attribute:
@@ -292,7 +301,7 @@ class Parameter(float):
 
     @value.setter
     def value(self, val):  self._val = val
-    
+
     def __hash__(self):
         return hash((self._getval(), self.min, self.max,
                      self.vary, self.expr))
@@ -302,13 +311,13 @@ class Parameter(float):
         if self.expr is not None:
             w.append("expr='%s'" % self.expr)
         elif self.vary:
-            w.append('vary=True')            
+            w.append('vary=True')
         if self.min not in (None, -np.inf):
             w.append('min=%s' % repr(self.min))
         if self.max not in (None, np.inf):
             w.append('max=%s' % repr(self.max))
         return 'param(%s)' % ', '.join(w)
-    
+
     def __new__(self, val=0, **kws):
         return float.__new__(self, val)
 
@@ -319,14 +328,14 @@ class Parameter(float):
 
     def __abs__(self):         return abs(self._getval())
     def __neg__(self):         return -self._getval()
-    def __pos__(self):         return +self._getval()    
+    def __pos__(self):         return +self._getval()
     def __nonzero__(self):     return self._getval() != 0
 
     def __int__(self):         return int(self._getval())
     def __long__(self):        return long(self._getval())
     def __float__(self):       return float(self._getval())
-    def __trunc__(self):       return self._getval().__trunc__()    
-    
+    def __trunc__(self):       return self._getval().__trunc__()
+
     def __add__(self, other):  return self._getval() + other
     def __sub__(self, other):  return self._getval() - other
     def __div__(self, other):  return self._getval() / other
@@ -335,7 +344,7 @@ class Parameter(float):
     def __divmod__(self, other): return divmod(self._getval(), other)
 
     def __mod__(self, other):  return self._getval() % other
-    def __mul__(self, other):  return self._getval() * other    
+    def __mul__(self, other):  return self._getval() * other
     def __pow__(self, other):  return self._getval() ** other
 
     def __gt__(self, other):   return self._getval() > other
@@ -355,7 +364,7 @@ class Parameter(float):
     def __rsub__(self, other):  return other - self._getval()
     def __rtruediv__(self, other):  return other / self._getval()
 
-    # 
+    #
     def as_integer_ratio(self):  return self._getval().as_integer_ratio()
     def hex(self):         return self._getval().hex()
     def is_integer(self):  return self._getval().is_integer()
@@ -363,7 +372,9 @@ class Parameter(float):
     def imag(self):        return self._getval().imag()
     def conjugate(self):   return self._getval().conjugate()
 
-    # def __format__(self, other):  return self._getval()
+    def __format__(self):  return format(self._getval())
+    def fromhex(self, other):  self._val = other.fromhex()
+
     # def __getformat__(self, other):  return self._getval()
     # def __getnewargs__(self, other):  return self._getval()
     # def __reduce__(self, other):  return self._getval()
@@ -373,5 +384,4 @@ class Parameter(float):
     # def __sizeof__(self, other):  return self._getval()
 
     # def __subclasshook__(self, other):  return self._getval()
-    # def fromhex(self, other):  return self._getval()
 

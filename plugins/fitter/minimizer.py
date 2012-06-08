@@ -32,64 +32,8 @@ from numpy import sqrt
 from scipy.optimize import leastsq
 import re
 from larch.utils import OrderedDict
-from larch.larchlib import Procedure, Parameter
+from larch.larchlib import Parameter
 from larch.symboltable import isgroup
- 
-# class Parameter(object):
-#     """A Parameter is the basic Parameter going
-#     into Fit Model.  The Parameter holds many attributes:
-#     value, vary, max_value, min_value.
-#     Note that constraints are set elsewhere (with Larch DefinedVariables)
-#     The value and min/max values will be set to floats.
-#     """
-#     def __init__(self, name=None, value=None, vary=True,
-#                  min=None, max=None, expr=None, _larch=None, **kws):
-#         self.name = name
-#         self._val = value
-#         self.init_value = value
-#         self.min = min
-#         self.max = max
-#         self.vary = vary
-#         self.expr = expr
-# 
-#         self.stderr = None
-#         self.correl = None
-#         self.defvar = None
-#         if self.expr is not None and _larch is not None:
-#             self.defvar = DefinedVariable(self.expr, _larch=_larch)
-#             self.vary = False
-#             self._val = self.defvar.evaluate()
-# 
-#     @property
-#     def value(self):
-#         if self.defvar is not None:
-#             self._val = self.defvar.evaluate()
-#         return self._val
-# 
-#     @value.setter
-#     def value(self, val):
-#         self._val = val
-# 
-#     @value.deleter
-#     def value(self):
-#         del self._val
-# 
-#     def __repr__(self):
-#         s = []
-#         if self.name is not None:
-#             s.append("'%s'" % self.name)
-#         val = repr(self.value)
-#         if self.vary and self.stderr is not None:
-#             val = "value=%s +/- %.3g" % (val, self.stderr)
-#         elif self.expr is not None:
-#             val = "value=%s (from expr)" % (val)
-#         elif not self.vary:
-#             val = "value=%s (fixed)" % (val)
-#         s.append(val)
-#         s.append("bounds=[%s:%s]" % (repr(self.min), repr(self.max)))
-#         if self.expr is not None:
-#             s.append("expr='%s'" % (self.expr))
-#         return "<Parameter %s>" % ', '.join(s)
 
 class MinimizerException(Exception):
     """General Purpose Exception"""
@@ -181,7 +125,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             return
         if not self._larch.symtable.isgroup(self.paramgroup):#         if not isgroup(self.paramgroup):
             print 'param group is not a Larch Group'
-            return 
+            return
         self.nfev_calls = 0
         self.var_names = []
         self.defvars = []
@@ -289,6 +233,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         setattr(group, 'message',    message)
         setattr(group, 'chi_square', chisqr)
         setattr(group, 'chi_reduced', redchi)
+        setattr(group, 'nvarys', self.nvarys)
         setattr(group, 'nfree', nfree)
         # print infodict.keys()
         return success

@@ -8,7 +8,7 @@ returns a Feff Group -- a special variation of a Group -- for
 the path represented by the feffNNNN.dat
 
   group  = ff2chi(pathlist)
-        
+
 creates a group that contains the chi(k) for the sum of paths.
 """
 
@@ -128,7 +128,7 @@ class FeffPathGroup(larch.Group):
             self.degen = self._dat.degen if degen is None else degen
         except AttributeError:
             pass
-    
+
         self.s02    = 1 if s02    is None else s02
         self.e0     = 0 if e0     is None else e0
         self.ei     = 0 if ei     is None else ei
@@ -160,13 +160,13 @@ class FeffPathGroup(larch.Group):
             if param in kws:
                 if kws[param] is not None:
                     val = kws[param]
-                            
+
             if isinstance(val, (str, unicode)):
                 setattr(self, param,
                         Parameter(expr=val, _larch=self._larch))
-                
+
                 val = getattr(self, param)
-                
+
             if isinstance(val, Parameter):
                 out.append(val.value)
             else:
@@ -175,7 +175,7 @@ class FeffPathGroup(larch.Group):
         return out
 
 
-    def _calcchi(self, kmax=20, kstep=0.05, degen=None, s02=None, 
+    def _calcchi(self, kmax=20, kstep=0.05, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):
         """calculate chi(k) with the provided parameters"""
@@ -183,7 +183,7 @@ class FeffPathGroup(larch.Group):
         kmax = min(max(self._dat.k), kmax)
         npts = 1 + int((kmax+kstep/10.)/kstep)
         k = np.linspace(0, kmax, npts)
-        
+
         pars = self.__pathparams(degen=degen, s02=s02, e0=e0, ei=ei,
                                  deltar=deltar, sigma2=sigma2,
                                  third=third, fourth=fourth)
@@ -216,12 +216,12 @@ class FeffPathGroup(larch.Group):
         # p = complex k, and its square:
         pp = (rep + 1j/lam)**2 + 1j * ei * ETOK
         p  = np.sqrt(pp)
-        cchi = np.exp(-2*reff*p.imag - 2*pp*(sigma2 - pp*fourth/3) + 
+        cchi = np.exp(-2*reff*p.imag - 2*pp*(sigma2 - pp*fourth/3) +
                       1j*(2*k*reff + pha +
                           2*p*(deltar - 2*sigma2/reff) - 2*pp*third/3))
-        
+
         # ensure that ktmp is a **copy** of k, and avoid divide-by-zero
-        ktmp = 1.0*k[:] 
+        ktmp = 1.0*k[:]
         ktmp[0] = SMALL
         cchi    = degen * s02 * amp * cchi / (ktmp * (reff + deltar)**2)
         cchi[0] = 2*cchi[1] - cchi[2]
@@ -237,7 +237,8 @@ def _read_feffdat(fname, _larch=None, **kws):
     return FeffPathGroup(fname, _larch=_larch)
 
 def _ff2chi(pathlist, _larch=None, group=None, **kws):
-    """sum the XAFS for a set of paths... assumes that the Path Parameters are set"""
+    """sum the XAFS for a set of paths... assumes that the
+    Path Parameters are set"""
     msg = _larch.writer.write
     for p in pathlist:
         if not isinstance(p, FeffPathGroup):
@@ -254,7 +255,7 @@ def _ff2chi(pathlist, _larch=None, group=None, **kws):
         setattr(group, 'chi', out)
     else:
         return out
-    
+
 
 def registerLarchPlugin():
     return ('_xafs', {'read_feffdat': _read_feffdat,
