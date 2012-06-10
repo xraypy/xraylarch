@@ -50,7 +50,6 @@ OPERATORS = {ast.Is:     lambda a, b: a is b,
              ast.UAdd:   lambda a: +a,
              ast.USub:   lambda a: -a}
 
-
 class Interpreter:
     """larch program compiler and interpreter.
   This module compiles expressions and statements to AST representation,
@@ -191,20 +190,31 @@ class Interpreter:
         #   on_xxx with handle nodes of type 'xxx', etc
         if node.__class__.__name__.lower() not in self.node_handlers:
             return self.unimplemented(node)
-
         handler = self.node_handlers[node.__class__.__name__.lower()]
-
 
         # run the handler:  this will likely generate
         # recursive calls into this run method.
         try:
-            ret = handler(node)
-            if isinstance(ret, enumerate):
-                ret = list(ret)
-            return ret
+            out = handler(node)
         except:
             self.raise_exception(node, expr=self.expr,
                                  fname=self.fname, lineno=self.lineno)
+
+        # for some cases (especially when using Parameter objects),
+        # a calculation returns an otherwise numeric array, but with
+        # dtype 'object'.  fix here, trying (float, complex, list).
+        if isinstance(out, numpy.ndarray) and out.dtype == numpy.object:
+            try:
+                out = out.astype(float)
+            except TypeError:
+                try:
+                    out = out.astype(complex)
+                except TypeError:
+                    out = list(out)
+        # enumeration objects are list-ified here...
+        if isinstance(out, enumerate):
+            out = list(out)
+        return out
 
     def __call__(self, expr, **kw):
         return self.eval(expr, **kw)
@@ -377,7 +387,6 @@ class Interpreter:
     def on_attribute(self, node):    # ('value', 'attr', 'ctx')
         "extract attribute"
         ctx = node.ctx.__class__
-        # print("on_attribute",node.value,node.attr,ctx)
         if ctx == ast.Load:
             sym = self.run(node.value)
             if hasattr(sym, node.attr):
@@ -409,7 +418,6 @@ class Interpreter:
 
     def on_augassign(self, node):    # ('target', 'op', 'value')
         "augmented assign"
-        # print( "AugASSIGN ", node.target, node.value)
         return self.on_assign(ast.Assign(targets=[node.target],
                                          value=ast.BinOp(left = node.target,
                                                          op   = node.op,
@@ -426,7 +434,6 @@ class Interpreter:
 
     def on_subscript(self, node):    # ('value', 'slice', 'ctx')
         "subscript handling -- one of the tricky parts"
-        # print("on_subscript: ", ast.dump(node))
         val    = self.run(node.value)
         nslice = self.run(node.slice)
         ctx = node.ctx.__class__
@@ -463,7 +470,6 @@ class Interpreter:
 
     def on_binop(self, node):    # ('left', 'op', 'right')
         "binary operator"
-        # print( 'BINARY  OP! ', node.left, node.right, node.op)
         return OPERATORS[node.op.__class__](self.run(node.left),
                                             self.run(node.right))
 
@@ -584,22 +590,17 @@ class Interpreter:
         "try/except blocks"
         no_errors = True
         for tnode in node.body:
-            # print(" Try Node: " , self.dump(tnode))
             self.run(tnode)
-            # print(" Error len: " , len(self.error))
             no_errors = no_errors and len(self.error) == 0
             if self.error:
                 e_type, e_value, e_tb = self.error[-1].exc_info
-                #print(" ERROR: ", e_type, e_value, e_tb)
-                #print("  ... ", self.error)
-
                 this_exc = e_type()
 
                 for hnd in node.handlers:
                     htype = None
                     if hnd.type is not None:
                         htype = __builtins__.get(hnd.type.id, None)
-                    # print(" ERR HANDLER ", htype)
+
                     if htype is None or isinstance(this_exc, htype):
                         self.error = []
                         if hnd.name is not None:
@@ -614,7 +615,6 @@ class Interpreter:
 
     def on_raise(self, node):    # ('type', 'inst', 'tback')
         "raise statement"
-        # print(" ON RAISE ", node.type, node.inst, node.tback)
         if sys.version_info[0] == 3:
             excnode  = node.exc
             msgnode  = node.cause
@@ -635,7 +635,6 @@ class Interpreter:
         if not hasattr(func, '__call__') and not isinstance(func, type):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, exc=TypeError, msg=msg)
-
         args = [self.run(targ) for targ in node.args]
         if node.starargs is not None:
             args = args + self.run(node.starargs)
@@ -653,6 +652,7 @@ class Interpreter:
         self.func = func
         out = func(*args, **keywords)
         self.func = None
+
         return out
 
         # try:
