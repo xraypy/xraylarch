@@ -29,7 +29,7 @@ will contain fit statistics chisquare, etc.
 """
 
 from numpy import sqrt
-from scipy.optimize import leastsq
+from scipy.optimize import leastsq as scipy_leastsq
 import re
 from larch.utils import OrderedDict
 from larch.larchlib import Parameter
@@ -52,7 +52,7 @@ class Minimizer(object):
 or set  leastsq_kws['maxfev']  to increase this maximum."""
 
     def __init__(self, fcn, params, fcn_args=None, fcn_kws=None,
-                 iter_cb=None, scale_covar=True,
+                 iter_cb=None, scale_covar=True, toler=1.e-7,
                  _larch=None, jacfcn=None, **kws):
         self.userfcn = fcn
         self.paramgroup = params
@@ -65,6 +65,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             self.userkws = {}
         self._larch = _larch
         self.iter_cb = iter_cb
+        self.toler = toler
         self.scale_covar = scale_covar
         self.kws = kws
 
@@ -151,7 +152,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         # this also acts as a check of expression syntax.
         self.__prepared = True
 
-    def leastsq(self, scale_covar=True, **kws):
+    def leastsq(self, **kws):
         """
         use Levenberg-Marquardt minimization to perform fit.
         This assumes that ModelParameters have been stored,
@@ -167,8 +168,9 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         returns True if fit was successful, False if not.
         """
         self.prepare_fit()
-        lskws = dict(full_output=1, xtol=1.e-7, ftol=1.e-7,
-                     gtol=1.e-7, maxfev=1000*(self.nvarys+1), Dfun=None)
+        toler = self.toler
+        lskws = dict(full_output=1, xtol=toler, ftol=toler,
+                     gtol=toler, maxfev=1000*(self.nvarys+1), Dfun=None)
 
         lskws.update(self.kws)
         lskws.update(kws)
@@ -177,33 +179,38 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             self.jacfcn = lskws['Dfun']
             lskws['Dfun'] = self.__jacobian
 
-        lsout = leastsq(self.__residual, self.vars, **lskws)
+        lsout = scipy_leastsq(self.__residual, self.vars, **lskws)
         vbest, cov, infodict, errmsg, ier = lsout
         resid = infodict['fvec']
-
         group = self.paramgroup
 
-        lmdif_messag = errmsg
-        success = ier in [1, 2, 3, 4]
         message = 'Fit succeeded.'
-
         if ier == 0:
             message = 'Invalid Input Parameters.'
         elif ier == 5:
             message = self.err_maxfev % lskws['maxfev']
-        else:
-            message = 'Fit tolerance may to be too small.'
+        elif ier > 5:
+            message = 'See lmdif_message.'
         if cov is None:
             message = '%s Could not estimate error-bars' % message
 
-        lmdif_out = dict(message=message, lmdif_message=errmsg,  ier=ier, success=success)
-        lmdif_out.update(infodict)
-
         ndata = len(resid)
-
         chisqr = (resid**2).sum()
         nfree  = (ndata - self.nvarys)
         redchi = chisqr / nfree
+
+        setattr(group, 'lmdif_status', ier)
+        setattr(group, 'lmdif_message', errmsg)
+        setattr(group, 'lmdif_success', ier in [1, 2, 3, 4])
+        setattr(group, 'toler',  self.toler)
+        setattr(group, 'nfcn_calls',  infodict['nfev'])
+        setattr(group, 'residual',   resid)
+        setattr(group, 'message',    message)
+        setattr(group, 'chi_square', chisqr)
+        setattr(group, 'chi_reduced', redchi)
+        setattr(group, 'nvarys', self.nvarys)
+        setattr(group, 'nfree', nfree)
+        setattr(group, 'errorbars', cov is not None)
 
         for name in self.var_names:
             par = getattr(group, name)
@@ -211,7 +218,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             par.correl = None
 
         if cov is not None:
-            errorbars = True
             covar = cov
             if self.scale_covar:
                 cov = cov * chisqr / nfree
@@ -223,20 +229,9 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
                     if jvar != ivar:
                         par.correl[name2] = (cov[ivar, jvar]/
                                              (par.stderr * sqrt(cov[jvar, jvar])))
-
-        setattr(group, 'errorbars',  errorbars)
-        setattr(group, 'covar_vars', self.var_names)
-        setattr(group, 'covar',      cov)
-        setattr(group, 'lmdif_status', ier)
-        setattr(group, 'nfcn_calls',  infodict['nfev'])
-        setattr(group, 'residual',   resid)
-        setattr(group, 'message',    message)
-        setattr(group, 'chi_square', chisqr)
-        setattr(group, 'chi_reduced', redchi)
-        setattr(group, 'nvarys', self.nvarys)
-        setattr(group, 'nfree', nfree)
-        # print infodict.keys()
-        return success
+            setattr(group, 'covar_vars', self.var_names)
+            setattr(group, 'covar',      cov)
+        return ier
 
 def minimize(fcn, group,  args=None, kws=None,
              scale_covar=True, iter_cb=None, _larch=None, **fit_kws):
@@ -250,8 +245,8 @@ def minimize(fcn, group,  args=None, kws=None,
     fitter = Minimizer(fcn, group, fcn_args=args, fcn_kws=kws,
                        iter_cb=iter_cb, scale_covar=scale_covar,
                        _larch=_larch,  **fit_kws)
+    fitter.leastsq()
 
-    return fitter.leastsq()
 
 def guess(value, _larch=None, **kws):
     """create a fitting Parameter as a Variable.
@@ -269,12 +264,12 @@ def fit_report(group, min_correl=0.1, _larch=None, **kws):
         return
     topline = '===================== FIT RESULTS ====================='
     header = '[[%s]]'
-    varformat = '   %12s = % f +/- %f    (init = % f)'
+    varformat = '   %12s = % f +/- %f   (init= % f)'
     out = [topline, header % 'Statistics']
 
     npts = len(group.residual)
-    out.append('   nvarys, nfree      = %i, %i' % (group.nvarys, group.nfree))
-    out.append('   npts, n_calls      = %i, %i' % (npts, group.nfcn_calls))
+    out.append('   npts, nvarys       = %i, %i' % (npts, group.nvarys))
+    out.append('   nfree, nfcn_calls  = %i, %i' % (group.nfree, group.nfcn_calls))
     out.append('   chi_square         = %f' % (group.chi_square))
     out.append('   reduced chi_square = %f' % (group.chi_reduced))
     out.append(' ')
