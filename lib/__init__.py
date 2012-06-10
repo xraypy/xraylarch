@@ -14,7 +14,7 @@ if major < 2 or (major == 2 and minor < 6):
     raise EnvironmentError('requires python 2.6 or higher')
 
 from .symboltable import Group, SymbolTable
-from .larchlib import Parameter
+from .larchlib import Parameter, param_value
 from .shell import shell
 from .interpreter import Interpreter
 from .inputText import InputText

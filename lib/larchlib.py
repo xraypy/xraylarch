@@ -310,6 +310,8 @@ class Parameter(object):
             w.append('max=%s' % repr(self.max))
         return 'param(%s)' % ', '.join(w)
 
+    #def __new__(self, val=0, **kws): return float.__new__(self, val)
+
     # these are more or less straight emulation of float,
     # but using _getval() to get current value
     def __str__(self):         return self.__repr__()
@@ -378,3 +380,9 @@ class Parameter(object):
 
 def isParameter(x):
     return isinstance(x, Parameter)
+
+def param_value(val):
+    "get param value -- useful for 3rd party code"
+    if isinstance(val, Parameter):
+        return val.value
+    return val
