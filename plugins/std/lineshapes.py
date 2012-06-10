@@ -12,7 +12,7 @@ def gaussian(x, cen=0, sigma=1, _larch=None):
     """1 dimensional gaussian:
     gaussian(x, cen, sigma)
     """
-    return (sqrt(log2/pi) / sigma) * exp(-log2 * (1.0*x-cen) **2 / sigma**2)
+    return (sqrt(log2/pi)/sigma) * exp(-log2 * (1.0*x-cen) **2 / sigma**2)
 
 def lorentzian(x, cen=0, sigma=1, _larch=None):
     """1 dimensional lorentzian
@@ -25,7 +25,7 @@ def pvoigt(x, cen=0, sigma=1, frac=0.5, _larch=None):
     pvoigt(x, cen, sigma, frac)
        = (1-frac)*gaussion(x,cen,sigma) + frac*lorentzian(x,cen, sigma)
     """
-    return ((1-frac)*gaussiann(x, cen=cen, sigma=sigma) +
+    return ((1-frac)*gaussian(x, cen=cen, sigma=sigma) +
                 frac*lorentzian(x, cen=cen, sigma=sigma))
 
 def pearson7(x, cen=0, sigma=1, expon=0.5, _larch=None):
