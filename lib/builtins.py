@@ -9,7 +9,7 @@ from helper import Helper
 from . import inputText
 from . import site_config
 from .utils import Closure
-from .larchlib import Parameter
+import larchlib
 from .symboltable import isgroup
 
 helper = Helper()
@@ -183,10 +183,16 @@ def _run(filename=None, _larch=None, new_module=None,
     if isinstance(filename, file):
         text = filename.read()
         filename = filename.name
-    elif (isinstance(filename, str) and
-          os.path.exists(filename) and
-          os.path.isfile(filename)):
-        text = open(filename).read()
+    elif isinstance(filename, str):
+        if os.path.exists(filename) and os.path.isfile(filename)):
+            try:
+                text = open(filename).read()
+            except IOError:
+            _larch.writer.write("cannot read file '%s'\n" % filename)
+            return
+        else:
+            _larch.writer.write("file not found '%s'\n" % filename)
+            return
 
     output = None
     fname = filename
@@ -210,7 +216,6 @@ def _run(filename=None, _larch=None, new_module=None,
             thismod = symtable.create_group(name=new_module)
             symtable._sys.modules[new_module] = thismod
             symtable.set_frame((thismod, thismod))
-
 
         output = []
         while len(inptext) > 0:
@@ -311,12 +316,12 @@ def _addplugin(plugin, _larch=None, **kws):
 
     def on_error(msg):
         _larch.raise_exception(None, exc=ImportError, msg=msg)
-       
-        
+
+
     def _plugin_file(plugin, path=None):
         "defined here to allow recursive imports for packages"
         fh = None
-        
+
         if path is None:
             path = site_config.plugins_path
         for p_path in path:
@@ -408,10 +413,10 @@ def _parameter(*args, **kws):
         expr = args[0]
         args = args[1:]
         kws.update({'expr': expr})
-    out = Parameter(*args, **kws)
+    out = larchlib.Parameter(*args, **kws)
     if 'name' not in kws:
         return out
-        
+
 
 local_funcs = {'group':_group,
                'dir': _dir,
