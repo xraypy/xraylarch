@@ -18,37 +18,40 @@ import numpy
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .larchlib import LarchExceptionHolder, Procedure
+from .larchlib import LarchExceptionHolder, Procedure, Parameter, isParameter
 from .utils import Closure
 
-OPERATORS = {ast.Is:     lambda a, b: a is b,
-             ast.IsNot:  lambda a, b: a is not b,
-             ast.In:     lambda a, b: a in b,
-             ast.NotIn:  lambda a, b: a not in b,
-             ast.Add:    lambda a, b: a + b,
-             ast.BitAnd: lambda a, b: a & b,
-             ast.BitOr:  lambda a, b: a | b,
-             ast.BitXor: lambda a, b: a ^ b,
-             ast.Div:    lambda a, b: a / b,
-             ast.FloorDiv: lambda a, b: a // b,
-             ast.LShift: lambda a, b: a << b,
-             ast.RShift: lambda a, b: a >> b,
-             ast.Mult:   lambda a, b: a * b,
-             ast.Pow:    lambda a, b: a ** b,
-             ast.Sub:    lambda a, b: a - b,
-             ast.Mod:    lambda a, b: a % b,
-             ast.And:    lambda a, b: a and b,
-             ast.Or:     lambda a, b: a or b,
-             ast.Eq:     lambda a, b: a == b,
-             ast.Gt:     lambda a, b: a > b,
-             ast.GtE:    lambda a, b: a >= b,
-             ast.Lt:     lambda a, b: a < b,
-             ast.LtE:    lambda a, b: a <= b,
-             ast.NotEq:  lambda a, b: a != b,
-             ast.Invert: lambda a: ~a,
-             ast.Not:    lambda a: not a,
-             ast.UAdd:   lambda a: +a,
-             ast.USub:   lambda a: -a}
+OPERATORS = {
+    ast.Add:    lambda a, b: b.__radd__(a) if isParameter(b) else a + b,
+    ast.Sub:    lambda a, b: b.__rsub__(a) if isParameter(b) else a - b,
+    ast.Mult:   lambda a, b: b.__rmul__(a) if isParameter(b) else a * b,
+    ast.Div:    lambda a, b: b.__rdiv__(a) if isParameter(b) else a / b,
+    ast.FloorDiv: lambda a, b: b.__rfloordiv__(a) if isParameter(b) else a // b,
+    ast.Mod:    lambda a, b: b.__rmod__(a) if isParameter(b) else a % b,
+    ast.Pow:    lambda a, b: b.__rpow__(a) if isParameter(b) else a ** b,
+    ast.Eq:     lambda a, b: b.__eq__(a)  if isParameter(b) else a == b,
+    ast.Gt:     lambda a, b: b.__le__(a) if isParameter(b) else a > b,
+    ast.GtE:    lambda a, b: b.__lt__(a) if isParameter(b) else a >= b,
+    ast.Lt:     lambda a, b: b.__ge__(a) if isParameter(b) else a < b,
+    ast.LtE:    lambda a, b: b.__gt__(a) if isParameter(b) else a <= b,
+    ast.NotEq:  lambda a, b: b.__ne__(a) if isParameter(b) else a != b,
+
+    ast.Is:     lambda a, b: a is b,
+    ast.IsNot:  lambda a, b: a is not b,
+    ast.In:     lambda a, b: a in b,
+    ast.NotIn:  lambda a, b: a not in b,
+    ast.BitAnd: lambda a, b: a & b,
+    ast.BitOr:  lambda a, b: a | b,
+    ast.BitXor: lambda a, b: a ^ b,
+    ast.LShift: lambda a, b: a << b,
+    ast.RShift: lambda a, b: a >> b,
+
+    ast.And:    lambda a, b: a and b,
+    ast.Or:     lambda a, b: a or b,
+    ast.Invert: lambda a: ~a,
+    ast.Not:    lambda a: not a,
+    ast.UAdd:   lambda a: +a,
+    ast.USub:   lambda a: -a}
 
 class Interpreter:
     """larch program compiler and interpreter.
@@ -199,22 +202,23 @@ class Interpreter:
         except:
             self.raise_exception(node, expr=self.expr,
                                  fname=self.fname, lineno=self.lineno)
-
-        # for some cases (especially when using Parameter objects),
-        # a calculation returns an otherwise numeric array, but with
-        # dtype 'object'.  fix here, trying (float, complex, list).
-        if isinstance(out, numpy.ndarray) and out.dtype == numpy.object:
-            try:
-                out = out.astype(float)
-            except TypeError:
-                try:
-                    out = out.astype(complex)
-                except TypeError:
-                    out = list(out)
-        # enumeration objects are list-ified here...
-        if isinstance(out, enumerate):
-            out = list(out)
-        return out
+        else:
+            # for some cases (especially when using Parameter objects),
+            # a calculation returns an otherwise numeric array, but with
+            # dtype 'object'. fix here, trying (float, complex, list).
+            if isinstance(out, numpy.ndarray):
+                if out.dtype == numpy.object:
+                    try:
+                        out = out.astype(float)
+                    except TypeError:
+                        try:
+                            out = out.astype(complex)
+                        except TypeError:
+                            out = list(out)
+            # enumeration objects are list-ified here...
+            if isinstance(out, enumerate):
+                out = list(out)
+            return out
 
     def __call__(self, expr, **kw):
         return self.eval(expr, **kw)
