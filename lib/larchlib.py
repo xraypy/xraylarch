@@ -59,10 +59,11 @@ class LarchExceptionHolder:
             func = self.func
             fname = self.fname
 
-            if isinstance(func, Closure):
-                func = func.func
-                fname = inspect.getmodule(func).__file__
             if fname is None:
+                if isinstance(func, Closure):
+                    func = func.func
+                    fname = inspect.getmodule(func).__file__
+
                 try:
                     fname = inspect.getmodule(func).__file__
                 except AttributeError:
@@ -98,7 +99,9 @@ class LarchExceptionHolder:
             try:
                 if fname is not None and os.path.exists(fname):
                     ftmp = open(fname, 'r')
-                    _expr = ftmp.readlines()[self.lineno-1][:-1]
+                    lines = ftmp.readlines()
+                    lineno = min(self.lineno, len(lines))-1
+                    _expr = lines[lineno][:-1]
                     call_expr = self.expr
                     self.expr = _expr
                     ftmp.close()
