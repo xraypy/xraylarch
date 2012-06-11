@@ -254,7 +254,8 @@ def guess(value, _larch=None, **kws):
        x = guess(10, min=0)
        y = guess(1.2, min=1, max=2)
     """
-    return Parameter(value, vary=True,  _larch=_larch, **kws)
+    kws.update({'vary':True})
+    return Parameter(value, _larch=_larch, **kws)
 
 def fit_report(group, min_correl=0.1, _larch=None, **kws):
     """print report of fit statistics given 'fit parameter group'
