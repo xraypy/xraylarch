@@ -391,25 +391,20 @@ class Interpreter:
     def on_attribute(self, node):    # ('value', 'attr', 'ctx')
         "extract attribute"
         ctx = node.ctx.__class__
-        if ctx == ast.Load:
-            sym = self.run(node.value)
-            if hasattr(sym, node.attr):
-                return getattr(sym, node.attr)
-            else:
-                obj = self.run(node.value)
-                fmt = "%s does not have member '%s'"
-                if not isgroup(obj):
-                    obj = obj.__class__
-                    fmt = "%s does not have attribute '%s'"
-                msg = fmt % (obj, node.attr)
-
-                self.raise_exception(node, exc=AttributeError, msg=msg)
-
-        elif ctx == ast.Del:
+        if ctx == ast.Del:
             return delattr(sym, node.attr)
-        elif ctx == ast.Store:
-            msg = "attribute for storage: shouldn't be here!"
-            self.raise_exception(node, exc=RuntimeError, msg=msg)
+        
+        sym = self.run(node.value)
+        if hasattr(sym, node.attr):
+            return getattr(sym, node.attr)
+        else:
+            obj = self.run(node.value)
+            fmt = "%s does not have member '%s'"
+            if not isgroup(obj):
+                obj = obj.__class__
+                fmt = "%s does not have attribute '%s'"
+            msg = fmt % (obj, node.attr)
+            self.raise_exception(node, exc=AttributeError, msg=msg)
 
     def on_assign(self, node):    # ('targets', 'value')
         "simple assignment"
@@ -418,14 +413,12 @@ class Interpreter:
             return
         for tnode in node.targets:
             self.node_assign(tnode, val)
-        return # return val
+        return
 
     def on_augassign(self, node):    # ('target', 'op', 'value')
         "augmented assign"
-        return self.on_assign(ast.Assign(targets=[node.target],
-                                         value=ast.BinOp(left = node.target,
-                                                         op   = node.op,
-                                                         right= node.value)))
+        val = ast.BinOp(left=node.target,  op=node.op, right=node.value)
+        return self.on_assign(ast.Assign(targets=[node.target], value=val))
 
     def on_slice(self, node):    # ():('lower', 'upper', 'step')
         "simple slice"
