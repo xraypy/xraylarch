@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """ Builtins for larch"""
 
 import os
@@ -184,12 +185,12 @@ def _run(filename=None, _larch=None, new_module=None,
         text = filename.read()
         filename = filename.name
     elif isinstance(filename, str):
-        if os.path.exists(filename) and os.path.isfile(filename)):
+        if os.path.exists(filename) and os.path.isfile(filename):
             try:
                 text = open(filename).read()
             except IOError:
-            _larch.writer.write("cannot read file '%s'\n" % filename)
-            return
+                _larch.writer.write("cannot read file '%s'\n" % filename)
+                return
         else:
             _larch.writer.write("file not found '%s'\n" % filename)
             return
@@ -201,14 +202,19 @@ def _run(filename=None, _larch=None, new_module=None,
         inptext = inputText.InputText(interactive=False, _larch=_larch)
         is_complete = inptext.put(text, filename=filename)
         if not is_complete:
-            exc = (None, 'Syntax Error: input is incomplete', None)
             inptext.input_buff.reverse()
             lline, lineno = 'unknown line', 0
             for tline, complete, eos, fname, lineno in inptext.input_buff:
                 if complete: break
                 lline = tline
-            _larch.raise_exception(expr=lline, fname=fname, exc=exc,
-                                  lineno=lineno+1)
+            _larch.raise_exception(None, expr=lline, fname=fname, lineno=lineno+1,
+                                   exc=SyntaxError, msg= 'input is incomplete')
+        if len(inptext.keys) > 0 and filename is not None:
+            msg = "file ends with un-terminated '%s' block"
+            _larch.raise_exception(None, expr="run('%s')" % filename,
+                                   fname=filename, lineno=inptext.lineno,
+                                   exc=IOError, msg=msg % inptext.keys[0])
+
         if new_module is not None:
             # save current module group
             #  create new group, set as moduleGroup and localGroup
@@ -218,6 +224,10 @@ def _run(filename=None, _larch=None, new_module=None,
             symtable.set_frame((thismod, thismod))
 
         output = []
+        if len(_larch.error) > 0:
+            inptext.clear()
+            return output
+
         while len(inptext) > 0:
             block, fname, lineno = inptext.get()
             ret = _larch.eval(block, fname=fname, lineno=lineno)
@@ -227,10 +237,11 @@ def _run(filename=None, _larch=None, new_module=None,
                         ret = ret()
                 except:
                     pass
-            if _larch.error:
+            if len(_larch.error) > 0:
                 break
-        if _larch.error:
+        if len(_larch.error) > 0:
             inptext.clear()
+
         elif printall and ret is not None:
             output.append("%s" % ret)
 
