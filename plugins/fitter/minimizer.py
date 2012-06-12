@@ -120,13 +120,13 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
 
         if self.__prepared:
             return
-        if self.paramgroup.__name__ is None:
-            self.paramgroup.__name__ = '_fit_params_%s' % id(self)
-        symtable = self._larch.symtable
-        symtable._sys.searchGroups.insert(0, self.paramgroup.__name__)
-        if not symtable.isgroup(self.paramgroup):#
-            print 'param group is not a Larch Group'
-            return
+        #if self.paramgroup.__name__ is None:
+        #    self.paramgroup.__name__ = '_fit_params_%s' % id(self)
+        #symtable = self._larch.symtable
+        #symtable._sys.searchGroups.insert(0, self.paramgroup.__name__)
+        #if not symtable.isgroup(self.paramgroup):#
+        #    print 'param group is not a Larch Group'
+        #    return
         
         self.nfev_calls = 0
         self.var_names = []
@@ -181,9 +181,9 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         resid = infodict['fvec']
         group = self.paramgroup
 
-        symtable = self._larch.symtable
-        if self.paramgroup.__name__ in symtable._sys.searchGroups:
-            symtable._sys.searchGroups.remove(self.paramgroup.__name__)
+        #symtable = self._larch.symtable
+        #if self.paramgroup.__name__ in symtable._sys.searchGroups:
+        #    symtable._sys.searchGroups.remove(self.paramgroup.__name__)
             
         message = 'Fit succeeded.'
         if ier == 0:
