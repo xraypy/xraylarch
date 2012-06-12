@@ -2,36 +2,55 @@ doc =  """
    Example fit to Gaussian line shape.
 """
 
-def resid(pars, data, verbose=False):
-    off = pars.offset
-    amp = pars.amp
-    cen = pars.cen
-    wid = pars.wid
-    model = off + amp*gaussian(data.x, cen, wid)
+log2 = log(2.0)
+s2pi = sqrt(log2/pi)
+parformat = " %4i    % .4f    % .4f    % .4f    % .4f" 
+
+def mymodel(x, off, amp, cen, wid):
+    """standard gaussian with scale and constant offset """
+    return off + amp*(s2pi / wid) * exp(-log2 * (x-cen)**2 / wid**2)
+enddef
+
+def resid(pars, data, verbose=False, update_rate=15):
+    model = mymodel(data.x, pars.off, pars.amp, pars.cen, pars.wid)
     if verbose:
-        newplot(data.x, data.y)
-        plot(data.x, model, force_draw=True)
+        if pars.fit_iter == 0:
+            print " Iteration   Offset   Ampliture   Center  Sigma"
+        endif
+        if pars.fit_iter % update_rate == 0:
+            print parformat % (pars.fit_iter, pars.off.value,
+                               pars.amp.value, pars.cen.value, pars.wid.value)
+            update_line(data.x, model, trace=2)
+        endif
     endif
+    pars.fit_iter += 1
     return  model - data.y
 enddef
 
+# create data
 mdat = group()
-mdat.x = arange(201)/20.0
-mdat.y = -2.0 + 6.0*gaussian(mdat.x, 3.0, 0.5) + random.normal(size=len(mdat.x), scale=0.1)
+mdat.x = arange(501)/25.0
+mdat.y = mymodel(mdat.x, -2.0, 22.0, 13.0, 1.25) + \
+         random.normal(size=len(mdat.x), scale=5.0e-1)
 
-params = group()
-params.offset= guess(-1)
-params.amp = guess(5.0)
-params.cen = guess(2.850)
-params.wid = guess(0.2)
+# create group for parameters
+params = group(off = param(-0.5, vary=True), 
+               cen = param(15.0, vary=True),
+               amp = param(30.0, vary=True),
+               wid = param(1.50, vary=True),
+               fit_iter=0)
 
-model = mdat.y + resid(params, mdat)
+init = mymodel(mdat.x, params.off, params.amp, params.cen, params.wid)
 
-x = minimize(resid, params, args=(mdat,), kws={'verbose':False})
+newplot(mdat.x, mdat.y)
+plot(mdat.x, init)
+plot(mdat.x, init, color='black', style='--')
 
-status = resid(params, mdat, verbose=True)
-print 'Fit finishd: %i function calls' % params.nfcn_calls
-show(params)
-# plot(mdat.x, model)
+minimize(resid, params, args=(mdat,),
+         kws={'verbose':True, 'update_rate': 5})
+
+final = mymodel(mdat.x, params.off, params.amp, params.cen, params.wid)
+
+update_line(mdat.x, final, trace=2)
 
 print fit_report(params)
