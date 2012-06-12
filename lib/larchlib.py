@@ -256,13 +256,13 @@ class Parameter(object):
 
     def __init__(self, val=0, min=None, max=None, vary=False,
                 expr=None, _larch=None, name=None, **kws):
-        self.value = val
+        self._val = val
         self._initval = val
         self.vary = vary
         self.min = min
         self.max = max
         self.name = name
-        self.expr = expr
+        self._expr = expr
         self._ast = None
         self._larch = None
         if (hasattr(_larch, 'run') and
@@ -272,14 +272,32 @@ class Parameter(object):
         if self._larch is not None and name is not None:
             self._larch.symtable.set_symbol(name, self)
 
+    @property
+    def expr(self):
+        return self._expr
+
+    @expr.setter
+    def expr(self, val):
+        self._ast = None
+        self._expr = val
+
+    @property
+    def value(self):
+        return self._getval()
+
+    @value.setter
+    def value(self, val):
+        self._val = val
+    
     def _getval(self):
-        if self._larch is not None and self.expr is not None:
+        if self._larch is not None and self._expr is not None:
             if self._ast is None:
-                self._ast = self._larch.parse(self.expr)
+                self._expr = self._expr.strip()
+                self._ast = self._larch.parse(self._expr)
                 if self._ast is None:
-                    raise Warning(self.__invalid % self.exp)
+                    self._larch.writer.write(self.__invalid % self._expr)
             if self._ast is not None:
-                self.value = self._larch.run(self._ast, expr=self.expr)
+                self._val = self._larch.run(self._ast, expr=self._expr)
                 # self._larch.symtable.save_frame()
                 # self._larch.symtable.restore_frame()
 
@@ -290,22 +308,22 @@ class Parameter(object):
 
         try:
             if self.min > -np.inf:
-               self.value = max(self.min, self.value)
+               self._val = max(self.min, self._val)
             if self.max < np.inf:
-                self.value = min(self.max, self.value)
+                self.value = min(self.max, self._val)
         except TypeError, ValueError:
-            self.value = np.nan
+            self._val = np.nan
 
-        return self.value
+        return self._val
 
     def __hash__(self):
         return hash((self._getval(), self.min, self.max,
-                     self.vary, self.expr))
+                     self.vary, self._expr))
 
     def __repr__(self):
         w = [repr(self._getval())]
-        if self.expr is not None:
-            w.append("expr='%s'" % self.expr)
+        if self._expr is not None:
+            w.append("expr='%s'" % self._expr)
         elif self.vary:
             w.append('vary=True')
         if self.min not in (None, -np.inf):
@@ -370,7 +388,7 @@ class Parameter(object):
     def conjugate(self):   return self._getval().conjugate()
 
     def __format__(self):  return format(self._getval())
-    def fromhex(self, other):  self.value = other.fromhex()
+    def fromhex(self, other):  self._val = other.fromhex()
 
     # def __getformat__(self, other):  return self._getval()
     # def __getnewargs__(self, other):  return self._getval()
@@ -383,10 +401,12 @@ class Parameter(object):
     # def __subclasshook__(self, other):  return self._getval()
 
 def isParameter(x):
-    return isinstance(x, Parameter)
+    return (isinstance(x, Parameter) or
+            x.__class__.__name__ == 'Parameter')
 
 def param_value(val):
     "get param value -- useful for 3rd party code"
     if isinstance(val, Parameter):
         return val.value
     return val
+
