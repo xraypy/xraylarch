@@ -49,26 +49,8 @@ class PlotDisplay(PlotFrame):
             symtable.set_symbol(self.symname, self)
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
-
-    def save_xylims(self, side='left'):
-        axes = self.panel.axes
-        if side == 'right':
-            axes = self.panel.get_right_axes()
-        self._xylims[axes] = self.panel.calc_xylims(axes)
-
-    def update_xylims(self, x, y, side='left', redraw=False):
-        axes = self.panel.axes
-        if side == 'right':
-            axes = self.panel.get_right_axes()
-        lims = ( min(min(x), self._xylims[axes][0]),
-                 max(max(x), self._xylims[axes][1]),
-                 min(min(y), self._xylims[axes][2]),
-                 max(max(y), self._xylims[axes][3]))
-        self._xylims[axes] = lims
-        self.panel.set_xylims(lims, side=side, autoscale=True)
-        if redraw:
-            self.panel.draw()
-
+            
+        
     def onExit(self, o, **kw):
         try:
             symtable = self._larch.symtable
@@ -203,7 +185,6 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
         plotter.plot(x, y, side=side, **kws)
     else:
         plotter.oplot(x, y, side=side, **kws)
-    plotter.save_xylims(side=side)
     if force_draw:
         update(_larch=_larch)
 
@@ -218,7 +199,6 @@ def _update_line(x, y, trace=1, win=1, _larch=None, wxparent=None,
     trace -= 1 # wxmplot counts traces from 0
 
     plotter.panel.update_line(trace, x, y, draw=True, side=side)
-    plotter.update_xylims(x, y, side=side, redraw=redraw)
     update(_larch)
 
 def update(_larch=None, **kws):
