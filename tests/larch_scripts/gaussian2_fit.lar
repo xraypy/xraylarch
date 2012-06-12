@@ -1,0 +1,70 @@
+doc =  """
+   Example fit to Gaussian line shape.
+"""
+
+log2 = log(2.0)
+s2pi = sqrt(log2/pi)
+parformat = " %4i    % .4f    % .4f    % .4f    % .4f"
+
+def mymodel(x, off, amp, cen, wid):
+    """standard gaussian with scale and constant offset """
+    return off + amp*(s2pi / wid) * exp(-log2 * (x-cen)**2 / wid**2)
+enddef
+
+def resid(pars, data, verbose=False, update_rate=15):
+    print ' resid 1 ', searchGroups
+
+    model = mymodel(data.x, pars.off1, pars.amp1, pars.cen1, pars.wid1) + \
+            mymodel(data.x, pars.off2, pars.amp2, pars.cen2, pars.wid2)
+    if verbose:
+        if pars.fit_iter == 0:
+            print " Iteration   Offset   Ampliture   Center  Sigma"
+        endif
+        if pars.fit_iter % update_rate == 0:
+            print parformat % (pars.fit_iter, pars.off1.value,
+                               pars.amp1.value, pars.cen1.value,
+                               pars.wid1.value)
+            update_line(data.x, model, trace=2)
+        endif
+
+    endif
+    pars.fit_iter += 1
+    return  model - data.y
+enddef
+
+# create data
+mdat = group()
+mdat.x = arange(501)/25.0
+mdat.y = mymodel(mdat.x, -2.0, 15.0, 11.0, .5) + \
+         mymodel(mdat.x,  0.0, 12.0, 9.0, 2.0) + \
+         random.normal(size=len(mdat.x), scale=.10)
+
+# create group for parameters
+params = group(off1 = param(-0.5, vary=True),
+               cen1 = param(15.0, vary=True),
+               amp1 = param(30.0, vary=True),
+               wid1 = param(3.50, vary=True),
+
+               off2 = param(0.0, vary=False),
+               cen2 = param(expr='params.cen1 - 2'),
+               amp2 = param(2.0, vary = True),
+               wid2 = param(expr='params.wid1*4'),
+               fit_iter=0)
+
+init = mymodel(mdat.x, params.off1, params.amp1, params.cen1, params.wid1) + \
+       mymodel(mdat.x, params.off2, params.amp2, params.cen2, params.wid2)
+
+
+newplot(mdat.x, mdat.y)
+plot(mdat.x, init)
+plot(mdat.x, init, color='black', style='--')
+
+minimize(resid, params, args=(mdat,),
+         kws={'verbose':True, 'update_rate': 5})
+
+final = mymodel(mdat.x, params.off1, params.amp1, params.cen1, params.wid1) + \
+       mymodel(mdat.x, params.off2, params.amp2, params.cen2, params.wid2)
+
+update_line(mdat.x, final, trace=2)
+
+print fit_report(params)
