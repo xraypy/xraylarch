@@ -86,10 +86,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             if par.max is not None:   val = min(val, par.max)
             par.value = val
 
-        for name in self.defvars:
-            par = getattr(group, name)
-            par.value = par.defvar.evaluate()
-
     def __residual(self, fvars):
         """
         residual function used for least-squares fit.
@@ -124,6 +120,9 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
 
         if self.__prepared:
             return
+        if self.paramgroup.__name__ is None:
+            self.paramgroup.__name__ = 'minimize_params_%s' % id(self)
+        self._larch.symtable._sys.searchGroups.insert(0, self.paramgroup.__name__)
         if not self._larch.symtable.isgroup(self.paramgroup):#         if not isgroup(self.paramgroup):
             print 'param group is not a Larch Group'
             return
@@ -133,15 +132,11 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         self.vars = []
         self.nvarys = 0
         for name in dir(self.paramgroup):
-            # print 'param? ', name
+            print 'param? ', name
             par = getattr(self.paramgroup, name)
             if not isinstance(par, Parameter):
                 continue
-            if par.expr is not None:
-                par.defvar = Parameter(par.expr, _larch=self._larch)
-                par.vary = False
-                self.defvars.append(name)
-            elif par.vary:
+            if par.vary:
                 self.var_names.append(name)
                 self.vars.append(par.value)
             if not hasattr(par, 'name') or par.name is None:
@@ -183,7 +178,9 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         vbest, cov, infodict, errmsg, ier = lsout
         resid = infodict['fvec']
         group = self.paramgroup
-
+        if self.paramgroup.__name__ in self._larch.symtable._sys.searchGroups:
+            self._larch.symtable._sys.searchGroups.remove(self.paramgroup.__name__)
+            self._larch.symtable._sys.groupCache['searchGroups'].remove(self.paramgroup.__name__)
         message = 'Fit succeeded.'
         if ier == 0:
             message = 'Invalid Input Parameters.'
