@@ -166,6 +166,7 @@ class Procedure(object):
     def __call__(self, *args, **kwargs):
         # msg = 'Cannot run Procedure %s' % self.name
         lgroup  = Group()
+        lgroup.__name__ = hex(id(lgroup))
         args    = list(args)
         n_args  = len(args)
         n_names = len(self.argnames)
