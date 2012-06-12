@@ -24,8 +24,13 @@ def _get(sym=None, _larch=None, **kws):
     return group
 
 
-def _show(sym=None, _larch=None, **kws):
-    """display group members"""
+def _show(sym=None, _larch=None, with_private=False, **kws):
+    """display group members,
+    Options
+    -------
+    with_private:  show 'private' members ('__private__')
+    
+    """
     if _larch is None:
         raise Warning("cannot show group -- larch broken?")
     if sym is None:
@@ -54,6 +59,9 @@ def _show(sym=None, _larch=None, **kws):
     members = dir(group)
     out = ['== %s: %i symbols ==' % (title, len(members))]
     for item in members:
+        if (item.startswith('__') and item.endswith('__') and
+            not with_private):
+            continue
         obj = getattr(group, item)
         dval = None
         if isinstance(obj, numpy.ndarray):
