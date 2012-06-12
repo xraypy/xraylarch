@@ -132,7 +132,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         self.vars = []
         self.nvarys = 0
         for name in dir(self.paramgroup):
-            print 'param? ', name
+            # print 'param? ', name
             par = getattr(self.paramgroup, name)
             if not isinstance(par, Parameter):
                 continue
