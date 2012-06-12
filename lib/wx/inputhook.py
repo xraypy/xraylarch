@@ -24,21 +24,25 @@ if sys.platform == 'win32':
 POLLTIME = 25 # milliseconds
 ON_INTERRUPT = None
 WXLARCH_SYM = None
-UPDATE_VAR = '_sys.wx.force_wxupdate'
+UPDATE_GROUPNAME = '_sys.wx'
+UPDATE_GROUP = None
+UPDATE_VAR = 'force_wxupdate'
 ID_TIMER = wx.NewId()
 
 def update_requested():
     "check if update has been requested"
-    global WXLARCH_SYM, UPDATE_VAR
+    global WXLARCH_SYM, UPDATE_VAR, UPDATE_GROUP, UPDATE_GROUPNAME
     if WXLARCH_SYM is not None:
-        return WXLARCH_SYM.get_symbol(UPDATE_VAR)
+        if UPDATE_GROUP is None:
+            UPDATE_GROUP = WXLARCH_SYM.get_symbol(UPDATE_GROUPNAME)
+        return getattr(UPDATE_GROUP, UPDATE_VAR, False)
     return False
 
 def clear_update_request():
     "clear update request"
-    global WXLARCH_SYM, UPDATE_VAR
-    if WXLARCH_SYM is not None:
-        WXLARCH_SYM.set_symbol(UPDATE_VAR, False)
+    global WXLARCH_SYM, UPDATE_VAR, UPDATE_GROUP, UPDATE_GROUPNAME
+    if UPDATE_GROUP is not None:
+        setattr(UPDATE_GROUP, UPDATE_VAR, False)
 
 class EventLoopRunner(object):
     def __init__(self, parent):
