@@ -32,7 +32,7 @@ from numpy import sqrt
 from scipy.optimize import leastsq as scipy_leastsq
 import re
 from larch.utils import OrderedDict
-from larch.larchlib import Parameter
+from larch.larchlib import Parameter, isParameter
 from larch.symboltable import isgroup
 
 class MinimizerException(Exception):
@@ -121,26 +121,28 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         if self.__prepared:
             return
         if self.paramgroup.__name__ is None:
-            self.paramgroup.__name__ = 'minimize_params_%s' % id(self)
-        self._larch.symtable._sys.searchGroups.insert(0, self.paramgroup.__name__)
-        if not self._larch.symtable.isgroup(self.paramgroup):#         if not isgroup(self.paramgroup):
+            self.paramgroup.__name__ = '_fit_params_%s' % id(self)
+        symtable = self._larch.symtable
+        symtable._sys.searchGroups.insert(0, self.paramgroup.__name__)
+        if not symtable.isgroup(self.paramgroup):#
             print 'param group is not a Larch Group'
             return
+        
         self.nfev_calls = 0
         self.var_names = []
         self.defvars = []
         self.vars = []
         self.nvarys = 0
         for name in dir(self.paramgroup):
-            # print 'param? ', name
             par = getattr(self.paramgroup, name)
-            if not isinstance(par, Parameter):
-                continue
-            if par.vary:
-                self.var_names.append(name)
-                self.vars.append(par.value)
-            if not hasattr(par, 'name') or par.name is None:
-                par.name = name
+            if isParameter(par):
+                if par.expr is not None:
+                    par._getval()
+                elif par.vary:
+                    self.var_names.append(name)
+                    self.vars.append(par.value)
+                if not hasattr(par, 'name') or par.name is None:
+                   par.name = name
         self.nvarys = len(self.vars)
         # now evaluate make sure initial values are set
         # are used to set values of the defined expressions.
@@ -178,9 +180,11 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         vbest, cov, infodict, errmsg, ier = lsout
         resid = infodict['fvec']
         group = self.paramgroup
-        if self.paramgroup.__name__ in self._larch.symtable._sys.searchGroups:
-            self._larch.symtable._sys.searchGroups.remove(self.paramgroup.__name__)
-            self._larch.symtable._sys.groupCache['searchGroups'].remove(self.paramgroup.__name__)
+
+        symtable = self._larch.symtable
+        if self.paramgroup.__name__ in symtable._sys.searchGroups:
+            symtable._sys.searchGroups.remove(self.paramgroup.__name__)
+            
         message = 'Fit succeeded.'
         if ier == 0:
             message = 'Invalid Input Parameters.'
@@ -263,6 +267,7 @@ def fit_report(group, min_correl=0.1, _larch=None, **kws):
     topline = '===================== FIT RESULTS ====================='
     header = '[[%s]]'
     varformat = '   %12s = % f +/- %f   (init= % f)'
+    exprformat = '   %12s = % f   = \'%s\''
     out = [topline, header % 'Statistics']
 
     npts = len(group.residual)
@@ -272,16 +277,22 @@ def fit_report(group, min_correl=0.1, _larch=None, **kws):
     out.append('   reduced chi_square = %f' % (group.chi_reduced))
     out.append(' ')
     out.append(header % 'Variables')
+    exprs = []
     for name in dir(group):
         var = getattr(group, name)
         if len(name) < 14:
             name = (name + ' '*14)[:14]
-        if isinstance(var, Parameter):
+        if isParameter(var):
             if var.vary:
                 out.append(varformat % (name, var.value,
                                         var.stderr, var._initval))
-
-
+                
+            elif var.expr is not None:
+                exprs.append(exprformat % (name, var.value, var.expr))
+    if len(exprs) > 0:
+        out.append(header % 'Constraint Expressions')
+        out.extend(exprs)
+                    
     covar_vars = getattr(group, 'covar_vars', [])
     if len(covar_vars) > 0:
         out.append(' ')
