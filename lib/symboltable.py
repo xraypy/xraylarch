@@ -89,14 +89,17 @@ class SymbolTable(Group):
             setattr(self, gname, Group(name=gname))
 
         self._sys.frames      = []
-        self._sys.searchGroups = []
+        self._sys.searchGroups = [self.top_group]
         self._sys.path        = ['.']
         self._sys.localGroup  = self
         self._sys.valid_commands = []
         self._sys.moduleGroup = self
-        self._sys.groupCache  = {'localGroup':None, 'moduleGroup':None,
-                                 'searchGroups':None, 'searchGroupObjects': None}
+        self._sys.__cache__  = [None, None, None, None]
 
+        for g in self.core_groups:
+            self._sys.searchGroups.append(g)
+        self._sys.core_groups = tuple(self._sys.searchGroups[:])
+        
         self._sys.historyfile = site_config.history_file
         self.__callbacks = {}
         orig_sys_path = sys.path[:]
@@ -138,16 +141,19 @@ class SymbolTable(Group):
         self._sys.localGroup, self._sys.moduleGroup  = groups
         self._fix_searchGroups()
 
+
+
     def _fix_searchGroups(self):
         """resolve list of groups to search for symbol names:
 
         The variable self._sys.searchGroups holds the list of group
         names for searching for symbol names.  A user can set this
-        dynamically.  The names need to be absolute (relative to
-        _main).
+        dynamically.  The names need to be absolute (that is, relative to
+        _main, and can omit the _main prefix).
 
-        The variable self._sys.groupCache['searchGroups'] holds the list of
-        actual group objects resolved from this name.
+        This calclutes and returns self._sys.searchGroupObjects,
+        which is the list of actual group objects (not names) resolved from
+        the list of names in _sys.searchGroups)
 
         _sys.localGroup,_sys.moduleGroup come first in the search list,
         followed by any search path associated with that module (from
@@ -156,51 +162,54 @@ class SymbolTable(Group):
         ##
         # check (and cache) whether searchGroups needs to be changed.
         sys = self._sys
-        cache = self._sys.groupCache
-        if (sys.localGroup   != cache['localGroup'] or
-            sys.moduleGroup  != cache['moduleGroup'] or
-            sys.searchGroups != cache['searchGroups']):
+        cache = sys.__cache__
+        if len(cache) < 4:  cache = [None, None, None, None]
+        if (sys.localGroup   == cache[0] and
+            sys.moduleGroup  == cache[1] and
+            sys.searchGroups == cache[2] and
+            cache[3] is not None):
+            return cache[3]
+        #print( 'real _fix searchGroup! ', dir(sys.localGroup))
+        #print( cache)
+        #print( sys.localGroup==cache[0], sys.localGroup)
+        #print( sys.moduleGroup==cache[1], sys.moduleGroup)
+        #print( sys.searchGroups==cache[2])
+    
+        if sys.moduleGroup is None:
+            sys.moduleGroup = self.top_group
+        if sys.localGroup is None:
+            sys.localGroup = self.moduleGroup
+        cache[0] = sys.localGroup
+        cache[1] = sys.moduleGroup
+        snames  = []
+        sgroups = [sys.localGroup]
+        if sys.moduleGroup != sys.localGroup:
+            sgroups.append(sys.moduleGroup)
+            
+        sysmods = list(self._sys.modules.values())
+        searchGroups  = sys.searchGroups[:]
+        searchGroups.extend(self._sys.core_groups)
+        for name in searchGroups:
+            if name not in snames:
+                snames.append(name)
+            grp = None
+            if name in self._sys.modules:
+                grp = self._sys.modules[name]
+            elif hasattr(self, name):
+                gtest = getattr(self, name)
+                if isinstance(gtest, Group):
+                    grp = gtest
+            else:
+                for sgrp in sysmods:
+                    if hasattr(sgrp, name):
+                        grp = getattr(grp, name)
+            if grp is not None and grp not in sgroups:
+                sgroups.append(grp)
 
-            if sys.moduleGroup is None:
-                sys.moduleGroup = self.top_group
-            if sys.localGroup is None:
-                sys.localGroup = self.moduleGroup
-
-            cache['localGroup']  = sys.localGroup
-            cache['moduleGroup'] = sys.moduleGroup
-
-            if cache['searchGroups'] is None:
-                cache['searchGroups'] = [self.top_group]
-
-            for gname in sys.searchGroups:
-                if gname not in cache['searchGroups']:
-                    cache['searchGroups'].append(gname)
-            for gname in self.core_groups:
-                if gname not in cache['searchGroups']:
-                    cache['searchGroups'].append(gname)
-
-            sys.searchGroups = cache['searchGroups'][:]
-            #
-            sgroups = []
-            smod_keys = list(self._sys.modules.keys())
-            smod_vals = list(self._sys.modules.values())
-            for gname in sys.searchGroups:
-                grp = None
-                if gname in smod_keys:
-                    grp = self._sys.modules[gname]
-                elif hasattr(self, gname):
-                    gtest = getattr(self, gname)
-                    if isinstance(gtest, Group):
-                        grp = gtest
-                else:
-                    for sgrp in smod_vals:
-                        if hasattr(sgrp, gname):
-                            grp = getattr(grp, gname)
-                if grp is not None and grp not in sgroups:
-                    sgroups.append(grp)
-
-            cache['searchGroupObjects'] = sgroups[:]
-        return cache
+        sys.searchGroups = cache[2] = snames[:]
+        sys.searchGroupObjects = cache[3] = sgroups[:]
+        
+        return sys.searchGroupObjects
 
     def get_parentpath(self, sym):
         """ get parent path for a symbol"""
@@ -219,13 +228,8 @@ class SymbolTable(Group):
         returns symbol given symbol name,
         creating symbol if needed (and create=True)"""
         debug = False # not ('force'in name)
-        # if debug:
-        #    print( '====\nLOOKUP ', name)
-        cache = self._fix_searchGroups()
-        searchGroups = [cache['localGroup'], cache['moduleGroup']]
-        searchGroups.extend(cache['searchGroupObjects'])
-        #if debug:
-        #    print( ' .. ', cache)
+        if debug:  print( '====\nLOOKUP ', name)
+        searchGroups = self._fix_searchGroups()
         #    print( ' .. ', searchGroups)
         self.__parents = []
         if self not in searchGroups:
@@ -320,7 +324,7 @@ class SymbolTable(Group):
 
     def set_symbol(self, name, value=None, group=None):
         "set a symbol in the table"
-        grp = self._fix_searchGroups()['localGroup']
+        grp = self._sys.localGroup
         if group is not None:
             grp = self.get_group(group)
         names = []
