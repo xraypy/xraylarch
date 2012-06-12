@@ -142,8 +142,7 @@ class SymbolTable(Group):
         self._fix_searchGroups()
 
 
-
-    def _fix_searchGroups(self):
+    def _fix_searchGroups(self, force=False):
         """resolve list of groups to search for symbol names:
 
         The variable self._sys.searchGroups holds the list of group
@@ -167,9 +166,9 @@ class SymbolTable(Group):
         if (sys.localGroup   == cache[0] and
             sys.moduleGroup  == cache[1] and
             sys.searchGroups == cache[2] and
-            cache[3] is not None):
+            cache[3] is not None and not force):
             return cache[3]
-        #print( 'real _fix searchGroup! ', dir(sys.localGroup))
+        # print( 'real _fix searchGroup! ', dir(sys.localGroup))
         #print( cache)
         #print( sys.localGroup==cache[0], sys.localGroup)
         #print( sys.moduleGroup==cache[1], sys.moduleGroup)
@@ -189,6 +188,7 @@ class SymbolTable(Group):
         sysmods = list(self._sys.modules.values())
         searchGroups  = sys.searchGroups[:]
         searchGroups.extend(self._sys.core_groups)
+        # print( 'fix groups:' )
         for name in searchGroups:
             if name not in snames:
                 snames.append(name)
@@ -206,8 +206,11 @@ class SymbolTable(Group):
             if grp is not None and grp not in sgroups:
                 sgroups.append(grp)
 
-        sys.searchGroups = cache[2] = snames[:]
+            # print( name, grp, grp in sgroups)
+
+        self._sys.searchGroups = cache[2] = snames[:]
         sys.searchGroupObjects = cache[3] = sgroups[:]
+        # print( 'Set searchGroups ', cache[2], cache[3])
         
         return sys.searchGroupObjects
 
@@ -240,8 +243,6 @@ class SymbolTable(Group):
                     not (grp is self and name in self._private))
 
         parts = name.split('.')
-        #if debug:
-        #    print( ' LOOKUP  PARTS ', parts)
         if len(parts) == 1:
             for grp in searchGroups:
                 #if debug:
@@ -419,8 +420,13 @@ class SymbolTable(Group):
         if not self.has_group(groupname):
             self.new_group(groupname)
 
-        self._sys.searchGroups.append(groupname)
-        self._fix_searchGroups()
+        if groupname not in self._sys.searchGroups:
+            self._sys.searchGroups.append(groupname)
+        self._fix_searchGroups(force=True)
+        #print( 'add plugin ', groupname)
+        #print(self._sys.searchGroups)
+        #print(self._sys.__cache__[2])
+        #print(self._sys.__cache__[3])
 
         for key, val in syms.items():
             if hasattr(val, '__call__'):
