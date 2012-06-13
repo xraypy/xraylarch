@@ -88,21 +88,23 @@ def xafsift(k, chi, group=None, kmin=0, kmax=20, kw=2,
     if _larch is None:
         raise Warning("cannot do xafsft -- larch broken?")
 
-    print 'xafsift not implemented'
+    print 'inverse xafs ft not yet implemented'
 
 def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2, dk=1, dk2=None,
-           window='kaiser', rmax_out=10, nfft=2048, kstep=0.05, _larch=None):
+           window='kaiser', rmax_out=10, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     calculate forward XAFS Fourier transform
     """
     if _larch is None:
         raise Warning("cannot do xafsft -- larch broken?")
 
-    cchi, win = xafsft_prep(k, chi, kmin=min, kmax=kmax, kw=kw, dk=dk,
-                            dk2=dkw, window=window, nfft=nfft, kstep=kstep)
+    cchi, win  = xafsft_prep(k, chi, kmin=kmin, kmax=kmax, kw=kw, dk=dk,
+                       dk2=dk2, window=window, nfft=nfft, kstep=kstep,
+                       _larch=_larch)
 
     out = kstep*sqrt(pi) * fft(cchi*win)[:nfft/2]
     delr = pi/(kstep*nfft)
+
     irmax = min(nfft/2, 1 + int(rmax_out/delr))
     if _larch.symtable.isgroup(group):
         r   = delr * arange(irmax)
@@ -125,6 +127,7 @@ def xafsft_prep(k, chi, kmin=0, kmax=20, kw=2, dk=1, dk2=None,
     Returns weighted chi, window function which can easily be multiplied
     and used in xafsft_fast.
     """
+
     ikmax = max(k)/kstep
     k_   = kstep * arange(nfft, dtype='f8')
     cchi = zeros(nfft, dtype='complex128')
