@@ -54,8 +54,11 @@ class Feffit(Minimizer):
     def __init__(self, pathlist, params, _larch=None, **kws):
         Minimizer.__init__(self, self._feffit, params, _larch=_larch, **kws)
 
-    def _feffit(self, ):
+    def _feffit(self, x):
         """residual function for feffit"""
 
+def _feffit():
+    print 'not yet!'
+    
 def registerLarchPlugin():
     return ('_xafs', {'feffit': _feffit})
