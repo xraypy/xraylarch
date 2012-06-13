@@ -3,14 +3,11 @@
 import numpy as np
 import sys, os
 import larch
+from larch.larchlib import plugin_path
 
-# put the 'std' and 'xafs' (this!) plugin directories into
-# sys.path to make sure module from these directories can be imported
-stddir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'std')
-sys.path.insert(0, stddir)
-
-thisdir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'xafs')
-sys.path.insert(0, thisdir)
+# put the 'std' and 'xafs' (this!) plugin directories into sys.path
+sys.path.insert(0, plugin_path('std'))
+sys.path.insert(0, plugin_path('xafs'))
 
 # now we can reliably import other std and xafs modules...
 from mathutils import _index_nearest, realimag
@@ -73,6 +70,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
         i2 = max(0, ik - 5)
         spl_k[i] = kraw[ik]
         spl_y[i] = (2*mu[ik] + mu[i1] + mu[i2] ) / 4.0
+
     # get spline represention: knots, coefs, order=3
     # coefs will be varied in fit.
     knots, coefs, order = splrep(spl_k, spl_y)
