@@ -21,6 +21,7 @@ class Group(object):
     """
     __private = ('_main', '_larch', '_parents', '__name__', '__private')
     def __init__(self, name=None, **kws):
+        if name is None: name = hex(id(self))
         self.__name__ = name
         for key, val in kws.items():
             setattr(self, key, val)
@@ -94,12 +95,13 @@ class SymbolTable(Group):
         self._sys.localGroup  = self
         self._sys.valid_commands = []
         self._sys.moduleGroup = self
+        self._sys.paramGroup = None
         self._sys.__cache__  = [None, None, None, None]
 
         for g in self.core_groups:
             self._sys.searchGroups.append(g)
         self._sys.core_groups = tuple(self._sys.searchGroups[:])
-        
+
         self._sys.historyfile = site_config.history_file
         self.__callbacks = {}
         orig_sys_path = sys.path[:]
@@ -173,7 +175,7 @@ class SymbolTable(Group):
         #print( sys.localGroup==cache[0], sys.localGroup)
         #print( sys.moduleGroup==cache[1], sys.moduleGroup)
         #print( sys.searchGroups==cache[2])
-    
+
         if sys.moduleGroup is None:
             sys.moduleGroup = self.top_group
         if sys.localGroup is None:
@@ -182,9 +184,11 @@ class SymbolTable(Group):
         cache[1] = sys.moduleGroup
         snames  = []
         sgroups = [sys.localGroup]
-        if sys.moduleGroup != sys.localGroup:
+        if sys.paramGroup is not None:
+            sgroups.append(sys.paramGroup)
+        if sys.moduleGroup not in sgroups:
             sgroups.append(sys.moduleGroup)
-            
+
         sysmods = list(self._sys.modules.values())
         searchGroups  = sys.searchGroups[:]
         searchGroups.extend(self._sys.core_groups)
@@ -211,7 +215,7 @@ class SymbolTable(Group):
         self._sys.searchGroups = cache[2] = snames[:]
         sys.searchGroupObjects = cache[3] = sgroups[:]
         # print( 'Set searchGroups ', cache[2], cache[3])
-        
+
         return sys.searchGroupObjects
 
     def get_parentpath(self, sym):
