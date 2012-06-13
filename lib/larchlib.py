@@ -10,6 +10,7 @@ import traceback
 import inspect
 from .utils import Closure
 from .symboltable import Group
+from .site_config import sys_larchdir
 
 class LarchExceptionHolder:
     "basic exception handler"
@@ -288,7 +289,7 @@ class Parameter(object):
     @value.setter
     def value(self, val):
         self._val = val
-    
+
     def _getval(self):
         if self._larch is not None and self._expr is not None:
             if self._ast is None:
@@ -410,3 +411,10 @@ def param_value(val):
         return val.value
     return val
 
+def plugin_path(val):
+    """return absolute path of a plugin folder - a convenience
+    for adding these paths to sys.path, as with
+
+    sys.path.insert(0, plugin_path('std'))
+    """
+    return os.path.abspath(os.path.join(sys_larchdir, 'plugins', val))
