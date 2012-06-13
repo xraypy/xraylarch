@@ -30,7 +30,7 @@ will contain fit statistics chisquare, etc.
 
 from numpy import sqrt
 from scipy.optimize import leastsq as scipy_leastsq
-import re
+
 from larch.utils import OrderedDict
 from larch.larchlib import Parameter, isParameter
 from larch.symboltable import isgroup
@@ -127,7 +127,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         #if not symtable.isgroup(self.paramgroup):#
         #    print 'param group is not a Larch Group'
         #    return
-        
+
         self.nfev_calls = 0
         self.var_names = []
         self.defvars = []
@@ -184,7 +184,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         #symtable = self._larch.symtable
         #if self.paramgroup.__name__ in symtable._sys.searchGroups:
         #    symtable._sys.searchGroups.remove(self.paramgroup.__name__)
-            
+
         message = 'Fit succeeded.'
         if ier == 0:
             message = 'Invalid Input Parameters.'
@@ -286,13 +286,13 @@ def fit_report(group, min_correl=0.1, _larch=None, **kws):
             if var.vary:
                 out.append(varformat % (name, var.value,
                                         var.stderr, var._initval))
-                
+
             elif var.expr is not None:
                 exprs.append(exprformat % (name, var.value, var.expr))
     if len(exprs) > 0:
         out.append(header % 'Constraint Expressions')
         out.extend(exprs)
-                    
+
     covar_vars = getattr(group, 'covar_vars', [])
     if len(covar_vars) > 0:
         out.append(' ')
