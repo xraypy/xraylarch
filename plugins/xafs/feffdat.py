@@ -16,17 +16,14 @@ creates a group that contains the chi(k) for the sum of paths.
 import numpy as np
 import sys, os
 import larch
-from larch.larchlib import Parameter, isParameter
+from larch.larchlib import Parameter, isParameter, plugin_path
 
-stddir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'std')
-sys.path.insert(0, stddir)
-
-thisdir = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'xafs')
-sys.path.insert(0, thisdir)
+sys.path.insert(0, plugin_path('std'))
+sys.path.insert(0, plugin_path('xafs'))
 
 from xafsutils import ETOK
 
-SMALL = 1.e-6 
+SMALL = 1.e-6
 
 class FeffDatFile(object):
     def __init__(self, filename=None):
@@ -111,7 +108,6 @@ class FeffDatFile(object):
         self.pha = data[1] + data[3]
         self.amp = data[2] * data[4]
 
-
 class FeffPathGroup(larch.Group):
     def __init__(self, filename=None, _larch=None,
                  s02=None, degen=None, e0=None,
@@ -148,7 +144,7 @@ class FeffPathGroup(larch.Group):
             return '<FeffPath Group %s>' % self.filename
         return '<FeffPath Group (empty)>'
 
-    def __pathparams(self, **kws):
+    def _pathparams(self, **kws):
         """evaluate path parameter value
 
         can provide an expression for any of the Path Parameters
@@ -176,39 +172,36 @@ class FeffPathGroup(larch.Group):
                 setattr(self, param, val)
         return out
 
-
     def _calcchi(self, kmax=20, kstep=0.05, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):
         """calculate chi(k) with the provided parameters"""
 
-        kmax = min(max(self._dat.k), kmax)
-        npts = 1 + int((kmax+kstep/10.)/kstep)
-        k = np.linspace(0, kmax, npts)
-
-        pars = self.__pathparams(degen=degen, s02=s02, e0=e0, ei=ei,
-                                 deltar=deltar, sigma2=sigma2,
-                                 third=third, fourth=fourth)
-
-        (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = pars
-
-        reff   = self.reff
-
-        if reff < 0.05:
+        if self.reff < 0.05:
             self._larch.writer.write('reff is too small to calculate chi(k)')
             return
 
-        # lookup Feff.dat values (pha, amp, rep, lam) for
-        # e0-shifted k, look for |e0| ~= 0.
+        (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
+                self._pathparams(degen=degen, s02=s02, e0=e0, ei=ei,
+                                 deltar=deltar, sigma2=sigma2,
+                                 third=third, fourth=fourth)
+
+        reff = self.reff
+
+        # create e0-shifted energy and k, careful to look for |e0| ~= 0.
+        kmax = min(max(self._dat.k), kmax)
+        npts = 1 + int((kmax+kstep/10.)/kstep)
+        k = np.linspace(0, kmax, npts)
         en = k*k - e0*ETOK
         if min(abs(en)) < SMALL:
             try:
-                en[np.where(abs(en) < SMALL)] = SMALL
+                en[np.where(abs(en) < 2*SMALL)] = SMALL
             except ValueError:
                 pass
         # q is the e0-shifted wavenumber
         q = np.sign(en)*np.sqrt(abs(en))
-            
+
+        # lookup Feff.dat values (pha, amp, rep, lam)
         pha = np.interp(q, self._dat.k, self._dat.pha)
         amp = np.interp(q, self._dat.k, self._dat.amp)
         rep = np.interp(q, self._dat.k, self._dat.rep)
@@ -224,18 +217,21 @@ class FeffPathGroup(larch.Group):
         # p = complex wavenumber, and its square:
         pp   = (rep + 1j/lam)**2 + 1j * ei * ETOK
         p    = np.sqrt(pp)
+
+        # the xafs equation:
         cchi = np.exp(-2*reff*p.imag - 2*pp*(sigma2 - pp*fourth/3) +
                       1j*(2*q*reff + pha +
-                          2*p*(deltar - 2*sigma2/reff) - 2*pp*third/3))
-        
+                          2*p*(deltar - 2*sigma2/reff - 2*pp*third/3) ))
+
         cchi = degen * s02 * amp * cchi / (q*(reff + deltar)**2)
         cchi[0] = 2*cchi[1] - cchi[2]
+
         # outputs:
         self.k = k
         self.p = p
         self.chi = cchi.imag
         self.chi_real = -cchi.real
-        # return self.chi
+
 
 def _read_feffdat(fname, _larch=None, **kws):
     """read Feff.dat file into a FeffPathGroup"""
@@ -260,7 +256,6 @@ def _ff2chi(pathlist, _larch=None, group=None, **kws):
         setattr(group, 'chi', out)
     else:
         return out
-
 
 def registerLarchPlugin():
     return ('_xafs', {'read_feffdat': _read_feffdat,
