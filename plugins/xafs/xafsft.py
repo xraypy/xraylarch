@@ -102,7 +102,7 @@ def xafsift(r, chir, group=None, rmin=0, rmax=20,
 
     cchir[0:len(chir)] = chir
     if chir.dtype == np.dtype('complex128'):
-        scale = scale / 2
+        scale = scale/2
 
     win = ftwindow(r_, xmin=rmin, xmax=rmax, dx=dr, dx2=dr2, window=window)
     out = scale * ifft(cchir*win * r_**rw)[:nfft/2]
@@ -131,16 +131,16 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=None, dk=1, dk2=None,
         kw = kws['kweight']
 
     cchi, win  = xafsft_prep(k, chi, kmin=kmin, kmax=kmax, kw=kw, dk=dk,
-                       dk2=dk2, window=window, nfft=nfft, kstep=kstep,
-                       _larch=_larch)
+                             dk2=dk2, window=window, nfft=nfft, kstep=kstep,
+                             _larch=_larch)
 
     out = kstep*sqrt(pi) * fft(cchi*win)[:nfft/2]
-    delr = pi/(kstep*nfft)
+    rstep = pi/(kstep*nfft)
 
-    irmax = min(nfft/2, 1 + int(rmax_out/delr))
+    irmax = min(nfft/2, 1 + int(rmax_out/rstep))
 
     if _larch.symtable.isgroup(group):
-        r   = delr * arange(irmax)
+        r   = rstep * arange(irmax)
         mag = sqrt(out.real**2 + out.imag**2)
         group.kwin =  win[:len(chi)]
         group.r    =  r[:irmax]

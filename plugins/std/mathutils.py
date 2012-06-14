@@ -16,7 +16,7 @@ def _deriv(arr, _larch=None, **kws):
 #     out[1:n-2] = [(arr[i+1] - arr[i-1])/2.0 for i in range(1, n-2)]
 #    return out
 
-def _index_of(array, value):
+def index_of(array, value):
     """return index of array *at or just below* value
     returns 0 if value < min(array)
     """
@@ -24,7 +24,7 @@ def _index_of(array, value):
         return 0
     return max(np.where(array<=value)[0])
 
-def _index_nearest(array, value):
+def index_nearest(array, value):
     """return index of array *nearest* to value
     """
     return np.abs(array-value).argmin()
@@ -36,7 +36,7 @@ def realimag(arr, _larch=None):
 def registerLarchPlugin():
     return ('_math', {'realimag': realimag,
                       'deriv': _deriv,
-                      'index_of': _index_of,
-                      'index_nearest': _index_nearest,
+                      'index_of': index_of,
+                      'index_nearest': index_nearest,
                       }
             )

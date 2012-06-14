@@ -15,7 +15,7 @@ sys.path.insert(0, plugin_path('xafs'))
 sys.path.insert(0, plugin_path('fitter'))
 
 # now we can reliably import other std and xafs modules...
-from mathutils import _index_nearest, realimag
+from mathutils import index_nearest, realimag
 
 from xafsutils import ETOK
 from xafsft import ftwindow, xafsft_fast
@@ -24,7 +24,6 @@ from pre_edge import find_e0
 from minimizer import Minimizer
 
 FMT_COEF = 'c%2.2i'
-# from lmfit import Parameters, Minimizer
 
 def spline_eval(kraw, mu, knots, coefs, order, kout):
     """eval bkg(kraw) and chi(k) for knots, coefs, order"""
@@ -56,7 +55,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     irbkg = int(1.01 + rbkg/rgrid)
     if e0 is None:
         e0 = find_e0(energy, mu, group=group, _larch=_larch)
-    ie0 = _index_nearest(energy, e0)
+    ie0 = index_nearest(energy, e0)
 
     # save ungridded k (kraw) and grided k (kout)
     # and ftwin (*k-weighting) for FT in residual
@@ -74,7 +73,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     spl_e  = np.zeros(nspline)
     for i in range(nspline):
         q = kmin + i*(kmax-kmin)/(nspline - 1)
-        ik = _index_nearest(kraw, q)
+        ik = index_nearest(kraw, q)
         
         i1 = min(len(kraw)-1, ik + 5)
         i2 = max(0, ik - 5)
@@ -101,7 +100,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
                   knots=knots, order=order, kraw=kraw, mu=mu[ie0:],
                   irbkg=irbkg, kout=kout, ftwin=ftwin, nfft=nfft)
     # do fit
-    fit = Minimizer(__resid, params, fcn_kws=fitkws, _larch=_larch)
+    fit = Minimizer(__resid, params, fcn_kws=fitkws, _larch=_larch, toler=1.e-4)
     fit.leastsq()
 
     # write final results
