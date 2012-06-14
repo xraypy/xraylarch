@@ -1,0 +1,17 @@
+add_plugin('xft')
+
+def testauto(g, rbkg=1):
+   plot(g.energy, g.bkg)
+enddef
+
+cu = read_ascii('tests/data/cu_metal_rt.xdi')
+print 'Test : ', cu
+autobk(cu.energy, cu.mutrans, group=cu, rbkg=1.0)
+
+xafsft(cu.k, cu.chi, kmin=2, kmax=18, dk=2, window='hanning', kweight=2, group=cu)
+xafsift(cu.r, cu.chir_re, rmin=1, rmax=20, dr=1, window='hanning', group=cu)
+
+newplot(cu.k, cu.k**2*cu.chi)
+plot(cu.q, cu.chiq_re)
+
+show(cu)

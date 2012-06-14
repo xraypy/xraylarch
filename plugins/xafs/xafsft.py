@@ -4,7 +4,7 @@
 """
 import numpy as np
 from numpy import (pi, arange, zeros, ones, sin, cos,
-                   exp, log, sqrt, where, interp)
+                   exp, log, sqrt, where, interp, linspace)
 from numpy.fft import fft, ifft
 from scipy.special import i0 as bessel0
 
@@ -79,16 +79,39 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         fwin =  exp(-(((x - dx2)**2)/(2*dx1*dx1)))
     return fwin
 
-def xafsift(k, chi, group=None, kmin=0, kmax=20, kw=2,
-           dk=1, dk2=None, window='kaiser',
-           rmax_out=10, nfft=2048, kstep=0.05, _larch=None):
+def xafsift(r, chir_re, chir_im=None, group=None, rmin=0, rmax=20,
+            dr=1, dr2=None, rweight=0, window='kaiser', qmax_out=None,
+            nfft=2048, kstep=0.05, _larch=None):
     """
     calculate reverse XAFS Fourier transform
     """
     if _larch is None:
         raise Warning("cannot do xafsft -- larch broken?")
 
-    print 'inverse xafs ft not yet implemented'
+    rstep = pi/(kstep*nfft)
+    r_   = rstep * arange(nfft, dtype='f8')
+    cchir = zeros(nfft, dtype='complex128')
+    if chir_im is not None and len(chir_im) == len(chir_re):
+        cchir[0:len(chir_re)] = chir_re + 1j*chir_im
+    else:
+        cchir[0:len(chir_re)] = chir_re
+    win = ftwindow(r_, xmin=rmin, xmax=rmax, dx=dr, dx2=dr2, window=window)
+
+    out = rstep * sqrt(pi) * (nfft /2 )* ifft(cchir*win * r_**rweight)[:nfft/2]
+
+    if qmax_out is None: qmax_out = 30.0
+    q = linspace(0, qmax_out, int(1.05 + qmax_out/kstep))
+    nkpts = len(q)
+    if _larch.symtable.isgroup(group):
+        setattr(group, 'q',  q)
+        mag = sqrt(out.real**2 + out.imag**2)
+        setattr(group, 'rwin',     win[:len(chir_re)])
+        setattr(group, 'chiq_mag', mag[:nkpts])
+        setattr(group, 'chiq_re',  out.real[:nkpts])
+        setattr(group, 'chiq_im',  out.imag[:nkpts])
+    else:
+        return out[:nkpts]
+
 
 def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=2, dk=1, dk2=None,
            window='kaiser', rmax_out=10, nfft=2048, kstep=0.05, _larch=None, **kws):
@@ -151,6 +174,7 @@ def xafsft_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     return  kstep * sqrt(pi) * fft(chi)[:nfft/2]
 
 def registerLarchPlugin():
+    print 'XFT!! '
     return (MODNAME, {'xafsft': xafsft,
                       'xafsft_prep': xafsft_prep,
                       'xafsft_fast': xafsft_fast,
