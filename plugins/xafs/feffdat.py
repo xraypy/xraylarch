@@ -252,8 +252,8 @@ def _ff2chi(pathlist, _larch=None, group=None, **kws):
         out += p.chi
 
     if _larch.symtable.isgroup(group):
-        setattr(group, 'k',   k)
-        setattr(group, 'chi', out)
+        group.k = k
+        group.chi = out
     else:
         return out
 

@@ -351,9 +351,9 @@ class EscanData:
             setattr(self,attr,  g[attr].value)
 
         if self.correct_deadtime:
-            setattr(self, 'dt_factor', g['dt_factor'].value)
-            setattr(self, 'det_corr',  g['det_corrected'].value)
-            setattr(self, 'sums_corr', g['sums_corrected'].value)
+            self.dt_factor =  g['dt_factor'].value
+            self.det_corr  =  g['det_corrected'].value
+            self.sums_corr =  g['sums_corrected'].value
 
 
         self.has_fullxrf = 'full_xrf' in root.keys()
@@ -968,7 +968,7 @@ def gsescan_group(fname, _larch=None, **kws):
         if not key.startswith('_'):
             setattr(group, key, val)
 
-    setattr(group, 'get_data', escan.get_data)
+    group.get_data = escan.get_data
     return group
 
 def registerLarchPlugin():

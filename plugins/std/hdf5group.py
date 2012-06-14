@@ -25,7 +25,7 @@ def h5group(fname, _larch=None):
         if isinstance(val, h5py.Group):
             setattr(top, current,  group(name=tname+'/'+current))
             if len(val.attrs) > 0:
-                setattr(top, 'attrs', dict(val.attrs))
+                top.attrs = dict(val.attrs)
         else:
             dat = fh.get(key)
             try:
@@ -37,7 +37,7 @@ def h5group(fname, _larch=None):
             if len(val.attrs) > 0:
                 setattr(top, current+'_attrs', dict(val.attrs))
     top = group(name=fname)
-    setattr(top, 'h5_file', fh)
+    top.h5_file = fh
     fh.visititems(Closure(func=add_component, top=top))
     return top
 

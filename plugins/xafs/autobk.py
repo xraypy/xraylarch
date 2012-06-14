@@ -93,10 +93,10 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     obkg[:ie0] = mu[:ie0]
     obkg[ie0:] = bkg
     if _larch.symtable.isgroup(group):
-        setattr(group, 'bkg',  obkg)
-        setattr(group, 'chie', mu-obkg)
-        setattr(group, 'k',    kout)
-        setattr(group, 'chi',  chi)
+        group.bkg  = obkg
+        group.chie = mu-obkg
+        group.k    = kout
+        group.chi  = chi
 
 def registerLarchPlugin():
     return ('_xafs', {'autobk': autobk})

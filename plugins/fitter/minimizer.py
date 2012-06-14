@@ -196,18 +196,18 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         nfree  = (ndata - self.nvarys)
         redchi = chisqr / nfree
 
-        setattr(group, 'lmdif_status', ier)
-        setattr(group, 'lmdif_message', errmsg)
-        setattr(group, 'lmdif_success', ier in [1, 2, 3, 4])
-        setattr(group, 'toler',  self.toler)
-        setattr(group, 'nfcn_calls',  infodict['nfev'])
-        setattr(group, 'residual',   resid)
-        setattr(group, 'message',    message)
-        setattr(group, 'chi_square', chisqr)
-        setattr(group, 'chi_reduced', redchi)
-        setattr(group, 'nvarys', self.nvarys)
-        setattr(group, 'nfree', nfree)
-        setattr(group, 'errorbars', cov is not None)
+        group.lmdif_status =  ier
+        group.lmdif_message =  errmsg
+        group.lmdif_success =  ier in [1, 2, 3, 4]
+        group.toler =   self.toler
+        group.nfcn_calls =   infodict['nfev']
+        group.residual =    resid
+        group.message =     message
+        group.chi_square =  chisqr
+        group.chi_reduced =  redchi
+        group.nvarys =  self.nvarys
+        group.nfree =  nfree
+        group.errorbars =  cov is not None
 
         for name in self.var_names:
             par = getattr(group, name)
@@ -226,8 +226,8 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
                     if jvar != ivar:
                         par.correl[name2] = (cov[ivar, jvar]/
                                              (par.stderr * sqrt(cov[jvar, jvar])))
-            setattr(group, 'covar_vars', self.var_names)
-            setattr(group, 'covar',      cov)
+            group.covar_vars =  self.var_names
+            group.covar =   cov
         return ier
 
 def minimize(fcn, group,  args=None, kws=None,

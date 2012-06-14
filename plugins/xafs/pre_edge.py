@@ -23,7 +23,7 @@ def find_e0(energy, mu, group=None, _larch=None):
             (i-1 in high_deriv_pts)):
             idmu_max, dmu_max = i, dmu[i]
     if _larch.symtable.isgroup(group):
-        setattr(group, 'e0', energy[idmu_max+1])
+        group.e0 = energy[idmu_max+1]
     return energy[idmu_max+1]
 
 def pre_edge(energy, mu, group=None, e0=None, step=None,
@@ -68,11 +68,11 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     edge_step = post_edge[ie0] - pre_edge[ie0]
     norm  = (mu - pre_edge)/edge_step
     if _larch.symtable.isgroup(group):
-        setattr(group, 'e0',        e0)
-        setattr(group, 'edge_step', edge_step)
-        setattr(group, 'norm',      norm)
-        setattr(group, 'pre_edge',  pre_edge)
-        setattr(group, 'post_edge', post_edge)
+        group.e0 = e0
+        group.norm = norm
+        group.edge_step  = edge_step
+        group.pre_edge   = pre_edge
+        group.post_edge  = post_edge
     else:
         return edge_step, e0
 
