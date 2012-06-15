@@ -5,7 +5,7 @@
 
 import sys, os
 import numpy as np
-from numpy import arange, interp, pi, zeros, sqrt
+from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 from numpy.fft import fft, ifft
 
 from scipy.optimize import leastsq as scipy_leastsq
@@ -27,88 +27,42 @@ from xafsft import xafsft, xafsft_prep, xafsft_fast, xafsift, ftwindow
 from feffdat import FeffPathGroup, _ff2chi
 
 class FilterGroup(larch.Group):
+    """A Group of filter parameters.
+    The apply() method will return the result of applying the filter,
+    ready to use in a Fit.   This caches the FT windows (k and r windows)
+    and assumes that once created (not None), these do not need to be
+    recalculated....
+
+    That is: don't change the parameters are expect the different things.
+    If you do change parameters, reset kwin_array / rwin_array to None.
+
+    """
     def __init__(self, kmin=0, kmax=20, kw=2, dk=1, dk2=None, window='kaiser',
                  rmin = 0, rmax=10, dr=0, rwindow='kaiser', kweight=None,
                  nfft=2048, kstep=0.05, fitspace='r', _larch=None, **kws):
         larch.Group.__init__(self)
-        
-        self._kmin = kmin
-        self._kmax = kmax
-        self._kw = kw
+
+        self.kmin = kmin
+        self.kmax = kmax
+        self.kw = kw
         if kweight is not None:
-            self._kw = kweight
-        self._dk = dk
-        self._dk2 = dk2
-        self._window = window
-        self._rmin = rmin
-        self._rmax = rmax
-        self._dr = dr
-        self._rwindow = rwindow
-        self._kstep = kstep
+            self.kw = kweight
+        self.dk = dk
+        self.dk2 = dk2
+        self.window = window
+        self.rmin = rmin
+        self.rmax = rmax
+        self.dr = dr
+        self.rwindow = rwindow
+        self.kstep = kstep
 
         self.nfft = nfft
         self.fitspace = fitspace
         self._larch = _larch
         self.rstep = pi/(self.kstep*self.nfft)
-        
+
         self.kwin_array = None
         self.rwin_array = None
-
-    ## these should all be properties that, when set, erase the
-    ## corresponding window function, so that the window will be
-    ## recalculated the next time it is needed
-
-    @property
-    def kmin(self): return self._kmin
-
-    @property
-    def kmax(self): return self._kmax
-
-    @property
-    def kw(self): return self._kw
-
-    @property
-    def dk(self): return self._dk
-
-    @property
-    def dk2(self): return self._dk2
-
-    @property
-    def window(self): return self._window
-
-    @property
-    def rmin(self): return self._rmin
-
-    @property
-    def rmax(self): return self._rmax
-
-    @property
-    def rw(self): return self._rw
-
-    @property
-    def dr(self): return self._dr
-
-    @property
-    def rwindow(self): return self._rwindow
-
-
-    @property
-    def kstep(self): return self._kstep
-
-    @kmin.setter
-    def kmin(self, val):
-        self.kwin_array = None
-        self._kmin = val
-
-    @kmax.setter
-    def kmax(self, val):
-        self.kwin_array = None
-        self._kmax = val
-
-    @kw.setter
-    def kw(self, val):
-        self.kwin_array = None
-        self._kw = val
 
     def fft(self, k, chi):
         if self.kwin_array is None:
@@ -124,7 +78,7 @@ class FilterGroup(larch.Group):
         if self.rwin_array is None:
             self.rwin_array = ftwindow(r, xmin=self.rmin, xmax=self.rmax,
                                        dx=self.dr, dx2=self.dr2,
-                                       window=self.rwindow)                    
+                                       window=self.rwindow)
 
         cchir = zeros(self.nfft, dtype='complex128')
         cchir[0:len(chir)] = chir
@@ -133,7 +87,7 @@ class FilterGroup(larch.Group):
 
     def apply(self, k, chi, **kws):
         """apply filter"""
-        
+
         for key, val in kws:
             if key == 'kweight': key = 'kw'
             setattr(self, key, val)
@@ -141,7 +95,7 @@ class FilterGroup(larch.Group):
         if self.fitspace == 'k':
             return chi * k**self.kw
         elif self.fitspace in ('r', 'q'):
-          
+
             k_ = self.kstep * arange(self.nfft, dtype='float64')
             r_ = self.rstep * arange(self.nfft, dtype='float64')
             chir = self.fft(k_, chi)
@@ -154,7 +108,7 @@ class FilterGroup(larch.Group):
                 iqmin = index_of(k_, self.kmin)
                 iqmax = min(self.nfft/2,  1 + index(k_, self.kmax))
                 return realimag(chiq[ikmin:ikmax])
-                
+
 class FeffitDataSet(larch.Group):
     def __init__(self, data=None, pathlist=None, filter=None, _larch=None):
         self._larch = _larch
@@ -166,36 +120,41 @@ class FeffitDataSet(larch.Group):
             filter = FilterGroup()
         self.filter = filter
         self.model = Group()
+        self.k = None
+        self.data_chi = None
+        self.model_chi = None
 
-    def calc_model(self):
-        """calculate model spectra from pathlist -- essentially ff2chi"""
-        _ff2chi(self.pathlist, _larch =_larch, group=self.model)
-            
-    def apply_transform(self):
+    def residual(self):
         if not isinstance(self.filter, FilterGroup):
-            self.filter.apply(self.datagroup.k, self.datagroup.chi)
+            print "Filter for DataSet is not set"
+            return
+        if self.k is None:
+            self.k = self.filter.kstep * arange(max(self.datagroup.k))
+            self.data_chi =  interp(self.k, self.datgroup.k, self.datagroup.chi)
+        self.model_chi = _ff2chi(self.pathlist, _larch =_larch,
+                                 kstep=self.filter.kstep, group=self.model)
 
-        
-class Feffit(Minimizer):
-    def __init__(self, pathlist, params, _larch=None, **kws):
-        Minimizer.__init__(self, self._feffit, params, _larch=_larch, **kws)
+        return self.filter.apply(self.k, self.data_chi-self.model_chi)
 
-    def _feffit(self, x):
-        """residual function for feffit"""
 
-def feffit_fit(_larch=None):
-    print 'not yet!'
-    
+def feffit_fit(params, datasets, _larch=None):
+
+    def _resid(self, params, datasets=None, _larch=None, **kws):
+        """ this is the residua function """
+        return concatenate([d.residual() for d in self.datasets])
+
+    fitkws = dict(datasets=datasets)
+    fit = Minimizer(_resid, params, fcn_kws=_fitkws, _larch=_larch)
+    fit.leastsq()
 
 def feffit_dataset(data=None, pathlist=None, filter=None, _larch=None):
     return FeffitDataSet(data=data, pathlist=pathlist, filter=filter, _larch=_larch)
 
-
 def feffit_filter(_larch=None, **kws):
     return FilterGroup(_larch=_larch, **kws)
-    
+
 def registerLarchPlugin():
-    print '====== test FEFFIT ======'
+    print '====== Test FEFFIT ======'
     return ('_xafs', {'feffit_fit': feffit_fit,
                       'feffit_dataset': feffit_dataset,
                       'feffit_filter': feffit_filter,
