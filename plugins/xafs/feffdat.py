@@ -120,7 +120,7 @@ class FeffPathGroup(larch.Group):
         self.filename = filename
         self._dat = FeffDatFile(filename=filename)
         try:
-            self.reff = self._dat.reff
+            self.reff  = self._dat.reff
             self.nleg  = self._dat.nleg
             self.geom  = self._dat.geom
             self.degen = self._dat.degen if degen is None else degen
@@ -137,7 +137,7 @@ class FeffPathGroup(larch.Group):
 
         self.k = []
         self.chi = []
-        self.calc_chi = self._calcchi
+
 
     def __repr__(self):
         if self.filename is not None:
@@ -172,7 +172,7 @@ class FeffPathGroup(larch.Group):
                 setattr(self, param, val)
         return out
 
-    def _calcchi(self, kmax=20, kstep=0.05, degen=None, s02=None,
+    def calc_chi(self, kmax=20, kstep=0.05, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):
         """calculate chi(k) with the provided parameters"""
@@ -187,6 +187,9 @@ class FeffPathGroup(larch.Group):
                                  third=third, fourth=fourth)
 
         reff = self.reff
+        # need to set paramGroup.reff to this reff!!
+        if self._larch.symtable.paramGroup is not None:
+            self._larch.symtable.paramGroup.reff = reff
 
         # create e0-shifted energy and k, careful to look for |e0| ~= 0.
         kmax = min(max(self._dat.k), kmax)
@@ -237,7 +240,7 @@ def _read_feffdat(fname, _larch=None, **kws):
     """read Feff.dat file into a FeffPathGroup"""
     return FeffPathGroup(fname, _larch=_larch)
 
-def _ff2chi(pathlist, _larch=None, group=None, **kws):
+def _ff2chi(pathlist, _larch=None, group=None, kstep=0.05, **kws):
     """sum the XAFS for a set of paths... assumes that the
     Path Parameters are set"""
     msg = _larch.writer.write
@@ -245,7 +248,7 @@ def _ff2chi(pathlist, _larch=None, group=None, **kws):
         if not isinstance(p, FeffPathGroup):
             msg('%s is not a valid Feff Path' % repr(p))
             return
-        p.calc_chi()
+        p.calc_chi(kstep=kstep)
     k = pathlist[0].k
     out = np.zeros_like(k)
     for p in pathlist:
