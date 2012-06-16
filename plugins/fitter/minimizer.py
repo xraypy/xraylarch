@@ -239,11 +239,11 @@ def minimize(fcn, group,  args=None, kws=None,
     if not _larch.symtable.isgroup(group):
         return 'param group is not a Larch Group'
 
-    fitter = Minimizer(fcn, group, fcn_args=args, fcn_kws=kws,
+    fit = Minimizer(fcn, group, fcn_args=args, fcn_kws=kws,
                        iter_cb=iter_cb, scale_covar=scale_covar,
                        _larch=_larch,  **fit_kws)
-    fitter.leastsq()
-
+    fit.leastsq()
+    return fit
 
 def guess(value, _larch=None, **kws):
     """create a fitting Parameter as a Variable.
