@@ -407,8 +407,8 @@ def isParameter(x):
 
 def param_value(val):
     "get param value -- useful for 3rd party code"
-    if isinstance(val, Parameter):
-        return val.value
+    while isinstance(val, Parameter):
+        val = val.value
     return val
 
 def plugin_path(val):
