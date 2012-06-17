@@ -181,8 +181,6 @@ class FeffPathGroup(larch.Group):
                                  third=third, fourth=fourth)
 
         reff = self.reff
-        print 'Calc Chi', degen, s02, e0, sigma2, reff
-
         # create e0-shifted energy and k, careful to look for |e0| ~= 0.
         kmax = min(max(self._dat.k), kmax)
         npts = 1 + int((kmax + 0.1*kstep)/kstep)
@@ -226,7 +224,6 @@ class FeffPathGroup(larch.Group):
         self.p = p
         self.chi = cchi.imag
         self.chi_real = -cchi.real
-        print 'Calc Chi done. ', self.chi[5:10]
 
 def _read_feffdat(fname, _larch=None, **kws):
     """read Feff.dat file into a FeffPathGroup"""
