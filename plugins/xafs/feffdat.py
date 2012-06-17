@@ -114,9 +114,8 @@ class FeffPathGroup(larch.Group):
                  ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None,  **kws):
 
-        self._larch = _larch
-
         larch.Group.__init__(self,  **kws)
+        self._larch = _larch
         self.filename = filename
         self._dat = FeffDatFile(filename=filename)
         try:
@@ -137,17 +136,19 @@ class FeffPathGroup(larch.Group):
 
         self.k = []
         self.chi = []
-        self.calc_chi = self._calcchi
+        self.calc_chi = self._calc_chi
 
     def __repr__(self):
         if self.filename is not None:
             return '<FeffPath Group %s>' % self.filename
         return '<FeffPath Group (empty)>'
 
-    def _pathparams(self, **kws):
+    def _pathparams(self, paramgroup=None, **kws):
         """evaluate path parameter value
         """
         # degen, s02, e0, ei, deltar, sigma2, third, fourth
+        if paramgroup is not None:
+            self._larch.symtable._sys.paramGroup = paramgroup
         self._larch.symtable._fix_searchGroups()
 
         out = []
@@ -164,23 +165,27 @@ class FeffPathGroup(larch.Group):
             out.append(param_value(val))
         return out
 
-    def _calcchi(self, kmax=None, kstep=None, degen=None, s02=None,
+    def _calc_chi(self, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):
         """calculate chi(k) with the provided parameters"""
-
         if self.reff < 0.05:
             self._larch.writer.write('reff is too small to calculate chi(k)')
             return
         if kmax is None: kmax = 25.0
         if kstep is None: kmax = 0.05
 
+        reff = self.reff
+        # put 'reff' into the paramGroup so that it can be used in
+        # constraint expressions
+        self._larch.symtable._sys.paramGroup.reff = reff
+
+        # get values for all the path parameters
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
                 self._pathparams(degen=degen, s02=s02, e0=e0, ei=ei,
                                  deltar=deltar, sigma2=sigma2,
                                  third=third, fourth=fourth)
 
-        reff = self.reff
         # create e0-shifted energy and k, careful to look for |e0| ~= 0.
         kmax = min(max(self._dat.k), kmax)
         npts = 1 + int((kmax + 0.1*kstep)/kstep)
@@ -229,16 +234,19 @@ def _read_feffdat(fname, _larch=None, **kws):
     """read Feff.dat file into a FeffPathGroup"""
     return FeffPathGroup(fname, _larch=_larch)
 
-def _ff2chi(pathlist, _larch=None, group=None, kmax=None, kstep=0.05, **kws):
+def _ff2chi(pathlist, _larch=None, group=None, kmax=None, kstep=0.05,
+            paramgroup=None, **kws):
     """sum the XAFS for a set of paths... assumes that the
     Path Parameters are set"""
     msg = _larch.writer.write
+    if paramgroup is not None:
+        _larch.symtable._sys.paramGroup = paramgroup
     for p in pathlist:
         if not hasattr(p, 'calc_chi'):
             msg('%s is not a valid Feff Path' % p)
             return
         p.calc_chi(kstep=kstep, kmax=kmax)
-    k = pathlist[0].k
+    k = pathlist[0].k[:]
     out = np.zeros_like(k)
     for p in pathlist:
         out += p.chi
