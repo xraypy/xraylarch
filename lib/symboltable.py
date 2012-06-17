@@ -96,7 +96,7 @@ class SymbolTable(Group):
         self._sys.valid_commands = []
         self._sys.moduleGroup = self
         self._sys.paramGroup = None
-        self._sys.__cache__  = [None, None, None, None]
+        self._sys.__cache__  = [None]*5
 
         for g in self.core_groups:
             self._sys.searchGroups.append(g)
@@ -164,28 +164,33 @@ class SymbolTable(Group):
         # check (and cache) whether searchGroups needs to be changed.
         sys = self._sys
         cache = sys.__cache__
-        if len(cache) < 4:  cache = [None, None, None, None]
-        if (sys.localGroup   == cache[0] and
-            sys.moduleGroup  == cache[1] and
-            sys.searchGroups == cache[2] and
-            cache[3] is not None and not force):
-            return cache[3]
+        if len(cache) < 5:
+            cache = [None]*5
+        if (sys.paramGroup   == cache[0] and
+            sys.localGroup   == cache[1] and
+            sys.moduleGroup  == cache[2] and
+            sys.searchGroups == cache[3] and
+            cache[4] is not None and not force):
+            return cache[4]
         # print( 'real _fix searchGroup! ', dir(sys.localGroup))
-        #print( cache)
-        #print( sys.localGroup==cache[0], sys.localGroup)
-        #print( sys.moduleGroup==cache[1], sys.moduleGroup)
-        #print( sys.searchGroups==cache[2])
+        # print( cache)
+        # print( sys.localGroup==cache[0], sys.localGroup)
+        # print( sys.moduleGroup==cache[1], sys.moduleGroup)
+        # print( sys.searchGroups==cache[2])
 
         if sys.moduleGroup is None:
             sys.moduleGroup = self.top_group
         if sys.localGroup is None:
             sys.localGroup = self.moduleGroup
-        cache[0] = sys.localGroup
-        cache[1] = sys.moduleGroup
+        cache[0] = sys.paramGroup
+        cache[1] = sys.localGroup
+        cache[2] = sys.moduleGroup
         snames  = []
-        sgroups = [sys.localGroup]
+        sgroups = []
         if sys.paramGroup is not None:
             sgroups.append(sys.paramGroup)
+
+        sgroups.append(sys.localGroup)
         if sys.moduleGroup not in sgroups:
             sgroups.append(sys.moduleGroup)
 
@@ -212,9 +217,9 @@ class SymbolTable(Group):
 
             # print( name, grp, grp in sgroups)
 
-        self._sys.searchGroups = cache[2] = snames[:]
-        sys.searchGroupObjects = cache[3] = sgroups[:]
-        # print( 'Set searchGroups ', cache[2], cache[3])
+        self._sys.searchGroups = cache[3] = snames[:]
+        sys.searchGroupObjects = cache[4] = sgroups[:]
+        # print( 'Set searchGroups ', cache[3], cache[4])
 
         return sys.searchGroupObjects
 
@@ -429,8 +434,6 @@ class SymbolTable(Group):
         self._fix_searchGroups(force=True)
         #print( 'add plugin ', groupname)
         #print(self._sys.searchGroups)
-        #print(self._sys.__cache__[2])
-        #print(self._sys.__cache__[3])
 
         for key, val in syms.items():
             if hasattr(val, '__call__'):
