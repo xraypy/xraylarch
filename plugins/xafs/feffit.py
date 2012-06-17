@@ -128,7 +128,9 @@ class FeffitDataSet(larch.Group):
         self.model_chi = None
         self.residual = self._residual
 
-    def _residual(self):
+    def _residual(self, paramgroup=None):
+        if paramgroup is not None:
+            self._larch.symtable._sys.paramGroup = paramgroup
         if not isinstance(self.transform, TransformGroup):
             print "Transform for DataSet is not set"
             return
@@ -138,23 +140,36 @@ class FeffitDataSet(larch.Group):
             nkmax = (0.1*kstep + max(self.datagroup.k)) / kstep
             self.k = self.transform.kstep * arange(nkmax)
             self.data_chi =  interp(self.k, self.datagroup.k, self.datagroup.chi)
-        self.model_chi = _ff2chi(self.pathlist, _larch =self._larch,
-                                 kmax=max(self.k), kstep=self.transform.kstep,
-                                 group=self.model)
-        #print ' len data chi ', len(self.data_chi)
-        #print ' len model chi ', len(self.model.chi)
+        _ff2chi(self.pathlist, _larch =self._larch,
+                kmax=max(self.k), kstep=self.transform.kstep,
+                group=self.model)
+        self.model_chi = self.model.chi
         return self.transform.apply(self.k, self.data_chi-self.model.chi)
 
 
-def feffit_fit(params, datasets, _larch=None):
+def feffit(params, datasets, _larch=None, **kws):
 
-    def _resid(self, params, datasets=None, _larch=None, **kws):
+    def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residua function """
-        return concatenate([d.residual() for d in self.datasets])
+        print 'in resid ! ', datasets, params
+        return concatenate([d.residual() for d in datasets])
 
+    print datasets, kws
+
+    if isinstance(datasets, FeffitDataSet):
+        datasets = [datasets]
+    for ds in datasets:
+        if not isinstance(ds, FeffitDataSet):
+            print "feffit needs a list of FeffitDataSets"
+            return
     fitkws = dict(datasets=datasets)
-    fit = Minimizer(_resid, params, fcn_kws=_fitkws, _larch=_larch)
+    fit = Minimizer(_resid, params, fcn_kws=fitkws, _larch=_larch)
     fit.leastsq()
+    # here we create outputs:
+    out = larch.Group(name='feffit fit results',
+                      params = params,
+                      datasets = datasets)
+    return out
 
 def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
     print
@@ -164,7 +179,7 @@ def feffit_transform(_larch=None, **kws):
     return TransformGroup(_larch=_larch, **kws)
 
 def registerLarchPlugin():
-    return ('_xafs', {'feffit_fit': feffit_fit,
+    return ('_xafs', {'feffit': feffit,
                       'feffit_dataset': feffit_dataset,
                       'feffit_transform': feffit_transform,
 
