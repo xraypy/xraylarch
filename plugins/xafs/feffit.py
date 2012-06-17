@@ -13,8 +13,6 @@ from scipy.optimize import leastsq as scipy_leastsq
 import larch
 from larch.larchlib import Parameter, isParameter, plugin_path
 from larch.utils import OrderedDict
-from larch.symboltable import isgroup
-
 
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('fitter'))
@@ -26,9 +24,9 @@ from minimizer import Minimizer
 from xafsft import xafsft, xafsft_prep, xafsft_fast, xafsift, ftwindow
 from feffdat import FeffPathGroup, _ff2chi
 
-class FilterGroup(larch.Group):
-    """A Group of filter parameters.
-    The apply() method will return the result of applying the filter,
+class TransformGroup(larch.Group):
+    """A Group of transform parameters.
+    The apply() method will return the result of applying the transform,
     ready to use in a Fit.   This caches the FT windows (k and r windows)
     and assumes that once created (not None), these do not need to be
     recalculated....
@@ -41,7 +39,6 @@ class FilterGroup(larch.Group):
                  rmin = 0, rmax=10, dr=0, rwindow='kaiser', kweight=None,
                  nfft=2048, kstep=0.05, fitspace='r', _larch=None, **kws):
         larch.Group.__init__(self)
-
         self.kmin = kmin
         self.kmax = kmax
         self.kw = kw
@@ -63,6 +60,10 @@ class FilterGroup(larch.Group):
 
         self.kwin_array = None
         self.rwin_array = None
+        # self.fft = self._fft
+        # self.ifft = self._ifft
+        # self.apply = self._apply
+
 
     def fft(self, k, chi):
         if self.kwin_array is None:
@@ -86,12 +87,12 @@ class FilterGroup(larch.Group):
         return sqrt(pi)/(2*self.kstep) * out[:self.nfft/2]
 
     def apply(self, k, chi, **kws):
-        """apply filter"""
-
+        """apply transform"""
+        # print 'this  is transform apply ', k[5:10], chi[5:10], kws
         for key, val in kws:
             if key == 'kweight': key = 'kw'
             setattr(self, key, val)
-
+        # print 'fit space = ', self.fitspace
         if self.fitspace == 'k':
             return chi * k**self.kw
         elif self.fitspace in ('r', 'q'):
@@ -110,31 +111,39 @@ class FilterGroup(larch.Group):
                 return realimag(chiq[ikmin:ikmax])
 
 class FeffitDataSet(larch.Group):
-    def __init__(self, data=None, pathlist=None, filter=None, _larch=None):
+    def __init__(self, data=None, pathlist=None, transform=None, _larch=None, **kws):
+
         self._larch = _larch
-        larch.Group.__init__(self,  **kws)
+        larch.Group.__init__(self,  residual=self._residual, **kws)
+
         self.pathlist = pathlist
 
         self.datagroup = data
-        if filter is None:
-            filter = FilterGroup()
-        self.filter = filter
-        self.model = Group()
+        if transform is None:
+            transform = TransformGroup()
+        self.transform = transform
+        self.model = larch.Group()
         self.k = None
         self.data_chi = None
         self.model_chi = None
+        self.residual = self._residual
 
-    def residual(self):
-        if not isinstance(self.filter, FilterGroup):
-            print "Filter for DataSet is not set"
+    def _residual(self):
+        if not isinstance(self.transform, TransformGroup):
+            print "Transform for DataSet is not set"
             return
         if self.k is None:
-            self.k = self.filter.kstep * arange(max(self.datagroup.k))
-            self.data_chi =  interp(self.k, self.datgroup.k, self.datagroup.chi)
-        self.model_chi = _ff2chi(self.pathlist, _larch =_larch,
-                                 kstep=self.filter.kstep, group=self.model)
-
-        return self.filter.apply(self.k, self.data_chi-self.model_chi)
+            # print '_resid create .k ',
+            kstep = self.transform.kstep
+            nkmax = (0.1*kstep + max(self.datagroup.k)) / kstep
+            self.k = self.transform.kstep * arange(nkmax)
+            self.data_chi =  interp(self.k, self.datagroup.k, self.datagroup.chi)
+        self.model_chi = _ff2chi(self.pathlist, _larch =self._larch,
+                                 kmax=max(self.k), kstep=self.transform.kstep,
+                                 group=self.model)
+        #print ' len data chi ', len(self.data_chi)
+        #print ' len model chi ', len(self.model.chi)
+        return self.transform.apply(self.k, self.data_chi-self.model.chi)
 
 
 def feffit_fit(params, datasets, _larch=None):
@@ -147,17 +156,17 @@ def feffit_fit(params, datasets, _larch=None):
     fit = Minimizer(_resid, params, fcn_kws=_fitkws, _larch=_larch)
     fit.leastsq()
 
-def feffit_dataset(data=None, pathlist=None, filter=None, _larch=None):
-    return FeffitDataSet(data=data, pathlist=pathlist, filter=filter, _larch=_larch)
+def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
+    print
+    return FeffitDataSet(data=data, pathlist=pathlist, transform=transform, _larch=_larch)
 
-def feffit_filter(_larch=None, **kws):
-    return FilterGroup(_larch=_larch, **kws)
+def feffit_transform(_larch=None, **kws):
+    return TransformGroup(_larch=_larch, **kws)
 
 def registerLarchPlugin():
-    print '====== Test FEFFIT ======'
     return ('_xafs', {'feffit_fit': feffit_fit,
                       'feffit_dataset': feffit_dataset,
-                      'feffit_filter': feffit_filter,
+                      'feffit_transform': feffit_transform,
 
 
                       })
