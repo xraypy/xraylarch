@@ -20,6 +20,15 @@ import wx.lib.newevent
 import larch
 from wxmplot import PlotFrame, ImageFrame
 
+mpl_dir = os.path.join(larch.site_config.usr_larchdir, 'matplotlib')
+os.environ['MPLCONFIGDIR'] = mpl_dir
+if not os.path.exists(mpl_dir):
+    try:
+        os.makedirs(mpl_dir)
+    except:
+        pass
+
+
 here = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'wx')
 sys.path.insert(0, here)
 
