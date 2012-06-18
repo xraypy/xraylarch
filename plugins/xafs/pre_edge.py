@@ -34,7 +34,6 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     """
     if _larch is None:
         raise Warning("cannot remove pre_edge -- larch broken?")
-
     if e0 is None or e0 < energy[0] or e0 > energy[-1]:
         e0 = find_e0(energy, mu, group=group, _larch=_larch)
 
@@ -53,18 +52,15 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     omu  = mu*energy**nvict
     coefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
     pre_edge = (coefs[0] * energy + coefs[1]) * energy**(-nvict)
-
     # normalization
     p1 = min(np.where(energy >= norm1+e0)[0])
     p2 = max(np.where(energy <= norm2+e0)[0])
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
-
     coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
     post_edge = 0
     for n, c in enumerate(reversed(list(coefs))):
         post_edge += c * energy**(n-nvict)
-
     edge_step = post_edge[ie0] - pre_edge[ie0]
     norm  = (mu - pre_edge)/edge_step
     if _larch.symtable.isgroup(group):
@@ -73,8 +69,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         group.edge_step  = edge_step
         group.pre_edge   = pre_edge
         group.post_edge  = post_edge
-    else:
-        return edge_step, e0
+    return edge_step, e0
 
 def registerLarchPlugin():
     return (MODNAME, {'find_e0': find_e0,
