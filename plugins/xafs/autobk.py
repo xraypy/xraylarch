@@ -19,7 +19,7 @@ from mathutils import index_nearest, realimag
 
 from xafsutils import ETOK
 from xafsft import ftwindow, xafsft_fast
-from pre_edge import find_e0
+from pre_edge import find_e0, pre_edge
 
 from minimizer import Minimizer
 
@@ -39,9 +39,11 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     return realimag(xafsft_fast(chi*ftwin, nfft=nfft)[:irbkg])
 
 def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
-           kmin=0, kmax=None, kw=1, dk=0, win=None, vary_e0=True,
-           chi_std=None, nfft=2048, kstep=0.05, debug=False,
-           _larch=None):
+           edge_step=None, kmin=0, kmax=None, kw=1, dk=0, win=None,
+           vary_e0=True, chi_std=None, nfft=2048, kstep=0.05, nnorm=3,
+           nvict=0, pre1=None, pre2=-50., norm1=100., norm2=None,
+           debug=False, _larch=None):
+
     """Use Autobk algorithm to remove XAFS background
     Options are:
       rbkg -- distance out to which the chi(R) is minimized
@@ -53,8 +55,16 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     rgrid = np.pi/(kstep*nfft)
     if rbkg < 2*rgrid: rbkg = 2*rgrid
     irbkg = int(1.01 + rbkg/rgrid)
+    if edge_step is None:
+        if _larch.symtable.isgroup(group) and hasattr(group, 'edge_step'):
+            edge_step = group.edge_step
     if e0 is None:
-        e0 = find_e0(energy, mu, group=group, _larch=_larch)
+        if _larch.symtable.isgroup(group) and hasattr(group, 'e0'):
+            e0 = group.e0
+    if e0 is None or edge_step is None:
+        edge_step, e0 = pre_edge(energy, mu, nnorm=nnorm, nvict=nvict,
+                                 pre1=pre1, pre2=pre2, norm1=norm1,
+                                 norm2=norm2, group=group, _larch=_larch)
     ie0 = index_nearest(energy, e0)
 
     # save ungridded k (kraw) and grided k (kout)
@@ -74,7 +84,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     for i in range(nspline):
         q = kmin + i*(kmax-kmin)/(nspline - 1)
         ik = index_nearest(kraw, q)
-        
+
         i1 = min(len(kraw)-1, ik + 5)
         i2 = max(0, ik - 5)
         spl_k[i] = kraw[ik]
@@ -95,7 +105,7 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
         setattr(params, name, p)
 
     initbkg, initchi = spline_eval(kraw, mu[ie0:], knots, coefs, order, kout)
-              
+
     fitkws = dict(ncoefs=len(coefs),
                   knots=knots, order=order, kraw=kraw, mu=mu[ie0:],
                   irbkg=irbkg, kout=kout, ftwin=ftwin, nfft=nfft)
@@ -112,20 +122,20 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     obkg[ie0:] = bkg
     if _larch.symtable.isgroup(group):
         group.bkg  = obkg
-        group.chie = mu-obkg
+        group.chie = (mu-obkg)/edge_step
         group.k    = kout
-        group.chi  = chi
+        group.chi  = chi/edge_step
         if debug:
             group.spline_params = params
             ix_bkg = np.zeros(len(mu))
             ix_bkg[:ie0] = mu[:ie0]
-            ix_bkg[ie0:] = initbkg            
+            ix_bkg[ie0:] = initbkg
             group.init_bkg = ix_bkg
-            group.init_chi = initchi
+            group.init_chi = initchi/edge_step
             group.spline_e = spl_e
             group.spline_y = np.array([coefs[i] for i in range(nspline)])
             group.spline_yinit = spl_y
-            
+
 
 def registerLarchPlugin():
     return ('_xafs', {'autobk': autobk})
