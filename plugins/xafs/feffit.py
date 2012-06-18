@@ -51,39 +51,72 @@ class TransformGroup(larch.Group):
         self.rmax = rmax
         self.dr = dr
         self.rwindow = rwindow
+        self.__nfft = 0
+        self.__kstep = None
+        self.nfft  = nfft
         self.kstep = kstep
+        self.rstep = pi/(self.kstep*self.nfft)
 
-        self.nfft = nfft
         self.fitspace = fitspace
         self._larch = _larch
-        self.rstep = pi/(self.kstep*self.nfft)
 
         self.kwin_array = None
         self.rwin_array = None
-        # self.fft = self._fft
-        # self.ifft = self._ifft
-        # self.apply = self._apply
+        self.__check_kstep()
+
+    def __check_kstep(self):
+        "this should be run in kstep or nfft changes"
+        if self.kstep == self.__kstep and self.nfft == self.__nfft:
+            return
+        self.rstep = pi/(self.kstep*self.nfft)
+        self.k_ = self.kstep * arange(self.nfft, dtype='float64')
+        self.r_ = self.rstep * arange(self.nfft, dtype='float64')
+
+    def xafsft(self, chi, group=None, rmax_out=10, **kws):
+        "returns "
+        for key, val in kws:
+            if key == 'kweight': key = 'kw'
+            setattr(self, key, val)
+        self.__check_kstep()
+
+        out = self.__fftf__(chi)
+
+        irmax = min(self.nfft/2, 1 + int(rmax_out/self.rstep))
+        if self._larch.symtable.isgroup(group):
+            r   = self.rstep * arange(irmax)
+            mag = sqrt(out.real**2 + out.imag**2)
+            group.r    =  r[:irmax]
+            group.chir =  out[:irmax]
+            group.chir_mag =  mag[:irmax]
+            group.chir_re  =  out.real[:irmax]
+            group.chir_im  =  out.imag[:irmax]
+        else:
+            return out[:irmax]
 
 
-    def fft(self, k, chi):
+    def __fftf__(self, chi):
+        " forward FT -- meant to be used internally"
+        self.__check_kstep()
         if self.kwin_array is None:
-            self.kwin_array = ftwindow(k, xmin=self.kmin, xmax=self.kmax,
+            self.kwin_array = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
                                        dx=self.dk, dx2=self.dk2,
                                        window=self.window)
         cchi = zeros(self.nfft, dtype='complex128')
         cchi[0:len(chi)] = chi
-        out = fft(cchi * self.kwin_array * k**self.kw)
+        out = fft(cchi * self.kwin_array * self.k_**self.kw)
         return self.kstep*sqrt(pi) * out[:self.nfft/2]
 
-    def ifft(self, r, chir):
+    def __ffti__(self, chir):
+        " reverse FT -- meant to be used internally"
+        self.__check_kstep()
         if self.rwin_array is None:
-            self.rwin_array = ftwindow(r, xmin=self.rmin, xmax=self.rmax,
+            self.rwin_array = ftwindow(self.r_, xmin=self.rmin, xmax=self.rmax,
                                        dx=self.dr, dx2=self.dr2,
                                        window=self.rwindow)
 
         cchir = zeros(self.nfft, dtype='complex128')
         cchir[0:len(chir)] = chir
-        out = ifft(cchir * self.rwin_array * r**self.rw)
+        out = ifft(cchir * self.rwin_array * self.r_**self.rw)
         return sqrt(pi)/(2*self.kstep) * out[:self.nfft/2]
 
     def apply(self, k, chi, **kws):
@@ -96,18 +129,16 @@ class TransformGroup(larch.Group):
         if self.fitspace == 'k':
             return chi * k**self.kw
         elif self.fitspace in ('r', 'q'):
-
-            k_ = self.kstep * arange(self.nfft, dtype='float64')
-            r_ = self.rstep * arange(self.nfft, dtype='float64')
-            chir = self.fft(k_, chi)
+            self.__check_kstep()
+            chir = self.__fftf__(chi)
             if self.fitspace == 'r':
-                irmin = index_of(r_, self.rmin)
-                irmax = min(self.nfft/2,  1 + index_of(r_, self.rmax))
+                irmin = index_of(self.r_, self.rmin)
+                irmax = min(self.nfft/2,  1 + index_of(self.r_, self.rmax))
                 return realimag(chir[irmin:irmax])
             else:
-                chiq = self.ifft(r_, chir)
-                iqmin = index_of(k_, self.kmin)
-                iqmax = min(self.nfft/2,  1 + index(k_, self.kmax))
+                chiq = self.__ffti__(self.r_, chir)
+                iqmin = index_of(self.k_, self.kmin)
+                iqmax = min(self.nfft/2,  1 + index(self.k_, self.kmax))
                 return realimag(chiq[ikmin:ikmax])
 
 class FeffitDataSet(larch.Group):
@@ -118,14 +149,13 @@ class FeffitDataSet(larch.Group):
 
         self.pathlist = pathlist
 
-        self.datagroup = data
+        self.data = data
         if transform is None:
             transform = TransformGroup()
         self.transform = transform
         self.model = larch.Group()
-        self.k = None
+        self.model.k = None
         self.data_chi = None
-        self.model_chi = None
         self.residual = self._residual
 
     def _residual(self, paramgroup=None):
@@ -134,27 +164,29 @@ class FeffitDataSet(larch.Group):
         if not isinstance(self.transform, TransformGroup):
             print "Transform for DataSet is not set"
             return
-        if self.k is None:
+        if self.model.k is None:
             # print '_resid create .k ',
             kstep = self.transform.kstep
-            nkmax = (0.1*kstep + max(self.datagroup.k)) / kstep
-            self.k = self.transform.kstep * arange(nkmax)
-            self.data_chi =  interp(self.k, self.datagroup.k, self.datagroup.chi)
+            nkmax = (0.1*kstep + max(self.data.k)) / kstep
+            self.model.k = self.transform.kstep * arange(nkmax)
+            self.data_chi =  interp(self.model.k, self.data.k, self.data.chi)
         _ff2chi(self.pathlist, _larch =self._larch,
-                kmax=max(self.k), kstep=self.transform.kstep,
+                kstep=self.transform.kstep, kmax=max(self.model.k),
                 group=self.model)
-        self.model_chi = self.model.chi
-        return self.transform.apply(self.k, self.data_chi-self.model.chi)
+        return self.transform.apply(self.model.k, self.data_chi-self.model.chi)
 
+    def save_ffts(self, rmax_out=10):
+        # print ' SAVE FFTs ' , len(self.model.k), len(self.data_chi), len(self.model.chi)
+        self.transform.xafsft(self.data_chi, group=self.data, rmax_out=rmax_out)
+        self.transform.xafsft(self.model.chi, group=self.model, rmax_out=rmax_out)
 
 def feffit(params, datasets, _larch=None, **kws):
 
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residua function """
-        print 'in resid ! ', datasets, params
+        # for p in dir(params):
+        #    print 'Param: ', p, getattr(params, p)
         return concatenate([d.residual() for d in datasets])
-
-    print datasets, kws
 
     if isinstance(datasets, FeffitDataSet):
         datasets = [datasets]
@@ -166,13 +198,16 @@ def feffit(params, datasets, _larch=None, **kws):
     fit = Minimizer(_resid, params, fcn_kws=fitkws, _larch=_larch)
     fit.leastsq()
     # here we create outputs:
+    for ds in datasets:
+        ds.save_ffts()
+
     out = larch.Group(name='feffit fit results',
                       params = params,
                       datasets = datasets)
+
     return out
 
 def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
-    print
     return FeffitDataSet(data=data, pathlist=pathlist, transform=transform, _larch=_larch)
 
 def feffit_transform(_larch=None, **kws):
