@@ -38,10 +38,10 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     return realimag(xafsft_fast(chi*ftwin, nfft=nfft)[:irbkg])
 
-def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
-           edge_step=None, kmin=0, kmax=None, kw=1, dk=0, win=None,
-           vary_e0=True, chi_std=None, nfft=2048, kstep=0.05, nnorm=3,
-           nvict=0, pre1=None, pre2=-50., norm1=100., norm2=None,
+def autobk(energy, mu, group=None, rbkg=1, nknots=None,
+           e0=None, edge_step=None, kmin=0, kmax=None, kw=1,
+           dk=0, win=None, vary_e0=True, chi_std=None,
+           nfft=2048, kstep=0.05,        pre_edge_kws=None,
            debug=False, _larch=None):
 
     """Use Autobk algorithm to remove XAFS background
@@ -51,10 +51,8 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
     if _larch is None:
         raise Warning("cannot calculate autobk spline -- larch broken?")
 
-    # get array indices for rkbg and e0: irbkg, ie0
-    rgrid = np.pi/(kstep*nfft)
-    if rbkg < 2*rgrid: rbkg = 2*rgrid
-    irbkg = int(1.01 + rbkg/rgrid)
+    # if e0 or edge_step are not specified, get them, either from the
+    # passed-in group or from running pre_edge()
     if edge_step is None:
         if _larch.symtable.isgroup(group) and hasattr(group, 'edge_step'):
             edge_step = group.edge_step
@@ -62,10 +60,19 @@ def autobk(energy, mu, rbkg=1, nknots=None, group=None, e0=None,
         if _larch.symtable.isgroup(group) and hasattr(group, 'e0'):
             e0 = group.e0
     if e0 is None or edge_step is None:
-        edge_step, e0 = pre_edge(energy, mu, nnorm=nnorm, nvict=nvict,
-                                 pre1=pre1, pre2=pre2, norm1=norm1,
-                                 norm2=norm2, group=group, _larch=_larch)
+        # need to run pre_edge:
+        pre_kws = dict(nnorm=3, nvict=0, pre1=None,
+                       pre2=-50., norm1=100., norm2=None)
+        if pre_edge_kws is not None:
+            pre_kws.update(pre_edge_kws)
+        edge_step, e0 = pre_edge(energy, mu, group=group,
+                                 _larch=_larch, **pre_kws)
+
+    # get array indices for rkbg and e0: irbkg, ie0
     ie0 = index_nearest(energy, e0)
+    rgrid = np.pi/(kstep*nfft)
+    if rbkg < 2*rgrid: rbkg = 2*rgrid
+    irbkg = int(1.01 + rbkg/rgrid)
 
     # save ungridded k (kraw) and grided k (kout)
     # and ftwin (*k-weighting) for FT in residual
