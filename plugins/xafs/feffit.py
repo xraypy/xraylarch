@@ -157,19 +157,50 @@ class FeffitDataSet(larch.Group):
         self.model.k = None
         self.data_chi = None
         self.residual = self._residual
+        self.eps_r  = 0
+        self.eps_k  = 0
 
-    def _residual(self, paramgroup=None):
-        if paramgroup is not None:
-            self._larch.symtable._sys.paramGroup = paramgroup
-        if not isinstance(self.transform, TransformGroup):
-            print "Transform for DataSet is not set"
-            return
+    def estimate_noise(self, rmin=15.0, rmax=25.0):
+        """estimage noice from high r"""
+        rmin_save = self.transform.rmin
+        rmax_save = self.transform.rmax
+        fitspace_save = self.transform.fitspace
+        self._make_modelk()
+        
+        chi_highr = self.transform.apply(self.model.k, self.data_chi,
+                                         fitspace='r', rmin=rmin, rmax=rmax)
+
+        eps_r = sqrt( (chi_highr*chi_highr).sum() / len(chi_highr))
+
+        w = 2 * self.transform.kw + 1
+        kstep = self.transform.kstep
+        kmax = self.transform.kmax
+        kmin = self.transform.kmim
+        eps_k = eps_r * sqrt( (2*pi* w) / kstep*(kmax**w - kmin**w))
+
+        self.transform.rmin = rmin_save
+        self.transform.rmax = rmax_save
+        self.transform.fitspace = fitspace_save        
+
+    def _make_modelk(self):
+        """create model k with uniform kstep and interpolate data onto this"""
         if self.model.k is None:
             # print '_resid create .k ',
             kstep = self.transform.kstep
             nkmax = (0.1*kstep + max(self.data.k)) / kstep
             self.model.k = self.transform.kstep * arange(nkmax)
             self.data_chi =  interp(self.model.k, self.data.k, self.data.chi)
+        
+        
+        
+    def _residual(self, paramgroup=None):
+        if paramgroup is not None:
+            self._larch.symtable._sys.paramGroup = paramgroup
+        if not isinstance(self.transform, TransformGroup):
+            print "Transform for DataSet is not set"
+            return
+        self._make_modelk()
+
         _ff2chi(self.pathlist, _larch =self._larch,
                 kstep=self.transform.kstep, kmax=max(self.model.k),
                 group=self.model)
