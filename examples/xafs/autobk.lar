@@ -1,0 +1,31 @@
+
+fname = 'cu_rt01.xmu'
+cu = read_ascii(fname)
+
+pre_edge(cu.energy, cu.xmu, group=cu)
+
+autobk(cu.energy, cu.xmu, rbkg=1, group=cu)
+
+xafsft(cu.k, cu.chi, kmin=2, kmax=17, dk=3, window='han', group=cu)
+
+newplot(cu.energy, cu.xmu, label=' $ \mu(E) $ ',
+        xlabel='Energy (eV)',   title='%s $ \mu(E) $ ' % fname )
+
+plot(cu.energy, cu.bkg, label=' $ \mu_0(E) $',
+     color='black' )
+
+newplot(cu.k, cu.chi*cu.k**2, win=2,
+     ylabel =' $ k^2 \chi(k) $ ',
+     xlabel=' $ k (\AA^{-1}) $ ',
+     title=' %s $ \chi(k)$ ' % fname)
+    
+yscale = int(1.10*max(cu.chi*cu.k**2))
+
+plot(cu.k, cu.kwin*yscale*0.97, ymax=yscale, win=2)
+
+newplot(cu.r, cu.chir_mag, win=3,
+        xlabel=' $ R (\AA) $',
+        label=' |chi(R)|' ,
+        title=' %s $ \chi(R)$ ' % fname)
+plot(cu.r, cu.chir.real, win=3,
+     label = ' $  Re[\chi(R)] $')

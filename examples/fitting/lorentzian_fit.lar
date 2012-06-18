@@ -1,0 +1,42 @@
+
+doc =  """
+   Example fit to Gaussian line shape.
+"""
+    
+
+def resid(pars, data, verbose=False):
+    # model = pars.offset + pars.amp*lorentzian(data.x, pars.cen.value, pars.wid.value)
+    model = pars.offset + pars.amp*lorentzian(data.x,
+                                              cen=pars.cen,
+                                              sigma=pars.wid)
+    if verbose:
+        newplot(data.x, data.y)
+        plot(data.x, model, force_draw=True)
+    endif
+    return  model - data.y
+enddef
+
+mdat = group()
+mdat.x = arange(201)/20.0
+
+mdat.y = -2.0 + 5.0*lorentzian(mdat.x, cen=3.0, sigma=0.5)
+mdat.y = mdat.y + random.normal(size=len(mdat.x), scale=0.1)
+
+params = group()
+params.offset= guess(-1)
+params.amp   = guess(8.0)
+params.cen   = guess(3.50)
+params.wid   = guess(0.40)
+
+# model = mdat.y + resid(params, mdat)
+
+x = minimize(resid, params, args=(mdat,), kws={'verbose':False})
+
+# status = resid(params, mdat) # , verbose=True)
+print 'Fit finishd: %i function calls' % params.nfcn_calls
+show(params)
+
+newplot(mdat.x, mdat.y)
+   plot(mdat.x, mdat.y + params.residual)
+
+print fit_report(params)
