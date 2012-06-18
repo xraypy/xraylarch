@@ -1,0 +1,45 @@
+
+print """
+This is a series of simple plotting examples.
+
+"""
+
+x = linspace(0, 10, 101)
+y = sin(x*2.5)
+
+counter = 0
+
+def do(label, code):
+    counter += 1
+    print "= #%i %s" % (counter, label)
+    print code
+    eval(code)
+   
+    pause("=  hit return for next example")
+enddef
+
+
+do('a very simple line plot',
+   "newplot(x, y, color='blue',  title='simple plot',  ylabel='sin(x)')")
+
+y2 = 5*cos(x*1.5)/(x+10)
+
+
+script = """newplot(x, y2, color='red',  style='dashed', ylabel='sin(x)')
+plot(x, y, color='black', linewidth=0, marker='o', markersize=6)
+"""
+do('''two traces, one linetypes, markertypes''', script)
+
+
+y3 = x**2
+
+script= """
+newplot(x, y, color='red',  style='solid', ylabel='sin(x)')
+plot(x, y3, side='right', color='black', linewidth=2, marker=None,
+y2label=' $ x^2 $')
+"""
+
+do('two traces using right and left axes', script)
+
+##
+

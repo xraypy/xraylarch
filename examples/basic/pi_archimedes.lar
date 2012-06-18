@@ -1,0 +1,20 @@
+
+print " == Using Archimedes Method to calculate PI"
+
+# max error allowed
+eps = 1e-14
+
+# initialize w/ square
+x = 4
+y = 2*sqrt(2)
+n=0
+while x-y > eps:
+    xnew = 2*x*y/(x+y)
+    y    = sqrt(xnew*y)
+    x    = xnew
+    n +=1
+#endwhile
+result = (x+y)/2
+pi1 = 4*arctan(1)
+print "PI = %.16f, error=%.3g in %i steps" % (result, result-pi1, n)
+

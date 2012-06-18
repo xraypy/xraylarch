@@ -1,0 +1,55 @@
+print """
+This example shows that a larch function has a
+'local scope' that store symbol names inside the function.
+
+here we define variable x and y in the main script: this is
+called the 'module level' -- all the names in a file of code
+live in the same module.
+
+The function f1 also defines a variable x, as well as
+arguments a, b, and c.  These, and any other variables
+definied within the function, live in Group that is unique to
+that function call: the 'local group'.
+
+From within any function, symbol names are first looked for in
+the local group (unique to that instance of the function
+call), then in the module group, and then in the list of
+Groups defined by _sys.searchGroups(), which will always
+contain ('_main', '_sys', '_builtin', '_math'), and will
+usually include other groups from plugins.  You can always
+retrieve a value using its fully qualified name.
+
+Thus, within f1, accessing 'x' will return the local value,
+'y' will return the module value, 'sqrt' will be found from
+the '_math' Group.
+
+To get the module value of 'x', you can use '_main.x'
+(assuming this script is run as run('local_namespace.lar')).
+
+Also note that while inside f1, the module value of 'y' is
+retrieved but that the output of f1() is then assigned to the
+symbol, so that the module-level value of 'y is different
+after running f1().
+"""
+
+x = 1000.0
+y = sqrt(x)
+
+def f1(a, b, c=1):
+    print  ' inside f1 a,b,c = ', a, b,c 
+    if c < 0:  c = -c
+    x = sqrt(a*b*c)
+    print ' inside f1 x = ', x
+    print ' inside f1 y = ', y
+    print ' inside f1 _main.x = ', _main.x
+    return x
+enddef
+
+print ' before f1 x, y = ', x, y
+print '  == call f1 =='
+
+y = f1(7, 99, c=0.2)
+
+print ' after f1  x , y = ', x, y
+
+
