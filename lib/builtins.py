@@ -169,6 +169,92 @@ def _group(_larch=None, **kws):
         setattr(group, key, val)
     return group
 
+def _eval(text=None, filename=None, _larch=None,
+          new_module=None, interactive=False,
+          printall=False): 
+    """evaluate a string of larch text
+    """
+    if _larch is None:
+        raise Warning("cannot eval string. larch broken?")
+
+
+    if text is None:
+        return None
+
+    symtable = _larch.symtable
+    lineno = 0
+    output = None
+    fname = filename
+    
+    inptext = inputText.InputText(interactive=interactive, _larch=_larch)
+    is_complete = inptext.put(text, filename=filename)
+    # print 'eval complete? ', is_complete, inptext.keys
+    if not is_complete:
+        inptext.input_buff.reverse()
+        lline, lineno = 'unknown line', 0
+        for tline, complete, eos, fname, lineno in inptext.input_buff:
+            if complete: break
+            lline = tline
+        _larch.raise_exception(None, expr=lline, fname=fname, lineno=lineno+1,
+                               exc=SyntaxError, msg= 'input is incomplete')
+
+    if len(inptext.keys) > 0 and filename is not None:
+        msg = "file ends with un-terminated '%s' block"
+        _larch.raise_exception(None, expr="run('%s')" % filename,
+                               fname=filename, lineno=inptext.lineno,
+                               exc=IOError, msg=msg % inptext.keys[0])
+
+    if new_module is not None:
+        # save current module group
+        #  create new group, set as moduleGroup and localGroup
+        symtable.save_frame()
+        thismod = symtable.create_group(name=new_module)
+        symtable._sys.modules[new_module] = thismod
+        symtable.set_frame((thismod, thismod))
+
+    output = []
+    # print 'eval %i lines of text ' % len(inptext)
+    if len(_larch.error) > 0:
+        inptext.clear()
+        return output
+
+    while len(inptext) > 0:
+        block, fname, lineno = inptext.get()
+        b = block.strip()
+        if len(b) <= 0:
+            continue
+        # print 'eval %i  : %i, %s ' % (lineno, len(block), block)
+
+
+        ret = _larch.eval(block, fname=fname, lineno=lineno)
+        if hasattr(ret, '__call__') and not isinstance(ret, type):
+            try:
+                if 1 == len(block.split()):
+                    ret = ret()
+            except:
+                pass
+        if len(_larch.error) > 0:
+            break
+        # 
+    if len(_larch.error) > 0:
+        inptext.clear()
+    elif printall and ret is not None:
+        output.append("%s" % ret)
+
+    # for a "newly created module" (as on import),
+    # the module group is the return value
+    # print 'eval End ', new_module, output
+    if new_module is not None:
+        symtable.restore_frame()
+        output = thismod
+    elif len(output) > 0:
+        output = "\n".join(output)
+    else:
+        output = None
+    # print 'FINAL OUT : ', output
+    return output
+    
+
 def _run(filename=None, _larch=None, new_module=None,
          interactive=False,   printall=False):
     """execute the larch text in a file as larch code. options:
@@ -179,7 +265,6 @@ def _run(filename=None, _larch=None, new_module=None,
     if _larch is None:
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
 
-    symtable = _larch.symtable
     text = None
     if isinstance(filename, file):
         text = filename.read()
@@ -195,67 +280,9 @@ def _run(filename=None, _larch=None, new_module=None,
             _larch.writer.write("file not found '%s'\n" % filename)
             return
 
-    output = None
-    fname = filename
-    lineno = 0
-    if text is not None:
-        inptext = inputText.InputText(interactive=False, _larch=_larch)
-        is_complete = inptext.put(text, filename=filename)
-        if not is_complete:
-            inptext.input_buff.reverse()
-            lline, lineno = 'unknown line', 0
-            for tline, complete, eos, fname, lineno in inptext.input_buff:
-                if complete: break
-                lline = tline
-            _larch.raise_exception(None, expr=lline, fname=fname, lineno=lineno+1,
-                                   exc=SyntaxError, msg= 'input is incomplete')
-        if len(inptext.keys) > 0 and filename is not None:
-            msg = "file ends with un-terminated '%s' block"
-            _larch.raise_exception(None, expr="run('%s')" % filename,
-                                   fname=filename, lineno=inptext.lineno,
-                                   exc=IOError, msg=msg % inptext.keys[0])
-
-        if new_module is not None:
-            # save current module group
-            #  create new group, set as moduleGroup and localGroup
-            symtable.save_frame()
-            thismod = symtable.create_group(name=new_module)
-            symtable._sys.modules[new_module] = thismod
-            symtable.set_frame((thismod, thismod))
-
-        output = []
-        if len(_larch.error) > 0:
-            inptext.clear()
-            return output
-
-        while len(inptext) > 0:
-            block, fname, lineno = inptext.get()
-            ret = _larch.eval(block, fname=fname, lineno=lineno)
-            if hasattr(ret, '__call__') and not isinstance(ret, type):
-                try:
-                    if 1 == len(block.split()):
-                        ret = ret()
-                except:
-                    pass
-            if len(_larch.error) > 0:
-                break
-        if len(_larch.error) > 0:
-            inptext.clear()
-
-        elif printall and ret is not None:
-            output.append("%s" % ret)
-
-        # for a "newly created module" (as on import),
-        # the module group is the return value
-        if new_module is not None:
-            symtable.restore_frame()
-            output = thismod
-        elif len(output) > 0:
-            output = "\n".join(output)
-        else:
-            output = None
-    return output
-
+    return  _eval(text=text, filename=filename, _larch=_larch,
+                  new_module=new_module, interactive=interactive,
+                  printall=printall)
 
 def _reload(mod, _larch=None, **kws):
     """reload a module, either larch or python"""
@@ -407,7 +434,6 @@ def _which(sym, _larch=None, **kws):
 
     return 'not found'
 
-
 def _pause(msg='Hit return to continue', _larch=None):
     if _larch is None:
         raise Warning("cannot pause() -- larch broken?")
@@ -428,6 +454,11 @@ def _parameter(*args, **kws):
     if 'name' not in kws:
         return out
 
+def my_eval(text, _larch=None):
+    return  _eval(text=text, _larch=_larch,
+                  new_module=None,  interactive=False,
+                  printall=True)
+
 
 local_funcs = {'group':_group,
                'dir': _dir,
@@ -437,6 +468,7 @@ local_funcs = {'group':_group,
                'sleep': _sleep,
                'reload':_reload,
                'run': _run,
+               'eval': my_eval,
                'help': _help,
                'add_plugin':_addplugin,
                'param': _parameter,
