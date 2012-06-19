@@ -101,8 +101,8 @@ def xafsift(r, chir, group=None, rmin=0, rmax=20,
 
     cchir[0:len(chir)] = chir
     if chir.dtype == np.dtype('complex128'):
-        scale = 1./2
-
+        scale = 0.5
+        
     win = ftwindow(r_, xmin=rmin, xmax=rmax, dx=dr, dx2=dr2, window=window)
     out = scale * xafsift_fast( cchir*win * r_**rw, kstep=kstep, nfft=nfft)
     if qmax_out is None: qmax_out = 30.0
@@ -118,7 +118,7 @@ def xafsift(r, chir, group=None, rmin=0, rmax=20,
     else:
         return out[:nkpts]
 
-def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=None, dk=1, dk2=None,
+def xafsft(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
            window='kaiser', rmax_out=10, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     calculate forward XAFS Fourier transform
@@ -126,13 +126,13 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=None, dk=1, dk2=None,
     if _larch is None:
         raise Warning("cannot do xafsft -- larch broken?")
     # allow kweight keyword == kw
-    if 'kweight' in kws:
-        kw = kws['kweight']
+    if 'kw' in kws:
+        kweight = kws['kw']
 
-    cchi, win  = xafsft_prep(k, chi, kmin=kmin, kmax=kmax, kw=kw, dk=dk,
-                             dk2=dk2, window=window, nfft=nfft, kstep=kstep,
-                             _larch=_larch)
-
+    cchi, win  = xafsft_prep(k, chi, kmin=kmin, kmax=kmax, kweight=kweight,
+                             dk=dk, dk2=dk2, nfft=nfft, kstep=kstep,
+                             window=window, _larch=_larch)
+    
     out = xafsft_fast(cchi*win, kstep=kstep, nfft=nfft)
     rstep = pi/(kstep*nfft)
 
@@ -151,7 +151,7 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=None, dk=1, dk2=None,
     else:
         return out[:irmax]
 
-def xafsft_prep(k, chi, kmin=0, kmax=20, kw=2, dk=1, dk2=None,
+def xafsft_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
                 window='kaiser', nfft=2048, kstep=0.05, _larch=None):
     """
     calculate weighted chi(k) on uniform grid of len=nfft, and the
@@ -160,11 +160,11 @@ def xafsft_prep(k, chi, kmin=0, kmax=20, kw=2, dk=1, dk2=None,
     Returns weighted chi, window function which can easily be multiplied
     and used in xafsft_fast.
     """
-    ikmax = max(k)/kstep
+    ikmax = int(1.01 + max(k)/kstep)
     k_   = kstep * arange(ikmax, dtype='float64')
     ochi = interp(k_, k, chi)
     win = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
-    return (ochi*k_**kw, win)
+    return (ochi*k_**kweight, win)
 
 def xafsft_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -178,7 +178,7 @@ def xafsft_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chi)] = chi
-    return  kstep * sqrt(0.5) * fft(cchi)[:nfft/2]
+    return (kstep / sqrt(pi)) * fft(cchi)[:nfft/2]
 
 def xafsift_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -191,8 +191,8 @@ def xafsift_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     This is useful for repeated FTs, as inside loops.
     """
     cchi = zeros(nfft, dtype='complex128')
-    cchi[0:len(chi)] = chi
-    return  (pi* sqrt(0.5)/kstep) * ifft(cchi)[:nfft/2]
+    cchi[0:len(chir)] = chir
+    return  (4*sqrt(pi)/kstep) * ifft(cchi)[:nfft/2]
 
 
 def registerLarchPlugin():

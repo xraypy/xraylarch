@@ -39,10 +39,10 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     return realimag(xafsft_fast(chi*ftwin, nfft=nfft)[:irbkg])
 
 def autobk(energy, mu, group=None, rbkg=1, nknots=None,
-           e0=None, edge_step=None, kmin=0, kmax=None, kw=1,
+           e0=None, edge_step=None, kmin=0, kmax=None, kweight=1,
            dk=0, win=None, vary_e0=True, chi_std=None,
-           nfft=2048, kstep=0.05,        pre_edge_kws=None,
-           debug=False, _larch=None):
+           nfft=2048, kstep=0.05, pre_edge_kws=None,
+           debug=False, _larch=None, **kws):
 
     """Use Autobk algorithm to remove XAFS background
     Options are:
@@ -50,6 +50,9 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
     """
     if _larch is None:
         raise Warning("cannot calculate autobk spline -- larch broken?")
+
+    if 'kw' in kws:
+        kweight = kws['kw']
 
     # if e0 or edge_step are not specified, get them, either from the
     # passed-in group or from running pre_edge()
@@ -80,8 +83,9 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
     if kmax is None:
         kmax = max(kraw)
     kout  = kstep * np.arange(int(1.01+kmax/kstep))
-    ftwin = kout**kw * ftwindow(kout, xmin=kmin, xmax=kmax,
-                                window=win, dx=dk)
+    
+    ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
+                                     window=win, dx=dk)
 
     # calc k-value and initial guess for y-values of spline params
     nspline = max(4, min(60, 2*int(rbkg*(kmax-kmin)/np.pi) + 1))
