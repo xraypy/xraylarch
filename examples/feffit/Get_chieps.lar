@@ -1,7 +1,7 @@
 
-# add_plugin('feffit2')
-# add_plugin('fdat')
-cu = read_ascii('../tests/data/cu_metal_rt.xdi')
+
+
+cu = read_ascii('cu_metal_rt.xdi')
 autobk(cu.energy, cu.mutrans, group=cu, rbkg=1.0, kw=1)
 
 fitparams = group(amp  = guess(1),
@@ -23,11 +23,16 @@ path1.deltar = param(expr='delr')
 # print 'Sum of paths = ', out[:19]
 
 
-trans   = feffit_transform(kmin=2, kmax=17, kw=2, dk=3, win='hanning', rmin=1.4, rmax=3.0)
+trans   = feffit_transform(kmin=2, kmax=17, kw=2, dk=3, dk2=3, window='hanning', rmin=1.4, rmax=3.0)
 dataset = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
 
-xafsft(cu.k, cu.chi, kmin=2, kmax=17, kw=2, dk=3, win='hanning', group=cu, rmax_out=30.0)
-print dataset.estimate_noise()
+xafsft(cu.k, cu.chi, kmin=2, kmax=17, kw=2, dk=3, dk2=3, window='hanning', group=cu, rmax_out=30.0)
+eps_k, eps_r =  dataset.estimate_noise()
+
+iff_ek, iff_er =  0.210323383E-03,   0.999730083E-02
+
+print 'K = ', eps_k, iff_ek/eps_k
+print 'R = ', eps_r, iff_er/eps_r
 
 newplot(cu.r, cu.chir_mag)
 
