@@ -94,18 +94,17 @@ def xafsift(r, chir, group=None, rmin=0, rmax=20,
 
     rstep = r[1] - r[0]
     kstep = pi/(rstep*nfft)
-    scale = sqrt(pi)/kstep 
-
+    scale = 1.0
 
     cchir = zeros(nfft, dtype='complex128')
     r_    = rstep * arange(nfft, dtype='float64')
 
     cchir[0:len(chir)] = chir
     if chir.dtype == np.dtype('complex128'):
-        scale = scale/2
+        scale = 1./2
 
     win = ftwindow(r_, xmin=rmin, xmax=rmax, dx=dr, dx2=dr2, window=window)
-    out = scale * ifft(cchir*win * r_**rw)[:nfft/2]
+    out = scale * xafsift_fast( cchir*win * r_**rw, kstep=kstep, nfft=nfft)
     if qmax_out is None: qmax_out = 30.0
     q = linspace(0, qmax_out, int(1.05 + qmax_out/kstep))
     nkpts = len(q)
@@ -134,7 +133,7 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kw=None, dk=1, dk2=None,
                              dk2=dk2, window=window, nfft=nfft, kstep=kstep,
                              _larch=_larch)
 
-    out = kstep*sqrt(pi) * fft(cchi*win)[:nfft/2]
+    out = xafsft_fast(cchi*win, kstep=kstep, nfft=nfft)
     rstep = pi/(kstep*nfft)
 
     irmax = min(nfft/2, 1 + int(rmax_out/rstep))
@@ -162,12 +161,10 @@ def xafsft_prep(k, chi, kmin=0, kmax=20, kw=2, dk=1, dk2=None,
     and used in xafsft_fast.
     """
     ikmax = max(k)/kstep
-    k_   = kstep * arange(nfft, dtype='float64')
-    cchi = zeros(nfft, dtype='complex128')
-    cchi[0:ikmax] = interp(k_[:ikmax], k, chi)
-
+    k_   = kstep * arange(ikmax, dtype='float64')
+    ochi = interp(k_, k, chi)
     win = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
-    return (cchi*k_**kw, win)
+    return (ochi*k_**kw, win)
 
 def xafsft_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -181,7 +178,22 @@ def xafsft_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chi)] = chi
-    return  kstep * sqrt(pi) * fft(chi)[:nfft/2]
+    return  kstep * sqrt(0.5) * fft(cchi)[:nfft/2]
+
+def xafsift_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
+    """
+    calculate inverse XAFS Fourier transform.  Unlike xafsft(),
+    this assumes that:
+      1. data is already on a uniform grid
+      2. any windowing and/or kweighting has been applied.
+    and simply returns the complex chi(R), not setting any larch data.
+
+    This is useful for repeated FTs, as inside loops.
+    """
+    cchi = zeros(nfft, dtype='complex128')
+    cchi[0:len(chi)] = chi
+    return  (pi* sqrt(0.5)/kstep) * ifft(cchi)[:nfft/2]
+
 
 def registerLarchPlugin():
     return (MODNAME, {'xafsft': xafsft,

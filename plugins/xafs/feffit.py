@@ -6,7 +6,6 @@
 import sys, os
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
-from numpy.fft import fft, ifft
 
 from scipy.optimize import leastsq as scipy_leastsq
 
@@ -21,7 +20,8 @@ sys.path.insert(0, plugin_path('xafs'))
 from mathutils import index_of, realimag
 
 from minimizer import Minimizer
-from xafsft import xafsft, xafsft_prep, xafsft_fast, xafsift, ftwindow
+from xafsft import xafsft, xafsift, xafsft_fast, xafsift_fast, ftwindow
+
 from feffdat import FeffPathGroup, _ff2chi
 
 class TransformGroup(larch.Group):
@@ -93,18 +93,16 @@ class TransformGroup(larch.Group):
         else:
             return out[:irmax]
 
-
     def __fftf__(self, chi):
-        " forward FT -- meant to be used internally"
+        """ forward FT -- meant to be used internally.
+        chi must be on self.k_ grid"""
         self.__check_kstep()
         if self.kwin_array is None:
             self.kwin_array = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
                                        dx=self.dk, dx2=self.dk2,
                                        window=self.window)
-        cchi = zeros(self.nfft, dtype='complex128')
-        cchi[0:len(chi)] = chi
-        out = fft(cchi * self.kwin_array * self.k_**self.kw)
-        return self.kstep*sqrt(pi) * out[:self.nfft/2]
+        cx = chi * self.kwin_array[:len(chi)] * self.k_[:len(chi)]**self.kw
+        return xafsft_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
     def __ffti__(self, chir):
         " reverse FT -- meant to be used internally"
@@ -114,18 +112,17 @@ class TransformGroup(larch.Group):
                                        dx=self.dr, dx2=self.dr2,
                                        window=self.rwindow)
 
-        cchir = zeros(self.nfft, dtype='complex128')
-        cchir[0:len(chir)] = chir
-        out = ifft(cchir * self.rwin_array * self.r_**self.rw)
-        return sqrt(pi)/(2*self.kstep) * out[:self.nfft/2]
+        cx = chir * self.rwin_array[:len(chir)] * self.r_[:len(chir)]**self.rw,
+        return xafsift_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
     def apply(self, k, chi, **kws):
         """apply transform"""
-        # print 'this  is transform apply ', k[5:10], chi[5:10], kws
-        for key, val in kws:
+        print 'this  is transform apply ', len(k), len(chi), k[5:10], chi[5:10], kws
+        for key, val in kws.items():
             if key == 'kweight': key = 'kw'
             setattr(self, key, val)
-        # print 'fit space = ', self.fitspace
+
+        print 'fit space = ', self.fitspace
         if self.fitspace == 'k':
             return chi * k**self.kw
         elif self.fitspace in ('r', 'q'):
@@ -134,6 +131,7 @@ class TransformGroup(larch.Group):
             if self.fitspace == 'r':
                 irmin = index_of(self.r_, self.rmin)
                 irmax = min(self.nfft/2,  1 + index_of(self.r_, self.rmax))
+                print ' I ', irmin, irmax, len(chir)
                 return realimag(chir[irmin:irmax])
             else:
                 chiq = self.__ffti__(self.r_, chir)
@@ -162,25 +160,31 @@ class FeffitDataSet(larch.Group):
 
     def estimate_noise(self, rmin=15.0, rmax=25.0):
         """estimage noice from high r"""
-        rmin_save = self.transform.rmin
-        rmax_save = self.transform.rmax
-        fitspace_save = self.transform.fitspace
+        print 'Estimate Noise!! ', rmin, self.transform.rmin
+        trans = self.transform
+        rmin_save = trans.rmin
+        rmax_save = trans.rmax
+        fitspace_save = trans.fitspace
         self._make_modelk()
-        
-        chi_highr = self.transform.apply(self.model.k, self.data_chi,
-                                         fitspace='r', rmin=rmin, rmax=rmax)
+        print 'Have mode.k ' , len(self.model.k), len(self.data_chi)
+        chi_highr = trans.apply(self.model.k, self.data_chi,
+                                fitspace='r', rmin=rmin, rmax=rmax)
+        print type(chi_highr), len(chi_highr)
 
-        eps_r = sqrt( (chi_highr*chi_highr).sum() / len(chi_highr))
+        eps_r = sqrt( (chi_highr*chi_highr).sum() / len(chi_highr)) # /2
 
-        w = 2 * self.transform.kw + 1
-        kstep = self.transform.kstep
-        kmax = self.transform.kmax
-        kmin = self.transform.kmim
-        eps_k = eps_r * sqrt( (2*pi* w) / kstep*(kmax**w - kmin**w))
+        w = 2 * trans.kw + 1
+        kstep = trans.kstep
+        kmax = trans.kmax
+        kmin = trans.kmin
+        print trans.kw, w, kstep, kmin, kmax
+        print sqrt( (2*pi* w) / kstep*(kmax**w - kmin**w))
+        eps_k = eps_r * sqrt( (2*pi* w) / (kstep*(kmax**w - kmin**w)))
 
-        self.transform.rmin = rmin_save
-        self.transform.rmax = rmax_save
-        self.transform.fitspace = fitspace_save        
+        trans.rmin = rmin_save
+        trans.rmax = rmax_save
+        trans.fitspace = fitspace_save
+        return eps_k, eps_r
 
     def _make_modelk(self):
         """create model k with uniform kstep and interpolate data onto this"""
@@ -190,9 +194,7 @@ class FeffitDataSet(larch.Group):
             nkmax = (0.1*kstep + max(self.data.k)) / kstep
             self.model.k = self.transform.kstep * arange(nkmax)
             self.data_chi =  interp(self.model.k, self.data.k, self.data.chi)
-        
-        
-        
+
     def _residual(self, paramgroup=None):
         if paramgroup is not None:
             self._larch.symtable._sys.paramGroup = paramgroup
