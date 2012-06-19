@@ -35,15 +35,16 @@ class TransformGroup(larch.Group):
     If you do change parameters, reset kwin_array / rwin_array to None.
 
     """
-    def __init__(self, kmin=0, kmax=20, kw=2, dk=1, dk2=None, window='kaiser',
-                 rmin = 0, rmax=10, dr=0, rwindow='kaiser', kweight=None,
-                 nfft=2048, kstep=0.05, fitspace='r', _larch=None, **kws):
+    def __init__(self, kmin=0, kmax=20, kweight=1, dk=1, dk2=None,
+                 window='kaiser', nfft=2048, kstep=0.05, 
+                 rmin = 0, rmax=10, dr=0, rwindow='kaiser', 
+                 fitspace='r', _larch=None, **kws):
         larch.Group.__init__(self)
         self.kmin = kmin
         self.kmax = kmax
-        self.kw = kw
-        if kweight is not None:
-            self.kw = kweight
+        self.kweight = kweight
+        if 'kw' in kws:
+            self.kweight = kws['kw']
         self.dk = dk
         self.dk2 = dk2
         self.window = window
@@ -75,7 +76,7 @@ class TransformGroup(larch.Group):
     def xafsft(self, chi, group=None, rmax_out=10, **kws):
         "returns "
         for key, val in kws:
-            if key == 'kweight': key = 'kw'
+            if key == 'kw': key = 'kweight'
             setattr(self, key, val)
         self.__check_kstep()
 
@@ -101,7 +102,7 @@ class TransformGroup(larch.Group):
             self.kwin_array = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
                                        dx=self.dk, dx2=self.dk2,
                                        window=self.window)
-        cx = chi * self.kwin_array[:len(chi)] * self.k_[:len(chi)]**self.kw
+        cx = chi * self.kwin_array[:len(chi)] * self.k_[:len(chi)]**self.kweight
         return xafsft_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
     def __ffti__(self, chir):
@@ -117,21 +118,21 @@ class TransformGroup(larch.Group):
 
     def apply(self, k, chi, **kws):
         """apply transform"""
-        print 'this  is transform apply ', len(k), len(chi), k[5:10], chi[5:10], kws
+        # print 'this  is transform apply ', len(k), len(chi), k[5:10], chi[5:10], kws
         for key, val in kws.items():
-            if key == 'kweight': key = 'kw'
+            if key == 'kw': key = 'kweight'
             setattr(self, key, val)
 
-        print 'fit space = ', self.fitspace
+        # print 'fit space = ', self.fitspace
         if self.fitspace == 'k':
-            return chi * k**self.kw
+            return chi * k**self.kweight
         elif self.fitspace in ('r', 'q'):
             self.__check_kstep()
             chir = self.__fftf__(chi)
             if self.fitspace == 'r':
                 irmin = index_of(self.r_, self.rmin)
                 irmax = min(self.nfft/2,  1 + index_of(self.r_, self.rmax))
-                print ' I ', irmin, irmax, len(chir)
+                # print ' I ', irmin, irmax, len(chir)
                 return realimag(chir[irmin:irmax])
             else:
                 chiq = self.__ffti__(self.r_, chir)
@@ -160,26 +161,26 @@ class FeffitDataSet(larch.Group):
 
     def estimate_noise(self, rmin=15.0, rmax=25.0):
         """estimage noice from high r"""
-        print 'Estimate Noise!! ', rmin, self.transform.rmin
+        # print 'Estimate Noise!! ', rmin, self.transform.rmin
         trans = self.transform
         rmin_save = trans.rmin
         rmax_save = trans.rmax
         fitspace_save = trans.fitspace
         self._make_modelk()
-        print 'Have mode.k ' , len(self.model.k), len(self.data_chi)
+        # print 'Have mode.k ' , len(self.model.k), len(self.data_chi)
         chi_highr = trans.apply(self.model.k, self.data_chi,
                                 fitspace='r', rmin=rmin, rmax=rmax)
-        print type(chi_highr), len(chi_highr)
+        # print type(chi_highr), len(chi_highr)
 
-        eps_r = sqrt( (chi_highr*chi_highr).sum() / len(chi_highr)) # /2
+        eps_r = sqrt( 2*(chi_highr*chi_highr).sum() / len(chi_highr)) # /2
 
-        w = 2 * trans.kw + 1
+        w = 2 * trans.kweight + 1
         kstep = trans.kstep
         kmax = trans.kmax
         kmin = trans.kmin
-        print trans.kw, w, kstep, kmin, kmax
-        print sqrt( (2*pi* w) / kstep*(kmax**w - kmin**w))
-        eps_k = eps_r * sqrt( (2*pi* w) / (kstep*(kmax**w - kmin**w)))
+        # print trans.kweight, w, kstep, kmin, kmax
+        # print sqrt( (2*pi* w) / kstep*(kmax**w - kmin**w))
+        eps_k = eps_r * sqrt( (2*pi*w)/(kstep*(kmax**w - kmin**w)))
 
         trans.rmin = rmin_save
         trans.rmax = rmax_save
