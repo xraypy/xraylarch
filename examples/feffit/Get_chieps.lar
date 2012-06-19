@@ -1,0 +1,48 @@
+
+# add_plugin('feffit2')
+# add_plugin('fdat')
+cu = read_ascii('../tests/data/cu_metal_rt.xdi')
+autobk(cu.energy, cu.mutrans, group=cu, rbkg=1.0, kw=1)
+
+fitparams = group(amp  = guess(1),
+                  de0  = guess(0.1),
+                  ss2  = guess(0.002),
+                  delr = guess(0.)
+                  )
+
+path1 = read_feffdat('feffcu01.dat')
+path1.s02    = param(expr='amp')
+path1.e0     = param(expr='de0')
+path1.sigma2 = param(expr='ss2')
+path1.deltar = param(expr='delr')
+
+# _sys.paramGroup = fitparams
+# x = path1._pathparams()
+
+#out = ff2chi([path1], paramgroup=fitparams)
+# print 'Sum of paths = ', out[:19]
+
+
+trans   = feffit_transform(kmin=2, kmax=17, kw=2, dk=3, win='hanning', rmin=1.4, rmax=3.0)
+dataset = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
+
+xafsft(cu.k, cu.chi, kmin=2, kmax=17, kw=2, dk=3, win='hanning', group=cu, rmax_out=30.0)
+print dataset.estimate_noise()
+
+newplot(cu.r, cu.chir_mag)
+
+# out = feffit(fitparams, dataset)
+# print 'feffit complete'
+# print fit_report(fitparams)
+
+#################################
+
+# feffit(1-3, chi = data.chi, k=data.k,group = fit)
+#
+# show @variables, chi_square, r_factor, n_idp, &fit_iteration
+#
+# newplot data.r, data.chir_mag, xmax=7
+# plot    fit.r,  fit.chir_mag
+# showpath 1  "color=blue"
+# showpath 2  "color=red"
+# showpath 3  "color=black"

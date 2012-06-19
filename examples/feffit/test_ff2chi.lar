@@ -1,0 +1,16 @@
+
+fitparams = group(amp  = guess(1),
+                  de0  = guess(0.1),
+                  ss2  = guess(0.002),
+                  delr = guess(0.)
+                  )
+
+path1 = read_feffdat('feffcu01.dat')
+path1.s02    = param(expr='amp')
+path1.e0     = param(expr='de0')
+path1.sigma2 = param(expr='ss2')
+path1.deltar = param(expr='delr')
+
+out = ff2chi([path1], paramgroup=fitparams)
+# print 'Sum of paths = ', out[:19]
+

@@ -1,0 +1,20 @@
+
+p1 = read_feffdat('feff0001.dat')
+p1.sigma2 = 0.003
+p1.deltar = 0.03
+
+p2 = read_feffdat('feff0002.dat')
+p2.sigma2 = 0.005
+
+p3 = read_feffdat('feff0003.dat')
+p3.sigma2 = 0.007
+
+sum = ff2chi((p1, p2, p3))
+newplot( p1.k, p1.chi)
+
+plot( p1.k, sum*p1.k**2)
+
+# oplot( p._dat.k, p._dat.pha, marker='+', linewidth=0)
+# plot( p.k, p.c_rep)
+# plot( p.k, p.p)
+# plot( p.k, p.c_lam)
