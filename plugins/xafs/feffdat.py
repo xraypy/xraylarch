@@ -165,15 +165,20 @@ class FeffPathGroup(larch.Group):
             out.append(param_value(val))
         return out
 
-    def _calc_chi(self, kmax=None, kstep=None, degen=None, s02=None,
+    def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):
         """calculate chi(k) with the provided parameters"""
         if self.reff < 0.05:
             self._larch.writer.write('reff is too small to calculate chi(k)')
             return
-        if kmax is None: kmax = 25.0
-        if kstep is None: kmax = 0.05
+        # make sure we have a k array
+        if k is None:
+            if kmax is None:
+                kmax = 30.0
+            kmax = min(max(self._dat.k), kmax)
+            if kstep is None: kstep = 0.05
+            k = kstep * arange(int(1.01 + kmax/kstep), dtype='float64')
 
         reff = self.reff
         # put 'reff' into the paramGroup so that it can be used in
@@ -187,9 +192,6 @@ class FeffPathGroup(larch.Group):
                                  third=third, fourth=fourth)
 
         # create e0-shifted energy and k, careful to look for |e0| ~= 0.
-        kmax = min(max(self._dat.k), kmax)
-        npts = 1 + int((kmax + 0.1*kstep)/kstep)
-        k = np.linspace(0, kmax, npts)
         en = k*k - e0*ETOK
         if min(abs(en)) < SMALL:
             try:
@@ -234,8 +236,8 @@ def _read_feffdat(fname, _larch=None, **kws):
     """read Feff.dat file into a FeffPathGroup"""
     return FeffPathGroup(fname, _larch=_larch)
 
-def _ff2chi(pathlist, _larch=None, group=None, kmax=None, kstep=0.05,
-            paramgroup=None, **kws):
+def _ff2chi(pathlist, paramgroup=None, _larch=None, group=None,
+            k=None, kmax=None, kstep=0.05, **kws):
     """sum the XAFS for a set of paths... assumes that the
     Path Parameters are set"""
     msg = _larch.writer.write
@@ -245,7 +247,7 @@ def _ff2chi(pathlist, _larch=None, group=None, kmax=None, kstep=0.05,
         if not hasattr(p, 'calc_chi'):
             msg('%s is not a valid Feff Path' % p)
             return
-        p.calc_chi(kstep=kstep, kmax=kmax)
+        p.calc_chi(k=k, kstep=kstep, kmax=kmax)
     k = pathlist[0].k[:]
     out = np.zeros_like(k)
     for p in pathlist:
