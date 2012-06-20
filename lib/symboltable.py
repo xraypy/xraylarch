@@ -45,6 +45,7 @@ class Group(object):
         "return list of member names"
         return [key for key in list(self.__dict__.keys())
                 if (not key.startswith('_SymbolTable_') and
+                    not key.startswith('_%s__' % self.__class__.__name__) and
                     key not in self.__private)]
 
     def _subgroups(self):
@@ -182,6 +183,7 @@ class SymbolTable(Group):
             sys.moduleGroup = self.top_group
         if sys.localGroup is None:
             sys.localGroup = self.moduleGroup
+        if not isgroup(sys.paramGroup): sys.paramGroup = None
         cache[0] = sys.paramGroup
         cache[1] = sys.localGroup
         cache[2] = sys.moduleGroup
