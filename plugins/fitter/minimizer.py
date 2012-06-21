@@ -122,7 +122,11 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             return
 
         # set larch's paramGroup to this group of parameters
-        self._larch.symtable._sys.paramGroup = self.paramgroup
+        if self._larch.symtable.isgroup(self.paramgroup):
+            self._larch.symtable._sys.paramGroup = self.paramgroup
+        else:
+            self._larch.write.write('Minimize Error: invalid parameter group!')
+            return
 
         self.nfev_calls = 0
         self.var_names = []
