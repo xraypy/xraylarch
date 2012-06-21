@@ -36,8 +36,8 @@ class TransformGroup(larch.Group):
 
     """
     def __init__(self, kmin=0, kmax=20, kweight=1, dk=1, dk2=None,
-                 window='kaiser', nfft=2048, kstep=0.05, 
-                 rmin = 0, rmax=10, dr=0, rwindow='kaiser', 
+                 window='kaiser', nfft=2048, kstep=0.05,
+                 rmin = 0, rmax=10, dr=0, rwindow='kaiser',
                  fitspace='r', _larch=None, **kws):
         larch.Group.__init__(self)
         self.kmin = kmin
@@ -63,26 +63,57 @@ class TransformGroup(larch.Group):
 
         self.kwin_array = None
         self.rwin_array = None
-        self.__check_kstep()
+        self.make_karrays()
 
-    def __check_kstep(self):
+    def make_karrays(self, k=None, chi=None):
         "this should be run in kstep or nfft changes"
         if self.kstep == self.__kstep and self.nfft == self.__nfft:
             return
+        self.__kstep = self.kstep
+        self.__nfft = self.nfft
+        
         self.rstep = pi/(self.kstep*self.nfft)
         self.k_ = self.kstep * arange(self.nfft, dtype='float64')
         self.r_ = self.rstep * arange(self.nfft, dtype='float64')
 
+    def estimate_noise(self, chi, rmin=15.0, rmax=25.0):
+        """estimage noice from high r"""
+        # print 'Estimate Noise!! ', rmin, self.transform.rmin
+        self.make_karrays()
+
+        save = self.rmin, self.rmax, self.fitspace
+
+        highr = self.apply(chi, eps_scale=False,
+                           fitspace='r', rmin=rmin, rmax=rmax) 
+        eps_r = sqrt((highr*highr).sum() / len(highr))
+        w = 2 * self.kweight + 1
+        scale = 2*sqrt((pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
+        eps_k = scale*eps_r
+
+        self.rmin, self.rmax, self.fitspace = save
+
+        self.n_idp  = 2*(self.rmax-self.rmin)*(self.kmax-self.kmin)/pi
+        self.epsilon_k = eps_k
+        self.epsilon_r = eps_r
+
+    def set_epsilon_k(self, eps_k):
+        """set epsilon_k and epsilon_r -- ucertainties in chi(k) and chi(R)"""
+        w = 2 * self.kweight + 1
+        scale = 2*sqrt((pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
+        eps_r = eps_k / scale
+        self.epsilon_k = eps_k
+        self.epsilon_r = eps_r        
+        
     def xafsft(self, chi, group=None, rmax_out=10, **kws):
         "returns "
         for key, val in kws:
             if key == 'kw': key = 'kweight'
             setattr(self, key, val)
-        self.__check_kstep()
+        self.make_karrays()
 
         out = self.__fftf__(chi)
 
-        irmax = min(self.nfft/2, 1 + int(rmax_out/self.rstep))
+        irmax = min(self.nfft/2, int(1.01 + rmax_out/self.rstep))
         if self._larch.symtable.isgroup(group):
             r   = self.rstep * arange(irmax)
             mag = sqrt(out.real**2 + out.imag**2)
@@ -97,7 +128,7 @@ class TransformGroup(larch.Group):
     def __fftf__(self, chi):
         """ forward FT -- meant to be used internally.
         chi must be on self.k_ grid"""
-        self.__check_kstep()
+        self.make_karrays()
         if self.kwin_array is None:
             self.kwin_array = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
                                        dx=self.dk, dx2=self.dk2,
@@ -107,7 +138,7 @@ class TransformGroup(larch.Group):
 
     def __ffti__(self, chir):
         " reverse FT -- meant to be used internally"
-        self.__check_kstep()
+        self.make_karrays()
         if self.rwin_array is None:
             self.rwin_array = ftwindow(self.r_, xmin=self.rmin, xmax=self.rmax,
                                        dx=self.dr, dx2=self.dr2,
@@ -116,8 +147,10 @@ class TransformGroup(larch.Group):
         cx = chir * self.rwin_array[:len(chir)] * self.r_[:len(chir)]**self.rw,
         return xafsift_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
-    def apply(self, k, chi, **kws):
-        """apply transform"""
+    def apply(self, chi, eps_scale=False, **kws):
+        """apply transform -- need to add uncertainty
+        eps_scale: scale by appropriaat epsilon_k or epsilon_r
+        """
         # print 'this  is transform apply ', len(k), len(chi), k[5:10], chi[5:10], kws
         for key, val in kws.items():
             if key == 'kw': key = 'kweight'
@@ -125,26 +158,27 @@ class TransformGroup(larch.Group):
 
         # print 'fit space = ', self.fitspace
         if self.fitspace == 'k':
-            return chi * k**self.kweight
+            return chi * self.k_[:len(chi)]**self.kweight
         elif self.fitspace in ('r', 'q'):
-            self.__check_kstep()
+            self.make_karrays()
             chir = self.__fftf__(chi)
             if self.fitspace == 'r':
-                irmin = index_of(self.r_, self.rmin)
-                irmax = min(self.nfft/2,  1 + index_of(self.r_, self.rmax))
-                # print ' I ', irmin, irmax, len(chir)
+                irmin = int(0.01 + self.rmin/self.rstep) 
+                irmax = min(self.nfft/2,  int(1.01 + self.rmax/self.rstep))
+                if eps_scale:
+                    chir = chir /(self.epsilon_r)
                 return realimag(chir[irmin:irmax])
             else:
                 chiq = self.__ffti__(self.r_, chir)
-                iqmin = index_of(self.k_, self.kmin)
-                iqmax = min(self.nfft/2,  1 + index(self.k_, self.kmax))
+                iqmin = int(0.01 + self.kmin/self.kstep) 
+                iqmax = min(self.nfft/2,  int(1.01 + self.kmax/self.kstep))
                 return realimag(chiq[ikmin:ikmax])
-
+            
 class FeffitDataSet(larch.Group):
     def __init__(self, data=None, pathlist=None, transform=None, _larch=None, **kws):
 
         self._larch = _larch
-        larch.Group.__init__(self,  residual=self._residual, **kws)
+        larch.Group.__init__(self,  residual=self.residual, **kws)
 
         self.pathlist = pathlist
 
@@ -154,72 +188,50 @@ class FeffitDataSet(larch.Group):
         self.transform = transform
         self.model = larch.Group()
         self.model.k = None
-        self.data_chi = None
-        self.residual = self._residual
-        self.eps_r  = 0
-        self.eps_k  = 0
+        self.datachi = None
+        self.__prepared = False
 
-    def estimate_noise(self, rmin=15.0, rmax=25.0):
-        """estimage noice from high r"""
-        # print 'Estimate Noise!! ', rmin, self.transform.rmin
+    def prepare_fit(self):
         trans = self.transform
-        rmin_save = trans.rmin
-        rmax_save = trans.rmax
-        fitspace_save = trans.fitspace
-        self._make_modelk()
-        # print 'Have mode.k ' , len(self.model.k), len(self.data_chi)
-        chi_highr = trans.apply(self.model.k, self.data_chi,
-                                fitspace='r', rmin=rmin, rmax=rmax)
-        # print type(chi_highr), len(chi_highr)
 
-        eps_r = sqrt( 2*(chi_highr*chi_highr).sum() / len(chi_highr)) # /2
+        trans.make_karrays()
+        ikmax = int(1.01 + max(self.data.k)/trans.kstep)
+        # ikmax = index_of(trans.k_, max(self.data.k))
+        self.model.k = trans.k_[:ikmax]
+        self.datachi = interp(self.model.k, self.data.k, self.data.chi)
 
-        w = 2 * trans.kweight + 1
-        kstep = trans.kstep
-        kmax = trans.kmax
-        kmin = trans.kmin
-        # print trans.kweight, w, kstep, kmin, kmax
-        # print sqrt( (2*pi* w) / kstep*(kmax**w - kmin**w))
-        eps_k = eps_r * sqrt( (2*pi*w)/(kstep*(kmax**w - kmin**w)))
+        if hasattr(self.data, 'epsilon_k'):
+            eps_k = self.data.epsilon_k
+            if isinstance(self.eps_k, numpy.ndarray):
+                eps_k = interp(self.model.k, self.data.k, self.data.epsilon_k)
+                trans.set_epsilon_k(eps_k)
+        else:
+            trans.estimate_noise(self.datachi, rmin=15.0, rmax=25.0)
 
-        trans.rmin = rmin_save
-        trans.rmax = rmax_save
-        trans.fitspace = fitspace_save
-        return eps_k, eps_r
-
-    def _make_modelk(self):
-        """create model k with uniform kstep and interpolate data onto this"""
-        if self.model.k is None:
-            # print '_resid create .k ',
-            kstep = self.transform.kstep
-            nkmax = (0.1*kstep + max(self.data.k)) / kstep
-            self.model.k = self.transform.kstep * arange(nkmax)
-            self.data_chi =  interp(self.model.k, self.data.k, self.data.chi)
-
-    def _residual(self, paramgroup=None):
-        if paramgroup is not None:
+        self.__prepared = True
+        
+    def residual(self, paramgroup=None):
+        if (paramgroup is not None and
+            self._larch.symtable.isgroup(paramgroup)):
             self._larch.symtable._sys.paramGroup = paramgroup
         if not isinstance(self.transform, TransformGroup):
             print "Transform for DataSet is not set"
             return
-        self._make_modelk()
+        if not self.__prepared:
+            self.prepare_fit()
 
-        _ff2chi(self.pathlist, _larch =self._larch,
-                kstep=self.transform.kstep, kmax=max(self.model.k),
+        _ff2chi(self.pathlist, k=self.model.k, _larch=self._larch,
                 group=self.model)
-        return self.transform.apply(self.model.k, self.data_chi-self.model.chi)
+        return self.transform.apply(self.datachi-self.model.chi, eps_scale=True)
 
     def save_ffts(self, rmax_out=10):
-        # print ' SAVE FFTs ' , len(self.model.k), len(self.data_chi), len(self.model.chi)
-        self.transform.xafsft(self.data_chi, group=self.data, rmax_out=rmax_out)
+        self.transform.xafsft(self.datachi,   group=self.data,  rmax_out=rmax_out)
         self.transform.xafsft(self.model.chi, group=self.model, rmax_out=rmax_out)
 
 def feffit(params, datasets, _larch=None, **kws):
 
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residua function """
-        # for p in dir(params):
-        #    print 'Param: ', p, getattr(params, p)
         return concatenate([d.residual() for d in datasets])
 
     if isinstance(datasets, FeffitDataSet):
@@ -231,6 +243,16 @@ def feffit(params, datasets, _larch=None, **kws):
     fitkws = dict(datasets=datasets)
     fit = Minimizer(_resid, params, fcn_kws=fitkws, _larch=_larch)
     fit.leastsq()
+    # scale uncertainties to sqrt(n_idp - n_varys)
+    n_idp = 0
+    for ds in datasets:
+        n_idp += ds.transform.n_idp
+    err_scale = sqrt(n_idp - params.nvarys)
+    for name in dir(params):
+        p = getattr(params, name)
+        if isParameter(p) and p.vary:
+            p.stderr *= err_scale
+            
     # here we create outputs:
     for ds in datasets:
         ds.save_ffts()
