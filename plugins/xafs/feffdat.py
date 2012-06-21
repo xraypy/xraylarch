@@ -147,7 +147,8 @@ class FeffPathGroup(larch.Group):
         """evaluate path parameter value
         """
         # degen, s02, e0, ei, deltar, sigma2, third, fourth
-        if paramgroup is not None:
+        if (paramgroup is not None and
+            self._larch.symtable.isgroup(paramgroup)):
             self._larch.symtable._sys.paramGroup = paramgroup
         self._larch.symtable._fix_searchGroups()
 
@@ -178,7 +179,7 @@ class FeffPathGroup(larch.Group):
                 kmax = 30.0
             kmax = min(max(self._dat.k), kmax)
             if kstep is None: kstep = 0.05
-            k = kstep * arange(int(1.01 + kmax/kstep), dtype='float64')
+            k = kstep * np.arange(int(1.01 + kmax/kstep), dtype='float64')
 
         reff = self.reff
         # put 'reff' into the paramGroup so that it can be used in
@@ -241,7 +242,8 @@ def _ff2chi(pathlist, paramgroup=None, _larch=None, group=None,
     """sum the XAFS for a set of paths... assumes that the
     Path Parameters are set"""
     msg = _larch.writer.write
-    if paramgroup is not None:
+    if (paramgroup is not None and
+         _larch.symtable.isgroup(group)):
         _larch.symtable._sys.paramGroup = paramgroup
     for p in pathlist:
         if not hasattr(p, 'calc_chi'):
