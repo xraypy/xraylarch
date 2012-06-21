@@ -71,7 +71,7 @@ class TransformGroup(larch.Group):
             return
         self.__kstep = self.kstep
         self.__nfft = self.nfft
-        
+
         self.rstep = pi/(self.kstep*self.nfft)
         self.k_ = self.kstep * arange(self.nfft, dtype='float64')
         self.r_ = self.rstep * arange(self.nfft, dtype='float64')
@@ -83,11 +83,21 @@ class TransformGroup(larch.Group):
 
         save = self.rmin, self.rmax, self.fitspace
 
+        # get chi(r) for high r
         highr = self.apply(chi, eps_scale=False,
-                           fitspace='r', rmin=rmin, rmax=rmax) 
-        eps_r = sqrt((highr*highr).sum() / len(highr))
+                           fitspace='r', rmin=rmin, rmax=rmax)
+
+        # get average of window function, and scale by this
+        ikmin = index_of(self.k_, self.kmin)
+        ikmax = index_of(self.k_, self.kmax)
+        kwin_ave = self.kwin_array[ikmin:ikmax].sum()/(ikmax-ikmin)
+
+        eps_r = sqrt((highr*highr).sum() / len(highr)) / kwin_ave
+
+        # use Parseval's theorem to convert epsilon_r to epsilon_k,
+        # compensating for kweight
         w = 2 * self.kweight + 1
-        scale = 2*sqrt((pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
+        scale = sqrt((2*pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
         eps_k = scale*eps_r
 
         self.rmin, self.rmax, self.fitspace = save
@@ -102,8 +112,8 @@ class TransformGroup(larch.Group):
         scale = 2*sqrt((pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
         eps_r = eps_k / scale
         self.epsilon_k = eps_k
-        self.epsilon_r = eps_r        
-        
+        self.epsilon_r = eps_r
+
     def xafsft(self, chi, group=None, rmax_out=10, **kws):
         "returns "
         for key, val in kws:
@@ -163,17 +173,17 @@ class TransformGroup(larch.Group):
             self.make_karrays()
             chir = self.__fftf__(chi)
             if self.fitspace == 'r':
-                irmin = int(0.01 + self.rmin/self.rstep) 
+                irmin = int(0.01 + self.rmin/self.rstep)
                 irmax = min(self.nfft/2,  int(1.01 + self.rmax/self.rstep))
                 if eps_scale:
                     chir = chir /(self.epsilon_r)
                 return realimag(chir[irmin:irmax])
             else:
                 chiq = self.__ffti__(self.r_, chir)
-                iqmin = int(0.01 + self.kmin/self.kstep) 
+                iqmin = int(0.01 + self.kmin/self.kstep)
                 iqmax = min(self.nfft/2,  int(1.01 + self.kmax/self.kstep))
                 return realimag(chiq[ikmin:ikmax])
-            
+
 class FeffitDataSet(larch.Group):
     def __init__(self, data=None, pathlist=None, transform=None, _larch=None, **kws):
 
@@ -209,7 +219,7 @@ class FeffitDataSet(larch.Group):
             trans.estimate_noise(self.datachi, rmin=15.0, rmax=25.0)
 
         self.__prepared = True
-        
+
     def residual(self, paramgroup=None):
         if (paramgroup is not None and
             self._larch.symtable.isgroup(paramgroup)):
@@ -252,7 +262,7 @@ def feffit(params, datasets, _larch=None, **kws):
         p = getattr(params, name)
         if isParameter(p) and p.vary:
             p.stderr *= err_scale
-            
+
     # here we create outputs:
     for ds in datasets:
         ds.save_ffts()
