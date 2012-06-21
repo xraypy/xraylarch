@@ -10,7 +10,7 @@ macro showpath 1
    plot(path$1.r, -path$1.chir_mag, $2)
 end macro
 
-read_data(../tests/data/cu_metal_rt.xdi, group=data, label='energy i0 itrans xmu')
+read_data(cu_metal_rt.xdi, group=data, label='energy i0 itrans xmu')
 spline(data.energy, data.xmu, group=data, rbkg=1.0, kweight=1)
 
 unguess
