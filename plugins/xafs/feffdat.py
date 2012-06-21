@@ -184,7 +184,8 @@ class FeffPathGroup(larch.Group):
         reff = self.reff
         # put 'reff' into the paramGroup so that it can be used in
         # constraint expressions
-        self._larch.symtable._sys.paramGroup.reff = reff
+        if self._larch.symtable._sys.paramGroup is not None:
+            self._larch.symtable._sys.paramGroup.reff = reff
 
         # get values for all the path parameters
         (degen, s02, e0, ei, deltar, sigma2, third, fourth)  = \
