@@ -21,14 +21,11 @@ for iscale in range(1, 11):
         eps.append(trans.epsilon_k)
     endfor
 
-    fdat.chir = trans.fftf(fdat.chi)
-    fdat.chir_mag = fdat.chir.real**2 + fdat.chir.imag**2
+    trans.xafsft(fdat.chi, group=fdat, rmax_out=16)
     newplot(fdat.k, fdat.chi*fdat.k)
-    plot(fdat.k, trans.kwin[:len(fdat.k)] * 0.7)
+    plot(fdat.k, fdat.kwin*0.7)
 
-    irmax = index_of(trans.r_, 13)
-    #newplot(trans.r_[:irmax], log(1.e-6+fdat.chir_mag[:irmax]), win=2)
-     newplot(trans.r_[:irmax], (1.e-6+fdat.chir_mag[:irmax]), win=2)
+    newplot(fdat.r, fdat.chir_mag, rmax=13, win=2)
     eps = array(eps)
     print '%2.2i %.5f | %.5f +/-  %.5f  ..   %.3f' % (iscale, scale, eps.mean(), eps.std(), eps.mean()/scale)
     sleep(0.5)
