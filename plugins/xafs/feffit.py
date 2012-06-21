@@ -32,7 +32,7 @@ class TransformGroup(larch.Group):
     recalculated....
 
     That is: don't change the parameters are expect the different things.
-    If you do change parameters, reset kwin_array / rwin_array to None.
+    If you do change parameters, reset kwin / rwin to None.
 
     """
     def __init__(self, kmin=0, kmax=20, kweight=1, dk=1, dk2=None,
@@ -61,8 +61,8 @@ class TransformGroup(larch.Group):
         self.fitspace = fitspace
         self._larch = _larch
 
-        self.kwin_array = None
-        self.rwin_array = None
+        self.kwin = None
+        self.rwin = None
         self.make_karrays()
 
     def make_karrays(self, k=None, chi=None):
@@ -87,10 +87,10 @@ class TransformGroup(larch.Group):
         highr = self.apply(chi, eps_scale=False,
                            fitspace='r', rmin=rmin, rmax=rmax)
 
-        # get average of window function, and scale by this
+        # get average of window function value, and eps_r scale by this
         ikmin = index_of(self.k_, self.kmin)
         ikmax = index_of(self.k_, self.kmax)
-        kwin_ave = self.kwin_array[ikmin:ikmax].sum()/(ikmax-ikmin)
+        kwin_ave = self.kwin[ikmin:ikmax].sum()/(ikmax-ikmin)
 
         eps_r = sqrt((highr*highr).sum() / len(highr)) / kwin_ave
 
@@ -121,7 +121,7 @@ class TransformGroup(larch.Group):
             setattr(self, key, val)
         self.make_karrays()
 
-        out = self.__fftf__(chi)
+        out = self.fftf(chi)
 
         irmax = min(self.nfft/2, int(1.01 + rmax_out/self.rstep))
         if self._larch.symtable.isgroup(group):
@@ -135,30 +135,29 @@ class TransformGroup(larch.Group):
         else:
             return out[:irmax]
 
-    def __fftf__(self, chi):
+    def fftf(self, chi):
         """ forward FT -- meant to be used internally.
         chi must be on self.k_ grid"""
         self.make_karrays()
-        if self.kwin_array is None:
-            self.kwin_array = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
-                                       dx=self.dk, dx2=self.dk2,
-                                       window=self.window)
-        cx = chi * self.kwin_array[:len(chi)] * self.k_[:len(chi)]**self.kweight
+        if self.kwin is None:
+            self.kwin = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
+                                 dx=self.dk, dx2=self.dk2, window=self.window)
+
+        cx = chi * self.kwin[:len(chi)] * self.k_[:len(chi)]**self.kweight
         return xafsft_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
-    def __ffti__(self, chir):
+    def ffti(self, chir):
         " reverse FT -- meant to be used internally"
         self.make_karrays()
-        if self.rwin_array is None:
-            self.rwin_array = ftwindow(self.r_, xmin=self.rmin, xmax=self.rmax,
-                                       dx=self.dr, dx2=self.dr2,
-                                       window=self.rwindow)
+        if self.rwin is None:
+            self.rwin = ftwindow(self.r_, xmin=self.rmin, xmax=self.rmax,
+                                 dx=self.dr, dx2=self.dr2, window=self.rwindow)
 
-        cx = chir * self.rwin_array[:len(chir)] * self.r_[:len(chir)]**self.rw,
+        cx = chir * self.rwin[:len(chir)] * self.r_[:len(chir)]**self.rw,
         return xafsift_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
     def apply(self, chi, eps_scale=False, **kws):
-        """apply transform -- need to add uncertainty
+        """apply transform, returns real/imag components
         eps_scale: scale by appropriaat epsilon_k or epsilon_r
         """
         # print 'this  is transform apply ', len(k), len(chi), k[5:10], chi[5:10], kws
@@ -171,7 +170,7 @@ class TransformGroup(larch.Group):
             return chi * self.k_[:len(chi)]**self.kweight
         elif self.fitspace in ('r', 'q'):
             self.make_karrays()
-            chir = self.__fftf__(chi)
+            chir = self.fftf(chi)
             if self.fitspace == 'r':
                 irmin = int(0.01 + self.rmin/self.rstep)
                 irmax = min(self.nfft/2,  int(1.01 + self.rmax/self.rstep))
@@ -179,7 +178,7 @@ class TransformGroup(larch.Group):
                     chir = chir /(self.epsilon_r)
                 return realimag(chir[irmin:irmax])
             else:
-                chiq = self.__ffti__(self.r_, chir)
+                chiq = self.ffti(self.r_, chir)
                 iqmin = int(0.01 + self.kmin/self.kstep)
                 iqmax = min(self.nfft/2,  int(1.01 + self.kmax/self.kstep))
                 return realimag(chiq[ikmin:ikmax])
