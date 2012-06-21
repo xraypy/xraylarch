@@ -1,27 +1,35 @@
 p1 = read_feffdat('feff0001.dat')
-p1.e0 = -2
-p1.sigma2 = 0.008
+p1.e0 = 2
+p1.sigma2 = 0.013
 
 k = 0.05 * arange(421)
-for iscale in range(10):
-    scale = 5.e-5 *  3**iscale
+
+for iscale in range(1, 11):
+    scale = 1.e-5 *  2**iscale
 
     eps = []
-    sleep(0.2)
     for  i in range(10):
         sum = ff2chi([p1], k=k)  + random.normal(size=len(k), scale=scale)
 
         fdat = group(k=k, chi=sum)
 
-        fdat.win = xafsft(k, sum, kmin=4, kmax=16, kweight=2, dk=5, window='parzen', rmin=1.4, rmax=3.0, group=fdat)
-        trans = feffit_transform(kmin=4, kmax=16, kweight=2, dk=5, window='parzen', rmin=1.4, rmax=3.0)
+        trans = feffit_transform(kmin=4, kmax=16, kweight=1, dk=4, window='hanning', rmin=1.4, rmax=3.0)
+        # trans = feffit_transform(kmin=4, kmax=16, kweight=2, dk=8, dk2=10, window='gaus', rmin=1.4, rmax=3.0)
         d1    = feffit_dataset(data=fdat, pathlist=[p1], transform=trans)
 
         d1.prepare_fit()
         eps.append(trans.epsilon_k)
     endfor
 
-    newplot(fdat.k, fdat.chi*fdat.k**2)
+    fdat.chir = trans.fftf(fdat.chi)
+    fdat.chir_mag = fdat.chir.real**2 + fdat.chir.imag**2
+    newplot(fdat.k, fdat.chi*fdat.k)
+    plot(fdat.k, trans.kwin[:len(fdat.k)] * 0.7)
+
+    irmax = index_of(trans.r_, 13)
+    #newplot(trans.r_[:irmax], log(1.e-6+fdat.chir_mag[:irmax]), win=2)
+     newplot(trans.r_[:irmax], (1.e-6+fdat.chir_mag[:irmax]), win=2)
     eps = array(eps)
     print '%2.2i %.5f | %.5f +/-  %.5f  ..   %.3f' % (iscale, scale, eps.mean(), eps.std(), eps.mean()/scale)
+    sleep(0.5)
 endfor
