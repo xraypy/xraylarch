@@ -127,6 +127,7 @@ class TransformGroup(larch.Group):
         if self._larch.symtable.isgroup(group):
             r   = self.rstep * arange(irmax)
             mag = sqrt(out.real**2 + out.imag**2)
+            group.kwin  =  self.kwin[:len(chi)]
             group.r    =  r[:irmax]
             group.chir =  out[:irmax]
             group.chir_mag =  mag[:irmax]
