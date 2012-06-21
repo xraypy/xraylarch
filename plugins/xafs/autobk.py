@@ -82,8 +82,8 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
     kraw = np.sqrt(ETOK*(energy[ie0:] - e0))
     if kmax is None:
         kmax = max(kraw)
-    kout  = kstep * np.arange(int(1.01+kmax/kstep))
-    
+    kout  = kstep * np.arange(int(1.01+kmax/kstep), dtype='float64')
+
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk)
 
