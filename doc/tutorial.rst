@@ -2,17 +2,19 @@
 Larch Tutorial
 ============================
 
-This chapter describes the Larch language and provides an introduction into
-processing data using Larch.  An important goal of Larch is to make writing
-and modifying data analysis as simple as possible.  The tutorial here tries
-to make few assumptions about your experience with scientific
-programming.  On the other hand, Larch is a language for processing of
-scientific data, the expected audience is expected to have a technical
-background, familiarity with using programs for scientific data analysis.
-In addition, some understanding of the concepts of how scientific data is
-stored on computers and of the basics of programming.
+At its core, Larch is a language for processing of scientific data.  This
+chapter describes the Larch language and introduces data processing using
+Larch.  An important goal of Larch is to make writing and modifying data
+analysis scripts as simple as possible.
 
-The Larch language is implemented in and heavily based on Python.
+Although aimed at the novice programmer, this tutorial does make a few
+assumptions about the readers experience with scientific programming.  For
+example, the reader is expected to have a technical background and some
+familiarity with using scientific data analysis programs.  Some
+understanding of the concepts of how scientific data is stored on computers
+and of the basics of programming will greatly help the reader.
+
+The Larch language is implemented in Python, and heavily based upon it.
 Knowledge of Python will greatly simplify learning Larch, and vice versa.
 This shared syntax is intentional, so that as you learn Larch, you will
 also be learning Python, which can be used to extend Larch.  Alternatively,

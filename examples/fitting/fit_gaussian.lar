@@ -6,13 +6,13 @@ log2 = log(2.0)
 s2pi = sqrt(log2/pi)
 parformat = " %4i    % .4f    % .4f    % .4f    % .4f"
 
-def mymodel(x, off, amp, cen, wid):
+def ga(x, off, amp, cen, wid):
     """standard gaussian with scale and constant offset """
     return off + amp*(s2pi / wid) * exp(-log2 * (x-cen)**2 / wid**2)
 enddef
 
 def resid(pars, data, verbose=False, update_rate=15):
-    model = mymodel(data.x, pars.off, pars.amp, pars.cen, pars.wid)
+    model = ga(data.x, pars.off, pars.amp, pars.cen, pars.wid)
     if verbose:
         if pars.fit_iter == 0:
             print " Iteration   Offset   Ampliture   Center  Sigma"
@@ -28,9 +28,10 @@ def resid(pars, data, verbose=False, update_rate=15):
 enddef
 
 # create data
+xdat = None
 mdat = group()
 mdat.x = arange(501)/25.0
-mdat.y = mymodel(mdat.x, -2.0, 15.0, 11.0, .5) + \
+mdat.y = ga(mdat.x, -2.0, 15.0, 11.0, .5) + \
          random.normal(size=len(mdat.x), scale=.40)
 
 # create group for parameters
@@ -40,8 +41,9 @@ params = group(off = param(-0.5, vary=True),
                wid = param(3.50, vary=True),
                fit_iter=0)
 
-init = mymodel(mdat.x, params.off, params.amp, params.cen, params.wid)
+init = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
 
+print 'xdat, mdat: ', id(xdat), id(mdat), id(mdat.x), id(mdat.y)
 newplot(mdat.x, mdat.y)
 plot(mdat.x, init)
 plot(mdat.x, init, color='black', style='--')
@@ -49,8 +51,8 @@ plot(mdat.x, init, color='black', style='--')
 minimize(resid, params, args=(mdat,),
          kws={'verbose':True, 'update_rate': 5})
 
-final = mymodel(mdat.x, params.off, params.amp, params.cen, params.wid)
+final = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
 
 update_line(mdat.x, final, trace=2)
 
-print fit_report(params)
+# print fit_report(params)
