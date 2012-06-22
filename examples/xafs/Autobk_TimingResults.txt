@@ -1,0 +1,14 @@
+Autobk runs in about ~25 to 30 milliseconds on Rabbit (Quad Xeon E5440, 2.8GHz, 4Gb RAM, 32-bit Windows 7)
+
+That is, 100 runs of test_autobk (read datafile, autobk, fft, filter) takes under 4 seconds:
+  ~10 msec to read file
+  ~23 msec for autobk
+   ~3 msec for 2 FFTs (forward and back transform)
+
+that is, one processor can reduce measured spectra at a rate approaching 100 kilo-spectra per hour.
+
+For reference, Ifeffit takes about 100 milliseconds for the same operations.
+
+Larch (pure Python) is 2.5x to 3x faster than Ifeffit (pure Fortran).
+
+Tests do not include graphics (100 ms or so)
