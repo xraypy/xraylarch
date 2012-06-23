@@ -1,0 +1,56 @@
+# test fit to noisy Feff data
+
+p0 = read_feffdat('feff0001.dat')
+p0.e0  = 7
+p0.s02 = 0.9
+p0.sigma2 = 0.007
+p0.deltar = -0.035
+
+
+k = 0.05 * arange(401)
+
+eps = 0.004
+fdat = group(k=k,
+             chi=ff2chi([p0], k=k)  + random.normal(size=len(k), scale=eps))
+
+
+fitparams = group(amp  = guess(1),
+                  de0  = guess(0.1),
+                  ss2  = guess(0.002),
+                  delr = guess(0.),
+                  third = param(0., vary=False)
+                  )
+
+path1 = read_feffdat('feff0001.dat')
+path1.s02    = param(expr='amp')
+path1.e0     = param(expr='de0')
+path1.sigma2 = param(expr='ss2')
+path1.deltar = param(expr='delr')
+path1.third  = param(expr='third')
+
+trans = feffit_transform(kmin=3, kmax=14, kw=(1,2,3), dk=4,  window='bessel',
+                         rmin=1.4, rmax=3.0)
+dset  = feffit_dataset(data=fdat, pathlist=[path1], transform=trans)
+
+out = feffit(fitparams, dset)
+print 'feffit complete'
+
+print fit_report(fitparams)
+
+newplot(dset.data.k, dset.data.chi*dset.data.k**2)
+  plot(dset.model.k, dset.model.chi*dset.model.k**2)
+  plot(dset.data.k, dset.data.kwin*1.7)
+
+
+newplot(dset.data.r, dset.data.chir_re, win=2)
+  plot(dset.model.r, dset.model.chir_re, win=2)
+
+# feffit(1-3, chi = data.chi, k=data.k,group = fit)
+#
+# show @variables, chi_square, r_factor, n_idp, &fit_iteration
+#
+# newplot data.r, data.chir_mag, xmax=7
+# plot    fit.r,  fit.chir_mag
+# showpath 1  "color=blue"
+# showpath 2  "color=red"
+# showpath 3  "color=black"

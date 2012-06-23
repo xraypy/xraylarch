@@ -4,6 +4,7 @@
 """
 
 import sys, os
+from collections import Iterable
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
@@ -35,8 +36,8 @@ class TransformGroup(larch.Group):
     If you do change parameters, reset kwin / rwin to None.
 
     """
-    def __init__(self, kmin=0, kmax=20, kweight=1, dk=1, dk2=None,
-                 window='kaiser', nfft=2048, kstep=0.05,
+    def __init__(self, kmin=0, kmax=20, kweight=2, dk=4, dk2=None,
+                 window='bessel', nfft=2048, kstep=0.05,
                  rmin = 0, rmax=10, dr=0, rwindow='kaiser',
                  fitspace='r', _larch=None, **kws):
         larch.Group.__init__(self)
@@ -45,6 +46,7 @@ class TransformGroup(larch.Group):
         self.kweight = kweight
         if 'kw' in kws:
             self.kweight = kws['kw']
+
         self.dk = dk
         self.dk2 = dk2
         self.window = window
@@ -76,39 +78,52 @@ class TransformGroup(larch.Group):
         self.k_ = self.kstep * arange(self.nfft, dtype='float64')
         self.r_ = self.rstep * arange(self.nfft, dtype='float64')
 
-    def estimate_noise(self, chi, rmin=15.0, rmax=25.0):
+    def estimate_noise(self, chi, rmin=15.0, rmax=25.0, all_kweights=True):
         """estimage noice from high r"""
         # print 'Estimate Noise!! ', rmin, self.transform.rmin
         self.make_karrays()
 
         save = self.rmin, self.rmax, self.fitspace
 
-        # get chi(r) for high r
-        highr = self.apply(chi, eps_scale=False,
-                           fitspace='r', rmin=rmin, rmax=rmax)
-
-        # get average of window function value, and eps_r scale by this
+        all_kweights = all_kweights and isinstance(self.kweight, Iterable)
+        if all_kweights:
+            chir = [self.fftf(chi, kweight=kw) for kw in self.kweight]
+        else:
+            chir = [self.fftf(chi)]
+        irmin = int(0.01 + rmin/self.rstep)
+        irmax = min(self.nfft/2,  int(1.01 + rmax/self.rstep))
+        highr = [realimag(chir_[irmin:irmax]) for chir_ in chir]
+        # get average of window function value, we will scale eps_r scale by this
         ikmin = index_of(self.k_, self.kmin)
         ikmax = index_of(self.k_, self.kmax)
         kwin_ave = self.kwin[ikmin:ikmax].sum()/(ikmax-ikmin)
 
-        eps_r = sqrt((highr*highr).sum() / len(highr)) / kwin_ave
-
+        eps_r = [(sqrt((chi*chi).sum() / len(chi)) / kwin_ave) for chi in highr]
+        eps_k = []
         # use Parseval's theorem to convert epsilon_r to epsilon_k,
         # compensating for kweight
-        w = 2 * self.kweight + 1
-        scale = sqrt((2*pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
-        eps_k = scale*eps_r
+        if all_kweights:
+            kweights = self.kweight[:]
+        else:
+            kweights = [self.kweight]
+        for i, kw in enumerate(kweights):
+            w = 2 * kw + 1
+            scale = sqrt((2*pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
+            eps_k.append(scale*eps_r[i])
+
 
         self.rmin, self.rmax, self.fitspace = save
 
         self.n_idp  = 2*(self.rmax-self.rmin)*(self.kmax-self.kmin)/pi
         self.epsilon_k = eps_k
         self.epsilon_r = eps_r
+        if len(eps_r) == 1:
+            self.epsilon_k = eps_k[0]
+            self.epsilon_r = eps_r[0]
 
     def set_epsilon_k(self, eps_k):
         """set epsilon_k and epsilon_r -- ucertainties in chi(k) and chi(R)"""
-        w = 2 * self.kweight + 1
+        w = 2 * self.get_kweight() + 1
         scale = 2*sqrt((pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
         eps_r = eps_k / scale
         self.epsilon_k = eps_k
@@ -117,7 +132,8 @@ class TransformGroup(larch.Group):
     def xafsft(self, chi, group=None, rmax_out=10, **kws):
         "returns "
         for key, val in kws:
-            if key == 'kw': key = 'kweight'
+            if key == 'kw':
+                key = 'kweight'
             setattr(self, key, val)
         self.make_karrays()
 
@@ -136,15 +152,23 @@ class TransformGroup(larch.Group):
         else:
             return out[:irmax]
 
-    def fftf(self, chi):
+    def get_kweight(self):
+        "if kweight is a list/tuple, use only the first one here"
+        if isinstance(self.kweight, Iterable):
+            return self.kweight[0]
+        return self.kweight
+
+
+    def fftf(self, chi, kweight=None):
         """ forward FT -- meant to be used internally.
         chi must be on self.k_ grid"""
         self.make_karrays()
         if self.kwin is None:
             self.kwin = ftwindow(self.k_, xmin=self.kmin, xmax=self.kmax,
                                  dx=self.dk, dx2=self.dk2, window=self.window)
-
-        cx = chi * self.kwin[:len(chi)] * self.k_[:len(chi)]**self.kweight
+        if kweight is None:
+            kweight = self.get_kweight()
+        cx = chi * self.kwin[:len(chi)] * self.k_[:len(chi)]**kweight
         return xafsft_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
     def ffti(self, chir):
@@ -157,32 +181,46 @@ class TransformGroup(larch.Group):
         cx = chir * self.rwin[:len(chir)] * self.r_[:len(chir)]**self.rw,
         return xafsift_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
-    def apply(self, chi, eps_scale=False, **kws):
+    def apply(self, chi, eps_scale=False, all_kweights=True, **kws):
         """apply transform, returns real/imag components
         eps_scale: scale by appropriaat epsilon_k or epsilon_r
         """
-        # print 'this  is transform apply ', len(k), len(chi), k[5:10], chi[5:10], kws
+        # print 'this  is transform apply ', len(chi), chi[5:10], kws
         for key, val in kws.items():
             if key == 'kw': key = 'kweight'
             setattr(self, key, val)
 
+        all_kweights = all_kweights and isinstance(self.kweight, Iterable)
         # print 'fit space = ', self.fitspace
         if self.fitspace == 'k':
-            return chi * self.k_[:len(chi)]**self.kweight
+            if all_kweights:
+                return np.concatenate([chi * self.k_[:len(chi)]**kw for kw in self.kweight])
+            else:
+                return chi * self.k_[:len(chi)]**self.kweight
         elif self.fitspace in ('r', 'q'):
             self.make_karrays()
-            chir = self.fftf(chi)
+            out = []
+            if all_kweights:
+                # print 'Apply -- use all kweights ', self.kweight
+                chir = [self.fftf(chi, kweight=kw) for kw in self.kweight]
+                eps_r = self.epsilon_r
+            else:
+                chir = [self.fftf(chi)]
+                eps_r = [self.epsilon_r]
             if self.fitspace == 'r':
                 irmin = int(0.01 + self.rmin/self.rstep)
                 irmax = min(self.nfft/2,  int(1.01 + self.rmax/self.rstep))
-                if eps_scale:
-                    chir = chir /(self.epsilon_r)
-                return realimag(chir[irmin:irmax])
+                for i, chir_ in enumerate(chir):
+                    if eps_scale:
+                        chir_ = chir_ /(eps_r[i])
+                    out.append( realimag(chir_[irmin:irmax]))
             else:
-                chiq = self.ffti(self.r_, chir)
+                chiq = [self.ffti(self.r_, c) for c in chir]
                 iqmin = int(0.01 + self.kmin/self.kstep)
                 iqmax = min(self.nfft/2,  int(1.01 + self.kmax/self.kstep))
-                return realimag(chiq[ikmin:ikmax])
+                for chiq_ in chiq:
+                    out.append( realimag(chiq[iqmin:iqmax]))
+            return np.concatenate(out)
 
 class FeffitDataSet(larch.Group):
     def __init__(self, data=None, pathlist=None, transform=None, _larch=None, **kws):
@@ -209,7 +247,7 @@ class FeffitDataSet(larch.Group):
         # ikmax = index_of(trans.k_, max(self.data.k))
         self.model.k = trans.k_[:ikmax]
         self.datachi = interp(self.model.k, self.data.k, self.data.chi)
-
+        # print 'prepare_fit ', dir(self.data)
         if hasattr(self.data, 'epsilon_k'):
             eps_k = self.data.epsilon_k
             if isinstance(self.eps_k, numpy.ndarray):
