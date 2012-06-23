@@ -30,7 +30,7 @@ common *macro language* will strengthen all these application areas.
 
    overview
    installation
-   tutorial
+   tutorial/index.rst
    reference
    developers
    xafs

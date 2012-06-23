@@ -27,11 +27,11 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-   tutorial_start
-   tutorial_datatypes
-   tutorial_flow
-   tutorial_errors
-   tutorial_procedures
-   tutorial_modules
-   tutorial_io
-   tutorial_plotting
+   start
+   datatypes
+   flow
+   errors
+   procedures
+   modules
+   io
+   plotting
