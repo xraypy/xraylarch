@@ -111,7 +111,7 @@ html_theme = 'sphinxdoc'
 #html_title = None
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
-#html_short_title = None
+#html_short_title =
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
@@ -143,7 +143,7 @@ html_sidebars = {'index': ['indexsidebar.html','searchbox.html']}
 #html_additional_pages = {}
 
 # If false, no module index is generated.
-#html_use_modindex = True
+html_use_modindex = False
 
 # If false, no index is generated.
 #html_use_index = True
