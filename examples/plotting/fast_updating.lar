@@ -1,0 +1,30 @@
+
+_doc_  = """
+update a plot inside a loop.
+
+Not super-fast, but it works!
+"""
+import time
+
+x = arange(1200)
+y1 = sin(x/23)
+y2 = 41 + 22*cos(x/87.)
+
+
+newplot(x[:10], y1[:10], side='left', ymin=-2, ymax=2)
+   plot(x[:10], y2[:10], side='right', ymin=0, ymax=100)
+t0 = time.time()
+npts = 20
+s = (len(x)-1) /npts
+for i in range(npts):
+    update_line(x[:1+s*i], y1[:1+s*i], trace=1, ymin=-2, ymax=2)
+    update_line(x[:1+s*i], y2[:1+s*i], trace=2, side='right', ymin=20)
+    print i, time.time()-t0
+    sleep(.02)
+    # newplot(x[:1+s*i], y1[:1+s*i], force_draw=True)
+#endfor
+print 'updated plot %i times in %.2f seconds' % (npts, time.time()-t0)
+#newplot(x, y1, ymin=-1.2, ymax=1.2)
+#plot(x, y2, side='right', ymin=15, ymax=80)
+
+

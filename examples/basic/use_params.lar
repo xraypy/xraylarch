@@ -1,0 +1,17 @@
+
+def g1(amp=1, cen=0, sigma=2):
+    print '=== G1 ' , amp, cen, sigma
+    a = (amp/sigma) * sqrt(log(2.0)/pi)
+    print ' ---> ', a
+#enddef
+
+amp = param(10, min=1)
+cen = param(5)
+sig = param(0.2)
+
+for i in range(10):
+    amp.value = i * 1.5 
+    cen.value = 5.0 + (4-i)/2.0
+    sig.value = 0.15 + i*i/10.
+    g1(amp=amp, cen=cen, sigma=sig)
+#endfor
