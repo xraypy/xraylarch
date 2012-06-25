@@ -171,7 +171,7 @@ def _group(_larch=None, **kws):
 
 def _eval(text=None, filename=None, _larch=None,
           new_module=None, interactive=False,
-          printall=False): 
+          printall=False):
     """evaluate a string of larch text
     """
     if _larch is None:
@@ -185,7 +185,7 @@ def _eval(text=None, filename=None, _larch=None,
     lineno = 0
     output = None
     fname = filename
-    
+
     inptext = inputText.InputText(interactive=interactive, _larch=_larch)
     is_complete = inptext.put(text, filename=filename)
     # print 'eval complete? ', is_complete, inptext.keys
@@ -235,7 +235,7 @@ def _eval(text=None, filename=None, _larch=None,
                 pass
         if len(_larch.error) > 0:
             break
-        # 
+        #
     if len(_larch.error) > 0:
         inptext.clear()
     elif printall and ret is not None:
@@ -253,7 +253,7 @@ def _eval(text=None, filename=None, _larch=None,
         output = None
     # print 'FINAL OUT : ', output
     return output
-    
+
 
 def _run(filename=None, _larch=None, new_module=None,
          interactive=False,   printall=False):
@@ -355,7 +355,6 @@ def _addplugin(plugin, _larch=None, **kws):
     def on_error(msg):
         _larch.raise_exception(None, exc=ImportError, msg=msg)
 
-
     def _plugin_file(plugin, path=None):
         "defined here to allow recursive imports for packages"
         fh = None
@@ -370,13 +369,30 @@ def _addplugin(plugin, _larch=None, **kws):
             write('Warning: plugin %s not found\n' % plugin)
             return
         if is_pkg:
-            for fname in os.listdir(mod):
-                if fname.endswith('.py') and len(fname) > 3:
-                    try:
-                        _plugin_file(fname[:-3], path=[mod])
-                    except:
-                        write('Warning: %s is not a valid plugin\n' %
-                              pjoin(mod, fname))
+            filelist = []
+            if 'plugins.txt' in os.listdir(mod):
+                try:
+                    fx = open(os.path.abspath(os.path.join(mod,
+                                                           'plugins.txt')), 'r')
+                    for fname in fx.readlines():
+                        fname = fname[:-1].strip()
+                        if (not fname.startswith('#') and
+                            fname.endswith('.py') and len(fname) > 3):
+                            filelist.append(fname)
+                except:
+                    print("Warnging:: Error reading plugin file:\n %s\n" %
+                          os.path.abspath(os.path.join(mod, 'plugins.txt')))
+            if len(filelist) == 0:
+                for fname in os.listdir(mod):
+                    if fname.endswith('.py') and len(fname) > 3:
+                        filelist.append(fname)
+
+            for fname in filelist:
+                try:
+                    _plugin_file(fname[:-3], path=[mod])
+                except:
+                    write('Warning: %s is not a valid plugin\n' %
+                          pjoin(mod, fname))
 
         else:
             fh, modpath, desc = mod
