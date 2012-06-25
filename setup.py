@@ -29,9 +29,13 @@ data_files.append((plugin_dir, pluginfiles))
 
 for pdir in pluginpaths:
     pfiles = []
-    for fname in glob.glob('%s/*.py' % pdir):
+    filelist = []
+    for ext in ('py', 'txt', 'db', 'dat', 'rst', 'lar',
+                'dll', 'dylib', 'so'):
+        filelist.extend(glob.glob('%s/*.%s' % (pdir, ext)))
+    for fname in filelist:
         if os.path.isdir(fname):
-            print "SUBDIR  !! Need to Walk!"
+            print 'Warning -- not walking subdirectories for Plugins!!'
         else:
             pfiles.append(fname)
     data_files.append((os.path.join(share_basedir, pdir), pfiles))
