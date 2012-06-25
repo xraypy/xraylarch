@@ -231,7 +231,7 @@ class xrayDB(object):
                 f0 += s * np.exp(-e*q*q)
             return f0
 
-    def _getChantler(self, element, energy, column='f1'):
+    def _getChantler(self, element, energy, column='f1', smoothing=1):
         """return energy-dependent data from Chantler table
         columns: f1, f2, mu_photo, mu_incoh, mu_total
         """
@@ -244,7 +244,10 @@ class xrayDB(object):
         if len(row) > 0:
             row = row[0]
         if isinstance(row, tab):
-            energy = np.array(energy)
+            if isinstance(energy, (float, int)):
+                energy = np.array([energy])
+            elif not isinstance(energy, np.ndarray):
+                energy = np.array(energy)
             emin, emax = min(energy), max(energy)
             # te = self.chantler_energies(element, emin=emin, emax=emax)
             te = np.array(json.loads(row.energy))
@@ -256,11 +259,7 @@ class xrayDB(object):
                 column = 'mu_total'
             ty = np.array(json.loads(getattr(row, column)))[region]
             if column == 'f1':
-                # print energy , te
-                ex = np.interp(energy, te, ty)
-                r1 = UnivariateSpline(energy, ex, s=1)(energy)
-                r2 = UnivariateSpline(te, ty, s=1)(energy)
-                return  r1, r2
+                return UnivariateSpline(te, ty, s=smoothing)(energy)
             else:
                 return np.exp(np.interp(np.log(energy),
                                         np.log(te),
@@ -302,17 +301,17 @@ class xrayDB(object):
         region = np.arange(nemin, nemax)
         return te[region], tf1[region], tf2[region]
 
-    def f1_chantler(self, element, energy):
+    def f1_chantler(self, element, energy, **kws):
         """returns f1 -- real part of anomalous x-ray scattering factor
         for selected input energy (or energies) in eV.
         """
-        return self._getChantler(element, energy, column='f1')
+        return self._getChantler(element, energy, column='f1', **kws)
 
-    def f2_chantler(self, element, energy):
+    def f2_chantler(self, element, energy, **kws):
         """returns f2 -- imaginary part of anomalous x-ray scattering factor
         for selected input energy (or energies) in eV.
         """
-        return self._getChantler(element, energy, column='f2')
+        return self._getChantler(element, energy, column='f2', **kws)
 
     def mu_chantler(self, element, energy, incoh=False, photo=False):
         """returns mu/rho in cm^2/gr -- x-ray mass attenuation coefficient
@@ -469,7 +468,8 @@ class xrayDB(object):
 
         energies: energies in eV to calculate cross-sections
         kind:     one of 'photo', 'coh', and 'incoh' for photo-absorption,
-                  coherent scattering, and incoherent scattering cross sections.
+                  coherent scattering, and incoherent scattering
+                  cross sections, respectively.
 
         Data from Elam, Ravel, and Sieber.
         """
@@ -500,7 +500,8 @@ class xrayDB(object):
         return np.exp(elam_spline(tab_lne, tab_val, tab_spl, np.log(energies)))
 
     def mu_elam(self, element, energies):
-        """returns photo-absorption cross section for an element at energies (in eV)
+        """returns photo-absorption cross section for an element
+        at energies (in eV)
 
         returns values in units of cm^2 / gr
 
@@ -514,7 +515,8 @@ class xrayDB(object):
         return self.Elam_CrossSection(element, energies, kind='photo')
 
     def coherent_cross_section_elam(self, element, energies):
-        """returns coherenet scattering cross section for an element at energies (in eV)
+        """returns coherenet scattering cross section for an element
+        at energies (in eV)
 
         returns values in units of cm^2 / gr
 
@@ -528,7 +530,8 @@ class xrayDB(object):
         return self.Elam_CrossSection(element, energies, kind='coh')
 
     def incoherent_cross_section_elam(self, element, energies):
-        """returns incoherenet scattering cross section for an element at energies (in eV)
+        """returns incoherenet scattering cross section for an element
+        at energies (in eV)
 
         returns values in units of cm^2 / gr
 

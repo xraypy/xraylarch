@@ -70,7 +70,7 @@ def chantler_energies(element, emin=0, emax=1.e9, _larch=None):
     xdb = get_xraydb(_larch)
     return xdb.chantler_energies(element, emin=emain, emax=emax)
 
-def f1_chantler(element, energy, _larch=None):
+def f1_chantler(element, energy, _larch=None, **kws):
     """returns real part of anomalous x-ray scattering factor for
     a selected element and input energy (or array of energies) in eV.
     Data is from the Chantler tables.
@@ -85,7 +85,7 @@ def f1_chantler(element, energy, _larch=None):
     if _larch is None:
         return
     xdb = get_xraydb(_larch)
-    return xdb._getChantler(element, energy, column='f1')
+    return xdb._getChantler(element, energy, column='f1', **kws)
 
 def f2_chantler(element, energy, _larch=None):
     """returns imaginary part of anomalous x-ray scattering factor for
@@ -297,6 +297,7 @@ def core_width(element=None, edge=None, _larch=None):
 
 def registerLarchPlugin():
     return (MODNAME, {'f0': f0, 'f0_ions': f0_ions,
+                      'chantler_energies': chantler_energies,
                       'f1_chantler': f1_chantler,
                       'f2_chantler': f2_chantler,
                       'mu_chantler': mu_chantler,
