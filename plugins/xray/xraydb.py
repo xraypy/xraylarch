@@ -259,11 +259,14 @@ class xrayDB(object):
                 column = 'mu_total'
             ty = np.array(json.loads(getattr(row, column)))[region]
             if column == 'f1':
-                return UnivariateSpline(te, ty, s=smoothing)(energy)
+                out = UnivariateSpline(te, ty, s=smoothing)(energy)
             else:
-                return np.exp(np.interp(np.log(energy),
+                out = np.exp(np.interp(np.log(energy),
                                         np.log(te),
                                         np.log(ty)))
+            if isinstance(out, np.ndarray) and len(out) == 1:
+                return out[0]
+            return out
 
     def chantler_energies(self, element, emin=0, emax=1.e9):
         """ return array of energies (in eV) at which data is
@@ -497,7 +500,10 @@ class xrayDB(object):
             tab_val = np.array(json.loads(row.log_photoabsorption))
             tab_spl = np.array(json.loads(row.log_photoabsorption_spline))
 
-        return np.exp(elam_spline(tab_lne, tab_val, tab_spl, np.log(energies)))
+        out = np.exp(elam_spline(tab_lne, tab_val, tab_spl, np.log(energies)))
+        if len(out) == 1:
+            return out[0]
+        return out
 
     def mu_elam(self, element, energies):
         """returns photo-absorption cross section for an element

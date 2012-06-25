@@ -11,10 +11,13 @@ from xraydb import xrayDB
 MODNAME = '_xray'
 
 def get_xraydb(_larch):
-    symname = '%s._xrayrefdb_' % MODNAME
-    if not _larch.symtable.has_symbol(symname):
-        _larch.symtable.set_symbol(symname, xrayDB())
-    return _larch.symtable.get_symbol(symname)
+    symname = '%s._xraydb' % MODNAME
+    if _larch.symtable.has_symbol(symname):
+        return _larch.symtable.get_symbol(symname)
+
+    xraydb = xrayDB()
+    _larch.symtable.set_symbol(symname, xraydb)
+    return xraydb
 
 def f0(ion, q, _larch=None):
     """returns elastic x-ray scattering factor, f0(q), for an ion.
@@ -296,6 +299,7 @@ def core_width(element=None, edge=None, _larch=None):
 
 
 def registerLarchPlugin():
+    print 'Register XRAYDB '
     return (MODNAME, {'f0': f0, 'f0_ions': f0_ions,
                       'chantler_energies': chantler_energies,
                       'f1_chantler': f1_chantler,
