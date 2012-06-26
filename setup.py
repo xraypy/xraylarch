@@ -47,5 +47,5 @@ setup(name = 'larch',
       license = 'Python',
       description = 'A data processing language for python',
       package_dir = {'larch': 'lib'},
-      packages = ['larch', 'larch.utils', 'larch.wx'],
+      packages = ['larch', 'larch.utils', 'larch.wxlib'],
       data_files  = data_files)

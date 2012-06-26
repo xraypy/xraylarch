@@ -11,8 +11,8 @@ with options
   -d, --debug           set debug mode
   -x, --nowx            set no wx graphics mode
   -e, --exec            execute script from file(s) only
-  # -r, --remote          run in remote server mode   (not yet implemented)
-  # -p PORT, --port=PORT  port number for remote server
+  -r, --remote          run in remote server mode   (not yet implemented)
+  -p PORT, --port=PORT  port number for remote server
 """
 
 import sys
@@ -41,13 +41,10 @@ parser.add_option("-e", "--exec", dest="noshell", action="store_true",
 parser.add_option("-r", "--remote", dest="server_mode", action="store_true",
                   default=False, help="run in remote server mode")
 
-parser.add_option("-p", "--port", dest="port", default='7239',
+parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for remote server")
 
 (options, args) = parser.parse_args()
-
-if options.server_mode:
-    print 'Warning: remote server mode not working!'
 
 if options.debug:
     try:
@@ -58,6 +55,12 @@ if options.debug:
         import larch
 else:
     import larch
+
+if options.server_mode:
+    from larch.xmlrpc_server import LarchServer
+    s = LarchServer(host='localhost', port=int(options.port))
+    s.run()
+    sys.exit()
 
 # can we, and should we, use wx?
 HAS_WX = False
@@ -90,9 +93,9 @@ def onCtrlC(*args, **kws):
 # use inputhook to enable wx
 if HAS_WX:
     if options.debug:
-        from lib.wx import inputhook
+        from lib.wxlib import inputhook
     else:
-        from larch.wx import inputhook
+        from larch.wxlib import inputhook
     app = wx.App(redirect=False, clearSigInt=False)
     # print 'has group _sys.wx? ', shell.larch.symtable.has_group('_sys.wx')
     shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
@@ -101,7 +104,6 @@ if HAS_WX:
     shell.larch.symtable.set_symbol('_sys.wx.parent',None)
     inputhook.ON_INTERRUPT = onCtrlC
     inputhook.WXLARCH_SYM = shell.larch.symtable
-
 
 # execute scripts listed on command-line
 if len(args)>0:

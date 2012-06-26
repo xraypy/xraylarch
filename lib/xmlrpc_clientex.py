@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 
 import xmlrpclib
-proxy = xmlrpclib.ServerProxy('http://localhost:7112')
-print dir(proxy)
-# print getattr(proxy, 'dir')
-print 'dir():', proxy.dir('/tmp')
+larch = xmlrpclib.ServerProxy('http://localhost:4966')
+print larch
+print ' Methods: ', larch.system.listMethods()
+print larch.system.methodHelp('dir')
 
-proxy.exit()
-## print 'list_contents():', proxy.list_contents('/tmp')
+print 'list_contents():', larch.dir('/tmp')
+# proxy.exit()
+
