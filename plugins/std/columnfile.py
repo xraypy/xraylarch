@@ -9,18 +9,19 @@ from larch.symboltable import isgroup
 
 MODNAME = '_io'
 
-def _read_ascii(fname, delim='#;*%', labels=None, _larch=None):
+def _read_ascii(fname, commentchars='#;%', labels=None, _larch=None):
     """read a column ascii column file.
-    The delim argument (#;* by default) sets the first character
-    to mark the header lines.
+    The commentchar argument (#;% by default) sets the valid comment characters:
+    if the the first character in a line matches one of these, the line is marked
+    as a  header lines.
 
     Header lines continue until a line with
-       '#----' (any delimiter followed by 4 '-'
+       '#----' (any commentchar followed by 4 '-'
     The line immediately following that is read as column labels
     (space delimited)
 
     If the header is of the form
-       # KEY : VAL   (ie delimiter, key ':' value)
+       # KEY : VAL   (ie commentchar key ':' value)
     these will be parsed into a 'attributes' dictionary
     in the returned group.
 
@@ -41,7 +42,7 @@ def _read_ascii(fname, delim='#;*%', labels=None, _larch=None):
     islabel = False
     for iline, line in enumerate(text):
         line = line[:-1].strip()
-        if line[0] in delim:
+        if line[0] in commentchar:
             if islabel:
                 _labels = line[1:].strip()
                 islabel = False
@@ -165,7 +166,7 @@ def write_ascii(filename, *args, **kws):
 
     _larch.writer.write("wrote to file '%s'\n" % filename)    
 
-def write_group(filename, group, scalars = None,
+def write_group(filename, group, scalars=None,
                 arrays=None, arrays_like=None,
                 commentchar='#',  _larch=None):
 
