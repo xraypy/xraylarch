@@ -33,8 +33,17 @@ def realimag(arr, _larch=None):
     "return real array of real/imag pairs from complex array"
     return np.array([(i.real, i.imag) for i in arr]).flatten()
 
+def complex_phase(arr, _larch=None):
+    "return phase, modulo 2pi jumps"
+    phase = np.arctan2(arr.imag, arr.real)
+    for i in range(1, len(phase)):
+        while (phase[i] - phase[i-1]) > 1.5*np.pi:
+            phase[i] -= 2*np.pi
+    return phase
+
 def registerLarchPlugin():
     return ('_math', {'realimag': realimag,
+                      'complex_phase': complex_phase,
                       'deriv': _deriv,
                       'index_of': index_of,
                       'index_nearest': index_nearest,

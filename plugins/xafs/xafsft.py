@@ -2,11 +2,20 @@
 """
   XAFS Fourier transforms
 """
+import sys
 import numpy as np
 from numpy import (pi, arange, zeros, ones, sin, cos,
                    exp, log, sqrt, where, interp, linspace)
 from numpy.fft import fft, ifft
 from scipy.special import i0 as bessel0
+
+import larch
+from larch.larchlib import plugin_path
+
+sys.path.insert(0, plugin_path('std'))
+from mathutils import complex_phase
+
+
 
 MODNAME = '_xafs'
 VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin', 'bes']
@@ -113,7 +122,7 @@ def xafsift(r, chir, group=None, rmin=0, rmax=20,
         mag = sqrt(out.real**2 + out.imag**2)
         group.rwin =  win[:len(chir)]
         group.chiq_mag =  mag[:nkpts]
-        group.chiq_pha =  np.arctan2(out.imag[:nkpts], out.real[:nkpts])
+        group.chiq_pha =  complex_phase(out[:nkpts])
         group.chiq_re  =  out.real[:nkpts]
         group.chiq_im  =  out.imag[:nkpts]
     else:
@@ -146,7 +155,7 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
         group.r    =  r[:irmax]
         group.chir =  out[:irmax]
         group.chir_mag =  mag[:irmax]
-        group.chir_pha =  np.arctan2(out.imag[:irmax], out.real[:irmax])
+        group.chir_pha =  complex_phase(out[:irmax])
         group.chir_re  =  out.real[:irmax]
         group.chir_im  =  out.imag[:irmax]
 
