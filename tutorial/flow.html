@@ -8,67 +8,66 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.8 documentation</title>
+    <title>Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.12 documentation</title>
     
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
-        VERSION:     '0.9.8',
+        URL_ROOT:    '../',
+        VERSION:     '0.9.12',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
-    <link rel="up" title="Larch Tutorial" href="tutorial.html" />
-    <link rel="next" title="Tutorial: Dealing With Errors" href="tutorial_errors.html" />
-    <link rel="prev" title="Tutorial: Basic and Complex Data Types" href="tutorial_datatypes.html" /> 
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.12 documentation" href="../index.html" />
+    <link rel="up" title="Larch Tutorial" href="index.html" />
+    <link rel="next" title="Tutorial: Dealing With Errors" href="errors.html" />
+    <link rel="prev" title="Tutorial: Basic and Complex Data Types" href="datatypes.html" /> 
   </head>
   <body>
-<div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
-  <font size=28px> <a href="index.html">
-      <img src="_static/larchcones.png"
-                height=65 border="0" alt="larch"/>
-    &nbsp; Larch: X-ray Data Analysis</a>
-  </font>
+<div style="text-align: left; padding: 2px 2px 5px 2px">
+  <font size=+3> <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larch images"/>
+      &nbsp; Larch: X-ray Data Analysis 
+   </a> </font>
 </div>
 
     <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
+          <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
+          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="tutorial_errors.html" title="Tutorial: Dealing With Errors"
+          <a href="errors.html" title="Tutorial: Dealing With Errors"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="tutorial_datatypes.html" title="Tutorial: Basic and Complex Data Types"
+          <a href="datatypes.html" title="Tutorial: Basic and Complex Data Types"
              accesskey="P">previous</a> |</li>
-   <li><a href="installation.html">download</a>|&nbsp;</li>
-   <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
-   <li><a href="reference.html">reference</a>|&nbsp;</li>
-   <li><a href="developers.html">develop</a>|&nbsp;</li>
-   <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+   <li><a href="../overview.html">overview</a>|&nbsp;</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../reference.html">reference</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
 
-          <li><a href="tutorial.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tutorial: Conditional Execution and Flow Control</a><ul>
 <li><a class="reference internal" href="#conditional-evaluation-with-if-and-else">Conditional Evaluation with if and else</a></li>
@@ -79,19 +78,19 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="tutorial_datatypes.html"
+  <p class="topless"><a href="datatypes.html"
                         title="previous chapter">Tutorial: Basic and Complex Data Types</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="tutorial_errors.html"
+  <p class="topless"><a href="errors.html"
                         title="next chapter">Tutorial: Dealing With Errors</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="_sources/tutorial_flow.txt"
+    <li><a href="../_sources/tutorial/flow.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
+    <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
       <input type="submit" value="Go" />
       <input type="hidden" name="check_keywords" value="yes" />
@@ -188,7 +187,7 @@ this:</p>
 endif</pre>
 </div>
 <p>where &#8216;&lt;statements&gt;&#8217; here means a list of statements, and the &#8216;endif&#8217; is
-required (see <a class="reference internal" href="developers.html#code-block-ends"><em>Code Block Ends</em></a>). For the above, two statements will
+required (see <a class="reference internal" href="../developers.html#code-block-ends"><em>Code Block Ends</em></a>). For the above, two statements will
 be run if x is equal to 0 &#8211; there is no restriction on how many statements
 can be run.</p>
 <p>An &#8216;else&#8217; statement can be added to execute code if the test is False:</p>
@@ -493,31 +492,31 @@ while loop:</p>
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
+          <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
+          <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="tutorial_errors.html" title="Tutorial: Dealing With Errors"
+          <a href="errors.html" title="Tutorial: Dealing With Errors"
              >next</a> |</li>
         <li class="right" >
-          <a href="tutorial_datatypes.html" title="Tutorial: Basic and Complex Data Types"
+          <a href="datatypes.html" title="Tutorial: Basic and Complex Data Types"
              >previous</a> |</li>
-   <li><a href="installation.html">download</a>|&nbsp;</li>
-   <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
-   <li><a href="reference.html">reference</a>|&nbsp;</li>
-   <li><a href="developers.html">develop</a>|&nbsp;</li>
-   <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+   <li><a href="../overview.html">overview</a>|&nbsp;</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../reference.html">reference</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
 
-          <li><a href="tutorial.html" >Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" >Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2011, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

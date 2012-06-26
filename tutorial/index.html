@@ -1,0 +1,205 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Larch Tutorial &mdash; larch 0.9.12 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.12 documentation" href="../index.html" />
+    <link rel="next" title="Tutorial: Getting Started" href="start.html" />
+    <link rel="prev" title="Downloading and Installation" href="../installation.html" /> 
+  </head>
+  <body>
+<div style="text-align: left; padding: 2px 2px 5px 2px">
+  <font size=+3> <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larch images"/>
+      &nbsp; Larch: X-ray Data Analysis 
+   </a> </font>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="start.html" title="Tutorial: Getting Started"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../installation.html" title="Downloading and Installation"
+             accesskey="P">previous</a> |</li>
+   <li><a href="../overview.html">overview</a>|&nbsp;</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="#">tutorial</a>|&nbsp;</li>
+   <li><a href="../reference.html">reference</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../installation.html"
+                        title="previous chapter">Downloading and Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="start.html"
+                        title="next chapter">Tutorial: Getting Started</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tutorial/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="larch-tutorial">
+<h1>Larch Tutorial<a class="headerlink" href="#larch-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>At its core, Larch is a language for processing of scientific data.  This
+chapter describes the Larch language and introduces data processing using
+Larch.  An important goal of Larch is to make writing and modifying data
+analysis scripts as simple as possible.</p>
+<p>Although aimed at the novice programmer, this tutorial does make a few
+assumptions about the readers experience with scientific programming.  For
+example, the reader is expected to have a technical background and some
+familiarity with using scientific data analysis programs.  Some
+understanding of the concepts of how scientific data is stored on computers
+and of the basics of programming will greatly help the reader.</p>
+<p>The Larch language is implemented in Python, and heavily based upon it.
+Knowledge of Python will greatly simplify learning Larch, and vice versa.
+This shared syntax is intentional, so that as you learn Larch, you will
+also be learning Python, which can be used to extend Larch.  Alternatively,
+knowledge of Python will make Larch easy to learn.  For further details on
+Python, including tutorials, see the Python documentation at
+<a class="reference external" href="http://python.org/">http://python.org/</a></p>
+<p>Contents:</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="start.html">Tutorial: Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="start.html#larch-as-a-basic-calculator">Larch as a Basic Calculator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="datatypes.html">Tutorial: Basic and Complex Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#basic-data-types">Basic Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#objects-and-groups">Objects and Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="flow.html">Tutorial: Conditional Execution and Flow Control</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#conditional-evaluation-with-if-and-else">Conditional Evaluation with if and else</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#for-loops">For loops</a></li>
+<li class="toctree-l2"><a class="reference internal" href="flow.html#while-loops">While loops</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="errors.html">Tutorial: Dealing With Errors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#syntax-errors">Syntax Errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#exceptions">Exceptions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#try-and-except">Try and Except</a></li>
+<li class="toctree-l2"><a class="reference internal" href="errors.html#raising-your-own-exceptions">Raising your own exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="procedures.html">Tutorial: Writing Procedures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#def-statement">Def statement</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#namespace-and-scope-inside-a-procedure">Namespace and &#8220;Scope&#8221; inside a Procedure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#the-return-statement-and-multiple-return-values">The return statement, and multiple Return values</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#keyword-arguments">Keyword arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="procedures.html#documentation-strings">Documentation Strings</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">Tutorial: Running Larch Scripts, and Modules</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#running-a-script-with-run">Running a script with run</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#importing-a-larch-module">Importing a Larch Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules.html#namespaces-again">Namespaces, again</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="io.html">Tutorial: Reading and Writing Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="io.html#simple-ascii-column-files">Simple ASCII Column Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="io.html#using-hdf5-files">Using HDF5 Files</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plotting.html">Tutorial: Plotting and Displaying Data</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="start.html" title="Tutorial: Getting Started"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../installation.html" title="Downloading and Installation"
+             >previous</a> |</li>
+   <li><a href="../overview.html">overview</a>|&nbsp;</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="#">tutorial</a>|&nbsp;</li>
+   <li><a href="../reference.html">reference</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

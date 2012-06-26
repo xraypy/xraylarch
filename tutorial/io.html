@@ -1,0 +1,290 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial: Reading and Writing Data &mdash; larch 0.9.12 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.12 documentation" href="../index.html" />
+    <link rel="up" title="Larch Tutorial" href="index.html" />
+    <link rel="next" title="Tutorial: Plotting and Displaying Data" href="plotting.html" />
+    <link rel="prev" title="Tutorial: Running Larch Scripts, and Modules" href="modules.html" /> 
+  </head>
+  <body>
+<div style="text-align: left; padding: 2px 2px 5px 2px">
+  <font size=+3> <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larch images"/>
+      &nbsp; Larch: X-ray Data Analysis 
+   </a> </font>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plotting.html" title="Tutorial: Plotting and Displaying Data"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="Tutorial: Running Larch Scripts, and Modules"
+             accesskey="P">previous</a> |</li>
+   <li><a href="../overview.html">overview</a>|&nbsp;</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../reference.html">reference</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial: Reading and Writing Data</a><ul>
+<li><a class="reference internal" href="#simple-ascii-column-files">Simple ASCII Column Files</a></li>
+<li><a class="reference internal" href="#using-hdf5-files">Using HDF5 Files</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">Tutorial: Running Larch Scripts, and Modules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plotting.html"
+                        title="next chapter">Tutorial: Plotting and Displaying Data</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tutorial/io.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial-reading-and-writing-data">
+<h1>Tutorial: Reading and Writing Data<a class="headerlink" href="#tutorial-reading-and-writing-data" title="Permalink to this headline">¶</a></h1>
+<p>Larch has several built-in functions for reading scientific data.  The
+intention that the types of supported files will increase.  In addition,
+many Python modules for reading standard types of image data can be used.</p>
+<span class="target" id="module-_io"></span><div class="section" id="simple-ascii-column-files">
+<h2>Simple ASCII Column Files<a class="headerlink" href="#simple-ascii-column-files" title="Permalink to this headline">¶</a></h2>
+<p>A simple way to store small amounts of numerical data, and one that is
+widely used in the XAFS community, is to store data in plaintext (ASCII
+encoded) data files, with whitespace delimited numbers layed out as a
+table, with a fix number of columns and rows indicated by newlines.
+Typically a comment character such as &#8220;#&#8221; is used to signify header
+information.  For instance:</p>
+<div class="highlight-python"><pre># room temperature FeO.
+# data from 20-BM, 2001, as part of NXS school
+#------------------------
+#   energy     xmu       i0
+  6911.7671  -0.35992590E-01  280101.00
+  6916.8730  -0.39081634E-01  278863.00
+  6921.7030  -0.42193483E-01  278149.00
+  6926.8344  -0.45165576E-01  277292.00
+  6931.7399  -0.47365589E-01  265707.00</pre>
+</div>
+<p>This file and others like it can be read with the builtin
+<a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><tt class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></tt></a> function.</p>
+<dl class="function">
+<dt id="_io.read_ascii">
+<tt class="descclassname">_io.</tt><tt class="descname">read_ascii</tt><big>(</big><em>filename</em>, <em>comentchar='#;*%'</em>, <em>labels=None</em><big>)</big><a class="headerlink" href="#_io.read_ascii" title="Permalink to this definition">¶</a></dt>
+<dd><p>opens and read an plaintext data file, returning a new group containing
+the data.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename</strong> (<em>string</em>) &#8211; name of file to read.</li>
+<li><strong>commentchar</strong> (<em>string</em>) &#8211; string of valid comment characters</li>
+<li><strong>labels</strong> &#8211; string to split for column labels</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>Some examples of <a class="reference internal" href="#_io.read_ascii" title="_io.read_ascii"><tt class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></tt></a>:</p>
+<div class="highlight-python"><pre>larch&gt; g = read_ascii('mydata.dat')
+larch&gt; show(g)
+== Group ascii_file mydata.dat: 6 symbols ==
+  attributes: &lt;Group header attributes from mydata.dat&gt;
+  column_labels: ['energy', 'xmu', 'i0']
+  energy: array&lt;shape=(412,), type=dtype('float64')&gt;
+  filename: 'mydata.dat'
+  i0: array&lt;shape=(412,), type=dtype('float64')&gt;
+  xmu: array&lt;shape=(412,), type=dtype('float64')&gt;
+larch&gt;</pre>
+</div>
+<p>which reads the data file and sets array names according to the column
+labels in the file.   You can be explicit:</p>
+<div class="highlight-python"><pre>larch&gt; g = read_ascii('mydata.dat', label='e mutrans monitor')
+larch&gt; show(g)
+== Group ascii_file mydata.dat: 6 symbols ==
+  attributes: &lt;Group header attributes from mydata.dat&gt;
+  column_labels: ['e', 'mutrans', 'monitor']
+  e: array&lt;shape=(412,), type=dtype('float64')&gt;
+  filename: 'mydata.dat'
+  monitor: array&lt;shape=(412,), type=dtype('float64')&gt;
+  mutrans: array&lt;shape=(412,), type=dtype('float64')&gt;
+larch&gt;</pre>
+</div>
+<p>and to get the data as a 2-D array:</p>
+<div class="highlight-python"><pre> larch&gt; g  = read_ascii('mydata.dat', labels=False)
+ larch&gt; show(g)
+ == Group ascii_file mydata.dat: 4 symbols ==
+   attributes: &lt;Group header attributes from mydata.dat&gt;
+   column_labels: []
+   data: array&lt;shape=(3, 412), type=dtype('float64')&gt;
+   filename: 'mydata.dat'
+larch&gt;</pre>
+</div>
+<dl class="function">
+<dt id="_io.write_ascii">
+<tt class="descclassname">_io.</tt><tt class="descname">write_ascii</tt><big>(</big><em>filename</em>, <em>*args</em>, <em>commentchar='#'</em>, <em>label=None</em>, <em>header=None</em><big>)</big><a class="headerlink" href="#_io.write_ascii" title="Permalink to this definition">¶</a></dt>
+<dd><p>opens and writes arrays, scalars, and text to an ASCII file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>commentchar</strong> &#8211; character for comment (&#8216;#&#8217;)</li>
+<li><strong>label</strong> &#8211; array label line (autogenerated)</li>
+<li><strong>header</strong> &#8211; array of strings for header</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="_io.write_group">
+<tt class="descclassname">_io.</tt><tt class="descname">write_group</tt><big>(</big><em>filename</em>, <em>group</em>, <em>scalars=None</em>, <em>arrays=None</em>, <em>arrays_like=None</em>, <em>commentchar='#'</em><big>)</big><a class="headerlink" href="#_io.write_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>write data from a specified group to an ASCII data file</p>
+</dd></dl>
+
+</div>
+<div class="section" id="using-hdf5-files">
+<h2>Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
+<p>HDF5 is an increasingly popular data format for scientific data, as it can
+efficiently hold very large arrays in a heirarchical format that holds
+&#8220;metadata&#8221; about the data, and can be explored with a variety of tools.</p>
+<p>An example using <tt class="xref py py-func docutils literal"><span class="pre">h5_group()</span></tt> shows that one can browse through the
+data heirarchy of the HDF5 file, and pick out the needed data:</p>
+<div class="highlight-python"><pre>larch&gt; g = h5group('test.h5')
+larch&gt; show(g)
+== Group test.h5: 3 symbols ==
+  attrs: {u'Collection Time': ': Sat Feb 4 13:29:00 2012', u'Version': '1.0.0',
+          u'Beamline': 'GSECARS, 13-IDC / APS', u'Title': 'Epics Scan Data'}
+  data: &lt;Group test.h5/data&gt;
+  h5_file: &lt;HDF5 file "test.h5" (mode r)&gt;
+larch&gt;show(g.data)
+== Group test.h5/data: 5 symbols ==
+  attrs: {u'scan_prefix': '13IDC:', u'start_time': ': Sat Feb 4 13:29:00 2012',
+        u'correct_deadtime': 'True', u'dimension': 2,
+        u'stop_time': ': Sat Feb 4 13:44:52 2009'}
+  environ: &lt;Group test.h5/data/environ&gt;
+  full_xrf: &lt;Group test.h5/data/full_xrf&gt;
+  merged_xrf: &lt;Group test.h5/data/merged_xrf&gt;
+  scan: &lt;Group test.h5/data/scan&gt;
+
+
+larch&gt; g.data.scan.sums
+&lt;HDF5 dataset "det": shape (15, 26, 26), type "&lt;f8"&gt;
+
+larch&gt; imshow(g.data.scan.sums[8:,:,:])</pre>
+</div>
+<p>This interface is general-purpose but somewhat low-level.  As HDF5 formats
+and schemas become standardized, better interfaces can easily be made on
+top of this approach.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plotting.html" title="Tutorial: Plotting and Displaying Data"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="Tutorial: Running Larch Scripts, and Modules"
+             >previous</a> |</li>
+   <li><a href="../overview.html">overview</a>|&nbsp;</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../reference.html">reference</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" >Larch Tutorial</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
