@@ -2,8 +2,6 @@
 cu = read_ascii('cu_metal_rt.xdi')
 autobk(cu.energy, cu.mutrans, group=cu, rbkg=1.0, kw=1)
 
-show(cu)
-
 fitparams = group(amp  = guess(1),
                   de0  = guess(0.1),
                   ss2  = guess(0.002),
@@ -31,7 +29,6 @@ dataset = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
 out = feffit(fitparams, dataset)
 #print 'feffit complete'
 
-add_plugin('frep')
 print feffit_report(out)
 
 

@@ -263,12 +263,10 @@ def _ff2chi(pathlist, paramgroup=None, _larch=None, group=None,
     else:
         return out
 
-def feffpath(filename=None, _larch=None,
-             label=None, s02=None, degen=None, e0=None,
-             ei=None, deltar=None, sigma2=None,
-             third=None, fourth=None,  **kws):
+def feffpath(filename=None, _larch=None, label=None, s02=None,
+             degen=None, e0=None,ei=None, deltar=None, sigma2=None,
+             third=None, fourth=None, **kws):
     """create a feff path"""
-    print 'I  am feffpath'
     return FeffPathGroup(filename=filename, label=label, s02=s02,
                          degen=degen, e0=e0, ei=ei, deltar=deltar,
                          sigma2=sigma2, third=third, fourth=fourth,

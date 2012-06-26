@@ -14,6 +14,7 @@ import larch
 from larch.larchlib import Parameter, isParameter, plugin_path
 from larch.utils import OrderedDict
 
+
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('fitter'))
 sys.path.insert(0, plugin_path('xafs'))
@@ -276,13 +277,19 @@ class FeffitDataSet(larch.Group):
         self.transform.xafsft(self.datachi,   group=self.data,  rmax_out=rmax_out)
         self.transform.xafsft(self.model.chi, group=self.model, rmax_out=rmax_out)
 
+def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
+    return FeffitDataSet(data=data, pathlist=pathlist, transform=transform, _larch=_larch)
+
+def feffit_transform(_larch=None, **kws):
+    return TransformGroup(_larch=_larch, **kws)
+
 def feffit(params, datasets, _larch=None, **kws):
 
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residua function """
-        print '---feffit residual '
-        for i in dir(params):
-            print i, getattr(params, i)
+        # print '---feffit residual '
+        #for i in dir(params):
+        # print i, getattr(params, i)
         return concatenate([d.residual() for d in datasets])
 
     if isinstance(datasets, FeffitDataSet):
@@ -315,15 +322,110 @@ def feffit(params, datasets, _larch=None, **kws):
 
     return out
 
-def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
-    return FeffitDataSet(data=data, pathlist=pathlist, transform=transform, _larch=_larch)
 
-def feffit_transform(_larch=None, **kws):
-    return TransformGroup(_larch=_larch, **kws)
+def feffit_report(result, min_correl=0.1, _larch=None, **kws):
+    """print report of fit for feffit"""
+    good_to_go = False
+    try:
+        fit    = result.fit
+        params = result.params
+        datasets = result.datasets
+        good_to_go = True
+    except:
+        pass
+    if not good_to_go:
+        print 'must pass output of feffit()!'
+        return
+    topline = '=================== FEFFIT RESULTS ===================='
+    header = '[[%s]]'
+    varformat = '   %12s = % f +/- %f   (init= % f)'
+    exprformat = '   %12s = % f   = \'%s\''
+    out = [topline, header % 'Statistics']
+    #     print 'Params ', dir(params)
+    #     print 'Fit    ', dir(fit)
+    #     for ds in datasets:
+    #         print dir(ds)
+    #         print dir(ds.transform)
+
+    npts = len(params.residual)
+
+    out.append('   npts, nvarys       = %i, %i' % (npts, params.nvarys))
+    out.append('   nfree, nfcn_calls  = %i, %i' % (params.nfree, params.nfcn_calls))
+    out.append('   chi_square         = %f' % (params.chi_square))
+    out.append('   reduced chi_square = %f' % (params.chi_reduced))
+    out.append(' ')
+    if len(datasets) == 1:
+        out.append(header % 'Data')
+    else:
+        out.append(header % 'Datasets (%i)' % len(datasets))
+    for i, ds in enumerate(datasets):
+        trans = ds.transform
+        if len(datasets) > 1:
+            out.append(' dataset %i:' % (i+1))
+        out.append('   n_independent      = %.3f ' % (trans.n_idp))
+        out.append('   eps_k, eps_r       = %f, %f' % (ds.transform.epsilon_k, ds.transform.epsilon_r))
+        out.append('   fit space          = %s  ' % (trans.fitspace))
+        out.append('   r-range            = %.3f, %.3f' % (trans.rmin, trans.rmax))
+        out.append('   k-range            = %.3f, %.3f' % (trans.kmin, trans.kmax))
+        kwin = '   k window, dk       = %s, %.3f' % (trans.window, trans.dk)
+        if trans.dk2 is not None:
+            kwin = "%s, %.3f" % (kwin, trans.dk2)
+        out.append(kwin)
+        out.append('   k-weight           = %s' % (repr(trans.kweight)))
+        out.append('   paths used in fit  = %s' % (repr([p.filename for p in ds.pathlist])))
+
+
+    out.append(' ')
+    out.append(header % 'Variables')
+
+    exprs = []
+    for name in dir(params):
+        var = getattr(params, name)
+        if len(name) < 14:
+            name = (name + ' '*14)[:14]
+        if isParameter(var):
+            if var.vary:
+                out.append(varformat % (name, var.value,
+                                        var.stderr, var._initval))
+
+            elif var.expr is not None:
+                exprs.append(exprformat % (name, var.value, var.expr))
+    if len(exprs) > 0:
+        out.append(header % 'Constraint Expressions')
+        out.extend(exprs)
+
+    covar_vars = getattr(params, 'covar_vars', [])
+    if len(covar_vars) > 0:
+        out.append(' ')
+        out.append(header % 'Correlations' +
+                   '    (unreported correlations are < % .3f)' % min_correl)
+        correls = {}
+        for i, name in enumerate(covar_vars):
+            par = getattr(params, name)
+            if not par.vary:
+                continue
+            if hasattr(par, 'correl') and par.correl is not None:
+                for name2 in covar_vars[i+1:]:
+                    if name != name2 and name2 in par.correl:
+                        correls["%s, %s" % (name, name2)] = par.correl[name2]
+
+        sort_correl = sorted(correls.items(), key=lambda it: abs(it[1]))
+        sort_correl.reverse()
+        for name, val in sort_correl:
+            if abs(val) < min_correl:
+                break
+            if len(name) < 20:
+                name = (name + ' '*20)[:20]
+            out.append('   %s = % .3f ' % (name, val))
+    out.append('='*len(topline))
+    return '\n'.join(out)
+
+
 
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
                       'feffit_dataset': feffit_dataset,
-                      'feffit_transform': feffit_transform})
+                      'feffit_transform': feffit_transform,
+                      'feffit_report': feffit_report})
 
 
