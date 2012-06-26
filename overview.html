@@ -1,0 +1,281 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Larch: Motivation and Overview &mdash; larch 0.9.12 documentation</title>
+    
+    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.12 documentation" href="index.html" />
+    <link rel="next" title="Downloading and Installation" href="installation.html" />
+    <link rel="prev" title="Larch" href="index.html" /> 
+  </head>
+  <body>
+<div style="text-align: left; padding: 2px 2px 5px 2px">
+  <font size=+3> <a href="index.html">
+      <img src="_static/larchcones.png" height=90 alt="larch images"/>
+      &nbsp; Larch: X-ray Data Analysis 
+   </a> </font>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Downloading and Installation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Larch"
+             accesskey="P">previous</a> |</li>
+   <li><a href="#">overview</a>|&nbsp;</li>
+   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="reference.html">reference</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Larch: Motivation and Overview</a><ul>
+<li><a class="reference internal" href="#general-motivation-of-the-design">General Motivation of the Design</a></li>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#design-principles-key-concepts">Design Principles, Key Concepts</a></li>
+<li><a class="reference internal" href="#capabilities">Capabilities</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Larch</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="next chapter">Downloading and Installation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/overview.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="larch-motivation-and-overview">
+<h1>Larch: Motivation and Overview<a class="headerlink" href="#larch-motivation-and-overview" title="Permalink to this headline">¶</a></h1>
+<p>Larch is a scientific data processing language.  Though fairly general
+purpose, it has been developed for and aimed especially at the problems of
+processing and analyziing x-ray spectroscopic and scattering data collected
+at modern synchrotrons and x-ray sources.  Thus, Larch has several related
+target application areas, including XAFS, XRF, and X-ray standing waves.
+The initial movitation was to replace the Ifeffit package for XAFS
+analysis, but the ability to add XRF capabilites and to use it as a
+&#8220;Spec-like&#8221; language for data collection and processing were quickly added
+to the list of things Larch should be able to do.</p>
+<p>Larch gives a simple command-line interface (a Read-Eval-Print Loop), but
+can also be scripted in &#8220;batch mode&#8221;.  GUIs can be built upon Larch by
+simply generating the commands, making it easy to separate the layout from
+the actual processing steps, so that the processing steps might be recorded
+and used to make a &#8220;batch script&#8221;.  Larch is easily called from Python.  In
+addition, you can use Larch with remote-procedure calls, so that it can be
+run from different languages, or run on different machines.</p>
+<div class="section" id="general-motivation-of-the-design">
+<h2>General Motivation of the Design<a class="headerlink" href="#general-motivation-of-the-design" title="Permalink to this headline">¶</a></h2>
+<p>Many scientific data collection, visualization, and analysis programs have
+a <em>macro language</em> built into them.  These <em>macro languages</em> often have
+built-in commands and datastructures important for the problems being
+solved.  They typically allow customization, automation, scripting, and
+extension of the fundamental operations needed to get the data collection,
+visualization, and analysis work done.  Some analysis programs have
+full-fledged languages or are simply built on top of a framework such as
+Matlab, IDL, Mathematica, R, Eclipse, or Emacs, while many other programs
+have very simplistic (often buggy) and limited languages.</p>
+<p>While <em>Domain Specific Languages</em> (the term <em>macro language</em> often implies
+that they are implemented by string substitutions, which may sometimes be
+true, but is sort of beside the point here) can be a very efficient way to
+provide flexible interaction and customization of complex software, there
+are a great many of them in use, making communication and sharing data
+between programs very hard.</p>
+<p>Larch is an attempt to make a domain specific language that can be the
+basis for x-ray data collection and analysis programs, so that the
+algorithms and techniques for visualization and analysis can be better
+shared between different programs and fields.  In this respect, Larch is
+meant to be the foundation or framework upon which data collection,
+visualization, and analysis programs can be written.  By having a common,
+extensible language and analysis environment, the hope is that it will be
+easier to make data collection, visualization, and analysis programs
+interact.</p>
+</div>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>Larch is written in Python, an interpreted (non-compiled) language that has
+become quite popular in a range of scientific disciplines.  Python is known
+for its very clear syntax and readability, and Larch has syntax that is
+built upon, and very closely related to Python&#8217;s.  Using Python in this way
+not only gives a fairly elegant and readable language, but also allows
+Larch to build upon many great efforts in Python, especially for scientific
+computing, including <a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.sourceforge.net/">matplotlib</a>.  Using
+Python also turns out to make implementing Larch and adding complex
+functionality such as XAFS analysis capabilities simple.</p>
+<p>In fact, Larch is so closely related to Python that a few key points should
+be made:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>All data items in Larch are really Python objects.</li>
+<li>All Larch code is translated into Python and then run using builtin
+Python tools.</li>
+</ol>
+</div></blockquote>
+<p>In a sense, Larch is a dialect of Python.  This means has a few that an
+understanding Larch and Python are close to one another.  This in itself
+can be seen as an advantage &#8211; Python is a popular, open-source, language
+that any programmer can easily learn, and books and web documentation about
+Python are plentiful.  If you known Python, Larch will be very easy to use,
+and vice versa.</p>
+</div>
+<div class="section" id="design-principles-key-concepts">
+<h2>Design Principles, Key Concepts<a class="headerlink" href="#design-principles-key-concepts" title="Permalink to this headline">¶</a></h2>
+<p>Since Larch is intended for processing scientific data, organization of
+data is a key consideration.  The main feature that Larch uses to help the
+user with organizing data is deceptively simple and useful &#8211; the
+<strong>Group</strong>.  This is simply an empty container into which any sort of data
+can be placed, including other Groups.  This provides a heirarchical
+structure of data that can be accessed and manipulated easily via
+attributes, as with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="mf">0.1</span><span class="o">*</span><span class="n">arange</span><span class="p">(</span><span class="mi">101</span><span class="p">),</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;group 1&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>That is to say, the Group &#8216;my_group&#8217; holds data in a convenient namespace.
+You can see thed contents of a group:</p>
+<div class="highlight-python"><pre>larch&gt; show(my_group)
+== Group 0x6e15970: 3 symbols ==
+  title: 'group 1'
+  x: array&lt;shape=(101,), type=dtype('float64')&gt;
+  y: array&lt;shape=(101,), type=dtype('float64')&gt;</pre>
+</div>
+<p>which shows that this group has 3 components.  Other things to note are
+that &#8216;x&#8217; and &#8216;y&#8217; hold arrays of data, and thatfunctions such as &#8216;sqrt&#8217; act
+on all elements of the array at once.</p>
+<p>Since much of what Larch is used for is modeling or fitting small data
+sets, another key organizing principle is the <strong>Parameter</strong>.  This holds a
+value that you might want to be optimized in a least-squares fit.   Thus, a
+Parameter can be flagged as a variable, or fixed to not be varied.  In
+addition, it can be given a mathematical expression in terms of other
+Parameters to determine its value as a constrained value.</p>
+</div>
+<div class="section" id="capabilities">
+<h2>Capabilities<a class="headerlink" href="#capabilities" title="Permalink to this headline">¶</a></h2>
+<p>At this writing, Larch has the following general capabilities:</p>
+<blockquote>
+<div><ul class="simple">
+<li>a full suite of mathematical functionality, with array handling
+builtin (so that functions work on full arrays).</li>
+<li>a general purpose language with flow-control (for and while loops),
+and conditional evaluation (if-then-else).</li>
+<li>some built-in I/O functionality for ASCII files and HDF5.</li>
+<li>simple line plots, with customizable line properties.</li>
+<li>simple 2-D image dispays, with some rudimentary customization.</li>
+<li>general-purpose minimization and curve-fitting.</li>
+</ul>
+</div></blockquote>
+<p>For XAFS analysis in particular, Larch is able to do most data processing
+and analysis steps needed, including:</p>
+<blockquote>
+<div><ul class="simple">
+<li>pre-edge background subtraction and normalization</li>
+<li>background subtraction for isolating chi(k)</li>
+<li>XAFS Fourier transforms</li>
+<li>reading and manipulating Feff Path files</li>
+<li>fitting Feff Paths to XAFS data</li>
+<li>general-purpose minimization and curve-fitting.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Downloading and Installation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Larch"
+             >previous</a> |</li>
+   <li><a href="#">overview</a>|&nbsp;</li>
+   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="reference.html">reference</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

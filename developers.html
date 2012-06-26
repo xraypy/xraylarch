@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Larch for Developers &mdash; larch 0.9.8 documentation</title>
+    <title>Larch for Developers &mdash; larch 0.9.12 documentation</title>
     
     <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.8',
+        VERSION:     '0.9.12',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,17 +25,16 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.8 documentation" href="index.html" />
-    <link rel="next" title="XAFS Analysis with Larch" href="xafs.html" />
+    <link rel="top" title="larch 0.9.12 documentation" href="index.html" />
+    <link rel="next" title="XAFS Analysis with Larch" href="xafs/index.html" />
     <link rel="prev" title="Larch Reference" href="reference.html" /> 
   </head>
   <body>
-<div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
-  <font size=28px> <a href="index.html">
-      <img src="_static/larchcones.png"
-                height=65 border="0" alt="larch"/>
-    &nbsp; Larch: X-ray Data Analysis</a>
-  </font>
+<div style="text-align: left; padding: 2px 2px 5px 2px">
+  <font size=+3> <a href="index.html">
+      <img src="_static/larchcones.png" height=90 alt="larch images"/>
+      &nbsp; Larch: X-ray Data Analysis 
+   </a> </font>
 </div>
 
     <div class="related">
@@ -45,20 +44,20 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
+          <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="xafs.html" title="XAFS Analysis with Larch"
+          <a href="xafs/index.html" title="XAFS Analysis with Larch"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="reference.html" title="Larch Reference"
              accesskey="P">previous</a> |</li>
+   <li><a href="overview.html">overview</a>|&nbsp;</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
-   <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
+   <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="reference.html">reference</a>|&nbsp;</li>
-   <li><a href="#">develop</a>|&nbsp;</li>
-   <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
  
       </ul>
@@ -86,7 +85,7 @@
   <p class="topless"><a href="reference.html"
                         title="previous chapter">Larch Reference</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="xafs.html"
+  <p class="topless"><a href="xafs/index.html"
                         title="next chapter">XAFS Analysis with Larch</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
@@ -253,18 +252,18 @@ python modules which define new or customized versions of functions to
 create or manipulate Groups.</p>
 <p>Plugins need access to Larch&#8217;s symbol table and need to tell Larch how to
 use them.  To do this, each function to be added to Larch in a plugin
-module needs a <cite>larch</cite> keyword argument, which will be used to pass in the
+module needs a <cite>_larch</cite> keyword argument, which will be used to pass in the
 instance of the current larch interpreter.  Normally, you will only need
-the <cite>symtable</cite> attribute of the <cite>larch</cite> variable, which is the symbol table
+the <cite>symtable</cite> attribute of the <cite>_larch</cite> variable, which is the symbol table
 used.</p>
 <p>In addition, all functions to be added to Larch need to be <em>registered</em>, by
 defining a function call <tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> that returns a tuple
 containing the name of the group containing the added functions, and a
 dictionary of Larch symbol names and functions.  A simple plugin module
 would look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  <span class="c"># Note:  larch instance passed in with keyword</span>
-    <span class="k">if</span> <span class="n">larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
-    <span class="n">group</span> <span class="o">=</span> <span class="n">larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;created by f1&#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  <span class="c"># Note:  larch instance passed in to &#39;_larch&#39;</span>
+    <span class="k">if</span> <span class="n">_larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">_larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;created by f1&#39;</span><span class="p">)</span>
 
     <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="c"># add symbols by &quot;setting attributes&quot;</span>
     <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
@@ -310,27 +309,27 @@ startup script.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
+          <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="xafs.html" title="XAFS Analysis with Larch"
+          <a href="xafs/index.html" title="XAFS Analysis with Larch"
              >next</a> |</li>
         <li class="right" >
           <a href="reference.html" title="Larch Reference"
              >previous</a> |</li>
+   <li><a href="overview.html">overview</a>|&nbsp;</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
-   <li><a href="tutorial.html">tutorial</a>|&nbsp;</li>
+   <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="reference.html">reference</a>|&nbsp;</li>
-   <li><a href="#">develop</a>|&nbsp;</li>
-   <li><a href="xafs.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="xrf.html">XRF analysis</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
  
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2011, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
