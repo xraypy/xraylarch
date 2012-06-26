@@ -126,6 +126,7 @@ class FeffPathGroup(larch.Group):
         except AttributeError:
             pass
         self.label  = filename if label is None else label
+        self.label  = filename if label is None else label
         self.s02    = 1 if s02    is None else s02
         self.e0     = 0 if e0     is None else e0
         self.ei     = 0 if ei     is None else ei
@@ -236,7 +237,7 @@ class FeffPathGroup(larch.Group):
 
 def _read_feffdat(fname, _larch=None, **kws):
     """read Feff.dat file into a FeffPathGroup"""
-    return FeffPathGroup(fname, _larch=_larch)
+    return FeffPathGroup(filename=fname, _larch=_larch)
 
 def _ff2chi(pathlist, paramgroup=None, _larch=None, group=None,
             k=None, kmax=None, kstep=0.05, **kws):
@@ -262,6 +263,18 @@ def _ff2chi(pathlist, paramgroup=None, _larch=None, group=None,
     else:
         return out
 
+def feffpath(filename=None, _larch=None,
+             label=None, s02=None, degen=None, e0=None,
+             ei=None, deltar=None, sigma2=None,
+             third=None, fourth=None,  **kws):
+    """create a feff path"""
+    print 'I  am feffpath'
+    return FeffPathGroup(filename=filename, label=label, s02=s02,
+                         degen=degen, e0=e0, ei=ei, deltar=deltar,
+                         sigma2=sigma2, third=third, fourth=fourth,
+                         _larch=_larch)
+
 def registerLarchPlugin():
     return ('_xafs', {'read_feffdat': _read_feffdat,
-                      'ff2chi': _ff2chi})
+                      'ff2chi': _ff2chi,
+                      'feffpath': feffpath})

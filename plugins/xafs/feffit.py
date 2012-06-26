@@ -147,7 +147,7 @@ class TransformGroup(larch.Group):
             group.r    =  r[:irmax]
             group.chir =  out[:irmax]
             group.chir_mag =  mag[:irmax]
-            group.chir_pha =  atan2(out.imag[:irmax], out.real[:irmax])
+            group.chir_pha =  np.arctan2(out.imag[:irmax], out.real[:irmax])
             group.chir_re  =  out.real[:irmax]
             group.chir_im  =  out.imag[:irmax]
         else:
@@ -158,7 +158,6 @@ class TransformGroup(larch.Group):
         if isinstance(self.kweight, Iterable):
             return self.kweight[0]
         return self.kweight
-
 
     def fftf(self, chi, kweight=None):
         """ forward FT -- meant to be used internally.
@@ -281,6 +280,9 @@ def feffit(params, datasets, _larch=None, **kws):
 
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residua function """
+        print '---feffit residual '
+        for i in dir(params):
+            print i, getattr(params, i)
         return concatenate([d.residual() for d in datasets])
 
     if isinstance(datasets, FeffitDataSet):
@@ -307,6 +309,7 @@ def feffit(params, datasets, _larch=None, **kws):
         ds.save_ffts()
 
     out = larch.Group(name='feffit fit results',
+                      fit = fit,
                       params = params,
                       datasets = datasets)
 
@@ -321,7 +324,6 @@ def feffit_transform(_larch=None, **kws):
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
                       'feffit_dataset': feffit_dataset,
-                      'feffit_transform': feffit_transform,
+                      'feffit_transform': feffit_transform})
 
 
-                      })
