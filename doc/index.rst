@@ -40,5 +40,5 @@ The idea is that having these different problem areas connected by a common
    reference
    developers
    xafs/index.rst
-   xrary/index.rst
+   xray/index.rst
 

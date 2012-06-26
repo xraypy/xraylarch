@@ -11,12 +11,11 @@
 {% endblock %}
 
 {% block relbar1 %}
-<div style="background-color: #CFDADD; text-align: left; padding: 8px 4px 8px 4px">
-  <font size=24px> <a href="{{ pathto('index') }}">
-      <img src="{{pathto("_static/larchcones.png", 1) }}"
-                height=65 border="0" alt="larch"/>
-    &nbsp; Larch: X-ray Data Analysis</a>
-  </font>
+<div style="text-align: left; padding: 2px 2px 5px 2px">
+  <font size=+3> <a href="{{ pathto('index') }}">
+      <img src="{{pathto("_static/larchcones.png", 1)}}" height=90 alt="larch images"/>
+      &nbsp; Larch: X-ray Data Analysis 
+   </a> </font>
 </div>
 {{ super() }}
 {% endblock %}
