@@ -10,26 +10,29 @@ fitparams = group(amp  = guess(1),
                   delr = guess(0.)
                   )
 
-path1 = read_feffdat('feffcu01.dat')
-path1.s02    = param(expr='amp')
-path1.e0     = param(expr='de0')
-path1.sigma2 = param(expr='ss2')
-path1.deltar = param(expr='delr')
+path1 = feffpath('feffcu01.dat',
+                 s02 = 'amp',
+                 e0 = 0,
+                 sigma2='ss2',
+                 deltar='delr')
+
+# can also set a path parameter this way:
+path1.e0 = param(expr='de0')
 
 # _sys.paramGroup = fitparams
 # x = path1._pathparams()
 
-#out = ff2chi([path1], paramgroup=fitparams)
+# out = ff2chi([path1], paramgroup=fitparams)
 # print 'Sum of paths = ', out[:19]
-
 
 trans   = feffit_transform(kmin=3, kmax=17, kw=2, dk=3, rmin=1.4, rmax=3.0)
 dataset = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
 
-# out = feffit(fitparams, dataset)
+out = feffit(fitparams, dataset)
 #print 'feffit complete'
 
-#print fit_report(fitparams)
+add_plugin('frep')
+print feffit_report(out)
 
 
 # feffit(1-3, chi = data.chi, k=data.k,group = fit)
