@@ -147,6 +147,7 @@ class TransformGroup(larch.Group):
             group.r    =  r[:irmax]
             group.chir =  out[:irmax]
             group.chir_mag =  mag[:irmax]
+            group.chir_pha =  atan2(out.imag[:irmax], out.real[:irmax])
             group.chir_re  =  out.real[:irmax]
             group.chir_im  =  out.imag[:irmax]
         else:

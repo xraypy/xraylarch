@@ -113,6 +113,7 @@ def xafsift(r, chir, group=None, rmin=0, rmax=20,
         mag = sqrt(out.real**2 + out.imag**2)
         group.rwin =  win[:len(chir)]
         group.chiq_mag =  mag[:nkpts]
+        group.chiq_pha =  atan2(out.imag[:nkpts], out.real[:nkpts])
         group.chiq_re  =  out.real[:nkpts]
         group.chiq_im  =  out.imag[:nkpts]
     else:
@@ -145,6 +146,7 @@ def xafsft(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
         group.r    =  r[:irmax]
         group.chir =  out[:irmax]
         group.chir_mag =  mag[:irmax]
+        group.chir_pha =  atan2(out.imag[:irmax], out.real[:irmax])
         group.chir_re  =  out.real[:irmax]
         group.chir_im  =  out.imag[:irmax]
 
