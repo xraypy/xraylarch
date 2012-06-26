@@ -1,11 +1,34 @@
 #!/usr/bin/env python
 
 import xmlrpclib
-larch = xmlrpclib.ServerProxy('http://localhost:4966')
-print larch
-print ' Methods: ', larch.system.listMethods()
-print larch.system.methodHelp('dir')
+import time
+import json
+from larch.utils.jsonutils import json_decode
 
-print 'list_contents():', larch.dir('/tmp')
-# proxy.exit()
+s = xmlrpclib.ServerProxy('http://localhost:4966')
+print ' Methods: ', s.system.listMethods()
+print s.system.methodHelp('dir')
+
+s.larch('m = 222.3')
+s.larch('g = group(x=linspace(0, 10, 11))')
+s.larch('g.z = cos(g.x)')
+s.larch('show(g)')
+s.larch('print g.z[3:10]')
+# s.larch('newplot(g.x, g.z)')
+# s.wx_interact(0.2)
+
+print ' All done! '
+
+s.larch('show(g)')
+
+gx  = json_decode(s.get_data('g.z'))
+print 'm = ', s.get_data('m')
+print 'x = ', s.get_data('x')
+
+print 'gx = ',  gx, type(gx), gx.dtype
+
+
+
+
+# s.exit()
 

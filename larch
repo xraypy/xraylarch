@@ -56,12 +56,6 @@ if options.debug:
 else:
     import larch
 
-if options.server_mode:
-    from larch.xmlrpc_server import LarchServer
-    s = LarchServer(host='localhost', port=int(options.port))
-    s.run()
-    sys.exit()
-
 # can we, and should we, use wx?
 HAS_WX = False
 if not options.nowx:
@@ -82,6 +76,13 @@ else:
 
 if len(__extra__)  > 0:
     BANNER = "%s %s" % (BANNER, __extra__)
+
+
+if options.server_mode:
+    from larch.xmlrpc_server import LarchServer
+    s = LarchServer(host='localhost', port=int(options.port))
+    s.run()
+    sys.exit()
 
 
 shell = larch.shell(banner_msg=BANNER, quiet=options.quiet)
