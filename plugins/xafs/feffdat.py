@@ -118,15 +118,13 @@ class FeffPathGroup(larch.Group):
         self._larch = _larch
         self.filename = filename
         self._dat = FeffDatFile(filename=filename)
-        try:
-            self.reff = self._dat.reff
-            self.nleg  = self._dat.nleg
-            self.geom  = self._dat.geom
-            self.degen = self._dat.degen if degen is None else degen
-        except AttributeError:
-            pass
+
+        self.reff = self._dat.reff
+        self.nleg  = self._dat.nleg
+        self.geom  = self._dat.geom
+        self.degen = self._dat.degen if degen is None else degen
         self.label  = filename if label is None else label
-        self.label  = filename if label is None else label
+
         self.s02    = 1 if s02    is None else s02
         self.e0     = 0 if e0     is None else e0
         self.ei     = 0 if ei     is None else ei
@@ -153,6 +151,12 @@ class FeffPathGroup(larch.Group):
             self._larch.symtable._sys.paramGroup = paramgroup
         self._larch.symtable._fix_searchGroups()
 
+        # put 'reff' into the paramGroup so that it can be used in
+        # constraint expressions
+        stable = self._larch.symtable
+        if stable.isgroup(stable._sys.paramGroup):
+            stable._sys.paramGroup.reff = self.reff            
+
         out = []
         for param in ('degen', 's02', 'e0', 'ei',
                       'deltar', 'sigma2', 'third', 'fourth'):
@@ -167,6 +171,40 @@ class FeffPathGroup(larch.Group):
             out.append(param_value(val))
         return out
 
+    def report(self):
+        "return  text report of parameters"
+        (deg, s02, e0, ei, delr, ss2, c3, c4) = self._pathparams()
+        
+        geomlabel  = '     geometry: Atom Label x, y, z ipot'
+        geomformat = '           %s   % .4f, % .4f, % .4f  %i' 
+        out = ['   feff dat file = %s' % self.filename]
+        if self.label != self.filename:
+            out.append('     label     = %s' % self.label)
+        out.append('     reff = %.5f' % self.reff)
+        out.append(geomlabel)
+        
+        for label, iz, ipot, x, y, z in self.geom:
+            s = geomformat % (label, x, y, z, ipot)
+            if ipot == 0: s = "%s (absorber)" % s
+            out.append(s)
+
+
+        out.append('     Degen  = % .5f' % deg)
+        out.append('     S02    = % .5f' % s02)
+        out.append('     E0     = % .5f' % e0)
+        out.append('     R      = % .5f' % (self.reff + delr))
+        out.append('     deltar = % .5f' % delr)
+        out.append('     sigma2 = % .5f' % ss2)
+        if c3 != 0:
+            out.append('     third  = % .5f' % c3)
+        if c4 != 0:
+            out.append('     fourth = % .5f' % c4)
+        if ei != 0:
+            out.append('     ei     = % .5f' % ei)
+            
+        return '\n'.join(out)
+
+    
     def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):
