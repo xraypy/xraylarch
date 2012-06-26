@@ -299,7 +299,6 @@ def core_width(element=None, edge=None, _larch=None):
 
 
 def registerLarchPlugin():
-    print 'Register XRAYDB '
     return (MODNAME, {'f0': f0, 'f0_ions': f0_ions,
                       'chantler_energies': chantler_energies,
                       'f1_chantler': f1_chantler,
