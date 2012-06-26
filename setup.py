@@ -3,7 +3,7 @@
 from distutils.core import setup, setup_keywords
 import os
 import glob
-from lib import site_configdata
+from lib import site_configdata, version
 
 share_basedir = site_configdata.unix_installdir
 if os.name == 'nt':
@@ -41,7 +41,7 @@ for pdir in pluginpaths:
     data_files.append((os.path.join(share_basedir, pdir), pfiles))
 
 setup(name = 'larch',
-      version = '0.9.10',
+      version = version.__version__, 
       author = 'Matthew Newville',
       author_email = 'newville@cars.uchicago.edu',
       license = 'Python',
