@@ -1,0 +1,59 @@
+
+cu = read_ascii('cu_metal_rt.xdi')
+autobk(cu.energy, cu.mutrans, group=cu, rbkg=1.0, kw=1)
+
+fitparams = group(amp  = guess(1),
+                  de0  = guess(0.1),
+                  ss2  = guess(0.002),
+                  ss2_2  = guess(0.002),
+                  alpha = guess(0.)
+                  )
+
+path1 = feffpath('feff0001.dat',
+                 s02 = 'amp',
+                 e0 = 'de0',
+                 sigma2='ss2',
+                 deltar='alpha*reff')
+
+# can also set a path parameter this way:
+path1.e0 = param(expr='de0')
+
+
+path2 = feffpath('feff0002.dat',
+                 s02 = 'amp',
+                 e0 = 'de0',
+                 sigma2='ss2_2',
+                 deltar='alpha*reff')
+
+
+path3 = feffpath('feff0003.dat',
+                 s02 = 'amp',
+                 e0 = 'de0',
+                 sigma2='ss2_2',
+                 deltar='alpha*reff')
+
+
+trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=3, rmin=1.4, rmax=3.5)
+dset  = feffit_dataset(data=cu, pathlist=[path1, path2, path3], transform=trans)
+
+out   = feffit(fitparams, dset)
+
+print feffit_report(out)
+
+do_plot = True
+if do_plot:
+    plot(dset.data.k, dset.data.chi*dset.data.k**2, new=True, label='data')
+    plot(dset.model.k, dset.model.chi*dset.model.k**2, label='fit')
+    plot(dset.data.k, dset.data.kwin*2.0,       label='window')
+    plot(path1.k,  -4.0 + path1.chi*path1.k**2, label='path1')
+    plot(path2.k,  -3.0 + path2.chi*path2.k**2, label='path2')
+    plot(path3.k,  -2.0 + path3.chi*path3.k**2, label='path3')
+    # 
+ 
+    plot(dset.data.r,  dset.data.chir_mag, win=2, new=True, label='data')
+    plot(dset.model.r, dset.model.chir_mag, win=2, label='fit')
+    plot(path1.r,     -path1.chir_mag,   win=2,   label='path1')
+    plot(path2.r,     -path2.chir_mag,   win=2,   label='path2')
+    plot(path3.r,     -path3.chir_mag,   win=2,   label='path3', xmax=7)
+
+#endif
