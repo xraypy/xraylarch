@@ -19,7 +19,7 @@ sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('fitter'))
 sys.path.insert(0, plugin_path('xafs'))
 
-from mathutils import index_of, realimag
+from mathutils import index_of, realimag, complex_phase
 
 from minimizer import Minimizer
 from xafsft import xafsft, xafsift, xafsft_fast, xafsift_fast, ftwindow
@@ -66,6 +66,8 @@ class TransformGroup(larch.Group):
 
         self.kwin = None
         self.rwin = None
+        self.xafsft = self._xafsft
+        self.estimate_noise = self._estimate_noise
         self.make_karrays()
 
     def make_karrays(self, k=None, chi=None):
@@ -79,7 +81,7 @@ class TransformGroup(larch.Group):
         self.k_ = self.kstep * arange(self.nfft, dtype='float64')
         self.r_ = self.rstep * arange(self.nfft, dtype='float64')
 
-    def estimate_noise(self, chi, rmin=15.0, rmax=25.0, all_kweights=True):
+    def _estimate_noise(self, chi, rmin=15.0, rmax=25.0, all_kweights=True):
         """estimage noice from high r"""
         # print 'Estimate Noise!! ', rmin, self.transform.rmin
         self.make_karrays()
@@ -130,7 +132,7 @@ class TransformGroup(larch.Group):
         self.epsilon_k = eps_k
         self.epsilon_r = eps_r
 
-    def xafsft(self, chi, group=None, rmax_out=10, **kws):
+    def _xafsft(self, chi, group=None, rmax_out=10, **kws):
         "returns "
         for key, val in kws:
             if key == 'kw':
@@ -148,7 +150,7 @@ class TransformGroup(larch.Group):
             group.r    =  r[:irmax]
             group.chir =  out[:irmax]
             group.chir_mag =  mag[:irmax]
-            group.chir_pha =  np.arctan2(out.imag[:irmax], out.real[:irmax])
+            group.chir_pha =  complex_phase(out[:irmax])
             group.chir_re  =  out.real[:irmax]
             group.chir_im  =  out.imag[:irmax]
         else:
@@ -273,9 +275,16 @@ class FeffitDataSet(larch.Group):
                 group=self.model)
         return self.transform.apply(self.datachi-self.model.chi, eps_scale=True)
 
-    def save_ffts(self, rmax_out=10):
-        self.transform.xafsft(self.datachi,   group=self.data,  rmax_out=rmax_out)
-        self.transform.xafsft(self.model.chi, group=self.model, rmax_out=rmax_out)
+    def save_ffts(self, rmax_out=10, path_outputs=True):
+        "save fft outputs"
+        xft = self.transform.xafsft
+        xft(self.datachi,   group=self.data,  rmax_out=rmax_out)
+        xft(self.model.chi, group=self.model, rmax_out=rmax_out)
+        if path_outputs:
+            for p in self.pathlist:
+                xft(p.chi, group=p, rmax_out=rmax_out)
+                
+
 
 def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
     return FeffitDataSet(data=data, pathlist=pathlist, transform=transform, _larch=_larch)
@@ -283,7 +292,8 @@ def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
 def feffit_transform(_larch=None, **kws):
     return TransformGroup(_larch=_larch, **kws)
 
-def feffit(params, datasets, _larch=None, **kws):
+def feffit(params, datasets, _larch=None, rmax_out=10,
+           path_outputs=True, **kws):
 
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residua function """
@@ -313,7 +323,7 @@ def feffit(params, datasets, _larch=None, **kws):
 
     # here we create outputs:
     for ds in datasets:
-        ds.save_ffts()
+        ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
 
     out = larch.Group(name='feffit fit results',
                       fit = fit,
@@ -323,7 +333,8 @@ def feffit(params, datasets, _larch=None, **kws):
     return out
 
 
-def feffit_report(result, min_correl=0.1, _larch=None, **kws):
+def feffit_report(result, min_correl=0.1, with_paths=True,
+                  _larch=None, **kws):
     """print report of fit for feffit"""
     good_to_go = False
     try:
@@ -417,7 +428,19 @@ def feffit_report(result, min_correl=0.1, _larch=None, **kws):
             if len(name) < 20:
                 name = (name + ' '*20)[:20]
             out.append('   %s = % .3f ' % (name, val))
+
+    if with_paths:
+        out.append(' ')
+        out.append(header % 'Paths')
+        for ds in datasets:
+            for p in ds.pathlist:
+                out.append('%s\n' % p.report())
+ 
+
+
     out.append('='*len(topline))
+
+
     return '\n'.join(out)
 
 
