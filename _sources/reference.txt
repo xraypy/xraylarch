@@ -13,6 +13,17 @@ Larch.
 Much of the discussion here will expect a familiarity with programming and
 a willingness to consult the on-line Python documentation when necessary.
 
+Needed here:
+
+  1. buit in functions
+  2. namespace layout (_main, _sys, _math, _builtin,...)
+
+
+
+.. toctree::
+   :maxdepth: 2
+
+   developers
 
 Overview
 ===================

@@ -10,7 +10,7 @@
     
     <title>Larch for Developers &mdash; larch 0.9.12 documentation</title>
     
-    <link rel="stylesheet" href="_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -27,15 +27,20 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.12 documentation" href="index.html" />
     <link rel="next" title="XAFS Analysis with Larch" href="xafs/index.html" />
-    <link rel="prev" title="Larch Reference" href="reference.html" /> 
+    <link rel="prev" title="Larch for Developers" href="" /> 
   </head>
   <body>
-<div style="text-align: left; padding: 2px 2px 5px 2px">
-  <font size=+3> <a href="index.html">
-      <img src="_static/larchcones.png" height=90 alt="larch images"/>
-      &nbsp; Larch: X-ray Data Analysis 
-   </a> </font>
+<div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
+<table><tr><td>
+   <a href="index.html">
+      <img src="_static/larchcones.png" height=90 alt="larchcones"/>
+   </a>
+</td><td>
+      <font size=+3><a href="index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
 </div>
+
 
     <div class="related">
       <h3>Navigation</h3>
@@ -50,9 +55,8 @@
           <a href="xafs/index.html" title="XAFS Analysis with Larch"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="reference.html" title="Larch Reference"
+          <a href="#" title="Larch for Developers"
              accesskey="P">previous</a> |</li>
-   <li><a href="overview.html">overview</a>|&nbsp;</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="reference.html">reference</a>|&nbsp;</li>
@@ -82,8 +86,8 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="reference.html"
-                        title="previous chapter">Larch Reference</a></p>
+  <p class="topless"><a href=""
+                        title="previous chapter">Larch for Developers</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="xafs/index.html"
                         title="next chapter">XAFS Analysis with Larch</a></p>
@@ -121,7 +125,7 @@ some familiarity with Python.</p>
 <div class="section" id="differences-between-larch-and-python">
 <span id="python-diffs-section"></span><h2>Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h2>
 <p>Larch is very similar to Python but there are some very important
-difffernces, especially for someone familiar with Python.  These
+differences, especially for someone familiar with Python.  These
 differences are not because we feel Python is somehow inadequate or
 imperfect, but because Larch is a domain-specific-language.  It is really
 something of an implementation detail that Larch&#8217;s syntax is so close to
@@ -130,7 +134,7 @@ Python.   The principle differences with Python are:</p>
 <div><ol class="arabic simple">
 <li>Using &#8216;end*&#8217; instead of significant white-space for code blocks.</li>
 <li>Groups versus Modules</li>
-<li>Changing the lookup rules for symbol names</li>
+<li>Changing the lookup rules for finding symbol names</li>
 <li>Not implementing several python concepts, notably Class, and lambda.</li>
 </ol>
 </div></blockquote>
@@ -207,16 +211,93 @@ symbol table.</p>
 </div>
 <div class="section" id="symbol-lookup-rules">
 <h3>Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this headline">¶</a></h3>
-<p>The name lookups in Python are quite straightforward and strict: local,
-module, global.  They are also fairly focused on <em>code</em> rather than <em>data</em>.
-There is a tendency with Python scripts to use something like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+<p>Looking up symbol names is a key feature of any language.  Python and Larch
+both allow <em>namespaces</em> in which symbols can be nested into a heirarchy,
+using a syntax of <strong>parent.child</strong>, with a dot (&#8216;.&#8217;) separating the
+components of the name.   Such parent/child relationships for symbol names
+are used for modules (files of code), and object attributes.   Thus, one
+could have data objects named:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">cu_01</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span>
+<span class="n">cu_02</span><span class="o">.</span><span class="n">path1</span><span class="o">.</span><span class="n">chi</span>
+<span class="n">cu_03</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chi</span>
 </pre></div>
 </div>
-<p>in quick-and-dirty scripts, though many experienced developers will tell
-you to avoid this like the plague.</p>
-<p>In Larch, there is a list of Groups
-namespaces that are</p>
+<p>Where the name <em>chi</em> is used repeatedly, but with different (and multiple)
+parents.  The issue of name lookups is how to know what (if any) to use if
+<em>chi</em> is specified without its parents names.</p>
+<p>In Python, name lookups are quite straightforward and strict: &#8220;<em>local,
+module</em>&#8221;. Here, <em>local</em> means &#8220;inside the current function or method&#8221; and
+<em>module</em> means &#8220;inside the current module (file of code text)&#8221;.  More
+specifically, each function or method and each module is given its own
+namespace, and symbols are looked for first in the local namespace, and
+then in the module namespace.  These rules are focused on <em>code</em> rather
+than <em>data</em>, and leads to having a lot of &#8220;import&#8221; statements at the top of
+python modules.  For example, to access the <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> function from the
+numpy module, one typically does one of these:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>or:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In both of these examples the numpy module is brought into the <em>module</em>
+level namespace, either named as &#8216;numpy&#8217; or renamed to &#8216;np&#8217; (a common
+convention in scientific python code).  Inside the function
+<tt class="xref py py-func docutils literal"><span class="pre">sqrt_array()</span></tt>, the names &#8216;npts&#8217; and &#8216;x&#8217; are in the local namespace &#8211;
+they are not available outside the function.  The functions <tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt>
+and <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> are taken from the module-level namespace, using the name
+as defined in the import statement.  A third alternative would be to
+import only the names &#8216;sqrt&#8217; and &#8216;arange&#8217; into the modules namespace:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">arange</span>
+
+<span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For quick and dirty Python scripts, there is a tendency to use
+&#8220;import <a href="#id2"><span class="problematic" id="id3">*</span></a>&#8221;, as in:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
+    <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which imports several hundred names into the module level namespace.  Many
+experienced developers will tell you to avoid this like the plague.</p>
+<p>In Larch, the general problem of how to lookup the names of objects
+remains, but the rules are changed slightly.  Since Group objects are used
+extensively throughout Larch exactly to provide namespaces as a way to
+organize data, we might as well use them.  Instead of using &#8220;import <a href="#id4"><span class="problematic" id="id5">*</span></a>&#8221;,
+Larch has a top-level group &#8216;_math&#8217; in which it stores several hundred
+names of functions, mostly from the numpy module.  It also uses top-level
+groups &#8216;_sys&#8217; and &#8216;_builtin&#8217;, which hold non-mathematical builtin functions
+and data, and many plugins will add top-level groups (such as &#8216;_plotter&#8217;,
+&#8216;_xafs&#8217;, and &#8216;_xray&#8217;).  So, to access <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> and <tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt> in
+Larch, you could write <cite>_math.sqrt()</cite> and <cite>_math.arange()</cite>.  But you don&#8217;t
+have to.</p>
+<p>Symbol lookup in Larch uses a list of Groups which is searched for names.
+This list of groups is held in _sys.searchGroups (which holds the group
+names) and _sys.searchGroupObjects (which holds references to the groups
+themselves).  These will be changed as the program runs.  They can be
+changed dynamically, this is not encouraged (and can lead to Larch not
+being able to work well).</p>
+<p>Larch also has 3 special variables that it uses to hold references to
+groups that are <em>always</em> included in the search of names.  These are
+&#8216;_sys.localGroup&#8217;, which holds the group for a currently running function
+while it is running; &#8216;_sys.moduleGroup&#8217;, which holds the namespace for a
+module associated with a currently running function; and &#8216;_sys.paramGroup&#8217;,
+which holds a group of Parameters used during fits (more on this, and why
+it is needed here in the section on Parameters).</p>
 </div>
 <div class="section" id="unimplemented-features">
 <h3>Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this headline">¶</a></h3>
@@ -315,9 +396,8 @@ startup script.</p>
           <a href="xafs/index.html" title="XAFS Analysis with Larch"
              >next</a> |</li>
         <li class="right" >
-          <a href="reference.html" title="Larch Reference"
+          <a href="#" title="Larch for Developers"
              >previous</a> |</li>
-   <li><a href="overview.html">overview</a>|&nbsp;</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="reference.html">reference</a>|&nbsp;</li>

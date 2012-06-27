@@ -10,7 +10,7 @@
     
     <title>Tutorial: Writing Procedures &mdash; larch 0.9.12 documentation</title>
     
-    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -31,12 +31,17 @@
     <link rel="prev" title="Tutorial: Dealing With Errors" href="errors.html" /> 
   </head>
   <body>
-<div style="text-align: left; padding: 2px 2px 5px 2px">
-  <font size=+3> <a href="../index.html">
-      <img src="../_static/larchcones.png" height=90 alt="larch images"/>
-      &nbsp; Larch: X-ray Data Analysis 
-   </a> </font>
+<div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
+<table><tr><td>
+   <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
+   </a>
+</td><td>
+      <font size=+3><a href="../index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
 </div>
+
 
     <div class="related">
       <h3>Navigation</h3>
@@ -53,7 +58,6 @@
         <li class="right" >
           <a href="errors.html" title="Tutorial: Dealing With Errors"
              accesskey="P">previous</a> |</li>
-   <li><a href="../overview.html">overview</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../reference.html">reference</a>|&nbsp;</li>
@@ -153,11 +157,11 @@ larch&gt; safe_sqrt(-9)
 Did you want sqrt(9.000000) = 3.000000?</pre>
 </div>
 <p>Of course, you will most often want a procedure to return a value.  This is
-done with the <strong>return</strong> statement.   This can be put anywhere in a
-procedure definition.  When encountered, it will cause the procedure to
-immediately exist, passing back any indicated value(s).  If no <strong>return</strong>
-statement is given in a procedure, it will return <tt class="docutils literal"><span class="pre">None</span></tt> when the
-procedure has fully executed.  An example:</p>
+done with the <strong>return</strong> statement.  A <strong>return</strong> statement can be put
+anywhere in a procedure definition.  When encountered, it will cause the
+procedure to immediately exist, passing back any indicated value(s).  If no
+<strong>return</strong> statement is given in a procedure, it will return <tt class="docutils literal"><span class="pre">None</span></tt> when
+the procedure has fully executed.  An example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
   <span class="k">if</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
      <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -167,21 +171,23 @@ procedure has fully executed.  An example:</p>
 <span class="n">enddef</span>
 </pre></div>
 </div>
-<p>which can no be used as:</p>
+<p>which can now be used as:</p>
 <div class="highlight-python"><pre>larch&gt; print safe_sqrt(4)
 2.0
 larch&gt; x = safe_sqrt(-10)
 larch&gt; print x
 3.16227766017</pre>
 </div>
-<p>Multiple arguments can be specified, separated by a comma:</p>
-<div class="highlight-python"><pre>larch&gt; def my_add(x, y):
-.....&gt;    return x + y
+<p><strong>return</strong> can take multiple arguments, separated by a comma, which is to
+say a <strong>tuple</strong>.  As an example:</p>
+<div class="highlight-python"><pre>larch&gt; def sum_diff(x, y):
+.....&gt;    return x + y, x-y
 .....&gt; enddef
-larch&gt; print my_add(1, 2.2)
-3.2</pre>
+larch&gt; print sum_diff(3., 4.)
+(7.0, -1.0)</pre>
 </div>
-<p>Formally, the definition of a procedure looks like:</p>
+<p>This is discussed in more detail below.</p>
+<p>The formal definition of a procedure looks like:</p>
 <div class="highlight-python"><pre>def &lt;procedure_name&gt;(&lt;arguments&gt;):
     &lt;block of statements&gt;
 enddef</pre>
@@ -325,13 +331,13 @@ keyword parameters.</p>
 </div>
 <div class="section" id="documentation-strings">
 <h2>Documentation Strings<a class="headerlink" href="#documentation-strings" title="Permalink to this headline">¶</a></h2>
-<p>Of course, it is a good idea to document your procedures so that you and
-others can read what it is meant to do and how to use it.   Larch has a
+<p>It is generally a good idea to document your procedures so that you and
+others can read what it is meant to do and how to use it.  Larch has a
 built-in mechanism for supporting procedure documentaion.  If the first
-statement in a procedure is a <strong>bare string</strong>  (that is, a string that is
+statement in a procedure is a <strong>bare string</strong> (that is, a string that is
 not assigned to a variable), then this will be used as the procedure
 documentation.  You can use triple-quoted strings for multi-line
-documentation strings.   This doc string will be used by the built-in help
+documentation strings.  This doc string will be used by the built-in help
 mechanism, or when viewing details of the procedure.  For example:</p>
 <div class="highlight-python"><pre>def safe_sqrt(x):
   """safe sqrt function:
@@ -369,7 +375,6 @@ enddef</pre>
         <li class="right" >
           <a href="errors.html" title="Tutorial: Dealing With Errors"
              >previous</a> |</li>
-   <li><a href="../overview.html">overview</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../reference.html">reference</a>|&nbsp;</li>

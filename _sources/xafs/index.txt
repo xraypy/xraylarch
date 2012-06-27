@@ -57,7 +57,6 @@ minimal subset of the possible outputs.
     matched to the low-*R* components of the resulting :math:`\chi(k)`.
 
 
-
 ..  function:: ftwindow(k, xmin=0, xmax=None, dk=1, ...)
 
     create a Fourier transform window function.

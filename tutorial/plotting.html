@@ -10,7 +10,7 @@
     
     <title>Tutorial: Plotting and Displaying Data &mdash; larch 0.9.12 documentation</title>
     
-    <link rel="stylesheet" href="../_static/sphinxdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
@@ -31,12 +31,17 @@
     <link rel="prev" title="Tutorial: Reading and Writing Data" href="io.html" /> 
   </head>
   <body>
-<div style="text-align: left; padding: 2px 2px 5px 2px">
-  <font size=+3> <a href="../index.html">
-      <img src="../_static/larchcones.png" height=90 alt="larch images"/>
-      &nbsp; Larch: X-ray Data Analysis 
-   </a> </font>
+<div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
+<table><tr><td>
+   <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
+   </a>
+</td><td>
+      <font size=+3><a href="../index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
 </div>
+
 
     <div class="related">
       <h3>Navigation</h3>
@@ -53,7 +58,6 @@
         <li class="right" >
           <a href="io.html" title="Tutorial: Reading and Writing Data"
              accesskey="P">previous</a> |</li>
-   <li><a href="../overview.html">overview</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../reference.html">reference</a>|&nbsp;</li>
@@ -67,6 +71,15 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial: Plotting and Displaying Data</a><ul>
+<li><a class="reference internal" href="#line-plots">Line Plots</a></li>
+<li><a class="reference internal" href="#image-display">Image Display</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="io.html"
                         title="previous chapter">Tutorial: Reading and Writing Data</a></p>
@@ -101,8 +114,291 @@
             
   <div class="section" id="tutorial-plotting-and-displaying-data">
 <h1>Tutorial: Plotting and Displaying Data<a class="headerlink" href="#tutorial-plotting-and-displaying-data" title="Permalink to this headline">¶</a></h1>
-<p>Plotting and Visualizing data is vital to a scientific analysis package,
-and Larch provides several methods for data visualization.</p>
+<p>Plotting and Visualizing data are vital to any scientific analysis package,
+and Larch provides several methods for data visualization.  These are
+largely built on two types of data display.  The first is the line plot
+(sometimes calld an xy plot), which shows traces of a set of functions
+y(x).  The second type of data display supported is the 2-dimensional image
+display, in which a grey scale or false color map shows an image
+representing a 2-dimensional array of intensity.</p>
+<p>Though not as fancy as many dedicated plotting and graphics packages, Larch
+attempts to provide satisfying and graphical displays of data, and the
+basic plots made with Larch can be high enough quality to include in
+publications.  In addition, both line plots and image display provide
+interactive features such as zooming in and out, changing properties such
+as colors and labels.  Finally, copying and saving images of the graphics
+is easy and can be done either with keyboard commands such as Ctrl-C or
+from dropdown menus on the graphic elements.</p>
+<div class="section" id="line-plots">
+<h2>Line Plots<a class="headerlink" href="#line-plots" title="Permalink to this headline">¶</a></h2>
+<p>Larch provides a few functions for making line plots, with the principle
+function being called <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>.  The <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> function takes two
+arrays: <cite>x</cite>, the abscissa array, and <cite>y</cite>, the ordinate array.  It also
+accepts a very large number of optional arguments for setting properties
+like color, line style, labels, and so on.  Most of these properties can
+also be set after the plot is displayed through the graphical display of
+the plot itself.</p>
+<p>Multiple plot windows can be shown simultaneously and you can easily
+control which one to draw to.</p>
+<dl class="function">
+<dt id="plot">
+<tt class="descname">plot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot y(x) given 1-dimensional x and y arrays &#8211; these must be of the
+same size.   Each x-y pair  displayed  is called a <em>trace</em>.
+There are many optional keyword/value parameters, and given in the
+<a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a> below.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="newplot">
+<tt class="descname">newplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#newplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is essentially the same a <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, but with the option  <cite>new=True</cite>.
+The rest of the arguments are as listed in  <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="scatterplot">
+<tt class="descname">scatterplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#scatterplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>A scatterplot differs from a line plot in that the set of x, y values
+are not assumed to be in any particular order, and so are not connected
+with a line.  Arguments are very similar to those for <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, and
+are listed in  <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a>.</p>
+</dd></dl>
+
+<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a>, <a class="reference internal" href="#newplot" title="newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>, and
+<a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> and
+<a class="reference internal" href="#newplot" title="newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>.  In addition, the <a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> method uses many of the same arguments for the
+same meaning, as indicated by the right-most column.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="14%" />
+<col width="13%" />
+<col width="9%" />
+<col width="51%" />
+<col width="14%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">argument</th>
+<th class="head">type</th>
+<th class="head">default</th>
+<th class="head">meaning</th>
+<th class="head">scatterplot?</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>title</td>
+<td>string</td>
+<td>None</td>
+<td>Plot title</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>ylabel</td>
+<td>string</td>
+<td>None</td>
+<td>abscissa label</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>y2label</td>
+<td>string</td>
+<td>None</td>
+<td>right-hand abscissa label</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>label</td>
+<td>string</td>
+<td>None</td>
+<td>trace label (defaults to &#8216;trace N&#8217;)</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>side</td>
+<td>left/right</td>
+<td>left</td>
+<td>side for y-axis and label</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>grid</td>
+<td>None/bool</td>
+<td>None</td>
+<td>to show grid lines</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>color</td>
+<td>string</td>
+<td>blue</td>
+<td>color to use for trace</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>use_dates</td>
+<td>bool</td>
+<td>False</td>
+<td>to show dates in xlabel (<a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> only)</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>linewidth</td>
+<td>int</td>
+<td>2</td>
+<td>linewidth for trace</td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>style</td>
+<td>string</td>
+<td>solid</td>
+<td>line-style for trace (solid, dashed, ...)</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>drawstyle</td>
+<td>string</td>
+<td>line</td>
+<td>style connecting points of trace</td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>marker</td>
+<td>string</td>
+<td>None</td>
+<td>symbol to show for each point (+, o, ....)</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>markersize</td>
+<td>int</td>
+<td>8</td>
+<td>size of marker shown for each point</td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>dy</td>
+<td>array</td>
+<td>None</td>
+<td>uncertainties for y values; error bars</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>ylog_scale</td>
+<td>bool</td>
+<td>False</td>
+<td>draw y axis with log(base 10) scale</td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>xmin</td>
+<td>float</td>
+<td>None</td>
+<td>minimum displayed x value</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>xmax</td>
+<td>float</td>
+<td>None</td>
+<td>maximum displayed x value</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>ymin</td>
+<td>float</td>
+<td>None</td>
+<td>minimum displayed y value</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>ymax</td>
+<td>float</td>
+<td>None</td>
+<td>maximum displayed y value</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>autoscale</td>
+<td>bool</td>
+<td>True</td>
+<td>whether to automatically set plot limits</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>draw_legend</td>
+<td>None/bool</td>
+<td>None</td>
+<td>whether to display legend (None: leave as is)</td>
+<td>no</td>
+</tr>
+<tr class="row-odd"><td>refresh</td>
+<td>bool</td>
+<td>True</td>
+<td>whether to refresh display</td>
+<td>no</td>
+</tr>
+<tr class="row-even"><td>&nbsp;</td>
+<td colspan="3"><strong>arguments that apply only for</strong> <a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a></td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>size</td>
+<td>int</td>
+<td>10</td>
+<td>size of marker</td>
+<td>yes</td>
+</tr>
+<tr class="row-even"><td>edgecolor</td>
+<td>string</td>
+<td>black</td>
+<td>edge color of marker</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>selectcolor</td>
+<td>string</td>
+<td>red</td>
+<td>color for selected points</td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<p>For each plot window, the configuration for the plot (title, labels, grid
+displays, etc) and the properties of each trace (color, linewidth, ...)
+are preserved for the duration of that window.   A few specific notes:</p>
+<blockquote>
+<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> default to <tt class="docutils literal"><span class="pre">None</span></tt>,
+which means to use the previously used value.</p>
+<p>2. The <em>use_dates</em> option is not very rich, and simply turns x-values that
+are Unix timestamps into x labels showing the dates.</p>
+<p>3. While the default is to auto-scale the plot from the data ranges,
+specifying any of the limits will override the corresponding limit(s).</p>
+<p>4. The <em>color</em> argument can be any color name (&#8220;blue&#8221;, &#8220;red&#8221;, &#8220;black&#8221;, etc),
+standard X11 color names (&#8220;cadetblue3&#8221;, &#8220;darkgreen&#8221;, etc), or an RGB hex
+color string of the form &#8220;#RRGGBB&#8221;.</p>
+<p>5. Valid <em>style</em> arguments are &#8216;solid&#8217;, &#8216;dashed&#8217;, &#8216;dotted&#8217;, or &#8216;dash-dot&#8217;,
+with &#8216;solid&#8217; as the default.</p>
+<p>6. Valid <em>marker</em> arguments are &#8216;+&#8217;, &#8216;o&#8217;, &#8216;x&#8217;, &#8216;^&#8217;, &#8216;v&#8217;, &#8216;&gt;&#8217;, &#8216;&lt;&#8217;, &#8216;|&#8217;, &#8216;_&#8217;,
+&#8216;square&#8217;, &#8216;diamond&#8217;, &#8216;thin diamond&#8217;, &#8216;hexagon&#8217;, &#8216;pentagon&#8217;, &#8216;tripod 1&#8217;, or
+&#8216;tripod 2&#8217;.</p>
+<p>7. Valid <em>drawstyles</em> are None (which connects points with a straight line),
+&#8216;steps-pre&#8217;, &#8216;steps-mid&#8217;, or &#8216;steps-post&#8217;, which give a step between the
+points, either just after a point (&#8216;steps-pre&#8217;), midway between them
+(&#8216;steps-mid&#8217;) or just before each point (&#8216;steps-post&#8217;).   Note that if displaying
+discrete values as a function of time, left-to-right, and want to show a
+transition to a new value as a sudden step, you want &#8216;steps-post&#8217;.</p>
+</div></blockquote>
+<p>Again, most of theese values can be configured interactively from the  plot window.</p>
+</div></blockquote>
+<dl class="method">
+<dt id="update_line">
+<tt class="descname">update_line</tt><big>(</big><em>x</em>, <em>y</em>, <em>trace</em>, <em>side='left'</em><big>)</big><a class="headerlink" href="#update_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>updates an existing trace.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> &#8211; array of x values</li>
+<li><strong>y</strong> &#8211; array of y values</li>
+<li><strong>trace</strong> &#8211; integer index for the trace (1 is the first trace)</li>
+<li><strong>side</strong> &#8211; which y axis to use (&#8216;left&#8217; or &#8216;right&#8217;).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This function is particularly useful for data that is changing and you
+wish to update traces from a previous <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> with new (x, y) data
+without completely redrawing the entire plot.  Using this method is
+substantially faster than replotting, and should be used for dynamic
+plots, such as those happening during fits.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="image-display">
+<h2>Image Display<a class="headerlink" href="#image-display" title="Permalink to this headline">¶</a></h2>
+</div>
 </div>
 
 
@@ -126,7 +422,6 @@ and Larch provides several methods for data visualization.</p>
         <li class="right" >
           <a href="io.html" title="Tutorial: Reading and Writing Data"
              >previous</a> |</li>
-   <li><a href="../overview.html">overview</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../reference.html">reference</a>|&nbsp;</li>

@@ -49,11 +49,11 @@ Here *x* will hold whatever value is passed to it, so that::
 
 
 Of course, you will most often want a procedure to return a value.  This is
-done with the **return** statement.   This can be put anywhere in a
-procedure definition.  When encountered, it will cause the procedure to
-immediately exist, passing back any indicated value(s).  If no **return**
-statement is given in a procedure, it will return ``None`` when the
-procedure has fully executed.  An example::
+done with the **return** statement.  A **return** statement can be put
+anywhere in a procedure definition.  When encountered, it will cause the
+procedure to immediately exist, passing back any indicated value(s).  If no
+**return** statement is given in a procedure, it will return ``None`` when
+the procedure has fully executed.  An example::
 
     def safe_sqrt(x):
       if x > 0:
@@ -63,7 +63,7 @@ procedure has fully executed.  An example::
       endif
     enddef
 
-which can no be used as::
+which can now be used as::
 
     larch> print safe_sqrt(4)
     2.0
@@ -71,19 +71,23 @@ which can no be used as::
     larch> print x
     3.16227766017
 
-Multiple arguments can be specified, separated by a comma::
+**return** can take multiple arguments, separated by a comma, which is to
+say a **tuple**.  As an example::
 
-    larch> def my_add(x, y):
-    .....>    return x + y
+    larch> def sum_diff(x, y):
+    .....>    return x + y, x-y
     .....> enddef
-    larch> print my_add(1, 2.2)
-    3.2
+    larch> print sum_diff(3., 4.)
+    (7.0, -1.0)
 
-Formally, the definition of a procedure looks like::
+This is discussed in more detail below.
+
+The formal definition of a procedure looks like::
 
    def <procedure_name>(<arguments>):
        <block of statements>
    enddef
+
 
 
 Namespace and "Scope" inside a Procedure
@@ -238,13 +242,13 @@ keyword parameters.
 Documentation Strings
 =======================
 
-Of course, it is a good idea to document your procedures so that you and
-others can read what it is meant to do and how to use it.   Larch has a
+It is generally a good idea to document your procedures so that you and
+others can read what it is meant to do and how to use it.  Larch has a
 built-in mechanism for supporting procedure documentaion.  If the first
-statement in a procedure is a **bare string**  (that is, a string that is
+statement in a procedure is a **bare string** (that is, a string that is
 not assigned to a variable), then this will be used as the procedure
 documentation.  You can use triple-quoted strings for multi-line
-documentation strings.   This doc string will be used by the built-in help
+documentation strings.  This doc string will be used by the built-in help
 mechanism, or when viewing details of the procedure.  For example::
 
     def safe_sqrt(x):
@@ -260,5 +264,4 @@ With this definition::
     larch> help(safe_sqrt)
       safe sqrt function:
          returns sqrt(abs(x))
-
 

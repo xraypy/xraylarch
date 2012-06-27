@@ -32,9 +32,7 @@ information.  For instance::
      6931.7399  -0.47365589E-01  265707.00
 
 This file and others like it can be read with the builtin
-:func:`read_ascii` function. 
-
-..
+:func:`read_ascii` function.
 
 
 .. function:: read_ascii(filename, comentchar='#;*%', labels=None)
@@ -43,7 +41,7 @@ This file and others like it can be read with the builtin
    the data.
 
 
-   :param filename:  name of file to read.  
+   :param filename:  name of file to read.
    :type  filename:  string
    :param commentchar:  string of valid comment characters
    :type  commentchar:  string
@@ -54,23 +52,24 @@ This file and others like it can be read with the builtin
     if the the first character in a line matches one of these, the line is marked
     as a  header lines.
 
-    Header lines continue until a line with
-       '#----' (any commentchar followed by 4 '-'
-    The line immediately following that is read as column labels
-    (space delimited)
+    Header lines continue until a line with '#----' (that is, any
+    commentchar followed by 4 '-' The line immediately following that is
+    read as column labels (space delimited)
 
-    If the header is of the form
+    If the header is of the form::
+
        # KEY : VAL   (ie commentchar key ':' value)
-    these will be parsed into an 'attributes' sub-group
+
+    these key-value pairs (all as strings) will be parsed into an 'attributes' sub-group.
 
     If labels has the default value ``None``, column labels from the line
     following the line of '#----' (if available) will be used.
 
     If labels is ``False``, the group will have a *data* variable contain
-    the 2-dimensional data. 
+    the 2-dimensional data.
 
 Some examples of :func:`read_ascii`::
-    
+
     larch> g = read_ascii('mydata.dat')
     larch> show(g)
     == Group ascii_file mydata.dat: 6 symbols ==
@@ -80,10 +79,10 @@ Some examples of :func:`read_ascii`::
       filename: 'mydata.dat'
       i0: array<shape=(412,), type=dtype('float64')>
       xmu: array<shape=(412,), type=dtype('float64')>
-    larch>  
+    larch>
 
 which reads the data file and sets array names according to the column
-labels in the file.   You can be explicit:: 
+labels in the file.   You can be explicit::
 
     larch> g = read_ascii('mydata.dat', label='e mutrans monitor')
     larch> show(g)
@@ -94,11 +93,11 @@ labels in the file.   You can be explicit::
       filename: 'mydata.dat'
       monitor: array<shape=(412,), type=dtype('float64')>
       mutrans: array<shape=(412,), type=dtype('float64')>
-    larch>  
+    larch>
 
 and to get the data as a 2-D array::
 
-    larch> g  = read_ascii('mydata.dat', labels=False)                                                                                                         
+    larch> g  = read_ascii('mydata.dat', labels=False)
     larch> show(g)
     == Group ascii_file mydata.dat: 4 symbols ==
       attributes: <Group header attributes from mydata.dat>
@@ -143,14 +142,14 @@ data heirarchy of the HDF5 file, and pick out the needed data::
     larch> g = h5group('test.h5')
     larch> show(g)
     == Group test.h5: 3 symbols ==
-      attrs: {u'Collection Time': ': Sat Feb 4 13:29:00 2012', u'Version': '1.0.0', 
+      attrs: {u'Collection Time': ': Sat Feb 4 13:29:00 2012', u'Version': '1.0.0',
               u'Beamline': 'GSECARS, 13-IDC / APS', u'Title': 'Epics Scan Data'}
       data: <Group test.h5/data>
       h5_file: <HDF5 file "test.h5" (mode r)>
     larch>show(g.data)
     == Group test.h5/data: 5 symbols ==
-      attrs: {u'scan_prefix': '13IDC:', u'start_time': ': Sat Feb 4 13:29:00 2012', 
-            u'correct_deadtime': 'True', u'dimension': 2, 
+      attrs: {u'scan_prefix': '13IDC:', u'start_time': ': Sat Feb 4 13:29:00 2012',
+            u'correct_deadtime': 'True', u'dimension': 2,
             u'stop_time': ': Sat Feb 4 13:44:52 2009'}
       environ: <Group test.h5/data/environ>
       full_xrf: <Group test.h5/data/full_xrf>
