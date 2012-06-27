@@ -5,7 +5,8 @@ cd doc
 echo '# Making docs'
 make all
 cd _build/html
-tar cvzf ../../docs.tgz *
+tar cvzf ../../../docs.tgz *
+
 cd ../../
 #
 echo "# Switching to gh-pages branch"
