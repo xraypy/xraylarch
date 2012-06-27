@@ -1,5 +1,6 @@
 
 fname = 'cu_rt01.xmu'
+fname = 'cu_rt01.xmu'
 cu = read_ascii(fname)
 
 pre_edge(cu.energy, cu.xmu, group=cu)

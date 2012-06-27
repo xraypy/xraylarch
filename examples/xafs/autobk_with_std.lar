@@ -1,0 +1,41 @@
+
+fname = 'cu_rt01.xmu'
+fname = 'cu.xmu'
+
+cu1 = read_ascii(fname)
+
+
+chidat = read_ascii('ifeffit_chik.dat', labels='k chi')
+# chidat = read_ascii('cu10k.chi', labels='k chi')
+
+pre_edge(cu1.energy, cu1.xmu, group=cu1)
+
+cu2 = copy(cu1)
+
+autobk(cu1.energy, cu1.xmu, rbkg=1, group=cu1)
+
+# now with std... 
+autobk(cu2.energy, cu2.xmu, rbkg=1, group=cu2, k_std=chidat.k, chi_std=chidat.chi)
+
+
+
+xafsft(cu1.k, cu1.chi, kmin=2, kmax=16, dk=2, kweight=2, window='han', group=cu1)
+
+xafsft(cu2.k, cu2.chi, kmin=2, kmax=16, dk=2, kweight=2, window='han', group=cu2)
+
+
+plot(cu1.k, cu1.chi*cu1.k**2, label='no std', new=True,
+        ylabel =' $ k^2 \chi(k) $ ',
+        xlabel=' $ k (\AA^{-1}) $ ',   title='  $ \chi(k)$ ' )
+
+plot(cu2.k, cu2.chi*cu2.k**2, label='with std')
+
+ 
+# 
+# newplot(cu.r, cu.chir_mag, win=3,
+#         xlabel=' $ R (\AA) $',
+#         label=' |chi(R)|' ,
+#         title=' %s $ \chi(R)$ ' % fname)
+# plot(cu.r, cu.chir.real, win=3,
+#      label = ' $  Re[\chi(R)] $')
+# ;

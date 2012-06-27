@@ -32,15 +32,18 @@ def spline_eval(kraw, mu, knots, coefs, order, kout):
     return bkg, chi
 
 def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
-            kraw=None, mu=None, kout=None, ftwin=1, **kws):
+            kraw=None, mu=None, kout=None, ftwin=1, chi_std=None, **kws):
 
     coefs = [getattr(pars, FMT_COEF % i) for i in range(ncoefs)]
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
+    print 'autobk resid ', chi_std is not None
+    if chi_std is not None:
+        chi = chi - chi_std
     return realimag(xafsft_fast(chi*ftwin, nfft=nfft)[:irbkg])
 
 def autobk(energy, mu, group=None, rbkg=1, nknots=None,
            e0=None, edge_step=None, kmin=0, kmax=None, kweight=1,
-           dk=0, win=None, vary_e0=True, chi_std=None,
+           dk=0, win=None, vary_e0=True, k_std=None, chi_std=None,
            nfft=2048, kstep=0.05, pre_edge_kws=None,
            debug=False, _larch=None, **kws):
 
@@ -84,6 +87,13 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
         kmax = max(kraw)
     kout  = kstep * np.arange(int(1.01+kmax/kstep), dtype='float64')
 
+    # interpolate provided chi(k) onto the kout grid
+    print ' standard ' , chi_std is not None, k_std is not None
+    if chi_std is not None and k_std is not None:
+        print 'Interolate standard ' 
+        chi_std = np.interp(kout, k_std, chi_std)
+    print chi_std is not None
+    
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk)
 
@@ -117,7 +127,7 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
 
     initbkg, initchi = spline_eval(kraw, mu[ie0:], knots, coefs, order, kout)
 
-    fitkws = dict(ncoefs=len(coefs),
+    fitkws = dict(ncoefs=len(coefs), chi_std=chi_std, 
                   knots=knots, order=order, kraw=kraw, mu=mu[ie0:],
                   irbkg=irbkg, kout=kout, ftwin=ftwin, nfft=nfft)
     # do fit
