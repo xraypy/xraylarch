@@ -9,7 +9,7 @@ from larch.symboltable import isgroup
 
 MODNAME = '_io'
 
-def _read_ascii(fname, commentchars='#;%', labels=None, _larch=None):
+def _read_ascii(fname, commentchar='#;%', labels=None, _larch=None):
     """read a column ascii column file.
     The commentchar argument (#;% by default) sets the valid comment characters:
     if the the first character in a line matches one of these, the line is marked
