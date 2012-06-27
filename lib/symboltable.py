@@ -200,8 +200,6 @@ class SymbolTable(Group):
         searchGroups  = sys.searchGroups[:]
         searchGroups.extend(self._sys.core_groups)
         for name in searchGroups:
-            if name not in snames:
-                snames.append(name)
             grp = None
             if name in self._sys.modules:
                 grp = self._sys.modules[name]
@@ -211,10 +209,7 @@ class SymbolTable(Group):
                     grp = gtest
             elif '.' in name:
                 parent, child= name.split('.')
-                # print( 'search for %s in sysmods' % name)
                 for sgrp in sysmods:
-                    #print(' ---  ', parent, sgrp.__name__, child,
-                    # paren == sgrp.__name__, hasattr(sgrp, child))
                     if (parent == sgrp.__name__ and 
                         hasattr(sgrp, child)):
                         grp = getattr(sgrp, child)
@@ -224,12 +219,10 @@ class SymbolTable(Group):
                     if hasattr(sgrp, name):
                         grp = getattr(sgrp, name)
                         break
-                    
             if grp is not None and grp not in sgroups:
                 sgroups.append(grp)
-
-            # print( name, grp, grp in sgroups)
-
+                snames.append(name)
+                
         self._sys.searchGroups = cache[3] = snames[:]
         sys.searchGroupObjects = cache[4] = sgroups[:]
         # print( 'Set searchGroups ', cache[3], cache[4])
