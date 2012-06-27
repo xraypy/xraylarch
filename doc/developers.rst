@@ -12,7 +12,7 @@ Differences between Larch and Python
 =============================================
 
 Larch is very similar to Python but there are some very important
-difffernces, especially for someone familiar with Python.  These
+differences, especially for someone familiar with Python.  These
 differences are not because we feel Python is somehow inadequate or
 imperfect, but because Larch is a domain-specific-language.  It is really
 something of an implementation detail that Larch's syntax is so close to
@@ -20,7 +20,7 @@ Python.   The principle differences with Python are:
 
   1. Using 'end*' instead of significant white-space for code blocks.
   2. Groups versus Modules
-  3. Changing the lookup rules for symbol names
+  3. Changing the lookup rules for finding symbol names
   4. Not implementing several python concepts, notably Class, and lambda.
 
 Each of these is discussed in more detail below.
@@ -109,18 +109,98 @@ symbol table.
 Symbol Lookup Rules
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The name lookups in Python are quite straightforward and strict: local,
-module, global.  They are also fairly focused on *code* rather than *data*.
-There is a tendency with Python scripts to use something like::
+Looking up symbol names is a key feature of any language.  Python and Larch
+both allow *namespaces* in which symbols can be nested into a heirarchy,
+using a syntax of **parent.child**, with a dot ('.') separating the
+components of the name.   Such parent/child relationships for symbol names
+are used for modules (files of code), and object attributes.   Thus, one
+could have data objects named::
+
+    cu_01.data.chi
+    cu_02.path1.chi
+    cu_03.model.chi
+
+Where the name *chi* is used repeatedly, but with different (and multiple)
+parents.  The issue of name lookups is how to know what (if any) to use if
+*chi* is specified without its parents names.
+
+In Python, name lookups are quite straightforward and strict: "*local,
+module*". Here, *local* means "inside the current function or method" and
+*module* means "inside the current module (file of code text)".  More
+specifically, each function or method and each module is given its own
+namespace, and symbols are looked for first in the local namespace, and
+then in the module namespace.  These rules are focused on *code* rather
+than *data*, and leads to having a lot of "import" statements at the top of
+python modules.  For example, to access the :func:`sqrt` function from the
+numpy module, one typically does one of these::
+
+    import numpy
+
+    def sqrt_array(npts=10):
+        x = np.arange(npts)/2.
+        return numpy.sqrt(x)
+
+or::
+
+    import numpy as np
+
+    def sqrt_array(npts=10):
+        x = np.arange(npts)/2.
+        return np.sqrt(x)
+
+
+In both of these examples the numpy module is brought into the *module*
+level namespace, either named as 'numpy' or renamed to 'np' (a common
+convention in scientific python code).  Inside the function
+:func:`sqrt_array`, the names 'npts' and 'x' are in the local namespace --
+they are not available outside the function.  The functions :func:`arange`
+and :func:`sqrt` are taken from the module-level namespace, using the name
+as defined in the import statement.  A third alternative would be to
+import only the names 'sqrt' and 'arange' into the modules namespace::
+
+    from numpy import sqrt, arange
+
+    def sqrt_array(npts=10):
+        x = arange(npts)/2.
+        return sqrt(x)
+
+For "quick and dirty" Python scripts, there is a tendency to use 'import
+*'::
 
     from numpy import *
+    def sqrt_array(npts=10):
+        x = arange(npts)/2.
+        return sqrt(x)
 
-in quick-and-dirty scripts, though many experienced developers will tell
-you to avoid this like the plague.
+which imports several hundred names into the module level namespace.  Many
+experienced developers will tell you to avoid this like the plague.
 
-In Larch, there is a list of Groups
-namespaces that are
+In Larch, the general problem of how to lookup the names of objects
+remains, but the rules are changed slightly.  Since Group objects are used
+extensively throughout Larch exactly to provide namespaces as a way to
+organize data, we might as well use them.  Instead of using 'import *',
+Larch has a top-level group '_math' in which it stores several hundred
+names of functions, mostly from the numpy module.  It also uses top-level
+groups '_sys' and '_builtin', which hold non-mathematical builtin functions
+and data, and many plugins will add top-level groups (such as '_plotter',
+'_xafs', and '_xray').  So, to access :func:`sqrt` and :func:`arange` in
+Larch, you could write `_math.sqrt()` and `_math.arange()`.  But you don't
+have to.
 
+Symbol lookup in Larch uses a list of Groups which is searched for names.
+This list of groups is held in _sys.searchGroups (which holds the group
+names) and _sys.searchGroupObjects (which holds references to the groups
+themselves).  These will be changed as the program runs.  They can be
+changed dynamically, this is not encouraged (and can lead to Larch not
+being able to work well).
+
+Larch also has 3 special variables that it uses to hold references to
+groups that are *always* included in the search of names.  These are
+'_sys.localGroup', which holds the group for a currently running function
+while it is running; '_sys.moduleGroup', which holds the namespace for a
+module associated with a currently running function; and '_sys.paramGroup',
+which holds a group of Parameters used during fits (more on this, and why
+it is needed here in the section on Parameters).
 
 
 
