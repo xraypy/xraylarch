@@ -17,10 +17,10 @@ if  [ $? -ne 0 ]  ; then
   exit
 fi
 
-tar xzf docs.tar.gz .
+tar xzf docs.tar.gz 
 
 echo "# commit changes to gh-pages branch"
-git add *.html _source/  _static/*
+git add *.html */*.html  *.js objects.inv searchindex.js larch.pdf _sources/ _static/
 git commit -am "updated docs"
 
 if  [ $? -ne 0 ]  ; then
