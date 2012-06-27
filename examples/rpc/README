@@ -1,0 +1,18 @@
+This directory shows examples of using larch by Remote Procedure Call. 
+This has severl important possible use cases:
+ 1. Larch can be run on a separate machine
+ 2. Multiple larch process can be running simultaneously, 
+    and a client can switch between them.
+ 3. A client can exit, but the underlying larch process
+    can be persistant, and so re-joined later.
+
+To start a larch RPC server, use 
+    larch -r
+
+You can specify a port with 
+    larch -r -p 4966
+
+The examples here shows a simple client that simply runs some larch
+commands and retrieves some data (which is transferred with json).
+
+

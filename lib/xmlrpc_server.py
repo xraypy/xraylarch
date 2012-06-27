@@ -8,14 +8,15 @@ from larch.interpreter import Interpreter
 from larch.inputText import InputText
 from larch.utils.jsonutils import json_encode
 
-import wx
-from larch.wxlib import inputhook
-HAS_WX = True
-#except ImportError:
-#    HAS_WX = False
+try:
+    import wx
+    from larch.wxlib import inputhook
+    HAS_WX = True
+except ImportError:
+    HAS_WX = False
 
 class LarchServer(SimpleXMLRPCServer):
-    def __init__(self, host='localhost', port=5465, with_wx=True, **kws):
+    def __init__(self, host='127.0.0.1', port=5465, with_wx=True, **kws):
         self.keep_alive = True
         self.port = port
         self.with_wx = HAS_WX and with_wx
@@ -56,6 +57,7 @@ class LarchServer(SimpleXMLRPCServer):
         if self.with_wx:
             self.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
             self.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
+            
             self.wxapp = wx.App(redirect=False, clearSigInt=False)
             self.wx_evtloop = inputhook.EventLoopRunner(parent=self.wxapp)
 
@@ -64,7 +66,7 @@ class LarchServer(SimpleXMLRPCServer):
             self.larch.symtable.set_symbol('_sys.wx.parent',None)
             inputhook.ON_INTERRUPT = self.exit
             inputhook.WXLARCH_SYM = self.larch.symtable
-
+        print 'Larch Initialized!'
         self.initialized = True
         
     def wx_interact(self, timeout):
