@@ -279,6 +279,27 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
     symtable.clear_callbacks(xsym)
     return (symtable.get_symbol(xsym), symtable.get_symbol(ysym))
 
+
+# @SafeWxCall
+def _scatterplot(x,y, win=1, _larch=None, wxparent=None,
+          force_draw=True,  **kws):
+    """scatterplot(x, y[, win=1], options])
+
+    Plot x, y values as a scatterplot.  Parameters are very similar to
+    those of plot()
+
+    See Also: plot, newplot
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+    plotter.scatterplot(x, y, **kws)
+    if force_draw:
+        update(_larch=_larch)
+
+
+
 # @SafeWxCall
 def _imshow(map, win=1, _larch=None, wxparent=None, **kws):
     """imshow(map[, options])
@@ -294,7 +315,7 @@ def _imshow(map, win=1, _larch=None, wxparent=None, **kws):
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
                       'newplot':_newplot,
-                      'oplot': _oplot,
+                      'scatterplot': _scatterplot,
                       'update_line': _update_line,
                       'get_display':_getDisplay,
                       'get_cursor': _getcursor,
