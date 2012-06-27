@@ -164,8 +164,8 @@ import only the names 'sqrt' and 'arange' into the modules namespace::
         x = arange(npts)/2.
         return sqrt(x)
 
-For "quick and dirty" Python scripts, there is a tendency to use 'import
-*'::
+For quick and dirty Python scripts, there is a tendency to use
+"import *", as in::
 
     from numpy import *
     def sqrt_array(npts=10):
@@ -178,7 +178,7 @@ experienced developers will tell you to avoid this like the plague.
 In Larch, the general problem of how to lookup the names of objects
 remains, but the rules are changed slightly.  Since Group objects are used
 extensively throughout Larch exactly to provide namespaces as a way to
-organize data, we might as well use them.  Instead of using 'import *',
+organize data, we might as well use them.  Instead of using "import *",
 Larch has a top-level group '_math' in which it stores several hundred
 names of functions, mostly from the numpy module.  It also uses top-level
 groups '_sys' and '_builtin', which hold non-mathematical builtin functions

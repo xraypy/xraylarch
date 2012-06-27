@@ -4,17 +4,9 @@ name='larch'
 cd doc
 echo '# Making docs'
 make all
-cd ../
-
-echo '# Building tarball of docs'
-mkdir _tmpdoc
-cp -pr doc/$name.pdf     _tmpdoc/.
-cp -pr doc/_build/html/*    _tmpdoc/.
-cd _tmpdoc
-tar czf ../../_docs.tar.gz .
-cd ..
-rm -rf _tmpdoc
-
+cd _build/html
+tar cvzf ../../docs.tgz *
+cd ../../
 #
 echo "# Switching to gh-pages branch"
 git checkout gh-pages
@@ -24,11 +16,11 @@ if  [ $? -ne 0 ]  ; then
   exit
 fi
 
-tar xzf ../_docs.tar.gz .
+tar xzf docs.tar.gz .
 
 echo "# commit changes to gh-pages branch"
-git add *.html
-git commit -am "changed docs"
+git add *.html _source/  _static/*
+git commit -am "updated docs"
 
 if  [ $? -ne 0 ]  ; then
   echo ' failed.'

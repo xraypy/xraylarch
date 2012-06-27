@@ -24,12 +24,11 @@ html:
 
 larch.pdf: latex
 	cd $(BUILDDIR)/latex && make all-pdf
-	cp -pr $(BUILDDIR)/latex/larch.pdf .
+	cp -pr $(BUILDDIR)/latex/larch.pdf $(BUILDDIR)/html/.
 
 all: html larch.pdf
 
 install: all
-	cp -pr larch.pdf $(INSTALLDIR)/larch.pdf
 	rm -rf  $(INSTALLDIR)/doc_old
 	mv  $(INSTALLDIR)/doc  $(INSTALLDIR)/doc_old
 	cp -pr  $(BUILDDIR)/html $(INSTALLDIR)/doc
