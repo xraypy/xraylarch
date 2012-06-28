@@ -29,9 +29,11 @@ Contents:
 
    start
    datatypes
+   arrays
    flow
    errors
    procedures
    modules
+   builtins
    io
    plotting

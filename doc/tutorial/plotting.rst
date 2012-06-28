@@ -35,24 +35,52 @@ Multiple plot windows can be shown simultaneously and you can easily
 control which one to draw to.
 
 
-.. function:: plot(x, y, **kws)
+.. method:: plot(x, y,  **kws)
+
+   :param x:     array of x values
+   :param y:     array of y values -- same size as x
 
    Plot y(x) given 1-dimensional x and y arrays -- these must be of the
-   same size.   Each x-y pair  displayed  is called a *trace*.  
-   There are many optional keyword/value parameters, and given in the 
-   :ref:`Table of Plot Arguments <plotopt_table>` below.
+   same size.   Each x, y pair displayed  is called a *trace*.  
 
-.. function:: newplot(x, y, **kws)
+
+   There are many options for a plot, all specified by the keyword/value
+   parameters described in the   :ref:`Table of Plot Arguments <plotopt_table>` below.
+
+.. method:: newplot(x, y, **kws)
 
    This is essentially the same a :func:`plot`, but with the option  `new=True`.
    The rest of the arguments are as listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
 
-.. function:: scatterplot(x, y, **kws)
+.. method:: scatterplot(x, y, **kws)
+
 
    A scatterplot differs from a line plot in that the set of x, y values
    are not assumed to be in any particular order, and so are not connected
    with a line.  Arguments are very similar to those for :func:`plot`, and
    are listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
+
+
+.. method:: update_trace(x, y, trace=1, win=1, side='left')
+
+   updates an existing trace.
+
+   :param x:     array of x values
+   :param y:     array of y values
+   :param win:   integer index of window for plot (1 is the first window)
+   :param trace: integer index for the trace (1 is the first trace)
+   :param side:  which y axis to use ('left' or 'right').
+
+   This function is particularly useful for data to be plotted is changing
+   and you wish to update traces from a previous :func:`plot` with new
+   data without completely redrawing the entire plot.  Using this method
+   is substantially faster than replotting, and should be used for dynamic
+   plots, such as plottting the progress of some function during a fit.
+   Note that you cannot change properties such as color here -- these will
+   be inherited from the existing trace.  In that sense, most of the
+   properties of the trace and of the plot as a whole remain unchanged, it
+   just happens that the data for the trace has been replaced.
+
 
 .. _plotopt_table:
 
@@ -71,6 +99,8 @@ same meaning, as indicated by the right-most column.
   | y2label     | string     | None    | right-hand abscissa label                      |  yes        |
   +-------------+------------+---------+------------------------------------------------+-------------+
   | label       | string     | None    | trace label (defaults to 'trace N')            |  yes        |
+  +-------------+------------+---------+------------------------------------------------+-------------+
+  | win         | integer    | 1       | index of plot window to use (1, 2, ..., 16)    |  yes        |
   +-------------+------------+---------+------------------------------------------------+-------------+
   | side        | left/right | left    | side for y-axis and label                      |  yes        |
   +-------------+------------+---------+------------------------------------------------+-------------+
@@ -134,7 +164,7 @@ same meaning, as indicated by the right-most column.
    standard X11 color names ("cadetblue3", "darkgreen", etc), or an RGB hex
    color string of the form "#RRGGBB".
 
-   5. Valid *style* arguments are 'solid', 'dashed', 'dotted', or 'dash-dot',
+   5. Valid *style* arguments are 'solid', 'dashed', 'dotted', or 'dash-dot' ,
    with 'solid' as the default.
 
    6. Valid *marker* arguments are '+', 'o', 'x', '^', 'v', '>', '<', '|', '_',
@@ -148,24 +178,139 @@ same meaning, as indicated by the right-most column.
    discrete values as a function of time, left-to-right, and want to show a
    transition to a new value as a sudden step, you want 'steps-post'.
 
-  Again, most of theese values can be configured interactively from the  plot window.
+ Again, most of these values can be configured interactively from the  plot window.
 
-.. method:: update_line(x, y, trace, side='left')
 
-   updates an existing trace.
 
-   :param x:     array of x values
-   :param y:     array of y values
-   :param trace: integer index for the trace (1 is the first trace)
-   :param side:  which y axis to use ('left' or 'right').
+Plot Examples
+~~~~~~~~~~~~~~
 
-   This function is particularly useful for data that is changing and you
-   wish to update traces from a previous :func:`plot` with new (x, y) data
-   without completely redrawing the entire plot.  Using this method is
-   substantially faster than replotting, and should be used for dynamic
-   plots, such as those happening during fits.
+
+Here a a few example plots, to whet your appetite::
+
+    x = linspace(0, 10, 101)
+    y1 = sin(x)
+    y2 = -2 +0.2*x + (0.2*x)**2 
+    newplot(x, y1)
+
+will make this plot:
+
+
+.. image:: ../images/plot_basic1.png
+
+
+Adding a second curve, and setting some labels::
+  
+     plot(x, y2, xlabel='x (mm)', ylabel='f(x)', title='Example Plot')
+
+will make this plot:
+
+.. image:: ../images/plot_basic2.png
+
+
+
+Using the Plot Windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+From the main plot window, you can perform several tasks:
+
+
+**Getting Cursor Position**:
+
+
+From the plot window you can click the left button of your mouse, and see
+the X, Y coordinates of where you clicked displayed in the status bar at
+the bottom of the plot window.   You can also read the values from the
+variables :data:`_plotter.plot1_x`  and :data:`_plotter.plot1_y`, for plot
+window 1, and :data:`_plotter.plot2_x`  and on for other plot windows.
+
+
+**Zooming in and out**:
+
+
+Left-clicking on the plot window and then dragging the mouse around with
+the button still pressed will draw a rectangular box around part of the
+plot window.  Releasing the mouse will zoom in on the portion of the plot
+set by the rectangle. You can zoom in multiple times. 
+
+To unzoom, press Ctrl-Z (Apple-Z on Mac OS X), which will go back to the
+previous zoom rectangle.  You can also right-click on the plot, which will
+bring up a window from which you can zoom out 1 level at a time, or all
+the way back to fully zoomed out.
+
+
+**Copy to Clipboard**:
+
+To copy the plot image (just the main plot image, not all the Window
+decorations such as menus and status bar) to the sysem clipboard, type
+Ctrl-C (Apple-C for Mac OS X users).  You can then paste this into other
+applications such as rich text documents and slide presentation tools.
+
+**Save image to PNG**:
+
+To save a copy of the plot image, use Ctrl-S (Apple-S for Mac OS X users).
+This will bring up a 'save file' dialog box for writing a PNG file of the
+plot.
+
+**Print image**:
+
+On many systems, you should be able to print directly from the Plot
+Window, using Ctrl-P (Apple-P for Mac OS X users).   This may not work on
+all systems.
+
+**Configuring the Plot**:
+
+ 
+From the Plot Window, either Ctrl-K (Apple-K for Mac OS X users) or
+Options->'Configure Plot' (or right-click to bring up a popup menu, then
+select Configure) will bring up the plot configuration window, which looks
+like this:
+
+
+.. image:: ../images/plot_config.png
+
+
+From here you can set the titles, labels, and styles, colors, symbols, and
+so on for the line traces.
+
+
+Using TeX-like commands for labels and titles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The titles and labels for plot elements can be simple strings or use a
+subset of TeX markup to give fine control over typesetting greek letters,
+mathematical symbols and formulae.   A simple example would be::
+
+    plot(k, chi, xlabel = ' $ k \rm(\AA^{-1}) $ ', ylabel = '$ \chi(k) $ ')
+
+This will render the x and y labels as (for the pedantic, these renderings
+below may be only approximate):
+
+   :math:`k \rm(\AA^{-1})`   
+
+   :math:`\chi(k)`
+
+
+That is, strings can contain TeX-like markup between dollar signs ('$').
+This does not actually use TeX (so you don't need TeX installed). This
+ability to render TeX is due entirely to the matplotlib library used, and
+further details about using TeX for markup, including a list of symbols,
+commands to change fonts, and examples, can be found at
+http://matplotlib.sourceforge.net/users/mathtext.html
+
+When using the Plot Configuration window to enter a TeX-like string, the
+text control box will be given a yellow background color (instead of the
+normal white color) if there is an error in rendering your TeX string. 
+
 
 
 
 Image Display
 ===============
+
+
+.. method:: imshow(dat,  **kws)
+
+   :param dat:  2-d array of some intensity
+
+   Imshow displays a grey-scale or false-color image from a 2-d array of intensities.
