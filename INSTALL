@@ -1,11 +1,102 @@
-required packages:
+Installation instructions for Larch
+========================================
 
-   numpy
-   matplolib
-   wx
-   docutlils
+To install the Larch, use::
 
-recommended packages:
-   scipy
+   python setup.py install
+
+On modern linux and OS X systems, you will probably need to install with super-user
+privileges, as with::
+
+   sude python setup.py install
+
+Requirements and Dependencies
+===============================
+
+Python:
+~~~~~~~
+
+Larch requires Python 2.6 or higher.  Python 2.7 is *STRONGLY* recommended
+if you have a choice.  Moderate testing has been done with Python 3.2, but
+not all modules are available for it at this writing (June 2012).  At some
+point in the near future, Larch will probably switch to Python 3, possibly
+to only Python 3.
+
+Several Python packages are also needed for Larch.  All of these are easily
+installed, either as binary installs for Windows or Mac OS X, or as part of
+your systems Package Management System for linux.  In addition, most of these
+are easily installed from source or using Python's easy_install script.
+
+Note that some Python distributions come with many of the required and
+strongly recommended modules already installed.
+
+Required Modules: Numpy and Scipy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Numpy and Scipy Packages are both required for Larch to work.  These
+are available from http://scipy.org.
+
+Strongly Recommended Modules: wxPython, matplotlib, and wxmplot
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+These modules are required for plotting data.
+
+They are all available as simple installs:
+
+  wxPython:   http://www.wxpython.org/download.php
+  matplotlib: http://sourceforge.net/projects/matplotlib/files/matplotlib/
+  wxmplot:    https://github.com/newville/wxmplot
+
+Recommended Modules: sqlalchemy, h5py
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In order to use data from the x-ray databases, the SQLAlchemy module must
+be installed.  See http://www.sqlalchemy.org/
+
+In order to read HDF5 files, the h5py package is needed. See
+http://code.google.com/p/h5py/
+
+
+What is Installed
+===========================
+
+The Larch installation process puts several files and directories on your computer.   A basic set of Python modules will be placed in the standard Python location on your machine, either something like
+  /usr/lib/python2.7/site-packages/larch   on linux
+  C:\Python2.7\libs\site-packages\larch    on Windows
+  /Library/Frameworks/Python.framework/Versions/Current/lib/python2.7/site-packages/larch   on Mac OS X
+
+The larch executable (or larch.bat) will be installed to
+  /usr/bin/larch                on linux
+  C:\Python2.7\bin\larch.bat    on Windows
+  /Library/Frameworks/Python.framework/Versions/2.7/bin/larch on Mac OS X
+
+In addition a directory is made for system-wide larch specific files,
+including larch modules and plugins.  This directory will be
+
+   /usr/share/larch/  on linux and Mac OS X
+   C:\Program Files\larch on Windows
+
+and will contain larch modules in a modules subdirectoy, and several larch
+plugins in the plugins sub-directory.
+
+You can create your own user larch directory (SHOULD BE CREATED AT INSTALL!)
+
+FIXME---
+   $HOME/.larch/  on linux and Mac OS X
+   APPDIR\larch    on Windows
+FIXME--
+
+
+Customization of Installation
+===============================
+
+The location of the the system-wide and per-user larch directories can be configured by editing the simple file
+lib/site_configdata.py
+
+prior to installation.
+
+
+Matt Newville <newville@cars.uchicago.edu>
+Last Update:  27-June-2012
 
 
