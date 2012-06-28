@@ -1,0 +1,265 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Tutorial: Basic Array Manipulation &mdash; larch 0.9.12 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.12',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.12 documentation" href="../index.html" />
+    <link rel="up" title="Larch Tutorial" href="index.html" />
+    <link rel="next" title="Tutorial: Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="prev" title="Tutorial: Basic and Complex Data Types" href="datatypes.html" /> 
+  </head>
+  <body>
+<div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
+<table><tr><td>
+   <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
+   </a>
+</td><td>
+      <font size=+3><a href="../index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="flow.html" title="Tutorial: Conditional Execution and Flow Control"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="Tutorial: Basic and Complex Data Types"
+             accesskey="P">previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../reference.html">reference</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Tutorial: Basic Array Manipulation</a><ul>
+<li><a class="reference internal" href="#functions-for-creating-arrays">Functions for creating arrays</a></li>
+<li><a class="reference internal" href="#the-array-dtype-datatype">The array <em>dtype</em> &#8211; datatype</a></li>
+<li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">Slicing and extracting sub-arrays</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="datatypes.html"
+                        title="previous chapter">Tutorial: Basic and Complex Data Types</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="flow.html"
+                        title="next chapter">Tutorial: Conditional Execution and Flow Control</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/tutorial/arrays.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="tutorial-basic-array-manipulation">
+<h1>Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="functions-for-creating-arrays">
+<h2>Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
+<p><a class="reference internal" href="#tutor-arraycreate-table"><em>Table of Array Creation Functions</em></a></p>
+<blockquote id="tutor-arraycreate-table">
+<div><blockquote>
+<div>Table of Array Creation Functions.  These functions can all be used to
+create arrays in Larch.</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="28%" />
+<col width="35%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>Function Name</strong></th>
+<th class="head"><strong>description</strong></th>
+<th class="head"><strong>example</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>array</td>
+<td>array from list</td>
+<td>arr = array([1,2,3])</td>
+</tr>
+<tr class="row-odd"><td>arange</td>
+<td>indices 0, N-1</td>
+<td>arr = arange(10)</td>
+</tr>
+<tr class="row-even"><td>zeros</td>
+<td>fill with N zeros</td>
+<td>arr = zeros(10)</td>
+</tr>
+<tr class="row-odd"><td>ones</td>
+<td>fill with N ones</td>
+<td>arr = ones(10)</td>
+</tr>
+<tr class="row-even"><td>linspace</td>
+<td>fill with bounds and N</td>
+<td>arra = linspace(0, 1, 11)</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Some examples of using these functions are needed:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span>
+<span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;f8&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">f</span>
+<span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">9.</span><span class="p">])</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;c16&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span>
+<span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">1.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">2.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">3.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">4.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">5.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">6.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>
+        <span class="mf">7.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">8.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">9.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>Here, the <strong>dtype</strong> argument sets the data type for the array members &#8211; in
+this case &#8216;f8&#8217; means &#8216;8 byte floating point&#8217; and &#8216;c16&#8217; means &#8216;16 byte
+complex&#8217; (i.e, double precision, and double precision complex,
+respectively).</p>
+<p>The <tt class="xref py py-func docutils literal"><span class="pre">linspace()</span></tt> function is particularly useful for creating arrays,
+as it takes a starting value, ending value, and number of points between
+these:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span>
+<span class="n">array</span><span class="p">([</span>  <span class="mf">0.</span> <span class="p">,</span>   <span class="mf">0.5</span><span class="p">,</span>   <span class="mf">1.</span> <span class="p">,</span>   <span class="mf">1.5</span><span class="p">,</span>   <span class="mf">2.</span> <span class="p">,</span>   <span class="mf">2.5</span><span class="p">,</span>   <span class="mf">3.</span> <span class="p">,</span>   <span class="mf">3.5</span><span class="p">,</span>   <span class="mf">4.</span> <span class="p">,</span>
+         <span class="mf">4.5</span><span class="p">,</span>   <span class="mf">5.</span> <span class="p">,</span>   <span class="mf">5.5</span><span class="p">,</span>   <span class="mf">6.</span> <span class="p">,</span>   <span class="mf">6.5</span><span class="p">,</span>   <span class="mf">7.</span> <span class="p">,</span>   <span class="mf">7.5</span><span class="p">,</span>   <span class="mf">8.</span> <span class="p">,</span>   <span class="mf">8.5</span><span class="p">,</span>
+         <span class="mf">9.</span> <span class="p">,</span>   <span class="mf">9.5</span><span class="p">,</span>  <span class="mf">10.</span> <span class="p">])</span>
+</pre></div>
+</div>
+<p>Several variants are possible.  For more information, consult the numpy
+tutorials, or use the online help system within Larch (which will print out
+the documentation string from the underlying numpy function):</p>
+<div class="highlight-python"><pre>larch&gt; help(linspace)
+
+    Return evenly spaced numbers over a specified interval.
+
+    Returns `num` evenly spaced samples, calculated over the
+    interval [`start`, `stop` ].
+
+    The endpoint of the interval can optionally be excluded.
+
+    Parameters
+    ----------
+    start : scalar
+        The starting value of the sequence.
+    stop : scalar
+        The end value of the sequence, unless `endpoint` is set to False.
+        In that case, the sequence consists of all but the last of ``num + 1``
+        evenly spaced samples, so that `stop` is excluded.  Note that the step
+        size changes when `endpoint` is False.
+    num : int, optional
+        Number of samples to generate. Default is 50.
+    endpoint : bool, optional
+        If True, `stop` is the last sample. Otherwise, it is not included.
+        Default is True.
+    retstep : bool, optional
+        If True, return (`samples`, `step`), where `step` is the spacing
+        between samples.
+
+    ....</pre>
+</div>
+</div>
+<div class="section" id="the-array-dtype-datatype">
+<h2>The array <em>dtype</em> &#8211; datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="slicing-and-extracting-sub-arrays">
+<h2>Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="flow.html" title="Tutorial: Conditional Execution and Flow Control"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="Tutorial: Basic and Complex Data Types"
+             >previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../reference.html">reference</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" >Larch Tutorial</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
