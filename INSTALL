@@ -60,12 +60,16 @@ http://code.google.com/p/h5py/
 What is Installed
 ===========================
 
-The Larch installation process puts several files and directories on your computer.   A basic set of Python modules will be placed in the standard Python location on your machine, either something like
+The Larch installation process puts several files and directories on your computer.
+A basic set of Python modules will be placed in the standard Python location on your
+machine, at locations like these:
+
   /usr/lib/python2.7/site-packages/larch   on linux
   C:\Python2.7\libs\site-packages\larch    on Windows
   /Library/Frameworks/Python.framework/Versions/Current/lib/python2.7/site-packages/larch   on Mac OS X
 
 The larch executable (or larch.bat) will be installed to
+
   /usr/bin/larch                on linux
   C:\Python2.7\bin\larch.bat    on Windows
   /Library/Frameworks/Python.framework/Versions/2.7/bin/larch on Mac OS X
@@ -86,14 +90,11 @@ FIXME---
    APPDIR\larch    on Windows
 FIXME--
 
-
 Customization of Installation
 ===============================
 
-The location of the the system-wide and per-user larch directories can be configured by editing the simple file
-lib/site_configdata.py
-
-prior to installation.
+The location of the the system-wide and per-user larch directories can be configured by editing the
+simple file lib/site_configdata.py  prior to installation.
 
 
 Matt Newville <newville@cars.uchicago.edu>
