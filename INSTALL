@@ -70,34 +70,54 @@ machine, at locations like these:
 
 The larch executable (or larch.bat) will be installed to
 
-  /usr/bin/larch                on linux
-  C:\Python2.7\bin\larch.bat    on Windows
+  /usr/bin/larch               on linux
+  C:\Python2.7\bin\larch.bat   on Windows
   /Library/Frameworks/Python.framework/Versions/2.7/bin/larch on Mac OS X
 
-In addition a directory is made for system-wide larch specific files,
-including larch modules and plugins.  This directory will be
+In addition, a directory is made for system-wide larch files, including
+larch modules and plugins.  This directory will be
 
-   /usr/share/larch/  on linux and Mac OS X
-   C:\Program Files\larch on Windows
+   /usr/share/larch/           on linux and Mac OS X
+   C:\Program Files\larch      on Windows
 
 and will contain larch modules in a modules subdirectoy, and several larch
 plugins in the plugins sub-directory.
 
-You can create your own user larch directory (SHOULD BE CREATED AT INSTALL!)
+Finally, a directory is made for user-specific larch files, including an
+initialization script, 'init.lar', to be run at startup, a history file,
+'history.lar', containing the command history for past larch sessions, and
+folders named 'matplotlib', 'modules', and 'plugins'.  The 'matplotlib'
+folder may be used by the plotting libraries, for example to store fonts.
+The 'modules' and 'plugins' folders are the place to put user-specific
+modules and plugins, respectively.
 
-FIXME---
-   $HOME/.larch/  on linux and Mac OS X
-   APPDIR\larch    on Windows
-FIXME--
+On linux and Mac OS X, the larch directory will be called '.larch'.  On
+Windows it will be 'larch'.The exact location of your larch directory
+varies from system to system, but should be in one of
+
+  /Users/USERRNAME/.larch
+  /home/USERNAME/.larch
+  C:\Users\USERNAME\larch
+  C:\ProgramData\larch
+
 
 Customization of Installation
 ===============================
 
-The location of the the system-wide and per-user larch directories can be configured by editing the
-simple file lib/site_configdata.py  prior to installation.
+The location of the the system-wide and per-user larch directories can be
+configured by editing the simple file lib/site_configdata.py.
+Currently, this file looks like this::
 
+   unix_installdir = '/usr/share/larch'
+   unix_userdir    = '.larch'
+
+   win_installdir = 'C:\\Program Files\\larch'
+   win_userdir    = 'larch'
+
+You can customize the installed locations by adjusting these values prior
+to installation.
 
 Matt Newville <newville@cars.uchicago.edu>
-Last Update:  27-June-2012
+Last Update:  28-June-2012
 
 

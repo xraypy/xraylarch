@@ -15,8 +15,29 @@ exists = os.path.exists
 abspath = os.path.abspath
 curdir = abspath('.')
 
+def get_homedir():
+    "determine home directory"
+    def check(method, s):
+        try:
+            if method(s) not in (None, s):
+                return method(s)
+        except KeyError:
+            print 'error looking up ', s
+            print sys.exc_info[1]
+        return None
+
+    home_dir = check(os.path.expanduser, '~')
+    if home_dir is not None:
+        for var in ('$HOME', '$USERPROFILE', '$ALLUSERSPROFILE', '$HOMEPATH'):
+            home_dir = check(os.path.expandvars, var)
+            if home_dir is not None: break
+
+    if home_dir is None:
+        home_dir = os.path.abspath('.')
+    return home_dir
+
+
 # general-use system path
-home_dir = os.environ.get('HOME', None)
 sys_larchdir = site_configdata.unix_installdir
 usr_larchdir = site_configdata.unix_userdir
 
@@ -25,12 +46,56 @@ if os.name == 'nt':
     sys_larchdir = site_configdata.win_installdir
     usr_larchdir = site_configdata.win_userdir
 
-    if home_dir is None:
-        for profile in ('ALLUSERSPROFILE', 'USERPROFILE'):
-            home_dir = os.environ.get(profile, None)
+home_dir = get_homedir()
 
-if home_dir is None:
-    home_dir = curdir
+def make_larch_userdirs():
+    "create users .larch directories"
+    files = {'init.lar': '# put startup larch commands here\n',
+             'history.lar': '# history of larch commands will be placed here\n'}
+    subdirs = {'matplotlib': '# matplotlib may put files here...\n',
+               'modules':    '# put custom larch or python modules here \n',
+               'plugins':    '# put larch plugins here \n'}
+
+    def make_dir(dname):
+        if exists(dname): return True
+        try:
+            os.mkdir(dname)
+            return True
+        except OSError:
+            print 'Error trying to create %s' % dname
+            print sys.exc_info()[1]
+        except TypeError:
+            print 'Error trying to create %s' % dname
+            print sys.exc_info()[1]
+        return False
+
+    def write_file(fname, text):
+        if os.path.exists(fname):
+            return True
+        try:
+            f = open(fname, 'w')
+            f.write(text)
+            f.close()
+            return True
+        except:
+            print 'Error trying to open %s' % fname
+            print sys.exc_info()[1]
+        return False
+
+    user_dir = abspath(join(home_dir, usr_larchdir))
+    if not make_dir(user_dir):
+
+        return
+    for fname, text in files.items():
+        fname = join(user_dir, fname)
+        write_file(fname, text)
+    for sdir, text in subdirs.items():
+        sdir = join(user_dir, sdir)
+        if not make_dir(sdir):
+            break
+        fname = join(sdir, 'README')
+        write_file(fname, text)
+
 
 if 'LARCHDIR' in os.environ:
     usr_larchdir = os.environ['LARCHDIR']
@@ -77,7 +142,7 @@ if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')
 
 def show_site_config():
-    print """===  Larch Configuration 
+    print """===  Larch Configuration
   users home directory: %s
   users larch dir:      %s
   users history_file:   %s

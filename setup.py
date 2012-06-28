@@ -3,7 +3,8 @@
 from distutils.core import setup, setup_keywords
 import os, sys
 import glob
-from lib import site_configdata, version
+
+from lib import site_configdata, site_config, version
 
 required_modules = ('numpy', 'scipy')
 
@@ -12,11 +13,12 @@ recommended_modules = {'basic processing analysis': ('numpy', 'scipy'),
                        'plotting': ('matplotlib', 'wxmplot'),
                        'access to x-ray databases': ('sqlalchemy', ),
                        'read hdf5 files': ('h5py', ),
-                       'using the EPICS control system': ('epics',)
+                       # 'using the EPICS control system': ('epics',)
                     }
 
 failed = False
 missing = []
+print 'Checking dependencies....'
 for desc, mods in recommended_modules.items():
     for mod in mods:
         try:
@@ -34,8 +36,7 @@ if failed:
 
 # read installation locations from lib/site_configdata.py
 share_basedir = site_configdata.unix_installdir
-if os.name == 'nt':
-    share_basedir = site_configdata.win_installdir
+user_basedir  = site_configdata.unix_userdir
 
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch modules
@@ -81,6 +82,8 @@ setup(name = 'larch',
       packages = ['larch', 'larch.utils', 'larch.wxlib'],
       data_files  = data_files)
 
+site_config.make_larch_userdirs()
+
 if len(missing) > 0:
     print '=' * 65
     print ':Warning: Some recommended Python Packages are missing:'
@@ -89,3 +92,5 @@ if len(missing) > 0:
     print 'Some functionality will not work until these are installed.'
     print 'Please read INSTALL for further information.'
     print '=' * 65
+
+
