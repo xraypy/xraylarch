@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.12 documentation" href="../index.html" />
     <link rel="up" title="Larch Tutorial" href="index.html" />
-    <link rel="next" title="Tutorial: Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="next" title="Tutorial: Basic Array Manipulation" href="arrays.html" />
     <link rel="prev" title="Tutorial: Getting Started" href="start.html" /> 
   </head>
   <body>
@@ -53,7 +53,7 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="flow.html" title="Tutorial: Conditional Execution and Flow Control"
+          <a href="arrays.html" title="Tutorial: Basic Array Manipulation"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="start.html" title="Tutorial: Getting Started"
@@ -98,8 +98,8 @@
   <p class="topless"><a href="start.html"
                         title="previous chapter">Tutorial: Getting Started</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="flow.html"
-                        title="next chapter">Tutorial: Conditional Execution and Flow Control</a></p>
+  <p class="topless"><a href="arrays.html"
+                        title="next chapter">Tutorial: Basic Array Manipulation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/datatypes.txt"
@@ -643,108 +643,10 @@ much more suitable for numeric calculations, and so are extremely important
 in Larch.  There are many ways to create arrays, including the builtin
 <tt class="xref py py-func docutils literal"><span class="pre">array()</span></tt> function which will attempt to convert a list or tuple of
 numbers into an Array.  You can also use the builtin <tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt>
-function to create an ordered sequence of indices ([1, 2, 3, ...]), and
-several other methods listed in</p>
-<p><a class="reference internal" href="#tutor-arraycreate-table"><em>Table of Array Creation Functions</em></a></p>
-<blockquote id="tutor-arraycreate-table">
-<div><blockquote>
-<div>Table of Array Creation Functions.  These functions can all be used to
-create arrays in Larch.</div></blockquote>
-<table border="1" class="docutils">
-<colgroup>
-<col width="28%" />
-<col width="35%" />
-<col width="38%" />
-</colgroup>
-<thead valign="bottom">
-<tr class="row-odd"><th class="head"><strong>Function Name</strong></th>
-<th class="head"><strong>description</strong></th>
-<th class="head"><strong>example</strong></th>
-</tr>
-</thead>
-<tbody valign="top">
-<tr class="row-even"><td>array</td>
-<td>array from list</td>
-<td>arr = array([1,2,3])</td>
-</tr>
-<tr class="row-odd"><td>arange</td>
-<td>indices 0, N-1</td>
-<td>arr = arange(10)</td>
-</tr>
-<tr class="row-even"><td>zeros</td>
-<td>fill with N zeros</td>
-<td>arr = zeros(10)</td>
-</tr>
-<tr class="row-odd"><td>ones</td>
-<td>fill with N ones</td>
-<td>arr = ones(10)</td>
-</tr>
-<tr class="row-even"><td>linspace</td>
-<td>fill with bounds and N</td>
-<td>arra = linspace(0, 1, 11)</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-<p>Some examples of using these functions are needed:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span>
-<span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;f8&#39;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">f</span>
-<span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">9.</span><span class="p">])</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;c16&#39;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span>
-<span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">1.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">2.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">3.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">4.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">5.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">6.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>
-        <span class="mf">7.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">8.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">9.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">])</span>
-</pre></div>
-</div>
-<p>Here, the <strong>dtype</strong> argument sets the data type for the array members &#8211; in
-this case &#8216;f8&#8217; means &#8216;8 byte floating point&#8217; and &#8216;c16&#8217; means &#8216;16 byte
-complex&#8217; (i.e, double precision, and double precision complex,
-respectively).</p>
-<p>The <tt class="xref py py-func docutils literal"><span class="pre">linspace()</span></tt> function is particularly useful for creating arrays,
-as it takes a starting value, ending value, and number of points between
-these:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">21</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">s</span>
-<span class="n">array</span><span class="p">([</span>  <span class="mf">0.</span> <span class="p">,</span>   <span class="mf">0.5</span><span class="p">,</span>   <span class="mf">1.</span> <span class="p">,</span>   <span class="mf">1.5</span><span class="p">,</span>   <span class="mf">2.</span> <span class="p">,</span>   <span class="mf">2.5</span><span class="p">,</span>   <span class="mf">3.</span> <span class="p">,</span>   <span class="mf">3.5</span><span class="p">,</span>   <span class="mf">4.</span> <span class="p">,</span>
-         <span class="mf">4.5</span><span class="p">,</span>   <span class="mf">5.</span> <span class="p">,</span>   <span class="mf">5.5</span><span class="p">,</span>   <span class="mf">6.</span> <span class="p">,</span>   <span class="mf">6.5</span><span class="p">,</span>   <span class="mf">7.</span> <span class="p">,</span>   <span class="mf">7.5</span><span class="p">,</span>   <span class="mf">8.</span> <span class="p">,</span>   <span class="mf">8.5</span><span class="p">,</span>
-         <span class="mf">9.</span> <span class="p">,</span>   <span class="mf">9.5</span><span class="p">,</span>  <span class="mf">10.</span> <span class="p">])</span>
-</pre></div>
-</div>
-<p>Several variants are possible.  For more information, consult the numpy
-tutorials, or use the online help system within Larch (which will print out
-the documentation string from the underlying numpy function):</p>
-<div class="highlight-python"><pre>larch&gt; help(linspace)
-
-    Return evenly spaced numbers over a specified interval.
-
-    Returns `num` evenly spaced samples, calculated over the
-    interval [`start`, `stop` ].
-
-    The endpoint of the interval can optionally be excluded.
-
-    Parameters
-    ----------
-    start : scalar
-        The starting value of the sequence.
-    stop : scalar
-        The end value of the sequence, unless `endpoint` is set to False.
-        In that case, the sequence consists of all but the last of ``num + 1``
-        evenly spaced samples, so that `stop` is excluded.  Note that the step
-        size changes when `endpoint` is False.
-    num : int, optional
-        Number of samples to generate. Default is 50.
-    endpoint : bool, optional
-        If True, `stop` is the last sample. Otherwise, it is not included.
-        Default is True.
-    retstep : bool, optional
-        If True, return (`samples`, `step`), where `step` is the spacing
-        between samples.
-
-    ....</pre>
-</div>
+function to create an ordered sequence of indices ([1, 2, 3, ...]), or one
+of several other methods to create arrays.</p>
+<p>Arrays are so important for processing numerical data that the next section
+is devoted to them.</p>
 </div>
 <div class="section" id="dictionaries">
 <h3>Dictionaries<a class="headerlink" href="#dictionaries" title="Permalink to this headline">¶</a></h3>
@@ -802,7 +704,7 @@ and are in fact used throughout python.</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="flow.html" title="Tutorial: Conditional Execution and Flow Control"
+          <a href="arrays.html" title="Tutorial: Basic Array Manipulation"
              >next</a> |</li>
         <li class="right" >
           <a href="start.html" title="Tutorial: Getting Started"

@@ -74,7 +74,12 @@
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Tutorial: Plotting and Displaying Data</a><ul>
-<li><a class="reference internal" href="#line-plots">Line Plots</a></li>
+<li><a class="reference internal" href="#line-plots">Line Plots</a><ul>
+<li><a class="reference internal" href="#plot-examples">Plot Examples</a></li>
+<li><a class="reference internal" href="#using-the-plot-windows">Using the Plot Windows</a></li>
+<li><a class="reference internal" href="#using-tex-like-commands-for-labels-and-titles">Using TeX-like commands for labels and titles</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#image-display">Image Display</a></li>
 </ul>
 </li>
@@ -140,23 +145,35 @@ also be set after the plot is displayed through the graphical display of
 the plot itself.</p>
 <p>Multiple plot windows can be shown simultaneously and you can easily
 control which one to draw to.</p>
-<dl class="function">
+<dl class="method">
 <dt id="plot">
 <tt class="descname">plot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot y(x) given 1-dimensional x and y arrays &#8211; these must be of the
-same size.   Each x-y pair  displayed  is called a <em>trace</em>.
-There are many optional keyword/value parameters, and given in the
-<a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a> below.</p>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> &#8211; array of x values</li>
+<li><strong>y</strong> &#8211; array of y values &#8211; same size as x</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Plot y(x) given 1-dimensional x and y arrays &#8211; these must be of the
+same size.   Each x, y pair displayed  is called a <em>trace</em>.</p>
+<p>There are many options for a plot, all specified by the keyword/value
+parameters described in the   <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a> below.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="method">
 <dt id="newplot">
 <tt class="descname">newplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#newplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>This is essentially the same a <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, but with the option  <cite>new=True</cite>.
 The rest of the arguments are as listed in  <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a>.</p>
 </dd></dl>
 
-<dl class="function">
+<dl class="method">
 <dt id="scatterplot">
 <tt class="descname">scatterplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#scatterplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>A scatterplot differs from a line plot in that the set of x, y values
@@ -165,11 +182,42 @@ with a line.  Arguments are very similar to those for <a class="reference intern
 are listed in  <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a>.</p>
 </dd></dl>
 
+<dl class="method">
+<dt id="update_trace">
+<tt class="descname">update_trace</tt><big>(</big><em>x</em>, <em>y</em>, <em>trace=1</em>, <em>win=1</em>, <em>side='left'</em><big>)</big><a class="headerlink" href="#update_trace" title="Permalink to this definition">¶</a></dt>
+<dd><p>updates an existing trace.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>x</strong> &#8211; array of x values</li>
+<li><strong>y</strong> &#8211; array of y values</li>
+<li><strong>win</strong> &#8211; integer index of window for plot (1 is the first window)</li>
+<li><strong>trace</strong> &#8211; integer index for the trace (1 is the first trace)</li>
+<li><strong>side</strong> &#8211; which y axis to use (&#8216;left&#8217; or &#8216;right&#8217;).</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>This function is particularly useful for data to be plotted is changing
+and you wish to update traces from a previous <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> with new
+data without completely redrawing the entire plot.  Using this method
+is substantially faster than replotting, and should be used for dynamic
+plots, such as plottting the progress of some function during a fit.
+Note that you cannot change properties such as color here &#8211; these will
+be inherited from the existing trace.  In that sense, most of the
+properties of the trace and of the plot as a whole remain unchanged, it
+just happens that the data for the trace has been replaced.</p>
+</dd></dl>
+
 <p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a>, <a class="reference internal" href="#newplot" title="newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>, and
 <a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> and
 <a class="reference internal" href="#newplot" title="newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>.  In addition, the <a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> method uses many of the same arguments for the
 same meaning, as indicated by the right-most column.</p>
 <blockquote>
+<div><blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
 <col width="14%" />
@@ -211,131 +259,137 @@ same meaning, as indicated by the right-most column.</p>
 <td>trace label (defaults to &#8216;trace N&#8217;)</td>
 <td>yes</td>
 </tr>
-<tr class="row-even"><td>side</td>
+<tr class="row-even"><td>win</td>
+<td>integer</td>
+<td>1</td>
+<td>index of plot window to use (1, 2, ..., 16)</td>
+<td>yes</td>
+</tr>
+<tr class="row-odd"><td>side</td>
 <td>left/right</td>
 <td>left</td>
 <td>side for y-axis and label</td>
 <td>yes</td>
 </tr>
-<tr class="row-odd"><td>grid</td>
+<tr class="row-even"><td>grid</td>
 <td>None/bool</td>
 <td>None</td>
 <td>to show grid lines</td>
 <td>yes</td>
 </tr>
-<tr class="row-even"><td>color</td>
+<tr class="row-odd"><td>color</td>
 <td>string</td>
 <td>blue</td>
 <td>color to use for trace</td>
 <td>yes</td>
 </tr>
-<tr class="row-odd"><td>use_dates</td>
+<tr class="row-even"><td>use_dates</td>
 <td>bool</td>
 <td>False</td>
 <td>to show dates in xlabel (<a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> only)</td>
 <td>no</td>
 </tr>
-<tr class="row-even"><td>linewidth</td>
+<tr class="row-odd"><td>linewidth</td>
 <td>int</td>
 <td>2</td>
 <td>linewidth for trace</td>
 <td>no</td>
 </tr>
-<tr class="row-odd"><td>style</td>
+<tr class="row-even"><td>style</td>
 <td>string</td>
 <td>solid</td>
 <td>line-style for trace (solid, dashed, ...)</td>
 <td>no</td>
 </tr>
-<tr class="row-even"><td>drawstyle</td>
+<tr class="row-odd"><td>drawstyle</td>
 <td>string</td>
 <td>line</td>
 <td>style connecting points of trace</td>
 <td>no</td>
 </tr>
-<tr class="row-odd"><td>marker</td>
+<tr class="row-even"><td>marker</td>
 <td>string</td>
 <td>None</td>
 <td>symbol to show for each point (+, o, ....)</td>
 <td>no</td>
 </tr>
-<tr class="row-even"><td>markersize</td>
+<tr class="row-odd"><td>markersize</td>
 <td>int</td>
 <td>8</td>
 <td>size of marker shown for each point</td>
 <td>no</td>
 </tr>
-<tr class="row-odd"><td>dy</td>
+<tr class="row-even"><td>dy</td>
 <td>array</td>
 <td>None</td>
 <td>uncertainties for y values; error bars</td>
 <td>no</td>
 </tr>
-<tr class="row-even"><td>ylog_scale</td>
+<tr class="row-odd"><td>ylog_scale</td>
 <td>bool</td>
 <td>False</td>
 <td>draw y axis with log(base 10) scale</td>
 <td>no</td>
 </tr>
-<tr class="row-odd"><td>xmin</td>
+<tr class="row-even"><td>xmin</td>
 <td>float</td>
 <td>None</td>
 <td>minimum displayed x value</td>
 <td>yes</td>
 </tr>
-<tr class="row-even"><td>xmax</td>
+<tr class="row-odd"><td>xmax</td>
 <td>float</td>
 <td>None</td>
 <td>maximum displayed x value</td>
 <td>yes</td>
 </tr>
-<tr class="row-odd"><td>ymin</td>
+<tr class="row-even"><td>ymin</td>
 <td>float</td>
 <td>None</td>
 <td>minimum displayed y value</td>
 <td>yes</td>
 </tr>
-<tr class="row-even"><td>ymax</td>
+<tr class="row-odd"><td>ymax</td>
 <td>float</td>
 <td>None</td>
 <td>maximum displayed y value</td>
 <td>yes</td>
 </tr>
-<tr class="row-odd"><td>autoscale</td>
+<tr class="row-even"><td>autoscale</td>
 <td>bool</td>
 <td>True</td>
 <td>whether to automatically set plot limits</td>
 <td>no</td>
 </tr>
-<tr class="row-even"><td>draw_legend</td>
+<tr class="row-odd"><td>draw_legend</td>
 <td>None/bool</td>
 <td>None</td>
 <td>whether to display legend (None: leave as is)</td>
 <td>no</td>
 </tr>
-<tr class="row-odd"><td>refresh</td>
+<tr class="row-even"><td>refresh</td>
 <td>bool</td>
 <td>True</td>
 <td>whether to refresh display</td>
 <td>no</td>
 </tr>
-<tr class="row-even"><td>&nbsp;</td>
+<tr class="row-odd"><td>&nbsp;</td>
 <td colspan="3"><strong>arguments that apply only for</strong> <a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a></td>
 <td>&nbsp;</td>
 </tr>
-<tr class="row-odd"><td>size</td>
+<tr class="row-even"><td>size</td>
 <td>int</td>
 <td>10</td>
 <td>size of marker</td>
 <td>yes</td>
 </tr>
-<tr class="row-even"><td>edgecolor</td>
+<tr class="row-odd"><td>edgecolor</td>
 <td>string</td>
 <td>black</td>
 <td>edge color of marker</td>
 <td>yes</td>
 </tr>
-<tr class="row-odd"><td>selectcolor</td>
+<tr class="row-even"><td>selectcolor</td>
 <td>string</td>
 <td>red</td>
 <td>color for selected points</td>
@@ -356,7 +410,7 @@ specifying any of the limits will override the corresponding limit(s).</p>
 <p>4. The <em>color</em> argument can be any color name (&#8220;blue&#8221;, &#8220;red&#8221;, &#8220;black&#8221;, etc),
 standard X11 color names (&#8220;cadetblue3&#8221;, &#8220;darkgreen&#8221;, etc), or an RGB hex
 color string of the form &#8220;#RRGGBB&#8221;.</p>
-<p>5. Valid <em>style</em> arguments are &#8216;solid&#8217;, &#8216;dashed&#8217;, &#8216;dotted&#8217;, or &#8216;dash-dot&#8217;,
+<p>5. Valid <em>style</em> arguments are &#8216;solid&#8217;, &#8216;dashed&#8217;, &#8216;dotted&#8217;, or &#8216;dash-dot&#8217; ,
 with &#8216;solid&#8217; as the default.</p>
 <p>6. Valid <em>marker</em> arguments are &#8216;+&#8217;, &#8216;o&#8217;, &#8216;x&#8217;, &#8216;^&#8217;, &#8216;v&#8217;, &#8216;&gt;&#8217;, &#8216;&lt;&#8217;, &#8216;|&#8217;, &#8216;_&#8217;,
 &#8216;square&#8217;, &#8216;diamond&#8217;, &#8216;thin diamond&#8217;, &#8216;hexagon&#8217;, &#8216;pentagon&#8217;, &#8216;tripod 1&#8217;, or
@@ -368,36 +422,108 @@ points, either just after a point (&#8216;steps-pre&#8217;), midway between them
 discrete values as a function of time, left-to-right, and want to show a
 transition to a new value as a sudden step, you want &#8216;steps-post&#8217;.</p>
 </div></blockquote>
-<p>Again, most of theese values can be configured interactively from the  plot window.</p>
 </div></blockquote>
-<dl class="method">
-<dt id="update_line">
-<tt class="descname">update_line</tt><big>(</big><em>x</em>, <em>y</em>, <em>trace</em>, <em>side='left'</em><big>)</big><a class="headerlink" href="#update_line" title="Permalink to this definition">¶</a></dt>
-<dd><p>updates an existing trace.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>x</strong> &#8211; array of x values</li>
-<li><strong>y</strong> &#8211; array of y values</li>
-<li><strong>trace</strong> &#8211; integer index for the trace (1 is the first trace)</li>
-<li><strong>side</strong> &#8211; which y axis to use (&#8216;left&#8217; or &#8216;right&#8217;).</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-<p>This function is particularly useful for data that is changing and you
-wish to update traces from a previous <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> with new (x, y) data
-without completely redrawing the entire plot.  Using this method is
-substantially faster than replotting, and should be used for dynamic
-plots, such as those happening during fits.</p>
-</dd></dl>
-
+<p>Again, most of these values can be configured interactively from the  plot window.</p>
+</div></blockquote>
+<div class="section" id="plot-examples">
+<h3>Plot Examples<a class="headerlink" href="#plot-examples" title="Permalink to this headline">¶</a></h3>
+<p>Here a a few example plots, to whet your appetite:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
+<span class="n">y1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">y2</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span> <span class="o">+</span><span class="mf">0.2</span><span class="o">*</span><span class="n">x</span> <span class="o">+</span> <span class="p">(</span><span class="mf">0.2</span><span class="o">*</span><span class="n">x</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will make this plot:</p>
+<img alt="../_images/plot_basic1.png" src="../_images/plot_basic1.png" />
+<p>Adding a second curve, and setting some labels:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;x (mm)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Example Plot&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will make this plot:</p>
+<img alt="../_images/plot_basic2.png" src="../_images/plot_basic2.png" />
+</div>
+<div class="section" id="using-the-plot-windows">
+<h3>Using the Plot Windows<a class="headerlink" href="#using-the-plot-windows" title="Permalink to this headline">¶</a></h3>
+<p>From the main plot window, you can perform several tasks:</p>
+<p><strong>Getting Cursor Position</strong>:</p>
+<p>From the plot window you can click the left button of your mouse, and see
+the X, Y coordinates of where you clicked displayed in the status bar at
+the bottom of the plot window.   You can also read the values from the
+variables <tt class="xref py py-data docutils literal"><span class="pre">_plotter.plot1_x</span></tt>  and <tt class="xref py py-data docutils literal"><span class="pre">_plotter.plot1_y</span></tt>, for plot
+window 1, and <tt class="xref py py-data docutils literal"><span class="pre">_plotter.plot2_x</span></tt>  and on for other plot windows.</p>
+<p><strong>Zooming in and out</strong>:</p>
+<p>Left-clicking on the plot window and then dragging the mouse around with
+the button still pressed will draw a rectangular box around part of the
+plot window.  Releasing the mouse will zoom in on the portion of the plot
+set by the rectangle. You can zoom in multiple times.</p>
+<p>To unzoom, press Ctrl-Z (Apple-Z on Mac OS X), which will go back to the
+previous zoom rectangle.  You can also right-click on the plot, which will
+bring up a window from which you can zoom out 1 level at a time, or all
+the way back to fully zoomed out.</p>
+<p><strong>Copy to Clipboard</strong>:</p>
+<p>To copy the plot image (just the main plot image, not all the Window
+decorations such as menus and status bar) to the sysem clipboard, type
+Ctrl-C (Apple-C for Mac OS X users).  You can then paste this into other
+applications such as rich text documents and slide presentation tools.</p>
+<p><strong>Save image to PNG</strong>:</p>
+<p>To save a copy of the plot image, use Ctrl-S (Apple-S for Mac OS X users).
+This will bring up a &#8216;save file&#8217; dialog box for writing a PNG file of the
+plot.</p>
+<p><strong>Print image</strong>:</p>
+<p>On many systems, you should be able to print directly from the Plot
+Window, using Ctrl-P (Apple-P for Mac OS X users).   This may not work on
+all systems.</p>
+<p><strong>Configuring the Plot</strong>:</p>
+<p>From the Plot Window, either Ctrl-K (Apple-K for Mac OS X users) or
+Options-&gt;&#8217;Configure Plot&#8217; (or right-click to bring up a popup menu, then
+select Configure) will bring up the plot configuration window, which looks
+like this:</p>
+<img alt="../_images/plot_config.png" src="../_images/plot_config.png" />
+<p>From here you can set the titles, labels, and styles, colors, symbols, and
+so on for the line traces.</p>
+</div>
+<div class="section" id="using-tex-like-commands-for-labels-and-titles">
+<h3>Using TeX-like commands for labels and titles<a class="headerlink" href="#using-tex-like-commands-for-labels-and-titles" title="Permalink to this headline">¶</a></h3>
+<p>The titles and labels for plot elements can be simple strings or use a
+subset of TeX markup to give fine control over typesetting greek letters,
+mathematical symbols and formulae.   A simple example would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s">&#39; $ k </span><span class="se">\r</span><span class="s">m(\AA^{-1}) $ &#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will render the x and y labels as (for the pedantic, these renderings
+below may be only approximate):</p>
+<blockquote>
+<div><p><img class="math" src="../_images/math/19a9656daf00e1fb3e91da89978f6e1bf2f1e8d2.png" alt="k \rm(\AA^{-1})"/></p>
+<p><img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></p>
+</div></blockquote>
+<p>That is, strings can contain TeX-like markup between dollar signs (&#8216;$&#8217;).
+This does not actually use TeX (so you don&#8217;t need TeX installed). This
+ability to render TeX is due entirely to the matplotlib library used, and
+further details about using TeX for markup, including a list of symbols,
+commands to change fonts, and examples, can be found at
+<a class="reference external" href="http://matplotlib.sourceforge.net/users/mathtext.html">http://matplotlib.sourceforge.net/users/mathtext.html</a></p>
+<p>When using the Plot Configuration window to enter a TeX-like string, the
+text control box will be given a yellow background color (instead of the
+normal white color) if there is an error in rendering your TeX string.</p>
+</div>
 </div>
 <div class="section" id="image-display">
 <h2>Image Display<a class="headerlink" href="#image-display" title="Permalink to this headline">¶</a></h2>
+<dl class="method">
+<dt id="imshow">
+<tt class="descname">imshow</tt><big>(</big><em>dat</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#imshow" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dat</strong> &#8211; 2-d array of some intensity</td>
+</tr>
+</tbody>
+</table>
+<p>Imshow displays a grey-scale or false-color image from a 2-d array of intensities.</p>
+</dd></dl>
+
 </div>
 </div>
 
