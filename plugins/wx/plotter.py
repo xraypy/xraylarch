@@ -39,6 +39,7 @@ from gui_utils import ensuremod
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 MODNAME = '_plotter'
+MAX_WINDOWS = 16
 
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, **kws):
@@ -126,7 +127,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
     if _larch is None:
         #print("Could not find larch?")
         return
-    win = max(1, int(abs(win)))
+    win = max(1, min(MAX_WINDOWS, int(abs(win)))
     title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (MODNAME, win)
     creator = PlotDisplay
@@ -198,7 +199,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
         update(_larch=_larch)
 
 
-def _update_line(x, y, trace=1, win=1, _larch=None, wxparent=None,
+def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
                  side='left', redraw=False, **kws):
     """update a plot trace with new data, avoiding complete redraw"""
     plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
@@ -316,7 +317,7 @@ def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
                       'newplot':_newplot,
                       'scatterplot': _scatterplot,
-                      'update_line': _update_line,
+                      'update_trace': _update_trace,
                       'get_display':_getDisplay,
                       'get_cursor': _getcursor,
                       'imshow':_imshow} )
