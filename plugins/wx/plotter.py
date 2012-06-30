@@ -127,7 +127,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
     if _larch is None:
         #print("Could not find larch?")
         return
-    win = max(1, min(MAX_WINDOWS, int(abs(win)))
+    win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (MODNAME, win)
     creator = PlotDisplay
