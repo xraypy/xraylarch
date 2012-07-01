@@ -71,7 +71,7 @@ def chantler_energies(element, emin=0, emax=1.e9, _larch=None):
     if _larch is None:
         return
     xdb = get_xraydb(_larch)
-    return xdb.chantler_energies(element, emin=emain, emax=emax)
+    return xdb.chantler_energies(element, emin=emin, emax=emax)
 
 def f1_chantler(element, energy, _larch=None, **kws):
     """returns real part of anomalous x-ray scattering factor for
