@@ -34,6 +34,9 @@ the plot itself.
 Multiple plot windows can be shown simultaneously and you can easily
 control which one to draw to.
 
+.. module:: _plotter
+   :synopsis: Plotting functions
+
 
 .. method:: plot(x, y,  **kws)
 
@@ -41,7 +44,7 @@ control which one to draw to.
    :param y:     array of y values -- same size as x
 
    Plot y(x) given 1-dimensional x and y arrays -- these must be of the
-   same size.   Each x, y pair displayed  is called a *trace*.  
+   same size.   Each x, y pair displayed  is called a *trace*.
 
 
    There are many options for a plot, all specified by the keyword/value
@@ -190,7 +193,7 @@ Here a a few example plots, to whet your appetite::
 
     x = linspace(0, 10, 101)
     y1 = sin(x)
-    y2 = -2 +0.2*x + (0.2*x)**2 
+    y2 = -2 +0.2*x + (0.2*x)**2
     newplot(x, y1)
 
 will make this plot:
@@ -200,7 +203,7 @@ will make this plot:
 
 
 Adding a second curve, and setting some labels::
-  
+
      plot(x, y2, xlabel='x (mm)', ylabel='f(x)', title='Example Plot')
 
 will make this plot:
@@ -231,7 +234,7 @@ window 1, and :data:`_plotter.plot2_x`  and on for other plot windows.
 Left-clicking on the plot window and then dragging the mouse around with
 the button still pressed will draw a rectangular box around part of the
 plot window.  Releasing the mouse will zoom in on the portion of the plot
-set by the rectangle. You can zoom in multiple times. 
+set by the rectangle. You can zoom in multiple times.
 
 To unzoom, press Ctrl-Z (Apple-Z on Mac OS X), which will go back to the
 previous zoom rectangle.  You can also right-click on the plot, which will
@@ -260,7 +263,7 @@ all systems.
 
 **Configuring the Plot**:
 
- 
+
 From the Plot Window, either Ctrl-K (Apple-K for Mac OS X users) or
 Options->'Configure Plot' (or right-click to bring up a popup menu, then
 select Configure) will bring up the plot configuration window, which looks
@@ -286,7 +289,7 @@ mathematical symbols and formulae.   A simple example would be::
 This will render the x and y labels as (for the pedantic, these renderings
 below may be only approximate):
 
-   :math:`k \rm(\AA^{-1})`   
+   :math:`k \rm(\AA^{-1})`
 
    :math:`\chi(k)`
 
@@ -300,17 +303,18 @@ http://matplotlib.sourceforge.net/users/mathtext.html
 
 When using the Plot Configuration window to enter a TeX-like string, the
 text control box will be given a yellow background color (instead of the
-normal white color) if there is an error in rendering your TeX string. 
-
+normal white color) if there is an error in rendering your TeX string.
 
 
 
 Image Display
 ===============
 
-
-.. method:: imshow(dat,  **kws)
+.. method:: imshow(dat,  x=None, y=None, **kws)
 
    :param dat:  2-d array of some intensity
+   :param x:    1-d array of x values
+   :param y:    1-d array of y values
 
    Imshow displays a grey-scale or false-color image from a 2-d array of intensities.
+

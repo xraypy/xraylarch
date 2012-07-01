@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XRF Analysis with Larch &mdash; larch 0.9.12 documentation</title>
+    <title>XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.12 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,7 +26,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.12 documentation" href="../index.html" />
-    <link rel="prev" title="XAFS: Fitting XAFS to Feff Paths" href="../xafs/feffit.html" /> 
+    <link rel="up" title="XAFS Analysis with Larch" href="index.html" />
+    <link rel="next" title="XRF Analysis with Larch" href="../xray/index.html" />
+    <link rel="prev" title="XAFS: Fourier Transforms for XAFS" href="xafsft.html" /> 
   </head>
   <body>
 <div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
@@ -51,26 +53,33 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../xafs/feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
+          <a href="../xray/index.html" title="XRF Analysis with Larch"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="xafsft.html" title="XAFS: Fourier Transforms for XAFS"
              accesskey="P">previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../reference.html">reference</a>|&nbsp;</li>
-   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="#">XRF analysis</a>|&nbsp;</li>
+   <li><a href="index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
- 
+
+          <li><a href="index.html" accesskey="U">XAFS Analysis with Larch</a> &raquo;</li> 
       </ul>
     </div>
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../xafs/feffit.html"
-                        title="previous chapter">XAFS: Fitting XAFS to Feff Paths</a></p>
+  <p class="topless"><a href="xafsft.html"
+                        title="previous chapter">XAFS: Fourier Transforms for XAFS</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../xray/index.html"
+                        title="next chapter">XRF Analysis with Larch</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/xray/index.txt"
+    <li><a href="../_sources/xafs/feffit.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -94,9 +103,32 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="xrf-analysis-with-larch">
-<h1>XRF Analysis with Larch<a class="headerlink" href="#xrf-analysis-with-larch" title="Permalink to this headline">¶</a></h1>
-<p>X-ray Fluorescence Data can be maniuplated and displayed with Larch.</p>
+  <div class="section" id="module-_xafs">
+<span id="xafs-fitting-xafs-to-feff-paths"></span><h1>XAFS: Fitting XAFS to Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="_xafs.feff_path">
+<tt class="descclassname">_xafs.</tt><tt class="descname">feff_path</tt><big>(</big><em>filename...</em><big>)</big><a class="headerlink" href="#_xafs.feff_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a Feff Path object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xafs.feffit_transform">
+<tt class="descclassname">_xafs.</tt><tt class="descname">feffit_transform</tt><big>(</big><big>)</big><a class="headerlink" href="#_xafs.feffit_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a Feffit Transform object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xafs.feffit_dataset">
+<tt class="descclassname">_xafs.</tt><tt class="descname">feffit_dataset</tt><big>(</big><big>)</big><a class="headerlink" href="#_xafs.feffit_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a Feffit Dataset object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xafs.feffit">
+<tt class="descclassname">_xafs.</tt><tt class="descname">feffit</tt><big>(</big><big>)</big><a class="headerlink" href="#_xafs.feffit" title="Permalink to this definition">¶</a></dt>
+<dd><p>execute a Feffit fit.</p>
+</dd></dl>
+
 </div>
 
 
@@ -115,15 +147,19 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../xafs/feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
+          <a href="../xray/index.html" title="XRF Analysis with Larch"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="xafsft.html" title="XAFS: Fourier Transforms for XAFS"
              >previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../reference.html">reference</a>|&nbsp;</li>
-   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="#">XRF analysis</a>|&nbsp;</li>
+   <li><a href="index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
- 
+
+          <li><a href="index.html" >XAFS Analysis with Larch</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

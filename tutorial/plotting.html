@@ -137,7 +137,7 @@ from dropdown menus on the graphic elements.</p>
 <div class="section" id="line-plots">
 <h2>Line Plots<a class="headerlink" href="#line-plots" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides a few functions for making line plots, with the principle
-function being called <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>.  The <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> function takes two
+function being called <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt>.  The <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function takes two
 arrays: <cite>x</cite>, the abscissa array, and <cite>y</cite>, the ordinate array.  It also
 accepts a very large number of optional arguments for setting properties
 like color, line style, labels, and so on.  Most of these properties can
@@ -145,9 +145,9 @@ also be set after the plot is displayed through the graphical display of
 the plot itself.</p>
 <p>Multiple plot windows can be shown simultaneously and you can easily
 control which one to draw to.</p>
-<dl class="method">
-<dt id="plot">
-<tt class="descname">plot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#plot" title="Permalink to this definition">¶</a></dt>
+<span class="target" id="module-_plotter"></span><dl class="method">
+<dt id="_plotter.plot">
+<tt class="descclassname">_plotter.</tt><tt class="descname">plot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.plot" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -167,24 +167,24 @@ parameters described in the   <a class="reference internal" href="#plotopt-table
 </dd></dl>
 
 <dl class="method">
-<dt id="newplot">
-<tt class="descname">newplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#newplot" title="Permalink to this definition">¶</a></dt>
-<dd><p>This is essentially the same a <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, but with the option  <cite>new=True</cite>.
+<dt id="_plotter.newplot">
+<tt class="descclassname">_plotter.</tt><tt class="descname">newplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.newplot" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is essentially the same a <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, but with the option  <cite>new=True</cite>.
 The rest of the arguments are as listed in  <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="scatterplot">
-<tt class="descname">scatterplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#scatterplot" title="Permalink to this definition">¶</a></dt>
+<dt id="_plotter.scatterplot">
+<tt class="descclassname">_plotter.</tt><tt class="descname">scatterplot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.scatterplot" title="Permalink to this definition">¶</a></dt>
 <dd><p>A scatterplot differs from a line plot in that the set of x, y values
 are not assumed to be in any particular order, and so are not connected
-with a line.  Arguments are very similar to those for <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, and
+with a line.  Arguments are very similar to those for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a>, and
 are listed in  <a class="reference internal" href="#plotopt-table"><em>Table of Plot Arguments</em></a>.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="update_trace">
-<tt class="descname">update_trace</tt><big>(</big><em>x</em>, <em>y</em>, <em>trace=1</em>, <em>win=1</em>, <em>side='left'</em><big>)</big><a class="headerlink" href="#update_trace" title="Permalink to this definition">¶</a></dt>
+<dt id="_plotter.update_trace">
+<tt class="descclassname">_plotter.</tt><tt class="descname">update_trace</tt><big>(</big><em>x</em>, <em>y</em>, <em>trace=1</em>, <em>win=1</em>, <em>side='left'</em><big>)</big><a class="headerlink" href="#_plotter.update_trace" title="Permalink to this definition">¶</a></dt>
 <dd><p>updates an existing trace.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -202,7 +202,7 @@ are listed in  <a class="reference internal" href="#plotopt-table"><em>Table of 
 </tbody>
 </table>
 <p>This function is particularly useful for data to be plotted is changing
-and you wish to update traces from a previous <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> with new
+and you wish to update traces from a previous <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> with new
 data without completely redrawing the entire plot.  Using this method
 is substantially faster than replotting, and should be used for dynamic
 plots, such as plottting the progress of some function during a fit.
@@ -212,9 +212,9 @@ properties of the trace and of the plot as a whole remain unchanged, it
 just happens that the data for the trace has been replaced.</p>
 </dd></dl>
 
-<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a>, <a class="reference internal" href="#newplot" title="newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>, and
-<a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> and
-<a class="reference internal" href="#newplot" title="newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>.  In addition, the <a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> method uses many of the same arguments for the
+<p id="plotopt-table"><strong>Table of Plot Arguments</strong> These arguments apply for the <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a>, <a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>, and
+<a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> methods.  Except where noted, the arguments are available for <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> and
+<a class="reference internal" href="#_plotter.newplot" title="_plotter.newplot"><tt class="xref py py-meth docutils literal"><span class="pre">newplot()</span></tt></a>.  In addition, the <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a> method uses many of the same arguments for the
 same meaning, as indicated by the right-most column.</p>
 <blockquote>
 <div><blockquote>
@@ -286,7 +286,7 @@ same meaning, as indicated by the right-most column.</p>
 <tr class="row-even"><td>use_dates</td>
 <td>bool</td>
 <td>False</td>
-<td>to show dates in xlabel (<a class="reference internal" href="#plot" title="plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> only)</td>
+<td>to show dates in xlabel (<a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-meth docutils literal"><span class="pre">plot()</span></tt></a> only)</td>
 <td>no</td>
 </tr>
 <tr class="row-odd"><td>linewidth</td>
@@ -374,7 +374,7 @@ same meaning, as indicated by the right-most column.</p>
 <td>no</td>
 </tr>
 <tr class="row-odd"><td>&nbsp;</td>
-<td colspan="3"><strong>arguments that apply only for</strong> <a class="reference internal" href="#scatterplot" title="scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a></td>
+<td colspan="3"><strong>arguments that apply only for</strong> <a class="reference internal" href="#_plotter.scatterplot" title="_plotter.scatterplot"><tt class="xref py py-meth docutils literal"><span class="pre">scatterplot()</span></tt></a></td>
 <td>&nbsp;</td>
 </tr>
 <tr class="row-even"><td>size</td>
@@ -401,7 +401,7 @@ same meaning, as indicated by the right-most column.</p>
 displays, etc) and the properties of each trace (color, linewidth, ...)
 are preserved for the duration of that window.   A few specific notes:</p>
 <blockquote>
-<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#plot" title="plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> default to <tt class="docutils literal"><span class="pre">None</span></tt>,
+<div><p>1. The title, label, and grid arguments to <a class="reference internal" href="#_plotter.plot" title="_plotter.plot"><tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt></a> default to <tt class="docutils literal"><span class="pre">None</span></tt>,
 which means to use the previously used value.</p>
 <p>2. The <em>use_dates</em> option is not very rich, and simply turns x-values that
 are Unix timestamps into x labels showing the dates.</p>
@@ -511,13 +511,18 @@ normal white color) if there is an error in rendering your TeX string.</p>
 <div class="section" id="image-display">
 <h2>Image Display<a class="headerlink" href="#image-display" title="Permalink to this headline">¶</a></h2>
 <dl class="method">
-<dt id="imshow">
-<tt class="descname">imshow</tt><big>(</big><em>dat</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#imshow" title="Permalink to this definition">¶</a></dt>
+<dt id="_plotter.imshow">
+<tt class="descclassname">_plotter.</tt><tt class="descname">imshow</tt><big>(</big><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.imshow" title="Permalink to this definition">¶</a></dt>
 <dd><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dat</strong> &#8211; 2-d array of some intensity</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dat</strong> &#8211; 2-d array of some intensity</li>
+<li><strong>x</strong> &#8211; 1-d array of x values</li>
+<li><strong>y</strong> &#8211; 1-d array of y values</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
