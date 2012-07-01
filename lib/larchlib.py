@@ -108,7 +108,9 @@ class LarchExceptionHolder:
                     ftmp.close()
             except (IOError, TypeError):
                 pass
-        if '\n' in self.expr:
+        if self.expr is None:
+            out.append('unknown error\n')
+        elif '\n' in self.expr:
             out.append("\n%s" % self.expr)
         else:
             out.append("    %s" % self.expr)
