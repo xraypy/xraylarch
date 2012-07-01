@@ -8,7 +8,22 @@ from scipy import polyfit
 MODNAME = '_xafs'
 
 def find_e0(energy, mu, group=None, _larch=None):
-    """calculate e0 given mu(energy)
+    """calculate E0 given mu(energy)
+
+    This finds the point with maximum derivative with some
+    checks to avoid spurious glitches.
+    
+    Arguments
+    ----------
+    energy:  array of x-ray energies, in eV
+    mu:      array of mu(E)
+    group:   output group 
+
+    Returns
+    -------
+    e0:      edge energy, in eV.
+
+    If a group is supplied, group.e0 will also be set to this value.
     """
     if _larch is None:
         raise Warning("cannot find e0 -- larch broken?")
@@ -29,8 +44,48 @@ def find_e0(energy, mu, group=None, _larch=None):
 def pre_edge(energy, mu, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, _larch=None, **kws):
-    """pre edge, normalization for XAFS
+    """pre edge subtraction, normalization for XAFS
 
+    This performs a number of steps:
+       1. determine E0 (if not supplied) from max of deriv(mu)
+       2. fit a line of polymonial to the region below the edge
+       3. fit a polymonial to the region above the edge
+       4. extrapolae the two curves to E0 to determine the edge jump
+
+    Arguments
+    ----------
+    energy:  array of x-ray energies, in eV
+    mu:      array of mu(E)
+    group:   output group 
+    e0:      edge energy, in eV.  If None, it will be determined here.
+    step:    edge jump.  If None, it will be determined here.
+    pre1:    low E range (relative to E0) for pre-edge fit
+    pre2:    high E range (relative to E0) for pre-edge fit
+    nvict:   energy exponent to use for pre-edg fit.  See Note
+    norm1:   low E range (relative to E0) for post-edge fit
+    norm2:   high E range (relative to E0) for post-edge fit
+    nnorm:   number of terms in polynomial (that is, 1+degree) for
+             post-edge, normalization curve. Default=3 (quadratic)
+
+    Returns
+    -------
+    if group is None, the return value is  (edge_step, e0)
+    if gorup is not None, the return value is None, and the following
+    data is put into the supplied group:
+
+
+        e0          energy origin
+        edge_step   edge step
+        norm        normalized mu(E)
+        pre_edge    determined pre-edge curve
+        post_edge   determined post-edge, normalization curve
+
+
+    Notes
+    -----
+       nvict gives an exponent to the energy term for the pre-edge fit.
+       That is, a line (m * energy + b) is fit to mu(energy)*energy**nvict
+       over the pr-edge regin, energy=[e0+pre1, e0+pre2].
     """
     if _larch is None:
         raise Warning("cannot remove pre_edge -- larch broken?")
