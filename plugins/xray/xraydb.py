@@ -302,7 +302,7 @@ class xrayDB(object):
         else:
             nemax = min(len(te), 2 + max(np.where(te<=emax)[0]))
         region = np.arange(nemin, nemax)
-        return te[region], tf1[region], tf2[region]
+        return te[region] # , tf1[region], tf2[region]
 
     def f1_chantler(self, element, energy, **kws):
         """returns f1 -- real part of anomalous x-ray scattering factor
