@@ -210,6 +210,7 @@ def registerLarchPlugin():
     return (MODNAME, {'xafsft': xafsft,
                       'xafsft_prep': xafsft_prep,
                       'xafsft_fast': xafsft_fast,
+                      'xafsift_fast': xafsift_fast,
                       'xafsift': xafsift,
                       'ftwindow': ftwindow,
                       })
