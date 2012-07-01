@@ -58,7 +58,7 @@ XAFS: Pre-edge Subtraction and Normalization
 
 ..  function:: find_e0(energy, mu, group=None, ...)
 
-    Determin :math:`E_0`, the energy threshold of the absorption edge, 
+    Determine :math:`E_0`, the energy threshold of the absorption edge, 
     from the arrays energy and mu for :math:`\mu(E)`.
 
     This finds the point with maximum derivative with some
