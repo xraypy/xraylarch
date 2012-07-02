@@ -18,22 +18,32 @@ recommended_modules = {'basic processing analysis': ('numpy', 'scipy'),
 
 failed = False
 missing = []
-print 'Checking dependencies....'
-for desc, mods in recommended_modules.items():
-    for mod in mods:
-        try:
-            x = __import__(mod)
-        except ImportError:
-            failed = failed or mod in required_modules
-            missing.append('     %s:  needed for %s' % (mod, desc))
+deps_ok = False
+if os.path.exists('.deps'):
+    try:
+        f = open('.deps', 'r').readlines()
+        deps_ok = int(f[0].strip()) == 1
+    except:
+        pass
 
-if failed:
-    print '== Cannot Install Larch: =='
-    print 'Missing dependencies: %s are REQUIRED' % (' and '.join(required_modules))
-    print 'Please read INSTALL for further information.'
-    sys.exit()
+if not deps_ok:
+    print 'Checking dependencies....'
+    for desc, mods in recommended_modules.items():
+        for mod in mods:
+            try:
+                x = __import__(mod)
+            except ImportError:
+                failed = failed or mod in required_modules
+                missing.append('     %s:  needed for %s' % (mod, desc))
 
-
+    if failed:
+        print '== Cannot Install Larch: =='
+        print 'Missing dependencies: %s are REQUIRED' % (' and '.join(required_modules))
+        print 'Please read INSTALL for further information.'
+        sys.exit()
+    deps_ok = len(missing) == 0
+############
+        
 # read installation locations from lib/site_configdata.py
 share_basedir = site_configdata.unix_installdir
 user_basedir  = site_configdata.unix_userdir
@@ -84,6 +94,11 @@ setup(name = 'larch',
 
 site_config.make_larch_userdirs()
 
+if deps_ok and not os.path.exists('.deps'):
+    f = open('.deps', 'w')
+    f.write('1\n')
+    f.close()
+    
 if len(missing) > 0:
     print '=' * 65
     print ':Warning: Some recommended Python Packages are missing:'
