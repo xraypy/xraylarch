@@ -15,7 +15,7 @@ sys.path.insert(0, plugin_path('xafs'))
 sys.path.insert(0, plugin_path('fitter'))
 
 # now we can reliably import other std and xafs modules...
-from mathutils import index_nearest, realimag
+from mathutils import index_nearest, realimag, remove_dups
 
 from xafsutils import ETOK
 from xafsft import ftwindow, xafsft_fast
@@ -57,6 +57,8 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
     if 'kw' in kws:
         kweight = kws['kw']
 
+    energy = remove_dups(energy)
+    
     # if e0 or edge_step are not specified, get them, either from the
     # passed-in group or from running pre_edge()
     if edge_step is None:
