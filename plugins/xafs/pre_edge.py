@@ -5,19 +5,29 @@
 
 import numpy as np
 from scipy import polyfit
+
+from larch.larchlib import plugin_path
+
+# put the 'std' and 'xafs' (this!) plugin directories into sys.path
+sys.path.insert(0, plugin_path('std'))
+
+# now we can reliably import other std and xafs modules...
+from mathutils import index_nearest, remove_dups
+
 MODNAME = '_xafs'
+
 
 def find_e0(energy, mu, group=None, _larch=None):
     """calculate E0 given mu(energy)
 
     This finds the point with maximum derivative with some
     checks to avoid spurious glitches.
-    
+
     Arguments
     ----------
     energy:  array of x-ray energies, in eV
     mu:      array of mu(E)
-    group:   output group 
+    group:   output group
 
     Returns
     -------
@@ -28,7 +38,8 @@ def find_e0(energy, mu, group=None, _larch=None):
     if _larch is None:
         raise Warning("cannot find e0 -- larch broken?")
 
-    dmu = np.diff(mu)
+    energy = remove_dups(energy)
+    dmu = np.diff(mu)/np.diff(energy)
     # find points of high derivative
     high_deriv_pts = np.where(dmu >  max(dmu)*0.05)[0]
     idmu_max, dmu_max = 0, 0
@@ -56,7 +67,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     ----------
     energy:  array of x-ray energies, in eV
     mu:      array of mu(E)
-    group:   output group 
+    group:   output group
     e0:      edge energy, in eV.  If None, it will be determined here.
     step:    edge jump.  If None, it will be determined here.
     pre1:    low E range (relative to E0) for pre-edge fit
@@ -87,10 +98,13 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
        That is, a line (m * energy + b) is fit to mu(energy)*energy**nvict
        over the pr-edge regin, energy=[e0+pre1, e0+pre2].
     """
+
     if _larch is None:
         raise Warning("cannot remove pre_edge -- larch broken?")
     if e0 is None or e0 < energy[0] or e0 > energy[-1]:
         e0 = find_e0(energy, mu, group=group, _larch=_larch)
+
+    energy = remove_dups(energy)
 
     p1 = min(np.where(energy >= e0-10.0)[0])
     p2 = max(np.where(energy <= e0+10.0)[0])
