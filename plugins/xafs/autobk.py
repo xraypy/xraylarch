@@ -36,7 +36,6 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
 
     coefs = [getattr(pars, FMT_COEF % i) for i in range(ncoefs)]
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
-    print 'autobk resid ', chi_std is not None
     if chi_std is not None:
         chi = chi - chi_std
     return realimag(xafsft_fast(chi*ftwin, nfft=nfft)[:irbkg])
@@ -58,7 +57,7 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
         kweight = kws['kw']
 
     energy = remove_dups(energy)
-    
+
     # if e0 or edge_step are not specified, get them, either from the
     # passed-in group or from running pre_edge()
     if edge_step is None:
@@ -90,12 +89,9 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
     kout  = kstep * np.arange(int(1.01+kmax/kstep), dtype='float64')
 
     # interpolate provided chi(k) onto the kout grid
-    print ' standard ' , chi_std is not None, k_std is not None
     if chi_std is not None and k_std is not None:
-        print 'Interolate standard ' 
         chi_std = np.interp(kout, k_std, chi_std)
-    print chi_std is not None
-    
+
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk)
 
@@ -129,7 +125,7 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None,
 
     initbkg, initchi = spline_eval(kraw, mu[ie0:], knots, coefs, order, kout)
 
-    fitkws = dict(ncoefs=len(coefs), chi_std=chi_std, 
+    fitkws = dict(ncoefs=len(coefs), chi_std=chi_std,
                   knots=knots, order=order, kraw=kraw, mu=mu[ie0:],
                   irbkg=irbkg, kout=kout, ftwin=ftwin, nfft=nfft)
     # do fit
