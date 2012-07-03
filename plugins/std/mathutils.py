@@ -41,7 +41,7 @@ def complex_phase(arr, _larch=None):
             phase[i] -= 2*np.pi
     return phase
 
-def remove_dups(arr, tiny=1.e-12):
+def remove_dups(arr, tiny=1.e-12, frac=0.02):
     "avoid repeated successive values of an array"
     if isinstance(arr, np.ndarray):
         shape = arr.shape
@@ -54,14 +54,14 @@ def remove_dups(arr, tiny=1.e-12):
         for i in dups:
             t = [2*tiny]
             if i > 0:
-                t.append(0.01*abs(arr[i]-arr[i-1]))
+                t.append(frac*abs(arr[i]-arr[i-1]))
             if i < len(arr)-1:
-                t.append(0.01*abs(arr[i+1]-arr[i]))
+                t.append(frac*abs(arr[i+1]-arr[i]))
             dx = max(t)
             arr[i] = arr[i] - dx
         arr.shape = shape
     return arr
-    
+
 def registerLarchPlugin():
     return ('_math', {'realimag': realimag,
                       'complex_phase': complex_phase,
