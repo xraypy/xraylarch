@@ -3,21 +3,27 @@
 Some common math utilities
 """
 import numpy as np
+import scipy
+import scipy.stats
+
+# functions more or less directly from scipy or numpy
+def linregress(x, y, _larch=None):
+    return scipy.stats.linregress(x, y)
+linregress.__doc__ = scipy.stats.linregress.__doc__
+
+def polyfit(x, y, deg, rcond=None, full=False, _larch=None):
+    return polyfit(x, y, dg, rcond=rcond, full=full)
+polyfit.__doc__ = scipy.polyfit.__doc__
 
 def _deriv(arr, _larch=None, **kws):
-    """take numerical derivitive of an array:"""
     if not isinstance(arr, np.ndarray):
         raise Warning("cannot take derivative of non-numeric array")
     return np.gradient(arr)
-#     n = len(arr)
-#     out  = np.zeros(n)
-#     out[0] = arr[1] - arr[0]
-#     out[n-1] = arr[n-1] - arr[n-2]
-#     out[1:n-2] = [(arr[i+1] - arr[i-1])/2.0 for i in range(1, n-2)]
-#    return out
+_deriv.__doc__ = np.gradient.__doc__
+
 
 def index_of(array, value):
-    """return index of array *at or just below* value
+    """return index of array *at or below* value
     returns 0 if value < min(array)
     """
     if value < min(array):
@@ -41,8 +47,39 @@ def complex_phase(arr, _larch=None):
             phase[i] -= 2*np.pi
     return phase
 
-def remove_dups(arr, tiny=1.e-12, frac=0.02):
-    "avoid repeated successive values of an array"
+def remove_dups(arr, tiny=1.e-8, frac=0.02):
+    """avoid repeated successive values of an array that is expected
+    to be monotonically increasing.
+
+    For repeated values, the first encountered occurance (at index i)
+    will be reduced by an amount that is the largest of these:
+
+    [tiny, frac*abs(arr[i]-arr[i-1]), frac*abs(arr[i+1]-arr[i])]
+
+    where tiny and frac are optional arguments.
+
+    Parameters
+    ----------
+    arr :  array of values expected to be monotonically increasing
+    tiny : smallest expected absolute value of interval [1.e-8]
+    frac : smallest expected fractional interval   [0.02]
+
+    Returns
+    -------
+    out : ndarray, strictly monotonically increasing array
+
+    Example
+    -------
+    >>> x = array([0, 1.1, 2.2, 2.2, 3.3])
+    >>> print remove_dups(x)
+    >>> array([ 0.   ,  1.1  ,  2.178,  2.2  ,  3.3  ])
+
+    """
+    if not isinstance(arr, np.ndarray):
+        try:
+            arr = np.array(arr)
+        except:
+            print 'remove_dups: argument is not an array'
     if isinstance(arr, np.ndarray):
         shape = arr.shape
         arr   = arr.flatten()
@@ -52,7 +89,7 @@ def remove_dups(arr, tiny=1.e-12, frac=0.02):
         except ValueError:
             dups = []
         for i in dups:
-            t = [2*tiny]
+            t = [tiny]
             if i > 0:
                 t.append(frac*abs(arr[i]-arr[i-1]))
             if i < len(arr)-1:
@@ -63,7 +100,9 @@ def remove_dups(arr, tiny=1.e-12, frac=0.02):
     return arr
 
 def registerLarchPlugin():
-    return ('_math', {'realimag': realimag,
+    return ('_math', {'linregress': linregress,
+                      'polyfit': polyfit,
+                      'realimag': realimag,
                       'complex_phase': complex_phase,
                       'deriv': _deriv,
                       'remove_dups': remove_dups,
