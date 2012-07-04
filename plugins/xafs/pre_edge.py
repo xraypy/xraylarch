@@ -3,6 +3,7 @@
   XAFS pre-edge subtraction, normalization algorithms
 """
 
+import sys
 import numpy as np
 from scipy import polyfit
 
