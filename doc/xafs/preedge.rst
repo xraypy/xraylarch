@@ -18,7 +18,7 @@ XAFS: Pre-edge Subtraction and Normalization
 
     :param energy:  1-d array of x-ray energies, in eV
     :param mu:      1-d array of :math:`\mu(E)`
-    :param group:   output group 
+    :param group:   output group
     :param e0:      edge energy, :math:`E_0` in eV.  If None, it will be determined here.
     :param step:    edge jump.  If None, it will be determined here.
     :param pre1:    low E range (relative to E0) for pre-edge fit
@@ -51,24 +51,52 @@ XAFS: Pre-edge Subtraction and Normalization
 
     Note:
        nvict gives an exponent to the energy term for the pre-edge fit.
-       That is, a line :math:`(m E + b)` is fit to 
+       That is, a line :math:`(m E + b)` is fit to
        :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1, E0+pre2].
 
 
 
 ..  function:: find_e0(energy, mu, group=None, ...)
 
-    Determine :math:`E_0`, the energy threshold of the absorption edge, 
+    Determine :math:`E_0`, the energy threshold of the absorption edge,
     from the arrays energy and mu for :math:`\mu(E)`.
 
     This finds the point with maximum derivative with some
     checks to avoid spurious glitches.
-    
+
 
     :param energy:  1-d array of x-ray energies, in eV
     :param   mu:    1-d array of mu(E)
-    :param group:   output group 
+    :param group:   output group
 
 
     Returns e0, the edge energy, :math:`E_0` in eV.  If a group is
     supplied, group.e0 will also be set to this value.
+
+Example
+=========
+
+A simple example of pre-edge subtraction::
+
+    fname = 'fe2o3_rt1.xmu'
+    dat = read_ascii(fname, labels='energy xmu i0')
+
+    pre_edge(dat.energy, dat.xmu, group=dat)
+
+    show(dat)
+
+    newplot(dat.energy, dat.xmu, label=' $ \mu(E) $ ',
+            xlabel='Energy (eV)',
+            title='%s Pre-Edge ' % fname,
+            show_legend=True)
+
+    plot(dat.energy, dat.pre_edge, label='pre-edge line',
+         color='black', style='dashed' )
+
+    plot(dat.energy, dat.post_edge, label='normalization line',
+         color='black', style='dotted' )
+
+gives the following results:
+
+.. image:: ../images/xafs_preedge.png
+   :width: 80 %
