@@ -43,10 +43,13 @@ if not deps_ok:
         sys.exit()
     deps_ok = len(missing) == 0
 ############
-        
 # read installation locations from lib/site_configdata.py
 share_basedir = site_configdata.unix_installdir
 user_basedir  = site_configdata.unix_userdir
+# windows
+if os.name == 'nt':
+    share_basedir = site_configdata.win_installdir
+    user_basedir = site_configdata.win_userdir
 
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch modules
