@@ -59,8 +59,8 @@ class PlotDisplay(PlotFrame):
             symtable.set_symbol(self.symname, self)
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
-            
-        
+
+
     def onExit(self, o, **kw):
         try:
             symtable = self._larch.symtable
@@ -302,7 +302,8 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None,
 
 
 # @SafeWxCall
-def _imshow(map, win=1, _larch=None, wxparent=None, **kws):
+def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
+            wxparent=None, **kws):
     """imshow(map[, options])
 
     Display an image for a 2-D array, as a map
@@ -311,7 +312,7 @@ def _imshow(map, win=1, _larch=None, wxparent=None, **kws):
     """
     img = _getDisplay(wxparent=wxparent, win=win, _larch=_larch, image=True)
     if img is not None:
-        img.display(map, **kws)
+        img.display(map, x=x, y=y, colormap=colormap, **kws)
 
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
