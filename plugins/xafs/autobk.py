@@ -40,11 +40,10 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
         chi = chi - chi_std
     return realimag(xafsft_fast(chi*ftwin, nfft=nfft)[:irbkg])
 
-def autobk(energy, mu, group=None, rbkg=1, nknots=None,
-           e0=None, edge_step=None, kmin=0, kmax=None, kweight=1,
-           dk=0, win=None, vary_e0=True, k_std=None, chi_std=None,
-           nfft=2048, kstep=0.05, pre_edge_kws=None,
-           debug=False, _larch=None, **kws):
+def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
+           edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
+           win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
+           pre_edge_kws=None, debug=False, _larch=None, **kws):
 
     """Use Autobk algorithm to remove XAFS background
     Options are:
