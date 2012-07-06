@@ -198,8 +198,8 @@ Here a a few example plots, to whet your appetite::
 
 will make this plot:
 
-
 .. image:: ../images/plot_basic1.png
+   :width: 80 %
 
 
 Adding a second curve, and setting some labels::
@@ -209,7 +209,7 @@ Adding a second curve, and setting some labels::
 will make this plot:
 
 .. image:: ../images/plot_basic2.png
-
+   :width: 80 %
 
 
 Using the Plot Windows
@@ -269,9 +269,8 @@ Options->'Configure Plot' (or right-click to bring up a popup menu, then
 select Configure) will bring up the plot configuration window, which looks
 like this:
 
-
 .. image:: ../images/plot_config.png
-
+   :width: 90 %
 
 From here you can set the titles, labels, and styles, colors, symbols, and
 so on for the line traces.
@@ -295,26 +294,60 @@ below may be only approximate):
 
 
 That is, strings can contain TeX-like markup between dollar signs ('$').
-This does not actually use TeX (so you don't need TeX installed). This
-ability to render TeX is due entirely to the matplotlib library used, and
-further details about using TeX for markup, including a list of symbols,
-commands to change fonts, and examples, can be found at
+This does not actually use TeX (so you don't need TeX installed), and the
+rendering is done using the matplotlib library.  For further details about
+using TeX for markup, including a list of symbols, commands to change
+fonts, and examples, can be found at
 http://matplotlib.sourceforge.net/users/mathtext.html
 
 When using the Plot Configuration window to enter a TeX-like string, the
 text control box will be given a yellow background color (instead of the
 normal white color) if there is an error in rendering your TeX string.
 
-
-
 Image Display
 ===============
 
-.. method:: imshow(dat,  x=None, y=None, **kws)
+.. method:: imshow(dat,  x=None, y=None, colormap=None,**kws)
 
    :param dat:  2-d array of some intensity
    :param x:    1-d array of x values
    :param y:    1-d array of y values
+   :param colormap:  name of color table to use.
 
    Imshow displays a grey-scale or false-color image from a 2-d array of intensities.
 
+The `x` and `y` arguments are intended to show real world coordinates for
+the image, not just the array indices.  If `None`, the array indices will
+be shown.
+
+By default, the image will be shown with the origin (pixel [0, 0]) in the
+lower left corner.  The image can be rotated and flipped by the user.
+
+The `colormap` argument is the name of the color map to use to transform
+intensity to color.  The default table is 'gray' for a grayscale mapping.
+Other valid names include 'coolwarm', 'cool', 'hot', 'jet', 'Reds',
+'Greens', 'Blues', 'copper', and a host of others, available
+
+From the Image Display Window, you zoom in on regions of the image, rotate
+the image, change the color table, change the intensity scaling, and change
+the interpolattion algorithm used.  An example image, generated with::
+
+    def gauss2d(x, y, x0, y0, sx, sy):
+        return outer(exp(-(((y-y0)/float(sy))**2)/2),
+                     exp(-(((x-x0)/float(sx))**2)/2))
+    enddef
+
+    ny, nx = 350, 400
+    ix = arange(nx)
+    iy = arange(ny)
+    x  =  ix / 10.
+    y  = -2 + iy / 10.0
+    dat = 0.2 + (0.5*random.random(size=nx*ny).reshape(ny, nx) +
+                 2.0*gauss2d(ix, iy, 190,   176,  37,  32))
+
+    imshow(dat, x=x, y=y, colormap='coolwarm')
+
+is shown below:
+
+.. image:: ../images/plot_image1.png
+   :width: 80 %

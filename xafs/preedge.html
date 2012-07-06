@@ -71,6 +71,14 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">XAFS: Pre-edge Subtraction and Normalization</a><ul>
+<li><a class="reference internal" href="#example">Example</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
                         title="previous chapter">XAFS Analysis with Larch</a></p>
@@ -205,6 +213,31 @@ checks to avoid spurious glitches.</p>
 supplied, group.e0 will also be set to this value.</p>
 </dd></dl>
 
+<div class="section" id="example">
+<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<p>A simple example of pre-edge subtraction:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;fe2o3_rt1.xmu&#39;</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy xmu i0&#39;</span><span class="p">)</span>
+
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
+
+<span class="n">show</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
+
+<span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39; $ \mu(E) $ &#39;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> Pre-Edge &#39;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">,</span>
+        <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">pre_edge</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;pre-edge line&#39;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dashed&#39;</span> <span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">post_edge</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;normalization line&#39;</span><span class="p">,</span>
+     <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dotted&#39;</span> <span class="p">)</span>
+</pre></div>
+</div>
+<p>gives the following results:</p>
+<img alt="../_images/xafs_preedge.png" src="../_images/xafs_preedge.png" style="width: 80%;" />
+</div>
 </div>
 
 

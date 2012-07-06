@@ -108,11 +108,52 @@
 <dl class="function">
 <dt id="_xafs.autobk">
 <tt class="descclassname">_xafs.</tt><tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the post-edge background function, <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>,
-according the the &#8220;AUTOBK&#8221; algorithm, in which a spline function is
-matched to the low-<em>R</em> components of the resulting <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
+<dd><p>Determine the post-edge background function, <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, and
+corresponding <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>energy</strong> &#8211; 1-d array of x-ray energies, in eV</li>
+<li><strong>mu</strong> &#8211; 1-d array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
+<li><strong>group</strong> &#8211; output group</li>
+<li><strong>rbkg</strong> &#8211; distance (in <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>) for <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> above
+which the signal is ignored. Default = 1.</li>
+<li><strong>e0</strong> &#8211; edge energy, in eV. If <cite>None</cite>, it will be determined.</li>
+<li><strong>edge_step</strong> &#8211; edge step.  If <cite>None</cite>, it will be determined here.</li>
+<li><strong>nknots</strong> &#8211; number of knots in spline.  If <cite>None</cite>, it will be determined.</li>
+<li><strong>kmin</strong> &#8211; minimum <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value   [0]</li>
+<li><strong>kmax</strong> &#8211; maximum <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value   [full data range].</li>
+<li><strong>kweight</strong> &#8211; <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> weight for FFT.  [1]</li>
+<li><strong>dk</strong> &#8211; FFT window window parameter.  [0]</li>
+<li><strong>win</strong> &#8211; FFT window function name.     [&#8216;hanning&#8217;]</li>
+<li><strong>k_std</strong> &#8211; optional <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> array for standard <img class="math" src="../_images/math/593e7d196e24fdd29e64f979a309c03a717d0e63.png" alt="chi(k)"/>.</li>
+<li><strong>chi_std</strong> &#8211; optional <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> array for standard <img class="math" src="../_images/math/593e7d196e24fdd29e64f979a309c03a717d0e63.png" alt="chi(k)"/>.</li>
+<li><strong>nfft</strong> &#8211; array size to use for FFT [2048]</li>
+<li><strong>kstep</strong> &#8211; <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> step size to use for FFT [0.05]</li>
+<li><strong>pre_edge_kws</strong> &#8211; keyword arguments to pass to <a class="reference internal" href="preedge.html#_xafs.pre_edge" title="_xafs.pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
+<p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm, in
+which a spline function is matched to the low-<em>R</em> components of the
+resulting <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
+<p>For reference, <img class="math" src="../_images/math/397ee84affc2af1775d27f2a27804691b3cf0bb4.png" alt="k = \sqrt{2m_e (E-E_0)/\hbar^2}"/> is the wavenumber of
+the ejected photo-electron, where <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> is the absorption threshold
+energy (the 0 of photo-electron energy).  For <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> in units of
+<img class="math" src="../_images/math/7ef6061afb4bdae4ec1d72f80a680fb291f27a54.png" alt="\rm \AA^{-1}"/> and <img class="math" src="../_images/math/fa2fa899f0afb05d6837885523503a2d4df434f9.png" alt="E"/> in units of eV, <img class="math" src="../_images/math/1d86ba75a289156904dacf43fce747f88b09252a.png" alt="k \approx
+\sqrt{(E-E_0)/3.81}"/>.  With this conversion of energy to wavenumber,
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> is defined from</p>
+<blockquote>
+<div><img class="math" src="../_images/math/4b7ef296e96bfdafdd517c90aaf88f18c9f2e1dc.png" alt="\chi(E) = \frac{\mu(E)-\mu_0(E)}{\Delta\mu}"/></div></blockquote>
+<p>where <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> is the post-edge background function determined
+here, and <img class="math" src="../_images/math/7d0e590a03ee2cb35204d1d883ae7a012e592ed6.png" alt="\Delta\mu"/> is the edge step, determined from the
+<a class="reference internal" href="preedge.html#_xafs.pre_edge" title="_xafs.pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
 </div>
 
 
