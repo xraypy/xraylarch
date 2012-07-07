@@ -210,7 +210,7 @@ class SymbolTable(Group):
             elif '.' in name:
                 parent, child= name.split('.')
                 for sgrp in sysmods:
-                    if (parent == sgrp.__name__ and 
+                    if (parent == sgrp.__name__ and
                         hasattr(sgrp, child)):
                         grp = getattr(sgrp, child)
                         break
@@ -222,7 +222,7 @@ class SymbolTable(Group):
             if grp is not None and grp not in sgroups:
                 sgroups.append(grp)
                 snames.append(name)
-                
+
         self._sys.searchGroups = cache[3] = snames[:]
         sys.searchGroupObjects = cache[4] = sgroups[:]
         # print( 'Set searchGroups ', cache[3], cache[4])
@@ -429,7 +429,7 @@ class SymbolTable(Group):
 
         registrar = getattr(plugin, 'registerLarchPlugin', None)
         if registrar is None:
-            on_error("%s has no registerLarchPlugin() method" %  plugin.__name__)
+            return
         groupname, syms = registrar()
 
         if not self.has_group(groupname):
@@ -438,8 +438,6 @@ class SymbolTable(Group):
         if groupname not in self._sys.searchGroups:
             self._sys.searchGroups.append(groupname)
         self._fix_searchGroups(force=True)
-        #print( 'add plugin ', groupname)
-        #print(self._sys.searchGroups)
 
         for key, val in syms.items():
             if hasattr(val, '__call__'):
