@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 """
-Read/Write XAS Data Interchange Format for larch
-
-install the xdi python module from
-    https://github.com/XraySpectroscopy/XAS-Data-Interchange
+Read/Write TIFF Files, using tifffile.py from Christoph Gohlke
 """
 import sys
 from larch.larchlib import plugin_path
