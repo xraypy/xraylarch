@@ -1,0 +1,23 @@
+# read and show a TIFF image from a Dectris Pilatus detector
+
+im_array = read_tiff('Pilatus.tiff')
+imshow(im_array, colormap='coolwarm')
+
+print 'Image Statistics: shape = ', im_array.shape
+max_loc = where(im_array == im_array.max())
+
+ixmax, iymax = max_loc[0][0], max_loc[1][0]
+
+
+high_intensities = where(im_array > im_array.std())
+
+hi_xr = high_intensities[0].min(), high_intensities[0].max()
+hi_yr = high_intensities[1].min(), high_intensities[1].max()
+
+print 'Max Intensity = %i at pixel (%i, %i)'           % (im_array.max(), ixmax, iymax)
+print 'Total Intensity = %i, standard deviation = %i ' % (im_array.sum(), im_array.std())
+print 'Number of pixels with high intensity (I>std_dev) = %i ' % (len(high_intensities[0]))
+print 'Range of high intensity:  (%i, %i) to (%i, %i)' % (hi_xr[0], hi_yr[0], hi_xr[1], hi_yr[1])
+
+# print 'Image Portion near max: '
+# print im_array[ixmax-3:ixmax+4,  iymax-3:iymax+4]
