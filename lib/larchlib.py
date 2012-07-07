@@ -3,7 +3,6 @@
 Helper classes for larch interpreter
 """
 from __future__ import division
-
 import sys, os
 import numpy as np
 import traceback
@@ -24,6 +23,17 @@ class LarchExceptionHolder:
         self.exc  = exc
         self.lineno = lineno
         self.exc_info = sys.exc_info()
+        # extract traceback, suppressing interpreter / symboltable
+        tbfull = traceback.extract_tb(self.exc_info[2])
+        tb_list = []
+        for tb in tbfull:
+            if not (sys.prefix in tb[0] and
+                    (os.path.join('larch', 'interpreter') in tb[0] or
+                     os.path.join('larch', 'symboltable') in tb[0])):
+                tb_list.append(tb)
+        self.tback = ''.join(traceback.format_list(tb_list))
+        if self.tback.endswith('\n'):
+            self.tback = self.tback[:-1]
 
         if self.exc_info[0] is not None:
             self.exc = self.exc_info[0]
@@ -39,9 +49,6 @@ class LarchExceptionHolder:
                 col_offset = self.node.col_offset
             except AttributeError:
                 pass
-
-        # print(" GET ERROR ", self.exc, self.msg, self.expr,
-        #       self.fname, self.func, self.lineno)
         try:
             exc_name = self.exc.__name__
         except AttributeError:
@@ -50,6 +57,8 @@ class LarchExceptionHolder:
             exc_name = 'UnknownError'
 
         out = []
+        if len(self.tback) > 0:
+            out.append(self.tback)
         call_expr = None
         fname = self.fname
         fline = None
@@ -102,7 +111,7 @@ class LarchExceptionHolder:
                     ftmp = open(fname, 'r')
                     lines = ftmp.readlines()
                     lineno = min(self.lineno, len(lines))-1
-                    _expr = lines[lineno][:-1]
+                    _expr = lines[lineno+1][:-1]
                     call_expr = self.expr
                     self.expr = _expr
                     ftmp.close()
