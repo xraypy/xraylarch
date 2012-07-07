@@ -13,7 +13,7 @@ recommended_modules = {'basic processing analysis': ('numpy', 'scipy'),
                        'plotting': ('matplotlib', 'wxmplot'),
                        'access to x-ray databases': ('sqlalchemy', ),
                        'read hdf5 files': ('h5py', ),
-                       # 'using the EPICS control system': ('epics',)
+                       'using the EPICS control system': ('epics',)
                     }
 
 failed = False
