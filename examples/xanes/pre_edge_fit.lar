@@ -1,0 +1,66 @@
+import os
+
+fname = os.path.join('..', 'xafs', 'fe2o3_rt1.xmu')
+dat = read_ascii(fname, labels='energy xmu i0')
+
+o = pre_edge(dat.energy, dat.xmu, group=dat)
+
+i1, i2 = index_of(dat.energy, 7105), index_of(dat.energy, 7125)
+dat.e = dat.energy[i1:i2+1]
+dat.y = dat.norm[i1:i2+1]
+
+def resid(pars, data, verbose=False, update_rate=15):
+    model =  (pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1) +
+              pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2) +
+              pars.amp3 * gaussian(data.e, pars.cen3, pars.wid3) +
+              pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen)) +
+              pars.off)
+    return model - data.y
+enddef
+
+# create group for parameters
+params = group(
+    wid1 = param(1.0, vary=True),
+    cen1 = param(7113.25, vary=True),
+    amp1 = param(0.2, vary=True),
+
+    wid2 = param(1.0, vary=True),
+    cen2 = param(7116.0, vary=True),
+    amp2 = param(0.2, vary=True),
+
+    wid3 = param(1.0, vary=True),
+    cen3 = param(7122.25, vary=True),
+    amp3 = param(0.1, vary=True),
+
+    off  = param(0.50, vary=True),
+
+    erf_amp  = param(0.50, vary=True),
+    erf_wid = param(0.50, vary=True),
+    erf_cen  = param(7123.25, vary=True),
+    )
+
+init = resid(params, dat)
+
+plot(dat.e, dat.y, new=True)
+plot(dat.e, init+dat.y)
+
+m = minimize(resid, params, args=(dat,))
+
+final = resid(params, dat)
+g1 = params.amp1* gaussian(dat.e, params.cen1, params.wid1)
+g2 = params.amp2* gaussian(dat.e, params.cen2, params.wid2)
+g3 = params.amp3* gaussian(dat.e, params.cen3, params.wid3)
+ex = params.off + params.erf_amp * erf(params.erf_wid*(dat.e - params.erf_cen))
+
+plot(dat.e, dat.y,       label='data', show_legend=True, new=True)
+plot(dat.e, final+dat.y, label='fit')
+plot(dat.e, final*10, label='resid(10x)')
+
+plot(dat.e, dat.y, label='data', show_legend=True, win=2, new=True)
+plot(dat.e, g1, label='gauss1', win=2)
+plot(dat.e, g2, label='gauss2', win=2)
+plot(dat.e, g3, label='gauss3', win=2)
+plot(dat.e, ex, label='erf', win=2)
+
+print fit_report(params, show_correl=False)
+#
