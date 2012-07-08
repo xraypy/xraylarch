@@ -258,7 +258,7 @@ def guess(value, _larch=None, **kws):
     kws.update({'vary':True})
     return Parameter(value, _larch=_larch, **kws)
 
-def fit_report(group, min_correl=0.1, _larch=None, **kws):
+def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
     """print report of fit statistics given 'fit parameter group'
     """
     if not _larch.symtable.isgroup(group):
@@ -294,7 +294,7 @@ def fit_report(group, min_correl=0.1, _larch=None, **kws):
         out.extend(exprs)
 
     covar_vars = getattr(group, 'covar_vars', [])
-    if len(covar_vars) > 0:
+    if show_correl and len(covar_vars) > 0:
         out.append(' ')
         out.append(header % 'Correlations' +
                    '    (unreported correlations are < % .3f)' % min_correl)
