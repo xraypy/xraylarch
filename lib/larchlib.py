@@ -28,7 +28,8 @@ class LarchExceptionHolder:
         tb_list = []
         for tb in tbfull:
             if not (sys.prefix in tb[0] and
-                    (os.path.join('larch', 'interpreter') in tb[0] or
+                    ('ast.py' in tb[0] or
+                     os.path.join('larch', 'interpreter') in tb[0] or
                      os.path.join('larch', 'symboltable') in tb[0])):
                 tb_list.append(tb)
         self.tback = ''.join(traceback.format_list(tb_list))
@@ -55,6 +56,10 @@ class LarchExceptionHolder:
             exc_name = str(self.exc)
         if exc_name in (None, 'None'):
             exc_name = 'UnknownError'
+
+        # print("GET ERROR ", exc_name, e_type, e_val)
+        # print(" TB :" , e_tb)
+        # print(traceback.print_tb(e_tb))
 
         out = []
         if len(self.tback) > 0:
@@ -99,8 +104,15 @@ class LarchExceptionHolder:
 
         tline = exc_name
         if self.msg not in ('',  None):
-            tline = "%s: %s" % (exc_name, str(self.msg))
+            ex_msg = getattr(e_val, 'msg', '')
+            if ex_msg is '':
+                ex_msg = str(self.msg)
+            tline = "%s: %s" % (exc_name, ex_msg)
         out.append(tline)
+
+        etext = getattr(e_val, 'text', '')
+        if etext is not '':
+            out.append(etext)
 
         if call_expr is None and (self.expr == '<>' or
                                   fname not in (None, '', '<stdin>')):
