@@ -110,8 +110,11 @@ class LarchExceptionHolder:
                 if fname is not None and os.path.exists(fname):
                     ftmp = open(fname, 'r')
                     lines = ftmp.readlines()
-                    lineno = min(self.lineno, len(lines))-1
-                    _expr = lines[lineno+1][:-1]
+                    lineno = min(self.lineno, len(lines))
+                    try:
+                        _expr = lines[lineno][:-1]
+                    except IndexError:
+                        _expr = 'unknown'
                     call_expr = self.expr
                     self.expr = _expr
                     ftmp.close()
