@@ -1,0 +1,13 @@
+# show errro
+
+
+x = 0
+
+
+g = x + 10
+
+print  10/x
+
+
+
+

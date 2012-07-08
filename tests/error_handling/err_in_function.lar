@@ -1,0 +1,6 @@
+"""syntax error in a function definition"""
+
+def bad_func(x):
+    """bad function return syntax"""
+    return x x+1
+enddef
