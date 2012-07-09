@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 ########################################################################
 # MCA class
 # From Mca written by Mark Rivers
@@ -30,12 +32,12 @@ Modifications:
         - added printing of icr in write_ascii_file
 """
 
-mport numpy as np
+import numpy as np
 import copy
 import math
-import types
 import deadtime
 
+HC = 12.3984193 # hc in keV*Ang
 ########################################################################
 class McaEnvironment:
     """
