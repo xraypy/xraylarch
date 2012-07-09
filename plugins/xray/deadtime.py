@@ -1,35 +1,34 @@
-# T. Trainor fftpt@uaf.edu
-# Deadtime calculations for CARS MED/MCA library
-# T. Trainor, 6-10-2006
-#
-# --------------
-# Modifications
-# --------------
-#
-#
-##################################################################################################
-
 """
-Calculate detector deadtime correction factors:
+Deadtime calculations
 
+Authors/Modifications:
+----------------------
+* T. Trainor (tptrainor@alaska.edu), 6-10-2006
+
+Description:
+------------
 The objective is to calculate a factor 'cor' that will provide
-corrected counts via:
-   counts_corrected = counts * cor
+a deadtime correction factor, and give corrected counts via:
+
+    counts_corrected = counts * cor
 
 Background:
 ------------
 A correction factor can be defined as:
 
-     cor = (icr_t/ocr_s)*(rt/lt)
+    cor = (icr_t/ocr_s)*(rt/lt)
 
 Here icr_t = true input count rate (actual counts hitting the detector
 per detector live time - ie icr is a rate)
 
-ocr_s is the output rate from detector slow channel.  ocr_s = TOC_s/lt, TOC_s
-are the total counts output from the slow filter (~ the total counts output
+ocr_s is the output rate from detector slow channel:  ocr_s = TOC_s/lt
+TOC_s is the total counts output from the slow filter (~ the total counts output
 by the detector).
 
-rt and lt are the detector real time and live time respectively.
+rt and lt are the detector real time and live time respectively. real time is
+the requested counting time (=time elapsed from detector start to detector stop).
+live time is the amount of time the detector is active.  e.g. lt/rt*100% is the
+percent of the counting time that the detector is actually live.
 
 icr_t is an uknown quantity.  It can be determined or approximated in a few
 different ways.
@@ -38,7 +37,7 @@ A) icr_t may be determined by inverting the following:
 
     ocr_f = icr_t * exp( -icr_t * t_f)
 
-Here ocr_f is the fast count rate.  ocr_f =TOC_f/lt, TOC_f are the total counts
+Here ocr_f is the fast count rate.  ocr_f = TOC_f/lt, TOC_f are the total counts
 output from the fast filter.
 
 t_f is the fast filter deadtime.  If the detector reports TOC_f and t_f is known
@@ -88,17 +87,17 @@ icr_t (eg mon -> ion chamber)
 In this case plot:
   * x = mon/rt
   * y = ocr_f   -> TOC_f/lt reported in file (may be called icr or total counts)
-  * icr_t = a*mon/rt
-  * fit varying t_f and a (prop const btwn mon and icr_t)
+  * icr_t = a*mon/rt + off
+  * fit varying t_f and a and off (slope and offset btwn mon and icr_t)
       ocr_f = icr_t*exp(-icr_t*t_f)
 
-If the detector does not report ocr_f, then use slow counts to correct:
+If the detector does not report ocr_f, then use slow counts to correct
+(or just sum all the actual output counts):
   * x = mon/rt
   * y = ocr_s   -> TOC_s/lt ~ ( Sum_i ( cnts_i) ) / lt
-  * icr_t = a*mon/rt
-  * fit varying t_s and a (prop const btwn mon and icr_t)
+  * icr_t = a*mon/rt + off
+  * fit varying t_s and a and off (slope and offset btwn mon and icr_t)
          ocr_s = icr_t*exp(-icr_t*t_s)
-
 
 Summary of correction methods:
 ------------------------------
@@ -122,40 +121,72 @@ the detector.
 4) icr_t is uknown or icr_t ~ ocr_s then just assume that icr_t/ocr_s = 1
    (ie just correct for livetime effects)
 
+Example:
+--------
+# given the arrays mon (ion chamber), rt and lt (each len = npts) and
+# the (numpy) multidimensional array for counts (e.g. nptsx2048)
+>>ocr = counts.sum(1)/lt
+>>x = mon/lt
+>>(params,msg) = fit(x,ocr)
+>>tau = params[0]
+>>a   = params[1]
+>>print 'a_fit= ',a,' tau_fit=', tau
+# corrected counts
+>>counts_cor = num.ones(counts.shape)
+>>ocr_cor = num.ones(mon.shape)
+>>for j in range(len(counts)):
+...>icr = calc_icr(ocr[j],tau)
+...>cor = correction_factor(rt[j],lt[j],icr[j],ocr[j])
+...>counts_cor[j] = counts[j]*cor
+...>ocr_cor[j] = counts_cor[j].sum()/lt
+>>pyplot.plot(x,ocr)
+>>pyplot.plot(x,ocr_cor)
 """
 
-#from Num import Num
+##############################################################################
+
 import numpy as np
+import scipy
 from scipy.optimize import leastsq
+from scipy.stats import linregress
+
 E_INV = np.exp(-1)
 
+##############################################################################
 def correction_factor(rt, lt, icr=None, ocr=None):
-    """Calculate the deadtime correction factor.
-        cor = (icr/ocr)*(rt/lt)
-        rt  = real time, time the detector was requested to count for
-        lt  = live time, actual time the detector was active and
-              processing counts
-        icr = true input count rate (TOC_t/lt, where TOC_t = true total counts
-              impinging the detector)
-        ocr = output count rate (TOC_s/lt, where TOC_s = total processed
-              {slow filter for dxp} counts output by the detector)
-
-        If icr and/or ocr are None then only lt correction is applied
-
-        the correction is applied as:
-            corrected_counts = counts * cor
     """
-    if ocr is not None and icr is not None:
+    Calculate the deadtime correction factor.
+
+    Parameters:
+    -----------
+    * rt  = real time, time the detector was requested to count for
+    * lt  = live time, actual time the detector was active and
+            processing counts
+    * icr = true input count rate (TOC_t/lt, where TOC_t = true total counts
+            impinging the detector)
+    * ocr = output count rate (TOC_s/lt, where TOC_s = total processed
+            {slow filter for dxp} counts output by the detector)
+
+    If icr and/or ocr are None then only lt correction is applied
+
+    Outputs:
+    -------
+    * cor = (icr/ocr)*(rt/lt)
+      the correction factor. the correction is applied as:
+        corrected_counts = counts * cor
+    """
+    if icr is not None and ocr is not None:
         return (icr/ocr)*(rt/lt)
     return (rt/lt)
 
-def correct_data(data, rt, lt, icr=None, ocr=None):
+def correct_data(data,rt,lt,icr=None,ocr=None):
     """
     Apply deatime correction to data
     """
-    return data*correction_factor(rt, lt, icr=icr, ocr=ocr)
+    cor = correction_factor(rt,lt,icr,ocr)
+    return data * cor
 
-def calc_icr(ocr, tau):
+def calc_icr(ocr,tau):
     """
     Calculate the true icr from a given ocr and corresponding deadtime factor
     tau using a Newton-Raphson algorithm to solve the following expression.
@@ -166,7 +197,6 @@ def calc_icr(ocr, tau):
 
     Note below could be improved!
     """
-
     # error checks
     if ocr is None or tau is None or ocr <= 0:
         return None
@@ -206,80 +236,99 @@ def calc_icr(ocr, tau):
             break
         else:
             cnt = cnt + 1
+
     return icr
 
-def fit_deadtime_curve(mon, ocr):
+##############################################################################
+def fit(mon,ocr,offset=True):
     """
     Fit a deatime curve and return optimized value of tau
 
-    mon is an array from a linear detector.  This should be in counts/sec
-    (ie mon/scaler_count_time)
-
-    ocr is an array corresponding to the output count rate (either slow or fast).
-    This should be in counts per second where
-        ocr = TOC/lt,
-    TOC is the total output counts and lt is the detector live time
-
     This fits the data to the following:
-          x = mon
+          x = icr_t = a*mon + off -> linear relation btwn icr and mon
           y = ocr   -> TOC/lt
-          icr_t = a*mon
-
-     fit varying 'tau' and 'a' (prop const btwn mon and icr_t)
+     fit varying 'tau', and 'a' and 'off' (slope and offset btwn mon and icr_t)
          ocr = icr_t*exp(-icr_t*tau)
 
     This function is appropriate for fitting either slow or fast ocr's.
     If mon is icr_t the the optimized 'a' should be ~1.
 
+    Parameters:
+    -----------
+    * mon is an array from a linear detector.  This should be in counts/sec
+      (ie mon_cnts/scaler_count_time)
+
+    * ocr is an array corresponding to the output count rate (either slow or fast).
+      This should be in counts per second where
+         ocr = TOC/lt,
+      TOC is the total output counts and lt is the detector live time
+
+    * If offset = False, off = 0.0 and only tau and a are returned
+
     Example:
-        (params,msg) = fit_deadtime_curve(mon,ocr_meas)
-        a = params[0]
-        tau = params[1]
+    --------
+    >>params = fit(mon/time,ocr)
+    >>tau = params[0]
+    >>a   = params[1]
+    >>off = params[2]
 
     """
-    mon = np.array(mon)
-    ocr = np.array(ocr)
+    mon  = np.array(mon,dtype=float)
+    ocr = np.array(ocr,dtype=float)
 
     npts = len(mon)
-    if len(ocr) != npts: return None
-
-    # make a gues at a
-    # assume that mon and ocr are arranged in ascending order, and the first 5%
-    # have little deadtime effects (or maybe a bit so scale up the average 20%).
-    idx = max(int(0.05*npts), 3)
-    mon_avg  = mon[:idx].sum()/idx
-    ocr_avg =  ocr[:idx].sum()/idx
-    a = 1.2*ocr_avg/mon_avg
+    if len(ocr) != npts:
+        return None
 
     # make a guess at tau, assume max(ocr) is the top of the deadtime curve
-    tau = E_INV / max(ocr)
-    params = (a, tau)
-    return leastsq(deadtime_residual, params, args = (mon, ocr))
+    tau = E_INV/max(ocr)
 
-def calc_ocr(params, mon):
-    a, tau = params
-    return a*mon * np.exp(-tau*a*mon)
+    # make a guess at linear params, ie if the detector is linear
+    #    ocr = icr = a*mon + off
+    # assume that mon and ocr are arranged in ascending order, and the first 10%
+    # have little deadtime effects (or maybe a bit so scale up the average 10-20%).
 
-def deadtime_residual(params, mon, ocr):
-    a, tau = params
-    print 'deadtime resid ', a, tau
-    return ocr - a*mon * np.exp(-tau*a*mon)
+    idx = max(int(0.10*npts), 3)
+    try:
+        xx = linregress(mon[0:idx],ocr[0:idx])
+        a   = xx[0]
+        off = xx[1]
+    except:
+        mon_avg = mon[:idx].sum()/idx
+        ocr_avg = ocr[:idx].sum()/idx
+        a   = 1.2*ocr_avg/mon_avg
+        off = 0.0
+    if offset:
+        params = (tau, a, off)
+    else:
+        params = (tau,a)
+    return leastsq(deadtime_residual, params, args = (mon, ocr, offset))
 
+def calc_ocr(params, mon, offset):
+    """ compute ocr from params"""
+    tau, a = params[0], params[1]
+    if offset:
+        off = params[2]
+    else:
+        off = 0.0
+    return (a*mon + off) * np.exp(-tau*(a*mon + off))
 
+def deadtime_residual(params, mon, ocr, offset):
+    """ compute residual """
+    return ocr - calc_ocr(params, mon, offset)
 
-##########
+##############################################################################
 if __name__ == '__main__':
     # test fit
-    mon = 10000 * np.arange(500.0)
-    a = 0.1
+    mon  = 10000. * np.arange(500.0)
+    a   = 0.1
     tau = 0.00001
     print 'a= ', a, ' tau= ', tau
     ocr = a*mon*np.exp(-a*mon*tau)
     ocr_meas = ocr + 2*np.random.normal(size=len(ocr), scale=30.0)
-
-    (params,msg) = fit_deadtime_curve(mon, ocr_meas)
-    a = params[0]
-    tau = params[1]
+    (params,msg) = fit(mon,ocr_meas)
+    tau = params[0]
+    a   = params[1]
     #print msg
     print 'a_fit= ',a,' tau_fit=', tau
 
@@ -289,8 +338,8 @@ if __name__ == '__main__':
     print 'max ocr = ', np.exp(-1)/tau
     print 'ocr= ', ocr, ' icr_calc= ',icr
 
-    rt = 1
-    lt = 1
+    rt = 1.
+    lt = 1.
     cor = correction_factor(rt,lt,icr,ocr)
     print 'cor= ', cor
 
