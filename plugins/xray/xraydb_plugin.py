@@ -333,7 +333,7 @@ def registerLarchPlugin():
                       'xray_edges': xray_edges,
                       'xray_edge': xray_edge,
                       'xray_lines': xray_lines,
-                      'xray_line': xray_line_data,
+                      'xray_line_data': xray_line_data,
                       'core_width':  core_width,
                       'CK_probability': CK_probability,
                       })
