@@ -263,6 +263,25 @@ def xray_lines(element, initial_level=None, excitation_energy=None,
     return xdb.xray_lines(element, initial_level=initial_level,
                           excitation_energy=excitation_energy)
 
+def xray_line_data(element, line='Ka1', _larch=None):
+    """returns data for an  x-ray emission lines of an element, given
+    the siegbahn notation for the like (Ka1, Lb1, etc).  Returns:
+         energy (in eV), intensity, initial_level, final_level
+
+    arguments
+    ---------
+    element:   atomic number, atomic symbol for element
+    line:      siegbahn notation for emission line
+
+    Data from Elam, Ravel, and Sieber.
+    """
+    if _larch is None:
+        return
+    xdb = get_xraydb(_larch)
+    lines = xdb.xray_lines(element)
+    return lines.get(line.title(), None)
+
+
 def CK_probability(element, initial, final, total=True, _larch=None):
     """return transition probability for an element, initial, and final levels.
 
@@ -314,6 +333,7 @@ def registerLarchPlugin():
                       'xray_edges': xray_edges,
                       'xray_edge': xray_edge,
                       'xray_lines': xray_lines,
+                      'xray_line': xray_line_data,
                       'core_width':  core_width,
                       'CK_probability': CK_probability,
                       })
