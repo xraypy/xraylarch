@@ -240,7 +240,7 @@ def calc_icr(ocr,tau):
     return icr
 
 ##############################################################################
-def fit(mon,ocr,offset=True):
+def fit(mon, ocr, offset=True):
     """
     Fit a deatime curve and return optimized value of tau
 
@@ -307,11 +307,10 @@ def fit(mon,ocr,offset=True):
 def calc_ocr(params, mon, offset):
     """ compute ocr from params"""
     tau, a = params[0], params[1]
+    off = 0
     if offset:
         off = params[2]
-    else:
-        off = 0.0
-    return (a*mon + off) * np.exp(-tau*(a*mon + off))
+    return (a*mon+off) * np.exp(-tau*(a*mon+off))
 
 def deadtime_residual(params, mon, ocr, offset):
     """ compute residual """
