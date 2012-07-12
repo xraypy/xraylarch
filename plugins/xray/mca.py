@@ -11,10 +11,7 @@ Authors/Modifications:
 ########################################################################
 
 import numpy as num
-import math
 
-# from tdl.modules.spectra import deadtime
-# from tdl.modules.spectra import calibration as calib
 from deadtime import calc_icr, correction_factor
 from calibration import channel_to_energy
 
@@ -143,8 +140,8 @@ class Mca:
         """
         return calibration data
         """
-        return {'offset':self.offset,      'slope':self.slope,
-                'quad':self.quad,   'units':self.units,  'tth':self.two_theta}
+        return {'offset':self.offset, 'slope':self.slope, 'quad':self.quad,
+                'units':self.units, 'tth':self.two_theta}
 
     ########################################################################
     def init_data(self, data=None, channels=None):
@@ -156,17 +153,17 @@ class Mca:
         * data: A numpy array of data (counts).
         * channels: Array of channel numbers
         """
-        if data:
-            self.data = num.asarray(data,dtype=num.int)
-        elif self.data==[]:
-            self.data = num.zeros(self.nchans,dtype=num.int)
+        if data is None:
+            self.data = num.zeros(self.nchans, dtype=num.int)
+        else:
+            self.data = num.asarray(data, dtype=num.int)
 
         # Note if channels == None, assume the same
         # length as data and channel[0] = 0
-        if channels:
-            self.channels = num.asarray(channels,dtype=num.int)
+        if channels is None:
+            self.channels = num.arange(len(self.data), dtype=num.int)
         else:
-            self.channels = num.arange(len(self.data),dtype=num.int)
+            self.channels = num.asarray(channels, dtype=num.int)
 
         # Check
         self.nchans = len(self.data)
@@ -182,7 +179,7 @@ class Mca:
         if tau == None just recompute,
         otherwise assign a new tau and recompute
         """
-        if tau != None:
+        if tau is not None:
             self.tau = tau
         self._calc_correction()
 
@@ -198,7 +195,7 @@ class Mca:
            if input_counts <= 0 we assume ocr = icr in the correction factor calculation,
                                 ie only lt correction
         """
-        if (self.live_time <=0) or (self.real_time <=0):
+        if self.live_time <= 0 or self.real_time <= 0:
             self.cor_factor  = 1.0
             return
 
@@ -222,7 +219,7 @@ class Mca:
             self.cor_factor = 1.0
 
     ########################################################################
-    def get_data(self,correct=True):
+    def get_data(self, correct=True):
         """
         Returns the data (counts) from the Mca
 
@@ -231,38 +228,19 @@ class Mca:
         sure the correction factor is up to date before requesting
         corrected data...
         """
-        if correct == True:
-            d = self.cor_factor * self.data
+        if correct:
             # note adding .5 rounds the data
-            d = (d+0.5).astype(num.int)
-            return d
+            return  (0.5 + self.cor_factor * self.data).astype(num.int)
         else:
             return self.data
 
     ########################################################################
     def get_energy(self):
         """
-        Returns a list containing the energy of each channel in the MCA spectrum.
+        Returns array of energy for each channel in the MCA spectra.
         """
-        energy = channel_to_energy(self.channels,
-                                   offset=self.offset,
-                                   slope=self.slope,
-                                   quad=self.quad)
+        energy = channel_to_energy(self.channels, offset=self.offset,
+                                   slope=self.slope, quad=self.quad)
         return energy
 
     ####################################################################
-    """
-    def count_totals(self):
-        ""
-        useful for doing a deadtime fit???
-        ""
-        rt = self.elapsed.real_time
-        lt = self.elapsed.live_time
-        OCR = self.elapsed.total_counts/mca.elapsed.live_time
-        ICR = self.elapsed.input_counts/mca.elapsed.live_time
-        ICR_CALC = self.elapsed.icr_calc
-        COR = self.elapsed.cor_factor
-        lst = {'rt':lt,'lt':lt,'OCR':OCR,'ICR':ICR,'ICR_CALC':ICR_CALC,'COR':COR}
-        return lst
-    """
-    #########################################################################
