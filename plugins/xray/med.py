@@ -23,7 +23,7 @@ import numpy as num
 import exceptions
 
 from mca import Mca
-from tdl.modules.spectra import calibration as calib
+import calibration as calib
 
 """
 cubic splines for energy alignment using
@@ -188,7 +188,7 @@ class Med:
                 self.mca[j].update_correction(tau = -1.0)
             return
         # if one value assign to all dets
-        if isinstance(tau, (float, int):
+        if isinstance(tau, (float, int)):
             for j in range(self.n_detectors):
                 self.mca[j].update_correction(tau = tau)
             return
