@@ -20,7 +20,7 @@ def resid(pars, data, verbose=False, update_rate=15):
         if pars.fit_iter % update_rate == 0:
             print parformat % (pars.fit_iter, pars.off.value,
                                pars.amp.value, pars.cen.value, pars.wid.value)
-            update_line(data.x, model, trace=2)
+            update_trace(data.x, model, trace=2)
         endif
     endif
     pars.fit_iter += 1
@@ -37,7 +37,7 @@ mdat.y = ga(mdat.x, -2.0, 15.0, 11.0, .5) + \
 # create group for parameters
 params = group(off = param(-0.5, vary=True),
                cen = param(15.0, vary=True),
-               amp = param(30.0, vary=True),
+               amp = param(30.0, vary=False),
                wid = param(3.50, vary=True),
                fit_iter=0)
 
@@ -53,6 +53,6 @@ minimize(resid, params, args=(mdat,),
 
 final = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
 
-update_line(mdat.x, final, trace=2)
+update_trace(mdat.x, final, trace=2)
 
 # print fit_report(params)
