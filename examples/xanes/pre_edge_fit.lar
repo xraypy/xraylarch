@@ -17,7 +17,7 @@ def make_model(pars, data, components=False):
     e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
     sum = g1 + g2 + g3 + e1
     if components:
-        return sum g1, g2, g3, e1
+        return sum, g1, g2, g3, e1
     endif
     return sum
 enddef
