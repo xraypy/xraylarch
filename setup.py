@@ -104,7 +104,7 @@ if deps_ok and not os.path.exists('.deps'):
     
 if len(missing) > 0:
     print '=' * 65
-    print ':Warning: Some recommended Python Packages are missing:'
+    print '== Warning: Some recommended Python Packages are missing =='
     print '\n'.join(missing)
     print ' '
     print 'Some functionality will not work until these are installed.'
