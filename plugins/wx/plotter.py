@@ -148,7 +148,6 @@ def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
         display.SetTitle(title)
     return display
 
-# @SafeWxCall
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
           force_draw=True, side='left', **kws):
     """plot(x, y[, win=1], options])
@@ -214,7 +213,6 @@ def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
 def update(_larch=None, **kws):
     _larch.symtable.set_symbol('_sys.wx.force_wxupdate', True)
 
-# @SafeWxCall
 def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
@@ -228,7 +226,6 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """
     _plot(x, y, win=win, new=False, _larch=_larch, wxparent=wxparent, **kws)
 
-# @SafeWxCall
 def _newplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """newplot(x, y[, win=1[, options]])
 
@@ -241,6 +238,68 @@ def _newplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     See Also: plot, oplot
     """
     _plot(x, y, win=win, new=True, _larch=_larch, wxparent=wxparent, **kws)
+
+def _plot_text(text, x, y, win=1, side='left',
+               rotation=None, ha='left', va='center',
+               _larch=None, wxparent=None,  **kws):
+    """plot_text(text, x, y, win=1, options)
+
+    add text at x, y coordinates of a plot
+    
+    Parameters:
+    --------------
+        text:  text to draw
+        x:     x position of text
+        y:     y position of text
+        win:   index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
+        side:  which axis to use ('left' or 'right') for coordinates.
+        rotation:  text rotation. angle in degrees or 'vertical' or 'horizontal'
+        ha:    horizontal alignment ('left', 'center', 'right')
+        va:    vertical alignment ('top', 'center', 'bottom', 'baseline')
+
+    See Also: plot, oplot, plot_arrow
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+    
+    plotter.add_text(text, x, y, side=side,
+                     rotation=rotation, ha=ha, va=va, **kws)
+
+def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
+                shape='full', fg='black', wdith=0.01,
+                head_width=0.1, overhang=0,
+               _larch=None, wxparent=None,  **kws):
+
+    """plot_arrow(x1, y1, x2, y2, win=1, options)
+
+    draw arrow from x1, y1 to x2, y2.
+    
+    Parameters:
+    --------------
+        x1: starting x coordinate
+        y1: starting y coordinate
+        x2: endnig x coordinate
+        y2: ending y coordinate
+        side: which axis to use ('left' or 'right') for coordinates.
+        shape:  arrow head shape ('full', 'left', 'right')
+        fg:     arrow fill color ('black')
+        width:  width of arrow line (in points. default=0.01)
+        head_width:  width of arrow head (in points. default=0.1)
+        overhang:    amount the arrow is swept back (in points. default=0)
+
+
+    See Also: plot, oplot, plot_text
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+    
+    plotter.add_text(text, x, y, side=side,
+                     rotation=rotation, ha=ha, va=va, **kws)
+
 
 def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
     """get_cursor(win=1, timeout=30)
@@ -281,7 +340,6 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
     return (symtable.get_symbol(xsym), symtable.get_symbol(ysym))
 
 
-# @SafeWxCall
 def _scatterplot(x,y, win=1, _larch=None, wxparent=None,
           force_draw=True,  **kws):
     """scatterplot(x, y[, win=1], options])
@@ -301,7 +359,6 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None,
 
 
 
-# @SafeWxCall
 def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
             wxparent=None, **kws):
     """imshow(map[, options])
@@ -316,7 +373,10 @@ def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
 
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
+                      'oplot':_oplot,
                       'newplot':_newplot,
+                      'plot_text': _plot_text,
+                      'plot_arrow': _plot_arrow,
                       'scatterplot': _scatterplot,
                       'update_trace': _update_trace,
                       'get_display':_getDisplay,
