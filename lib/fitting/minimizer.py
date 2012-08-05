@@ -31,9 +31,7 @@ will contain fit statistics chisquare, etc.
 from numpy import sqrt
 from scipy.optimize import leastsq as scipy_leastsq
 
-from larch.utils import OrderedDict
-from larch.larchlib import Parameter, isParameter
-from larch.symboltable import isgroup
+from .parameter import isParameter
 
 class MinimizerException(Exception):
     """General Purpose Exception"""
@@ -112,13 +110,13 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         return self.jacfcn(self.paramgroup, *self.userargs, **self.userkws)
 
 
-    def prepare_fit(self):
+    def prepare_fit(self, force=False):
         """prepare parameters for fit
         determine which parameters are actually variables
         and which are defined expressions.
         """
 
-        if self.__prepared:
+        if self.__prepared and not force:
             return
 
         # set larch's paramGroup to this group of parameters
@@ -164,7 +162,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         writes outputs to many internal attributes, and
         returns True if fit was successful, False if not.
         """
-        self.prepare_fit()
+        self.prepare_fit(force=True)
         toler = self.toler
         lskws = dict(full_output=1, xtol=toler, ftol=toler,
                      gtol=toler, maxfev=1000*(self.nvarys+1), Dfun=None)
@@ -249,15 +247,6 @@ def minimize(fcn, group,  args=None, kws=None,
     fit.leastsq()
     return fit
 
-def guess(value, _larch=None, **kws):
-    """create a fitting Parameter as a Variable.
-    A minimum or maximum value for the variable value can be given:
-       x = guess(10, min=0)
-       y = guess(1.2, min=1, max=2)
-    """
-    kws.update({'vary':True})
-    return Parameter(value, _larch=_larch, **kws)
-
 def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
     """print report of fit statistics given 'fit parameter group'
     """
@@ -319,8 +308,7 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
     out.append('='*len(topline))
     return '\n'.join(out)
 
-
-def registerLarchPlugin():
-    return ('_math', {'minimize': minimize,
-                      'guess': guess,
-                      'fit_report': fit_report  })
+# def registerLarchPlugin():
+#     return ('_math', {'minimize': minimize,
+#                       'guess': guess,
+#                       'fit_report': fit_report})
