@@ -5,14 +5,12 @@ import sys, os
 import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 
-import larch
-from larch import Group, Parameter
-from larch.larchlib import plugin_path
+from larch import Group, Parameter, Minimizer, plugin_path
 
 # put the 'std' and 'xafs' (this!) plugin directories into sys.path
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xafs'))
-sys.path.insert(0, plugin_path('fitter'))
+# sys.path.insert(0, plugin_path('fitter'))
 
 # now we can reliably import other std and xafs modules...
 from mathutils import index_nearest, realimag, remove_dups
@@ -21,7 +19,7 @@ from xafsutils import ETOK
 from xafsft import ftwindow, xafsft_fast
 from pre_edge import find_e0, pre_edge
 
-from minimizer import Minimizer
+# from minimizer import Minimizer
 
 FMT_COEF = 'c%2.2i'
 

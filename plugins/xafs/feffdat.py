@@ -15,8 +15,7 @@ creates a group that contains the chi(k) for the sum of paths.
 
 import numpy as np
 import sys, os
-import larch
-from larch.larchlib import Parameter, param_value, plugin_path
+from larch import Group, Parameter, param_value, plugin_path
 
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xafs'))
@@ -108,13 +107,13 @@ class FeffDatFile(object):
         self.pha = data[1] + data[3]
         self.amp = data[2] * data[4]
 
-class FeffPathGroup(larch.Group):
+class FeffPathGroup(Group):
     def __init__(self, filename=None, _larch=None,
                  label=None, s02=None, degen=None, e0=None,
                  ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None,  **kws):
 
-        larch.Group.__init__(self,  **kws)
+        Group.__init__(self,  **kws)
         self._larch = _larch
         self.filename = filename
         self._dat = FeffDatFile(filename=filename)
@@ -155,7 +154,7 @@ class FeffPathGroup(larch.Group):
         # constraint expressions
         stable = self._larch.symtable
         if stable.isgroup(stable._sys.paramGroup):
-            stable._sys.paramGroup.reff = self.reff            
+            stable._sys.paramGroup.reff = self.reff
 
         out = []
         for param in ('degen', 's02', 'e0', 'ei',
@@ -174,15 +173,15 @@ class FeffPathGroup(larch.Group):
     def report(self):
         "return  text report of parameters"
         (deg, s02, e0, ei, delr, ss2, c3, c4) = self._pathparams()
-        
+
         geomlabel  = '     geometry: Atom Label x, y, z ipot'
-        geomformat = '           %s   % .4f, % .4f, % .4f  %i' 
+        geomformat = '           %s   % .4f, % .4f, % .4f  %i'
         out = ['   feff dat file = %s' % self.filename]
         if self.label != self.filename:
             out.append('     label     = %s' % self.label)
         out.append('     reff = %.5f' % self.reff)
         out.append(geomlabel)
-        
+
         for label, iz, ipot, x, y, z in self.geom:
             s = geomformat % (label, x, y, z, ipot)
             if ipot == 0: s = "%s (absorber)" % s
@@ -201,10 +200,10 @@ class FeffPathGroup(larch.Group):
             out.append('     fourth = % .5f' % c4)
         if ei != 0:
             out.append('     ei     = % .5f' % ei)
-            
+
         return '\n'.join(out)
 
-    
+
     def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):

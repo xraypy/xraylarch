@@ -10,23 +10,20 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
 from scipy.optimize import leastsq as scipy_leastsq
 
-import larch
-from larch.larchlib import Parameter, isParameter, plugin_path
-from larch.utils import OrderedDict
-
+from larch import Group, Parameter, isParameter, Minimizer, plugin_path, OrderedDict
 
 sys.path.insert(0, plugin_path('std'))
-sys.path.insert(0, plugin_path('fitter'))
 sys.path.insert(0, plugin_path('xafs'))
+## sys.path.insert(0, plugin_path('fitter'))
 
 from mathutils import index_of, realimag, complex_phase
 
-from minimizer import Minimizer
+# from minimizer import Minimizer
 from xafsft import xafsft, xafsift, xafsft_fast, xafsift_fast, ftwindow
 
 from feffdat import FeffPathGroup, _ff2chi
 
-class TransformGroup(larch.Group):
+class TransformGroup(Group):
     """A Group of transform parameters.
     The apply() method will return the result of applying the transform,
     ready to use in a Fit.   This caches the FT windows (k and r windows)
@@ -41,7 +38,7 @@ class TransformGroup(larch.Group):
                  window='bessel', nfft=2048, kstep=0.05,
                  rmin = 0, rmax=10, dr=0, rwindow='kaiser',
                  fitspace='r', _larch=None, **kws):
-        larch.Group.__init__(self)
+        Group.__init__(self)
         self.kmin = kmin
         self.kmax = kmax
         self.kweight = kweight
@@ -225,11 +222,11 @@ class TransformGroup(larch.Group):
                     out.append( realimag(chiq[iqmin:iqmax]))
             return np.concatenate(out)
 
-class FeffitDataSet(larch.Group):
+class FeffitDataSet(Group):
     def __init__(self, data=None, pathlist=None, transform=None, _larch=None, **kws):
 
         self._larch = _larch
-        larch.Group.__init__(self,  residual=self.residual, **kws)
+        Group.__init__(self,  residual=self.residual, **kws)
 
         self.pathlist = pathlist
 
@@ -237,7 +234,7 @@ class FeffitDataSet(larch.Group):
         if transform is None:
             transform = TransformGroup()
         self.transform = transform
-        self.model = larch.Group()
+        self.model = Group()
         self.model.k = None
         self.datachi = None
         self.__prepared = False
@@ -283,7 +280,7 @@ class FeffitDataSet(larch.Group):
         if path_outputs:
             for p in self.pathlist:
                 xft(p.chi, group=p, rmax_out=rmax_out)
-                
+
 
 
 def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
@@ -325,13 +322,10 @@ def feffit(params, datasets, _larch=None, rmax_out=10,
     for ds in datasets:
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
 
-    out = larch.Group(name='feffit fit results',
-                      fit = fit,
-                      params = params,
-                      datasets = datasets)
-
-    return out
-
+    return Group(name='feffit fit results',
+                 fit = fit,
+                 params = params,
+                 datasets = datasets)
 
 def feffit_report(result, min_correl=0.1, with_paths=True,
                   _larch=None, **kws):
@@ -435,15 +429,9 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         for ds in datasets:
             for p in ds.pathlist:
                 out.append('%s\n' % p.report())
- 
-
 
     out.append('='*len(topline))
-
-
     return '\n'.join(out)
-
-
 
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
