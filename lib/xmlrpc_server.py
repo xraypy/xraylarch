@@ -32,7 +32,7 @@ class LarchServer(SimpleXMLRPCServer):
 
     def run(self):
         """run server until keep_alive is set to False"""
-        print 'Serving Larch at port ' , self.port
+        print( 'Serving Larch at port %s' % repr(self.port))
         try:
             while self.keep_alive:
                 self.handle_request()
@@ -57,7 +57,7 @@ class LarchServer(SimpleXMLRPCServer):
         if self.with_wx:
             self.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
             self.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
-            
+
             self.wxapp = wx.App(redirect=False, clearSigInt=False)
             self.wx_evtloop = inputhook.EventLoopRunner(parent=self.wxapp)
 
@@ -66,9 +66,9 @@ class LarchServer(SimpleXMLRPCServer):
             self.larch.symtable.set_symbol('_sys.wx.parent',None)
             inputhook.ON_INTERRUPT = self.exit
             inputhook.WXLARCH_SYM = self.larch.symtable
-        print 'Larch Initialized!'
+        print('Larch Initialized!')
         self.initialized = True
-        
+
     def wx_interact(self, timeout):
         "allow wx widgets to update until timeout expires"
         if self.wx_evtloop is not None:
@@ -83,7 +83,7 @@ class LarchServer(SimpleXMLRPCServer):
         if not self.initialized:
             self.initialize_larch()
         return json_encode(symname, symtable=self.larch.symtable)
-        
+
     def larch_exec(self, text):
         "execute larch command"
         if not self.initialized:
@@ -112,7 +112,7 @@ class LarchServer(SimpleXMLRPCServer):
                 elif ret is not None:
                     sys.stdout.write("%s\n" % repr(ret))
         return ret is None
-    
+
 if __name__ == '__main__':
     s = LarchServer(host='localhost', port=4966)
     s.run()
