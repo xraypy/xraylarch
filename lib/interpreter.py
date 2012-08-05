@@ -5,8 +5,6 @@
 Safe(ish) evaluator of python expressions, using ast module.
 The emphasis here is on mathematical expressions, and so
 numpy functions are imported if available and used.
-
-
 """
 from __future__ import division, print_function
 import os
@@ -18,7 +16,8 @@ import numpy
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .larchlib import LarchExceptionHolder, Procedure, Parameter, isParameter
+from .larchlib import LarchExceptionHolder, Procedure
+from .fitting  import isParameter
 from .utils import Closure
 
 OPERATORS = {
@@ -35,7 +34,6 @@ OPERATORS = {
     ast.Lt:     lambda a, b: b.__ge__(a) if isParameter(b) else a < b,
     ast.LtE:    lambda a, b: b.__gt__(a) if isParameter(b) else a <= b,
     ast.NotEq:  lambda a, b: b.__ne__(a) if isParameter(b) else a != b,
-
     ast.Is:     lambda a, b: a is b,
     ast.IsNot:  lambda a, b: a is not b,
     ast.In:     lambda a, b: a in b,
@@ -45,7 +43,6 @@ OPERATORS = {
     ast.BitXor: lambda a, b: a ^ b,
     ast.LShift: lambda a, b: a << b,
     ast.RShift: lambda a, b: a >> b,
-
     ast.And:    lambda a, b: a and b,
     ast.Or:     lambda a, b: a or b,
     ast.Invert: lambda a: ~a,
@@ -92,8 +89,8 @@ class Interpreter:
         self.func       = None
         self.fname      = '<stdin>'
         self.lineno     = 0
-        builtingroup = getattr(symtable,'_builtin')
-        mathgroup    = getattr(symtable,'_math')
+        builtingroup = symtable._builtin
+        mathgroup    = symtable._math
         setattr(mathgroup, 'j', 1j)
 
         for sym in builtins.from_math:
@@ -110,9 +107,12 @@ class Interpreter:
         for fname, sym in list(builtins.numpy_renames.items()):
             setattr(mathgroup, fname, getattr(numpy, sym))
 
-        for fname, fcn in list(builtins.local_funcs.items()):
-            setattr(builtingroup, fname,
-                    Closure(func=fcn, _larch=self, _name=fname))
+        for groupname, entries in builtins.local_funcs.items():
+            group = getattr(symtable, groupname, None)
+            if group is not None:
+                for fname, fcn in list(entries.items()):
+                    setattr(group, fname,
+                            Closure(func=fcn, _larch=self, _name=fname))
 
         # add all plugins in standard plugins folder
         plugins_dir = os.path.join(site_config.sys_larchdir, 'plugins')
@@ -393,7 +393,7 @@ class Interpreter:
         ctx = node.ctx.__class__
         if ctx == ast.Del:
             return delattr(sym, node.attr)
-        
+
         sym = self.run(node.value)
         if hasattr(sym, node.attr):
             return getattr(sym, node.attr)
