@@ -92,7 +92,7 @@ setup(name = 'larch',
       license = 'Python',
       description = 'A scientific data processing language in python',
       package_dir = {'larch': 'lib'},
-      packages = ['larch', 'larch.utils', 'larch.wxlib'],
+      packages = ['larch', 'larch.utils', 'larch.fitting', 'larch.wxlib'],
       data_files  = data_files)
 
 site_config.make_larch_userdirs()
@@ -101,7 +101,7 @@ if deps_ok and not os.path.exists('.deps'):
     f = open('.deps', 'w')
     f.write('1\n')
     f.close()
-    
+
 if len(missing) > 0:
     print '=' * 65
     print '== Warning: Some recommended Python Packages are missing =='
