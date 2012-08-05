@@ -189,12 +189,11 @@ class SymbolTable(Group):
         cache[2] = sys.moduleGroup
         snames  = []
         sgroups = []
-        if sys.paramGroup is not None:
-            sgroups.append(sys.paramGroup)
 
-        sgroups.append(sys.localGroup)
-        if sys.moduleGroup not in sgroups:
-            sgroups.append(sys.moduleGroup)
+        for grp in (sys.localGroup, sys.paramGroup, sys.moduleGroup):
+            if grp is not None and grp not in sgroups:
+                sgroups.append(grp)
+
 
         sysmods = list(self._sys.modules.values())
         searchGroups  = sys.searchGroups[:]
