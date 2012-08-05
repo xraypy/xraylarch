@@ -6,12 +6,12 @@ import imp
 import sys
 import time
 
-from helper import Helper
+from .helper import Helper
 from . import inputText
 from . import site_config
 from . import fitting
 from .utils import Closure
-import larchlib
+from . import larchlib
 from .symboltable import isgroup
 
 

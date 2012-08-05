@@ -27,7 +27,7 @@ if os.path.exists('.deps'):
         pass
 
 if not deps_ok:
-    print 'Checking dependencies....'
+    print( 'Checking dependencies....')
     for desc, mods in recommended_modules.items():
         for mod in mods:
             try:
@@ -37,9 +37,9 @@ if not deps_ok:
                 missing.append('     %s:  needed for %s' % (mod, desc))
 
     if failed:
-        print '== Cannot Install Larch: =='
-        print 'Missing dependencies: %s are REQUIRED' % (' and '.join(required_modules))
-        print 'Please read INSTALL for further information.'
+        print('== Cannot Install Larch: ==')
+        print('Missing dependencies: %s are REQUIRED' % (' and '.join(required_modules)))
+        print('Please read INSTALL for further information.')
         sys.exit()
     deps_ok = len(missing) == 0
 ############
@@ -79,7 +79,7 @@ for pdir in pluginpaths:
         filelist.extend(glob.glob('%s/*.%s' % (pdir, ext)))
     for fname in filelist:
         if os.path.isdir(fname):
-            print 'Warning -- not walking subdirectories for Plugins!!'
+            print('Warning -- not walking subdirectories for Plugins!!')
         else:
             pfiles.append(fname)
     data_files.append((os.path.join(share_basedir, pdir), pfiles))
@@ -103,12 +103,12 @@ if deps_ok and not os.path.exists('.deps'):
     f.close()
 
 if len(missing) > 0:
-    print '=' * 65
-    print '== Warning: Some recommended Python Packages are missing =='
-    print '\n'.join(missing)
-    print ' '
-    print 'Some functionality will not work until these are installed.'
-    print 'Please read INSTALL for further information.'
-    print '=' * 65
+    print( '=' * 65)
+    print( '== Warning: Some recommended Python Packages are missing ==')
+    print( '\n'.join(missing))
+    print( ' ')
+    print( 'Some functionality will not work until these are installed.')
+    print( 'Please read INSTALL for further information.')
+    print( '=' * 65)
 
 

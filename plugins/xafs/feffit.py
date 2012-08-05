@@ -10,7 +10,7 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
 from scipy.optimize import leastsq as scipy_leastsq
 
-from larch import Group, Parameter, isParameter, Minimizer, plugin_path, OrderedDict
+from larch import Group, Parameter, isParameter, Minimizer, plugin_path
 
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xafs'))

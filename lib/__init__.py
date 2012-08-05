@@ -19,5 +19,5 @@ from .shell import shell
 from .larchlib import plugin_path
 from .interpreter import Interpreter
 from .inputText import InputText
-from .utils import OrderedDict, Closure, fixName
+from .utils import Closure, fixName
 from .version import __date__, __version__

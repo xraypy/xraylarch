@@ -2,8 +2,8 @@
 """
 handle input Text for Larch -- inclides translation to Python text
 """
-# from __future__ import print_function
-from utils import isValidName, isNumber, isLiteralStr, find_delims
+from __future__ import print_function
+from .utils import isValidName, isNumber, isLiteralStr, find_delims
 
 def strip_comments(sinp, char='#'):
     "find character in a string, skipping over quoted text"
@@ -118,7 +118,7 @@ class InputText:
                      'while': ('else') }
 
     defpar = "_builtin.param(expr='%s', name='%s')"
-    
+
     nonkey = 'NONKEY'
 
     empty_frame = (None, None, -1)
@@ -412,8 +412,8 @@ if __name__ == '__main__':
     inp.put("a)")
 
     while inp:
-        print inp.get()
-    print 'done'
+        print( inp.get())
+    print( 'done')
 
     buff = ['x = 1',
             'y = x /2',

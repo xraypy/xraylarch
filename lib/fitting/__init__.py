@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-from parameter import Parameter, isParameter, param_value
-from minimizer import Minimizer, minimize, fit_report
+from .parameter import Parameter, isParameter, param_value
+from .minimizer import Minimizer, minimize, fit_report
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"

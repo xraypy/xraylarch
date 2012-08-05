@@ -76,7 +76,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         set parameter values from values of fitted variables
         """
         if not self.__prepared:
-            print 'fit not prepared!'
+            print('fit not prepared!')
         group = self.paramgroup
         for name, val in zip(self.var_names, fvars):
             par = getattr(group, name)
@@ -251,7 +251,7 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
     """print report of fit statistics given 'fit parameter group'
     """
     if not _larch.symtable.isgroup(group):
-        print 'must pass Group to fit_report()'
+        print('must pass Group to fit_report()')
         return
     topline = '===================== FIT RESULTS ====================='
     header = '[[%s]]'

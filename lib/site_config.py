@@ -6,9 +6,11 @@ site configuration for larch:
    module_path: list of directories to search for larch code
    history_file:
 """
+from __future__ import print_function
+
 import os
 import sys
-import site_configdata
+from . import site_configdata
 
 join = os.path.join
 exists = os.path.exists
@@ -22,8 +24,8 @@ def get_homedir():
             if method(s) not in (None, s):
                 return method(s)
         except KeyError:
-            print 'error looking up ', s
-            print sys.exc_info[1]
+            print('error looking up %s' % s)
+            print(sys.exc_info[1])
         return None
 
     home_dir = check(os.path.expanduser, '~')
@@ -62,11 +64,11 @@ def make_larch_userdirs():
             os.mkdir(dname)
             return True
         except OSError:
-            print 'Error trying to create %s' % dname
-            print sys.exc_info()[1]
+            print('Error trying to create %s' % dname)
+            print(sys.exc_info()[1])
         except TypeError:
-            print 'Error trying to create %s' % dname
-            print sys.exc_info()[1]
+            print('Error trying to create %s' % dname)
+            print(sys.exc_info()[1])
         return False
 
     def write_file(fname, text):
@@ -78,8 +80,8 @@ def make_larch_userdirs():
             f.close()
             return True
         except:
-            print 'Error trying to open %s' % fname
-            print sys.exc_info()[1]
+            print('Error trying to open %s' % fname)
+            print(sys.exc_info()[1])
         return False
 
     user_dir = abspath(join(home_dir, usr_larchdir))
@@ -142,7 +144,7 @@ if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')
 
 def show_site_config():
-    print """===  Larch Configuration
+    print( """===  Larch Configuration
   users home directory: %s
   users larch dir:      %s
   users history_file:   %s
@@ -151,7 +153,7 @@ def show_site_config():
   plugins search path:  %s
 ========================
 """ % (home_dir, usr_larchdir, history_file, init_files,
-       modules_path, plugins_path)
+       modules_path, plugins_path))
 
 if __name__ == '__main__':
     show_site_config()

@@ -72,7 +72,7 @@ class Parameter(object):
                self._val = max(self.min, self._val)
             if self.max < np.inf:
                 self.value = min(self.max, self._val)
-        except TypeError, ValueError:
+        except(TypeError, ValueError):
             self._val = np.nan
 
         return self._val

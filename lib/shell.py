@@ -35,7 +35,7 @@ class shell(cmd.Cmd):
             try:
                 self.rdline.read_history_file(history_file)
             except IOError:
-                print 'could not read history from ', history_file
+                print('could not read history from %s' % history_file)
 
         if stdin is not None:   sys.stdin = stdin
         if stdout is not None:  sys.stdout = stdout

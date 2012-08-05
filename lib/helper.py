@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 main = """This is Larch main help"""
 
-import helpTopics
+from . import helpTopics
 Help_topics = helpTopics.generate()
 
 class Helper(object):
