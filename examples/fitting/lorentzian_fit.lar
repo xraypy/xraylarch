@@ -1,8 +1,7 @@
-
 doc =  """
    Example fit to Gaussian line shape.
 """
-    
+
 
 def resid(pars, data, verbose=False):
     # model = pars.offset + pars.amp*lorentzian(data.x, pars.cen.value, pars.wid.value)

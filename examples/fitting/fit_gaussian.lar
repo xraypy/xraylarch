@@ -31,19 +31,18 @@ enddef
 xdat = None
 mdat = group()
 mdat.x = arange(501)/25.0
-mdat.y = ga(mdat.x, -2.0, 15.0, 11.0, .5) + \
-         random.normal(size=len(mdat.x), scale=.40)
+mdat.y = ga(mdat.x, -2.0, 15.0, 11.0, 2.0) + \
+         random.normal(size=len(mdat.x), scale=0.250)
 
 # create group for parameters
-params = group(off = param(-0.5, vary=True),
-               cen = param(15.0, vary=True),
-               amp = param(30.0, vary=False),
-               wid = param(3.50, vary=True),
+params = group(off = param(1,   vary=True),
+               amp = param(1.0, vary=True),
+               cen = param(10.0, vary=True),
+               wid = param(1.0, vary=True),
                fit_iter=0)
 
 init = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
 
-print 'xdat, mdat: ', id(xdat), id(mdat), id(mdat.x), id(mdat.y)
 newplot(mdat.x, mdat.y)
 plot(mdat.x, init)
 plot(mdat.x, init, color='black', style='--')
@@ -55,4 +54,4 @@ final = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
 
 update_trace(mdat.x, final, trace=2)
 
-# print fit_report(params)
+print fit_report(params)

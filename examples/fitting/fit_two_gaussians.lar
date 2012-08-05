@@ -10,12 +10,12 @@ xlog2 = log(2.0)
 s2pi = sqrt(xlog2/pi)
 parformat = " %4i  % .4f  % .4f  % .4f  % .4f % .4f  % .4f % .4f"
 
-def mymodel(x, off, amp, cen, wid):
+def mymodel(x, _off, _amp, _cen, _wid):
     """standard gaussian with scale and constant offset """
-    return off + amp*(s2pi / wid) * exp(-xlog2 * (x-cen)**2 / wid**2)
+    return _off + _amp*(s2pi / _wid) * exp(-xlog2 * (x-_cen)**2 / _wid**2)
 enddef
 
-def xresid(pars, data, verbose=False, update_rate=5):
+def resid(pars, data, verbose=False, update_rate=5):
     model = mymodel(data.x, pars.off1, pars.amp1, pars.cen1, pars.wid1) + \
             mymodel(data.x, pars.off2, pars.amp2, pars.cen2, pars.wid2)
     if verbose:
@@ -23,14 +23,11 @@ def xresid(pars, data, verbose=False, update_rate=5):
             print "    I   Offset    Amp1      Cen1    Sigma1   Amp2     Cen2    Sigma2"
         endif
         if pars.fit_iter % update_rate == 0:
-            #print parformat % (pars.fit_iter, pars.off1.value,
-            #                   pars.amp1.value, pars.cen1.value,
-            #                   pars.wid1.value, pars.amp2.value,
-            #                   pars.cen2.value, pars.wid2.value)
-            # update_line(data.x, data.y, trace=1)
-            update_line(data.x, model, trace=2)
-            # print 'In resid ', id(pars), id(data)
-
+            print parformat % (pars.fit_iter, pars.off1.value,
+                               pars.amp1.value, pars.cen1.value,
+                               pars.wid1.value, pars.amp2.value,
+                               pars.cen2.value, pars.wid2.value)
+            update_trace(data.x, model, trace=2)
         endif
     endif
     pars.fit_iter += 1
@@ -38,26 +35,25 @@ def xresid(pars, data, verbose=False, update_rate=5):
 enddef
 
 # create data
-mdat = None
-xdat = group()
-xdat.x = arange(501)/20.0
-xdat.var = mymodel(xdat.x, -0.2, 15.0, 11.0, .5) + mymodel(xdat.x,  0.0, 12.0, 9.0, 2.0) + \
-         random.normal(size=len(xdat.x), scale=.035)
-print 'xdat, mdat: ', id(xdat), id(mdat), id(xdat.x), id(xdat.var)
+xdat = group(x=arange(501)/20.0)
+xdat.var =  mymodel(xdat.x, -0.2, 15.0, 11.0, .5) + \
+            mymodel(xdat.x,  0.0, 12.0, 9.0, 2.0) + \
+            random.normal(size=len(xdat.x), scale=.20)
 
 # create group for parameters
 fitpars = group(off1 = param(0, vary=True),
-               cen1 = param(10.0, vary=True),
-               amp1 = param(30.0, vary=True),
-               wid1 = param(2.0, vary=True),
+                cen1 = param(10.0, vary=True),
+                amp1 = param(30.0, vary=True),
+                wid1 = param(2.0, vary=True),
 
-               off2 = param(0.0, vary=False),
-               cen2 = param(expr='cen1 - 2'),
-               amp2 = param(50.0, vary = True),
-               wid2 = param(expr='wid1*4'),
-               fit_iter=0)
+                off2 = param(0.0, vary=False),
+                cen2 = param(expr='cen1 - 2'),
+                amp2 = param(50.0, vary = True),
+                wid2 = param(expr='wid1*4'),
+                fit_iter=0)
 
 _sys.paramGroup = fitpars
+
 
 if show_plots:
     init = mymodel(xdat.x, fitpars.off1, fitpars.amp1, fitpars.cen1, fitpars.wid1) + \
@@ -67,13 +63,13 @@ if show_plots:
     plot(xdat.x, init, color='black', style='--')
 endif
 
-minimize(xresid, fitpars, args=(xdat,),
-         kws={'verbose':show_plots, 'update_rate': 2})
+minimize(resid, fitpars, args=(xdat,),
+         kws={'verbose':show_plots, 'update_rate': 5})
 
 if show_plots:
     final = mymodel(xdat.x, fitpars.off1, fitpars.amp1, fitpars.cen1, fitpars.wid1) + \
             mymodel(xdat.x, fitpars.off2, fitpars.amp2, fitpars.cen2, fitpars.wid2)
-    update_line(xdat.x, final, trace=2)
+    update_trace(xdat.x, final, trace=2)
 endif
-# print fit_report(fitpars)
-#print 'Total run time = %.3f sec' % (time.time() - t0)
+print fit_report(fitpars)
+print 'Total run time = %.3f sec' % (time.time() - t0)
