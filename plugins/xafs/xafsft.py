@@ -55,7 +55,8 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
 
     def asint(val): return int((val+xeps)/xstep)
     i1, i2, i3, i4 = asint(x1), asint(x2), asint(x3), asint(x4)
-
+    i1, i2 = max(0, i1), max(0, i2)
+    i3, i4 = min(len(x)-1, i3), min(len(x)-1, i4)
     # initial window
     fwin =  zeros(len(x))
     fwin[i2:i3] = ones(i3-i2)
