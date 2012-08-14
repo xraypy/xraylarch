@@ -40,7 +40,6 @@ params = group(off = param(1,   vary=True),
                cen = param(10.0, vary=True),
                wid = param(1.0, vary=True),
                fit_iter=0)
-
 init = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
 
 newplot(mdat.x, mdat.y)
@@ -53,5 +52,6 @@ minimize(resid, params, args=(mdat,),
 final = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
 
 update_trace(mdat.x, final, trace=2)
-
 print fit_report(params)
+
+show(params)

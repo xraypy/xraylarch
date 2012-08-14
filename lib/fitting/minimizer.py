@@ -28,10 +28,13 @@ best fit values, uncertainties and correlations, and the params group
 will contain fit statistics chisquare, etc.
 """
 
-from numpy import sqrt
+from numpy import sqrt, dot, take, triu, shape, eye, transpose
+from numpy.dual import inv
+from numpy.linalg import LinAlgError
 from scipy.optimize import leastsq as scipy_leastsq
 
 from .parameter import isParameter
+from larch import Group
 
 class MinimizerException(Exception):
     """General Purpose Exception"""
@@ -179,6 +182,14 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         resid = infodict['fvec']
         group = self.paramgroup
 
+        # compute covariance matrix here explicitly...
+        rvec = dot(triu(transpose(infodict['fjac'])[:self.nvarys,:]),
+                take(eye(self.nvarys),infodict['ipvt']-1,0))
+        try:
+            cov = inv(dot(transpose(rvec),rvec))
+        except LinAlgError:
+            cov = None
+
         #symtable = self._larch.symtable
         #if self.paramgroup.__name__ in symtable._sys.searchGroups:
         #    symtable._sys.searchGroups.remove(self.paramgroup.__name__)
@@ -198,11 +209,18 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         nfree  = (ndata - self.nvarys)
         redchi = chisqr / nfree
 
-        group.lmdif_status =  ier
-        group.lmdif_message =  errmsg
-        group.lmdif_success =  ier in [1, 2, 3, 4]
-        group.toler =   self.toler
-        group.nfcn_calls =   infodict['nfev']
+
+        group.lmdif  = Group()
+        group.lmdif.fjac = infodict['fjac']
+        group.lmdif.fvec = infodict['fvec']
+        group.lmdif.qtf  = infodict['qtf']
+        group.lmdif.ipvt = infodict['ipvt']
+        group.lmdif.status =  ier
+        group.lmdif.message =  errmsg
+        group.lmdif.success =  ier in [1, 2, 3, 4]
+        group.lmdif.nfcn_calls =   infodict['nfev']
+        group.lmdif.toler =   self.toler
+
         group.residual =    resid
         group.message =     message
         group.chi_square =  chisqr
@@ -217,7 +235,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             par.correl = None
 
         if cov is not None:
-            covar = cov
             if self.scale_covar:
                 cov = cov * chisqr / nfree
             for ivar, name in enumerate(self.var_names):
