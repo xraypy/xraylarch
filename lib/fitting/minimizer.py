@@ -26,9 +26,13 @@ as the first argument, and can take additional optional arguments.
 After this, each of the parameters in the params group will contain
 best fit values, uncertainties and correlations, and the params group
 will contain fit statistics chisquare, etc.
+
+
+   Copyright (c) 2012 Matthew Newville, The University of Chicago
+   <newville@cars.uchicago.edu>
 """
 
-from numpy import sqrt, dot, take, triu, shape, eye, transpose
+from numpy import dot, eye, ones_like, sqrt, take, transpose, triu
 from numpy.dual import inv
 from numpy.linalg import LinAlgError
 from scipy.optimize import leastsq as scipy_leastsq
@@ -47,7 +51,6 @@ class MinimizerException(Exception):
 
 class Minimizer(object):
     """general minimizer"""
-    err_nonparam = "params must be a minimizer.Parameters() instance or list of Parameters()"
     err_maxfev   = """Too many function calls (max set to  %i)!  Use:
     minimize(func, params, ...., maxfev=NNN)
 or set  leastsq_kws['maxfev']  to increase this maximum."""
@@ -83,9 +86,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         group = self.paramgroup
         for name, val in zip(self.var_names, fvars):
             par = getattr(group, name)
-            if par.min is not None:   val = max(val, par.min)
-            if par.max is not None:   val = min(val, par.max)
-            par.value = val
+            par._val  = par._from_internal(val)
 
     def __residual(self, fvars):
         """
@@ -137,11 +138,12 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         for name in dir(self.paramgroup):
             par = getattr(self.paramgroup, name)
             if isParameter(par):
+                val0 = par.setup_bounds()
                 if par.expr is not None:
                     par._getval()
                 elif par.vary:
                     self.var_names.append(name)
-                    self.vars.append(par.value)
+                    self.vars.append(val0)
                 if not hasattr(par, 'name') or par.name is None:
                    par.name = name
         self.nvarys = len(self.vars)
@@ -182,9 +184,20 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         resid = infodict['fvec']
         group = self.paramgroup
 
+        # need to map _best values to params, then calculate the
+        # grad for the variable parameters
+        grad = ones_like(vbest)
+        for ivar, name in enumerate(self.var_names):
+            par = getattr(group, name)
+            grad[ivar] = par.scale_gradient(vbest[ivar])
+
+        # modified from JJ Helmus' leastsqbound.py
         # compute covariance matrix here explicitly...
+        infodict['fjac'] = transpose(transpose(infodict['fjac']) /
+                                     take(grad, infodict['ipvt'] - 1))
+
         rvec = dot(triu(transpose(infodict['fjac'])[:self.nvarys,:]),
-                take(eye(self.nvarys),infodict['ipvt']-1,0))
+                take(eye(self.nvarys),infodict['ipvt'] - 1,0))
         try:
             cov = inv(dot(transpose(rvec),rvec))
         except LinAlgError:
@@ -221,6 +234,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         group.lmdif.nfcn_calls =   infodict['nfev']
         group.lmdif.toler =   self.toler
 
+        group.nfcn_calls =   infodict['nfev']
         group.residual =    resid
         group.message =     message
         group.chi_square =  chisqr

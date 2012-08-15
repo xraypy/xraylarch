@@ -1,4 +1,4 @@
-import numpy as np
+from numpy import arcsin, cos, inf, nan, sin, sqrt
 
 class Parameter(object):
     """returns a parameter object: a floating point value with bounds that can
@@ -26,6 +26,7 @@ class Parameter(object):
         self._expr = expr
         self._ast = None
         self._larch = None
+        self._from_internal = lambda val: val
         if (hasattr(_larch, 'run') and
             hasattr(_larch, 'parse') and
             hasattr(_larch, 'symtable')):
@@ -62,20 +63,63 @@ class Parameter(object):
                 # self._larch.symtable.save_frame()
                 # self._larch.symtable.restore_frame()
 
-        if self.min is None: self.min = -np.inf
-        if self.max is None: self.max =  np.inf
+        if self.min is None: self.min = -inf
+        if self.max is None: self.max =  inf
         if self.max < self.min:
             self.max, self.min = self.min, self.max
 
         try:
-            if self.min > -np.inf:
+            if self.min > -inf:
                self._val = max(self.min, self._val)
-            if self.max < np.inf:
+            if self.max < inf:
                 self.value = min(self.max, self._val)
         except(TypeError, ValueError):
-            self._val = np.nan
-
+            self._val = nan
         return self._val
+
+    def setup_bounds(self):
+        """set up Minuit-style internal/external parameter transformation
+        of min/max bounds.
+
+        returns internal value for parameter from self.value (which holds
+        the external, user-expected value).   This internal values should
+        actually be used in a fit....
+
+        As a side-effect, this also defines the self.from_internal method
+        used to re-calculate self.value from the internal value, applying
+        the inverse Minuit-style transformation.  This method should be
+        called prior to passing a Parameter to the user-defined objective
+        function.
+
+        This code borrows heavily from JJ Helmus' leastsqbound.py
+        """
+        if self.min in (None, -inf) and self.max in (None, inf):
+            self._from_internal = lambda val: val
+            _val  = self._val
+        elif self.max in (None, inf):
+            self._from_internal = lambda val: self.min - 1 + sqrt(val*val + 1)
+            _val  = sqrt((self._val - self.min + 1)**2 - 1)
+        elif self.min in (None, -inf):
+            self._from_internal = lambda val: self.max + 1 - sqrt(val*val + 1)
+            _val  = sqrt((self.max - self._val + 1)**2 - 1)
+        else:
+            self._from_internal = lambda val: self.min + (sin(val) + 1) * \
+                                  (self.max - self.min) / 2
+            _val  = arcsin(2*(self._val - self.min)/(self.max - self.min) - 1)
+        return _val
+
+    def scale_gradient(self, val):
+        """returns scaling factor for gradient the according to Minuit-style
+        transformation.
+        """
+        if self.min in (None, -inf) and self.max in (None, inf):
+            return 1.0
+        elif self.max in (None, inf):
+            return val / sqrt(val*val + 1)
+        elif self.min in (None, -inf):
+            return -val / sqrt(val*val + 1)
+        else:
+            return cos(val) * (self.max - self.min) / 2.0
 
     def __hash__(self):
         return hash((self._getval(), self.min, self.max,
@@ -87,9 +131,9 @@ class Parameter(object):
             w.append("expr='%s'" % self._expr)
         elif self.vary:
             w.append('vary=True')
-        if self.min not in (None, -np.inf):
+        if self.min not in (None, -inf):
             w.append('min=%s' % repr(self.min))
-        if self.max not in (None, np.inf):
+        if self.max not in (None, inf):
             w.append('max=%s' % repr(self.max))
         return 'param(%s)' % ', '.join(w)
 
