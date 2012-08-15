@@ -1,7 +1,6 @@
 doc =  """
-   Example fit to Gaussian line shape.
+   Example fit to Gaussian line shape, with bounds
 """
-
 log2 = log(2.0)
 s2pi = sqrt(log2/pi)
 parformat = " %4i    % .4f    % .4f    % .4f    % .4f"
@@ -31,14 +30,15 @@ enddef
 xdat = None
 mdat = group()
 mdat.x = arange(501)/25.0
+random.seed(1)
 mdat.y = ga(mdat.x, -2.0, 15.0, 11.0, 2.0) + \
          random.normal(size=len(mdat.x), scale=0.250)
 
 # create group for parameters
-params = group(off = param(1,   vary=True),
-               amp = param(1.0, vary=True),
-               cen = param(10.0, vary=True),
-               wid = param(1.0, vary=True),
+params = group(off = param(-3.1,   max=0, vary=True),
+               amp = param(10.0,   max=17.8, min=0, vary=True),
+               cen = param(10.80, min=10., max=12., vary=True),
+               wid = param(1.0,  min=0, max=9, vary=True),
                fit_iter=0)
 init = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
 
