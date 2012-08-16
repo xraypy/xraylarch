@@ -39,6 +39,7 @@ The idea is that having these different problem areas connected by a common
    tutorial/index.rst
    reference
    developers
+   fitting
    xafs/index.rst
    xray/index.rst
 
