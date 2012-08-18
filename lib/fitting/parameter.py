@@ -188,8 +188,8 @@ class Parameter(object):
     def as_integer_ratio(self):  return self._getval().as_integer_ratio()
     def hex(self):         return self._getval().hex()
     def is_integer(self):  return self._getval().is_integer()
-    def real(self):        return self._getval().real()
-    def imag(self):        return self._getval().imag()
+    def real(self):        return self._getval().real
+    def imag(self):        return self._getval().imag
     def conjugate(self):   return self._getval().conjugate()
 
     def __format__(self):  return format(self._getval())
