@@ -23,9 +23,115 @@ algorithms) are used for those other functions as well.
 Fitting Overview
 ================== 
 
+Modeling and fitting of experimental data is a key need for the analysis of
+most scientific data.  There is an extensive literature on these topics,
+with a wealth written on both the theoretical and practical aspects of
+modeling data.  One of the more common and general approaches is to use a
+least-squares analysis, in which a model is adjusted until it matches
+experimental data such that the sum of squares of the difference between
+data and model is as small as possible.  Mathematically, this is expressed
+as
+
+.. math::
+
+    S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \bf{\beta}) } \big]^2
+
+where the experimental data is expressed as :math:`\bf{y}(\bf{x})` that is
+discretely sampled at :math:`N` points, :math:`f(\bf{x}, \bf{\beta})` is a
+model function, and :math:`\bf{\beta}` is a set of adjustable parameters in
+the model.  For a simple linear model of data, for example, :math:`f =
+\beta_0 + \beta_1 \bf{x}`, but the model can be arbitrary complex.  There
+is good statistical justification for using this approach, and many
+existing tools for helping to find the minimal values of :math:`S`.  These
+justifcations are not without criticism or caveats, but we'll leave that
+aside for now.
+
+It is common to include a multiplicative factor to each component in in the
+least-squares equation above, so that the different data points might be
+given more or less weight.  Again, there are several approaches to this,
+with one of the most common approaches to weight by the inverse of the
+estimated uncertainty in the data value.  This then what is generally
+called the chi-square goodness-of-fit parameter
+
+
+.. math::
+
+    \chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \bf{\beta})}{\epsilon_i} \big]^2
+
+Here, :math:`\epsilon_i` represents the uncertainty in the value of :math:`y_i`.  
+
+As mentioned, the model function can be fairly complex. There is a large
+literature on the cases where the model function :math:`f(\bf{x},
+\bf{\beta})` depends linearly on its parameters :math:`\bf{\beta}`.  More
+generally, the model function will not depend linearly on its parameters,
+and the minimization is generally referred to a ''non-linear least-squares
+optimization'' in the literature.  All the discussion here will assume that
+the models can be non-linear.
+
+
+It is convenient to define the **residual function**  as
+
+.. math::
+
+     r = \frac{y - f(x, \bf{\beta})}{\epsilon}
+
+
+so that the sum to be minimized is a simple sum of this function, :math:`s
+= \sum_i^{N} r_i^2`.   The fitting process can then be made very general
+with a few key components required.  Specifically, for Larch, the
+requirements are
+ 
+  1. An **objective function** to calculate the residual function.  This
+  will be a Larch function that takes *a group containing all the
+  parameters* as its first argument, and an unlimited set of optional
+  arguments.  The arrays for the data should passed in by these optional
+  arguments.  This should return the array of residuals.
+
+  2. A set of Parameters that are used in the model, and are to be adjusted
+  to find the least-square value of the sum of squares of the residual.
+  These must be placed in a single **parameter group**.
+
+These topics will be discussed in more detail below.   After the fit has
+completed, several statistical results will be available. 
+
+
+Objective Function and minimize
+================================
+
+As mentioned above, the objective function is meant to calculate the fit
+residual vector (data - model) given a group of parameters, and optional
+inputs.  You'll note that we didn't explicitly mention the data here.  This
+is because, in general, the data to be modeled may be quite complex.  It
+might, for example, be contained in two or more arrays -- perhaps what you
+want to model is the difference of two image arrays, or the fourier
+filtered average of ten spectra.  All these are best handled through
+optional arguments.  The objective function really only needs to have as
+its first argument a group containing all the parameters used in the model.
+
+A simple model for a linear fit might look like this::
+
+
+    params = group(offset = param(0), slope = param(1))
+   
+    def residual(pars, xdata=None, ydata=None):
+        model = pars.offset + pars.slope * xdata
+        diff  = ydata - model
+        return diff
+    enddef
+
+Here ``params`` is a Larch group containing two Parameters (as defined by
+:func:`_math.param`, which we'll discuss in more detail in the next
+section).  The objective function ``residual`` will take
+
+
 
 Parameters 
 ===============
+
+The fitting parameters used in the fitting model are all meant to be
+continuous variables -- floating point numbers.   In general, the fitting
+procedure may assign any value to any parameter.
+
 
 
 setting bounds
@@ -34,17 +140,23 @@ setting bounds
 algebraic constraints
 ~~~~~~~~~~~~~~~~~~~~~~
 
-Objective Function and minimize
-================================
-
-
 
 Fit Results and Outputs
 ============================
 
+After the fit has completed, several statistics are output and available to
+describe the quality of the fit and the estimated values for the Paramter
+values and uncertainties.
+
 
 Some Builtin Line-shape Functions
 ==================================
+
+Larch provides a number of convenience functions for common line-shapes
+used in fitting of experimental data.  This list is not exhaustive, but can
+be amended easily. 
+
+
 
 
 Example 1: Fitting a Simple Gaussian
