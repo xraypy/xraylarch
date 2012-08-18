@@ -15,7 +15,7 @@ def gaussian(x, cen=0, sigma=1):
     """
     cen = param_value(cen)
     sigma = param_value(sigma)
-    return (1./(sqrt(2*pi)*sigma) * exp(-(1.0*x-cen) **2 / (2*sigma)**2)
+    return (1./(sqrt(2*pi)*sigma)) * exp(-(1.0*x-cen) **2 / (2*sigma)**2)
 
 def lorentzian(x, cen=0, sigma=1):
     """1 dimensional lorentzian
