@@ -114,22 +114,41 @@ general model describing the data, but keep some of the parameters in the
 model fixed.
 
 In Larch, a **Parameter** is a fundamental data type.  It is an object with
-many attributes, the most important of which is a ``value``.   A Parameter
-can be used as a floating point number
+many attributes, the most important of which is a ``value``.  A Parameter's
+value can change of course -- this is what will happen during a fit or
+refinement process.  A Parameter can have many other attributes as well, as
+we'll discuss throughout this section.  In most cases, a Parameter can be
+used as a floating point number, and its value will be used.
 
-..  function:: param(value, vary=False, min=None, max=None, expr=True)
+To create a Parameter, use the :func:`param` function, which takes a value
+as its first argument, and a few optional keyword arguments to control
+whether the value should be varied in a fit or kept fixed, and setting
+optional upper and lower bounds for the Parameter value.  In addition, an
+algebraic expression can be specified to create a **constrained Parameter**.
 
-    define a Parameter, Determine the post-edge background function, :math:`\mu_0(E)`, and
-    corresponding :math:`\chi(k)`.
+..  function:: param(value, vary=False, min=None, max=None, expr=None)
 
-    :param energy:  1-d array of x-ray energies, in eV
-    :param mu:      1-d array of :math:`\mu(E)`
-    :param group:   output group
+    define a Parameter, setting some of it principle attributes
 
-..  function:: guess(value, ...)
+    :param value:  floating point value.  This value may be adjusted during a fit.
+    :param vary:   flag telling whether Parameter is to be varied during a  fit (``True``, ``False``) [``False``]
+    :param min:    minimum value the Parameter can take.
+    :param max:    maximum value the Parameter can take.
+    :param expr:   algebraic expression for a constrained Parameter.  See :ref:`param-constraints-label`  for details.
+
+..  function:: guess(value, min=None, max=None, expr=None)
+
+    define a variable Parameter, setting some of it principle attributes.
+    The arguments here are identical to :func:`param`, except that
+    ``vary=True`` is set.
+
+A simple example for creating
+
 
 setting bounds
 ~~~~~~~~~~~~~~~
+
+..  _param-constraints-label:
 
 algebraic constraints
 ~~~~~~~~~~~~~~~~~~~~~~
