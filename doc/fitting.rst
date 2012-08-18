@@ -81,11 +81,11 @@ so that the sum to be minimized is a simple sum of this function, :math:`s
 with a few key components required.  Specifically, for Larch, the
 requirements are
 
-  1. A set of Parameters, :math:`{\bf{\beta}}` that are used in the model,
+  1. A set of Parameters, :math:`{\bf{\beta}}`, that are used in the model,
   and are to be adjusted to find the least-square value of the sum of
   squares of the residual.  These must be **parameters** (discussed below)
   that are held in a single **parameter group**.  That group can contain
-  other data,
+  other data.
 
   2. An **objective function** to calculate the residual function.  This
   will be a Larch function that takes the **parameter group** described
@@ -100,6 +100,8 @@ available.  Though the description so far as been somewhat formal, the
 process is not as hard as it sounds, and all the topics will be discussed
 in more detail below.
 
+As mentioned above, the objective function needs to follow fairly strict
+guidelines.  The first argument must be a Larch group, and the return value
 
 Parameters
 ===============
@@ -184,14 +186,60 @@ Here ``params`` is a Larch group containing two Parameters (as defined by
 section).  The objective function ``residual`` will take
 
 
+To actually perform the fit, the :func:`minimize` function must be called.  This
+takes the objective function as its first argument, and the group containing all
+the Parameters as its second argument.  As the fit proceeds, the values  the Parameters
+will be updated and passed into the objective function.  Optional arguments for the
+objective function can be specified as well.  In addition, there are several optional
+arguments which are passed on to the underlying fitting function (:func:`scipy.optimize.leastsq`).
 
+.. function:: minimize(fcn, paramgroup, args=None, kws=None, ...)
+
+    find the best-fit values for the Parameters in ``paramgroup`` such that the
+    output array from the objective function :func:`fcn` has minimal sum-of-squares.
+
+    :param fcn: objective function, which must have signature and output as described below.
+    :param paramgroup: a Group containing the Parameters used by the
+         objective function. This will be passed as the first argument to the
+         objective function.  The Group can contain other components in
+         addition to the set of Parameters for the model.
+
+    returns fit object that can be used to modify or re-run fit.  Most results
+    of interest are written to the *paramgroup*.
 
 Fit Results and Outputs
 ============================
 
 After the fit has completed, several statistics are output and available to
 describe the quality of the fit and the estimated values for the Parameter
-values and uncertainties.
+values and uncertainties.  The main statistics are written to *paramgroup*.
+
+The estimated values, uncertainties, and correlations for each varied
+Parameter are written as attributes of that Parameter.  Thus, after a fit,
+each variable Parameter ``par`` will be updated so that ``par.value`` will
+hold the estimated best-fit value, ``par.stderr`` will hold the estimated
+uncertainty (1-:math:`\sigma` standard error), and ``par.correl`` will hold
+a dictionary of correlation values with the other variable Parameters.
+
+General Fit statistics describing the quality of the fit and details about
+how the fit proceeded will be put into components of *paramgroup*, with
+variable names and meanings as outlines in :ref:`Table of Fit Statistics <minimize-stats_table>`.
+For advanced users, the full residual vector, covarance matrix, and
+jacobian matrix from the fit, as well as several more esoteric outputs from
+MINPACK's lmdif function are put in *paramgroup.lmdif*.
+
+.. _minimize-stats_table:
+
+   Table of Fit Statistics.
+   Listed are the name of the variable added to the fit *paramgroup*, and
+   the statistical quantity it holds.
+
+    ==================== ===================================
+     *attribute*             *statistical quantity*
+    ==================== ===================================
+     chi_square             :math:`\chi^2`
+     reduced_chi_square     :math:`\chi_\nu^2`
+    ==================== ===================================
 
 
 
@@ -201,6 +249,22 @@ Some Builtin Line-shape Functions
 Larch provides a number of convenience functions for common line-shapes
 used in fitting of experimental data.  This list is not exhaustive, but can
 be amended easily.
+
+.. function:: gaussian(x, cen=0, sigma=1)
+
+   a Gaussian or Normal distribution function:
+
+.. math::
+
+  f = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}
+
+where *cen* is used for :math:`\mu`.
+
+.. function:: lorentzian(x, cen=0, sigma=1)
+
+.. function:: pvoigt(x, cen=0, sigma=1, frac=0.5)
+
+.. function:: pearson7(x, cen=0, sigma=1, expon=0.5)
 
 
 Example 1: Fitting a Simple Gaussian
@@ -251,35 +315,35 @@ this::
 This fitting script consists  of several components, which we'll go over in
 some detail.
 
-  1 '''create mock data''':  Here we use the builtin :func:`_math.gaussian`
+  1 **create mock data**:  Here we use the builtin :func:`_math.gaussian`
   function to create the model function.  We also add simulated noise to
   the model data with the :func:`random.normal` function from numpy.
 
-  2. '''create a group of fit parameters''':  Here we create a group with
+  2. **create a group of fit parameters**:  Here we create a group with
   several components, all defined by the :func:`_math.guess` function to
   create variable Parameters.  Two of the variables here have a lower bound
   set.   We also calculate the initial value for the model using the
   initial guesses for the parameter values.
 
-  3. '''define objective function for fit residual''': As above, this
+  3. **define objective function for fit residual**: As above, this
   function will receive the group of fit parameters as the first argument,
   and may also receive other arguments as specficied in the call to
   :func:`_math.minimize`.  This function returns the residual of the fit
   (data - model).
 
-  4. '''perform fit'''.  Here we call :func:`_math.minimize`  with
+  4. **perform fit**.  Here we call :func:`_math.minimize`  with
   arguments of the objective function, the parameter group, and any
   additional positional arguments to the objective function (keyword/value
   arguments can also be supplied).   When this has completed, we calculate
   to model function with the final values of the parameters.
 
-  5. '''plot results'''.   Here we plot the data, initial, and final fits.
+  5. **plot results**.   Here we plot the data, initial, and final fits.
 
-  6. '''print report of parameters, uncertainties'''.  Here we print out a
+  6. **print report of parameters, uncertainties**.  Here we print out a
   report of the fit statistics, best fit values, uncertainties and
   correlations between variables.
 
-The printed output from ''fit_report(params)'' will look like this::
+The printed output from ``fit_report(params)`` will look like this::
 
     ===================== FIT RESULTS =====================
     [[Statistics]]
