@@ -17,11 +17,11 @@ The concepts presented here focus on modeling and fitting of general
 spectra.  Of course, Larch can provides other, specific functions for doing
 fits, such as the EXAFS procedures :func:`_xafs.autobk` and
 :func:`_xafs.feffit`.  Many of these concepts (and the underlying fitting
-algorithms) are used for those other functions as well. 
+algorithms) are used for those other functions as well.
 
 
 Fitting Overview
-================== 
+==================
 
 Modeling and fitting of experimental data is a key need for the analysis of
 most scientific data.  There is an extensive literature on these topics,
@@ -58,7 +58,7 @@ called the chi-square goodness-of-fit parameter
 
     \chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \bf{\beta})}{\epsilon_i} \big]^2
 
-Here, :math:`\epsilon_i` represents the uncertainty in the value of :math:`y_i`.  
+Here, :math:`\epsilon_i` represents the uncertainty in the value of :math:`y_i`.
 
 As mentioned, the model function can be fairly complex. There is a large
 literature on the cases where the model function :math:`f(\bf{x},
@@ -80,19 +80,60 @@ so that the sum to be minimized is a simple sum of this function, :math:`s
 = \sum_i^{N} r_i^2`.   The fitting process can then be made very general
 with a few key components required.  Specifically, for Larch, the
 requirements are
- 
-  1. An **objective function** to calculate the residual function.  This
-  will be a Larch function that takes *a group containing all the
-  parameters* as its first argument, and an unlimited set of optional
-  arguments.  The arrays for the data should passed in by these optional
-  arguments.  This should return the array of residuals.
 
-  2. A set of Parameters that are used in the model, and are to be adjusted
-  to find the least-square value of the sum of squares of the residual.
-  These must be placed in a single **parameter group**.
+  1. A set of Parameters, :math:`beta` that are used in the model, and are
+  to be adjusted to find the least-square value of the sum of squares of
+  the residual.  These must be **parameters** (discussed below) that are
+  held in a single **parameter group**.   That group can contain other
+  data,
 
-These topics will be discussed in more detail below.   After the fit has
-completed, several statistical results will be available. 
+  2. An **objective function** to calculate the residual function.  This
+  will be a Larch function that takes the **parameter group** described
+  above as its first argument, and an unlimited set of optional arguments.
+  The arrays for the data should passed in by these optional arguments.
+  This function should return the residual array, :math:`r` that will be
+  minimized in the least-squares sense.
+
+After the fit has completed, several statistical results describing the fit
+quality and the values and uncertainties found for the parameters will be
+available.  Though the description so far as been somewhat formal, the
+process is not as hard as it sounds, and all the topics will be discussed
+in more detail below.
+
+
+Parameters
+===============
+
+The parameters used in the fitting model are all meant to be continuous
+variables -- floating point numbers.  In general, the fitting procedure may
+assign any value to any parameter.  In an actual fit, you may want to place
+some restrictions on the value a parameter can take.  For example, if
+you're fitting data to a line, you may want to ensure that the slope of the
+line is positive.  For more complex cases, you might want to write a a
+general model describing the data, but keep some of the parameters in the
+model fixed.
+
+In Larch, a **Parameter** is a fundamental data type.  It is an object with
+many attributes, the most important of which is a ``value``.   A Parameter
+can be used as a floating point number
+
+..  function:: param(value, vary=False, min=None, max=None, expr=True)
+
+    define a Parameter, Determine the post-edge background function, :math:`\mu_0(E)`, and
+    corresponding :math:`\chi(k)`.
+
+    :param energy:  1-d array of x-ray energies, in eV
+    :param mu:      1-d array of :math:`\mu(E)`
+    :param group:   output group
+
+..  function:: guess(value, ...)
+
+setting bounds
+~~~~~~~~~~~~~~~
+
+algebraic constraints
+~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 Objective Function and minimize
@@ -112,7 +153,7 @@ A simple model for a linear fit might look like this::
 
 
     params = group(offset = param(0), slope = param(1))
-   
+
     def residual(pars, xdata=None, ydata=None):
         model = pars.offset + pars.slope * xdata
         diff  = ydata - model
@@ -125,28 +166,14 @@ section).  The objective function ``residual`` will take
 
 
 
-Parameters 
-===============
-
-The fitting parameters used in the fitting model are all meant to be
-continuous variables -- floating point numbers.   In general, the fitting
-procedure may assign any value to any parameter.
-
-
-
-setting bounds
-~~~~~~~~~~~~~~~
-
-algebraic constraints
-~~~~~~~~~~~~~~~~~~~~~~
-
 
 Fit Results and Outputs
 ============================
 
 After the fit has completed, several statistics are output and available to
-describe the quality of the fit and the estimated values for the Paramter
+describe the quality of the fit and the estimated values for the Parameter
 values and uncertainties.
+
 
 
 Some Builtin Line-shape Functions
@@ -154,9 +181,7 @@ Some Builtin Line-shape Functions
 
 Larch provides a number of convenience functions for common line-shapes
 used in fitting of experimental data.  This list is not exhaustive, but can
-be amended easily. 
-
-
+be amended easily.
 
 
 Example 1: Fitting a Simple Gaussian
@@ -180,7 +205,7 @@ this::
                    amp = guess(5, min=0),
 		   cen = guess(2),
 		   wid = guess(1, min=0))
-    
+
     init = params.off + params.amp * \
                 gaussian(mdat.x, params.cen, params.wid)
 
@@ -191,7 +216,7 @@ this::
 
     # preform fit
     minimize(resid, params, args=(mdat,))
- 
+
     final = params.off + params.amp * \
                 gaussian(mdat.x, params.cen, params.wid)
 
@@ -210,7 +235,7 @@ some detail.
   1 '''create mock data''':  Here we use the builtin :func:`_math.gaussian`
   function to create the model function.  We also add simulated noise to
   the model data with the :func:`random.normal` function from numpy.
-  
+
   2. '''create a group of fit parameters''':  Here we create a group with
   several components, all defined by the :func:`_math.guess` function to
   create variable Parameters.  Two of the variables here have a lower bound
@@ -221,7 +246,7 @@ some detail.
   function will receive the group of fit parameters as the first argument,
   and may also receive other arguments as specficied in the call to
   :func:`_math.minimize`.  This function returns the residual of the fit
-  (data - model). 
+  (data - model).
 
   4. '''perform fit'''.  Here we call :func:`_math.minimize`  with
   arguments of the objective function, the parameter group, and any
@@ -230,7 +255,7 @@ some detail.
   to model function with the final values of the parameters.
 
   5. '''plot results'''.   Here we plot the data, initial, and final fits.
- 
+
   6. '''print report of parameters, uncertainties'''.  Here we print out a
   report of the fit statistics, best fit values, uncertainties and
   correlations between variables.
@@ -243,19 +268,19 @@ The printed output from ''fit_report(params)'' will look like this::
        nfree, nfcn_calls  = 197, 26
        chi_square         = 0.545081
        reduced chi_square = 0.002767
-     
+
     [[Variables]]
        amp            =  11.973425 +/- 0.067265   (init=  5.000000)
        cen            =  1.511988 +/- 0.008168   (init=  2.000000)
        off            =  1.002578 +/- 0.004996   (init=  0.000000)
        wid            =  1.996553 +/- 0.010843   (init=  1.000000)
-     
+
     [[Correlations]]    (unreported correlations are <  0.100)
-       amp, wid             =  0.690 
-       amp, off             = -0.670 
-       off, wid             = -0.462 
+       amp, wid             =  0.690
+       amp, off             = -0.670
+       off, wid             = -0.462
     =======================================================
-    
+
 
 And the plot of data and fit will look like this::
 
@@ -265,7 +290,7 @@ And the plot of data and fit will look like this::
 Example 3: Fitting XANES Pre-edge Peaks
 =========================================
 
-This 
+This
 
 Example 2: Fitting XANES Spectra as a Linear Combination of Other Spectra
 ==========================================================================
