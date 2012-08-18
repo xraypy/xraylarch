@@ -81,11 +81,11 @@ so that the sum to be minimized is a simple sum of this function, :math:`s
 with a few key components required.  Specifically, for Larch, the
 requirements are
 
-  1. A set of Parameters, :math:`beta` that are used in the model, and are
-  to be adjusted to find the least-square value of the sum of squares of
-  the residual.  These must be **parameters** (discussed below) that are
-  held in a single **parameter group**.   That group can contain other
-  data,
+  1. A set of Parameters, :math:`{\bf{\beta}}` that are used in the model,
+  and are to be adjusted to find the least-square value of the sum of
+  squares of the residual.  These must be **parameters** (discussed below)
+  that are held in a single **parameter group**.  That group can contain
+  other data,
 
   2. An **objective function** to calculate the residual function.  This
   will be a Larch function that takes the **parameter group** described
