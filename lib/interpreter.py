@@ -633,6 +633,7 @@ class Interpreter:
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, exc=TypeError, msg=msg)
         args = [self.run(targ) for targ in node.args]
+
         if node.starargs is not None:
             args = args + self.run(node.starargs)
 
@@ -647,6 +648,13 @@ class Interpreter:
             keywords.update(self.run(node.kwargs))
 
         self.func = func
+
+        # cast Parameters to floats for the many numpy ufuncs.
+        if isinstance(func, numpy.ufunc):
+            for i, arg in enumerate(args):
+                if isParameter(arg):
+                    args[i] = arg.value
+
         out = func(*args, **keywords)
         self.func = None
 
