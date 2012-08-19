@@ -342,7 +342,7 @@ in the :ref:`Table of Useful Line shapes <fit-funcs_table>`.
     pearson7(x, cen, sigma, expon)    Pearson-7 function
     arctan(x)                         Arc-tangent function
     erf(x)                            Error function
-    erfc(x)                           Complemented Error function (1-erf(x)
+    erfc(x)                           Complemented Error function (1-erf(x))
     gammaln(x)                        log of absolute value of gamma(x)
     ================================= ======================================
 
