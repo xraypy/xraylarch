@@ -35,8 +35,8 @@ The idea is that having these different problem areas connected by a common
    :maxdepth: 1
 
    contents
-   overview
    installation
+   overview
    tutorial/index.rst
    developers
    fitting

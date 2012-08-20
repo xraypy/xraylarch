@@ -5,8 +5,8 @@ Larch Documentation Table of Contents
 .. toctree::
    :maxdepth: 2
 
-   overview
    installation
+   overview
    tutorial/index.rst
    developers
    fitting

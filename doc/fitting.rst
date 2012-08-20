@@ -101,7 +101,38 @@ process is not as hard as it sounds, and all the topics will be discussed
 in more detail below.
 
 As mentioned above, the objective function needs to follow fairly strict
-guidelines.  The first argument must be a Larch group, and the return value
+guidelines.  The first argument must be a Larch group containing all the
+Parameters for the mode, and the return value of the objective function
+must be the fit residual -- the array to be minimized in the least-squares
+sense.
+
+We'll jump in with a simple example fit to a line, with this script::
+
+    # create mock data for a line
+    dat = group(x = linspace(0, 10, 51))
+    dat.y = 1.0 + 2.5 * dat.x + random.normal(size=51, scale=1)
+
+    # create a group of fit parameters
+    params = group(off = guess(0), slope = guess(0))
+
+    init = params.off + params.slope * dat.x
+
+    # define objective function for fit residual
+    def fitresid(p, data):
+        return data.y - (p.off + p.slope * data.x)
+    enddef
+
+    # perform fit
+    minimize(fitresid, params, args=(dat,))
+
+    final = params.off + params.slope * dat.x
+
+Here `params` is the parameter group, with both `params.off` and
+`params.slope` as Parameters.  `fitresid` is the objective function that
+calculates the model function from the values of the Parameters, and
+returns the residual (data - model).  The :func:`minimize` function does
+the actual fit, and will call the objective function many times with
+different (and generally improved) values for the parameters.
 
 Parameters
 ===============
@@ -144,17 +175,82 @@ algebraic expression can be specified to create a **constrained Parameter**.
     The arguments here are identical to :func:`param`, except that
     ``vary=True`` is set.
 
-A simple example for creating
+Simple examples for creating a parameter and creating an group of
+parameters would be::
 
+    # create some Parameters
+    p1 = param(5.0)
+    p2 = params(10, min=0, max=100, vary=True)
+    p3 = param(expr='1 - sqrt(p2**2)')
+
+    # create a Group of parameters
+    fit_params = group(p1 = p1, p2 = p2, p3 = p3,
+                       centroid = param(99, vary=False),
+                       amp = guess(3, min=0))
 
 setting bounds
 ~~~~~~~~~~~~~~~
+
+Upper and lower bounds can be set on a Parameters value using the *min* and
+*max* arguments to :func:`param` or by setting the *min* and *max*
+attribute of an existing Parameter.  To remove a bound, set the
+corresponding attribute to ``None``.
+
+During a fit, a Parameter's value may approach or even equal one of the
+bounds, but will never violate the boundary.  This is, of course, the main
+point of having the boundary.   It should, however, be kept in mind that a
+Parameter with a best-fit value at or very close to a boundary may not have
+an accurate estimate of its uncertainty.  In some cases, it may even be
+that a best-fit value at a boundary will prevent a reasonable estimate of
+the uncertainty in any of the other Parameters in the fit.
 
 ..  _param-constraints-label:
 
 algebraic constraints
 ~~~~~~~~~~~~~~~~~~~~~~
 
+It is often useful to be able to build a fitting model in which Parameters
+in the model are related to one another.  As a simple example, it might be
+useful to fit a spectrum with a sum of two lineshapes that have different
+centroids, but the same width.  As a second example, it might be useful to
+fit a spectrum to a sum of two model spectra where the relative weight of
+the model spectra must add to 1.  For each of these cases, one could simply
+write a model function that implemented such constraints.
+
+Rather than trying to capture such special cases, Larch takes a more
+general approach, and allows Parameters to get their value from an
+algebraic expression.  Thus, one might define an objective function for a
+sum of two Gaussian functions (discussed in more detail in
+:ref:`lineshape-functions-label`), as::
+
+    def fit_2gauss(params, data):
+        model = params.amp1 * gaussian(data.x, params.cen1, params.wid1) + \
+                params.amp2 * gaussian(data.x, params.cen2, params.wid2)
+        return (data.y - model)
+    enddef
+
+This is general and does not put any relations between the parameter
+values.  But one can place such relations in the definitions of the
+parameters.  Thus, one could constrain the two widths of the Gaussians to
+be the same value with::
+
+    params.wid1 = guess(1, min=0)
+    params.wid2 = param(expr='wid1')
+
+and the value of `params.wid2` will have the value as `params.wid1`, and
+won't be an independent variable in the fit.  One can use more complex
+expressions -- any valid Larch expression is allowed.   For example, one
+could constrain the two amplitude parameters to add to 1 and each be
+between 0 and 1 as::
+
+    params.amp1 = guess(0.5, min=0, max=1)
+    params.amp2 = param(expr='1 - amp1')
+
+**Namespaces for algebraic expressions**
+
+In light of the discussion on :ref:`tut-namespaces-label`, it's worth
+asking what variables and functions are available for writing algebraic
+constraints.
 
 
 Objective Function and minimize
@@ -172,7 +268,6 @@ its first argument a group containing all the parameters used in the model.
 
 A simple model for a linear fit might look like this::
 
-
     params = group(offset = param(0), slope = param(1))
 
     def residual(pars, xdata=None, ydata=None):
@@ -181,9 +276,8 @@ A simple model for a linear fit might look like this::
         return diff
     enddef
 
-Here ``params`` is a Larch group containing two Parameters (as defined by
-:func:`_math.param`, which we'll discuss in more detail in the next
-section).  The objective function ``residual`` will take
+Here ``params`` is a Larch group containing two Parameters as defined by
+:func:`_math.param`, discussed above.
 
 
 To actually perform the fit, the :func:`minimize` function must be called.  This
@@ -223,10 +317,12 @@ a dictionary of correlation values with the other variable Parameters.
 
 General Fit statistics describing the quality of the fit and details about
 how the fit proceeded will be put into components of *paramgroup*, with
-variable names and meanings as outlines in :ref:`Table of Fit Statistics <minimize-stats_table>`.
-For advanced users, the full residual vector, covarance matrix, and
-jacobian matrix from the fit, as well as several more esoteric outputs from
-MINPACK's lmdif function are put in *paramgroup.lmdif*.
+variable names and meanings as outlines in
+:ref:`Table of Fit Statistics <minimize-stats_table>`.  For advanced users,
+the full residual vector,
+covarance matrix, and jacobian matrix from the fit, as well as several more
+esoteric outputs from MINPACK's lmdif function are put in
+*paramgroup.lmdif*.
 
 .. _minimize-stats_table:
 
@@ -234,14 +330,21 @@ MINPACK's lmdif function are put in *paramgroup.lmdif*.
    Listed are the name of the variable added to the fit *paramgroup*, and
    the statistical quantity it holds.
 
-    ==================== ===================================
-     *attribute*             *statistical quantity*
-    ==================== ===================================
-     chi_square             :math:`\chi^2`
-     reduced_chi_square     :math:`\chi_\nu^2`
-    ==================== ===================================
+    ======================= =============================================
+     *attribute*               *statistical quantity*
+    ======================= =============================================
+     residual                residual array, with npts elements
+     nfcn_calls              number of calls to objective function
+     nvarys                  number of independent variables
+     nfree                   number of free parameters (npts - nvarys)
+     chi_square              :math:`\chi^2`, chi-square
+     chi_reduced             :math:`\chi_\nu^2`, reduced chi-square
+     message                 an output message about fit
+     errorbars               flag for whether errorbars were calculated
+     lmdif                   Group containing output data from MINPACK-1
+    ======================= =============================================
 
-
+..  _lineshape-functions-label:
 
 Some Builtin Line-shape Functions
 ==================================
@@ -362,10 +465,10 @@ Example 1: Fitting a Simple Gaussian
 
 
 Here we make a simple mock data set and fit a Gaussian function to it.
-Though a fairly simple example, it touches on all the concepts discussed
-above, and is a reasonable representation of the sort of analysis actually
-done when modeling many kinds of data.  The script to do the fit looks like
-this::
+Though a fairly simple example, and one that is guaranteed to work well, it
+touches on all the concepts discussed above, and is a reasonable
+representation of the sort of analysis actually done when modeling many
+kinds of data.  The script to do the fit looks like this::
 
     # create mock data
     mdat = group()
@@ -387,7 +490,7 @@ this::
         return data.y - (p.off + p.amp * gaussian(data.x, p.cen, p.wid))
     enddef
 
-    # preform fit
+    # perform fit
     minimize(resid, params, args=(mdat,))
 
     final = params.off + params.amp * \
@@ -395,7 +498,7 @@ this::
 
     # plot results
     newplot(mdat.x, mdat.y, label='data', show_legend=True)
-    plot(mdat.x, init, label='initial', color='black', style='--')
+    plot(mdat.x, init, label='initial', color='black', style='dotted')
     plot(mdat.x, final, label='final', color='red')
 
     # print report of parameters, uncertainties
@@ -455,29 +558,37 @@ The printed output from ``fit_report(params)`` will look like this::
     =======================================================
 
 
-And the plot of data and fit will look like this::
-
-<include graphic here>
+And the plot of data and fit will look like this:
 
 
-Example 3: Fitting XANES Pre-edge Peaks
+.. image:: images/fit_example1.png
+   :width: 80 %
+
+
+Example 2: Fitting XANES Pre-edge Peaks
 =========================================
 
-This
+This example extends the previous one by a) using data read in from a text
+file, b) using many more lineshapes, c) setting bounds on parameters, and
+d) using a simple algebraic constraint.   The basic format of the above
+exmple is followed, but the script is a bit longer.
 
-Example 2: Fitting XANES Spectra as a Linear Combination of Other Spectra
+
+
+
+Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra
 ==========================================================================
 
-In this example, which is much simpler than the previous one, we fit a
-XANES spectra as a linear combination of two other spectra. It is often
-used to compare an unknown spectra with a large selection of candidate
-model spectra, taking the result with lowest misfit statistics as the most
-likely results.  Though it should be used with some caution, this
-represents a standard and very simple approach to XANES analysis. In the
-example here we only do the fit with a single pair of candidate spectra.
-Extending to more model spectra is left as an exercise for the reader.
-Other possible variations include fiting the derivatives or other spectral
-decompositions of the spectra.
+This example is simpler than the previous one, though still worth an
+explicit example.  Here, we fit a XANES spectra as a linear combination of
+two other spectra. It is often used to compare an unknown spectra with a
+large selection of candidate model spectra, taking the result with lowest
+misfit statistics as the most likely results.  Though it should be used
+with some caution, this represents a standard and very simple approach to
+XANES analysis. In the example here we only do the fit with a single pair
+of candidate spectra.  Extending to more model spectra is left as an
+exercise for the reader.  Other possible variations include fiting the
+derivatives or other spectral decompositions of the spectra.
 
 For the analysis here, we have unknown spectra X and two model spectra A
 and B.  first put all the data onto the same ordinate (energy) array.  This
