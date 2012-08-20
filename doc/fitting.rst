@@ -132,7 +132,11 @@ Here `params` is the parameter group, with both `params.off` and
 calculates the model function from the values of the Parameters, and
 returns the residual (data - model).  The :func:`minimize` function does
 the actual fit, and will call the objective function many times with
-different (and generally improved) values for the parameters.
+different (and generally improved) values for the parameters.  Of course,
+there are faster and more statistically sound methods for determining a
+linear trend in a set of data, but the point of this example is to
+illustrate the mechanisms for doing more complex, non-linear modeling of
+data.
 
 Parameters
 ===============
