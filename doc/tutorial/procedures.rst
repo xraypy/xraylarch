@@ -149,7 +149,11 @@ arguments and created inside the procedure.
 3. Third, variable declared at the top-level in the same module in which the
 procedure is  defined.
 
-4. Finaly, By going through the list of other search groups.
+4. Finaly, by going through the list of other search groups, including all
+the groups in `_sys.core_groups`, and probably several others brought in
+from some plug-in.
+
+
 
 In principle, you can alter some of these variables in the `_sys` group.
 This is a really bad idea, and you should avoid doing it at all costs.
