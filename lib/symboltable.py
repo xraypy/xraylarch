@@ -7,6 +7,7 @@ import os
 import sys
 import types
 import numpy
+import copy
 
 from .utils import Closure, fixName, isValidName
 from . import site_config
@@ -21,7 +22,8 @@ class Group(object):
     """
     __private = ('_main', '_larch', '_parents', '__name__', '__private')
     def __init__(self, name=None, **kws):
-        if name is None: name = hex(id(self))
+        if name is None:
+            name = hex(id(self))
         self.__name__ = name
         for key, val in kws.items():
             setattr(self, key, val)
@@ -33,6 +35,20 @@ class Group(object):
         if self.__name__ is not None:
             return '<Group %s>' % self.__name__
         return '<Group>'
+
+    def __copy__(self):
+        out = Group()
+        for k, v in self.__dict__.items():
+            if k != '__name__':
+                setattr(out, k,  copy.copy(v))
+        return out
+
+    def __deepcopy__(self, memo):
+        out = Group()
+        for k, v in self.__dict__.items():
+            if k != '__name__':
+                setattr(out, k,  copy.deepcopy(v, memo))
+        return out
 
     def __id__(self):
         return id(self)

@@ -16,7 +16,8 @@ class Parameter(object):
     __invalid = "Invalid expression for parameter: '%s'"
 
     def __init__(self, val=0, min=None, max=None, vary=False,
-                expr=None, _larch=None, name=None, **kws):
+                expr=None, stderr=None, correl=None, name=None,
+                 _larch=None, **kws):
         self._val = val
         self._initval = val
         self.vary = vary
@@ -24,6 +25,8 @@ class Parameter(object):
         self.max = max
         self.name = name
         self._expr = expr
+        self.stderr = stderr
+        self.correl = correl
         self._ast = None
         self._larch = None
         self._from_internal = lambda val: val
@@ -34,6 +37,18 @@ class Parameter(object):
         if self._larch is not None and name is not None:
             self._larch.symtable.set_symbol(name, self)
 
+    def __copy__(self):
+        return Parameter(val=self._val, min=self.min, max=self.max,
+                         vary=self.vary, expr=self.expr,
+                         stderr=self.stderr, correl=self.correl,
+                         name=self.name,  _larch=self._larch)
+            
+    def __deepcopy__(self, memo):
+        return Parameter(val=self._val, min=self.min, max=self.max,
+                         vary=self.vary, expr=self.expr,
+                         stderr=self.stderr, correl=self.correl,
+                         name=self.name,  _larch=self._larch)
+            
     @property
     def expr(self):
         return self._expr
