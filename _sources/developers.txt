@@ -1,22 +1,36 @@
 ============================
-Larch for Developers
+Programming with Larch
 ============================
 
-This chapter describes details of Larch language for developers and
-programmers wanting to extend Larch.  This document will assume you have
-some familiarity with Python.
+This chapter describes some of the key concepts for programming with Larch.
+Larch is a fairly complete programming language for data analysis, but it
+is sometimes desirable to extend Larch with new functionality.  There are
+three main ways to do this.  First, ``modules`` are files of Larch or
+Python code that can be imported and used from Larch to provide new
+functionality.  Second, ``plugins`` are specially written modules that can
+be used to add built-in functions that can more closely interact with the
+Larch interpreter. 
+
+The reader is assumed to be familiar with computer programming, and to have
+some exposure to working with Larch and or Python.  While primarily aimed
+at developers and advanced users, Larch (and Python) makes such
+developments easy enough that neither extensive effort no extensive
+training are required.
 
 .. _python_diffs_section:
 
 Differences between Larch and Python
 =============================================
 
-Larch is very similar to Python but there are some very important
-differences, especially for someone familiar with Python.  These
-differences are not because we feel Python is somehow inadequate or
-imperfect, but because Larch is a domain-specific-language.  It is really
-something of an implementation detail that Larch's syntax is so close to
-Python.   The principle differences with Python are:
+Larch is based on and very similar to Python, but there are some very
+important differences that need to be noted, especially for those familiar
+with Python.  These differences are not here because we feel Python is
+somehow inadequate or imperfect, but because Larch is intended as a
+domain-specific-language.  The fact that Larch's syntax is so close to
+Python is really something of an implementation detail, so straying from
+the "purity" of Python shouldn't be seen as an allegation of imperfection
+on either Larch's or Python's parts -- they have different goals.  The
+principle differences with Python are:
 
   1. Using 'end*' instead of significant white-space for code blocks.
   2. Groups versus Modules
@@ -164,8 +178,7 @@ import only the names 'sqrt' and 'arange' into the modules namespace::
         x = arange(npts)/2.
         return sqrt(x)
 
-For quick and dirty Python scripts, there is a tendency to use
-"import *", as in::
+For quick and dirty Python scripts, there is a tendency to use `import *`, as in::
 
     from numpy import *
     def sqrt_array(npts=10):
@@ -178,7 +191,7 @@ experienced developers will tell you to avoid this like the plague.
 In Larch, the general problem of how to lookup the names of objects
 remains, but the rules are changed slightly.  Since Group objects are used
 extensively throughout Larch exactly to provide namespaces as a way to
-organize data, we might as well use them.  Instead of using "import *",
+organize data, we might as well use them.  Instead of using `import *`,
 Larch has a top-level group '_math' in which it stores several hundred
 names of functions, mostly from the numpy module.  It also uses top-level
 groups '_sys' and '_builtin', which hold non-mathematical builtin functions

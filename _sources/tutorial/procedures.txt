@@ -1,13 +1,15 @@
 =======================================================
-Tutorial: Writing Procedures
+Tutorial: Writing Functions or Procedures
 =======================================================
 
 Any moderately complex script will eventually include calcluations that
 need to be repeated.  The preferred way to do this is write your own
 function or **procedure**, which can be called exactly as the built-in
-functions.  For clarification, here we use the word **procedure** for a
-function written in Larch, leaving **function** to imply a Python function.
-In fact, as we will see, there is very little difference in practical use.
+functions.  For maximum clarity in this section we tend use the word
+**procedure** for a function written in Larch, leaving **function** to
+imply a Python function.  In fact, as we will see, there is very little
+difference in practical use, and the rest of the documentation will be more
+lax about referring to functions written in Larch as functions.
 
 Once you're ready to write procedures, you'll almost certainly want to read
 about running Larch scripts and modules in the next section of this tutorial.
@@ -88,20 +90,80 @@ The formal definition of a procedure looks like::
        <block of statements>
    enddef
 
-
+..  _tut-namespaces-label:
 
 Namespace and "Scope" inside a Procedure
 =================================================
 
 While inside a procedure, and important consideration is "what variables
-does this procedure have access to?".  Generally speaking, there is no
-reason to expect it to know about any variables that are not passed in as
-arguments or created inside the procedure definition.
+does this procedure have access to?".  In fact, the question can be
+extended beyond procedures and functions to ask "what variables are
+available at any time during a Larch session or when a script is running?".
+This is known as **scoping**, and there is the notion of a **namespace** in
+which all the available variables exist.
+
+In Larch (to be clear, the rules here are slightly different than Python),
+every named object (variable, function, etc) exists in a Group.  The
+top-level group is `_main`, and all groups descend from it.  There is a
+special list ``_sys.searchGroupObjects`` holding the list of Groups to be
+searched for names.  There are several related variables listed in
+:ref:`Table of Namespace-related Variables <namespace_table>`.
+
+.. _namespace_table:
+
+   Table of Namespace-related Variables
+
+   Listed are the name of variables holding information used in the looking
+   up of symbol names.
+
+    ========================= =============================================
+     *variable*                  *content*
+    ========================= =============================================
+     _sys.paramGroup           group of Parameters, as for a fit
+     _sys.localGroup           group for variables passed into or created
+                               in a procedure
+     _sys.moduleGroup          group for module-wide variables -- those
+                               definied in the same file as the current procedure.
+     _sys.searchGroupObjects   current list (ordered) of actual groups searched
+     _sys.searchGroups         current list of actual group names searched
+     _sys.core_groups          ('_main', '_sys', '_builtin', '_math')
+    ========================= =============================================
+
+
+`_sys.searchGroups` and `_sys.searchGroupObjects` are always kept in sync,
+and always contains the groups named in `_sys.core_groups`.  In addition,
+they always contains (in order, if not ``None``), `_sys.localGroup`,
+`_sys.paramGroup`, `_sys.moduleGroup`.  If not inside a function or module,
+`_sys.localGroup` and `_sys.moduleGroup` are set to `_main`.
+
+
+Thus, inside a procedure, the way names are looked up are:
+
+1. First, variables defined in the current *parameter group*.  This is
+meant to be used exclusively for fitting procedures. Only during a fit
+should `_sys.paramGroup` have any value other than ``None``.
+
+2. Second, variables defined in the procedure definition (command-line
+arguments and created inside the procedure.
+
+3. Third, variable declared at the top-level in the same module in which the
+procedure is  defined.
+
+4. Finaly, by going through the list of other search groups, including all
+the groups in `_sys.core_groups`, and probably several others brought in
+from some plug-in.
+
+
+
+In principle, you can alter some of these variables in the `_sys` group.
+This is a really bad idea, and you should avoid doing it at all costs.
+
+
 
 The return statement, and multiple Return values
 ======================================================
 
-As seen above, the **return** statement will exist a procedure, and send
+As seen above, the **return** statement will exit a procedure, and send
 back a value to the calling code.    The return value can be either a
 single value or a tuple of values, which gives a convenient way to return
 multiple values from a single procedure.  Thus::

@@ -1,0 +1,776 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fitting and Modeling Data with Larch &mdash; larch 0.9.13 documentation</title>
+    
+    <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.9.13',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.13 documentation" href="index.html" />
+    <link rel="next" title="XAFS Analysis with Larch" href="xafs/index.html" />
+    <link rel="prev" title="Programming with Larch" href="developers.html" /> 
+  </head>
+  <body>
+<div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
+<table><tr><td>
+   <a href="index.html">
+      <img src="_static/larchcones.png" height=90 alt="larchcones"/>
+   </a>
+</td><td>
+      <font size=+3><a href="index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="xafs/index.html" title="XAFS Analysis with Larch"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="developers.html" title="Programming with Larch"
+             accesskey="P">previous</a> |</li>
+   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="contents.html">contents</a>|&nbsp;</li>
+   <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Fitting and Modeling Data with Larch</a><ul>
+<li><a class="reference internal" href="#fitting-overview">Fitting Overview</a></li>
+<li><a class="reference internal" href="#parameters">Parameters</a><ul>
+<li><a class="reference internal" href="#setting-bounds">setting bounds</a></li>
+<li><a class="reference internal" href="#algebraic-constraints">algebraic constraints</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#objective-function-and-minimize">Objective Function and minimize</a></li>
+<li><a class="reference internal" href="#fit-results-and-outputs">Fit Results and Outputs</a></li>
+<li><a class="reference internal" href="#some-builtin-line-shape-functions">Some Builtin Line-shape Functions</a></li>
+<li><a class="reference internal" href="#example-1-fitting-a-simple-gaussian">Example 1: Fitting a Simple Gaussian</a></li>
+<li><a class="reference internal" href="#example-2-fitting-xanes-pre-edge-peaks">Example 2: Fitting XANES Pre-edge Peaks</a></li>
+<li><a class="reference internal" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="developers.html"
+                        title="previous chapter">Programming with Larch</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xafs/index.html"
+                        title="next chapter">XAFS Analysis with Larch</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/fitting.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fitting-and-modeling-data-with-larch">
+<h1>Fitting and Modeling Data with Larch<a class="headerlink" href="#fitting-and-modeling-data-with-larch" title="Permalink to this headline">¶</a></h1>
+<p>A key motivation for Larch is to provide easy and robust ways to model data
+and perform complex fits of data to models.  Data modeling and fitting can
+be messy and challenging tasks, so a major factor in Larch&#8217;s design was to
+make this as simple as possible.  This chapter discusses the basic concepts
+for building models, setting up and performing fits, and inspecting the
+results.</p>
+<span class="target" id="module-_math"></span><p>The concepts presented here focus on modeling and fitting of general
+spectra.  Of course, Larch can provides other, specific functions for doing
+fits, such as the EXAFS procedures <a class="reference internal" href="xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></tt></a> and
+<a class="reference internal" href="xafs/feffit.html#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">_xafs.feffit()</span></tt></a>.  Many of these concepts (and the underlying fitting
+algorithms) are used for those other functions as well.</p>
+<div class="section" id="fitting-overview">
+<h2>Fitting Overview<a class="headerlink" href="#fitting-overview" title="Permalink to this headline">¶</a></h2>
+<p>Modeling and fitting of experimental data is a key need for the analysis of
+most scientific data.  There is an extensive literature on these topics,
+with a wealth written on both the theoretical and practical aspects of
+modeling data.  One of the more common and general approaches is to use a
+least-squares analysis, in which a model is adjusted until it matches
+experimental data such that the sum of squares of the difference between
+data and model is as small as possible.  Mathematically, this is expressed
+as</p>
+<div class="math">
+<p><img src="_images/math/0d9469992b0be2337e1b7e0dea39653dc0c2d752.png" alt="S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \bf{\beta}) } \big]^2"/></p>
+</div><p>where the experimental data is expressed as <img class="math" src="_images/math/a031ede742c94d145a55465f98292b64045966ae.png" alt="\bf{y}(\bf{x})"/> that is
+discretely sampled at <img class="math" src="_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/> points, <img class="math" src="_images/math/c0ea53b29f6cfdadcde8421e0c566fa6a5df54cd.png" alt="f(\bf{x}, \bf{\beta})"/> is a
+model function, and <img class="math" src="_images/math/8571b6857c97eca5eab9458a84ae423f9953b222.png" alt="\bf{\beta}"/> is a set of adjustable parameters in
+the model.  For a simple linear model of data, for example, <img class="math" src="_images/math/aef5e70eab065e06e6baba21c77c5af5ae4a7cd3.png" alt="f =
+\beta_0 + \beta_1 \bf{x}"/>, but the model can be arbitrary complex.  There
+is good statistical justification for using this approach, and many
+existing tools for helping to find the minimal values of <img class="math" src="_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>.  These
+justifcations are not without criticism or caveats, but we&#8217;ll leave that
+aside for now.</p>
+<p>It is common to include a multiplicative factor to each component in in the
+least-squares equation above, so that the different data points might be
+given more or less weight.  Again, there are several approaches to this,
+with one of the most common approaches to weight by the inverse of the
+estimated uncertainty in the data value.  This then what is generally
+called the chi-square goodness-of-fit parameter</p>
+<div class="math">
+<p><img src="_images/math/975aff17681ff7405403c3bd330511df1c60a5f8.png" alt="\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \bf{\beta})}{\epsilon_i} \big]^2"/></p>
+</div><p>Here, <img class="math" src="_images/math/319593f7ae7122d7910bdf87a156b25f7588f1ad.png" alt="\epsilon_i"/> represents the uncertainty in the value of <img class="math" src="_images/math/6e6ceb79ebc4bf613298e0144eae25dd73de9be3.png" alt="y_i"/>.</p>
+<p>As mentioned, the model function can be fairly complex. There is a large
+literature on the cases where the model function <img class="math" src="_images/math/8aff0aa6da9e71312699cc057298aa47843015d9.png" alt="f(\bf{x},
+\bf{\beta})"/> depends linearly on its parameters <img class="math" src="_images/math/8571b6857c97eca5eab9458a84ae423f9953b222.png" alt="\bf{\beta}"/>.  More
+generally, the model function will not depend linearly on its parameters,
+and the minimization is generally referred to a &#8216;&#8217;non-linear least-squares
+optimization&#8217;&#8217; in the literature.  All the discussion here will assume that
+the models can be non-linear.</p>
+<p>It is convenient to define the <strong>residual function</strong>  as</p>
+<div class="math">
+<p><img src="_images/math/d0fdc35b3dd4a22a1b4d9702b8f610c43bee71a4.png" alt="r = \frac{y - f(x, \bf{\beta})}{\epsilon}"/></p>
+</div><p>so that the sum to be minimized is a simple sum of this function, <img class="math" src="_images/math/1f55a748c2d8210ce75719c2aa974062110cda02.png" alt="s
+= \sum_i^{N} r_i^2"/>.   The fitting process can then be made very general
+with a few key components required.  Specifically, for Larch, the
+requirements are</p>
+<blockquote>
+<div><p>1. A set of Parameters, <img class="math" src="_images/math/a635341ad6185dab9baf0d221abf46ea94c6fbd6.png" alt="{\bf{\beta}}"/>, that are used in the model,
+and are to be adjusted to find the least-square value of the sum of
+squares of the residual.  These must be <strong>parameters</strong> (discussed below)
+that are held in a single <strong>parameter group</strong>.  That group can contain
+other data.</p>
+<p>2. An <strong>objective function</strong> to calculate the residual function.  This
+will be a Larch function that takes the <strong>parameter group</strong> described
+above as its first argument, and an unlimited set of optional arguments.
+The arrays for the data should passed in by these optional arguments.
+This function should return the residual array, <img class="math" src="_images/math/b55ca7a0aa88ab7d58f4fc035317fdac39b17861.png" alt="r"/> that will be
+minimized in the least-squares sense.</p>
+</div></blockquote>
+<p>After the fit has completed, several statistical results describing the fit
+quality and the values and uncertainties found for the parameters will be
+available.  Though the description so far as been somewhat formal, the
+process is not as hard as it sounds, and all the topics will be discussed
+in more detail below.</p>
+<p>As mentioned above, the objective function needs to follow fairly strict
+guidelines.  The first argument must be a Larch group containing all the
+Parameters for the mode, and the return value of the objective function
+must be the fit residual &#8211; the array to be minimized in the least-squares
+sense.</p>
+<p>We&#8217;ll jump in with a simple example fit to a line, with this script:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># create mock data for a line</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">51</span><span class="p">))</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">51</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># create a group of fit parameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span>
+
+<span class="c"># define objective function for fit residual</span>
+<span class="k">def</span> <span class="nf">fitresid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+<span class="n">enddef</span>
+
+<span class="c"># perform fit</span>
+<span class="n">minimize</span><span class="p">(</span><span class="n">fitresid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
+
+<span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span>
+</pre></div>
+</div>
+<p>Here <cite>params</cite> is the parameter group, with both <cite>params.off</cite> and
+<cite>params.slope</cite> as Parameters.  <cite>fitresid</cite> is the objective function that
+calculates the model function from the values of the Parameters, and
+returns the residual (data - model).  The <a class="reference internal" href="#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function does
+the actual fit, and will call the objective function many times with
+different (and generally improved) values for the parameters.  Of course,
+there are faster and more statistically sound methods for determining a
+linear trend in a set of data, but the point of this example is to
+illustrate the mechanisms for doing more complex, non-linear modeling of
+data.</p>
+</div>
+<div class="section" id="parameters">
+<h2>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h2>
+<p>The parameters used in the fitting model are all meant to be continuous
+variables &#8211; floating point numbers.  In general, the fitting procedure may
+assign any value to any parameter.  In an actual fit, you may want to place
+some restrictions on the value a parameter can take.  For example, if
+you&#8217;re fitting data to a line, you may want to ensure that the slope of the
+line is positive.  For more complex cases, you might want to write a a
+general model describing the data, but keep some of the parameters in the
+model fixed.</p>
+<p>In Larch, a <strong>Parameter</strong> is a fundamental data type.  It is an object with
+many attributes, the most important of which is a <tt class="docutils literal"><span class="pre">value</span></tt>.  A Parameter&#8217;s
+value can change of course &#8211; this is what will happen during a fit or
+refinement process.  A Parameter can have many other attributes as well, as
+we&#8217;ll discuss throughout this section.  In most cases, a Parameter can be
+used as a floating point number, and its value will be used.</p>
+<p>To create a Parameter, use the <a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> function, which takes a value
+as its first argument, and a few optional keyword arguments to control
+whether the value should be varied in a fit or kept fixed, and setting
+optional upper and lower bounds for the Parameter value.  In addition, an
+algebraic expression can be specified to create a <strong>constrained Parameter</strong>.</p>
+<dl class="function">
+<dt id="_math.param">
+<tt class="descclassname">_math.</tt><tt class="descname">param</tt><big>(</big><em>value</em>, <em>vary=False</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#_math.param" title="Permalink to this definition">¶</a></dt>
+<dd><p>define a Parameter, setting some of it principle attributes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> &#8211; floating point value.  This value may be adjusted during a fit.</li>
+<li><strong>vary</strong> &#8211; flag telling whether Parameter is to be varied during a  fit (<tt class="docutils literal"><span class="pre">True</span></tt>, <tt class="docutils literal"><span class="pre">False</span></tt>) [<tt class="docutils literal"><span class="pre">False</span></tt>]</li>
+<li><strong>min</strong> &#8211; minimum value the Parameter can take.</li>
+<li><strong>max</strong> &#8211; maximum value the Parameter can take.</li>
+<li><strong>expr</strong> &#8211; algebraic expression for a constrained Parameter.  See <a class="reference internal" href="#param-constraints-label"><em>algebraic constraints</em></a>  for details.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="_math.guess">
+<tt class="descclassname">_math.</tt><tt class="descname">guess</tt><big>(</big><em>value</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#_math.guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>define a variable Parameter, setting some of it principle attributes.
+The arguments here are identical to <a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a>, except that
+<tt class="docutils literal"><span class="pre">vary=True</span></tt> is set.</p>
+</dd></dl>
+
+<p>Simple examples for creating a parameter and creating an group of
+parameters would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># create some Parameters</span>
+<span class="n">p1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">5.0</span><span class="p">)</span>
+<span class="n">p2</span> <span class="o">=</span> <span class="n">params</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">p3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;1 - sqrt(p2**2)&#39;</span><span class="p">)</span>
+
+<span class="c"># create a Group of parameters</span>
+<span class="n">fit_params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">p3</span><span class="p">,</span>
+                   <span class="n">centroid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                   <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="section" id="setting-bounds">
+<h3>setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h3>
+<p>Upper and lower bounds can be set on a Parameters value using the <em>min</em> and
+<em>max</em> arguments to <a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> or by setting the <em>min</em> and <em>max</em>
+attribute of an existing Parameter.  To remove a bound, set the
+corresponding attribute to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+<p>During a fit, a Parameter&#8217;s value may approach or even equal one of the
+bounds, but will never violate the boundary.  This is, of course, the main
+point of having the boundary.   It should, however, be kept in mind that a
+Parameter with a best-fit value at or very close to a boundary may not have
+an accurate estimate of its uncertainty.  In some cases, it may even be
+that a best-fit value at a boundary will prevent a reasonable estimate of
+the uncertainty in any of the other Parameters in the fit.</p>
+</div>
+<div class="section" id="algebraic-constraints">
+<span id="param-constraints-label"></span><h3>algebraic constraints<a class="headerlink" href="#algebraic-constraints" title="Permalink to this headline">¶</a></h3>
+<p>It is often useful to be able to build a fitting model in which Parameters
+in the model are related to one another.  As a simple example, it might be
+useful to fit a spectrum with a sum of two lineshapes that have different
+centroids, but the same width.  As a second example, it might be useful to
+fit a spectrum to a sum of two model spectra where the relative weight of
+the model spectra must add to 1.  For each of these cases, one could simply
+write a model function that implemented such constraints.</p>
+<p>Rather than trying to capture such special cases, Larch takes a more
+general approach, and allows Parameters to get their value from an
+algebraic expression.  Thus, one might define an objective function for a
+sum of two Gaussian functions (discussed in more detail in
+<a class="reference internal" href="#lineshape-functions-label"><em>Some Builtin Line-shape Functions</em></a>), as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">fit_2gauss</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">model</span><span class="p">)</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>This is general and does not put any relations between the parameter
+values.  But one can place such relations in the definitions of the
+parameters.  Thus, one could constrain the two widths of the Gaussians to
+be the same value with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">wid1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">wid2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;wid1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and the value of <cite>params.wid2</cite> will have the value as <cite>params.wid1</cite>, and
+won&#8217;t be an independent variable in the fit.  One can use more complex
+expressions &#8211; any valid Larch expression is allowed.   For example, one
+could constrain the two amplitude parameters to add to 1 and each be
+between 0 and 1 as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;1 - amp1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Namespaces for algebraic expressions</strong></p>
+<p>It&#8217;s worth asking what variables and functions are available for writing
+algebraic constraints.  The discussion on <a class="reference internal" href="tutorial/procedures.html#tut-namespaces-label"><em>Namespace and &#8220;Scope&#8221; inside a Procedure</em></a>
+gives a partial explanation, but we&#8217;ll be a bit more explicit here.
+During a fit, the <em>paramgroup</em> given to <a class="reference internal" href="#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> will be assigned
+to <cite>_sys.paramGroup</cite> and will be the first place variables are looked for.
+The variables defined inside the objective function will be in
+<cite>_sys.localGroup</cite>, and which will also be searched for variables.  After
+that, names are looked up with the normal procedures.  In essence, this
+means that the variables and functions available for algebraic expressions
+during a fit include</p>
+<p>1. First, all the other Parameters (and any other variables) defined in the
+<em>parameter group</em> for a fit.</p>
+<p>2. All the variables defined in the objective function, including those
+passed in via the argument list.</p>
+<p>3. All the normal functions and variable names available in Larch,
+including all the mathematical functions.</p>
+<p>As we said, <cite>_sys.paramGroup</cite> is set during a fit.  It is left set at the
+end of the fit &#8211; it is not cleared or reset.  However, note that
+<cite>_sys.paramGroup</cite> may be unset or set to the wrong group (say, from a
+previous fit) when setting up a new fit.  Of course, you can explicitly
+assign a group to <cite>_sys.paramGroup</cite> when setting up a fit, so that you
+might be able to sensibly call the objective function yourself, prior to
+doing a minimization.</p>
+</div>
+</div>
+<div class="section" id="objective-function-and-minimize">
+<h2>Objective Function and minimize<a class="headerlink" href="#objective-function-and-minimize" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned above, the objective function is meant to calculate the fit
+residual vector (data - model) given a group of parameters, and optional
+inputs.  You&#8217;ll note that we didn&#8217;t explicitly mention the data here.  This
+is because, in general, the data to be modeled may be quite complex.  It
+might, for example, be contained in two or more arrays &#8211; perhaps what you
+want to model is the difference of two image arrays, or the fourier
+filtered average of ten spectra.  All these are best handled through
+optional arguments.  The objective function really only needs to have as
+its first argument a group containing all the parameters used in the model.</p>
+<p>A simple model for a linear fit might look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">offset</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">residual</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">xdata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">xdata</span>
+    <span class="n">diff</span>  <span class="o">=</span> <span class="n">ydata</span> <span class="o">-</span> <span class="n">model</span>
+    <span class="k">return</span> <span class="n">diff</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>Here <tt class="docutils literal"><span class="pre">params</span></tt> is a Larch group containing two Parameters as defined by
+<a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>, discussed above.</p>
+<p>To actually perform the fit, the <a class="reference internal" href="#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function must be called.  This
+takes the objective function as its first argument, and the group containing all
+the Parameters as its second argument.  As the fit proceeds, the values  the Parameters
+will be updated and passed into the objective function.  Optional arguments for the
+objective function can be specified as well.  In addition, there are several optional
+arguments which are passed on to the underlying fitting function (<tt class="xref py py-func docutils literal"><span class="pre">scipy.optimize.leastsq()</span></tt>).</p>
+<dl class="function">
+<dt id="_math.minimize">
+<tt class="descclassname">_math.</tt><tt class="descname">minimize</tt><big>(</big><em>fcn</em>, <em>paramgroup</em>, <em>args=None</em>, <em>kws=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_math.minimize" title="Permalink to this definition">¶</a></dt>
+<dd><p>find the best-fit values for the Parameters in <tt class="docutils literal"><span class="pre">paramgroup</span></tt> such that the
+output array from the objective function <tt class="xref py py-func docutils literal"><span class="pre">fcn()</span></tt> has minimal sum-of-squares.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fcn</strong> &#8211; objective function, which must have signature and output as described below.</li>
+<li><strong>paramgroup</strong> &#8211; a Group containing the Parameters used by the
+objective function. This will be passed as the first argument to the
+objective function.  The Group can contain other components in
+addition to the set of Parameters for the model.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>returns fit object that can be used to modify or re-run fit.  Most results
+of interest are written to the <em>paramgroup</em>.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="fit-results-and-outputs">
+<h2>Fit Results and Outputs<a class="headerlink" href="#fit-results-and-outputs" title="Permalink to this headline">¶</a></h2>
+<p>After the fit has completed, several statistics are output and available to
+describe the quality of the fit and the estimated values for the Parameter
+values and uncertainties.  The main statistics are written to <em>paramgroup</em>.</p>
+<p>The estimated values, uncertainties, and correlations for each varied
+Parameter are written as attributes of that Parameter.  Thus, after a fit,
+each variable Parameter <tt class="docutils literal"><span class="pre">par</span></tt> will be updated so that <tt class="docutils literal"><span class="pre">par.value</span></tt> will
+hold the estimated best-fit value, <tt class="docutils literal"><span class="pre">par.stderr</span></tt> will hold the estimated
+uncertainty (1-<img class="math" src="_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> standard error), and <tt class="docutils literal"><span class="pre">par.correl</span></tt> will hold
+a dictionary of correlation values with the other variable Parameters.</p>
+<p>General Fit statistics describing the quality of the fit and details about
+how the fit proceeded will be put into components of <em>paramgroup</em>, with
+variable names and meanings as outlines in
+<a class="reference internal" href="#minimize-stats-table"><em>Table of Fit Statistics</em></a>.  For advanced users,
+the full residual vector,
+covarance matrix, and jacobian matrix from the fit, as well as several more
+esoteric outputs from MINPACK&#8217;s lmdif function are put in
+<em>paramgroup.lmdif</em>.</p>
+<blockquote id="minimize-stats-table">
+<div><p>Table of Fit Statistics.
+Listed are the name of the variable added to the fit <em>paramgroup</em>, and
+the statistical quantity it holds.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><em>attribute</em></th>
+<th class="head"><em>statistical quantity</em></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>residual</td>
+<td>residual array, with npts elements</td>
+</tr>
+<tr class="row-odd"><td>nfcn_calls</td>
+<td>number of calls to objective function</td>
+</tr>
+<tr class="row-even"><td>nvarys</td>
+<td>number of independent variables</td>
+</tr>
+<tr class="row-odd"><td>nfree</td>
+<td>number of free parameters (npts - nvarys)</td>
+</tr>
+<tr class="row-even"><td>chi_square</td>
+<td><img class="math" src="_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/>, chi-square</td>
+</tr>
+<tr class="row-odd"><td>chi_reduced</td>
+<td><img class="math" src="_images/math/43a7dd44b2519d01fa6ed6d8ab9b36af52218f6f.png" alt="\chi_\nu^2"/>, reduced chi-square</td>
+</tr>
+<tr class="row-even"><td>message</td>
+<td>an output message about fit</td>
+</tr>
+<tr class="row-odd"><td>errorbars</td>
+<td>flag for whether errorbars were calculated</td>
+</tr>
+<tr class="row-even"><td>lmdif</td>
+<td>Group containing output data from MINPACK-1</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="some-builtin-line-shape-functions">
+<span id="lineshape-functions-label"></span><h2>Some Builtin Line-shape Functions<a class="headerlink" href="#some-builtin-line-shape-functions" title="Permalink to this headline">¶</a></h2>
+<p>Larch provides a number of convenience functions for common line-shapes
+used in fitting of experimental data.  This list is not exhaustive, but can
+be amended easily.</p>
+<dl class="function">
+<dt id="_math.gaussian">
+<tt class="descclassname">_math.</tt><tt class="descname">gaussian</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#_math.gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>a Gaussian or normal distribution function:</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="_images/math/bdbc896d4c7f5f835f24376323ace5d04b583dff.png" alt="f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}"/></p>
+</div><p>where <em>cen</em> is used for <img class="math" src="_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>.</p>
+<dl class="function">
+<dt id="_math.lorentzian">
+<tt class="descclassname">_math.</tt><tt class="descname">lorentzian</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#_math.lorentzian" title="Permalink to this definition">¶</a></dt>
+<dd><p>a Lorentzian or Cauchy-Lorentz distribution function:</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="_images/math/4745a75d8ed4f59c889eb50bd0c60e847204d27c.png" alt="f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]"/></p>
+</div><p>where <em>cen</em> is used for <img class="math" src="_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>.</p>
+<dl class="function">
+<dt id="_math.voigt">
+<tt class="descclassname">_math.</tt><tt class="descname">voigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>gamma=None</em><big>)</big><a class="headerlink" href="#_math.voigt" title="Permalink to this definition">¶</a></dt>
+<dd><p>a Voigt distribution function.   There seem to be many variant
+definitions &#8211; the one used here is given as</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="_images/math/589ebe0af0d3b7d01cd1bea2d530259c7c5035f5.png" alt="f(x, \mu, \sigma, \gamma) = \frac{\textrm{Re}[w(z)]}{\sigma\sqrt{2 \pi}}"/></p>
+</div><p>where</p>
+<div class="math">
+<p><img src="_images/math/7bd65efb3bda0f3a2355ea4ff455c190765fffb5.png" alt="\begin{eqnarray*}
+  z &amp;=&amp; \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
+  w(z) &amp;=&amp; e^{-z^2}{\operatorname{erfc}}(-iz)
+\end{eqnarray*}"/></p>
+</div><p>and <tt class="xref py py-func docutils literal"><span class="pre">erfc()</span></tt> is the complimentary error function.
+As above,  <em>cen</em> is used for <img class="math" src="_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/> here.
+If <em>gamma</em> is left as <tt class="docutils literal"><span class="pre">None</span></tt>, it is set equal to <em>sigma</em>.</p>
+<dl class="function">
+<dt id="_math.pvoigt">
+<tt class="descclassname">_math.</tt><tt class="descname">pvoigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>frac=0.5</em><big>)</big><a class="headerlink" href="#_math.pvoigt" title="Permalink to this definition">¶</a></dt>
+<dd><p>a pseudo-Voigt distribution function, which is a weighted sum of a
+Gaussian and Lorentzian function with the same values for <em>cen</em>
+(<img class="math" src="_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>) and <em>sigma</em> (<img class="math" src="_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>), and <em>frac</em> setting the
+Lorentzian fraction:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">pvoigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac</span><span class="p">)</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span><span class="o">*</span><span class="n">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="_math.pearson7">
+<tt class="descclassname">_math.</tt><tt class="descname">pearson7</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>expon=0.5</em><big>)</big><a class="headerlink" href="#_math.pearson7" title="Permalink to this definition">¶</a></dt>
+<dd><p>a Pearson-7 lineshape.  This is another Voigt-like distribution
+function, defined as</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="_images/math/df35eabd6cc60bae412c146bb25be6722acf40c9.png" alt="f(x, \mu, \sigma, p) = \frac{s}{\big\{[1 + (\frac{x-\mu}{\sigma})^2] (2^{1/p} -1)  \big\}^p}"/></p>
+</div><p>where for <em>cen</em> (<img class="math" src="_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>) and <em>sigma</em> (<img class="math" src="_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>) are as for the
+above lineshapes, and <em>expon</em> is <img class="math" src="_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/>, and</p>
+<div class="math">
+<p><img src="_images/math/28a63312fb45b227ad84a149f4cbe93e1a397cd1.png" alt="s = \frac{\gamma(p) \sqrt{2^{1/p} -1}}{ \sigma\sqrt{\pi}\,\gamma(p-1/2)}"/></p>
+</div><p>where <img class="math" src="_images/math/33bbf6ed599196c0e8ec3a71668b736d2750bc2b.png" alt="\gamma(x)"/> is the gamma function.</p>
+<p>Several builtin special functions can also be used to create lineshapes
+useful in fitting spectra and other x-ray data.  Some of these are detailed
+in the <a class="reference internal" href="#fit-funcs-table"><em>Table of Useful Line shapes</em></a>.</p>
+<blockquote id="fit-funcs-table">
+<div><p>Table of Useful Line shapes.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="46%" />
+<col width="54%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><em>function</em></th>
+<th class="head"><em>description</em></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>gaussian(x, cen, sigma)</td>
+<td>Gaussian, normal distribution.</td>
+</tr>
+<tr class="row-odd"><td>lorentzian(x, cen, sigma)</td>
+<td>Lorentzian distribution</td>
+</tr>
+<tr class="row-even"><td>voigt(x, cen, sigma, gamma)</td>
+<td>Voigt function</td>
+</tr>
+<tr class="row-odd"><td>pvoigt(x, cen, sigma, frac)</td>
+<td>pseudo-Voigt function</td>
+</tr>
+<tr class="row-even"><td>pearson7(x, cen, sigma, expon)</td>
+<td>Pearson-7 function</td>
+</tr>
+<tr class="row-odd"><td>arctan(x)</td>
+<td>Arc-tangent function</td>
+</tr>
+<tr class="row-even"><td>erf(x)</td>
+<td>Error function</td>
+</tr>
+<tr class="row-odd"><td>erfc(x)</td>
+<td>Complemented Error function (1-erf(x))</td>
+</tr>
+<tr class="row-even"><td>gammaln(x)</td>
+<td>log of absolute value of gamma(x)</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Other standard special functions (Bessel functions, Legendre polynomials,
+etc) can be accessed from scipy.special:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">j0</span> <span class="c"># Bessel function of order 0,</span>
+<span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">y1</span> <span class="c"># Bessel function of second kind of order 1</span>
+</pre></div>
+</div>
+<p>A host of functions to generate other distribution functions (Pareto,
+Student&#8217;s T, etc) can be accessed from scipy.stats.</p>
+</div>
+<div class="section" id="example-1-fitting-a-simple-gaussian">
+<h2>Example 1: Fitting a Simple Gaussian<a class="headerlink" href="#example-1-fitting-a-simple-gaussian" title="Permalink to this headline">¶</a></h2>
+<p>Here we make a simple mock data set and fit a Gaussian function to it.
+Though a fairly simple example, and one that is guaranteed to work well, it
+touches on all the concepts discussed above, and is a reasonable
+representation of the sort of analysis actually done when modeling many
+kinds of data.  The script to do the fit looks like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># create mock data</span>
+<span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
+<span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+<span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
+         <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.050</span><span class="p">)</span>
+
+<span class="c"># create a group of fit parameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+               <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+               <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+               <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
+            <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
+
+<span class="c"># define objective function for fit residual</span>
+<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
+<span class="n">enddef</span>
+
+<span class="c"># perform fit</span>
+<span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
+
+<span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
+            <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
+
+<span class="c"># plot results</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">mdat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;initial&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;final&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+
+<span class="c"># print report of parameters, uncertainties</span>
+<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This fitting script consists  of several components, which we&#8217;ll go over in
+some detail.</p>
+<blockquote>
+<div><p>1 <strong>create mock data</strong>:  Here we use the builtin <a class="reference internal" href="#_math.gaussian" title="_math.gaussian"><tt class="xref py py-func docutils literal"><span class="pre">_math.gaussian()</span></tt></a>
+function to create the model function.  We also add simulated noise to
+the model data with the <tt class="xref py py-func docutils literal"><span class="pre">random.normal()</span></tt> function from numpy.</p>
+<p>2. <strong>create a group of fit parameters</strong>:  Here we create a group with
+several components, all defined by the <a class="reference internal" href="#_math.guess" title="_math.guess"><tt class="xref py py-func docutils literal"><span class="pre">_math.guess()</span></tt></a> function to
+create variable Parameters.  Two of the variables here have a lower bound
+set.   We also calculate the initial value for the model using the
+initial guesses for the parameter values.</p>
+<p>3. <strong>define objective function for fit residual</strong>: As above, this
+function will receive the group of fit parameters as the first argument,
+and may also receive other arguments as specficied in the call to
+<a class="reference internal" href="#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a>.  This function returns the residual of the fit
+(data - model).</p>
+<p>4. <strong>perform fit</strong>.  Here we call <a class="reference internal" href="#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a>  with
+arguments of the objective function, the parameter group, and any
+additional positional arguments to the objective function (keyword/value
+arguments can also be supplied).   When this has completed, we calculate
+to model function with the final values of the parameters.</p>
+<ol class="arabic simple" start="5">
+<li><strong>plot results</strong>.   Here we plot the data, initial, and final fits.</li>
+</ol>
+<p>6. <strong>print report of parameters, uncertainties</strong>.  Here we print out a
+report of the fit statistics, best fit values, uncertainties and
+correlations between variables.</p>
+</div></blockquote>
+<p>The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt> will look like this:</p>
+<div class="highlight-python"><pre>===================== FIT RESULTS =====================
+[[Statistics]]
+   npts, nvarys       = 201, 4
+   nfree, nfcn_calls  = 197, 26
+   chi_square         = 0.545081
+   reduced chi_square = 0.002767
+
+[[Variables]]
+   amp            =  11.973425 +/- 0.067265   (init=  5.000000)
+   cen            =  1.511988 +/- 0.008168   (init=  2.000000)
+   off            =  1.002578 +/- 0.004996   (init=  0.000000)
+   wid            =  1.996553 +/- 0.010843   (init=  1.000000)
+
+[[Correlations]]    (unreported correlations are &lt;  0.100)
+   amp, wid             =  0.690
+   amp, off             = -0.670
+   off, wid             = -0.462
+=======================================================</pre>
+</div>
+<p>And the plot of data and fit will look like this:</p>
+<img alt="_images/fit_example1.png" src="_images/fit_example1.png" style="width: 80%;" />
+</div>
+<div class="section" id="example-2-fitting-xanes-pre-edge-peaks">
+<h2>Example 2: Fitting XANES Pre-edge Peaks<a class="headerlink" href="#example-2-fitting-xanes-pre-edge-peaks" title="Permalink to this headline">¶</a></h2>
+<p>This example extends the previous one by a) using data read in from a text
+file, b) using many more lineshapes, c) setting bounds on parameters, and
+d) using a simple algebraic constraint.   The basic format of the above
+exmple is followed, but the script is a bit longer.</p>
+</div>
+<div class="section" id="example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">
+<h2>Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra<a class="headerlink" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra" title="Permalink to this headline">¶</a></h2>
+<p>This example is simpler than the previous one, though still worth an
+explicit example.  Here, we fit a XANES spectra as a linear combination of
+two other spectra. It is often used to compare an unknown spectra with a
+large selection of candidate model spectra, taking the result with lowest
+misfit statistics as the most likely results.  Though it should be used
+with some caution, this represents a standard and very simple approach to
+XANES analysis. In the example here we only do the fit with a single pair
+of candidate spectra.  Extending to more model spectra is left as an
+exercise for the reader.  Other possible variations include fiting the
+derivatives or other spectral decompositions of the spectra.</p>
+<p>For the analysis here, we have unknown spectra X and two model spectra A
+and B.  first put all the data onto the same ordinate (energy) array.  This
+does not necessarily need to be a uniform energy grid.  We then use a
+Parameter group with two parameters.  The first of these is the amplitude
+for model spectra A, which is set to vary and have a minimum value of 0 and
+a maximum of 1.  The second parameter is the amplitude for model spectra B,
+which is constrained to be &#8216;1 - ampA&#8217;.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="xafs/index.html" title="XAFS Analysis with Larch"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="developers.html" title="Programming with Larch"
+             >previous</a> |</li>
+   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="contents.html">contents</a>|&nbsp;</li>
+   <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+ 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

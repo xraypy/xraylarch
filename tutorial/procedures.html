@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Writing Procedures &mdash; larch 0.9.12 documentation</title>
+    <title>Tutorial: Writing Functions or Procedures &mdash; larch 0.9.13 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.12',
+        VERSION:     '0.9.13',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.12 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
     <link rel="up" title="Larch Tutorial" href="index.html" />
     <link rel="next" title="Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
     <link rel="prev" title="Tutorial: Dealing With Errors" href="errors.html" /> 
@@ -59,8 +59,8 @@
           <a href="errors.html" title="Tutorial: Dealing With Errors"
              accesskey="P">previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="../reference.html">reference</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
    <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
@@ -73,7 +73,7 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Tutorial: Writing Procedures</a><ul>
+<li><a class="reference internal" href="#">Tutorial: Writing Functions or Procedures</a><ul>
 <li><a class="reference internal" href="#def-statement">Def statement</a></li>
 <li><a class="reference internal" href="#namespace-and-scope-inside-a-procedure">Namespace and &#8220;Scope&#8221; inside a Procedure</a></li>
 <li><a class="reference internal" href="#the-return-statement-and-multiple-return-values">The return statement, and multiple Return values</a></li>
@@ -115,14 +115,16 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="tutorial-writing-procedures">
-<h1>Tutorial: Writing Procedures<a class="headerlink" href="#tutorial-writing-procedures" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="tutorial-writing-functions-or-procedures">
+<h1>Tutorial: Writing Functions or Procedures<a class="headerlink" href="#tutorial-writing-functions-or-procedures" title="Permalink to this headline">¶</a></h1>
 <p>Any moderately complex script will eventually include calcluations that
 need to be repeated.  The preferred way to do this is write your own
 function or <strong>procedure</strong>, which can be called exactly as the built-in
-functions.  For clarification, here we use the word <strong>procedure</strong> for a
-function written in Larch, leaving <strong>function</strong> to imply a Python function.
-In fact, as we will see, there is very little difference in practical use.</p>
+functions.  For maximum clarity in this section we tend use the word
+<strong>procedure</strong> for a function written in Larch, leaving <strong>function</strong> to
+imply a Python function.  In fact, as we will see, there is very little
+difference in practical use, and the rest of the documentation will be more
+lax about referring to functions written in Larch as functions.</p>
 <p>Once you&#8217;re ready to write procedures, you&#8217;ll almost certainly want to read
 about running Larch scripts and modules in the next section of this tutorial.</p>
 <div class="section" id="def-statement">
@@ -194,15 +196,81 @@ enddef</pre>
 </div>
 </div>
 <div class="section" id="namespace-and-scope-inside-a-procedure">
-<h2>Namespace and &#8220;Scope&#8221; inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this headline">¶</a></h2>
+<span id="tut-namespaces-label"></span><h2>Namespace and &#8220;Scope&#8221; inside a Procedure<a class="headerlink" href="#namespace-and-scope-inside-a-procedure" title="Permalink to this headline">¶</a></h2>
 <p>While inside a procedure, and important consideration is &#8220;what variables
-does this procedure have access to?&#8221;.  Generally speaking, there is no
-reason to expect it to know about any variables that are not passed in as
-arguments or created inside the procedure definition.</p>
+does this procedure have access to?&#8221;.  In fact, the question can be
+extended beyond procedures and functions to ask &#8220;what variables are
+available at any time during a Larch session or when a script is running?&#8221;.
+This is known as <strong>scoping</strong>, and there is the notion of a <strong>namespace</strong> in
+which all the available variables exist.</p>
+<p>In Larch (to be clear, the rules here are slightly different than Python),
+every named object (variable, function, etc) exists in a Group.  The
+top-level group is <cite>_main</cite>, and all groups descend from it.  There is a
+special list <tt class="docutils literal"><span class="pre">_sys.searchGroupObjects</span></tt> holding the list of Groups to be
+searched for names.  There are several related variables listed in
+<a class="reference internal" href="#namespace-table"><em>Table of Namespace-related Variables</em></a>.</p>
+<blockquote id="namespace-table">
+<div><p>Table of Namespace-related Variables</p>
+<p>Listed are the name of variables holding information used in the looking
+up of symbol names.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="32%" />
+<col width="68%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><em>variable</em></th>
+<th class="head"><em>content</em></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>_sys.paramGroup</td>
+<td>group of Parameters, as for a fit</td>
+</tr>
+<tr class="row-odd"><td>_sys.localGroup</td>
+<td>group for variables passed into or created
+in a procedure</td>
+</tr>
+<tr class="row-even"><td>_sys.moduleGroup</td>
+<td>group for module-wide variables &#8211; those
+definied in the same file as the current procedure.</td>
+</tr>
+<tr class="row-odd"><td>_sys.searchGroupObjects</td>
+<td>current list (ordered) of actual groups searched</td>
+</tr>
+<tr class="row-even"><td>_sys.searchGroups</td>
+<td>current list of actual group names searched</td>
+</tr>
+<tr class="row-odd"><td>_sys.core_groups</td>
+<td>(&#8216;_main&#8217;, &#8216;_sys&#8217;, &#8216;_builtin&#8217;, &#8216;_math&#8217;)</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<p><cite>_sys.searchGroups</cite> and <cite>_sys.searchGroupObjects</cite> are always kept in sync,
+and always contains the groups named in <cite>_sys.core_groups</cite>.  In addition,
+they always contains (in order, if not <tt class="docutils literal"><span class="pre">None</span></tt>), <cite>_sys.localGroup</cite>,
+<cite>_sys.paramGroup</cite>, <cite>_sys.moduleGroup</cite>.  If not inside a function or module,
+<cite>_sys.localGroup</cite> and <cite>_sys.moduleGroup</cite> are set to <cite>_main</cite>.</p>
+<p>Thus, inside a procedure, the way names are looked up are:</p>
+<p>1. First, variables defined in the current <em>parameter group</em>.  This is
+meant to be used exclusively for fitting procedures. Only during a fit
+should <cite>_sys.paramGroup</cite> have any value other than <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+<p>2. Second, variables defined in the procedure definition (command-line
+arguments and created inside the procedure.</p>
+<p>3. Third, variable declared at the top-level in the same module in which the
+procedure is  defined.</p>
+<p>4. Finaly, by going through the list of other search groups, including all
+the groups in <cite>_sys.core_groups</cite>, and probably several others brought in
+from some plug-in.</p>
+<p>In principle, you can alter some of these variables in the <cite>_sys</cite> group.
+This is a really bad idea, and you should avoid doing it at all costs.</p>
 </div>
 <div class="section" id="the-return-statement-and-multiple-return-values">
 <h2>The return statement, and multiple Return values<a class="headerlink" href="#the-return-statement-and-multiple-return-values" title="Permalink to this headline">¶</a></h2>
-<p>As seen above, the <strong>return</strong> statement will exist a procedure, and send
+<p>As seen above, the <strong>return</strong> statement will exit a procedure, and send
 back a value to the calling code.    The return value can be either a
 single value or a tuple of values, which gives a convenient way to return
 multiple values from a single procedure.  Thus:</p>
@@ -376,8 +444,8 @@ enddef</pre>
           <a href="errors.html" title="Tutorial: Dealing With Errors"
              >previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="../reference.html">reference</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
    <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>

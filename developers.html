@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Larch for Developers &mdash; larch 0.9.12 documentation</title>
+    <title>Programming with Larch &mdash; larch 0.9.13 documentation</title>
     
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.12',
+        VERSION:     '0.9.13',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,9 +25,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.12 documentation" href="index.html" />
-    <link rel="next" title="XAFS Analysis with Larch" href="xafs/index.html" />
-    <link rel="prev" title="Larch for Developers" href="" /> 
+    <link rel="top" title="larch 0.9.13 documentation" href="index.html" />
+    <link rel="next" title="Fitting and Modeling Data with Larch" href="fitting.html" />
+    <link rel="prev" title="Tutorial: Plotting and Displaying Data" href="tutorial/plotting.html" /> 
   </head>
   <body>
 <div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
@@ -52,14 +52,14 @@
           <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="xafs/index.html" title="XAFS Analysis with Larch"
+          <a href="fitting.html" title="Fitting and Modeling Data with Larch"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="#" title="Larch for Developers"
+          <a href="tutorial/plotting.html" title="Tutorial: Plotting and Displaying Data"
              accesskey="P">previous</a> |</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="contents.html">contents</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="reference.html">reference</a>|&nbsp;</li>
    <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
    <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
@@ -71,7 +71,7 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Larch for Developers</a><ul>
+<li><a class="reference internal" href="#">Programming with Larch</a><ul>
 <li><a class="reference internal" href="#differences-between-larch-and-python">Differences between Larch and Python</a><ul>
 <li><a class="reference internal" href="#code-block-ends">Code Block Ends</a></li>
 <li><a class="reference internal" href="#groups-vs-modules">Groups vs Modules</a></li>
@@ -86,11 +86,11 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href=""
-                        title="previous chapter">Larch for Developers</a></p>
+  <p class="topless"><a href="tutorial/plotting.html"
+                        title="previous chapter">Tutorial: Plotting and Displaying Data</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="xafs/index.html"
-                        title="next chapter">XAFS Analysis with Larch</a></p>
+  <p class="topless"><a href="fitting.html"
+                        title="next chapter">Fitting and Modeling Data with Larch</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/developers.txt"
@@ -117,19 +117,32 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="larch-for-developers">
-<h1>Larch for Developers<a class="headerlink" href="#larch-for-developers" title="Permalink to this headline">¶</a></h1>
-<p>This chapter describes details of Larch language for developers and
-programmers wanting to extend Larch.  This document will assume you have
-some familiarity with Python.</p>
+  <div class="section" id="programming-with-larch">
+<h1>Programming with Larch<a class="headerlink" href="#programming-with-larch" title="Permalink to this headline">¶</a></h1>
+<p>This chapter describes some of the key concepts for programming with Larch.
+Larch is a fairly complete programming language for data analysis, but it
+is sometimes desirable to extend Larch with new functionality.  There are
+three main ways to do this.  First, <tt class="docutils literal"><span class="pre">modules</span></tt> are files of Larch or
+Python code that can be imported and used from Larch to provide new
+functionality.  Second, <tt class="docutils literal"><span class="pre">plugins</span></tt> are specially written modules that can
+be used to add built-in functions that can more closely interact with the
+Larch interpreter.</p>
+<p>The reader is assumed to be familiar with computer programming, and to have
+some exposure to working with Larch and or Python.  While primarily aimed
+at developers and advanced users, Larch (and Python) makes such
+developments easy enough that neither extensive effort no extensive
+training are required.</p>
 <div class="section" id="differences-between-larch-and-python">
 <span id="python-diffs-section"></span><h2>Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h2>
-<p>Larch is very similar to Python but there are some very important
-differences, especially for someone familiar with Python.  These
-differences are not because we feel Python is somehow inadequate or
-imperfect, but because Larch is a domain-specific-language.  It is really
-something of an implementation detail that Larch&#8217;s syntax is so close to
-Python.   The principle differences with Python are:</p>
+<p>Larch is based on and very similar to Python, but there are some very
+important differences that need to be noted, especially for those familiar
+with Python.  These differences are not here because we feel Python is
+somehow inadequate or imperfect, but because Larch is intended as a
+domain-specific-language.  The fact that Larch&#8217;s syntax is so close to
+Python is really something of an implementation detail, so straying from
+the &#8220;purity&#8221; of Python shouldn&#8217;t be seen as an allegation of imperfection
+on either Larch&#8217;s or Python&#8217;s parts &#8211; they have different goals.  The
+principle differences with Python are:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>Using &#8216;end*&#8217; instead of significant white-space for code blocks.</li>
@@ -264,8 +277,7 @@ import only the names &#8216;sqrt&#8217; and &#8216;arange&#8217; into the modul
     <span class="k">return</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For quick and dirty Python scripts, there is a tendency to use
-&#8220;import <a href="#id2"><span class="problematic" id="id3">*</span></a>&#8221;, as in:</p>
+<p>For quick and dirty Python scripts, there is a tendency to use <cite>import *</cite>, as in:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="o">*</span>
 <span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="n">npts</span><span class="p">)</span><span class="o">/</span><span class="mf">2.</span>
@@ -277,7 +289,7 @@ experienced developers will tell you to avoid this like the plague.</p>
 <p>In Larch, the general problem of how to lookup the names of objects
 remains, but the rules are changed slightly.  Since Group objects are used
 extensively throughout Larch exactly to provide namespaces as a way to
-organize data, we might as well use them.  Instead of using &#8220;import <a href="#id4"><span class="problematic" id="id5">*</span></a>&#8221;,
+organize data, we might as well use them.  Instead of using <cite>import *</cite>,
 Larch has a top-level group &#8216;_math&#8217; in which it stores several hundred
 names of functions, mostly from the numpy module.  It also uses top-level
 groups &#8216;_sys&#8217; and &#8216;_builtin&#8217;, which hold non-mathematical builtin functions
@@ -393,14 +405,14 @@ startup script.</p>
           <a href="np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="xafs/index.html" title="XAFS Analysis with Larch"
+          <a href="fitting.html" title="Fitting and Modeling Data with Larch"
              >next</a> |</li>
         <li class="right" >
-          <a href="#" title="Larch for Developers"
+          <a href="tutorial/plotting.html" title="Tutorial: Plotting and Displaying Data"
              >previous</a> |</li>
    <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="contents.html">contents</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="reference.html">reference</a>|&nbsp;</li>
    <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
    <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
