@@ -252,10 +252,33 @@ between 0 and 1 as::
 
 **Namespaces for algebraic expressions**
 
-In light of the discussion on :ref:`tut-namespaces-label`, it's worth
-asking what variables and functions are available for writing algebraic
-constraints.
+It's worth asking what variables and functions are available for writing
+algebraic constraints.  The discussion on :ref:`tut-namespaces-label`
+gives a partial explanation, but we'll be a bit more explicit here.
+During a fit, the *paramgroup* given to :func:`minimize` will be assigned
+to `_sys.paramGroup` and will be the first place variables are looked for.
+The variables defined inside the objective function will be in
+`_sys.localGroup`, and which will also be searched for variables.  After
+that, names are looked up with the normal procedures.  In essence, this
+means that the variables and functions available for algebraic expressions
+during a fit include
 
+1. First, all the other Parameters (and any other variables) defined in the
+*parameter group* for a fit.
+
+2. All the variables defined in the objective function, including those
+passed in via the argument list.
+
+3. All the normal functions and variable names available in Larch,
+including all the mathematical functions.
+
+As we said, `_sys.paramGroup` is set during a fit.  It is left set at the
+end of the fit -- it is not cleared or reset.  However, note that
+`_sys.paramGroup` may be unset or set to the wrong group (say, from a
+previous fit) when setting up a new fit.  Of course, you can explicitly
+assign a group to `_sys.paramGroup` when setting up a fit, so that you
+might be able to sensibly call the objective function yourself, prior to
+doing a minimization.
 
 Objective Function and minimize
 ================================
