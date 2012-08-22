@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 minimizer for Larch, similar to lmfit-py.
 
@@ -38,7 +39,12 @@ from numpy.linalg import LinAlgError
 from scipy.optimize import leastsq as scipy_leastsq
 
 from .parameter import isParameter
-from larch import Group
+
+
+try:
+    from larch import Group
+except:
+    Group = None
 
 class MinimizerException(Exception):
     """General Purpose Exception"""
@@ -223,16 +229,19 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         redchi = chisqr / nfree
 
 
-        group.lmdif  = Group()
-        group.lmdif.fjac = infodict['fjac']
-        group.lmdif.fvec = infodict['fvec']
-        group.lmdif.qtf  = infodict['qtf']
-        group.lmdif.ipvt = infodict['ipvt']
-        group.lmdif.status =  ier
-        group.lmdif.message =  errmsg
-        group.lmdif.success =  ier in [1, 2, 3, 4]
-        group.lmdif.nfcn_calls =   infodict['nfev']
-        group.lmdif.toler =   self.toler
+        lmdif = group
+        if Group is not None:
+            lmdif = group.lmdif  = Group()
+        
+        lmdif.fjac = infodict['fjac']
+        lmdif.fvec = infodict['fvec']
+        lmdif.qtf  = infodict['qtf']
+        lmdif.ipvt = infodict['ipvt']
+        lmdif.status =  ier
+        lmdif.message =  errmsg
+        lmdif.success =  ier in [1, 2, 3, 4]
+        lmdif.nfcn_calls =   infodict['nfev']
+        lmdif.toler =   self.toler
 
         group.nfcn_calls =   infodict['nfev']
         group.residual =    resid

@@ -14,7 +14,6 @@ from scipy.optimize import brentq
 from scipy.special import erf
 
 from .parameter import isParameter
-from larch import Group
 
 def f_compare(ndata, nparams, new_chi, best_chi, nfix=1):
     """
@@ -192,9 +191,11 @@ def conf_intervals(minimizer, sigmas=(1, 2, 3), maxiter=200,
         for sig, p in zip(sigmas, probs):
             if p < old_prob:
                 try:
-                    val = brentq(calc_prob, val_limit, limit, args=(p, par, p_trace), xtol=0.001)
+                    val = brentq(calc_prob, val_limit, limit,
+                                 args=(p, par, p_trace), xtol=0.001)
                 except ValueError:
-                    val = brentq(calc_prob, start_val, limit, args=(p, par, p_trace), xtol=0.001)
+                    val = brentq(calc_prob, start_val, limit,
+                                 args=(p, par, p_trace), xtol=0.001)
                                #we don't know which side of zero we are                    
                 val_limit=val-0.001*direction                    
                 ret.append((direction*sig, val))
@@ -230,12 +231,12 @@ def conf_intervals(minimizer, sigmas=(1, 2, 3), maxiter=200,
     minimizer.paramgroup = pgroup_save
     return output, trace_dict
 
-def conf_interval2d(minimizer, xname, yname, nx=16, ny=16, xrange=None,
-                    yrange=None, prob_func=None, **kws):
-    r"""Calculates confidence regions for two fixed parameters.
+def chisquare_map(minimizer, xname, yname, nx=16, ny=16, xrange=None,
+             yrange=None, prob_func=None, **kws):
+    r"""Calculates chi-square map for two fixed parameters.
     
-    The method is explained in *conf_interval*: here we are fixing
-    two parameters.
+    The method is explained roughly as in *conf_interval*:
+    here we are fixing  two parameters.
     
     Parameters
     ----------
@@ -311,17 +312,19 @@ def conf_interval2d(minimizer, xname, yname, nx=16, ny=16, xrange=None,
 
     ndata  = len(minimizer.paramgroup.residual)
 
-    def calc_prob(vals):
+    # def calc_prob(vals):
+    def calc_chi2(vals):
         x.value = vals[0]
         y.value = vals[1]
 
         minimizer.prepare_fit(force=True)
         minimizer.leastsq()
-        chi2   = minimizer.paramgroup.chi_square
-        nvarys = minimizer.paramgroup.nvarys
-        return prob_func(ndata, nvarys, chi2, best_chi, nfix=2.0)
+        return minimizer.paramgroup.chi_square
+        # chi2   = minimizer.paramgroup.chi_square
+        # nvarys = minimizer.paramgroup.nvarys
+        # return prob_func(ndata, nvarys, chi2, best_chi, nfix=2.0)
 
-    out = np.apply_along_axis(calc_prob, -1, grid)
+    out = np.apply_along_axis(calc_chi2, -1, grid)
 
     x.vary, y.vary = True, True
     restore_vals(params, params_save)

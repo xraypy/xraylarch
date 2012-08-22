@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from .parameter import Parameter, isParameter, param_value
 from .minimizer import Minimizer, minimize, fit_report
-from .confidence import conf_intervals , conf_interval2d, conf_report
+from .confidence import conf_intervals , chisquare_map, conf_report
 
 def confidence_report(conf_vals, **kws):
     """return a formatted report of confidence intervals calcualted
@@ -14,8 +14,8 @@ def confidence_intervals(minout, sigmas=(1, 2, 3),  **kws):
     for supplied sigma values"""
     return conf_intervals(minout, sigmas=sigmas, **kws)
 
-def confidence_map(minout, xname, yname, nx=11, ny=11,
-                   limits=None, **kws):
+def chi2_map(minout, xname, yname, nx=11, ny=11,
+             limits=None, **kws):
     """generate a confidence map for any two parameters for a fit
 
     Arguments
@@ -32,8 +32,8 @@ def confidence_map(minout, xname, yname, nx=11, ny=11,
     =======
         xpts, ypts, map
     """
-    return conf_interval2d(minout, xname, yname, nx=nx, ny=ny,
-                           limits=limits, **kws)
+    return chisquare_map(minout, xname, yname, nx=nx, ny=ny,
+                         limits=limits, **kws)
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
