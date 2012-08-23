@@ -39,6 +39,6 @@ The idea is that having these different problem areas connected by a common
    overview
    tutorial/index.rst
    developers
-   fitting
+   fitting/index.rst
    xafs/index.rst
    xray/index.rst

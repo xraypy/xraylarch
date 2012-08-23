@@ -9,6 +9,6 @@ Larch Documentation Table of Contents
    overview
    tutorial/index.rst
    developers
-   fitting
+   fitting/index.rst
    xafs/index.rst
    xray/index.rst
