@@ -245,7 +245,7 @@ def _plot_text(text, x, y, win=1, side='left',
     """plot_text(text, x, y, win=1, options)
 
     add text at x, y coordinates of a plot
-    
+
     Parameters:
     --------------
         text:  text to draw
@@ -263,7 +263,7 @@ def _plot_text(text, x, y, win=1, side='left',
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
-    
+
     plotter.add_text(text, x, y, side=side,
                      rotation=rotation, ha=ha, va=va, **kws)
 
@@ -275,7 +275,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     """plot_arrow(x1, y1, x2, y2, win=1, options)
 
     draw arrow from x1, y1 to x2, y2.
-    
+
     Parameters:
     --------------
         x1: starting x coordinate
@@ -296,7 +296,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
-    
+
     plotter.add_text(text, x, y, side=side,
                      rotation=rotation, ha=ha, va=va, **kws)
 
@@ -371,6 +371,35 @@ def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
     if img is not None:
         img.display(map, x=x, y=y, colormap=colormap, **kws)
 
+def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
+              facecolor='w', edgecolor='w', quality=75, image=False, **kws):
+    """formats: png (default), svg, pdf, jpeg, tiff"""
+    if format is None:
+        pref, suffix = os.path.splitext(fname)
+        if suffix is not None:
+            if suffix.startswith('.'):
+                suffix = suffix[1:]
+            format = suffix
+    if format is None: format = 'png'
+    format = format.lower()
+    canvas = _getDisplay(wxparent=wxparent, win=win,
+                         _larch=_larch, image=image).panel.canvas
+
+    if format in ('jpeg', 'jpg'):
+        canvas.print_jpeg(fname, quality=quality, **kws)
+    elif format in ('tiff', 'tif'):
+        canvas.print_tiff(fname, **kws)
+    elif format in ('png', 'svg', 'pdf', 'emf', 'eps'):
+        canvas.print_figure(fname, dpi=dpi, format=format,
+                            facecolor=facecolor, edgecolor=edgecolor, **kws)
+    else:
+        print 'unsupported image format: ', format
+
+def _saveimg(fname, _larch=None, **kws):
+    """save image from image display"""
+    kws.update({'image':True})
+    _saveplot(fname, _larch=_larch, **kws)
+
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
                       'oplot':_oplot,
@@ -379,6 +408,8 @@ def registerLarchPlugin():
                       'plot_arrow': _plot_arrow,
                       'scatterplot': _scatterplot,
                       'update_trace': _update_trace,
+                      'save_plot': _saveplot,
+                      'save_image': _saveimg,
                       'get_display':_getDisplay,
                       'get_cursor': _getcursor,
                       'imshow':_imshow} )
