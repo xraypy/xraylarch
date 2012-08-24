@@ -34,6 +34,10 @@ def voigt(x, cen=0, sigma=1, gamma=None):
     """
     if gamma is None:
         gamma = sigma
+    cen   = param_value(cen)
+    sigma = param_value(sigma)    
+    gamma = param_value(gamma)    
+
     z = (x-cen + 1j*gamma)/ (sigma*sqrt(2))
     return wofz(z).real / (sigma*s2pi)
 
