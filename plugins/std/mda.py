@@ -1,13 +1,11 @@
 #!/usr/bin/env python
 # adopted with few changes from Tim Mooney's mda.py
-
+#
 # version 1 Tim Mooney 5/30/2006
 # derived from readMDA.py
 # - supports reading, writing, and arithmetic operations for up to 4D MDA files
 
 import xdrlib 
-# import tkFileDialog
-# import Tkinter
 import sys
 import os
 import string
@@ -873,34 +871,24 @@ def opMDA(op, d1, d2):
         print "opMDA supports up to 4D scans"
     return s
 
-# #######################################
-# # If called directory from command line
-# #######################################
-# def main():
-#     root = Tkinter.Tk()
-#     if len(sys.argv) < 2:
-#         fname = tkFileDialog.Open().show()
-#     elif sys.argv[1] == '?' or sys.argv[1] == "help" or sys.argv[1][:2] == "-h":
-#         print "usage: %s [filename [maxdim [verbose]]]" % sys.argv[0]
-#         print "   maxdim defaults to 2; verbose defaults to 1"
-#         return()
-#     else:
-#         fname = sys.argv[1]
-# 
-#     maxdim = 4
-#     verbose = 1
-#     if len(sys.argv) > 1:
-#         maxdim = int(sys.argv[2])
-#     if len(sys.argv) > 2:
-#         verbose = int(sys.argv[3])
-# 
-#     dim = readMDA(fname, maxdim, verbose, 0)
-# 
-# ;
-
 def _readmda(fname, maxdim=4, verbose=False, _larch=None, **kws):
-    dim = readMDA(fname, maxdim=maxdim, verbose=verbose)
-    return dim
+    """read an MDA file from the Epics Scan Record
+
+    Warning: not very well tested for scans of high dimension
+    """
+    out = readMDA(fname, maxdim=maxdim, verbose=verbose)
+    if _larch is None:
+        return out
+    group = _larch.symtable.create_group(name='MDA_file %s' % fname)
+    group.extra_pvs = out[0]
+    group.scan1 = out[1]
+    if len(out) > 2:
+        group.scan2 = out[2]
+    if len(out) > 3:
+        group.scan3 = out[3]
+    if len(out) > 4:
+        group.scan4 = out[4]
+    return group
 
 	
 def registerLarchPlugin():
