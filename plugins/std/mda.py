@@ -5,7 +5,8 @@
 # derived from readMDA.py
 # - supports reading, writing, and arithmetic operations for up to 4D MDA files
 
-import xdrlib 
+import xdrlib
+import numpy as np
 import sys
 import os
 import string
@@ -209,15 +210,15 @@ def readScan(file, v):
     for j in range(scan.np):
         if v: print "read %d pts for pos. %d at file loc %x" % (scan.npts,
             j, file_loc)
-        scan.p[j].data = u.unpack_farray(scan.npts, u.unpack_double)    
+        scan.p[j].data = np.array(u.unpack_farray(scan.npts, u.unpack_double))
         if v: print "scan.p[%d].data = %s" % (j, `scan.p[j].data`)
-        
+
     # detectors
     file.seek(file.tell() - (len(buf) - u.get_position()))
     buf = file.read(scan.nd * scan.npts * 4)
     u = xdrlib.Unpacker(buf)
     for j in range(scan.nd):
-        scan.d[j].data = u.unpack_farray(scan.npts, u.unpack_float)
+        scan.d[j].data = np.array(u.unpack_farray(scan.npts, u.unpack_float))
         if v: print "scan.d[%d].data = %s" % (j, `scan.d[j].data`)
 
     return scan
@@ -373,7 +374,7 @@ def readMDA(fname, maxdim=4, verbose=0, help=0):
             value = ''
             count = 0
             if EPICS_type != 0:   # not DBR_STRING
-                count = u.unpack_int()  # 
+                count = u.unpack_int()  #
                 n = u.unpack_int()      # length of unit string
                 if n: unit = u.unpack_string()
 
@@ -528,14 +529,14 @@ def packScanData(scan, cpt):
     p = xdrlib.Packer()
     if (len(cpt) == 0): # 1D array
         for i in range(scan.np):
-            p.pack_farray(scan.npts, scan.p[i].data, p.pack_double)    
+            p.pack_farray(scan.npts, scan.p[i].data, p.pack_double)
         for i in range(scan.nd):
             p.pack_farray(scan.npts, scan.d[i].data, p.pack_float)
-    
+
     elif (len(cpt) == 1): # 2D array
         j = cpt[0]
         for i in range(scan.np):
-            p.pack_farray(scan.npts, scan.p[i].data[j], p.pack_double)    
+            p.pack_farray(scan.npts, scan.p[i].data[j], p.pack_double)
         for i in range(scan.nd):
             p.pack_farray(scan.npts, scan.d[i].data[j], p.pack_float)
 
@@ -543,7 +544,7 @@ def packScanData(scan, cpt):
         j = cpt[0]
         k = cpt[1]
         for i in range(scan.np):
-            p.pack_farray(scan.npts, scan.p[i].data[j][k], p.pack_double)    
+            p.pack_farray(scan.npts, scan.p[i].data[j][k], p.pack_double)
         for i in range(scan.nd):
             p.pack_farray(scan.npts, scan.d[i].data[j][k], p.pack_float)
 
@@ -777,7 +778,7 @@ def opMDA_scalar(op, d1, scalar):
             for k in range(s[2].npts):
                 for l in range(s[3].npts):
                     s[3].d[i].data[j][k][l] = op(s[3].d[i].data[j][k][l], scalar)
-            
+
     if (len(s) == 4): return s
     # 4D op
     for i in range(s[4].nd):
@@ -852,7 +853,7 @@ def opMDA(op, d1, d2):
         for j in range(s[1].npts):
             for k in range(s[2].npts):
                 s[3].d[i].data[j][k] = map(op, s[3].d[i].data[j][k], d2[3].d[i].data[j][k])
-            
+
     if (len(s) == 4): return s
     # 3D op
     if s[4].nd != d2[4].nd:
@@ -890,6 +891,6 @@ def _readmda(fname, maxdim=4, verbose=False, _larch=None, **kws):
         group.scan4 = out[4]
     return group
 
-	
+
 def registerLarchPlugin():
     return ('_io', {'read_mda': _readmda})
