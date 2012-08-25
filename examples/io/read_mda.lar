@@ -1,0 +1,20 @@
+fname ='SampleScan.mda'
+mda = read_mda(fname)
+pos0 = mda.scan1.p[0] # positioner 0
+det0 = mda.scan1.d[0] # detector 0
+
+print 'Scan taken at time: ', mda.scan1.time
+if len(pos0.desc) < 1:
+    xlabel = "%s (%s)" % (pos0.name, pos0.unit)
+else:
+    xlabel = "%s (%s)" % (pos0.desc, pos0.unit)
+endif
+title = '%s (%i pts)' % (fname, mda.scan1.npts)
+
+newplot(pos0.data, det0.data, title=title, label='Det0',
+        xlabel=xlabel, ylabel=det0.name, marker='o')
+
+plot(pos0.data, deriv(det0.data), label='deriv',
+     show_legend=True)
+   
+save_plot('scan_plot.png')
