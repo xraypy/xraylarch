@@ -17,10 +17,10 @@ t0 = time.time()
 npts = 20
 s = (len(x)-1) /npts
 for i in range(npts):
-    update_trace(x[:1+s*i], y1[:1+s*i], trace=1, ymin=-2, ymax=2)
-    update_trace(x[:1+s*i], y2[:1+s*i], trace=2, side='right', ymin=20)
-    # print i, time.time()-t0
-    # sleep(.002)
+    newplot(x[:1+s*i], y1[:1+s*i], trace=1, ymin=-2, ymax=2)
+    plot(x[:1+s*i], y2[:1+s*i], trace=2, side='right', ymin=20)
+    print i, time.time()-t0
+    # sleep(.02)
     # newplot(x[:1+s*i], y1[:1+s*i], force_draw=True)
 #endfor
 print 'updated plot %i times in %.2f seconds' % (npts, time.time()-t0)

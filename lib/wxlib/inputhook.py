@@ -64,8 +64,8 @@ class EventLoopRunner(object):
             self.evtloop.Exit()
             del self.timer, self.evtloop
             clear_update_request()
-#         else:
-#             try:
+#        else:
+#            try:
 #                 t0 = time.time()
 #                 while self.evtloop.Pending() and time.time()-t0 < self.poll_time/2000.0:
 #                     self.evtloop.Dispatch()
@@ -73,7 +73,6 @@ class EventLoopRunner(object):
 #                 wx.GetApp().ProcessIdle()
 #             except:
 #                 pass
-
 
 def input_handler1():
     """Run the wx event loop, polling for stdin.
@@ -96,7 +95,7 @@ def input_handler1():
             eloop = EventLoopRunner(parent=app)
             ptime = POLLTIME
             if update_requested():
-                ptime /= 5
+                ptime /= 10
             eloop.run(poll_time=ptime)
     except KeyboardInterrupt:
         if hasattr(ON_INTERRUPT, '__call__'):
@@ -165,4 +164,23 @@ input_handler = input_handler1
 input_hook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
 cback = CFUNCTYPE(c_int)(input_handler)
 input_hook.value = cast(cback, c_void_p).value
+
+def ping(timeout=0.01):
+    "ping wx"
+    try:
+        app = wx.GetApp()
+        if app is not None:
+            assert wx.Thread_IsMain()
+            # Make a temporary event loop and process system events until
+            # there are no more waiting, then allow idle events (which
+            # will also deal with pending or posted wx events.)
+            evtloop = wx.EventLoop()
+            ea = wx.EventLoopActivator(evtloop)
+            t0 = time.time()
+            while time.time()-t0 < timeout:
+                evtloop.Dispatch()
+            app.ProcessIdle()
+            del ea
+    except:
+        pass
 

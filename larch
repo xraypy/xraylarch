@@ -100,6 +100,7 @@ if HAS_WX:
     app = wx.App(redirect=False, clearSigInt=False)
     # print 'has group _sys.wx? ', shell.larch.symtable.has_group('_sys.wx')
     shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
+    shell.larch.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
     shell.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
     shell.larch.symtable.set_symbol('_sys.wx.wxapp', app) # app.GetTopWindow())
     shell.larch.symtable.set_symbol('_sys.wx.parent',None)

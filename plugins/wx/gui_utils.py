@@ -34,49 +34,62 @@ def _wxupdate(_larch=None, **kws):
     symtable = ensuremod(_larch, '_sys')
     symtable = ensuremod(_larch, '_sys.wx')
     input_handler = symtable.get_symbol('_sys.wx.inputhook').input_handler
+    wxping = symtable.get_symbol('_sys.wx.ping')
     if input_handler is not None:
         symtable.set_symbol("_sys.wx.force_wxupdate", True)
-        input_handler()
+        wxping(0.002)
 
 class wxLarchTimer(wx.MiniFrame):
    """hidden wx frame that contains only a timer widget.
    This timer widget will periodically force a wx update
    """
-   def __init__(self, polltime=50, _larch=None):
+   def __init__(self, _larch, polltime=50):
        wx.MiniFrame.__init__(self, None, -1, '')
        self.Show(False)
+       self.polltime = polltime
        tid = wx.NewId()
        self.timer = wx.Timer(self, tid)
        wx.EVT_TIMER(self, tid, self.OnTimer)
-       self._larch = _larch
+       self.symtable = _larch.symtable
+       self.wxping =self.symtable.get_symbol('_sys.wx.ping')
+
+   def Start(self, polltime = None):
+       if polltime is None: polltime = self.polltime
+       if polltime is None: polltime = 500
        self.timer.Start(polltime)
-       
+
    def Stop(self):
-       _wxupdate(_larch = self._larch)
+       self.wxping(0.005)
        self.timer.Stop()
        self.Destroy()
 
    def OnTimer(self, event=None):
        """timer events -- here we execute any un-executed shell code"""
-       time.sleep(0.01)
+       self.symtable.set_symbol('_sys.wx.force_wxupdate', True)
+       self.wxping(0.001)
+       time.sleep(0.001)
 
 # @SafeWxCall
 def _gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
     symtable = ensuremod(_larch, '_sys')
     symtable = ensuremod(_larch, '_sys.wx')
+    wxping = _larch.symtable.get_symbol('_sys.wx.ping')
 
-    parent = wxLarchTimer(_larch=_larch)
+    parent = wxLarchTimer(_larch)
 
-    dlg = wx.DirDialog(parent, message='Choose Directory',
+    dlg = wx.DirDialog(parent, 'Choose Directory',
+                       defaultPath = os.getcwd(),
                        style = wx.DD_DEFAULT_STYLE)
     path = None
+    parent.Start()
+    print dlg.IsModal()
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
 
-    dlg.Destroy()
     parent.Stop()
-    
+    dlg.Destroy()
+
     if path is not None:
         os.chdir(path)
     return os.getcwd()
@@ -97,7 +110,7 @@ def _fileprompt(wxparent=None, _larch=None,
     """
     symtable = ensuremod(_larch)
 
-    parent = wxLarchTimer(_larch=_larch)
+    parent = wxLarchTimer(_larch)
     if fname is None:
         try:
             fname = symtable.get_symbol("%s.default_filename" % MODNAME)
@@ -120,6 +133,7 @@ def _fileprompt(wxparent=None, _larch=None,
         if message is None:
             message = 'Save As '
 
+    parent.Start()
     dlg = wx.FileDialog(parent=parent, message=message,
                         defaultDir = os.getcwd(),
                         defaultFile= fname,
@@ -128,6 +142,7 @@ def _fileprompt(wxparent=None, _larch=None,
     path = None
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
+    parent.Stop()
     dlg.Destroy()
     parent.Destroy()
     return path
