@@ -42,13 +42,13 @@ class Parameter(object):
                          vary=self.vary, expr=self.expr,
                          stderr=self.stderr, correl=self.correl,
                          name=self.name,  _larch=self._larch)
-            
+
     def __deepcopy__(self, memo):
         return Parameter(val=self._val, min=self.min, max=self.max,
                          vary=self.vary, expr=self.expr,
                          stderr=self.stderr, correl=self.correl,
                          name=self.name,  _larch=self._larch)
-            
+
     @property
     def expr(self):
         return self._expr
@@ -144,8 +144,8 @@ class Parameter(object):
         w = [repr(self._getval())]
         if self._expr is not None:
             w.append("expr='%s'" % self._expr)
-        elif self.vary:
-            w.append('vary=True')
+        else:
+            w.append('vary=%s' % repr(self.vary))
         if self.min not in (None, -inf):
             w.append('min=%s' % repr(self.min))
         if self.max not in (None, inf):
