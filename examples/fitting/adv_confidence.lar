@@ -1,0 +1,30 @@
+#
+#  Shows usage of fitting with non-normal correlation of variables,
+#  and confidence intervals.
+#
+
+random.seed(1)
+dat = group(x = linspace(0, 10, 101))
+dat.y = 4*exp(-dat.x/3) - 5.*exp(-dat.x/9) + random.normal(size=len(dat.x), scale=0.05)
+
+fitparams = group(a1 = guess(3.5), a2 = guess(-9.5), t1 = guess(3), t2 = guess(15))
+
+def fit_exp(pars, dat):
+    model = pars.a1 * exp(-dat.x / pars.t1) + pars.a2 * exp(-dat.x / pars.t2)
+    return model - dat.y
+enddef
+
+minout = minimize(fit_exp, fitparams, args=(dat,))
+
+final = fit_exp(fitparams, dat) + dat.y
+newplot (dat.x, dat.y, label='data', marker='o', linewidth=0)
+   plot (dat.x, final, label='fit')
+
+# print minout
+print fit_report(fitparams)
+
+conf_int = confidence_intervals(minout)
+print confidence_report(conf_int)
+
+xvals, yvals, c2map = chi2_map(minout, 'a2', 't2', nx=21, ny=21,sigmas=4)
+imshow(c2map, x=xvals, y=yvals, title='Chi-square map for a2 and t2')

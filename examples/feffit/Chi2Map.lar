@@ -1,0 +1,65 @@
+
+cu = read_ascii('cu.chi')
+
+fitparams = group(amp  = param(1, vary=True),
+                  de0  = param(1, vary=True),
+                  ss2  = param(0.002, vary=True),
+                  delr = param(0, vary=True))
+
+path1 = feffpath('feffcu01.dat',  s02 = 'amp', sigma2='ss2',  deltar='delr')
+
+
+# can also set a path parameter this way:
+path1.e0 = param(expr='de0')
+
+trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=3, rmin=1.4, rmax=3.0)
+dset  = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
+
+out = feffit(fitparams, dset)
+#print 'feffit complete'
+#
+# print feffit_report(out)
+
+# plot(dset.data.k, dset.data.chi*dset.data.k**2, new=True, label='data')
+# plot(dset.model.k, dset.model.chi*dset.model.k**2, label='fit')
+
+#
+
+#
+# fitparams.ss2.value = 0.001
+# fitparams.amp.value = 0.75
+# out.fit.leastsq()
+#
+#fitparams.delr.vary  = False
+#fitparams.amp.vary  = False
+
+delr_vals = fitparams.delr.value  + linspace(-3*fitparams.delr.stderr, 3*fitparams.delr.stderr, 15)
+amp_vals  = fitparams.amp.value  + linspace(-3*fitparams.amp.stderr, 3*fitparams.amp.stderr, 15)
+c2map = zeros(15*15).reshape(15, 15)
+#
+# for i, a in enumerate(amp_vals):
+#     fitparams.amp.value = a
+#     for j, s in enumerate(delr_vals):
+#        fitparams.delr.value = s
+#        out.fit.leastsq()
+#        c2map[j, i] = fitparams.chi_square
+#        print 'Amp,Sigma2,Delr,E0 = %.4f %.4f %.4f %.4f  %.1f ' % (fitparams.amp.value,
+#                                                                   fitparams.ss2.value, fitparams.delr.value,
+#                                                                   fitparams.de0.value, fitparams.chi_square)
+#     endfor
+# endfor
+
+
+#fitparams.delr.vary  = True
+#fitparams.amp.vary  = True
+#out.fit.leastsq()
+
+print feffit_report(out)
+
+ox, oy, map = chi2_map(out.fit, 'amp', 'delr', nx=15, ny=15)
+imshow(map, y=ox, x = oy)
+
+
+
+#
+#out2 = feffit(fitparams, dset)
