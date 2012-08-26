@@ -59,7 +59,7 @@ def conf_report(conf_vals):
     out.append('#'  + '='*90)
     for nam in names:
         t1 = (' ' + nam + ' '*maxlen)[:maxlen+2]
-        t2 = ('  - diff - ' + ' '*len(t1))[:len(t1)]
+        t2 = ('    -best ' + ' '*len(t1))[:len(t1)]
         line = [t1]
         line.extend(['%9.5g' % i[1] for i in conf_vals[nam]])
         out.append('  '.join(line))
@@ -219,9 +219,9 @@ def conf_intervals(minimizer, sigmas=(1, 2, 3), maxiter=200,
         par.vary = False
 
         start_val = par.value
+        lower = search_limits(par, -1, p_trace)
         upper = search_limits(par, 1, p_trace)
-        out = upper[::-1] + [(0, start_val)]
-        out.extend(search_limits(par, -1, p_trace))
+        out = lower[::-1] + [(0, start_val)] + upper
 
         if with_trace:
             trace_dict[par.name] = p_trace_to_dict(p_trace, params)
