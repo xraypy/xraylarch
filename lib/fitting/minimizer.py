@@ -104,10 +104,15 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         """
         self.nfev_calls = self.nfev_calls + 1
         self.__update_params(fvars)
-
+        #print '__residual ', self.nfev_calls, fvars, self.var_names
+        #for nam in dir(self.paramgroup):
+        #    obj = getattr(self.paramgroup, nam)
+        #    if isParameter(obj):
+        #        print '   params ', nam, obj
+        # print self.userargs, self.userkws
         out = self.userfcn(self.paramgroup, *self.userargs, **self.userkws)
         if hasattr(self.iter_cb, '__call__'):
-            self.iter_cb(self.params, self.nfev_calls, out,
+            self.iter_cb(self.paramgroup, self.nfev_calls, out,
                          *self.userargs, **self.userkws)
         return out
 
@@ -185,6 +190,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             self.jacfcn = lskws['Dfun']
             lskws['Dfun'] = self.__jacobian
 
+        # print '  IN Leastsq  BEFORE fit ', len(self.vars), self.vars, lskws, self.paramgroup
         lsout = scipy_leastsq(self.__residual, self.vars, **lskws)
         vbest, cov, infodict, errmsg, ier = lsout
         resid = infodict['fvec']
@@ -224,7 +230,14 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             message = '%s Could not estimate error-bars' % message
 
         ndata = len(resid)
+
         chisqr = (resid**2).sum()
+        # print ' %%% leastsq result: ', chisqr, ndata, self.nvarys
+        #for nam in dir(self.paramgroup):
+        #    obj = getattr(self.paramgroup, nam)
+        #    if isParameter(obj):
+        #        print '   params ', nam, obj
+
         nfree  = (ndata - self.nvarys)
         redchi = chisqr / nfree
 
@@ -232,7 +245,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         lmdif = group
         if Group is not None:
             lmdif = group.lmdif  = Group()
-        
+
         lmdif.fjac = infodict['fjac']
         lmdif.fvec = infodict['fvec']
         lmdif.qtf  = infodict['qtf']
@@ -282,8 +295,8 @@ def minimize(fcn, group,  args=None, kws=None,
         return 'param group is not a Larch Group'
 
     fit = Minimizer(fcn, group, fcn_args=args, fcn_kws=kws,
-                       iter_cb=iter_cb, scale_covar=scale_covar,
-                       _larch=_larch,  **fit_kws)
+                    iter_cb=iter_cb, scale_covar=scale_covar,
+                    _larch=_larch,  **fit_kws)
     fit.leastsq()
     return fit
 
@@ -352,3 +365,4 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
 #     return ('_math', {'minimize': minimize,
 #                       'guess': guess,
 #                       'fit_report': fit_report})
+

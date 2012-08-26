@@ -247,7 +247,7 @@ class FeffitDataSet(Group):
         # ikmax = index_of(trans.k_, max(self.data.k))
         self.model.k = trans.k_[:ikmax]
         self.datachi = interp(self.model.k, self.data.k, self.data.chi)
-        # print 'prepare_fit ', dir(self.data)
+        # print 'feffit dataset prepare_fit ', dir(self.data)
         if hasattr(self.data, 'epsilon_k'):
             eps_k = self.data.epsilon_k
             if isinstance(self.eps_k, numpy.ndarray):
@@ -268,8 +268,8 @@ class FeffitDataSet(Group):
         if not self.__prepared:
             self.prepare_fit()
 
-        _ff2chi(self.pathlist, k=self.model.k, _larch=self._larch,
-                group=self.model)
+        _ff2chi(self.pathlist, k=self.model.k,
+                _larch=self._larch, group=self.model)
         return self.transform.apply(self.datachi-self.model.chi, eps_scale=True)
 
     def save_ffts(self, rmax_out=10, path_outputs=True):
@@ -282,22 +282,24 @@ class FeffitDataSet(Group):
                 xft(p.chi, group=p, rmax_out=rmax_out)
 
 
-
 def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
-    return FeffitDataSet(data=data, pathlist=pathlist, transform=transform, _larch=_larch)
+    return FeffitDataSet(data=data, pathlist=pathlist,
+                         transform=transform, _larch=_larch)
 
 def feffit_transform(_larch=None, **kws):
     return TransformGroup(_larch=_larch, **kws)
 
-def feffit(params, datasets, _larch=None, rmax_out=10,
-           path_outputs=True, **kws):
-
+def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws):
+    """run feff-fit"""
     def _resid(params, datasets=None, _larch=None, **kws):
-        """ this is the residua function """
-        # print '---feffit residual '
-        #for i in dir(params):
-        # print i, getattr(params, i)
+        """ this is the residual function """
         return concatenate([d.residual() for d in datasets])
+        #         s = ' : '
+        #         for i in dir(params):
+        #             obj = getattr(params, i)
+        #             if isParameter(obj):
+        #                 s = s + '  %.6f' % obj.value
+        #         print '---feffit residual ', datasets, s
 
     if isinstance(datasets, FeffitDataSet):
         datasets = [datasets]
@@ -306,7 +308,8 @@ def feffit(params, datasets, _larch=None, rmax_out=10,
             print "feffit needs a list of FeffitDataSets"
             return
     fitkws = dict(datasets=datasets)
-    fit = Minimizer(_resid, params, fcn_kws=fitkws, _larch=_larch)
+    fit = Minimizer(_resid, params, fcn_kws=fitkws,
+                    scale_covar=True,  _larch=_larch)
     fit.leastsq()
     # scale uncertainties to sqrt(n_idp - n_varys)
     n_idp = 0
