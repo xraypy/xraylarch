@@ -165,9 +165,10 @@ input_hook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
 cback = CFUNCTYPE(c_int)(input_handler)
 input_hook.value = cast(cback, c_void_p).value
 
-def ping(timeout=0.01):
+def ping(timeout=0.001):
     "ping wx"
     try:
+        t0 = time.time()
         app = wx.GetApp()
         if app is not None:
             assert wx.Thread_IsMain()
@@ -176,9 +177,9 @@ def ping(timeout=0.01):
             # will also deal with pending or posted wx events.)
             evtloop = wx.EventLoop()
             ea = wx.EventLoopActivator(evtloop)
-            t0 = time.time()
-            while time.time()-t0 < timeout:
-                evtloop.Dispatch()
+            # t0 = time.time()
+            #while time.time()-t0 < timeout:
+            #    evtloop.Dispatch()
             app.ProcessIdle()
             del ea
     except:
