@@ -78,11 +78,14 @@ print 'Total time for fit = %.3f sec' % (time.time() - t0)
 
 print 'Calculating Chi-Square map for amp2 and off1:'
 
-
 # important!!! supress plots, reset counter
 minout.userkws['plot'] = False
 minout.userkws['update_rate'] = 500
 fitpars.fit_iter = 0
 
-xvals, yvals, c2map = chi2_map(minout, 'amp1', 'off1', nx=21, ny=21, xrange=[13,17], yrange=[-0.4, -0.0])
-imshow(c2map, x=xvals, y=yvals, title='Correlation of Amp1 and Off1')
+conf_int = confidence_intervals(minout)
+print confidence_report(conf_int)
+
+xvals, yvals, c2map = chi2_map(minout, 'amp1', 'off1', nx=21, ny=11, xrange=[13,17], yrange=[-0.4, -0.0])
+contoru(c2map, x=xvals, y=yvals, title='Chi2 map for Amp1 and Off1')
+
