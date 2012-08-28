@@ -368,13 +368,23 @@ def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
             wxparent=None, **kws):
     """imshow(map[, options])
 
-    Display an image for a 2-D array, as a map
+    Display an 2-D array of intensities as a false-color map
 
     map: 2-dimensional array for map
     """
     img = _getDisplay(wxparent=wxparent, win=win, _larch=_larch, image=True)
     if img is not None:
         img.display(map, x=x, y=y, colormap=colormap, **kws)
+
+def _contour(map, x=None, y=None, **kws):
+    """contour(map[, options])
+
+    Display an 2-D array of intensities as a contour plot
+
+    map: 2-dimensional array for map
+    """
+    kws.update(dict(style='contour'))
+    _imshow(map, x=x, y=y, **kws)
 
 def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
               facecolor='w', edgecolor='w', quality=75, image=False, **kws):
@@ -417,4 +427,6 @@ def registerLarchPlugin():
                       'save_image': _saveimg,
                       'get_display':_getDisplay,
                       'get_cursor': _getcursor,
-                      'imshow':_imshow} )
+                      'imshow':_imshow,
+                      'contour':_contour,
+                      } )
