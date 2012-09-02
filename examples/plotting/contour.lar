@@ -1,0 +1,20 @@
+
+
+def gauss2d(x, y, x0, y0, sx, sy):
+    return outer(exp(-(((y-y0)/float(sy))**2)/2),
+                 exp(-(((x-x0)/float(sx))**2)/2))
+#enddef
+
+ny, nx = 350, 400
+x = arange(nx)
+y = arange(ny)
+ox =  x / 62.
+oy = -2 + y / 97.0
+dat = 0.1 + (0.4*random.random(size=nx*ny).reshape(ny, nx) +
+             16.0*gauss2d(x, y, 190,   96,  15,  26) +
+             27.0*gauss2d(x, y, 140,  210,  51,  42))
+
+
+contour(dat, x=ox, y=oy)
+
+
