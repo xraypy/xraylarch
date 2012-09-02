@@ -60,7 +60,6 @@ class PlotDisplay(PlotFrame):
         if window not in PLOT_DISPLAYS:
             PLOT_DISPLAYS[window] = self
 
-
     def onExit(self, o, **kw):
         try:
             symtable = self._larch.symtable
@@ -88,6 +87,7 @@ class ImageDisplay(ImageFrame):
         self.Raise()
         self.cursor_pos = []
         self.panel.cursor_callback = self.onCursor
+        self.panel.contour_callback = self.onContour
         self.window = int(window)
         self.symname = '%s.img%i' % (MODNAME, self.window)
         self._larch = _larch
@@ -96,6 +96,11 @@ class ImageDisplay(ImageFrame):
             symtable.set_symbol(self.symname, self)
         if self.window not in IMG_DISPLAYS:
             IMG_DISPLAYS[self.window] = self
+
+    def onContour(self, levels=None, **kws):
+        symtable = ensuremod(self._larch, MODNAME)
+        if symtable is not None and levels is not None:
+            symtable.set_symbol('%s_contour_levels'  % self.symname, levels)
 
     def onExit(self, o, **kw):
         try:
