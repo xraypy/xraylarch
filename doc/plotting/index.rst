@@ -283,20 +283,28 @@ The titles and labels for plot elements can be simple strings or use a
 subset of TeX markup to give fine control over typesetting greek letters,
 mathematical symbols and formulae.   A simple example would be::
 
-    plot(k, chi, xlabel = ' $ k \rm(\AA^{-1}) $ ', ylabel = '$ \chi(k) $ ')
+    plot(k, chi, xlabel = '$ k \rm(\AA^{-1}) $', ylabel = '$ \chi(k) $ ')
 
-This will render the x and y labels as (for the pedantic, these renderings
-below may be only approximate):
+The portion of the strings between the dollar signs ('$') will be rendered
+as TeX-like markup, and so render the x and y labels as (for the pedantic,
+these renderings below may be only approximate):
 
    :math:`k \rm(\AA^{-1})`
 
    :math:`\chi(k)`
 
+An important point here is the use of the backslash character, '\', which
+you may recall from the tutorial is also used as an escape sequence.  Thus
+some TeX sequences, such as '\theta' may require an additional backslash,
+so that the '\t' part isn't rendered as a tab character. More generally,
+use of *raw strings* is recommended in this contex, so that one uses::
 
-That is, strings can contain TeX-like markup between dollar signs ('$').
-This does not actually use TeX (so you don't need TeX installed), and the
-rendering is done using the matplotlib library.  For further details about
-using TeX for markup, including a list of symbols, commands to change
+    plot(k, chi, xlabel = r'$ k \rm(\AA^{-1}) $', ylabel = r'$ \chi(k) $ ')
+
+
+Note that this does not actually use TeX (so you don't need TeX installed),
+and the rendering is done by the matplotlib library.  For further details
+about using TeX for markup, including a list of symbols, commands to change
 fonts, and examples, can be found at
 http://matplotlib.sourceforge.net/users/mathtext.html
 
@@ -304,21 +312,31 @@ When using the Plot Configuration window to enter a TeX-like string, the
 text control box will be given a yellow background color (instead of the
 normal white color) if there is an error in rendering your TeX string.
 
-Image Display
-===============
+Image Display and Contour
+==========================
 
-.. method:: imshow(dat,  x=None, y=None, colormap=None,**kws)
+.. method:: imshow(dat, x=None, y=None, colormap=None, **kws)
 
    :param dat:  2-d array of some intensity
    :param x:    1-d array of x values
    :param y:    1-d array of y values
    :param colormap:  name of color table to use.
 
-   Imshow displays a grey-scale or false-color image from a 2-d array of intensities.
+   display a grey-scale or false-color image from a 2-d array of intensities.
 
-The `x` and `y` arguments are intended to show real world coordinates for
-the image, not just the array indices.  If `None`, the array indices will
-be shown.
+.. method:: contour(dat, x=None, y=None, colormap=None, nlevels=None, **kws)
+
+   :param dat:  2-d array of some intensity
+   :param x:    1-d array of x values
+   :param y:    1-d array of y values
+   :param colormap:  name of color table to use.
+   :param nlevels:   number of contour levels shown
+
+   display a grey-scale or false-color contour map from a 2-d array of intensities.
+
+For both these functions, the `x` and `y` arguments are intended to show
+real world coordinates for the image, not just the array indices.  If
+`None`, the array indices will be shown.
 
 By default, the image will be shown with the origin (pixel [0, 0]) in the
 lower left corner.  The image can be rotated and flipped by the user.
@@ -329,8 +347,10 @@ Other valid names include 'coolwarm', 'cool', 'hot', 'jet', 'Reds',
 'Greens', 'Blues', 'copper', and a host of others, available
 
 From the Image Display Window, you zoom in on regions of the image, rotate
-the image, change the color table, change the intensity scaling, and change
-the interpolattion algorithm used.  An example image, generated with::
+the image, change the color table, change the intensity scaling, change the
+interpolattion algorithm used.  You can also toggle between showing an
+image of continuously varying intensities and a contour map.  An example
+image, generated with::
 
     def gauss2d(x, y, x0, y0, sx, sy):
         return outer(exp(-(((y-y0)/float(sy))**2)/2),
