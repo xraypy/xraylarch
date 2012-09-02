@@ -45,12 +45,12 @@ quotes::
    larch> s = 'a string'
    larch> s2 = "a different string"
 
-A string can include a '\n' character (for newline) or '\t' (for tab) and
+A string can include a '\\n' character (for newline) or '\\t' (for tab) and
 several other control characters, as in many languages.  The backslash
-character '\' indicates these *escape sequences*, which includes newline as
+character '\\' indicates these *escape sequences*, which includes newline as
 tab as well as several other standard escape sequence.  The quote character
 and the backslash character themselves can be backslashed.  Thus, to get an
-actual backslash character in the string, you would have to use '\\', and
+actual backslash character in the string, you would have to use '\\\\', and
 to get a single quote, one might say::
 
    larch> s3 = 'A string with a backslash-> \\ '

@@ -293,10 +293,10 @@ these renderings below may be only approximate):
 
    :math:`\chi(k)`
 
-An important point here is the use of the backslash character, '\', which
+An important point here is the use of the backslash character, '\\', which
 you may recall from the tutorial is also used as an escape sequence.  Thus
-some TeX sequences, such as '\theta' may require an additional backslash,
-so that the '\t' part isn't rendered as a tab character. More generally,
+some TeX sequences, such as '\\theta' may require an additional backslash,
+so that the '\\t' part isn't rendered as a tab character. More generally,
 use of *raw strings* is recommended in this contex, so that one uses::
 
     plot(k, chi, xlabel = r'$ k \rm(\AA^{-1}) $', ylabel = r'$ \chi(k) $ ')
