@@ -78,7 +78,7 @@
 <li><a class="reference internal" href="#using-tex-like-commands-for-labels-and-titles">Using TeX-like commands for labels and titles</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#image-display">Image Display</a></li>
+<li><a class="reference internal" href="#image-display-and-contour">Image Display and Contour</a></li>
 </ul>
 </li>
 </ul>
@@ -486,19 +486,27 @@ so on for the line traces.</p>
 <p>The titles and labels for plot elements can be simple strings or use a
 subset of TeX markup to give fine control over typesetting greek letters,
 mathematical symbols and formulae.   A simple example would be:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s">&#39; $ k </span><span class="se">\r</span><span class="s">m(\AA^{-1}) $ &#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s">&#39;$ k </span><span class="se">\r</span><span class="s">m(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s">&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This will render the x and y labels as (for the pedantic, these renderings
-below may be only approximate):</p>
+<p>The portion of the strings between the dollar signs (&#8216;$&#8217;) will be rendered
+as TeX-like markup, and so render the x and y labels as (for the pedantic,
+these renderings below may be only approximate):</p>
 <blockquote>
 <div><p><img class="math" src="../_images/math/19a9656daf00e1fb3e91da89978f6e1bf2f1e8d2.png" alt="k \rm(\AA^{-1})"/></p>
 <p><img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></p>
 </div></blockquote>
-<p>That is, strings can contain TeX-like markup between dollar signs (&#8216;$&#8217;).
-This does not actually use TeX (so you don&#8217;t need TeX installed), and the
-rendering is done using the matplotlib library.  For further details about
-using TeX for markup, including a list of symbols, commands to change
+<p>An important point here is the use of the backslash character, &#8216;&#8217;, which
+you may recall from the tutorial is also used as an escape sequence.  Thus
+some TeX sequences, such as &#8216;theta&#8217; may require an additional backslash,
+so that the &#8216;t&#8217; part isn&#8217;t rendered as a tab character. More generally,
+use of <em>raw strings</em> is recommended in this contex, so that one uses:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="p">,</span> <span class="n">xlabel</span> <span class="o">=</span> <span class="s">r&#39;$ k \rm(\AA^{-1}) $&#39;</span><span class="p">,</span> <span class="n">ylabel</span> <span class="o">=</span> <span class="s">r&#39;$ \chi(k) $ &#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that this does not actually use TeX (so you don&#8217;t need TeX installed),
+and the rendering is done by the matplotlib library.  For further details
+about using TeX for markup, including a list of symbols, commands to change
 fonts, and examples, can be found at
 <a class="reference external" href="http://matplotlib.sourceforge.net/users/mathtext.html">http://matplotlib.sourceforge.net/users/mathtext.html</a></p>
 <p>When using the Plot Configuration window to enter a TeX-like string, the
@@ -506,8 +514,8 @@ text control box will be given a yellow background color (instead of the
 normal white color) if there is an error in rendering your TeX string.</p>
 </div>
 </div>
-<div class="section" id="image-display">
-<h2>Image Display<a class="headerlink" href="#image-display" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="image-display-and-contour">
+<h2>Image Display and Contour<a class="headerlink" href="#image-display-and-contour" title="Permalink to this headline">¶</a></h2>
 <dl class="method">
 <dt id="_plotter.imshow">
 <tt class="descclassname">_plotter.</tt><tt class="descname">imshow</tt><big>(</big><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.imshow" title="Permalink to this definition">¶</a></dt>
@@ -525,12 +533,33 @@ normal white color) if there is an error in rendering your TeX string.</p>
 </tr>
 </tbody>
 </table>
-<p>Imshow displays a grey-scale or false-color image from a 2-d array of intensities.</p>
+<p>display a grey-scale or false-color image from a 2-d array of intensities.</p>
 </dd></dl>
 
-<p>The <cite>x</cite> and <cite>y</cite> arguments are intended to show real world coordinates for
-the image, not just the array indices.  If <cite>None</cite>, the array indices will
-be shown.</p>
+<dl class="method">
+<dt id="_plotter.contour">
+<tt class="descclassname">_plotter.</tt><tt class="descname">contour</tt><big>(</big><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>nlevels=None</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.contour" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dat</strong> &#8211; 2-d array of some intensity</li>
+<li><strong>x</strong> &#8211; 1-d array of x values</li>
+<li><strong>y</strong> &#8211; 1-d array of y values</li>
+<li><strong>colormap</strong> &#8211; name of color table to use.</li>
+<li><strong>nlevels</strong> &#8211; number of contour levels shown</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>display a grey-scale or false-color contour map from a 2-d array of intensities.</p>
+</dd></dl>
+
+<p>For both these functions, the <cite>x</cite> and <cite>y</cite> arguments are intended to show
+real world coordinates for the image, not just the array indices.  If
+<cite>None</cite>, the array indices will be shown.</p>
 <p>By default, the image will be shown with the origin (pixel [0, 0]) in the
 lower left corner.  The image can be rotated and flipped by the user.</p>
 <p>The <cite>colormap</cite> argument is the name of the color map to use to transform
@@ -538,8 +567,10 @@ intensity to color.  The default table is &#8216;gray&#8217; for a grayscale map
 Other valid names include &#8216;coolwarm&#8217;, &#8216;cool&#8217;, &#8216;hot&#8217;, &#8216;jet&#8217;, &#8216;Reds&#8217;,
 &#8216;Greens&#8217;, &#8216;Blues&#8217;, &#8216;copper&#8217;, and a host of others, available</p>
 <p>From the Image Display Window, you zoom in on regions of the image, rotate
-the image, change the color table, change the intensity scaling, and change
-the interpolattion algorithm used.  An example image, generated with:</p>
+the image, change the color table, change the intensity scaling, change the
+interpolattion algorithm used.  You can also toggle between showing an
+image of continuously varying intensities and a contour map.  An example
+image, generated with:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">gauss2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">y0</span><span class="p">,</span> <span class="n">sx</span><span class="p">,</span> <span class="n">sy</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">outer</span><span class="p">(</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">y</span><span class="o">-</span><span class="n">y0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sy</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">),</span>
                  <span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="p">(((</span><span class="n">x</span><span class="o">-</span><span class="n">x0</span><span class="p">)</span><span class="o">/</span><span class="nb">float</span><span class="p">(</span><span class="n">sx</span><span class="p">))</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span><span class="p">))</span>

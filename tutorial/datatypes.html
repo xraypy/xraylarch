@@ -168,9 +168,22 @@ quotes:</p>
 </pre></div>
 </div>
 <p>A string can include a &#8216;n&#8217; character (for newline) or &#8216;t&#8217; (for tab) and
-several other control characters as in many languages.  For strings that
-may span over more than 1 line, a special &#8220;triple quoted&#8221; syntax is
-supported, so that:</p>
+several other control characters, as in many languages.  The backslash
+character &#8216;&#8217; indicates these <em>escape sequences</em>, which includes newline as
+tab as well as several other standard escape sequence.  The quote character
+and the backslash character themselves can be backslashed.  Thus, to get an
+actual backslash character in the string, you would have to use &#8216;\&#8217;, and
+to get a single quote, one might say:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="s">&#39;A string with a backslash-&gt; </span><span class="se">\\</span><span class="s"> &#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">s4</span> <span class="o">=</span> <span class="s">&#39;Bob</span><span class="se">\&#39;</span><span class="s">s string&#39;</span>
+</pre></div>
+</div>
+<p>One can also use so-called a <em>raw string</em>, in which the backslash character
+is <strong>not</strong> used for escape sequences:</p>
+<div class="highlight-python"><pre>larch s5 = r'A string with backslash \n but not a newline!'</pre>
+</div>
+<p>For strings that may span over more than 1 line, a special &#8220;triple quoted&#8221;
+syntax is supported, so that:</p>
 <div class="highlight-python"><pre>larch&gt; long_string = """Now is the time for all good men
 .....&gt; to come to the aid of their party"""
 larch&gt; print long_string

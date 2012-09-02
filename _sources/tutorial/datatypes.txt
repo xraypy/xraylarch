@@ -46,16 +46,29 @@ quotes::
    larch> s2 = "a different string"
 
 A string can include a '\n' character (for newline) or '\t' (for tab) and
-several other control characters as in many languages.  For strings that
-may span over more than 1 line, a special "triple quoted" syntax is
-supported, so that::
+several other control characters, as in many languages.  The backslash
+character '\' indicates these *escape sequences*, which includes newline as
+tab as well as several other standard escape sequence.  The quote character
+and the backslash character themselves can be backslashed.  Thus, to get an
+actual backslash character in the string, you would have to use '\\', and
+to get a single quote, one might say::
+
+   larch> s3 = 'A string with a backslash-> \\ '
+   larch> s4 = 'Bob\'s string'
+
+One can also use so-called a *raw string*, in which the backslash character
+is **not** used for escape sequences::
+
+   larch s5 = r'A string with backslash \n but not a newline!'
+
+For strings that may span over more than 1 line, a special "triple quoted"
+syntax is supported, so that::
 
     larch> long_string = """Now is the time for all good men
     .....> to come to the aid of their party"""
     larch> print long_string
     Now is the time for all good men
     to come to the aid of their party
-
 
 It is important to keep in mind that mixing data types in a calculation may
 or may not make sense to Larch.  For example, a string cannot be added to a
@@ -543,7 +556,7 @@ function to create an ordered sequence of indices ([1, 2, 3, ...]), or one
 of several other methods to create arrays.
 
 Arrays are so important for processing numerical data that the next section
-is devoted to them.  
+is devoted to them.
 
 
 Dictionaries
