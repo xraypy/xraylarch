@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XRF Analysis with Larch &mdash; larch 0.9.13 documentation</title>
+    <title>Advanced Confidence Intervals and Chi-square maps &mdash; larch 0.9.13 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,8 +26,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
-    <link rel="next" title="Programming with Larch" href="../devel/index.html" />
-    <link rel="prev" title="XAFS: Fitting XAFS to Feff Paths" href="../xafs/feffit.html" /> 
+    <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
+    <link rel="next" title="Some Builtin Line-shape Functions" href="lineshapes.html" />
+    <link rel="prev" title="Fit Results and Outputs" href="results.html" /> 
   </head>
   <body>
 <div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
@@ -52,32 +53,33 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../devel/index.html" title="Programming with Larch"
+          <a href="lineshapes.html" title="Some Builtin Line-shape Functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../xafs/feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
+          <a href="results.html" title="Fit Results and Outputs"
              accesskey="P">previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="#">XRF analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
- 
+
+          <li><a href="index.html" accesskey="U">Fitting and Modeling Data with Larch</a> &raquo;</li> 
       </ul>
     </div>
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../xafs/feffit.html"
-                        title="previous chapter">XAFS: Fitting XAFS to Feff Paths</a></p>
+  <p class="topless"><a href="results.html"
+                        title="previous chapter">Fit Results and Outputs</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../devel/index.html"
-                        title="next chapter">Programming with Larch</a></p>
+  <p class="topless"><a href="lineshapes.html"
+                        title="next chapter">Some Builtin Line-shape Functions</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/xray/index.txt"
+    <li><a href="../_sources/fitting/confidence.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -101,9 +103,11 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="xrf-analysis-with-larch">
-<h1>XRF Analysis with Larch<a class="headerlink" href="#xrf-analysis-with-larch" title="Permalink to this headline">¶</a></h1>
-<p>X-ray Fluorescence Data can be maniuplated and displayed with Larch.</p>
+  <div class="section" id="advanced-confidence-intervals-and-chi-square-maps">
+<h1>Advanced Confidence Intervals and Chi-square maps<a class="headerlink" href="#advanced-confidence-intervals-and-chi-square-maps" title="Permalink to this headline">¶</a></h1>
+<p>The assumptions made when the parameter uncertainties are estimated are not
+always perfect.  Unfortunately, it is sometimes difficult to tell when this
+is the case.</p>
 </div>
 
 
@@ -122,18 +126,19 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../devel/index.html" title="Programming with Larch"
+          <a href="lineshapes.html" title="Some Builtin Line-shape Functions"
              >next</a> |</li>
         <li class="right" >
-          <a href="../xafs/feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
+          <a href="results.html" title="Fit Results and Outputs"
              >previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="#">XRF analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
- 
+
+          <li><a href="index.html" >Fitting and Modeling Data with Larch</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

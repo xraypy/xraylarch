@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Parameters &mdash; larch 0.9.13 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.13',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
+    <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
+    <link rel="next" title="Minimize and Objective Functions" href="minimize.html" />
+    <link rel="prev" title="Fitting Overview" href="overview.html" /> 
+  </head>
+  <body>
+<div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
+<table><tr><td>
+   <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
+   </a>
+</td><td>
+      <font size=+3><a href="../index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="minimize.html" title="Minimize and Objective Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="Fitting Overview"
+             accesskey="P">previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Fitting and Modeling Data with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Parameters</a><ul>
+<li><a class="reference internal" href="#setting-bounds">setting bounds</a></li>
+<li><a class="reference internal" href="#algebraic-constraints">algebraic constraints</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter">Fitting Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="minimize.html"
+                        title="next chapter">Minimize and Objective Functions</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/fitting/parameters.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="parameters">
+<h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
+<p>The parameters used in the fitting model are all meant to be continuous
+variables &#8211; floating point numbers.  In general, the fitting procedure may
+assign any value to any parameter.  In an actual fit, you may want to place
+some restrictions on the value a parameter can take.  For example, if
+you&#8217;re fitting data to a line, you may want to ensure that the slope of the
+line is positive.  For more complex cases, you might want to write a a
+general model describing the data, but keep some of the parameters in the
+model fixed.</p>
+<p>In Larch, a <strong>Parameter</strong> is a fundamental data type.  It is an object with
+many attributes, the most important of which is a <tt class="docutils literal"><span class="pre">value</span></tt>.  A Parameter&#8217;s
+value can change of course &#8211; this is what will happen during a fit or
+refinement process.  A Parameter can have many other attributes as well, as
+we&#8217;ll discuss throughout this section.  In most cases, a Parameter can be
+used as a floating point number, and its value will be used.</p>
+<p>To create a Parameter, use the <a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> function, which takes a value
+as its first argument, and a few optional keyword arguments to control
+whether the value should be varied in a fit or kept fixed, and setting
+optional upper and lower bounds for the Parameter value.  In addition, an
+algebraic expression can be specified to create a <strong>constrained Parameter</strong>.</p>
+<dl class="function">
+<dt id="param">
+<tt class="descname">param</tt><big>(</big><em>value</em>, <em>vary=False</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
+<dd><p>define a Parameter, setting some of it principle attributes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> &#8211; floating point value.  This value may be adjusted during a fit.</li>
+<li><strong>vary</strong> &#8211; flag telling whether Parameter is to be varied during a  fit (<tt class="docutils literal"><span class="pre">True</span></tt>, <tt class="docutils literal"><span class="pre">False</span></tt>) [<tt class="docutils literal"><span class="pre">False</span></tt>]</li>
+<li><strong>min</strong> &#8211; minimum value the Parameter can take.</li>
+<li><strong>max</strong> &#8211; maximum value the Parameter can take.</li>
+<li><strong>expr</strong> &#8211; algebraic expression for a constrained Parameter.  See <a class="reference internal" href="#param-constraints-label"><em>algebraic constraints</em></a>  for details.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="guess">
+<tt class="descname">guess</tt><big>(</big><em>value</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>define a variable Parameter, setting some of it principle attributes.
+The arguments here are identical to <a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a>, except that
+<tt class="docutils literal"><span class="pre">vary=True</span></tt> is set.</p>
+</dd></dl>
+
+<p>Simple examples for creating a parameter and creating an group of
+parameters would be:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># create some Parameters</span>
+<span class="n">p1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">5.0</span><span class="p">)</span>
+<span class="n">p2</span> <span class="o">=</span> <span class="n">params</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">p3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;1 - sqrt(p2**2)&#39;</span><span class="p">)</span>
+
+<span class="c"># create a Group of parameters</span>
+<span class="n">fit_params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">p3</span><span class="p">,</span>
+                   <span class="n">centroid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                   <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="section" id="setting-bounds">
+<h2>setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h2>
+<p>Upper and lower bounds can be set on a Parameters value using the <em>min</em> and
+<em>max</em> arguments to <a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> or by setting the <em>min</em> and <em>max</em>
+attribute of an existing Parameter.  To remove a bound, set the
+corresponding attribute to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+<p>During a fit, a Parameter&#8217;s value may approach or even equal one of the
+bounds, but will never violate the boundary.  This is, of course, the main
+point of having the boundary.   It should, however, be kept in mind that a
+Parameter with a best-fit value at or very close to a boundary may not have
+an accurate estimate of its uncertainty.  In some cases, it may even be
+that a best-fit value at a boundary will prevent a reasonable estimate of
+the uncertainty in any of the other Parameters in the fit.</p>
+</div>
+<div class="section" id="algebraic-constraints">
+<span id="param-constraints-label"></span><h2>algebraic constraints<a class="headerlink" href="#algebraic-constraints" title="Permalink to this headline">¶</a></h2>
+<p>It is often useful to be able to build a fitting model in which Parameters
+in the model are related to one another.  As a simple example, it might be
+useful to fit a spectrum with a sum of two lineshapes that have different
+centroids, but the same width.  As a second example, it might be useful to
+fit a spectrum to a sum of two model spectra where the relative weight of
+the model spectra must add to 1.  For each of these cases, one could simply
+write a model function that implemented such constraints.</p>
+<p>Rather than trying to capture such special cases, Larch takes a more
+general approach, and allows Parameters to get their value from an
+algebraic expression.  Thus, one might define an objective function for a
+sum of two Gaussian functions (discussed in more detail in
+<a class="reference internal" href="lineshapes.html#lineshape-functions-label"><em>Some Builtin Line-shape Functions</em></a>), as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">fit_2gauss</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span> <span class="o">+</span> \
+            <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">model</span><span class="p">)</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>This is general and does not put any relations between the parameter
+values.  But one can place such relations in the definitions of the
+parameters.  Thus, one could constrain the two widths of the Gaussians to
+be the same value with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">wid1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">wid2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;wid1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and the value of <cite>params.wid2</cite> will have the value as <cite>params.wid1</cite>, and
+won&#8217;t be an independent variable in the fit.  One can use more complex
+expressions &#8211; any valid Larch expression is allowed.   For example, one
+could constrain the two amplitude parameters to add to 1 and each be
+between 0 and 1 as:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;1 - amp1&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><strong>Namespaces for algebraic expressions</strong></p>
+<p>It&#8217;s worth asking what variables and functions are available for writing
+algebraic constraints.  The discussion on <a class="reference internal" href="../tutorial/procedures.html#tut-namespaces-label"><em>Namespace and &#8220;Scope&#8221; inside a Procedure</em></a>
+gives a partial explanation, but we&#8217;ll be a bit more explicit here.
+During a fit, the <em>paramgroup</em> given to <a class="reference internal" href="minimize.html#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> will be assigned
+to <cite>_sys.paramGroup</cite> and will be the first place variables are looked for.
+The variables defined inside the objective function will be in
+<cite>_sys.localGroup</cite>, and which will also be searched for variables.  After
+that, names are looked up with the normal procedures.  In essence, this
+means that the variables and functions available for algebraic expressions
+during a fit include</p>
+<p>1. First, all the other Parameters (and any other variables) defined in the
+<em>parameter group</em> for a fit.</p>
+<p>2. All the variables defined in the objective function, including those
+passed in via the argument list.</p>
+<p>3. All the normal functions and variable names available in Larch,
+including all the mathematical functions.</p>
+<p>As we said, <cite>_sys.paramGroup</cite> is set during a fit.  It is left set at the
+end of the fit &#8211; it is not cleared or reset.  However, note that
+<cite>_sys.paramGroup</cite> may be unset or set to the wrong group (say, from a
+previous fit) when setting up a new fit.  Of course, you can explicitly
+assign a group to <cite>_sys.paramGroup</cite> when setting up a fit, so that you
+might be able to sensibly call the objective function yourself, prior to
+doing a minimization.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="minimize.html" title="Minimize and Objective Functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="Fitting Overview"
+             >previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" >Fitting and Modeling Data with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

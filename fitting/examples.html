@@ -1,0 +1,277 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fit Examples &mdash; larch 0.9.13 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.13',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
+    <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
+    <link rel="next" title="XAFS Analysis with Larch" href="../xafs/index.html" />
+    <link rel="prev" title="Some Builtin Line-shape Functions" href="lineshapes.html" /> 
+  </head>
+  <body>
+<div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
+<table><tr><td>
+   <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
+   </a>
+</td><td>
+      <font size=+3><a href="../index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../xafs/index.html" title="XAFS Analysis with Larch"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="lineshapes.html" title="Some Builtin Line-shape Functions"
+             accesskey="P">previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Fitting and Modeling Data with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Fit Examples</a><ul>
+<li><a class="reference internal" href="#example-1-fitting-a-simple-gaussian">Example 1: Fitting a Simple Gaussian</a></li>
+<li><a class="reference internal" href="#example-2-fitting-xanes-pre-edge-peaks">Example 2: Fitting XANES Pre-edge Peaks</a></li>
+<li><a class="reference internal" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="lineshapes.html"
+                        title="previous chapter">Some Builtin Line-shape Functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../xafs/index.html"
+                        title="next chapter">XAFS Analysis with Larch</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/fitting/examples.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fit-examples">
+<h1>Fit Examples<a class="headerlink" href="#fit-examples" title="Permalink to this headline">¶</a></h1>
+<p>This section contains a few illustrative fitting examples.</p>
+<div class="section" id="example-1-fitting-a-simple-gaussian">
+<h2>Example 1: Fitting a Simple Gaussian<a class="headerlink" href="#example-1-fitting-a-simple-gaussian" title="Permalink to this headline">¶</a></h2>
+<p>Here we make a simple mock data set and fit a Gaussian function to it.
+Though a fairly simple example, and one that is guaranteed to work well, it
+touches on all the concepts discussed above, and is a reasonable
+representation of the sort of analysis actually done when modeling many
+kinds of data.  The script to do the fit looks like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># create mock data</span>
+<span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
+<span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
+<span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
+         <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.050</span><span class="p">)</span>
+
+<span class="c"># create a group of fit parameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+               <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+               <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
+               <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
+            <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
+
+<span class="c"># define objective function for fit residual</span>
+<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">wid</span><span class="p">))</span>
+<span class="n">enddef</span>
+
+<span class="c"># perform fit</span>
+<span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
+
+<span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
+            <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
+
+<span class="c"># plot results</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">mdat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;initial&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;final&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+
+<span class="c"># print report of parameters, uncertainties</span>
+<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This fitting script consists  of several components, which we&#8217;ll go over in
+some detail.</p>
+<blockquote>
+<div><p>1 <strong>create mock data</strong>:  Here we use the builtin <tt class="xref py py-func docutils literal"><span class="pre">_math.gaussian()</span></tt>
+function to create the model function.  We also add simulated noise to
+the model data with the <tt class="xref py py-func docutils literal"><span class="pre">random.normal()</span></tt> function from numpy.</p>
+<p>2. <strong>create a group of fit parameters</strong>:  Here we create a group with
+several components, all defined by the <tt class="xref py py-func docutils literal"><span class="pre">_math.guess()</span></tt> function to
+create variable Parameters.  Two of the variables here have a lower bound
+set.   We also calculate the initial value for the model using the
+initial guesses for the parameter values.</p>
+<p>3. <strong>define objective function for fit residual</strong>: As above, this
+function will receive the group of fit parameters as the first argument,
+and may also receive other arguments as specficied in the call to
+<tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt>.  This function returns the residual of the fit
+(data - model).</p>
+<p>4. <strong>perform fit</strong>.  Here we call <tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt>  with
+arguments of the objective function, the parameter group, and any
+additional positional arguments to the objective function (keyword/value
+arguments can also be supplied).   When this has completed, we calculate
+to model function with the final values of the parameters.</p>
+<ol class="arabic simple" start="5">
+<li><strong>plot results</strong>.   Here we plot the data, initial, and final fits.</li>
+</ol>
+<p>6. <strong>print report of parameters, uncertainties</strong>.  Here we print out a
+report of the fit statistics, best fit values, uncertainties and
+correlations between variables.</p>
+</div></blockquote>
+<p>The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt> will look like this:</p>
+<div class="highlight-python"><pre>===================== FIT RESULTS =====================
+[[Statistics]]
+   npts, nvarys       = 201, 4
+   nfree, nfcn_calls  = 197, 26
+   chi_square         = 0.545081
+   reduced chi_square = 0.002767
+
+[[Variables]]
+   amp            =  11.973425 +/- 0.067265   (init=  5.000000)
+   cen            =  1.511988 +/- 0.008168   (init=  2.000000)
+   off            =  1.002578 +/- 0.004996   (init=  0.000000)
+   wid            =  1.996553 +/- 0.010843   (init=  1.000000)
+
+[[Correlations]]    (unreported correlations are &lt;  0.100)
+   amp, wid             =  0.690
+   amp, off             = -0.670
+   off, wid             = -0.462
+=======================================================</pre>
+</div>
+<p>And the plot of data and fit will look like this:</p>
+<img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 80%;" />
+</div>
+<div class="section" id="example-2-fitting-xanes-pre-edge-peaks">
+<h2>Example 2: Fitting XANES Pre-edge Peaks<a class="headerlink" href="#example-2-fitting-xanes-pre-edge-peaks" title="Permalink to this headline">¶</a></h2>
+<p>This example extends the previous one by a) using data read in from a text
+file, b) using many more lineshapes, c) setting bounds on parameters, and
+d) using a simple algebraic constraint.   The basic format of the above
+exmple is followed, but the script is a bit longer.</p>
+</div>
+<div class="section" id="example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">
+<h2>Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra<a class="headerlink" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra" title="Permalink to this headline">¶</a></h2>
+<p>This example is simpler than the previous one, though still worth an
+explicit example.  Here, we fit a XANES spectra as a linear combination of
+two other spectra. It is often used to compare an unknown spectra with a
+large selection of candidate model spectra, taking the result with lowest
+misfit statistics as the most likely results.  Though it should be used
+with some caution, this represents a standard and very simple approach to
+XANES analysis. In the example here we only do the fit with a single pair
+of candidate spectra.  Extending to more model spectra is left as an
+exercise for the reader.  Other possible variations include fiting the
+derivatives or other spectral decompositions of the spectra.</p>
+<p>For the analysis here, we have unknown spectra X and two model spectra A
+and B.  first put all the data onto the same ordinate (energy) array.  This
+does not necessarily need to be a uniform energy grid.  We then use a
+Parameter group with two parameters.  The first of these is the amplitude
+for model spectra A, which is set to vary and have a minimum value of 0 and
+a maximum of 1.  The second parameter is the amplitude for model spectra B,
+which is constrained to be &#8216;1 - ampA&#8217;.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../xafs/index.html" title="XAFS Analysis with Larch"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="lineshapes.html" title="Some Builtin Line-shape Functions"
+             >previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" >Fitting and Modeling Data with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

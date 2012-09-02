@@ -1,0 +1,242 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Fitting Overview &mdash; larch 0.9.13 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.13',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
+    <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
+    <link rel="next" title="Parameters" href="parameters.html" />
+    <link rel="prev" title="Fitting and Modeling Data with Larch" href="index.html" /> 
+  </head>
+  <body>
+<div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
+<table><tr><td>
+   <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
+   </a>
+</td><td>
+      <font size=+3><a href="../index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="parameters.html" title="Parameters"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Fitting and Modeling Data with Larch"
+             accesskey="P">previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Fitting and Modeling Data with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Fitting and Modeling Data with Larch</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="parameters.html"
+                        title="next chapter">Parameters</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/fitting/overview.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="fitting-overview">
+<h1>Fitting Overview<a class="headerlink" href="#fitting-overview" title="Permalink to this headline">¶</a></h1>
+<p>Modeling and fitting of experimental data is a key need for the analysis of
+most scientific data.  There is an extensive literature on these topics,
+with a wealth written on both the theoretical and practical aspects of
+modeling data.  One of the more common and general approaches is to use a
+least-squares analysis, in which a model is adjusted until it matches
+experimental data such that the sum of squares of the difference between
+data and model is as small as possible.  Mathematically, this is expressed
+as</p>
+<div class="math">
+<p><img src="../_images/math/0d9469992b0be2337e1b7e0dea39653dc0c2d752.png" alt="S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \bf{\beta}) } \big]^2"/></p>
+</div><p>where the experimental data is expressed as <img class="math" src="../_images/math/a031ede742c94d145a55465f98292b64045966ae.png" alt="\bf{y}(\bf{x})"/> that is
+discretely sampled at <img class="math" src="../_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/> points, <img class="math" src="../_images/math/c0ea53b29f6cfdadcde8421e0c566fa6a5df54cd.png" alt="f(\bf{x}, \bf{\beta})"/> is a
+model function, and <img class="math" src="../_images/math/8571b6857c97eca5eab9458a84ae423f9953b222.png" alt="\bf{\beta}"/> is a set of adjustable parameters in
+the model.  For a simple linear model of data, for example, <img class="math" src="../_images/math/aef5e70eab065e06e6baba21c77c5af5ae4a7cd3.png" alt="f =
+\beta_0 + \beta_1 \bf{x}"/>, but the model can be arbitrary complex.  There
+is good statistical justification for using this approach, and many
+existing tools for helping to find the minimal values of <img class="math" src="../_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>.  These
+justifcations are not without criticism or caveats, but we&#8217;ll leave that
+aside for now.</p>
+<p>It is common to include a multiplicative factor to each component in in the
+least-squares equation above, so that the different data points might be
+given more or less weight.  Again, there are several approaches to this,
+with one of the most common approaches to weight by the inverse of the
+estimated uncertainty in the data value.  This then what is generally
+called the chi-square goodness-of-fit parameter</p>
+<div class="math">
+<p><img src="../_images/math/975aff17681ff7405403c3bd330511df1c60a5f8.png" alt="\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \bf{\beta})}{\epsilon_i} \big]^2"/></p>
+</div><p>Here, <img class="math" src="../_images/math/319593f7ae7122d7910bdf87a156b25f7588f1ad.png" alt="\epsilon_i"/> represents the uncertainty in the value of <img class="math" src="../_images/math/6e6ceb79ebc4bf613298e0144eae25dd73de9be3.png" alt="y_i"/>.</p>
+<p>As mentioned, the model function can be fairly complex. There is a large
+literature on the cases where the model function <img class="math" src="../_images/math/8aff0aa6da9e71312699cc057298aa47843015d9.png" alt="f(\bf{x},
+\bf{\beta})"/> depends linearly on its parameters <img class="math" src="../_images/math/8571b6857c97eca5eab9458a84ae423f9953b222.png" alt="\bf{\beta}"/>.  More
+generally, the model function will not depend linearly on its parameters,
+and the minimization is generally referred to a &#8216;&#8217;non-linear least-squares
+optimization&#8217;&#8217; in the literature.  All the discussion here will assume that
+the models can be non-linear.</p>
+<p>It is convenient to define the <strong>residual function</strong>  as</p>
+<div class="math">
+<p><img src="../_images/math/d0fdc35b3dd4a22a1b4d9702b8f610c43bee71a4.png" alt="r = \frac{y - f(x, \bf{\beta})}{\epsilon}"/></p>
+</div><p>so that the sum to be minimized is a simple sum of this function, <img class="math" src="../_images/math/1f55a748c2d8210ce75719c2aa974062110cda02.png" alt="s
+= \sum_i^{N} r_i^2"/>.   The fitting process can then be made very general
+with a few key components required.  Specifically, for Larch, the
+requirements are</p>
+<blockquote>
+<div><p>1. A set of Parameters, <img class="math" src="../_images/math/a635341ad6185dab9baf0d221abf46ea94c6fbd6.png" alt="{\bf{\beta}}"/>, that are used in the model,
+and are to be adjusted to find the least-square value of the sum of
+squares of the residual.  These must be <strong>parameters</strong> (discussed below)
+that are held in a single <strong>parameter group</strong>.  That group can contain
+other data.</p>
+<p>2. An <strong>objective function</strong> to calculate the residual function.  This
+will be a Larch function that takes the <strong>parameter group</strong> described
+above as its first argument, and an unlimited set of optional arguments.
+The arrays for the data should passed in by these optional arguments.
+This function should return the residual array, <img class="math" src="../_images/math/b55ca7a0aa88ab7d58f4fc035317fdac39b17861.png" alt="r"/> that will be
+minimized in the least-squares sense.</p>
+</div></blockquote>
+<p>After the fit has completed, several statistical results describing the fit
+quality and the values and uncertainties found for the parameters will be
+available.  Though the description so far as been somewhat formal, the
+process is not as hard as it sounds, and all the topics will be discussed
+in more detail below.</p>
+<p>As mentioned above, the objective function needs to follow fairly strict
+guidelines.  The first argument must be a Larch group containing all the
+Parameters for the mode, and the return value of the objective function
+must be the fit residual &#8211; the array to be minimized in the least-squares
+sense.</p>
+<p>We&#8217;ll jump in with a simple example fit to a line, with this script:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># create mock data for a line</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">51</span><span class="p">))</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">51</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># create a group of fit parameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span>
+
+<span class="c"># define objective function for fit residual</span>
+<span class="k">def</span> <span class="nf">fitresid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+<span class="n">enddef</span>
+
+<span class="c"># perform fit</span>
+<span class="n">minimize</span><span class="p">(</span><span class="n">fitresid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
+
+<span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span>
+</pre></div>
+</div>
+<p>Here <cite>params</cite> is the parameter group, with both <cite>params.off</cite> and
+<cite>params.slope</cite> as Parameters.  <cite>fitresid</cite> is the objective function that
+calculates the model function from the values of the Parameters, and
+returns the residual (data - model).  The <a class="reference internal" href="minimize.html#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function does
+the actual fit, and will call the objective function many times with
+different (and generally improved) values for the parameters.  Of course,
+there are faster and more statistically sound methods for determining a
+linear trend in a set of data, but the point of this example is to
+illustrate the mechanisms for doing more complex, non-linear modeling of
+data.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="parameters.html" title="Parameters"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Fitting and Modeling Data with Larch"
+             >previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+
+          <li><a href="index.html" >Fitting and Modeling Data with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>

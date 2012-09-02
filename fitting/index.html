@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XRF Analysis with Larch &mdash; larch 0.9.13 documentation</title>
+    <title>Fitting and Modeling Data with Larch &mdash; larch 0.9.13 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
-    <link rel="next" title="Programming with Larch" href="../devel/index.html" />
-    <link rel="prev" title="XAFS: Fitting XAFS to Feff Paths" href="../xafs/feffit.html" /> 
+    <link rel="next" title="Fitting Overview" href="overview.html" />
+    <link rel="prev" title="Plotting and Displaying Data" href="../plotting/index.html" /> 
   </head>
   <body>
 <div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
@@ -52,16 +52,16 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../devel/index.html" title="Programming with Larch"
+          <a href="overview.html" title="Fitting Overview"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../xafs/feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
+          <a href="../plotting/index.html" title="Plotting and Displaying Data"
              accesskey="P">previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="#">XRF analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
  
       </ul>
@@ -70,14 +70,14 @@
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../xafs/feffit.html"
-                        title="previous chapter">XAFS: Fitting XAFS to Feff Paths</a></p>
+  <p class="topless"><a href="../plotting/index.html"
+                        title="previous chapter">Plotting and Displaying Data</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../devel/index.html"
-                        title="next chapter">Programming with Larch</a></p>
+  <p class="topless"><a href="overview.html"
+                        title="next chapter">Fitting Overview</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/xray/index.txt"
+    <li><a href="../_sources/fitting/index.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -101,9 +101,39 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="xrf-analysis-with-larch">
-<h1>XRF Analysis with Larch<a class="headerlink" href="#xrf-analysis-with-larch" title="Permalink to this headline">¶</a></h1>
-<p>X-ray Fluorescence Data can be maniuplated and displayed with Larch.</p>
+  <div class="section" id="fitting-and-modeling-data-with-larch">
+<h1>Fitting and Modeling Data with Larch<a class="headerlink" href="#fitting-and-modeling-data-with-larch" title="Permalink to this headline">¶</a></h1>
+<p>A key motivation for Larch is to provide easy and robust ways to model data
+and perform complex fits of data to models.  Data modeling and fitting can
+be messy and challenging tasks, so a major factor in Larch&#8217;s design was to
+make this as simple as possible.  This chapter discusses the basic concepts
+for building models, setting up and performing fits, and inspecting the
+results.</p>
+<span class="target" id="module-_math"></span><p>The concepts presented here focus on modeling and fitting of general
+spectra.  Of course, Larch can provides other, specific functions for doing
+fits, such as the EXAFS procedures <a class="reference internal" href="../xafs/autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></tt></a> and
+<a class="reference internal" href="../xafs/feffit.html#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">_xafs.feffit()</span></tt></a>.  Many of these concepts (and the underlying fitting
+algorithms) are used for those other functions as well.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Fitting Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#setting-bounds">setting bounds</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#algebraic-constraints">algebraic constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="minimize.html">Minimize and Objective Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="results.html">Fit Results and Outputs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="confidence.html">Advanced Confidence Intervals and Chi-square maps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lineshapes.html">Some Builtin Line-shape Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Fit Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#example-1-fitting-a-simple-gaussian">Example 1: Fitting a Simple Gaussian</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#example-2-fitting-xanes-pre-edge-peaks">Example 2: Fitting XANES Pre-edge Peaks</a></li>
+<li class="toctree-l2"><a class="reference internal" href="examples.html#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
+</ul>
+</li>
+</ul>
+</div>
 </div>
 
 
@@ -122,16 +152,16 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../devel/index.html" title="Programming with Larch"
+          <a href="overview.html" title="Fitting Overview"
              >next</a> |</li>
         <li class="right" >
-          <a href="../xafs/feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
+          <a href="../plotting/index.html" title="Plotting and Displaying Data"
              >previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="#">XRF analysis</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
    &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
  
       </ul>
