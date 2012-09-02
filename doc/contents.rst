@@ -8,7 +8,8 @@ Larch Documentation Table of Contents
    installation
    overview
    tutorial/index.rst
-   developers
+   plotting/index.rst
    fitting/index.rst
    xafs/index.rst
    xray/index.rst
+   devel/index.rst

@@ -36,4 +36,3 @@ Contents:
    modules
    builtins
    io
-   plotting

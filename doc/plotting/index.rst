@@ -1,5 +1,5 @@
 =======================================================
-Tutorial: Plotting and Displaying Data
+Plotting and Displaying Data
 =======================================================
 
 Plotting and Visualizing data are vital to any scientific analysis package,
