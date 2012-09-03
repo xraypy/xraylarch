@@ -20,8 +20,8 @@ is easy and can be done either with keyboard commands such as Ctrl-C or
 from dropdown menus on the graphic elements.
 
 
-Line Plots
-==============
+2-D Line Plots:
+=========================
 
 Larch provides a few functions for making line plots, with the principle
 function being called :func:`plot`.  The :func:`plot` function takes two
@@ -54,36 +54,6 @@ control which one to draw to.
 
    This is essentially the same a :func:`plot`, but with the option  `new=True`.
    The rest of the arguments are as listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
-
-.. method:: scatterplot(x, y, **kws)
-
-
-   A scatterplot differs from a line plot in that the set of x, y values
-   are not assumed to be in any particular order, and so are not connected
-   with a line.  Arguments are very similar to those for :func:`plot`, and
-   are listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
-
-
-.. method:: update_trace(x, y, trace=1, win=1, side='left')
-
-   updates an existing trace.
-
-   :param x:     array of x values
-   :param y:     array of y values
-   :param win:   integer index of window for plot (1 is the first window)
-   :param trace: integer index for the trace (1 is the first trace)
-   :param side:  which y axis to use ('left' or 'right').
-
-   This function is particularly useful for data to be plotted is changing
-   and you wish to update traces from a previous :func:`plot` with new
-   data without completely redrawing the entire plot.  Using this method
-   is substantially faster than replotting, and should be used for dynamic
-   plots, such as plottting the progress of some function during a fit.
-   Note that you cannot change properties such as color here -- these will
-   be inherited from the existing trace.  In that sense, most of the
-   properties of the trace and of the plot as a whole remain unchanged, it
-   just happens that the data for the trace has been replaced.
-
 
 .. _plotopt_table:
 
@@ -184,10 +154,95 @@ same meaning, as indicated by the right-most column.
  Again, most of these values can be configured interactively from the  plot window.
 
 
+.. method:: scatterplot(x, y, **kws)
+
+   A scatterplot differs from a line plot in that the set of x, y values
+   are not assumed to be in any particular order, and so are not connected
+   with a line.  Arguments are very similar to those for :func:`plot`, and
+   are listed in  :ref:`Table of Plot Arguments <plotopt_table>`.
+
+.. method:: update_trace(x, y, trace=1, win=1, side='left')
+
+   updates an existing trace.
+
+   :param x:     array of x values
+   :param y:     array of y values
+   :param win:   integer index of window for plot (1 is the first window)
+   :param trace: integer index for the trace (1 is the first trace)
+   :param side:  which y axis to use ('left' or 'right').
+
+   This function is particularly useful for data to be plotted is changing
+   and you wish to update traces from a previous :func:`plot` with new
+   data without completely redrawing the entire plot.  Using this method
+   is substantially faster than replotting, and should be used for dynamic
+   plots, such as plottting the progress of some function during a fit.
+   Note that you cannot change properties such as color here -- these will
+   be inherited from the existing trace.  In that sense, most of the
+   properties of the trace and of the plot as a whole remain unchanged, it
+   just happens that the data for the trace has been replaced.
+
+.. method:: plot_text(text, x, y, win=1, side='left', rotation=None, ha='left', va='center')
+
+    add text at x, y coordinates of the plot window
+
+    :param text:  text to draw
+    :param  x:     x position of text
+    :param  y:     y position of text
+    :param  win:   index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
+    :param  side:  which axis to use ('left' or 'right') for coordinates.
+    :param  rotation:  text rotation. angle in degrees or 'vertical' or 'horizontal'
+    :param  ha:      horizontal alignment ('left', 'center', 'right')
+    :param  va:      vertical alignment ('top', 'center', 'bottom', 'baseline')
+
+
+.. method:: plot_arrow(x1, y1, x2, y2, win=1, **kws)
+
+    draw arrow from x1, y1 to x2, y2.
+
+    :param    x1: starting x coordinate
+    :param    y1: starting y coordinate
+    :param    x2: endnig x coordinate
+    :param    y2: ending y coordinate
+    :param  win:   index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
+    :param    side: which axis to use ('left' or 'right') for coordinates.
+    :param    shape:  arrow head shape ('full', 'left', 'right')
+    :param    fg:     arrow fill color ('black')
+    :param    width:  width of arrow line (in points. default=0.01)
+    :param    head_width:  width of arrow head (in points. default=0.1)
+    :param    overhang:    amount the arrow is swept back (in points. default=0)
+
+
+.. method:: save_plot(filename, dpi=300, format=None, win=1, facecolor='w', edgecolor='w', quality=75)
+
+    save the current plot to a PNG or other output formats.
+
+    :param filename: name of output file
+    :param dpi:  resolution (dots per inch)
+    :param format:  output format (one of 'png', 'pdf', 'jpeg', 'jpg','tiff' or 'svg')
+    :param  win:   index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
+    :param facecolor:  color of plot background (not supported for all formats)
+    :param edgecolor:  color of plot frame color (not supported for all formats)
+    :param quality:    image quality (JPEG only?)
+
+.. method:: save_image(filename, dpi=300, format=None, win=1, facecolor='w', edgecolor='w', quality=75)
+
+    save the current 2D image from :meth:`imshow` to a PNG or other output formats.
+
+    :param filename: name of output file
+    :param dpi:  resolution (dots per inch)
+    :param format:  output format (one of 'png', 'pdf', 'jpeg', 'jpg','tiff' or 'svg')
+    :param  win:   index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
+    :param facecolor:  color of plot background (not supported for all formats)
+    :param edgecolor:  color of plot frame color (not supported for all formats)
+    :param quality:    image quality (JPEG only?)
+
+.. method:: get_display(win=1)
+
+   return the underlying Display object.
+
 
 Plot Examples
 ~~~~~~~~~~~~~~
-
 
 Here a a few example plots, to whet your appetite::
 
@@ -212,10 +267,10 @@ will make this plot:
    :width: 80 %
 
 
-Using the Plot Windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Interactive Use of the Plot Windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-From the main plot window, you can perform several tasks:
+From the main plot window, you can perform several tasks interactively:
 
 
 **Getting Cursor Position**:
@@ -362,12 +417,18 @@ image, generated with::
     iy = arange(ny)
     x  =  ix / 10.
     y  = -2 + iy / 10.0
-    dat = 0.2 + (0.5*random.random(size=nx*ny).reshape(ny, nx) +
-                 2.0*gauss2d(ix, iy, 190,   176,  37,  32))
+
+    dat = 0.2 + (0.05*random.random(size=nx*ny).reshape(ny, nx) +
+                 2.0*gauss2d(ix, iy, 190,   176,  57,  69))
 
     imshow(dat, x=x, y=y, colormap='coolwarm')
 
 is shown below:
 
 .. image:: ../images/plot_image1.png
+   :width: 80 %
+
+and as a contour plot, with a different color table:
+
+.. image:: ../images/plot_contour1.png
    :width: 80 %
