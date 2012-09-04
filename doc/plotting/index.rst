@@ -20,7 +20,7 @@ is easy and can be done either with keyboard commands such as Ctrl-C or
 from dropdown menus on the graphic elements.
 
 
-2-D Line Plots:
+Line Plots
 =========================
 
 Larch provides a few functions for making line plots, with the principle
@@ -29,14 +29,23 @@ arrays: `x`, the abscissa array, and `y`, the ordinate array.  It also
 accepts a very large number of optional arguments for setting properties
 like color, line style, labels, and so on.  Most of these properties can
 also be set after the plot is displayed through the graphical display of
-the plot itself.
+the plot itself.  The plots are fully interactive so that coordinates can
+be seen (and written to larch variables) by clicking on the plot, and
+zooming in on portions of the plot can be done with click-and-drag.
+Right-clicking will pop up a list of options for zooming out, configuring
+the plot, or saving a PNG image of the plot.  Menus on the window frame
+give even more options, including Copy-to-clipboard and printing.
 
-Multiple plot windows can be shown simultaneously and you can easily
-control which one to draw to.
+Multiple plot windows can be shown simultaneously, each in an independent
+window, and you can control which one is drawn to with a plot window index
+``win``.
 
 .. module:: _plotter
    :synopsis: Plotting functions
 
+
+Plotting commands
+~~~~~~~~~~~~~~~~~~~~~
 
 .. method:: plot(x, y,  **kws)
 
@@ -151,8 +160,7 @@ same meaning, as indicated by the right-most column.
    discrete values as a function of time, left-to-right, and want to show a
    transition to a new value as a sudden step, you want 'steps-post'.
 
- Again, most of these values can be configured interactively from the  plot window.
-
+ Again, most of these values can be configured interactively from the Plot configuration window.
 
 .. method:: scatterplot(x, y, **kws)
 
@@ -163,7 +171,8 @@ same meaning, as indicated by the right-most column.
 
 .. method:: update_trace(x, y, trace=1, win=1, side='left')
 
-   updates an existing trace.
+   updates an existing trace of a plot.
+
 
    :param x:     array of x values
    :param y:     array of y values
@@ -224,6 +233,7 @@ same meaning, as indicated by the right-most column.
     :param edgecolor:  color of plot frame color (not supported for all formats)
     :param quality:    image quality (JPEG only?)
 
+
 .. method:: save_image(filename, dpi=300, format=None, win=1, facecolor='w', edgecolor='w', quality=75)
 
     save the current 2D image from :meth:`imshow` to a PNG or other output formats.
@@ -238,7 +248,9 @@ same meaning, as indicated by the right-most column.
 
 .. method:: get_display(win=1)
 
-   return the underlying Display object.
+   return the underlying Display object. For advanced usage, this contains
+   the PlotDisplay object, which is the wxPython frame.  The matplotlib
+   Axes object will be the ``panel.axes``.
 
 
 Plot Examples
@@ -271,7 +283,6 @@ Interactive Use of the Plot Windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 From the main plot window, you can perform several tasks interactively:
-
 
 **Getting Cursor Position**:
 
@@ -352,7 +363,7 @@ An important point here is the use of the backslash character, '\\', which
 you may recall from the tutorial is also used as an escape sequence.  Thus
 some TeX sequences, such as '\\theta' may require an additional backslash,
 so that the '\\t' part isn't rendered as a tab character. More generally,
-use of *raw strings* is recommended in this contex, so that one uses::
+use of *raw strings* is recommended in this context, so that one uses::
 
     plot(k, chi, xlabel = r'$ k \rm(\AA^{-1}) $', ylabel = r'$ \chi(k) $ ')
 
