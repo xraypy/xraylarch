@@ -1,5 +1,14 @@
 from numpy import arcsin, cos, inf, nan, sin, sqrt
 
+# uncertainties package
+HAS_UNCERTAIN = False
+try:
+    import uncertainties
+    ufloat = uncertainties.ufloat
+    HAS_UNCERTAIN = True
+except ImportError:
+    pass
+
 class Parameter(object):
     """returns a parameter object: a floating point value with bounds that can
     be flagged as a variable for a fit, or given an expression to use to
@@ -27,6 +36,7 @@ class Parameter(object):
         self._expr = expr
         self.stderr = stderr
         self.correl = correl
+        self.use_uvalue = False
         self._ast = None
         self._larch = None
         self._from_internal = lambda val: val
@@ -57,6 +67,14 @@ class Parameter(object):
     def expr(self, val):
         self._ast = None
         self._expr = val
+
+    @property
+    def uvalue(self):
+        """get value with uncertainties (uncertainties.ufloat)"""
+        v = self._getval()
+        if HAS_UNCERTAIN and self.stderr is not None:
+            return ufloat((v, self.stderr))
+        return v
 
     @property
     def value(self):
