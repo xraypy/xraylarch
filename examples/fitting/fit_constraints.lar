@@ -1,0 +1,38 @@
+
+
+def resid(pars, x, sigma=None, data=None):
+    yg = pars.amp_g*gaussian(x,  pars.cen_g, pars.wid_g)
+    yl = pars.amp_l*lorentzian(x,  pars.cen_l, pars.wid_l)
+    slope = pars.line_slope
+    offset = pars.line_off
+    model =  yg +  yl + offset + x * slope
+    if data is None:      return model
+    if sigma is  None:    return (model - data)
+    return (model - data)/sigma
+enddef
+
+n = 601
+xmin = 0.
+xmax = 20.0
+x = linspace(xmin, xmax, n)
+
+data = (21*gaussian(x,  8.1, 1.2) +
+        10*lorentzian(x, 9.6, 2.4) +
+        random.normal(scale=0.23,  size=n) +
+        x*0.5)
+
+pfit = group(amp_g = guess(10),
+              cen_g = guess(9),
+              wid_g = guess(1),
+              amp_tot = guess(20),
+              amp_l   = param(expr='amp_tot - amp_g'),
+              cen_l   = param(expr='1.5+cen_g'),
+              wid_l   = param(expr='2*wid_g'),
+              line_slope = guess(0),
+              line_off = guess(0.2))
+
+myfit = minimize(resid, pfit,
+                 args=(x,), kws={'data':data})
+
+print fit_report(pfit)
+
