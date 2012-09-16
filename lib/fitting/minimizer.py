@@ -33,12 +33,20 @@ will contain fit statistics chisquare, etc.
    <newville@cars.uchicago.edu>
 """
 
-from numpy import dot, eye, ones_like, sqrt, take, transpose, triu
+from numpy import dot, eye, ndarray, ones_like, sqrt, take, transpose, triu
 from numpy.dual import inv
 from numpy.linalg import LinAlgError
 from scipy.optimize import leastsq as scipy_leastsq
 
-# uncertainties package
+# check for scipy.optimize.minimize
+HAS_SCALAR_MIN = False
+try:
+    from scipy.optimize import minimize as scipy_minimize
+    HAS_SCALAR_MIN = True
+except ImportError:
+    pass
+
+# check for uncertainties package
 HAS_UNCERTAIN = False
 try:
     import uncertainties
@@ -110,6 +118,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         user-supplied function to calculate the residual.
         """
         self.nfev_calls = self.nfev_calls + 1
+        # self.paramgroup.fit_iter = self.nfev_calls
         self.__update_params(fvars)
         #print '__residual ', self.nfev_calls, fvars, self.var_names
         #for nam in dir(self.paramgroup):
@@ -204,11 +213,13 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
 
         # need to map _best values to params, then calculate the
         # grad for the variable parameters
-        grad = ones_like(_best)
-        named_params = {}
+        grad = ones_like(_best)   # holds scaled gradient for variables
+        vbest = ones_like(_best)  # holds best values for variables
+        named_params = {}         # var names : parameter object
         for ivar, name in enumerate(self.var_names):
             named_params[name] = par = getattr(group, name)
             grad[ivar] = par.scale_gradient(_best[ivar])
+            vbest[ivar] =  par.value
 
         # modified from JJ Helmus' leastsqbound.py
         # compute covariance matrix here explicitly...
@@ -221,10 +232,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             cov = inv(dot(transpose(rvec),rvec))
         except LinAlgError:
             cov = None
-
-        #symtable = self._larch.symtable
-        #if self.paramgroup.__name__ in symtable._sys.searchGroups:
-        #    symtable._sys.searchGroups.remove(self.paramgroup.__name__)
 
         message = 'Fit succeeded.'
         if ier == 0:
@@ -239,18 +246,12 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         ndata = len(resid)
 
         chisqr = (resid**2).sum()
-        # print ' %%% leastsq result: ', chisqr, ndata, self.nvarys
-        #for nam in dir(self.paramgroup):
-        #    obj = getattr(self.paramgroup, nam)
-        #    if isParameter(obj):
-        #        print '   params ', nam, obj
-
         nfree  = (ndata - self.nvarys)
         redchi = chisqr / nfree
 
         lmdif = group
         if Group is not None:
-            lmdif = group.lmdif  = Group()
+            lmdif = group.lmdif = Group()
 
         lmdif.fjac = infodict['fjac']
         lmdif.fvec = infodict['fvec']
@@ -288,27 +289,77 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             group.covar_vars = self.var_names
             group.covar = cov
 
-        def par_eval(vals, par=None):
-            if par is None: return 0
-            return par._getval()
-
         if HAS_UNCERTAIN and cov is not None:
-            uvars = uncertainties.correlated_values(_best, cov)
-            ueval = uncertainties.wrap(par_eval)
+            # uncertainties for constrained parameters:
+            #   get values with uncertainties (including correlations),
+            #   temporarily set Parameter values to these,
+            #   re-evaluate contrained parameters to extract stderr
+            #   and then set Parameters back to best-fit value
+            uvars = uncertainties.correlated_values(vbest, cov)
             for val, nam in zip(uvars, self.var_names):
                 named_params[nam]._val = val
             for nam in dir(self.paramgroup):
                 obj = getattr(self.paramgroup, nam)
-                if isParameter(obj) and getattr(obj, '_ast', None) is not None:
+                if isParameter(obj):
                     try:
-                        obj.stderr = obj._getval().std_dev()
+                        if obj._ast is not None: # only constrained params
+                            obj.stderr = obj.value.std_dev()
                     except:
                         pass
             for val, nam in zip(uvars, self.var_names):
                 named_params[nam]._val = val.nominal_value
         return ier
 
-def minimize(fcn, group,  args=None, kws=None,
+    def scalar_minimize(self, method='Nelder-Mead', **kws):
+        """
+        use one of the scaler minimization methods from scipy.
+        Available methods include:
+          Nelder-Mead
+          Powell
+          CG  (conjugate gradient)
+          BFGS
+          Newton-CG
+          Anneal
+          L-BFGS-B
+          TNC
+          COBYLA
+          SLSQP
+
+        If the objective function returns a numpy array instead
+        of the expected scalar, the sum of squares of the array
+        will be used.
+
+        Note that bounds and constraints can be set on Parameters
+        for any of these methods, so are not supported separately
+        for those designed to use bounds.
+
+        """
+        if not HAS_SCALAR_MIN :
+            raise NotImplementedError
+
+        self.prepare_fit()
+
+        fmin_kws = dict(method=method, tol=self.toler)
+        fmin_kws.update(self.kws)
+        fmin_kws.update(kws)
+        def penalty(params):
+            "local penalty function -- eval sum-squares residual"
+            r = self.__residual(params)
+            if isinstance(r, ndarray):
+                r = (r*r).sum()
+            return r
+
+        ret = scipy_minimize(penalty, self.vars, **fmin_kws)
+        xout = ret.x
+        self.message = ret.message
+        self.nfev = ret.nfev
+        self.covar_vars = None
+        self.covar = None
+        print 'Scalar min output: ', ret
+        print ret.keys()
+
+
+def minimize(fcn, group,  args=None, kws=None, method='leastsq',
              scale_covar=True, iter_cb=None, _larch=None, **fit_kws):
     """simple minimization function,
     finding the values for the params which give the
@@ -320,7 +371,28 @@ def minimize(fcn, group,  args=None, kws=None,
     fit = Minimizer(fcn, group, fcn_args=args, fcn_kws=kws,
                     iter_cb=iter_cb, scale_covar=scale_covar,
                     _larch=_larch,  **fit_kws)
-    fit.leastsq()
+
+    _scalar_methods = {'nelder': 'Nelder-Mead',
+                       'powell': 'Powell',
+                       'cg': 'CG ',
+                       'bfgs': 'BFGS',
+                       'newton': 'Newton-CG',
+                       # 'anneal': 'Anneal',
+                       'lbfgs': 'L-BFGS-B',
+                       'l-bfgs': 'L-BFGS-B',
+                       'tnc': 'TNC',
+                       'cobyla': 'COBYLA',
+                       'slsqp': 'SLSQP'}
+
+    meth = method.lower()
+    meth_found = False
+    if HAS_SCALAR_MIN:
+        for name, method in _scalar_methods.items():
+            if meth.startswith(name):
+                meth_found = True
+                fit.scalar_minimize(method=method)
+    if not meth_found:
+        fit.leastsq()
     return fit
 
 def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
@@ -336,10 +408,14 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
     out = [topline, header % 'Statistics']
 
     npts = len(group.residual)
-    out.append('   npts, nvarys       = %i, %i' % (npts, group.nvarys))
-    out.append('   nfree, nfcn_calls  = %i, %i' % (group.nfree, group.nfcn_calls))
-    out.append('   chi_square         = %f' % (group.chi_square))
-    out.append('   reduced chi_square = %f' % (group.chi_reduced))
+    if hasattr(group, 'nvarys'):
+        out.append('   npts, nvarys       = %i, %i' % (npts, group.nvarys))
+    if hasattr(group, 'nfree') and hasattr(group, 'nfcn_calls'):
+        out.append('   nfree, nfcn_calls  = %i, %i' % (group.nfree, group.nfcn_calls))
+    if hasattr(group, 'chi_square'):
+        out.append('   chi_square         = %f' % (group.chi_square))
+    if hasattr(group, 'chi_reduced'):
+        out.append('   reduced chi_square = %f' % (group.chi_reduced))
     out.append(' ')
     out.append(header % 'Variables')
     exprs = []
