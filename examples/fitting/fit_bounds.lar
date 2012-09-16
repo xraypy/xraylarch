@@ -7,11 +7,11 @@ parformat = " %4i    % .4f    % .4f    % .4f    % .4f"
 
 def ga(x, off, amp, cen, wid):
     """standard gaussian with scale and constant offset """
-    return off + amp*(s2pi / wid) * exp(-log2 * (x-cen)**2 / wid**2)
+    return off + amp*gaussian(x, cen, wid)
 enddef
 
-def resid(pars, data, verbose=False, update_rate=15):
-    model = ga(data.x, pars.off, pars.amp, pars.cen, pars.wid)
+def resid(pars, data, verbose=False, update_rate=10):
+    model = pars.off + pars.amp*gaussian(data.x, pars.cen, pars.wid)
     if verbose:
         if pars.fit_iter == 0:
             print " Iteration   Offset   Amplitude   Center  Sigma"
@@ -31,17 +31,17 @@ xdat = None
 mdat = group()
 mdat.x = arange(501)/25.0
 random.seed(1)
-mdat.y = ga(mdat.x, -2.0, 15.0, 11.0, 2.0) + \
+mdat.y = 2.2 + 12.0*gaussian(mdat.x, 11.0, 2.0) + \
          random.normal(size=len(mdat.x), scale=0.250)
 
 # create group for parameters
-params = group(off = param(-3.1,   max=0, vary=True),
+params = group(off = param(-3.1,   max=10, vary=True),
                amp = param(10.0,   max=17.8, min=0, vary=True),
                cen = param(10.80, min=10., max=12., vary=True),
-               wid = param(1.0,  min=0, max=9, vary=True),
-               fit_iter=0)
-init = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
+               wid = param(1.0,  min=-0, max=9, vary=True),
+               fit_iter = 0)
 
+init = params.off  + params.amp*gaussian(mdat.x, params.cen, params.wid)
 newplot(mdat.x, mdat.y)
 plot(mdat.x, init)
 plot(mdat.x, init, color='black', style='--')
@@ -49,9 +49,9 @@ plot(mdat.x, init, color='black', style='--')
 minimize(resid, params, args=(mdat,),
          kws={'verbose':True, 'update_rate': 5})
 
-final = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
-
-update_trace(mdat.x, final, trace=2)
+# final = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
+#
+# update_trace(mdat.x, final, trace=2)
 print fit_report(params)
 
 show(params)
