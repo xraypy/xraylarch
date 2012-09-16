@@ -1,20 +1,27 @@
-==================================
-Minimize and Objective Functions
-==================================
+==============================================
+:func:`minimize` and Objective Functions
+==============================================
 
-As mentioned above, the objective function is meant to calculate the fit
-residual vector (data - model) given a group of parameters, and optional
-inputs.  You'll note that we didn't explicitly mention the data here.  This
-is because, in general, the data to be modeled may be quite complex.  It
-might, for example, be contained in two or more arrays -- perhaps what you
-want to model is the difference of two image arrays, or the fourier
-filtered average of ten spectra.  All these are best handled through
-optional arguments.  The objective function really only needs to have as
-its first argument a group containing all the parameters used in the model.
 
-A simple model for a linear fit might look like this::
+As mentioned above, the objective function returns an array calculated from
+given a group of parameters.  This array will be minimized in the
+least-squares sense in the fitting process.  For most fits, the objective
+function should return the residual array (data - model), given a group of
+parameters and optional inputs.  You'll note that we didn't explicitly
+mention any *data* in describing the objective function.  This is because,
+formally, the minimization process may be looking for a solution to a
+purely mathematical problem, not just fitting to data.  Even when the
+objective function does return the difference of data and model, the data
+to be modeled may be quite complex.  It might, for example, be contained in
+two or more arrays -- perhaps what you want to model is the difference of
+two image arrays, or the fourier filtered average of ten spectra.  Because
+of such complexities, the reliance of optional arguments appears to be the
+best approach.
 
-    params = group(offset = param(0), slope = param(1))
+A simple objective function that models data as a line might look like this::
+
+    params = group(offset = param(0., vary=True),
+                   slope = param(200, min=0, vary=True))
 
     def residual(pars, xdata=None, ydata=None):
         model = pars.offset + pars.slope * xdata
@@ -22,8 +29,8 @@ A simple model for a linear fit might look like this::
         return diff
     enddef
 
-Here ``params`` is a Larch group containing two Parameters as defined by
-:func:`_math.param`, discussed above.
+Here ``params`` is a Group containing two Parameters as defined by
+:func:`_math.param`, discussed earlier.
 
 
 To actually perform the fit, the :func:`minimize` function must be called.  This
