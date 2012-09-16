@@ -38,8 +38,15 @@ from numpy.dual import inv
 from numpy.linalg import LinAlgError
 from scipy.optimize import leastsq as scipy_leastsq
 
-from .parameter import isParameter
+# uncertainties package
+HAS_UNCERTAIN = False
+try:
+    import uncertainties
+    HAS_UNCERTAIN = True
+except ImportError:
+    pass
 
+from .parameter import isParameter
 
 try:
     from larch import Group
@@ -190,18 +197,18 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             self.jacfcn = lskws['Dfun']
             lskws['Dfun'] = self.__jacobian
 
-        # print '  IN Leastsq  BEFORE fit ', len(self.vars), self.vars, lskws, self.paramgroup
         lsout = scipy_leastsq(self.__residual, self.vars, **lskws)
-        vbest, cov, infodict, errmsg, ier = lsout
+        _best, cov, infodict, errmsg, ier = lsout
         resid = infodict['fvec']
         group = self.paramgroup
 
         # need to map _best values to params, then calculate the
         # grad for the variable parameters
-        grad = ones_like(vbest)
+        grad = ones_like(_best)
+        named_params = {}
         for ivar, name in enumerate(self.var_names):
-            par = getattr(group, name)
-            grad[ivar] = par.scale_gradient(vbest[ivar])
+            named_params[name] = par = getattr(group, name)
+            grad[ivar] = par.scale_gradient(_best[ivar])
 
         # modified from JJ Helmus' leastsqbound.py
         # compute covariance matrix here explicitly...
@@ -241,7 +248,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         nfree  = (ndata - self.nvarys)
         redchi = chisqr / nfree
 
-
         lmdif = group
         if Group is not None:
             lmdif = group.lmdif  = Group()
@@ -265,24 +271,41 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         group.nfree =  nfree
         group.errorbars =  cov is not None
 
-        for name in self.var_names:
-            par = getattr(group, name)
-            par.stderr = 0
-            par.correl = None
+        for par in named_params.values():
+            par.stderr, par.correl = 0, None
 
         if cov is not None:
             if self.scale_covar:
                 cov = cov * chisqr / nfree
-            for ivar, name in enumerate(self.var_names):
-                par = getattr(group, name)
-                par.stderr = sqrt(cov[ivar, ivar])
-                par.correl = {}
-                for jvar, name2 in enumerate(self.var_names):
-                    if jvar != ivar:
-                        par.correl[name2] = (cov[ivar, jvar]/
-                                             (par.stderr * sqrt(cov[jvar, jvar])))
-            group.covar_vars =  self.var_names
-            group.covar =   cov
+            for iv, name in enumerate(self.var_names):
+                p = named_params[name]
+                p.stderr = sqrt(cov[iv, iv])
+                p.correl = {}
+                for jv, name2 in enumerate(self.var_names):
+                    if jv != iv:
+                        p.correl[name2] = (cov[iv, jv]/
+                                           (p.stderr * sqrt(cov[jv, jv])))
+            group.covar_vars = self.var_names
+            group.covar = cov
+
+        def par_eval(vals, par=None):
+            if par is None: return 0
+            return par._getval()
+
+        if HAS_UNCERTAIN and cov is not None:
+            uvars = uncertainties.correlated_values(_best, cov)
+            ueval = uncertainties.wrap(par_eval)
+            for val, nam in zip(uvars, self.var_names):
+                named_params[nam]._val = val
+            for nam in dir(self.paramgroup):
+                obj = getattr(self.paramgroup, nam)
+                if isParameter(obj) and getattr(obj, '_ast', None) is not None:
+                    try:
+                        obj.stderr = obj._getval().std_dev()
+                    except:
+                        pass
+            for val, nam in zip(uvars, self.var_names):
+                named_params[nam]._val = val.nominal_value
         return ier
 
 def minimize(fcn, group,  args=None, kws=None,
@@ -308,8 +331,8 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
         return
     topline = '===================== FIT RESULTS ====================='
     header = '[[%s]]'
-    varformat = '   %12s = % f +/- %f   (init= % f)'
-    exprformat = '   %12s = % f   = \'%s\''
+    varformat  = '   %12s = %s (init= % f)'
+    exprformat = '   %12s = %s = \'%s\''
     out = [topline, header % 'Statistics']
 
     npts = len(group.residual)
@@ -325,12 +348,13 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
         if len(name) < 14:
             name = (name + ' '*14)[:14]
         if isParameter(var):
+            sval = "% f" % var.value
+            if var.stderr is not None:
+                sval = "% f +/- %f" % (var.value, var.stderr)
             if var.vary:
-                out.append(varformat % (name, var.value,
-                                        var.stderr, var._initval))
-
+                out.append(varformat % (name, sval, var._initval))
             elif var.expr is not None:
-                exprs.append(exprformat % (name, var.value, var.expr))
+                exprs.append(exprformat % (name, sval, var.expr))
     if len(exprs) > 0:
         out.append(header % 'Constraint Expressions')
         out.extend(exprs)
