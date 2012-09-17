@@ -2,7 +2,15 @@
 Fit Examples
 ==============
 
-This section contains a few illustrative fitting examples.
+This section contains a few illustrative fitting examples.  As mentioned
+earlier, the important pieces to have for a fit are:
+  1. a *Parameter Group*: a group that contains all the parameters (both
+     truly variable parameters as well as any constrained parameters) for
+     the fit.
+
+  2. an *Objective Function* that takes the Parameter Group as the first
+     argument, and returns an array to be minimized in the least-squares
+     sense.
 
 
 Example 1: Fitting a Simple Gaussian

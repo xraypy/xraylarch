@@ -63,8 +63,10 @@ requirements are
   1. A set of Parameters, :math:`{\bf{\beta}}`, that are used in the model,
   and are to be adjusted to find the least-square value of the sum of
   squares of the residual.  These must be **parameters** (discussed below)
-  that are held in a single **parameter group**.  That group can contain
-  other data.
+  that are held in a single **parameter group**.  This is a regular Larch
+  group, and so can contain other values as well.  That makes it one possible
+  way to pass in data to the objective function. Note that, as discussed
+  later, the fit will write most of its outputs to this group.
 
   2. An **objective function** to calculate the residual function.  This
   will be a Larch function that takes the **parameter group** described
