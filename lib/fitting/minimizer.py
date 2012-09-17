@@ -235,7 +235,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
 
         ofit = group
         if Group is not None:
-            ofit = group.fit = Group()
+            ofit = group.fit_details = Group()
 
         ofit.method = 'leastsq'
         ofit.fjac = infodict['fjac']
@@ -349,7 +349,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
 
         ofit = group = self.paramgroup
         if Group is not None:
-            ofit = group.fit = Group()
+            ofit = group.fit_details = Group()
 
         ofit.method    = method
         ofit.nfev      = ret.nfev
