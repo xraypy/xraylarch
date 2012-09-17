@@ -4,13 +4,13 @@ Fit Examples
 
 This section contains a few illustrative fitting examples.  As mentioned
 earlier, the important pieces to have for a fit are:
-  1. a *Parameter Group*: a group that contains all the parameters (both
-     truly variable parameters as well as any constrained parameters) for
-     the fit.
 
-  2. an *Objective Function* that takes the Parameter Group as the first
-     argument, and returns an array to be minimized in the least-squares
-     sense.
+1. a *Parameter Group*: a group that contains all the parameters (both
+truly variable parameters as well as any constrained parameters) for the
+fit.
+
+2. an *Objective Function* that takes the Parameter Group as the first
+argument, and returns an array to be minimized in the least-squares sense.
 
 
 Example 1: Fitting a Simple Gaussian
@@ -21,41 +21,9 @@ Here we make a simple mock data set and fit a Gaussian function to it.
 Though a fairly simple example, and one that is guaranteed to work well, it
 touches on all the concepts discussed above, and is a reasonable
 representation of the sort of analysis actually done when modeling many
-kinds of data.  The script to do the fit looks like this::
+kinds of data.  The script to do the fit looks like this:
 
-    # create mock data
-    mdat = group()
-    mdat.x = linspace(-10, 10, 201)
-    mdat.y = 1.0 + 12.0 * gaussian(mdat.x, 1.5, 2.0) + \
-             random.normal(size=len(mdat.x), scale=0.050)
-
-    # create a group of fit parameters
-    params = group(off = guess(0),
-                   amp = guess(5, min=0),
-		   cen = guess(2),
-		   wid = guess(1, min=0))
-
-    init = params.off + params.amp * \
-                gaussian(mdat.x, params.cen, params.wid)
-
-    # define objective function for fit residual
-    def resid(p, data):
-        return data.y - (p.off + p.amp * gaussian(data.x, p.cen, p.wid))
-    enddef
-
-    # perform fit
-    minimize(resid, params, args=(mdat,))
-
-    final = params.off + params.amp * \
-                gaussian(mdat.x, params.cen, params.wid)
-
-    # plot results
-    newplot(mdat.x, mdat.y, label='data', show_legend=True)
-    plot(mdat.x, init, label='initial', color='black', style='dotted')
-    plot(mdat.x, final, label='final', color='red')
-
-    # print report of parameters, uncertainties
-    print fit_report(params)
+.. literalinclude:: ../../examples/fitting/doc_example1.lar
 
 
 This fitting script consists  of several components, which we'll go over in
@@ -92,22 +60,23 @@ some detail.
 The printed output from ``fit_report(params)`` will look like this::
 
     ===================== FIT RESULTS =====================
-    [[Statistics]]
-       npts, nvarys       = 201, 4
-       nfree, nfcn_calls  = 197, 26
-       chi_square         = 0.545081
-       reduced chi_square = 0.002767
-
-    [[Variables]]
-       amp            =  11.973425 +/- 0.067265   (init=  5.000000)
-       cen            =  1.511988 +/- 0.008168   (init=  2.000000)
-       off            =  1.002578 +/- 0.004996   (init=  0.000000)
-       wid            =  1.996553 +/- 0.010843   (init=  1.000000)
-
-    [[Correlations]]    (unreported correlations are <  0.100)
-       amp, wid             =  0.690
-       amp, off             = -0.670
-       off, wid             = -0.462
+    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
+       Message from fit    = Fit succeeded.
+       npts, nvarys, nfree = 201, 4, 197
+       nfev (func calls)   = 26
+       chi_square          = 0.498818
+       reduced chi_square  = 0.002532
+     
+    [[Variables]] 
+       amp            =  12.102080 +/- 0.122022 (init=  5.000000)
+       cen            =  1.476801 +/- 0.016932 (init=  2.000000)
+       off            =  0.996424 +/- 0.006977 (init=  0.000000)
+       wid            =  2.022030 +/- 0.016608 (init=  1.000000)
+     
+    [[Correlations]]     (unreported correlations are <  0.100)
+       amp, off             = -0.861 
+       amp, wid             =  0.808 
+       off, wid             = -0.692 
     =======================================================
 
 

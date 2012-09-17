@@ -94,22 +94,23 @@ Further information on these methods, including full lists of extra
 parameters that can be passed to them, can be found at `scipy.optimize
 <http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.html>`_.
 
-It should be noted that the Levenberg-Marquardt algorithm is generally the
-fastest of the methods listed, and is generally fairly robust.  It is
-sometimes criticized as being sensitive to initial guesses and prone to
-finding local minima.  The other fitting methods use very different
-algorithms, and so can be used to explore these effects. Many of them are
-much slower -- using more than ten times as many evaluations of the
-objective function is not unusual. This does not guarantee a more robust
-answer, but it does allow one to try out and compare the results of the
-different methods.
+It should be noted that the Levenberg-Marquardt algorithm is almost always
+the fastest of the methods listed (often by 10x), and is generally fairly
+robust.  It is sometimes criticized as being sensitive to initial guesses
+and prone to finding local minima.  The other fitting methods use very
+different algorithms, and so can be used to explore these effects. Many of
+them are much slower -- using more than ten times as many evaluations of
+the objective function is not unusual. This does not guarantee a more
+robust answer, but it does allow one to try out and compare the results of
+the different methods.
 
 While the TNC, COBYLA, SLSQP, and LBFGSB methods are supported, their
 principle justification is that the underlying algorithms support
 constraints.  For Larch, this advantage is not particularly important, as
-all fitting methods can have constraints applied through Parameters.  That
-said, these methods are still interesting to explore, and the LBFGSB method
-appearing to be especially fast and robust.
+all fitting methods can have constraints applied through Parameters, and
+the mechanism used by the native methods is not actually even supported
+with Larch.  That said, all these methods are still interesting to explore.
+
 
 Extra keywords for the *leastsq* method include:
 
