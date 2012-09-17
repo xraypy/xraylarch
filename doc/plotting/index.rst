@@ -371,8 +371,7 @@ use of *raw strings* is recommended in this context, so that one uses::
 Note that this does not actually use TeX (so you don't need TeX installed),
 and the rendering is done by the matplotlib library.  For further details
 about using TeX for markup, including a list of symbols, commands to change
-fonts, and examples, can be found at
-http://matplotlib.sourceforge.net/users/mathtext.html
+fonts, and examples, can be found at http://matplotlib.org/users/mathtext.html
 
 When using the Plot Configuration window to enter a TeX-like string, the
 text control box will be given a yellow background color (instead of the

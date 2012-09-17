@@ -92,7 +92,8 @@ procedure decides it has found the best solution that it can.
 
 Further information on these methods, including full lists of extra
 parameters that can be passed to them, can be found at `scipy.optimize
-<http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.html>`_.
+<http://docs.scipy.org/doc/scipy/reference/optimize.html>`_.
+
 
 It should be noted that the Levenberg-Marquardt algorithm is almost always
 the fastest of the methods listed (often by 10x), and is generally fairly

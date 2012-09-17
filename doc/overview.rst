@@ -56,7 +56,7 @@ Overview
 
 .. _scipy: http://scipy.org/
 .. _numpy: http://numpy.scipy.org/
-.. _matplotlib: http://matplotlib.sourceforge.net/
+.. _matplotlib: http://matplotlib.org/
 .. _h5py: http://code.google.com/p/h5py/
 
 Larch is written in Python, an interpreted (non-compiled) language that has
