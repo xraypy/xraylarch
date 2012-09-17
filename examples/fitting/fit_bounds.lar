@@ -46,12 +46,11 @@ newplot(mdat.x, mdat.y)
 plot(mdat.x, init)
 plot(mdat.x, init, color='black', style='--')
 
-minimize(resid, params, args=(mdat,),
-         kws={'verbose':True, 'update_rate': 5})
+minout = minimize(resid, params, args=(mdat,), kws={'verbose':True, 'update_rate': 5})
 
-# final = ga(mdat.x, params.off, params.amp, params.cen, params.wid)
-#
-# update_trace(mdat.x, final, trace=2)
+final = params.off  + params.amp*gaussian(mdat.x, params.cen, params.wid)
+plot(mdat.x, final)
+
 print fit_report(params)
 
 show(params)

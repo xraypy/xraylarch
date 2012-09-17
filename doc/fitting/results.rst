@@ -28,16 +28,54 @@ esoteric outputs from MINPACK's lmdif function are put in
    Listed are the name of the variable added to the fit *paramgroup*, and
    the statistical quantity it holds.
 
-    ======================= =============================================
-     *attribute*               *statistical quantity*
-    ======================= =============================================
-     residual                residual array, with npts elements
-     nfcn_calls              number of calls to objective function
+    ======================= ==================================================
+     *attribute*               *statistical quantity or other output*
+    ======================= ==================================================
+     residual                final array returned from objective function
      nvarys                  number of independent variables
-     nfree                   number of free parameters (npts - nvarys)
+     nfree                   number of free parameters (len(residual) - nvarys)
      chi_square              :math:`\chi^2`, chi-square
      chi_reduced             :math:`\chi_\nu^2`, reduced chi-square
      message                 an output message about fit
      errorbars               flag for whether errorbars were calculated
-     lmdif                   Group containing output data from MINPACK-1
-    ======================= =============================================
+     fit_details             Group containing output data from fitting method
+     fit_details.method      name of fitting method used.
+     fit_details.nfev        number of calls to (evaluations of) objective function
+    ======================= ==================================================
+
+Additional outputs written to the ``fit_details`` group vary for each
+fitting method.
+
+.. method:: fit_report(paramgroup, show_correl=True, min_correl=0.1)
+
+   returns a fit report for a fit given a parameter group.
+
+   :param paramgroup:  parameter group, after being used in a fit.
+   :param show_correl: flag (``True``/``False``) to show parameter correlations.
+   :param min_correl:  smallest absolute value of correlation to show.
+
+   The output string can be printed.
+
+A typical result from :meth:`fit_report`` would look like this::
+
+    larch> print fit_report(params)
+    ===================== FIT RESULTS =====================
+    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
+       Message from fit    = Fit succeeded.
+       npts, nvarys, nfree = 501, 4, 497
+       nfev (func calls)   = 26
+       chi_square          = 30.650777
+       reduced chi_square  = 0.061672
+
+    [[Variables]]
+       amp            =  12.053707 +/- 0.383248 (init=  10.000000)
+       cen            =  10.943759 +/- 0.052711 (init=  10.800000)
+       off            =  2.209804 +/- 0.022001 (init= -3.100000)
+       wid            =  2.013217 +/- 0.052131 (init=  1.000000)
+
+    [[Correlations]]     (unreported correlations are <  0.100)
+       amp, off             = -0.864
+       amp, wid             =  0.812
+       off, wid             = -0.699
+    =======================================================
+

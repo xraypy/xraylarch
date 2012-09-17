@@ -143,7 +143,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             return
 
         self.var_names = []
-        self.defvars = []
         self.vars = []
         self.nvarys = 0
         for name in dir(self.paramgroup):
@@ -191,10 +190,11 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             lskws['Dfun'] = self.__jacobian
 
         lsout = scipy_leastsq(self.__residual, self.vars, **lskws)
+        del self.vars
+
         _best, cov, infodict, errmsg, ier = lsout
         resid = infodict['fvec']
         group = self.paramgroup
-
         # need to map _best values to params, then calculate the
         # grad for the variable parameters
         grad = ones_like(_best)   # holds scaled gradient for variables
@@ -340,7 +340,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             return r
 
         ret = scipy_minimize(penalty, self.vars, **fmin_kws)
-
+        del self.vars
         resid  = self.__residual(ret.x)
         ndata  = len(resid)
         chisqr = (resid**2).sum()

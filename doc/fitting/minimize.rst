@@ -111,21 +111,20 @@ all fitting methods can have constraints applied through Parameters.  That
 said, these methods are still interesting to explore, and the LBFGSB method
 appearing to be especially fast and robust.
 
-
 Extra keywords for the *leastsq* method include:
 
-    +------------------+----------------+------------------------------------------------------------+
-    | :meth:`leastsq`  |  Default Value | Description                                                |
-    | arg              |                |                                                            |
-    +==================+================+============================================================+
-    |   xtol           |  1.e-7         | Relative error in the approximate solution                 |
-    +------------------+----------------+------------------------------------------------------------+
-    |   ftol           |  1.e-7         | Relative error in the desired sum of squares               |
-    +------------------+----------------+------------------------------------------------------------+
-    |   maxfev         | 2000*(nvar+1)  | maximum number of function calls (nvar= # of variables)    |
-    +------------------+----------------+------------------------------------------------------------+
-    |   Dfun           | ``None``       | function to call for Jacobian calculation                  |
-    +------------------+----------------+------------------------------------------------------------+
+    +----------------------+----------------+------------------------------------------------------------+
+    | ``extra_kw`` arg for |  Default Value | Description                                                |
+    | ``method='leastsq'`` |                |                                                            |
+    +======================+================+============================================================+
+    |   xtol               |  1.e-7         | Relative error in the approximate solution                 |
+    +----------------------+----------------+------------------------------------------------------------+
+    |   ftol               |  1.e-7         | Relative error in the desired sum of squares               |
+    +----------------------+----------------+------------------------------------------------------------+
+    |   maxfev             | 2000*(nvar+1)  | maximum number of function calls (nvar= # of variables)    |
+    +----------------------+----------------+------------------------------------------------------------+
+    |   Dfun               | ``None``       | function to call for Jacobian calculation                  |
+    +----------------------+----------------+------------------------------------------------------------+
 
 By default, numerical derivatives are used, and the following arguments are
 used.
