@@ -1,0 +1,52 @@
+
+def resid(pars, x, sigma=None, data=None):
+    model = pars.amp*gaussian(x,  pars.cen, pars.wid) + pars.off + x * pars.slope
+    pars.iter += 1
+#     if pars.iter % 25 == 0:
+#         print pars.iter, pars.amp, pars.cen, pars.wid, pars.off, pars.slope
+#     endif
+    if data is None:      return model
+    if sigma is  None:    return (model - data)
+    return (model - data)/sigma
+enddef
+
+n = 601
+xmin = 0.
+xmax = 20.0
+x = linspace(xmin, xmax, n)
+
+data = 27*gaussian(x, 9.3, 1.5) + random.normal(scale=0.35,  size=n) + x*.3 - 0.1
+
+pfit = group(amp = guess(21),
+             cen = guess(11),
+             wid = guess(0.5),
+             slope = guess(0),
+             off = guess(0),
+             iter = 0)
+pfit2 = group(amp = guess(21),
+              cen = guess(11),
+              wid = guess(0.5),
+              slope = guess(0),
+              off = guess(0),
+              iter=0)
+
+myfit = minimize(resid, pfit2, args=(x,), kws={'data':data})
+print fit_report(pfit2)
+newplot(x, data, linewidth=0, marker='+', color='blue', label='data', show_legend=True)
+
+lfit = pfit2.amp * gaussian(x, pfit2.cen, pfit2.wid) + x*pfit2.slope + pfit2.off
+plot(x, lfit, linewidth=2, color='red', label=pfit2.fit.method)
+
+meths = ['nelder', 'powell', 'bfgs', 'lbfgs', 'tnc', 'cobyla', 'slsqp']
+
+myfit = minimize(resid, pfit, method=meths[6],  args=(x,), kws={'data':data})
+
+sfit = pfit.amp * gaussian(x, pfit.cen, pfit.wid) + x*pfit.slope + pfit.off
+plot(x, sfit, linewidth=2, color='black', style='dashed', label=pfit.fit.method)
+
+plot(x, 10*(sfit-lfit), color='blue', label='diff x10')
+print fit_report(pfit)
+
+# myfit = minimize(resid, pfit, method='leastsq',
+#                  args=(x,), kws={'data':data})
+# print fit_report(pfit)

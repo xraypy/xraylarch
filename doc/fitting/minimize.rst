@@ -32,15 +32,18 @@ A simple objective function that models data as a line might look like this::
 Here ``params`` is a Group containing two Parameters as defined by
 :func:`_math.param`, discussed earlier.
 
-
 To actually perform the fit, the :func:`minimize` function must be called.  This
 takes the objective function as its first argument, and the group containing all
-the Parameters as its second argument.  As the fit proceeds, the values  the Parameters
-will be updated and passed into the objective function.  Optional arguments for the
-objective function can be specified as well.  In addition, there are several optional
-arguments which are passed on to the underlying fitting function (:func:`scipy.optimize.leastsq`).
+the Parameters as its second argument, keyword arguments for the optional
+arguments for the objective function, and several keyword arguments to
+alter the fitting process itself.
 
-.. function:: minimize(fcn, paramgroup, args=None, kws=None, ...)
+As the fit proceeds, the values the Parameter values will be updated, and
+the objective function will be called to recalculate the residual array.
+Thus the objective function may be called many times before the fitting
+procedure decides it has found the best solution that it can.
+
+.. function:: minimize(fcn, paramgroup, args=None, kws=None, method='leastsq', **extra_kws)
 
     find the best-fit values for the Parameters in ``paramgroup`` such that the
     output array from the objective function :func:`fcn` has minimal sum-of-squares.
@@ -50,6 +53,79 @@ arguments which are passed on to the underlying fitting function (:func:`scipy.o
          objective function. This will be passed as the first argument to the
          objective function.  The Group can contain other components in
          addition to the set of Parameters for the model.
+    :param args: a tuple of positional arguments to pass to the objective function.
+    :param kws:  a dictionary of keyword/value arguments to pass to the objective function.
+    :param method:  name (case insensitive) of minimization method to use (default='leastsq')
+    :param extra_kws:  additional keywords to pass to fitting method.
 
     returns fit object that can be used to modify or re-run fit.  Most results
-    of interest are written to the *paramgroup*.
+    of interest are written back to ``paramgroup`` itself.
+
+    The ``method`` argument gives the name of the fitting method to be
+    used.  Several methods are available, as described below in
+    :ref:`Table of Fitting Methods <minimize-methods_table>`.
+
+
+.. _minimize-methods_table:
+
+   Table of Fitting Methods.
+
+   Listed are the names and description of fitting methods available to the
+   :func:`minimize` function.  The *leastsq* method is the default, and the
+   only method for which uncertainties and correlations are automatically
+   calculated.
+
+    ============= ==================================================================
+     method name    Description
+    ============= ==================================================================
+     Leastsq        Levenberg-Marquardt.
+     Nelder-Mead    Nelder-Mead downhill simplex.
+     Powell         Powell's method.
+     BFGS           quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno.
+     CG             Conjugate Gradient.
+
+     LBFGSB         Limited-Memory BFGS Method with Constraints.
+     TNC            Truncated Newton method.
+     COBYLA         Constrained Optimization BY Linear Approximation.
+     SLSQP          Sequential Least SQuares Programming.
+    ============= ==================================================================
+
+Further information on these methods, including full lists of extra
+parameters that can be passed to them, can be found at `scipy.optimize
+<http://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.html>`_.
+
+It should be noted that the Levenberg-Marquardt algorithm is generally the
+fastest of the methods listed, and is generally fairly robust.  It is
+sometimes criticized as being sensitive to initial guesses and prone to
+finding local minima.  The other fitting methods use very different
+algorithms, and so can be used to explore these effects. Many of them are
+much slower -- using more than ten times as many evaluations of the
+objective function is not unusual. This does not guarantee a more robust
+answer, but it does allow one to try out and compare the results of the
+different methods.
+
+While the TNC, COBYLA, SLSQP, and LBFGSB methods are supported, their
+principle justification is that the underlying algorithms support
+constraints.  For Larch, this advantage is not particularly important, as
+all fitting methods can have constraints applied through Parameters.  That
+said, these methods are still interesting to explore, and the LBFGSB method
+appearing to be especially fast and robust.
+
+
+Extra keywords for the *leastsq* method include:
+
+    +------------------+----------------+------------------------------------------------------------+
+    | :meth:`leastsq`  |  Default Value | Description                                                |
+    | arg              |                |                                                            |
+    +==================+================+============================================================+
+    |   xtol           |  1.e-7         | Relative error in the approximate solution                 |
+    +------------------+----------------+------------------------------------------------------------+
+    |   ftol           |  1.e-7         | Relative error in the desired sum of squares               |
+    +------------------+----------------+------------------------------------------------------------+
+    |   maxfev         | 2000*(nvar+1)  | maximum number of function calls (nvar= # of variables)    |
+    +------------------+----------------+------------------------------------------------------------+
+    |   Dfun           | ``None``       | function to call for Jacobian calculation                  |
+    +------------------+----------------+------------------------------------------------------------+
+
+By default, numerical derivatives are used, and the following arguments are
+used.
