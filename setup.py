@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from distutils.core import setup, setup_keywords
+from setuptools import setup
 import os, sys
 import glob
 
@@ -13,6 +13,7 @@ recommended_modules = {'basic processing analysis': ('numpy', 'scipy'),
                        'plotting': ('matplotlib', 'wxmplot'),
                        'access to x-ray databases': ('sqlalchemy', ),
                        'read hdf5 files': ('h5py', ),
+                       'propogate uncertainties': ('uncertainties', ),
                        'using the EPICS control system': ('epics',)
                     }
 
