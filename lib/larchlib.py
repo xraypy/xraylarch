@@ -11,6 +11,12 @@ from .utils import Closure
 from .symboltable import Group
 from .site_config import sys_larchdir
 
+class Empty:
+    def __nonzero__(self): return False
+
+# holder for 'returned None' from Larch procedure
+ReturnedNone = Empty()
+
 class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node, msg='', fname='<stdin>',
@@ -259,6 +265,7 @@ class Procedure(object):
                 break
             if self._larch.retval is not None:
                 retval = self._larch.retval
+                if retval is ReturnedNone: retval = None
                 break
         stable.restore_frame()
         self._larch.debug = False

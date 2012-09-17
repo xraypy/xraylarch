@@ -16,7 +16,7 @@ import numpy
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .larchlib import LarchExceptionHolder, Procedure
+from .larchlib import LarchExceptionHolder, Procedure, ReturnedNone
 from .fitting  import isParameter
 from .utils import Closure
 
@@ -266,8 +266,10 @@ class Interpreter:
         return self.run(node.value)  # ('value',)
 
     def on_return(self, node): # ('value',)
-        "return statement"
-        self.retval = self.run(node.value)
+        "return statement: look for None, return special sentinal"
+        ret = self.run(node.value)
+        if ret is None: ret = ReturnedNone
+        self.retval = ret
         return
 
     def on_repr(self, node):
