@@ -35,8 +35,8 @@ some detail.
 
   2. **create a group of fit parameters**:  Here we create a group with
   several components, all defined by the :func:`_math.guess` function to
-  create variable Parameters.  Two of the variables here have a lower bound
-  set.   We also calculate the initial value for the model using the
+  create variable Parameters.  Two of the parameters have a lower bound
+  set.   We also calculate the initial value for the model using the 
   initial guesses for the parameter values.
 
   3. **define objective function for fit residual**: As above, this
@@ -87,18 +87,27 @@ And the plot of data and fit will look like this:
    :width: 80 %
 
 
-Example 2: Fitting XANES Pre-edge Peaks
+Example 3: Fitting XANES Pre-edge Peaks
 =========================================
 
-This example extends the previous one by a) using data read in from a text
-file, b) using many more lineshapes, c) setting bounds on parameters, and
-d) using a simple algebraic constraint.   The basic format of the above
-exmple is followed, but the script is a bit longer.
+This example extends the previous one considerably.   Although the same
+basic approach (write an objective function, define parameters, perform
+fit), here we add several steps that you might use when modeling real data:
+   a) using data read in from a text file,
+   b) using more lineshapes, here 3 Gaussians and an error-function, 
+   c) using a simple algebraic constraint.  
 
 
+Consequently, the script is a bit longer:
 
 
-Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra
+.. literalinclude:: ../../examples/fitting/doc_example2.lar
+
+Here, we're fitting several Gaussian functions.  If the centroids of these
+are left completely free, they tend to wander around, so fairly tight
+controls are placed here on the centroids.  
+
+Example 4: Fitting XANES Spectra as a Linear Combination of Other Spectra
 ==========================================================================
 
 This example is simpler than the previous one, though still worth an
