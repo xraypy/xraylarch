@@ -15,7 +15,7 @@ Numpy, matplotlib, and wxPython are all required for Larch, and scipy is
 strongly encouraged (and some functionality depends on it).  These are
 simply installed as standard packages on almost all platforms.
 
-.. _larch github repository:   http://github.com/xraypy/xralarch
+.. _larch github repository:   http://github.com/xraypy/xraylarch
 
 All development is being done through the `larch github repository`_.  To
 get a read-only copy of the atest version, use::

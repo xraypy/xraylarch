@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Parameters &mdash; larch 0.9.13 documentation</title>
+    <title>Parameters &mdash; larch 0.9.14 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.13',
+        VERSION:     '0.9.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,9 +25,9 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
     <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
-    <link rel="next" title="Minimize and Objective Functions" href="minimize.html" />
+    <link rel="next" title="minimize() and Objective Functions" href="minimize.html" />
     <link rel="prev" title="Fitting Overview" href="overview.html" /> 
   </head>
   <body>
@@ -53,7 +53,7 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="minimize.html" title="Minimize and Objective Functions"
+          <a href="minimize.html" title="minimize() and Objective Functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="overview.html" title="Fitting Overview"
@@ -85,7 +85,7 @@
                         title="previous chapter">Fitting Overview</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="minimize.html"
-                        title="next chapter">Minimize and Objective Functions</a></p>
+                        title="next chapter"><tt class="docutils literal docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/parameters.txt"
@@ -244,13 +244,14 @@ during a fit include</p>
 passed in via the argument list.</p>
 <p>3. All the normal functions and variable names available in Larch,
 including all the mathematical functions.</p>
-<p>As we said, <cite>_sys.paramGroup</cite> is set during a fit.  It is left set at the
-end of the fit &#8211; it is not cleared or reset.  However, note that
-<cite>_sys.paramGroup</cite> may be unset or set to the wrong group (say, from a
-previous fit) when setting up a new fit.  Of course, you can explicitly
-assign a group to <cite>_sys.paramGroup</cite> when setting up a fit, so that you
-might be able to sensibly call the objective function yourself, prior to
-doing a minimization.</p>
+<p>As we said, <cite>_sys.paramGroup</cite> is set during a fit, by <a class="reference internal" href="minimize.html#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a>.  It
+is left set at the end of the fit &#8211; it is not cleared or reset.  However,
+note that <cite>_sys.paramGroup</cite> may be unset or set to the wrong group (say,
+from a previous fit) when setting up a new fit (before you call
+<a class="reference internal" href="minimize.html#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a>).  Of course, you can explicitly assign a group to
+<cite>_sys.paramGroup</cite> when setting up a fit, so that you might be able to
+sensibly call the objective function yourself, prior to doing a
+minimization.</p>
 </div>
 </div>
 
@@ -270,7 +271,7 @@ doing a minimization.</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="minimize.html" title="Minimize and Objective Functions"
+          <a href="minimize.html" title="minimize() and Objective Functions"
              >next</a> |</li>
         <li class="right" >
           <a href="overview.html" title="Fitting Overview"

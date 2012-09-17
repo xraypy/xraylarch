@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fitting Overview &mdash; larch 0.9.13 documentation</title>
+    <title>Fitting Overview &mdash; larch 0.9.14 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.13',
+        VERSION:     '0.9.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
     <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
     <link rel="next" title="Parameters" href="parameters.html" />
     <link rel="prev" title="Fitting and Modeling Data with Larch" href="index.html" /> 
@@ -151,8 +151,10 @@ requirements are</p>
 <div><p>1. A set of Parameters, <img class="math" src="../_images/math/a635341ad6185dab9baf0d221abf46ea94c6fbd6.png" alt="{\bf{\beta}}"/>, that are used in the model,
 and are to be adjusted to find the least-square value of the sum of
 squares of the residual.  These must be <strong>parameters</strong> (discussed below)
-that are held in a single <strong>parameter group</strong>.  That group can contain
-other data.</p>
+that are held in a single <strong>parameter group</strong>.  This is a regular Larch
+group, and so can contain other values as well.  That makes it one possible
+way to pass in data to the objective function. Note that, as discussed
+later, the fit will write most of its outputs to this group.</p>
 <p>2. An <strong>objective function</strong> to calculate the residual function.  This
 will be a Larch function that takes the <strong>parameter group</strong> described
 above as its first argument, and an unlimited set of optional arguments.

@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fit Results and Outputs &mdash; larch 0.9.13 documentation</title>
+    <title>Fit Results and Outputs &mdash; larch 0.9.14 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.13',
+        VERSION:     '0.9.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,10 +25,10 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
     <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
     <link rel="next" title="Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
-    <link rel="prev" title="Minimize and Objective Functions" href="minimize.html" /> 
+    <link rel="prev" title="minimize() and Objective Functions" href="minimize.html" /> 
   </head>
   <body>
 <div style=" color: #76989B; text-align: left; padding: 2px 2px 2px 2px">
@@ -56,7 +56,7 @@
           <a href="confidence.html" title="Advanced Confidence Intervals and Chi-square maps"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="minimize.html" title="Minimize and Objective Functions"
+          <a href="minimize.html" title="minimize() and Objective Functions"
              accesskey="P">previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
@@ -73,7 +73,7 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="minimize.html"
-                        title="previous chapter">Minimize and Objective Functions</a></p>
+                        title="previous chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="confidence.html"
                         title="next chapter">Advanced Confidence Intervals and Chi-square maps</a></p>
@@ -129,46 +129,93 @@ the statistical quantity it holds.</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="34%" />
-<col width="66%" />
+<col width="29%" />
+<col width="71%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head"><em>attribute</em></th>
-<th class="head"><em>statistical quantity</em></th>
+<th class="head"><em>statistical quantity or other output</em></th>
 </tr>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>residual</td>
-<td>residual array, with npts elements</td>
+<td>final array returned from objective function</td>
 </tr>
-<tr class="row-odd"><td>nfcn_calls</td>
-<td>number of calls to objective function</td>
-</tr>
-<tr class="row-even"><td>nvarys</td>
+<tr class="row-odd"><td>nvarys</td>
 <td>number of independent variables</td>
 </tr>
-<tr class="row-odd"><td>nfree</td>
-<td>number of free parameters (npts - nvarys)</td>
+<tr class="row-even"><td>nfree</td>
+<td>number of free parameters (len(residual) - nvarys)</td>
 </tr>
-<tr class="row-even"><td>chi_square</td>
+<tr class="row-odd"><td>chi_square</td>
 <td><img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/>, chi-square</td>
 </tr>
-<tr class="row-odd"><td>chi_reduced</td>
+<tr class="row-even"><td>chi_reduced</td>
 <td><img class="math" src="../_images/math/43a7dd44b2519d01fa6ed6d8ab9b36af52218f6f.png" alt="\chi_\nu^2"/>, reduced chi-square</td>
 </tr>
-<tr class="row-even"><td>message</td>
+<tr class="row-odd"><td>message</td>
 <td>an output message about fit</td>
 </tr>
-<tr class="row-odd"><td>errorbars</td>
+<tr class="row-even"><td>errorbars</td>
 <td>flag for whether errorbars were calculated</td>
 </tr>
-<tr class="row-even"><td>lmdif</td>
-<td>Group containing output data from MINPACK-1</td>
+<tr class="row-odd"><td>fit_details</td>
+<td>Group containing output data from fitting method</td>
+</tr>
+<tr class="row-even"><td>fit_details.method</td>
+<td>name of fitting method used.</td>
+</tr>
+<tr class="row-odd"><td>fit_details.nfev</td>
+<td>number of calls to (evaluations of) objective function</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 </div></blockquote>
+<p>Additional outputs written to the <tt class="docutils literal"><span class="pre">fit_details</span></tt> group vary for each
+fitting method.</p>
+<dl class="method">
+<dt id="fit_report">
+<tt class="descname">fit_report</tt><big>(</big><em>paramgroup</em>, <em>show_correl=True</em>, <em>min_correl=0.1</em><big>)</big><a class="headerlink" href="#fit_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a fit report for a fit given a parameter group.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>paramgroup</strong> &#8211; parameter group, after being used in a fit.</li>
+<li><strong>show_correl</strong> &#8211; flag (<tt class="docutils literal"><span class="pre">True</span></tt>/<tt class="docutils literal"><span class="pre">False</span></tt>) to show parameter correlations.</li>
+<li><strong>min_correl</strong> &#8211; smallest absolute value of correlation to show.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The output string can be printed.</p>
+</dd></dl>
+
+<p>A typical result from <tt class="xref py py-meth docutils literal"><span class="pre">fit_report`()</span></tt> would look like this:</p>
+<div class="highlight-python"><pre>larch&gt; print fit_report(params)
+===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 501, 4, 497
+   nfev (func calls)   = 26
+   chi_square          = 30.650777
+   reduced chi_square  = 0.061672
+
+[[Variables]]
+   amp            =  12.053707 +/- 0.383248 (init=  10.000000)
+   cen            =  10.943759 +/- 0.052711 (init=  10.800000)
+   off            =  2.209804 +/- 0.022001 (init= -3.100000)
+   wid            =  2.013217 +/- 0.052131 (init=  1.000000)
+
+[[Correlations]]     (unreported correlations are &lt;  0.100)
+   amp, off             = -0.864
+   amp, wid             =  0.812
+   off, wid             = -0.699
+=======================================================</pre>
+</div>
 </div>
 
 
@@ -190,7 +237,7 @@ the statistical quantity it holds.</p>
           <a href="confidence.html" title="Advanced Confidence Intervals and Chi-square maps"
              >next</a> |</li>
         <li class="right" >
-          <a href="minimize.html" title="Minimize and Objective Functions"
+          <a href="minimize.html" title="minimize() and Objective Functions"
              >previous</a> |</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>

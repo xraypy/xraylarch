@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Minimize and Objective Functions &mdash; larch 0.9.13 documentation</title>
+    <title>minimize() and Objective Functions &mdash; larch 0.9.14 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.13',
+        VERSION:     '0.9.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
     <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
     <link rel="next" title="Fit Results and Outputs" href="results.html" />
     <link rel="prev" title="Parameters" href="parameters.html" /> 
@@ -104,18 +104,24 @@
           <div class="body">
             
   <div class="section" id="minimize-and-objective-functions">
-<h1>Minimize and Objective Functions<a class="headerlink" href="#minimize-and-objective-functions" title="Permalink to this headline">¶</a></h1>
-<p>As mentioned above, the objective function is meant to calculate the fit
-residual vector (data - model) given a group of parameters, and optional
-inputs.  You&#8217;ll note that we didn&#8217;t explicitly mention the data here.  This
-is because, in general, the data to be modeled may be quite complex.  It
-might, for example, be contained in two or more arrays &#8211; perhaps what you
-want to model is the difference of two image arrays, or the fourier
-filtered average of ten spectra.  All these are best handled through
-optional arguments.  The objective function really only needs to have as
-its first argument a group containing all the parameters used in the model.</p>
-<p>A simple model for a linear fit might look like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">offset</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">slope</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+<h1><a class="reference internal" href="#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> and Objective Functions<a class="headerlink" href="#minimize-and-objective-functions" title="Permalink to this headline">¶</a></h1>
+<p>As mentioned above, the objective function returns an array calculated from
+given a group of parameters.  This array will be minimized in the
+least-squares sense in the fitting process.  For most fits, the objective
+function should return the residual array (data - model), given a group of
+parameters and optional inputs.  You&#8217;ll note that we didn&#8217;t explicitly
+mention any <em>data</em> in describing the objective function.  This is because,
+formally, the minimization process may be looking for a solution to a
+purely mathematical problem, not just fitting to data.  Even when the
+objective function does return the difference of data and model, the data
+to be modeled may be quite complex.  It might, for example, be contained in
+two or more arrays &#8211; perhaps what you want to model is the difference of
+two image arrays, or the fourier filtered average of ten spectra.  Because
+of such complexities, the reliance of optional arguments appears to be the
+best approach.</p>
+<p>A simple objective function that models data as a line might look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">offset</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+               <span class="n">slope</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">residual</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">xdata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ydata</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">offset</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">slope</span> <span class="o">*</span> <span class="n">xdata</span>
@@ -124,17 +130,20 @@ its first argument a group containing all the parameters used in the model.</p>
 <span class="n">enddef</span>
 </pre></div>
 </div>
-<p>Here <tt class="docutils literal"><span class="pre">params</span></tt> is a Larch group containing two Parameters as defined by
-<tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt>, discussed above.</p>
+<p>Here <tt class="docutils literal"><span class="pre">params</span></tt> is a Group containing two Parameters as defined by
+<tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt>, discussed earlier.</p>
 <p>To actually perform the fit, the <a class="reference internal" href="#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function must be called.  This
 takes the objective function as its first argument, and the group containing all
-the Parameters as its second argument.  As the fit proceeds, the values  the Parameters
-will be updated and passed into the objective function.  Optional arguments for the
-objective function can be specified as well.  In addition, there are several optional
-arguments which are passed on to the underlying fitting function (<tt class="xref py py-func docutils literal"><span class="pre">scipy.optimize.leastsq()</span></tt>).</p>
+the Parameters as its second argument, keyword arguments for the optional
+arguments for the objective function, and several keyword arguments to
+alter the fitting process itself.</p>
+<p>As the fit proceeds, the values the Parameter values will be updated, and
+the objective function will be called to recalculate the residual array.
+Thus the objective function may be called many times before the fitting
+procedure decides it has found the best solution that it can.</p>
 <dl class="function">
 <dt id="minimize">
-<tt class="descname">minimize</tt><big>(</big><em>fcn</em>, <em>paramgroup</em>, <em>args=None</em>, <em>kws=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#minimize" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">minimize</tt><big>(</big><em>fcn</em>, <em>paramgroup</em>, <em>args=None</em>, <em>kws=None</em>, <em>method='leastsq'</em>, <em>**extra_kws</em><big>)</big><a class="headerlink" href="#minimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>find the best-fit values for the Parameters in <tt class="docutils literal"><span class="pre">paramgroup</span></tt> such that the
 output array from the objective function <tt class="xref py py-func docutils literal"><span class="pre">fcn()</span></tt> has minimal sum-of-squares.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -147,15 +156,125 @@ output array from the objective function <tt class="xref py py-func docutils lit
 objective function. This will be passed as the first argument to the
 objective function.  The Group can contain other components in
 addition to the set of Parameters for the model.</li>
+<li><strong>args</strong> &#8211; a tuple of positional arguments to pass to the objective function.</li>
+<li><strong>kws</strong> &#8211; a dictionary of keyword/value arguments to pass to the objective function.</li>
+<li><strong>method</strong> &#8211; name (case insensitive) of minimization method to use (default=&#8217;leastsq&#8217;)</li>
+<li><strong>extra_kws</strong> &#8211; additional keywords to pass to fitting method.</li>
 </ul>
 </td>
 </tr>
 </tbody>
 </table>
 <p>returns fit object that can be used to modify or re-run fit.  Most results
-of interest are written to the <em>paramgroup</em>.</p>
+of interest are written back to <tt class="docutils literal"><span class="pre">paramgroup</span></tt> itself.</p>
+<p>The <tt class="docutils literal"><span class="pre">method</span></tt> argument gives the name of the fitting method to be
+used.  Several methods are available, as described below in
+<a class="reference internal" href="#minimize-methods-table"><em>Table of Fitting Methods</em></a>.</p>
 </dd></dl>
 
+<blockquote id="minimize-methods-table">
+<div><p>Table of Fitting Methods.</p>
+<p>Listed are the names and description of fitting methods available to the
+<a class="reference internal" href="#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function.  The <em>leastsq</em> method is the default, and the
+only method for which uncertainties and correlations are automatically
+calculated.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="84%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">method name</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Leastsq</td>
+<td>Levenberg-Marquardt.</td>
+</tr>
+<tr class="row-odd"><td>Nelder-Mead</td>
+<td>Nelder-Mead downhill simplex.</td>
+</tr>
+<tr class="row-even"><td>Powell</td>
+<td>Powell&#8217;s method.</td>
+</tr>
+<tr class="row-odd"><td>BFGS</td>
+<td>quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno.</td>
+</tr>
+<tr class="row-even"><td>CG</td>
+<td>Conjugate Gradient.</td>
+</tr>
+<tr class="row-odd"><td>LBFGSB</td>
+<td>Limited-Memory BFGS Method with Constraints.</td>
+</tr>
+<tr class="row-even"><td>TNC</td>
+<td>Truncated Newton method.</td>
+</tr>
+<tr class="row-odd"><td>COBYLA</td>
+<td>Constrained Optimization BY Linear Approximation.</td>
+</tr>
+<tr class="row-even"><td>SLSQP</td>
+<td>Sequential Least SQuares Programming.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<p>Further information on these methods, including full lists of extra
+parameters that can be passed to them, can be found at <a class="reference external" href="http://docs.scipy.org/doc/scipy/reference/optimize.html">scipy.optimize</a>.</p>
+<p>It should be noted that the Levenberg-Marquardt algorithm is almost always
+the fastest of the methods listed (often by 10x), and is generally fairly
+robust.  It is sometimes criticized as being sensitive to initial guesses
+and prone to finding local minima.  The other fitting methods use very
+different algorithms, and so can be used to explore these effects. Many of
+them are much slower &#8211; using more than ten times as many evaluations of
+the objective function is not unusual. This does not guarantee a more
+robust answer, but it does allow one to try out and compare the results of
+the different methods.</p>
+<p>While the TNC, COBYLA, SLSQP, and LBFGSB methods are supported, their
+principle justification is that the underlying algorithms support
+constraints.  For Larch, this advantage is not particularly important, as
+all fitting methods can have constraints applied through Parameters, and
+the mechanism used by the native methods is not actually even supported
+with Larch.  That said, all these methods are still interesting to explore.</p>
+<p>Extra keywords for the <em>leastsq</em> method include:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="16%" />
+<col width="61%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><tt class="docutils literal"><span class="pre">extra_kw</span></tt> arg for
+<tt class="docutils literal"><span class="pre">method='leastsq'</span></tt></th>
+<th class="head">Default Value</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>xtol</td>
+<td>1.e-7</td>
+<td>Relative error in the approximate solution</td>
+</tr>
+<tr class="row-odd"><td>ftol</td>
+<td>1.e-7</td>
+<td>Relative error in the desired sum of squares</td>
+</tr>
+<tr class="row-even"><td>maxfev</td>
+<td>2000*(nvar+1)</td>
+<td>maximum number of function calls (nvar= # of variables)</td>
+</tr>
+<tr class="row-odd"><td>Dfun</td>
+<td><tt class="docutils literal"><span class="pre">None</span></tt></td>
+<td>function to call for Jacobian calculation</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>By default, numerical derivatives are used, and the following arguments are
+used.</p>
 </div>
 
 

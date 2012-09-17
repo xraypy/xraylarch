@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fit Examples &mdash; larch 0.9.13 documentation</title>
+    <title>Fit Examples &mdash; larch 0.9.14 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.13',
+        VERSION:     '0.9.14',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.13 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
     <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
     <link rel="next" title="XAFS Analysis with Larch" href="../xafs/index.html" />
     <link rel="prev" title="Some Builtin Line-shape Functions" href="lineshapes.html" /> 
@@ -115,7 +115,13 @@
             
   <div class="section" id="fit-examples">
 <h1>Fit Examples<a class="headerlink" href="#fit-examples" title="Permalink to this headline">¶</a></h1>
-<p>This section contains a few illustrative fitting examples.</p>
+<p>This section contains a few illustrative fitting examples.  As mentioned
+earlier, the important pieces to have for a fit are:</p>
+<p>1. a <em>Parameter Group</em>: a group that contains all the parameters (both
+truly variable parameters as well as any constrained parameters) for the
+fit.</p>
+<p>2. an <em>Objective Function</em> that takes the Parameter Group as the first
+argument, and returns an array to be minimized in the least-squares sense.</p>
 <div class="section" id="example-1-fitting-a-simple-gaussian">
 <h2>Example 1: Fitting a Simple Gaussian<a class="headerlink" href="#example-1-fitting-a-simple-gaussian" title="Permalink to this headline">¶</a></h2>
 <p>Here we make a simple mock data set and fit a Gaussian function to it.
@@ -128,15 +134,14 @@ kinds of data.  The script to do the fit looks like this:</p>
 <span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
          <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.050</span><span class="p">)</span>
-
-<span class="c"># create a group of fit parameters</span>
+ <span class="c"># create a group of fit parameters</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
                <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
                <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
                <span class="n">wid</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
 
 <span class="n">init</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
-            <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
+       <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
 
 <span class="c"># define objective function for fit residual</span>
 <span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
@@ -147,7 +152,7 @@ kinds of data.  The script to do the fit looks like this:</p>
 <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
 
 <span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
-            <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
+        <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
 
 <span class="c"># plot results</span>
 <span class="n">newplot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">mdat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -188,22 +193,23 @@ correlations between variables.</p>
 </div></blockquote>
 <p>The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt> will look like this:</p>
 <div class="highlight-python"><pre>===================== FIT RESULTS =====================
-[[Statistics]]
-   npts, nvarys       = 201, 4
-   nfree, nfcn_calls  = 197, 26
-   chi_square         = 0.545081
-   reduced chi_square = 0.002767
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 201, 4, 197
+   nfev (func calls)   = 26
+   chi_square          = 0.498818
+   reduced chi_square  = 0.002532
 
 [[Variables]]
-   amp            =  11.973425 +/- 0.067265   (init=  5.000000)
-   cen            =  1.511988 +/- 0.008168   (init=  2.000000)
-   off            =  1.002578 +/- 0.004996   (init=  0.000000)
-   wid            =  1.996553 +/- 0.010843   (init=  1.000000)
+   amp            =  12.102080 +/- 0.122022 (init=  5.000000)
+   cen            =  1.476801 +/- 0.016932 (init=  2.000000)
+   off            =  0.996424 +/- 0.006977 (init=  0.000000)
+   wid            =  2.022030 +/- 0.016608 (init=  1.000000)
 
-[[Correlations]]    (unreported correlations are &lt;  0.100)
-   amp, wid             =  0.690
-   amp, off             = -0.670
-   off, wid             = -0.462
+[[Correlations]]     (unreported correlations are &lt;  0.100)
+   amp, off             = -0.861
+   amp, wid             =  0.808
+   off, wid             = -0.692
 =======================================================</pre>
 </div>
 <p>And the plot of data and fit will look like this:</p>

@@ -133,10 +133,13 @@ passed in via the argument list.
 3. All the normal functions and variable names available in Larch,
 including all the mathematical functions.
 
-As we said, `_sys.paramGroup` is set during a fit.  It is left set at the
-end of the fit -- it is not cleared or reset.  However, note that
-`_sys.paramGroup` may be unset or set to the wrong group (say, from a
-previous fit) when setting up a new fit.  Of course, you can explicitly
-assign a group to `_sys.paramGroup` when setting up a fit, so that you
-might be able to sensibly call the objective function yourself, prior to
-doing a minimization.
+As we said, `_sys.paramGroup` is set during a fit, by :func:`minimize`.  It
+is left set at the end of the fit -- it is not cleared or reset.  However,
+note that `_sys.paramGroup` may be unset or set to the wrong group (say,
+from a previous fit) when setting up a new fit (before you call
+:func:`minimize`).  Of course, you can explicitly assign a group to
+`_sys.paramGroup` when setting up a fit, so that you might be able to
+sensibly call the objective function yourself, prior to doing a
+minimization.
+
+

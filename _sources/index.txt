@@ -6,7 +6,7 @@ Larch
 
 .. _scipy: http://scipy.org/
 .. _numpy: http://numpy.scipy.org/
-.. _matplotlib: http://matplotlib.sourceforge.net/
+.. _matplotlib: http://matplotlib.org/
 .. _h5py: http://code.google.com/p/h5py/
 
 Larch is a scientific data processing language that is designed to be easy
