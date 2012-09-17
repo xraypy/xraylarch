@@ -77,8 +77,7 @@ class Minimizer(object):
 or set  leastsq_kws['maxfev']  to increase this maximum."""
 
     def __init__(self, fcn, params, fcn_args=None, fcn_kws=None,
-                 iter_cb=None, scale_covar=True, toler=1.e-7,
-                 _larch=None, jacfcn=None, **kws):
+                 scale_covar=True, toler=1.e-7, _larch=None, jacfcn=None, **kws):
         self.userfcn = fcn
         self.paramgroup = params
         self.userargs = fcn_args
@@ -89,12 +88,10 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         if self.userkws is None:
             self.userkws = {}
         self._larch = _larch
-        self.iter_cb = iter_cb
         self.toler = toler
         self.scale_covar = scale_covar
         self.kws = kws
 
-        self.nfev_calls = 0
         self.jacfcn = jacfcn
         self.__prepared = False
 
@@ -117,20 +114,8 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         evaluating constraints, and then passes those to the
         user-supplied function to calculate the residual.
         """
-        self.nfev_calls = self.nfev_calls + 1
-        # self.paramgroup.fit_iter = self.nfev_calls
         self.__update_params(fvars)
-        #print '__residual ', self.nfev_calls, fvars, self.var_names
-        #for nam in dir(self.paramgroup):
-        #    obj = getattr(self.paramgroup, nam)
-        #    if isParameter(obj):
-        #        print '   params ', nam, obj
-        # print self.userargs, self.userkws
-        out = self.userfcn(self.paramgroup, *self.userargs, **self.userkws)
-        if hasattr(self.iter_cb, '__call__'):
-            self.iter_cb(self.paramgroup, self.nfev_calls, out,
-                         *self.userargs, **self.userkws)
-        return out
+        return self.userfcn(self.paramgroup, *self.userargs, **self.userkws)
 
     def __jacobian(self, fvars):
         """
@@ -157,7 +142,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             self._larch.write.write('Minimize Error: invalid parameter group!')
             return
 
-        self.nfev_calls = 0
         self.var_names = []
         self.defvars = []
         self.vars = []
@@ -249,21 +233,21 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         nfree  = (ndata - self.nvarys)
         redchi = chisqr / nfree
 
-        lmdif = group
+        ofit = group
         if Group is not None:
-            lmdif = group.lmdif = Group()
+            ofit = group.fit = Group()
 
-        lmdif.fjac = infodict['fjac']
-        lmdif.fvec = infodict['fvec']
-        lmdif.qtf  = infodict['qtf']
-        lmdif.ipvt = infodict['ipvt']
-        lmdif.status =  ier
-        lmdif.message =  errmsg
-        lmdif.success =  ier in [1, 2, 3, 4]
-        lmdif.nfcn_calls =   infodict['nfev']
-        lmdif.toler =   self.toler
+        ofit.method = 'leastsq'
+        ofit.fjac = infodict['fjac']
+        ofit.fvec = infodict['fvec']
+        ofit.qtf  = infodict['qtf']
+        ofit.ipvt = infodict['ipvt']
+        ofit.status =  ier
+        ofit.message =  errmsg
+        ofit.success =  ier in [1, 2, 3, 4]
+        ofit.nfev =   infodict['nfev']
+        ofit.toler =   self.toler
 
-        group.nfcn_calls =   infodict['nfev']
         group.residual =    resid
         group.message =     message
         group.chi_square =  chisqr
@@ -339,28 +323,49 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
 
         self.prepare_fit()
 
-        fmin_kws = dict(method=method, tol=self.toler)
+        maxfev = 1000*(self.nvarys + 1)
+        opts = {'maxiter': maxfev}
+        if method not in ('L-BFGS-B','TNC'):
+            opts['maxfev'] = maxfev
+
+        fmin_kws = dict(method=method, tol=self.toler, options=opts)
+
         fmin_kws.update(self.kws)
         fmin_kws.update(kws)
-        def penalty(params):
+        def penalty(parvals):
             "local penalty function -- eval sum-squares residual"
-            r = self.__residual(params)
+            r = self.__residual(parvals)
             if isinstance(r, ndarray):
                 r = (r*r).sum()
             return r
 
         ret = scipy_minimize(penalty, self.vars, **fmin_kws)
-        xout = ret.x
-        self.message = ret.message
-        self.nfev = ret.nfev
-        self.covar_vars = None
-        self.covar = None
-        print 'Scalar min output: ', ret
-        print ret.keys()
+
+        resid  = self.__residual(ret.x)
+        ndata  = len(resid)
+        chisqr = (resid**2).sum()
+        nfree  = (ndata - self.nvarys)
+        redchi = chisqr / nfree
+
+        ofit = group = self.paramgroup
+        if Group is not None:
+            ofit = group.fit = Group()
+
+        ofit.method    = method
+        ofit.nfev      = ret.nfev
+        ofit.success   = ret.success
+        ofit.status    = ret.status
+        group.nvarys   = self.nvarys
+        group.nfree    = nfree
+        group.residual = resid
+        group.message  = ret.message
+        group.chi_square  = chisqr
+        group.chi_reduced = redchi
+        group.errorbars   = False
 
 
 def minimize(fcn, group,  args=None, kws=None, method='leastsq',
-             scale_covar=True, iter_cb=None, _larch=None, **fit_kws):
+             _larch=None, **fit_kws):
     """simple minimization function,
     finding the values for the params which give the
     minimal sum-of-squares of the array return by fcn
@@ -369,12 +374,11 @@ def minimize(fcn, group,  args=None, kws=None, method='leastsq',
         return 'param group is not a Larch Group'
 
     fit = Minimizer(fcn, group, fcn_args=args, fcn_kws=kws,
-                    iter_cb=iter_cb, scale_covar=scale_covar,
-                    _larch=_larch,  **fit_kws)
+                    scale_covar=True, _larch=_larch,  **fit_kws)
 
     _scalar_methods = {'nelder': 'Nelder-Mead',
                        'powell': 'Powell',
-                       'cg': 'CG ',
+                       'cg': 'CG',
                        'bfgs': 'BFGS',
                        'newton': 'Newton-CG',
                        # 'anneal': 'Anneal',
@@ -402,22 +406,37 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
         print('must pass Group to fit_report()')
         return
     topline = '===================== FIT RESULTS ====================='
-    header = '[[%s]]'
+    header = '[[%s]] %s'
     varformat  = '   %12s = %s (init= % f)'
     exprformat = '   %12s = %s = \'%s\''
-    out = [topline, header % 'Statistics']
+    out = [topline]
 
     npts = len(group.residual)
-    if hasattr(group, 'nvarys'):
-        out.append('   npts, nvarys       = %i, %i' % (npts, group.nvarys))
-    if hasattr(group, 'nfree') and hasattr(group, 'nfcn_calls'):
-        out.append('   nfree, nfcn_calls  = %i, %i' % (group.nfree, group.nfcn_calls))
+    ofit = getattr(group, 'fit', None)
+    if ofit is None:  ofit = group
+    methodname = getattr(ofit, 'method', 'leastsq')
+    success = getattr(ofit, 'success', False)
+
+    if success:
+        subtitle = '   Fit succeeded, '
+    else:
+        subtitle = '   Fit Failed, '
+    subtitle = "%s method = '%s'." % (subtitle, methodname)
+    out.append(header % ('Statistics', subtitle))
+
+    if hasattr(group, 'message'):
+        out.append('   Message from fit    = %s' % (group.message))
+
+    out.append('   npts, nvarys, nfree = %i, %i, %i' % (npts, group.nvarys, group.nfree))
+
+    if hasattr(ofit, 'nfev'):
+        out.append('   nfev (func calls)   = %i' % (ofit.nfev))
     if hasattr(group, 'chi_square'):
-        out.append('   chi_square         = %f' % (group.chi_square))
+        out.append('   chi_square          = %f' % (group.chi_square))
     if hasattr(group, 'chi_reduced'):
-        out.append('   reduced chi_square = %f' % (group.chi_reduced))
+        out.append('   reduced chi_square  = %f' % (group.chi_reduced))
     out.append(' ')
-    out.append(header % 'Variables')
+    out.append(header % ('Variables',''))
     exprs = []
     for name in dir(group):
         var = getattr(group, name)
@@ -437,9 +456,9 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
 
     covar_vars = getattr(group, 'covar_vars', [])
     if show_correl and len(covar_vars) > 0:
+        subtitle = '    (unreported correlations are < % .3f)' % min_correl
         out.append(' ')
-        out.append(header % 'Correlations' +
-                   '    (unreported correlations are < % .3f)' % min_correl)
+        out.append(header % ('Correlations', subtitle))
         correls = {}
         for i, name in enumerate(covar_vars):
             par = getattr(group, name)
