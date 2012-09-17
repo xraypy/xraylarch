@@ -451,7 +451,7 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
             elif var.expr is not None:
                 exprs.append(exprformat % (name, sval, var.expr))
     if len(exprs) > 0:
-        out.append(header % 'Constraint Expressions')
+        out.append(header % ('Constraint Expressions', ''))
         out.extend(exprs)
 
     covar_vars = getattr(group, 'covar_vars', [])
