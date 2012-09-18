@@ -266,7 +266,8 @@ Here a a few example plots, to whet your appetite::
 will make this plot:
 
 .. image:: ../images/plot_basic1.png
-   :width: 80 %
+   :target: ../_images/plot_basic1.png
+   :width: 75 %
 
 
 Adding a second curve, and setting some labels::
@@ -276,7 +277,8 @@ Adding a second curve, and setting some labels::
 will make this plot:
 
 .. image:: ../images/plot_basic2.png
-   :width: 80 %
+   :target: ../_images/plot_basic2.png
+   :width: 75 %
 
 
 Interactive Use of the Plot Windows
@@ -336,7 +338,8 @@ select Configure) will bring up the plot configuration window, which looks
 like this:
 
 .. image:: ../images/plot_config.png
-   :width: 90 %
+   :target: ../_images/plot_config.png
+   :width: 75 %
 
 From here you can set the titles, labels, and styles, colors, symbols, and
 so on for the line traces.
@@ -436,9 +439,11 @@ image, generated with::
 is shown below:
 
 .. image:: ../images/plot_image1.png
-   :width: 80 %
+   :target: ../_images/plot_image1.png
+   :width: 75 %
 
 and as a contour plot, with a different color table:
 
 .. image:: ../images/plot_contour1.png
-   :width: 80 %
+   :target: ../_images/plot_contour1.png
+   :width: 75 %
