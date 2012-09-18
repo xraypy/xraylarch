@@ -28,7 +28,7 @@ pdf: latex
 	cd $(BUILDDIR)/latex && pdflatex larch.tex
 	cp -pr $(BUILDDIR)/latex/larch.pdf $(BUILDDIR)/html/.
 
-all: html larch.pdf
+all: html pdf
 
 install: all
 	rm -rf  $(INSTALLDIR)/doc_old
