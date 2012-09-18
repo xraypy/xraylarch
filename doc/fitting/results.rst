@@ -56,7 +56,7 @@ fitting method.
 
    The output string can be printed.
 
-A typical result from :meth:`fit_report`` would look like this::
+A typical result from :meth:`fit_report` would look like this::
 
     larch> print fit_report(params)
     ===================== FIT RESULTS =====================
