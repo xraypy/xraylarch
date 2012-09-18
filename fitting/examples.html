@@ -134,7 +134,8 @@ kinds of data.  The script to do the fit looks like this:</p>
 <span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
          <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.050</span><span class="p">)</span>
- <span class="c"># create a group of fit parameters</span>
+
+<span class="c"># create a group of fit parameters</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">off</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
                <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
                <span class="n">cen</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span>
@@ -151,13 +152,14 @@ kinds of data.  The script to do the fit looks like this:</p>
 <span class="c"># perform fit</span>
 <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">mdat</span><span class="p">,))</span>
 
+<span class="c"># make final array</span>
 <span class="n">final</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">params</span><span class="o">.</span><span class="n">amp</span> <span class="o">*</span> \
         <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid</span><span class="p">)</span>
 
 <span class="c"># plot results</span>
-<span class="n">newplot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">mdat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;initial&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dotted&#39;</span><span class="p">)</span>
-<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;final&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">mdat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">init</span><span class="p">,</span>   <span class="n">label</span><span class="o">=</span><span class="s">&#39;initial&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dotted&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;final&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
 
 <span class="c"># print report of parameters, uncertainties</span>
 <span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
@@ -171,7 +173,7 @@ function to create the model function.  We also add simulated noise to
 the model data with the <tt class="xref py py-func docutils literal"><span class="pre">random.normal()</span></tt> function from numpy.</p>
 <p>2. <strong>create a group of fit parameters</strong>:  Here we create a group with
 several components, all defined by the <tt class="xref py py-func docutils literal"><span class="pre">_math.guess()</span></tt> function to
-create variable Parameters.  Two of the variables here have a lower bound
+create variable Parameters.  Two of the parameters have a lower bound
 set.   We also calculate the initial value for the model using the
 initial guesses for the parameter values.</p>
 <p>3. <strong>define objective function for fit residual</strong>: As above, this
@@ -213,14 +215,245 @@ correlations between variables.</p>
 =======================================================</pre>
 </div>
 <p>And the plot of data and fit will look like this:</p>
-<img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 80%;" />
+<blockquote>
+<div><a class="reference external image-reference" href="../_images/fit_example1.png"><img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 65%;" /></a>
+</div></blockquote>
 </div>
 <div class="section" id="example-2-fitting-xanes-pre-edge-peaks">
 <h2>Example 2: Fitting XANES Pre-edge Peaks<a class="headerlink" href="#example-2-fitting-xanes-pre-edge-peaks" title="Permalink to this headline">¶</a></h2>
-<p>This example extends the previous one by a) using data read in from a text
-file, b) using many more lineshapes, c) setting bounds on parameters, and
-d) using a simple algebraic constraint.   The basic format of the above
-exmple is followed, but the script is a bit longer.</p>
+<p>This example extends on the previous one of fitting peaks.  Though
+following the same basic approach (write an objective function, define
+parameters, perform fit), we add several steps that you might use when
+modeling real data:</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li>using data read in from a text file,</li>
+<li>using more lineshapes, here 3 peak-like functions and an
+error-function.</li>
+</ol>
+</div></blockquote>
+<p>Consequently, the script is a bit longer:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c"># read data</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;doc_example2.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy xmu i0&#39;</span><span class="p">)</span>
+
+<span class="c"># perform pre-processing steps, here doing an XAFS pre-edge</span>
+<span class="c"># removal</span>
+<span class="n">step</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
+
+<span class="c"># select data range to be considered in the fit here.</span>
+<span class="c"># note that this could be done inside the objective function,</span>
+<span class="c"># but doing these steps here means it done only once.</span>
+<span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">index_of</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">7105</span><span class="p">),</span> <span class="n">index_of</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">7125</span><span class="p">)</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">e</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">[</span><span class="n">i1</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">norm</span><span class="p">[</span><span class="n">i1</span><span class="o">+</span><span class="mi">1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
+
+    <span class="n">e1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_amp</span> <span class="o">*</span> <span class="n">erf</span><span class="p">(</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_wid</span><span class="o">*</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span> <span class="o">-</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_cen</span><span class="p">))</span>
+    <span class="nb">sum</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span> <span class="o">+</span> <span class="n">e1</span>
+    <span class="k">if</span> <span class="n">components</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span>  <span class="n">e1</span>
+    <span class="n">endif</span>
+    <span class="k">return</span> <span class="nb">sum</span>
+<span class="n">enddef</span>
+
+<span class="c"># create group for parameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+    <span class="n">cen1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7113.25</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7111</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7115</span><span class="p">),</span>
+    <span class="n">cen2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7116.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7115</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7120</span><span class="p">),</span>
+
+    <span class="n">amp1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.25</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+
+    <span class="n">wid1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
+    <span class="n">wid2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
+
+    <span class="n">off</span>  <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.50</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+
+    <span class="n">erf_amp</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.50</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">erf_wid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.50</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+    <span class="n">erf_cen</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7123.5</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7121</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7124</span><span class="p">)</span>
+    <span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="s">&quot;fit residual&quot;</span>
+    <span class="k">return</span> <span class="n">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="o">-</span> <span class="n">data</span><span class="o">.</span><span class="n">y</span>
+<span class="n">enddef</span>
+
+<span class="n">m</span> <span class="o">=</span> <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">dat</span><span class="p">,))</span>
+
+<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">show_correl</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+
+<span class="c"># now plot results (2 different windows)</span>
+<span class="n">final</span><span class="p">,</span> <span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">e1</span> <span class="o">=</span> <span class="n">make_model</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">dat</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+     <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s">&#39;ul&#39;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;$</span><span class="se">\\</span><span class="s">mu(E)$&#39;</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s">&#39;Fe pre-edge peak-fit: best fit and residual&#39;</span><span class="p">,</span>     
+     <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;fit&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="p">(</span><span class="n">final</span><span class="o">-</span><span class="n">dat</span><span class="o">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">10</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;diff (10x)&#39;</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+     <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s">&#39;ul&#39;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;$</span><span class="se">\\</span><span class="s">mu(E)$&#39;</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s">&#39;Fe pre-edge peak-fit: components&#39;</span><span class="p">,</span>
+     <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">f1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;peak1&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;peak2&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">e1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;erf +offset&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dashed&#39;</span><span class="p">)</span>
+
+
+<span class="c">#</span>
+</pre></div>
+</div>
+<p>First, we read in the data and do some XAFS-specific preprocessing step.
+Also note that we limit the range of the data from the full data set using
+the <tt class="docutils literal"><span class="pre">index_of</span></tt> function.  The objective function <tt class="docutils literal"><span class="pre">resid()</span></tt> is very
+simple, calling <tt class="docutils literal"><span class="pre">make_models()</span></tt> which creates the model of two Gaussian
+peaks, an error function, and an offset.  There are 10 parameters for the
+fit.  We&#8217;re fitting the spectra with two Gaussian functions and an error
+function.  It is oten observed that if the centroids of peak functions such
+as Gaussians are left to vary completely freely they tend to wander around
+and give lousy fits, so here we place fairly tight controls on the
+centroids.  We also place bounds on the amplitudes and widths of the peaks,
+so they can&#8217;t go too far astray.</p>
+<p>The fit gives a report (ignoring correlations) like this:</p>
+<div class="highlight-python"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 51, 10, 41
+   nfev (func calls)   = 214
+   chi_square          = 0.001194
+   reduced chi_square  = 0.000029
+
+[[Variables]]
+   amp1           =  0.078636 +/- 0.015419 (init=  0.250000)
+   amp2           =  0.406155 +/- 0.044061 (init=  0.250000)
+   cen1           =  7113.212401 +/- 0.074142 (init=  7113.250000)
+   cen2           =  7115.571111 +/- 0.297302 (init=  7116.000000)
+   erf_amp        =  0.375339 +/- 0.008897 (init=  0.500000)
+   erf_cen        =  7122.242846 +/- 0.075486 (init=  7123.500000)
+   erf_wid        =  0.289039 +/- 0.012431 (init=  0.500000)
+   off            =  0.386845 +/- 0.009081 (init=  0.500000)
+   wid1           =  0.489783 +/- 0.068186 (init=  0.600000)
+   wid2           =  1.877520 +/- 0.166384 (init=  1.200000)
+=======================================================</pre>
+</div>
+<p>and the plots of the resulting best-fit and components look like these:</p>
+<blockquote>
+<div><a class="reference external image-reference" href="../_images/fit_example2a1.png"><img alt="../_images/fit_example2a1.png" src="../_images/fit_example2a1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/fit_example2a2.png"><img alt="../_images/fit_example2a2.png" src="../_images/fit_example2a2.png" style="width: 48%;" /></a>
+</div></blockquote>
+<p>and we see the fit is pretty good.</p>
+<p>Looking more closely, however, there is a hint in the data and the residual
+that we may have missed a third peak at around E = 7122 eV.  We can add
+this by simply adding another peak function to the <tt class="docutils literal"><span class="pre">make_models()</span></tt>
+function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
+    <span class="n">p3</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid3</span><span class="p">)</span>
+
+    <span class="n">e1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">off</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_amp</span> <span class="o">*</span> <span class="n">erf</span><span class="p">(</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_wid</span><span class="o">*</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span> <span class="o">-</span> <span class="n">pars</span><span class="o">.</span><span class="n">erf_cen</span><span class="p">))</span>
+    <span class="nb">sum</span> <span class="o">=</span> <span class="n">p1</span> <span class="o">+</span> <span class="n">p2</span> <span class="o">+</span> <span class="n">p3</span> <span class="o">+</span> <span class="n">e1</span>
+    <span class="k">if</span> <span class="n">components</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span><span class="p">,</span> <span class="n">e1</span>
+    <span class="n">endif</span>
+    <span class="k">return</span> <span class="nb">sum</span>
+<span class="n">enddef</span>
+</pre></div>
+</div>
+<p>and 3 more fitting parameters to the parameter group:</p>
+<div class="highlight-python"><pre>params = group(
+    ...
+    cen3 = param(7122.0, vary=True, min=7120, max=7124),
+    amp3 = param(0.5,    vary=True, min=0),
+    wid3 = param(1.2,    vary=True, min=0.05),
+    ...)</pre>
+</div>
+<p>The fit now has 13 variables, and gives a report like this:</p>
+<div class="highlight-python"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 51, 13, 38
+   nfev (func calls)   = 775
+   chi_square          = 0.000103
+   reduced chi_square  = 0.000003
+
+[[Variables]]
+   amp1           =  0.080092 +/- 0.005012 (init=  0.250000)
+   amp2           =  0.384458 +/- 0.017113 (init=  0.250000)
+   amp3           =  0.111112 +/- 0.016366 (init=  0.500000)
+   cen1           =  7113.234596 +/- 0.023044 (init=  7113.250000)
+   cen2           =  7115.416637 +/- 0.136760 (init=  7116.000000)
+   cen3           =  7122.300480 +/- 0.039187 (init=  7122.000000)
+   erf_amp        =  0.476421 +/- 0.022186 (init=  0.500000)
+   erf_cen        =  7123.374345 +/- 0.215044 (init=  7123.500000)
+   erf_wid        =  0.230234 +/- 0.009485 (init=  0.500000)
+   off            =  0.487636 +/- 0.022221 (init=  0.500000)
+   wid1           =  0.496794 +/- 0.021434 (init=  0.600000)
+   wid2           =  1.896698 +/- 0.064887 (init=  1.200000)
+   wid3           =  0.614099 +/- 0.040220 (init=  1.200000)
+=======================================================</pre>
+</div>
+<p>Adding the third peak here reduced <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> by a factor of 10, from
+0.0001194 to 0.0000103, and so seems to be a significant improvement.  The
+values for the energy center and amplitude for the error function have both
+moved significantly, as can be seen in the plots for this fit:</p>
+<blockquote>
+<div><a class="reference external image-reference" href="../_images/fit_example2b1.png"><img alt="../_images/fit_example2b1.png" src="../_images/fit_example2b1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/fit_example2b2.png"><img alt="../_images/fit_example2b2.png" src="../_images/fit_example2b2.png" style="width: 48%;" /></a>
+</div></blockquote>
+<p>Finally for this example, we can replace the Gaussian peak shapes with
+other functional forms.   To use the Voigt function shown in the previous
+section, we simply change <tt class="docutils literal"><span class="pre">make_models()</span></tt> to use:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
+<span class="n">p2</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
+<span class="n">p3</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The fit report now reads:</p>
+<div class="highlight-python"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 51, 13, 38
+   nfev (func calls)   = 441
+   chi_square          = 0.000093
+   reduced chi_square  = 0.000002
+
+[[Variables]]
+   amp1           =  0.146617 +/- 0.012757 (init=  0.250000)
+   amp2           =  0.445953 +/- 0.035927 (init=  0.250000)
+   amp3           =  0.193669 +/- 0.032386 (init=  0.500000)
+   cen1           =  7113.237795 +/- 0.020992 (init=  7113.250000)
+   cen2           =  7115.912912 +/- 0.134734 (init=  7116.000000)
+   cen3           =  7122.320641 +/- 0.037579 (init=  7122.000000)
+   erf_amp        =  0.490162 +/- 0.023101 (init=  0.500000)
+   erf_cen        =  7123.580458 +/- 0.227496 (init=  7123.500000)
+   erf_wid        =  0.228310 +/- 0.008306 (init=  0.500000)
+   off            =  0.497919 +/- 0.023158 (init=  0.500000)
+   wid1           =  0.528196 +/- 0.027222 (init=  0.600000)
+   wid2           =  1.676269 +/- 0.093116 (init=  1.200000)
+   wid3           =  0.642993 +/- 0.047203 (init=  1.200000)
+=======================================================</pre>
+</div>
+<p>and we see that the already very low
+<img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> reduces by another 10%, which suggests a real improvement.
+For completeness,  the plots from this fit look like this:</p>
+<blockquote>
+<div><a class="reference external image-reference" href="../_images/fit_example2c1.png"><img alt="../_images/fit_example2c1.png" src="../_images/fit_example2c1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/fit_example2c2.png"><img alt="../_images/fit_example2c2.png" src="../_images/fit_example2c2.png" style="width: 48%;" /></a>
+</div></blockquote>
+<p>It&#8217;s difficult to see a dramatic difference in fit quality for this data,
+but the ability to explore fitting with different lineshapes like this is
+still a useful test of the robustness of the fit.</p>
 </div>
 <div class="section" id="example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">
 <h2>Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra<a class="headerlink" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra" title="Permalink to this headline">¶</a></h2>
