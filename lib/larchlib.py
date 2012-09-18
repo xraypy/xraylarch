@@ -114,10 +114,11 @@ class LarchExceptionHolder:
             if ex_msg is '':
                 ex_msg = str(self.msg)
             tline = "%s: %s" % (exc_name, ex_msg)
-        out.append(tline)
+        if tline is not None:
+            out.append(tline)
 
         etext = getattr(e_val, 'text', '')
-        if etext is not '':
+        if etext not in (None, ''):
             out.append(etext)
 
         if call_expr is None and (self.expr == '<>' or
