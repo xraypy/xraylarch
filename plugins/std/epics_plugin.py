@@ -11,7 +11,7 @@ except:
 
 def caget(pvname, _larch=None, **kws):
     if _larch is None or not HAS_PYEPICS: return
-    return epics.caget(pvname, *args, **kws)
+    return epics.caget(pvname, **kws)
 
 caget.__doc__ = epics.caget.__doc__
 
