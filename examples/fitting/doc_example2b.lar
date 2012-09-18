@@ -16,11 +16,12 @@ def make_model(pars, data, components=False):
     """make model of spectra: 2 peak functions, 1 erf function, offset"""
     p1 = pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1)
     p2 = pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2)
+    p3 = pars.amp3 * gaussian(data.e, pars.cen3, pars.wid3)    
 
     e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
-    sum = p1 + p2 + e1
+    sum = p1 + p2 + p3 + e1
     if components:
-        return sum, p1, p2,  e1
+        return sum, p1, p2, p3, e1
     endif
     return sum
 enddef
@@ -35,6 +36,10 @@ params = group(
 
     wid1 = param(0.6, vary=True, min=0.05),
     wid2 = param(1.2, vary=True, min=0.05),
+
+    cen3 = param(7122.0, vary=True, min=7120, max=7124),
+    amp3 = param(0.5,    vary=True, min=0),
+    wid3 = param(1.2,    vary=True, min=0.05),
 
     off  = param(0.50, vary=True),
 
@@ -53,7 +58,7 @@ m = minimize(resid, params, args=(dat,))
 print fit_report(params, show_correl=False)
 
 # now plot results (2 different windows)
-final, f1, f2, e1 = make_model(params, dat, components=True)
+final, f1, f2, f3, e1 = make_model(params, dat, components=True)
 plot(dat.e, dat.y,  label='data', marker='+',
      show_legend=True, legend_loc='ul',
      xlabel='Energy (eV)', ylabel='$\\mu(E)$',
@@ -72,6 +77,6 @@ plot(dat.e, dat.y, label='data', marker='+',
 plot(dat.e, f1, label='peak1', win=2)
 plot(dat.e, f2, label='peak2', win=2)
 plot(dat.e, e1, label='erf +offset', win=2, color='red', style='dashed')
-
+plot(dat.e, f3, label='peak3', win=2, color='blue', style='dashed')
 
 #
