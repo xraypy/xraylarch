@@ -1,21 +1,17 @@
-import os
-fname = os.path.join('..', 'xafs', 'fe2o3_rt1.xmu')
-dat = read_ascii(fname, labels='energy xmu i0')
+
+dat = read_ascii('doc_example2.dat', labels='energy xmu i0')
 pre_edge(dat.energy, dat.xmu, group=dat)
 
 i1, i2 = index_of(dat.energy, 7105), index_of(dat.energy, 7125)
-dat.e = dat.energy[i1:i2+1]
-dat.y = dat.norm[i1:i2+1]
+dat.e = dat.energy[i1+1:i2+1]
+dat.y = dat.norm[i1+1:i2+1]
 
 def make_model(pars, data, components=False):
-    """make model of spectra: 3 gaussians, 1 erf function, offset"""
+    """make model of spectra: 3 voigt functions, 1 erf function, offset"""
     f1 = pars.amp1 * voigt(data.e, pars.cen1, sigma=pars.wid1, gamma=pars.gam)
     f2 = pars.amp2 * voigt(data.e, pars.cen2, sigma=pars.wid2, gamma=pars.gam)
     f3 = pars.amp3 * voigt(data.e, pars.cen3, sigma=pars.wid3, gamma=pars.gam)
-    #f1 = pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1)
-    #f2 = pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2)
 
-    # g3 = pars.amp3 * voigt(data.e, pars.cen3, pars.wid3)
     e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
     sum = f1 + f2 + f3 + e1
     if components:
@@ -31,30 +27,32 @@ enddef
 
 # create group for parameters
 params = group(
-    gam  = param(1.0, vary=True, min=0.5, max=3.0),
-    wid1 = param(1.0, vary=True, min=0),
-    cen1 = param(7113.25, vary=True, min=7110, max=7115),
-    amp1 = param(0.2, vary=True, min=0),
-    wid2 = param(1.0, vary=True, min=0),
-    cen2 = param(7116.0, vary=True, min=7115, max=7120),
-    amp2 = param(0.2, vary=True, min=0),
+    gam  = param(1.0, vary=False),
 
-    wid3 = param(1., vary=True, min=0),
-    cen3 = param(7122.25, vary=True, min=7118, max=7126),
-    amp3 = param(1.0, vary=True),
+    cen1 = param(7113.25, vary=True, min=7111, max=7115),
+    amp1 = param(0.25, vary=True, min=0),
+    wid1 = param(0.6, vary=True, min=0.1),
+
+    cen2 = param(7116.0, vary=True, min=7115, max=7120),
+    amp2 = param(0.25, vary=True, min=0),
+    wid2 = param(1.2, vary=True, min=0),
+
+    cen3 = param(7122.0, vary=True, min=7120, max=7124),
+    amp3 = param(0.25, vary=True, min=0),
+    wid3 = param(1.2, vary=True, min=0),
 
     off  = param(0.50, vary=True),
 
     erf_amp = param(0.50, vary=True),
     erf_wid = param(0.50, vary=True),
-    erf_cen = param(7122.25, vary=True, min=7120, max=7124),
+    erf_cen = param(7123, vary=True, min=7121, max=7124),
     )
 
 # needed so that make_model() will be able to evaluate 'wid3'
 _sys.paramGroup = params
 init = make_model(params, dat)
 
-plot(dat.e, dat.y, new=True) # , xmin=7110, xmax=7125)
+plot(dat.e, dat.y, new=True)
 plot(dat.e, init+dat.y)
 
 m = minimize(resid, params, args=(dat,))
@@ -62,13 +60,12 @@ m = minimize(resid, params, args=(dat,))
 final, f1, f2, f3, e1 = make_model(params, dat, components=True)
 
 plot(dat.e, dat.y,  label='data', show_legend=True, legend_loc='ul', new=True)
-     # xmin=7110, xmax=7125)
 
 plot(dat.e, final,  label='fit')
 plot(dat.e, (final-dat.y)*10, label='resid(10x)')
 
-plot(dat.e, dat.y, label='data', show_legend=True,
-     win=2, new=True) # , xmin=7110, xmax=7125)
+plot(dat.e, dat.y, label='data', show_legend=True, legend_loc='ul', new=True, win=2)
+
 plot(dat.e, f1, label='voigt1', win=2)
 plot(dat.e, f2, label='voigt2', win=2)
 plot(dat.e, f3, label='voigt3', win=2)
