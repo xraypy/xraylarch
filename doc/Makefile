@@ -22,8 +22,10 @@ html:
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-larch.pdf: latex
-	cd $(BUILDDIR)/latex && make all-pdf
+pdf: latex
+	cd $(BUILDDIR)/latex && pdflatex larch.tex
+	cd $(BUILDDIR)/latex && makeindex -s python.ist larch.idx
+	cd $(BUILDDIR)/latex && pdflatex larch.tex
 	cp -pr $(BUILDDIR)/latex/larch.pdf $(BUILDDIR)/html/.
 
 all: html larch.pdf

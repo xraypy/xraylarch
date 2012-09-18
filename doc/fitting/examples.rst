@@ -82,9 +82,9 @@ The printed output from ``fit_report(params)`` will look like this::
 
 And the plot of data and fit will look like this:
 
-.. image:: ../images/fit_example1.png
-   :target: ../_images/fit_example1.png
-   :width: 65 %
+  .. image:: ../images/fit_example1.png
+     :target: ../_images/fit_example1.png
+     :width: 65 %
 
 
 Example 2: Fitting XANES Pre-edge Peaks
@@ -143,12 +143,12 @@ The fit gives a report (ignoring correlations) like this::
 
 and the plots of the resulting best-fit and components look like these:
 
-.. image::  ../images/fit_example2a1.png
-   :target: ../_images/fit_example2a1.png
-   :width: 48 %
-.. image:: ../images/fit_example2a2.png
-   :target: ../_images/fit_example2a2.png
-   :width: 48 %
+  .. image::  ../images/fit_example2a1.png
+     :target: ../_images/fit_example2a1.png
+     :width: 48 %
+  .. image:: ../images/fit_example2a2.png
+     :target: ../_images/fit_example2a2.png
+     :width: 48 %
 
 
 and we see the fit is pretty good.  
@@ -215,12 +215,12 @@ Adding the third peak here reduced :math:`\chi^2` by a factor of 10, from
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:
 
-.. image::  ../images/fit_example2b1.png
-   :target: ../_images/fit_example2b1.png
-   :width: 48 %
-.. image::  ../images/fit_example2b2.png
-   :target: ../_images/fit_example2b2.png
-   :width: 48 %
+  .. image::  ../images/fit_example2b1.png
+     :target: ../_images/fit_example2b1.png
+     :width: 48 %
+  .. image::  ../images/fit_example2b2.png
+     :target: ../_images/fit_example2b2.png
+     :width: 48 %
 
 Finally for this example, we can replace the Gaussian peak shapes with
 other functional forms.   To use the Voigt function shown in the previous
@@ -259,14 +259,14 @@ The fit report now reads::
 
 and we see that the already very low
 :math:`\chi^2` reduces by another 10%, which suggests a real improvement.
-For completeness,  the plots from this fit look like this:
+For completeness,  the plots from this fit look like this: 
 
-.. image:: ../images/fit_example2c1.png
-   :target: ../_images/fit_example2c1.png
-   :width: 48 %
-.. image:: ../images/fit_example2c2.png
-   :target: ../_images/fit_example2c2.png
-   :width: 48 %
+  .. image:: ../images/fit_example2c1.png
+     :target: ../_images/fit_example2c1.png
+     :width: 48 %
+  .. image:: ../images/fit_example2c2.png
+     :target: ../_images/fit_example2c2.png
+     :width: 48 %
 
 It's difficult to see a dramatic difference in fit quality for this data,
 but the ability to explore fitting with different lineshapes like this is
