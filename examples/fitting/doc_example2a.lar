@@ -1,3 +1,4 @@
+## examples/fitting/doc_example2a.lar
 # read data
 dat = read_ascii('doc_example2.dat', labels='energy xmu i0')
 
@@ -73,5 +74,4 @@ plot(dat.e, f1, label='peak1', win=2)
 plot(dat.e, f2, label='peak2', win=2)
 plot(dat.e, e1, label='erf +offset', win=2, color='red', style='dashed')
 
-
-#
+## end of examples/fitting/doc_example2a.lar

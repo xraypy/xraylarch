@@ -1,4 +1,4 @@
-## File ReadData.lar
+## examples/fitting/doc_example3/ReadData.lar
 d1 = read_ascii('unknown.dat')
 s1 = read_ascii('s1.dat')
 s2 = read_ascii('s2.dat')
@@ -17,3 +17,4 @@ data.s3 = interp(data.energy, s3.energy, s3.munorm)
 data.s4 = interp(data.energy, s4.energy, s4.munorm)
 data.s5 = interp(data.energy, s5.energy, s5.munorm)
 data.s6 = interp(data.energy, s6.energy, s6.munorm)
+## end of examples/fitting/doc_example3/ReadData.lar

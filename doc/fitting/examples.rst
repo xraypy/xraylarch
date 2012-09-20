@@ -89,7 +89,6 @@ And the plot of data and fit will look like this:
 .. _fitting_fig1:
 
    Figure 1.  Simple fit to mock data
-
   .. image:: ../images/fit_example1.png
      :target: ../_images/fit_example1.png
      :width: 65 %
@@ -155,7 +154,6 @@ and the plots of the resulting best-fit and components look like these:
 
    Figure 2.  Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions and
    an Error function
-
   .. image::  ../images/fit_example2a1.png
      :target: ../_images/fit_example2a1.png
      :width: 48 %
@@ -186,7 +184,9 @@ function::
     enddef
 
 
-and 3 more fitting parameters to the parameter group::
+and 3 more fitting parameters to the parameter group:
+
+.. code-block:: python
 
     params = group(
         ...
@@ -232,7 +232,6 @@ moved significantly, as can be seen in the plots for this fit:
 
    Figure 3.  Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions and
    an Error function
-
   .. image::  ../images/fit_example2b1.png
      :target: ../_images/fit_example2b1.png
      :width: 48 %
@@ -283,7 +282,6 @@ For completeness,  the plots from this fit look like this:
 
    Figure 4.  Fit to Fe K-edge pre-edge and edge with 3 Voigt functions and
    an Error function
-
   .. image:: ../images/fit_example2c1.png
      :target: ../_images/fit_example2c1.png
      :width: 48 %
@@ -335,7 +333,6 @@ important component.
 
    Figure 5.  Components used for Linear Combination Fits (left) and Fit
    with components *s1* and *s2* (right).
-
   .. image:: ../images/fit_example3a.png
      :target: ../_images/fit_example3a.png
      :width: 48 %
@@ -384,12 +381,10 @@ results of this fit are::
     =======================================================
 
 
-and the result for this fit is shown in the figure above.  This
-demonstrates the use of simple constraints for Parameters in fits: we've
-used an algebraic expression to ensure that the weights for the two
+and the result for this fit is shown in :ref:`Figure 5 <fitting_fig5>`.
+This demonstrates the use of simple constraints for Parameters in fits:
+we've used an algebraic expression to ensure that the weights for the two
 components in the fit add to 1.
-
-
 
 The fit here is not perfect, and we suspect there may be another standard
 as a component to the fit.  But at this point, we have several candidate
@@ -406,7 +401,7 @@ can compare the results.   This makes use of some of the more advanced
 scripting features of larch:
 
 .. literalinclude:: ../../examples/fitting/doc_example3/fit2.lar
-
+   :language: python
 
 There are several points worth noting here:
 
@@ -458,7 +453,6 @@ and the output plots for the best model look like this:
 .. _fitting_fig6:
 
    Figure 6.  Fit with components *s1*, *s2*, and *s3*
-
   .. image:: ../images/fit_example3c1.png
      :target: ../_images/fit_example3c1.png
      :width: 48 %
@@ -544,7 +538,6 @@ The plots resulting from both sets of Parameters are shown:
 .. _fitting_fig7:
 
    Figure 7: Fit with components *s1*, *s2*, *s3*, and *s6*
-
   .. image:: ../images/fit_example3d1.png
      :target: ../_images/fit_example3d1.png
      :width: 48 %
@@ -552,18 +545,16 @@ The plots resulting from both sets of Parameters are shown:
      :target: ../_images/fit_example3d2.png
      :width: 48 %
 
-and
+.. _fitting_fig8:  
 
-.. _fitting_fig8:
-  
-  Figure 8:  Fit with components *s1*, *s2*, *s3*, and *s5*
-
+   Figure 8:  Fit with components *s1*, *s2*, *s3*, and *s5*
   .. image:: ../images/fit_example3e1.png
      :target: ../_images/fit_example3e1.png
      :width: 48 %
   .. image:: ../images/fit_example3e2.png
      :target: ../_images/fit_example3e2.png
      :width: 48 %
+
 
 From the plots alone, it is difficult to tell which of these fits is
 better, and it is probably say that these are both good fits, suggesting

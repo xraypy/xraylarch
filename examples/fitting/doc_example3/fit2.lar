@@ -1,3 +1,4 @@
+## examples/fitting/doc_example3/fit2.lar
 run('ReadData.lar')
 
 # define objective function for fit residual
@@ -99,3 +100,4 @@ print fit_report(best_params)
  
 make_plots(best_params, data)
 
+## end of examples/fitting/doc_example3/fit2.lar

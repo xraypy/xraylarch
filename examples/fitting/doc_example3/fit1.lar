@@ -1,3 +1,4 @@
+## examples/fitting/doc_example3/fit1.lar
 run('ReadData.lar')
 
 # create a group of fit parameters
@@ -41,4 +42,4 @@ plot(data.energy, fit,  label='final', color='red')
 
 plot(data.energy, 10*(data.mu-fit),  label='resid(x10)', color='black')
 
-
+## end of examples/fitting/doc_example3/fit1.lar
