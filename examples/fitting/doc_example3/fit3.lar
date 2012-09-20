@@ -1,0 +1,140 @@
+run('ReadData.lar')
+
+# define objective function for fit residual
+def sum_standards(p, data):
+    return (p.amp1*data.s1 + p.amp2*data.s2 + p.amp3*data.s3 +
+            p.amp4*data.s4 + p.amp5*data.s5 + p.amp6*data.s6 )
+enddef
+
+def resid(pars, data):
+    """residual function for minimization"""
+    out = data.mu - sum_standards(pars, data)
+    if hasattr(data, 'eps'):
+        out = out / data.eps
+    endif
+    return out
+enddef
+
+params = group(amp1 = param(0.4, vary=True, min=0, max=1),
+               amp2 = param(0.4, vary=True, min=0, max=1),
+               amp3 = param(0.0, min=0, max=1),
+               amp4 = param(0.0, min=0, max=1),
+               amp5 = param(0.0, min=0, max=1),
+               amp6 = param(0.0, min=0, max=1),  note = '')
+
+# make multiple copies of this parameter group:
+pars = []
+
+# Model:  two components only (same as fit1)
+pars.append(copy(params))
+pars[0].amp2.vary = False
+pars[0].amp2.expr = '1 - amp1'
+pars[0].note = '2 component fit:  s1, s2'
+
+# Model: three components
+pars.append(copy(params))
+pars[1].amp3.expr = '1 - amp1 - amp2'
+pars[1].note = '3 component fit:  s1, s2, s3'
+
+# Model: three components
+pars.append(copy(params))
+pars[2].amp4.expr = '1 - amp1 - amp2'
+pars[2].note = '3 component fit:  s1, s2, s4'
+
+# Model: three components
+pars.append(copy(params))
+pars[3].amp5.expr = '1 - amp1 - amp2'
+pars[3].note = '3 component fit:  s1, s2, s5'
+
+# Model: three components
+pars.append(copy(params))
+pars[4].amp6.expr = '1 - amp1 - amp2'
+pars[4].note = '3 component fit:  s1, s2, s6'
+
+# Model: four components
+pars.append(copy(params))
+pars[5].amp3.vary = True
+pars[5].amp4.expr = '1 - amp1 - amp2 - amp3'
+pars[5].note = '4 component fit:  s1, s2, s3, s4'
+
+# Model: four components
+pars.append(copy(params))
+pars[6].amp3.vary = True
+pars[6].amp5.expr = '1 - amp1 - amp2 - amp3'
+pars[6].note = '4 component fit:  s1, s2, s3, s5'
+
+# Model: four components
+pars.append(copy(params))
+pars[7].amp3.vary = True
+pars[7].amp6.expr = '1 - amp1 - amp2 - amp3'
+pars[7].note = '4 component fit:  s1, s2, s3, s6'
+
+
+# Model: four components
+pars.append(copy(params))
+pars[8].amp4.vary = True
+pars[8].amp5.expr = '1 - amp1 - amp2 - amp4'
+pars[8].note = '4 component fit:  s1, s2, s4, s5'
+
+# Model: four components
+pars.append(copy(params))
+pars[9].amp5.vary = True
+pars[9].amp1.value = 0.3
+pars[9].amp2.value = 0.3
+pars[9].amp5.value = 0.3
+pars[9].amp6.expr = '1 - amp1 - amp2 - amp5'
+pars[9].note = '4 component fit:  s1, s2, s5, s6'
+
+# Model: four components
+pars.append(copy(params))
+pars[10].amp4.vary = True
+pars[10].amp6.expr = '1 - amp1 - amp2 - amp4'
+pars[10].note = '4 component fit:  s1, s2, s4, s6'
+
+
+# set uncertainty in data that we'll use to scale the returned residual
+data.eps  = 0.001
+
+
+## Now loop over parameter groups, performing fit and comparing
+## the value of reduced chi-square
+print 'chi_reduced         fit notes'
+print '-------------------------------------'
+best_chi2, best_params = 1.e99, None
+for p in pars:
+    minimize(resid, p, args=(data,))
+    print "  %.4f   %s" % (p.chi_reduced, p.note)
+    if p.chi_reduced < best_chi2:
+        best_params, best_chi2 = p, p.chi_reduced
+    endif
+endfor
+
+def make_plots(pars, d):
+    "generates best-fit plots for a parameter group"
+   fit = sum_standards(pars, d)
+   plot(d.energy, d.mu,   label='data', color='blue', marker='+',
+        markersize=5, show_legend=True, legend_loc='cr', new=True,
+        xlabel='Energy (eV)', title=pars.note, xmin=11900, xmax=12000)
+   plot(d.energy, fit,  label='final', color='red')
+   plot(d.energy, 10*(d.mu-fit),  label='resid(x10)', color='black')
+
+   # window 2: components
+   plot(d.energy, d.mu,  label='data', color='blue', marker='+',
+        markersize=5, show_legend=True, legend_loc='ur', new=True, win=2,
+        xlabel='Energy (eV)', title=pars.note, xmin=11900, xmax=12000)
+   if pars.amp1 != 0:  plot(d.energy, pars.amp1*d.s1, label='s1', win=2)
+   if pars.amp2 != 0:  plot(d.energy, pars.amp2*d.s2, label='s2', win=2)
+   if pars.amp3 != 0:  plot(d.energy, pars.amp3*d.s3, label='s3', win=2)
+   if pars.amp4 != 0:  plot(d.energy, pars.amp4*d.s4, label='s4', win=2)
+   if pars.amp5 != 0:  plot(d.energy, pars.amp5*d.s5, label='s5', win=2)
+   if pars.amp6 != 0:  plot(d.energy, pars.amp6*d.s6, label='s6', win=2)
+enddef
+
+print 'Best Fit:  ', best_params.note
+# NOTE!  set paramGroup to best_params to ensure
+#        that constraintes are properly evaluated
+
+_sys.paramGroup = best_params
+print fit_report(best_params)
+ 
+make_plots(best_params, data)
