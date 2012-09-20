@@ -1,8 +1,10 @@
 *.pyc
 *~
 *#
+.deps
 doc/_build
 doc/*.pdf
 build
 dist
+sandbox/
 NonGit/
