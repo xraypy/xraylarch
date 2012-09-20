@@ -149,7 +149,7 @@ def write_ascii(filename, *args, **kws):
     buff.append('%s---------------------------------'% com)
     if label is None:
         label = '  '.join(['col%i' % (i+1) for i in range(len(arrays))])
-    buff.append('  %s' % label)
+    buff.append('#  %s' % label)
 
     arrays = np.array(arrays)
     for i in range(arraylen):
@@ -164,6 +164,7 @@ def write_ascii(filename, *args, **kws):
 
     try:
         fout.write('\n'.join(buff))
+        fout.write('\n')
     except:
         _larch.writer.write("cannot write to file %s'" % filename)
         return

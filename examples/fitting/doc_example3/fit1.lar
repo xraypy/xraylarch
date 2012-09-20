@@ -1,0 +1,44 @@
+run('ReadData.lar')
+
+# create a group of fit parameters
+params = group(amp1 = param(0.5, min=0, max=1),
+               amp2 = param(0.5, min=0, max=1),
+               amp3 = param(0.0, min=0, max=1),
+               amp4 = param(0.0, min=0, max=1),
+               amp5 = param(0.0, min=0, max=1),
+               amp6 = param(0.0, min=0, max=1))
+
+# define objective function for fit residual
+def sum_standards(pars, data):
+    return (pars.amp1*data.s1 + pars.amp2*data.s2 + pars.amp3*data.s3 +
+            pars.amp4*data.s4 + pars.amp5*data.s5 + pars.amp6*data.s6 )
+enddef
+
+def resid(pars, data):
+    return data.mu - sum_standards(pars, data)
+enddef
+
+# tweak model here: Amp1 is free,
+# 1 Amp is constrained to be 1 - sum_of_others
+#
+params.amp1.vary = True
+params.amp2.expr = '1 - amp1'
+
+
+# perform fit
+minimize(resid, params, args=(data,))
+
+fit = sum_standards(params, data)
+
+plot(data.energy, data.mu,   label='data', color='blue', marker='+',
+     markersize=5, show_legend=True, legend_loc='cr', new=True,
+     xlabel='Energy (eV)', title='Sum S1 and S2 to match data',
+     xmin=11900, xmax=12000)
+plot(data.energy, fit,  label='final', color='red')
+
+plot(data.energy, 10*(data.mu-fit),  label='resid(x10)', color='black')
+
+# print report of parameters, uncertainties
+print fit_report(params)
+
+

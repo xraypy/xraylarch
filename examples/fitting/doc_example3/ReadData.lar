@@ -1,0 +1,18 @@
+d1 = read_ascii('unknown.dat')
+s1 = read_ascii('s1.dat')
+s2 = read_ascii('s2.dat')
+s3 = read_ascii('s3.dat')
+s4 = read_ascii('s4.dat')
+s5 = read_ascii('s5.dat')
+s6 = read_ascii('s6.dat')
+
+i1, i2 = index_of(d1.energy, 11870), index_of(d1.energy, 12030)
+
+data = group(energy=d1.energy[i1:i2+1], mu=d1.munorm[i1:i2+1])
+
+data.s1 = interp(data.energy, s1.energy, s1.munorm)
+data.s2 = interp(data.energy, s2.energy, s2.munorm)
+data.s3 = interp(data.energy, s3.energy, s3.munorm)
+data.s4 = interp(data.energy, s4.energy, s4.munorm)
+data.s5 = interp(data.energy, s5.energy, s5.munorm)
+data.s6 = interp(data.energy, s6.energy, s6.munorm)

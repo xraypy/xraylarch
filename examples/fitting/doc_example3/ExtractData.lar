@@ -1,0 +1,21 @@
+files = ('Au foil.nor',
+         'Au3 Cl aq.nor',
+         'Au hydroxide.nor',
+         'Au thiocyanide.nor',
+         'Au sulphide.nor',
+         'Au thiosulphate aq.nor' )
+
+def convert(fname, oname):
+    f = read_ascii('FromAthena/%s' % fname, labels='energy munorm')
+    header = ['data extracted from cyanobacteria.prj, file=%s' % fname]
+    label = '  energy         munorm'
+    write_ascii(oname, f.energy, f.munorm, label=label, header=header)
+enddef
+
+convert('au_cyano_data.nor', 'unknown.dat')
+i = 0
+for fname in files:
+    i = i + 1
+    oname = 's%i.dat' % i
+    convert(fname, oname)
+endfor

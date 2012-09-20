@@ -13,6 +13,9 @@ fit.
 argument, and returns an array to be minimized in the least-squares sense.
 
 
+The files for the examples shown here are all can be found in the
+*examples/fitting* folder of the main Larch distribution.
+
 Example 1: Fitting a Simple Gaussian
 ======================================
 
@@ -41,7 +44,7 @@ some detail.
 
   3. **define objective function for fit residual**: As above, this
   function will receive the group of fit parameters as the first argument,
-  and may also receive other arguments as specficied in the call to
+  and may also receive other arguments as specified in the call to
   :func:`_math.minimize`.  This function returns the residual of the fit
   (data - model).
 
@@ -111,7 +114,7 @@ the ``index_of`` function.  The objective function ``resid()`` is very
 simple, calling ``make_models()`` which creates the model of two Gaussian
 peaks, an error function, and an offset.  There are 10 parameters for the
 fit.  We're fitting the spectra with two Gaussian functions and an error
-function.  It is oten observed that if the centroids of peak functions such
+function.  It is often observed that if the centroids of peak functions such
 as Gaussians are left to vary completely freely they tend to wander around
 and give lousy fits, so here we place fairly tight controls on the
 centroids.  We also place bounds on the amplitudes and widths of the peaks,
@@ -126,8 +129,8 @@ The fit gives a report (ignoring correlations) like this::
        nfev (func calls)   = 214
        chi_square          = 0.001194
        reduced chi_square  = 0.000029
-     
-    [[Variables]] 
+
+    [[Variables]]
        amp1           =  0.078636 +/- 0.015419 (init=  0.250000)
        amp2           =  0.406155 +/- 0.044061 (init=  0.250000)
        cen1           =  7113.212401 +/- 0.074142 (init=  7113.250000)
@@ -139,7 +142,7 @@ The fit gives a report (ignoring correlations) like this::
        wid1           =  0.489783 +/- 0.068186 (init=  0.600000)
        wid2           =  1.877520 +/- 0.166384 (init=  1.200000)
     =======================================================
- 
+
 
 and the plots of the resulting best-fit and components look like these:
 
@@ -151,19 +154,19 @@ and the plots of the resulting best-fit and components look like these:
      :width: 48 %
 
 
-and we see the fit is pretty good.  
+and we see the fit is pretty good.
 
 Looking more closely, however, there is a hint in the data and the residual
 that we may have missed a third peak at around E = 7122 eV.  We can add
 this by simply adding another peak function to the ``make_models()``
 function::
-    
+
     def make_model(pars, data, components=False):
         """make model of spectra: 2 peak functions, 1 erf function, offset"""
         p1 = pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1)
         p2 = pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2)
-        p3 = pars.amp3 * gaussian(data.e, pars.cen3, pars.wid3)    
-    
+        p3 = pars.amp3 * gaussian(data.e, pars.cen3, pars.wid3)
+
         e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
         sum = p1 + p2 + p3 + e1
         if components:
@@ -192,8 +195,8 @@ The fit now has 13 variables, and gives a report like this::
        nfev (func calls)   = 775
        chi_square          = 0.000103
        reduced chi_square  = 0.000003
-     
-    [[Variables]] 
+
+    [[Variables]]
        amp1           =  0.080092 +/- 0.005012 (init=  0.250000)
        amp2           =  0.384458 +/- 0.017113 (init=  0.250000)
        amp3           =  0.111112 +/- 0.016366 (init=  0.500000)
@@ -228,7 +231,7 @@ section, we simply change ``make_models()`` to use::
 
     p1 = pars.amp1 * voigt(data.e, pars.cen1, pars.wid1)
     p2 = pars.amp2 * voigt(data.e, pars.cen2, pars.wid2)
-    p3 = pars.amp3 * voigt(data.e, pars.cen3, pars.wid3)    
+    p3 = pars.amp3 * voigt(data.e, pars.cen3, pars.wid3)
 
 
 The fit report now reads::
@@ -240,8 +243,8 @@ The fit report now reads::
        nfev (func calls)   = 441
        chi_square          = 0.000093
        reduced chi_square  = 0.000002
-     
-    [[Variables]] 
+
+    [[Variables]]
        amp1           =  0.146617 +/- 0.012757 (init=  0.250000)
        amp2           =  0.445953 +/- 0.035927 (init=  0.250000)
        amp3           =  0.193669 +/- 0.032386 (init=  0.500000)
@@ -259,7 +262,7 @@ The fit report now reads::
 
 and we see that the already very low
 :math:`\chi^2` reduces by another 10%, which suggests a real improvement.
-For completeness,  the plots from this fit look like this: 
+For completeness,  the plots from this fit look like this:
 
   .. image:: ../images/fit_example2c1.png
      :target: ../_images/fit_example2c1.png
@@ -273,32 +276,92 @@ but the ability to explore fitting with different lineshapes like this is
 still a useful test of the robustness of the fit.
 
 
-
 Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra
 ==========================================================================
 
-This example is simpler than the previous one, though still worth an
+This example is quite a bit simpler than the previous one, though worth an
 explicit example.  Here, we fit a XANES spectra as a linear combination of
-two other spectra. It is often used to compare an unknown spectra with a
-large selection of candidate model spectra, taking the result with lowest
-misfit statistics as the most likely results.  Though it should be used
-with some caution, this represents a standard and very simple approach to
-XANES analysis. In the example here we only do the fit with a single pair
-of candidate spectra.  Extending to more model spectra is left as an
-exercise for the reader.  Other possible variations include fiting the
-derivatives or other spectral decompositions of the spectra.
-
-For the analysis here, we have unknown spectra X and two model spectra A
-and B.  first put all the data onto the same ordinate (energy) array.  This
-does not necessarily need to be a uniform energy grid.  We then use a
-Parameter group with two parameters.  The first of these is the amplitude
-for model spectra A, which is set to vary and have a minimum value of 0 and
-a maximum of 1.  The second parameter is the amplitude for model spectra B,
-which is constrained to be '1 - ampA'.
+two other spectra.  This approach is often used to compare an unknown
+spectra with a large selection of candidate model spectra, taking the
+result with lowest misfit statistics as the most likely results.  Though
+this method should be used with some caution, it is a standard and very
+simple approach to XANES analysis.
 
 
+The example here is borrowed from Bruce Ravel's data and tutorials, and
+based on the work published by M. Lengke, *et al*, *Environmental Science
+and Technology* **40** (20), p6304 (2006).  The goal here is not to repeat
+the whole of that analysis, but to present the mechanics of the fitting
+approach.  Essentially, we're asserting that a particular measured spectrum
+is made of a linear combination of 2 or more other spectra.  We have a set
+of candidate model spectra, and we're going to try to determine both which
+of those model spectra combine to match the measured one.  Here we will
+simply assert that all the spectra are aligned in the ordinate and that
+they are normalized in some reproducible way so that there are essentially
+no artefacts or systematic problems in the 'x' or 'y' values of the data.
+
+For the example here, the spectra are held in individual ASCII data files,
+which we'll call *unknown.dat* for the unknown spectrum and *s1.dat*,
+*s2.dat*, ..., *s6.dat* for the spectra on 6 different standards. It is
+not important for the discussion here what these spectra represent, but
+they are XANES data taken at the Au L3 edge on various Au compounds.
+
+A visual inspection of the spectra (see figure below) suggests that *s2* is probably a
+major component of the unknown, though the peak around 11950 eV is a feature
+that only *s1* has, so it too may be an important component.
+
+  .. image:: ../images/fit_example3a.png
+     :target: ../_images/fit_example3a.png
+     :width: 48 %
+  .. image:: ../images/fit_example3b.png
+     :target: ../_images/fit_example3b.png
+     :width: 48 %
+
+To quantitatively fit these spectra, we read in all the data, and then
+create a single group *dat* that will contain all the data we need.  It
+turns out (and a common issue for XAFS data), the scans here do not have
+identical energy values, so we both select a limited energy range, and
+interpolate the standards onto the energy array of the unknown, and put all
+these spectra into a single group:
+
+.. literalinclude:: ../../examples/fitting/doc_example3/ReadData.lar
 
 
+The initial fit to the unknown spectrum with spectra *s1* and *s2* looks
+like this:
+
+.. literalinclude:: ../../examples/fitting/doc_example3/fit1.lar
 
 
+Here, we actually define a weight for all 6 spectra, but just force 4 of
+them to be 0.    We place bounds of [0, 1] on all the parameters, and we
+use a constraint to ensure that the parameters add to 1.0.  The results of
+this fit are::
 
+    ===================== FIT RESULTS =====================
+    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
+       Message from fit    = Fit succeeded.
+       npts, nvarys, nfree = 160, 1, 159
+       nfev (func calls)   = 5
+       chi_square          = 0.009339
+       reduced chi_square  = 0.000059
+
+    [[Variables]]
+       amp1           =  0.470660 +/- 0.004709 (init=  0.500000)
+    [[Constraint Expressions]]
+       amp2           =  0.529340 +/- 0.004709 = '1 - amp1'
+
+    [[Correlations]]     (unreported correlations are <  0.100)
+    =======================================================
+
+and the results for this fit are shown above.
+
+The fit here is not perfect, and we suspect there may be another standard
+as a component to the fit.  But at this point, we have several candidate
+spectra, and a pretty good starting fit, so the main questions are
+
+  1. How do we know when one fit is better than another?
+  2. Which combination gives the best results.
+
+Setting up the fit as above makes it particularly
+easy to change the model around, as we'll see below.

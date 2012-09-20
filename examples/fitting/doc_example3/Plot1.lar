@@ -1,0 +1,29 @@
+d1 = read_ascii('unknown.dat')
+s1 = read_ascii('s1.dat')
+s2 = read_ascii('s2.dat')
+s3 = read_ascii('s3.dat')
+s4 = read_ascii('s4.dat')
+s5 = read_ascii('s5.dat')
+s6 = read_ascii('s6.dat')
+
+
+newplot(d1.energy, d1.munorm+2.4, color='blue', marker='+', markersize=3,
+        title = 'XANES spectra: 1 unknown and 6 standards',
+        xmin=11900, xmax=12000,ymax=3.75, xlabel='Energy (eV)', ylabel='$\\mu$')
+
+
+plot(s1.energy, s1.munorm+2.0, color='red')
+plot_text('unknown', 11965, 3.56)
+plot_text('s1',      11965, 3.16)
+plot_text('s2',      11965, 2.78)
+plot_text('s3',      11965, 2.41)
+plot_text('s4',      11965, 1.93)
+plot_text('s5',      11965, 1.53)
+plot_text('s6',      11965, 1.13)
+
+plot(s2.energy, s2.munorm+1.6, color='black')
+plot(s3.energy, s3.munorm+1.2, color='blue')
+plot(s4.energy, s4.munorm+0.8, color='red')
+plot(s5.energy, s5.munorm+0.4, color='black')
+plot(s6.energy, s6.munorm+0.0, color='blue', style='solid')
+

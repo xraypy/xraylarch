@@ -57,7 +57,7 @@ final, f1, f2, e1 = make_model(params, dat, components=True)
 plot(dat.e, dat.y,  label='data', marker='+',
      show_legend=True, legend_loc='ul',
      xlabel='Energy (eV)', ylabel='$\\mu(E)$',
-     title='Fe pre-edge peak-fit: best fit and residual',     
+     title='Fe pre-edge peak-fit: best fit and residual',
      new=True)
 
 plot(dat.e, final,  label='fit')
