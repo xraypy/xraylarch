@@ -54,7 +54,8 @@ some detail.
   arguments can also be supplied).   When this has completed, we calculate
   to model function with the final values of the parameters.
 
-  5. **plot results**.   Here we plot the data, initial, and final fits.
+  5. **plot results**.   Here we plot the data, starting values, and the final
+  fit. 
 
   6. **print report of parameters, uncertainties**.  Here we print out a
   report of the fit statistics, best fit values, uncertainties and
@@ -84,6 +85,10 @@ The printed output from ``fit_report(params)`` will look like this::
 
 
 And the plot of data and fit will look like this:
+
+.. _fitting_fig1:
+
+   Figure 1.  Simple fit to mock data
 
   .. image:: ../images/fit_example1.png
      :target: ../_images/fit_example1.png
@@ -145,6 +150,11 @@ The fit gives a report (ignoring correlations) like this::
 
 
 and the plots of the resulting best-fit and components look like these:
+
+.. _fitting_fig2:
+
+   Figure 2.  Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions and
+   an Error function
 
   .. image::  ../images/fit_example2a1.png
      :target: ../_images/fit_example2a1.png
@@ -218,6 +228,11 @@ Adding the third peak here reduced :math:`\chi^2` by a factor of 10, from
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:
 
+.. _fitting_fig3:
+
+   Figure 3.  Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions and
+   an Error function
+
   .. image::  ../images/fit_example2b1.png
      :target: ../_images/fit_example2b1.png
      :width: 48 %
@@ -264,6 +279,11 @@ and we see that the already very low
 :math:`\chi^2` reduces by another 10%, which suggests a real improvement.
 For completeness,  the plots from this fit look like this:
 
+.. _fitting_fig4:
+
+   Figure 4.  Fit to Fe K-edge pre-edge and edge with 3 Voigt functions and
+   an Error function
+
   .. image:: ../images/fit_example2c1.png
      :target: ../_images/fit_example2c1.png
      :width: 48 %
@@ -306,9 +326,15 @@ which we'll call *unknown.dat* for the unknown spectrum and *s1.dat*,
 not important for the discussion here what these spectra represent, but
 they are XANES data taken at the Au L3 edge on various Au compounds.
 
-A visual inspection of the spectra (see figure below) suggests that *s2* is probably a
-major component of the unknown, though the peak around 11950 eV is a feature
-that only *s1* has, so it too may be an important component.
+A visual inspection of the spectra (see :ref:`Figure 5 <fitting_fig5>`)
+suggests that *s2* is probably a major component of the unknown, though the
+peak around 11950 eV is a feature that only *s1* has, so it too may be an
+important component.
+
+.. _fitting_fig5:
+
+   Figure 5.  Components used for Linear Combination Fits (left) and Fit
+   with components *s1* and *s2* (right).
 
   .. image:: ../images/fit_example3a.png
      :target: ../_images/fit_example3a.png
@@ -333,35 +359,221 @@ like this:
 .. literalinclude:: ../../examples/fitting/doc_example3/fit1.lar
 
 
-Here, we actually define a weight for all 6 spectra, but just force 4 of
-them to be 0.    We place bounds of [0, 1] on all the parameters, and we
-use a constraint to ensure that the parameters add to 1.0.  The results of
-this fit are::
+Here, we actually define a weight for all 6 spectra, but force 4 of them to
+be 0.  For a two component fit, this would not be necessary, but we'll be
+expanding this shortly.  We place bounds of [0, 1] on all the parameters,
+and we use a constraint to ensure that the parameters add to 1.0.   Also
+note that we define an uncertainty in the data that we use to scale the
+``data - model`` returned by the fit.   This is somewhat arbitrarily chosen
+to be 0.001, that is 0.1% of the typical data value.  The
+results of this fit are::
 
     ===================== FIT RESULTS =====================
     [[Statistics]]    Fit succeeded,  method = 'leastsq'.
        Message from fit    = Fit succeeded.
        npts, nvarys, nfree = 160, 1, 159
        nfev (func calls)   = 5
-       chi_square          = 0.009339
-       reduced chi_square  = 0.000059
-
-    [[Variables]]
+       chi_square          = 9339.070954
+       reduced chi_square  = 58.736295
+     
+    [[Variables]] 
        amp1           =  0.470660 +/- 0.004709 (init=  0.500000)
-    [[Constraint Expressions]]
+    [[Constraint Expressions]] 
        amp2           =  0.529340 +/- 0.004709 = '1 - amp1'
-
-    [[Correlations]]     (unreported correlations are <  0.100)
+     
     =======================================================
 
-and the results for this fit are shown above.
+
+and the result for this fit is shown in the figure above.  This
+demonstrates the use of simple constraints for Parameters in fits: we've
+used an algebraic expression to ensure that the weights for the two
+components in the fit add to 1.
+
+
 
 The fit here is not perfect, and we suspect there may be another standard
 as a component to the fit.  But at this point, we have several candidate
 spectra, and a pretty good starting fit, so the main questions are
 
   1. How do we know when one fit is better than another?
-  2. Which combination gives the best results.
+  2. Which combination gives the best results?
 
-Setting up the fit as above makes it particularly
-easy to change the model around, as we'll see below.
+To answer the first question, we'll assert that "improved reduced
+chi-square" is the best way to decide which of a series of fits is best.
+To answer the second question, we'll work through all the possibilities.
+Now, we set up a more complicated script to do 5 separate fits so that we
+can compare the results.   This makes use of some of the more advanced
+scripting features of larch:
+
+.. literalinclude:: ../../examples/fitting/doc_example3/fit2.lar
+
+
+There are several points worth noting here:
+
+ a) We make a new copy of the Parameter Group for each fit -- this way we
+    can (with some care) switch back and forth between fitting models.  Note
+    that we add the non-Parameter ``note`` member to this group that give a
+    brief description of the fit.  Of course, we could add anything else we
+    wanted.
+  
+ b) We set ``amp1.vary`` and ``amp2.vary`` to ``True`` and set one of the
+    other amplitude parameter's expression to ``1 - amp1 - amp2`` to impose
+    the desired constraint.
+
+ c) The loop over Parameter groups runs the fit for each set of
+    Parameters, and checks for the lowest value of ``chi_reduced``.
+
+
+The output of running this gives::
+
+    chi_reduced         fit notes
+    -------------------------------------
+      58.7363   2 component fit:  s1, s2
+      40.1796   3 component fit:  s1, s2, s3
+      37.1932   3 component fit:  s1, s2, s4
+      32.1411   3 component fit:  s1, s2, s5
+      37.2007   3 component fit:  s1, s2, s6
+    Best Fit:   3 component fit:  s1, s2, s5
+    ===================== FIT RESULTS =====================
+    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
+       Message from fit    = Fit succeeded.
+       npts, nvarys, nfree = 160, 2, 158
+       nfev (func calls)   = 10
+       chi_square          = 5078.292601
+       reduced chi_square  = 32.141092
+     
+    [[Variables]] 
+       amp1           =  0.278665 +/- 0.017035 (init=  0.400000)
+       amp2           =  0.532070 +/- 0.003491 (init=  0.400000)
+    [[Constraint Expressions]] 
+       amp5           =  0.189264 +/- 0.016438 = '1 - amp1 - amp2'
+     
+    [[Correlations]]     (unreported correlations are <  0.100)
+       amp1, amp2           = -0.270 
+    =======================================================
+
+
+and the output plots for the best model look like this:
+
+.. _fitting_fig6:
+
+   Figure 6.  Fit with components *s1*, *s2*, and *s3*
+
+  .. image:: ../images/fit_example3c1.png
+     :target: ../_images/fit_example3c1.png
+     :width: 48 %
+  .. image:: ../images/fit_example3c2.png
+     :target: ../_images/fit_example3c2.png
+     :width: 48 %
+
+
+Of course, we aren't necessarily done here as we haven't exhausted all
+possible combinations of components.  Included in the examples
+(*examples/fitting/doc_examples3/fit3.lar*), but not reprinted here, is a
+script that runs through all possible combinations of 3 and 4 components,
+though still assuming that *s1* and *s2* are components.
+
+
+The output gives this::
+
+    chi_reduced         fit notes
+    -------------------------------------
+      58.7363   2 component fit:  s1, s2
+      40.1796   3 component fit:  s1, s2, s3
+      37.1932   3 component fit:  s1, s2, s4
+      32.1411   3 component fit:  s1, s2, s5
+      37.2007   3 component fit:  s1, s2, s6
+      59.2220   4 component fit:  s1, s2, s3, s4
+      14.7269   4 component fit:  s1, s2, s3, s5
+      13.3452   4 component fit:  s1, s2, s3, s6
+      30.1274   4 component fit:  s1, s2, s4, s5
+      32.3537   4 component fit:  s1, s2, s5, s6
+      34.3471   4 component fit:  s1, s2, s4, s6
+    Best Fit:   4 component fit:  s1, s2, s3, s6
+    ===================== FIT RESULTS =====================
+    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
+       Message from fit    = Fit succeeded.
+       npts, nvarys, nfree = 160, 3, 157
+       nfev (func calls)   = 22
+       chi_square          = 2095.190450
+       reduced chi_square  = 13.345162
+     
+    [[Variables]] 
+       amp1           =  0.327883 +/- 0.009491 (init=  0.400000)
+       amp2           =  0.465013 +/- 0.005625 (init=  0.400000)
+       amp3           =  0.063834 +/- 0.003834 (init=  0.000000)
+    [[Constraint Expressions]] 
+       amp6           =  0.143270 +/- 0.008020 = '1 - amp1 - amp2 - amp3'
+     
+    [[Correlations]]     (unreported correlations are <  0.100)
+       amp2, amp3           = -0.890 
+       amp1, amp2           = -0.340 
+    =======================================================
+
+You might notice that, whereas the 3 component fit favored adding *s5*, the
+four component fit favors *s3* and *s6*.  You might further notice that the
+four component fit with *s3* and *s5* has reduced chi-square of 14.7, only
+slightly worse than the best value.  For completeness, the parameters for
+that are::
+
+    larch> print fit_report(pars[6])
+    ===================== FIT RESULTS =====================
+    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
+       Message from fit    = Fit succeeded.
+       npts, nvarys, nfree = 160, 3, 157
+       nfev (func calls)   = 18
+       chi_square          = 2312.121664
+       reduced chi_square  = 14.726890
+     
+    [[Variables]] 
+       amp1           =  0.303043 +/- 0.011665 (init=  0.400000)
+       amp2           =  0.458358 +/- 0.005875 (init=  0.400000)
+       amp3           =  0.054293 +/- 0.003941 (init=  0.000000)
+    [[Constraint Expressions]] 
+       amp5           =  0.184307 +/- 0.011130 = '1 - amp1 - amp2 - amp3'
+     
+    [[Correlations]]     (unreported correlations are <  0.100)
+       amp2, amp3           = -0.916 
+       amp1, amp2           = -0.247 
+       amp1, amp3           =  0.152 
+    =======================================================
+
+
+The plots resulting from both sets of Parameters are shown:
+
+.. _fitting_fig7:
+
+   Figure 7: Fit with components *s1*, *s2*, *s3*, and *s6*
+
+  .. image:: ../images/fit_example3d1.png
+     :target: ../_images/fit_example3d1.png
+     :width: 48 %
+  .. image:: ../images/fit_example3d2.png
+     :target: ../_images/fit_example3d2.png
+     :width: 48 %
+
+and
+
+.. _fitting_fig8:
+  
+  Figure 8:  Fit with components *s1*, *s2*, *s3*, and *s5*
+
+  .. image:: ../images/fit_example3e1.png
+     :target: ../_images/fit_example3e1.png
+     :width: 48 %
+  .. image:: ../images/fit_example3e2.png
+     :target: ../_images/fit_example3e2.png
+     :width: 48 %
+
+From the plots alone, it is difficult to tell which of these fits is
+better, and it is probably say that these are both good fits, suggesting
+that component *s3* is important even if at a very small fraction, and that
+either component *s5* or *s6* (which aren't that different
+spectroscopically or chemically, see :ref:`Figure 5 <fitting_fig5>`) is
+present.  Of course, the analysis here is not meant to be definitive, and
+there are many more checks that could be done.  For what it's worth, Lengke
+*et al*   looked at many more unknown spectra, and also adjusted the energy
+ranges of the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the
+best components, and get concentrations of the components very similar to
+the ones here.
+
