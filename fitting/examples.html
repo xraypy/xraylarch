@@ -122,6 +122,8 @@ truly variable parameters as well as any constrained parameters) for the
 fit.</p>
 <p>2. an <em>Objective Function</em> that takes the Parameter Group as the first
 argument, and returns an array to be minimized in the least-squares sense.</p>
+<p>The files for the examples shown here are all can be found in the
+<em>examples/fitting</em> folder of the main Larch distribution.</p>
 <div class="section" id="example-1-fitting-a-simple-gaussian">
 <h2>Example 1: Fitting a Simple Gaussian<a class="headerlink" href="#example-1-fitting-a-simple-gaussian" title="Permalink to this headline">¶</a></h2>
 <p>Here we make a simple mock data set and fit a Gaussian function to it.
@@ -129,7 +131,8 @@ Though a fairly simple example, and one that is guaranteed to work well, it
 touches on all the concepts discussed above, and is a reasonable
 representation of the sort of analysis actually done when modeling many
 kinds of data.  The script to do the fit looks like this:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># create mock data</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example1.lar</span>
+<span class="c"># create mock data</span>
 <span class="n">mdat</span> <span class="o">=</span> <span class="n">group</span><span class="p">()</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">201</span><span class="p">)</span>
 <span class="n">mdat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">12.0</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">mdat</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="mf">1.5</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span> <span class="o">+</span> \
@@ -163,6 +166,9 @@ kinds of data.  The script to do the fit looks like this:</p>
 
 <span class="c"># print report of parameters, uncertainties</span>
 <span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+
+<span class="c">## end of examples/fitting/doc_example1.lar</span>
 </pre></div>
 </div>
 <p>This fitting script consists  of several components, which we&#8217;ll go over in
@@ -178,7 +184,7 @@ set.   We also calculate the initial value for the model using the
 initial guesses for the parameter values.</p>
 <p>3. <strong>define objective function for fit residual</strong>: As above, this
 function will receive the group of fit parameters as the first argument,
-and may also receive other arguments as specficied in the call to
+and may also receive other arguments as specified in the call to
 <tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt>.  This function returns the residual of the fit
 (data - model).</p>
 <p>4. <strong>perform fit</strong>.  Here we call <tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt>  with
@@ -186,9 +192,8 @@ arguments of the objective function, the parameter group, and any
 additional positional arguments to the objective function (keyword/value
 arguments can also be supplied).   When this has completed, we calculate
 to model function with the final values of the parameters.</p>
-<ol class="arabic simple" start="5">
-<li><strong>plot results</strong>.   Here we plot the data, initial, and final fits.</li>
-</ol>
+<p>5. <strong>plot results</strong>.   Here we plot the data, starting values, and the final
+fit.</p>
 <p>6. <strong>print report of parameters, uncertainties</strong>.  Here we print out a
 report of the fit statistics, best fit values, uncertainties and
 correlations between variables.</p>
@@ -215,8 +220,10 @@ correlations between variables.</p>
 =======================================================</pre>
 </div>
 <p>And the plot of data and fit will look like this:</p>
-<blockquote>
-<div><a class="reference external image-reference" href="../_images/fit_example1.png"><img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 65%;" /></a>
+<blockquote id="fitting-fig1">
+<div><blockquote>
+<div>Figure 1.  Simple fit to mock data</div></blockquote>
+<a class="reference external image-reference" href="../_images/fit_example1.png"><img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 65%;" /></a>
 </div></blockquote>
 </div>
 <div class="section" id="example-2-fitting-xanes-pre-edge-peaks">
@@ -233,7 +240,8 @@ error-function.</li>
 </ol>
 </div></blockquote>
 <p>Consequently, the script is a bit longer:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c"># read data</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example2a.lar</span>
+<span class="c"># read data</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;doc_example2.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy xmu i0&#39;</span><span class="p">)</span>
 
 <span class="c"># perform pre-processing steps, here doing an XAFS pre-edge</span>
@@ -292,7 +300,7 @@ error-function.</li>
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">y</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
      <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s">&#39;ul&#39;</span><span class="p">,</span>
      <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;$</span><span class="se">\\</span><span class="s">mu(E)$&#39;</span><span class="p">,</span>
-     <span class="n">title</span><span class="o">=</span><span class="s">&#39;Fe pre-edge peak-fit: best fit and residual&#39;</span><span class="p">,</span>     
+     <span class="n">title</span><span class="o">=</span><span class="s">&#39;Fe pre-edge peak-fit: best fit and residual&#39;</span><span class="p">,</span>
      <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">final</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;fit&#39;</span><span class="p">)</span>
@@ -308,8 +316,7 @@ error-function.</li>
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;peak2&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">plot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">e1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;erf +offset&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dashed&#39;</span><span class="p">)</span>
 
-
-<span class="c">#</span>
+<span class="c">## end of examples/fitting/doc_example2a.lar</span>
 </pre></div>
 </div>
 <p>First, we read in the data and do some XAFS-specific preprocessing step.
@@ -318,7 +325,7 @@ the <tt class="docutils literal"><span class="pre">index_of</span></tt> function
 simple, calling <tt class="docutils literal"><span class="pre">make_models()</span></tt> which creates the model of two Gaussian
 peaks, an error function, and an offset.  There are 10 parameters for the
 fit.  We&#8217;re fitting the spectra with two Gaussian functions and an error
-function.  It is oten observed that if the centroids of peak functions such
+function.  It is often observed that if the centroids of peak functions such
 as Gaussians are left to vary completely freely they tend to wander around
 and give lousy fits, so here we place fairly tight controls on the
 centroids.  We also place bounds on the amplitudes and widths of the peaks,
@@ -346,8 +353,11 @@ so they can&#8217;t go too far astray.</p>
 =======================================================</pre>
 </div>
 <p>and the plots of the resulting best-fit and components look like these:</p>
-<blockquote>
-<div><a class="reference external image-reference" href="../_images/fit_example2a1.png"><img alt="../_images/fit_example2a1.png" src="../_images/fit_example2a1.png" style="width: 48%;" /></a>
+<blockquote id="fitting-fig2">
+<div><blockquote>
+<div>Figure 2.  Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions and
+an Error function</div></blockquote>
+<a class="reference external image-reference" href="../_images/fit_example2a1.png"><img alt="../_images/fit_example2a1.png" src="../_images/fit_example2a1.png" style="width: 48%;" /></a>
 <a class="reference external image-reference" href="../_images/fit_example2a2.png"><img alt="../_images/fit_example2a2.png" src="../_images/fit_example2a2.png" style="width: 48%;" /></a>
 </div></blockquote>
 <p>and we see the fit is pretty good.</p>
@@ -371,12 +381,13 @@ function:</p>
 </pre></div>
 </div>
 <p>and 3 more fitting parameters to the parameter group:</p>
-<div class="highlight-python"><pre>params = group(
-    ...
-    cen3 = param(7122.0, vary=True, min=7120, max=7124),
-    amp3 = param(0.5,    vary=True, min=0),
-    wid3 = param(1.2,    vary=True, min=0.05),
-    ...)</pre>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span>
+    <span class="o">...</span>
+    <span class="n">cen3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">7122.0</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">7120</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">7124</span><span class="p">),</span>
+    <span class="n">amp3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span>    <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+    <span class="n">wid3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.2</span><span class="p">,</span>    <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.05</span><span class="p">),</span>
+    <span class="o">...</span><span class="p">)</span>
+</pre></div>
 </div>
 <p>The fit now has 13 variables, and gives a report like this:</p>
 <div class="highlight-python"><pre>===================== FIT RESULTS =====================
@@ -407,8 +418,11 @@ function:</p>
 0.0001194 to 0.0000103, and so seems to be a significant improvement.  The
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:</p>
-<blockquote>
-<div><a class="reference external image-reference" href="../_images/fit_example2b1.png"><img alt="../_images/fit_example2b1.png" src="../_images/fit_example2b1.png" style="width: 48%;" /></a>
+<blockquote id="fitting-fig3">
+<div><blockquote>
+<div>Figure 3.  Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions and
+an Error function</div></blockquote>
+<a class="reference external image-reference" href="../_images/fit_example2b1.png"><img alt="../_images/fit_example2b1.png" src="../_images/fit_example2b1.png" style="width: 48%;" /></a>
 <a class="reference external image-reference" href="../_images/fit_example2b2.png"><img alt="../_images/fit_example2b2.png" src="../_images/fit_example2b2.png" style="width: 48%;" /></a>
 </div></blockquote>
 <p>Finally for this example, we can replace the Gaussian peak shapes with
@@ -447,8 +461,11 @@ section, we simply change <tt class="docutils literal"><span class="pre">make_mo
 <p>and we see that the already very low
 <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> reduces by another 10%, which suggests a real improvement.
 For completeness,  the plots from this fit look like this:</p>
-<blockquote>
-<div><a class="reference external image-reference" href="../_images/fit_example2c1.png"><img alt="../_images/fit_example2c1.png" src="../_images/fit_example2c1.png" style="width: 48%;" /></a>
+<blockquote id="fitting-fig4">
+<div><blockquote>
+<div>Figure 4.  Fit to Fe K-edge pre-edge and edge with 3 Voigt functions and
+an Error function</div></blockquote>
+<a class="reference external image-reference" href="../_images/fit_example2c1.png"><img alt="../_images/fit_example2c1.png" src="../_images/fit_example2c1.png" style="width: 48%;" /></a>
 <a class="reference external image-reference" href="../_images/fit_example2c2.png"><img alt="../_images/fit_example2c2.png" src="../_images/fit_example2c2.png" style="width: 48%;" /></a>
 </div></blockquote>
 <p>It&#8217;s difficult to see a dramatic difference in fit quality for this data,
@@ -457,23 +474,404 @@ still a useful test of the robustness of the fit.</p>
 </div>
 <div class="section" id="example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">
 <h2>Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra<a class="headerlink" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra" title="Permalink to this headline">¶</a></h2>
-<p>This example is simpler than the previous one, though still worth an
+<p>This example is quite a bit simpler than the previous one, though worth an
 explicit example.  Here, we fit a XANES spectra as a linear combination of
-two other spectra. It is often used to compare an unknown spectra with a
-large selection of candidate model spectra, taking the result with lowest
-misfit statistics as the most likely results.  Though it should be used
-with some caution, this represents a standard and very simple approach to
-XANES analysis. In the example here we only do the fit with a single pair
-of candidate spectra.  Extending to more model spectra is left as an
-exercise for the reader.  Other possible variations include fiting the
-derivatives or other spectral decompositions of the spectra.</p>
-<p>For the analysis here, we have unknown spectra X and two model spectra A
-and B.  first put all the data onto the same ordinate (energy) array.  This
-does not necessarily need to be a uniform energy grid.  We then use a
-Parameter group with two parameters.  The first of these is the amplitude
-for model spectra A, which is set to vary and have a minimum value of 0 and
-a maximum of 1.  The second parameter is the amplitude for model spectra B,
-which is constrained to be &#8216;1 - ampA&#8217;.</p>
+two other spectra.  This approach is often used to compare an unknown
+spectra with a large selection of candidate model spectra, taking the
+result with lowest misfit statistics as the most likely results.  Though
+this method should be used with some caution, it is a standard and very
+simple approach to XANES analysis.</p>
+<p>The example here is borrowed from Bruce Ravel&#8217;s data and tutorials, and
+based on the work published by M. Lengke, <em>et al</em>, <em>Environmental Science
+and Technology</em> <strong>40</strong> (20), p6304 (2006).  The goal here is not to repeat
+the whole of that analysis, but to present the mechanics of the fitting
+approach.  Essentially, we&#8217;re asserting that a particular measured spectrum
+is made of a linear combination of 2 or more other spectra.  We have a set
+of candidate model spectra, and we&#8217;re going to try to determine both which
+of those model spectra combine to match the measured one.  Here we will
+simply assert that all the spectra are aligned in the ordinate and that
+they are normalized in some reproducible way so that there are essentially
+no artefacts or systematic problems in the &#8216;x&#8217; or &#8216;y&#8217; values of the data.</p>
+<p>For the example here, the spectra are held in individual ASCII data files,
+which we&#8217;ll call <em>unknown.dat</em> for the unknown spectrum and <em>s1.dat</em>,
+<em>s2.dat</em>, ..., <em>s6.dat</em> for the spectra on 6 different standards. It is
+not important for the discussion here what these spectra represent, but
+they are XANES data taken at the Au L3 edge on various Au compounds.</p>
+<p>A visual inspection of the spectra (see <a class="reference internal" href="#fitting-fig5"><em>Figure 5</em></a>)
+suggests that <em>s2</em> is probably a major component of the unknown, though the
+peak around 11950 eV is a feature that only <em>s1</em> has, so it too may be an
+important component.</p>
+<blockquote id="fitting-fig5">
+<div><blockquote>
+<div>Figure 5.  Components used for Linear Combination Fits (left) and Fit
+with components <em>s1</em> and <em>s2</em> (right).</div></blockquote>
+<a class="reference external image-reference" href="../_images/fit_example3a.png"><img alt="../_images/fit_example3a.png" src="../_images/fit_example3a.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/fit_example3b.png"><img alt="../_images/fit_example3b.png" src="../_images/fit_example3b.png" style="width: 48%;" /></a>
+</div></blockquote>
+<p>To quantitatively fit these spectra, we read in all the data, and then
+create a single group <em>dat</em> that will contain all the data we need.  It
+turns out (and a common issue for XAFS data), the scans here do not have
+identical energy values, so we both select a limited energy range, and
+interpolate the standards onto the energy array of the unknown, and put all
+these spectra into a single group:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example3/ReadData.lar</span>
+<span class="n">d1</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;unknown.dat&#39;</span><span class="p">)</span>
+<span class="n">s1</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;s1.dat&#39;</span><span class="p">)</span>
+<span class="n">s2</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;s2.dat&#39;</span><span class="p">)</span>
+<span class="n">s3</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;s3.dat&#39;</span><span class="p">)</span>
+<span class="n">s4</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;s4.dat&#39;</span><span class="p">)</span>
+<span class="n">s5</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;s5.dat&#39;</span><span class="p">)</span>
+<span class="n">s6</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;s6.dat&#39;</span><span class="p">)</span>
+
+<span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">index_of</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">11870</span><span class="p">),</span> <span class="n">index_of</span><span class="p">(</span><span class="n">d1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">12030</span><span class="p">)</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">d1</span><span class="o">.</span><span class="n">energy</span><span class="p">[</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">mu</span><span class="o">=</span><span class="n">d1</span><span class="o">.</span><span class="n">munorm</span><span class="p">[</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">data</span><span class="o">.</span><span class="n">s1</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s1</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s2</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s2</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s2</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s3</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s3</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s3</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s4</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s4</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s4</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s5</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s5</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s5</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s6</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s6</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s6</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
+<span class="c">## end of examples/fitting/doc_example3/ReadData.lar</span>
+</pre></div>
+</div>
+<p>The initial fit to the unknown spectrum with spectra <em>s1</em> and <em>s2</em> looks
+like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example3/fit1.lar</span>
+<span class="n">run</span><span class="p">(</span><span class="s">&#39;ReadData.lar&#39;</span><span class="p">)</span>
+
+<span class="c"># create a group of fit parameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp4</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp5</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp6</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+
+<span class="c"># define objective function for fit residual</span>
+<span class="k">def</span> <span class="nf">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s1</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s2</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s3</span> <span class="o">+</span>
+            <span class="n">pars</span><span class="o">.</span><span class="n">amp4</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s4</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp5</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s5</span> <span class="o">+</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp6</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s6</span> <span class="p">)</span>
+<span class="n">enddef</span>
+
+<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span><span class="o">/</span><span class="n">data</span><span class="o">.</span><span class="n">eps</span>
+<span class="n">enddef</span>
+
+<span class="c"># set model here: Amp1 is free,</span>
+<span class="c"># Amp2 is constrained to be 1 - Amp1</span>
+
+<span class="n">params</span><span class="o">.</span><span class="n">amp1</span><span class="o">.</span><span class="n">vary</span> <span class="o">=</span> <span class="bp">True</span>
+<span class="n">params</span><span class="o">.</span><span class="n">amp2</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s">&#39;1 - amp1&#39;</span>
+
+<span class="c"># set uncertainty in data that we&#39;ll use to scale the returned residual</span>
+<span class="n">data</span><span class="o">.</span><span class="n">eps</span>  <span class="o">=</span> <span class="mf">0.001</span>
+
+<span class="c"># perform fit</span>
+<span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,))</span>
+<span class="n">fit</span> <span class="o">=</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+
+<span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>   <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+     <span class="n">markersize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s">&#39;cr&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Sum S1 and S2 to match data&#39;</span><span class="p">,</span>
+     <span class="n">xmin</span><span class="o">=</span><span class="mi">11900</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">12000</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">fit</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;final&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">10</span><span class="o">*</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">mu</span><span class="o">-</span><span class="n">fit</span><span class="p">),</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;resid(x10)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">)</span>
+
+<span class="c">## end of examples/fitting/doc_example3/fit1.lar</span>
+</pre></div>
+</div>
+<p>Here, we actually define a weight for all 6 spectra, but force 4 of them to
+be 0.  For a two component fit, this would not be necessary, but we&#8217;ll be
+expanding this shortly.  We place bounds of [0, 1] on all the parameters,
+and we use a constraint to ensure that the parameters add to 1.0.   Also
+note that we define an uncertainty in the data that we use to scale the
+<tt class="docutils literal"><span class="pre">data</span> <span class="pre">-</span> <span class="pre">model</span></tt> returned by the fit.   This is somewhat arbitrarily chosen
+to be 0.001, that is 0.1% of the typical data value.  The
+results of this fit are:</p>
+<div class="highlight-python"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 160, 1, 159
+   nfev (func calls)   = 5
+   chi_square          = 9339.070954
+   reduced chi_square  = 58.736295
+
+[[Variables]]
+   amp1           =  0.470660 +/- 0.004709 (init=  0.500000)
+[[Constraint Expressions]]
+   amp2           =  0.529340 +/- 0.004709 = '1 - amp1'
+
+=======================================================</pre>
+</div>
+<p>and the result for this fit is shown in <a class="reference internal" href="#fitting-fig5"><em>Figure 5</em></a>.
+This demonstrates the use of simple constraints for Parameters in fits:
+we&#8217;ve used an algebraic expression to ensure that the weights for the two
+components in the fit add to 1.</p>
+<p>The fit here is not perfect, and we suspect there may be another standard
+as a component to the fit.  But at this point, we have several candidate
+spectra, and a pretty good starting fit, so the main questions are</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>How do we know when one fit is better than another?</li>
+<li>Which combination gives the best results?</li>
+</ol>
+</div></blockquote>
+<p>To answer the first question, we&#8217;ll assert that &#8220;improved reduced
+chi-square&#8221; is the best way to decide which of a series of fits is best.
+To answer the second question, we&#8217;ll work through all the possibilities.
+Now, we set up a more complicated script to do 5 separate fits so that we
+can compare the results.   This makes use of some of the more advanced
+scripting features of larch:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example3/fit2.lar</span>
+<span class="n">run</span><span class="p">(</span><span class="s">&#39;ReadData.lar&#39;</span><span class="p">)</span>
+
+<span class="c"># define objective function for fit residual</span>
+<span class="k">def</span> <span class="nf">sum_standards</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">amp1</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s1</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp2</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s2</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp3</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s3</span> <span class="o">+</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">amp4</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s4</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp5</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s5</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">amp6</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">s6</span> <span class="p">)</span>
+<span class="n">enddef</span>
+
+<span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;residual function for minimization&quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">mu</span> <span class="o">-</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s">&#39;eps&#39;</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out</span> <span class="o">/</span> <span class="n">data</span><span class="o">.</span><span class="n">eps</span>
+    <span class="n">endif</span>
+    <span class="k">return</span> <span class="n">out</span>
+<span class="n">enddef</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp4</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp5</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+               <span class="n">amp6</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>  <span class="n">note</span> <span class="o">=</span> <span class="s">&#39;&#39;</span><span class="p">)</span>
+
+<span class="c"># make 4 copies of this parameter group:</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c"># Model:  two components only (same as fit1)</span>
+<span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">amp2</span><span class="o">.</span><span class="n">vary</span> <span class="o">=</span> <span class="bp">False</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">amp2</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s">&#39;1 - amp1&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s">&#39;2 component fit:  s1, s2&#39;</span>
+
+<span class="c"># Model: three components</span>
+<span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">amp3</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s">&#39;1 - amp1 - amp2&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s">&#39;3 component fit:  s1, s2, s3&#39;</span>
+
+<span class="c"># Model: three components</span>
+<span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">amp4</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s">&#39;1 - amp1 - amp2&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s">&#39;3 component fit:  s1, s2, s4&#39;</span>
+
+<span class="c"># Model: three components</span>
+<span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">amp5</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s">&#39;1 - amp1 - amp2&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s">&#39;3 component fit:  s1, s2, s5&#39;</span>
+
+<span class="c"># Model: three components</span>
+<span class="n">pars</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">copy</span><span class="p">(</span><span class="n">params</span><span class="p">))</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">amp6</span><span class="o">.</span><span class="n">expr</span> <span class="o">=</span> <span class="s">&#39;1 - amp1 - amp2&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">note</span> <span class="o">=</span> <span class="s">&#39;3 component fit:  s1, s2, s6&#39;</span>
+
+<span class="c"># set uncertainty in data that we&#39;ll use to scale the returned residual</span>
+<span class="n">data</span><span class="o">.</span><span class="n">eps</span>  <span class="o">=</span> <span class="mf">0.001</span>
+
+
+
+<span class="c">## Now loop over parameter groups, performing fit and comparing</span>
+<span class="c">## the value of reduced chi-square</span>
+<span class="k">print</span> <span class="s">&#39;chi_reduced         fit notes&#39;</span>
+<span class="k">print</span> <span class="s">&#39;-------------------------------------&#39;</span>
+<span class="n">best_chi2</span><span class="p">,</span> <span class="n">best_params</span> <span class="o">=</span> <span class="mf">1.e99</span><span class="p">,</span> <span class="bp">None</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pars</span><span class="p">:</span>
+    <span class="n">minimize</span><span class="p">(</span><span class="n">resid</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">data</span><span class="p">,))</span>
+    <span class="k">print</span> <span class="s">&quot;  </span><span class="si">%.4f</span><span class="s">   </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">chi_reduced</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">note</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">chi_reduced</span> <span class="o">&lt;</span> <span class="n">best_chi2</span><span class="p">:</span>
+        <span class="n">best_params</span><span class="p">,</span> <span class="n">best_chi2</span> <span class="o">=</span> <span class="n">p</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">chi_reduced</span>
+    <span class="n">endif</span>
+<span class="n">endfor</span>
+
+<span class="k">def</span> <span class="nf">make_plots</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">d</span><span class="p">):</span>
+    <span class="s">&quot;generates best-fit plots for a parameter group&quot;</span>
+   <span class="n">fit</span> <span class="o">=</span> <span class="n">sum_standards</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+   <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>   <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+        <span class="n">markersize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s">&#39;cr&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">pars</span><span class="o">.</span><span class="n">note</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="mi">11900</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">12000</span><span class="p">)</span>
+   <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">fit</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;final&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">)</span>
+   <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="mi">10</span><span class="o">*</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">mu</span><span class="o">-</span><span class="n">fit</span><span class="p">),</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;resid(x10)&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">)</span>
+
+   <span class="c"># window 2: components</span>
+   <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+        <span class="n">markersize</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s">&#39;ur&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">pars</span><span class="o">.</span><span class="n">note</span><span class="p">,</span> <span class="n">xmin</span><span class="o">=</span><span class="mi">11900</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">12000</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">s1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;s1&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">s2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;s2&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">s3</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;s3&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp4</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp4</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">s4</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;s4&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp5</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp5</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">s5</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;s5&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+   <span class="k">if</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp6</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="n">plot</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp6</span><span class="o">*</span><span class="n">d</span><span class="o">.</span><span class="n">s6</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;s6&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">enddef</span>
+
+<span class="k">print</span> <span class="s">&#39;Best Fit:  &#39;</span><span class="p">,</span> <span class="n">best_params</span><span class="o">.</span><span class="n">note</span>
+<span class="c"># NOTE!  set paramGroup to best_params to ensure</span>
+<span class="c">#        that constraintes are properly evaluated</span>
+
+<span class="n">_sys</span><span class="o">.</span><span class="n">paramGroup</span> <span class="o">=</span> <span class="n">best_params</span>
+<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">best_params</span><span class="p">)</span>
+ 
+<span class="n">make_plots</span><span class="p">(</span><span class="n">best_params</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+<span class="c">## end of examples/fitting/doc_example3/fit2.lar</span>
+</pre></div>
+</div>
+<p>There are several points worth noting here:</p>
+<blockquote>
+<div><ol class="loweralpha simple">
+<li>We make a new copy of the Parameter Group for each fit &#8211; this way we
+can (with some care) switch back and forth between fitting models.  Note
+that we add the non-Parameter <tt class="docutils literal"><span class="pre">note</span></tt> member to this group that give a
+brief description of the fit.  Of course, we could add anything else we
+wanted.</li>
+<li>We set <tt class="docutils literal"><span class="pre">amp1.vary</span></tt> and <tt class="docutils literal"><span class="pre">amp2.vary</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> and set one of the
+other amplitude parameter&#8217;s expression to <tt class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">amp1</span> <span class="pre">-</span> <span class="pre">amp2</span></tt> to impose
+the desired constraint.</li>
+<li>The loop over Parameter groups runs the fit for each set of
+Parameters, and checks for the lowest value of <tt class="docutils literal"><span class="pre">chi_reduced</span></tt>.</li>
+</ol>
+</div></blockquote>
+<p>The output of running this gives:</p>
+<div class="highlight-python"><pre>chi_reduced         fit notes
+-------------------------------------
+  58.7363   2 component fit:  s1, s2
+  40.1796   3 component fit:  s1, s2, s3
+  37.1932   3 component fit:  s1, s2, s4
+  32.1411   3 component fit:  s1, s2, s5
+  37.2007   3 component fit:  s1, s2, s6
+Best Fit:   3 component fit:  s1, s2, s5
+===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 160, 2, 158
+   nfev (func calls)   = 10
+   chi_square          = 5078.292601
+   reduced chi_square  = 32.141092
+
+[[Variables]]
+   amp1           =  0.278665 +/- 0.017035 (init=  0.400000)
+   amp2           =  0.532070 +/- 0.003491 (init=  0.400000)
+[[Constraint Expressions]]
+   amp5           =  0.189264 +/- 0.016438 = '1 - amp1 - amp2'
+
+[[Correlations]]     (unreported correlations are &lt;  0.100)
+   amp1, amp2           = -0.270
+=======================================================</pre>
+</div>
+<p>and the output plots for the best model look like this:</p>
+<blockquote id="fitting-fig6">
+<div><blockquote>
+<div>Figure 6.  Fit with components <em>s1</em>, <em>s2</em>, and <em>s3</em></div></blockquote>
+<a class="reference external image-reference" href="../_images/fit_example3c1.png"><img alt="../_images/fit_example3c1.png" src="../_images/fit_example3c1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/fit_example3c2.png"><img alt="../_images/fit_example3c2.png" src="../_images/fit_example3c2.png" style="width: 48%;" /></a>
+</div></blockquote>
+<p>Of course, we aren&#8217;t necessarily done here as we haven&#8217;t exhausted all
+possible combinations of components.  Included in the examples
+(<em>examples/fitting/doc_examples3/fit3.lar</em>), but not reprinted here, is a
+script that runs through all possible combinations of 3 and 4 components,
+though still assuming that <em>s1</em> and <em>s2</em> are components.</p>
+<p>The output gives this:</p>
+<div class="highlight-python"><pre>chi_reduced         fit notes
+-------------------------------------
+  58.7363   2 component fit:  s1, s2
+  40.1796   3 component fit:  s1, s2, s3
+  37.1932   3 component fit:  s1, s2, s4
+  32.1411   3 component fit:  s1, s2, s5
+  37.2007   3 component fit:  s1, s2, s6
+  59.2220   4 component fit:  s1, s2, s3, s4
+  14.7269   4 component fit:  s1, s2, s3, s5
+  13.3452   4 component fit:  s1, s2, s3, s6
+  30.1274   4 component fit:  s1, s2, s4, s5
+  32.3537   4 component fit:  s1, s2, s5, s6
+  34.3471   4 component fit:  s1, s2, s4, s6
+Best Fit:   4 component fit:  s1, s2, s3, s6
+===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 160, 3, 157
+   nfev (func calls)   = 22
+   chi_square          = 2095.190450
+   reduced chi_square  = 13.345162
+
+[[Variables]]
+   amp1           =  0.327883 +/- 0.009491 (init=  0.400000)
+   amp2           =  0.465013 +/- 0.005625 (init=  0.400000)
+   amp3           =  0.063834 +/- 0.003834 (init=  0.000000)
+[[Constraint Expressions]]
+   amp6           =  0.143270 +/- 0.008020 = '1 - amp1 - amp2 - amp3'
+
+[[Correlations]]     (unreported correlations are &lt;  0.100)
+   amp2, amp3           = -0.890
+   amp1, amp2           = -0.340
+=======================================================</pre>
+</div>
+<p>You might notice that, whereas the 3 component fit favored adding <em>s5</em>, the
+four component fit favors <em>s3</em> and <em>s6</em>.  You might further notice that the
+four component fit with <em>s3</em> and <em>s5</em> has reduced chi-square of 14.7, only
+slightly worse than the best value.  For completeness, the parameters for
+that are:</p>
+<div class="highlight-python"><pre>larch&gt; print fit_report(pars[6])
+===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 160, 3, 157
+   nfev (func calls)   = 18
+   chi_square          = 2312.121664
+   reduced chi_square  = 14.726890
+
+[[Variables]]
+   amp1           =  0.303043 +/- 0.011665 (init=  0.400000)
+   amp2           =  0.458358 +/- 0.005875 (init=  0.400000)
+   amp3           =  0.054293 +/- 0.003941 (init=  0.000000)
+[[Constraint Expressions]]
+   amp5           =  0.184307 +/- 0.011130 = '1 - amp1 - amp2 - amp3'
+
+[[Correlations]]     (unreported correlations are &lt;  0.100)
+   amp2, amp3           = -0.916
+   amp1, amp2           = -0.247
+   amp1, amp3           =  0.152
+=======================================================</pre>
+</div>
+<p>The plots resulting from both sets of Parameters are shown:</p>
+<blockquote id="fitting-fig7">
+<div><blockquote>
+<div>Figure 7: Fit with components <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s6</em></div></blockquote>
+<a class="reference external image-reference" href="../_images/fit_example3d1.png"><img alt="../_images/fit_example3d1.png" src="../_images/fit_example3d1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/fit_example3d2.png"><img alt="../_images/fit_example3d2.png" src="../_images/fit_example3d2.png" style="width: 48%;" /></a>
+</div></blockquote>
+<blockquote id="fitting-fig8">
+<div><blockquote>
+<div>Figure 8:  Fit with components <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em></div></blockquote>
+<a class="reference external image-reference" href="../_images/fit_example3e1.png"><img alt="../_images/fit_example3e1.png" src="../_images/fit_example3e1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/fit_example3e2.png"><img alt="../_images/fit_example3e2.png" src="../_images/fit_example3e2.png" style="width: 48%;" /></a>
+</div></blockquote>
+<p>From the plots alone, it is difficult to tell which of these fits is
+better, and it is probably say that these are both good fits, suggesting
+that component <em>s3</em> is important even if at a very small fraction, and that
+either component <em>s5</em> or <em>s6</em> (which aren&#8217;t that different
+spectroscopically or chemically, see <a class="reference internal" href="#fitting-fig5"><em>Figure 5</em></a>) is
+present.  Of course, the analysis here is not meant to be definitive, and
+there are many more checks that could be done.  For what it&#8217;s worth, Lengke
+<em>et al</em>   looked at many more unknown spectra, and also adjusted the energy
+ranges of the fits, and concludedd that <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em> were the
+best components, and get concentrations of the components very similar to
+the ones here.</p>
 </div>
 </div>
 
