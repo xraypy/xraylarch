@@ -52,8 +52,6 @@ the levels indicated.
     better than another.
 
 
-
-
 Confidence interval, Example 1
 -------------------------------
 
@@ -96,20 +94,102 @@ while the output from the much more explicit search done in
 The automatic error estimates given from :func:`minimize` are meant to be
 1-:math:`\sigma` uncertainties.   Comparing the two methods we find:
 
-    ============= =============== ========================== =======================
-     Parameter      Best Value      Automatic                 Explicit
-     Name                           1-:math:`\sigma` value    1-:math:`\sigma` value
-    ============= =============== ========================== =======================
-      amp           12.1299         +/- 0.1247                 +0.1267, -0.1246
-      cen            1.4768         +/- 0.0173                 +0.0172, -0.0172
-      off            0.9988         +/- 0.0071                 +0.0076, -0.0076
-      cen            2.0223         +/- 0.0169                 +0.0172, -0.0170
-    ============= =============== ========================== =======================
+    ============= =============== =================================== ===============================
+     Parameter      Best Value      Automatic 1-:math:`\sigma` value  Explicit 1-:math:`\sigma` value
+    ============= =============== =================================== ===============================
+      amp           12.1299         +/- 0.1247                         +0.1267, -0.1246
+      cen            1.4768         +/- 0.0173                         +0.0172, -0.0172
+      off            0.9988         +/- 0.0071                         +0.0076, -0.0076
+      cen            2.0223         +/- 0.0169                         +0.0172, -0.0170
+    ============= =============== =================================== ===============================
 
-which seems to justify the use of the automated method.
+which seems to justify the use of the automated method.  The uncertainties
+found from the more thorough exploration shows symmetric uncertainties,
+even out to the 3-:math:`\sigma` level, and of the 4 1-:math:`\sigma`
+uncertainties, 3 are within 2%, and the worst agreement, for the smallest
+uncertainty is within 7%.    It also shows that the scaling of
+uncertainties is fairly linear with :math:`\sigma`:  the 3-:math:`\sigma`
+values are approximately 3 times the 1-:math:`\sigma` values.
 
 
 Confidence interval, Example 2
 -------------------------------
 
-Of course, there are more challenging cases than the one above.
+Of course, there are more challenging cases than the one above.  A double
+exponential function is one such example, so we start with a fit to mock
+data
+
+.. literalinclude:: ../../examples/fitting/doc_example_conf2.lar
+
+
+The resulting statistics report with the automated uncertainties is::
+
+    ===================== FIT RESULTS =====================
+    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
+       Message from fit    = Fit succeeded.
+       npts, nvarys, nfree = 101, 4, 97
+       nfev (func calls)   = 36
+       chi_square          = 0.191322
+       reduced chi_square  = 0.001972
+
+    [[Variables]]
+       a1             =  2.828857 +/- 0.149776 (init=  3.500000)
+       a2             = -4.819553 +/- 0.159495 (init= -9.500000)
+       t1             =  1.878519 +/- 0.100212 (init=  3.000000)
+       t2             =  9.270866 +/- 0.309035 (init=  15.000000)
+
+    [[Correlations]]     (unreported correlations are <  0.100)
+       a2, t2               =  0.991
+       a1, a2               = -0.991
+       a1, t2               = -0.988
+       a2, t1               = -0.968
+       t1, t2               = -0.937
+       a1, t1               =  0.935
+    =======================================================
+
+You can see that the correlations between **all 6 pairs of variables** is
+above 90%.  The resulting plot of the best-fit looks fairly reasonable:
+
+.. _fit_conf_fig1:
+
+  .. image:: ../images/fit_example_conf2.png
+     :target: ../_images/fit_example_conf2.png
+     :width: 65 %
+
+
+But now we ask for the more thorough investigation of the confidence
+intervals in these parameters with::
+
+    conf_int = confidence_intervals(minout)
+    print confidence_report(conf_int)
+
+and the resulting report is::
+
+    # Confidence Interval Report
+    # Sigmas:          -3         -2         -1          0          1          2          3
+    # Percentiles:  -99.730    -95.450    -68.269      0.000     68.269     95.450     99.730
+    #==========================================================================================
+     a1              2.4622     2.5704      2.691     2.8289     2.9936     3.1985      3.467
+        -best      -0.36665   -0.25842   -0.13785          0    0.16472    0.36968    0.63812
+     a2             -5.4926    -5.2111    -4.9945    -4.8196    -4.6726     -4.544     -4.429
+        -best      -0.67309   -0.39152   -0.17499          0    0.14698    0.27553    0.39058
+     t2              8.2604     8.6221     8.9556     9.2709     9.5761     9.8776     10.182
+        -best       -1.0105   -0.64882   -0.31531          0    0.30526    0.60676    0.91132
+     t1              1.6107     1.6942     1.7827     1.8785     1.9841     2.1049     2.2456
+        -best      -0.26785   -0.18436   -0.09583          0    0.10553    0.22637    0.36709
+
+
+Now we see more asymmetric uncertainty values. Comparing the
+1-:math:`\sigma` levels between the automated and explicit methods as we
+did above, we now have
+
+    ============= =============== =================================== ===============================
+     Parameter      Best Value      Automatic 1-:math:`\sigma` value  Explicit 1-:math:`\sigma` value
+    ============= =============== =================================== ===============================
+      a1            2.8289         +/- 0.1498                           +0.1647, -0.1379
+      a2           -4.8196         +/- 0.1595                           +0.1470, -0.1750
+      t1            9.2709         +/- 0.1002                           +0.1055, -0.0958
+      t2            1.8785         +/- 0.3090                           +0.3053, -0.3153
+    ============= =============== =================================== ===============================
+
+This doesn't look too bad, but except that the errors are less symmetric.
