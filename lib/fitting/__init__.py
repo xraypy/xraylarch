@@ -1,12 +1,21 @@
 #!/usr/bin/env python
 from .parameter import Parameter, isParameter, param_value
 from .minimizer import Minimizer, minimize, fit_report
-from .confidence import conf_intervals , chisquare_map, conf_report
+from .confidence import conf_intervals , chisquare_map, conf_report, f_compare
+
+
+def f_test(ndata, nvars, chisquare, chisquare0, nfix=1):
+    """return the F-test value for the following input values:
+    f = f_test(ndata, nparams, chisquare, chisquare0, nfix=1)
+
+    nfix = the number of fixed parameters.
+    """
+    return f_compare(ndata, nvars, chisquare, chisquare0, nfix=1)
 
 def confidence_report(conf_vals, **kws):
     """return a formatted report of confidence intervals calcualted
     by confidence_intervals"""
-    
+
     return conf_report(conf_vals)
 
 def confidence_intervals(minout, sigmas=(1, 2, 3),  **kws):

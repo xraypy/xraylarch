@@ -24,6 +24,6 @@ algorithms) are used for those other functions as well.
    parameters
    minimize
    results
-   confidence
    lineshapes
    examples
+   confidence

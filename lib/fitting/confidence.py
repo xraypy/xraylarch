@@ -233,6 +233,7 @@ def conf_intervals(minimizer, sigmas=(1, 2, 3), maxiter=200,
         return output, trace_dict
     else:
         return output
+
 def chisquare_map(minimizer, xname, yname, nx=16, ny=16, xrange=None,
              yrange=None, sigmas=5, prob_func=None, **kws):
     r"""Calculates chi-square map for two fixed parameters.
