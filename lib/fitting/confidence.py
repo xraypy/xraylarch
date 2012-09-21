@@ -234,7 +234,7 @@ def conf_intervals(minimizer, sigmas=(1, 2, 3), maxiter=200,
     else:
         return output
 
-def chisquare_map(minimizer, xname, yname, nx=16, ny=16, xrange=None,
+def chisquare_map(minimizer, xname, yname, nx=11, ny=11, xrange=None,
              yrange=None, sigmas=5, prob_func=None, **kws):
     r"""Calculates chi-square map for two fixed parameters.
 
@@ -288,6 +288,8 @@ def chisquare_map(minimizer, xname, yname, nx=16, ny=16, xrange=None,
 
     x = getattr(paramgroup, xname)
     y = getattr(paramgroup, yname)
+    if sigmas is None:
+        sigmas = 5
 
     x_upper, x_lower = (x.value + sigmas*x.stderr, x.value - sigmas*x.stderr)
     y_upper, y_lower = (y.value + sigmas*y.stderr, y.value - sigmas*y.stderr)
@@ -317,6 +319,8 @@ def chisquare_map(minimizer, xname, yname, nx=16, ny=16, xrange=None,
     out = np.apply_along_axis(calc_chi2, -1, grid)
     x.vary, y.vary = True, True
     restore_vals(paramgroup, params_savevals)
+    minimizer.leastsq()
+
     return x_points, y_points, out
 
 

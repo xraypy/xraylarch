@@ -23,8 +23,8 @@ def confidence_intervals(minout, sigmas=(1, 2, 3),  **kws):
     for supplied sigma values"""
     return conf_intervals(minout, sigmas=sigmas, **kws)
 
-def chi2_map(minout, xname, yname, nx=11, ny=11,
-             limits=None, **kws):
+def chi2_map(minout, xname, yname, nx=11, ny=11, xrange=None,
+             yrange=None, sigmas=None, **kws):
     """generate a confidence map for any two parameters for a fit
 
     Arguments
@@ -42,7 +42,7 @@ def chi2_map(minout, xname, yname, nx=11, ny=11,
         xpts, ypts, map
     """
     return chisquare_map(minout, xname, yname, nx=nx, ny=ny,
-                         limits=limits, **kws)
+                         sigmas=sigmas, **kws)
 
 def param(*args, **kws):
     "create a fitting Parameter as a Variable"
