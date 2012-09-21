@@ -179,9 +179,10 @@ and the resulting report is::
         -best      -0.26785   -0.18436   -0.09583          0    0.10553    0.22637    0.36709
 
 
-Now we see more asymmetric uncertainty values. Comparing the
-1-:math:`\sigma` levels between the automated and explicit methods as we
-did above, we now have
+Now can see more asymmetric uncertainty values, specifically that the
+-n-:math:`\sigma` and +n-:math:`\sigma` are different, and don't seem to be
+linear in n.  Comparing the 1-:math:`\sigma` levels between the automated
+and explicit methods as we did above, we now have
 
     ============= =============== =================================== ===============================
      Parameter      Best Value      Automatic 1-:math:`\sigma` value  Explicit 1-:math:`\sigma` value
@@ -192,4 +193,11 @@ did above, we now have
       t2            1.8785         +/- 0.3090                           +0.3053, -0.3153
     ============= =============== =================================== ===============================
 
-This doesn't look too bad, but except that the errors are less symmetric.
+In fairness, the automated values don't look too bad, given that they
+cannot reflect asymmetric uncertainties.  But, like the reported
+correlations, the full report above hints at a less than ideal case.
+
+Chi-square Maps
+------------------
+
+We can further explore pairs of variables
