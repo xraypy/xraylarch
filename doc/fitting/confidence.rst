@@ -21,16 +21,14 @@ uncertainties.  For many (perhaps most) cases, they do not provide much
 better insight than the automatic method.
 
 
-.. module:: _math
-
 .. function:: confidence_intervals(minimizer, sigmas=(1, 2, 3), prob_func=None, maxiter=200)
 
     Calculate confidence intervals for the parameters from a given fit.
 
-    :param minimizer: the minizer object returned by :func:`minimize`.
+    :param minimizer: the minimizer object returned by :func:`minimize`.
     :param sigmas: list of sigma-levels to find parameter values for.
     :param prob_func: ``None`` or callable function to calculate the
-    	   probality from the opimized chi-square. By default,
+    	   probability from the optimized chi-square. By default,
            :func:`f_compare`, the standard F-test, is used.
 
     The function returns a dictionary of parameter names, with each value
@@ -152,6 +150,8 @@ above 90%.  The resulting plot of the best-fit looks fairly reasonable:
 
 .. _fit_conf_fig1:
 
+   Figure 1.  Fit to double exponential function.
+
   .. image:: ../images/fit_example_conf2.png
      :target: ../_images/fit_example_conf2.png
      :width: 65 %
@@ -200,4 +200,103 @@ correlations, the full report above hints at a less than ideal case.
 Chi-square Maps
 ------------------
 
-We can further explore pairs of variables
+We can further explore the correlation between pairs of variables by making
+and visualizing a map of the chi-square (:math:`\chi^2`) statistic.  This
+can be helpful to determine if the automatically calculated uncertainties
+and correlation are reasonable, and to look for pathological cases.  The
+:func:`chi2_map` function will calculate a map of :math:`\chi^2` for a pair
+of variable parameters by brute force.
+
+
+.. function:: chi2_map(minimizer, xname, yname, nx=11, ny=11, sigmas=5, xrange=None, yrange=None)
+
+    Return a chi-square map for two parameters in a fit
+
+    :param minimizer: the minimizer object returned by :func:`minimize`.
+    :param xname:    name of variable for x-axis
+    :param yname:    name of variable for y-axis
+    :param nx:       number of steps in x [11]
+    :param ny:       number of steps in y [11]
+    :param sigmas:   extent of x, y values to calculate, in :math:`\sigma`
+    :param xrange:   explicit range of calculations for x [x.best +/- SIGMAS*x.stderr]
+    :param yrange:   explicit range of calculations for y [y.best +/- SIGMAS*y.stderr]
+
+   
+    The ``xrange`` and ``yrange`` arguments can be used to fully dictate
+    the x and y values to use.  By default, the x and y values are
+    automatically determined from ``nx``, ``ny``, and ``sigma``, with the
+    ``sigma`` argument sets how far from the best value to extend the
+    ranges.
+
+    returns a tuple of (x_vals, y_vals, chi2_map)
+
+
+As an example usage, we return to the first example of the "well-behaved"
+fit, and run :func:`chi2_map` on a pair of variables with low correlation
+and a pair with high correlation::
+
+     x1, y1, chi2_ampcen = chi2_map(mout, 'amp', 'cen', nx=21, ny=21)
+     x2, y2, chi2_ampwid = chi2_map(mout, 'amp', 'wid', nx=21, ny=21)
+     contour(chi2_ampcen, x=x1, y=y1, title='Correlation(amp, cen)')
+     contour(chi2_ampwid, x=x2, y=y2, win=2, title='Correlation(amp, wid)')
+
+
+with the resulting Chi-square maps looking like this:
+
+.. _fit_conf_fig2:
+
+   Figure 2.  Chi-square maps for two pairs of variables for the fit to
+   Gaussian data.  With the best-fit chi-square value of 0.5134, the
+   contour map for relatively uncorrelated parameters *amp* and *cen* is
+   shown on the left, while that for the more highlycorrelated parameters
+   *amp* and *wid* is shown on the right.
+
+  .. image:: ../images/fit_example_conf3a.png
+     :target: ../_images/fit_example_conf3a.png
+     :width: 48 %
+  .. image:: ../images/fit_example_conf3b.png
+     :target: ../_images/fit_example_conf3b.png
+     :width: 48 %
+
+
+The circular map for the uncorrelated parameters *amp* and *cen*
+and the elliptical map for the highly correlated parameters *amp* and *wid*
+are exactly as would be expected, and what the automated estimate of
+uncertainties and correlations assumes. 
+
+But now, if we turn to the more pathological case of the double
+exponential, we calculate the chi-square maps as::
+
+   x1, y1, c1 = chi2_map(minout, 'a1', 'a2', nx=25, ny=25)
+   x2, y2, c2 = chi2_map(minout, 'a1', 't1', nx=25, ny=25)
+   contour(c1, x=x1, y=y1,        title='Correlation(a1, a2)')
+   contour(c2, x=x2, y=y2, win=2, title='Correlation(a1, t1)')
+
+
+with the resulting contour plots:
+
+.. _fit_conf_fig3:
+
+   Figure 3.  Chi-square maps for two pairs of variables for the fit to
+   Double Exponential.  With the best-fit chi-square value of 0.1913, the
+   contour map for *a1 and *a2* is shown on the left, while that for *a1*
+   and *t2* is shown on the right. 
+
+  .. image:: ../images/fit_example_conf4a.png
+     :target: ../_images/fit_example_conf4a.png
+     :width: 48 %
+  .. image:: ../images/fit_example_conf4b.png
+     :target: ../_images/fit_example_conf4b.png
+     :width: 48 %
+
+Here, the values of chi-square quickly grow very large away from the ideal
+fit.  More importantly, the maps are not remotely elliptical.
+
+Finally, it should be emphasized that while all the tests in this section
+are informative, they are also fairly slow, re-running the fits many times.
+It is probably safe to rely on the automatic calculations of uncertainties
+and correlations, and use these methods on occasions of extremely high
+correlation, or when nearing a final analysis.
+
+
+

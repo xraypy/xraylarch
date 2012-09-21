@@ -1,0 +1,31 @@
+## examples/fitting/doc_example_conf1.lar
+# create mock data
+mdat = group()
+mdat.x = linspace(-10, 10, 201)
+mdat.y = 1.0 + 12.0 * gaussian(mdat.x, 1.5, 2.0) + \
+         random.normal(size=len(mdat.x), scale=0.050)
+
+
+params = group(off = guess(0),
+               amp = guess(5, min=0),
+               cen = guess(2),
+               wid = guess(1, min=0))
+
+
+# define objective function for fit residual
+def resid(p, data):
+    return data.y - (p.off + p.amp * gaussian(data.x, p.cen, p.wid))
+enddef
+
+# perform fit
+mout = minimize(resid, params, args=(mdat,))
+
+# print report of parameters, uncertainties
+print fit_report(params)
+
+x1, y1, chi2_ampcen = chi2_map(mout, 'amp', 'cen', nx=21, ny=21)
+x2, y2, chi2_ampwid = chi2_map(mout, 'amp', 'wid', nx=21, ny=21)
+contour(chi2_ampcen, x=x1, y=y1, title='Correlation(amp, cen)')
+contour(chi2_ampwid, x=x2, y=y2, win=2, title='Correlation(amp, wid)')
+
+## end of examples/fitting/doc_example_conf1.lar

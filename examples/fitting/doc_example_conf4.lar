@@ -1,0 +1,32 @@
+## examples/fitting/doc_example_conf4.lar
+#  Shows usage of fitting with non-normal correlation of variables,
+#  and confidence intervals.
+
+random.seed(1)
+dat = group(x = linspace(0, 10, 101))
+dat.y = 3*exp(-dat.x/2) - 5*exp(-dat.x/9) + random.normal(size=len(dat.x), scale=0.05)
+
+fitparams = group(a1 = guess(3.5),
+                  a2 = guess(-9.5),
+                  t1 = guess(3),
+                  t2 = guess(15))
+
+def fit_exp(pars, dat):
+    model = pars.a1 * exp(-dat.x / pars.t1) + pars.a2 * exp(-dat.x / pars.t2)
+    return model - dat.y
+enddef
+
+minout = minimize(fit_exp, fitparams, args=(dat,))
+print fit_report(fitparams, min_correl=0)
+
+final = fit_exp(fitparams, dat) + dat.y
+newplot (dat.x, dat.y, label='data', marker='o', linewidth=0)
+   plot (dat.x, final, label='fit')
+
+     x1, y1, c1 = chi2_map(minout, 'a1', 'a2', nx=25, ny=25)
+     x2, y2, c2 = chi2_map(minout, 'a1', 't2', nx=25, ny=25)
+     contour(c1, x=x1, y=y1,        title='Correlation(a1, a2)')
+     contour(c2, x=x2, y=y2, win=2, title='Correlation(a1, t2)')
+
+
+## end of examples/fitting/doc_example_conf4.lar
