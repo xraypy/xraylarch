@@ -55,7 +55,7 @@ some detail.
   to model function with the final values of the parameters.
 
   5. **plot results**.   Here we plot the data, starting values, and the final
-  fit. 
+  fit.
 
   6. **print report of parameters, uncertainties**.  Here we print out a
   report of the fit statistics, best fit values, uncertainties and
@@ -372,12 +372,12 @@ results of this fit are::
        nfev (func calls)   = 5
        chi_square          = 9339.070954
        reduced chi_square  = 58.736295
-     
-    [[Variables]] 
+
+    [[Variables]]
        amp1           =  0.470660 +/- 0.004709 (init=  0.500000)
-    [[Constraint Expressions]] 
+    [[Constraint Expressions]]
        amp2           =  0.529340 +/- 0.004709 = '1 - amp1'
-     
+
     =======================================================
 
 
@@ -410,7 +410,7 @@ There are several points worth noting here:
     that we add the non-Parameter ``note`` member to this group that give a
     brief description of the fit.  Of course, we could add anything else we
     wanted.
-  
+
  b) We set ``amp1.vary`` and ``amp2.vary`` to ``True`` and set one of the
     other amplitude parameter's expression to ``1 - amp1 - amp2`` to impose
     the desired constraint.
@@ -436,15 +436,15 @@ The output of running this gives::
        nfev (func calls)   = 10
        chi_square          = 5078.292601
        reduced chi_square  = 32.141092
-     
-    [[Variables]] 
+
+    [[Variables]]
        amp1           =  0.278665 +/- 0.017035 (init=  0.400000)
        amp2           =  0.532070 +/- 0.003491 (init=  0.400000)
-    [[Constraint Expressions]] 
+    [[Constraint Expressions]]
        amp5           =  0.189264 +/- 0.016438 = '1 - amp1 - amp2'
-     
+
     [[Correlations]]     (unreported correlations are <  0.100)
-       amp1, amp2           = -0.270 
+       amp1, amp2           = -0.270
     =======================================================
 
 
@@ -491,17 +491,17 @@ The output gives this::
        nfev (func calls)   = 22
        chi_square          = 2095.190450
        reduced chi_square  = 13.345162
-     
-    [[Variables]] 
+
+    [[Variables]]
        amp1           =  0.327883 +/- 0.009491 (init=  0.400000)
        amp2           =  0.465013 +/- 0.005625 (init=  0.400000)
        amp3           =  0.063834 +/- 0.003834 (init=  0.000000)
-    [[Constraint Expressions]] 
+    [[Constraint Expressions]]
        amp6           =  0.143270 +/- 0.008020 = '1 - amp1 - amp2 - amp3'
-     
+
     [[Correlations]]     (unreported correlations are <  0.100)
-       amp2, amp3           = -0.890 
-       amp1, amp2           = -0.340 
+       amp2, amp3           = -0.890
+       amp1, amp2           = -0.340
     =======================================================
 
 You might notice that, whereas the 3 component fit favored adding *s5*, the
@@ -518,18 +518,18 @@ that are::
        nfev (func calls)   = 18
        chi_square          = 2312.121664
        reduced chi_square  = 14.726890
-     
-    [[Variables]] 
+
+    [[Variables]]
        amp1           =  0.303043 +/- 0.011665 (init=  0.400000)
        amp2           =  0.458358 +/- 0.005875 (init=  0.400000)
        amp3           =  0.054293 +/- 0.003941 (init=  0.000000)
-    [[Constraint Expressions]] 
+    [[Constraint Expressions]]
        amp5           =  0.184307 +/- 0.011130 = '1 - amp1 - amp2 - amp3'
-     
+
     [[Correlations]]     (unreported correlations are <  0.100)
-       amp2, amp3           = -0.916 
-       amp1, amp2           = -0.247 
-       amp1, amp3           =  0.152 
+       amp2, amp3           = -0.916
+       amp1, amp2           = -0.247
+       amp1, amp3           =  0.152
     =======================================================
 
 
@@ -545,7 +545,7 @@ The plots resulting from both sets of Parameters are shown:
      :target: ../_images/fit_example3d2.png
      :width: 48 %
 
-.. _fitting_fig8:  
+.. _fitting_fig8:
 
    Figure 8:  Fit with components *s1*, *s2*, *s3*, and *s5*
   .. image:: ../images/fit_example3e1.png

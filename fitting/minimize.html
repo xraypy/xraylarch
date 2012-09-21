@@ -103,8 +103,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="minimize-and-objective-functions">
-<h1><a class="reference internal" href="#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> and Objective Functions<a class="headerlink" href="#minimize-and-objective-functions" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-_math">
+<span id="minimize-and-objective-functions"></span><h1><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
 <p>As mentioned above, the objective function returns an array calculated from
 given a group of parameters.  This array will be minimized in the
 least-squares sense in the fitting process.  For most fits, the objective
@@ -132,7 +132,7 @@ best approach.</p>
 </div>
 <p>Here <tt class="docutils literal"><span class="pre">params</span></tt> is a Group containing two Parameters as defined by
 <tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt>, discussed earlier.</p>
-<p>To actually perform the fit, the <a class="reference internal" href="#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function must be called.  This
+<p>To actually perform the fit, the <a class="reference internal" href="#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function must be called.  This
 takes the objective function as its first argument, and the group containing all
 the Parameters as its second argument, keyword arguments for the optional
 arguments for the objective function, and several keyword arguments to
@@ -142,8 +142,8 @@ the objective function will be called to recalculate the residual array.
 Thus the objective function may be called many times before the fitting
 procedure decides it has found the best solution that it can.</p>
 <dl class="function">
-<dt id="minimize">
-<tt class="descname">minimize</tt><big>(</big><em>fcn</em>, <em>paramgroup</em>, <em>args=None</em>, <em>kws=None</em>, <em>method='leastsq'</em>, <em>**extra_kws</em><big>)</big><a class="headerlink" href="#minimize" title="Permalink to this definition">¶</a></dt>
+<dt id="_math.minimize">
+<tt class="descclassname">_math.</tt><tt class="descname">minimize</tt><big>(</big><em>fcn</em>, <em>paramgroup</em>, <em>args=None</em>, <em>kws=None</em>, <em>method='leastsq'</em>, <em>**extra_kws</em><big>)</big><a class="headerlink" href="#_math.minimize" title="Permalink to this definition">¶</a></dt>
 <dd><p>find the best-fit values for the Parameters in <tt class="docutils literal"><span class="pre">paramgroup</span></tt> such that the
 output array from the objective function <tt class="xref py py-func docutils literal"><span class="pre">fcn()</span></tt> has minimal sum-of-squares.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -175,7 +175,7 @@ used.  Several methods are available, as described below in
 <blockquote id="minimize-methods-table">
 <div><p>Table of Fitting Methods.</p>
 <p>Listed are the names and description of fitting methods available to the
-<a class="reference internal" href="#minimize" title="minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function.  The <em>leastsq</em> method is the default, and the
+<a class="reference internal" href="#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> function.  The <em>leastsq</em> method is the default, and the
 only method for which uncertainties and correlations are automatically
 calculated.</p>
 <blockquote>

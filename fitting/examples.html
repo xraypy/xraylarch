@@ -27,7 +27,7 @@
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
     <link rel="up" title="Fitting and Modeling Data with Larch" href="index.html" />
-    <link rel="next" title="XAFS Analysis with Larch" href="../xafs/index.html" />
+    <link rel="next" title="Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
     <link rel="prev" title="Some Builtin Line-shape Functions" href="lineshapes.html" /> 
   </head>
   <body>
@@ -53,7 +53,7 @@
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../xafs/index.html" title="XAFS Analysis with Larch"
+          <a href="confidence.html" title="Advanced Confidence Intervals and Chi-square maps"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="lineshapes.html" title="Some Builtin Line-shape Functions"
@@ -85,8 +85,8 @@
   <p class="topless"><a href="lineshapes.html"
                         title="previous chapter">Some Builtin Line-shape Functions</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../xafs/index.html"
-                        title="next chapter">XAFS Analysis with Larch</a></p>
+  <p class="topless"><a href="confidence.html"
+                        title="next chapter">Advanced Confidence Intervals and Chi-square maps</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/examples.txt"
@@ -185,9 +185,9 @@ initial guesses for the parameter values.</p>
 <p>3. <strong>define objective function for fit residual</strong>: As above, this
 function will receive the group of fit parameters as the first argument,
 and may also receive other arguments as specified in the call to
-<tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt>.  This function returns the residual of the fit
+<a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a>.  This function returns the residual of the fit
 (data - model).</p>
-<p>4. <strong>perform fit</strong>.  Here we call <tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt>  with
+<p>4. <strong>perform fit</strong>.  Here we call <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a>  with
 arguments of the objective function, the parameter group, and any
 additional positional arguments to the objective function (keyword/value
 arguments can also be supplied).   When this has completed, we calculate
@@ -891,7 +891,7 @@ the ones here.</p>
           <a href="../np-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="../xafs/index.html" title="XAFS Analysis with Larch"
+          <a href="confidence.html" title="Advanced Confidence Intervals and Chi-square maps"
              >next</a> |</li>
         <li class="right" >
           <a href="lineshapes.html" title="Some Builtin Line-shape Functions"
