@@ -150,7 +150,7 @@ output array from the objective function <tt class="xref py py-func docutils lit
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>fcn</strong> &#8211; objective function, which must have signature and output as described below.</li>
 <li><strong>paramgroup</strong> &#8211; a Group containing the Parameters used by the
 objective function. This will be passed as the first argument to the
@@ -161,6 +161,9 @@ addition to the set of Parameters for the model.</li>
 <li><strong>method</strong> &#8211; name (case insensitive) of minimization method to use (default=&#8217;leastsq&#8217;)</li>
 <li><strong>extra_kws</strong> &#8211; additional keywords to pass to fitting method.</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a <tt class="xref py py-class docutils literal"><span class="pre">minimizer</span></tt> object that can be re-used under certain conditions.</p>
 </td>
 </tr>
 </tbody>

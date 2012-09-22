@@ -58,6 +58,7 @@ procedure decides it has found the best solution that it can.
     :param kws:  a dictionary of keyword/value arguments to pass to the objective function.
     :param method:  name (case insensitive) of minimization method to use (default='leastsq')
     :param extra_kws:  additional keywords to pass to fitting method.
+    :returns:      a :class:`minimizer` object that can be re-used under certain conditions.
 
     returns fit object that can be used to modify or re-run fit.  Most results
     of interest are written back to ``paramgroup`` itself.

@@ -139,7 +139,7 @@ better insight than the automatic method.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>minimizer</strong> &#8211; the minimizer object returned by <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt>.</li>
 <li><strong>sigmas</strong> &#8211; list of sigma-levels to find parameter values for.</li>
 <li><strong>prob_func</strong> &#8211; <tt class="docutils literal"><span class="pre">None</span></tt> or callable function to calculate the
@@ -148,10 +148,12 @@ probability from the optimized chi-square. By default,
 </ul>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a dictionary of parameter names, with each value containing
+a list of (sigma, value) pairs.</p>
+</td>
+</tr>
 </tbody>
 </table>
-<p>The function returns a dictionary of parameter names, with each value
-containing a list of (sigma, value) pairs.</p>
 </dd></dl>
 
 <p>This function will adjust the value for each parameter, re-optimizing the
@@ -160,12 +162,14 @@ the levels indicated.</p>
 <dl class="function">
 <dt id="confidence_report">
 <tt class="descname">confidence_report</tt><big>(</big><em>conf_values</em><big>)</big><a class="headerlink" href="#confidence_report" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns string of a confidence interval report.</p>
+<dd><p>Convert the output of <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><tt class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></tt></a> into a printable report.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>conf_values</strong> &#8211; confidence values returned by <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><tt class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></tt></a>.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a string containing the report, which can be printed or stored.</td>
 </tr>
 </tbody>
 </table>
@@ -436,26 +440,27 @@ of variable parameters by brute force.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>minimizer</strong> &#8211; the minimizer object returned by <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt>.</li>
 <li><strong>xname</strong> &#8211; name of variable for x-axis</li>
 <li><strong>yname</strong> &#8211; name of variable for y-axis</li>
 <li><strong>nx</strong> &#8211; number of steps in x [11]</li>
 <li><strong>ny</strong> &#8211; number of steps in y [11]</li>
 <li><strong>sigmas</strong> &#8211; extent of x, y values to calculate, in <img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/></li>
-<li><strong>xrange</strong> &#8211; explicit range of calculations for x [x.best +/- SIGMAS*x.stderr]</li>
-<li><strong>yrange</strong> &#8211; explicit range of calculations for y [y.best +/- SIGMAS*y.stderr]</li>
+<li><strong>xrange</strong> &#8211; explicit x range of calculations [x.best +/- <tt class="docutils literal"><span class="pre">sigmas</span></tt> * x.stderr]</li>
+<li><strong>yrange</strong> &#8211; explicit y range of calculations [y.best +/- <tt class="docutils literal"><span class="pre">sigmas</span></tt> * y.stderr]</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a tuple of (x_vals, y_vals, chi2_map)</p>
 </td>
 </tr>
 </tbody>
 </table>
-<p>The <tt class="docutils literal"><span class="pre">xrange</span></tt> and <tt class="docutils literal"><span class="pre">yrange</span></tt> arguments can be used to fully dictate
-the x and y values to use.  By default, the x and y values are
-automatically determined from <tt class="docutils literal"><span class="pre">nx</span></tt>, <tt class="docutils literal"><span class="pre">ny</span></tt>, and <tt class="docutils literal"><span class="pre">sigma</span></tt>, with the
-<tt class="docutils literal"><span class="pre">sigma</span></tt> argument sets how far from the best value to extend the
-ranges.</p>
-<p>returns a tuple of (x_vals, y_vals, chi2_map)</p>
+<p>The <tt class="docutils literal"><span class="pre">xrange</span></tt> and <tt class="docutils literal"><span class="pre">yrange</span></tt> arguments can be used to fully dictate the x
+and y values to use.  By default, the x and y values are automatically
+determined from <tt class="docutils literal"><span class="pre">nx</span></tt>, <tt class="docutils literal"><span class="pre">ny</span></tt>, and <tt class="docutils literal"><span class="pre">sigmas</span></tt>, with the <tt class="docutils literal"><span class="pre">sigmas</span></tt> argument
+sets how far from the best value to extend the ranges.</p>
 </dd></dl>
 
 <p>As an example usage, we return to the first example of the &#8220;well-behaved&#8221;

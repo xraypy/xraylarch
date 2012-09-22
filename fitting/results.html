@@ -174,7 +174,7 @@ the statistical quantity it holds.</p>
 </div></blockquote>
 <p>Additional outputs written to the <tt class="docutils literal"><span class="pre">fit_details</span></tt> group vary for each
 fitting method.</p>
-<dl class="method">
+<dl class="function">
 <dt id="fit_report">
 <tt class="descname">fit_report</tt><big>(</big><em>paramgroup</em>, <em>show_correl=True</em>, <em>min_correl=0.1</em><big>)</big><a class="headerlink" href="#fit_report" title="Permalink to this definition">¶</a></dt>
 <dd><p>returns a fit report for a fit given a parameter group.</p>
@@ -182,19 +182,21 @@ fitting method.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>paramgroup</strong> &#8211; parameter group, after being used in a fit.</li>
 <li><strong>show_correl</strong> &#8211; flag (<tt class="docutils literal"><span class="pre">True</span></tt>/<tt class="docutils literal"><span class="pre">False</span></tt>) to show parameter correlations.</li>
 <li><strong>min_correl</strong> &#8211; smallest absolute value of correlation to show.</li>
 </ul>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">string of fit report.   This can be printed or stored.</p>
+</td>
+</tr>
 </tbody>
 </table>
-<p>The output string can be printed.</p>
 </dd></dl>
 
-<p>A typical result from <a class="reference internal" href="#fit_report" title="fit_report"><tt class="xref py py-meth docutils literal"><span class="pre">fit_report()</span></tt></a> would look like this:</p>
+<p>A typical result from <a class="reference internal" href="#fit_report" title="fit_report"><tt class="xref py py-func docutils literal"><span class="pre">fit_report()</span></tt></a> would look like this:</p>
 <div class="highlight-python"><pre>larch&gt; print fit_report(params)
 ===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = 'leastsq'.

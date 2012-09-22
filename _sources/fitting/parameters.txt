@@ -33,6 +33,7 @@ algebraic expression can be specified to create a **constrained Parameter**.
     :param min:    minimum value the Parameter can take.
     :param max:    maximum value the Parameter can take.
     :param expr:   algebraic expression for a constrained Parameter.  See :ref:`param-constraints-label`  for details.
+    :returns:      a new Parameter defined according to input.
 
 ..  function:: guess(value, min=None, max=None, expr=None)
 

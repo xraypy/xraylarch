@@ -28,11 +28,10 @@ better insight than the automatic method.
     :param minimizer: the minimizer object returned by :func:`minimize`.
     :param sigmas: list of sigma-levels to find parameter values for.
     :param prob_func: ``None`` or callable function to calculate the
-    	   probability from the optimized chi-square. By default,
-           :func:`f_compare`, the standard F-test, is used.
-
-    The function returns a dictionary of parameter names, with each value
-    containing a list of (sigma, value) pairs.
+    	       probability from the optimized chi-square. By default,
+	       :func:`f_compare`, the standard F-test, is used.
+    :returns:  a dictionary of parameter names, with each value containing
+               a list of (sigma, value) pairs.
 
 This function will adjust the value for each parameter, re-optimizing the
 other parameters until it finds the parameter values that increase sigma by
@@ -40,9 +39,10 @@ the levels indicated.
 
 .. function:: confidence_report(conf_values)
 
-    Returns string of a confidence interval report.
+    Convert the output of :func:`confidence_intervals` into a printable report.
 
     :param conf_values: confidence values returned by :func:`confidence_intervals`.
+    :returns:  a string containing the report, which can be printed or stored.
 
 .. function:: f_test(ndata, nparams, chisquare, chisquare0, nfix=1)
 
@@ -218,17 +218,15 @@ of variable parameters by brute force.
     :param nx:       number of steps in x [11]
     :param ny:       number of steps in y [11]
     :param sigmas:   extent of x, y values to calculate, in :math:`\sigma`
-    :param xrange:   explicit range of calculations for x [x.best +/- SIGMAS*x.stderr]
-    :param yrange:   explicit range of calculations for y [y.best +/- SIGMAS*y.stderr]
+    :param xrange:   explicit x range of calculations [x.best +/- ``sigmas`` * x.stderr]
+    :param yrange:   explicit y range of calculations [y.best +/- ``sigmas`` * y.stderr]
 
-   
-    The ``xrange`` and ``yrange`` arguments can be used to fully dictate
-    the x and y values to use.  By default, the x and y values are
-    automatically determined from ``nx``, ``ny``, and ``sigma``, with the
-    ``sigma`` argument sets how far from the best value to extend the
-    ranges.
+    :returns:        a tuple of (x_vals, y_vals, chi2_map)
 
-    returns a tuple of (x_vals, y_vals, chi2_map)
+    The ``xrange`` and ``yrange`` arguments can be used to fully dictate the x
+    and y values to use.  By default, the x and y values are automatically
+    determined from ``nx``, ``ny``, and ``sigmas``, with the ``sigmas`` argument
+    sets how far from the best value to extend the ranges.
 
 
 As an example usage, we return to the first example of the "well-behaved"
@@ -262,7 +260,7 @@ with the resulting Chi-square maps looking like this:
 The circular map for the uncorrelated parameters *amp* and *cen*
 and the elliptical map for the highly correlated parameters *amp* and *wid*
 are exactly as would be expected, and what the automated estimate of
-uncertainties and correlations assumes. 
+uncertainties and correlations assumes.
 
 But now, if we turn to the more pathological case of the double
 exponential, we calculate the chi-square maps as::
@@ -280,7 +278,7 @@ with the resulting contour plots:
    Figure 3.  Chi-square maps for two pairs of variables for the fit to
    Double Exponential.  With the best-fit chi-square value of 0.1913, the
    contour map for *a1 and *a2* is shown on the left, while that for *a1*
-   and *t2* is shown on the right. 
+   and *t2* is shown on the right.
 
   .. image:: ../images/fit_example_conf4a.png
      :target: ../_images/fit_example_conf4a.png

@@ -111,19 +111,24 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-_xafs">
-<span id="xafs-pre-edge-subtraction-and-normalization"></span><h1>XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="xafs-pre-edge-subtraction-and-normalization">
+<h1>XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#xafs-pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
+<p>After reading in data and constructing <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>, the principle
+pre-processing steps for XAFS analysis.  are pre-edge subtraction and
+normalization.  Reading data and constructing <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> are handled by
+internal larch functions, especially <tt class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></tt>.  The main
+XAFS-specific function for pre-edge subtraction and normalizaiton is
+<a class="reference internal" href="#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
 <dl class="function">
-<dt id="_xafs.pre_edge">
-<tt class="descclassname">_xafs.</tt><tt class="descname">pre_edge</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.pre_edge" title="Permalink to this definition">¶</a></dt>
-<dd><p>Pre-edge subtraction and normalization.</p>
-<dl class="docutils">
-<dt>This performs a number of steps:</dt>
+<dt id="pre_edge">
+<tt class="descname">pre_edge</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#pre_edge" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="docutils">
+<dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt>
 <dd><ol class="first last arabic simple">
 <li>determine <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> (if not supplied) from max of deriv(mu)</li>
 <li>fit a line of polymonial to the region below the edge</li>
 <li>fit a polymonial to the region above the edge</li>
-<li>extrapolae the two curves to <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> to determine the edge jump</li>
+<li>extrapolate the two curves to <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> to determine the edge jump</li>
 </ol>
 </dd>
 </dl>
@@ -131,7 +136,7 @@
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> &#8211; 1-d array of x-ray energies, in eV</li>
 <li><strong>mu</strong> &#8211; 1-d array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
 <li><strong>group</strong> &#8211; output group</li>
@@ -139,7 +144,7 @@
 <li><strong>step</strong> &#8211; edge jump.  If None, it will be determined here.</li>
 <li><strong>pre1</strong> &#8211; low E range (relative to E0) for pre-edge fit</li>
 <li><strong>pre2</strong> &#8211; high E range (relative to E0) for pre-edge fit</li>
-<li><strong>nvict</strong> &#8211; energy exponent to use for pre-edg fit.  See Note below</li>
+<li><strong>nvict</strong> &#8211; energy exponent to use for pre-edg fit.  See Note below.</li>
 <li><strong>norm1</strong> &#8211; low E range (relative to E0) for post-edge fit</li>
 <li><strong>norm2</strong> &#8211; high E range (relative to E0) for post-edge fit</li>
 <li><strong>nnorm</strong> &#8211; number of terms in polynomial (that is, 1+degree) for
@@ -147,22 +152,24 @@ post-edge, normalization curve. Default=3 (quadratic)</li>
 </ul>
 </td>
 </tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(edge_step, e0).</p>
+</td>
+</tr>
 </tbody>
 </table>
-<p>For return values, if <strong>group</strong> is None, the return value is
-(edge_step, e0).</p>
-<p>If a <strong>group</strong> is supplied, return value is None, and the following
-data is put into the <strong>group</strong>:</p>
+<p>If a <tt class="docutils literal"><span class="pre">group</span></tt> argument is provided, the following data is put into it:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="17%" />
-<col width="83%" />
+<col width="19%" />
+<col width="81%" />
 </colgroup>
-<tbody valign="top">
-<tr class="row-odd"><td>attribute</td>
-<td>meaning</td>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">attribute</th>
+<th class="head">meaning</th>
 </tr>
+</thead>
+<tbody valign="top">
 <tr class="row-even"><td>e0</td>
 <td>energy origin</td>
 </tr>
@@ -181,17 +188,17 @@ data is put into the <strong>group</strong>:</p>
 </tbody>
 </table>
 </div></blockquote>
+</dd></dl>
+
 <dl class="docutils">
-<dt>Note:</dt>
+<dt>Notes:</dt>
 <dd>nvict gives an exponent to the energy term for the pre-edge fit.
 That is, a line <img class="math" src="../_images/math/009ce44abdece773c5456d540fa0c0392da31efb.png" alt="(m E + b)"/> is fit to
 <img class="math" src="../_images/math/97de16ff6ff1ddb301788a6e681182654946d949.png" alt="\mu(E) E^{nvict}"/>   over the pr-edge region, E= [E0+pre1, E0+pre2].</dd>
 </dl>
-</dd></dl>
-
 <dl class="function">
-<dt id="_xafs.find_e0">
-<tt class="descclassname">_xafs.</tt><tt class="descname">find_e0</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.find_e0" title="Permalink to this definition">¶</a></dt>
+<dt id="find_e0">
+<tt class="descname">find_e0</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/>, the energy threshold of the absorption edge,
 from the arrays energy and mu for <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.</p>
 <p>This finds the point with maximum derivative with some
@@ -200,11 +207,14 @@ checks to avoid spurious glitches.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy</strong> &#8211; 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> &#8211; 1-d array of mu(E)</li>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>energy</strong> &#8211; array of x-ray energies, in eV</li>
+<li><strong>mu</strong> &#8211; array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
 <li><strong>group</strong> &#8211; output group</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">e0.</p>
 </td>
 </tr>
 </tbody>
@@ -219,7 +229,7 @@ supplied, group.e0 will also be set to this value.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy xmu i0&#39;</span><span class="p">)</span>
 
-<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
+<span class="n">step</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
 
 <span class="n">show</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
 

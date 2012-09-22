@@ -103,18 +103,18 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="module-_xafs">
-<span id="xafs-post-edge-background-subtraction"></span><h1>XAFS: Post-edge Background Subtraction<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="xafs-post-edge-background-subtraction">
+<h1>XAFS: Post-edge Background Subtraction<a class="headerlink" href="#xafs-post-edge-background-subtraction" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
-<dt id="_xafs.autobk">
-<tt class="descclassname">_xafs.</tt><tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
+<dt id="autobk">
+<tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><big>)</big><a class="headerlink" href="#autobk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the post-edge background function, <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, and
 corresponding <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> &#8211; 1-d array of x-ray energies, in eV</li>
 <li><strong>mu</strong> &#8211; 1-d array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
 <li><strong>group</strong> &#8211; output group</li>
@@ -132,12 +132,103 @@ which the signal is ignored. Default = 1.</li>
 <li><strong>chi_std</strong> &#8211; optional <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> array for standard <img class="math" src="../_images/math/593e7d196e24fdd29e64f979a309c03a717d0e63.png" alt="chi(k)"/>.</li>
 <li><strong>nfft</strong> &#8211; array size to use for FFT [2048]</li>
 <li><strong>kstep</strong> &#8211; <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> step size to use for FFT [0.05]</li>
-<li><strong>pre_edge_kws</strong> &#8211; keyword arguments to pass to <a class="reference internal" href="preedge.html#_xafs.pre_edge" title="_xafs.pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</li>
+<li><strong>pre_edge_kws</strong> &#8211; keyword arguments to pass to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</li>
+<li><strong>nclamp</strong> &#8211; number of energy end-points for clamp [2]</li>
+<li><strong>clamp_lo</strong> &#8211; weight of low-energy clamp [1]</li>
+<li><strong>clamp_hi</strong> &#8211; weight of high-energy clamp [1]</li>
+<li><strong>calc_uncertaintites</strong> &#8211; Flag to calculate uncertainties in  <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> and <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> [<tt class="docutils literal"><span class="pre">False</span></tt>]</li>
 </ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><p><tt class="docutils literal"><span class="pre">None</span></tt>.</p>
+<p>If a <tt class="docutils literal"><span class="pre">group</span></tt> argument is provided, the following data is put into it:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="23%" />
+<col width="77%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><p class="first last">attribute</p>
+</th>
+<th class="head"><p class="first last">meaning</p>
+</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><p class="first last">e0</p>
+</td>
+<td><p class="first last">energy origin</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">edge_step</p>
+</td>
+<td><p class="first last">edge step</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">norm</p>
+</td>
+<td><p class="first last">normalized <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>   (array)</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">pre_edge</p>
+</td>
+<td><p class="first last">pre-edge curve array</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">post_edge</p>
+</td>
+<td><p class="first last">post-edge, normalization array</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">bkg</p>
+</td>
+<td><p class="first last"><img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> (not normalized)</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">chie</p>
+</td>
+<td><p class="first last"><img class="math" src="../_images/math/48cc4eace36e799ff96a2fefb5f9b0f240586170.png" alt="\chi(E)"/> values.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">k</p>
+</td>
+<td><p class="first last"><img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values, on uniform grid.</p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">chi</p>
+</td>
+<td><p class="first last"><img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> values &#8211; the EXAFS.</p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">delta_chi (*)</p>
+</td>
+<td><p class="first last"><img class="math" src="../_images/math/c655498ea147c2858ff123706c398f8cdda64b4a.png" alt="\delta\chi(k)"/>, uncertainty in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></p>
+</td>
+</tr>
+<tr class="row-even"><td><p class="first last">delta_bkg (*)</p>
+</td>
+<td><p class="first last"><img class="math" src="../_images/math/8c64a2baf30cff9b3615b85485bde819bb58a2f8.png" alt="\delta\mu_0(E)"/>, uncertainty in <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/></p>
+</td>
+</tr>
+<tr class="row-odd"><td><p class="first last">autobk_details</p>
+</td>
+<td><p class="first last">Group of arrays with autobk details</p>
 </td>
 </tr>
 </tbody>
 </table>
+</div></blockquote>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Here, the arrays <tt class="docutils literal"><span class="pre">group.k</span></tt>, <tt class="docutils literal"><span class="pre">group.chi</span></tt>, and <tt class="docutils literal"><span class="pre">group.delta_chi</span></tt>
+will be the same length, giving <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and its uncertainty
+from 0 to a maximum k value determined by <tt class="docutils literal"><span class="pre">kmax</span></tt> or the range of
+available data.  The arrays <tt class="docutils literal"><span class="pre">group.bkg</span></tt>, <tt class="docutils literal"><span class="pre">group.delta_bkg</span></tt>, and
+<tt class="docutils literal"><span class="pre">group.chie</span></tt> will correspond to the input <tt class="docutils literal"><span class="pre">energy</span></tt> array.</p>
 </dd></dl>
 
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm, in
@@ -153,7 +244,7 @@ energy (the 0 of photo-electron energy).  For <img class="math" src="../_images/
 <div><img class="math" src="../_images/math/4b7ef296e96bfdafdd517c90aaf88f18c9f2e1dc.png" alt="\chi(E) = \frac{\mu(E)-\mu_0(E)}{\Delta\mu}"/></div></blockquote>
 <p>where <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> is the post-edge background function determined
 here, and <img class="math" src="../_images/math/7d0e590a03ee2cb35204d1d883ae7a012e592ed6.png" alt="\Delta\mu"/> is the edge step, determined from the
-<a class="reference internal" href="preedge.html#_xafs.pre_edge" title="_xafs.pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
+<a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
 </div>
 
 
