@@ -17,7 +17,6 @@ from mathutils import index_nearest, remove_dups
 
 MODNAME = '_xafs'
 
-
 def find_e0(energy, mu, group=None, _larch=None):
     """calculate E0 given mu(energy)
 
@@ -32,7 +31,7 @@ def find_e0(energy, mu, group=None, _larch=None):
 
     Returns
     -------
-    e0:      edge energy, in eV.
+    step, e0:    edge step, edge energy (in eV)
 
     If a group is supplied, group.e0 will also be set to this value.
     """
@@ -81,11 +80,9 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
 
     Returns
     -------
-    if group is None, the return value is  (edge_step, e0)
-    if gorup is not None, the return value is None, and the following
-    data is put into the supplied group:
+    returns  (edge_step, e0)
 
-
+    if group is not None, the following attributes of that group are set:
         e0          energy origin
         edge_step   edge step
         norm        normalized mu(E)
