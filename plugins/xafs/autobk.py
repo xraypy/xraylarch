@@ -10,10 +10,9 @@ from larch import Group, Parameter, Minimizer, plugin_path
 # put the 'std' and 'xafs' (this!) plugin directories into sys.path
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xafs'))
-# sys.path.insert(0, plugin_path('fitter'))
 
 # now we can reliably import other std and xafs modules...
-from mathutils import index_nearest, realimag, remove_dups
+from mathutils import index_of, index_nearest, realimag, remove_dups
 
 from xafsutils import ETOK
 from xafsft import ftwindow, xafsft_fast
@@ -23,19 +22,16 @@ from pre_edge import find_e0, pre_edge
 HAS_UNCERTAIN = False
 try:
     import uncertainties
-    from uncertainties import correlated_values
-    from uncertainties.unumpy import uarray
     HAS_UNCERTAIN = True
 except ImportError:
     pass
-
 
 FMT_COEF = 'c%2.2i'
 
 def spline_eval(kraw, mu, knots, coefs, order, kout):
     """eval bkg(kraw) and chi(k) for knots, coefs, order"""
     bkg = splev(kraw, [knots, coefs, order])
-    chi = UnivariateSpline(kraw, mu-bkg, s=0)(kout)
+    chi = UnivariateSpline(kraw, (mu-bkg), s=0)(kout)
     return bkg, chi
 
 def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
@@ -58,9 +54,8 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
 def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
-           pre_edge_kws=None, debug=False, _larch=None, nclamp=2,
-           clamp_lo=1, clamp_hi=1, **kws):
-
+           pre_edge_kws=None, nclamp=2, clamp_lo=1, clamp_hi=1,
+           calc_uncertainties=False, _larch=None, **kws):
     """Use Autobk algorithm to remove XAFS background
     Options are:
       rbkg -- distance out to which the chi(R) is minimized
@@ -68,9 +63,7 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
     if _larch is None:
         raise Warning("cannot calculate autobk spline -- larch broken?")
 
-    if 'kw' in kws:
-        kweight = kws['kw']
-
+    if 'kw' in kws:  kweight = kws['kw']
     energy = remove_dups(energy)
 
     # if e0 or edge_step are not specified, get them, either from the
@@ -101,24 +94,24 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
     kraw = np.sqrt(ETOK*(energy[ie0:] - e0))
     if kmax is None:
         kmax = max(kraw)
+    else:
+        kmax = max(0, min(max(kraw), kmax))
     kout  = kstep * np.arange(int(1.01+kmax/kstep), dtype='float64')
+    iemax = min(len(energy), 2+index_of(energy, e0+kmax*kmax/ETOK)) - 1
 
     # interpolate provided chi(k) onto the kout grid
     if chi_std is not None and k_std is not None:
         chi_std = np.interp(kout, k_std, chi_std)
-
+    # pre-load FT window
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk)
 
     # calc k-value and initial guess for y-values of spline params
-    nspline = max(4, min(128, 2*int(rbkg*(kmax-kmin)/np.pi) + 1))
-    spl_y  = np.zeros(nspline)
-    spl_k  = np.zeros(nspline)
-    spl_e  = np.zeros(nspline)
-    for i in range(nspline):
-        q = kmin + i*(kmax-kmin)/(nspline - 1)
+    nspl = max(4, min(128, 2*int(rbkg*(kmax-kmin)/np.pi) + 1))
+    spl_y, spl_k, spl_e  = np.zeros(nspl), np.zeros(nspl), np.zeros(nspl)
+    for i in range(nspl):
+        q  = kmin + i*(kmax-kmin)/(nspl - 1)
         ik = index_nearest(kraw, q)
-
         i1 = min(len(kraw)-1, ik + 5)
         i2 = max(0, ik - 5)
         spl_k[i] = kraw[ik]
@@ -130,54 +123,55 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
     knots, coefs, order = splrep(spl_k, spl_y)
 
     # set fit parameters from initial coefficients
-    ncoefs = len(coefs)
     params = Group()
-    for i in range(ncoefs):
+    for i in range(len(coefs)):
         name = FMT_COEF % i
         p = Parameter(coefs[i], name=name, vary=i<len(spl_y))
         p._getval()
         setattr(params, name, p)
 
-    initbkg, initchi = spline_eval(kraw, mu[ie0:], knots, coefs, order, kout)
+    initbkg, initchi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
+                                   knots, coefs, order, kout)
 
-    fitkws = dict(ncoefs=len(coefs), chi_std=chi_std,
-                  knots=knots, order=order, kraw=kraw, mu=mu[ie0:],
-                  irbkg=irbkg, kout=kout, ftwin=ftwin, nfft=nfft,
-                  nclamp=nclamp, clamp_lo=clamp_lo, clamp_hi=clamp_hi)
     # do fit
-    fit = Minimizer(__resid, params, fcn_kws=fitkws, _larch=_larch, toler=1.e-4)
+    fit = Minimizer(__resid, params, _larch=_larch, toler=1.e-4,
+                    fcn_kws = dict(ncoefs=len(coefs), chi_std=chi_std,
+                                   knots=knots, order=order,
+                                   kraw=kraw[:iemax-ie0+1],
+                                   mu=mu[ie0:iemax+1], irbkg=irbkg, kout=kout,
+                                   ftwin=ftwin, nfft=nfft, nclamp=nclamp,
+                                   clamp_lo=clamp_lo, clamp_hi=clamp_hi))
     fit.leastsq()
 
     # write final results
-    coefs = [getattr(params, FMT_COEF % i) for i in range(ncoefs)]
-
-    bkg, chi = spline_eval(kraw, mu[ie0:], knots, coefs, order, kout)
-    obkg  = np.zeros(len(mu))
-    obkg[:ie0] = mu[:ie0]
-    obkg[ie0:] = bkg
+    coefs = [getattr(params, FMT_COEF % i) for i in range(len(coefs))]
+    bkg, chi = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
+                           knots, coefs, order, kout)
+    obkg = np.copy(mu)
+    obkg[ie0:ie0+len(bkg)] = bkg
+    # outputs to group
     if _larch.symtable.isgroup(group):
         group.bkg  = obkg
         group.chie = (mu-obkg)/edge_step
         group.k    = kout
         group.chi  = chi/edge_step
-        gdet = group.autobk_details = Group()
-        gdet.spline_params = params
-        ix_bkg = np.zeros(len(mu))
-        ix_bkg[:ie0] = mu[:ie0]
-        ix_bkg[ie0:] = initbkg
-        gdet.init_bkg = ix_bkg
-        gdet.init_chi = initchi/edge_step
-        gdet.spline_e = spl_e
-        gdet.spline_y = np.array([coefs[i] for i in range(nspline)])
-        gdet.spline_yinit = spl_y
-        if HAS_UNCERTAIN:
-            # now, calculate delta_mu0 and delta_chi
+        # now fill in 'autobk_details' group
+        dg = group.autobk_details = Group()
+        dg.spline_params = params
+        dg.init_bkg = np.copy(mu)
+        dg.init_bkg[ie0:ie0+len(bkg)] = initbkg
+        dg.init_chi = initchi/edge_step
+        dg.spline_e = spl_e
+        dg.spline_y = np.array([coefs[i] for i in range(nspl)])
+        dg.spline_yinit = spl_y
+        # uncertainties in mu0 and chi:  fairly slow!!
+        if HAS_UNCERTAIN and calc_uncertainties:
             vbest, vstd = [], []
             for n in fit.var_names:
                 par = getattr(params, n)
                 vbest.append(par.value)
                 vstd.append(par.stderr)
-            uvars = correlated_values(vbest, params.covar)
+            uvars = uncertainties.correlated_values(vbest, params.covar)
             # uncertainty in bkg (aka mu0)
             # note that much of this is working around
             # limitations in the uncertainty package that make it
@@ -187,21 +181,21 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
             #     of global "index" is important here)
             def my_dsplev(*args):
                 coefs = np.array(args)
-                return splev(kraw, [knots, coefs, order])[index]
+                return splev(kraw[:iemax-ie0+1], [knots, coefs, order])[index]
             fdbkg = uncertainties.wrap(my_dsplev)
             dmu0  = [fdbkg(*uvars).std_dev() for index in range(len(bkg))]
-            gdet.dbkg = np.zeros(len(mu))
-            gdet.dbkg[ie0:] = np.array(dmu0)
+            group.delta_bkg = np.zeros(len(mu))
+            group.delta_bkg[ie0:ie0+len(bkg)] = np.array(dmu0)
 
             # uncertainty in chi (see notes above)
             def my_dchi(*args):
                 coefs = np.array(args)
-                b, c = spline_eval(kraw, mu[ie0:], knots, coefs, order, kout)
+                b, c = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
+                                   knots, coefs, order, kout)
                 return c[index]
             fdchi = uncertainties.wrap(my_dchi)
             dci   = [fdchi(*uvars).std_dev() for index in range(len(kout))]
-            gdet.dchi  = np.array(dci)/edge_step
+            group.delta_chi = np.array(dci)/edge_step
 
 def registerLarchPlugin():
     return ('_xafs', {'autobk': autobk})
-
