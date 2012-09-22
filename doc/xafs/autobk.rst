@@ -2,9 +2,6 @@
 XAFS: Post-edge Background Subtraction
 ==============================================
 
-.. module:: _xafs
-   :synopsis: XAFS Pre-edge subtraction and normalization functions
-
 ..  function:: autobk(energy, mu, group=None, rbkg=1.0, ...)
 
     Determine the post-edge background function, :math:`\mu_0(E)`, and
@@ -28,6 +25,36 @@ XAFS: Post-edge Background Subtraction
     :param nfft:     array size to use for FFT [2048]
     :param kstep:    :math:`k` step size to use for FFT [0.05]
     :param pre_edge_kws:  keyword arguments to pass to :func:`pre_edge`.
+    :param nclamp:    number of energy end-points for clamp [2]
+    :param clamp_lo:  weight of low-energy clamp [1]
+    :param clamp_hi:  weight of high-energy clamp [1]
+    :param calc_uncertaintites:  Flag to calculate uncertainties in  :math:`\mu_0(E)` and :math:`\chi(k)` [``False``]
+    :returns:         ``None``.
+
+     If a ``group`` argument is provided, the following data is put into it:
+
+       =================   =========================================================
+        attribute             meaning
+       =================   =========================================================
+        e0                 energy origin
+        edge_step          edge step
+        norm               normalized :math:`\mu(E)`   (array)
+        pre_edge           pre-edge curve array
+        post_edge          post-edge, normalization array
+        bkg                :math:`\mu_0(E)` (not normalized)
+        chie               :math:`\chi(E)` values.
+        k                  :math:`k` values, on uniform grid.
+        chi                :math:`\chi(k)` values -- the EXAFS.
+        delta_chi (*)      :math:`\delta\chi(k)`, uncertainty in :math:`\chi(k)`
+	delta_bkg (*)      :math:`\delta\mu_0(E)`, uncertainty in :math:`\mu_0(E)`
+	autobk_details      Group of arrays with autobk details
+       =================   =========================================================
+
+    Here, the arrays ``group.k``, ``group.chi``, and ``group.delta_chi``
+    will be the same length, giving :math:`\chi(k)` and its uncertainty
+    from 0 to a maximum k value determined by ``kmax`` or the range of
+    available data.  The arrays ``group.bkg``, ``group.delta_bkg``, and
+    ``group.chie`` will correspond to the input ``energy`` array.
 
 The background subtraction method used is the **AUTOBK** algorithm, in
 which a spline function is matched to the low-*R* components of the
@@ -40,7 +67,7 @@ energy (the 0 of photo-electron energy).  For :math:`k` in units of
 \sqrt{(E-E_0)/3.81}`.  With this conversion of energy to wavenumber,
 :math:`\chi(k)` is defined from
 
-    :math:`\chi(E) = \frac{\mu(E)-\mu_0(E)}{\Delta\mu}` 
+    :math:`\chi(E) = \frac{\mu(E)-\mu_0(E)}{\Delta\mu}`
 
 where :math:`\mu_0(E)` is the post-edge background function determined
 here, and :math:`\Delta\mu` is the edge step, determined from the

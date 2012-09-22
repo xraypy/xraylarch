@@ -7,7 +7,8 @@ Some Builtin Line-shape Functions
 
 Larch provides a number of convenience functions for common line-shapes
 used in fitting of experimental data.  This list is not exhaustive, but can
-be amended easily.
+be amended easily.  All these functions return either a floating point
+scalar or array, depending on the input ``x``.
 
 .. function:: gaussian(x, cen=0, sigma=1)
 

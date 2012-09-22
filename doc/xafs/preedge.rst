@@ -2,19 +2,21 @@
 XAFS: Pre-edge Subtraction and Normalization
 ==============================================
 
-.. module:: _xafs
-   :synopsis: XAFS Pre-edge subtraction and normalization functions
+After reading in data and constructing :math:`\mu(E)`, the principle
+pre-processing steps for XAFS analysis.  are pre-edge subtraction and
+normalization.  Reading data and constructing :math:`\mu(E)` are handled by
+internal larch functions, especially :func:`read_ascii`.  The main
+XAFS-specific function for pre-edge subtraction and normalizaiton is
+:func:`pre_edge`.
+
 
 ..  function:: pre_edge(energy, mu, group=None, ...)
 
-    Pre-edge subtraction and normalization.
-
-    This performs a number of steps:
+    Pre-edge subtraction and normalization.  This performs a number of steps:
        1. determine :math:`E_0` (if not supplied) from max of deriv(mu)
        2. fit a line of polymonial to the region below the edge
        3. fit a polymonial to the region above the edge
-       4. extrapolae the two curves to :math:`E_0` to determine the edge jump
-
+       4. extrapolate the two curves to :math:`E_0` to determine the edge jump
 
     :param energy:  1-d array of x-ray energies, in eV
     :param mu:      1-d array of :math:`\mu(E)`
@@ -23,38 +25,30 @@ XAFS: Pre-edge Subtraction and Normalization
     :param step:    edge jump.  If None, it will be determined here.
     :param pre1:    low E range (relative to E0) for pre-edge fit
     :param pre2:    high E range (relative to E0) for pre-edge fit
-    :param nvict:   energy exponent to use for pre-edg fit.  See Note below
+    :param nvict:   energy exponent to use for pre-edg fit.  See Note below.
     :param norm1:   low E range (relative to E0) for post-edge fit
     :param norm2:   high E range (relative to E0) for post-edge fit
     :param nnorm:   number of terms in polynomial (that is, 1+degree) for
                     post-edge, normalization curve. Default=3 (quadratic)
 
-    For return values, if **group** is None, the return value is
-    (edge_step, e0).
+    :returns:  (edge_step, e0).
 
-    If a **group** is supplied, return value is None, and the following
-    data is put into the **group**:
+    If a ``group`` argument is provided, the following data is put into it:
 
-       +-----------+----------------------------------------------------+
-       | attribute | meaning                                            |
-       +-----------+----------------------------------------------------+
-       | e0        |  energy origin                                     |
-       +-----------+----------------------------------------------------+
-       | edge_step |  edge step                                         |
-       +-----------+----------------------------------------------------+
-       | norm      |  normalized mu(E)   (array)                        |
-       +-----------+----------------------------------------------------+
-       | pre_edge  |  pre-edge curve (array)                            |
-       +-----------+----------------------------------------------------+
-       | post_edge |  post-edge, normalization curve  (array)           |
-       +-----------+----------------------------------------------------+
+       ============   ==================================================
+        attribute      meaning
+       ============   ==================================================
+        e0             energy origin
+        edge_step      edge step
+        norm           normalized mu(E)   (array)
+        pre_edge       pre-edge curve (array)
+        post_edge      post-edge, normalization curve  (array)
+       ============   ==================================================
 
-    Note:
-       nvict gives an exponent to the energy term for the pre-edge fit.
-       That is, a line :math:`(m E + b)` is fit to
-       :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1, E0+pre2].
-
-
+Notes:
+   nvict gives an exponent to the energy term for the pre-edge fit.
+   That is, a line :math:`(m E + b)` is fit to
+   :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1, E0+pre2].
 
 ..  function:: find_e0(energy, mu, group=None, ...)
 
@@ -65,9 +59,10 @@ XAFS: Pre-edge Subtraction and Normalization
     checks to avoid spurious glitches.
 
 
-    :param energy:  1-d array of x-ray energies, in eV
-    :param   mu:    1-d array of mu(E)
+    :param energy:  array of x-ray energies, in eV
+    :param   mu:    array of :math:`\mu(E)`
     :param group:   output group
+    :returns:       e0.
 
 
     Returns e0, the edge energy, :math:`E_0` in eV.  If a group is
@@ -81,7 +76,7 @@ A simple example of pre-edge subtraction::
     fname = 'fe2o3_rt1.xmu'
     dat = read_ascii(fname, labels='energy xmu i0')
 
-    pre_edge(dat.energy, dat.xmu, group=dat)
+    step, e0 = pre_edge(dat.energy, dat.xmu, group=dat)
 
     show(dat)
 

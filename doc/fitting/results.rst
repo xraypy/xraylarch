@@ -46,17 +46,17 @@ esoteric outputs from MINPACK's lmdif function are put in
 Additional outputs written to the ``fit_details`` group vary for each
 fitting method.
 
-.. method:: fit_report(paramgroup, show_correl=True, min_correl=0.1)
+.. function:: fit_report(paramgroup, show_correl=True, min_correl=0.1)
 
    returns a fit report for a fit given a parameter group.
 
    :param paramgroup:  parameter group, after being used in a fit.
    :param show_correl: flag (``True``/``False``) to show parameter correlations.
    :param min_correl:  smallest absolute value of correlation to show.
+   :returns:   string of fit report.   This can be printed or stored.
 
-   The output string can be printed.
 
-A typical result from :meth:`fit_report` would look like this::
+A typical result from :func:`fit_report` would look like this::
 
     larch> print fit_report(params)
     ===================== FIT RESULTS =====================
