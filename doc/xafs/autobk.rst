@@ -200,11 +200,12 @@ that :math:`\mu_0(E)` might want to leave some first-shell leakage at
 low-:math:`R`.
 
 To accout for this, you can proved a spectrum of :math:`chi(k)` for a
-standard that is meant to be close to the spectrum being analyzed.
-This is done by providing 2 arrays: ``k_std`` and ``chi_std``, which need
-to be the same lenth.  By providing these, the best values for
-:math:`\mu_0(E)` will be those that minimize the the Fourier transorm of
-the difference of :math:`\chi(k)` for the data and standrad.
+standard that is meant to be close to the spectrum being analyzed.  This is
+done by providing 2 arrays: ``k_std`` and ``chi_std``, which need to be the
+same lenth.  By providing these, the best values for :math:`\mu_0(E)` will
+be those that minimize the the Fourier transorm of the difference of
+:math:`\chi(k)` for the data and standard.    This can be especially helpful
+to give more consistent background
 
 End-point clamps for the spline
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -219,7 +220,20 @@ the low- and high-ends of the :math:`\chi(k)` array, and include them in
 the array to be minimized in the fit.  This has the tendency to push the
 end-points of :math:`\chi(k)` to zero.
 
-The strength of ...
+There are three parameters influencing the clamps.  ``nclamp`` sets the
+number of data points of :math:`\chi(k)` at the beginning and end of the
+:math:`k` range to add to the fit.  ``clamp_lo`` sets the weighting factor
+applied to the first ``nclamp`` points for the low-:math:`k` end fo the
+data range, and ``clamp_hi`` sets the weighting factor applied to the last
+``nclamp`` points at the high-:math:`k` end.
+
+There is not an easy way to determine ahead of time what the clamp
+parameters will be.  Typically, ``nclamp`` need only be 1 to 5 data points
+(with 2 being the default).  Setting ``nclamp`` to 0 will remove the clamps
+completely.  Values for ``clamp_lo`` and ``clamp_hi`` are floating point
+numbers, and should range from about 1 (the default) to 10 or 20 for a very
+strong clamp that will almost certainly force :math:`\chi(k)` to be 0 at
+the end-points.
 
 Recommendations
 ~~~~~~~~~~~~~~~~~
