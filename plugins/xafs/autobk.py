@@ -157,13 +157,13 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
         group.chi  = chi/edge_step
         # now fill in 'autobk_details' group
         dg = group.autobk_details = Group()
-        dg.spline_params = params
+        dg.spline_pars = params
         dg.init_bkg = np.copy(mu)
         dg.init_bkg[ie0:ie0+len(bkg)] = initbkg
         dg.init_chi = initchi/edge_step
-        dg.spline_e = spl_e
-        dg.spline_y = np.array([coefs[i] for i in range(nspl)])
-        dg.spline_yinit = spl_y
+        dg.knots_e  = spl_e
+        dg.knots_y  = np.array([coefs[i] for i in range(nspl)])
+        dg.init_knots_y = spl_y
         # uncertainties in mu0 and chi:  fairly slow!!
         if HAS_UNCERTAIN and calc_uncertainties:
             vbest, vstd = [], []
@@ -179,9 +179,10 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
             #  2. work on returned scalars (but not arrays)
             #  3. not handle kw args and *args well (so use
             #     of global "index" is important here)
+            nkx = iemax-ie0 + 1
             def my_dsplev(*args):
                 coefs = np.array(args)
-                return splev(kraw[:iemax-ie0+1], [knots, coefs, order])[index]
+                return splev(kraw[:nkx], [knots, coefs, order])[index]
             fdbkg = uncertainties.wrap(my_dsplev)
             dmu0  = [fdbkg(*uvars).std_dev() for index in range(len(bkg))]
             group.delta_bkg = np.zeros(len(mu))
@@ -190,12 +191,12 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
             # uncertainty in chi (see notes above)
             def my_dchi(*args):
                 coefs = np.array(args)
-                b, c = spline_eval(kraw[:iemax-ie0+1], mu[ie0:iemax+1],
-                                   knots, coefs, order, kout)
-                return c[index]
+                b,chi = spline_eval(kraw[:nkx], mu[ie0:iemax+1],
+                                    knots, coefs, order, kout)
+                return chi[index]
             fdchi = uncertainties.wrap(my_dchi)
-            dci   = [fdchi(*uvars).std_dev() for index in range(len(kout))]
-            group.delta_chi = np.array(dci)/edge_step
+            dchi  = [fdchi(*uvars).std_dev() for index in range(len(kout))]
+            group.delta_chi = np.array(dchi)/edge_step
 
 def registerLarchPlugin():
     return ('_xafs', {'autobk': autobk})
