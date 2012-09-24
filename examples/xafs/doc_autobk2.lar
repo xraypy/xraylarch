@@ -1,0 +1,17 @@
+## examples/xafs/doc_autobk2.lar
+fname = 'scorodite_as_xafs.001'
+title = 'FeAsSO4  (scorodite)' 
+dat = read_ascii(fname)
+dat.energy = dat.p1
+dat.xmu    = ln(dat.d1/dat.d2)
+autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat)
+
+newplot(dat.energy, dat.xmu,
+        xlabel='Energy (eV)', ylabel=r'$\mu(E)$',
+        title=title, xmin=dat.e0-50, xmax=dat.e0+550)
+plot(dat.energy, dat.bkg, color='red', style='dashed')
+
+newplot(dat.k, dat.chi*dat.k**2, xlabel=r'$k \rm\, (\AA^{-1})$',
+        ylabel=r'$k^2\chi(k)$', title=title, win=2)
+
+## end of examples/xafs/doc_autobk2.lar

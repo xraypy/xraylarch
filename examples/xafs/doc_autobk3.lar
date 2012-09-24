@@ -1,0 +1,31 @@
+## examples/xafs/doc_autobk3.lar
+fname = 'scorodite_as_xafs.001'
+title = 'FeAsSO4  (scorodite)' 
+dat = read_ascii(fname)
+dat.energy = dat.p1
+dat.xmu    = ln(dat.d1/dat.d2)
+
+autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat, clamp_hi=0)
+dat.chi0 = dat.chi * dat.k**2
+
+autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat, clamp_hi=2)
+dat.chi2 = dat.chi * dat.k**2
+
+autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat, clamp_hi=5)
+dat.chi5 = dat.chi * dat.k**2
+
+autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat, clamp_hi=10)
+dat.chi10 = dat.chi * dat.k**2
+
+newplot(dat.k, dat.chi0, label='clamp_hi=0', show_legend=True,
+        xmin=4, 
+        xlabel=r'$k \rm\, (\AA^{-1})$',  ylabel=r'$k^2\chi(k)$',
+        title='Effect of clamp_hi')
+
+plot(dat.k, dat.chi2, label='clamp_hi=5', show_legend=True)
+plot(dat.k, dat.chi5, label='clamp_hi=5', show_legend=True)
+plot(dat.k, dat.chi10, label='clamp_hi=10', show_legend=True)
+
+## end of examples/xafs/doc_autobk3.lar
+
+

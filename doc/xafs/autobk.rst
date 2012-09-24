@@ -134,6 +134,7 @@ A spline is a general mathematical function, and so using one to match
 :math:`\mu(E)` that we will subtract from the same :math:`\mu(E)` could
 easily match *too* well, and erase much of the data we're interested in.
 Therefore, we have to carefully consider two aspects:
+
   1. what portions of the spectrum we want it to match, and
   2. how flexible the spline can be.
 
@@ -279,7 +280,86 @@ order):
  the endpoints too much, increasing these values can help greatly.
 
 
-Examples
+Exampless
 ==========
 
+Here, we give a few examples using :func:`autobk`, and outline some of its
+features.
+
+
+Basic example
+~~~~~~~~~~~~~~~~~~
+
+The simplest example of reading data and doing background subtraction would
+using all the default inputs would be:
+
+.. literalinclude:: ../../examples/xafs/doc_autobk1.lar
+
+with the resulting outputs looking like this:
+
+.. _xafs_fig2:
+
+   Figure 2.  Example of simple usage of :func:`autobk`.
+
+
+  .. image::  ../images/xafs_autobk1a.png
+     :target: ../_images/xafs_autobk1a.png
+     :width: 48 %
+  .. image::  ../images/xafs_autobk1b.png
+     :target: ../_images/xafs_autobk1b.png
+     :width: 48 %
+
+Thus demonstrating that we can process data on Cu metal.
+
+For a slightly more challenging example, we try the As K-edge of scorodit
+(:math:`\rm FeAsO4 \cdot (nH_2O)`).  Here, we  start by reading in data and
+constructing :math:`\mu(E)`, then run :func:`autobk` with all default
+settings:
+
+
+.. literalinclude:: ../../examples/xafs/doc_autobk2.lar
+
+The resulting outputs looks OK:
+
+.. _xafs_fig3:
+
+   Figure 3.  Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
+
+
+  .. image::  ../images/xafs_autobk2a.png
+     :target: ../_images/xafs_autobk2a.png
+     :width: 48 %
+  .. image::  ../images/xafs_autobk2b.png
+     :target: ../_images/xafs_autobk2b.png
+     :width: 48 %
+
+A close examimation of :math:`k^2\chi(k)` suggests we might be able to do
+better, which brings us to the next section.
+
+Adjusting spline clamps
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+For the scorodite example above, the XAFS diverges from 0 at the
+high-:math:`k` end of the spectra.  Playing with the spline clamps
+discussed above, we try a few options to study the effect of adding a
+clamp:
+
+.. literalinclude:: ../../examples/xafs/doc_autobk3.lar
+
+   
+results in the following comparison:
+
+
+.. _xafs_fig4:
+
+   Figure 4.  Influence of spline clamps of :math:`\chi(k)`
+
+  .. image::  ../images/xafs_autobk3.png
+     :target: ../_images/xafs_autobk3.png
+     :width: 65 %
+
+
+Using a Standard :math:`\chi(k)`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

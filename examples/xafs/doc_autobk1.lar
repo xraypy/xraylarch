@@ -1,0 +1,15 @@
+## examples/xafs/doc_autobk1.lar
+fname = 'cu_rt01.xmu'
+cu = read_ascii(fname)
+autobk(cu.energy, cu.xmu, rbkg=1.0, group=cu)
+
+newplot(cu.energy, cu.xmu,
+        xlabel='Energy (eV)', ylabel=r'$\mu(E)$',
+        xmin=cu.e0-100, xmax=cu.e0+300,
+        title=fname)
+plot(cu.energy, cu.bkg, color='black')
+
+newplot(cu.k, cu.chi*cu.k, xlabel=r'$k \rm\, (\AA^{-1})$',
+        ylabel=r'$k\chi(k)$', title=fname,win=2)
+
+## end of examples/xafs/doc_autobk1.lar
