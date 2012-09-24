@@ -394,6 +394,7 @@ def _contour(map, x=None, y=None, **kws):
 def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
               facecolor='w', edgecolor='w', quality=75, image=False, **kws):
     """formats: png (default), svg, pdf, jpeg, tiff"""
+    thisdir = os.path.abspath(os.curdir)
     if format is None:
         pref, suffix = os.path.splitext(fname)
         if suffix is not None:
@@ -414,6 +415,7 @@ def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
                             facecolor=facecolor, edgecolor=edgecolor, **kws)
     else:
         print 'unsupported image format: ', format
+    os.chdir(thisdir)
 
 def _saveimg(fname, _larch=None, **kws):
     """save image from image display"""
