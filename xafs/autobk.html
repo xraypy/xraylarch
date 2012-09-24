@@ -122,11 +122,12 @@
             
   <div class="section" id="xafs-post-edge-background-subtraction">
 <h1>XAFS: Post-edge Background Subtraction<a class="headerlink" href="#xafs-post-edge-background-subtraction" title="Permalink to this headline">¶</a></h1>
-<p>Background subtraction is an important data processing steps in EXAFS
-analysis, converting the measured <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> into the <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>
-ready for quantitative analysis.  In larch, this step is performed by the
-<a class="reference internal" href="#autobk" title="autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function.  This function has many options and subtleties,
-and this section is devoted to this function and the underlying algorithm.</p>
+<p>Background subtraction is one of the most important data processing steps
+in EXAFS analysis, converting the measured <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> into the
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> ready for quantitative analysis.  In Larch, this step is
+performed by the <a class="reference internal" href="#autobk" title="autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function, which has many options and
+subtleties.  This section is devoted to background subtraction with the
+<img class="math" src="../_images/math/238cbe895cd49ca373a27030b3b5d9529dadceae.png" alt="autobk"/> function and the underlying algorithm it uses.</p>
 <div class="section" id="the-autobk-function">
 <h2>The <a class="reference internal" href="#autobk" title="autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
@@ -141,11 +142,11 @@ corresponding <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> &#8211; 1-d array of x-ray energies, in eV</li>
 <li><strong>mu</strong> &#8211; 1-d array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
-<li><strong>group</strong> &#8211; output group</li>
+<li><strong>group</strong> &#8211; output group (and input group for <tt class="docutils literal"><span class="pre">e0</span></tt> and <tt class="docutils literal"><span class="pre">edge_step</span></tt>.</li>
 <li><strong>rbkg</strong> &#8211; distance (in <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>) for <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> above
 which the signal is ignored. Default = 1.</li>
-<li><strong>e0</strong> &#8211; edge energy, in eV. If <cite>None</cite>, it will be determined.</li>
-<li><strong>edge_step</strong> &#8211; edge step.  If <cite>None</cite>, it will be determined here.</li>
+<li><strong>e0</strong> &#8211; edge energy, in eV.  If <cite>None</cite>, it will be determined.</li>
+<li><strong>edge_step</strong> &#8211; edge step.  If <cite>None</cite>, it will be determined.</li>
 <li><strong>pre_edge_kws</strong> &#8211; keyword arguments to pass to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</li>
 <li><strong>nknots</strong> &#8211; number of knots in spline.  If <cite>None</cite>, it will be determined.</li>
 <li><strong>kmin</strong> &#8211; minimum <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value   [0]</li>
@@ -155,8 +156,8 @@ which the signal is ignored. Default = 1.</li>
 <li><strong>win</strong> &#8211; FFT window function name.     [&#8216;hanning&#8217;]</li>
 <li><strong>nfft</strong> &#8211; array size to use for FFT [2048]</li>
 <li><strong>kstep</strong> &#8211; <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> step size to use for FFT [0.05]</li>
-<li><strong>k_std</strong> &#8211; optional <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> array for standard <img class="math" src="../_images/math/593e7d196e24fdd29e64f979a309c03a717d0e63.png" alt="chi(k)"/>.</li>
-<li><strong>chi_std</strong> &#8211; optional <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> array for standard <img class="math" src="../_images/math/593e7d196e24fdd29e64f979a309c03a717d0e63.png" alt="chi(k)"/>.</li>
+<li><strong>k_std</strong> &#8211; optional <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> array for standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</li>
+<li><strong>chi_std</strong> &#8211; optional <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> array for standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</li>
 <li><strong>nclamp</strong> &#8211; number of energy end-points for clamp [2]</li>
 <li><strong>clamp_lo</strong> &#8211; weight of low-energy clamp [1]</li>
 <li><strong>clamp_hi</strong> &#8211; weight of high-energy clamp [1]</li>
@@ -206,15 +207,24 @@ which the signal is ignored. Default = 1.</li>
 </tbody>
 </table>
 </div></blockquote>
-<p>Here, the arrays <tt class="docutils literal"><span class="pre">group.k</span></tt>, <tt class="docutils literal"><span class="pre">group.chi</span></tt>, and <tt class="docutils literal"><span class="pre">group.delta_chi</span></tt>
-will be the same length, giving <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and its uncertainty
-from 0 to a maximum k value determined by <tt class="docutils literal"><span class="pre">kmax</span></tt> or the range of
-available data.  The arrays <tt class="docutils literal"><span class="pre">group.bkg</span></tt>, <tt class="docutils literal"><span class="pre">group.delta_bkg</span></tt>, and
-<tt class="docutils literal"><span class="pre">group.chie</span></tt> will correspond to the input <tt class="docutils literal"><span class="pre">energy</span></tt> array, but will
-only be calculated and written if the argument <tt class="docutils literal"><span class="pre">calc_uncertainties</span></tt>
-is <tt class="docutils literal"><span class="pre">True</span></tt>.   In addition, if pre-edge subtraction had not been done
-previously, it will be done here, and the outputs described for
-<a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a> will also be written to <tt class="docutils literal"><span class="pre">group</span></tt>.</p>
+<p>Here, the arrays <tt class="docutils literal"><span class="pre">group.k</span></tt>, <tt class="docutils literal"><span class="pre">group.chi</span></tt> will be the same length,
+giving <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> from 0 to a maximum k value set by <tt class="docutils literal"><span class="pre">kmax</span></tt> or
+the range of available data.  The arrays <tt class="docutils literal"><span class="pre">group.bkg</span></tt> and
+<tt class="docutils literal"><span class="pre">group.chie</span></tt> will correspond to the input <tt class="docutils literal"><span class="pre">energy</span></tt> array.</p>
+<p>The parameters <tt class="docutils literal"><span class="pre">e0</span></tt> and <tt class="docutils literal"><span class="pre">edge_step</span></tt> are needed to determine
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>, and can be specified here.  If they are not, but the
+input <tt class="docutils literal"><span class="pre">group</span></tt> has attributes <tt class="docutils literal"><span class="pre">e0</span></tt> and <tt class="docutils literal"><span class="pre">edge_step</span></tt> &#8211; say, from
+running <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a> &#8211; those values will be used.  If values
+cannot be found in either place, they will be determined by calling
+<a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a> from within <a class="reference internal" href="#autobk" title="autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>.  The <tt class="docutils literal"><span class="pre">pre_edge_kws</span></tt>
+argument can be used here for parameters to pass to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>,
+and the output parameters from it will be added to the output
+<tt class="docutils literal"><span class="pre">group</span></tt>.</p>
+<p>If <tt class="docutils literal"><span class="pre">calc_uncertainties</span></tt> is set to <tt class="docutils literal"><span class="pre">True</span></tt>, the outputs
+<tt class="docutils literal"><span class="pre">group.delta_chi</span></tt> and <tt class="docutils literal"><span class="pre">group.delta_bkg</span></tt>, holding the uncertainties
+in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, respectively.  These
+calculations are relatively costly, and can take 20 times longer to
+determine <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> themselves.</p>
 <p>The <tt class="docutils literal"><span class="pre">group.autobk_details</span></tt> group will contain the following attributes:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -249,10 +259,6 @@ previously, it will be done here, and the outputs described for
 </tbody>
 </table>
 </div></blockquote>
-<p>Note that <tt class="docutils literal"><span class="pre">e0</span></tt> and <tt class="docutils literal"><span class="pre">edge_step</span></tt> can be specified.  If not specified,
-they will be determined by calling <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.  The
-<tt class="docutils literal"><span class="pre">pre_edge_kws</span></tt> argument can be used to pass custom arguments to
-<a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
 </dd></dl>
 
 </div>
@@ -273,66 +279,74 @@ energy (the 0 of photo-electron energy).  For <img class="math" src="../_images/
 bare atom, embedded in the molecular or solid environment, but without
 scattering of the outgoing photo-electron that gives rise to the EXAFS, and
 <img class="math" src="../_images/math/7d0e590a03ee2cb35204d1d883ae7a012e592ed6.png" alt="\Delta\mu"/> is the edge step in <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.</p>
-<p>The quantity <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> cannot be independently measured.  Here we
-empirically determine it given the data for <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> by fitting a
-spline (a piece-polynomial function that is easily adjusted even while its
-smoothness is controlled) to <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.  An advantage to what could
-easily be described as an <em>ad hoc</em> approach is that the data for
-<img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> can hide many systematic drifts and dependencies that are
+<p>The quantity <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> cannot be independently measured.  Instead,
+we empirically determine it here given the data for <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> by
+fitting a spline (a piece-polynomial function that is easily adjusted even
+while its smoothness is controlled) to <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.  An advantage to
+what could easily be described as an <em>ad hoc</em> approach is that the data for
+<img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> can include many systematic drifts and dependencies that are
 slowly varying with energy.</p>
-<p>You may also note the definition above normalizes to the edge step
-<img class="math" src="../_images/math/7d0e590a03ee2cb35204d1d883ae7a012e592ed6.png" alt="\Delta\mu"/> instead of the energy-dependent <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, as is
+<p>The definition above normalizes to the edge step <img class="math" src="../_images/math/7d0e590a03ee2cb35204d1d883ae7a012e592ed6.png" alt="\Delta\mu"/>
+(<tt class="docutils literal"><span class="pre">edge_step</span></tt>) instead of the energy-dependent <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, as is
 often described in introductory texts on EXAFS.  The reason for this is
 essentially the same &#8211; so that we do not need to carefully take care of
 slow energy drifts in the measured <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> or worry about having an
 absolute measure of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.</p>
 <div class="section" id="and-spline-for">
 <h3><img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
-<p>Of course, a spline is a general mathematical function, and so using one to
-match <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> that we will subtract from the same <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>
-could easily match <em>too</em> well, and erase much of the data we&#8217;re interested
-in.  Therefore, we have to carefully consider both how flexible the spline
-can be and what portions of the spectrum we want it to match.  What we want
-is a <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> that removes the low frequency (low-<em>R</em>) portions of
-the <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> spectra, and recognizing this can tell us how to determine
-both of these.</p>
+<p>A spline is a general mathematical function, and so using one to match
+<img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> that we will subtract from the same <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> could
+easily match <em>too</em> well, and erase much of the data we&#8217;re interested in.
+Therefore, we have to carefully consider two aspects:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li>what portions of the spectrum we want it to match, and</li>
+<li>how flexible the spline can be.</li>
+</ol>
+</div></blockquote>
+<p>What we want is a <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> that removes the low frequency (low-<em>R</em>)
+portions of the <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> spectra, and recognizing this can tell us how
+to determine both of these.</p>
 <p>First, since we know the EXAFS oscillations do not extend far below the
 near-neighbor distance and since atoms are essentially never closer than 1
-<img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, and generally more like 2 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, we can say that we want
-to remove the frequencies of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> below some distance,
-<img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/> (or <tt class="docutils literal"><span class="pre">rbkg</span></tt> in <a class="reference internal" href="#autobk" title="autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>).  That is, we want to
-the spline function to be adjusted so that the components of
-<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/> are minimized.  We can use a
-default of 1 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, and recommend that the value be roughly half the
-expected near-neighbor distance.</p>
-<p>The second question of how flexible to make the spline is answered from
-basic signal processing through the <a class="reference external" href="http://en.wikipedia.org/wiki/Nyquist-Shannon_sampling_theorem">Nyquist-Shannon sampling theorem</a>,
-which tells us how many adjustable parameters to use for our spline:</p>
-<div class="math">
-<p><img src="../_images/math/34495c24efbd3a723b3afdc7af84760275791724.png" alt="N_{\rm spline}  =  1 + \frac{2R_{\rm bkg} \Delta k}{\pi}"/></p>
-</div><p>where <img class="math" src="../_images/math/83db992a1bf9c6721470cff232c7842530571adb.png" alt="\Delta k"/> is the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range of the data.  We create a
-spline function consisting of <img class="math" src="../_images/math/3c0f695d99800c7bfb48763bda3373569fe6620b.png" alt="N_{\rm spline}"/> adjustable points
-(<em>knots</em> in the spline, where the second derivatives are allowed to
-change), evenly spaced in <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> (that is, quadratic in energy).  We do
-a fit that adjusts the values of the function at each knot, computes
-<img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> by simple spline interpolation, calculates
+<img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, and generally more like 2 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, we can say that
+we want to remove the frequencies of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> below some distance,
+<img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/> (<tt class="docutils literal"><span class="pre">rbkg</span></tt>).  That is, we want the spline function to
+be adjusted so that the components of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/056c346f96c5e4f9f2caa7f30265682aeb07b410.png" alt="R_{\rm
+bkg}"/> are minimized.  We can use a default of 1 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, and
+recommend that the value be roughly half the expected near-neighbor
+distance.</p>
+<p>To do this, we create a spline function consisting of <img class="math" src="../_images/math/19c1c38620999cb84a2823fe276a79a645af36d2.png" alt="N_{\rm knots}"/>
+adjustable points (<em>knots</em> in the spline, where the second derivatives are
+allowed to change), evenly spaced in <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> (that is, quadratic in
+energy).  We do a fit that adjusts the values of the function at each knot,
+computes <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> by simple spline interpolation, calculates
 <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>, does a Fourier transform to <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>, and then
 seeks to minimize the components of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/056c346f96c5e4f9f2caa7f30265682aeb07b410.png" alt="R_{\rm
-bkg}"/>.  In this way we satisfy both considerations above: limiting the
-number of knots prevents the spline from being able to follow the
-frequencies of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> we care about most, and limiting the portion
-of the spectrum to be minimized to the very low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components, we do
-not even try to match those frequencies.  Thus, we are ensured of a
+bkg}"/>.</p>
+<p>This leads to the second question of how flexible to make the spline is
+answered from basic signal processing through the <a class="reference external" href="http://en.wikipedia.org/wiki/Nyquist-Shannon_sampling_theorem">Nyquist-Shannon sampling
+theorem</a>,
+which tells us how many adjustable parameters to use for our spline:</p>
+<div class="math">
+<p><img src="../_images/math/c7607ee858ddcaadb7a8e3df60a2fd3f5145b04f.png" alt="N_{\rm knots}  =  1 + \frac{2R_{\rm bkg} \Delta k}{\pi}"/></p>
+</div><p>where <img class="math" src="../_images/math/83db992a1bf9c6721470cff232c7842530571adb.png" alt="\Delta k"/> is the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range of the data.  This value can
+be over-ridden by specifing <tt class="docutils literal"><span class="pre">nknots</span></tt>, but this is strongly recommended
+against.</p>
+<p>In this way we satisfy both considerations above: limiting the number of
+knots prevents the spline from being able to follow the frequencies of
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> we care about most, and limiting the portion of the
+spectrum to be minimized to the very low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components, we do not
+even try to match those frequencies.  Thus, we are ensured of a
 <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> that only removes the low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components of
 <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.</p>
 </div>
 <div class="section" id="selecting-fourier-transform-parameters">
 <h3>Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
-<p>In order to determine <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> in this way, we must do a Fourier
-transform.  These are discussed in more detail in the next section, but
-here we mention the parameters affecting the Fourier transform used, and
-their default values.  The default parameter values are generally
-sufficient, and need only minor adjustments except in unusual cases.</p>
+<p>In order to determine <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, we must do a Fourier transform.
+These are discussed in more detail in the next section, but here we give
+the parameters affecting the Fourier transform used, and their default
+values.</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -390,40 +404,46 @@ sufficient, and need only minor adjustments except in unusual cases.</p>
 </tbody>
 </table>
 </div></blockquote>
+<p>The most important point is that the Fourier transform used to fit
+and visualize <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> is not necessarily the one to use here.  In
+particular, the <tt class="docutils literal"><span class="pre">kweight</span></tt> parameter should be 0 or 1 here, as we want to
+emphasize the low-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> portion of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  The default
+parameter values for <a class="reference internal" href="#autobk" title="autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> are generally sufficient, and need only
+minor adjustments except in unusual cases.</p>
 </div>
 <div class="section" id="using-a-standard">
 <h3>Using a standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
-<p>We said above that we want simply to minimize the low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components
-of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.  In principle, there should be some leakage of the first
+<p>We said above that we want to minimize the low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components of
+<img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.  In principle, there should be some leakage of the first
 shell to fairly low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>.  This is especially noticeable for a short
 ligand (say, below 1.75 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/> or so) of a low-Z atom (notably, C,
 N, and O).  Normally, this is not a serious problem, but it does point out
 that <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> might want to leave some first-shell leakage at
 low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>.</p>
-<p>To accout for this, you can proved a spectrum of <img class="math" src="../_images/math/593e7d196e24fdd29e64f979a309c03a717d0e63.png" alt="chi(k)"/> for a
+<p>To accout for this, you can proved a spectrum of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a
 standard that is meant to be close to the spectrum being analyzed.  This is
 done by providing 2 arrays: <tt class="docutils literal"><span class="pre">k_std</span></tt> and <tt class="docutils literal"><span class="pre">chi_std</span></tt>, which need to be the
 same lenth.  By providing these, the best values for <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> will
 be those that minimize the the Fourier transorm of the difference of
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for the data and standard.    This can be especially helpful
-to give more consistent background</p>
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for the data and standard.  This can be especially helpful
+to give more consistent background for a set of related spectra.</p>
 </div>
 <div class="section" id="end-point-clamps-for-the-spline">
 <h3>End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
 <p>Because the spline is chosen to match the low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components of
 <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>, the process does not even look at how the resulting
 <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> looks.  This can lead to some unstable behavior at the
-end-points of the spline, and cause <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to diverge at the ends.</p>
-<p>This can be remedied by add <em>clamps</em> to fit.  These include a few points at
-the low- and high-ends of the <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> array, and include them in
-the array to be minimized in the fit.  This has the tendency to push the
-end-points of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to zero.</p>
-<p>There are three parameters influencing the clamps.  <tt class="docutils literal"><span class="pre">nclamp</span></tt> sets the
-number of data points of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> at the beginning and end of the
-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range to add to the fit.  <tt class="docutils literal"><span class="pre">clamp_lo</span></tt> sets the weighting factor
-applied to the first <tt class="docutils literal"><span class="pre">nclamp</span></tt> points for the low-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> end fo the
-data range, and <tt class="docutils literal"><span class="pre">clamp_hi</span></tt> sets the weighting factor applied to the last
-<tt class="docutils literal"><span class="pre">nclamp</span></tt> points at the high-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> end.</p>
+end-points of the spline, causing <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to diverge at the ends.</p>
+<p>This can be remedied by adding <em>clamps</em> to the end-points of <img class="math" src="../_images/math/593e7d196e24fdd29e64f979a309c03a717d0e63.png" alt="chi(k)"/>
+to the fit.  That is, a few points at the low- and high-ends of the
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> array are appended to the array to be minimized in the fit,
+which has the tendency to push the end-points of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to zero.</p>
+<p>There are three parameters influencing these end-points clamps.  <tt class="docutils literal"><span class="pre">nclamp</span></tt>
+sets the number of data points of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> at the beginning and end
+of the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range to add to the fit.  <tt class="docutils literal"><span class="pre">clamp_lo</span></tt> sets the weighting
+factor applied to the first <tt class="docutils literal"><span class="pre">nclamp</span></tt> points for the low-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> end fo
+the data range, and <tt class="docutils literal"><span class="pre">clamp_hi</span></tt> sets the weighting factor applied to the
+last <tt class="docutils literal"><span class="pre">nclamp</span></tt> points at the high-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> end.</p>
 <p>There is not an easy way to determine ahead of time what the clamp
 parameters will be.  Typically, <tt class="docutils literal"><span class="pre">nclamp</span></tt> need only be 1 to 5 data points
 (with 2 being the default).  Setting <tt class="docutils literal"><span class="pre">nclamp</span></tt> to 0 will remove the clamps

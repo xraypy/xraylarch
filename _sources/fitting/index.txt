@@ -12,8 +12,8 @@ results.
 .. module:: _math
 
 The concepts presented here focus on modeling and fitting of general
-spectra.  Of course, Larch can provides other, specific functions for doing
-fits, such as the EXAFS procedures :func:`_xafs.autobk` and
+spectra and data.  Of course, Larch can provides other, specific functions
+for doing fits, such as the EXAFS procedures :func:`_xafs.autobk` and
 :func:`_xafs.feffit`.  Many of these concepts (and the underlying fitting
 algorithms) are used for those other functions as well.
 

@@ -6,10 +6,10 @@ Modeling and fitting of experimental data is a key need for the analysis of
 most scientific data.  There is an extensive literature on these topics,
 with a wealth written on both the theoretical and practical aspects of
 modeling data.  One of the more common and general approaches is to use a
-least-squares analysis, in which a model is adjusted until it matches
-experimental data such that the sum of squares of the difference between
-data and model is as small as possible.  Mathematically, this is expressed
-as
+least-squares analysis, in which a parameterized model is adjusted until it
+matches experimental data in the sense that the sum of squares of the
+difference between data and model is as small as possible.  Mathematically,
+this is expressed as
 
 .. math::
 
@@ -17,21 +17,21 @@ as
 
 where the experimental data is expressed as :math:`\bf{y}(\bf{x})` that is
 discretely sampled at :math:`N` points, :math:`f(\bf{x}, \bf{\beta})` is a
-model function, and :math:`\bf{\beta}` is a set of adjustable parameters in
-the model.  For a simple linear model of data, for example, :math:`f =
-\beta_0 + \beta_1 \bf{x}`, but the model can be arbitrary complex.  There
-is good statistical justification for using this approach, and many
+model function of some dependent variables :math:`\bf{x}` and
+:math:`\bf{\beta}`, a set of parameters in the model.  As a simple example,
+a linear model of data would be written as :math:`f = \beta_0 +
+\beta_1\bf{x}`.  Of course, models can be arbitrary complex.  There is good
+statistical justification for using the least-squares approach, and many
 existing tools for helping to find the minimal values of :math:`S`.  These
 justifcations are not without criticism or caveats, but we'll leave that
 aside for now.
 
 It is common to include a multiplicative factor to each component in in the
-least-squares equation above, so that the different data points might be
-given more or less weight.  Again, there are several approaches to this,
-with one of the most common approaches to weight by the inverse of the
-estimated uncertainty in the data value.  This then what is generally
-called the chi-square goodness-of-fit parameter
-
+least-squares equation above, so that the different samples (or data
+points) might be given more or less weight.  Again, there are several
+approaches to this, with one of the most common approaches to weight by the
+inverse of the estimated uncertainty in the data value.  This then what is
+generally called the chi-square goodness-of-fit parameter
 
 .. math::
 
@@ -39,14 +39,16 @@ called the chi-square goodness-of-fit parameter
 
 Here, :math:`\epsilon_i` represents the uncertainty in the value of :math:`y_i`.
 
-As mentioned, the model function can be fairly complex. There is a large
-literature on the cases where the model function :math:`f(\bf{x},
-\bf{\beta})` depends linearly on its parameters :math:`\bf{\beta}`.  More
-generally, the model function will not depend linearly on its parameters,
-and the minimization is generally referred to a ''non-linear least-squares
-optimization'' in the literature.  All the discussion here will assume that
-the models can be non-linear.
+As mentioned, the model function can be fairly complex.
 
+There is an extensive literature for case where the model function
+:math:`f(\bf{x}, \bf{\beta})` depends linearly on its parameters
+:math:`\bf{\beta}` (but not necessarily linearly on a dependent variable --
+a quadratic function :math:`\beta_0 + \beta_1 x + \beta_2 x^2` is linear in
+this sense).  Of course, model function need not be linear in its
+parameters, and the minimization is generally referred to a ''non-linear
+least-squares optimization'' in the literature.  All the discussion here
+will assume that the models can be non-linear.
 
 It is convenient to define the **residual function**  as
 
@@ -54,9 +56,8 @@ It is convenient to define the **residual function**  as
 
      r = \frac{y - f(x, \bf{\beta})}{\epsilon}
 
-
 so that the sum to be minimized is a simple sum of this function, :math:`s
-= \sum_i^{N} r_i^2`.   The fitting process can then be made very general
+= \sum_i^{N} r_i^2`.  The fitting process can then be made very general
 with a few key components required.  Specifically, for Larch, the
 requirements are
 
@@ -64,9 +65,7 @@ requirements are
   and are to be adjusted to find the least-square value of the sum of
   squares of the residual.  These must be **parameters** (discussed below)
   that are held in a single **parameter group**.  This is a regular Larch
-  group, and so can contain other values as well.  That makes it one possible
-  way to pass in data to the objective function. Note that, as discussed
-  later, the fit will write most of its outputs to this group.
+  group, and so can contain other values as well.
 
   2. An **objective function** to calculate the residual function.  This
   will be a Larch function that takes the **parameter group** described
@@ -75,17 +74,23 @@ requirements are
   This function should return the residual array, :math:`r` that will be
   minimized in the least-squares sense.
 
-After the fit has completed, several statistical results describing the fit
-quality and the values and uncertainties found for the parameters will be
-available.  Though the description so far as been somewhat formal, the
-process is not as hard as it sounds, and all the topics will be discussed
+Note that the use of additional data in the **parameter group** makes this
+one way to pass in data to the objective function.  After the fit has
+completed, several statistical results describing the fit quality and the
+values and uncertainties found for the parameters will be written to thie
+**parameter group**.
+
+Though the description so far as been somewhat formal, the process is not
+as hard as it sounds, and all the topics outlined so far will be discussed
 in more detail below.
 
-As mentioned above, the objective function needs to follow fairly strict
-guidelines.  The first argument must be a Larch group containing all the
-Parameters for the mode, and the return value of the objective function
-must be the fit residual -- the array to be minimized in the least-squares
-sense.
+
+Because the objective function will be called by the fitting process, it
+needs to follow fairly strict guidelines in its inputs and outputs.
+Specifically, the first argument to the function **must** be a Larch group
+containing all the Parameters in the model.  Furthermore, the return value
+of the objective function must be the fit residual -- the array to be
+minimized in the least-squares sense.
 
 We'll jump in with a simple example fit to a line, with this script::
 
@@ -106,15 +111,16 @@ We'll jump in with a simple example fit to a line, with this script::
     # perform fit
     minimize(fitresid, params, args=(dat,))
 
+    # create final model using best-fit values for the parameters.
     final = params.off + params.slope * dat.x
 
 Here `params` is the parameter group, with both `params.off` and
-`params.slope` as Parameters.  `fitresid` is the objective function that
-calculates the model function from the values of the Parameters, and
-returns the residual (data - model).  The :func:`minimize` function does
-the actual fit, and will call the objective function many times with
-different (and generally improved) values for the parameters.  Of course,
-there are faster and more statistically sound methods for determining a
-linear trend in a set of data, but the point of this example is to
-illustrate the mechanisms for doing more complex, non-linear modeling of
-data.
+`params.slope` as Parameters that will be adjusted in the fit.  `fitresid`
+is the objective function that calculates and returns the residual array
+(data - model) from the values of the Parameters.  The :func:`minimize`
+function does the actual fit, and will call the objective function many
+times with different (and generally improving) values for the parameters.
+Of course, there are faster and more statistically sound methods for
+determining a linear trend in a set of data, but the point of this example
+is to illustrate the mechanisms for doing more complex, non-linear modeling
+of data.

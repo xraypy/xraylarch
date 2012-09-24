@@ -88,7 +88,8 @@ And the plot of data and fit will look like this:
 
 .. _fitting_fig1:
 
-   Figure 1.  Simple fit to mock data
+     Figure 1.  Simple fit to mock data
+
   .. image:: ../images/fit_example1.png
      :target: ../_images/fit_example1.png
      :width: 65 %
@@ -154,6 +155,7 @@ and the plots of the resulting best-fit and components look like these:
 
    Figure 2.  Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions and
    an Error function
+
   .. image::  ../images/fit_example2a1.png
      :target: ../_images/fit_example2a1.png
      :width: 48 %
@@ -193,7 +195,7 @@ and 3 more fitting parameters to the parameter group:
         cen3 = param(7122.0, vary=True, min=7120, max=7124),
         amp3 = param(0.5,    vary=True, min=0),
         wid3 = param(1.2,    vary=True, min=0.05),
-	...)
+        ...)
 
 The fit now has 13 variables, and gives a report like this::
 
@@ -232,6 +234,7 @@ moved significantly, as can be seen in the plots for this fit:
 
    Figure 3.  Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions and
    an Error function
+
   .. image::  ../images/fit_example2b1.png
      :target: ../_images/fit_example2b1.png
      :width: 48 %
@@ -282,6 +285,7 @@ For completeness,  the plots from this fit look like this:
 
    Figure 4.  Fit to Fe K-edge pre-edge and edge with 3 Voigt functions and
    an Error function
+
   .. image:: ../images/fit_example2c1.png
      :target: ../_images/fit_example2c1.png
      :width: 48 %
@@ -333,6 +337,7 @@ important component.
 
    Figure 5.  Components used for Linear Combination Fits (left) and Fit
    with components *s1* and *s2* (right).
+
   .. image:: ../images/fit_example3a.png
      :target: ../_images/fit_example3a.png
      :width: 48 %
@@ -453,6 +458,7 @@ and the output plots for the best model look like this:
 .. _fitting_fig6:
 
    Figure 6.  Fit with components *s1*, *s2*, and *s3*
+
   .. image:: ../images/fit_example3c1.png
      :target: ../_images/fit_example3c1.png
      :width: 48 %
@@ -538,6 +544,7 @@ The plots resulting from both sets of Parameters are shown:
 .. _fitting_fig7:
 
    Figure 7: Fit with components *s1*, *s2*, *s3*, and *s6*
+
   .. image:: ../images/fit_example3d1.png
      :target: ../_images/fit_example3d1.png
      :width: 48 %
@@ -548,6 +555,7 @@ The plots resulting from both sets of Parameters are shown:
 .. _fitting_fig8:
 
    Figure 8:  Fit with components *s1*, *s2*, *s3*, and *s5*
+
   .. image:: ../images/fit_example3e1.png
      :target: ../_images/fit_example3e1.png
      :width: 48 %

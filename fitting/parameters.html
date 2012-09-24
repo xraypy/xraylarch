@@ -116,23 +116,31 @@
 <h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
 <p>The parameters used in the fitting model are all meant to be continuous
 variables &#8211; floating point numbers.  In general, the fitting procedure may
-assign any value to any parameter.  In an actual fit, you may want to place
-some restrictions on the value a parameter can take.  For example, if
+assign any value to any parameter.  In many cases, however, you may want to
+place some restrictions on the value a parameter can take.  For example, if
 you&#8217;re fitting data to a line, you may want to ensure that the slope of the
 line is positive.  For more complex cases, you might want to write a a
 general model describing the data, but keep some of the parameters in the
 model fixed.</p>
-<p>In Larch, a <strong>Parameter</strong> is a fundamental data type.  It is an object with
-many attributes, the most important of which is a <tt class="docutils literal"><span class="pre">value</span></tt>.  A Parameter&#8217;s
-value can change of course &#8211; this is what will happen during a fit or
-refinement process.  A Parameter can have many other attributes as well, as
-we&#8217;ll discuss throughout this section.  In most cases, a Parameter can be
-used as a floating point number, and its value will be used.</p>
+<p>In Larch, a <strong>Parameter</strong> is a fundamental data type designed to hold
+variables for fits that can be restricted in the values it can take.  A
+Parameter has several attributes, the most important of which is a
+<tt class="docutils literal"><span class="pre">value</span></tt> &#8211; the current value.  A Parameter&#8217;s value can be changed of
+course &#8211; this is what will happen during a fit &#8211; but other attributes can
+be set to help determine its value too.  In most cases, a Parameter can be
+used as a floating point number, and its value attribute will be used.
+Thus:</p>
+<div class="highlight-python"><pre>larch&gt; x = param(10)
+larch&gt; print x
+param(10, vary=False)
+larch&gt; print x+2
+12</pre>
+</div>
 <p>To create a Parameter, use the <a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> function, which takes a value
 as its first argument, and a few optional keyword arguments to control
-whether the value should be varied in a fit or kept fixed, and setting
-optional upper and lower bounds for the Parameter value.  In addition, an
-algebraic expression can be specified to create a <strong>constrained Parameter</strong>.</p>
+whether the value is to be varied in a fit or kept fixed, to set optional
+upper and lower bounds for the Parameter value, or to set an algebraic
+expression to use to evaluate its value as a <strong>constrained Parameter</strong>.</p>
 <dl class="function">
 <dt id="param">
 <tt class="descname">param</tt><big>(</big><em>value</em>, <em>vary=False</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
@@ -157,6 +165,67 @@ algebraic expression can be specified to create a <strong>constrained Parameter<
 </table>
 </dd></dl>
 
+<p>A Parameter may have the following attributes to either control its value
+or give additional information about its value:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="27%" />
+<col width="17%" />
+<col width="38%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">attribute</th>
+<th class="head">meaning</th>
+<th class="head">default</th>
+<th class="head">set by which functions:</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>value</td>
+<td>value</td>
+<td>&nbsp;</td>
+<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+</tr>
+<tr class="row-odd"><td>vary</td>
+<td>can change in fit</td>
+<td><tt class="docutils literal"><span class="pre">False</span></tt></td>
+<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+</tr>
+<tr class="row-even"><td>min</td>
+<td>lower bound</td>
+<td><tt class="docutils literal"><span class="pre">None</span></tt></td>
+<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+</tr>
+<tr class="row-odd"><td>max</td>
+<td>upper bound</td>
+<td><tt class="docutils literal"><span class="pre">None</span></tt></td>
+<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+</tr>
+<tr class="row-even"><td>name</td>
+<td>optional name</td>
+<td><tt class="docutils literal"><span class="pre">None</span></tt></td>
+<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+</tr>
+<tr class="row-odd"><td>expr</td>
+<td>algebraic constraint</td>
+<td><tt class="docutils literal"><span class="pre">None</span></tt></td>
+<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+</tr>
+<tr class="row-even"><td>stderr</td>
+<td>uncertainty</td>
+<td>&#8211;</td>
+<td><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></td>
+</tr>
+<tr class="row-odd"><td>correl</td>
+<td>correlations</td>
+<td>&#8211;</td>
+<td><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
 <dl class="function">
 <dt id="guess">
 <tt class="descname">guess</tt><big>(</big><em>value</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
@@ -185,8 +254,7 @@ parameters would be:</p>
 attribute of an existing Parameter.  To remove a bound, set the
 corresponding attribute to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
 <p>During a fit, a Parameter&#8217;s value may approach or even equal one of the
-bounds, but will never violate the boundary.  This is, of course, the main
-point of having the boundary.   It should, however, be kept in mind that a
+bounds, but will never violate the boundary.  It should be kept in mind that a
 Parameter with a best-fit value at or very close to a boundary may not have
 an accurate estimate of its uncertainty.  In some cases, it may even be
 that a best-fit value at a boundary will prevent a reasonable estimate of
@@ -199,10 +267,10 @@ in the model are related to one another.  As a simple example, it might be
 useful to fit a spectrum with a sum of two lineshapes that have different
 centroids, but the same width.  As a second example, it might be useful to
 fit a spectrum to a sum of two model spectra where the relative weight of
-the model spectra must add to 1.  For each of these cases, one could simply
-write a model function that implemented such constraints.</p>
-<p>Rather than trying to capture such special cases, Larch takes a more
-general approach, and allows Parameters to get their value from an
+the model spectra must add to 1.  For each of these cases, one could write
+a model function that implemented such constraints.</p>
+<p>Rather than trying to capture and encourage such special cases, Larch takes
+a more general approach, allowing Parameters to get their value from an
 algebraic expression.  Thus, one might define an objective function for a
 sum of two Gaussian functions (discussed in more detail in
 <a class="reference internal" href="lineshapes.html#lineshape-functions-label"><em>Some Builtin Line-shape Functions</em></a>), as:</p>
@@ -213,23 +281,25 @@ sum of two Gaussian functions (discussed in more detail in
 <span class="n">enddef</span>
 </pre></div>
 </div>
-<p>This is general and does not put any relations between the parameter
-values.  But one can place such relations in the definitions of the
-parameters.  Thus, one could constrain the two widths of the Gaussians to
-be the same value with:</p>
+<p>This is general and does not put any relations between the parameter values
+within the objective function.  But one can place such relations in the
+definitions of the parameters and have them obeyed within the fit.  That
+is, one could constrain the two widths of the Gaussians to be the same
+value with:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">wid1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">params</span><span class="o">.</span><span class="n">wid2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;wid1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>and the value of <cite>params.wid2</cite> will have the value as <cite>params.wid1</cite>, and
-won&#8217;t be an independent variable in the fit.  One can use more complex
-expressions &#8211; any valid Larch expression is allowed.   For example, one
-could constrain the two amplitude parameters to add to 1 and each be
-between 0 and 1 as:</p>
+<p>and the value of <cite>params.wid2</cite> will have the same value as <cite>params.wid1</cite>
+every time the objective is called, but won&#8217;t be an independent variable in
+the fit.  As a second  example, one could constrain the two amplitude
+parameters to add to 1 and each be between 0 and 1 as:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;1 - amp1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>of course, one can use more complex expressions &#8211; any valid Larch
+expression is allowed.</p>
 <p><strong>Namespaces for algebraic expressions</strong></p>
 <p>It&#8217;s worth asking what variables and functions are available for writing
 algebraic constraints.  The discussion on <a class="reference internal" href="../tutorial/procedures.html#tut-namespaces-label"><em>Namespace and &#8220;Scope&#8221; inside a Procedure</em></a>
