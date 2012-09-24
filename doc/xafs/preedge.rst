@@ -9,7 +9,6 @@ internal larch functions, especially :func:`read_ascii`.  The main
 XAFS-specific function for pre-edge subtraction and normalizaiton is
 :func:`pre_edge`.
 
-
 ..  function:: pre_edge(energy, mu, group=None, ...)
 
     Pre-edge subtraction and normalization.  This performs a number of steps:
