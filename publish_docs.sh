@@ -1,7 +1,5 @@
-installdir='/www/apache/htdocs/software/python/lmfit'
-docbuild='doc/_build'
+docdir='doc'
 name='larch'
-
 
 finish() {
    echo "# git checkout master"
@@ -12,9 +10,10 @@ finish() {
    fi
 }
 
-cd doc
+cd $docdir
 echo '# Making docs'
-make all
+make clean 
+make html pdf
 cd _build/html
 tar czf ../../../_docs.tgz *
 cd ../../../
@@ -41,11 +40,11 @@ if  [ $? -ne 0 ]  ; then
 fi
 
 echo "# Pushing docs to github"
-##git push
-##if  [ $? -ne 0 ]  ; then
-##  echo '# git push failed.'
-##  finish
-##fi
+git push
+if  [ $? -ne 0 ]  ; then
+  echo '# git push failed.'
+  finish
+fi
 
 echo "# switch back to master branch"
 git checkout master
@@ -53,16 +52,3 @@ if  [ $? -ne 0 ]  ; then
   echo '# checkout master failed.'
   finish
 fi
-
-
-# # install locally
-# echo "# Installing docs to CARS web pages"
-# cp ../_docs.tar.gz $installdir/..
-#
-# cd $installdir
-# if  [ $? -ne 0 ]  ; then
-#   echo ' failed.'
-#   exit
-# fi
-#
-# tar xvzf ../_docs.tar.gz
