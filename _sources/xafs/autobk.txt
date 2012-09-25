@@ -339,7 +339,6 @@ better, which brings us to the next section.
 Adjusting spline clamps
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 For the scorodite example above, the XAFS diverges from 0 at the
 high-:math:`k` end of the spectra.  Playing with the spline clamps
 discussed above, we try a few options to study the effect of adding a
@@ -347,9 +346,7 @@ clamp:
 
 .. literalinclude:: ../../examples/xafs/doc_autobk3.lar
 
-   
 results in the following comparison:
-
 
 .. _xafs_fig4:
 
