@@ -38,9 +38,24 @@ conventions.  This gives conjugate variables of :math:`\omega` and
   \chi(k) \sim \sin[2kR + \delta(k)]
 
 the conjugate variables in XAFS are generally taken to be :math:`k` and
-:math:`2R`.  Thus, getting  a properly normalized :math:`\tilde\chi(R)`
-from  a Fourier transform of :math:`\chi(k)` depends on the conventions
-used.
+:math:`2R`.  The normalizaion of :math:`\tilde\chi(R)` from a Fourier
+transform of :math:`\chi(k)` is a matter of convention, but we follow the
+symmetric case above (with :math:`t` replaced by :math:`k` and
+:math:`\omega` replaced by :math:`2R`, and of course :math:`f` by
+:math:`\chi`).
+
+But there are two more important issues to mention.  First, an XAFS Fourier
+transform mutiplies :math:`\chi(k)` by a power of :math:`k`, :math:`k^n`
+and by a window function :math:`\Omega(k)` before doing the Fourier
+transform.  The power-law weighting allow the oscillations in :math:`k` to
+emphasize different portions of the spectra, or to give a uniform intensity
+to the oscillations.  The window function acts to smooth the resulting
+Fourier transform and remove ripple and ringing in it that would result
+from a sudden truncation of :math:`\chi(k)`  at the end of the data range.
+
+The second important issue is that the continuous Fourier transform
+described above is replaced by a discrete transform.
+
 
 
 Fourier transform windows
