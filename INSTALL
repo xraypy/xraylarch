@@ -16,25 +16,55 @@ Requirements and Dependencies
 Python:
 ~~~~~~~
 
-Larch requires Python 2.6 or higher.  Python 2.7 is *STRONGLY* recommended
-if you have a choice.  Moderate testing has been done with Python 3.2, but
-not all modules are available for it at this writing (June 2012).  At some
-point in the near future, Larch will probably switch to Python 3, possibly
-to only Python 3.
+Larch requires Python 2.6 or higher.  Python 2.7 is *STRONGLY* recommended,
+unless you have no choice.  Moderate testing has been done with Python 3.2,
+but not all modules (notably, wx) are available for it at this writing
+(Sept 2012).  At some point in the future, Larch will probably switch to
+Python 3, possibly to only supporting use from Python 3.
 
-Several Python packages are also needed for Larch.  All of these are easily
+Several Python packages are needed for Larch.  All of these are easily
 installed, either as binary installs for Windows or Mac OS X, or as part of
-your systems Package Management System for linux.  In addition, most of these
-are easily installed from source or using Python's easy_install script.
+your systems Package Management System for linux.  In addition, most of
+these are easily installed from source or using Python's easy_install
+script (see Using easy_install below)
 
 Note that some Python distributions come with many of the required and
 strongly recommended modules already installed.
 
-Required Modules: Numpy and Scipy
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Using easy_install
+~~~~~~~~~~~~~~~~~~~~
 
-The Numpy and Scipy Packages are both required for Larch to work.  These
-are available from http://scipy.org.
+Python has an easy-to-use program to install libraries called easy_install.
+If you don't have easy_install already installed, it is also easy to
+install.  For Windows, there is an executable installer
+setuptools-06c11.win32-py2.7.exe, and for Linux and Mac OS X there is a
+setuptools-0.6c11.tar.gz file in the dependencies directory.  For Linux and
+Mac OS X, do:
+    ~> cd dependencies
+    ~> tar xvzf setuptools-0.6c11.tar.gz
+    ~> cd setuptools-0.6c11
+    ~> sudo python setup.py install
+
+For windows, easy_install is installed in C:\Python2.7\Scripts\easy_install.exe
+for linux, it is put in /usr/bin, and for Mac OS X, somewhere like
+/Library/Frameworks/Python.framework/Versions/Current/bin/easy_install
+
+If this is placed in your path (or copied to your path), then many python
+packages can be installed with
+    ~> easy_install -U packagename
+
+For Windows, many packages have binary installers -- these are generally
+preferred, as easy_install will try to compile any C or Fortran parts of
+the library.
+
+Required Modules: Numpy and Scipy and Docutils
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Numpy and Scipy Packages are both required for Larch to work.
+These are available from http://scipy.org.  For Windows, install binaries.
+
+Docutils can be found at http://pypi.python.org/pypi/docutils, and can be
+installed via easy_install.
 
 Strongly Recommended Modules: wxPython, matplotlib, and wxmplot
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -47,15 +77,30 @@ They are all available as simple installs:
   matplotlib: http://sourceforge.net/projects/matplotlib/files/matplotlib/
   wxmplot:    https://github.com/newville/wxmplot
 
-Recommended Modules: sqlalchemy, h5py
+The wxPython 2.9 series is recommended, and is required on 64-bit Mac OS X.
+
+Matplotlib can be installed from binaries or via easy_install, but does need a C compiler.
+
+WXMplot is pure python and can be install as binaries or with easy_install
+on all systems.
+
+
+Recommended Modules: sqlalchemy, h5py, epics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In order to use data from the x-ray databases, the SQLAlchemy module must
-be installed.  See http://www.sqlalchemy.org/
+be installed.  This con be installed with
+   ~>easy_install -U sqlalchemy
 
 In order to read HDF5 files, the h5py package is needed. See
-http://code.google.com/p/h5py/
+http://code.google.com/p/h5py/.  This can be installed with:
+   ~>easy_install -U h5py
 
+though this needs working C (and Fortran?) compilers.
+
+The PyEpics module provides support for interacting with the Epics control system.  The
+python module is pure Python (and so can be installed with easy_install), but requires the
+base Epics Channel Access library to be installed to actually work.
 
 What is Installed
 ===========================
@@ -118,6 +163,6 @@ You can customize the installed locations by adjusting these values prior
 to installation.
 
 Matt Newville <newville@cars.uchicago.edu>
-Last Update:  28-June-2012
+Last Update:  26-Sept-2012
 
 

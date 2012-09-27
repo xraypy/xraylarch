@@ -6,9 +6,9 @@ import glob
 
 from lib import site_configdata, site_config, version
 
-required_modules = ('numpy', 'scipy')
+required_modules = ('numpy', 'scipy', 'docutils', 'wx', 'matplotlib', 'wxmplot')
 
-recommended_modules = {'basic processing analysis': ('numpy', 'scipy'),
+recommended_modules = {'basic processing analysis': ('numpy', 'scipy', 'docutils'),
                        'graphics and plotting': ('wx',),
                        'plotting': ('matplotlib', 'wxmplot'),
                        'access to x-ray databases': ('sqlalchemy', ),
