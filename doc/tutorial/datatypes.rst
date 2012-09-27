@@ -97,6 +97,7 @@ well as comparison operators '>', '>=', '<', '<=', '==', '!=', and 'is'.
 Note that 'is' expresses identity, which is a slightly stricter test than
 '==' (equality), and is most useful for complex objects.::
 
+   larch> b = 5
    larch> 2 > 3
    False
    larch> (b > 0) and (b <= 10)
@@ -275,7 +276,7 @@ principle starting groups are describe in
   ==================== =================================================
     _builtin             basic builtin functions.
     _math                mathematical and array functions.
-    _sys                 larch sstem-wide variables.
+    _sys                 larch system-wide variables.
     _io                  file input/output functions.
     _plotter             plotting and image display functions.
     _xafs                XAFS-specific functions.

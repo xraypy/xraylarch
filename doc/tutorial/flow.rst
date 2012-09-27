@@ -155,7 +155,7 @@ For loops
 
 It is often necessary to repeat a calculation multiple times.  A common
 method of doing this is to use a **loop**, including using a loop counter
-to iterates over some set of values.  In Larch, this is done with a **for
+to iterate over some set of values.  In Larch, this is done with a **for
 loop**.  For those familiar with other languages, a Larch for loop is a bit
 different from a C for loop or Fortran do loop.  A for loop in Larch
 iterates over an ordered set of values as from a list, tuple, or array, or
@@ -233,9 +233,9 @@ iterating over a sequence of equal-length tuples, as in::
 
 will print::
 
-   a, 1
-   b, 2
-   c, 3
+   a 1
+   b 2
+   c 3
 
 This may seem to be mostly of curious interest, but can be extremely useful
 especially when dealing with dictionaries or with arrays or lists of equal
@@ -248,7 +248,7 @@ two-element tuples as above of key, value.  Thus::
    endfor
 
 will print (note that dictionaries do no preserve order, but the (key, val)
-pairs match::
+pairs match)::
 
    a 1
    c 3
@@ -287,9 +287,9 @@ tuple of (index, value) for a sequence.   That is::
 
 will print::
 
-   0, a
-   1, b
-   2, c
+   0 a
+   1 b
+   2 c
 
 
 It is sometimes useful to jump out of a for loop, or go onto the next value
