@@ -1,0 +1,18 @@
+cu = read_ascii('cu_metal_rt.xdi')
+autobk(cu.energy, cu.mutrans, group=cu, rbkg=1, debug=True)
+
+kweight = 2
+xftf(cu.k, cu.chi, kmin=3, kmax=17, dk=3, window='hanning',
+     kweight=kweight, group=cu)
+
+chi_kw = cu.chi*cu.k**kweight
+newplot(cu.k, chi_kw,
+        xlabel=r'$k \rm\, (\AA^{-1})$', ylabel=r'$k^2\chi(k)\rm\,(\AA^{-2})$' )
+
+scale = int(10.2*max(abs(chi_kw)))/10.0
+plot(cu.k, cu.kwin*scale)
+
+newplot(cu.r, cu.chir_mag, win=2,
+     xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
+
+

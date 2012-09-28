@@ -15,7 +15,7 @@ sys.path.insert(0, plugin_path('xafs'))
 from mathutils import index_of, index_nearest, realimag, remove_dups
 
 from xafsutils import ETOK
-from xafsft import ftwindow, xafsft_fast
+from xafsft import ftwindow, xftf_fast
 from pre_edge import find_e0, pre_edge
 
 # check for uncertainties package
@@ -43,7 +43,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     if chi_std is not None:
         chi = chi - chi_std
     sum2 = (chi*chi).sum() * nclamp / 10.0
-    out = realimag(xafsft_fast(chi*ftwin, nfft=nfft)[:irbkg])
+    out = realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
 
     if clamp_lo > 0 and nclamp > 0:
         out = np.concatenate((out, clamp_lo*chi[:nclamp]/sum2))

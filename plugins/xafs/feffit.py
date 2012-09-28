@@ -19,7 +19,7 @@ sys.path.insert(0, plugin_path('xafs'))
 from mathutils import index_of, realimag, complex_phase
 
 # from minimizer import Minimizer
-from xafsft import xafsft, xafsift, xafsft_fast, xafsift_fast, ftwindow
+from xafsft import xftf_fast, xftr_fast, ftwindow
 
 from feffdat import FeffPathGroup, _ff2chi
 
@@ -169,9 +169,9 @@ class TransformGroup(Group):
         if kweight is None:
             kweight = self.get_kweight()
         cx = chi * self.kwin[:len(chi)] * self.k_[:len(chi)]**kweight
-        return xafsft_fast(cx, kstep=self.kstep, nfft=self.nfft)
+        return xftf_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
-    def ffti(self, chir):
+    def fftr(self, chir):
         " reverse FT -- meant to be used internally"
         self.make_karrays()
         if self.rwin is None:
@@ -179,7 +179,7 @@ class TransformGroup(Group):
                                  dx=self.dr, dx2=self.dr2, window=self.rwindow)
 
         cx = chir * self.rwin[:len(chir)] * self.r_[:len(chir)]**self.rw,
-        return xafsift_fast(cx, kstep=self.kstep, nfft=self.nfft)
+        return xftr_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
     def apply(self, chi, eps_scale=False, all_kweights=True, **kws):
         """apply transform, returns real/imag components
@@ -215,7 +215,7 @@ class TransformGroup(Group):
                         chir_ = chir_ /(eps_r[i])
                     out.append( realimag(chir_[irmin:irmax]))
             else:
-                chiq = [self.ffti(self.r_, c) for c in chir]
+                chiq = [self.fftr(self.r_, c) for c in chir]
                 iqmin = int(0.01 + self.kmin/self.kstep)
                 iqmax = min(self.nfft/2,  int(1.01 + self.kmax/self.kstep))
                 for chiq_ in chiq:
