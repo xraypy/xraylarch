@@ -92,6 +92,7 @@ Several builtin special functions can also be used to create lineshapes
 useful in fitting spectra and other x-ray data.  Some of these are detailed
 in the :ref:`Table of Useful Line shapes <fit-funcs_table>`.
 
+.. index:: lineshapes for fitting
 .. _fit-funcs_table:
 
     Table of Useful Line shapes.

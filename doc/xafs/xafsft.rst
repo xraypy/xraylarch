@@ -6,18 +6,17 @@ XAFS: Fourier Transforms for XAFS
 
 Fourier transforms are central to understanding and using
 XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
-transforms as part of their processing.  For example, but :func:`autobk`
-and :func:`feffit` rely on XAFS Fourier transforms, as well as the specific
-XAFS Fourier transform function described in this section.  The details of
-these transforms will be described in detail in this section.  Many of
-these functions share parametersa and arguments with similar names and
-meanings.
+transforms as part of their processing, and many of the functions
+parameters and arguments described here have names and meanings used
+throughout the XAFS functionality of Larch.  For example, but
+:func:`autobk` and :func:`feffit` rely on XAFS Fourier transforms, and use
+the XAFS Fourier transform function described here.
 
 
 Overview of XAFS Fourier transforms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Standard Fourier transform of a signal :math:`f(t)` can be written as
+The standard Fourier transform of a signal :math:`f(t)` can be written as
 
 .. math::
    :nowrap:
@@ -92,6 +91,9 @@ points :math:`R_m = m \, \delta R`, the definitions become:
 
 These normalizations preserve the symmetry properties of the Fourier
 Transforms with conjugate variables :math:`k` and :math:`2R`.
+Though the reverse transform converts the complex :math:`\chi(R)` to the
+complext :math:`\chi(k)` on the same :math:`k` spacing as the starting
+data, we often refer to the filtered :math:`\chi(k)` as *q* space.
 
 A final complication in using Fourier transforms for XAFS is that the
 measured :math:`\mu(E)` and :math:`\chi(k)` are a strictly real values,
@@ -102,7 +104,7 @@ XAFS is written as the imaginary part of a complex function.  This might
 lead one to assume that constructing :math:`\tilde\chi(k)` as :math:`0 +
 i\chi(k)` would be the natural choice.  For historical reasons, Larch uses
 the opposite convention, constructing :math:`\tilde\chi(k)` as
-:math:`\chi(k) + i*0`.   As we'll see below, you can easily change this
+:math:`\chi(k) + 0i`.   As we'll see below, you can easily change this
 convention.  The effect of this choice is minor unless one is
 concerned about the differences of the real and imaginary parts of
 :math:`\chi(R)` or one is intending to filter and back-transform the
@@ -121,37 +123,126 @@ encapsulated in the :func:`xafsft` function.
     perform a forward XAFS Fourier transform, from :math:`\chi(k)` to
     :math:`\chi(R)`, using common XAFS conventions.
 
+    :param k:        1-d array of photo-electron wavenumber in :math:`\rm\AA^{-1}`
+    :param chi:      1-d array of :math:`\chi`
+    :param group:    output Group
+    :param rmax_out: highest *R* for output data (10 :math:`\rm\AA`)
+    :param kweight:  exponent for weighting spectra by :math:`k^{\rm kweight}`
+    :param kmin:     starting *k* for FT Window
+    :param kmax:     ending *k* for FT Window
+    :param dk:       tapering parameter for FT Window
+    :param dk2:      second tapering parameter for FT Window
+    :param window:   name of window type
+    :param nfft:     value to use for :math:`N_{\rm fft}` (2048).
+    :param kstep:    value to use for :math:`\delta{k}` (0.05).
+
+    :returns:  ``None`` -- outputs are written to supplied group.
+
+    If a ``group`` argument is provided, the following data arrays are put into it:
+
+       ================= ===============================================================
+        attribute         meaning
+       ================= ===============================================================
+        kwin               window :math:`\Omega(k)` (length of input chi(k)).
+	r                  uniform array of :math:`R`, out to ``rmax_out``.
+	chir               complex array of :math:`\tilde\chi(R)`.
+	chir_mag           magnitude of :math:`\tilde\chi(R)`.
+	chir_pha           phase of :math:`\tilde\chi(R)`.
+	chir_re            real part of of :math:`\tilde\chi(R)`.
+	chir_im            imaginary part of :math:`\tilde\chi(R)`.
+       ================= ===============================================================
+
+    It is expected that the input ``k`` be a uniformly spaced array of
+    values with spacing ``kstep``, starting a 0.  If it is not, the ``k``
+    and ``chi`` data will be linearly interpolated onto the proper grid.
+
+    The FT window parameters are explained in more detail in the discusion of
+    :func:`ftwindow`.
+
 
 ..  function:: xftf_fast(chi, nfft=2048, kstep=0.05)
 
     perform a forward XAFS Fourier transform, from :math:`\chi(k)` to
     :math:`\chi(R)`, using common XAFS conventions.  This version demands
-    chi to represent :math:`\chi(k)` on a uniform :math:`k` grid, and
-    returns the complex array of :math:`\chi(R)` without putting any
-    values into a group.
+    ``chi`` to include any weighting and windowing, and so to represent
+    :math:`\chi(k)k^w\Omega(k)` on a uniform :math:`k` grid. It returns
+    the complex array of :math:`\chi(R)`.
+
+    :param chi:      1-d array of :math:`\chi` to be transformed
+    :param nfft:     value to use for :math:`N_{\rm fft}` (2048).
+    :param kstep:    value to use for :math:`\delta{k}` (0.05).
+
+    :returns:  complex :math:`\chi(R)`.
+
 
 Reverse XAFS Fourier transforms (:math:`R{\rightarrow}q`)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Reverse Fourier transforms convert :math:`\chi(R)` back to filtered
 :math:`\chi(k)`.  We refer to the filtered :math:`k` space as :math:`q` to
-emphasize the distinction between the two.
-
+emphasize the distinction between the two.  The filtered :math:`\chi(q)` is
+complex.  By convention, the real part of :math:`\chi(q)` corresponds to
+the explicitly real :math:`\chi(k)`.
 
 ..  function:: xftr(r, chir, group=None, ...)
 
-    perform a revers XAFS Fourier transform, from :math:`\chi(R)` to
-    :math:`\chi(q)`, using common XAFS conventions.
+    perform a reverse XAFS Fourier transform, from :math:`\chi(R)` to
+    :math:`\chi(q)`.
+
+    :param r:        1-d array of distance.
+    :param chir:      1-d array of :math:`\chi(R)`
+    :param group:    output Group
+    :param qmax_out: highest *k* for output data (30 :math:`\rm\AA^{-1}`)
+    :param rweight:  exponent for weighting spectra by :math:`r^{\rm rweight}` (0)
+    :param rmin:     starting *R* for FT Window
+    :param rmax:     ending *R* for FT Window
+    :param dr:       tapering parameter for FT Window
+    :param dr2:      second tapering parameter for FT Window
+    :param window:   name of window type
+    :param nfft:     value to use for :math:`N_{\rm fft}` (2048).
+    :param kstep:    value to use for :math:`\delta{k}` (0.05).
+
+    :returns:  ``None`` -- outputs are written to supplied group.
+
+    If a ``group`` argument is provided, the following data arrays are put into it:
+
+       ================= ===============================================================
+        attribute         meaning
+       ================= ===============================================================
+        rwin               window :math:`\Omega(R)` (length of input chi(R)).
+	q                  uniform array of :math:`k`, out to ``qmax_out``.
+	chiq               complex array of :math:`\tilde\chi(k)`.
+	chiq_mag           magnitude of :math:`\tilde\chi(k)`.
+	chiq_pha           phase of :math:`\tilde\chi(k)`.
+	chiq_re            real part of of :math:`\tilde\chi(k)`.
+	chiq_im            imaginary part of :math:`\tilde\chi(k)`.
+       ================= ===============================================================
+
+    In analogy with :func:`xftf`, it is expected that the input ``r`` be a
+    uniformly spaced array of values starting a 0.
+
+    The input ``chir`` array can be either the complex :math:`chi(R)` array
+    as output to ``Group.chir`` from :func:`xftf`, or one of the real or
+    imaginary parts of the :math:`chi(R)` as output to ``Group.chir_re`` or
+    ``Group.chir_im``.
+
+    The FT window parameters are explained in more detail in the discusion of
+    :func:`ftwindow`.
 
 
-..  function:: xftr_fast(chi, nfft=2048, kstep=0.05)
+..  function:: xftr_fast(chir, nfft=2048, kstep=0.05)
 
-    perform a reverse XAFS Fourier transform, from :math:`\chi(k)` to
-    :math:`\chi(R)`, using common XAFS conventions.  This version demands
-    chir to represent the complex :math:`\chi(R)` as created from
-    :math:`\chi(k)` on a uniform :math:`k` grid, and returns the complex
-    array of :math:`\chi(q)` without putting any values into a group.
+    perform a reverse XAFS Fourier transform, from :math:`\chi(R)` to
+    :math:`\chi(q)`, using common XAFS conventions.  This version demands
+    ``chir`` be  the complex :math:`\chi(R)` as created from :func:`xftf`.
+    It returns the complex array of :math:`\chi(q)` without putting any
+    values into a group.
 
+    :param chir:     1-d array of :math:`\chi(R)` to be transformed
+    :param nfft:     value to use for :math:`N_{\rm fft}` (2048).
+    :param kstep:    value to use for :math:`\delta{k}` (0.05).
+
+    :returns:  complex :math:`\chi(q)`.
 
 
 Fourier transform windows
@@ -164,10 +255,83 @@ extensive literature on such windows, and a lot of choices and parameters
 available for constructing windows.  A sampling of windows is shown below.
 
 
-..  function:: ftwindow(k, xmin=0, xmax=None, dk=1, ...)
+..  function:: ftwindow(x, xmin=0, xmax=None, dk=1, ...)
 
-    create a Fourier transform window function.
+    create a Fourier transform window array.
 
+    :param x:        1-d array array to build window on.
+    :param xmin:     starting *x* for FT Window
+    :param xmax:     ending *x* for FT Window
+    :param dx:       tapering parameter for FT Window
+    :param dx2:      second tapering parameter for FT Window (=dx)
+    :param window:   name of window type
+    :returns:  1-d window array.
+
+    Note that if ``dx`` is specified but ``dx2`` is not, ``dx2`` will
+    generally take the same value as ``dx``.
+
+    The window type must be one of those listed in the :ref:`Table of
+    Fourier Transform Window Types <xafs-ftwin_table>`.
+
+.. index:: Fourier Transform Window types
+.. _xafs-ftwin_table:
+
+    Table of Fourier Transform Window Types
+
+       ================= ===============================================================
+        window name       description
+       ================= ===============================================================
+        hanning           cosine-squared taper
+        parzen            linear taper
+        welch             quadratic taper
+	gaussian          Gaussian (normal) function window
+	sine              sine function window
+	kaiser            Kaiser-Bessel function-derived window
+       ================= ===============================================================
+
+In general, the window arrays have a value that gradually increases from 0
+up to 1 at the low-k end, may stay with a value 1 over some central
+portion, and then tapers down to 0 at the high-k end.  The mea ning of the
+``dx`` and ``dx2``, and even ``xmin``, and ``xmax`` varies a bit for the
+different window types.  The Hanning, Parzen, and Welch windows share a
+convention that the windows taper up from 0 to 1 between ``xmin-dx/2`` and
+``xmin+dx/2``, and then taper down from 1 to 0 between ``xmax-dx2/2`` and
+``xmax+dx2/2``.  The conventions for the Kaiser, Gaussian, and Sine window
+types is a bit more complicated, and is best given explicitly.  In the
+formulae below, ``dx`` written as :math:`{\delta}x` and ``dx2`` as
+:math:`{\delta}x_2`.
+
+For the Gaussian window, the ``xmin`` and ``xmax`` parameters are ignored,
+and the form is simply
+
+.. math::
+
+   \Omega(x) = \exp{[ -\frac{(x - {\delta}x_2)^2}{2\delta{x}^2}]}
+
+
+For the Sine and Kaiser-Bessel windows, we define  :math:`x_i = x_{\rm min} - {\delta}x`
+and  :math:`x_f = x_{\rm max} + {\delta}x_2`.  The form for the Sine window,
+
+
+.. math::
+
+   \Omega(x) = \sin{[ \frac{ \pi(x_f - x)}{x_f - x_i}]}
+
+between :math:`x_i`  and  :math:`x_f`, and 0 outside this range.
+The Kaiser-Bessel window is slightly more complicated:
+
+.. math::
+   :nowrap:
+
+   \begin{eqnarray*}
+     x_0     &=& (x4+x1)/2 \\
+     \sigma  &=& (x4-x1)/2 \\
+     a       &=& \sqrt{\max{(0, 1 - \frac{(x-x_0)^2}{\sigma^2} ) }} \\
+     \Omega'(x) &=& i_0({a\delta}x) / i_0({\delta}x)  \\
+     \Omega(x) &=& (\Omega'(x) - \min{(\Omega'(x))} / (1.0 - \min{(\Omega'(x))})\\
+   \end{eqnarray*}
+
+where :math:`i_0` is the modified Bessel function of order 0.
 
 Examples: Fourier transform windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

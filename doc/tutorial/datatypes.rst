@@ -266,6 +266,7 @@ specific functionality are created on startup by Larch plugins.  The
 principle starting groups are describe in
 :ref:`Table of Basic Larch Groups <tutor_topgroups_table>`
 
+.. index:: toplevel groups
 .. _tutor_topgroups_table:
 
    Table of Basic Larch Groups.  These groups are listed in order of how
