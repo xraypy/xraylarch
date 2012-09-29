@@ -126,8 +126,6 @@ def xftr(r, chir, group=None, rmin=0, rmax=20,
         group.chiq_pha =  complex_phase(out[:nkpts])
         group.chiq_re  =  out.real[:nkpts]
         group.chiq_im  =  out.imag[:nkpts]
-    else:
-        return out[:nkpts]
 
 def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
            window='kaiser', rmax_out=10, nfft=2048, kstep=0.05, _larch=None, **kws):
@@ -160,8 +158,6 @@ def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
         group.chir_re  =  out.real[:irmax]
         group.chir_im  =  out.imag[:irmax]
 
-    else:
-        return out[:irmax]
 
 def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
                 window='kaiser', nfft=2048, kstep=0.05, _larch=None):
