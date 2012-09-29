@@ -278,8 +278,8 @@ def _plot_text(text, x, y, win=1, side='left',
                      rotation=rotation, ha=ha, va=va, **kws)
 
 def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
-                shape='full', fg='black', wdith=0.01,
-                head_width=0.1, overhang=0,
+                shape='full', color='black', width=1,
+                head_width=1, overhang=0,
                _larch=None, wxparent=None,  **kws):
 
     """plot_arrow(x1, y1, x2, y2, win=1, options)
@@ -294,7 +294,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
         y2: ending y coordinate
         side: which axis to use ('left' or 'right') for coordinates.
         shape:  arrow head shape ('full', 'left', 'right')
-        fg:     arrow fill color ('black')
+        color:  arrow color ('black')
         width:  width of arrow line (in points. default=0.01)
         head_width:  width of arrow head (in points. default=0.1)
         overhang:    amount the arrow is swept back (in points. default=0)
@@ -306,10 +306,11 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
-
-    plotter.add_text(text, x, y, side=side,
-                     rotation=rotation, ha=ha, va=va, **kws)
-
+    width = width/5000.0
+    head_width = head_width/5000.0
+    plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
+                      color=color, width=width, head_width=head_width,
+                      overhang=overhang, **kws)
 
 def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
     """get_cursor(win=1, timeout=30)
