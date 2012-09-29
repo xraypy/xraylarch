@@ -15,10 +15,8 @@ from larch.larchlib import plugin_path
 sys.path.insert(0, plugin_path('std'))
 from mathutils import complex_phase
 
-
-
 MODNAME = '_xafs'
-VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par','wel', 'sin', 'bes']
+VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par', 'wel', 'sin', 'bes']
 
 def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
              window='hanning', _larch=None, **kws):
@@ -77,12 +75,14 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         arg  = wid**2 - (x-cen)**2
         arg[where(arg<0)] = 0
         fwin = bessel0((dx/wid) * sqrt(arg)) / bessel0(dx1)
-        if nam == 'kai':
+        off = min(fwin)
+        # old behaviour
+        if nam == 'bes':
             fwin[where(x<=x1)] = 0
             fwin[where(x>=x4)] = 0
         else:
-            off = min(fwin)
             fwin = (fwin - off) / (1.0 - off)
+
     elif nam == 'sin':
         fwin[i1:i4] = sin(pi*(x4-x[i1:i4]) / (x4-x1))
     elif nam == 'gau':
@@ -122,6 +122,7 @@ def xftr(r, chir, group=None, rmin=0, rmax=20,
         group.q = q
         mag = sqrt(out.real**2 + out.imag**2)
         group.rwin =  win[:len(chir)]
+        group.chiq     =  out[:nkpts]
         group.chiq_mag =  mag[:nkpts]
         group.chiq_pha =  complex_phase(out[:nkpts])
         group.chiq_re  =  out.real[:nkpts]
@@ -158,7 +159,6 @@ def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
         group.chir_re  =  out.real[:irmax]
         group.chir_im  =  out.imag[:irmax]
 
-
 def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
                 window='kaiser', nfft=2048, kstep=0.05, _larch=None):
     """
@@ -168,11 +168,11 @@ def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
     Returns weighted chi, window function which can easily be multiplied
     and used in xftf_fast.
     """
-    ikmax = int(1.01 + max(k)/kstep)
-    k_   = kstep * arange(ikmax, dtype='float64')
-    ochi = interp(k_, k, chi)
-    win = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
-    return (ochi*k_**kweight, win)
+    n    = int( 0.25 + max(k)/kstep)
+    k_   = linspace(0, n*kstep, n+1)
+    chi_ = interp(k_, k, chi)
+    win  = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
+    return (chi_ *k_**kweight, win)
 
 def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
