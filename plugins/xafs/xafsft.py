@@ -7,7 +7,7 @@ import numpy as np
 from numpy import (pi, arange, zeros, ones, sin, cos,
                    exp, log, sqrt, where, interp, linspace)
 from numpy.fft import fft, ifft
-from scipy.special import i0 as bessel0
+from scipy.special import i0 as bessel_i0
 
 import larch
 from larch.larchlib import plugin_path
@@ -47,9 +47,9 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         x3 = x4 - xeps - dx2*(xmax-xmin)/2.0
     elif nam == 'gau':
         dx1 = max(dx1, xeps)
-    elif nam == 'sin':
-        x1 = xmin - dx1
-        x4 = xmax + dx2
+#     elif nam == 'sin':
+#         x1 = xmin - dx1
+#         x4 = xmax + dx2
 
     def asint(val): return int((val+xeps)/xstep)
     i1, i2, i3, i4 = asint(x1), asint(x2), asint(x3), asint(x4)
@@ -72,21 +72,15 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     elif nam in ('kai', 'bes'):
         cen  = (x4+x1)/2
         wid  = (x4-x1)/2
-        arg  = wid**2 - (x-cen)**2
+        arg  = 1 - (x-cen)**2 / (wid**2)
         arg[where(arg<0)] = 0
-        fwin = bessel0((dx/wid) * sqrt(arg)) / bessel0(dx1)
-        off = min(fwin)
-        # old behaviour
-        if nam == 'bes':
-            fwin[where(x<=x1)] = 0
-            fwin[where(x>=x4)] = 0
-        else:
-            fwin = (fwin - off) / (1.0 - off)
+        fwin = (bessel_i0(dx * sqrt(arg)) - 1) / (bessel_i0(dx) -1)
 
     elif nam == 'sin':
         fwin[i1:i4] = sin(pi*(x4-x[i1:i4]) / (x4-x1))
     elif nam == 'gau':
-        fwin =  exp(-(((x - dx2)**2)/(2*dx1*dx1)))
+        cen  = (x4+x1)/2
+        fwin =  exp(-(((x - cen)**2)/(2*dx1*dx1)))
     return fwin
 
 def xftr(r, chir, group=None, rmin=0, rmax=20,
