@@ -301,21 +301,20 @@ types is a bit more complicated, and is best given explicitly.  In the
 formulae below, ``dx`` written as :math:`{\delta}x` and ``dx2`` as
 :math:`{\delta}x_2`.
 
-For the Gaussian window, the ``xmin`` and ``xmax`` parameters are ignored,
-and the form is simply
+For these windows, we define :math:`x_i = x_{\rm min} - {\delta}x/2`,
+:math:`x_f = x_{\rm max} + {\delta}x_2/2`, and :math:`x_0 = (x_f + x_i)/2`,
+as the beginning, end, and center of the widows.  For the Gaussian window,
+the form is simply
 
 .. math::
 
-   \Omega(x) = \exp{[ -\frac{(x - {\delta}x_2)^2}{2\delta{x}^2}]}
+   \Omega(x) = \exp{\bigl[ -\frac{(x - x_0)^2}{2\delta{x}^2}\bigr]}
 
-
-For the Sine and Kaiser-Bessel windows, we define  :math:`x_i = x_{\rm min} - {\delta}x`
-and  :math:`x_f = x_{\rm max} + {\delta}x_2`.  The form for the Sine window,
-
+The form for the Sine window is
 
 .. math::
 
-   \Omega(x) = \sin{[ \frac{ \pi(x_f - x)}{x_f - x_i}]}
+   \Omega(x) = \sin{\bigl[ \frac{ \pi(x_f - x)}{x_f - x_i}\bigr]}
 
 between :math:`x_i`  and  :math:`x_f`, and 0 outside this range.
 The Kaiser-Bessel window is slightly more complicated:
@@ -324,14 +323,19 @@ The Kaiser-Bessel window is slightly more complicated:
    :nowrap:
 
    \begin{eqnarray*}
-     x_0     &=& (x4+x1)/2 \\
-     \sigma  &=& (x4-x1)/2 \\
-     a       &=& \sqrt{\max{(0, 1 - \frac{(x-x_0)^2}{\sigma^2} ) }} \\
-     \Omega'(x) &=& i_0({a\delta}x) / i_0({\delta}x)  \\
-     \Omega(x) &=& (\Omega'(x) - \min{(\Omega'(x))} / (1.0 - \min{(\Omega'(x))})\\
+      a       &=& \sqrt{\max{\bigl[0, 1 - \frac{4(x-x_0)^2}{(x_f-x_i)^2} \bigr] }} \\
+     \Omega(x) &=& \frac{i_0({a\delta}x) - 1}{i_0({\delta}x) - 1} \\
    \end{eqnarray*}
 
 where :math:`i_0` is the modified Bessel function of order 0.
 
+
 Examples: Fourier transform windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here, we give a series of example windows, to illustrate the different
+window types and the effect of the various parameters.
+
+
+
+
