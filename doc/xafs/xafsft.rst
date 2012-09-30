@@ -2,6 +2,8 @@
 XAFS: Fourier Transforms for XAFS
 ==============================================
 
+.. module:: _xafs
+
 :synopsis: XAFS Fourier transform functions
 
 Fourier transforms are central to understanding and using
@@ -296,19 +298,18 @@ portion, and then tapers down to 0 at the high-k end.  The mea ning of the
 different window types.  The Hanning, Parzen, and Welch windows share a
 convention that the windows taper up from 0 to 1 between ``xmin-dx/2`` and
 ``xmin+dx/2``, and then taper down from 1 to 0 between ``xmax-dx2/2`` and
-``xmax+dx2/2``.  The conventions for the Kaiser, Gaussian, and Sine window
-types is a bit more complicated, and is best given explicitly.  In the
-formulae below, ``dx`` written as :math:`{\delta}x` and ``dx2`` as
-:math:`{\delta}x_2`.
+``xmax+dx2/2``.
 
-For these windows, we define :math:`x_i = x_{\rm min} - {\delta}x/2`,
-:math:`x_f = x_{\rm max} + {\delta}x_2/2`, and :math:`x_0 = (x_f + x_i)/2`,
-as the beginning, end, and center of the widows.  For the Gaussian window,
-the form is simply
+The conventions for the Kaiser, Gaussian, and Sine window types is a bit
+more complicated, and is best given explicitly.  In the formulae below,
+``dx`` written as :math:`dx` and ``dx2`` as :math:`dx_2`.  We
+define :math:`x_i = x_{\rm min} - dx/2`, :math:`x_f = x_{\rm max} +
+dx_2/2`, and :math:`x_0 = (x_f + x_i)/2`, as the beginning, end, and
+center of the widows.  For the Gaussian window, the form is:
 
 .. math::
 
-   \Omega(x) = \exp{\bigl[ -\frac{(x - x_0)^2}{2\delta{x}^2}\bigr]}
+   \Omega(x) = \exp{\bigl[ -\frac{(x - x_0)^2}{2{dx}^2}\bigr]}
 
 The form for the Sine window is
 
@@ -324,18 +325,78 @@ The Kaiser-Bessel window is slightly more complicated:
 
    \begin{eqnarray*}
       a       &=& \sqrt{\max{\bigl[0, 1 - \frac{4(x-x_0)^2}{(x_f-x_i)^2} \bigr] }} \\
-     \Omega(x) &=& \frac{i_0({a\delta}x) - 1}{i_0({\delta}x) - 1} \\
+     \Omega(x) &=& \frac{i_0(a dx) - 1}{i_0(dx) - 1} \\
    \end{eqnarray*}
 
 where :math:`i_0` is the modified Bessel function of order 0.
-
 
 Examples: Fourier transform windows
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here, we give a series of example windows, to illustrate the different
-window types and the effect of the various parameters.
+window types and the effect of the various parameters.  The meanings of
+``xmin``, ``xmax``, ``dx`` and ``dx2`` are identical for the Hanning, Parzen and
+Welch windows, and illustrated in the two following figures.
+
+.. _xafs_fig5:
+
+   Figure 5. Fourier Transform window examples and illustration of
+   parameter meaning for the Hanning, Parzen, and Welch windows.  Note that
+   :math:`\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5`, and that
+   the meaning of ``dx`` is to control the taper over which the window
+   changes from 0 to 1.  Here, ``xmin=5`` and ``xmax=15``.
+
+  .. image::  ../images/ftwin_example1.png
+     :target: ../_images/ftwin_example1.png
+     :width: 48 %
+  .. image:: ../images/ftwin_example2.png
+     :target: ../_images/ftwin_example2.png
+     :width: 48 %
+
+.. _xafs_fig6:
+
+   Figure 6. Fourier Transform window examples and illustration of
+   parameter meaning.  On the left, a comparison of Welch, Parzen, and
+   Hanning with the same parameters is shown.  On the right, the effect of
+   ``dx2`` is shown as a different amount of taper on the high- and
+   low-``x`` end of the window.  As before, ``xmin=5`` and ``xmax=15``.
+
+  .. image::  ../images/ftwin_example3.png
+     :target: ../_images/ftwin_example3.png
+     :width: 48 %
+  .. image:: ../images/ftwin_example4.png
+     :target: ../_images/ftwin_example4.png
+     :width: 48 %
+
+The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
+go to 1 at the average of ``xmin`` and ``xmax``, but do not stay at 1 over
+a central portion of the window -- they taper continuously.  The Gaussian
+window is a simple Gaussian function, and is not truncated according to
+``xmin`` and ``xmax``, and the ``dx`` parameter sets the width.  The Sine
+and Kaiser-Bessel windows both go to zero at  ``xmin-dx/2`` and ``xmax +
+dx/2``.  For very large values of ``dx``, the Kaiser-Bessel window
+approaches a nearly Gaussian lineshape.
+
+.. _xafs_fig7:
+
+   Figure 7. Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
+   Sine, and Gaussian windos with the same parameters is shown.  On the right, the effect of
+   ``dx`` is shown for the Kaiser-Bessel window, and a closer comparison to a
+   Gaussian window is made.
+
+  .. image::  ../images/ftwin_example5.png
+     :target: ../_images/ftwin_example5.png
+     :width: 48 %
+  .. image:: ../images/ftwin_example6.png
+     :target: ../_images/ftwin_example6.png
+     :width: 48 %
 
 
+Examples: XAFS Fourier transforms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
+Now we show some example Fourier transforms, illustrating the real and
+imaginary parts of the :math:`chi(R)` as well as the magnitude, the effect
+of different windows types, and Fourier filtering to :math:`\chi(q)`.  We
+use a single XAFS dataset from FeO for all these examples, with a
+well-separated first and second shell.
