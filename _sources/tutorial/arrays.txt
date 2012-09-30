@@ -9,6 +9,7 @@ Functions for creating arrays
 
 :ref:`Table of Array Creation Functions <tutor_arraycreate_table>`
 
+.. index:: array creation
 .. _tutor_arraycreate_table:
 
    Table of Array Creation Functions.  These functions can all be used to

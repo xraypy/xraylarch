@@ -78,10 +78,10 @@ be made:
   2. All Larch code is translated into Python and then run using builtin
      Python tools.
 
-In a sense, Larch is a dialect of Python.  This means has a few that an
+In a sense, Larch is a dialect of Python.  Thus an
 understanding Larch and Python are close to one another.  This in itself
 can be seen as an advantage -- Python is a popular, open-source, language
-that any programmer can easily learn, and books and web documentation about
+that any programmer can easily learn.  Books and web documentation about
 Python are plentiful.  If you known Python, Larch will be very easy to use,
 and vice versa.
 
@@ -102,7 +102,7 @@ attributes, as with::
      larch> plot(my_group.x, my_group.y, title=my_group.title)
 
 That is to say, the Group 'my_group' holds data in a convenient namespace.
-You can see thed contents of a group::
+You can see the contents of a group::
 
     larch> show(my_group)
     == Group 0x6e15970: 3 symbols ==
@@ -111,7 +111,7 @@ You can see thed contents of a group::
       y: array<shape=(101,), type=dtype('float64')>
 
 which shows that this group has 3 components.  Other things to note are
-that 'x' and 'y' hold arrays of data, and thatfunctions such as 'sqrt' act
+that 'x' and 'y' hold arrays of data, and that functions such as 'sqrt' act
 on all elements of the array at once.
 
 Since much of what Larch is used for is modeling or fitting small data

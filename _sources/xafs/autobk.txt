@@ -2,6 +2,9 @@
 XAFS: Post-edge Background Subtraction
 ==============================================
 
+.. module:: _xafs
+
+
 Background subtraction is one of the most important data processing steps
 in EXAFS analysis, converting the measured :math:`\mu(E)` into the
 :math:`\chi(k)` ready for quantitative analysis.  In Larch, this step is

@@ -30,7 +30,7 @@
     <link rel="prev" title="Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left; 
+<div style=" color: #76989B; text-align: left;
             height:95px; padding: 1px 0px 0px 3px">
 <table><tr><td>
    <a href="../index.html">
@@ -60,9 +60,11 @@
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="#">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+   <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
+   <li><a href="#">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>|&nbsp;</li>
  
       </ul>
     </div>
@@ -106,13 +108,13 @@
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
 was originally conceived to be version 2 of Ifeffit, replacing and
 expanding all the XAFS analysis capabilities of that package.</p>
-<p>As of this writing (June, 2012), this replacement is approximately
-complete, in that most functionality of Ifeffit 1 is available in Larch.  A
-few features of some processing steps are not fully available in Larch, and
-there are some slight differences in implementation details such that
-slightly different numerical results are obtained.  On the other hand, some
-new features are already available with Larch that were not available with
-Ifeffit 1.2 and some small errors in Ifeffit 1.2 have been fixed.</p>
+<p>As of this writing (Sept, 2012), this replacement is approximately
+complete, in that essentially all the functionality of Ifeffit 1 is
+available in Larch.  There are some slight differences in implementation
+details, such that slightly different numerical results are obtained.
+Importantly, some new features are already available with Larch that were
+not available with Ifeffit 1.2 and some small errors in Ifeffit 1.2 have
+been fixed.</p>
 <p>XAFS Analysis can generally be broken into a few separate steps:</p>
 <blockquote>
 <div><ol class="arabic simple">
@@ -127,7 +129,7 @@ Ifeffit 1.2 and some small errors in Ifeffit 1.2 have been fixed.</p>
 </ol>
 </div></blockquote>
 <p>Broadly speaking, Larch can do all of these steps.</p>
-<span class="target" id="module-_xafs"></span><p>The XAFS-specific functions in Larch are kept in the <a class="reference internal" href="#module-_xafs" title="_xafs: Basic XAFS Functions"><tt class="xref py py-data docutils literal"><span class="pre">_xafs</span></tt></a> Group,
+<span class="target" id="module-_xafs"></span><p>The XAFS-specific functions in Larch are kept in the <a class="reference internal" href="xafsft.html#module-_xafs" title="_xafs"><tt class="xref py py-data docutils literal"><span class="pre">_xafs</span></tt></a> Group,
 which can be easily accessed, as this is in the default search path.  Note
 that many of the XAFS functions take a <strong>group</strong> argument, which is a group
 into which resulting data are written.  That is, many of the functions have
@@ -150,9 +152,16 @@ listed below.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="xafsft.html">XAFS: Fourier Transforms for XAFS</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">Overview of XAFS Fourier transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#fourier-transform-windows">Fourier transform windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#inverse-xafs-fourier-transforms">Inverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#fourier-transform-windows">Fourier transform windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-fourier-transform-windows">Examples: Fourier transform windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-xafs-fourier-transforms">Examples: XAFS Fourier transforms</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="feffpaths.html">XAFS: Reading and using Feff Paths</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feff-path-object">Feff Path Object</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">Example:  Reading a FEFF file</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="feffit.html">XAFS: Fitting XAFS to Feff Paths</a></li>
@@ -184,14 +193,16 @@ listed below.</p>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="#">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+   <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
+   <li><a href="#">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>|&nbsp;</li>
  
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, Matthew Newville.
+        &copy; Copyright 2012, Matthew Newville.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

@@ -30,7 +30,7 @@
     <link rel="top" title="larch 0.9.14 documentation" href="index.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left; 
+<div style=" color: #76989B; text-align: left;
             height:95px; padding: 1px 0px 0px 3px">
 <table><tr><td>
    <a href="index.html">
@@ -54,9 +54,11 @@
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="contents.html">contents</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+   <li><a href="plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="fitting/index.html">fit</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>|&nbsp;</li>
  
       </ul>
     </div>
@@ -103,6 +105,7 @@
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
+ | <a href="#T"><strong>T</strong></a>
  | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
  | <a href="#W"><strong>W</strong></a>
@@ -120,14 +123,18 @@
   <dt><a href="fitting/index.html#module-_math">_math (module)</a>, <a href="fitting/minimize.html#module-_math">[1]</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="plotting/index.html#module-_plotter">_plotter (module)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="xafs/index.html#module-_xafs">_xafs (module)</a>, <a href="xafs/feffit.html#module-_xafs">[1]</a>
+  <dt><a href="tutorial/procedures.html#index-0">_sys variables</a>
+  </dt>
+
+      
+  <dt><a href="xafs/index.html#module-_xafs">_xafs (module)</a>, <a href="xafs/feffit.html#module-_xafs">[1]</a>, <a href="xafs/feffpaths.html#module-_xafs">[2]</a>, <a href="xafs/autobk.html#module-_xafs">[3]</a>, <a href="xafs/xafsft.html#module-_xafs">[4]</a>
   </dt>
 
   </dl></td>
@@ -137,7 +144,13 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="xafs/autobk.html#autobk">autobk() (built-in function)</a>
+  <dt><a href="tutorial/arrays.html#index-0">array creation</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="xafs/autobk.html#_xafs.autobk">autobk() (in module _xafs)</a>
   </dt>
 
   </dl></td>
@@ -175,7 +188,7 @@
   </dt>
 
       
-  <dt><a href="xafs/feffit.html#_xafs.feff_path">feff_path() (in module _xafs)</a>
+  <dt><a href="xafs/feffpaths.html#_xafs.feff_path">feff_path() (in module _xafs)</a>
   </dt>
 
       
@@ -186,12 +199,12 @@
   <dt><a href="xafs/feffit.html#_xafs.feffit_dataset">feffit_dataset() (in module _xafs)</a>
   </dt>
 
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="xafs/feffit.html#_xafs.feffit_transform">feffit_transform() (in module _xafs)</a>
   </dt>
 
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="xafs/preedge.html#find_e0">find_e0() (built-in function)</a>
   </dt>
@@ -201,7 +214,11 @@
   </dt>
 
       
-  <dt><a href="xafs/xafsft.html#ftwindow">ftwindow() (built-in function)</a>
+  <dt><a href="xafs/xafsft.html#index-0">Fourier Transform Window types</a>
+  </dt>
+
+      
+  <dt><a href="xafs/xafsft.html#_xafs.ftwindow">ftwindow() (in module _xafs)</a>
   </dt>
 
   </dl></td>
@@ -241,6 +258,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="fitting/lineshapes.html#index-0">lineshapes for fitting</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
   <dt><a href="fitting/lineshapes.html#lorentzian">lorentzian() (built-in function)</a>
   </dt>
 
@@ -259,6 +282,12 @@
 
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="tutorial/procedures.html#index-0">namespace-related variables</a>
+  </dt>
+
+  </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="plotting/index.html#_plotter.newplot">newplot() (in module _plotter)</a>
@@ -333,6 +362,16 @@
   </dl></td>
 </tr></table>
 
+<h2 id="T">T</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="tutorial/datatypes.html#index-0">toplevel groups</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
 <h2 id="U">U</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
@@ -373,21 +412,21 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="xafs/xafsft.html#xafsft">xafsft() (built-in function)</a>
+  <dt><a href="xafs/xafsft.html#_xafs.xftf">xftf() (in module _xafs)</a>
   </dt>
 
       
-  <dt><a href="xafs/xafsft.html#xafsft_fast">xafsft_fast() (built-in function)</a>
+  <dt><a href="xafs/xafsft.html#_xafs.xftf_fast">xftf_fast() (in module _xafs)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="xafs/xafsft.html#xafsift">xafsift() (built-in function)</a>
+  <dt><a href="xafs/xafsft.html#_xafs.xftr">xftr() (in module _xafs)</a>
   </dt>
 
       
-  <dt><a href="xafs/xafsft.html#xafsift_fast">xafsift_fast() (built-in function)</a>
+  <dt><a href="xafs/xafsft.html#_xafs.xftr_fast">xftr_fast() (in module _xafs)</a>
   </dt>
 
   </dl></td>
@@ -412,14 +451,16 @@
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="contents.html">contents</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+   <li><a href="plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="fitting/index.html">fit</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>|&nbsp;</li>
  
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, Matthew Newville.
+        &copy; Copyright 2012, Matthew Newville.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

@@ -30,7 +30,7 @@
     <link rel="prev" title="Downloading and Installation" href="installation.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left; 
+<div style=" color: #76989B; text-align: left;
             height:95px; padding: 1px 0px 0px 3px">
 <table><tr><td>
    <a href="index.html">
@@ -60,9 +60,11 @@
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="contents.html">contents</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+   <li><a href="plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="fitting/index.html">fit</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>|&nbsp;</li>
  
       </ul>
     </div>
@@ -177,10 +179,10 @@ be made:</p>
 Python tools.</li>
 </ol>
 </div></blockquote>
-<p>In a sense, Larch is a dialect of Python.  This means has a few that an
+<p>In a sense, Larch is a dialect of Python.  Thus an
 understanding Larch and Python are close to one another.  This in itself
 can be seen as an advantage &#8211; Python is a popular, open-source, language
-that any programmer can easily learn, and books and web documentation about
+that any programmer can easily learn.  Books and web documentation about
 Python are plentiful.  If you known Python, Larch will be very easy to use,
 and vice versa.</p>
 </div>
@@ -199,7 +201,7 @@ attributes, as with:</p>
 </pre></div>
 </div>
 <p>That is to say, the Group &#8216;my_group&#8217; holds data in a convenient namespace.
-You can see thed contents of a group:</p>
+You can see the contents of a group:</p>
 <div class="highlight-python"><pre>larch&gt; show(my_group)
 == Group 0x6e15970: 3 symbols ==
   title: 'group 1'
@@ -207,7 +209,7 @@ You can see thed contents of a group:</p>
   y: array&lt;shape=(101,), type=dtype('float64')&gt;</pre>
 </div>
 <p>which shows that this group has 3 components.  Other things to note are
-that &#8216;x&#8217; and &#8216;y&#8217; hold arrays of data, and thatfunctions such as &#8216;sqrt&#8217; act
+that &#8216;x&#8217; and &#8216;y&#8217; hold arrays of data, and that functions such as &#8216;sqrt&#8217; act
 on all elements of the array at once.</p>
 <p>Since much of what Larch is used for is modeling or fitting small data
 sets, another key organizing principle is the <strong>Parameter</strong>.  This holds a
@@ -270,14 +272,16 @@ and analysis steps needed, including:</p>
    <li><a href="installation.html">download</a>|&nbsp;</li>
    <li><a href="contents.html">contents</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="xray/index.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="search.html">search</a>&nbsp;</li>
+   <li><a href="plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="fitting/index.html">fit</a>|&nbsp;</li>
+   <li><a href="xafs/index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="search.html">search</a>|&nbsp;</li>
  
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, Matthew Newville.
+        &copy; Copyright 2012, Matthew Newville.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

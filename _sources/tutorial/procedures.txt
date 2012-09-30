@@ -109,6 +109,7 @@ special list ``_sys.searchGroupObjects`` holding the list of Groups to be
 searched for names.  There are several related variables listed in
 :ref:`Table of Namespace-related Variables <namespace_table>`.
 
+.. index:: _sys variables,  namespace-related variables
 .. _namespace_table:
 
    Table of Namespace-related Variables

@@ -18,7 +18,7 @@ simply installed as standard packages on almost all platforms.
 .. _larch github repository:   http://github.com/xraypy/xraylarch
 
 All development is being done through the `larch github repository`_.  To
-get a read-only copy of the atest version, use::
+get a read-only copy of the latest version, use::
 
    git clone http://github.com/xraypy/xraylarch.git
 

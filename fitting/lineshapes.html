@@ -31,7 +31,7 @@
     <link rel="prev" title="Fit Results and Outputs" href="results.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left; 
+<div style=" color: #76989B; text-align: left;
             height:95px; padding: 1px 0px 0px 3px">
 <table><tr><td>
    <a href="../index.html">
@@ -61,9 +61,11 @@
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+   <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="index.html">fit</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>|&nbsp;</li>
 
           <li><a href="index.html" accesskey="U">Fitting and Modeling Data with Larch</a> &raquo;</li> 
       </ul>
@@ -117,7 +119,9 @@ scalar or array, depending on the input <tt class="docutils literal"><span class
 
 <div class="math">
 <p><img src="../_images/math/bdbc896d4c7f5f835f24376323ace5d04b583dff.png" alt="f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}"/></p>
-</div><p>where <em>cen</em> is used for <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>.</p>
+</div><p>where <em>cen</em> is used for <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>.
+The Full-Width at Half-Maximum is <img class="math" src="../_images/math/2058af8143906b3ff5439922f6e0c6a726a956c3.png" alt="2\sigma\sqrt{2\ln{2}}"/>, or
+approximately 2.3548:math:<cite>sigma</cite></p>
 <dl class="function">
 <dt id="lorentzian">
 <tt class="descname">lorentzian</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
@@ -126,12 +130,12 @@ scalar or array, depending on the input <tt class="docutils literal"><span class
 
 <div class="math">
 <p><img src="../_images/math/4745a75d8ed4f59c889eb50bd0c60e847204d27c.png" alt="f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]"/></p>
-</div><p>where <em>cen</em> is used for <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>.</p>
+</div><p>where <em>cen</em> is used for <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>. The Full-Width at Half-Maximum is
+2:math:<cite>sigma</cite>.</p>
 <dl class="function">
 <dt id="voigt">
 <tt class="descname">voigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>gamma=None</em><big>)</big><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
-<dd><p>a Voigt distribution function.   There seem to be many variant
-definitions &#8211; the one used here is given as</p>
+<dd><p>a Voigt distribution function.   The definitio used here is</p>
 </dd></dl>
 
 <div class="math">
@@ -145,6 +149,8 @@ definitions &#8211; the one used here is given as</p>
 </div><p>and <tt class="xref py py-func docutils literal"><span class="pre">erfc()</span></tt> is the complimentary error function.
 As above,  <em>cen</em> is used for <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/> here.
 If <em>gamma</em> is left as <tt class="docutils literal"><span class="pre">None</span></tt>, it is set equal to <em>sigma</em>.</p>
+<p>Note that if <img class="math" src="../_images/math/66981fa3920210c6ad8dbe5e968783d5dd7520c3.png" alt="\gamma"/> = <img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>, the Full-Width at
+Half-Maximum is approximately 3.6013:math:<cite>sigma</cite>.</p>
 <dl class="function">
 <dt id="pvoigt">
 <tt class="descname">pvoigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>frac=0.5</em><big>)</big><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
@@ -175,7 +181,7 @@ above lineshapes, and <em>expon</em> is <img class="math" src="../_images/math/3
 useful in fitting spectra and other x-ray data.  Some of these are detailed
 in the <a class="reference internal" href="#fit-funcs-table"><em>Table of Useful Line shapes</em></a>.</p>
 <blockquote id="fit-funcs-table">
-<div><p>Table of Useful Line shapes.</p>
+<span id="index-0"></span><div><p>Table of Useful Line shapes.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="46%" />
@@ -251,15 +257,17 @@ Student&#8217;s T, etc) can be accessed from scipy.stats.</p>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
-   <li><a href="../xafs/index.html">XAFS analysis</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF analysis</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="../search.html">search</a>&nbsp;</li>
+   <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="index.html">fit</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>|&nbsp;</li>
 
           <li><a href="index.html" >Fitting and Modeling Data with Larch</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2011, Matthew Newville.
+        &copy; Copyright 2012, Matthew Newville.
       Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>

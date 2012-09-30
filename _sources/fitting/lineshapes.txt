@@ -19,6 +19,8 @@ scalar or array, depending on the input ``x``.
   f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}
 
 where *cen* is used for :math:`\mu`.
+The Full-Width at Half-Maximum is :math:`2\sigma\sqrt{2\ln{2}}`, or
+approximately 2.3548:math:`\sigma`
 
 .. function:: lorentzian(x, cen=0, sigma=1)
 
@@ -28,12 +30,12 @@ where *cen* is used for :math:`\mu`.
 
   f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]
 
-where *cen* is used for :math:`\mu`.
+where *cen* is used for :math:`\mu`. The Full-Width at Half-Maximum is
+2:math:`\sigma`.
 
 .. function:: voigt(x, cen=0, sigma=1, gamma=None)
 
-   a Voigt distribution function.   There seem to be many variant
-   definitions -- the one used here is given as
+   a Voigt distribution function.   The definitio used here is
 
 .. math::
 
@@ -53,6 +55,8 @@ and :func:`erfc` is the complimentary error function.
 As above,  *cen* is used for :math:`\mu` here.
 If *gamma* is left as ``None``, it is set equal to *sigma*.
 
+Note that if :math:`\gamma` = :math:`\sigma`, the Full-Width at
+Half-Maximum is approximately 3.6013:math:`\sigma`.
 
 .. function:: pvoigt(x, cen=0, sigma=1, frac=0.5)
 
@@ -88,6 +92,7 @@ Several builtin special functions can also be used to create lineshapes
 useful in fitting spectra and other x-ray data.  Some of these are detailed
 in the :ref:`Table of Useful Line shapes <fit-funcs_table>`.
 
+.. index:: lineshapes for fitting
 .. _fit-funcs_table:
 
     Table of Useful Line shapes.
