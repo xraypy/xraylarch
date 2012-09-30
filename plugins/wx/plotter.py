@@ -222,7 +222,6 @@ def update(_larch=None, **kws):
     except:
         pass
 
-
 def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
@@ -279,7 +278,7 @@ def _plot_text(text, x, y, win=1, side='left',
 
 def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
                 shape='full', color='black', width=1,
-                head_width=1, overhang=0,
+                head_width=20, overhang=0,
                _larch=None, wxparent=None,  **kws):
 
     """plot_arrow(x1, y1, x2, y2, win=1, options)
@@ -299,7 +298,6 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
         head_width:  width of arrow head (in points. default=0.1)
         overhang:    amount the arrow is swept back (in points. default=0)
 
-
     See Also: plot, oplot, plot_text
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
@@ -307,10 +305,49 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
     width = width/5000.0
-    head_width = head_width/5000.0
+    head_width = head_width/1000.0
     plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
                       color=color, width=width, head_width=head_width,
                       overhang=overhang, **kws)
+
+def _plot_axhline(y, xmin=None, xmax=None, win=1,
+                  wxparent=None, _larch=None, **kws):
+    """plot_axhline(y, xmin=None, ymin=None, **kws)
+
+    plot a horizontal line spanning the plot axes
+    Parameters:
+    --------------
+        y:      y position of line
+        xmin:   starting x fraction (window units -- not user units!)
+        xmax:   ending x fraction (window units -- not user units!)
+    See Also: plot, oplot, plot_arrow
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+
+    plotter.panel.axes.axhline(y, xmin=xmin, xmax=xmax, **kws)
+
+def _plot_axvline(x, ymin=None, ymax=None, win=1,
+                  wxparent=None, _larch=None, **kws):
+    """plot_axvline(y, xmin=None, ymin=None, **kws)
+
+    plot a vertical line spanning the plot axes
+    Parameters:
+    --------------
+        x:      x position of line
+        ymin:   starting y fraction (window units -- not user units!)
+        ymax:   ending y fraction (window units -- not user units!)
+    See Also: plot, oplot, plot_arrow
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+
+    plotter.panel.axes.axvline(y, xmin=xmin, xmax=xmax, **kws)
+
 
 def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
     """get_cursor(win=1, timeout=30)
@@ -429,6 +466,8 @@ def registerLarchPlugin():
                       'newplot':_newplot,
                       'plot_text': _plot_text,
                       'plot_arrow': _plot_arrow,
+                      'plot_axvline':  _plot_axvline,
+                      'plot_axhline':  _plot_axhline,
                       'scatterplot': _scatterplot,
                       'update_trace': _update_trace,
                       'save_plot': _saveplot,
