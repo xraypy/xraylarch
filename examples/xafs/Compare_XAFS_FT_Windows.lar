@@ -18,4 +18,4 @@ newplot(k, wiff, label='ifeffit', xlabel='k',
 
 
 plot(k, kaiser_win, label='kaiser', marker='+', linewidth=0)
-plot(k, bessel_win, label='bessel (new)' )
+plot(k, bessel_win, label='bessel (ifeffit compat)' )

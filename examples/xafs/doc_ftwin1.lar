@@ -1,0 +1,36 @@
+
+x = linspace(0, 20, 401)
+
+hann_win1 =  ftwindow(x, xmin=5, xmax=15, dx=3, window='hanning')
+hann_win2 =  ftwindow(x, xmin=5, xmax=15, dx=5, window='hanning')
+hann_win3 =  ftwindow(x, xmin=5, xmax=15, dx=3, dx2=7, window='hanning')
+parzen_win1 =  ftwindow(x, xmin=5, xmax=15, dx=3, window='parzen')
+welch_win1 =  ftwindow(x, xmin=5, xmax=15, dx=3, window='welch')
+
+newplot(x, hann_win1, label='Hanning(5, 15, dx=3)', xlabel='x',
+         ymin=-0.05, ymax=1.20, show_legend=True)
+
+plot([3.5, 3.5], [0, 1],   style='dashed', color='black', label='')
+plot([6.5, 6.5], [0, 1],   style='dashed', color='black', label='')
+plot([5.0, 5.0], [0, 0.5], style='dashed', color='black', label='')
+
+plot_text('dx=3',   3.75, 1.05)
+plot_arrow(5.0, 1, 3.5, 1)
+plot_arrow(5.0, 1, 6.5, 1)
+
+newplot(x, hann_win1, label='Hanning(5, 15, dx=3)', xlabel='x',
+         ymin=-0.05, ymax=1.05, show_legend=True, legend_loc='lc', win=2)
+plot(x, hann_win2, label='Hanning(5, 15, dx=5)', win=2)
+
+newplot(x, welch_win1+0.5, label='Welch(5, 15, dx=3)',
+     xlabel='x', ymin=-0.05, ymax=1.55, show_legend=True, legend_loc='lc', win=3)
+
+plot(x, parzen_win1+0.25, label='Parzen(5, 15, dx=3)', win=3)
+plot(x, hann_win1, label='Hanning(5, 15, dx=3)', win=3)
+
+
+newplot(x, hann_win1, label='Hanning(5, 15, dx=3)', xlabel='x',
+         ymin=-0.05, ymax=1.05, show_legend=True, legend_loc='lc', win=4)
+plot(x, hann_win3, label='Hanning(5, 15, dx=3, dx2=7)', win=4)
+
+

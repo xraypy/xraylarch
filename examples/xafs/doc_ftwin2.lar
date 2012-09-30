@@ -1,0 +1,20 @@
+
+x = linspace(0, 20, 401)
+
+kai_win1 =  ftwindow(x, xmin=5, xmax=15, dx=4, window='kaiser')
+sin_win1 =  ftwindow(x, xmin=5, xmax=15, dx=4, window='sine')
+gau_win1 =  ftwindow(x, xmin=5, xmax=15, dx=4, window='gaussian')
+
+
+newplot(x, kai_win1, label='Kaiser(5, 15, dx=4)', xlabel='x',
+        ymin=-0.05, ymax=1.05, show_legend=True, legend_loc='lc')
+plot(x, sin_win1, label='Sine(5, 15, dx=4)')
+plot(x, gau_win1, label='Gassian(5, 15, dx=4)')
+
+newplot(x, kai_win1, label='Kaiser(5, 15, dx=4)', xlabel='x',
+        ymin=-0.05, ymax=1.05, show_legend=True, legend_loc='lc', win=2)
+plot(x, ftwindow(x, xmin=5, xmax=15, dx=10, window='kaiser'),
+     label='Kaiser(5, 15, dx=10)', win=2)
+plot(x, ftwindow(x, xmin=5, xmax=15, dx=3, window='gaussian'),
+     label='Gaussian(5, 15, dx=3)', win=2)
+
