@@ -47,9 +47,6 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         x3 = x4 - xeps - dx2*(xmax-xmin)/2.0
     elif nam == 'gau':
         dx1 = max(dx1, xeps)
-#     elif nam == 'sin':
-#         x1 = xmin - dx1
-#         x4 = xmax + dx2
 
     def asint(val): return int((val+xeps)/xstep)
     i1, i2, i3, i4 = asint(x1), asint(x2), asint(x3), asint(x4)
@@ -57,7 +54,8 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     i3, i4 = min(len(x)-1, i3), min(len(x)-1, i4)
     # initial window
     fwin =  zeros(len(x))
-    fwin[i2:i3] = ones(i3-i2)
+    if i3 > i2:
+        fwin[i2:i3] = ones(i3-i2)
 
     # now finish making window
     if nam in ('han', 'fha'):
@@ -69,13 +67,17 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     elif nam == 'wel':
         fwin[i1:i2] = 1 - ((x[i1:i2]-x2) / (x2-x1))**2
         fwin[i3:i4] = 1 - ((x[i3:i4]-x3) / (x4-x3))**2
-    elif nam in ('kai', 'bes'):
+    elif nam  in ('kai', 'bes'):
         cen  = (x4+x1)/2
         wid  = (x4-x1)/2
         arg  = 1 - (x-cen)**2 / (wid**2)
         arg[where(arg<0)] = 0
-        fwin = (bessel_i0(dx * sqrt(arg)) - 1) / (bessel_i0(dx) -1)
-
+        if nam == 'bes': # 'bes' : ifeffit implementation of kaiser-bessel
+            fwin = bessel_i0(dx* sqrt(arg)) / bessel_i0(dx)
+            fwin[where(x<=x1)] = 0
+            fwin[where(x>=x4)] = 0
+        else: # better version
+            fwin = (bessel_i0(dx * sqrt(arg)) - 1) / (bessel_i0(dx) -1)
     elif nam == 'sin':
         fwin[i1:i4] = sin(pi*(x4-x[i1:i4]) / (x4-x1))
     elif nam == 'gau':
