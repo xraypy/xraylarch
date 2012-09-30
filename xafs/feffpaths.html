@@ -1,0 +1,179 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>XAFS: Reading and using Feff Paths &mdash; larch 0.9.14 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.14',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
+    <link rel="up" title="XAFS Analysis with Larch" href="index.html" />
+    <link rel="next" title="XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
+    <link rel="prev" title="XAFS: Fourier Transforms for XAFS" href="xafsft.html" /> 
+  </head>
+  <body>
+<div style=" color: #76989B; text-align: left;
+            height:95px; padding: 1px 0px 0px 3px">
+<table><tr><td>
+   <a href="../index.html">
+      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
+   </a></td><td padding=0>
+      <font size=+3><a href="../index.html" style="color: #662211">
+        &nbsp; Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="xafsft.html" title="XAFS: Fourier Transforms for XAFS"
+             accesskey="P">previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
+   <li><a href="index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>|&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">XAFS Analysis with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">XAFS: Reading and using Feff Paths</a><ul>
+<li><a class="reference internal" href="#feff-path-object">Feff Path Object</a></li>
+<li><a class="reference internal" href="#example-reading-a-feff-file">Example:  Reading a FEFF file</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="xafsft.html"
+                        title="previous chapter">XAFS: Fourier Transforms for XAFS</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="feffit.html"
+                        title="next chapter">XAFS: Fitting XAFS to Feff Paths</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/xafs/feffpaths.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-_xafs">
+<span id="xafs-reading-and-using-feff-paths"></span><h1>XAFS: Reading and using Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<p>For modeling EXAFS data, Larch relies heavily on calculations of
+theoretical XAFS spectra using FEFF.  Being able to run FEFF and use its
+results is thus of fundamental importance for using Larch for fitting EXAFS
+spectra.  While a complete description of FEFF is beyond the scope of this
+documentation, here we describe how to read the results from FEFF into
+Larch.  The main interface for this is the <a class="reference internal" href="#_xafs.feff_path" title="_xafs.feff_path"><tt class="xref py py-func docutils literal"><span class="pre">feff_path()</span></tt></a> function that
+reads FEFF <em>feffNNNN.dat</em> file into a larch FeffPath object.</p>
+<dl class="function">
+<dt id="_xafs.feff_path">
+<tt class="descclassname">_xafs.</tt><tt class="descname">feff_path</tt><big>(</big><em>filename...</em><big>)</big><a class="headerlink" href="#_xafs.feff_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a Feff Path object</p>
+</dd></dl>
+
+<div class="section" id="feff-path-object">
+<h2>Feff Path Object<a class="headerlink" href="#feff-path-object" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="example-reading-a-feff-file">
+<h2>Example:  Reading a FEFF file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
+<p>Here we simply read a <em>feffNNNN.dat</em> file and manipulate its contents.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="xafsft.html" title="XAFS: Fourier Transforms for XAFS"
+             >previous</a> |</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
+   <li><a href="index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   &nbsp;&nbsp;<li><a href="../search.html">search</a>|&nbsp;</li>
+
+          <li><a href="index.html" >XAFS Analysis with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Matthew Newville.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
