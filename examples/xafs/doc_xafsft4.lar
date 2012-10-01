@@ -1,0 +1,36 @@
+
+## examples/xafs/doc_xafsft3.lar
+dat = read_ascii('feo.dat', labels='energy time i0 i1 if')
+dat.xmu  = log(dat.i0/dat.i1)
+autobk(dat.energy, dat.xmu, group=dat, rbkg=1, kweight=2, clamp_hi=10)
+
+kweight = 2
+
+xftf(dat.k, dat.chi, kmin=3, kmax=13, dk=4, window='hanning',
+     kweight=kweight, group=dat)
+
+dat.chi_kw = dat.k**kweight * dat.chi
+
+d2 = group(r = dat.r, chir=dat.chir)
+
+xftr(dat.r, dat.chir, rmin=1, rmax=3.2, dr=0.05, window='hanning',  group=dat)
+xftr(d2.r,  d2.chir, rmin=1, rmax=1.95, dr=0.05, window='hanning',  group=d2)
+
+## now plot results
+newplot(dat.r, dat.chir_mag, xmax=8, label='data',
+        show_legend=True, legend_loc='ur', color='black',
+        xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
+
+scale = int(1 + 10.0*max(dat.chir_mag))/10.0
+
+plot(dat.r, dat.rwin*scale,   color='red', label='R-window, rmax=3.2')
+plot(d2.r,  d2.rwin*scale*0.95,  color='blue', label='R-window, rmax=2.0')
+
+newplot(dat.k, dat.chi_kw, win=2, label='chi*k^2 data',
+        show_legend=True, legend_loc='ur', color='black', xmax=16,
+        xlabel=r'$k \rm\, (\AA^{-1})$', ylabel=r'$\chi(k)\rm\,(\AA^{-2})$' )
+
+plot(dat.q, dat.chiq_re, win=2, label='chiq_re, rmax=3.2', color='red')
+plot(d2.q , d2.chiq_re, win=2, label='chiq_re, rmax=2.0', color='blue')
+
+## end examples/xafs/doc_xafsft3.lar

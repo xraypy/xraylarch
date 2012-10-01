@@ -471,7 +471,16 @@ We now turn our attention to the different components of the Fourier
 transform.  As above, it is most common to plot the magnitude of the
 Fourier transform.  But, as the transformed :math:`\chi(R)` is complex, it
 can be instructive to plot the real and imaginary components, as shown
-below:
+below::
+
+    newplot(dat1.r, dat1.chir_mag, xmax=8, label='chir_mag',
+            show_legend=True, legend_loc='ur', color='black',
+            xlabel=r'$R \rm\, (\AA)$', ylabel=r'$\chi(R)\rm\,(\AA^{-3})$' )
+
+    plot(dat1.r, dat1.chir_re, color='red', label='chir_re')
+    plot(dat1.r, dat1.chir_im, color='blue', label='chir_im')
+
+which results in
 
 .. _xafs_fig10:
 
@@ -491,7 +500,27 @@ Examples: Reverse XAFS Fourier transforms, Fourier Filtering
 
 A reverse Fourier transform will convert data from :math:`\chi(R)` to
 :math:`\chi(q)`.  This allows a limited range of frequencies (distances) to
-be isolated and turned back into a :math:`chi(k)` spectrum.
+be isolated and turned back into a :math:`\chi(k)` spectrum.  Here, we show
+two different :math:`R` windows to filter either just the first shell of
+the spectra, or the first two shells, and compare the resulting filtered
+:math:`\chi(q)`.
 
+
+.. _xafs_fig11:
+
+  .. image::  ../images/xft_example6.png
+     :target: ../_images/xft_example6.png
+     :width: 48 %
+  .. image:: ../images/xft_example7.png
+     :target: ../_images/xft_example7.png
+     :width: 48 %
+
+  Figure 11.  Reverse XAFS Fourier transform, or Fourier filtering.  Here,
+  one can see the effect of different window sizes on the Fourier filtered
+  spectrum.  Including the first two peaks or shells reproduces most of the
+  original spectrum, with only high-frequency components removed.
+
+Note that it is ``chiq_re`` that is compared to the k-weighted ``chi``
+array.
 
 
