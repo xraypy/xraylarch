@@ -1,6 +1,5 @@
 ## examples/xafs/doc_xafsft3.lar
-dat = read_ascii('feo.dat', labels='energy time i0 i1 if')
-dat.xmu  = log(dat.i0/dat.i1)
+dat = read_ascii('feo_rt1.xmu', labels='energy xmu i0')
 autobk(dat.energy, dat.xmu, group=dat, rbkg=1, kweight=2, clamp_hi=10)
 
 kweight = 2
