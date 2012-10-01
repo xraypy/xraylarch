@@ -1,0 +1,22 @@
+## examples/xafs/doc_xafsft3.lar
+dat = read_ascii('feo.dat', labels='energy time i0 i1 if')
+dat.xmu  = log(dat.i0/dat.i1)
+autobk(dat.energy, dat.xmu, group=dat, rbkg=1, kweight=2, clamp_hi=10)
+
+kweight = 2
+
+## Hanning
+d1 = group(k=dat.k, chi=dat.chi)
+xftf(d1.k, d1.chi, kmin=3, kmax=13, dk=4, window='hanning',
+     kweight=kweight, group=d1)
+
+## now plot results
+newplot(d1.r, d1.chir_mag, xmax=8, label='chir_mag',
+        show_legend=True, legend_loc='ur', color='black',
+        xlabel=r'$R \rm\, (\AA)$', ylabel=r'$\chi(R)\rm\,(\AA^{-3})$' )
+
+plot(d1.r, d1.chir_re, color='red', label='chir_re')
+plot(d1.r, d1.chir_im, color='blue', label='chir_im')
+
+
+## end examples/xafs/doc_xafsft3.lar

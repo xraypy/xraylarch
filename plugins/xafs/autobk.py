@@ -35,7 +35,7 @@ def spline_eval(kraw, mu, knots, coefs, order, kout):
     return bkg, chi
 
 def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
-            kraw=None, mu=None, kout=None, ftwin=1, chi_std=None,
+            kraw=None, mu=None, kout=None, ftwin=1, kweight=1, chi_std=None,
             nclamp=2, clamp_lo=1, clamp_hi=1, **kws):
 
     coefs = [getattr(pars, FMT_COEF % i) for i in range(ncoefs)]
@@ -47,8 +47,10 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
 
     if clamp_lo > 0 and nclamp > 0:
         out = np.concatenate((out, clamp_lo*chi[:nclamp]/sum2))
+    #print clamp_hi, nclamp, sum2, len(coefs),
+    #print kout[-nclamp:]**kweight*clamp_hi*chi[-nclamp:]/sum2
     if clamp_hi > 0 and nclamp > 0:
-        out = np.concatenate((out, clamp_hi*chi[-nclamp:]/sum2))
+        out = np.concatenate((out, clamp_hi*chi[-nclamp:]*(kout[-nclamp:]**kweight)/sum2))
     return out
 
 def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
@@ -80,8 +82,10 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
                        pre2=-50., norm1=100., norm2=None)
         if pre_edge_kws is not None:
             pre_kws.update(pre_edge_kws)
-        edge_step, e0 = pre_edge(energy, mu, group=group,
-                                 _larch=_larch, **pre_kws)
+        pedge_step, pe0 = pre_edge(energy, mu, group=group,
+                                   _larch=_larch, **pre_kws)
+        if e0 is None: e0 = pe0
+        if edge_step is None: edge_step = pedge_step
 
     # get array indices for rkbg and e0: irbkg, ie0
     ie0 = index_nearest(energy, e0)
@@ -105,7 +109,6 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
     # pre-load FT window
     ftwin = kout**kweight * ftwindow(kout, xmin=kmin, xmax=kmax,
                                      window=win, dx=dk)
-
     # calc k-value and initial guess for y-values of spline params
     nspl = max(4, min(128, 2*int(rbkg*(kmax-kmin)/np.pi) + 1))
     spl_y, spl_k, spl_e  = np.zeros(nspl), np.zeros(nspl), np.zeros(nspl)
@@ -139,7 +142,8 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
                                    knots=knots, order=order,
                                    kraw=kraw[:iemax-ie0+1],
                                    mu=mu[ie0:iemax+1], irbkg=irbkg, kout=kout,
-                                   ftwin=ftwin, nfft=nfft, nclamp=nclamp,
+                                   ftwin=ftwin, kweight=kweight,
+                                   nfft=nfft, nclamp=nclamp,
                                    clamp_lo=clamp_lo, clamp_hi=clamp_hi))
     fit.leastsq()
 

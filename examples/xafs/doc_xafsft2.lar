@@ -1,0 +1,53 @@
+## examples/xafs/doc_xafsft2.lar
+dat = read_ascii('feo.dat', labels='energy time i0 i1 if')
+dat.xmu  = log(dat.i0/dat.i1)
+autobk(dat.energy, dat.xmu, group=dat, rbkg=1, kweight=2, clamp_hi=10)
+
+kweight = 2
+
+## Hanning
+d1 = group(k=dat.k, chi=dat.chi)
+xftf(d1.k, d1.chi, kmin=3, kmax=13, dk=4, window='hanning',
+     kweight=kweight, group=d1)
+
+## Parzen
+d2 = group(k=dat.k, chi=dat.chi)
+
+xftf(d2.k, d2.chi, kmin=3, kmax=13, dk=4, window='parzen',
+     kweight=kweight, group=d2)
+
+## Welch
+d3 = group(k=dat.k, chi=dat.chi)
+
+xftf(d3.k, d3.chi, kmin=3, kmax=13, dk=4, window='welch',
+     kweight=kweight, group=d3)
+
+## now plot results
+newplot(d1.r, d1.chir_mag, xmax=8, label='Hanning(dk=4)',
+        show_legend=True, legend_loc='ur', color='blue',
+        xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
+
+plot(d2.r, d2.chir_mag, color='red', label='Parzen(dk=4)')
+plot(d3.r, d3.chir_mag, color='black', label='Welch(dk=4)')
+
+
+## Kaiser
+d4 = group(k=dat.k, chi=dat.chi)
+xftf(d4.k, d4.chi, kmin=3, kmax=13, dk=4, window='kaiser',
+     kweight=kweight, group=d4)
+
+## Gaussian
+d5 = group(k=dat.k, chi=dat.chi)
+
+xftf(d5.k, d5.chi, kmin=3, kmax=13, dk=4, window='gaussian',
+     kweight=kweight, group=d5)
+
+## now plot results
+newplot(d1.r, d1.chir_mag, xmax=8, label='Hanning(dk=4)', win=2,
+        show_legend=True, legend_loc='ur', color='blue',
+        xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
+
+plot(d4.r, d4.chir_mag, color='red', label='Kaiser(dk=4)', win=2)
+plot(d5.r, d5.chir_mag, color='black', label='Gaussian(dk=4)', win=2)
+
+## end examples/xafs/doc_xafsft2.lar

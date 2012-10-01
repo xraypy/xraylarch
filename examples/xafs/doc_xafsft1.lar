@@ -1,18 +1,36 @@
-cu = read_ascii('cu_metal_rt.xdi')
-autobk(cu.energy, cu.mutrans, group=cu, rbkg=1, debug=True)
+## examples/xafs/doc_xafsft1.lar
+dat = read_ascii('feo.dat', labels='energy time i0 i1 if')
+dat.xmu  = log(dat.i0/dat.i1)
+autobk(dat.energy, dat.xmu, group=dat, rbkg=1, kweight=2, clamp_hi=10)
 
 kweight = 2
-xftf(cu.k, cu.chi, kmin=3, kmax=17, dk=3, window='hanning',
-     kweight=kweight, group=cu)
 
-chi_kw = cu.chi*cu.k**kweight
-newplot(cu.k, chi_kw,
+d1 = group(k=dat.k, chi=dat.chi)
+
+xftf(d1.k, d1.chi, kmin=3, kmax=13, dk=1, window='hanning',
+     kweight=kweight, group=d1)
+
+d1.chik_kw = d1.chi*d1.k**kweight
+
+## now with dk=5
+d2 = group(k=dat.k, chi=dat.chi)
+
+xftf(d2.k, d2.chi, kmin=3, kmax=13, dk=5, window='hanning',
+     kweight=kweight, group=d2)
+
+## now plot results
+newplot(d1.k, d1.chik_kw, win=1, label='data', color='black',
+        show_legend=True, legend_loc='lr',
         xlabel=r'$k \rm\, (\AA^{-1})$', ylabel=r'$k^2\chi(k)\rm\,(\AA^{-2})$' )
 
-scale = int(10.2*max(abs(chi_kw)))/10.0
-plot(cu.k, cu.kwin*scale)
+scale = int(10.2*max(abs(d1.chik_kw)))/10.0
+plot(d1.k, d1.kwin*scale, win=1, color='blue', label='Hanning(dk=1)')
 
-newplot(cu.r, cu.chir_mag, win=2,
-     xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
+newplot(d1.r, d1.chir_mag, win=2, xmax=8, label='Hanning(dk=2)',
+        show_legend=True, legend_loc='ur', color='blue',
+        xlabel=r'$R \rm\, (\AA)$', ylabel=r'$|\chi(R)|\rm\,(\AA^{-3})$' )
 
+plot(d2.k, d2.kwin*scale, win=1, color='red', label='Hanning(dk=5)')
+plot(d2.r, d2.chir_mag, win=2,   color='red', label='Hanning(dk=5)')
 
+## end examples/xafs/doc_xafsft1.lar
