@@ -330,8 +330,8 @@ The Kaiser-Bessel window is slightly more complicated:
 
 where :math:`i_0` is the modified Bessel function of order 0.
 
-Examples: Fourier transform windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Fourier transform windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here, we give a series of example windows, to illustrate the different
 window types and the effect of the various parameters.  The meanings of
@@ -352,6 +352,7 @@ Welch windows, and illustrated in the two following figures.
   .. image:: ../images/ftwin_example2.png
      :target: ../_images/ftwin_example2.png
      :width: 48 %
+
 
 .. _xafs_fig6:
 
@@ -392,11 +393,134 @@ approaches a nearly Gaussian lineshape.
      :width: 48 %
 
 
-Examples: XAFS Fourier transforms
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Examples: Forward XAFS Fourier transforms
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now we show some example Fourier transforms, illustrating the real and
 imaginary parts of the :math:`chi(R)` as well as the magnitude, the effect
 of different windows types, and Fourier filtering to :math:`\chi(q)`.  We
 use a single XAFS dataset from FeO for all these examples, with a
-well-separated first and second shell.
+well-separated first and second shell.  The full scripts to generate the
+figures shown here are included in the *examples/xafs/* folder.
+
+
+We start with a comparison of a small value of ``dk`` and a larger value.
+A script that runs :func:`xafsft`, changing on ``dk`` would look like::
+
+    xftf(dat1.k, dat1.chi, kmin=3, kmax=13, dk=1, window='hanning',
+         kweight=kweight, group=dat1)
+
+    dat2 = group(k=dat1.k, chi=dat1.chi) # make a copy of the group
+    xftf(dat2.k, dat2.chi, kmin=3, kmax=13, dk=5, window='hanning',
+         kweight=kweight, group=dat2)
+
+would result in the following results:
+
+.. _xafs_fig8:
+
+  .. image::  ../images/xft_example1.png
+     :target: ../_images/xft_example1.png
+     :width: 48 %
+  .. image:: ../images/xft_example2.png
+     :target: ../_images/xft_example2.png
+     :width: 48 %
+
+
+  Figure 8.  Comparson of the effect of different values of ``dk`` on real
+  XAFS Fourier transforms.  Increasing ``dk`` reduces peak heights and
+  tends to broaden peaks, but the effects are rather small.
+
+
+A script that runs :func:`xafsft` with consistent parameters, but different
+window types::
+
+    xftf(dat1.k, dat1.chi, kmin=3, kmax=13, dk=4, window='hanning',
+         kweight=kweight, group=dat1)
+
+    dat2 = group(k=dat1.k, chi=dat1.chi) # make a copy of the group
+    xftf(dat2.k, dat2.chi, kmin=3, kmax=13, dk=4, window='parzen',
+         kweight=kweight, group=dat2)
+
+    dat3 = group(k=dat1.k, chi=dat1.chi) #
+    xftf(dat3.k, dat3.chi, kmin=3, kmax=13, dk=4, window='welch',
+         kweight=kweight, group=dat3)
+
+    dat4 = group(k=dat1.k, chi=dat1.chi) #
+    xftf(dat4.k, dat4.chi, kmin=3, kmax=13, dk=4, window='kaiser',
+         kweight=kweight, group=dat4)
+
+    dat5 = group(k=dat1.k, chi=dat1.chi) #
+    xftf(dat5.k, dat5.chi, kmin=3, kmax=13, dk=4, window='gaussian',
+         kweight=kweight, group=dat5)
+
+would result in the following results:
+
+.. _xafs_fig9:
+
+  .. image::  ../images/xft_example3.png
+     :target: ../_images/xft_example3.png
+     :width: 48 %
+  .. image:: ../images/xft_example4.png
+     :target: ../_images/xft_example4.png
+     :width: 48 %
+
+  Figure 9.  Comparson of the effect of different window types
+  on real XAFS Fourier transforms.
+
+We now turn our attention to the different components of the Fourier
+transform.  As above, it is most common to plot the magnitude of the
+Fourier transform.  But, as the transformed :math:`\chi(R)` is complex, it
+can be instructive to plot the real and imaginary components, as shown
+below::
+
+    newplot(dat1.r, dat1.chir_mag, xmax=8, label='chir_mag',
+            show_legend=True, legend_loc='ur', color='black',
+            xlabel=r'$R \rm\, (\AA)$', ylabel=r'$\chi(R)\rm\,(\AA^{-3})$' )
+
+    plot(dat1.r, dat1.chir_re, color='red', label='chir_re')
+    plot(dat1.r, dat1.chir_im, color='blue', label='chir_im')
+
+which results in
+
+.. _xafs_fig10:
+
+  .. image::  ../images/xft_example5.png
+     :target: ../_images/xft_example5.png
+     :width: 65 %
+
+  Figure 10. The real and imaginary components of the XAFS Fourier
+  transform.
+
+In fact, in the analysis discussed with :func:`feffit`, the real and
+imaginary components are used, not simply the magnitude.
+
+
+Examples: Reverse XAFS Fourier transforms, Fourier Filtering
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A reverse Fourier transform will convert data from :math:`\chi(R)` to
+:math:`\chi(q)`.  This allows a limited range of frequencies (distances) to
+be isolated and turned back into a :math:`\chi(k)` spectrum.  Here, we show
+two different :math:`R` windows to filter either just the first shell of
+the spectra, or the first two shells, and compare the resulting filtered
+:math:`\chi(q)`.
+
+
+.. _xafs_fig11:
+
+  .. image::  ../images/xft_example6.png
+     :target: ../_images/xft_example6.png
+     :width: 48 %
+  .. image:: ../images/xft_example7.png
+     :target: ../_images/xft_example7.png
+     :width: 48 %
+
+  Figure 11.  Reverse XAFS Fourier transform, or Fourier filtering.  Here,
+  one can see the effect of different window sizes on the Fourier filtered
+  spectrum.  Including the first two peaks or shells reproduces most of the
+  original spectrum, with only high-frequency components removed.
+
+Note that it is ``chiq_re`` that is compared to the k-weighted ``chi``
+array.
+
+

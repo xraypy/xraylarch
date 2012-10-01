@@ -80,8 +80,9 @@
 <li><a class="reference internal" href="#forward-xafs-fourier-transforms">Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
 <li><a class="reference internal" href="#reverse-xafs-fourier-transforms">Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
 <li><a class="reference internal" href="#fourier-transform-windows">Fourier transform windows</a></li>
-<li><a class="reference internal" href="#examples-fourier-transform-windows">Examples: Fourier transform windows</a></li>
-<li><a class="reference internal" href="#examples-xafs-fourier-transforms">Examples: XAFS Fourier transforms</a></li>
+<li><a class="reference internal" href="#id1">Fourier transform windows</a></li>
+<li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">Examples: Forward XAFS Fourier transforms</a></li>
+<li><a class="reference internal" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering">Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
 </ul>
 </li>
 </ul>
@@ -532,8 +533,8 @@ The Kaiser-Bessel window is slightly more complicated:</p>
 \end{eqnarray*}"/></p>
 </div><p>where <img class="math" src="../_images/math/1b5590d608ffe24233396eb2e4f8ca142ae42963.png" alt="i_0"/> is the modified Bessel function of order 0.</p>
 </div>
-<div class="section" id="examples-fourier-transform-windows">
-<h2>Examples: Fourier transform windows<a class="headerlink" href="#examples-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="id1">
+<h2>Fourier transform windows<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <p>Here, we give a series of example windows, to illustrate the different
 window types and the effect of the various parameters.  The meanings of
 <tt class="docutils literal"><span class="pre">xmin</span></tt>, <tt class="docutils literal"><span class="pre">xmax</span></tt>, <tt class="docutils literal"><span class="pre">dx</span></tt> and <tt class="docutils literal"><span class="pre">dx2</span></tt> are identical for the Hanning, Parzen and
@@ -576,13 +577,101 @@ Gaussian window is made.</div></blockquote>
 <a class="reference external image-reference" href="../_images/ftwin_example6.png"><img alt="../_images/ftwin_example6.png" src="../_images/ftwin_example6.png" style="width: 48%;" /></a>
 </div></blockquote>
 </div>
-<div class="section" id="examples-xafs-fourier-transforms">
-<h2>Examples: XAFS Fourier transforms<a class="headerlink" href="#examples-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="examples-forward-xafs-fourier-transforms">
+<h2>Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>Now we show some example Fourier transforms, illustrating the real and
 imaginary parts of the <img class="math" src="../_images/math/a5d717f649338b4ff9eed79059d2ae7171591e70.png" alt="chi(R)"/> as well as the magnitude, the effect
 of different windows types, and Fourier filtering to <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.  We
 use a single XAFS dataset from FeO for all these examples, with a
-well-separated first and second shell.</p>
+well-separated first and second shell.  The full scripts to generate the
+figures shown here are included in the <em>examples/xafs/</em> folder.</p>
+<p>We start with a comparison of a small value of <tt class="docutils literal"><span class="pre">dk</span></tt> and a larger value.
+A script that runs <tt class="xref py py-func docutils literal"><span class="pre">xafsft()</span></tt>, changing on <tt class="docutils literal"><span class="pre">dk</span></tt> would look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
+     <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
+
+<span class="n">dat2</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c"># make a copy of the group</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat2</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
+     <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat2</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>would result in the following results:</p>
+<blockquote id="xafs-fig8">
+<div><a class="reference external image-reference" href="../_images/xft_example1.png"><img alt="../_images/xft_example1.png" src="../_images/xft_example1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/xft_example2.png"><img alt="../_images/xft_example2.png" src="../_images/xft_example2.png" style="width: 48%;" /></a>
+<p>Figure 8.  Comparson of the effect of different values of <tt class="docutils literal"><span class="pre">dk</span></tt> on real
+XAFS Fourier transforms.  Increasing <tt class="docutils literal"><span class="pre">dk</span></tt> reduces peak heights and
+tends to broaden peaks, but the effects are rather small.</p>
+</div></blockquote>
+<p>A script that runs <tt class="xref py py-func docutils literal"><span class="pre">xafsft()</span></tt> with consistent parameters, but different
+window types:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
+     <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
+
+<span class="n">dat2</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c"># make a copy of the group</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat2</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;parzen&#39;</span><span class="p">,</span>
+     <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat2</span><span class="p">)</span>
+
+<span class="n">dat3</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c">#</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat3</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat3</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;welch&#39;</span><span class="p">,</span>
+     <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat3</span><span class="p">)</span>
+
+<span class="n">dat4</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c">#</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat4</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat4</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;kaiser&#39;</span><span class="p">,</span>
+     <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat4</span><span class="p">)</span>
+
+<span class="n">dat5</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">k</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi</span><span class="o">=</span><span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span> <span class="c">#</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">dat5</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat5</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;gaussian&#39;</span><span class="p">,</span>
+     <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat5</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>would result in the following results:</p>
+<blockquote id="xafs-fig9">
+<div><a class="reference external image-reference" href="../_images/xft_example3.png"><img alt="../_images/xft_example3.png" src="../_images/xft_example3.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/xft_example4.png"><img alt="../_images/xft_example4.png" src="../_images/xft_example4.png" style="width: 48%;" /></a>
+<p>Figure 9.  Comparson of the effect of different window types
+on real XAFS Fourier transforms.</p>
+</div></blockquote>
+<p>We now turn our attention to the different components of the Fourier
+transform.  As above, it is most common to plot the magnitude of the
+Fourier transform.  But, as the transformed <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> is complex, it
+can be instructive to plot the real and imaginary components, as shown
+below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">newplot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;chir_mag&#39;</span><span class="p">,</span>
+        <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">legend_loc</span><span class="o">=</span><span class="s">&#39;ur&#39;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$R \rm\, (\AA)$&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$\chi(R)\rm\,(\AA^{-3})$&#39;</span> <span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_re</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;red&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;chir_re&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_im</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;blue&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;chir_im&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>which results in</p>
+<blockquote id="xafs-fig10">
+<div><a class="reference external image-reference" href="../_images/xft_example5.png"><img alt="../_images/xft_example5.png" src="../_images/xft_example5.png" style="width: 65%;" /></a>
+<p>Figure 10. The real and imaginary components of the XAFS Fourier
+transform.</p>
+</div></blockquote>
+<p>In fact, in the analysis discussed with <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>, the real and
+imaginary components are used, not simply the magnitude.</p>
+</div>
+<div class="section" id="examples-reverse-xafs-fourier-transforms-fourier-filtering">
+<h2>Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this headline">¶</a></h2>
+<p>A reverse Fourier transform will convert data from <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to
+<img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.  This allows a limited range of frequencies (distances) to
+be isolated and turned back into a <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> spectrum.  Here, we show
+two different <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> windows to filter either just the first shell of
+the spectra, or the first two shells, and compare the resulting filtered
+<img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.</p>
+<blockquote id="xafs-fig11">
+<div><a class="reference external image-reference" href="../_images/xft_example6.png"><img alt="../_images/xft_example6.png" src="../_images/xft_example6.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/xft_example7.png"><img alt="../_images/xft_example7.png" src="../_images/xft_example7.png" style="width: 48%;" /></a>
+<p>Figure 11.  Reverse XAFS Fourier transform, or Fourier filtering.  Here,
+one can see the effect of different window sizes on the Fourier filtered
+spectrum.  Including the first two peaks or shells reproduces most of the
+original spectrum, with only high-frequency components removed.</p>
+</div></blockquote>
+<p>Note that it is <tt class="docutils literal"><span class="pre">chiq_re</span></tt> that is compared to the k-weighted <tt class="docutils literal"><span class="pre">chi</span></tt>
+array.</p>
 </div>
 </div>
 
