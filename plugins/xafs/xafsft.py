@@ -40,6 +40,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     x2 = xmin + dx1 / 2.0  + xeps
     x3 = xmax - dx2 / 2.0  - xeps
     x4 = min(max(x), xmax + dx2 / 2.0)
+
     if nam == 'fha':
         if dx1 < 0: dx1 = 0
         if dx2 > 1: dx2 = 1
@@ -52,6 +53,11 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
     i1, i2, i3, i4 = asint(x1), asint(x2), asint(x3), asint(x4)
     i1, i2 = max(0, i1), max(0, i2)
     i3, i4 = min(len(x)-1, i3), min(len(x)-1, i4)
+    if i2 == i1: i1 = max(0, i2-1)
+    if i4 == i3: i3 = max(i2, i4-1)
+    x1, x2, x3, x4 = x[i1], x[i2], x[i3], x[i4]
+    if x1 == x2: x2 = x2+xeps
+    if x3 == x4: x4 = x4+xeps
     # initial window
     fwin =  zeros(len(x))
     if i3 > i2:
@@ -59,14 +65,14 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
 
     # now finish making window
     if nam in ('han', 'fha'):
-        fwin[i1:i2] = sin((pi/2)*(x[i1:i2]-x1) / (x2-x1))**2
-        fwin[i3:i4] = cos((pi/2)*(x[i3:i4]-x3) / (x4-x3))**2
+        fwin[i1:i2+1] = sin((pi/2)*(x[i1:i2+1]-x1) / (x2-x1))**2
+        fwin[i3:i4+1] = cos((pi/2)*(x[i3:i4+1]-x3) / (x4-x3))**2
     elif nam == 'par':
-        fwin[i1:i2] = (x[i1:i2]-x1) / (x2-x1)
-        fwin[i3:i4] = 1 - (x[i3:i4]-x3) / (x4-x3)
+        fwin[i1:i2+1] =     (x[i1:i2+1]-x1) / (x2-x1)
+        fwin[i3:i4+1] = 1 - (x[i3:i4+1]-x3) / (x4-x3)
     elif nam == 'wel':
-        fwin[i1:i2] = 1 - ((x[i1:i2]-x2) / (x2-x1))**2
-        fwin[i3:i4] = 1 - ((x[i3:i4]-x3) / (x4-x3))**2
+        fwin[i1:i2+1] = 1 - ((x[i1:i2+1]-x2) / (x2-x1))**2
+        fwin[i3:i4+1] = 1 - ((x[i3:i4+1]-x3) / (x4-x3))**2
     elif nam  in ('kai', 'bes'):
         cen  = (x4+x1)/2
         wid  = (x4-x1)/2
@@ -79,7 +85,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         else: # better version
             fwin = (bessel_i0(dx * sqrt(arg)) - 1) / (bessel_i0(dx) -1)
     elif nam == 'sin':
-        fwin[i1:i4] = sin(pi*(x4-x[i1:i4]) / (x4-x1))
+        fwin[i1:i4+1] = sin(pi*(x4-x[i1:i4+1]) / (x4-x1))
     elif nam == 'gau':
         cen  = (x4+x1)/2
         fwin =  exp(-(((x - cen)**2)/(2*dx1*dx1)))
