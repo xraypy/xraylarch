@@ -42,8 +42,8 @@ MODNAME = '_plotter'
 MAX_WINDOWS = 16
 
 class PlotDisplay(PlotFrame):
-    def __init__(self, wxparent=None, window=1, _larch=None, **kws):
-        PlotFrame.__init__(self, parent=wxparent,
+    def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
+        PlotFrame.__init__(self, parent=wxparent, size=size,
                            output_title='plot2d',
                            exit_callback=self.onExit, **kws)
         self.Show()
@@ -80,8 +80,8 @@ class PlotDisplay(PlotFrame):
         symtable.set_symbol('%s_y'  % self.symname, y)
 
 class ImageDisplay(ImageFrame):
-    def __init__(self, wxparent=None, window=1, _larch=None, **kws):
-        ImageFrame.__init__(self, parent=wxparent,
+    def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
+        ImageFrame.__init__(self, parent=wxparent, size=size,
                                   exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
@@ -126,7 +126,7 @@ class ImageDisplay(ImageFrame):
         if iy is not None:  set('%s_iy' % self.symname, iy)
         if val is not None: set('%s_val' % self.symname, val)
 
-def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
+def _getDisplay(win=1, _larch=None, wxparent=None, size=None, image=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if _larch is None:
@@ -147,13 +147,13 @@ def _getDisplay(win=1, _larch=None, wxparent=None, image=False):
     else:
         display = _larch.symtable.get_symbol(symname, create=True)
     if display is None:
-        display = creator(window=win, wxparent=wxparent, _larch=_larch)
+        display = creator(window=win, wxparent=wxparent, size=size, _larch=_larch)
         _larch.symtable.set_symbol(symname, display)
     if display is not None:
         display.SetTitle(title)
     return display
 
-def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
+def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
           force_draw=True, side='left', **kws):
     """plot(x, y[, win=1], options])
 
@@ -191,7 +191,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None,
 
     See Also: oplot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
@@ -222,7 +222,7 @@ def update(_larch=None, **kws):
     except:
         pass
 
-def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
+def _oplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, over-plotting any
@@ -233,9 +233,9 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None, **kws):
 
     See Also: plot, newplot
     """
-    _plot(x, y, win=win, new=False, _larch=_larch, wxparent=wxparent, **kws)
+    _plot(x, y, win=win, size=size, new=False, _larch=_larch, wxparent=wxparent, **kws)
 
-def _newplot(x, y, win=1, _larch=None, wxparent=None, **kws):
+def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
     """newplot(x, y[, win=1[, options]])
 
     Plot 2-D trace of x, y arrays in a Plot Frame, clearing any
@@ -246,9 +246,9 @@ def _newplot(x, y, win=1, _larch=None, wxparent=None, **kws):
 
     See Also: plot, oplot
     """
-    _plot(x, y, win=win, new=True, _larch=_larch, wxparent=wxparent, **kws)
+    _plot(x, y, win=win, size=size, new=True, _larch=_larch, wxparent=wxparent, **kws)
 
-def _plot_text(text, x, y, win=1, side='left',
+def _plot_text(text, x, y, win=1, side='left', size=None,
                rotation=None, ha='left', va='center',
                _larch=None, wxparent=None,  **kws):
     """plot_text(text, x, y, win=1, options)
@@ -268,7 +268,7 @@ def _plot_text(text, x, y, win=1, side='left',
 
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
@@ -279,7 +279,7 @@ def _plot_text(text, x, y, win=1, side='left',
 def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
                 shape='full', color='black', width=1,
                 head_width=20, overhang=0,
-               _larch=None, wxparent=None,  **kws):
+               _larch=None, wxparent=None,  size=None, **kws):
 
     """plot_arrow(x1, y1, x2, y2, win=1, options)
 
@@ -300,7 +300,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
 
     See Also: plot, oplot, plot_text
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
@@ -310,7 +310,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
                       color=color, width=width, head_width=head_width,
                       overhang=overhang, **kws)
 
-def _plot_axhline(y, xmin=None, xmax=None, win=1,
+def _plot_axhline(y, xmin=None, xmax=None, win=1, size=None,
                   wxparent=None, _larch=None, **kws):
     """plot_axhline(y, xmin=None, ymin=None, **kws)
 
@@ -322,14 +322,14 @@ def _plot_axhline(y, xmin=None, xmax=None, win=1,
         xmax:   ending x fraction (window units -- not user units!)
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
 
     plotter.panel.axes.axhline(y, xmin=xmin, xmax=xmax, **kws)
 
-def _plot_axvline(x, ymin=None, ymax=None, win=1,
+def _plot_axvline(x, ymin=None, ymax=None, win=1, size=None,
                   wxparent=None, _larch=None, **kws):
     """plot_axvline(y, xmin=None, ymin=None, **kws)
 
@@ -341,7 +341,7 @@ def _plot_axvline(x, ymin=None, ymax=None, win=1,
         ymax:   ending y fraction (window units -- not user units!)
     See Also: plot, oplot, plot_arrow
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
@@ -349,7 +349,7 @@ def _plot_axvline(x, ymin=None, ymax=None, win=1,
     plotter.panel.axes.axvline(y, xmin=xmin, xmax=xmax, **kws)
 
 
-def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
+def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None, **kws):
     """get_cursor(win=1, timeout=30)
 
     waits (up to timeout) for cursor click in selected plot window, and
@@ -363,7 +363,7 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
     For a more consistent programmatic approach, this routine can be called
     with timeout <= 0 to read the most recently clicked cursor position.
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     symtable = ensuremod(_larch, MODNAME)
     sentinal = '%s.plot%i_cursorflag' % (MODNAME, win)
     xsym = '%s.plot%i_x' % (MODNAME, win)
@@ -388,7 +388,7 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, **kws):
     return (symtable.get_symbol(xsym), symtable.get_symbol(ysym))
 
 
-def _scatterplot(x,y, win=1, _larch=None, wxparent=None,
+def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
           force_draw=True,  **kws):
     """scatterplot(x, y[, win=1], options])
 
@@ -397,7 +397,7 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None,
 
     See Also: plot, newplot
     """
-    plotter = _getDisplay(wxparent=wxparent, win=win, _larch=_larch)
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch)
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
@@ -408,14 +408,14 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None,
 
 
 def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
-            wxparent=None, **kws):
+            wxparent=None, size=None, **kws):
     """imshow(map[, options])
 
     Display an 2-D array of intensities as a false-color map
 
     map: 2-dimensional array for map
     """
-    img = _getDisplay(wxparent=wxparent, win=win, _larch=_larch, image=True)
+    img = _getDisplay(wxparent=wxparent, win=win, size=size, _larch=_larch, image=True)
     if img is not None:
         img.display(map, x=x, y=y, colormap=colormap, **kws)
 
@@ -430,7 +430,8 @@ def _contour(map, x=None, y=None, **kws):
     _imshow(map, x=x, y=y, **kws)
 
 def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
-              facecolor='w', edgecolor='w', quality=75, image=False, **kws):
+              size=None, facecolor='w', edgecolor='w', quality=75,
+              image=False, **kws):
     """formats: png (default), svg, pdf, jpeg, tiff"""
     thisdir = os.path.abspath(os.curdir)
     if format is None:
@@ -441,7 +442,7 @@ def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
             format = suffix
     if format is None: format = 'png'
     format = format.lower()
-    canvas = _getDisplay(wxparent=wxparent, win=win,
+    canvas = _getDisplay(wxparent=wxparent, win=win, size=size,
                          _larch=_larch, image=image).panel.canvas
 
     if format in ('jpeg', 'jpg'):
