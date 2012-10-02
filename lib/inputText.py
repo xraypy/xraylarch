@@ -112,10 +112,10 @@ class InputText:
     ps1 = ' >'
     ps2 = '....>'
     block_friends = {'if':    ('else', 'elif'),
-                     'for':   ('else'),
+                     'for':   ('else',),
                      'def':   (),
                      'try':   ('else', 'except', 'finally'),
-                     'while': ('else') }
+                     'while': ('else',) }
 
     defpar = "_builtin.param(expr='%s', name='%s')"
 
