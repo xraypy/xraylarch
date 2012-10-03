@@ -80,6 +80,7 @@ add_function_parentheses = True
 # unit titles (such as .. function::).
 add_module_names = True
 
+
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
 #show_authors = False
@@ -172,7 +173,7 @@ htmlhelp_basename = 'larchdoc'
 #latex_paper_size = 'letter'
 
 # The font size ('10pt', '11pt' or '12pt').
-#latex_font_size = '10pt'
+latex_font_size = '11pt'
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
@@ -190,10 +191,10 @@ latex_logo = '_static/larchcones.png'
 #latex_use_parts = False
 
 # Additional stuff for the LaTeX preamble.
-#latex_preamble = ''
+latex_preamble = '\usepackage{amsmath}'
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
 
 # If false, no module index is generated.
-#latex_use_modindex = True
+latex_use_modindex = False

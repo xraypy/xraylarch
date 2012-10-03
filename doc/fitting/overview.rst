@@ -13,18 +13,17 @@ this is expressed as
 
 .. math::
 
-    S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \bf{\beta}) } \big]^2
+    S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta}) } \big]^2
 
-where the experimental data is expressed as :math:`\bf{y}(\bf{x})` that is
-discretely sampled at :math:`N` points, :math:`f(\bf{x}, \bf{\beta})` is a
-model function of some dependent variables :math:`\bf{x}` and
-:math:`\bf{\beta}`, a set of parameters in the model.  As a simple example,
-a linear model of data would be written as :math:`f = \beta_0 +
-\beta_1\bf{x}`.  Of course, models can be arbitrary complex.  There is good
-statistical justification for using the least-squares approach, and many
-existing tools for helping to find the minimal values of :math:`S`.  These
-justifcations are not without criticism or caveats, but we'll leave that
-aside for now.
+where the experimental data is expressed as :math:`y(x)` that is discretely
+sampled at :math:`N` points, :math:`f(x, \vec\beta)` is a model function of
+some dependent data :math:`x` and :math:`\vec\beta`, a set of parameters in the
+model.  As a simple example, a linear model of data would be written as
+:math:`f = \beta_0 + \beta_1{x}`.  Of course, models can be arbitrary
+complex.  There is good statistical justification for using the
+least-squares approach, and many existing tools for helping to find the
+minimal values of :math:`S`.  These justifcations are not without criticism
+or caveats, but we'll leave that aside for now.
 
 It is common to include a multiplicative factor to each component in in the
 least-squares equation above, so that the different samples (or data
@@ -35,39 +34,40 @@ generally called the chi-square goodness-of-fit parameter
 
 .. math::
 
-    \chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \bf{\beta})}{\epsilon_i} \big]^2
+    \chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2
 
 Here, :math:`\epsilon_i` represents the uncertainty in the value of :math:`y_i`.
-
-As mentioned, the model function can be fairly complex.
+It is common to
+As mentioned, the model describing :math:`f(x, \vec{\beta})` can be fairly complex.
 
 There is an extensive literature for case where the model function
-:math:`f(\bf{x}, \bf{\beta})` depends linearly on its parameters
-:math:`\bf{\beta}` (but not necessarily linearly on a dependent variable --
+:math:`f(x, \vec{\beta})` depends linearly on its parameters
+:math:`\vec{\beta}` (but not necessarily linearly on a dependent variable --
 a quadratic function :math:`\beta_0 + \beta_1 x + \beta_2 x^2` is linear in
 this sense).  Of course, model function need not be linear in its
 parameters, and the minimization is generally referred to a ''non-linear
 least-squares optimization'' in the literature.  All the discussion here
 will assume that the models can be non-linear.
 
-It is convenient to define the **residual function**  as
+It is convenient to define the **residual array** :math:`r` with :math:`N`
+elements:
 
 .. math::
 
-     r = \frac{y - f(x, \bf{\beta})}{\epsilon}
+     r_i = \frac{y_i - f(x_i, \vec\beta)}{\epsilon_i}
 
 so that the sum to be minimized is a simple sum of this function, :math:`s
 = \sum_i^{N} r_i^2`.  The fitting process can then be made very general
 with a few key components required.  Specifically, for Larch, the
 requirements are
 
-  1. A set of Parameters, :math:`{\bf{\beta}}`, that are used in the model,
+  1. A set of Parameters, :math:`{\vec{\beta}}`, that are used in the model,
   and are to be adjusted to find the least-square value of the sum of
   squares of the residual.  These must be **parameters** (discussed below)
   that are held in a single **parameter group**.  This is a regular Larch
   group, and so can contain other values as well.
 
-  2. An **objective function** to calculate the residual function.  This
+  2. An **objective function** to calculate the residual array.  This
   will be a Larch function that takes the **parameter group** described
   above as its first argument, and an unlimited set of optional arguments.
   The arrays for the data should passed in by these optional arguments.
@@ -78,19 +78,16 @@ Note that the use of additional data in the **parameter group** makes this
 one way to pass in data to the objective function.  After the fit has
 completed, several statistical results describing the fit quality and the
 values and uncertainties found for the parameters will be written to thie
-**parameter group**.
-
-Though the description so far as been somewhat formal, the process is not
-as hard as it sounds, and all the topics outlined so far will be discussed
-in more detail below.
-
+**parameter group**.  Though the description so far as been somewhat
+formal, the process is not as hard as it sounds, and all the topics
+outlined so far will be discussed in more detail below.
 
 Because the objective function will be called by the fitting process, it
 needs to follow fairly strict guidelines in its inputs and outputs.
 Specifically, the first argument to the function **must** be a Larch group
 containing all the Parameters in the model.  Furthermore, the return value
-of the objective function must be the fit residual -- the array to be
-minimized in the least-squares sense.
+of the objective function must be the fit residual array to be minimized in
+the least-squares sense.
 
 We'll jump in with a simple example fit to a line, with this script::
 

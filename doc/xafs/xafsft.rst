@@ -223,9 +223,9 @@ the explicitly real :math:`\chi(k)`.
     In analogy with :func:`xftf`, it is expected that the input ``r`` be a
     uniformly spaced array of values starting a 0.
 
-    The input ``chir`` array can be either the complex :math:`chi(R)` array
+    The input ``chir`` array can be either the complex :math:`\chi(R)` array
     as output to ``Group.chir`` from :func:`xftf`, or one of the real or
-    imaginary parts of the :math:`chi(R)` as output to ``Group.chir_re`` or
+    imaginary parts of the :math:`\chi(R)` as output to ``Group.chir_re`` or
     ``Group.chir_im``.
 
     The FT window parameters are explained in more detail in the discusion of
@@ -397,7 +397,7 @@ Examples: Forward XAFS Fourier transforms
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now we show some example Fourier transforms, illustrating the real and
-imaginary parts of the :math:`chi(R)` as well as the magnitude, the effect
+imaginary parts of the :math:`\chi(R)` as well as the magnitude, the effect
 of different windows types, and Fourier filtering to :math:`\chi(q)`.  We
 use a single XAFS dataset from FeO for all these examples, with a
 well-separated first and second shell.  The full scripts to generate the

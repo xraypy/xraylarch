@@ -2,7 +2,7 @@
 Tutorial: Dealing With Errors
 =======================================================
 
-When an error exists in the syntax of your script, or an erro happens when
+When an error exists in the syntax of your script, or an error happens when
 running your script, an *Error* or *Exception* is generated, and the
 execution of your script is stopped.
 
@@ -12,13 +12,14 @@ Syntax Errors
 Syntax errors result from incomplete or ill-formed larch syntax.  For
 example::
 
-    larch> x = 3 *
-    SyntaxError
-    <StdInput>
-        x = 3  *
+    larch> x = 3 +
+    SyntaxError: invalid syntax
+    x = 3 +
+
+        x = 3  +
 
 This indicates that the Larch interpreter could not understand the meaning
-of the statement 'x = 3 *', because it excepts a value after the '*'.
+of the statement 'x = 3 +', because it excepts a value after the '+'.
 Syntax errors are spotted and raised before the interpreter tries to
 evaluate the expression.  That is because Larch first fully parses any
 statements (or block of statements if you're entering multiple statements
@@ -85,7 +86,6 @@ As a simple example::
         print 'saw a divide by zero!
         x = 0
     endtry
-    <more statements>
 
 If b is not 0, x is set to the value of a/b.  If b is 0, executing *x =
 a/b* will cause a ZeroDivisionError (as we saw above), so the block with
