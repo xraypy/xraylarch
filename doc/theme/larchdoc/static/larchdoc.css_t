@@ -21,7 +21,7 @@ body {
     letter-spacing: -0.01em;
     line-height: 150%;
     text-align: center;
-    background-color: #D4E4DA;
+    background-color: #c5daba; 
     color: black;
     padding: 0;
     border: 1px solid #aaa;

@@ -19,8 +19,11 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-	@echo
-	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+epub:
+	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
+	cp -pr $(BUILDDIR)/epub/*.epub $(BUILDDIR)/html/.
+
 
 pdf: latex
 	cd $(BUILDDIR)/latex && pdflatex larch.tex
@@ -28,7 +31,7 @@ pdf: latex
 	cd $(BUILDDIR)/latex && pdflatex larch.tex
 	cp -pr $(BUILDDIR)/latex/larch.pdf $(BUILDDIR)/html/.
 
-all: html pdf
+all: html epub pdf
 
 install: all
 	rm -rf  $(INSTALLDIR)/doc_old
