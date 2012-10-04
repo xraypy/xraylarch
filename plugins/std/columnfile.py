@@ -10,7 +10,7 @@ from larch.symboltable import isgroup
 MODNAME = '_io'
 TINY = 1.e-7
 
-def _read_ascii(fname, commentchar='#;%', labels=None, sort=True, sort_column=0, _larch=None):
+def _read_ascii(fname, commentchar='#;%', labels=None, sort=False, sort_column=0, _larch=None):
     """read a column ascii column file.
     The commentchar argument (#;% by default) sets the valid comment characters:
     if the the first character in a line matches one of these, the line is marked
