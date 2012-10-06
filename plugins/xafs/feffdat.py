@@ -285,7 +285,7 @@ def _ff2chi(pathlist, paramgroup=None, _larch=None, group=None,
          _larch.symtable.isgroup(group)):
         _larch.symtable._sys.paramGroup = paramgroup
     for p in pathlist:
-        if not hasattr(p, 'calc_chi'):
+        if not isinstance(p, FeffPathGroup):
             msg('%s is not a valid Feff Path' % p)
             return
         p.calc_chi(k=k, kstep=kstep, kmax=kmax)
