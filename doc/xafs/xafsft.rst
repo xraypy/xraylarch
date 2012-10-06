@@ -280,16 +280,16 @@ available for constructing windows.  A sampling of windows is shown below.
 
     Table of Fourier Transform Window Types
 
-       ================= ===============================================================
-        window name       description
-       ================= ===============================================================
-        hanning           cosine-squared taper
-        parzen            linear taper
-        welch             quadratic taper
-	gaussian          Gaussian (normal) function window
-	sine              sine function window
-	kaiser            Kaiser-Bessel function-derived window
-       ================= ===============================================================
+       =================== =========================================================
+        window name          description
+       =================== =========================================================
+        hanning              cosine-squared taper
+        parzen               linear taper
+        welch                quadratic taper
+	gaussian             Gaussian (normal) function window
+	sine                 sine function window
+	kaiser               Kaiser-Bessel function-derived window
+       =================== =========================================================
 
 In general, the window arrays have a value that gradually increases from 0
 up to 1 at the low-k end, may stay with a value 1 over some central
