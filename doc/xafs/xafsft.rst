@@ -4,8 +4,6 @@ XAFS: Fourier Transforms for XAFS
 
 .. module:: _xafs
 
-:synopsis: XAFS Fourier transform functions
-
 Fourier transforms are central to understanding and using
 XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
 transforms as part of their processing, and many of the functions
