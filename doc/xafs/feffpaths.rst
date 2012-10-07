@@ -10,7 +10,7 @@ theoretical XAFS spectra using FEFF.  Being able to run FEFF and use its
 results is thus of fundamental importance for using Larch for fitting EXAFS
 spectra.  While a complete description of FEFF is beyond the scope of this
 documentation, here we describe how to read the results from FEFF into
-Larch.  The main interface for this is the :func:`feff_path` function that
+Larch.  The main interface for this is the :func:`feffpath` function that
 reads FEFF *feffNNNN.dat* file into a larch FeffPath object.
 
 
@@ -19,12 +19,18 @@ reads FEFF *feffNNNN.dat* file into a larch FeffPath object.
     create a Feff Path object from a *feffNNNN.dat* file.
 
 
+..  function:: path2chi(path, paramgroup=None, k=None, kmax=None, kstep=0.05)
+
+    calculate :math:`chi(k)` for a Feff Path.
+
+
 ..  function:: ff2chi(pathlist, paramgroup=None, group=None, k=None, kmax=None, kstep=0.05)
+
 
     sum a set of Feff Paths
 
 
-Feff Path Object
+FeffPath Group
 ~~~~~~~~~~~~~~~~~~
 
    Table of Feff Path Parameters, listed in the :ref:`Table of Feff Path Parameters <xafs-pathparams_table>`.
@@ -52,8 +58,13 @@ Feff Path Object
        =================== =========================================================
 
 
-FEFF Data structure
+The Feff Path Group also contains several more
+
+
+
+Feff.Dat File Group
 ~~~~~~~~~~~~~~~~~~~~~~
+
 
 
 <feffdat.FeffDatFile object at 0x7318f90>
