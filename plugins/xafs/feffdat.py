@@ -24,12 +24,20 @@ from xafsutils import ETOK
 
 SMALL = 1.e-6
 
-class FeffDatFile(object):
-    def __init__(self, filename=None):
+class FeffDatFile(Group):
+    def __init__(self, filename=None, **kws):
+        kwargs = dict(name='feff.dat: %s' % filename)
+        kwargs.update(kws)
+        Group.__init__(self,  **kwargs)
         if filename is not None:
-            self.read(filename)
+            self.__read(filename)
 
-    def read(self, filename):
+    def __repr__(self):
+        if self.filename is not None:
+            return '<Feff.dat File Group: %s>' % self.filename
+        return '<Feff.dat File Group (empty)>'
+
+    def __read(self, filename):
         try:
             lines = open(filename, 'r').readlines()
         except:
@@ -113,15 +121,17 @@ class FeffPathGroup(Group):
                  ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None,  **kws):
 
-        Group.__init__(self,  **kws)
+        kwargs = dict(name='FeffPath: %s' % filename)
+        kwargs.update(kws)
+        Group.__init__(self, **kwargs)
         self._larch = _larch
         self.filename = filename
-        self._dat = FeffDatFile(filename=filename)
+        self._feffdat = FeffDatFile(filename=filename)
 
-        self.reff = self._dat.reff
-        self.nleg  = self._dat.nleg
-        self.geom  = self._dat.geom
-        self.degen = self._dat.degen if degen is None else degen
+        self.reff = self._feffdat.reff
+        self.nleg  = self._feffdat.nleg
+        self.geom  = self._feffdat.geom
+        self.degen = self._feffdat.degen if degen is None else degen
         self.label  = filename if label is None else label
 
         self.s02    = 1 if s02    is None else s02
@@ -134,7 +144,6 @@ class FeffPathGroup(Group):
 
         self.k = []
         self.chi = []
-        self.calc_chi = self._calc_chi
 
     def __repr__(self):
         if self.filename is not None:
@@ -187,7 +196,6 @@ class FeffPathGroup(Group):
             if ipot == 0: s = "%s (absorber)" % s
             out.append(s)
 
-
         out.append('     Degen  = % .5f' % deg)
         out.append('     S02    = % .5f' % s02)
         out.append('     E0     = % .5f' % e0)
@@ -203,7 +211,6 @@ class FeffPathGroup(Group):
 
         return '\n'.join(out)
 
-
     def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):
@@ -215,7 +222,7 @@ class FeffPathGroup(Group):
         if k is None:
             if kmax is None:
                 kmax = 30.0
-            kmax = min(max(self._dat.k), kmax)
+            kmax = min(max(self._feffdat.k), kmax)
             if kstep is None: kstep = 0.05
             k = kstep * np.arange(int(1.01 + kmax/kstep), dtype='float64')
 
@@ -242,10 +249,10 @@ class FeffPathGroup(Group):
         q = np.sign(en)*np.sqrt(abs(en))
 
         # lookup Feff.dat values (pha, amp, rep, lam)
-        pha = np.interp(q, self._dat.k, self._dat.pha)
-        amp = np.interp(q, self._dat.k, self._dat.amp)
-        rep = np.interp(q, self._dat.k, self._dat.rep)
-        lam = np.interp(q, self._dat.k, self._dat.lam)
+        pha = np.interp(q, self._feffdat.k, self._feffdat.pha)
+        amp = np.interp(q, self._feffdat.k, self._feffdat.amp)
+        rep = np.interp(q, self._feffdat.k, self._feffdat.rep)
+        lam = np.interp(q, self._feffdat.k, self._feffdat.lam)
 
         if debug:
             self.debug_k   = q
@@ -265,40 +272,46 @@ class FeffPathGroup(Group):
 
         cchi = degen * s02 * amp * cchi / (q*(reff + deltar)**2)
         cchi[0] = 2*cchi[1] - cchi[2]
-
         # outputs:
         self.k = k
         self.p = p
         self.chi = cchi.imag
         self.chi_real = -cchi.real
 
-def _read_feffdat(fname, _larch=None, **kws):
-    """read Feff.dat file into a FeffPathGroup"""
-    return FeffPathGroup(filename=fname, _larch=_larch)
+def _path2chi(path, paramgroup=None, _larch=None, **kws):
+    """calculate chi(k) for a Feff Path,
+    optionally setting path parameter values
+    output chi array will be written to path group
+    """
+    if not isinstance(path, FeffPathGroup):
+        msg('%s is not a valid Feff Path' % path)
+        return
+    if (paramgroup is not None and _larch is not None and
+         _larch.symtable.isgroup(paramgroup)):
+        _larch.symtable._sys.paramGroup = paramgroup
+    path._calc_chi(**kws)
 
 def _ff2chi(pathlist, paramgroup=None, _larch=None, group=None,
             k=None, kmax=None, kstep=0.05, **kws):
-    """sum the XAFS for a set of paths... assumes that the
+    """sum the XAFS for a set of Feff Paths... assumes that the
     Path Parameters are set"""
     msg = _larch.writer.write
-    if (paramgroup is not None and
-         _larch.symtable.isgroup(group)):
+    if (paramgroup is not None and _larch is not None and
+         _larch.symtable.isgroup(paramgroup)):
         _larch.symtable._sys.paramGroup = paramgroup
-    for p in pathlist:
-        if not isinstance(p, FeffPathGroup):
-            msg('%s is not a valid Feff Path' % p)
+    for path in pathlist:
+        if not isinstance(path, FeffPathGroup):
+            msg('%s is not a valid Feff Path' % path)
             return
-        p.calc_chi(k=k, kstep=kstep, kmax=kmax)
+        path._calc_chi(k=k, kstep=kstep, kmax=kmax)
     k = pathlist[0].k[:]
     out = np.zeros_like(k)
-    for p in pathlist:
-        out += p.chi
+    for path in pathlist:
+        out += path.chi
 
     if _larch.symtable.isgroup(group):
         group.k = k
         group.chi = out
-    else:
-        return out
 
 def feffpath(filename=None, _larch=None, label=None, s02=None,
              degen=None, e0=None,ei=None, deltar=None, sigma2=None,
@@ -310,6 +323,6 @@ def feffpath(filename=None, _larch=None, label=None, s02=None,
                          _larch=_larch)
 
 def registerLarchPlugin():
-    return ('_xafs', {'read_feffdat': _read_feffdat,
-                      'ff2chi': _ff2chi,
-                      'feffpath': feffpath})
+    return ('_xafs', {'feffpath': feffpath,
+                      'path2chi': _path2chi,
+                      'ff2chi': _ff2chi})
