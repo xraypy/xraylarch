@@ -37,6 +37,18 @@ class FeffDatFile(Group):
             return '<Feff.dat File Group: %s>' % self.filename
         return '<Feff.dat File Group (empty)>'
 
+    @property
+    def reff(self): return self.__reff__
+
+    @reff.setter
+    def reff(self, val):     pass
+
+    @property
+    def nleg(self): return self.__nleg__
+
+    @nleg.setter
+    def nleg(self, val):     pass
+
     def __read(self, filename):
         try:
             lines = open(filename, 'r').readlines()
@@ -90,8 +102,8 @@ class FeffDatFile(Group):
                 pcounter += 1
                 if pcounter == 1:
                     w = [float(x) for x in line.split()[:5]]
-                    self.nleg = int(w.pop(0))
-                    self.degen, self.reff, self.rnorman, self.edge = w
+                    self.__nleg__ = int(w.pop(0))
+                    self.degen, self.__reff__, self.rnorman, self.edge = w
                 elif pcounter > 2:
                     words = line.split()
                     xyz = [float(x) for x in words[:3]]
@@ -128,11 +140,9 @@ class FeffPathGroup(Group):
         self.filename = filename
         self._feffdat = FeffDatFile(filename=filename)
 
-        self.reff = self._feffdat.reff
-        self.nleg  = self._feffdat.nleg
         self.geom  = self._feffdat.geom
-        self.degen = self._feffdat.degen if degen is None else degen
-        self.label  = filename if label is None else label
+        self.degen = degen if degen is not None else self._feffdat.degen
+        self.label = label if label is not None else filename
 
         self.s02    = 1 if s02    is None else s02
         self.e0     = 0 if e0     is None else e0
@@ -142,8 +152,20 @@ class FeffPathGroup(Group):
         self.third  = 0 if third  is None else third
         self.fourth = 0 if fourth is None else fourth
 
-        self.k = []
-        self.chi = []
+        self.k = None
+        self.chi = None
+
+    @property
+    def reff(self): return self._feffdat.reff
+
+    @reff.setter
+    def reff(self, val):  pass
+
+    @property
+    def nleg(self): return self._feffdat.nleg
+
+    @nleg.setter
+    def nleg(self, val):     pass
 
     def __repr__(self):
         if self.filename is not None:
@@ -163,7 +185,7 @@ class FeffPathGroup(Group):
         # constraint expressions
         stable = self._larch.symtable
         if stable.isgroup(stable._sys.paramGroup):
-            stable._sys.paramGroup.reff = self.reff
+            stable._sys.paramGroup.reff = self._feffdat.reff
 
         out = []
         for param in ('degen', 's02', 'e0', 'ei',
@@ -188,7 +210,7 @@ class FeffPathGroup(Group):
         out = ['   feff dat file = %s' % self.filename]
         if self.label != self.filename:
             out.append('     label     = %s' % self.label)
-        out.append('     reff = %.5f' % self.reff)
+        out.append('     reff = %.5f' % self._feffdat.reff)
         out.append(geomlabel)
 
         for label, iz, ipot, x, y, z in self.geom:
@@ -199,7 +221,7 @@ class FeffPathGroup(Group):
         out.append('     Degen  = % .5f' % deg)
         out.append('     S02    = % .5f' % s02)
         out.append('     E0     = % .5f' % e0)
-        out.append('     R      = % .5f' % (self.reff + delr))
+        out.append('     R      = % .5f' % (self._feffdat.reff + delr))
         out.append('     deltar = % .5f' % delr)
         out.append('     sigma2 = % .5f' % ss2)
         if c3 != 0:
@@ -215,7 +237,7 @@ class FeffPathGroup(Group):
                  e0=None, ei=None, deltar=None, sigma2=None,
                  third=None, fourth=None, debug=False, **kws):
         """calculate chi(k) with the provided parameters"""
-        if self.reff < 0.05:
+        if self._feffdat.reff < 0.05:
             self._larch.writer.write('reff is too small to calculate chi(k)')
             return
         # make sure we have a k array
@@ -226,7 +248,7 @@ class FeffPathGroup(Group):
             if kstep is None: kstep = 0.05
             k = kstep * np.arange(int(1.01 + kmax/kstep), dtype='float64')
 
-        reff = self.reff
+        reff = self._feffdat.reff
         # put 'reff' into the paramGroup so that it can be used in
         # constraint expressions
         if self._larch.symtable._sys.paramGroup is not None:
@@ -276,7 +298,7 @@ class FeffPathGroup(Group):
         self.k = k
         self.p = p
         self.chi = cchi.imag
-        self.chi_real = -cchi.real
+        self.chi_imag = -cchi.real
 
 def _path2chi(path, paramgroup=None, _larch=None, **kws):
     """calculate chi(k) for a Feff Path,
