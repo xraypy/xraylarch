@@ -260,6 +260,8 @@ numbers, and should range from about 1 (the default) to 10 or 20 for a very
 strong clamp that will almost certainly force :math:`\chi(k)` to be 0 at
 the end-points.
 
+
+
 Recommendations
 ~~~~~~~~~~~~~~~~~
 
@@ -283,8 +285,8 @@ order):
  the endpoints too much, increasing these values can help greatly.
 
 
-Exampless
-==========
+Examples
+============
 
 Here, we give a few examples using :func:`autobk`, and outline some of its
 features.

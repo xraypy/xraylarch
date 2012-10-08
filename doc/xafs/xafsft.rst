@@ -245,8 +245,8 @@ the explicitly real :math:`\chi(k)`.
     :returns:  complex :math:`\chi(q)`.
 
 
-Fourier transform windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+Generating Fourier transform windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As mentioned above, a Fourier transform window will smooth the resulting
 Fourier transformed spectrum, removing ripple and ringing in it that would
@@ -328,8 +328,8 @@ The Kaiser-Bessel window is slightly more complicated:
 
 where :math:`i_0` is the modified Bessel function of order 0.
 
-Fourier transform windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Exmample Fourier transform windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here, we give a series of example windows, to illustrate the different
 window types and the effect of the various parameters.  The meanings of
