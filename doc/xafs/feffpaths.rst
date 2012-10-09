@@ -44,6 +44,11 @@ describe a Feff Path.  These are discussed in more detail below in
 For all the options described above with **value or parameter** either a
 numerical value or a Parameter (as created by :func:`_math.param`) can be given.
 
+
+
+:func:`path2chi` and :func:`ff2chi`: Generating :math:`\chi(k)` for a FeffPath
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ..  function:: path2chi(path, paramgroup=None, kmax=None, kstep=0.05, k=None)
 
     calculate :math:`\chi(k)` for a single Feff Path.
@@ -167,6 +172,7 @@ and :math:`\chi` and several other attributes.
 Due to Larch's flexibility, it is possible to delete, overwrite, or put inappropriate values into
 these variables.  This can cause all sorts of trouble and care should be taken to not do this.
 
+
 .. index:: Feff.dat File Group
 
 .. _xafs-feffdat_sec:
@@ -180,10 +186,37 @@ calculation.  Many of these (including the arrays of data) are used for the calc
 FeffPath Group, and others still (such as ``exch`` and ``rnorman``) are left only in the
 ``_feffdat`` Group, though they may be used for further study.
 
-As with the FeffPath Group, this Group has a The full list
+As with the FeffPath Group, this Group has an expected set of components that
+should be treated as read-only.
 
-larch> dir(a._dat)
-['__class__', '__delattr__', '__dict__', '__doc__', '__format__', '__getattribute__', '__hash__', '__init__', '__module__', '__new__', '__reduce__', '__reduce_ex__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', 'amp', 'degen', 'edge', 'exch', 'filename', 'gam_ch', 'geom', 'k', 'kf', 'lam', 'mag_feff', 'mu', 'nleg', 'pha', 'pha_feff', 'potentials', 'read', 'real_phc', 'red_fact', 'reff', 'rep', 'rnorman', 'rs_int', 'title', 'version', 'vint']
+
+     ================= =====================================================================
+      attribute          description
+     ================= =====================================================================
+       amp                array<shape=(59,), type=dtype('float64')>
+       degen                12.0
+       edge                -5.53502
+       exch                'H-L exch'
+       filename                'feff0001.dat'
+       gam_ch                1.761
+       geom               [('Cu', 29, 0, 0.0, 0.0, 0.0), ('Cu', 29, 1, 0.0, -1.8016, 1.8016)]
+       k                array<shape=(59,), type=dtype('float64')>
+       kf                1.806
+       lam                array<shape=(59,), type=dtype('float64')>
+       mag_feff                array<shape=(59,), type=dtype('float64')>
+       mu                -5.535
+       pha                array<shape=(59,), type=dtype('float64')>
+       pha_feff                array<shape=(59,), type=dtype('float64')>
+       potentials                [(0, 29, 1.289, 1.424), (1, 29, 1.272, 1.392)]
+       real_phc                array<shape=(59,), type=dtype('float64')>
+       red_fact                array<shape=(59,), type=dtype('float64')>
+       rep                array<shape=(59,), type=dtype('float64')>
+       rnorman                2.63
+       rs_int                2.008
+       title                'Cu  metal  fcc a=3.603'
+       version                'Feff XX 6.10'
+       vint                -17.96
+     ================= =====================================================================
 
 
 .. index:: EXAFS Equation with Feff

@@ -245,8 +245,8 @@ the explicitly real :math:`\chi(k)`.
     :returns:  complex :math:`\chi(q)`.
 
 
-Generating Fourier transform windows
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:func:`ftwindow`: Generating Fourier transform windows
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As mentioned above, a Fourier transform window will smooth the resulting
 Fourier transformed spectrum, removing ripple and ringing in it that would
