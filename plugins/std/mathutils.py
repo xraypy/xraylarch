@@ -12,7 +12,7 @@ def linregress(x, y, _larch=None):
 linregress.__doc__ = scipy.stats.linregress.__doc__
 
 def polyfit(x, y, deg, rcond=None, full=False, _larch=None):
-    return polyfit(x, y, dg, rcond=rcond, full=full)
+    return scipy.polyfit(x, y, deg, rcond=rcond, full=full)
 polyfit.__doc__ = scipy.polyfit.__doc__
 
 def _deriv(arr, _larch=None, **kws):
