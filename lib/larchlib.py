@@ -7,6 +7,8 @@ import sys, os
 import numpy as np
 import traceback
 import inspect
+import ctypes
+import ctypes.util
 from .utils import Closure
 from .symboltable import Group
 from .site_config import sys_larchdir
@@ -281,3 +283,37 @@ def plugin_path(val):
     sys.path.insert(0, plugin_path('std'))
     """
     return os.path.abspath(os.path.join(sys_larchdir, 'plugins', val))
+
+
+def add2path(envvar='PATH', dirname='.'):
+    """add specified dir to begninng of PATH and
+    DYLD_LIBRARY_PATH, LD_LIBRARY_PATH environmental variables,
+    returns previous definition of PATH, for restoration"""
+    sep = ':'
+    if os.name == 'nt':
+        sep = ';'
+    oldpath = os.environ.get(envvar, '')
+    if oldpath == '':
+        os.environ[envar] = dirname
+    else:
+        paths = oldpath.split(sep)
+        paths.insert(0, os.path.abspath(dirname))
+        os.environ[envvar] = sep.join(paths)
+    return oldpath
+
+def get_dll(libname, thisdir=None):
+    """find and load a shared library"""
+    _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
+    if thisdir is None:
+        thisdir = os.curdir
+    for key in _paths:
+        _paths[key] = add2path(key, thisdir)
+
+    dllpath = ctypes.util.find_library(libname)
+    loaddll = ctypes.cdll.LoadLibrary
+    if os.name == 'nt':
+        loaddll = ctypes.windll.LoadLibrary
+    dll = loaddll(dllpath)
+    for key, val in _paths.items():
+        os.environ[key] = val
+    return dll
