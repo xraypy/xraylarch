@@ -1,0 +1,1 @@
+Modules/Plugins that use a shared library should live here, then install .dll/.so/.dylib to appropriate plugin folder
