@@ -294,7 +294,7 @@ def add2path(envvar='PATH', dirname='.'):
         sep = ';'
     oldpath = os.environ.get(envvar, '')
     if oldpath == '':
-        os.environ[envar] = dirname
+        os.environ[envvar] = dirname
     else:
         paths = oldpath.split(sep)
         paths.insert(0, os.path.abspath(dirname))
@@ -304,14 +304,21 @@ def add2path(envvar='PATH', dirname='.'):
 def get_dll(libname, thisdir=None):
     """find and load a shared library"""
     _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
+    _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so',
+                      'darwin': 'lib%s.dylib'}
+
     if thisdir is None:
         thisdir = os.curdir
     for key in _paths:
         _paths[key] = add2path(key, thisdir)
 
     dllpath = ctypes.util.find_library(libname)
+    if dllpath is None:
+        fname = _dylib_formats[sys.platform] % libname
+        dllpath = os.path.join(thisdir, fname)
+        
     loaddll = ctypes.cdll.LoadLibrary
-    if os.name == 'nt':
+    if sys.platform == 'win32':
         loaddll = ctypes.windll.LoadLibrary
     dll = loaddll(dllpath)
     for key, val in _paths.items():
