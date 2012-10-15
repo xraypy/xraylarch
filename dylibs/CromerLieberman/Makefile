@@ -8,17 +8,9 @@
 #         to add more options or more optimaztion, but the rest
 #         should be OK
 
-INSTALLDIR= ../../plugins/xray/
+INSTALLDIR= ../../plugins/xray
 
-# Mac OS X 10.6.8 build
-F77 = gfortran -O2 -arch i386 -arch x86_64 -mmacosx-version-min=10.5 -isysroot/Developer/SDKs/MacOSX10.5.sdk -fPIC -Wall
-AR     = ar
-RANLIB = ranlib
-CLLIB  = libcldata.a
-SHAREDLIB = libcldata.dylib
-CC   = cc -O2 -arch i386 -arch x86_64
-LINK = gcc -O2 -arch i386 -arch x86_64 -mmacosx-version-min=10.5 -isysroot/Developer/SDKs/MacOSX10.5.sdk -fPIC -shared
-LINK_FLAGS = -L/Users/Newville/Codes/ifeffit/local/lib -lgfortran -lgfortranbegin
+include Mk.config
 
 .f.o:
 	$(F77) -c $*.f
