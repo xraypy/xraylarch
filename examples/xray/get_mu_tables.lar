@@ -1,0 +1,17 @@
+# example getting tabulated mu values from mu_elam
+
+e = linspace(100, 20000, 401)
+z1, z2, z3 = 12, 20, 38
+# z1, z2, z3 = 16, 34, 82
+
+mu1 = mu_elam(z1, e)
+mu2 = mu_elam(z2, e)
+mu3 = mu_elam(z3, e)
+
+newplot(e, log(mu1), xlabel='E (eV)', label=atomic_symbol(z1),
+        show_legend=True,
+        ylabel=r'$ \ln(\mu/\rho) \rm\, (cm^2/g) $ ',
+        title='Mass attenuation coefficient')
+
+plot(e, log(mu2), label=atomic_symbol(z2))
+plot(e, log(mu3), label=atomic_symbol(z3))

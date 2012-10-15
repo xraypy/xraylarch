@@ -1,0 +1,13 @@
+# example getting tabulated f1/f2 values from Cromer Lieberman
+
+e = linspace(1000, 40000, 201)
+
+z = 45
+f1, f2 = f1f2_cl(z, e)
+
+newplot(e, f1, xlabel='E (eV)', label=" f' ", show_legend=True,
+        ylabel=r"$ f' , f'' (e^{-}) $ ",
+        title='Anomalous scattering factors for %s' % atomic_symbol(z))
+
+plot(e, f2, label=" f'' ")
+

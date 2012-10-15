@@ -1,0 +1,17 @@
+# example getting x-ray properties of elements
+
+print '  = Properties for Zinc:'
+print "  ==== atomic data"
+print "  atomic_number('zn')  = ", atomic_number('zn')
+print "  atomic_symbol(30)    = ", atomic_symbol(30)
+print "  atomic_mass(30)      = ", atomic_mass(30)
+print "  atomic_density(30)   = ", atomic_density(30)
+print "  ==== x-ray data"
+print "  xray_edge(30, 'K')   = ", xray_edge(30, 'K')
+print "  xray_edge(30, 'L3')  = ", xray_edge(30, 'L3')
+print "  xray_lines(30)       = ", xray_lines(30).keys()
+print "  xray_line(30, 'Ka1') = ", xray_line(30, 'Ka1')
+print "  xray_line(30, 'Kb1') = ", xray_line(30, 'Kb1')
+print "  core_width(30, 'K')  = ", core_width(30, 'K')
+print "  ====="
+
