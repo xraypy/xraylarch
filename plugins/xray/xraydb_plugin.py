@@ -202,7 +202,7 @@ def atomic_mass(element, _larch=None):
         return
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
-        element = symbol(element, _larch=_larch)
+        element = atomic_symbol(element, _larch=_larch)
     return xdb._getElementData(element).molar_mass
 
 def atomic_density(element, _larch=None):
@@ -211,7 +211,7 @@ def atomic_density(element, _larch=None):
         return
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
-        element = symbol(element, _larch=_larch)
+        element = atomic_symbol(element, _larch=_larch)
     return xdb._getElementData(element).density
 
 def xray_edges(element, _larch=None):
@@ -263,7 +263,7 @@ def xray_lines(element, initial_level=None, excitation_energy=None,
     return xdb.xray_lines(element, initial_level=initial_level,
                           excitation_energy=excitation_energy)
 
-def xray_line_data(element, line='Ka1', _larch=None):
+def xray_line(element, line='Ka1', _larch=None):
     """returns data for an  x-ray emission lines of an element, given
     the siegbahn notation for the like (Ka1, Lb1, etc).  Returns:
          energy (in eV), intensity, initial_level, final_level
@@ -333,7 +333,7 @@ def registerLarchPlugin():
                       'xray_edges': xray_edges,
                       'xray_edge': xray_edge,
                       'xray_lines': xray_lines,
-                      'xray_line_data': xray_line_data,
+                      'xray_line': xray_line,
                       'core_width':  core_width,
                       'CK_probability': CK_probability,
                       })

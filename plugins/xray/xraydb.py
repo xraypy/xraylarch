@@ -500,7 +500,10 @@ class xrayDB(object):
             tab_val = np.array(json.loads(row.log_photoabsorption))
             tab_spl = np.array(json.loads(row.log_photoabsorption_spline))
 
-        out = np.exp(elam_spline(tab_lne, tab_val, tab_spl, np.log(energies)))
+        emin_tab = 10*int(0.102*np.exp(tab_lne[0]))
+        e = 1.0*energies
+        e[np.where(e < emin_tab)] = emin_tab
+        out = np.exp(elam_spline(tab_lne, tab_val, tab_spl, np.log(e)))
         if len(out) == 1:
             return out[0]
         return out
