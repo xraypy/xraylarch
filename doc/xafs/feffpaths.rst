@@ -193,29 +193,29 @@ should be treated as read-only.
      ================= =====================================================================
       attribute          description
      ================= =====================================================================
-       amp                array<shape=(59,), type=dtype('float64')>
-       degen                12.0
-       edge                -5.53502
-       exch                'H-L exch'
-       filename                'feff0001.dat'
-       gam_ch                1.761
-       geom               [('Cu', 29, 0, 0.0, 0.0, 0.0), ('Cu', 29, 1, 0.0, -1.8016, 1.8016)]
-       k                array<shape=(59,), type=dtype('float64')>
-       kf                1.806
-       lam                array<shape=(59,), type=dtype('float64')>
-       mag_feff                array<shape=(59,), type=dtype('float64')>
-       mu                -5.535
-       pha                array<shape=(59,), type=dtype('float64')>
-       pha_feff                array<shape=(59,), type=dtype('float64')>
-       potentials                [(0, 29, 1.289, 1.424), (1, 29, 1.272, 1.392)]
-       real_phc                array<shape=(59,), type=dtype('float64')>
-       red_fact                array<shape=(59,), type=dtype('float64')>
-       rep                array<shape=(59,), type=dtype('float64')>
-       rnorman                2.63
-       rs_int                2.008
-       title                'Cu  metal  fcc a=3.603'
-       version                'Feff XX 6.10'
-       vint                -17.96
+       amp               array: total amplitude
+       degen             path degeneracy (coordination number)
+       edge              energy threshold relative to atomic valu (a poor estimate)
+       exch              string describing electronic exchange model
+       filename          File name
+       gam_ch            core level energy width
+       geom              path geometry: list of (Symbol, Z, ipot, x, y, z)
+       k                 array: k values
+       kf                k value at Fermi level
+       lam               array: mean-free path
+       mag_feff          array: magnitude of Feff
+       mu                Fermi level, eV
+       pha               array: total phase shift
+       pha_feff          array: scattring phase shift
+       potentials        path potentials: list of (ipot, z, r_MuffinTin, r_Norman)
+       real_phc          array: central atom phase shift
+       red_fact          array: amplitude reduction factor
+       rep               array: real part of p
+       rnorman           Norman radius
+       rs_int            interstitial radius
+       title             user title
+       version           Feff version
+       vint              interstitial potential
      ================= =====================================================================
 
 
