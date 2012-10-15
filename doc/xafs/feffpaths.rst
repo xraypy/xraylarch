@@ -163,8 +163,6 @@ This essentially calls :func:`path2chi` for each of the paths in the
 ``pathlist`` and writes the resulting arrays for :math:`k` and :math:`\chi` the
 sum of :math:`\chi` for all the paths) to ``group.k`` and ``group.chi``.
 
-
-
 .. index:: Feff.dat File Group
 
 .. _xafs-feffdat_sec:
@@ -181,33 +179,46 @@ FeffPath Group, and others still (such as ``exch`` and ``rnorman``) are left onl
 As with the FeffPath Group, this Group has an expected set of components that
 should be treated as read-only.
 
-     ================= =====================================================================
-      attribute          description
-     ================= =====================================================================
-       amp               array: total amplitude
+.. _xafs-feffdat_table:
+
+    Table of Feff.dat components.  Listed here is the component read from
+    the Feff.dat file and stored in the ``_feffdat`` group for each FeffPath.
+
+    ================= =====================================================================
+     attribute          description
+    ================= =====================================================================
+       amp               array: total amplitude,   :math:`F_{\rm eff}(k)`
        degen             path degeneracy (coordination number)
        edge              energy threshold relative to atomic valu (a poor estimate)
        exch              string describing electronic exchange model
        filename          File name
        gam_ch            core level energy width
        geom              path geometry: list of (Symbol, Z, ipot, x, y, z)
-       k                 array: k values
+       k                 array: k values, :math:`k_{\rm feff}`
        kf                k value at Fermi level
-       lam               array: mean-free path
+       lam               array: mean-free path,  :math:`\lambda(k)`
        mag_feff          array: magnitude of Feff
        mu                Fermi level, eV
-       pha               array: total phase shift
+       pha               array: total phase shift, :math:`\delta(k)`
        pha_feff          array: scattring phase shift
        potentials        path potentials: list of (ipot, z, r_MuffinTin, r_Norman)
        real_phc          array: central atom phase shift
        red_fact          array: amplitude reduction factor
-       rep               array: real part of p
+       rep               array: real part of p, :math:`p_{\rm real}(k)`
        rnorman           Norman radius
        rs_int            interstitial radius
        title             user title
        version           Feff version
        vint              interstitial potential
-     ================= =====================================================================
+    ================= =====================================================================
+
+
+The arrays from the data columns of the Feff data file break up the
+amplitude and phase into two components (essentially as one for the central
+atom and one for the scattering atoms) that are simply added together.
+Thus ``amp`` = ``red_fact`` + ``mag_feff`` and the sum is used as
+:math:`F_{\rm eff}(k)`.  Similarly, ``pha`` = ``real_phc`` + ``pha_feff``
+and the sum is used as :math:`\delta(k)`.
 
 
 .. index:: EXAFS Equation with Feff
@@ -217,9 +228,19 @@ should be treated as read-only.
 The EXAFS Equation using Feff and FeffPath Groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now we are ready to write down the full EXAFS equation used for a Feff
-Path.
+Now we are ready to write down the full EXAFS equation used for a Feff Path
+using the terms defined above in the :ref:`Table of Feff Path Parameters
+<xafs-pathparams_table>` and the :ref:`Table of Feff.Dat Components
+<xafs-feffdat_table>`.  One of the trickier concepts is that we are
+evaluating at experimental values of :math:`k` while the Feff calculation
+is tabulated on its own set of :math:`k` values and we may need to apply an
+energy shift of :math:`E_0` to the Feff calculation.  Thus, first we find
+:math:`k` as
 
+.. math::
+    k = \sqrt{k_{\rm feff}^2  - {2m_e E_0}/{\hbar^2} }
+
+Next, we note that
 
 
 Example:  Reading a FEFF file

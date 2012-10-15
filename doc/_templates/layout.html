@@ -1,14 +1,14 @@
 {% extends "!layout.html" %}
 
 {% block rootrellink %}
-   <li><a href="{{ pathto('installation') }}">download</a>|&nbsp;</li>
    <li><a href="{{ pathto('contents') }}">contents</a>|&nbsp;</li>
+   <li><a href="{{ pathto('installation') }}">download</a>|&nbsp;</li>
    <li><a href="{{ pathto('tutorial/index') }}">tutorial</a>|&nbsp;</li>
    <li><a href="{{ pathto('plotting/index') }}">plot</a>|&nbsp;</li>
    <li><a href="{{ pathto('fitting/index') }}">fit</a>|&nbsp;</li>
    <li><a href="{{ pathto('xafs/index') }}">XAFS</a>|&nbsp;</li>
+   <li><a href="{{ pathto('xray/index') }}">Xray Data</a>|&nbsp;</li>
    <li><a href="{{ pathto('xray/index') }}">XRF</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="{{ pathto('search') }}">search</a>|&nbsp;</li>
 {% endblock %}
 
 {% block relbar1 %}
@@ -29,6 +29,7 @@
 {% endblock %}
 
 {# put the sidebar before the body #}
-{% block sidebar1 %}{{ sidebar() }}{% endblock %}
-{% block sidebar2 %}{% endblock %}
+{% block sidebar1 %}
+{{ sidebar() }}
+{% endblock %}{% block sidebar2 %}{% endblock %}
 
