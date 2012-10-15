@@ -133,7 +133,9 @@ Since Larch is built upon Python, an object-oriented programming language,
 all named quantities or **variables** in Larch are python objects.  Because
 of this, most Larch variables come with built-in functionality derived from
 their python objects. Though Larch does not provide a way for the user to
-define their own new objects, this can be done with the Python interface.
+define their own new objects, objects created in Python this can be used by
+Larch, so that extensions and plugins for Larch can define new classes of
+object types.
 
 Objects
 ~~~~~~~~~~
@@ -155,9 +157,9 @@ Python type of any variable, use the builtin :func:`type` function::
 
 The attributes and methods differ for each type of object, but are all
 accessed the same way -- with a '.' (dot) separating the variable name or
-value from the name of the attribute or method.   As above, complex data
+value from the name of the attribute or method.  As above, complex data
 have :attr:`real` and :attr:`imag` attributes for the real and imaginary
-parts,  which can be accessed::
+parts, which can be accessed::
 
    larch> x = sin(1+1j)
    larch> print x
@@ -165,19 +167,30 @@ parts,  which can be accessed::
    larch> print x.imag
    0.63496391478473613
 
-Methods are functions that belong to an object (and so know about the data
-in that object).  They are also objects themselves (and so have attributes
-and methods), but can be called using parentheses '()', possibly with
-arguments inside the parentheses to change the methods behavior.  For
-example, a complex number has a :meth:`conjugate` method::
+Methods are attributes of an object that happen to be callable as a
+function.  Since they belong to to an object, they know about the data and
+other attributes in that object.  To call a method or function, simply add
+parentheses '()' after its name, possibly with arguments inside the
+parentheses to change the methods behavior.  For example, a complex number
+has a :meth:`conjugate` method::
 
    larch> x.conjugate
    <built-in method conjugate of complex object at 0x178e54b8>
    larch> x.conjugate()
    (1.2984575814159773-0.63496391478473613j)
 
-Strings and other data types have many more attributes and methods, as
-we'll see below.
+Note that just using ``x.conjugate`` returns the method itself, while using
+``x.conjugate()`` actually runs the method.  It's fair to ask why ``real``
+and ``imag`` are simple attributes of complex number object while
+``conjugate`` is a method that must be called.  In general, the idea is
+that simple attributes are static data belonging to the object, while a
+method is something that has to be computed.  These rules are not fixed,
+however, and it is sometimes a matter of knowing which attributes are
+callable methods.
+
+Many data types have their own attribues and methods.  As we'll see below,
+strings have many attributes and methods, as do the container objects
+(list, array, tuple, dictionary) we'll see shortly.
 
 To get a listing of all the attributes and methods of a object, use the
 builtin :func:`dir` function::
@@ -247,10 +260,10 @@ values, so that this group could have been created with a single call::
 
     larch> g = group(x=1002.8, name='here is a string', data=arange(100))
 
-Many Larch functions will return groups or take a 'group' argument to
-write data into.  That is, a function that reads data from a file will
-almost certainly organize that data into a group, and simply return the
-group for you to name, perhaps something like::
+Many Larch functions will return groups or take a 'group' argument to write
+data into.  For example, the built-in functions that reads data from an
+external file will likely organize that data into a group and that group
+perhaps something like::
 
     larch> cu = read_ascii('cu_150k.xmu')
 
@@ -380,7 +393,8 @@ All lists will have an 'append' method, as well as several others:
     * sort -- sort the elements.
 
 Note that the methods that change the list do so *IN PLACE* and return
-``None``.  That is, to sort a list, do this::
+``None``.  That is, to sort a list (alphabetically by default, or with an
+optional custom comparison function passed in), do this::
 
      larch> my_list.sort()
 
@@ -388,7 +402,7 @@ but not this::
 
      larch> my_list = my_list.sort()  # WRONG!!
 
-as that will set 'my_list' to None.
+as that will sort the list, then happily set 'my_list' to None.
 
 You can get the length of a list with the built-in :func:`len` function,
 and test whether a particular element is in a list with the `in` operator::

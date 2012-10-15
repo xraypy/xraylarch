@@ -2,53 +2,23 @@
 Larch: Motivation and Overview
 ==================================================
 
-Larch is a scientific data processing language.  Though fairly general
-purpose, it has been developed for and aimed especially at the problems of
-processing and analyziing x-ray spectroscopic and scattering data collected
-at modern synchrotrons and x-ray sources.  Thus, Larch has several related
-target application areas, including XAFS, XRF, and X-ray standing waves.
-The initial movitation was to replace the Ifeffit package for XAFS
-analysis, but the ability to add XRF capabilites and to use it as a
-"Spec-like" language for data collection and processing were quickly added
-to the list of things Larch should be able to do.
+Larch is a scientific data processing language.  Though having pretty
+general capabilities, it has been developed especially for processing and
+analyziing x-ray spectroscopic and scattering data collected at modern
+synchrotrons and x-ray sources.  Thus, Larch has several related target
+application areas, including XAFS, XRF, and X-ray standing waves.  The
+initial movitation for Larch was to replace the Ifeffit package for XAFS
+analysis, with the the ability to add XRF capabilites and to use it as a
+macro language for data collection and initial data processing and
+visualization were quickly added to the list of goals.
 
 Larch gives a simple command-line interface (a Read-Eval-Print Loop), but
 can also be scripted in "batch mode".  GUIs can be built upon Larch by
 simply generating the commands, making it easy to separate the layout from
 the actual processing steps, so that the processing steps might be recorded
-and used to make a "batch script".  Larch is easily called from Python.  In
-addition, you can use Larch with remote-procedure calls, so that it can be
-run from different languages, or run on different machines.
-
-General Motivation of the Design
-====================================
-
-Many scientific data collection, visualization, and analysis programs have
-a *macro language* built into them.  These *macro languages* often have
-built-in commands and datastructures important for the problems being
-solved.  They typically allow customization, automation, scripting, and
-extension of the fundamental operations needed to get the data collection,
-visualization, and analysis work done.  Some analysis programs have
-full-fledged languages or are simply built on top of a framework such as
-Matlab, IDL, Mathematica, R, Eclipse, or Emacs, while many other programs
-have very simplistic (often buggy) and limited languages.
-
-While *Domain Specific Languages* (the term *macro language* often implies
-that they are implemented by string substitutions, which may sometimes be
-true, but is sort of beside the point here) can be a very efficient way to
-provide flexible interaction and customization of complex software, there
-are a great many of them in use, making communication and sharing data
-between programs very hard.
-
-Larch is an attempt to make a domain specific language that can be the
-basis for x-ray data collection and analysis programs, so that the
-algorithms and techniques for visualization and analysis can be better
-shared between different programs and fields.  In this respect, Larch is
-meant to be the foundation or framework upon which data collection,
-visualization, and analysis programs can be written.  By having a common,
-extensible language and analysis environment, the hope is that it will be
-easier to make data collection, visualization, and analysis programs
-interact.
+and used to make a "batch script".  In addition you can use Larch with
+remote-procedure calls, so that it can be run as a service, and called from
+a variety of languages and from different machines.
 
 
 Overview
@@ -69,7 +39,6 @@ computing, including `numpy`_, `scipy`_, `h5py`_, and `matplotlib`_.  Using
 Python also turns out to make implementing Larch and adding complex
 functionality such as XAFS analysis capabilities simple.
 
-
 In fact, Larch is so closely related to Python that a few key points should
 be made:
 
@@ -78,12 +47,11 @@ be made:
   2. All Larch code is translated into Python and then run using builtin
      Python tools.
 
-In a sense, Larch is a dialect of Python.  Thus an
-understanding Larch and Python are close to one another.  This in itself
-can be seen as an advantage -- Python is a popular, open-source, language
-that any programmer can easily learn.  Books and web documentation about
-Python are plentiful.  If you known Python, Larch will be very easy to use,
-and vice versa.
+In a sense, Larch is a dialect of Python.  Thus an understanding Larch and
+Python are close to one another.  This in itself can be seen as an
+advantage -- Python is a popular, open-source, language that any programmer
+can easily learn.  Books and web documentation about Python are plentiful.
+If you known Python, Larch will be very easy to use, and vice versa.
 
 
 Design Principles, Key Concepts
@@ -91,28 +59,36 @@ Design Principles, Key Concepts
 
 Since Larch is intended for processing scientific data, organization of
 data is a key consideration.  The main feature that Larch uses to help the
-user with organizing data is deceptively simple and useful -- the
-**Group**.  This is simply an empty container into which any sort of data
-can be placed, including other Groups.  This provides a heirarchical
-structure of data that can be accessed and manipulated easily via
+user with organizing data is **Group**.  This is simply a container into
+which any sort of data can be placed, including other Groups.  This allows
+nested structures of data that can be accessed and manipulated easily via
 attributes, as with::
 
-     larch> my_group = group(x = 0.1*arange(101), title='group 1')
-     larch> my_group.y = sqrt(my_group.x)
+     larch> my_group = group(x = range(11), scale=10.2, title='group 1')
+     larch> my_group.y = my_group.x*my_group.x
      larch> plot(my_group.x, my_group.y, title=my_group.title)
 
-That is to say, the Group 'my_group' holds data in a convenient namespace.
-You can see the contents of a group::
+The Group ``my_group`` holds data for ``x``, ``y``, and ``title``.  Here,
+the ``range()`` function gives an array of 11 elements ([0, 1, 2, ..., 10])
+that will be held by ``my_group.x``.  You can see the contents of a group
+with the :func:`show` function::
 
     larch> show(my_group)
-    == Group 0x6e15970: 3 symbols ==
-      title: 'group 1'
-      x: array<shape=(101,), type=dtype('float64')>
-      y: array<shape=(101,), type=dtype('float64')>
+    == Group 0x6e15970: 4 symbols ==
+      scale: 10.2
+      t: 'group 1'
+      x: array<shape=(11,), type=dtype('int32')>
+      y: array<shape=(11,), type=dtype('int32')>
 
-which shows that this group has 3 components.  Other things to note are
-that 'x' and 'y' hold arrays of data, and that functions such as 'sqrt' act
-on all elements of the array at once.
+which shows that this group has 4 components, and lists the components.
+As the ``x`` and ``y`` members hold array, the size and datatype of the
+array is shown.  Doing::
+
+    larch> print my.group.y
+    [  0   1   4   9  16  25  36  49  64  81 100]
+
+will show the array elements.   The :func:`plot` function will show a graph
+of y(x).
 
 Since much of what Larch is used for is modeling or fitting small data
 sets, another key organizing principle is the **Parameter**.  This holds a
@@ -120,7 +96,6 @@ value that you might want to be optimized in a least-squares fit.   Thus, a
 Parameter can be flagged as a variable, or fixed to not be varied.  In
 addition, it can be given a mathematical expression in terms of other
 Parameters to determine its value as a constrained value.
-
 
 
 Capabilities
@@ -147,7 +122,6 @@ and analysis steps needed, including:
    * reading and manipulating Feff Path files
    * fitting Feff Paths to XAFS data
    * general-purpose minimization and curve-fitting.
-
 
 
 

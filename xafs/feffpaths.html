@@ -31,14 +31,16 @@
     <link rel="prev" title="XAFS: Fourier Transforms for XAFS" href="xafsft.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left;
-            height:95px; padding: 1px 0px 0px 3px">
-<table><tr><td>
-   <a href="../index.html">
-      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
-   </a></td><td padding=0>
-      <font size=+3><a href="../index.html" style="color: #662211">
-        &nbsp; Larch: X-ray Data Analysis   </a></font>
+<div style=" color: #c5daba;  text-align: left;
+            height:100px; padding: 0">
+<table><tr>
+  <td width=20% padding=0>
+    <a href="#">
+       <img src="../_static/larchcones.png" width=90% alt="larchcones"/>
+    </a>
+  </td><td width=80% padding=0>
+      <font size=+3><a href="../index.html" style="color: #772211">
+          Larch: X-ray Data Analysis   </a></font>
 </td></tr></table>
 </div>
 
@@ -49,9 +51,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
              accesskey="N">next</a> |</li>
@@ -76,8 +75,12 @@
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">XAFS: Reading and using Feff Paths</a><ul>
-<li><a class="reference internal" href="#feff-path-object">Feff Path Object</a></li>
+<li><a class="reference internal" href="#feffpath-and-feffpath-groups"><tt class="docutils literal"><span class="pre">feffpath()</span></tt> and FeffPath Groups</a></li>
+<li><a class="reference internal" href="#path2chi-and-ff2chi-generating-for-a-feffpath"><tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a FeffPath</a></li>
+<li><a class="reference internal" href="#the-feff-dat-file-group">The Feff.Dat File Group</a></li>
+<li><a class="reference internal" href="#the-exafs-equation-using-feff-and-feffpath-groups">The EXAFS Equation using Feff and FeffPath Groups</a></li>
 <li><a class="reference internal" href="#example-reading-a-feff-file">Example:  Reading a FEFF file</a></li>
+<li><a class="reference internal" href="#example-adding-feff-files">Example:  Adding FEFF files</a></li>
 </ul>
 </li>
 </ul>
@@ -118,23 +121,340 @@
 <span id="xafs-reading-and-using-feff-paths"></span><h1>XAFS: Reading and using Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>For modeling EXAFS data, Larch relies heavily on calculations of
 theoretical XAFS spectra using FEFF.  Being able to run FEFF and use its
-results is thus of fundamental importance for using Larch for fitting EXAFS
+results is of fundamental importance for using Larch for fitting EXAFS
 spectra.  While a complete description of FEFF is beyond the scope of this
 documentation, here we describe how to read the results from FEFF into
-Larch.  The main interface for this is the <a class="reference internal" href="#_xafs.feff_path" title="_xafs.feff_path"><tt class="xref py py-func docutils literal"><span class="pre">feff_path()</span></tt></a> function that
-reads FEFF <em>feffNNNN.dat</em> file into a larch FeffPath object.</p>
+Larch.  The main interface for this is the <a class="reference internal" href="#_xafs.feffpath" title="_xafs.feffpath"><tt class="xref py py-func docutils literal"><span class="pre">feffpath()</span></tt></a> function that
+reads FEFF <em>feffNNNN.dat</em> file and creates a FeffPath Group.</p>
+<div class="section" id="feffpath-and-feffpath-groups">
+<h2><a class="reference internal" href="#_xafs.feffpath" title="_xafs.feffpath"><tt class="xref py py-func docutils literal"><span class="pre">feffpath()</span></tt></a> and FeffPath Groups<a class="headerlink" href="#feffpath-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
+<p>The outputs from Feff for each path are complicated enough to need a
+structured organization of data.  This is accomplished by providing a
+special kind of a Larch Group &#8211; a FeffPath Group which holds all the
+information about a Feff Path, including the photo-electron scattering
+amplitudes and phase-shifts needed to describe and calculate the EXAFS for
+that Path.  A FeffPath Group is created with the <a class="reference internal" href="#_xafs.feffpath" title="_xafs.feffpath"><tt class="xref py py-func docutils literal"><span class="pre">feffpath()</span></tt></a>
+group. For many uses a Feff Path can be treated as a &#8220;black box&#8221;, and
+simply setting the adjustable Path Parameters and passing around these
+Groups is sufficient for simulating and fitting EXAFS spectra.</p>
+<p>At times it can be helpful to inspect and study the detailed components of
+the Feff Path.  Since a FeffPath Group is a regular Larch Group, all the
+data can be read and viewed.  A FeffPath Group has the components listed in
+the <a class="reference internal" href="#xafs-pathparams-table"><em>Table of Feff Path Parameters</em></a>.  This
+includes the <em>Adjustable Numerical Path Parameters</em> &#8211; the values of which
+can be changed to affect the calculated EXAFS for the Path &#8211; as well as
+the arrays for <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> and several other attributes.
+Since this Group is used to calculate <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for the path, many of
+the components need to be in place and holding the expected values so that
+the calculation can be done correctly, Due to Larch&#8217;s flexibility, it is
+possible to delete, overwrite, or put inappropriate values into the
+components of a FeffPath Group, and care must be taken to avoid this.</p>
+<blockquote id="xafs-pathparams-table">
+<span id="index-0"></span><div><p>Table of FeffPath attributes, including the Path Parameters used in the
+EXAFS equation.  The attributes here are arranged by category.  The <em>Info</em>
+attributes are informational only.  The two <em>Numerical</em> attributes <tt class="docutils literal"><span class="pre">reff</span></tt>
+and <tt class="docutils literal"><span class="pre">nleg</span></tt> are used in the EXAFS equation but are meant to be constants
+and their values should not be changed.  The <em>Adjustable</em> attributes are the
+standard Adjustable, Numerical Path Parameters that can be changed to affect
+the resulting EXAFS <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  These can be set either as constant
+values or fitting Parameters as defined by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>.  The <em>Output
+array</em> attributes are the arrays output from <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a>.  Finally, the
+sub-group <tt class="docutils literal"><span class="pre">_feffdat</span></tt> contains the low-level data as read directly from the
+<em>feffNNNN.dat</em> file, which is detailed in the next section,
+<a class="reference internal" href="#xafs-feffdat-sec"><em>The Feff.Dat File Group</em></a>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="60%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">attribute name</th>
+<th class="head">category</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>filename</td>
+<td>Info</td>
+<td>name of <em>feffNNNN.dat</em> file</td>
+</tr>
+<tr class="row-odd"><td>label</td>
+<td>Info</td>
+<td>path description</td>
+</tr>
+<tr class="row-even"><td>geom</td>
+<td>Info</td>
+<td>path geometry: list of (symbol, ipot, x, y, z)</td>
+</tr>
+<tr class="row-odd"><td>reff</td>
+<td>Numerical</td>
+<td><img class="math" src="../_images/math/15493fcc792ba610986fbea3a27f4cef6740f314.png" alt="R_{\rm eff}"/>, nominal path length</td>
+</tr>
+<tr class="row-even"><td>nleg</td>
+<td>Numerical</td>
+<td>number of path legs (1+number of scatterers)</td>
+</tr>
+<tr class="row-odd"><td>degen</td>
+<td>Adjustable</td>
+<td><img class="math" src="../_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/>, path degeneracy</td>
+</tr>
+<tr class="row-even"><td>s02</td>
+<td>Adjustable</td>
+<td><img class="math" src="../_images/math/fc923d7c827eca7b3f461463e11c982710c3bcb1.png" alt="S_0^2"/>, amplitude reduction factor</td>
+</tr>
+<tr class="row-odd"><td>e0</td>
+<td>Adjustable</td>
+<td><img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/>, energy origin</td>
+</tr>
+<tr class="row-even"><td>deltar</td>
+<td>Adjustable</td>
+<td><img class="math" src="../_images/math/54a4250f367ce0b8542a9368e68ef0d4a575db8c.png" alt="\delta R"/>, shift in path length</td>
+</tr>
+<tr class="row-odd"><td>sigma2</td>
+<td>Adjustable</td>
+<td><img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/>, mean-square displacement</td>
+</tr>
+<tr class="row-even"><td>third</td>
+<td>Adjustable</td>
+<td><img class="math" src="../_images/math/94aaab012b431d7695fa1ae72d7a88b05baf09f7.png" alt="c_3"/>,  third cumulant</td>
+</tr>
+<tr class="row-odd"><td>fourth</td>
+<td>Adjustable</td>
+<td><img class="math" src="../_images/math/67cff48f601f12a5b71afe302e7c3487f7535731.png" alt="c_4"/>, the fourth cumulant</td>
+</tr>
+<tr class="row-even"><td>ei</td>
+<td>Adjustable</td>
+<td><img class="math" src="../_images/math/f8f358aa01478e43f1a663db574b83f88d7be478.png" alt="E_i"/>, imaginary energy shift.</td>
+</tr>
+<tr class="row-odd"><td>k</td>
+<td>Output array</td>
+<td><img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>, photo-electron wavenumber</td>
+</tr>
+<tr class="row-even"><td>chi</td>
+<td>Output array</td>
+<td><img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>, the EXAFS</td>
+</tr>
+<tr class="row-odd"><td>chi_imag</td>
+<td>Output array</td>
+<td><img class="math" src="../_images/math/eef370fe28e0da6dd00093372bac872a58f421bb.png" alt="\rm{Im}(\chi)"/>, imaginary EXAFS</td>
+</tr>
+<tr class="row-even"><td>p</td>
+<td>Output array</td>
+<td><img class="math" src="../_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/>, complex photo-electron wavenumber</td>
+</tr>
+<tr class="row-odd"><td>_feffdat</td>
+<td>Group</td>
+<td>a Group containing raw data from <em>feffNNNN.dat</em></td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
 <dl class="function">
-<dt id="_xafs.feff_path">
-<tt class="descclassname">_xafs.</tt><tt class="descname">feff_path</tt><big>(</big><em>filename...</em><big>)</big><a class="headerlink" href="#_xafs.feff_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>create a Feff Path object</p>
+<dt id="_xafs.feffpath">
+<tt class="descclassname">_xafs.</tt><tt class="descname">feffpath</tt><big>(</big><em>filename</em>, <em>label=None</em>, <em>s02=None</em>, <em>degen=None</em>, <em>e0=None</em>, <em>deltar=None</em>, <em>sigma2=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.feffpath" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a FeffPath Group from a <em>feffNNNN.dat</em> file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>filename</strong> &#8211; name (full path of) <em>feffNNNN.dat</em> file</li>
+<li><strong>label</strong> &#8211; label for path   [file name]</li>
+<li><strong>degen</strong> &#8211; path degeneracy, <img class="math" src="../_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/> [taken from file]</li>
+<li><strong>s02</strong> &#8211; <img class="math" src="../_images/math/fc923d7c827eca7b3f461463e11c982710c3bcb1.png" alt="S_0^2"/>    value or parameter [1.0]</li>
+<li><strong>e0</strong> &#8211; <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/>      value or parameter [0.0]</li>
+<li><strong>deltar</strong> &#8211; <img class="math" src="../_images/math/54a4250f367ce0b8542a9368e68ef0d4a575db8c.png" alt="\delta R"/> value or parameter [0.0]</li>
+<li><strong>sigma2</strong> &#8211; <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/> value or parameter [0.0]</li>
+<li><strong>third</strong> &#8211; <img class="math" src="../_images/math/94aaab012b431d7695fa1ae72d7a88b05baf09f7.png" alt="c_3"/>      value or parameter [0.0]</li>
+<li><strong>fourth</strong> &#8211; <img class="math" src="../_images/math/67cff48f601f12a5b71afe302e7c3487f7535731.png" alt="c_4"/>      value or parameter [0.0]</li>
+<li><strong>ei</strong> &#8211; <img class="math" src="../_images/math/f8f358aa01478e43f1a663db574b83f88d7be478.png" alt="E_i"/>      value or parameter [0.0]</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a FeffPath Group.</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
-<div class="section" id="feff-path-object">
-<h2>Feff Path Object<a class="headerlink" href="#feff-path-object" title="Permalink to this headline">¶</a></h2>
+<p>For all the options described above with <strong>value or parameter</strong> either a
+numerical value or a Parameter (as created by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>) can be given.</p>
+</div>
+<div class="section" id="path2chi-and-ff2chi-generating-for-a-feffpath">
+<h2><a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> and <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a>: Generating <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a FeffPath<a class="headerlink" href="#path2chi-and-ff2chi-generating-for-a-feffpath" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="_xafs.path2chi">
+<tt class="descclassname">_xafs.</tt><tt class="descname">path2chi</tt><big>(</big><em>path</em>, <em>paramgroup=None</em>, <em>kmax=None</em>, <em>kstep=0.05</em>, <em>k=None</em><big>)</big><a class="headerlink" href="#_xafs.path2chi" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a single Feff Path.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>path</strong> &#8211; a FeffPath Group</li>
+<li><strong>paramgroup</strong> &#8211; a Parameter Group for calculating Path Parameters [<tt class="docutils literal"><span class="pre">None</span></tt>]</li>
+<li><strong>kmax</strong> &#8211; maximum <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value for <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> calculation [20].</li>
+<li><strong>kstep</strong> &#8211; step in <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value for <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> calculation [0.05].</li>
+<li><strong>k</strong> &#8211; explicit array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values to calculate <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">None</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>If <tt class="docutils literal"><span class="pre">k</span></tt> is specified, that will be used as the set of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values at which
+to calculate <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.  If not given, the values of <tt class="docutils literal"><span class="pre">kstep</span></tt> and <tt class="docutils literal"><span class="pre">kmax</span></tt>
+will be used to construct a uniformly-spaced array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values starting
+at 0 and extending to (and including) <tt class="docutils literal"><span class="pre">kmax</span></tt>.</p>
+<p>The calculated <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> array is placed in the Feff Path Group <tt class="docutils literal"><span class="pre">path</span></tt> as
+<tt class="docutils literal"><span class="pre">path.chi</span></tt>.  In addition calculated arrays for <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>, <img class="math" src="../_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/>, and
+<img class="math" src="../_images/math/eef370fe28e0da6dd00093372bac872a58f421bb.png" alt="\rm{Im}(\chi)"/> are placed in the variables <tt class="docutils literal"><span class="pre">path.k</span></tt>, <tt class="docutils literal"><span class="pre">path.p</span></tt>, and
+<tt class="docutils literal"><span class="pre">path.chi_imag</span></tt>, respectively.  See <a class="reference internal" href="#xafs-exafsequation-sec"><em>The EXAFS Equation using Feff and FeffPath Groups</em></a> for the
+detailed definitions of the quantities.</p>
+<p>If specified, <tt class="docutils literal"><span class="pre">paramgroup</span></tt> is used as the Parameter Group &#8211; the group used
+for evaluating parameter expressions (ie, constraints using named variables).
+This is similar to the use in REFERENCE HERE.</p>
+<dl class="function">
+<dt id="_xafs.ff2chi">
+<tt class="descclassname">_xafs.</tt><tt class="descname">ff2chi</tt><big>(</big><em>pathlist</em>, <em>paramgroup=None</em>, <em>group=None</em>, <em>k=None</em>, <em>kmax=None</em>, <em>kstep=0.05</em><big>)</big><a class="headerlink" href="#_xafs.ff2chi" title="Permalink to this definition">¶</a></dt>
+<dd><p>sum the <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a list of FeffPath Groups.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>pathlist</strong> &#8211; a list of FeffPath Groups</li>
+<li><strong>paramgroup</strong> &#8211; a Parameter Group for calculating Path Parameters [<tt class="docutils literal"><span class="pre">None</span></tt>]</li>
+<li><strong>group</strong> &#8211; a Group to which the outputs are written  [<tt class="docutils literal"><span class="pre">None</span></tt>]</li>
+<li><strong>kmax</strong> &#8211; maximum <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value for <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> calculation [20].</li>
+<li><strong>kstep</strong> &#8211; step in <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value for <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> calculation [0.05].</li>
+<li><strong>k</strong> &#8211; explicit array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values to calculate <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">None</span></tt></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>This essentially calls <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> for each of the paths in the
+<tt class="docutils literal"><span class="pre">pathlist</span></tt> and writes the resulting arrays for <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> the
+sum of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> for all the paths) to <tt class="docutils literal"><span class="pre">group.k</span></tt> and <tt class="docutils literal"><span class="pre">group.chi</span></tt>.</p>
+</div>
+<div class="section" id="the-feff-dat-file-group">
+<span id="xafs-feffdat-sec"></span><span id="index-1"></span><h2>The Feff.Dat File Group<a class="headerlink" href="#the-feff-dat-file-group" title="Permalink to this headline">¶</a></h2>
+<p>Each FeffPath Group will have a <tt class="docutils literal"><span class="pre">_feffdat</span></tt> sub-group which contains the results of the Feff
+calculation.  Many of these (including the arrays of data) are used for the calculations of
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for that Path, while others (such as <tt class="docutils literal"><span class="pre">geom</span></tt> and <tt class="docutils literal"><span class="pre">nleg</span></tt>) are copied into the
+FeffPath Group, and others still (such as <tt class="docutils literal"><span class="pre">exch</span></tt> and <tt class="docutils literal"><span class="pre">rnorman</span></tt>) are left only in the
+<tt class="docutils literal"><span class="pre">_feffdat</span></tt> Group, though they may be used for further study.</p>
+<p>As with the FeffPath Group, this Group has an expected set of components that
+should be treated as read-only.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">attribute</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>amp</td>
+<td>array: total amplitude</td>
+</tr>
+<tr class="row-odd"><td>degen</td>
+<td>path degeneracy (coordination number)</td>
+</tr>
+<tr class="row-even"><td>edge</td>
+<td>energy threshold relative to atomic valu (a poor estimate)</td>
+</tr>
+<tr class="row-odd"><td>exch</td>
+<td>string describing electronic exchange model</td>
+</tr>
+<tr class="row-even"><td>filename</td>
+<td>File name</td>
+</tr>
+<tr class="row-odd"><td>gam_ch</td>
+<td>core level energy width</td>
+</tr>
+<tr class="row-even"><td>geom</td>
+<td>path geometry: list of (Symbol, Z, ipot, x, y, z)</td>
+</tr>
+<tr class="row-odd"><td>k</td>
+<td>array: k values</td>
+</tr>
+<tr class="row-even"><td>kf</td>
+<td>k value at Fermi level</td>
+</tr>
+<tr class="row-odd"><td>lam</td>
+<td>array: mean-free path</td>
+</tr>
+<tr class="row-even"><td>mag_feff</td>
+<td>array: magnitude of Feff</td>
+</tr>
+<tr class="row-odd"><td>mu</td>
+<td>Fermi level, eV</td>
+</tr>
+<tr class="row-even"><td>pha</td>
+<td>array: total phase shift</td>
+</tr>
+<tr class="row-odd"><td>pha_feff</td>
+<td>array: scattring phase shift</td>
+</tr>
+<tr class="row-even"><td>potentials</td>
+<td>path potentials: list of (ipot, z, r_MuffinTin, r_Norman)</td>
+</tr>
+<tr class="row-odd"><td>real_phc</td>
+<td>array: central atom phase shift</td>
+</tr>
+<tr class="row-even"><td>red_fact</td>
+<td>array: amplitude reduction factor</td>
+</tr>
+<tr class="row-odd"><td>rep</td>
+<td>array: real part of p</td>
+</tr>
+<tr class="row-even"><td>rnorman</td>
+<td>Norman radius</td>
+</tr>
+<tr class="row-odd"><td>rs_int</td>
+<td>interstitial radius</td>
+</tr>
+<tr class="row-even"><td>title</td>
+<td>user title</td>
+</tr>
+<tr class="row-odd"><td>version</td>
+<td>Feff version</td>
+</tr>
+<tr class="row-even"><td>vint</td>
+<td>interstitial potential</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+<div class="section" id="the-exafs-equation-using-feff-and-feffpath-groups">
+<span id="xafs-exafsequation-sec"></span><span id="index-2"></span><h2>The EXAFS Equation using Feff and FeffPath Groups<a class="headerlink" href="#the-exafs-equation-using-feff-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
+<p>Now we are ready to write down the full EXAFS equation used for a Feff
+Path.</p>
 </div>
 <div class="section" id="example-reading-a-feff-file">
 <h2>Example:  Reading a FEFF file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
 <p>Here we simply read a <em>feffNNNN.dat</em> file and manipulate its contents.</p>
+</div>
+<div class="section" id="example-adding-feff-files">
+<h2>Example:  Adding FEFF files<a class="headerlink" href="#example-adding-feff-files" title="Permalink to this headline">¶</a></h2>
+<p>Now, we add some FEFF files together, applying path parameters.x</p>
 </div>
 </div>
 
@@ -150,9 +470,6 @@ reads FEFF <em>feffNNNN.dat</em> file into a larch FeffPath object.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
              >next</a> |</li>
@@ -173,7 +490,7 @@ reads FEFF <em>feffNNNN.dat</em> file into a larch FeffPath object.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

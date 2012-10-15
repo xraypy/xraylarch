@@ -31,14 +31,16 @@
     <link rel="prev" title="Tutorial: Getting Started" href="start.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left;
-            height:95px; padding: 1px 0px 0px 3px">
-<table><tr><td>
-   <a href="../index.html">
-      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
-   </a></td><td padding=0>
-      <font size=+3><a href="../index.html" style="color: #662211">
-        &nbsp; Larch: X-ray Data Analysis   </a></font>
+<div style=" color: #c5daba;  text-align: left;
+            height:100px; padding: 0">
+<table><tr>
+  <td width=20% padding=0>
+    <a href="#">
+       <img src="../_static/larchcones.png" width=90% alt="larchcones"/>
+    </a>
+  </td><td width=80% padding=0>
+      <font size=+3><a href="../index.html" style="color: #772211">
+          Larch: X-ray Data Analysis   </a></font>
 </td></tr></table>
 </div>
 
@@ -49,9 +51,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="arrays.html" title="Tutorial: Basic Array Manipulation"
              accesskey="N">next</a> |</li>
@@ -251,7 +250,9 @@ further details and notes.</p>
 all named quantities or <strong>variables</strong> in Larch are python objects.  Because
 of this, most Larch variables come with built-in functionality derived from
 their python objects. Though Larch does not provide a way for the user to
-define their own new objects, this can be done with the Python interface.</p>
+define their own new objects, objects created in Python this can be used by
+Larch, so that extensions and plugins for Larch can define new classes of
+object types.</p>
 <div class="section" id="objects">
 <h3>Objects<a class="headerlink" href="#objects" title="Permalink to this headline">¶</a></h3>
 <p>All Larch variables are Python objects, and so have a well-defined <strong>type</strong>
@@ -270,27 +271,37 @@ larch&gt; type(sin)
 </div>
 <p>The attributes and methods differ for each type of object, but are all
 accessed the same way &#8211; with a &#8216;.&#8217; (dot) separating the variable name or
-value from the name of the attribute or method.   As above, complex data
+value from the name of the attribute or method.  As above, complex data
 have <tt class="xref py py-attr docutils literal"><span class="pre">real</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">imag</span></tt> attributes for the real and imaginary
-parts,  which can be accessed:</p>
+parts, which can be accessed:</p>
 <div class="highlight-python"><pre>larch&gt; x = sin(1+1j)
 larch&gt; print x
 (1.2984575814159773+0.63496391478473613j)
 larch&gt; print x.imag
 0.63496391478473613</pre>
 </div>
-<p>Methods are functions that belong to an object (and so know about the data
-in that object).  They are also objects themselves (and so have attributes
-and methods), but can be called using parentheses &#8216;()&#8217;, possibly with
-arguments inside the parentheses to change the methods behavior.  For
-example, a complex number has a <tt class="xref py py-meth docutils literal"><span class="pre">conjugate()</span></tt> method:</p>
+<p>Methods are attributes of an object that happen to be callable as a
+function.  Since they belong to to an object, they know about the data and
+other attributes in that object.  To call a method or function, simply add
+parentheses &#8216;()&#8217; after its name, possibly with arguments inside the
+parentheses to change the methods behavior.  For example, a complex number
+has a <tt class="xref py py-meth docutils literal"><span class="pre">conjugate()</span></tt> method:</p>
 <div class="highlight-python"><pre>larch&gt; x.conjugate
 &lt;built-in method conjugate of complex object at 0x178e54b8&gt;
 larch&gt; x.conjugate()
 (1.2984575814159773-0.63496391478473613j)</pre>
 </div>
-<p>Strings and other data types have many more attributes and methods, as
-we&#8217;ll see below.</p>
+<p>Note that just using <tt class="docutils literal"><span class="pre">x.conjugate</span></tt> returns the method itself, while using
+<tt class="docutils literal"><span class="pre">x.conjugate()</span></tt> actually runs the method.  It&#8217;s fair to ask why <tt class="docutils literal"><span class="pre">real</span></tt>
+and <tt class="docutils literal"><span class="pre">imag</span></tt> are simple attributes of complex number object while
+<tt class="docutils literal"><span class="pre">conjugate</span></tt> is a method that must be called.  In general, the idea is
+that simple attributes are static data belonging to the object, while a
+method is something that has to be computed.  These rules are not fixed,
+however, and it is sometimes a matter of knowing which attributes are
+callable methods.</p>
+<p>Many data types have their own attribues and methods.  As we&#8217;ll see below,
+strings have many attributes and methods, as do the container objects
+(list, array, tuple, dictionary) we&#8217;ll see shortly.</p>
 <p>To get a listing of all the attributes and methods of a object, use the
 builtin <tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -354,10 +365,10 @@ values, so that this group could have been created with a single call:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Many Larch functions will return groups or take a &#8216;group&#8217; argument to
-write data into.  That is, a function that reads data from a file will
-almost certainly organize that data into a group, and simply return the
-group for you to name, perhaps something like:</p>
+<p>Many Larch functions will return groups or take a &#8216;group&#8217; argument to write
+data into.  For example, the built-in functions that reads data from an
+external file will likely organize that data into a group and that group
+perhaps something like:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">cu</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;cu_150k.xmu&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -498,7 +509,8 @@ appending to it with the &#8216;append&#8217; method:</p>
 </ul>
 </div></blockquote>
 <p>Note that the methods that change the list do so <em>IN PLACE</em> and return
-<tt class="docutils literal"><span class="pre">None</span></tt>.  That is, to sort a list, do this:</p>
+<tt class="docutils literal"><span class="pre">None</span></tt>.  That is, to sort a list (alphabetically by default, or with an
+optional custom comparison function passed in), do this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -506,7 +518,7 @@ appending to it with the &#8216;append&#8217; method:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="n">my_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>  <span class="c"># WRONG!!</span>
 </pre></div>
 </div>
-<p>as that will set &#8216;my_list&#8217; to None.</p>
+<p>as that will sort the list, then happily set &#8216;my_list&#8217; to None.</p>
 <p>You can get the length of a list with the built-in <tt class="xref py py-func docutils literal"><span class="pre">len()</span></tt> function,
 and test whether a particular element is in a list with the <cite>in</cite> operator:</p>
 <div class="highlight-python"><pre>larch&gt; my_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
@@ -717,9 +729,6 @@ and are in fact used throughout python.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="arrays.html" title="Tutorial: Basic Array Manipulation"
              >next</a> |</li>
         <li class="right" >
@@ -739,7 +748,7 @@ and are in fact used throughout python.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

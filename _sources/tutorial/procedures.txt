@@ -132,8 +132,8 @@ searched for names.  There are several related variables listed in
 
 
 `_sys.searchGroups` and `_sys.searchGroupObjects` are always kept in sync,
-and always contains the groups named in `_sys.core_groups`.  In addition,
-they always contains (in order, if not ``None``), `_sys.localGroup`,
+and always contain the groups named in `_sys.core_groups`.  In addition,
+they always contain (in order, if not ``None``), `_sys.localGroup`,
 `_sys.paramGroup`, `_sys.moduleGroup`.  If not inside a function or module,
 `_sys.localGroup` and `_sys.moduleGroup` are set to `_main`.
 
@@ -201,8 +201,10 @@ Keyword arguments
 For the procedures defined so far, the arguments have been both required
 and in a fixed order.  Sometimes, you'll want to give a procedure optional
 arguments, and perhaps allow some flexibility in the order of the
-arguments.  Larch allows this with **keyword** arguments.  In a procedure
-definition, you add an argument name with a default value,  like this::
+arguments.  Larch allows this with **keyword** arguments.
+Keyword arguments offer distinct advantages over positional arguments
+in that they have default values, and can be given in any order.
+In a procedure definition, you add an argument name with a default value,  like this::
 
     def xlog(a, base=e):
         """return log(a) with base = base (default=e=2.71828...)
@@ -224,9 +226,8 @@ This can then be used as::
     larch> xlog(16, base=2)
     4.0
 
-You can supply many keyword arguments, but they must all come *after* the
-positional arguments.
-
+You can supply many keyword arguments -- they can be given in any order,
+but they must all come *after* the positional arguments.
 
 A procedure can be written to take an unspecified number of positional and
 keyword parameters, using a special syntax for unspecified positional

@@ -41,9 +41,9 @@ values, and then use these in calculations::
 Note that parentheses are used to group multiplication and division, and
 also to hold the arguments to functions like :func:`sin`.
 
-Variable names must start with a letter or underscore ('_'), followed by
+Variable names must start with a letter or underscore (_), followed by
 any number of letters, underscores, or numbers.  You may notice that a dot
-('.') may appear to be in many variable names.  This indicates an
+(.) may appear to be in many variable names.  This indicates an
 *attribute*  of a variable -- we'll get to this in a later section.
 
 If you're familiar with other programming langauges, an important point for

@@ -21,7 +21,7 @@ body {
     letter-spacing: -0.01em;
     line-height: 150%;
     text-align: center;
-    background-color: #D4E4DA;
+    background-color: #c5daba;
     color: black;
     padding: 0;
     border: 1px solid #aaa;
@@ -92,11 +92,11 @@ div.sphinxsidebar {
     font-size: 1em;
     text-align: left;
 }
-/* sort of sets sidebar to be sticky and on right-side, 
-   but is not perfect, as the vertical spacing seems a 
+/* sort of sets sidebar to be sticky and on right-side,
+   but is not perfect, as the vertical spacing seems a
    little bit off.
-    position: fixed;    
-    overflow: auto;  
+    position: fixed;
+    overflow: auto;
     right: 0;
     top: 120px;
     bottom: 0;
@@ -282,7 +282,25 @@ table {
 }
 
 table td, table th {
-    padding: 0.2em 0.5em 0.2em 0.5em;
+    padding: 0.25em 0.5em 0.25em 0.5em;
+}
+
+th {
+    background-color: #fbfbdd;
+}
+
+/* alternating colors in table rows */
+table.docutils tr:nth-child(even) {
+    background-color: #fcfbfb;
+}
+table.docutils tr:nth-child(odd) {
+    background-color: #ffffff;
+}
+
+table.docutils tr {
+    border-style: solid none solid none;
+    border-width: 2px 0px 0px 0px;
+    border-color: #F4F4F4;
 }
 
 div.admonition, div.warning {

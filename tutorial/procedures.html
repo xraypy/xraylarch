@@ -31,14 +31,16 @@
     <link rel="prev" title="Tutorial: Dealing With Errors" href="errors.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left;
-            height:95px; padding: 1px 0px 0px 3px">
-<table><tr><td>
-   <a href="../index.html">
-      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
-   </a></td><td padding=0>
-      <font size=+3><a href="../index.html" style="color: #662211">
-        &nbsp; Larch: X-ray Data Analysis   </a></font>
+<div style=" color: #c5daba;  text-align: left;
+            height:100px; padding: 0">
+<table><tr>
+  <td width=20% padding=0>
+    <a href="#">
+       <img src="../_static/larchcones.png" width=90% alt="larchcones"/>
+    </a>
+  </td><td width=80% padding=0>
+      <font size=+3><a href="../index.html" style="color: #772211">
+          Larch: X-ray Data Analysis   </a></font>
 </td></tr></table>
 </div>
 
@@ -49,9 +51,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="modules.html" title="Tutorial: Running Larch Scripts, and Modules"
              accesskey="N">next</a> |</li>
@@ -252,8 +251,8 @@ definied in the same file as the current procedure.</td>
 </div></blockquote>
 </div></blockquote>
 <p><cite>_sys.searchGroups</cite> and <cite>_sys.searchGroupObjects</cite> are always kept in sync,
-and always contains the groups named in <cite>_sys.core_groups</cite>.  In addition,
-they always contains (in order, if not <tt class="docutils literal"><span class="pre">None</span></tt>), <cite>_sys.localGroup</cite>,
+and always contain the groups named in <cite>_sys.core_groups</cite>.  In addition,
+they always contain (in order, if not <tt class="docutils literal"><span class="pre">None</span></tt>), <cite>_sys.localGroup</cite>,
 <cite>_sys.paramGroup</cite>, <cite>_sys.moduleGroup</cite>.  If not inside a function or module,
 <cite>_sys.localGroup</cite> and <cite>_sys.moduleGroup</cite> are set to <cite>_main</cite>.</p>
 <p>Thus, inside a procedure, the way names are looked up are:</p>
@@ -303,8 +302,10 @@ values.</p>
 <p>For the procedures defined so far, the arguments have been both required
 and in a fixed order.  Sometimes, you&#8217;ll want to give a procedure optional
 arguments, and perhaps allow some flexibility in the order of the
-arguments.  Larch allows this with <strong>keyword</strong> arguments.  In a procedure
-definition, you add an argument name with a default value,  like this:</p>
+arguments.  Larch allows this with <strong>keyword</strong> arguments.
+Keyword arguments offer distinct advantages over positional arguments
+in that they have default values, and can be given in any order.
+In a procedure definition, you add an argument name with a default value,  like this:</p>
 <div class="highlight-python"><pre>def xlog(a, base=e):
     """return log(a) with base = base (default=e=2.71828...)
     """
@@ -325,8 +326,8 @@ This can then be used as:</p>
 <span class="mf">4.0</span>
 </pre></div>
 </div>
-<p>You can supply many keyword arguments, but they must all come <em>after</em> the
-positional arguments.</p>
+<p>You can supply many keyword arguments &#8211; they can be given in any order,
+but they must all come <em>after</em> the positional arguments.</p>
 <p>A procedure can be written to take an unspecified number of positional and
 keyword parameters, using a special syntax for unspecified positional
 arguments and for unspecified keyword arguments.  To use unspecified
@@ -437,9 +438,6 @@ enddef</pre>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="modules.html" title="Tutorial: Running Larch Scripts, and Modules"
              >next</a> |</li>
         <li class="right" >
@@ -459,7 +457,7 @@ enddef</pre>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

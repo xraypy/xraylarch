@@ -31,14 +31,16 @@
     <link rel="prev" title="Tutorial: Conditional Execution and Flow Control" href="flow.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left;
-            height:95px; padding: 1px 0px 0px 3px">
-<table><tr><td>
-   <a href="../index.html">
-      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
-   </a></td><td padding=0>
-      <font size=+3><a href="../index.html" style="color: #662211">
-        &nbsp; Larch: X-ray Data Analysis   </a></font>
+<div style=" color: #c5daba;  text-align: left;
+            height:100px; padding: 0">
+<table><tr>
+  <td width=20% padding=0>
+    <a href="#">
+       <img src="../_static/larchcones.png" width=90% alt="larchcones"/>
+    </a>
+  </td><td width=80% padding=0>
+      <font size=+3><a href="../index.html" style="color: #772211">
+          Larch: X-ray Data Analysis   </a></font>
 </td></tr></table>
 </div>
 
@@ -49,9 +51,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="procedures.html" title="Tutorial: Writing Functions or Procedures"
              accesskey="N">next</a> |</li>
@@ -118,20 +117,21 @@
             
   <div class="section" id="tutorial-dealing-with-errors">
 <h1>Tutorial: Dealing With Errors<a class="headerlink" href="#tutorial-dealing-with-errors" title="Permalink to this headline">¶</a></h1>
-<p>When an error exists in the syntax of your script, or an erro happens when
+<p>When an error exists in the syntax of your script, or an error happens when
 running your script, an <em>Error</em> or <em>Exception</em> is generated, and the
 execution of your script is stopped.</p>
 <div class="section" id="syntax-errors">
 <h2>Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
 <p>Syntax errors result from incomplete or ill-formed larch syntax.  For
 example:</p>
-<div class="highlight-python"><pre>larch&gt; x = 3 *
-SyntaxError
-&lt;StdInput&gt;
-    x = 3  *</pre>
+<div class="highlight-python"><pre>larch&gt; x = 3 +
+SyntaxError: invalid syntax
+x = 3 +
+
+    x = 3  +</pre>
 </div>
 <p>This indicates that the Larch interpreter could not understand the meaning
-of the statement &#8216;x = 3 <em>&#8216;, because it excepts a value after the &#8216;</em>&#8216;.
+of the statement &#8216;x = 3 +&#8217;, because it excepts a value after the &#8216;+&#8217;.
 Syntax errors are spotted and raised before the interpreter tries to
 evaluate the expression.  That is because Larch first fully parses any
 statements (or block of statements if you&#8217;re entering multiple statements
@@ -188,8 +188,7 @@ As a simple example:</p>
 except ZeroDivisionError:
     print 'saw a divide by zero!
     x = 0
-endtry
-&lt;more statements&gt;</pre>
+endtry</pre>
 </div>
 <p>If b is not 0, x is set to the value of a/b.  If b is 0, executing <em>x =
 a/b</em> will cause a ZeroDivisionError (as we saw above), so the block with
@@ -255,9 +254,6 @@ be &#8220;raising an exception&#8221;:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="procedures.html" title="Tutorial: Writing Functions or Procedures"
              >next</a> |</li>
         <li class="right" >
@@ -277,7 +273,7 @@ be &#8220;raising an exception&#8221;:</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

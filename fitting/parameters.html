@@ -31,14 +31,16 @@
     <link rel="prev" title="Fitting Overview" href="overview.html" /> 
   </head>
   <body>
-<div style=" color: #76989B; text-align: left;
-            height:95px; padding: 1px 0px 0px 3px">
-<table><tr><td>
-   <a href="../index.html">
-      <img src="../_static/larchcones.png" height=90 alt="larchcones"/>
-   </a></td><td padding=0>
-      <font size=+3><a href="../index.html" style="color: #662211">
-        &nbsp; Larch: X-ray Data Analysis   </a></font>
+<div style=" color: #c5daba;  text-align: left;
+            height:100px; padding: 0">
+<table><tr>
+  <td width=20% padding=0>
+    <a href="#">
+       <img src="../_static/larchcones.png" width=90% alt="larchcones"/>
+    </a>
+  </td><td width=80% padding=0>
+      <font size=+3><a href="../index.html" style="color: #772211">
+          Larch: X-ray Data Analysis   </a></font>
 </td></tr></table>
 </div>
 
@@ -49,9 +51,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="minimize.html" title="minimize() and Objective Functions"
              accesskey="N">next</a> |</li>
@@ -114,8 +113,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="parameters">
-<h1>Parameters<a class="headerlink" href="#parameters" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="module-_math">
+<span id="parameters"></span><h1>Parameters<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
 <p>The parameters used in the fitting model are all meant to be continuous
 variables &#8211; floating point numbers.  In general, the fitting procedure may
 assign any value to any parameter.  In many cases, however, you may want to
@@ -138,14 +137,14 @@ param(10, vary=False)
 larch&gt; print x+2
 12</pre>
 </div>
-<p>To create a Parameter, use the <a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> function, which takes a value
+<p>To create a Parameter, use the <a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> function, which takes a value
 as its first argument, and a few optional keyword arguments to control
 whether the value is to be varied in a fit or kept fixed, to set optional
 upper and lower bounds for the Parameter value, or to set an algebraic
 expression to use to evaluate its value as a <strong>constrained Parameter</strong>.</p>
 <dl class="function">
-<dt id="param">
-<tt class="descname">param</tt><big>(</big><em>value</em>, <em>vary=False</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#param" title="Permalink to this definition">¶</a></dt>
+<dt id="_math.param">
+<tt class="descclassname">_math.</tt><tt class="descname">param</tt><big>(</big><em>value</em>, <em>vary=False</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#_math.param" title="Permalink to this definition">¶</a></dt>
 <dd><p>define a Parameter, setting some of it principle attributes</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -188,71 +187,76 @@ or give additional information about its value:</p>
 <tr class="row-even"><td>value</td>
 <td>value</td>
 <td>&nbsp;</td>
-<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+<td><a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>vary</td>
 <td>can change in fit</td>
 <td><tt class="docutils literal"><span class="pre">False</span></tt></td>
-<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+<td><a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>min</td>
 <td>lower bound</td>
 <td><tt class="docutils literal"><span class="pre">None</span></tt></td>
-<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+<td><a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>max</td>
 <td>upper bound</td>
 <td><tt class="docutils literal"><span class="pre">None</span></tt></td>
-<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+<td><a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>name</td>
 <td>optional name</td>
 <td><tt class="docutils literal"><span class="pre">None</span></tt></td>
-<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+<td><a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>expr</td>
 <td>algebraic constraint</td>
 <td><tt class="docutils literal"><span class="pre">None</span></tt></td>
-<td><a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
+<td><a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>stderr</td>
 <td>uncertainty</td>
 <td>&#8211;</td>
-<td><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></td>
+<td><a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>correl</td>
 <td>correlations</td>
 <td>&#8211;</td>
-<td><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></td>
+<td><a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <dl class="function">
-<dt id="guess">
-<tt class="descname">guess</tt><big>(</big><em>value</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#guess" title="Permalink to this definition">¶</a></dt>
+<dt id="_math.guess">
+<tt class="descclassname">_math.</tt><tt class="descname">guess</tt><big>(</big><em>value</em>, <em>min=None</em>, <em>max=None</em>, <em>expr=None</em><big>)</big><a class="headerlink" href="#_math.guess" title="Permalink to this definition">¶</a></dt>
 <dd><p>define a variable Parameter, setting some of it principle attributes.
-The arguments here are identical to <a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a>, except that
+The arguments here are identical to <a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a>, except that
 <tt class="docutils literal"><span class="pre">vary=True</span></tt> is set.</p>
 </dd></dl>
 
-<p>Simple examples for creating a parameter and creating an group of
-parameters would be:</p>
+<p>An example of creating some parameters,  and creating a group of parameters would be:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># create some Parameters</span>
-<span class="n">p1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">5.0</span><span class="p">)</span>
-<span class="n">p2</span> <span class="o">=</span> <span class="n">params</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
-<span class="n">p3</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;1 - sqrt(p2**2)&#39;</span><span class="p">)</span>
+<span class="n">c1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>              <span class="c"># a constant (non-varying) parameter</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>     <span class="c"># a bounded variable parameter</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">10.</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>        <span class="c"># a semi-bounded variable parameter</span>
 
-<span class="c"># create a Group of parameters</span>
-<span class="n">fit_params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span> <span class="o">=</span> <span class="n">p2</span><span class="p">,</span> <span class="n">p3</span> <span class="o">=</span> <span class="n">p3</span><span class="p">,</span>
-                   <span class="n">centroid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
-                   <span class="n">amp</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="c"># create a group of parameters, either from existing parameters</span>
+<span class="c"># or ones created right here</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">a1</span> <span class="o">=</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="o">=</span> <span class="n">a2</span><span class="p">,</span>
+               <span class="n">centroid</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">99</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c"># add more parameters to the group:</span>
+<span class="n">params</span><span class="o">.</span><span class="n">c1</span> <span class="o">=</span> <span class="n">c1</span>
+
+<span class="c"># add a constrained parameter: dependent on other parameters in the group</span>
+<span class="n">params</span><span class="o">.</span><span class="n">e1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;a1 - c1*sqrt(a2)&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 <div class="section" id="setting-bounds">
 <h2>setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h2>
 <p>Upper and lower bounds can be set on a Parameters value using the <em>min</em> and
-<em>max</em> arguments to <a class="reference internal" href="#param" title="param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> or by setting the <em>min</em> and <em>max</em>
+<em>max</em> arguments to <a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> or by setting the <em>min</em> and <em>max</em>
 attribute of an existing Parameter.  To remove a bound, set the
 corresponding attribute to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
 <p>During a fit, a Parameter&#8217;s value may approach or even equal one of the
@@ -306,7 +310,7 @@ expression is allowed.</p>
 <p>It&#8217;s worth asking what variables and functions are available for writing
 algebraic constraints.  The discussion on <a class="reference internal" href="../tutorial/procedures.html#tut-namespaces-label"><em>Namespace and &#8220;Scope&#8221; inside a Procedure</em></a>
 gives a partial explanation, but we&#8217;ll be a bit more explicit here.
-During a fit, the <em>paramgroup</em> given to <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt> will be assigned
+During a fit, the <em>paramgroup</em> given to <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> will be assigned
 to <cite>_sys.paramGroup</cite> and will be the first place variables are looked for.
 The variables defined inside the objective function will be in
 <cite>_sys.localGroup</cite>, and which will also be searched for variables.  After
@@ -319,11 +323,11 @@ during a fit include</p>
 passed in via the argument list.</p>
 <p>3. All the normal functions and variable names available in Larch,
 including all the mathematical functions.</p>
-<p>As we said, <cite>_sys.paramGroup</cite> is set during a fit, by <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt>.  It
+<p>As we said, <cite>_sys.paramGroup</cite> is set during a fit, by <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a>.  It
 is left set at the end of the fit &#8211; it is not cleared or reset.  However,
 note that <cite>_sys.paramGroup</cite> may be unset or set to the wrong group (say,
 from a previous fit) when setting up a new fit (before you call
-<tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt>).  Of course, you can explicitly assign a group to
+<a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a>).  Of course, you can explicitly assign a group to
 <cite>_sys.paramGroup</cite> when setting up a fit, so that you might be able to
 sensibly call the objective function yourself, prior to doing a
 minimization.</p>
@@ -342,9 +346,6 @@ minimization.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
         <li class="right" >
           <a href="minimize.html" title="minimize() and Objective Functions"
              >next</a> |</li>
@@ -365,7 +366,7 @@ minimization.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

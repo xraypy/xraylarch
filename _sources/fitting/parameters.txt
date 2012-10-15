@@ -2,6 +2,8 @@
 Parameters
 ===============
 
+.. module:: _math
+
 The parameters used in the fitting model are all meant to be continuous
 variables -- floating point numbers.  In general, the fitting procedure may
 assign any value to any parameter.  In many cases, however, you may want to
@@ -65,18 +67,24 @@ or give additional information about its value:
     The arguments here are identical to :func:`param`, except that
     ``vary=True`` is set.
 
-Simple examples for creating a parameter and creating an group of
-parameters would be::
+An example of creating some parameters,  and creating a group of parameters would be::
 
     # create some Parameters
-    p1 = param(5.0)
-    p2 = params(10, min=0, max=100, vary=True)
-    p3 = param(expr='1 - sqrt(p2**2)')
+    c1 = param(0.75)              # a constant (non-varying) parameter
+    a1 = param(1.0, min=0, max=5, vary=True)     # a bounded variable parameter
+    a2 = guess(10., min=0)        # a semi-bounded variable parameter
 
-    # create a Group of parameters
-    fit_params = group(p1 = p1, p2 = p2, p3 = p3,
-                       centroid = param(99, vary=False),
-                       amp = guess(3, min=0))
+    # create a group of parameters, either from existing parameters
+    # or ones created right here
+    params = group(a1 = a1, a2 = a2,
+                   centroid = param(99, vary=False) )
+
+    # add more parameters to the group:
+    params.c1 = c1
+
+    # add a constrained parameter: dependent on other parameters in the group
+    params.e1 = param(expr='a1 - c1*sqrt(a2)')
+
 
 setting bounds
 ~~~~~~~~~~~~~~~
