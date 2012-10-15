@@ -10,107 +10,35 @@ results is of fundamental importance for using Larch for fitting EXAFS
 spectra.  While a complete description of FEFF is beyond the scope of this
 documentation, here we describe how to read the results from FEFF into
 Larch.  The main interface for this is the :func:`feffpath` function that
-reads FEFF *feffNNNN.dat* file into a larch FeffPath Group.
-
-For many uses a Feff Path can be treated as a "black box" which holds the
-EXAFS information for a scattering path, and simply setting the adjustable
-Path Parameters and passing around these Groups is sufficient for
-simulating and fitting EXAFS spectra.  For some cases, however, it can be
-helpful to inspect and study the details of the Feff Path.  This ability is
-readily available with Larch, as all the data from the Feff Path is exposed
-and available.
-
-..  function:: feffpath(filename, label=None, s02=None, degen=None, e0=None, deltar=None, sigma2=None, ...)
-
-    create a FeffPath Group from a *feffNNNN.dat* file.
-
-    :param filename:  name (full path of) *feffNNNN.dat* file
-    :param label:     label for path   [file name]
-    :param degen:     path degeneracy, :math:`N` [taken from file]
-    :param s02:       :math:`S_0^2`    value or parameter [1.0]
-    :param e0:        :math:`E_0`      value or parameter [0.0]
-    :param deltar:    :math:`\delta R` value or parameter [0.0]
-    :param sigma2:    :math:`\sigma^2` value or parameter [0.0]
-    :param third:     :math:`c_3`      value or parameter [0.0]
-    :param fourth:    :math:`c_4`      value or parameter [0.0]
-    :param ei:        :math:`E_i`      value or parameter [0.0]
-    :returns: a FeffPath Group.
-
-The returned FeffPath Group is a regular Larch Group, but with a set of
-components that are expected to be in place and holding the right values to
-describe a Feff Path.  These are discussed in more detail below in
-:ref:`xafs-feffpathgroup_sec`.
-
-For all the options described above with **value or parameter** either a
-numerical value or a Parameter (as created by :func:`_math.param`) can be given.
+reads FEFF *feffNNNN.dat* file and creates a FeffPath Group.
 
 
+:func:`feffpath` and FeffPath Groups
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-:func:`path2chi` and :func:`ff2chi`: Generating :math:`\chi(k)` for a FeffPath
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The outputs from Feff for each path are complicated enough to need a
+structured organization of data.  This is accomplished by providing a
+special kind of a Larch Group -- a FeffPath Group which holds all the
+information about a Feff Path, including the photo-electron scattering
+amplitudes and phase-shifts needed to describe and calculate the EXAFS for
+that Path.  A FeffPath Group is created with the :func:`feffpath`
+group. For many uses a Feff Path can be treated as a "black box", and
+simply setting the adjustable Path Parameters and passing around these
+Groups is sufficient for simulating and fitting EXAFS spectra.
 
-..  function:: path2chi(path, paramgroup=None, kmax=None, kstep=0.05, k=None)
+At times it can be helpful to inspect and study the detailed components of
+the Feff Path.  Since a FeffPath Group is a regular Larch Group, all the
+data can be read and viewed.  A FeffPath Group has the components listed in
+the :ref:`Table of Feff Path Parameters <xafs-pathparams_table>`.  This
+includes the *Adjustable Numerical Path Parameters* -- the values of which
+can be changed to affect the calculated EXAFS for the Path -- as well as
+the arrays for :math:`k` and :math:`\chi` and several other attributes.
+Since this Group is used to calculate :math:`\chi(k)` for the path, many of
+the components need to be in place and holding the expected values so that
+the calculation can be done correctly, Due to Larch's flexibility, it is
+possible to delete, overwrite, or put inappropriate values into the
+components of a FeffPath Group, and care must be taken to avoid this.
 
-    calculate :math:`\chi(k)` for a single Feff Path.
-
-    :param path:        a FeffPath Group
-    :param paramgroup:  a Parameter Group for calculating Path Parameters [``None``]
-    :param kmax:        maximum :math:`k` value for :math:`\chi` calculation [20].
-    :param kstep:       step in :math:`k` value for :math:`\chi` calculation [0.05].
-    :param k:           explicit array of :math:`k` values to calculate :math:`\chi`.
-    :returns: ``None``
-
-If ``k`` is specified, that will be used as the set of :math:`k` values at which
-to calculate :math:`\chi`.  If not given, the values of ``kstep`` and ``kmax``
-will be used to construct a uniformly-spaced array of :math:`k` values starting
-at 0 and extending to (and including) ``kmax``.
-
-The calculated :math:`\chi` array is placed in the Feff Path Group ``path`` as
-``path.chi``.  In addttion calculated arrays for :math:`k`, :math:`p`, and
-:math:`\rm{Im}(\chi)` are placed in the variables ``path.k``, ``path.p``, and
-``path.chi_imag``, respectively.  See :ref:`xafs-exafsequation_sec` for the
-detailed definitions of the quantities.
-
-If specified, ``paramgroup`` is used as the Parameter Group -- the group used
-for evaluating parameter expressions (ie, constraints using named variables).
-This is similar to the use in REFERENCE HERE.
-
-..  function:: ff2chi(pathlist, paramgroup=None, group=None, k=None, kmax=None, kstep=0.05)
-
-    sum the :math:`\chi(k)` for a list of FeffPath Groups.
-
-    :param pathlist:    a list of FeffPath Groups
-    :param paramgroup:  a Parameter Group for calculating Path Parameters [``None``]
-    :param group:       a Group to which the outputs are written  [``None``]
-    :param kmax:        maximum :math:`k` value for :math:`\chi` calculation [20].
-    :param kstep:       step in :math:`k` value for :math:`\chi` calculation [0.05].
-    :param k:           explicit array of :math:`k` values to calculate :math:`\chi`.
-    :returns: ``None``
-
-This essentially calls :func:`path2chi` for each of the paths in the
-``pathlist`` and writes the resulting arrays for :math:`k` and :math:`\chi` the
-sum of :math:`\chi` for all the paths) to ``group.k`` and ``group.chi``.
-
-.. index:: FeffPath Groups
-.. _xafs-feffpathgroup_sec:
-
-FeffPath Groups
-~~~~~~~~~~~~~~~~~~
-
-The functions listed above, as well as :func:`feffit` discussed in the next
-session, use FeffPath Groups as the basic object holding information
-about a Feff Path, including the photo-electron scattering amplitudes and
-phase-shifts needed to describe the EXAFS for that Path.
-
-A FeffPath is a regular Larch Group, but with a set of components that are hold
-values to describe an EXAFS Scattering Path, and allow :math:`\chi(k)` to be
-calculated for that Path.  Thus, a FeffPath needs to have several components in
-place and holding the expected values so that the calculations can be done
-correctly.  Specifically, a FeffPath Group has the components listed in the
-:ref:`Table of Feff Path Parameters <xafs-pathparams_table>`.  This includes the
-*Adjustable Numerical Path Parameters* -- the values of which can be changed to
-affect the calculated EXAFS for the Path -- as well as the arrays for :math:`k`
-and :math:`\chi` and several other attributes.
 
 .. index:: Feff Path Parameters
 
@@ -169,8 +97,72 @@ and :math:`\chi` and several other attributes.
     |   _feffdat      |  Group          | a Group containing raw data from *feffNNNN.dat*    |
     +-----------------+-----------------+----------------------------------------------------+
 
-Due to Larch's flexibility, it is possible to delete, overwrite, or put inappropriate values into
-these variables.  This can cause all sorts of trouble and care should be taken to not do this.
+
+..  function:: feffpath(filename, label=None, s02=None, degen=None, e0=None, deltar=None, sigma2=None, ...)
+
+    create a FeffPath Group from a *feffNNNN.dat* file.
+
+    :param filename:  name (full path of) *feffNNNN.dat* file
+    :param label:     label for path   [file name]
+    :param degen:     path degeneracy, :math:`N` [taken from file]
+    :param s02:       :math:`S_0^2`    value or parameter [1.0]
+    :param e0:        :math:`E_0`      value or parameter [0.0]
+    :param deltar:    :math:`\delta R` value or parameter [0.0]
+    :param sigma2:    :math:`\sigma^2` value or parameter [0.0]
+    :param third:     :math:`c_3`      value or parameter [0.0]
+    :param fourth:    :math:`c_4`      value or parameter [0.0]
+    :param ei:        :math:`E_i`      value or parameter [0.0]
+    :returns: a FeffPath Group.
+
+For all the options described above with **value or parameter** either a
+numerical value or a Parameter (as created by :func:`_math.param`) can be given.
+
+
+:func:`path2chi` and :func:`ff2chi`: Generating :math:`\chi(k)` for a FeffPath
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..  function:: path2chi(path, paramgroup=None, kmax=None, kstep=0.05, k=None)
+
+    calculate :math:`\chi(k)` for a single Feff Path.
+
+    :param path:        a FeffPath Group
+    :param paramgroup:  a Parameter Group for calculating Path Parameters [``None``]
+    :param kmax:        maximum :math:`k` value for :math:`\chi` calculation [20].
+    :param kstep:       step in :math:`k` value for :math:`\chi` calculation [0.05].
+    :param k:           explicit array of :math:`k` values to calculate :math:`\chi`.
+    :returns: ``None``
+
+If ``k`` is specified, that will be used as the set of :math:`k` values at which
+to calculate :math:`\chi`.  If not given, the values of ``kstep`` and ``kmax``
+will be used to construct a uniformly-spaced array of :math:`k` values starting
+at 0 and extending to (and including) ``kmax``.
+
+The calculated :math:`\chi` array is placed in the Feff Path Group ``path`` as
+``path.chi``.  In addition calculated arrays for :math:`k`, :math:`p`, and
+:math:`\rm{Im}(\chi)` are placed in the variables ``path.k``, ``path.p``, and
+``path.chi_imag``, respectively.  See :ref:`xafs-exafsequation_sec` for the
+detailed definitions of the quantities.
+
+If specified, ``paramgroup`` is used as the Parameter Group -- the group used
+for evaluating parameter expressions (ie, constraints using named variables).
+This is similar to the use in REFERENCE HERE.
+
+..  function:: ff2chi(pathlist, paramgroup=None, group=None, k=None, kmax=None, kstep=0.05)
+
+    sum the :math:`\chi(k)` for a list of FeffPath Groups.
+
+    :param pathlist:    a list of FeffPath Groups
+    :param paramgroup:  a Parameter Group for calculating Path Parameters [``None``]
+    :param group:       a Group to which the outputs are written  [``None``]
+    :param kmax:        maximum :math:`k` value for :math:`\chi` calculation [20].
+    :param kstep:       step in :math:`k` value for :math:`\chi` calculation [0.05].
+    :param k:           explicit array of :math:`k` values to calculate :math:`\chi`.
+    :returns: ``None``
+
+This essentially calls :func:`path2chi` for each of the paths in the
+``pathlist`` and writes the resulting arrays for :math:`k` and :math:`\chi` the
+sum of :math:`\chi` for all the paths) to ``group.k`` and ``group.chi``.
+
 
 
 .. index:: Feff.dat File Group
@@ -188,7 +180,6 @@ FeffPath Group, and others still (such as ``exch`` and ``rnorman``) are left onl
 
 As with the FeffPath Group, this Group has an expected set of components that
 should be treated as read-only.
-
 
      ================= =====================================================================
       attribute          description

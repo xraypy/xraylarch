@@ -37,14 +37,14 @@ conventions.  This gives conjugate variables of :math:`\omega` and
   \chi(k) \sim \sin[2kR + \delta(k)]
 
 the conjugate variables in XAFS are generally taken to be :math:`k` and
-:math:`2R`.  The normalizaion of :math:`\tilde\chi(R)` from a Fourier
+:math:`2R`.  The normalization of :math:`\tilde\chi(R)` from a Fourier
 transform of :math:`\chi(k)` is a matter of convention, but we follow the
 symmetric case above (with :math:`t` replaced by :math:`k` and
 :math:`\omega` replaced by :math:`2R`, and of course :math:`f` by
 :math:`\chi`).
 
 But there are two more important issues to mention.  First, an XAFS Fourier
-transform mutiplies :math:`\chi(k)` by a power of :math:`k`, :math:`k^n`
+transform multiplies :math:`\chi(k)` by a power of :math:`k`, :math:`k^n`
 and by a window function :math:`\Omega(k)` before doing the Fourier
 transform.  The power-law weighting allow the oscillations in :math:`k` to
 emphasize different portions of the spectra, or to give a uniform intensity
@@ -55,7 +55,7 @@ from a sudden truncation of :math:`\chi(k)` at the end of the data range.
 The second important issue is that the continuous Fourier transform
 described above is replaced by a discrete transform.  This better matches
 the discrete sampling of energy and :math:`k` values of the data, and
-allows Fast Fourier Transform techinques to be used.  It does change the
+allows Fast Fourier Transform techniques to be used.  It does change the
 definitions of the transforms used somewhat. First, the :math:`\chi(k)`
 data must be on *uniformly spaced* set of :math:`k` values.  The default
 :math:`k` spacing used in Larch (including as output from :func:`autobk`)
@@ -92,7 +92,7 @@ points :math:`R_m = m \, \delta R`, the definitions become:
 These normalizations preserve the symmetry properties of the Fourier
 Transforms with conjugate variables :math:`k` and :math:`2R`.
 Though the reverse transform converts the complex :math:`\chi(R)` to the
-complext :math:`\chi(k)` on the same :math:`k` spacing as the starting
+complex :math:`\chi(k)` on the same :math:`k` spacing as the starting
 data, we often refer to the filtered :math:`\chi(k)` as *q* space.
 
 A final complication in using Fourier transforms for XAFS is that the
@@ -116,7 +116,7 @@ Forward XAFS Fourier transforms (:math:`k{\rightarrow}R`)
 
 The forward Fourier transform converts :math:`\chi(k)` to :math:`\chi(R)`
 and is of primary importance for XAFS analysis.  In Larch, this is
-encapsulated in the :func:`xafsft` function.
+encapsulated in the :func:`xftf` function.
 
 ..  function:: xftf(k, chi, group=None, ...)
 
@@ -156,7 +156,7 @@ encapsulated in the :func:`xafsft` function.
     values with spacing ``kstep``, starting a 0.  If it is not, the ``k``
     and ``chi`` data will be linearly interpolated onto the proper grid.
 
-    The FT window parameters are explained in more detail in the discusion of
+    The FT window parameters are explained in more detail in the discussion of
     :func:`ftwindow`.
 
 
@@ -226,7 +226,7 @@ the explicitly real :math:`\chi(k)`.
     imaginary parts of the :math:`\chi(R)` as output to ``Group.chir_re`` or
     ``Group.chir_im``.
 
-    The FT window parameters are explained in more detail in the discusion of
+    The FT window parameters are explained in more detail in the discussion of
     :func:`ftwindow`.
 
 
@@ -291,7 +291,7 @@ available for constructing windows.  A sampling of windows is shown below.
 
 In general, the window arrays have a value that gradually increases from 0
 up to 1 at the low-k end, may stay with a value 1 over some central
-portion, and then tapers down to 0 at the high-k end.  The mea ning of the
+portion, and then tapers down to 0 at the high-k end.  The meaning of the
 ``dx`` and ``dx2``, and even ``xmin``, and ``xmax`` varies a bit for the
 different window types.  The Hanning, Parzen, and Welch windows share a
 convention that the windows taper up from 0 to 1 between ``xmin-dx/2`` and
@@ -299,7 +299,7 @@ convention that the windows taper up from 0 to 1 between ``xmin-dx/2`` and
 ``xmax+dx2/2``.
 
 The conventions for the Kaiser, Gaussian, and Sine window types is a bit
-more complicated, and is best given explicitly.  In the formulae below,
+more complicated, and is best given explicitly.  In the formulas below,
 ``dx`` written as :math:`dx` and ``dx2`` as :math:`dx_2`.  We
 define :math:`x_i = x_{\rm min} - dx/2`, :math:`x_f = x_{\rm max} +
 dx_2/2`, and :math:`x_0 = (x_f + x_i)/2`, as the beginning, end, and
@@ -328,7 +328,7 @@ The Kaiser-Bessel window is slightly more complicated:
 
 where :math:`i_0` is the modified Bessel function of order 0.
 
-Exmample Fourier transform windows
+Catalog of Fourier transform window
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here, we give a series of example windows, to illustrate the different
@@ -379,7 +379,7 @@ approaches a nearly Gaussian lineshape.
 .. _xafs_fig7:
 
    Figure 7. Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
-   Sine, and Gaussian windos with the same parameters is shown.  On the right, the effect of
+   Sine, and Gaussian windows with the same parameters is shown.  On the right, the effect of
    ``dx`` is shown for the Kaiser-Bessel window, and a closer comparison to a
    Gaussian window is made.
 
@@ -403,7 +403,7 @@ figures shown here are included in the *examples/xafs/* folder.
 
 
 We start with a comparison of a small value of ``dk`` and a larger value.
-A script that runs :func:`xafsft`, changing on ``dk`` would look like::
+A script that runs :func:`xftf`, changing on ``dk`` would look like::
 
     xftf(dat1.k, dat1.chi, kmin=3, kmax=13, dk=1, window='hanning',
          kweight=kweight, group=dat1)
@@ -424,12 +424,12 @@ would result in the following results:
      :width: 48 %
 
 
-  Figure 8.  Comparson of the effect of different values of ``dk`` on real
+  Figure 8.  Comparison of the effect of different values of ``dk`` on real
   XAFS Fourier transforms.  Increasing ``dk`` reduces peak heights and
   tends to broaden peaks, but the effects are rather small.
 
 
-A script that runs :func:`xafsft` with consistent parameters, but different
+A script that runs :func:`xftf` with consistent parameters, but different
 window types::
 
     xftf(dat1.k, dat1.chi, kmin=3, kmax=13, dk=4, window='hanning',
@@ -462,7 +462,7 @@ would result in the following results:
      :target: ../_images/xft_example4.png
      :width: 48 %
 
-  Figure 9.  Comparson of the effect of different window types
+  Figure 9.  Comparison of the effect of different window types
   on real XAFS Fourier transforms.
 
 We now turn our attention to the different components of the Fourier
