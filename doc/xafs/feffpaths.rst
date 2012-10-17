@@ -304,7 +304,7 @@ Example:  Reading a FEFF file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Here we simply read a *feffNNNN.dat* file and display its components, and
-calculate :math:`chi` for this path with two different values of
+calculate :math:`\chi` for this path with two different values of
 :math:`\sigma^2`.
 
 .. literalinclude:: ../../examples/feffit/doc_feffdat1.lar
