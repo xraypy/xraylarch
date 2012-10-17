@@ -17,7 +17,7 @@ recommended_modules = {'basic processing analysis': ('numpy', 'scipy', 'docutils
                        'using the EPICS control system': ('epics',)
                     }
 
-failed = False
+modules_imported = {}
 missing = []
 deps_ok = False
 if os.path.exists('.deps'):
@@ -31,18 +31,30 @@ if not deps_ok:
     print( 'Checking dependencies....')
     for desc, mods in recommended_modules.items():
         for mod in mods:
+            if mod not in modules_imported:
+                modules_imported[mod] = False
             try:
                 x = __import__(mod)
+                modules_imported[mod] = True
             except ImportError:
-                failed = failed or mod in required_modules
                 missing.append('     %s:  needed for %s' % (mod, desc))
+    missing_reqs = []
+    for mod in modules_imported:
+        if mod in required_modules and not modules_imported[mod]:
+            missing_reqs.append(mod)
+            
+    if len(missing_reqs) > 0:
+        print('== Cannot Install Larch: Required Modules are Missing ==')
+        isword = 'is'
+        if len(missing_reqs) > 1: isword = 'are'
+        print(' %s %s REQUIRED' % (' and '.join(missing_reqs), isword) )
+        print(' ')
+        print(' Please read INSTALL for further information.')
+        print(' ')
 
-    if failed:
-        print('== Cannot Install Larch: ==')
-        print('Missing dependencies: %s are REQUIRED' % (' and '.join(required_modules)))
-        print('Please read INSTALL for further information.')
         sys.exit()
     deps_ok = len(missing) == 0
+print '=============================='
 ############
 # read installation locations from lib/site_configdata.py
 share_basedir = site_configdata.unix_installdir
