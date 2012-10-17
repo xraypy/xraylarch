@@ -76,7 +76,7 @@ components of a FeffPath Group, and care must be taken to avoid this.
     +-----------------+-----------------+----------------------------------------------------+
     |   e0            |  Adjustable     | :math:`E_0`, energy origin                         |
     +-----------------+-----------------+----------------------------------------------------+
-    |   deltar        |  Adjustable     | :math:`\delta R`, shift in path length             |
+    |   deltar        |  Adjustable     | :math:`\Delta R`, shift in path length             |
     +-----------------+-----------------+----------------------------------------------------+
     |   sigma2        |  Adjustable     | :math:`\sigma^2`, mean-square displacement         |
     +-----------------+-----------------+----------------------------------------------------+
@@ -107,7 +107,7 @@ components of a FeffPath Group, and care must be taken to avoid this.
     :param degen:     path degeneracy, :math:`N` [taken from file]
     :param s02:       :math:`S_0^2`    value or parameter [1.0]
     :param e0:        :math:`E_0`      value or parameter [0.0]
-    :param deltar:    :math:`\delta R` value or parameter [0.0]
+    :param deltar:    :math:`\Delta R` value or parameter [0.0]
     :param sigma2:    :math:`\sigma^2` value or parameter [0.0]
     :param third:     :math:`c_3`      value or parameter [0.0]
     :param fourth:    :math:`c_4`      value or parameter [0.0]
@@ -163,8 +163,6 @@ This essentially calls :func:`path2chi` for each of the paths in the
 ``pathlist`` and writes the resulting arrays for :math:`k` and :math:`\chi` the
 sum of :math:`\chi` for all the paths) to ``group.k`` and ``group.chi``.
 
-
-
 .. index:: Feff.dat File Group
 
 .. _xafs-feffdat_sec:
@@ -181,33 +179,46 @@ FeffPath Group, and others still (such as ``exch`` and ``rnorman``) are left onl
 As with the FeffPath Group, this Group has an expected set of components that
 should be treated as read-only.
 
-     ================= =====================================================================
-      attribute          description
-     ================= =====================================================================
-       amp               array: total amplitude
+.. _xafs-feffdat_table:
+
+    Table of Feff.dat components.  Listed here is the component read from
+    the Feff.dat file and stored in the ``_feffdat`` group for each FeffPath.
+
+    ================= =====================================================================
+     attribute          description
+    ================= =====================================================================
+       amp               array: total amplitude,   :math:`F_{\rm eff}(k)`
        degen             path degeneracy (coordination number)
        edge              energy threshold relative to atomic valu (a poor estimate)
        exch              string describing electronic exchange model
        filename          File name
        gam_ch            core level energy width
        geom              path geometry: list of (Symbol, Z, ipot, x, y, z)
-       k                 array: k values
+       k                 array: k values, :math:`k_{\rm feff}`
        kf                k value at Fermi level
-       lam               array: mean-free path
+       lam               array: mean-free path,  :math:`\lambda(k)`
        mag_feff          array: magnitude of Feff
        mu                Fermi level, eV
-       pha               array: total phase shift
+       pha               array: total phase shift, :math:`\delta(k)`
        pha_feff          array: scattring phase shift
        potentials        path potentials: list of (ipot, z, r_MuffinTin, r_Norman)
        real_phc          array: central atom phase shift
        red_fact          array: amplitude reduction factor
-       rep               array: real part of p
+       rep               array: real part of p, :math:`p_{\rm real}(k)`
        rnorman           Norman radius
        rs_int            interstitial radius
        title             user title
        version           Feff version
        vint              interstitial potential
-     ================= =====================================================================
+    ================= =====================================================================
+
+
+The arrays from the data columns of the Feff data file break up the
+amplitude and phase into two components (essentially as one for the central
+atom and one for the scattering atoms) that are simply added together.
+Thus ``amp`` = ``red_fact`` + ``mag_feff`` and the sum is used as
+:math:`F_{\rm eff}(k)`.  Similarly, ``pha`` = ``real_phc`` + ``pha_feff``
+and the sum is used as :math:`\delta(k)`.
 
 
 .. index:: EXAFS Equation with Feff
@@ -217,9 +228,75 @@ should be treated as read-only.
 The EXAFS Equation using Feff and FeffPath Groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now we are ready to write down the full EXAFS equation used for a Feff
-Path.
+Now we are ready to write down the full EXAFS equation used for a Feff Path
+using the terms defined above in the :ref:`Table of Feff Path Parameters
+<xafs-pathparams_table>` and the :ref:`Table of Feff.Dat Components
+<xafs-feffdat_table>`.  One of the trickier concepts is that we are
+evaluating at experimental values of :math:`k` while the Feff calculation
+is tabulated on its own set of :math:`k` values and we may need to apply an
+energy shift of :math:`E_0` to the Feff calculation.  Thus, first we find
+:math:`k` as
 
+.. math::
+    k = \sqrt{k_{\rm feff}^2  - {2m_e E_0}/{\hbar^2} }
+
+where :math:`E_0` is taken from the ``e0`` parameter and :math:`k_{\rm
+feff}` are the :math:`k` values from Feff (``_feffdat.k``).  This shifted
+:math:`k` will be used to access the :math:`k` dependent values from the
+Feff arrays.  Next, we note that we need the complex wavenumber, defined as
+
+.. math::
+   p = p' + i p'' = \sqrt{ \bigl\{ p_{\rm real}(k) - i / \lambda(k) \bigr\}^2 - i \,
+        2 m_e E_i /{\hbar^2} }
+
+where :math:`p_{\rm real}` and :math:`\lambda` are the values from Feff
+(``_feffdat.rep`` and ``_feffdat.lam``) and :math:`E_i` is the complex energy
+shift from the parameter ``ei``.  Note that :math:`i` is used as the complex
+number following the physics literature, while within Larch ``1j`` is used.
+The complex wavenumber :math:`p` includes a self-energy term (due the the
+presence of multiple electrons in the system) and is meant to be referenced
+to the absorption threshod while :math:`k` is meant to be referenced to the
+Fermi level.  Thus :math:`p_{\rm real} \approx \Sigma + k`, where
+:math:`\Sigma` is a small but usually positive offset.  Within the EXAFS
+equation, :math:`k` is used to restore the calculation of :math:`\chi(k)` as
+done by Feff, while :math:`p` is used to apply alterations to :math:`\chi(k)`
+as for disorder terms.
+
+The EXAFS equation used for constructing :math:`\chi(k)` from a Feff
+calculation is then
+
+.. math::
+   :nowrap:
+
+   \begin{eqnarray*}
+   \chi(k) = & {\rm Im}\Bigl[
+      {\displaystyle{
+              \frac{f_{\rm eff(k)} N S_0^2} {k(R_{\rm eff} + \Delta R)^2} }
+            \enskip\exp(-2p''R_{\rm reff} - 2p^2\sigma^2 +
+            \textstyle{\frac{2}{3}}p^4 c_4)}  \hspace{18mm} \,\, \\
+            &{\times  \exp \bigl\{ i\big[  2kR_{\rm eff} + \delta(k)
+            + 2p(\Delta R - 2\sigma^2/R_{\rm eff} )
+            - \textstyle{\frac{4}{3}} p^3 c_3  \big]  \bigr\} }
+           \Bigr]    \\
+   \end{eqnarray*}
+
+where the terms are all defined above. Again, note that :math:`k` is used to
+reconstruct the unaltered EXAFS from the Feff.dat file, and the complex
+:math:`p` is used for the terms adding the effects of disorder.  Also note
+that :math:`p''` becomes :math:`\lambda(k)` for :math:`E_i = 0`, and is the
+generalization of the mean-free-path contribution.  The terms :math:`\Delta
+R`, :math:`\sigma^2`, :math:`c_3`, and :math:`c_4` are the first four
+cumulants of the atomic pair distribution for the selected path. The
+additional term :math:`-2p(2\sigma^2/R_{\rm eff})` in the phase is a
+correction to the cumulant expansion due to the averaging over the
+:math:`1/R^2` term in the EXAFS equation.
+
+The use of the cumulant expansion here does not necessarily imply that
+systems must be ordered enough for their atomic distributios to modeled by
+the cumulant expansion.  All that is required is that contribution from each
+path be ordered enough for the cumulant expansion to work.  A highly
+disordered system can be modeled by applying a more complex weighting to a
+set of paths -- that is, a histogram of paths.
 
 
 Example:  Reading a FEFF file
