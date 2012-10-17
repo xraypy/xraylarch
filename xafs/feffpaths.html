@@ -57,18 +57,19 @@
         <li class="right" >
           <a href="xafsft.html" title="XAFS: Fourier Transforms for XAFS"
              accesskey="P">previous</a> |</li>
-   <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="../search.html">search</a>|&nbsp;</li>
 
           <li><a href="index.html" accesskey="U">XAFS Analysis with Larch</a> &raquo;</li> 
       </ul>
     </div>
+
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
@@ -111,6 +112,7 @@
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
+
 
     <div class="document">
       <div class="documentwrapper">
@@ -209,7 +211,7 @@ sub-group <tt class="docutils literal"><span class="pre">_feffdat</span></tt> co
 </tr>
 <tr class="row-even"><td>deltar</td>
 <td>Adjustable</td>
-<td><img class="math" src="../_images/math/54a4250f367ce0b8542a9368e68ef0d4a575db8c.png" alt="\delta R"/>, shift in path length</td>
+<td><img class="math" src="../_images/math/3b949109c5d7b0ce70c280f17cfc63036d7ccc96.png" alt="\Delta R"/>, shift in path length</td>
 </tr>
 <tr class="row-odd"><td>sigma2</td>
 <td>Adjustable</td>
@@ -264,7 +266,7 @@ sub-group <tt class="docutils literal"><span class="pre">_feffdat</span></tt> co
 <li><strong>degen</strong> &#8211; path degeneracy, <img class="math" src="../_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/> [taken from file]</li>
 <li><strong>s02</strong> &#8211; <img class="math" src="../_images/math/fc923d7c827eca7b3f461463e11c982710c3bcb1.png" alt="S_0^2"/>    value or parameter [1.0]</li>
 <li><strong>e0</strong> &#8211; <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/>      value or parameter [0.0]</li>
-<li><strong>deltar</strong> &#8211; <img class="math" src="../_images/math/54a4250f367ce0b8542a9368e68ef0d4a575db8c.png" alt="\delta R"/> value or parameter [0.0]</li>
+<li><strong>deltar</strong> &#8211; <img class="math" src="../_images/math/3b949109c5d7b0ce70c280f17cfc63036d7ccc96.png" alt="\Delta R"/> value or parameter [0.0]</li>
 <li><strong>sigma2</strong> &#8211; <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/> value or parameter [0.0]</li>
 <li><strong>third</strong> &#8211; <img class="math" src="../_images/math/94aaab012b431d7695fa1ae72d7a88b05baf09f7.png" alt="c_3"/>      value or parameter [0.0]</li>
 <li><strong>fourth</strong> &#8211; <img class="math" src="../_images/math/67cff48f601f12a5b71afe302e7c3487f7535731.png" alt="c_4"/>      value or parameter [0.0]</li>
@@ -358,8 +360,10 @@ FeffPath Group, and others still (such as <tt class="docutils literal"><span cla
 <tt class="docutils literal"><span class="pre">_feffdat</span></tt> Group, though they may be used for further study.</p>
 <p>As with the FeffPath Group, this Group has an expected set of components that
 should be treated as read-only.</p>
-<blockquote>
-<div><table border="1" class="docutils">
+<blockquote id="xafs-feffdat-table">
+<div><p>Table of Feff.dat components.  Listed here is the component read from
+the Feff.dat file and stored in the <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group for each FeffPath.</p>
+<table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
 <col width="80%" />
@@ -371,7 +375,7 @@ should be treated as read-only.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>amp</td>
-<td>array: total amplitude</td>
+<td>array: total amplitude,   <img class="math" src="../_images/math/dc9ceb3d964e0dd8dc21a9b509aec8e8bb0ea172.png" alt="F_{\rm eff}(k)"/></td>
 </tr>
 <tr class="row-odd"><td>degen</td>
 <td>path degeneracy (coordination number)</td>
@@ -392,13 +396,13 @@ should be treated as read-only.</p>
 <td>path geometry: list of (Symbol, Z, ipot, x, y, z)</td>
 </tr>
 <tr class="row-odd"><td>k</td>
-<td>array: k values</td>
+<td>array: k values, <img class="math" src="../_images/math/d5ddb392ea10551ae9362e74a91a808ca21c042d.png" alt="k_{\rm feff}"/></td>
 </tr>
 <tr class="row-even"><td>kf</td>
 <td>k value at Fermi level</td>
 </tr>
 <tr class="row-odd"><td>lam</td>
-<td>array: mean-free path</td>
+<td>array: mean-free path,  <img class="math" src="../_images/math/9da1ca06f254e28e313f89305d77b9824c2e81ad.png" alt="\lambda(k)"/></td>
 </tr>
 <tr class="row-even"><td>mag_feff</td>
 <td>array: magnitude of Feff</td>
@@ -407,7 +411,7 @@ should be treated as read-only.</p>
 <td>Fermi level, eV</td>
 </tr>
 <tr class="row-even"><td>pha</td>
-<td>array: total phase shift</td>
+<td>array: total phase shift, <img class="math" src="../_images/math/c60f21ac85a002e1af86e871193d4ac8dc0fabde.png" alt="\delta(k)"/></td>
 </tr>
 <tr class="row-odd"><td>pha_feff</td>
 <td>array: scattring phase shift</td>
@@ -422,7 +426,7 @@ should be treated as read-only.</p>
 <td>array: amplitude reduction factor</td>
 </tr>
 <tr class="row-odd"><td>rep</td>
-<td>array: real part of p</td>
+<td>array: real part of p, <img class="math" src="../_images/math/62a9ce9672802009c1533f2b5a5cd183a9f8bc48.png" alt="p_{\rm real}(k)"/></td>
 </tr>
 <tr class="row-even"><td>rnorman</td>
 <td>Norman radius</td>
@@ -442,11 +446,72 @@ should be treated as read-only.</p>
 </tbody>
 </table>
 </div></blockquote>
+<p>The arrays from the data columns of the Feff data file break up the
+amplitude and phase into two components (essentially as one for the central
+atom and one for the scattering atoms) that are simply added together.
+Thus <tt class="docutils literal"><span class="pre">amp</span></tt> = <tt class="docutils literal"><span class="pre">red_fact</span></tt> + <tt class="docutils literal"><span class="pre">mag_feff</span></tt> and the sum is used as
+<img class="math" src="../_images/math/dc9ceb3d964e0dd8dc21a9b509aec8e8bb0ea172.png" alt="F_{\rm eff}(k)"/>.  Similarly, <tt class="docutils literal"><span class="pre">pha</span></tt> = <tt class="docutils literal"><span class="pre">real_phc</span></tt> + <tt class="docutils literal"><span class="pre">pha_feff</span></tt>
+and the sum is used as <img class="math" src="../_images/math/c60f21ac85a002e1af86e871193d4ac8dc0fabde.png" alt="\delta(k)"/>.</p>
 </div>
 <div class="section" id="the-exafs-equation-using-feff-and-feffpath-groups">
 <span id="xafs-exafsequation-sec"></span><span id="index-2"></span><h2>The EXAFS Equation using Feff and FeffPath Groups<a class="headerlink" href="#the-exafs-equation-using-feff-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
-<p>Now we are ready to write down the full EXAFS equation used for a Feff
-Path.</p>
+<p>Now we are ready to write down the full EXAFS equation used for a Feff Path
+using the terms defined above in the <a class="reference internal" href="#xafs-pathparams-table"><em>Table of Feff Path Parameters</em></a> and the <a class="reference internal" href="#xafs-feffdat-table"><em>Table of Feff.Dat Components</em></a>.  One of the trickier concepts is that we are
+evaluating at experimental values of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> while the Feff calculation
+is tabulated on its own set of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values and we may need to apply an
+energy shift of <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> to the Feff calculation.  Thus, first we find
+<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> as</p>
+<div class="math">
+<p><img src="../_images/math/e843cf17b6b2b22b09f913d2e6af861f04ba4e03.png" alt="k = \sqrt{k_{\rm feff}^2  - {2m_e E_0}/{\hbar^2} }"/></p>
+</div><p>where <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> is taken from the <tt class="docutils literal"><span class="pre">e0</span></tt> parameter and <img class="math" src="../_images/math/426172f4bcda36a7158cc9a6ea45ef149e13aa43.png" alt="k_{\rm
+feff}"/> are the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values from Feff (<tt class="docutils literal"><span class="pre">_feffdat.k</span></tt>).  This shifted
+<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> will be used to access the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> dependent values from the
+Feff arrays.  Next, we note that we need the complex wavenumber, defined as</p>
+<div class="math">
+<p><img src="../_images/math/b100fa8ed524edd22778f5bc86ae184b44cae04b.png" alt="p = p' + i p'' = \sqrt{ \bigl\{ p_{\rm real}(k) - i / \lambda(k) \bigr\}^2 - i \,
+     2 m_e E_i /{\hbar^2} }"/></p>
+</div><p>where <img class="math" src="../_images/math/ebc667a6b48c0f57dd85e1e4479e308b711c0b37.png" alt="p_{\rm real}"/> and <img class="math" src="../_images/math/ce4588fd900d02afcbd260bc07f54cce49a7dc4a.png" alt="\lambda"/> are the values from Feff
+(<tt class="docutils literal"><span class="pre">_feffdat.rep</span></tt> and <tt class="docutils literal"><span class="pre">_feffdat.lam</span></tt>) and <img class="math" src="../_images/math/f8f358aa01478e43f1a663db574b83f88d7be478.png" alt="E_i"/> is the complex energy
+shift from the parameter <tt class="docutils literal"><span class="pre">ei</span></tt>.  Note that <img class="math" src="../_images/math/34857b3ba74ce5cd8607f3ebd23e9015908ada71.png" alt="i"/> is used as the complex
+number following the physics literature, while within Larch <tt class="docutils literal"><span class="pre">1j</span></tt> is used.
+The complex wavenumber <img class="math" src="../_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/> includes a self-energy term (due the the
+presence of multiple electrons in the system) and is meant to be referenced
+to the absorption threshod while <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> is meant to be referenced to the
+Fermi level.  Thus <img class="math" src="../_images/math/4c9ec62dd8f94ca61489453f6c67271591a6d003.png" alt="p_{\rm real} \approx \Sigma + k"/>, where
+<img class="math" src="../_images/math/c8f77e3035db5fe9a4975967750ac1a6454bda8c.png" alt="\Sigma"/> is a small but usually positive offset.  Within the EXAFS
+equation, <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> is used to restore the calculation of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> as
+done by Feff, while <img class="math" src="../_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/> is used to apply alterations to <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>
+as for disorder terms.</p>
+<p>The EXAFS equation used for constructing <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> from a Feff
+calculation is then</p>
+<div class="math">
+<p><img src="../_images/math/c998bfa74d71a14018ee98799599e0c64a888fbe.png" alt="\begin{eqnarray*}
+\chi(k) = &amp; {\rm Im}\Bigl[
+   {\displaystyle{
+           \frac{f_{\rm eff(k)} N S_0^2} {k(R_{\rm eff} + \Delta R)^2} }
+         \enskip\exp(-2p''R_{\rm reff} - 2p^2\sigma^2 +
+         \textstyle{\frac{2}{3}}p^4 c_4)}  \hspace{18mm} \,\, \\
+         &amp;{\times  \exp \bigl\{ i\big[  2kR_{\rm eff} + \delta(k)
+         + 2p(\Delta R - 2\sigma^2/R_{\rm eff} )
+         - \textstyle{\frac{4}{3}} p^3 c_3  \big]  \bigr\} }
+        \Bigr]    \\
+\end{eqnarray*}"/></p>
+</div><p>where the terms are all defined above. Again, note that <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> is used to
+reconstruct the unaltered EXAFS from the Feff.dat file, and the complex
+<img class="math" src="../_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/> is used for the terms adding the effects of disorder.  Also note
+that <img class="math" src="../_images/math/ef804e2f03eac13c447a49c25c8b57bf936ceefb.png" alt="p''"/> becomes <img class="math" src="../_images/math/9da1ca06f254e28e313f89305d77b9824c2e81ad.png" alt="\lambda(k)"/> for <img class="math" src="../_images/math/9fe46701fb538f53997b9a8c6ec67c44ee032593.png" alt="E_i = 0"/>, and is the
+generalization of the mean-free-path contribution.  The terms <img class="math" src="../_images/math/08842238d3403fa09d4313be1d356168b7f360e1.png" alt="\Delta
+R"/>, <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/>, <img class="math" src="../_images/math/94aaab012b431d7695fa1ae72d7a88b05baf09f7.png" alt="c_3"/>, and <img class="math" src="../_images/math/67cff48f601f12a5b71afe302e7c3487f7535731.png" alt="c_4"/> are the first four
+cumulants of the atomic pair distribution for the selected path. The
+additional term <img class="math" src="../_images/math/f25bca85d065ff40a783a30890c018517e48b646.png" alt="-2p(2\sigma^2/R_{\rm eff})"/> in the phase is a
+correction to the cumulant expansion due to the averaging over the
+<img class="math" src="../_images/math/5a7a21ed469f84a209720ee21ba26052d77cdbc5.png" alt="1/R^2"/> term in the EXAFS equation.</p>
+<p>The use of the cumulant expansion here does not necessarily imply that
+systems must be ordered enough for their atomic distributios to modeled by
+the cumulant expansion.  All that is required is that contribution from each
+path be ordered enough for the cumulant expansion to work.  A highly
+disordered system can be modeled by applying a more complex weighting to a
+set of paths &#8211; that is, a histogram of paths.</p>
 </div>
 <div class="section" id="example-reading-a-feff-file">
 <h2>Example:  Reading a FEFF file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
@@ -476,14 +541,14 @@ Path.</p>
         <li class="right" >
           <a href="xafsft.html" title="XAFS: Fourier Transforms for XAFS"
              >previous</a> |</li>
-   <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
-   &nbsp;&nbsp;<li><a href="../search.html">search</a>|&nbsp;</li>
 
           <li><a href="index.html" >XAFS Analysis with Larch</a> &raquo;</li> 
       </ul>
