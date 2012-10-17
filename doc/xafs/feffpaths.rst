@@ -76,7 +76,7 @@ components of a FeffPath Group, and care must be taken to avoid this.
     +-----------------+-----------------+----------------------------------------------------+
     |   e0            |  Adjustable     | :math:`E_0`, energy origin                         |
     +-----------------+-----------------+----------------------------------------------------+
-    |   deltar        |  Adjustable     | :math:`\delta R`, shift in path length             |
+    |   deltar        |  Adjustable     | :math:`\Delta R`, shift in path length             |
     +-----------------+-----------------+----------------------------------------------------+
     |   sigma2        |  Adjustable     | :math:`\sigma^2`, mean-square displacement         |
     +-----------------+-----------------+----------------------------------------------------+
@@ -107,7 +107,7 @@ components of a FeffPath Group, and care must be taken to avoid this.
     :param degen:     path degeneracy, :math:`N` [taken from file]
     :param s02:       :math:`S_0^2`    value or parameter [1.0]
     :param e0:        :math:`E_0`      value or parameter [0.0]
-    :param deltar:    :math:`\delta R` value or parameter [0.0]
+    :param deltar:    :math:`\Delta R` value or parameter [0.0]
     :param sigma2:    :math:`\sigma^2` value or parameter [0.0]
     :param third:     :math:`c_3`      value or parameter [0.0]
     :param fourth:    :math:`c_4`      value or parameter [0.0]
@@ -240,7 +240,63 @@ energy shift of :math:`E_0` to the Feff calculation.  Thus, first we find
 .. math::
     k = \sqrt{k_{\rm feff}^2  - {2m_e E_0}/{\hbar^2} }
 
-Next, we note that
+where :math:`E_0` is taken from the ``e0`` parameter and :math:`k_{\rm
+feff}` are the :math:`k` values from Feff (``_feffdat.k``).  This shifted
+:math:`k` will be used to access the :math:`k` dependent values from the
+Feff arrays.  Next, we note that we need the complex wavenumber, defined as
+
+.. math::
+   p = p' + i p'' = \sqrt{ \bigl\{ p_{\rm real}(k) - i / \lambda(k) \bigr\}^2 - i \,
+        2 m_e E_i /{\hbar^2} }
+
+where :math:`p_{\rm real}` and :math:`\lambda` are the values from Feff
+(``_feffdat.rep`` and ``_feffdat.lam``) and :math:`E_i` is the complex energy
+shift from the parameter ``ei``.  Note that :math:`i` is used as the complex
+number following the physics literature, while within Larch ``1j`` is used.
+The complex wavenumber :math:`p` includes a self-energy term (due the the
+presence of multiple electrons in the system) and is meant to be referenced
+to the absorption threshod while :math:`k` is meant to be referenced to the
+Fermi level.  Thus :math:`p_{\rm real} \approx \Sigma + k`, where
+:math:`\Sigma` is a small but usually positive offset.  Within the EXAFS
+equation, :math:`k` is used to restore the calculation of :math:`\chi(k)` as
+done by Feff, while :math:`p` is used to apply alterations to :math:`\chi(k)`
+as for disorder terms.
+
+The EXAFS equation used for constructing :math:`\chi(k)` from a Feff
+calculation is then
+
+.. math::
+   :nowrap:
+
+   \begin{eqnarray*}
+   \chi(k) = & {\rm Im}\Bigl[
+      {\displaystyle{
+              \frac{f_{\rm eff(k)} N S_0^2} {k(R_{\rm eff} + \Delta R)^2} }
+            \enskip\exp(-2p''R_{\rm reff} - 2p^2\sigma^2 +
+            \textstyle{\frac{2}{3}}p^4 c_4)}  \hspace{18mm} \,\, \\
+            &{\times  \exp \bigl\{ i\big[  2kR_{\rm eff} + \delta(k)
+            + 2p(\Delta R - 2\sigma^2/R_{\rm eff} )
+            - \textstyle{\frac{4}{3}} p^3 c_3  \big]  \bigr\} }
+           \Bigr]    \\
+   \end{eqnarray*}
+
+where the terms are all defined above. Again, note that :math:`k` is used to
+reconstruct the unaltered EXAFS from the Feff.dat file, and the complex
+:math:`p` is used for the terms adding the effects of disorder.  Also note
+that :math:`p''` becomes :math:`\lambda(k)` for :math:`E_i = 0`, and is the
+generalization of the mean-free-path contribution.  The terms :math:`\Delta
+R`, :math:`\sigma^2`, :math:`c_3`, and :math:`c_4` are the first four
+cumulants of the atomic pair distribution for the selected path. The
+additional term :math:`-2p(2\sigma^2/R_{\rm eff})` in the phase is a
+correction to the cumulant expansion due to the averaging over the
+:math:`1/R^2` term in the EXAFS equation.
+
+The use of the cumulant expansion here does not necessarily imply that
+systems must be ordered enough for their atomic distributios to modeled by
+the cumulant expansion.  All that is required is that contribution from each
+path be ordered enough for the cumulant expansion to work.  A highly
+disordered system can be modeled by applying a more complex weighting to a
+set of paths -- that is, a histogram of paths.
 
 
 Example:  Reading a FEFF file
