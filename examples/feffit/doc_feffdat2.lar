@@ -1,0 +1,15 @@
+## examples/feffit/doc_feffdat2.lar
+
+fname = 'feff0001.dat'
+path1 = feffpath(fname)
+
+newplot(path1._feffdat.k, path1._feffdat.amp, xlabel=r' $ k \rm\, (\AA^{-1})$',
+        ylabel=r'$ |F_{\rm eff}(k)|$', label = r'amp', show_legend=True,
+        title=r'components of _feffdat for %s' % fname,
+        marker='o', markersize=4)
+
+plot(path1._feffdat.k, path1._feffdat.lam, side='right',
+     marker='o', markersize=4,
+     label = r'lam', y2label=r'$ \lambda(k) \rm\, (\AA)$')
+
+## end examples/feffit/doc_feffdat2.lar

@@ -1,0 +1,20 @@
+## examples/feffit/doc_feffdat1.lar
+
+fname = 'feff0001.dat'
+path1 = feffpath(fname)
+
+path2chi(path1)
+show(path1)
+
+
+newplot(path1.k, path1.chi*path1.k**2, xlabel=r' $ k \rm\, (\AA^{-1})$',
+        ylabel=r'$ k^2\chi(k)$', label = r'$\sigma^2 = 0$', show_legend=True,
+        title=r'$\chi(k)$ from %s' % fname)
+
+path1.sigma2 = 0.002
+
+path2chi(path1)
+
+plot(path1.k, path1.chi*path1.k**2, label = r'$\sigma^2 = 0.002$')
+
+## end examples/feffit/doc_feffdat1.lar
