@@ -146,6 +146,7 @@ parameters to add to 1 and each be between 0 and 1 as::
 of course, one can use more complex expressions -- any valid Larch
 expression is allowed.
 
+.. _fitting-namespace_sec:
 
 **Namespaces for algebraic expressions**
 

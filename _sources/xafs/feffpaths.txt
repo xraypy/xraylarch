@@ -143,9 +143,10 @@ The calculated :math:`\chi` array is placed in the Feff Path Group ``path`` as
 ``path.chi_imag``, respectively.  See :ref:`xafs-exafsequation_sec` for the
 detailed definitions of the quantities.
 
-If specified, ``paramgroup`` is used as the Parameter Group -- the group used
-for evaluating parameter expressions (ie, constraints using named variables).
-This is similar to the use in REFERENCE HERE.
+If specified, ``paramgroup`` is used as the Parameter Group -- the group
+used for evaluating parameter expressions (ie, constraints using named
+variables).  This is similar to the use for :func:`_math.minimize` as discussed
+in :ref:`Namespaces for algebraic expressions <fitting-namespace_sec>`.
 
 ..  function:: ff2chi(pathlist, paramgroup=None, group=None, k=None, kmax=None, kstep=0.05)
 
@@ -302,7 +303,64 @@ set of paths -- that is, a histogram of paths.
 Example:  Reading a FEFF file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Here we simply read a *feffNNNN.dat* file and manipulate its contents.
+Here we simply read a *feffNNNN.dat* file and display its components, and
+calculate :math:`chi` for this path with two different values of
+:math:`\sigma^2`.
+
+.. literalinclude:: ../../examples/feffit/doc_feffdat1.lar
+
+The output of this looks like this::
+
+    == FeffPath Group feff0001.dat: 16 symbols ==
+      _feffdat: <Feff.dat File Group: feff0001.dat>
+      chi: array<shape=(401,), type=dtype('float64')>
+      chi_imag: array<shape=(401,), type=dtype('float64')>
+      degen: 12.0
+      deltar: 0
+      e0: 0
+      ei: 0
+      filename: 'feff0001.dat'
+      fourth: 0
+      geom: [('Cu', 29, 0, 0.0, 0.0, 0.0), ('Cu', 29, 1, 0.0, -1.8016, 1.8016)]
+      k: array<shape=(401,), type=dtype('float64')>
+      label: 'feff0001.dat'
+      p: array<shape=(401,), type=dtype('complex128')>
+      s02: 1
+      sigma2: 0
+      third: 0
+
+After the initial read, the values of ``k``, ``p``, ``chi``, and
+``chi_imag`` are set to ``None``, and are not calculated until
+:func:`path2chi` is called.
+
+.. _xafs_fig5:
+
+   Figure 5. Calculations of :math:`\chi(k)` for a Feff Path.
+
+  .. image:: ../images/feffdat_example1.png
+     :target: ../_images/feffdat_example1.png
+     :width: 75 %
+
+We can also use the data from the ``_feffdat`` group to look at the
+individual scattering components.  Thus to look at the scattering amplitude
+and mean-free-path for a particular scattering path, you could use a script
+like this:
+
+.. literalinclude:: ../../examples/feffit/doc_feffdat2.lar
+
+which will produce a plot like this:
+
+.. _xafs_fig6:
+
+   Figure 6. Components of ``_feffdat`` group for a Feff Path.
+
+  .. image:: ../images/feffdat_example2.png
+     :target: ../_images/feffdat_example2.png
+     :width: 75 %
+
+You can see here that the arrays in the ``_feffdat`` group are sampled at
+varying :math:`k` spacing, and that this spacing becomes fairly large at
+high :math:`k`.
 
 Example:  Adding FEFF files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

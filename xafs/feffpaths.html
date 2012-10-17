@@ -319,9 +319,10 @@ at 0 and extending to (and including) <tt class="docutils literal"><span class="
 <img class="math" src="../_images/math/eef370fe28e0da6dd00093372bac872a58f421bb.png" alt="\rm{Im}(\chi)"/> are placed in the variables <tt class="docutils literal"><span class="pre">path.k</span></tt>, <tt class="docutils literal"><span class="pre">path.p</span></tt>, and
 <tt class="docutils literal"><span class="pre">path.chi_imag</span></tt>, respectively.  See <a class="reference internal" href="#xafs-exafsequation-sec"><em>The EXAFS Equation using Feff and FeffPath Groups</em></a> for the
 detailed definitions of the quantities.</p>
-<p>If specified, <tt class="docutils literal"><span class="pre">paramgroup</span></tt> is used as the Parameter Group &#8211; the group used
-for evaluating parameter expressions (ie, constraints using named variables).
-This is similar to the use in REFERENCE HERE.</p>
+<p>If specified, <tt class="docutils literal"><span class="pre">paramgroup</span></tt> is used as the Parameter Group &#8211; the group
+used for evaluating parameter expressions (ie, constraints using named
+variables).  This is similar to the use for <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> as discussed
+in <a class="reference internal" href="../fitting/parameters.html#fitting-namespace-sec"><em>Namespaces for algebraic expressions</em></a>.</p>
 <dl class="function">
 <dt id="_xafs.ff2chi">
 <tt class="descclassname">_xafs.</tt><tt class="descname">ff2chi</tt><big>(</big><em>pathlist</em>, <em>paramgroup=None</em>, <em>group=None</em>, <em>k=None</em>, <em>kmax=None</em>, <em>kstep=0.05</em><big>)</big><a class="headerlink" href="#_xafs.ff2chi" title="Permalink to this definition">¶</a></dt>
@@ -515,7 +516,88 @@ set of paths &#8211; that is, a histogram of paths.</p>
 </div>
 <div class="section" id="example-reading-a-feff-file">
 <h2>Example:  Reading a FEFF file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
-<p>Here we simply read a <em>feffNNNN.dat</em> file and manipulate its contents.</p>
+<p>Here we simply read a <em>feffNNNN.dat</em> file and display its components, and
+calculate <img class="math" src="../_images/math/9360e51ba0d61995127dff7663d05b160601ae36.png" alt="chi"/> for this path with two different values of
+<img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/>.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffdat1.lar</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;feff0001.dat&#39;</span>
+<span class="n">path1</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="n">path2chi</span><span class="p">(</span><span class="n">path1</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="n">path1</span><span class="p">)</span>
+
+
+<span class="n">newplot</span><span class="p">(</span><span class="n">path1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">path1</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">path1</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39; $ k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$ k^2\chi(k)$&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s">r&#39;$\sigma^2 = 0$&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s">r&#39;$\chi(k)$ from </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">)</span>
+
+<span class="n">path1</span><span class="o">.</span><span class="n">sigma2</span> <span class="o">=</span> <span class="mf">0.002</span>
+
+<span class="n">path2chi</span><span class="p">(</span><span class="n">path1</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">path1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">path1</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">path1</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s">r&#39;$\sigma^2 = 0.002$&#39;</span><span class="p">)</span>
+
+<span class="c">## end examples/feffit/doc_feffdat1.lar</span>
+</pre></div>
+</div>
+<p>The output of this looks like this:</p>
+<div class="highlight-python"><pre>== FeffPath Group feff0001.dat: 16 symbols ==
+  _feffdat: &lt;Feff.dat File Group: feff0001.dat&gt;
+  chi: array&lt;shape=(401,), type=dtype('float64')&gt;
+  chi_imag: array&lt;shape=(401,), type=dtype('float64')&gt;
+  degen: 12.0
+  deltar: 0
+  e0: 0
+  ei: 0
+  filename: 'feff0001.dat'
+  fourth: 0
+  geom: [('Cu', 29, 0, 0.0, 0.0, 0.0), ('Cu', 29, 1, 0.0, -1.8016, 1.8016)]
+  k: array&lt;shape=(401,), type=dtype('float64')&gt;
+  label: 'feff0001.dat'
+  p: array&lt;shape=(401,), type=dtype('complex128')&gt;
+  s02: 1
+  sigma2: 0
+  third: 0</pre>
+</div>
+<p>After the initial read, the values of <tt class="docutils literal"><span class="pre">k</span></tt>, <tt class="docutils literal"><span class="pre">p</span></tt>, <tt class="docutils literal"><span class="pre">chi</span></tt>, and
+<tt class="docutils literal"><span class="pre">chi_imag</span></tt> are set to <tt class="docutils literal"><span class="pre">None</span></tt>, and are not calculated until
+<a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> is called.</p>
+<blockquote id="xafs-fig5">
+<div><blockquote>
+<div>Figure 5. Calculations of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a Feff Path.</div></blockquote>
+<a class="reference external image-reference" href="../_images/feffdat_example1.png"><img alt="../_images/feffdat_example1.png" src="../_images/feffdat_example1.png" style="width: 75%;" /></a>
+</div></blockquote>
+<p>We can also use the data from the <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group to look at the
+individual scattering components.  Thus to look at the scattering amplitude
+and mean-free-path for a particular scattering path, you could use a script
+like this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffdat2.lar</span>
+
+<span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;feff0001.dat&#39;</span>
+<span class="n">path1</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
+
+<span class="n">newplot</span><span class="p">(</span><span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">amp</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39; $ k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$ |F_{\rm eff}(k)|$&#39;</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="s">r&#39;amp&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">title</span><span class="o">=</span><span class="s">r&#39;components of _feffdat for </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">,</span>
+        <span class="n">marker</span><span class="o">=</span><span class="s">&#39;o&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">lam</span><span class="p">,</span> <span class="n">side</span><span class="o">=</span><span class="s">&#39;right&#39;</span><span class="p">,</span>
+     <span class="n">marker</span><span class="o">=</span><span class="s">&#39;o&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+     <span class="n">label</span> <span class="o">=</span> <span class="s">r&#39;lam&#39;</span><span class="p">,</span> <span class="n">y2label</span><span class="o">=</span><span class="s">r&#39;$ \lambda(k) \rm\, (\AA)$&#39;</span><span class="p">)</span>
+
+<span class="c">## end examples/feffit/doc_feffdat2.lar</span>
+</pre></div>
+</div>
+<p>which will produce a plot like this:</p>
+<blockquote id="xafs-fig6">
+<div><blockquote>
+<div>Figure 6. Components of <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group for a Feff Path.</div></blockquote>
+<a class="reference external image-reference" href="../_images/feffdat_example2.png"><img alt="../_images/feffdat_example2.png" src="../_images/feffdat_example2.png" style="width: 75%;" /></a>
+</div></blockquote>
+<p>You can see here that the arrays in the <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group are sampled at
+varying <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> spacing, and that this spacing becomes fairly large at
+high <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>.</p>
 </div>
 <div class="section" id="example-adding-feff-files">
 <h2>Example:  Adding FEFF files<a class="headerlink" href="#example-adding-feff-files" title="Permalink to this headline">¶</a></h2>
