@@ -313,7 +313,7 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
         _larch.symtable._sys.paramGroup = paramgroup
     path._calc_chi(**kws)
 
-def _ff2chi(pathlist, paramgroup=None, _larch=None, group=None,
+def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
             k=None, kmax=None, kstep=0.05, **kws):
     """sum the XAFS for a set of Feff Paths... assumes that the
     Path Parameters are set"""

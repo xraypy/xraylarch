@@ -365,4 +365,9 @@ high :math:`k`.
 Example:  Adding FEFF files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Now, we add some FEFF files together, applying path parameters.x
+Now, we add some FEFF files together, applying some path parameters.  The
+example is actually very similar to the one above except that we use
+:func:`ff2chi` to create a :math:`\chi(k)` from a list of paths, and put
+the result into its own group.  Thus:
+
+.. literalinclude:: ../../examples/feffit/doc_feffdat3.lar
