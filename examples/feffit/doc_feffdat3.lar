@@ -1,6 +1,6 @@
 ## examples/feffit/doc_feffdat3.lar
 
-
+# read some paths
 path1 = feffpath('feff_feo01.dat')
 path2 = feffpath('feff_feo02.dat')
 path3 = feffpath('feff_feo03.dat')

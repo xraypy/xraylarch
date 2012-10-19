@@ -1,0 +1,43 @@
+## examples/feffit/doc_feffdat4.lar
+
+# read some paths
+path1 = feffpath('feff_feo01.dat')
+path2 = feffpath('feff_feo02.dat')
+
+# create a group containing parameters
+params = group(e0  = param(-2, min=-10, max=10),
+               amp = param(0.8, min=0.3, max=1.5))
+
+for p in (path1, path2):
+    p.e0  = 'e0'
+    p.s02 = 'amp'
+    p.sigma2 = 0.001
+    if p == path2: p.sigma2 = 0.003
+endfor
+
+mysum = group(label='FeO sum of paths')
+
+ff2chi([path1, path2], group=mysum, paramgroup=params)
+
+print 'E0 = ', path1.e0, path2.e0
+print 'S02= ', path1.s02, path2.s02
+
+newplot(mysum.k, mysum.chi*mysum.k**2, label='E0=-2, S02=0.9', show_legend=True,
+        xlabel=r' $ k \rm\, (\AA^{-1})$',
+        ylabel=r'$ k^2\chi(k)$',  title=mysum.label)
+
+# now change parameter values, re-do sum
+params.e0.value = 2
+params.amp.value = 1.0
+
+# re-calculate chi for each path with paramgroup set
+# then sum paths
+
+path2chi(path1, paramgroup=params)
+path2chi(path2, paramgroup=params)
+
+mysum.chi_alt = path1.chi + path2.chi
+
+plot(mysum.k, mysum.chi_alt*mysum.k**2, label='E0=2, S02=1.0')
+
+## end examples/feffit/doc_feffdat4.lar

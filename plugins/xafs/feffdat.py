@@ -181,11 +181,13 @@ class FeffPathGroup(Group):
             self._larch.symtable._sys.paramGroup = paramgroup
         self._larch.symtable._fix_searchGroups()
 
-        # put 'reff' into the paramGroup so that it can be used in
-        # constraint expressions
+        # put 'reff' and '_feffdat' into the paramGroup so that
+        # 'reff' can be used in constraint expressions and
+        # '_feffdat' can be used inside Debye and Eins functions
         stable = self._larch.symtable
         if stable.isgroup(stable._sys.paramGroup):
             stable._sys.paramGroup.reff = self._feffdat.reff
+            stable._sys.paramGroup._feffdat = self._feffdat
 
         out = []
         for param in ('degen', 's02', 'e0', 'ei',
@@ -195,8 +197,10 @@ class FeffPathGroup(Group):
                 if kws[param] is not None:
                     val = kws[param]
             if isinstance(val, (str, unicode)):
-                setattr(self, param,
-                        Parameter(expr=val, _larch=self._larch))
+                thispar = Parameter(expr=val, _larch=self._larch)
+                if isinstance(thispar, Parameter):
+                    thispar = thispar.value
+                setattr(self, param, thispar)
                 val = getattr(self, param)
             out.append(param_value(val))
         return out
