@@ -517,7 +517,7 @@ set of paths &#8211; that is, a histogram of paths.</p>
 <div class="section" id="example-reading-a-feff-file">
 <h2>Example:  Reading a FEFF file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
 <p>Here we simply read a <em>feffNNNN.dat</em> file and display its components, and
-calculate <img class="math" src="../_images/math/9360e51ba0d61995127dff7663d05b160601ae36.png" alt="chi"/> for this path with two different values of
+calculate <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> for this path with two different values of
 <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffdat1.lar</span>
 
@@ -601,7 +601,59 @@ high <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61
 </div>
 <div class="section" id="example-adding-feff-files">
 <h2>Example:  Adding FEFF files<a class="headerlink" href="#example-adding-feff-files" title="Permalink to this headline">¶</a></h2>
-<p>Now, we add some FEFF files together, applying path parameters.x</p>
+<p>Now, we add some FEFF files together, applying some path parameters.  The
+example is actually very similar to the one above except that we use
+<a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> to create a <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> from a list of paths, and put
+the result into its own group.  Thus:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffdat3.lar</span>
+
+
+<span class="n">path1</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo01.dat&#39;</span><span class="p">)</span>
+<span class="n">path2</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo02.dat&#39;</span><span class="p">)</span>
+<span class="n">path3</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo03.dat&#39;</span><span class="p">)</span>
+<span class="n">path4</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo04.dat&#39;</span><span class="p">)</span>
+<span class="n">path5</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo05.dat&#39;</span><span class="p">)</span>
+
+<span class="c"># apply an e0 shift and s02 to all paths:</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="n">path1</span><span class="p">,</span> <span class="n">path2</span><span class="p">,</span> <span class="n">path3</span><span class="p">,</span> <span class="n">path4</span><span class="p">,</span> <span class="n">path5</span><span class="p">):</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">e0</span>  <span class="o">=</span> <span class="o">-</span><span class="mf">0.5</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">s02</span> <span class="o">=</span>  <span class="mf">0.9</span>
+<span class="n">endfor</span>
+
+<span class="n">path1</span><span class="o">.</span><span class="n">sigma2</span> <span class="o">=</span> <span class="mf">0.003</span>
+<span class="n">path2</span><span class="o">.</span><span class="n">sigma2</span> <span class="o">=</span> <span class="mf">0.004</span>
+<span class="n">path3</span><span class="o">.</span><span class="n">sigma2</span> <span class="o">=</span> <span class="mf">0.006</span>
+<span class="n">path4</span><span class="o">.</span><span class="n">sigma2</span> <span class="o">=</span> <span class="mf">0.008</span>
+<span class="n">path5</span><span class="o">.</span><span class="n">sigma2</span> <span class="o">=</span> <span class="mf">0.008</span>
+<span class="n">mysum</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;FeO sum of paths 1,2,3,4,5&#39;</span><span class="p">)</span>
+
+<span class="n">ff2chi</span><span class="p">([</span><span class="n">path1</span><span class="p">,</span> <span class="n">path2</span><span class="p">,</span> <span class="n">path3</span><span class="p">,</span> <span class="n">path4</span><span class="p">,</span> <span class="n">path5</span><span class="p">],</span> <span class="n">group</span><span class="o">=</span><span class="n">mysum</span><span class="p">)</span>
+
+<span class="c">## now, we can also simply sum paths 3,4,5...</span>
+<span class="n">mysum</span><span class="o">.</span><span class="n">chi345</span> <span class="o">=</span> <span class="n">path3</span><span class="o">.</span><span class="n">chi</span> <span class="o">+</span> <span class="n">path4</span><span class="o">.</span><span class="n">chi</span> <span class="o">+</span> <span class="n">path5</span><span class="o">.</span><span class="n">chi</span>
+
+
+<span class="n">newplot</span><span class="p">(</span><span class="n">mysum</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">mysum</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">mysum</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;sum(1,2,3,4,5)&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39; $ k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$ k^2\chi(k)$&#39;</span><span class="p">,</span>  <span class="n">title</span><span class="o">=</span><span class="n">mysum</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">path1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="o">-</span><span class="mf">2.</span><span class="o">+</span><span class="n">path1</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">path1</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;path1&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">path2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span><span class="o">+</span><span class="n">path2</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">path2</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;path2&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">path3</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="o">-</span><span class="mi">6</span><span class="o">+</span><span class="n">mysum</span><span class="o">.</span><span class="n">chi345</span><span class="o">*</span><span class="n">path3</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;sum(3,4,5)&#39;</span><span class="p">)</span>
+
+<span class="c">## end examples/feffit/doc_feffdat3.lar</span>
+</pre></div>
+</div>
+<p>With the result as shown below.  Note that we can also make a simple sum of
+a set of paths, which was done in this example to add the contributions of
+paths 3, 4, and 5.  This works because <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> runs <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a>
+for each path to be summed, so that the <tt class="docutils literal"><span class="pre">chi</span></tt> component of the FeffPath
+group is up to date.</p>
+<blockquote id="xafs-fig7">
+<div><blockquote>
+<div>Figure 7. Results for sum of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for list of paths.</div></blockquote>
+<a class="reference external image-reference" href="../_images/feffdat_example3.png"><img alt="../_images/feffdat_example3.png" src="../_images/feffdat_example3.png" style="width: 75%;" /></a>
+</div></blockquote>
 </div>
 </div>
 
