@@ -22,26 +22,16 @@ mysum = group(label='FeO sum of paths 1,2,3,4,5')
 
 ff2chi([path1, path2, path3, path4, path5], group=mysum)
 
-newplot(mysum.k, mysum.chi*mysum.k**2, label='total', show_legend=True,
+## now, we can also simply sum paths 3,4,5...
+mysum.chi345 = path3.chi + path4.chi + path5.chi
+
+
+newplot(mysum.k, mysum.chi*mysum.k**2, label='sum(1,2,3,4,5)', show_legend=True,
         xlabel=r' $ k \rm\, (\AA^{-1})$',
         ylabel=r'$ k^2\chi(k)$',  title=mysum.label)
 
-plot(path1.k, -2.5+path1.chi*path1.k**2, label='path1')
-plot(path2.k, -5.0+path2.chi*path2.k**2, label='path2')
-plot(path3.k, -7.5+path3.chi*path3.k**2, label='path3')
-plot(path4.k, -10.0+path4.chi*path3.k**2, label='path4')
-plot(path5.k, -12.5+path5.chi*path3.k**2, label='path5')
-
-## now, let's look at just paths 3,4,5
-sum345 = group(label='FeO sum of paths 3,4,5')
-ff2chi([path3, path4, path5], group=sum345)
-
-newplot(mysum.k, mysum.chi*mysum.k**2, label='sum(1,2,3,4,5)', show_legend=True,
-        xlabel=r' $ k \rm\, (\AA^{-1})$', win=2,
-        ylabel=r'$ k^2\chi(k)$',  title=mysum.label)
-
-plot(path1.k,  -2.5+path1.chi*path1.k**2, label='path1', win=2)
-plot(path2.k,  -5.0+path2.chi*path2.k**2, label='path2', win=2)
-plot(sum345.k, -7.5+sum345.chi*sum345.k**2, label='sum(3,4,5)', win=2)
+plot(path1.k, -2.+path1.chi*path1.k**2, label='path1')
+plot(path2.k, -4+path2.chi*path2.k**2, label='path2')
+plot(path3.k, -6+mysum.chi345*path3.k**2, label='sum(3,4,5)')
 
 ## end examples/feffit/doc_feffdat3.lar

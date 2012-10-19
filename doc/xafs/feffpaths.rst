@@ -371,3 +371,18 @@ example is actually very similar to the one above except that we use
 the result into its own group.  Thus:
 
 .. literalinclude:: ../../examples/feffit/doc_feffdat3.lar
+
+With the result as shown below.  Note that we can also make a simple sum of
+a set of paths, which was done in this example to add the contributions of
+paths 3, 4, and 5.  This works because :func:`ff2chi` runs :func:`path2chi`
+for each path to be summed, so that the ``chi`` component of the FeffPath
+group is up to date.
+
+.. _xafs_fig7:
+
+   Figure 7. Results for sum of :math:`\chi(k)` for list of paths.
+
+  .. image:: ../images/feffdat_example3.png
+     :target: ../_images/feffdat_example3.png
+     :width: 75 %
+
