@@ -42,7 +42,7 @@ if not deps_ok:
     for mod in modules_imported:
         if mod in required_modules and not modules_imported[mod]:
             missing_reqs.append(mod)
-            
+
     if len(missing_reqs) > 0:
         print('== Cannot Install Larch: Required Modules are Missing ==')
         isword = 'is'
@@ -72,6 +72,13 @@ data_files  = [('bin', ['larch', 'larch_gui'])]
 mod_dir = os.path.join(share_basedir, 'modules')
 modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
 data_files.append((mod_dir, modfiles))
+
+#dlls
+dll_maindir = os.path.join(share_basedir, 'dlls')
+for dx in ('win32', 'win64', 'linux32', 'linux64', 'darwin'):
+    dlldir = os.path.join(dll_maindir, dx)
+    dllfiles = glob.glob('dlls/%s/*' % dx)
+    data_files.append((dlldir, dllfiles))
 
 plugin_dir = os.path.join(share_basedir, 'plugins')
 pluginfiles = []
