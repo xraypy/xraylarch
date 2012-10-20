@@ -36,7 +36,7 @@ def f1f2(z, energies, width=None, edge=None, egrid=None, _larch=None):
     """
     global CLLIB
     if CLLIB is None:
-        CLLIB = get_dll('cldata', thisdir=plugin_path('xray'))
+        CLLIB = get_dll('cldata') # , thisdir=plugin_path('xray'))
 
     en = energies[:]
 

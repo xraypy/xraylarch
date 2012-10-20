@@ -301,14 +301,29 @@ def add2path(envvar='PATH', dirname='.'):
         os.environ[envvar] = sep.join(paths)
     return oldpath
 
-def get_dll(libname, thisdir=None):
+def get_dlldir():
+    import  os, sys
+    from platform import uname, architecture
+    system, node, release, version, mach, processor = uname()
+    arch = architecture()[0]
+    dlldir = None
+    suff = '32'
+    if arch.startswith('64'):  suff = '64'
+    if os.name == 'nt':
+        return 'win%s' % suff
+    elif system.lower().startswith('linux'):
+        return 'linux%s' % suff
+    elif system.lower().startswith('darwin'):
+        return 'darwin'
+    return ''
+
+def get_dll(libname):
     """find and load a shared library"""
     _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
     _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so',
                       'darwin': 'lib%s.dylib'}
 
-    if thisdir is None:
-        thisdir = os.curdir
+    thisdir = os.path.join(sys_larchdir, 'dlls', get_dlldir())
     for key in _paths:
         _paths[key] = add2path(key, thisdir)
 
@@ -316,7 +331,7 @@ def get_dll(libname, thisdir=None):
     if dllpath is None:
         fname = _dylib_formats[sys.platform] % libname
         dllpath = os.path.join(thisdir, fname)
-        
+
     loaddll = ctypes.cdll.LoadLibrary
     if sys.platform == 'win32':
         loaddll = ctypes.windll.LoadLibrary
