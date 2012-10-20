@@ -38,7 +38,6 @@ install: $(SHAREDLIB)
 	mkdir -p $(INSTALLDIR)
 	cp $(SHAREDLIB) $(INSTALLDIR)/.
 
-
 distrib:
 	mkdir -p src/
 	cp $(SRC) $(INC)  src/

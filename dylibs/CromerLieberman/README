@@ -1,14 +1,12 @@
 
 To build the Cromer-Lieberman shared library:
 
- Windows:
-    > use_mingw   (may need tweaking to point to your installation of MinGW and Msys)
+Windows:
+   > use_mingw   (may need tweaking to point to your installation of MinGW and Msys)
 
- Windows, Linux, Mac OSX:
+Windows, Linux, Mac OSX:
+   > python config.py
+   > make install
 
- > python config.py
- > make install
-
-Mac OSX Note
-    # may need to tweak Mk.macosx to point to your gfortran installation
+Mac OSX Note:  may need to tweak Mk.darwin to point to your gfortran installation
 

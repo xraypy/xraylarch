@@ -2,9 +2,10 @@
 
 ARCH_TARGS = -arch i386 -arch x86_64
 MAC_SDK    = -mmacosx-version-min=10.5 -isysroot/Developer/SDKs/MacOSX10.5.sdk
+#GFORT_LIBDIR = usr/local/gfortran/lib/gcc/x86_64-apple-darwin10/4.6.1/
 GFORT_LIBDIR = /Users/Newville/Codes/ifeffit/local/lib
 
-F77        = gfortran -O2 -Wall $(ARCH_TARGS) $(MAC_SDK) -fPIC 
+F77        = gfortran -O2 -Wall $(ARCH_TARGS) $(MAC_SDK) -fPIC
 AR         = ar
 RANLIB     = ranlib
 CLLIB      = libcldata.a
