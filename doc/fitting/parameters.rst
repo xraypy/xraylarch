@@ -1,3 +1,5 @@
+.. _fitting-parameters_sec:
+
 ===============
 Parameters
 ===============

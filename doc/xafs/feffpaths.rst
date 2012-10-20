@@ -299,7 +299,6 @@ path be ordered enough for the cumulant expansion to work.  A highly
 disordered system can be modeled by applying a more complex weighting to a
 set of paths -- that is, a histogram of paths.
 
-
 Example:  Reading a FEFF file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -386,3 +385,23 @@ group is up to date.
      :target: ../_images/feffdat_example3.png
      :width: 75 %
 
+
+Example: Using Path Parameters when adding FEFF files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using :ref:`Parameters <fitting-parameters_sec>` for modelling data is a
+key feature of Larch, and if you are modelling XAFS data with Feff, you
+will want to parameterize Path Parameters, apply them to a set of Paths,
+and investigate the resulting sum of Paths.    In Larch,
+
+.. literalinclude:: ../../examples/feffit/doc_feffdat4.lar
+
+
+.. _xafs_fig8:
+
+   Figure 8. Results for making 2 different sums of paths using
+   parameterized Path Parameters
+
+  .. image:: ../images/feffdat_example4.png
+     :target: ../_images/feffdat_example4.png
+     :width: 75 %
