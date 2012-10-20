@@ -8,9 +8,8 @@
 #         to add more options or more optimaztion, but the rest
 #         should be OK
 
-INSTALLDIR= ../../plugins/xray
-
 include Mk.config
+include Mk.install
 
 .f.o:
 	$(F77) -c $*.f
@@ -36,7 +35,9 @@ clean :
 	rm -f $(OBJ)  $(CLLIB) $(SHAREDLIB)
 
 install: $(SHAREDLIB)
+	mkdir -p $(INSTALLDIR)
 	cp $(SHAREDLIB) $(INSTALLDIR)/.
+
 
 distrib:
 	mkdir -p src/
