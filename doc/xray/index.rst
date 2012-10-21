@@ -62,7 +62,7 @@ then given.
       :func:`f0`                 elastic scattering factor (Waasmaier and Kirfel)
       :func:`f0_ions`            list of valid "ions" for :func:`f0` (Waasmaier and Kirfel)
       :func:`chantler_energies`  energies of tabulation for Chantler data (Chantler)
-      :func:`f1_chantler`        f'  anomalous factor  Chantler)
+      :func:`f1_chantler`        f'  anomalous factor (Chantler)
       :func:`f2_chantler`        f'' anomalous factor (Chantler)
       :func:`mu_chantler`        absorption cross-section (Chantler)
       :func:`f1f2_cl`            f' and f'' anomalous factors (Cromer and Liberman)
@@ -190,12 +190,56 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     return core electronic level width for an atomic number or symbol and
     name of the edge.  widths are in eV.
 
-
 .. function:: mu_elam(z_or_symbol, energies)
 
     return x-ray mass attenuation coefficient (:math:`\mu/\rho`) for an atomic number or symbol at
     specified energy values.
 
+.. function:: coherent_xsec(z_or_symbol, energies)
+
+    return coherent scattering cross-section for an atomic number or symbol at
+    specified energy values.  Values returned are in cm^2/gr.
+
+.. function:: incoherent_xsec(z_or_symbol, energies)
+
+    return incoherent scattering cross-section for an atomic number or symbol at
+    specified energy values. Values returned are in cm^2/gr.
+
+.. function:: ck_probability(z_or_symbol, initial_level, final_level, total=True)
+
+    return the Coster-Kronig transition probability for an atomic number or symbol between the
+    initial and final levels.  If ``total=True``, transitions via possible intermediate levels is
+    included.
+
+.. function:: f0(ion, qvalues)
+
+   return elastic scattering factor :math:`f_0(q)` for the supplied values of ``q`` (:math:`q =
+   \sin(\theta)/\lambda` where :math:`\theta` is the scattering angle and :math:`\lambda` is the
+   x-ray wavelength).  Here, ``ion`` can be an atomic number or symbol, or any of the valid ion
+   values (e.g., 'Ga3+') given by Waasmaier and Kirfel.
+
+.. function:: f0_ions(element=None)
+
+    list of valid ions for :func:`f0`.  If ``element`` is given (either an atomic number or
+    symbol), then only the valid ions for that element will be returned.
+
+.. function:: chantler_energies()
+
+.. function:: f1_chantler()
+
+     f' anomalous factor (Chantler)
+
+.. function:: f2_chantler()
+
+     f'' anomalous factor (Chantler)
+
+.. function:: mu_chantler()
+
+     absorption cross-section (Chantler)
+
+.. function:: f1f2_cl()
+
+      f' and f'' anomalous factors (Cromer and Liberman)
 
 .. rubric:: References
 
