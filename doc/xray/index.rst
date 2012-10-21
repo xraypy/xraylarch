@@ -39,23 +39,22 @@ then given.
 .. _xraydb-funcs_table:
 
     Table of X-ray data functions.  These functions calculate and return some element-specific
-    properties.  Except where noted, the first argument can either be a atomic number or valid
-    atomic symbol (case insensitive).  Data for elements with atomic number > 92 may not be
-    available and when provided may not be very reliable.  Except where noted, the data comes from
-    Elam, Ravel, and Sieber.
+    properties.  Most data extends to Z=98 (Cf).  Data for elements with atomic number > 92 (U) may
+    not be available and when provided may not be very reliable.  Except where noted, the data
+    comes from Elam, Ravel, and Sieber.
 
-     ========================== =======================================================
+     ========================== =============================================================
       function                    description
-     ========================== =======================================================
+     ========================== =============================================================
       :func:`atomic_number`      atomic number from symbol
       :func:`atomic_symbol`      atomic symbol from number
       :func:`atomic_mass`        atomic mass
       :func:`atomic_density`     atomic density (for pure element)
-      :func:`xray_edges`         list of x-ray edges data for an element
       :func:`xray_edge`          xray edge data for a particular element and edge
-      :func:`xray_lines`         list of x-ray emission line data for an element
       :func:`xray_line`          xray emission line data for an element and line
-      :func:`core_width`         core level width for an element and edge
+      :func:`xray_edges`         dictionary of all x-ray edges data for an element
+      :func:`xray_lines`         dictionary of all x-ray emission line data for an element
+      :func:`core_width`         core level width for an element and edge (Keski-Rahkonen and Krause)
       :func:`mu_elam`            absorption cross-section
       :func:`coherent_xsec`      coherent cross-section
       :func:`incoherent_xsec`    incoherent cross-section
@@ -67,17 +66,135 @@ then given.
       :func:`f2_chantler`        f'' anomalous factor (Chantler)
       :func:`mu_chantler`        absorption cross-section (Chantler)
       :func:`f1f2_cl`            f' and f'' anomalous factors (Cromer and Liberman)
-     ========================== =======================================================
+     ========================== =============================================================
+
+A few conventions used in these functions is worth mentioning.  Almost all these functions require
+an element to be specified for the first argment, noted as ``z_or_symbol`` in the functions below.
+This can either be a valid atomic number or a case-insensitive atomic symbol.  Thus, ``28``, ``Co``
+and ``co`` all specify cobalt.  Several functions take either an ``edge`` or a ``level`` argument
+to signify an core electronic level.  These must be one of the levels listed in the :ref:`Table of
+X-ray edge names <xraydb-edge_table>`.  Some functions take emission line arguments.  These follow
+the latinized version of the Siegbahn notation as indicated in the :ref:`Table of X-ray emission
+line names <xraydb-lines_table>`.  Finally, all energies are in eV.
+
+.. index:: Table of X-ray edge names
+.. _xraydb-edge_table:
+
+    Table of X-ray Edge / Core electronic levels
+
+   =============  ==================
+    Edge/Level     electronic level
+   =============  ==================
+     K               1s
+     L3              2p3/2
+     L2              2p1/2
+     L1              2s
+     M5              3d5/2
+     M4              3d3/2
+     M3              3p3/2
+     M2              3p1/2
+     M1              3s
+     N7              4f7/2
+     N6              4f5/2
+     N5              4d5/2
+     N4              4d3/2
+     N3              4p3/2
+     N2              4p1/2
+     N1              4s
+     O5              5d5/2
+     O4              5d3/2
+     O3              5p3/2
+     O2              5p1/2
+     O1              5s
+     P3              6p3/2
+     P2              6p1/2
+     P1              6s
+   =============  ==================
+
+.. index:: Table of X-ray emission lines
+.. _xraydb-lines_table:
+
+    Table of X-ray emission line names
+
+   ============= ============================== ========================
+    Line           Siegbahn notation             IUPAC notation
+   ============= ============================== ========================
+    Ka1            :math:`K\alpha_1`              K-L3
+    Ka2            :math:`K\alpha_2`              K-L2
+    Ka3            :math:`K\alpha_3`              K-L1
+    Kb1            :math:`K\beta_1`               K-M3
+    Kb2            :math:`K\beta_2`               K-N2,3
+    Kb3            :math:`K\beta_3`               K-M2
+    Kb4            :math:`K\beta_2`               K-N4,5
+    Kb5            :math:`K\beta_3`               K-M4,5
+    La1            :math:`L\alpha_1`              L3-M5
+    La2            :math:`L\alpha_1`              L3-M4
+    Lb1            :math:`L\beta_1`               L2-M4
+    Lb2,15         :math:`L\beta_2,L\beta_{15}`   L3-N4,5
+    Lb3            :math:`L\beta_3`               L1-M3
+    Lb4            :math:`L\beta_4`               L1-M2
+    Lb5            :math:`L\beta_5`               L3-O4,5
+    Lb6            :math:`L\beta_6`                L3-N1
+    Lg1            :math:`L\gamma_1`              L2-N4
+    Lg2            :math:`L\gamma_2`              L1-N2
+    Lg3            :math:`L\gamma_3`              L1-N3
+    Lg6            :math:`L\gamma_6`              L2-O4
+    Ll             :math:`Ll`                     L3-M1
+    Ln             :math:`L\nu`                   L2-M1
+    Ma             :math:`M\alpha`                M5-N6,7
+    Mb             :math:`M\beta`                 M4-N6
+    Mg             :math:`M\gamma`                M3-N5
+    Mz             :math:`M\zeta`                 M4,5-N6,7
+   ============= ============================== ========================
+
 
 .. function:: atomic_number(symbol)
 
     return the atomic number from an atomic symbol ('H', 'C', 'Fe', etc)
 
-
 .. function:: atomic_symbol(z)
 
     return the atomic symbol from an atomic number
 
+.. function:: atomic_mass(z_or_symbol)
+
+    return the atomic mass in amu from an atomic number or symbol
+
+.. function:: atomic_density(z_or_symbol)
+
+    return the density of the common form of a pure element, in gr/cm^3, from an atomic number or symbol.
+
+.. function:: xray_edge(z_or_symbol, edge_name)
+
+    return (edge energy, fluorescence yield, edge jump) for an atomic number or symbol and
+    name of the edge.  Edge energies are in eV.
+
+.. function:: xray_line(z_or_symbol, line_name)
+
+    return (emission energy, intensity, initial level, final level)for an atomic number or symbol
+    and name of the emission line.  The intensity is the probability of emission from the given
+    initial level.
+
+.. function:: xray_edges(z_or_symbol)
+
+    return dictionary of all (edge energy, fluorescence yield, edge jump) for an atomic number or
+    symbol.  The keys of the dictionay are the names of the edges.
+
+.. function:: xray_lines(z_or_symbol)
+
+    return dictionary of all (emission energy, intensity, initial level, final level for an atomic
+    number or symbol.  The keys of the dictionay are the names of the emission lines.
+
+.. function:: core_width(z_or_symbol, edge)
+
+    return core electronic level width for an atomic number or symbol and
+    name of the edge.  widths are in eV.
+
+
+.. function:: mu_elam(z_or_symbol, energies)
+
+    return x-ray mass attenuation coefficient (:math:`\mu/\rho`) for an atomic number or symbol at
+    specified energy values.
 
 
 .. rubric:: References
