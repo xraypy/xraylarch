@@ -30,6 +30,7 @@ c  matthew newville oct 1996
        clcalc = 0
 c  initialize the trivial parts of xnrg:
 c  (non-trivial parts are given in the data statements above)
+       if (iz .gt. 92) return
        nxpts = min(maxpts, npts)
        norbz = norb(iz)
        do 50 k = 1, 5
