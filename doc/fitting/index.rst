@@ -1,6 +1,8 @@
-===========================================
-Fitting and Modeling Data with Larch
-===========================================
+.. _fitting-chapter:
+
+=================================
+Fitting and Modeling Data
+=================================
 
 A key motivation for Larch is to provide easy and robust ways to model data
 and perform complex fits of data to models.  Data modeling and fitting can

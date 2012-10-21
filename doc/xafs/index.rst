@@ -1,18 +1,19 @@
-===============================
-XAFS Analysis with Larch
-===============================
+.. _xafs-chapter:
+
+=======================
+XAFS Analysis
+=======================
 
 One of the primary motivations for Larch was processing XAFS data.  Larch
 was originally conceived to be version 2 of Ifeffit, replacing and
 expanding all the XAFS analysis capabilities of that package.
 
-As of this writing (Sept, 2012), this replacement is approximately
-complete, in that essentially all the functionality of Ifeffit 1 is
-available in Larch.  There are some slight differences in implementation
-details, such that slightly different numerical results are obtained.
-Importantly, some new features are already available with Larch that were
-not available with Ifeffit 1.2 and some small errors in Ifeffit 1.2 have
-been fixed.
+As of this writing (Oct, 2012), this replacement is approximately complete,
+in that essentially all the functionality of Ifeffit 1 is available in
+Larch.  There are some slight differences in implementation details, such
+that slightly different numerical results are obtained.  Importantly, some
+new features are already available with Larch that were not available with
+Ifeffit 1.2 and some small errors in Ifeffit 1.2 have been fixed.
 
 
 XAFS Analysis can generally be broken into a few separate steps:

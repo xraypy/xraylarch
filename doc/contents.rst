@@ -12,4 +12,5 @@ Larch Documentation Table of Contents
    fitting/index.rst
    xafs/index.rst
    xray/index.rst
+   xrf/index.rst
    devel/index.rst

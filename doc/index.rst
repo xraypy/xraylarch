@@ -42,4 +42,5 @@ The idea is that having these different problem areas connected by a common
    fitting/index.rst
    xafs/index.rst
    xray/index.rst
+   xrf/index.rst
    devel/index.rst

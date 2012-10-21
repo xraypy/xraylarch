@@ -1,6 +1,8 @@
-=======================================================
+.. _plotting-chapter:
+
+====================================
 Plotting and Displaying Data
-=======================================================
+====================================
 
 Plotting and Visualizing data are vital to any scientific analysis package,
 and Larch provides several methods for data visualization.  These are

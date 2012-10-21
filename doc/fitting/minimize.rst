@@ -1,3 +1,5 @@
+.. _fitting-minimize-sec:
+
 ==============================================
 :func:`minimize` and Objective Functions
 ==============================================
@@ -18,6 +20,8 @@ two or more arrays -- perhaps what you want to model is the difference of
 two image arrays, or the fourier filtered average of ten spectra.  Because
 of such complexities, the reliance of optional arguments appears to be the
 best approach.
+
+.. index:: objective function
 
 A simple objective function that models data as a line might look like this::
 

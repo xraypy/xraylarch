@@ -392,10 +392,38 @@ Example: Using Path Parameters when adding FEFF files
 Using :ref:`Parameters <fitting-parameters_sec>` for modelling data is a
 key feature of Larch, and if you are modelling XAFS data with Feff, you
 will want to parameterize Path Parameters, apply them to a set of Paths,
-and investigate the resulting sum of Paths.    In Larch,
+and investigate the resulting sum of Paths.    This is similar to the
+examples above, but combines the Parameter concept from the Fitting
+chapter.  In Larch, this looks like:
 
 .. literalinclude:: ../../examples/feffit/doc_feffdat4.lar
 
+After reading in the Feff data files, we have created a group ``pars`` of
+Parameters with :func:`_math.param`, specifically ``pars.del_e0`` and
+``pars.amp``.   Then we set the ``e0`` path parameter for each path to the
+string ``'del_e0'``, and the ``amp`` path parameter to ``'amp'``.   We set
+the ``sigma2`` values to simple numbers, as above.
+
+Now, when running :func:`ff2chi`, we give not only a ``group`` to put the
+results in, but also a ``paramgroup`` to use as the parameters for
+evaluating any mathematical expressions we've defined for the path
+parameters.   At this point, the strings ``del_e0`` and ``amp`` for the
+path parameters for path 1 and 2 are converted into Parameters and
+evaluated.
+
+.. index:: _sys.paramGroup; with Feff paths
+
+After plotting the results, we then change the values of the parameters.
+We could re-run :func:`ff2chi`, but we can also just run :func:`path2chi`
+on the paths for which we want to recalculate :math:`\chi`.  Note that we
+specify the ``paramgroup`` to :func:`path2chi` here.  Strictly speaking,
+this is not necessary, as both :func:`path2chi` and :func:`ff2chi` set the
+value of ``_sys.paramGroup``, which is the default group used for looking
+up names for expression in parameters.  That is, after the first call to
+:func:`ff2chi`, ``sys.paramGroup`` is set to our parameter group ``pars``
+and any subsequent need to evaluate parameters will use that until
+overridden by resetting ``_sys.paramGroup``, which can be done by passing a
+``paramgroup`` argument to :func:`path2chi` or :func:`ff2chi`.
 
 .. _xafs_fig8:
 
@@ -405,3 +433,11 @@ and investigate the resulting sum of Paths.    In Larch,
   .. image:: ../images/feffdat_example4.png
      :target: ../_images/feffdat_example4.png
      :width: 75 %
+
+
+The resulting plot shows the effect of changing :math:`E_0` and
+:math:`S_0^2` for a sum of paths.  The same result could be shown by just
+setting the path parameters to the appropriate numerical values, but the
+use of parameters makes this somewhat more general.  As we will see in the
+next section, the use of parameters also allows us to easily refine their
+values in a fit of XAFS data to such a sum of paths.
