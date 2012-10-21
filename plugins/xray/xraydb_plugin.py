@@ -324,8 +324,8 @@ def registerLarchPlugin():
                       'f2_chantler': f2_chantler,
                       'mu_chantler': mu_chantler,
                       'mu_elam': mu_elam,
-                      'coherent_cross_section_elam': coherent_cross_section_elam,
-                      'incoherent_cross_section_elam': incoherent_cross_section_elam,
+                      'coherent_xsec': coherent_cross_section_elam,
+                      'incoherent_xsec': incoherent_cross_section_elam,
                       'atomic_number': atomic_number,
                       'atomic_symbol': atomic_symbol,
                       'atomic_mass':   atomic_mass,
@@ -335,7 +335,7 @@ def registerLarchPlugin():
                       'xray_lines': xray_lines,
                       'xray_line': xray_line,
                       'core_width':  core_width,
-                      'CK_probability': CK_probability,
+                      'ck_probability': CK_probability,
                       })
 
 
