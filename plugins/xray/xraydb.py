@@ -381,6 +381,7 @@ class xrayDB(object):
         """returns tuple of (energy, fluorescence_yield, edge_jump)
         for an x-ray absorption edge
         """
+        edge = edge.title()
         edges = self.xray_edges(element)
         if edge in edges:
             return edges[edge]
@@ -451,7 +452,7 @@ class xrayDB(object):
             else:
                 rows = rows.filter(tab.element==element.title())
         if has_edge:
-            rows = rows.filter(tab.edge==edge)
+            rows = rows.filter(tab.edge==edge.title())
         out = rows.all()
         if len(out) == 1:
             return(out[0].width)
