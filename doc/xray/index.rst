@@ -16,8 +16,8 @@ probabilites for core electron levels, absorption cross-sections, elastic
 scattering terms, and anomalous scattering corrections.
 
 Much of the speectroscopic data comes from the compilation of Elam, Ravel
-and Sieber [ElamTables]_.  The core-hole widths for excited electronic
-levels comes from Keski-Rahkonen and Krause [KeskiKrause]_, while elastic
+and Sieber [ElamRavelSieber]_.  The core-hole widths for excited electronic
+levels comes from Keski-Rahkonen and Krause [KeskiRahkonenKrause]_, while elastic
 x-ray scattering data, f0(q), is derived from Waasmaier and Kirfel
 [WaasmaierKirfel]_.  Anomalous cross-sections from Cromer and Liberman
 [CromerLiberman]_ (as implemented by Brennan and Cowan [BrennanCowan]_ )
@@ -58,7 +58,6 @@ then given.
       :func:`mu_elam`            absorption cross-section
       :func:`coherent_xsec`      coherent cross-section
       :func:`incoherent_xsec`    incoherent cross-section
-      :func:`ck_probability`     Coster-Kronig probability
       :func:`f0`                 elastic scattering factor (Waasmaier and Kirfel)
       :func:`f0_ions`            list of valid "ions" for :func:`f0` (Waasmaier and Kirfel)
       :func:`chantler_energies`  energies of tabulation for Chantler data (Chantler)
@@ -82,70 +81,63 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 
     Table of X-ray Edge / Core electronic levels
 
-   =============  ==================
-    Edge/Level     electronic level
-   =============  ==================
-     K               1s
-     L3              2p3/2
-     L2              2p1/2
-     L1              2s
-     M5              3d5/2
-     M4              3d3/2
-     M3              3p3/2
-     M2              3p1/2
-     M1              3s
-     N7              4f7/2
-     N6              4f5/2
-     N5              4d5/2
-     N4              4d3/2
-     N3              4p3/2
-     N2              4p1/2
-     N1              4s
-     O5              5d5/2
-     O4              5d3/2
-     O3              5p3/2
-     O2              5p1/2
-     O1              5s
-     P3              6p3/2
-     P2              6p1/2
-     P1              6s
-   =============  ==================
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   |Name |electronic level |Name |electronic level |Name |electronic level |
+   +=====+=================+=====+=================+=====+=================+
+   | K   |    1s           | N7  |    4f7/2        | O3  |     5p3/2       |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   | L3  |    2p3/2        | N6  |    4f5/2        | O2  |     5p1/2       |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   | L2  |    2p1/2        | N5  |    4d5/2        | O1  |     5s          |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   | L1  |    2s           | N4  |    4d3/2        | P3  |     6p3/2       |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   | M5  |    3d5/2        | N3  |    4p3/2        | P2  |     6p1/2       |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   | M4  |    3d3/2        | N2  |    4p1/2        | P1  |     6s          |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   | M3  |    3p3/2        | N1  |    4s           |     |                 |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   | M2  |    3p1/2        |     |                 |     |                 |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
+   | M1  |    3s           |     |                 |     |                 |
+   +-----+-----------------+-----+-----------------+-----+-----------------+
 
 .. index:: Table of X-ray emission lines
 .. _xraydb-lines_table:
 
-    Table of X-ray emission line names
+    Table of X-ray emission line names and the corresponding Siegbahn and IUPAC notations
 
-   ============= ============================== ========================
-    Line           Siegbahn notation             IUPAC notation
-   ============= ============================== ========================
-    Ka1            :math:`K\alpha_1`              K-L3
-    Ka2            :math:`K\alpha_2`              K-L2
-    Ka3            :math:`K\alpha_3`              K-L1
-    Kb1            :math:`K\beta_1`               K-M3
-    Kb2            :math:`K\beta_2`               K-N2,3
-    Kb3            :math:`K\beta_3`               K-M2
-    Kb4            :math:`K\beta_2`               K-N4,5
-    Kb5            :math:`K\beta_3`               K-M4,5
-    La1            :math:`L\alpha_1`              L3-M5
-    La2            :math:`L\alpha_1`              L3-M4
-    Lb1            :math:`L\beta_1`               L2-M4
-    Lb2,15         :math:`L\beta_2,L\beta_{15}`   L3-N4,5
-    Lb3            :math:`L\beta_3`               L1-M3
-    Lb4            :math:`L\beta_4`               L1-M2
-    Lb5            :math:`L\beta_5`               L3-O4,5
-    Lb6            :math:`L\beta_6`                L3-N1
-    Lg1            :math:`L\gamma_1`              L2-N4
-    Lg2            :math:`L\gamma_2`              L1-N2
-    Lg3            :math:`L\gamma_3`              L1-N3
-    Lg6            :math:`L\gamma_6`              L2-O4
-    Ll             :math:`Ll`                     L3-M1
-    Ln             :math:`L\nu`                   L2-M1
-    Ma             :math:`M\alpha`                M5-N6,7
-    Mb             :math:`M\beta`                 M4-N6
-    Mg             :math:`M\gamma`                M3-N5
-    Mz             :math:`M\zeta`                 M4,5-N6,7
-   ============= ============================== ========================
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Name   | Siegbahn                    | IUPAC     | Name   | Siegbahn                    | IUPAC       |
+   +========+=============================+===========+========+=============================+=============+
+   | Ka1    | :math:`K\alpha_1`           | K-L3      | Lb4    | :math:`L\beta_4`            | L1-M2       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Ka2    | :math:`K\alpha_2`           | K-L2      | Lb5    | :math:`L\beta_5`            | L3-O4,5     |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Ka3    | :math:`K\alpha_3`           | K-L1      | Lb6    | :math:`L\beta_6`            | L3-N1       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Kb1    | :math:`K\beta_1`            | K-M3      | Lg1    | :math:`L\gamma_1`           | L2-N4       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Kb2    | :math:`K\beta_2`            | K-N2,3    | Lg2    | :math:`L\gamma_2`           | L1-N2       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Kb3    | :math:`K\beta_3`            | K-M2      | Lg3    | :math:`L\gamma_3`           | L1-N3       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Kb4    | :math:`K\beta_2`            | K-N4,5    | Lg6    | :math:`L\gamma_6`           | L2-O4       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Kb5    | :math:`K\beta_3`            | K-M4,5    | Ll     | :math:`Ll`                  | L3-M1       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | La1    | :math:`L\alpha_1`           | L3-M5     | Ln     | :math:`L\nu`                | L2-M1       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | La2    | :math:`L\alpha_1`           | L3-M4     | Ma     | :math:`M\alpha`             | M5-N6,7     |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Lb1    | :math:`L\beta_1`            | L2-M4     | Mb     | :math:`M\beta`              | M4-N6       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Lb2,15 |:math:`L\beta_2,L\beta_{15}` | L3-N4,5   | Mg     | :math:`M\gamma`             | M3-N5       |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+   | Lb3    | :math:`L\beta_3`            | L1-M3     | Mz     | :math:`M\zeta`              | M4,5-N6,7   |
+   +--------+-----------------------------+-----------+--------+-----------------------------+-------------+
+
 
 
 .. function:: atomic_number(symbol)
@@ -205,42 +197,56 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     return incoherent scattering cross-section for an atomic number or symbol at
     specified energy values. Values returned are in cm^2/gr.
 
-.. function:: ck_probability(z_or_symbol, initial_level, final_level, total=True)
-
-    return the Coster-Kronig transition probability for an atomic number or symbol between the
-    initial and final levels.  If ``total=True``, transitions via possible intermediate levels is
-    included.
 
 .. function:: f0(ion, qvalues)
 
-   return elastic scattering factor :math:`f_0(q)` for the supplied values of ``q`` (:math:`q =
-   \sin(\theta)/\lambda` where :math:`\theta` is the scattering angle and :math:`\lambda` is the
-   x-ray wavelength).  Here, ``ion`` can be an atomic number or symbol, or any of the valid ion
-   values (e.g., 'Ga3+') given by Waasmaier and Kirfel.
+   return elastic scattering (Thomson) factor :math:`f_0(q)` for the supplied values of
+   ``q`` (:math:`q = \sin(\theta)/\lambda` where :math:`\theta` is the scattering angle
+   and :math:`\lambda` is the x-ray wavelength).  Here, ``ion`` can be an atomic number or
+   symbol, or any of the valid ion values (e.g., 'Ga3+') given by Waasmaier and Kirfel.
+   The returned values are in units of electron number.
 
 .. function:: f0_ions(element=None)
 
-    list of valid ions for :func:`f0`.  If ``element`` is given (either an atomic number or
+    returns list of valid ions for :func:`f0`.  If ``element`` is given (either an atomic number or
     symbol), then only the valid ions for that element will be returned.
 
-.. function:: chantler_energies()
+.. index:: anomalous x-ray scattering factors
 
-.. function:: f1_chantler()
+.. function:: chantler_energies(z_or_symbol, emin=0, emax=1.e9)
 
-     f' anomalous factor (Chantler)
+   returns array of energies (in eV) at whch data is tabulated in the Chantler tables.
+   The arguments ``emin`` and ``emax`` can be used to restrict the range of returned energies.
 
-.. function:: f2_chantler()
+.. function:: f1_chantler(z_or_symbol, energies)
 
-     f'' anomalous factor (Chantler)
+   return array of f', the real part of the anomalous scattering factor for an element at
+   the given energies, using the tabulation of Chantler.  The returned values are in units
+   of electron numbers, and represent the correction to Thomson scattering term.
 
-.. function:: mu_chantler()
+.. function:: f2_chantler(z_or_symbol, energies)
 
-     absorption cross-section (Chantler)
+   return array of f'', the imaginary part of the anomalous scattering factor for an
+   element at the given energies, using the tabulation of Chantler.  The returned values
+   are in units of electron numbers.  These values scale to the values of the mass
+   attenuation coefficient.
 
-.. function:: f1f2_cl()
+.. function:: mu_chantler(z_or_element, energies)
 
-      f' and f'' anomalous factors (Cromer and Liberman)
+    return x-ray mass attenuation coefficient (:math:`\mu/\rho`) for an element at the
+    specified energy values, using the tabulation of Chantler.
 
+.. function:: f1f2_cl(z_or_element, energies, width=None, edge=None)
+
+    return tuple of (f', f''), the real and imaginary anomalous scattering factors for an
+    element at the specified energies, using the calculation scheme of Cromer and
+    Liberman, as implemented by Brennan and Cowan.  The optional argument ``width`` can be
+    used to specify an energy width (in eV) to use to convolve the output with a
+    Lorentzian profile (with ``width`` used as :math:`2\gamma` in the Lorentzian).  If
+    ``edge`` is given ('K', 'L3', etc), the core-level width is looked up from
+    :func:`core_width`, and its value is used.
+
+    Note that both f' and f'' are returned here.
 .. rubric:: References
 
 .. [BrennanCowan] S. Brennan and P. L. Cowen, *A suite of programs for
@@ -248,7 +254,7 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     for a variety of materials at arbitrary wavelengths*, Review of
     Scientific Instruments **63**, pp850--853 (1992) [`doi link <http://dx.doi.org/10.1063/1.1142625>`_].
 
-.. [Chantler]   C. T. Chantler, Journal of Physical and  Chemica Reference
+.. [Chantler]   C. T. Chantler, Journal of Physical and Chemical Reference
     Data **24**, p71 (1995)
 
 .. [CromerLiberman] D. T. Cromer and D. A. Liberman *Anomalous dispersion
@@ -256,11 +262,11 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     absorption-edge*, Acta Crystallographica **A37**, pp267-268 (1981)
     [`doi link <http://dx.doi.org/10.1107/S0567739481000600>`_].
 
-.. [ElamTables]   W. T. Elam, B. D. Ravel and J. R. Sieber, Radiation
+.. [ElamRavelSieber]   W. T. Elam, B. D. Ravel and J. R. Sieber, Radiation
     Physics and Chemistry **63** (2), pp121--128 (2002)
     [`doi link <http://dx.doi.org/10.1016/S0969-806X(01)00227-4>`_].
 
-.. [KeskiKrause]  O. Keski-Rahkonen and M. O. Krause, *Total and Partial
+.. [KeskiRahkonenKrause]  O. Keski-Rahkonen and M. O. Krause, *Total and Partial
     Atomic-Level Widths*, Atomic Data and Nuclear Data Tables **14**,
     pp139-146 (1974)
 
