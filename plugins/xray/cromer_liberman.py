@@ -14,7 +14,7 @@ from xraydb_plugin import core_width, atomic_number
 MODNAME = '_xray'
 CLLIB = None
 
-def f1f2(z, energies, width=None, edge=None, egrid=None, _larch=None):
+def f1f2(z, energies, width=None, edge=None, _larch=None):
     """Return anomalous scattering factors f1, f2 from Cromer-Liberman
 
     Look-up and return f1, f2 for an element and array of energies
@@ -35,7 +35,7 @@ def f1f2(z, energies, width=None, edge=None, egrid=None, _larch=None):
     """
     global CLLIB
     if CLLIB is None:
-        CLLIB = get_dll('cldata') # , thisdir=plugin_path('xray'))
+        CLLIB = get_dll('cldata')
 
     en = energies[:]
     if not isinstance(z, int):
@@ -64,6 +64,7 @@ def f1f2(z, energies, width=None, edge=None, egrid=None, _larch=None):
         lor  = (1./(1 + ((np.arange(2*nk+1)-nk*1.0)/sig)**2))/(np.pi*sig)
         scale = lor.sum()
 
+    # create ctypes pointers for the C function
     npts   = len(en)
     p_z    = ctypes.pointer(ctypes.c_int(int(z)))
     p_npts = ctypes.pointer(ctypes.c_int(npts))
