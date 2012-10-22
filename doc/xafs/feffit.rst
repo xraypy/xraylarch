@@ -40,13 +40,24 @@ addition, a fit has a single parameter group, holding all the variable and
 constrained parameters used by all the paths and data sets in a fit.
 
 There are then 3 principle functions for setting up and executing
-:func:`feffit`.  First, :func:`feffit_transform` is used to create a
-Transform group, which holds the set of Fourier transform parameters.
-Second, :func:`feffit_dataset` is used to create a Dataset group, which
-consists of the three components described above: experimental data, list
-of Feff paths, and Trransform group.  Finally, :func:`feffit` is run with a
-a parameter group containing the variable and constrained Parameters for
-the fit, and a dataset or list of datasets groups.
+:func:`feffit`:
+
+  1. :func:`feffit_transform` is used to create a Transform group,
+     which holds the set of Fourier transform parameters.
+
+  2. :func:`feffit_dataset` is used to create a Dataset group, which
+     consists of the three components described above:
+
+     a. a group holding experimental data (``k`` and ``chi``).
+     b. a list of Feff paths.
+     c. a Transform group.
+
+  3. Finally, :func:`feffit` is run with a parameter group containing
+     the variable and constrained Parameters for the fit, and a dataset
+     or list of datasets groups.
+
+:func:`feffit_transform`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ..  function:: feffit_transform(fitspace='r', kmin=0, kmax=20, kweight=2, ...)
 
@@ -65,24 +76,45 @@ the fit, and a dataset or list of datasets groups.
     :param rmax:     ending *R* for Fit Range and/or reverse FT Window (10).
     :param dr:       tapering parameter for reverse FT Window 0.
     :param rwindow:  name of window type for reverse FT Window ('kaiser').
+    :returns:        a Feffit Transform group
 
     The parameters stored in the returned group object will be used to
     control how the fit is performed.
 
+:func:`feffit_dataset`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ..  function:: feffit_dataset(data=None, pathlist=[], transform=None)
 
-    create a Feffit Dataset group.  By itself, this is pretty simple
-    object, consisting of ``data``, a ``pathlist``, and a ``transform``.
+    create a Feffit Dataset group.
+
+    :param data:      group containing experimental EXAFS (needs arrays ``k`` and ``chi``).
+    :param pathlis:   list of FeffPath groups, as created from :func:`feffpath`.
+    :param transform: Feffit Transform group.
+    :returns:         a Feffit Dataset group.
+
+    A Dataset group is pretty simple, initially consisting of ``data``, a
+    ``pathlist``, and a ``transform``, though each of these can be complex.
+
     The value for ``data`` must be a group containing arrays ``k`` and
-    ``chi`` (as if determined :math:`_xafs.autobk` or some other
-    procedure).  ``pathlist`` is a list of Feff Paths, each of which can
-    have its Path Parameters written in terms of fit parameters (see the
-    final example in the previous section).  This list of paths will be
+    ``chi`` (as determined :func:`_xafs.autobk` or some other procedure).
+    If it contains a value (scalar or array) ``epsilon_k``, that will be
+    used as the uncertainty in :math:`\chi(k)` for weighting the fit.
+    Otherwise, the uncertainty in :math:`\chi(k)` will be estimated
+    automatically.  The ``pathlist`` is a list of Feff Paths, each of which
+    can have its Path Parameters written in terms of fit parameters (see
+    the final example in the previous section).  This list of paths will be
     sent to :func:`ff2chi` to caclulate the model :math:`\chi` to compare
     to the experimental data.  Finally, ``transform`` is a Feffit transform
     group, as defined above.
 
+:func:`feffit`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 ..  function:: feffit(paramgroup, datasets, rmax_out=10, path_outputs=True)
 
-    execute a Feffit fit.
-
+    execute a Feffit fit.  This simply takes a parameter group, as does
+    :func:`_math.minimize`, and a Feffit dataset or list of Feffit
+    datasets.  If ``path_outputs==True``, all paths will be separately
+    Fourier transformed, with the result being put in the corresponding
+    FeffPath group.
