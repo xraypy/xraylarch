@@ -67,6 +67,9 @@ class TransformGroup(Group):
         self.estimate_noise = self._estimate_noise
         self.make_karrays()
 
+    def __repr__(self):
+        return '<FeffitTransform Group: %s>' % self.__name__
+
     def make_karrays(self, k=None, chi=None):
         "this should be run in kstep or nfft changes"
         if self.kstep == self.__kstep and self.nfft == self.__nfft:
@@ -239,6 +242,9 @@ class FeffitDataSet(Group):
         self.datachi = None
         self.__prepared = False
 
+    def __repr__(self):
+        return '<FeffitDataSet Group: %s>' % self.__name__
+
     def prepare_fit(self):
         trans = self.transform
 
@@ -294,15 +300,10 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residual function """
         return concatenate([d.residual() for d in datasets])
-        #         s = ' : '
-        #         for i in dir(params):
-        #             obj = getattr(params, i)
-        #             if isParameter(obj):
-        #                 s = s + '  %.6f' % obj.value
-        #         print '---feffit residual ', datasets, s
 
     if isinstance(datasets, FeffitDataSet):
         datasets = [datasets]
+
     for ds in datasets:
         if not isinstance(ds, FeffitDataSet):
             print "feffit needs a list of FeffitDataSets"
@@ -325,10 +326,8 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     for ds in datasets:
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
 
-    return Group(name='feffit fit results',
-                 fit = fit,
-                 params = params,
-                 datasets = datasets)
+    return Group(name='feffit fit results',   fit = fit,
+                 params = params, datasets = datasets)
 
 def feffit_report(result, min_correl=0.1, with_paths=True,
                   _larch=None, **kws):
