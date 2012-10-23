@@ -113,23 +113,63 @@ There are then 3 principle functions for setting up and executing
 
 ..  function:: feffit(paramgroup, datasets, rmax_out=10, path_outputs=True)
 
-    execute a Feffit fit.  This simply takes a parameter group, as does
+    execute a Feffit fit. 
+
+
+ This simply takes a parameter group, as does
     :func:`_math.minimize`, and a Feffit dataset or list of Feffit
     datasets.  If ``path_outputs==True``, all paths will be separately
     Fourier transformed, with the result being put in the corresponding
     FeffPath group.
+
+    This returns a group which contains the Feffit results, including:
+      1. ``params``: the fit parameters. This will be identical to the
+         ``paramgroup`` passed in.
+      2. ``datasets``: an array of FeffitDataSet groups.  These will be
+         identical to the datasets passed in.
+      3. a ``fit`` object, which points to the low-level fit.
+
+   On output, the ``params`` group will, of course, have the Parameter
+   values updated to the best-fit values.  The Feffit Dataset objects will
+   have several outputs written to it for the data and model.
+
+   << table of dataset output arrays (chir_mag, etc) >>
 
 
 Example 1: Simple fit with 1 Path
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We start with a fairly minimal example, fitting spectra read from a data
-file with a single Feff Path.
+file with a single Feff Path.   
 
 
 .. literalinclude:: ../../examples/feffit/doc_feffit1.lar
 
 
+This simply follows the essential steps:
+
+ 1. A group of parameters ``pars`` is defined.  Note that you can include
+ upper and/or lower bounds and mix the use of :func:`_math.guess` and
+ :func:`_math.param`.
+
+ 2. A Feff Path is defined with :func:`feffpath`, as discussed in the
+ previous section. Here we assign each of the Path Parameters to the name
+ of one of the fitting parameters.  More complex expressions and relations
+ can be used, but for this example, we're keeping it simple.
+
+ 3. A Feffit Transform is created with :func:`feffit_transform`, which
+ essentially sets the Fourier transform parameters and fit ranges.
+
+ 4. A Feffit Dataset is created with :func:`feffit_dataset`.  To begin the
+ fit, this includes a ``data`` group, a ``transform`` group, and a
+ ``pathlist``,  which is a list of FeffPaths.
+
+ 5. The fit is run with :func:`feffit`, and the output group is saved.
+
+ 6. A fit report is written from the output of :func:`feffit` and plots
+    are made from the dataset.
+
+ 
 running this example prints out the following report::
 
     =================== FEFFIT RESULTS ====================
