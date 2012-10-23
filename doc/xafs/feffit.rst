@@ -118,3 +118,74 @@ There are then 3 principle functions for setting up and executing
     datasets.  If ``path_outputs==True``, all paths will be separately
     Fourier transformed, with the result being put in the corresponding
     FeffPath group.
+
+
+Example 1: Simple fit with 1 Path
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We start with a fairly minimal example, fitting spectra read from a data
+file with a single Feff Path.
+
+
+.. literalinclude:: ../../examples/feffit/doc_feffit1.lar
+
+
+running this example prints out the following report::
+
+    =================== FEFFIT RESULTS ====================
+    [[Statistics]]
+       npts, nvarys       = 106, 4
+       nfree, nfcn_calls  = 102, 31
+       chi_square         = 6930.379153
+       reduced chi_square = 67.944894
+     
+    [[Data]]
+       n_independent      = 14.260 
+       eps_k, eps_r       = 0.000173, 0.008240
+       fit space          = r  
+       r-range            = 1.400, 3.000
+       k-range            = 3.000, 17.000
+       k window, dk       = bessel, 3.000
+       k-weight           = 2
+       paths used in fit  = ['feffcu01.dat']
+     
+    [[Variables]]
+       amp            =  0.932276 +/- 0.045077   (init=  1.000000)
+       del_e0         =  3.962456 +/- 0.553577   (init=  0.100000)
+       del_r          = -0.005644 +/- 0.002969   (init=  0.000000)
+       sig2           =  0.008677 +/- 0.000364   (init=  0.002000)
+     
+    [[Correlations]]    (unreported correlations are <  0.100)
+       amp, sig2            =  0.922 
+       del_e0, del_r        =  0.908 
+       del_r, sig2          =  0.160 
+       amp, del_r           =  0.145 
+     
+    [[Paths]]
+       feff dat file = feffcu01.dat
+         reff = 2.54780
+         geometry: Atom Label x, y, z ipot
+               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
+               Cu    0.0000, -1.8016,  1.8016  1
+         Degen  =  12.00000
+         S02    =  0.93228
+         E0     =  3.96246
+         R      =  2.54216
+         deltar = -0.00564
+         sigma2 =  0.00868
+    =======================================================
+
+and generates the plots shown.
+
+.. _xafs_fig9:
+
+   Figure 9. Results for Feffit for a simple 1-shell fit to a 
+   spectrum from Cu metal.
+
+  .. image:: ../images/feffit_example1.png
+     :target: ../_images/feffit_example1.png
+     :width: 48 %
+  .. image:: ../images/feffit_example2.png
+     :target: ../_images/feffit_example2.png
+     :width: 48 %
+
