@@ -35,7 +35,7 @@ where *cen* is used for :math:`\mu`. The Full-Width at Half-Maximum is
 
 .. function:: voigt(x, cen=0, sigma=1, gamma=None)
 
-   a Voigt distribution function.   The definitio used here is
+   a Voigt distribution function.   The definition used here is
 
 .. math::
 
@@ -51,12 +51,11 @@ where
      w(z) &=& e^{-z^2}{\operatorname{erfc}}(-iz)
    \end{eqnarray*}
 
-and :func:`erfc` is the complimentary error function.
-As above,  *cen* is used for :math:`\mu` here.
-If *gamma* is left as ``None``, it is set equal to *sigma*.
-
-Note that if :math:`\gamma` = :math:`\sigma`, the Full-Width at
-Half-Maximum is approximately 3.6013:math:`\sigma`.
+and :func:`erfc` is the complimentary error function.  As above, *cen* is
+used for :math:`\mu` here, *sigma* for :math:`\sigma`, and *gamma* for the
+parameter :math:`\gamma`.  If *gamma* is left as ``None``, it is set equal
+to *sigma*.  For the case when :math:`\gamma = \sigma`, the Full-Width at
+Half-Maximum is :math:`\sim 3.6013\sigma`.
 
 .. function:: pvoigt(x, cen=0, sigma=1, frac=0.5)
 

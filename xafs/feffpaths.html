@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS: Reading and using Feff Paths &mdash; larch 0.9.14 documentation</title>
+    <title>XAFS: Reading and using Feff Paths &mdash; larch 0.9.15 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.14',
+        VERSION:     '0.9.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,8 +25,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
-    <link rel="up" title="XAFS Analysis with Larch" href="index.html" />
+    <link rel="top" title="larch 0.9.15 documentation" href="../index.html" />
+    <link rel="up" title="XAFS Analysis" href="index.html" />
     <link rel="next" title="XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
     <link rel="prev" title="XAFS: Fourier Transforms for XAFS" href="xafsft.html" /> 
   </head>
@@ -64,9 +64,9 @@
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   <li><a href="../xray/xrf.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">XAFS Analysis with Larch</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -82,6 +82,7 @@
 <li><a class="reference internal" href="#the-exafs-equation-using-feff-and-feffpath-groups">The EXAFS Equation using Feff and FeffPath Groups</a></li>
 <li><a class="reference internal" href="#example-reading-a-feff-file">Example:  Reading a FEFF file</a></li>
 <li><a class="reference internal" href="#example-adding-feff-files">Example:  Adding FEFF files</a></li>
+<li><a class="reference internal" href="#example-using-path-parameters-when-adding-feff-files">Example: Using Path Parameters when adding FEFF files</a></li>
 </ul>
 </li>
 </ul>
@@ -120,7 +121,7 @@
           <div class="body">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-reading-and-using-feff-paths"></span><h1>XAFS: Reading and using Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-reading-and-using-feff-paths"></span><span id="xafs-feffpaths-sec"></span><h1>XAFS: Reading and using Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>For modeling EXAFS data, Larch relies heavily on calculations of
 theoretical XAFS spectra using FEFF.  Being able to run FEFF and use its
 results is of fundamental importance for using Larch for fitting EXAFS
@@ -607,7 +608,7 @@ example is actually very similar to the one above except that we use
 the result into its own group.  Thus:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffdat3.lar</span>
 
-
+<span class="c"># read some paths</span>
 <span class="n">path1</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo01.dat&#39;</span><span class="p">)</span>
 <span class="n">path2</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo02.dat&#39;</span><span class="p">)</span>
 <span class="n">path3</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo03.dat&#39;</span><span class="p">)</span>
@@ -655,6 +656,95 @@ group is up to date.</p>
 <a class="reference external image-reference" href="../_images/feffdat_example3.png"><img alt="../_images/feffdat_example3.png" src="../_images/feffdat_example3.png" style="width: 75%;" /></a>
 </div></blockquote>
 </div>
+<div class="section" id="example-using-path-parameters-when-adding-feff-files">
+<h2>Example: Using Path Parameters when adding FEFF files<a class="headerlink" href="#example-using-path-parameters-when-adding-feff-files" title="Permalink to this headline">¶</a></h2>
+<p>Using <a class="reference internal" href="../fitting/parameters.html#fitting-parameters-sec"><em>Parameters</em></a> for modelling data is a
+key feature of Larch, and if you are modelling XAFS data with Feff, you
+will want to parameterize Path Parameters, apply them to a set of Paths,
+and investigate the resulting sum of Paths.    This is similar to the
+examples above, but combines the Parameter concept from the Fitting
+chapter.  In Larch, this looks like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffdat4.lar</span>
+
+<span class="c"># read some paths</span>
+<span class="n">path1</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo01.dat&#39;</span><span class="p">)</span>
+<span class="n">path2</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo02.dat&#39;</span><span class="p">)</span>
+
+<span class="c"># create a group containing parameters</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">del_e0</span>  <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="o">-</span><span class="mf">4.0</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mi">10</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">10</span><span class="p">),</span>
+             <span class="n">amp</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.8</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mf">0.3</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mf">1.5</span><span class="p">))</span>
+
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="p">(</span><span class="n">path1</span><span class="p">,</span> <span class="n">path2</span><span class="p">):</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">e0</span>  <span class="o">=</span> <span class="s">&#39;del_e0&#39;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">s02</span> <span class="o">=</span> <span class="s">&#39;amp&#39;</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">sigma2</span> <span class="o">=</span> <span class="mf">0.003</span>
+    <span class="k">if</span> <span class="n">p</span> <span class="o">==</span> <span class="n">path2</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">sigma2</span> <span class="o">=</span> <span class="mf">0.005</span>
+<span class="n">endfor</span>
+
+<span class="n">mysum</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="s">&#39;FeO sum of paths&#39;</span><span class="p">)</span>
+
+<span class="n">ff2chi</span><span class="p">([</span><span class="n">path1</span><span class="p">,</span> <span class="n">path2</span><span class="p">],</span> <span class="n">group</span><span class="o">=</span><span class="n">mysum</span><span class="p">,</span> <span class="n">paramgroup</span><span class="o">=</span><span class="n">pars</span><span class="p">)</span>
+
+<span class="n">label</span><span class="o">=</span><span class="s">&#39;E0=</span><span class="si">%.1f</span><span class="s">, S02=</span><span class="si">%.1f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">del_e0</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+
+<span class="n">newplot</span><span class="p">(</span><span class="n">mysum</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">mysum</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">mysum</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+        <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$ k \rm\, (\AA^{-1})$&#39;</span><span class="p">,</span>
+        <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$ k^2\chi(k)$&#39;</span><span class="p">,</span>  <span class="n">title</span><span class="o">=</span><span class="n">mysum</span><span class="o">.</span><span class="n">label</span><span class="p">)</span>
+
+<span class="c"># now change parameter values, re-do sum</span>
+<span class="n">pars</span><span class="o">.</span><span class="n">del_e0</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">3.5</span>
+<span class="n">pars</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="c"># re-calculate chi for each path with paramgroup set</span>
+<span class="c"># then sum the paths ourselves</span>
+
+<span class="n">path2chi</span><span class="p">(</span><span class="n">path1</span><span class="p">,</span> <span class="n">paramgroup</span><span class="o">=</span><span class="n">pars</span><span class="p">)</span>
+<span class="n">path2chi</span><span class="p">(</span><span class="n">path2</span><span class="p">,</span> <span class="n">paramgroup</span><span class="o">=</span><span class="n">pars</span><span class="p">)</span>
+
+<span class="n">mysum</span><span class="o">.</span><span class="n">chi_alt</span> <span class="o">=</span> <span class="n">path1</span><span class="o">.</span><span class="n">chi</span> <span class="o">+</span> <span class="n">path2</span><span class="o">.</span><span class="n">chi</span>
+
+<span class="n">label</span><span class="o">=</span><span class="s">&#39;E0=</span><span class="si">%.1f</span><span class="s">, S02=</span><span class="si">%.1f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">del_e0</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">mysum</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">mysum</span><span class="o">.</span><span class="n">chi_alt</span><span class="o">*</span><span class="n">mysum</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="n">label</span><span class="p">)</span>
+
+<span class="c">## end examples/feffit/doc_feffdat4.lar</span>
+</pre></div>
+</div>
+<p>After reading in the Feff data files, we have created a group <tt class="docutils literal"><span class="pre">pars</span></tt> of
+Parameters with <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>, specifically <tt class="docutils literal"><span class="pre">pars.del_e0</span></tt> and
+<tt class="docutils literal"><span class="pre">pars.amp</span></tt>.   Then we set the <tt class="docutils literal"><span class="pre">e0</span></tt> path parameter for each path to the
+string <tt class="docutils literal"><span class="pre">'del_e0'</span></tt>, and the <tt class="docutils literal"><span class="pre">amp</span></tt> path parameter to <tt class="docutils literal"><span class="pre">'amp'</span></tt>.   We set
+the <tt class="docutils literal"><span class="pre">sigma2</span></tt> values to simple numbers, as above.</p>
+<p>Now, when running <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a>, we give not only a <tt class="docutils literal"><span class="pre">group</span></tt> to put the
+results in, but also a <tt class="docutils literal"><span class="pre">paramgroup</span></tt> to use as the parameters for
+evaluating any mathematical expressions we&#8217;ve defined for the path
+parameters.   At this point, the strings <tt class="docutils literal"><span class="pre">del_e0</span></tt> and <tt class="docutils literal"><span class="pre">amp</span></tt> for the
+path parameters for path 1 and 2 are converted into Parameters and
+evaluated.</p>
+<p id="index-3">After plotting the results, we then change the values of the parameters.
+We could re-run <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a>, but we can also just run <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a>
+on the paths for which we want to recalculate <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.  Note that we
+specify the <tt class="docutils literal"><span class="pre">paramgroup</span></tt> to <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> here.  Strictly speaking,
+this is not necessary, as both <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> and <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> set the
+value of <tt class="docutils literal"><span class="pre">_sys.paramGroup</span></tt>, which is the default group used for looking
+up names for expression in parameters.  That is, after the first call to
+<a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a>, <tt class="docutils literal"><span class="pre">sys.paramGroup</span></tt> is set to our parameter group <tt class="docutils literal"><span class="pre">pars</span></tt>
+and any subsequent need to evaluate parameters will use that until
+overridden by resetting <tt class="docutils literal"><span class="pre">_sys.paramGroup</span></tt>, which can be done by passing a
+<tt class="docutils literal"><span class="pre">paramgroup</span></tt> argument to <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> or <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a>.</p>
+<blockquote id="xafs-fig8">
+<div><blockquote>
+<div>Figure 8. Results for making 2 different sums of paths using
+parameterized Path Parameters</div></blockquote>
+<a class="reference external image-reference" href="../_images/feffdat_example4.png"><img alt="../_images/feffdat_example4.png" src="../_images/feffdat_example4.png" style="width: 75%;" /></a>
+</div></blockquote>
+<p>The resulting plot shows the effect of changing <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> and
+<img class="math" src="../_images/math/fc923d7c827eca7b3f461463e11c982710c3bcb1.png" alt="S_0^2"/> for a sum of paths.  The same result could be shown by just
+setting the path parameters to the appropriate numerical values, but the
+use of parameters makes this somewhat more general.  As we will see in the
+next section, the use of parameters also allows us to easily refine their
+values in a fit of XAFS data to such a sum of paths.</p>
+</div>
 </div>
 
 
@@ -682,14 +772,14 @@ group is up to date.</p>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   <li><a href="../xray/xrf.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >XAFS Analysis with Larch</a> &raquo;</li> 
+          <li><a href="index.html" >XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

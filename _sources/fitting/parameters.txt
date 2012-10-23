@@ -1,3 +1,5 @@
+.. _fitting-parameters_sec:
+
 ===============
 Parameters
 ===============
@@ -146,9 +148,11 @@ parameters to add to 1 and each be between 0 and 1 as::
 of course, one can use more complex expressions -- any valid Larch
 expression is allowed.
 
+.. index:: _sys.paramGroup
+
 .. _fitting-namespace_sec:
 
-**Namespaces for algebraic expressions**
+.. rubric:: Namespaces for algebraic expressions
 
 It's worth asking what variables and functions are available for writing
 algebraic constraints.  The discussion on :ref:`tut-namespaces-label`

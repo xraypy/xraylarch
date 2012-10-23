@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.14 documentation</title>
+    <title>XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.15 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.14',
+        VERSION:     '0.9.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,9 +25,9 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
-    <link rel="up" title="XAFS Analysis with Larch" href="index.html" />
-    <link rel="next" title="XRF Analysis with Larch" href="../xray/index.html" />
+    <link rel="top" title="larch 0.9.15 documentation" href="../index.html" />
+    <link rel="up" title="XAFS Analysis" href="index.html" />
+    <link rel="next" title="X-ray Databases" href="../xray/index.html" />
     <link rel="prev" title="XAFS: Reading and using Feff Paths" href="feffpaths.html" /> 
   </head>
   <body>
@@ -52,7 +52,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../xray/index.html" title="XRF Analysis with Larch"
+          <a href="../xray/index.html" title="X-ray Databases"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="feffpaths.html" title="XAFS: Reading and using Feff Paths"
@@ -64,21 +64,32 @@
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   <li><a href="../xray/xrf.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">XAFS Analysis with Larch</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li><a class="reference internal" href="#feffit-transform"><tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
+<li><a class="reference internal" href="#feffit-dataset"><tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
+<li><a class="reference internal" href="#feffit"><tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li><a class="reference internal" href="#example-1-simple-fit-with-1-path">Example 1: Simple fit with 1 Path</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="feffpaths.html"
                         title="previous chapter">XAFS: Reading and using Feff Paths</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../xray/index.html"
-                        title="next chapter">XRF Analysis with Larch</a></p>
+                        title="next chapter">X-ray Databases</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/feffit.txt"
@@ -108,27 +119,285 @@
             
   <div class="section" id="module-_xafs">
 <span id="xafs-fitting-xafs-to-feff-paths"></span><h1>XAFS: Fitting XAFS to Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
-<p>Here, we describe how to set up a fitting model to fit a set of FEFF
-calculations to XAFS data.  The documentation so far has touched on many
-aspects of this process, and those sections will be referenced here.</p>
+<p>Fitting XAFS data with structural models based on Feff calculations is a
+primary motivation for Larch.  In this section, we describe how to set up a
+fitting model to fit a set of FEFF calculations to XAFS data.  Many parts
+of the documentation so far have touched on important aspects of this
+process, and those sections will be referenced here.</p>
+<p>The basic approach is to create a model EXAFS <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> as a sum of
+scattering paths that will be compared to experimentally derived
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  The model will be parameterized in terms of Larch
+Parameters defined by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>.  A fit, using the same fitting
+infrastructure as to <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> will be used to refine the
+values of the variable parameters in the model.  To be clear, the Path
+Parameters for all Feff Paths in the fits should be written in terms of
+variable parameters help in a single parameter group.  The refinement will
+be done by comparing the model and experimental <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> after a
+<em>Transformation</em> based on the Fourier transforms in <a class="reference internal" href="xafsft.html#xafs-ft-sec"><em>XAFS: Fourier Transforms for XAFS</em></a>.</p>
+<p>The function <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> is the principle function to do the fit of a
+set of Feff paths to XAFS spectra.  This essentially runs
+<a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> with a parameter group, but with a built-in
+objective function to calculate the fit residual.  This built-in objective
+function calculates the residual as the difference of model and
+experimental <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a list of <em>Datasets</em>.  Here, a <em>Feffit
+Dataset</em> is an important concept that will allow us to easily extend
+modeling to multiple data sets.</p>
+<p>A <em>Feffit Dataset</em> has three principle components.  First, it has an
+experimental data, <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  Second, it has a list of Feff paths &#8211;
+<a class="reference internal" href="feffpaths.html#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> will be used to calculate the model <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  Third,
+it has a <em>Feffit Transform</em> group which holds the Fourier transform and
+fitting ranges to select how the data and model are to be compared.  In
+addition, a fit has a single parameter group, holding all the variable and
+constrained parameters used by all the paths and data sets in a fit.</p>
+<p>There are then 3 principle functions for setting up and executing
+<a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><tt class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></tt></a> is used to create a Transform group,
+which holds the set of Fourier transform parameters.</li>
+<li><a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><tt class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></tt></a> is used to create a Dataset group, which
+consists of the three components described above:<ol class="loweralpha">
+<li>a group holding experimental data (<tt class="docutils literal"><span class="pre">k</span></tt> and <tt class="docutils literal"><span class="pre">chi</span></tt>).</li>
+<li>a list of Feff paths.</li>
+<li>a Transform group.</li>
+</ol>
+</li>
+<li>Finally, <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> is run with a parameter group containing
+the variable and constrained Parameters for the fit, and a dataset
+or list of datasets groups.</li>
+</ol>
+</div></blockquote>
+<div class="section" id="feffit-transform">
+<h2><a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><tt class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></tt></a><a class="headerlink" href="#feffit-transform" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit_transform">
-<tt class="descclassname">_xafs.</tt><tt class="descname">feffit_transform</tt><big>(</big><big>)</big><a class="headerlink" href="#_xafs.feffit_transform" title="Permalink to this definition">¶</a></dt>
-<dd><p>create a Feffit Transform object</p>
+<tt class="descclassname">_xafs.</tt><tt class="descname">feffit_transform</tt><big>(</big><em>fitspace='r'</em>, <em>kmin=0</em>, <em>kmax=20</em>, <em>kweight=2</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.feffit_transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>create and return Feffit Transform group to be used in a Feffit dataset.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>fitspace</strong> &#8211; name of FT type for fit  (&#8216;r&#8217;).</li>
+<li><strong>kmin</strong> &#8211; starting <em>k</em> for FT Window (0).</li>
+<li><strong>kmax</strong> &#8211; ending <em>k</em> for FT Window (20).</li>
+<li><strong>dk</strong> &#8211; tapering parameter for FT Window (4).</li>
+<li><strong>dk2</strong> &#8211; second tapering parameter for FT Window (None).</li>
+<li><strong>window</strong> &#8211; name of window type (&#8216;kaiser&#8217;).</li>
+<li><strong>nfft</strong> &#8211; value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> &#8211; value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>kweight</strong> &#8211; exponent for weighting spectra by <img class="math" src="../_images/math/351cfe295a9c1727c0af7a2d3e2cb31984cd439b.png" alt="k^{\rm kweight}"/> (2).</li>
+<li><strong>rmin</strong> &#8211; starting <em>R</em> for Fit Range and/or reverse FT Window (0).</li>
+<li><strong>rmax</strong> &#8211; ending <em>R</em> for Fit Range and/or reverse FT Window (10).</li>
+<li><strong>dr</strong> &#8211; tapering parameter for reverse FT Window 0.</li>
+<li><strong>rwindow</strong> &#8211; name of window type for reverse FT Window (&#8216;kaiser&#8217;).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Feffit Transform group</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The parameters stored in the returned group object will be used to
+control how the fit is performed.</p>
 </dd></dl>
 
+</div>
+<div class="section" id="feffit-dataset">
+<h2><a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><tt class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></tt></a><a class="headerlink" href="#feffit-dataset" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit_dataset">
-<tt class="descclassname">_xafs.</tt><tt class="descname">feffit_dataset</tt><big>(</big><big>)</big><a class="headerlink" href="#_xafs.feffit_dataset" title="Permalink to this definition">¶</a></dt>
-<dd><p>create a Feffit Dataset object</p>
+<tt class="descclassname">_xafs.</tt><tt class="descname">feffit_dataset</tt><big>(</big><em>data=None</em>, <em>pathlist=</em><span class="optional">[</span><span class="optional">]</span>, <em>transform=None</em><big>)</big><a class="headerlink" href="#_xafs.feffit_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a Feffit Dataset group.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> &#8211; group containing experimental EXAFS (needs arrays <tt class="docutils literal"><span class="pre">k</span></tt> and <tt class="docutils literal"><span class="pre">chi</span></tt>).</li>
+<li><strong>pathlis</strong> &#8211; list of FeffPath groups, as created from <a class="reference internal" href="feffpaths.html#_xafs.feffpath" title="_xafs.feffpath"><tt class="xref py py-func docutils literal"><span class="pre">feffpath()</span></tt></a>.</li>
+<li><strong>transform</strong> &#8211; Feffit Transform group.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Feffit Dataset group.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>A Dataset group is pretty simple, initially consisting of <tt class="docutils literal"><span class="pre">data</span></tt>, a
+<tt class="docutils literal"><span class="pre">pathlist</span></tt>, and a <tt class="docutils literal"><span class="pre">transform</span></tt>, though each of these can be complex.</p>
+<p>The value for <tt class="docutils literal"><span class="pre">data</span></tt> must be a group containing arrays <tt class="docutils literal"><span class="pre">k</span></tt> and
+<tt class="docutils literal"><span class="pre">chi</span></tt> (as determined <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></tt></a> or some other procedure).
+If it contains a value (scalar or array) <tt class="docutils literal"><span class="pre">epsilon_k</span></tt>, that will be
+used as the uncertainty in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for weighting the fit.
+Otherwise, the uncertainty in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> will be estimated
+automatically.  The <tt class="docutils literal"><span class="pre">pathlist</span></tt> is a list of Feff Paths, each of which
+can have its Path Parameters written in terms of fit parameters (see
+the final example in the previous section).  This list of paths will be
+sent to <a class="reference internal" href="feffpaths.html#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> to caclulate the model <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> to compare
+to the experimental data.  Finally, <tt class="docutils literal"><span class="pre">transform</span></tt> is a Feffit transform
+group, as defined above.</p>
 </dd></dl>
 
+</div>
+<div class="section" id="feffit">
+<h2><a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a><a class="headerlink" href="#feffit" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit">
-<tt class="descclassname">_xafs.</tt><tt class="descname">feffit</tt><big>(</big><big>)</big><a class="headerlink" href="#_xafs.feffit" title="Permalink to this definition">¶</a></dt>
-<dd><p>execute a Feffit fit.</p>
+<tt class="descclassname">_xafs.</tt><tt class="descname">feffit</tt><big>(</big><em>paramgroup</em>, <em>datasets</em>, <em>rmax_out=10</em>, <em>path_outputs=True</em><big>)</big><a class="headerlink" href="#_xafs.feffit" title="Permalink to this definition">¶</a></dt>
+<dd><blockquote>
+<div>execute a Feffit fit.</div></blockquote>
+<dl class="docutils">
+<dt>This simply takes a parameter group, as does</dt>
+<dd><blockquote class="first">
+<div><p><a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a>, and a Feffit dataset or list of Feffit
+datasets.  If <tt class="docutils literal"><span class="pre">path_outputs==True</span></tt>, all paths will be separately
+Fourier transformed, with the result being put in the corresponding
+FeffPath group.</p>
+<dl class="docutils">
+<dt>This returns a group which contains the Feffit results, including:</dt>
+<dd><ol class="first last arabic simple">
+<li><tt class="docutils literal"><span class="pre">params</span></tt>: the fit parameters. This will be identical to the
+<tt class="docutils literal"><span class="pre">paramgroup</span></tt> passed in.</li>
+<li><tt class="docutils literal"><span class="pre">datasets</span></tt>: an array of FeffitDataSet groups.  These will be
+identical to the datasets passed in.</li>
+<li>a <tt class="docutils literal"><span class="pre">fit</span></tt> object, which points to the low-level fit.</li>
+</ol>
+</dd>
+</dl>
+</div></blockquote>
+<p>On output, the <tt class="docutils literal"><span class="pre">params</span></tt> group will, of course, have the Parameter
+values updated to the best-fit values.  The Feffit Dataset objects will
+have several outputs written to it for the data and model.</p>
+<p class="last">&lt;&lt; table of dataset output arrays (chir_mag, etc) &gt;&gt;</p>
+</dd>
+</dl>
 </dd></dl>
 
+</div>
+<div class="section" id="example-1-simple-fit-with-1-path">
+<h2>Example 1: Simple fit with 1 Path<a class="headerlink" href="#example-1-simple-fit-with-1-path" title="Permalink to this headline">¶</a></h2>
+<p>We start with a fairly minimal example, fitting spectra read from a data
+file with a single Feff Path.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffit1.lar</span>
+
+<span class="c"># read data</span>
+<span class="n">cu_data</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;cu.chi&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;k, chi&#39;</span><span class="p">)</span>
+
+<span class="c"># define fitting parameter group</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+             <span class="n">del_e0</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
+             <span class="n">sig2</span>   <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+             <span class="n">del_r</span>  <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span> <span class="p">)</span>
+
+<span class="c"># define a Feff Path, give expressions for Path Parameters</span>
+<span class="n">path1</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feffcu01.dat&#39;</span><span class="p">,</span>
+                 <span class="n">s02</span>    <span class="o">=</span> <span class="s">&#39;amp&#39;</span><span class="p">,</span>
+                 <span class="n">e0</span>     <span class="o">=</span> <span class="s">&#39;del_e0&#39;</span><span class="p">,</span>
+                 <span class="n">sigma2</span> <span class="o">=</span> <span class="s">&#39;sig2&#39;</span><span class="p">,</span>
+                 <span class="n">deltar</span> <span class="o">=</span> <span class="s">&#39;del_r&#39;</span><span class="p">)</span>
+
+<span class="c"># set tranform / fit ranges</span>
+<span class="n">trans</span> <span class="o">=</span> <span class="n">feffit_transform</span><span class="p">(</span><span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">17</span><span class="p">,</span> <span class="n">kw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">rmin</span><span class="o">=</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+
+<span class="c"># define dataset to include data, pathlist, transform</span>
+<span class="n">dset</span>  <span class="o">=</span> <span class="n">feffit_dataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">cu_data</span><span class="p">,</span> <span class="n">pathlist</span><span class="o">=</span><span class="p">[</span><span class="n">path1</span><span class="p">],</span> <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+
+<span class="c"># perform fit!</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$k \rm\,(\AA^{-1})$&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span>
+     <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$k^2\chi(k) \rm\,(\AA^{-2})$&#39;</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s">&#39;First shell fit to Cu&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;fit&#39;</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$R \rm\,(\AA)$&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s">&#39;label&#39;</span><span class="p">,</span>
+     <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$|\chi(R)| \rm\,(\AA^{-3})$&#39;</span><span class="p">,</span>
+     <span class="n">title</span><span class="o">=</span><span class="s">&#39;First shell fit to Cu&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;fit&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c">## end examples/feffit/doc_feffit1.lar</span>
+</pre></div>
+</div>
+<p>This simply follows the essential steps:</p>
+<blockquote>
+<div><p>1. A group of parameters <tt class="docutils literal"><span class="pre">pars</span></tt> is defined.  Note that you can include
+upper and/or lower bounds and mix the use of <a class="reference internal" href="../fitting/parameters.html#_math.guess" title="_math.guess"><tt class="xref py py-func docutils literal"><span class="pre">_math.guess()</span></tt></a> and
+<a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>.</p>
+<p>2. A Feff Path is defined with <a class="reference internal" href="feffpaths.html#_xafs.feffpath" title="_xafs.feffpath"><tt class="xref py py-func docutils literal"><span class="pre">feffpath()</span></tt></a>, as discussed in the
+previous section. Here we assign each of the Path Parameters to the name
+of one of the fitting parameters.  More complex expressions and relations
+can be used, but for this example, we&#8217;re keeping it simple.</p>
+<p>3. A Feffit Transform is created with <a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><tt class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></tt></a>, which
+essentially sets the Fourier transform parameters and fit ranges.</p>
+<p>4. A Feffit Dataset is created with <a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><tt class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></tt></a>.  To begin the
+fit, this includes a <tt class="docutils literal"><span class="pre">data</span></tt> group, a <tt class="docutils literal"><span class="pre">transform</span></tt> group, and a
+<tt class="docutils literal"><span class="pre">pathlist</span></tt>,  which is a list of FeffPaths.</p>
+<ol class="arabic simple" start="5">
+<li>The fit is run with <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>, and the output group is saved.</li>
+<li>A fit report is written from the output of <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> and plots
+are made from the dataset.</li>
+</ol>
+</div></blockquote>
+<p>running this example prints out the following report:</p>
+<div class="highlight-python"><pre>=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys       = 106, 4
+   nfree, nfcn_calls  = 102, 31
+   chi_square         = 6930.379153
+   reduced chi_square = 67.944894
+
+[[Data]]
+   n_independent      = 14.260
+   eps_k, eps_r       = 0.000173, 0.008240
+   fit space          = r
+   r-range            = 1.400, 3.000
+   k-range            = 3.000, 17.000
+   k window, dk       = bessel, 3.000
+   k-weight           = 2
+   paths used in fit  = ['feffcu01.dat']
+
+[[Variables]]
+   amp            =  0.932276 +/- 0.045077   (init=  1.000000)
+   del_e0         =  3.962456 +/- 0.553577   (init=  0.100000)
+   del_r          = -0.005644 +/- 0.002969   (init=  0.000000)
+   sig2           =  0.008677 +/- 0.000364   (init=  0.002000)
+
+[[Correlations]]    (unreported correlations are &lt;  0.100)
+   amp, sig2            =  0.922
+   del_e0, del_r        =  0.908
+   del_r, sig2          =  0.160
+   amp, del_r           =  0.145
+
+[[Paths]]
+   feff dat file = feffcu01.dat
+     reff = 2.54780
+     geometry: Atom Label x, y, z ipot
+           Cu    0.0000,  0.0000,  0.0000  0 (absorber)
+           Cu    0.0000, -1.8016,  1.8016  1
+     Degen  =  12.00000
+     S02    =  0.93228
+     E0     =  3.96246
+     R      =  2.54216
+     deltar = -0.00564
+     sigma2 =  0.00868
+=======================================================</pre>
+</div>
+<p>and generates the plots shown.</p>
+<blockquote id="xafs-fig9">
+<div><blockquote>
+<div>Figure 9. Results for Feffit for a simple 1-shell fit to a
+spectrum from Cu metal.</div></blockquote>
+<a class="reference external image-reference" href="../_images/feffit_example1.png"><img alt="../_images/feffit_example1.png" src="../_images/feffit_example1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/feffit_example2.png"><img alt="../_images/feffit_example2.png" src="../_images/feffit_example2.png" style="width: 48%;" /></a>
+</div></blockquote>
+</div>
 </div>
 
 
@@ -144,7 +413,7 @@ aspects of this process, and those sections will be referenced here.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../xray/index.html" title="XRF Analysis with Larch"
+          <a href="../xray/index.html" title="X-ray Databases"
              >next</a> |</li>
         <li class="right" >
           <a href="feffpaths.html" title="XAFS: Reading and using Feff Paths"
@@ -156,14 +425,14 @@ aspects of this process, and those sections will be referenced here.</p>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   <li><a href="../xray/xrf.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >XAFS Analysis with Larch</a> &raquo;</li> 
+          <li><a href="index.html" >XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

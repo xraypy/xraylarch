@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS Analysis with Larch &mdash; larch 0.9.14 documentation</title>
+    <title>XAFS Analysis &mdash; larch 0.9.15 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.14',
+        VERSION:     '0.9.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.15 documentation" href="../index.html" />
     <link rel="next" title="XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
     <link rel="prev" title="Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" /> 
   </head>
@@ -63,7 +63,7 @@
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="#">XAFS</a>|&nbsp;</li>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   <li><a href="../xray/xrf.html">XRF</a>|&nbsp;</li>
  
       </ul>
     </div>
@@ -104,18 +104,17 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="xafs-analysis-with-larch">
-<h1>XAFS Analysis with Larch<a class="headerlink" href="#xafs-analysis-with-larch" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="xafs-analysis">
+<span id="xafs-chapter"></span><h1>XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
 was originally conceived to be version 2 of Ifeffit, replacing and
 expanding all the XAFS analysis capabilities of that package.</p>
-<p>As of this writing (Sept, 2012), this replacement is approximately
-complete, in that essentially all the functionality of Ifeffit 1 is
-available in Larch.  There are some slight differences in implementation
-details, such that slightly different numerical results are obtained.
-Importantly, some new features are already available with Larch that were
-not available with Ifeffit 1.2 and some small errors in Ifeffit 1.2 have
-been fixed.</p>
+<p>As of this writing (Oct, 2012), this replacement is approximately complete,
+in that essentially all the functionality of Ifeffit 1 is available in
+Larch.  There are some slight differences in implementation details, such
+that slightly different numerical results are obtained.  Importantly, some
+new features are already available with Larch that were not available with
+Ifeffit 1.2 and some small errors in Ifeffit 1.2 have been fixed.</p>
 <p>XAFS Analysis can generally be broken into a few separate steps:</p>
 <blockquote>
 <div><ol class="arabic simple">
@@ -130,7 +129,7 @@ been fixed.</p>
 </ol>
 </div></blockquote>
 <p>Broadly speaking, Larch can do all of these steps.</p>
-<span class="target" id="module-_xafs"></span><p>The XAFS-specific functions in Larch are kept in the <a class="reference internal" href="xafsft.html#module-_xafs" title="_xafs"><tt class="xref py py-data docutils literal"><span class="pre">_xafs</span></tt></a> Group,
+<span class="target" id="module-_xafs"></span><p>The XAFS-specific functions in Larch are kept in the <a class="reference internal" href="feffit.html#module-_xafs" title="_xafs: XAFS Feff Path and fitting functions"><tt class="xref py py-data docutils literal"><span class="pre">_xafs</span></tt></a> Group,
 which can be easily accessed, as this is in the default search path.  Note
 that many of the XAFS functions take a <strong>group</strong> argument, which is a group
 into which resulting data are written.  That is, many of the functions have
@@ -168,9 +167,16 @@ listed below.</p>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">The EXAFS Equation using Feff and FeffPath Groups</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">Example:  Reading a FEFF file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-adding-feff-files">Example:  Adding FEFF files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-using-path-parameters-when-adding-feff-files">Example: Using Path Parameters when adding FEFF files</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="feffit.html">XAFS: Fitting XAFS to Feff Paths</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feffit.html">XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-transform"><tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-dataset"><tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit"><tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-1-simple-fit-with-1-path">Example 1: Simple fit with 1 Path</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -200,13 +206,13 @@ listed below.</p>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="#">XAFS</a>|&nbsp;</li>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
-   <li><a href="../xray/index.html">XRF</a>|&nbsp;</li>
+   <li><a href="../xray/xrf.html">XRF</a>|&nbsp;</li>
  
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

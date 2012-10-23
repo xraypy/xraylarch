@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XRF Analysis with Larch &mdash; larch 0.9.14 documentation</title>
+    <title>X-ray Databases &mdash; larch 0.9.15 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.14',
+        VERSION:     '0.9.15',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,8 +25,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.14 documentation" href="../index.html" />
-    <link rel="next" title="Programming with Larch" href="../devel/index.html" />
+    <link rel="top" title="larch 0.9.15 documentation" href="../index.html" />
+    <link rel="next" title="X-ray Fluorescence Analaysis with Larch" href="../xrf/index.html" />
     <link rel="prev" title="XAFS: Fitting XAFS to Feff Paths" href="../xafs/feffit.html" /> 
   </head>
   <body>
@@ -51,7 +51,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../devel/index.html" title="Programming with Larch"
+          <a href="../xrf/index.html" title="X-ray Fluorescence Analaysis with Larch"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../xafs/feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
@@ -63,7 +63,7 @@
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
    <li><a href="#">Xray Data</a>|&nbsp;</li>
-   <li><a href="#">XRF</a>|&nbsp;</li>
+   <li><a href="xrf.html">XRF</a>|&nbsp;</li>
  
       </ul>
     </div>
@@ -75,8 +75,8 @@
   <p class="topless"><a href="../xafs/feffit.html"
                         title="previous chapter">XAFS: Fitting XAFS to Feff Paths</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../devel/index.html"
-                        title="next chapter">Programming with Larch</a></p>
+  <p class="topless"><a href="../xrf/index.html"
+                        title="next chapter">X-ray Fluorescence Analaysis with Larch</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xray/index.txt"
@@ -104,9 +104,516 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="xrf-analysis-with-larch">
-<h1>XRF Analysis with Larch<a class="headerlink" href="#xrf-analysis-with-larch" title="Permalink to this headline">¶</a></h1>
-<p>X-ray Fluorescence Data can be maniuplated and displayed with Larch.</p>
+  <div class="section" id="module-_xray">
+<span id="x-ray-databases"></span><span id="xraydb-chapter"></span><h1>X-ray Databases<a class="headerlink" href="#module-_xray" title="Permalink to this headline">¶</a></h1>
+<p>An important aspect of x-ray spectroscopies and scattering analysis is
+having access to tabulated values for x-ray properties of various elements
+and compounds.  Larch provides several functions to access these x-ray
+properties.  These include basic atomic properties like atomic number and
+mass, tabulated values of characteristic energies and transition
+probabilites for core electron levels, absorption cross-sections, elastic
+scattering terms, and anomalous scattering corrections.</p>
+<p>Much of the speectroscopic data comes from the compilation of Elam, Ravel
+and Sieber <a class="reference internal" href="#elamravelsieber">[ElamRavelSieber]</a>.  The core-hole widths for excited electronic
+levels comes from Keski-Rahkonen and Krause <a class="reference internal" href="#keskirahkonenkrause">[KeskiRahkonenKrause]</a>, while elastic
+x-ray scattering data, f0(q), is derived from Waasmaier and Kirfel
+<a class="reference internal" href="#waasmaierkirfel">[WaasmaierKirfel]</a>.  Anomalous cross-sections from Cromer and Liberman
+<a class="reference internal" href="#cromerliberman">[CromerLiberman]</a> (as implemented by Brennan and Cowan <a class="reference internal" href="#brennancowan">[BrennanCowan]</a> )
+are provided.  In addition, Chantler&#8217;s <a class="reference internal" href="#chantler">[Chantler]</a> values for absorption
+cross-sections and anomalous x-ray scattering factors are available.
+Except for the anomalous cross-section data from Cromer and Liberman (which
+is implemented using the Fortran routine by Brennan and Cowan with slight
+modifications), the data is accessed through a portable SQLite3 database
+file.  This implementation was originally done by Darren Dale from CHESS
+(see <a class="reference external" href="https://github.com/praxes/elam_physical_reference">https://github.com/praxes/elam_physical_reference</a>), with some
+additions and alterations made for Larch.</p>
+<p>The <a class="reference internal" href="#xraydb-funcs-table"><em>Table of X-ray data functions</em></a> gives a brief
+description to the available functions for accessing these data.  More
+detailed descriptions of function arguments, returned values, and so on are
+then given.</p>
+<blockquote id="xraydb-funcs-table">
+<span id="index-0"></span><div><p>Table of X-ray data functions.  These functions calculate and return some element-specific
+properties.  Most data extends to Z=98 (Cf).  Data for elements with atomic number &gt; 92 (U) may
+not be available and when provided may not be very reliable.  Except where noted, the data
+comes from Elam, Ravel, and Sieber.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="73%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">function</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="#_xray.atomic_number" title="_xray.atomic_number"><tt class="xref py py-func docutils literal"><span class="pre">atomic_number()</span></tt></a></td>
+<td>atomic number from symbol</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.atomic_symbol" title="_xray.atomic_symbol"><tt class="xref py py-func docutils literal"><span class="pre">atomic_symbol()</span></tt></a></td>
+<td>atomic symbol from number</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.atomic_mass" title="_xray.atomic_mass"><tt class="xref py py-func docutils literal"><span class="pre">atomic_mass()</span></tt></a></td>
+<td>atomic mass</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.atomic_density" title="_xray.atomic_density"><tt class="xref py py-func docutils literal"><span class="pre">atomic_density()</span></tt></a></td>
+<td>atomic density (for pure element)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_edge" title="_xray.xray_edge"><tt class="xref py py-func docutils literal"><span class="pre">xray_edge()</span></tt></a></td>
+<td>xray edge data for a particular element and edge</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_line" title="_xray.xray_line"><tt class="xref py py-func docutils literal"><span class="pre">xray_line()</span></tt></a></td>
+<td>xray emission line data for an element and line</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_edges" title="_xray.xray_edges"><tt class="xref py py-func docutils literal"><span class="pre">xray_edges()</span></tt></a></td>
+<td>dictionary of all x-ray edges data for an element</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_lines" title="_xray.xray_lines"><tt class="xref py py-func docutils literal"><span class="pre">xray_lines()</span></tt></a></td>
+<td>dictionary of all x-ray emission line data for an element</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.core_width" title="_xray.core_width"><tt class="xref py py-func docutils literal"><span class="pre">core_width()</span></tt></a></td>
+<td>core level width for an element and edge (Keski-Rahkonen and Krause)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><tt class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></tt></a></td>
+<td>absorption cross-section</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.coherent_xsec" title="_xray.coherent_xsec"><tt class="xref py py-func docutils literal"><span class="pre">coherent_xsec()</span></tt></a></td>
+<td>coherent cross-section</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.incoherent_xsec" title="_xray.incoherent_xsec"><tt class="xref py py-func docutils literal"><span class="pre">incoherent_xsec()</span></tt></a></td>
+<td>incoherent cross-section</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.f0" title="_xray.f0"><tt class="xref py py-func docutils literal"><span class="pre">f0()</span></tt></a></td>
+<td>elastic scattering factor (Waasmaier and Kirfel)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.f0_ions" title="_xray.f0_ions"><tt class="xref py py-func docutils literal"><span class="pre">f0_ions()</span></tt></a></td>
+<td>list of valid &#8220;ions&#8221; for <a class="reference internal" href="#_xray.f0" title="_xray.f0"><tt class="xref py py-func docutils literal"><span class="pre">f0()</span></tt></a> (Waasmaier and Kirfel)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.chantler_energies" title="_xray.chantler_energies"><tt class="xref py py-func docutils literal"><span class="pre">chantler_energies()</span></tt></a></td>
+<td>energies of tabulation for Chantler data (Chantler)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.f1_chantler" title="_xray.f1_chantler"><tt class="xref py py-func docutils literal"><span class="pre">f1_chantler()</span></tt></a></td>
+<td>f&#8217;  anomalous factor (Chantler)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.f2_chantler" title="_xray.f2_chantler"><tt class="xref py py-func docutils literal"><span class="pre">f2_chantler()</span></tt></a></td>
+<td>f&#8217;&#8217; anomalous factor (Chantler)</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.mu_chantler" title="_xray.mu_chantler"><tt class="xref py py-func docutils literal"><span class="pre">mu_chantler()</span></tt></a></td>
+<td>absorption cross-section (Chantler)</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.f1f2_cl" title="_xray.f1f2_cl"><tt class="xref py py-func docutils literal"><span class="pre">f1f2_cl()</span></tt></a></td>
+<td>f&#8217; and f&#8217;&#8217; anomalous factors (Cromer and Liberman)</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<p>A few conventions used in these functions is worth mentioning.  Almost all these functions require
+an element to be specified for the first argment, noted as <tt class="docutils literal"><span class="pre">z_or_symbol</span></tt> in the functions below.
+This can either be a valid atomic number or a case-insensitive atomic symbol.  Thus, <tt class="docutils literal"><span class="pre">28</span></tt>, <tt class="docutils literal"><span class="pre">Co</span></tt>
+and <tt class="docutils literal"><span class="pre">co</span></tt> all specify cobalt.  Several functions take either an <tt class="docutils literal"><span class="pre">edge</span></tt> or a <tt class="docutils literal"><span class="pre">level</span></tt> argument
+to signify an core electronic level.  These must be one of the levels listed in the <a class="reference internal" href="#xraydb-edge-table"><em>Table of
+X-ray edge names</em></a>.  Some functions take emission line arguments.  These follow
+the latinized version of the Siegbahn notation as indicated in the <a class="reference internal" href="#xraydb-lines-table"><em>Table of X-ray emission
+line names</em></a>.  Finally, all energies are in eV.</p>
+<blockquote id="xraydb-edge-table">
+<span id="index-1"></span><div><blockquote>
+<div>Table of X-ray Edge / Core electronic levels</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="26%" />
+<col width="8%" />
+<col width="26%" />
+<col width="8%" />
+<col width="26%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">electronic level</th>
+<th class="head">Name</th>
+<th class="head">electronic level</th>
+<th class="head">Name</th>
+<th class="head">electronic level</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>K</td>
+<td>1s</td>
+<td>N7</td>
+<td>4f7/2</td>
+<td>O3</td>
+<td>5p3/2</td>
+</tr>
+<tr class="row-odd"><td>L3</td>
+<td>2p3/2</td>
+<td>N6</td>
+<td>4f5/2</td>
+<td>O2</td>
+<td>5p1/2</td>
+</tr>
+<tr class="row-even"><td>L2</td>
+<td>2p1/2</td>
+<td>N5</td>
+<td>4d5/2</td>
+<td>O1</td>
+<td>5s</td>
+</tr>
+<tr class="row-odd"><td>L1</td>
+<td>2s</td>
+<td>N4</td>
+<td>4d3/2</td>
+<td>P3</td>
+<td>6p3/2</td>
+</tr>
+<tr class="row-even"><td>M5</td>
+<td>3d5/2</td>
+<td>N3</td>
+<td>4p3/2</td>
+<td>P2</td>
+<td>6p1/2</td>
+</tr>
+<tr class="row-odd"><td>M4</td>
+<td>3d3/2</td>
+<td>N2</td>
+<td>4p1/2</td>
+<td>P1</td>
+<td>6s</td>
+</tr>
+<tr class="row-even"><td>M3</td>
+<td>3p3/2</td>
+<td>N1</td>
+<td>4s</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>M2</td>
+<td>3p1/2</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>M1</td>
+<td>3s</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<blockquote id="xraydb-lines-table">
+<span id="index-2"></span><div><blockquote>
+<div>Table of X-ray emission line names and the corresponding Siegbahn and IUPAC notations</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="8%" />
+<col width="30%" />
+<col width="11%" />
+<col width="8%" />
+<col width="30%" />
+<col width="13%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name</th>
+<th class="head">Siegbahn</th>
+<th class="head">IUPAC</th>
+<th class="head">Name</th>
+<th class="head">Siegbahn</th>
+<th class="head">IUPAC</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Ka1</td>
+<td><img class="math" src="../_images/math/a6d81292cd2ba542a0985e2167f8ded7e9bf3651.png" alt="K\alpha_1"/></td>
+<td>K-L3</td>
+<td>Lb4</td>
+<td><img class="math" src="../_images/math/7a6546171a2c96377f6a2b6065fa20713dd85daf.png" alt="L\beta_4"/></td>
+<td>L1-M2</td>
+</tr>
+<tr class="row-odd"><td>Ka2</td>
+<td><img class="math" src="../_images/math/f8dac0f1b0a38198de63238c66064269b4fd054b.png" alt="K\alpha_2"/></td>
+<td>K-L2</td>
+<td>Lb5</td>
+<td><img class="math" src="../_images/math/b332da4f9c9630e013811bb2a400ab4a24e9fb75.png" alt="L\beta_5"/></td>
+<td>L3-O4,5</td>
+</tr>
+<tr class="row-even"><td>Ka3</td>
+<td><img class="math" src="../_images/math/fa5c93b1f218e5251d65bfbe5f93bd37de78ea34.png" alt="K\alpha_3"/></td>
+<td>K-L1</td>
+<td>Lb6</td>
+<td><img class="math" src="../_images/math/9e9ed2238ac71720ae732334d5f334dcb0eae950.png" alt="L\beta_6"/></td>
+<td>L3-N1</td>
+</tr>
+<tr class="row-odd"><td>Kb1</td>
+<td><img class="math" src="../_images/math/80addcf0b803fb8b1a805a3dcfec3425238a5212.png" alt="K\beta_1"/></td>
+<td>K-M3</td>
+<td>Lg1</td>
+<td><img class="math" src="../_images/math/8160473270fde67077fa23adba683cad0601017c.png" alt="L\gamma_1"/></td>
+<td>L2-N4</td>
+</tr>
+<tr class="row-even"><td>Kb2</td>
+<td><img class="math" src="../_images/math/5202c926dd355480b855262ab34bc89c147b2f9c.png" alt="K\beta_2"/></td>
+<td>K-N2,3</td>
+<td>Lg2</td>
+<td><img class="math" src="../_images/math/23008e6a2fb0516a7112dcae30bfba46afa04d07.png" alt="L\gamma_2"/></td>
+<td>L1-N2</td>
+</tr>
+<tr class="row-odd"><td>Kb3</td>
+<td><img class="math" src="../_images/math/c5a5670ea52748cd4a3a27767149fdc5b8cf75cd.png" alt="K\beta_3"/></td>
+<td>K-M2</td>
+<td>Lg3</td>
+<td><img class="math" src="../_images/math/6f1130c6203c5c25e649df3ff73ece82e7307c14.png" alt="L\gamma_3"/></td>
+<td>L1-N3</td>
+</tr>
+<tr class="row-even"><td>Kb4</td>
+<td><img class="math" src="../_images/math/5202c926dd355480b855262ab34bc89c147b2f9c.png" alt="K\beta_2"/></td>
+<td>K-N4,5</td>
+<td>Lg6</td>
+<td><img class="math" src="../_images/math/c7ba4aa4549b2da94804551b20e7b5868d0dfb20.png" alt="L\gamma_6"/></td>
+<td>L2-O4</td>
+</tr>
+<tr class="row-odd"><td>Kb5</td>
+<td><img class="math" src="../_images/math/c5a5670ea52748cd4a3a27767149fdc5b8cf75cd.png" alt="K\beta_3"/></td>
+<td>K-M4,5</td>
+<td>Ll</td>
+<td><img class="math" src="../_images/math/b40a578d248504f43bcbf5765b63bbf84808cf64.png" alt="Ll"/></td>
+<td>L3-M1</td>
+</tr>
+<tr class="row-even"><td>La1</td>
+<td><img class="math" src="../_images/math/5f860fa4fb32ca708393fac62a41bafe65603f33.png" alt="L\alpha_1"/></td>
+<td>L3-M5</td>
+<td>Ln</td>
+<td><img class="math" src="../_images/math/0852c788f50ed4eb0256e558df58aa19783ebde2.png" alt="L\nu"/></td>
+<td>L2-M1</td>
+</tr>
+<tr class="row-odd"><td>La2</td>
+<td><img class="math" src="../_images/math/5f860fa4fb32ca708393fac62a41bafe65603f33.png" alt="L\alpha_1"/></td>
+<td>L3-M4</td>
+<td>Ma</td>
+<td><img class="math" src="../_images/math/ec7a13353f0604ed8a9fabbc5176b613852498cd.png" alt="M\alpha"/></td>
+<td>M5-N6,7</td>
+</tr>
+<tr class="row-even"><td>Lb1</td>
+<td><img class="math" src="../_images/math/3c446e08cb1beee72aae87a71cdc61d10b098aae.png" alt="L\beta_1"/></td>
+<td>L2-M4</td>
+<td>Mb</td>
+<td><img class="math" src="../_images/math/c990f0ded2aaba4bfa9f871cdd0d7ab35ee9c328.png" alt="M\beta"/></td>
+<td>M4-N6</td>
+</tr>
+<tr class="row-odd"><td>Lb2,15</td>
+<td><img class="math" src="../_images/math/2bed71ebf7117728286549f32dd94d80e459bf35.png" alt="L\beta_2,L\beta_{15}"/></td>
+<td>L3-N4,5</td>
+<td>Mg</td>
+<td><img class="math" src="../_images/math/806aa2860b6b2d1c6b6fd092b5e9022ce4531bf0.png" alt="M\gamma"/></td>
+<td>M3-N5</td>
+</tr>
+<tr class="row-even"><td>Lb3</td>
+<td><img class="math" src="../_images/math/4d036bb17694660dc93f07c3e3564db44a84fb5a.png" alt="L\beta_3"/></td>
+<td>L1-M3</td>
+<td>Mz</td>
+<td><img class="math" src="../_images/math/4c5df9d447c8ded679154aeac2e14df29ced27d9.png" alt="M\zeta"/></td>
+<td>M4,5-N6,7</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<dl class="function">
+<dt id="_xray.atomic_number">
+<tt class="descclassname">_xray.</tt><tt class="descname">atomic_number</tt><big>(</big><em>symbol</em><big>)</big><a class="headerlink" href="#_xray.atomic_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the atomic number from an atomic symbol (&#8216;H&#8217;, &#8216;C&#8217;, &#8216;Fe&#8217;, etc)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.atomic_symbol">
+<tt class="descclassname">_xray.</tt><tt class="descname">atomic_symbol</tt><big>(</big><em>z</em><big>)</big><a class="headerlink" href="#_xray.atomic_symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the atomic symbol from an atomic number</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.atomic_mass">
+<tt class="descclassname">_xray.</tt><tt class="descname">atomic_mass</tt><big>(</big><em>z_or_symbol</em><big>)</big><a class="headerlink" href="#_xray.atomic_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the atomic mass in amu from an atomic number or symbol</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.atomic_density">
+<tt class="descclassname">_xray.</tt><tt class="descname">atomic_density</tt><big>(</big><em>z_or_symbol</em><big>)</big><a class="headerlink" href="#_xray.atomic_density" title="Permalink to this definition">¶</a></dt>
+<dd><p>return the density of the common form of a pure element, in gr/cm^3, from an atomic number or symbol.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.xray_edge">
+<tt class="descclassname">_xray.</tt><tt class="descname">xray_edge</tt><big>(</big><em>z_or_symbol</em>, <em>edge_name</em><big>)</big><a class="headerlink" href="#_xray.xray_edge" title="Permalink to this definition">¶</a></dt>
+<dd><p>return (edge energy, fluorescence yield, edge jump) for an atomic number or symbol and
+name of the edge.  Edge energies are in eV.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.xray_line">
+<tt class="descclassname">_xray.</tt><tt class="descname">xray_line</tt><big>(</big><em>z_or_symbol</em>, <em>line_name</em><big>)</big><a class="headerlink" href="#_xray.xray_line" title="Permalink to this definition">¶</a></dt>
+<dd><p>return (emission energy, intensity, initial level, final level)for an atomic number or symbol
+and name of the emission line.  The intensity is the probability of emission from the given
+initial level.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.xray_edges">
+<tt class="descclassname">_xray.</tt><tt class="descname">xray_edges</tt><big>(</big><em>z_or_symbol</em><big>)</big><a class="headerlink" href="#_xray.xray_edges" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dictionary of all (edge energy, fluorescence yield, edge jump) for an atomic number or
+symbol.  The keys of the dictionay are the names of the edges.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.xray_lines">
+<tt class="descclassname">_xray.</tt><tt class="descname">xray_lines</tt><big>(</big><em>z_or_symbol</em><big>)</big><a class="headerlink" href="#_xray.xray_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dictionary of all (emission energy, intensity, initial level, final level for an atomic
+number or symbol.  The keys of the dictionay are the names of the emission lines.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.core_width">
+<tt class="descclassname">_xray.</tt><tt class="descname">core_width</tt><big>(</big><em>z_or_symbol</em>, <em>edge</em><big>)</big><a class="headerlink" href="#_xray.core_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>return core electronic level width for an atomic number or symbol and
+name of the edge.  widths are in eV.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.mu_elam">
+<tt class="descclassname">_xray.</tt><tt class="descname">mu_elam</tt><big>(</big><em>z_or_symbol</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.mu_elam" title="Permalink to this definition">¶</a></dt>
+<dd><p>return x-ray mass attenuation coefficient (<img class="math" src="../_images/math/dbc31a35ac108827f7abee7680c09300c42b3017.png" alt="\mu/\rho"/>) for an atomic number or symbol at
+specified energy values.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.coherent_xsec">
+<tt class="descclassname">_xray.</tt><tt class="descname">coherent_xsec</tt><big>(</big><em>z_or_symbol</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.coherent_xsec" title="Permalink to this definition">¶</a></dt>
+<dd><p>return coherent scattering cross-section for an atomic number or symbol at
+specified energy values.  Values returned are in cm^2/gr.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.incoherent_xsec">
+<tt class="descclassname">_xray.</tt><tt class="descname">incoherent_xsec</tt><big>(</big><em>z_or_symbol</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.incoherent_xsec" title="Permalink to this definition">¶</a></dt>
+<dd><p>return incoherent scattering cross-section for an atomic number or symbol at
+specified energy values. Values returned are in cm^2/gr.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.f0">
+<tt class="descclassname">_xray.</tt><tt class="descname">f0</tt><big>(</big><em>ion</em>, <em>qvalues</em><big>)</big><a class="headerlink" href="#_xray.f0" title="Permalink to this definition">¶</a></dt>
+<dd><p>return elastic scattering (Thomson) factor <img class="math" src="../_images/math/252b7fc4767f9042eae75d0a40545f15f3d09a75.png" alt="f_0(q)"/> for the supplied values of
+<tt class="docutils literal"><span class="pre">q</span></tt> (<img class="math" src="../_images/math/d7fb73f74e0552571f8c2d11031fe2360b4540d9.png" alt="q = \sin(\theta)/\lambda"/> where <img class="math" src="../_images/math/52e8ed7a3ba22130ad3984eb2cd413406475a689.png" alt="\theta"/> is the scattering angle
+and <img class="math" src="../_images/math/ce4588fd900d02afcbd260bc07f54cce49a7dc4a.png" alt="\lambda"/> is the x-ray wavelength).  Here, <tt class="docutils literal"><span class="pre">ion</span></tt> can be an atomic number or
+symbol, or any of the valid ion values (e.g., &#8216;Ga3+&#8217;) given by Waasmaier and Kirfel.
+The returned values are in units of electron number.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.f0_ions">
+<tt class="descclassname">_xray.</tt><tt class="descname">f0_ions</tt><big>(</big><em>element=None</em><big>)</big><a class="headerlink" href="#_xray.f0_ions" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns list of valid ions for <a class="reference internal" href="#_xray.f0" title="_xray.f0"><tt class="xref py py-func docutils literal"><span class="pre">f0()</span></tt></a>.  If <tt class="docutils literal"><span class="pre">element</span></tt> is given (either an atomic number or
+symbol), then only the valid ions for that element will be returned.</p>
+</dd></dl>
+
+<span class="target" id="index-3"></span><dl class="function">
+<dt id="_xray.chantler_energies">
+<tt class="descclassname">_xray.</tt><tt class="descname">chantler_energies</tt><big>(</big><em>z_or_symbol</em>, <em>emin=0</em>, <em>emax=1.e9</em><big>)</big><a class="headerlink" href="#_xray.chantler_energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns array of energies (in eV) at whch data is tabulated in the Chantler tables.
+The arguments <tt class="docutils literal"><span class="pre">emin</span></tt> and <tt class="docutils literal"><span class="pre">emax</span></tt> can be used to restrict the range of returned energies.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.f1_chantler">
+<tt class="descclassname">_xray.</tt><tt class="descname">f1_chantler</tt><big>(</big><em>z_or_symbol</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.f1_chantler" title="Permalink to this definition">¶</a></dt>
+<dd><p>return array of f&#8217;, the real part of the anomalous scattering factor for an element at
+the given energies, using the tabulation of Chantler.  The returned values are in units
+of electron numbers, and represent the correction to Thomson scattering term.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.f2_chantler">
+<tt class="descclassname">_xray.</tt><tt class="descname">f2_chantler</tt><big>(</big><em>z_or_symbol</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.f2_chantler" title="Permalink to this definition">¶</a></dt>
+<dd><p>return array of f&#8217;&#8216;, the imaginary part of the anomalous scattering factor for an
+element at the given energies, using the tabulation of Chantler.  The returned values
+are in units of electron numbers.  These values scale to the values of the mass
+attenuation coefficient.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.mu_chantler">
+<tt class="descclassname">_xray.</tt><tt class="descname">mu_chantler</tt><big>(</big><em>z_or_element</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.mu_chantler" title="Permalink to this definition">¶</a></dt>
+<dd><p>return x-ray mass attenuation coefficient (<img class="math" src="../_images/math/dbc31a35ac108827f7abee7680c09300c42b3017.png" alt="\mu/\rho"/>) for an element at the
+specified energy values, using the tabulation of Chantler.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.f1f2_cl">
+<tt class="descclassname">_xray.</tt><tt class="descname">f1f2_cl</tt><big>(</big><em>z_or_element</em>, <em>energies</em>, <em>width=None</em>, <em>edge=None</em><big>)</big><a class="headerlink" href="#_xray.f1f2_cl" title="Permalink to this definition">¶</a></dt>
+<dd><p>return tuple of (f&#8217;, f&#8217;&#8216;), the real and imaginary anomalous scattering factors for an
+element at the specified energies, using the calculation scheme of Cromer and
+Liberman, as implemented by Brennan and Cowan.  The optional argument <tt class="docutils literal"><span class="pre">width</span></tt> can be
+used to specify an energy width (in eV) to use to convolve the output with a
+Lorentzian profile (with <tt class="docutils literal"><span class="pre">width</span></tt> used as <img class="math" src="../_images/math/2ac40c94a470c086e7c819e51c1891b9f79ffb1e.png" alt="2\gamma"/> in the Lorentzian).  If
+<tt class="docutils literal"><span class="pre">edge</span></tt> is given (&#8216;K&#8217;, &#8216;L3&#8217;, etc), the core-level width is looked up from
+<a class="reference internal" href="#_xray.core_width" title="_xray.core_width"><tt class="xref py py-func docutils literal"><span class="pre">core_width()</span></tt></a>, and its value is used.</p>
+<p>Note that both f&#8217; and f&#8217;&#8217; are returned here.</p>
+</dd></dl>
+
+<p class="rubric">References</p>
+<table class="docutils citation" frame="void" id="brennancowan" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id5">[BrennanCowan]</a></td><td>S. Brennan and P. L. Cowen, <em>A suite of programs for
+calculating x-ray absorption, reflection, and diffraction performance
+for a variety of materials at arbitrary wavelengths</em>, Review of
+Scientific Instruments <strong>63</strong>, pp850&#8211;853 (1992) [<a class="reference external" href="http://dx.doi.org/10.1063/1.1142625">doi link</a>].</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="chantler" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id6">[Chantler]</a></td><td>C. T. Chantler, Journal of Physical and Chemical Reference
+Data <strong>24</strong>, p71 (1995)</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="cromerliberman" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id4">[CromerLiberman]</a></td><td>D. T. Cromer and D. A. Liberman <em>Anomalous dispersion
+calculations near to and on the long-wavelength side of an
+absorption-edge</em>, Acta Crystallographica <strong>A37</strong>, pp267-268 (1981)
+[<a class="reference external" href="http://dx.doi.org/10.1107/S0567739481000600">doi link</a>].</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="elamravelsieber" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[ElamRavelSieber]</a></td><td>W. T. Elam, B. D. Ravel and J. R. Sieber, Radiation
+Physics and Chemistry <strong>63</strong> (2), pp121&#8211;128 (2002)
+[<a class="reference external" href="http://dx.doi.org/10.1016/S0969-806X(01)00227-4">doi link</a>].</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="keskirahkonenkrause" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id2">[KeskiRahkonenKrause]</a></td><td>O. Keski-Rahkonen and M. O. Krause, <em>Total and Partial
+Atomic-Level Widths</em>, Atomic Data and Nuclear Data Tables <strong>14</strong>,
+pp139-146 (1974)</td></tr>
+</tbody>
+</table>
+<table class="docutils citation" frame="void" id="waasmaierkirfel" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id3">[WaasmaierKirfel]</a></td><td>D. Waasmaier and A. Kirfel, <em>New Analytical
+Scattering Factor Functions for Free Atoms and Ions</em>,
+Acta Crystallographica <strong>A51</strong>, pp416-431 (1995)
+[<a class="reference external" href="http://dx.doi.org/10.1107/S0108767394013292">doi link</a>].</td></tr>
+</tbody>
+</table>
 </div>
 
 
@@ -122,7 +629,7 @@
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../devel/index.html" title="Programming with Larch"
+          <a href="../xrf/index.html" title="X-ray Fluorescence Analaysis with Larch"
              >next</a> |</li>
         <li class="right" >
           <a href="../xafs/feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
@@ -134,13 +641,13 @@
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
    <li><a href="#">Xray Data</a>|&nbsp;</li>
-   <li><a href="#">XRF</a>|&nbsp;</li>
+   <li><a href="xrf.html">XRF</a>|&nbsp;</li>
  
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
