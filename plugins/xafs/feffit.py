@@ -30,9 +30,9 @@ class TransformGroup(Group):
     and assumes that once created (not None), these do not need to be
     recalculated....
 
-    That is: don't change the parameters are expect the different things.
-    If you do change parameters, reset kwin / rwin to None.
-
+    That is: don't simply change the parameters and expect different results.
+    If you do change parameters, reset kwin / rwin to None to cause them to be
+    recalculated.
     """
     def __init__(self, kmin=0, kmax=20, kweight=2, dk=4, dk2=None,
                  window='bessel', nfft=2048, kstep=0.05,
@@ -63,7 +63,7 @@ class TransformGroup(Group):
 
         self.kwin = None
         self.rwin = None
-        self.xafsft = self._xafsft
+        # self.xafsft = self._xafsft
         self.estimate_noise = self._estimate_noise
         self.make_karrays()
 
@@ -82,7 +82,7 @@ class TransformGroup(Group):
         self.r_ = self.rstep * arange(self.nfft, dtype='float64')
 
     def _estimate_noise(self, chi, rmin=15.0, rmax=25.0, all_kweights=True):
-        """estimage noice from high r"""
+        """estimage noise in a chi spectrum from its high r components"""
         # print 'Estimate Noise!! ', rmin, self.transform.rmin
         self.make_karrays()
 
@@ -280,13 +280,12 @@ class FeffitDataSet(Group):
 
     def save_ffts(self, rmax_out=10, path_outputs=True):
         "save fft outputs"
-        xft = self.transform.xafsft
+        xft = self.transform._xafsft
         xft(self.datachi,   group=self.data,  rmax_out=rmax_out)
         xft(self.model.chi, group=self.model, rmax_out=rmax_out)
         if path_outputs:
             for p in self.pathlist:
                 xft(p.chi, group=p, rmax_out=rmax_out)
-
 
 def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
     return FeffitDataSet(data=data, pathlist=pathlist,
@@ -312,6 +311,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     fit = Minimizer(_resid, params, fcn_kws=fitkws,
                     scale_covar=True,  _larch=_larch)
     fit.leastsq()
+
     # scale uncertainties to sqrt(n_idp - n_varys)
     n_idp = 0
     for ds in datasets:
@@ -348,16 +348,11 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     varformat = '   %12s = % f +/- %f   (init= % f)'
     exprformat = '   %12s = % f   = \'%s\''
     out = [topline, header % 'Statistics']
-    #     print 'Params ', dir(params)
-    #     print 'Fit    ', dir(fit)
-    #     for ds in datasets:
-    #         print dir(ds)
-    #         print dir(ds.transform)
 
     npts = len(params.residual)
 
     out.append('   npts, nvarys       = %i, %i' % (npts, params.nvarys))
-    out.append('   nfree, nfcn_calls  = %i, %i' % (params.nfree, params.nfcn_calls))
+    out.append('   nfree, nfcn_calls  = %i, %i' % (params.nfree, params.fit_details.nfev))
     out.append('   chi_square         = %f' % (params.chi_square))
     out.append('   reduced chi_square = %f' % (params.chi_reduced))
     out.append(' ')
