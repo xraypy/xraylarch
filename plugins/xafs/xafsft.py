@@ -78,7 +78,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         wid  = (x4-x1)/2
         arg  = 1 - (x-cen)**2 / (wid**2)
         arg[where(arg<0)] = 0
-        if nam == 'bes': # 'bes' : ifeffit implementation of kaiser-bessel
+        if nam == 'bes': # 'bes' : ifeffit 1.0 implementation of kaiser-bessel
             fwin = bessel_i0(dx* sqrt(arg)) / bessel_i0(dx)
             fwin[where(x<=x1)] = 0
             fwin[where(x>=x4)] = 0

@@ -35,7 +35,7 @@ class TransformGroup(Group):
     recalculated.
     """
     def __init__(self, kmin=0, kmax=20, kweight=2, dk=4, dk2=None,
-                 window='bessel', nfft=2048, kstep=0.05,
+                 window='kaiser', nfft=2048, kstep=0.05,
                  rmin = 0, rmax=10, dr=0, rwindow='kaiser',
                  fitspace='r', _larch=None, **kws):
         Group.__init__(self)
@@ -64,7 +64,7 @@ class TransformGroup(Group):
         self.kwin = None
         self.rwin = None
         # self.xafsft = self._xafsft
-        self.estimate_noise = self._estimate_noise
+        # self.estimate_noise = self._estimate_noise
         self.make_karrays()
 
     def __repr__(self):
@@ -229,7 +229,7 @@ class FeffitDataSet(Group):
     def __init__(self, data=None, pathlist=None, transform=None, _larch=None, **kws):
 
         self._larch = _larch
-        Group.__init__(self,  residual=self.residual, **kws)
+        Group.__init__(self, **kws)
 
         self.pathlist = pathlist
 
@@ -239,7 +239,7 @@ class FeffitDataSet(Group):
         self.transform = transform
         self.model = Group()
         self.model.k = None
-        self.datachi = None
+        self.__chi = None
         self.__prepared = False
 
     def __repr__(self):
@@ -252,7 +252,7 @@ class FeffitDataSet(Group):
         ikmax = int(1.01 + max(self.data.k)/trans.kstep)
         # ikmax = index_of(trans.k_, max(self.data.k))
         self.model.k = trans.k_[:ikmax]
-        self.datachi = interp(self.model.k, self.data.k, self.data.chi)
+        self.__chi = interp(self.model.k, self.data.k, self.data.chi)
         # print 'feffit dataset prepare_fit ', dir(self.data)
         if hasattr(self.data, 'epsilon_k'):
             eps_k = self.data.epsilon_k
@@ -260,11 +260,15 @@ class FeffitDataSet(Group):
                 eps_k = interp(self.model.k, self.data.k, self.data.epsilon_k)
                 trans.set_epsilon_k(eps_k)
         else:
-            trans.estimate_noise(self.datachi, rmin=15.0, rmax=25.0)
+            trans._estimate_noise(self.__chi, rmin=15.0, rmax=25.0)
 
         self.__prepared = True
 
-    def residual(self, paramgroup=None):
+    def _residual(self, paramgroup=None):
+        """return the residual for this data set
+        residual = self.transform.apply(data_chi - model_chi)
+        where model_chi is the result of ff2chi(pathlist)
+        """
         if (paramgroup is not None and
             self._larch.symtable.isgroup(paramgroup)):
             self._larch.symtable._sys.paramGroup = paramgroup
@@ -276,12 +280,12 @@ class FeffitDataSet(Group):
 
         _ff2chi(self.pathlist, k=self.model.k,
                 _larch=self._larch, group=self.model)
-        return self.transform.apply(self.datachi-self.model.chi, eps_scale=True)
+        return self.transform.apply(self.__chi-self.model.chi, eps_scale=True)
 
     def save_ffts(self, rmax_out=10, path_outputs=True):
         "save fft outputs"
         xft = self.transform._xafsft
-        xft(self.datachi,   group=self.data,  rmax_out=rmax_out)
+        xft(self.__chi,   group=self.data,  rmax_out=rmax_out)
         xft(self.model.chi, group=self.model, rmax_out=rmax_out)
         if path_outputs:
             for p in self.pathlist:
@@ -298,7 +302,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     """run feff-fit"""
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residual function """
-        return concatenate([d.residual() for d in datasets])
+        return concatenate([d._residual() for d in datasets])
 
     if isinstance(datasets, FeffitDataSet):
         datasets = [datasets]
@@ -332,15 +336,15 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
 def feffit_report(result, min_correl=0.1, with_paths=True,
                   _larch=None, **kws):
     """print report of fit for feffit"""
-    good_to_go = False
+    input_ok = False
     try:
         fit    = result.fit
         params = result.params
         datasets = result.datasets
-        good_to_go = True
+        input_ok = True
     except:
         pass
-    if not good_to_go:
+    if not input_ok:
         print 'must pass output of feffit()!'
         return
     topline = '=================== FEFFIT RESULTS ===================='
@@ -352,31 +356,33 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     npts = len(params.residual)
 
     out.append('   npts, nvarys       = %i, %i' % (npts, params.nvarys))
-    out.append('   nfree, nfcn_calls  = %i, %i' % (params.nfree, params.fit_details.nfev))
-    out.append('   chi_square         = %f' % (params.chi_square))
-    out.append('   reduced chi_square = %f' % (params.chi_reduced))
+    out.append('   nfree, nfcn_calls  = %i, %i' % (params.nfree,
+                                                   params.fit_details.nfev))
+    out.append('   chi_square         = %f'     % (params.chi_square))
+    out.append('   reduced chi_square = %f'     % (params.chi_reduced))
     out.append(' ')
     if len(datasets) == 1:
         out.append(header % 'Data')
     else:
         out.append(header % 'Datasets (%i)' % len(datasets))
     for i, ds in enumerate(datasets):
-        trans = ds.transform
+        tr = ds.transform
         if len(datasets) > 1:
             out.append(' dataset %i:' % (i+1))
-        out.append('   n_independent      = %.3f ' % (trans.n_idp))
-        out.append('   eps_k, eps_r       = %f, %f' % (ds.transform.epsilon_k, ds.transform.epsilon_r))
-        out.append('   fit space          = %s  ' % (trans.fitspace))
-        out.append('   r-range            = %.3f, %.3f' % (trans.rmin, trans.rmax))
-        out.append('   k-range            = %.3f, %.3f' % (trans.kmin, trans.kmax))
-        kwin = '   k window, dk       = %s, %.3f' % (trans.window, trans.dk)
-        if trans.dk2 is not None:
-            kwin = "%s, %.3f" % (kwin, trans.dk2)
+        out.append('   n_independent      = %.3f '  % (tr.n_idp))
+        out.append('   eps_k, eps_r       = %f, %f' % (tr.epsilon_k,
+                                                       tr.epsilon_r))
+        out.append('   fit space          = %s  '   % (tr.fitspace))
+        out.append('   r-range            = %.3f, %.3f' % (tr.rmin, tr.rmax))
+        out.append('   k-range            = %.3f, %.3f' % (tr.kmin, tr.kmax))
+        kwin = '   k window, dk       = %s, %.3f'   % (tr.window, tr.dk)
+        if tr.dk2 is not None:
+            kwin = "%s, %.3f" % (kwin, tr.dk2)
         out.append(kwin)
-        out.append('   k-weight           = %s' % (repr(trans.kweight)))
-        out.append('   paths used in fit  = %s' % (repr([p.filename for p in ds.pathlist])))
-
-
+        out.append('   k-weight           = %s' % (repr(tr.kweight)))
+        pathfiles = [p.filename for p in ds.pathlist]
+        out.append('   paths used in fit  = %s' % (repr(pathfiles)))
+    #
     out.append(' ')
     out.append(header % 'Variables')
 
@@ -426,7 +432,6 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         for ds in datasets:
             for p in ds.pathlist:
                 out.append('%s\n' % p.report())
-
     out.append('='*len(topline))
     return '\n'.join(out)
 
