@@ -1,7 +1,8 @@
 """
 Positioner for Step Scan
 """
-
+import time
+import numpy as np
 from epics import PV, caget
 from .saveable import Saveable
 
@@ -50,10 +51,10 @@ do a readback on this position -- add a ScanDetector for that!
     def __onComplete(self, pvname=None, **kws):
         self.done = True
 
-    def set_array(self, start=None, stop=None, step=None, npts=None):
+    def set_array(self, start, stop, npts):
         """set positioner array with start/stop/step/npts"""
-        print 'hello set array'
-
+        self.array = np.linspace(start, stop, npts)
+        
     def move_to_start(self, wait=False):
         """ move to starting position"""
         return self.move_to_pos(0, wait=wait)
@@ -87,20 +88,21 @@ do a readback on this position -- add a ScanDetector for that!
             return
         self.done = False
         self.pv.put(self.array[i], callback=self.__onComplete)
+        time.sleep(1.e-4)
         if wait:
             t0 = time.time()
             while not self.done and time.time()-t0 < timeout:
                 time.sleep(1.e-4)
 
-    def pre_scan(self):
+    def pre_scan(self, **kws):
         "method to run prior to scan: override for real action"
         pass
 
-    def post_scan(self):
+    def post_scan(self, **kws):
         "method to run after to scan: override for real action"
         pass
 
-    def at_break(self, breakpoint=None):
+    def at_break(self, breakpoint=None, **kws):
         "method to run at break points: override for real action"
         pass
 
