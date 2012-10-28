@@ -80,7 +80,7 @@ class ScanFile(object):
         "write timestamp"
         pass
 
-    def write_data(self, breakpoint=0, clear=True):
+    def write_data(self, breakpoint=0, clear=False):
         "write data"
         pass
 
@@ -88,6 +88,7 @@ class ASCIIScanFile(ScanFile):
     """basis ASCII Column File, line-ending delimited,
     using '#' for comment lines
     """
+    num_format = "%13f"
     def __init__(self, name=None, scan=None,
                  comchar='#', comments=None,
                  mode='increment'):
@@ -169,7 +170,7 @@ class ASCIIScanFile(ScanFile):
         out.append('%sLegend End' % self.com2)
         self.write_lines(out)
 
-    def write_data(self, breakpoint=0, clear=True, close_file=False):
+    def write_data(self, breakpoint=0, clear=False, close_file=False):
         "write data"
         self.write_timestamp()
         if breakpoint == 0:
@@ -184,12 +185,17 @@ class ASCIIScanFile(ScanFile):
         for i in range(len(self.scan.counters[0].buff)):
             words =  self.scan.pos_actual[i][:]
             words.extend([c.buff[i] for c in self.scan.counters])
-            out.append(' '.join(["%10f" % w for w in words]))
+            try:
+                thisline = ' '.join([self.num_format % w for w in words])
+            except:
+                thisline = ' '.join([repr(w) for w in words])
+            out.append(thisline)
+
         self.write_lines(out)
         if clear:
-            [c.clear() for c in self.scan.counters]
-            self.scan.pos_actual = []
+            self.scan.clear_data()
 
+            
         if close_file:
             print "Wrote and closed %s" % self.filename
             self.close()

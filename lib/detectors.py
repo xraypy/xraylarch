@@ -3,7 +3,7 @@ Triggers, Counters, Detectors for Step Scan
 """
 
 import time
-from epics import PV, caget, caput
+from epics import PV, caget, caput, poll
 from epics.devices import Scaler, Mca, Struck
 from ordereddict import OrderedDict
 
@@ -50,7 +50,9 @@ Example usage:
         if value is None:
             value = self._val
         self.pv.put(value, callback=self.__onComplete)
-
+        time.sleep(0.001)
+        poll()
+        
 class Counter(Saveable):
     """simple scan counter object --
     a value that will be counted at each point in the scan"""
@@ -66,8 +68,10 @@ class Counter(Saveable):
         return "<Counter %s (%s)>" % (self.label, self.pv.pvname)
 
     def read(self):
-        self.buff.append(self.pv.get())
-
+        val = self.pv.get(use_monitor=False)
+        self.buff.append(val)
+        return val
+    
     def clear(self):
         self.buff = []
 

@@ -83,6 +83,7 @@ with it.  It will use these for PVs to post data at each point of the scan.
 
 import time
 import threading
+import numpy as np
 from epics import PV, poll
 
 from .detectors import Counter, DeviceCounter, Trigger
@@ -147,7 +148,7 @@ class StepScan(object):
         self.det_settle_time = 1.e-3
         self.pos_maxmove_time = 3600.0
         self.det_maxcount_time = 86400.0
-
+        self.dwelltime = None
         self.comments = comments
 
         self.filename = filename
@@ -250,16 +251,28 @@ class StepScan(object):
 
     def set_dwelltime(self, dtime):
         """set scan dwelltime per point to constant value"""
-        for d in self.detectors:
+        self.dwelltime = dtime
+	for d in self.detectors:
             d.dwelltime = dtime
 
-    def at_break(self, breakpoint=0):
+    def at_break(self, breakpoint=0, clear=False):
         out = [m(breakpoint=breakpoint) for m in self.at_break_methods]
         if self.datafile is not None:
             self.datafile.write_data(breakpoint=breakpoint)
         return out
 
     def pre_scan(self):
+        if self.dwelltime is not None:
+            self.min_dwelltime = self.dwelltime
+            self.max_dwelltime = self.dwelltime
+            if isinstance(self.dwelltime, (list, tuple)):
+                self.dwelltime = np.array(self.dwelltime)
+            if isinstance(self.dwelltime, np.ndarray):
+                self.min_dwelltime = min(self.dwelltime)
+                self.max_dwelltime = max(self.dwelltime)
+            for d in self.detectors:
+                d.dwelltime = self.dwelltime
+
         [pv.connect() for  (desc, pv) in self.extra_pvs]
         return [m() for m in self.pre_scan_methods]
 
@@ -300,6 +313,12 @@ class StepScan(object):
         "read values for extra PVs"
         return [(desc, pv.pvname, pv.get()) for desc, pv in self.extra_pvs]
 
+    def clear_data(self):
+        """clear scan data"""
+        for c in self.counters:
+            c.clear()
+        self.pos_actual = []
+        
     def run(self, filename=None, comments=None):
         """ run the actual scan:
            Verify, Save original positions,
@@ -315,14 +334,18 @@ class StepScan(object):
         self.abort = False
         orig_positions = [p.current() for p in self.positioners]
 
+
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
 
-        out = [p.move_to_start() for p in self.positioners]
+        out = [p.move_to_start(wait=False) for p in self.positioners]
         self.check_outputs(out, msg='move to start')
+
+        self.clear_data()
 
         self.open_output_file(filename=filename, comments=comments)
         self.datafile.write_data(breakpoint=0)
+
 
         npts = len(self.positioners[0].array)
 
@@ -333,35 +356,58 @@ class StepScan(object):
             self.message_thread.start()
         self.cpt = 0
         self.npts = npts
-        for i in range(npts):
+        t0 = time.time()
+        out = [p.move_to_start(wait=True) for p in self.positioners]
+        self.check_outputs(out, msg='move to start with wait')
+        print 'Final move_to_start took %.4f sec' % (time.time()-t0)
+        [p.current() for p in self.positioners]
+        [d.pv.get() for d in self.counters]
+        print '------' 
+        i = -1
+        while not self.abort:
+            i += 1
+            if i >= npts:
+                break
             try:
+                point_ok = True
                 self.cpt = i+1
-                if self.abort:
-                    break
                 # move to next position, wait for moves to finish
                 [p.move_to_pos(i) for p in self.positioners]
                 t0 = time.time()
+                mcount = 0
                 while (not all([p.done for p in self.positioners]) and
                        time.time() - t0 < self.pos_maxmove_time):
                     if self.abort:
                         break
-                    poll(1.e-3, 0.1)
-
+                    poll(5.e-3, 0.25)
+                    mcount += 1
+                if self.abort:
+                    break
                 # wait for positioners to settle
+                # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
                 time.sleep(self.pos_settle_time)
-
                 # start triggers, wait for them to finish
-                [trig.start(1) for trig in self.triggers]
+                [trig.start() for trig in self.triggers]
                 t0 = time.time()
-                while (not all([trig.done for trig in self.triggers]) and
-                       time.time() - t0 < self.det_maxcount_time):
+                time.sleep(max(0.01, self.min_dwelltime/4.0))
+                while not (all([trig.done for trig in self.triggers]) and
+                           (time.time() - t0 < self.det_maxcount_time) and
+                           (time.time() - t0 > self.min_dwelltime/2.0)): 
                     if self.abort:
                         break
-                    poll(1.e-3, 0.1)
+                    poll(5.e-3, 0.25)
+                if self.abort:
+                    break                    
+                self.trig_elapsed_times =  [time.time()-t0]
+                self.trig_elapsed_times.extend([t.runtime for t in self.triggers])
+                for t in self.triggers:
+                    if t.runtime < self.min_dwelltime / 2.0:
+                        point_ok = False
 
-                # wait, then read read counters and acutal positions
+                # wait, then read read counters and actual positions
                 time.sleep(self.det_settle_time)
                 [c.read() for c in self.counters]
+                self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
 
                 # if a messenger exists, let it know this point has finished
@@ -371,19 +417,26 @@ class StepScan(object):
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
                     self.at_break(breakpoint=i, clear=True)
+                
             except KeyboardInterrupt:
                 self.abort = True
-
+            if not point_ok:
+                print 'point messed up... try again?'
+                i -= 1
+                
         # scan complete
         # return to original positions, write data
+        if self.abort:
+            print "scan aborted at point %i of %i." % (self.cpt, self.npts)
+        
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
-        self.datafile.write_data(breakpoint=-1, close_file=True)
+        self.datafile.write_data(breakpoint=-1, close_file=True, clear=False)
         self.abort = False
 
         # run post_scan methods
         out = self.post_scan()
-        self.check_outputs(out, msg='pre scan')
+        self.check_outputs(out, msg='post scan')
 
         # end messenger thread
         if self.message_thread is not None:
