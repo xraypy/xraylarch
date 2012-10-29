@@ -88,7 +88,7 @@ class ASCIIScanFile(ScanFile):
     """basis ASCII Column File, line-ending delimited,
     using '#' for comment lines
     """
-    num_format = "%13f"
+    num_format = "% 15f"
     def __init__(self, name=None, scan=None,
                  comchar='#', comments=None,
                  mode='increment'):
@@ -126,8 +126,8 @@ class ASCIIScanFile(ScanFile):
         for desc, pvname, val in self.scan.read_extra_pvs():
             if not isinstance(val, (str, unicode)):
                 val = repr(val)
-            out.append("%s %s = %s = %s" % (self.comchar,
-                                            desc, pvname, val))
+            out.append("%s %s |%s|  %s" % (self.comchar,
+                                           desc, pvname, val))
 
         out.append('%sExtraPVs End' % (self.com2))
         self.write_lines(out)
@@ -154,14 +154,16 @@ class ASCIIScanFile(ScanFile):
         for i, pos in enumerate(self.scan.positioners):
             key = 'p%i' % (i+1)
             cols.append("   %s  " % (key))
-            legend.append("%s %s: %s (%s)" % (self.comchar, key,
-                                               pos.label,
-                                               pos.pv.pvname))
+            legend.append("%s %s |%s| %s" % (self.comchar, key,
+                                             pos.pv.pvname,
+                                             pos.label))
+            
         for i, det in enumerate(self.scan.counters):
-            key = 'd%i' % (i)
+            key = 'd%i' % (i+1)
             cols.append("   %s  " % (key))
-            legend.append("%s %s =  %s = %s" % (self.comchar, key,
-                                               det.label, det.pv.pvname))
+            legend.append("%s %s |%s| %s" % (self.comchar, key,
+                                             det.pv.pvname, det.label))
+
         out = ['%sLegend Start:' % self.com2]
         for l in legend:
             out.append(l)
@@ -169,7 +171,7 @@ class ASCIIScanFile(ScanFile):
         out.append('%sLegend End' % self.com2)
         self.write_lines(out)
 
-    def write_data(self, breakpoint=0, clear=False, close_file=False):
+    def write_data(self, breakpoint=0, clear=False, close_file=False, verbose=False):
         "write data"
         if breakpoint == 0:
             self.write_timestamp(label='Time_Start')
@@ -197,5 +199,7 @@ class ASCIIScanFile(ScanFile):
 
             
         if close_file:
-            print "Wrote and closed %s" % self.filename
             self.close()
+            if verbose:
+                print "Wrote and closed %s" % self.filename
+                            
