@@ -311,7 +311,10 @@ class StepScan(object):
 
     def read_extra_pvs(self):
         "read values for extra PVs"
-        return [(desc, pv.pvname, pv.get()) for desc, pv in self.extra_pvs]
+        out = []
+        for desc, pv in self.extra_pvs:
+            out.append((desc, pv.pvname, pv.get(as_string=True)))
+        return out
 
     def clear_data(self):
         """clear scan data"""
@@ -359,10 +362,8 @@ class StepScan(object):
         t0 = time.time()
         out = [p.move_to_start(wait=True) for p in self.positioners]
         self.check_outputs(out, msg='move to start with wait')
-        print 'Final move_to_start took %.4f sec' % (time.time()-t0)
         [p.current() for p in self.positioners]
         [d.pv.get() for d in self.counters]
-        print '------' 
         i = -1
         while not self.abort:
             i += 1
