@@ -126,16 +126,16 @@ class ASCIIScanFile(ScanFile):
         for desc, pvname, val in self.scan.read_extra_pvs():
             if not isinstance(val, (str, unicode)):
                 val = repr(val)
-            out.append("%s %s:   %s (%s)" % (self.comchar,
-                                             desc, val, pvname))
+            out.append("%s %s = %s = %s" % (self.comchar,
+                                            desc, pvname, val))
 
         out.append('%sExtraPVs End' % (self.com2))
         self.write_lines(out)
 
-    def write_timestamp(self):
+    def write_timestamp(self, label='Time'):
         "write timestamp"
         self.check_writeable()
-        self.write("%sTime: %s\n" % (self.com2, get_timestamp()))
+        self.write("%s%s: %s\n" % (self.com2, label, get_timestamp()))
 
     def write_comments(self):
         "write comment lines"
@@ -160,9 +160,8 @@ class ASCIIScanFile(ScanFile):
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i)
             cols.append("   %s  " % (key))
-            legend.append("%s %s: %s (%s)" % (self.comchar, key,
-                                               det.label,
-                                               det.pv.pvname))
+            legend.append("%s %s =  %s = %s" % (self.comchar, key,
+                                               det.label, det.pv.pvname))
         out = ['%sLegend Start:' % self.com2]
         for l in legend:
             out.append(l)
@@ -172,14 +171,15 @@ class ASCIIScanFile(ScanFile):
 
     def write_data(self, breakpoint=0, clear=False, close_file=False):
         "write data"
-        self.write_timestamp()
         if breakpoint == 0:
+            self.write_timestamp(label='Time_Start')
             self.write_comments()
             self.write_legend()
             return
-
+        self.write_timestamp(label='Time_End')
         self.write_extrapvs()
         out = ['%s%s' % (self.comchar, '-'*66)]
+
         out.append(self.column_label)
 
         for i in range(len(self.scan.counters[0].buff)):
