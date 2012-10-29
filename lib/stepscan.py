@@ -158,11 +158,15 @@ class StepScan(object):
 
         self.verified = False
         self.abort = False
-
+        self.inittime = 0 # time to initialize scan (pre_scan, move to start, begin i/o)
+        self.looptime = 0 # time to run scan loop (even if aborted)
+        self.exittime = 0 # time to complete scan (post_scan, return positioners, complete i/o)
+        self.runtime  = 0 # inittime + looptime + exittime
+        
         self.message_thread = None
         self.messenger = messenger
         if filename is not None:
-            self.open_output_file(filename=filename, comments=comments)
+            self.datafile = self.open_output_file(filename=filename, comments=comments)
 
         self.extra_pvs = []
         self.positioners = []
@@ -186,10 +190,8 @@ class StepScan(object):
         if comments is not None:
             self.comments = comments
 
-        self.datafile = creator(name=self.filename,
-                                mode=self.filemode,
-                                comments=self.comments,
-                                scan=self)
+        return creator(name=self.filename,     mode=self.filemode,
+                       comments=self.comments, scan=self)
 
     def add_counter(self, counter, label=None):
         "add simple counter"
@@ -330,13 +332,13 @@ class StepScan(object):
            Loop over points
            run post_scan methods
         """
+        ts_start = time.time()
         if not self.verify_scan():
             print 'Cannot execute scan'
             print self.error_message
             return
         self.abort = False
         orig_positions = [p.current() for p in self.positioners]
-
 
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
@@ -346,9 +348,8 @@ class StepScan(object):
 
         self.clear_data()
 
-        self.open_output_file(filename=filename, comments=comments)
+        self.datafile = self.open_output_file(filename=filename, comments=comments)
         self.datafile.write_data(breakpoint=0)
-
 
         npts = len(self.positioners[0].array)
 
@@ -365,6 +366,9 @@ class StepScan(object):
         [p.current() for p in self.positioners]
         [d.pv.get() for d in self.counters]
         i = -1
+        ts_init = time.time()
+        self.inittime = ts_init - ts_start
+
         while not self.abort:
             i += 1
             if i >= npts:
@@ -427,6 +431,8 @@ class StepScan(object):
                 
         # scan complete
         # return to original positions, write data
+        ts_loop = time.time()
+        self.looptime = ts_loop - ts_init
         if self.abort:
             print "scan aborted at point %i of %i." % (self.cpt, self.npts)
         
@@ -443,4 +449,10 @@ class StepScan(object):
         if self.message_thread is not None:
             self.message_thread.cpt = None
             self.message_thread.join()
+
+        ts_exit = time.time()
+        self.exittime = ts_exit - ts_loop
+        self.runtime  = ts_exit - ts_start
+        return self.datafile.filename
+        ##
 
