@@ -113,7 +113,7 @@ class LinearScanPanel(GenericScanPanel):
         self.pos_settings = []
         pchoices=self.config.positioners.keys()
         fsize = (95, -1)
-        for i in range(3):
+        for i in range(4):
             lab = 'Slave'
             if i == 0: lab = 'Master'
             if i > 0 and 'None' not in pchoices:
@@ -249,7 +249,7 @@ class XAFSScanPanel(GenericScanPanel):
             sizer.Add(SimpleText(panel, lab),  (ir, ic), (1, 1), lsty, 2)
 
         fsize = (80, -1)
-        for i, label in enumerate(('Pre-Edge', 'XANES', 'EXAFS')):
+        for i, label in enumerate(('Pre-Edge', 'XANES', 'EXAFS', 'EXAFS2')):
             ir += 1
             reg   = wx.StaticText(panel, -1, size=(120, -1), label=' %s' % label)
             start = FloatCtrl(panel, size=fsize, value=0,  act_on_losefocus=True,
@@ -277,7 +277,6 @@ class XAFSScanPanel(GenericScanPanel):
                 step.Disable()
                 npts.Disable()
                 dtime.Disable()
-                reg.Disable()
                 units.Disable()
             sizer.Add(reg,   (ir, 0), (1, 1), wx.ALL, 5)
             sizer.Add(start, (ir, 1), (1, 1), wx.ALL, 2)
