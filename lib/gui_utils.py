@@ -93,6 +93,13 @@ def add_menu(parent, menu, label='', text='', action=None):
     if hasattr(action, '__call__'):
         wx.EVT_MENU(parent, wid, action)
 
+def add_choice(panel, choices, default=0, action=None, **kws):
+    "add simple button with bound action"
+    c = wx.Choice(panel, -1,  choices=choices, **kws)
+    c.Select(default)
+    c.Bind(wx.EVT_CHOICE, action)
+    return c
+
 def popup(parent, message, title, style=None):
     """
     generic popup message dialog, returns
