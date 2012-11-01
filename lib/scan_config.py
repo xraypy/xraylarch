@@ -16,7 +16,7 @@ DET_LEGEND = '# index = label || DetectorPV || options '
 DEFAULT_CONF = """
 ### Epics Scan Configuration
 [setup]
-filename_prefix = test
+filename = test.dat
 filemode        = increment
 #--------------------------#
 [positioners]
@@ -115,7 +115,7 @@ class ScanConfig(object):
                     out.append("%s = %s" % (name, val))
             elif sect == 'detectors':
                 out.append(DET_LEGEND)
-                print 'sect = det' 
+                print 'sect = det'
                 idx = 0
                 for key, val in getattr(self, sect).items():
                     idx = idx + 1
