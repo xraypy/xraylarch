@@ -62,6 +62,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                                         size=size, style=style,
                                         name=self.__name__)
         self.Font13=wx.Font(13, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self._initialized = False # used to shunt events while creating windows
 
     def layout(self, panel, sizer, irow):
         sizer.Add(SimpleText(panel, "Estimated Scan Time:"),
@@ -74,6 +75,18 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         pack(self, msizer)
         self.Layout()
         self.SetupScrolling()
+        self._initialized = True
+
+    def setStepNpts(self, wids, label):
+        "set step / npts for start/stop/step/npts list of widgets"
+        start = wids[0].GetValue()
+        stop = wids[1].GetValue()
+        if label in ('start', 'stop', 'step'):
+            step = wids[2].GetValue()
+            wids[3].SetValue(1 + int(0.1 + abs(stop-start)/step), act=False)
+        elif label == 'npts':
+            npts = max(2, wids[3].GetValue())
+            wids[2].SetValue((stop-start)/(npts-1), act=False)
 
     def top_widgets(self, panel, sizer, title, irow=1,
                     dwell_prec=3, dwell_value=1):
@@ -99,16 +112,17 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                   (irow+1, 0), (1, 8), wx.ALIGN_CENTER)
         return irow+2
 
-    def StartStopStepNpts(self, panel, i, npts=True):
+    def StartStopStepNpts(self, panel, i, npts=True, initvals=(-1,1,1,3)):
         fsize = (95, -1)
-        start = FloatCtrl(panel, size=fsize, value=0, act_on_losefocus=True,
+        s0, s1, ds, ns = initvals
+        start = FloatCtrl(panel, size=fsize, value=s0, act_on_losefocus=True,
                           action=Closure(self.onVal, index=i, label='start'))
-        stop  = FloatCtrl(panel, size=fsize, value=0, act_on_losefocus=True,
+        stop  = FloatCtrl(panel, size=fsize, value=s1, act_on_losefocus=True,
                           action=Closure(self.onVal, index=i, label='stop'))
-        step  = FloatCtrl(panel, size=fsize, value=0, act_on_losefocus=True,
+        step  = FloatCtrl(panel, size=fsize, value=ds, act_on_losefocus=True,
                           action=Closure(self.onVal, index=i, label='step'))
         if npts:
-            npts  = FloatCtrl(panel, precision=0,  value=1, size=(50, -1),
+            npts  = FloatCtrl(panel, precision=0,  value=ns, size=(50, -1),
                               act_on_losefocus=True,
                               action=Closure(self.onVal, index=i, label='npts'))
         else:
@@ -184,22 +198,10 @@ class LinearScanPanel(GenericScanPanel):
         self.layout(panel, sizer, ir)
 
     def onVal(self, index=0, label=None, value=None, **kws):
+        if not self._initialized: return
         print 'LineScan on Value ', index, label, value, kws
-        try:
-            if label in ('start', 'stop', 'step'):
-                wids = self.pos_settings[index] # pos, units, cur, start, stop, step, npts
-                start = wids[3].GetValue()
-                stop = wids[4].GetValue()
-                step = wids[5].GetValue()
-                wids[6].SetValue(1 + int(0.1  + abs(stop - start)/step), act=False)
-            elif label == 'npts':
-                wids = self.pos_settings[index] # pos, units, cur, start, stop, step, npts
-                start = wids[3].GetValue()
-                stop  = wids[4].GetValue()
-                npts  = max(2, int(value))
-                wids[5].SetValue((stop-start)/(npts-1), act=False)
-        except IndexError:
-            pass
+        if label in ('start', 'stop', 'step', 'npts'):
+            self.setStepNpts(self.pos_settings[index][3:], label)
 
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
@@ -256,11 +258,14 @@ class XAFSScanPanel(GenericScanPanel):
                                     "Npts", "Time (s)", "Units")):
             sizer.Add(SimpleText(panel, lab),  (ir, ic), (1, 1), lsty, 2)
 
-        for i, label in enumerate(('Pre-Edge', 'XANES', 'EXAFS', 'EXAFS2')):
+        for i, reg in enumerate((('Pre-Edge', (-50, -10, 5, 9)),
+                                  ('XANES', (-10, 10, 1, 21)),
+                                  ('EXAFS', (10, 200, 1, 96)),
+                                  ('EXAFS2', (200, 500, 3, 101)))):
+            label, initvals = reg
             ir += 1
             reg   = wx.StaticText(panel, -1, size=(120, -1), label=' %s' % label)
-            start, stop, step, npts = self.StartStopStepNpts(panel, i)
-
+            start, stop, step, npts = self.StartStopStepNpts(panel, i, initvals=initvals)
             dtime = FloatCtrl(panel, size=(65, -1), value=0, minval=0, precision=2,
                               action=Closure(self.onVal, index=i, label='dtime'))
 
@@ -306,7 +311,8 @@ class XAFSScanPanel(GenericScanPanel):
         self.layout(panel, sizer, ir)
 
     def onVal(self, index=0, label=None, value=None, **kws):
-        print 'XAFS on Value ', index, label, value, kws
+        if not self._initialized: return
+        print 'XAFS on Value ', index, label, value, kws, self._initialized
         if label == 'dwelltime':
             for reg in self.reg_settings:
                 reg[4].SetValue(value)
@@ -314,12 +320,6 @@ class XAFSScanPanel(GenericScanPanel):
                 self.kwtime.SetValue(value)
             except:
                 pass
-        elif label == 'stop':
-            if index < len(self.reg_settings)-1:
-                self.reg_settings[index+1][0].SetValue(value, act=False)
-        elif label == 'start':
-            if index > 0:
-                self.reg_settings[index-1][1].SetValue(value, act=False)
         elif label == 'nreg':
             nregs = value
             for ireg, reg in enumerate(self.reg_settings):
@@ -327,6 +327,15 @@ class XAFSScanPanel(GenericScanPanel):
                     for wid in reg: wid.Enable()
                 else:
                     for wid in reg: wid.Disable()
+
+        if label in ('start', 'stop', 'step', 'npts'):
+            self.setStepNpts(self.reg_settings[index], label)
+            if label == 'stop' and index < len(self.reg_settings)-1:
+                self.reg_settings[index+1][0].SetValue(value, act=False)
+                self.setStepNpts(self.reg_settings[index+1], label)
+            elif label == 'start' and index > 0:
+                self.reg_settings[index-1][1].SetValue(value, act=False)
+                self.setStepNpts(self.reg_settings[index-1], label)
 
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
@@ -394,7 +403,10 @@ class MeshScanPanel(GenericScanPanel):
         self.layout(panel, sizer, ir)
 
     def onVal(self, index=0, label=None, value=None, **kws):
-        print 'on Value ', index, label, value, kws
+        if not self._initialized: return
+        print 'MeshScan on Value ', index, label, value, kws
+        if label in ('start', 'stop', 'step', 'npts'):
+            self.setStepNpts(self.pos_settings[index][3:], label)
 
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
@@ -453,7 +465,10 @@ class SlewScanPanel(GenericScanPanel):
         self.layout(panel, sizer, ir)
 
     def onVal(self, index=0, label=None, value=None, **kws):
-        print 'on Value ', index, label, value, kws
+        if not self._initialized: return
+        print 'SlewScan on Value ', index, label, value, kws
+        if label in ('start', 'stop', 'step', 'npts'):
+            self.setStepNpts(self.pos_settings[index][3:], label)
 
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
