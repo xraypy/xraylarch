@@ -28,7 +28,7 @@ class ScanRegion(Saveable):
                           dtime=dtime,
                           dtime_final=dtime_final,
                           dtime_wt=dtime_wt)
-        
+
 class XAFS_Scan(StepScan):
     def __init__(self, label=None, energy_pv=None, read_pv=None,
                  e0=0, dtime=1, **kws):
@@ -46,7 +46,7 @@ class XAFS_Scan(StepScan):
         self.energy_pv = energy_pv
         self.read_pv = read_pv
         if energy_pv is not None:
-           
+
             self.energy_pos = Positioner(energy_pv, label='Energy')
             self.positioners = []
             self.add_positioner(self.energy_pos)
@@ -67,13 +67,11 @@ class XAFS_Scan(StepScan):
         for r in self.regions:
             print r
 
-
     def add_region(self, start, stop, step=None, npts=None,
                    relative=True, use_k=False, e0=None,
                    dtime=None, dtime_final=None, dtime_wt=1):
         """add a region to an EXAFS scan.
         Note that scans must be added in order of increasing energy
-
         """
         if e0 is None:
             e0 = self.e0
