@@ -15,7 +15,7 @@ class Saveable(object):
 
     def __repr__(self):
         return self._saved_repr()
-    
+
     def _saved_kws(self):
         return json.dumps(self.__kws, sort_keys=True)
 
@@ -29,7 +29,6 @@ class Saveable(object):
         return "<%s: args=%s, kws=%s>" % (self.__class,
                                           self._saved_args(),
                                           self._saved_kws())
-
     def _saved_state(self):
         return (self.__class, self._saved_args(), self._saved_kws())
 
@@ -37,8 +36,8 @@ class Saveable(object):
         return (self._saved_class() == other._saved_class() and
                 self._saved_args() == other._saved_args() and
                 self._saved_kws() == other._saved_kws())
-                
-    
+
+
 def unpack_args(args, kws):
     """unpacks the args, *kws for a Saveable, suitable
     for passing to object creation.
@@ -52,12 +51,12 @@ def unpack_args(args, kws):
         identify the ClassCreation object and run:
 
         newobj = ClassCreator(*args, **kws)
-                
+
     """
     args = [str(u) for u in json.loads(args)]
     kws  = dict((str(k),v) for k, v in json.loads(kws).items())
     return args, kws
-    
+
 class TestCase(Saveable):
     def __init__(self, pvname, label=None, array=None, **kws):
         Saveable.__init__(self, pvname, label=label, array=array, **kws)
@@ -67,7 +66,7 @@ if __name__ == '__main__':
     print a._saved_class()
     print a._saved_args()
     print a._saved_kws()
-    
+
     print a
 
     if a._saved_class()=='TestCase':
@@ -75,4 +74,4 @@ if __name__ == '__main__':
         b = TestCase(*args, **kws) #@ *args, **kws)
         print b
         print a == b, a is b
-        
+
