@@ -40,8 +40,6 @@ import wx.lib.mixins.inspection
 import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
 
-from larch import Interpreter
-
 from gui_utils import SimpleText, FloatCtrl, Closure
 from gui_utils import pack, add_button, add_menu, add_choice, add_menu
 
@@ -68,7 +66,6 @@ class ScanFrame(wx.Frame):
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
-        self.larch = Interpreter()
 
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -96,13 +93,14 @@ class ScanFrame(wx.Frame):
         self.nb.SetBackgroundColour('#FCFCFA')
         self.SetBackgroundColour('#F0F0E8')
 
-        self.scan_choices = []
+        self.scanpanels = []
         for name, creator in (('Linear Step Scan', LinearScanPanel),
-                           ('2-D Mesh Scan',    MeshScanPanel),
-                           ('Slew Scan',        SlewScanPanel),
-                           ('XAFS Scan',        XAFSScanPanel)):
-            panel = creator(self, config=self.config, larch=self.larch)
-            self.nb.AddPage(panel, name, True)
+                              ('2-D Mesh Scan',    MeshScanPanel),
+                              ('Slew Scan',        SlewScanPanel),
+                              ('XAFS Scan',        XAFSScanPanel)):
+            p = creator(self, config=self.config)
+            self.nb.AddPage(p, name, True)
+            self.scanpanels.append(p)
 
         self.nb.SetSelection(0)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -143,10 +141,19 @@ class ScanFrame(wx.Frame):
 
         bpanel.SetSizer(bsizer)
         bsizer.Fit(bpanel)
-
+        wx.CallAfter(self.init_larch)
         sizer.Add(bpanel, 0, ALL_CEN, 5)
         self.SetSizer(sizer)
         sizer.Fit(self)
+
+    def init_larch(self):
+        print 'initializing larch'
+        t0 = time.time()
+        import larch
+        self._larch = larch.Interpreter()
+        for span in self.scanpanels:
+            span.larch = self._larch
+        print 'larch initialization took %.3f sec' % (time.time() - t0)
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()

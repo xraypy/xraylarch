@@ -1,33 +1,12 @@
 #!/usr/bin/env python
 """
-Main GUI form for setting up and executing Step Scans
-
-Principle features:
-   1.  Overall Configuration file in home directory
-   2.  wx.ChoiceBox (exclusive panel) for
-         Linear Scans
-         Mesh Scans (2d maps)
-         XAFS Scans
-         Fly Scans (optional)
-
-   3.  Other notes:
-       Linear Scans support Slave positioners
-       A Scan Definition files describes an individual scan.
-       Separate popup window for Detectors (Trigger + set of Counters)
-       Allow adding any additional Counter
-       Builtin Support for Detectors: Scalers, MultiMCAs, and AreaDetectors
-       Give File Prefix on Scan Form
-       options window for settling times
-       Plot Window allows simple math of columns
-       Plot Window supports shows position has "Go To" button.
-
-   4. To consider / add:
-       keep sqlite db of scan defs / scan names (do a scan like 'xxxx')
-       plot window can do simple analysis?
-
+GUI Panels for setting up positioners for different scan types.
+Current scan types:
+    Linear Scans
+    Mesh Scans (2d maps)
+    EXAFS Scans
+    Fly Scans (optional)
 """
-import os
-import time
 
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
@@ -44,13 +23,8 @@ from xafs_scan import etok, ktoe
 from file_utils import new_filename, increment_filename, nativepath
 from scan_config import ScanConfig
 
-MAX_POINTS = 4000
-
-ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
-
-CEN=wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-LEFT=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
+LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
 ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
              'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
@@ -113,7 +87,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         self.est_time  = SimpleText(panel, '00:00:00')
         title =  SimpleText(panel, title, font=self.Font13, colour='#880000',
                             style=LEFT)
-        alabel = SimpleText(panel, 'Scan Mode:')
+        alabel = SimpleText(panel, ' Mode:')
         dlabel  = SimpleText(panel, 'Time/Point (sec):')
 
         sizer.Add(title,          (0,    0), (1, 3), CEN, 4)
@@ -145,6 +119,18 @@ class GenericScanPanel(scrolled.ScrolledPanel):
     def onVal(self, index=0, label=None, value=None, **kws):
         pass
 
+    def onAbsRel(self, evt=None):
+        for index, wids in enumerate(self.pos_settings):
+            if wids[3].Enabled:
+                try:
+                    offset = float(wids[2].GetLabel())
+                except:
+                    offset = 0.0
+                if 1 == self.absrel.GetSelection(): # now relative (was absolute)
+                    offset = -offset
+                wids[3].SetValue(offset + wids[3].GetValue(), act=False)
+                wids[4].SetValue(offset + wids[4].GetValue(), act=False)
+
     def generate_scan(self):
         print 'generate scan ', self.__name__
 
@@ -158,14 +144,12 @@ class LinearScanPanel(GenericScanPanel):
 
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(7, 8)
-        sty=wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-        lsty=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
         ir = self.top_widgets(panel, sizer, 'Linear Step Scan Setup')
         for ic, lab in enumerate(("Role", "Positioner", "Units", "Current", "Start",
                                   "Stop", "Step", " Npts")):
-            s  = sty
-            if lab == " Npts": s = lsty
+            s  = CEN
+            if lab == " Npts": s = LEFT
             sizer.Add(SimpleText(panel, lab), (ir, ic), (1, 1), s, 2)
 
         self.pos_settings = []
@@ -181,8 +165,8 @@ class LinearScanPanel(GenericScanPanel):
                              action=Closure(self.onPos, index=i))
 
             role = wx.StaticText(panel, -1, label=lab)
-            units = wx.StaticText(panel, -1, size=(30, -1), label=' ')
-            cur = wx.StaticText(panel, -1, size=(80, -1), label=' ')
+            units = wx.StaticText(panel, -1, size=(30, -1), label='mm')
+            cur = wx.StaticText(panel, -1, size=(80, -1), label='1.000')
 
             start, stop, step, npts = self.StartStopStepNpts(panel, i,
                                                              npts=(i==0))
@@ -219,10 +203,6 @@ class LinearScanPanel(GenericScanPanel):
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
 
-    def onAbsRel(self, evt=None):
-        print 'On AbsRel  ', evt
-
-
 class XAFSScanPanel(GenericScanPanel):
     """ exafs  scan """
     __name__ = 'XAFSScan'
@@ -239,51 +219,45 @@ class XAFSScanPanel(GenericScanPanel):
                             size=(80, -1), act_on_losefocus=True,
                             action=Closure(self.onVal, label='e0'))
 
-        self.elemchoice = add_choice(panel, ELEM_LIST,   action=self.onEdgeChoice, size=(70, 25))
+        self.elemchoice = add_choice(panel, ELEM_LIST,
+                                     action=self.onEdgeChoice, size=(70, 25))
         self.elemchoice.SetMaxSize((50, 20))
         self.elemchoice.SetSelection(41)
 
-        o  = self.larch.eval("xray_edge('Cu', 'K')")
-        o  = self.larch.eval("xray_edge('Cu', 'L3')")
-
         self.edgechoice = add_choice(panel, self.edges_list,
-                             action=self.onEdgeChoice)
+                                     action=self.onEdgeChoice)
+
+        ir = self.top_widgets(panel, sizer,'EXAFS Scan Setup', irow=2)
 
         nregs_wid = FloatCtrl(panel, precision=0, value=3, minval=0, maxval=5,
                             size=(25, -1),  act_on_losefocus=True,
                             action=Closure(self.onVal, label='nreg'))
-
         nregs = nregs_wid.GetValue()
 
-        sty=wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-        lsty=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-
-        ir = self.top_widgets(panel, sizer,'EXAFS Scan Setup', irow=2)
-
         sizer.Add(SimpleText(panel, "# Regions:"),  (ir-2, 5), (1, 1), LEFT)
-        sizer.Add(nregs_wid,                         (ir-2, 6), (1, 1), LEFT)
+        sizer.Add(nregs_wid,                        (ir-2, 6), (1, 1), LEFT)
 
-        sizer.Add(SimpleText(panel, "Edge Energy:", size=(120, -1),
-                             style=wx.ALIGN_LEFT), (1, 0), (1, 1), sty, 2)
-        sizer.Add(self.e0,                        (1, 1), (1, 1), lsty, 2)
-        sizer.Add(SimpleText(panel, "Element:"),  (1, 2), (1, 1), lsty)
-        sizer.Add(self.elemchoice,                (1, 3), (1, 1), lsty)
-        sizer.Add(SimpleText(panel, "Edge:"),     (1, 4), (1, 1), lsty)
-        sizer.Add(self.edgechoice,                (1, 5), (1, 1), lsty)
+        sizer.Add(SimpleText(panel, "EdgeEnergy:", size=(100, -1),
+                             style=wx.ALIGN_LEFT), (1, 0), (1, 1), CEN, 2)
+        sizer.Add(self.e0,                        (1, 1), (1, 1), LEFT, 2)
+        sizer.Add(SimpleText(panel, "Element:"),  (1, 2), (1, 1), LEFT)
+        sizer.Add(self.elemchoice,                (1, 3), (1, 1), LEFT)
+        sizer.Add(SimpleText(panel, "Edge:"),     (1, 4), (1, 1), LEFT)
+        sizer.Add(self.edgechoice,                (1, 5), (1, 1), LEFT)
 
         for ic, lab in enumerate(("Region", "Start", "Stop", "Step",
                                     "Npts", "Time (s)", "Units")):
-            sizer.Add(SimpleText(panel, lab),  (ir, ic), (1, 1), lsty, 2)
+            sizer.Add(SimpleText(panel, lab),  (ir, ic), (1, 1), LEFT, 2)
 
         for i, reg in enumerate((('Pre-Edge', (-50, -10, 5, 9)),
-                                  ('XANES', (-10, 10, 1, 21)),
-                                  ('EXAFS', (10, 200, 1, 96)),
-                                  ('EXAFS2', (200, 500, 3, 101)))):
+                                  ('XANES',   (-10, 10, 1, 21)),
+                                  ('EXAFS1',  (10, 200, 2, 96)),
+                                  ('EXAFS2',  (200, 500, 3, 101)))):
             label, initvals = reg
             ir += 1
-            reg   = wx.StaticText(panel, -1, size=(120, -1), label=' %s' % label)
+            reg   = wx.StaticText(panel, -1, size=(100, -1), label=' %s' % label)
             start, stop, step, npts = self.StartStopStepNpts(panel, i, initvals=initvals)
-            dtime = FloatCtrl(panel, size=(65, -1), value=0, minval=0, precision=2,
+            dtime = FloatCtrl(panel, size=(65, -1), value=1, minval=0, precision=3,
                               action=Closure(self.onVal, index=i, label='dtime'))
 
             if i < 2:
@@ -315,15 +289,15 @@ class XAFSScanPanel(GenericScanPanel):
 
         self.kwtimechoice = add_choice(panel, ('0', '1', '2', '3'), size=(70, -1))
 
-        self.kwtime = FloatCtrl(panel, precision=2, value=0, minval=0,
+        self.kwtime = FloatCtrl(panel, precision=3, value=0, minval=0,
                                 size=(65, -1),
                                 action=Closure(self.onVal, label='kwtime'))
 
         ir += 1
-        sizer.Add(SimpleText(panel, "k-weight time of last region:"),  (ir, 1,), (1, 2), sty, 3)
-        sizer.Add(self.kwtimechoice, (ir, 3), (1, 1), lsty, 2)
-        sizer.Add(SimpleText(panel, "Max Time:"),  (ir, 4,), (1, 1), sty, 3)
-        sizer.Add(self.kwtime, (ir, 5), (1, 1), lsty, 2)
+        sizer.Add(SimpleText(panel, "k-weight time of last region:"),  (ir, 1,), (1, 2), CEN, 3)
+        sizer.Add(self.kwtimechoice, (ir, 3), (1, 1), LEFT, 2)
+        sizer.Add(SimpleText(panel, "Max Time:"),  (ir, 4,), (1, 1), CEN, 3)
+        sizer.Add(self.kwtime, (ir, 5), (1, 1), LEFT, 2)
 
         ir += 1
         self.layout(panel, sizer, ir)
@@ -404,8 +378,9 @@ class XAFSScanPanel(GenericScanPanel):
     def onEdgeChoice(self, evt=None):
         edge = self.edgechoice.GetStringSelection()
         elem = self.elemchoice.GetStringSelection()
-        e0val = self.larch( "xray_edge('%s', '%s')" % (elem, edge))
-        self.e0.SetValue(e0val[0])
+        if self.larch is not None:
+            e0val = self.larch( "xray_edge('%s', '%s')" % (elem, edge))
+            self.e0.SetValue(e0val[0])
 
 class MeshScanPanel(GenericScanPanel):
     """ mesh / 2-d scan """
@@ -416,15 +391,12 @@ class MeshScanPanel(GenericScanPanel):
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(7, 8)
 
-        sty=wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-        lsty=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-
         ir = self.top_widgets(panel, sizer, 'Mesh Scan (Slow Map) Setup')
 
         for ic, lab in enumerate(("Loop", "Positioner", "Units",
                                   "Current", "Start","Stop", "Step", " Npts")):
-            s  = sty
-            if lab == " Npts": s = lsty
+            s  = CEN
+            if lab == " Npts": s = LEFT
             sizer.Add(SimpleText(panel, lab), (ir, ic), (1, 1), s, 2)
 
         self.pos_settings = []
@@ -435,8 +407,8 @@ class MeshScanPanel(GenericScanPanel):
             pos = add_choice(panel, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
 
-            units = wx.StaticText(panel, -1, size=(30, -1), label=' ')
-            cur = wx.StaticText(panel, -1, size=(80, -1), label=' ')
+            units = wx.StaticText(panel, -1, size=(30, -1), label='mm')
+            cur = wx.StaticText(panel, -1, size=(80, -1), label='1.000')
             start, stop, step, npts = self.StartStopStepNpts(panel, i)
 
             self.pos_settings.append((pos, units, cur, start, stop, step, npts))
@@ -466,10 +438,6 @@ class MeshScanPanel(GenericScanPanel):
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
 
-    def onAbsRel(self, evt=None):
-        print 'On AbsRel  ', evt
-
-
 class SlewScanPanel(GenericScanPanel):
     """ mesh / 2-d scan """
     __name__ = 'SlewScan'
@@ -479,15 +447,12 @@ class SlewScanPanel(GenericScanPanel):
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(7, 8)
 
-        sty=wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-        lsty=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-
         ir = self.top_widgets(panel, sizer, 'Slew Scan (Fast Map) Setup')
 
         for ic, lab in enumerate(("Loop", "Positioner", "Units",
                                   "Current", "Start","Stop", "Step", " Npts")):
-            s  = sty
-            if lab == " Npts": s = lsty
+            s  = CEN
+            if lab == " Npts": s = LEFT
             sizer.Add(SimpleText(panel, lab), (ir, ic), (1, 1), s, 2)
 
         self.pos_settings = []
@@ -497,8 +462,8 @@ class SlewScanPanel(GenericScanPanel):
             lab = wx.StaticText(panel, -1, label=label)
             pos = add_choice(panel, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
-            units = wx.StaticText(panel, -1, size=(30, -1), label=' ')
-            cur = wx.StaticText(panel, -1, size=(80, -1), label=' ')
+            units = wx.StaticText(panel, -1, size=(30, -1), label='mm')
+            cur = wx.StaticText(panel, -1, size=(80, -1), label='1.000')
             start, stop, step, npts = self.StartStopStepNpts(panel, i)
 
             self.pos_settings.append((pos, units, cur, start, stop, step, npts))
@@ -527,9 +492,6 @@ class SlewScanPanel(GenericScanPanel):
 
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
-
-    def onAbsRel(self, evt=None):
-        print 'On AbsRel  ', evt
 
     def OLDSLEWSCANPanel(self):
         pane = wx.Panel(self, -1)
