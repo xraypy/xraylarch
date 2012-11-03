@@ -7,7 +7,7 @@ from epics import PV, caget, caput, poll
 from epics.devices import Scaler, Mca, Struck
 from ordereddict import OrderedDict
 
-from .saveable import Saveable
+from saveable import Saveable
 
 class Trigger(Saveable):
     """Detector Trigger for a scan. The interface is:
@@ -52,7 +52,7 @@ Example usage:
         self.pv.put(value, callback=self.__onComplete)
         time.sleep(0.001)
         poll()
-        
+
 class Counter(Saveable):
     """simple scan counter object --
     a value that will be counted at each point in the scan"""
@@ -71,7 +71,7 @@ class Counter(Saveable):
         val = self.pv.get(use_monitor=False)
         self.buff.append(val)
         return val
-    
+
     def clear(self):
         self.buff = []
 
@@ -324,7 +324,7 @@ class AreaDetector(DetectorMixin):
             self.dwelltime_pv.put(self.dwelltime)
         caput("%sImageMode" % (self.prefix), 0)      # single image capture
         caput("%sArrayCallbacks" % (self.prefix), 1) # enable callbacks
-        
+
 
 class McaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'

@@ -36,9 +36,10 @@ import wx.lib.mixins.inspection
 
 import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
+
 from gui_utils import SimpleText, FloatCtrl, Closure
 from gui_utils import pack, add_choice
-
+from xafs_scan import etok, ktoe
 
 from file_utils import new_filename, increment_filename, nativepath
 from scan_config import ScanConfig
@@ -51,13 +52,24 @@ FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BU
 CEN=wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT=wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
+ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
+             'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
+             'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge',
+             'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo',
+             'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te',
+             'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm',
+             'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf',
+             'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb',
+             'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U',
+             'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf')
 
 class GenericScanPanel(scrolled.ScrolledPanel):
     __name__ = 'genericScan'
-    def __init__(self, parent, config=None,
+    def __init__(self, parent, config=None, larch=None,
                  size=(625,300), style=wx.GROW|wx.TAB_TRAVERSAL):
 
         self.config = config
+        self.larch = larch
         scrolled.ScrolledPanel.__init__(self, parent,
                                         size=size, style=style,
                                         name=self.__name__)
@@ -81,12 +93,13 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         "set step / npts for start/stop/step/npts list of widgets"
         start = wids[0].GetValue()
         stop = wids[1].GetValue()
-        if label in ('start', 'stop', 'step'):
-            step = wids[2].GetValue()
-            wids[3].SetValue(1 + int(0.1 + abs(stop-start)/step), act=False)
-        elif label == 'npts':
+        if label == 'npts':
             npts = max(2, wids[3].GetValue())
-            wids[2].SetValue((stop-start)/(npts-1), act=False)
+        else:
+            step = wids[2].GetValue()
+            npts = max(2, 1 + int(0.1 + abs(stop-start)/step))
+        wids[3].SetValue(npts, act=False)
+        wids[2].SetValue((stop-start)/(npts-1), act=False)
 
     def top_widgets(self, panel, sizer, title, irow=1,
                     dwell_prec=3, dwell_value=1):
@@ -140,8 +153,8 @@ class LinearScanPanel(GenericScanPanel):
     """ linear scan """
     __name__ = 'StepScan'
 
-    def __init__(self, parent, config=None):
-        GenericScanPanel.__init__(self, parent, size=(750, 250), config=config)
+    def __init__(self, parent, **kws):
+        GenericScanPanel.__init__(self, parent, size=(750, 250), **kws)
 
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(7, 8)
@@ -216,19 +229,23 @@ class XAFSScanPanel(GenericScanPanel):
     edges_list = ('K','L3','M5','L2','L1')
     units_list = ('eV', '1/A')
 
-    def __init__(self, parent, config=None):
-        GenericScanPanel.__init__(self, parent, size=(750, 325), config=config)
+    def __init__(self, parent, **kws):
+        GenericScanPanel.__init__(self, parent, size=(750, 325), **kws)
         self.reg_settings = []
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(7, 7)
 
-        e0_wid  = FloatCtrl(panel, precision=2, value=10000., minval=0, maxval=1e7,
+        self.e0 = FloatCtrl(panel, precision=2, value=20000., minval=0, maxval=1e7,
                             size=(80, -1), act_on_losefocus=True,
                             action=Closure(self.onVal, label='e0'))
 
+        self.elemchoice = add_choice(panel, ELEM_LIST,   action=self.onEdgeChoice, size=(70, 25))
+        self.elemchoice.SetMaxSize((50, 20))
+        self.elemchoice.SetSelection(41)
 
-        self.elemchoice = add_choice(panel, ('Cu', 'Zn'),
-                             action=self.onElemChoice)
+        o  = self.larch.eval("xray_edge('Cu', 'K')")
+        o  = self.larch.eval("xray_edge('Cu', 'L3')")
+
         self.edgechoice = add_choice(panel, self.edges_list,
                              action=self.onEdgeChoice)
 
@@ -248,7 +265,7 @@ class XAFSScanPanel(GenericScanPanel):
 
         sizer.Add(SimpleText(panel, "Edge Energy:", size=(120, -1),
                              style=wx.ALIGN_LEFT), (1, 0), (1, 1), sty, 2)
-        sizer.Add(e0_wid,                         (1, 1), (1, 1), lsty, 2)
+        sizer.Add(self.e0,                        (1, 1), (1, 1), lsty, 2)
         sizer.Add(SimpleText(panel, "Element:"),  (1, 2), (1, 1), lsty)
         sizer.Add(self.elemchoice,                (1, 3), (1, 1), lsty)
         sizer.Add(SimpleText(panel, "Edge:"),     (1, 4), (1, 1), lsty)
@@ -273,7 +290,8 @@ class XAFSScanPanel(GenericScanPanel):
                 units = wx.StaticText(panel, -1, size=(30, -1), label='eV')
             else:
                 units = add_choice(panel, self.units_list,
-                                   action=Closure(self.onUnitsChoice, index=i))
+                                   action=Closure(self.onVal, label='units', index=i))
+                # action=Closure(self.onUnitsChoice, index=i))
 
             self.reg_settings.append((start, stop, step, npts, dtime, units))
             if i >= nregs:
@@ -310,12 +328,25 @@ class XAFSScanPanel(GenericScanPanel):
         ir += 1
         self.layout(panel, sizer, ir)
 
-    def onVal(self, index=0, label=None, value=None, **kws):
+    def getUnits(self, index):
+        un = self.reg_settings[index][5]
+        if hasattr(un, 'GetStringSelection'):
+            return un.GetStringSelection()
+        else:
+            return un.GetLabel()
+
+    def onVal(self, evt=None, index=0, label=None, value=None, **kws):
+        "XAFS onVal"
         if not self._initialized: return
-        print 'XAFS on Value ', index, label, value, kws, self._initialized
+        wids = self.reg_settings[index]
+        units = self.getUnits(index)
+        e0_off = 0
+        if 0 == self.absrel.GetSelection(): # absolute
+            e0_off = self.e0.GetValue()
+
         if label == 'dwelltime':
-            for reg in self.reg_settings:
-                reg[4].SetValue(value)
+            for wid in self.reg_settings:
+                wid[4].SetValue(value)
             try:
                 self.kwtime.SetValue(value)
             except:
@@ -327,36 +358,60 @@ class XAFSScanPanel(GenericScanPanel):
                     for wid in reg: wid.Enable()
                 else:
                     for wid in reg: wid.Disable()
+        elif label == 'units':
+            if units == 'eV': # was 1/A, convert to eV
+                wids[0].SetValue(ktoe(wids[0].GetValue()) + e0_off)
+                wids[1].SetValue(ktoe(wids[1].GetValue()) + e0_off)
+                wids[2].SetValue(2.0)
+            else:
+                wids[0].SetValue(etok(wids[0].GetValue() - e0_off))
+                wids[1].SetValue(etok(wids[1].GetValue() - e0_off))
+                wids[2].SetValue(0.05)
+
+            self.setStepNpts(wids, label)
 
         if label in ('start', 'stop', 'step', 'npts'):
-            self.setStepNpts(self.reg_settings[index], label)
+            self.setStepNpts(wids, label)
             if label == 'stop' and index < len(self.reg_settings)-1:
+                nunits = self.getUnits(index+1)
+                if nunits != units:
+                    if units == 'eV':
+                        value = etok(value - e0_off)
+                    else:
+                        value = ktoe(value) + e0_off
                 self.reg_settings[index+1][0].SetValue(value, act=False)
                 self.setStepNpts(self.reg_settings[index+1], label)
             elif label == 'start' and index > 0:
+                nunits = self.getUnits(index-1)
+                if nunits != units:
+                    if units == 'eV':
+                        value = etok(value - e0_off)
+                    else:
+                        value = ktoe(value) + e0_off
                 self.reg_settings[index-1][1].SetValue(value, act=False)
                 self.setStepNpts(self.reg_settings[index-1], label)
 
-    def onPos(self, evt=None, index=0):
-        print 'On Position   ', index, evt
-
     def onAbsRel(self, evt=None):
-        print 'On AbsRel  ', evt.GetString()
-
-    def onUnitsChoice(self, evt=None, index=0):
-        print 'On Units:  ', evt.GetString(), index
+        offset = self.e0.GetValue()
+        if 1 == self.absrel.GetSelection(): # relative (was absolute)
+            offset = -offset
+        for index, wids in enumerate(self.reg_settings):
+            units = self.getUnits(index)
+            if units == 'eV':
+                for ix in range(2):
+                    wids[ix].SetValue(wids[ix].GetValue() + offset, act=False)
 
     def onEdgeChoice(self, evt=None):
-        print 'On Edge:  ', evt.GetString()
-
-    def onElemChoice(self, evt=None):
-        print 'On Elem:  ', evt.GetString()
+        edge = self.edgechoice.GetStringSelection()
+        elem = self.elemchoice.GetStringSelection()
+        e0val = self.larch( "xray_edge('%s', '%s')" % (elem, edge))
+        self.e0.SetValue(e0val[0])
 
 class MeshScanPanel(GenericScanPanel):
     """ mesh / 2-d scan """
     __name__ = 'MeshScan'
-    def __init__(self, parent, config=None):
-        GenericScanPanel.__init__(self, parent, size=(750, 250), config=config)
+    def __init__(self, parent, **kws):
+        GenericScanPanel.__init__(self, parent, size=(750, 250), **kws)
 
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(7, 8)
@@ -418,8 +473,8 @@ class MeshScanPanel(GenericScanPanel):
 class SlewScanPanel(GenericScanPanel):
     """ mesh / 2-d scan """
     __name__ = 'SlewScan'
-    def __init__(self, parent, config=None):
-        GenericScanPanel.__init__(self, parent, size=(750, 250), config=config)
+    def __init__(self, parent, **kws):
+        GenericScanPanel.__init__(self, parent, size=(750, 250), **kws)
 
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(7, 8)
