@@ -4,7 +4,7 @@ Positioner for Step Scan
 import time
 import numpy as np
 from epics import PV, caget
-from .saveable import Saveable
+from saveable import Saveable
 
 class Positioner(Saveable):
     """a positioner for a scan
@@ -54,7 +54,7 @@ do a readback on this position -- add a ScanDetector for that!
     def set_array(self, start, stop, npts):
         """set positioner array with start/stop/step/npts"""
         self.array = np.linspace(start, stop, npts)
-        
+
     def move_to_start(self, wait=False):
         """ move to starting position"""
         return self.move_to_pos(0, wait=wait)

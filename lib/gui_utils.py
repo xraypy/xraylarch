@@ -57,7 +57,7 @@ def set_sizer(panel, sizer=None, style=wx.VERTICAL, fit=False):
     if fit:
         sizer.Fit(panel)
 
-def set_float(val):
+def set_float(val, default=0):
     """ utility to set a floating value,
     useful for converting from strings """
     out = None

@@ -86,8 +86,8 @@ import threading
 import numpy as np
 from epics import PV, poll
 
-from .detectors import Counter, DeviceCounter, Trigger
-from .outputfile import ASCIIScanFile
+from detectors import Counter, DeviceCounter, Trigger
+from outputfile import ASCIIScanFile
 
 class ScanMessenger(threading.Thread):
     """ Provides a way to run user-supplied functions per scan point,
@@ -162,7 +162,7 @@ class StepScan(object):
         self.looptime = 0 # time to run scan loop (even if aborted)
         self.exittime = 0 # time to complete scan (post_scan, return positioners, complete i/o)
         self.runtime  = 0 # inittime + looptime + exittime
-        
+
         self.message_thread = None
         self.messenger = messenger
         if filename is not None:
@@ -323,7 +323,7 @@ class StepScan(object):
         for c in self.counters:
             c.clear()
         self.pos_actual = []
-        
+
     def run(self, filename=None, comments=None):
         """ run the actual scan:
            Verify, Save original positions,
@@ -397,12 +397,12 @@ class StepScan(object):
                 time.sleep(max(0.01, self.min_dwelltime/4.0))
                 while not (all([trig.done for trig in self.triggers]) and
                            (time.time() - t0 < self.det_maxcount_time) and
-                           (time.time() - t0 > self.min_dwelltime/2.0)): 
+                           (time.time() - t0 > self.min_dwelltime/2.0)):
                     if self.abort:
                         break
                     poll(5.e-3, 0.25)
                 if self.abort:
-                    break                    
+                    break
                 self.trig_elapsed_times =  [time.time()-t0]
                 self.trig_elapsed_times.extend([t.runtime for t in self.triggers])
                 for t in self.triggers:
@@ -422,20 +422,20 @@ class StepScan(object):
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
                     self.at_break(breakpoint=i, clear=True)
-                
+
             except KeyboardInterrupt:
                 self.abort = True
             if not point_ok:
                 print 'point messed up... try again?'
                 i -= 1
-                
+
         # scan complete
         # return to original positions, write data
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
         if self.abort:
             print "scan aborted at point %i of %i." % (self.cpt, self.npts)
-        
+
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
         self.datafile.write_data(breakpoint=-1, close_file=True, clear=False)

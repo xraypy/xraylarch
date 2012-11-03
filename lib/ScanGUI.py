@@ -40,6 +40,8 @@ import wx.lib.mixins.inspection
 import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
 
+from larch import Interpreter
+
 from gui_utils import SimpleText, FloatCtrl, Closure
 from gui_utils import pack, add_button, add_menu, add_choice, add_menu
 
@@ -66,6 +68,7 @@ class ScanFrame(wx.Frame):
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
+        self.larch = Interpreter()
 
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -94,12 +97,12 @@ class ScanFrame(wx.Frame):
         self.SetBackgroundColour('#F0F0E8')
 
         self.scan_choices = []
-        for name, pane in (('Linear Step Scan', LinearScanPanel),
+        for name, creator in (('Linear Step Scan', LinearScanPanel),
                            ('2-D Mesh Scan',    MeshScanPanel),
                            ('Slew Scan',        SlewScanPanel),
                            ('XAFS Scan',        XAFSScanPanel)):
-            self.nb.AddPage(pane(self, config=self.config), name, True)
-
+            panel = creator(self, config=self.config, larch=self.larch)
+            self.nb.AddPage(panel, name, True)
 
         self.nb.SetSelection(0)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
