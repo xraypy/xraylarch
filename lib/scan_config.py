@@ -18,16 +18,37 @@ DEFAULT_CONF = """
 [setup]
 filename = test.dat
 filemode = increment
+basedir = //cars5/Data/xas_user/Nov2012/
+extrapvs_file =
 #--------------------------#
 [positioners]
-# index = label || PVname
-1 = MotorX || 13IDE:m10
-2 = MotorY || 13IDE:m11
-3 = Energy || 13IDA:E:En:Energy
+# index = label || drivePV  || readbackPV
+1 = MotorX || 13IDE:m10  || 13IDE:m10.RBV
+2 = MotorY || 13IDE:m11  || 13IDE:m11.RBV
+3 = Energy || 13IDA:E:En:Energy  || 13IDA:E:En:E_RBV
+#--------------------------#
+[xafs]
+energy_drive = 13IDA:E:En:Energy.VAL
+energy_read  = 13IDA:E:En:E_RBV
+#--------------------------#
+[slewscan]
+type = NewportXPS
+mode = PVTGroup
+host = 164.54.160.180
+user   = Administrator
+passwd = Administrator
+group = FINE
+positioners= X, Y, Theta
+#--------------------------#
+[slewscan_positioners]
+# index = label || drivePV || readbackPV
+1 = MotorX || 13IDE:m10  || 13IDE:m10.RBV
+2 = MotorY || 13IDE:m11  || 13IDE:m11.RBV
 #--------------------------#
 [detectors]
 # index = label || DetectorPV  || options
-1 = scaler1 || 13IDE:scaler1  || kind=scaler, use_calc=True
+1 = scaler1 || 13IDE:scaler1 || kind=scaler, use_calc=True
+### 2 = mcs1    || 13IDE:SIS1    || kind=mcs
 #--------------------------#
 [counters]
 # index = label || PVname
@@ -44,18 +65,22 @@ DEF_CONFFILE = os.path.join(get_homedir(), '.pyscan', 'scan_config.ini')
 
 class ScanConfig(object):
     #  sections            name      ordered?
-    __sects = OrderedDict((('setup',       False),
+    __sects = OrderedDict((('setup',     False),
                            ('positioners', True),
                            ('detectors',   True),
+                           ('counters',    True),
+                           ('xafs',      False),
+                           ('slewscan',  False),
+                           ('slewscan_positioners',  True),
                            ('extra_pvs',   True),
-                           ('counters',    True)))
+                           ))
 
     def __init__(self, filename=None, text=None):
         for s in self.__sects:
            setattr(self, s, {})
 
         self._cp = ConfigParser()
-        if filename is not None:
+        if filename is None:
             filename = DEF_CONFFILE
         self.filename = filename
         if (os.path.exists(filename) and

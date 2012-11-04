@@ -271,14 +271,12 @@ class SimpleDetector(DetectorMixin):
         DetectorMixin.__init__(self, prefix, **kws)
         self.counters = [Counter(prefix)]
 
-
 class MotorDetector(DetectorMixin):
     "Motor Detector: a Counter for  Motor Readback, no trigger"
     trigger_suffix = None
     def __init__(self, prefix, **kws):
         DetectorMixin.__init__(self, prefix, **kws)
         self.counters = [MotorCounter(prefix)]
-
 
 class ScalerDetector(DetectorMixin):
     trigger_suffix = '.CNT'
@@ -325,7 +323,6 @@ class AreaDetector(DetectorMixin):
         caput("%sImageMode" % (self.prefix), 0)      # single image capture
         caput("%sArrayCallbacks" % (self.prefix), 1) # enable callbacks
 
-
 class McaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
     def __init__(self, prefix, save_spectra=True, **kws):
@@ -337,44 +334,11 @@ class McaDetector(DetectorMixin):
         self._counter = McaCounter(prefix, nchan=nchan, use_calc=use_calc)
         self.counters = self._counter.counters
 
-
     def pre_scan(self, **kws):
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
-#
-#
-# class MultiMCACounter(DeviceCounter):
-#     invalid_device_msg = 'MCACounter must use a med'
-#     _dxp_fields = (('.InputCountRate', 'ICR'),
-#                    ('.OutputCountRate', 'OCR'))
-#     def __init__(self, prefix, outpvs=None, nmcas=4, nrois=32,
-#                  search_all = False,  use_net=False,
-#                  use_unlabeled=False, use_full=True):
-#         DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
-#         prefix = self.prefix
-#         fields = []
-#         for imca in range(1, nmcas+1):
-#             mcaname = 'mca%i' % imca
-#             dxpname = 'dxp%i' % imca
-#             for i in range(nrois):
-#                 roiname = caget('%s:%s.R%iNM' % (prefix, mcaname, i)).strip()
-#                 roi_hi  = caget('%s:%s.R%iHI' % (prefix, mcaname, i))
-#                 label = '%s (%s)'% (roiname, mcaname)
-#                 if (len(roiname) > 0 and roi_hi > 0) or use_unlabeled:
-#                     suff = ':%s.R%i' % (mcaname, i)
-#                     if use_net:
-#                         suff = ':%s.R%iN' %  (mcaname, i)
-#                     fields.append((suff, label))
-#                 if roi_hi < 1 and not search_all:
-#                     break
-#             # for dsuff, dname in self._dxp_fields:
-#             #     fields.append()... add dxp
-#             if use_full:
-#                 fields.append((':%s.VAL' % mcaname, 'mca spectra (%s)' % mcaname))
-#         self.set_counters(fields)
-#
-# ;
+
 class MultiMcaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
     collect_mode = 'CollectMode'
@@ -411,7 +375,7 @@ class MultiMcaDetector(DetectorMixin):
         caput("%sReadAll.SCAN"   % (self.prefix), 9)
         caput("%sStatusAll.SCAN" % (self.prefix), 9)
 
-def genericDetector(name, kind=None, label=None, **kws):
+def get_detector(name, kind=None, label=None, **kws):
     """returns best guess of which Detector class to use
            Mca, MultiMca, Motor, Scaler, Simple
     based on kind and/or record type.

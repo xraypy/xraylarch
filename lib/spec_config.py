@@ -107,7 +107,7 @@ class SpecConfig(object):
                     out.append("%s = %s" % (name, val))
             elif sect == 'detectors':
                 out.append(DET_LEGEND)
-                print 'sect = det' 
+                print 'sect = det'
                 idx = 0
                 for key, val in getattr(self, sect).items():
                     idx = idx + 1
