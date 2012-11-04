@@ -86,8 +86,8 @@ import threading
 import numpy as np
 from epics import PV, poll
 
-from detectors import Counter, DeviceCounter, Trigger
-from outputfile import ASCIIScanFile
+from .detectors import Counter, DeviceCounter, Trigger
+from .outputfile import ASCIIScanFile
 
 class ScanMessenger(threading.Thread):
     """ Provides a way to run user-supplied functions per scan point,

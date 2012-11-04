@@ -7,7 +7,6 @@ from random import seed, randrange
 BAD_FILECHARS = ';~,`!%$@?*#:"/|\'\\\t\r\n (){}[]<>'
 BAD_FILETABLE = maketrans(BAD_FILECHARS, '_'*len(BAD_FILECHARS))
 
-
 def get_timestamp():
     """return ISO format of current timestamp:
     2012-04-27 17:31:12

@@ -4,7 +4,7 @@ Positioner for Step Scan
 import time
 import numpy as np
 from epics import PV, caget
-from saveable import Saveable
+from .saveable import Saveable
 
 class Positioner(Saveable):
     """a positioner for a scan
