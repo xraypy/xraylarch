@@ -7,7 +7,7 @@ import wx.lib.scrolledpanel as scrolled
 
 from ..ordereddict import OrderedDict
 from .gui_utils import GUIColors, set_font_with_children, YesNo
-from .gui_utils impor  add_button, pack, SimpleText
+from .gui_utils import add_button, pack, SimpleText
 from .pvconnector import PVNameCtrl
 
 class PositionerFrame(wx.Frame) :
