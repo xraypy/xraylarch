@@ -30,7 +30,7 @@ from epics import PV, caget, poll
 
 from .stepscan   import StepScan
 from .positioner import Positioner
-from .detectors  import genericDetector, Counter
+from .detectors  import get_detector, Counter
 from .spec_config import SpecConfig
 
 class SpecScan(object):
@@ -45,10 +45,10 @@ class SpecScan(object):
             self.configfile = configfile
 
         self.read_config(filename=configfile)
-            
+
         if filename is not None:
             self.filename = filename
-                    
+
         self.lup = self.dscan
 
     def read_config(self, filename=None):
@@ -59,7 +59,7 @@ class SpecScan(object):
             self.motors[label] = Positioner(pvname, label=label)
 
         for label, pvname in self.config.counters.items():
-            self.bare_counters.append(Counter(pvname, label=label))            
+            self.bare_counters.append(Counter(pvname, label=label))
 
         self.add_extra_pvs(self.config.extra_pvs.items())
         for label, val in self.config.detectors.items():
@@ -83,7 +83,7 @@ class SpecScan(object):
 
     def add_detector(self, name, kind=None, **kws):
         "add detector, giving base name and detector type"
-        self.detectors.append(genericDetector(name, kind=kind, **kws))
+        self.detectors.append(get_detector(name, kind=kind, **kws))
 
     def add_extra_pvs(self, extra_pvs):
         """add extra PVs to be recorded prior to each scan

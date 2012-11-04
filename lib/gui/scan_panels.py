@@ -4,10 +4,9 @@ GUI Panels for setting up positioners for different scan types.
 Current scan types:
     Linear Scans
     Mesh Scans (2d maps)
-    EXAFS Scans
+    XAFS Scans
     Fly Scans (optional)
 """
-
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
@@ -23,8 +22,6 @@ from .. import etok, ktoe
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
-print 'IMPORT scan panels'
-
 ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
              'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
              'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge',
@@ -38,10 +35,11 @@ ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
 
 class GenericScanPanel(scrolled.ScrolledPanel):
     __name__ = 'genericScan'
-    def __init__(self, parent, config=None, larch=None,
+    def __init__(self, parent, config=None, pvlist=None, larch=None,
                  size=(625,300), style=wx.GROW|wx.TAB_TRAVERSAL):
 
         self.config = config
+        self.pvlist = pvlist
         self.larch = larch
         scrolled.ScrolledPanel.__init__(self, parent,
                                         size=size, style=style,
@@ -130,6 +128,9 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                 wids[3].SetValue(offset + wids[3].GetValue(), act=False)
                 wids[4].SetValue(offset + wids[4].GetValue(), act=False)
 
+    def use_config(self, config):
+        pass
+
     def generate_scan(self):
         print 'generate scan ', self.__name__
 
@@ -195,15 +196,27 @@ class LinearScanPanel(GenericScanPanel):
 
     def onVal(self, index=0, label=None, value=None, **kws):
         if not self._initialized: return
-        print 'LineScan on Value ', index, label, value, kws
         if label in ('start', 'stop', 'step', 'npts'):
             self.setStepNpts(self.pos_settings[index][3:], label)
 
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
 
+    def use_config(self, config):
+        poslist = config.positioners.keys()
+        poslist.append('Dummy')
+        if hasattr(self, 'pos_settings'):
+            for i, wids in enumerate(self.pos_settings):
+                a = wids[0].GetStringSelection()
+                wids[0].Clear()
+                if i > 0 and 'None' not in poslist:
+                    poslist.insert(0, 'None')
+                wids[0].SetItems(poslist)
+                wids[0].SetStringSelection(a)
+
+
 class XAFSScanPanel(GenericScanPanel):
-    """ exafs  scan """
+    """xafs  scan """
     __name__ = 'XAFSScan'
     edges_list = ('K','L3','M5','L2','L1')
     units_list = ('eV', '1/A')
@@ -226,7 +239,7 @@ class XAFSScanPanel(GenericScanPanel):
         self.edgechoice = add_choice(panel, self.edges_list,
                                      action=self.onEdgeChoice)
 
-        ir = self.top_widgets(panel, sizer,'EXAFS Scan Setup', irow=2)
+        ir = self.top_widgets(panel, sizer,'XAFS Scan Setup', irow=2)
 
         nregs_wid = FloatCtrl(panel, precision=0, value=3, minval=0, maxval=5,
                             size=(25, -1),  act_on_losefocus=True,
@@ -437,6 +450,16 @@ class MeshScanPanel(GenericScanPanel):
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
 
+    def use_config(self, config):
+        poslist = config.positioners.keys()
+        poslist.append('Dummy')
+        if hasattr(self, 'pos_settings'):
+            for i, wids in enumerate(self.pos_settings):
+                a = wids[0].GetStringSelection()
+                wids[0].Clear()
+                wids[0].SetItems(poslist)
+                wids[0].SetStringSelection(a)
+
 class SlewScanPanel(GenericScanPanel):
     """ mesh / 2-d scan """
     __name__ = 'SlewScan'
@@ -455,10 +478,12 @@ class SlewScanPanel(GenericScanPanel):
             sizer.Add(SimpleText(panel, lab), (ir, ic), (1, 1), s, 2)
 
         self.pos_settings = []
-        pchoices=self.config.positioners.keys()
         fsize = (95, -1)
         for i, label in enumerate(("Inner", "Outer")):
             lab = wx.StaticText(panel, -1, label=label)
+            pchoices = self.config.positioners.keys()
+            if i == 0:
+                pchoices = self.config.slewscan_positioners.keys()
             pos = add_choice(panel, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
             units = wx.StaticText(panel, -1, size=(30, -1), label='mm')
@@ -485,12 +510,23 @@ class SlewScanPanel(GenericScanPanel):
 
     def onVal(self, index=0, label=None, value=None, **kws):
         if not self._initialized: return
-        print 'SlewScan on Value ', index, label, value, kws
         if label in ('start', 'stop', 'step', 'npts'):
             self.setStepNpts(self.pos_settings[index][3:], label)
 
     def onPos(self, evt=None, index=0):
         print 'On Position   ', index, evt
+
+    def use_config(self, config):
+        slewlist = config.slewscan_positioners.keys()
+        poslist = config.positioners.keys()
+        poslist.append('Dummy')
+        inner = self.pos_settings[0][0]
+        outer = self.pos_settings[1][0]
+        for wid, vals in ((inner, slewlist), (outer, poslist)):
+            a = wid.GetStringSelection()
+            wid.Clear()
+            wid.SetItems(vals)
+            wid.SetStringSelection(a)
 
     def OLDSLEWSCANPanel(self):
         pane = wx.Panel(self, -1)

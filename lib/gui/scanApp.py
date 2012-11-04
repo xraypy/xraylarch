@@ -52,6 +52,7 @@ from ..scan_config import ScanConfig
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
                         SlewScanPanel,   XAFSScanPanel)
 
+from .pvconnector import PVNameCtrl, EpicsPVList
 from .pos_setup import PositionerFrame
 
 
@@ -67,8 +68,11 @@ class ScanFrame(wx.Frame):
 
     def __init__(self, configfile='defconf.ini',  **kwds):
 
+        self.config = ScanConfig(configfile)
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
+
+        self.pvlist = EpicsPVList(self)
 
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -80,7 +84,6 @@ class ScanFrame(wx.Frame):
         self.SetSize((700, 575))
         self.SetFont(self.Font11)
 
-        self.config = ScanConfig(configfile)
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -101,7 +104,8 @@ class ScanFrame(wx.Frame):
                               ('2-D Mesh Scan',    MeshScanPanel),
                               ('Slew Scan',        SlewScanPanel),
                               ('XAFS Scan',        XAFSScanPanel)):
-            p = creator(self, config=self.config)
+
+            p = creator(self, config=self.config, pvlist=self.pvlist)
             self.nb.AddPage(p, name, True)
             self.scanpanels.append(p)
 
@@ -145,18 +149,23 @@ class ScanFrame(wx.Frame):
         bpanel.SetSizer(bsizer)
         bsizer.Fit(bpanel)
         wx.CallAfter(self.init_larch)
+        wx.CallAfter(self.init_epics)
         sizer.Add(bpanel, 0, ALL_CEN, 5)
         self.SetSizer(sizer)
         sizer.Fit(self)
 
     def init_larch(self):
-        print 'initializing larch'
         t0 = time.time()
         import larch
         self._larch = larch.Interpreter()
         for span in self.scanpanels:
             span.larch = self._larch
-        print 'larch initialization took %.3f sec' % (time.time() - t0)
+
+    def init_epics(self):
+        for desc, pvname in self.config.positioners.items():
+            for j in pvname: self.pvlist.connect_pv(j)
+        for desc, pvname in self.config.extra_pvs.items():
+            self.pvlist.connect_pv(pvname)
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
@@ -212,8 +221,8 @@ class ScanFrame(wx.Frame):
         self.Destroy()
 
     def onSetupPositioners(self, evt=None):
-        print 'Setup Positioners'
-        p = PositionerFrame(self, config=self.config)
+        p = PositionerFrame(self, config=self.config, pvlist=self.pvlist,
+                            scanpanels=self.scanpanels)
 
     def onSetupDetectors(self, evt=None):
         print 'Setup Detectors'
