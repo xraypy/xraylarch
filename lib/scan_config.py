@@ -7,8 +7,8 @@ import os
 import time
 from ConfigParser import  ConfigParser
 from cStringIO import StringIO
-from ordereddict import OrderedDict
-from file_utils import get_homedir, get_timestamp
+from .ordereddict import OrderedDict
+from .file_utils import get_homedir, get_timestamp
 
 LEGEND     = '# index = label || PVname'
 DET_LEGEND = '# index = label || DetectorPV || options '
@@ -17,7 +17,7 @@ DEFAULT_CONF = """
 ### Epics Scan Configuration
 [setup]
 filename = test.dat
-filemode        = increment
+filemode = increment
 #--------------------------#
 [positioners]
 # index = label || PVname
@@ -55,25 +55,30 @@ class ScanConfig(object):
            setattr(self, s, {})
 
         self._cp = ConfigParser()
-        if filename is None:
-            if (os.path.exists(DEF_CONFFILE) and
-                os.path.isfile(DEF_CONFFILE)):
-                filename = DEF_CONFFILE
-
-        self.filename = filename
         if filename is not None:
-            self.Read(filename)
-
-    def Read(self, fname):
-        "read config"
-        if fname is None:
-            return
-        ret = self._cp.read(fname)
-
-        if len(ret) == 0:
-            time.sleep(0.25)
+            filename = DEF_CONFFILE
+        self.filename = filename
+        if (os.path.exists(filename) and
+            os.path.isfile(filename)):
             ret = self._cp.read(fname)
-        self.filename = fname
+            if len(ret) == 0:
+                time.sleep(0.1)
+                self._cp.read(fname)
+        else:
+            self._cp.readfp(StringIO(DEFAULT_CONF))
+        self.Read()
+
+    def Read(self, filename=None):
+        "read config"
+        if (filename is not None and
+            (os.path.exists(filename) and
+             os.path.isfile(filename))):
+            ret = self._cp.read(fname)
+            if len(ret) == 0:
+                time.sleep(0.1)
+                self._cp.read(fname)
+            self.filename = fname
+
         # process sections
         for sect, ordered in self.__sects.items():
             if not self._cp.has_section(sect):

@@ -22,7 +22,7 @@ which  can be overridden to create a new Output file type
 """
 import os
 import time
-from file_utils import new_filename, get_timestamp
+from .file_utils import new_filename, get_timestamp
 
 class ScanFile(object):
     """base Scan File -- will need to inherti and
@@ -106,7 +106,7 @@ class ASCIIScanFile(ScanFile):
             new_file = ('increment' == self.filemode)
         if new_file:
             self.filename = new_filename(self.filename)
-        
+
         is_new = not os.path.exists(self.filename)
         self.fh = open(self.filename, mode)
         if is_new:
@@ -157,7 +157,7 @@ class ASCIIScanFile(ScanFile):
             legend.append("%s %s |%s| %s" % (self.comchar, key,
                                              pos.pv.pvname,
                                              pos.label))
-            
+
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i+1)
             cols.append("   %s  " % (key))
@@ -197,9 +197,9 @@ class ASCIIScanFile(ScanFile):
         if clear:
             self.scan.clear_data()
 
-            
+
         if close_file:
             self.close()
             if verbose:
                 print "Wrote and closed %s" % self.filename
-                            
+
