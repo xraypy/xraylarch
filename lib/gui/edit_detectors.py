@@ -61,13 +61,16 @@ class DetectorFrame(wx.Frame) :
 
             desc   = SimpleText(panel, label=opts['kind'], size=(100, -1))
             pvctrl = PVNameCtrl(panel, value=pvname, pvlist=self.pvlist, size=(175, -1))
-            opts   = SimpleText(panel, label=repr(opts))
+            opanel, owids = self.opts_panel(panel, opts)
+
             use    = YesNo(panel)
             sizer.Add(desc,   (ir, 0), (1, 1), labstyle, 1)
             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 1)
             sizer.Add(use,    (ir, 2), (1, 1), labstyle, 1)
-            sizer.Add(opts,   (ir, 3), (1, 1), labstyle, 1)
-            self.widlist.append(('detectors', desc, pvctrl, use, opts))
+            sizer.Add(opanel, (ir, 3), (1, 1), labstyle, 1)
+            wids = ['detectors', desc, pvctrl, use]
+            wids.extend(owids)
+            self.widlist.append(tuple(wids))
 
         ir += 1
         self.add_subtitle(panel, sizer, ir, 'Additional Counters')
@@ -121,6 +124,25 @@ class DetectorFrame(wx.Frame) :
         pack(self, mainsizer)
         self.Show()
         self.Raise()
+
+    def opts_panel(self, parent, options):
+        pane = wx.Panel(parent)
+        sizer  = wx.BoxSizer(wx.HORIZONTAL)
+        kind = options.pop('kind').lower()
+        l = SimpleText(pane, repr(options))
+        sizer.Add(l, 1, wx.GROW, 1)
+        print 'OPTIONS: ', options
+        if kind == 'scaler':
+            print 'scaler::'
+        elif kind == 'mca':
+            print 'mca::'
+        elif kind.startswith('multi'):
+            print 'multi mca::'
+        elif kind.startswith('area'):
+            print 'area detector::'
+        pack(pane, sizer)
+        wids = [l]
+        return pane, wids
 
     def add_subtitle(self, panel, sizer, row, text):
         sizer.Add(wx.StaticLine(panel, size=(50, 2), style=wx.LI_HORIZONTAL),
