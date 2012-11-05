@@ -165,9 +165,8 @@ class LinearScanPanel(GenericScanPanel):
                              action=Closure(self.onPos, index=i))
 
             role = wx.StaticText(panel, -1, label=lab)
-            units = wx.StaticText(panel, -1, size=(30, -1), label='mm')
-            cur = wx.StaticText(panel, -1, size=(80, -1), label='1.000')
-
+            units = wx.StaticText(panel, -1, size=(30, -1), label='')
+            cur = wx.StaticText(panel, -1, size=(80, -1), label='')
             start, stop, step, npts = self.StartStopStepNpts(panel, i,
                                                              npts=(i==0))
 
@@ -218,8 +217,8 @@ class LinearScanPanel(GenericScanPanel):
 class XAFSScanPanel(GenericScanPanel):
     """xafs  scan """
     __name__ = 'XAFSScan'
-    edges_list = ('K','L3','M5','L2','L1')
-    units_list = ('eV', '1/A')
+    edges_list = ('K', 'L3', 'L2', 'L1', 'M5')
+    units_list = ('eV', u'1/\u212B')
 
     def __init__(self, parent, **kws):
         GenericScanPanel.__init__(self, parent, size=(750, 325), **kws)
@@ -419,8 +418,8 @@ class MeshScanPanel(GenericScanPanel):
             pos = add_choice(panel, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
 
-            units = wx.StaticText(panel, -1, size=(30, -1), label='mm')
-            cur = wx.StaticText(panel, -1, size=(80, -1), label='1.000')
+            units = wx.StaticText(panel, -1, size=(30, -1), label='')
+            cur = wx.StaticText(panel, -1, size=(80, -1), label='')
             start, stop, step, npts = self.StartStopStepNpts(panel, i)
 
             self.pos_settings.append((pos, units, cur, start, stop, step, npts))
@@ -486,8 +485,8 @@ class SlewScanPanel(GenericScanPanel):
                 pchoices = self.config.slewscan_positioners.keys()
             pos = add_choice(panel, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
-            units = wx.StaticText(panel, -1, size=(30, -1), label='mm')
-            cur = wx.StaticText(panel, -1, size=(80, -1), label='1.000')
+            units = wx.StaticText(panel, -1, size=(30, -1), label='')
+            cur = wx.StaticText(panel, -1, size=(80, -1), label='')
             start, stop, step, npts = self.StartStopStepNpts(panel, i)
 
             self.pos_settings.append((pos, units, cur, start, stop, step, npts))

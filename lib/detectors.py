@@ -201,28 +201,26 @@ class MultiMcaCounter(DeviceCounter):
         fields = []
         extras = []
         for imca in range(1, nmcas+1):
-            mcaname = 'mca%i' % imca
-            dxpname = 'dxp%i' % imca
-            extras.extend([("Calib  Offset (%s)" % (mcaname),
-                            "%s%s.CALO" % (prefix, mcaname)),
-                           ("Calib  Slope (%s)" % (mcaname),
-                            "%s%s.CALS" % (prefix, mcaname)),
-                           ("Calib  Quad (%s)" % (mcaname),
-                            "%s%s.CALQ" % (prefix, mcaname)),
-                           ("Peaking Time (%s)" % (dxpname),
-                            "%s%s:PeakingTime" % (prefix, dxpname))])
+            mca = 'mca%i' % imca
+            dxp = 'dxp%i' % imca
+            extras.extend([
+                ("CalibOffset (%s)" % mca, "%s%s.CALO" % (prefix, mca)),
+                ("CalibSlope (%s)" % mca, "%s%s.CALS" % (prefix, mca)),
+                ("CalibQuad (%s)" % mca, "%s%s.CALQ" % (prefix, mca)),
+                ("PeakingTime (%s)" % dxp, "%s%s:PeakingTime" % (prefix, dxp))
+                ])
 
         for i in range(nrois):
             for imca in range(1, nmcas+1):
-                mcaname = 'mca%i' % imca
-                dxpname = 'dxp%i' % imca
-                roiname = caget('%s%s.R%iNM' % (prefix, mcaname, i)).strip()
-                roi_hi  = caget('%s%s.R%iHI' % (prefix, mcaname, i))
-                label = '%s (%s)'% (roiname, mcaname)
-                if (len(roiname) > 0 and roi_hi > 0) or use_unlabeled:
-                    suff = '%s.R%i' % (mcaname, i)
+                mca = 'mca%i' % imca
+                dxp = 'dxp%i' % imca
+                roi = caget('%s%s.R%iNM' % (prefix, mca, i)).strip()
+                roi_hi  = caget('%s%s.R%iHI' % (prefix, mca, i))
+                label = '%s (%s)'% (roi, mca)
+                if (len(roi) > 0 and roi_hi > 0) or use_unlabeled:
+                    suff = '%s.R%i' % (mca, i)
                     if use_net:
-                        suff = '%s.R%iN' %  (mcaname, i)
+                        suff = '%s.R%iN' %  (mca, i)
                     fields.append((suff, label))
                 if roi_hi < 1 and not search_all:
                     break
@@ -235,7 +233,9 @@ class MultiMcaCounter(DeviceCounter):
 
         if use_full:
             for imca in range(1, nmcas+1):
-                fields.append(('%s.VAL' % mcaname, 'mca spectra (%s)' % mcaname))
+                mca = 'mca%i' % imca
+                fields.append(('%s%s.VAL' % (prefix, mca),
+                               'mca spectra (%s)' % mca))
         self.extra_pvs = extras
         self.set_counters(fields)
 
@@ -280,7 +280,6 @@ class MotorDetector(DetectorMixin):
 
 class ScalerDetector(DetectorMixin):
     trigger_suffix = '.CNT'
-
     def __init__(self, prefix, nchan=8, use_calc=True, **kws):
         DetectorMixin.__init__(self, prefix, **kws)
         self.scaler = Scaler(prefix, nchan=nchan)
@@ -307,7 +306,7 @@ class AreaDetector(DetectorMixin):
     trigger / dwelltime, uses array counter as only counter
     """
     trigger_suffix = 'Acquire'
-    def __init__(self, prefix, save_spectra=True, **kws):
+    def __init__(self, prefix, **kws):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         DetectorMixin.__init__(self, prefix, **kws)

@@ -25,6 +25,12 @@ Principle features:
        keep sqlite db of scan defs / scan names (do a scan like 'xxxx')
        plot window can do simple analysis?
 
+To Do:
+  calculate / display estimated scan time on changes
+  plotting window with drop-downs for column math
+  detector selection
+  encapsulate (json?) scan parameters
+
 """
 import os
 import time
@@ -53,10 +59,9 @@ from .scan_panels import (LinearScanPanel, MeshScanPanel,
                         SlewScanPanel,   XAFSScanPanel)
 
 from .pvconnector import PVNameCtrl, EpicsPVList
-from .pos_setup import PositionerFrame
+from .edit_positioners import PositionerFrame
+from .edit_detectors import DetectorFrame
 
-
-MAX_POINTS = 4000
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
@@ -64,11 +69,16 @@ class ScanFrame(wx.Frame):
     _about = """StepScan GUI
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    _cnf_wildcard = "Scan Definition Files(*.ini)|*.ini|All files (*.*)|*.*"
+    _ini_wildcard = "Epics Scan Settings(*.ini)|*.ini|All files (*.*)|*.*"
+    _ini_default  = "epicsscans.ini"
+    _cnf_wildcard = "Scan Definition(*.cnf)|*.cnf|All files (*.*)|*.*"
+    _cnf_default  = "scan.cnf"
 
-    def __init__(self, configfile='defconf.ini',  **kwds):
-
-        self.config = ScanConfig(configfile)
+    def __init__(self, conffile=None,  **kwds):
+        if conffile is None:
+            conffile = self._ini_default
+        self.conffile = conffile
+        self.config = ScanConfig(conffile)
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
 
@@ -78,7 +88,7 @@ class ScanFrame(wx.Frame):
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font11=wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font10=wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+
 
         self.SetTitle("Epics Scans")
         self.SetSize((700, 575))
@@ -178,41 +188,47 @@ class ScanFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         # file
         fmenu = wx.Menu()
-        add_menu(self, fmenu, "&Read Scan Definition File",
-                  "Read Scan Defintion File",
-                  self.onReadConfigFile)
-
-        add_menu(self, fmenu,"&Save Scan Definition File",
-                  "Save Scan Definition File", self.onSaveScanFile)
+        add_menu(self, fmenu, "&Open Scan Definition\tCtrl+O",
+                 "Read Scan Defintion",  self.onReadScanDef)
+        add_menu(self, fmenu,"&Save Scan Definition\tCtrl+S",
+                  "Save Scan Definition", self.onSaveScanDef)
 
         fmenu.AppendSeparator()
-        add_menu(self, fmenu,'Change &Working Folder',
-                  "Choose working directory",
-                  self.onFolderSelect)
+        add_menu(self, fmenu, "Load Settings\tCtrl+L",
+                 "Load Settings", self.onLoadSettings)
+
+        add_menu(self, fmenu,"Save Settings\tCtrl+R",
+                  "Save Settings", self.onSaveSettings)
+
         fmenu.AppendSeparator()
-        add_menu(self,fmenu, "E&xit",
+
+        add_menu(self, fmenu,'Change &Working Folder\tCtrl+W',
+                  "Choose working directory",  self.onFolderSelect)
+        fmenu.AppendSeparator()
+        add_menu(self, fmenu, "&Quit\tCtrl+Q",
                   "Quit program", self.onClose)
 
         # options
         pmenu = wx.Menu()
-        add_menu(self, pmenu, "Setup &Motors and Positioners",
+        add_menu(self, pmenu, "General\tCtrl+G",
+                 "General Setup", self.onSetupMisc)
+
+        add_menu(self, pmenu, "Positioners\tCtrl+P",
                   "Setup Motors and Positioners", self.onSetupPositioners)
-        dmenu = wx.Menu()
-        add_menu(self, dmenu, "Setup &Detectors and Counters",
+        add_menu(self, pmenu, "Detectors\tCtrl+D",
                   "Setup Detectors and Counters", self.onSetupDetectors)
         # help
         hmenu = wx.Menu()
         add_menu(self, hmenu, "&About",
                   "More information about this program",  self.onAbout)
 
-        self.menubar.Append(fmenu, "&File")
-        self.menubar.Append(pmenu, "&Positioners")
-        self.menubar.Append(dmenu, "&Detectors")
+        self.menubar.Append(fmenu, "&File\tCtrl+F")
+        self.menubar.Append(pmenu, "&Setup\tCtrl+E")
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
 
     def onAbout(self,evt):
-        dlg = wx.MessageDialog(self, self._about,"About Me",
+        dlg = wx.MessageDialog(self, self._about,"About Epics StepScan",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
@@ -220,12 +236,15 @@ class ScanFrame(wx.Frame):
     def onClose(self,evt):
         self.Destroy()
 
+    def onSetupMisc(self, evt=None):
+        print 'need frame for general config'
+
     def onSetupPositioners(self, evt=None):
-        p = PositionerFrame(self, config=self.config, pvlist=self.pvlist,
-                            scanpanels=self.scanpanels)
+        PositionerFrame(self, config=self.config, pvlist=self.pvlist,
+                        scanpanels=self.scanpanels)
 
     def onSetupDetectors(self, evt=None):
-        print 'Setup Detectors'
+        DetectorFrame(self, config=self.config, pvlist=self.pvlist)
 
     def onFolderSelect(self,evt):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
@@ -241,236 +260,39 @@ class ScanFrame(wx.Frame):
                 pass
         dlg.Destroy()
 
-    def onSaveScanFile(self,evt=None):
-        self.onSaveConfigFile(evt=evt,scan_only=True)
+    def onSaveScanDef(self, evt=None):
+        print 'on SaveScan Def'
 
-    def onSaveConfigFile(self,evt=None,scan_only=False):
-        fout=self.configfile
+    def onReadScanDef(self, evt=None):
+        print 'on ReadScan Def'
+
+    def onSaveSettings(self, evt=None):
+        fout = self.conffile
         if fout is None:
-            fout = 'config.ini'
-        dlg = wx.FileDialog(self,
-                            message="Save Scan Definition File",
+            fout = self._ini_default
+        dlg = wx.FileDialog(self, message="Save EpicsScan Settings",
                             defaultDir=os.getcwd(),
                             defaultFile=fout,
-                            wildcard=self._cnf_wildcard,
+                            wildcard=self._ini_wildcard,
                             style=wx.SAVE|wx.CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
-            self.SaveConfigFile(path,scan_only=scan_only)
+            self.config.Save(dlg.GetPath())
         dlg.Destroy()
 
-    def onReadConfigFile(self,evt=None):
-        fname = self.configfile
+    def onLoadSettings(self, evt=None):
+        fname = self.conffile
         if fname is None: fname = ''
-        dlg = wx.FileDialog(self, message="Read Scan Definition File",
+        dlg = wx.FileDialog(self, message="Load EpicsScan Settings",
                             defaultDir=os.getcwd(),
-                            defaultFile='',  wildcard=self._cnf_wildcard,
-                            style=wx.OPEN | wx.CHANGE_DIR)
+                            defaultFile=fname,
+                            wildcard=self._ini_wildcard,
+                            style=wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
-            paths = dlg.GetPaths()
-            self.ReadConfigFile(paths[0])
+            path = dlg.GetPath()
+            self.config.Read(path)
+            for p in self.scanpanels:
+                p.use_config(self.config)
         dlg.Destroy()
-
-
-        os.chdir(nativepath(self.mapper.basedir))
-        self.SetMotorLimits()
-
-
-    @DelayedEpicsCallback
-    def onMapRow(self,pvname=None,value=0,**kw):
-        " the map row changed -- another row is finished"
-        rowtime  = 0.5 + self.t_rowtime
-        nrows    = float(self.m2npts.GetLabel().strip())
-        time_left = int(0.5+ rowtime * max(0, nrows - value))
-        message = "Estimated Time remaining: %s" % timedelta(seconds=time_left)
-        self.statusbar.SetStatusText(message, 0)
-
-    @DelayedEpicsCallback
-    def onMapInfo(self,pvname=None,char_value=None,**kw):
-        self.statusbar.SetStatusText(char_value,1)
-
-    @DelayedEpicsCallback
-    def onMapMessage(self,pvname=None,char_value=None,**kw):
-        self.statusbar.SetStatusText(char_value,0)
-
-    @DelayedEpicsCallback
-    def onMapStart(self,pvname=None,value=None,**kw):
-        if value == 0: # stop of map
-            self.startbutton.Enable()
-            self.abortbutton.Disable()
-
-            self.usertitles.Enable()
-            self.filename.Enable()
-
-            fname = str(self.filename.GetValue())
-            if os.path.exists(fname):
-                self.filename.SetValue(increment_filename(fname))
-
-            fname = str(self.filename.GetValue())
-
-            nfile = new_filename(os.path.abspath(fname))
-            self.filename.SetValue(os.path.split(nfile)[1])
-        else: # start of map
-            self.startbutton.Disable()
-            self.abortbutton.Enable()
-
-    @DelayedEpicsCallback
-    def onMapAbort(self,pvname=None,value=None,**kw):
-        if value == 0:
-            self.abortbutton.Enable()
-            self.startbutton.Disable()
-        else:
-            self.abortbutton.Disable()
-            self.startbutton.Enable()
-
-    def epics_CtrlVars(self,posname):
-        posname = str(posname)
-        ctrlvars = {'lower_ctrl_limit':-0.001,
-                    'upper_ctrl_limit':0.001,
-                    'units': 'mm'}
-
-        if posname not in self._pvs:
-            labels = self.config['slow_positioners'].values()
-            if posname in labels:
-                keys   = self.config['slow_positioners'].keys()
-                pvname = keys[labels.index(posname)]
-                self._pvs[posname] = epics.PV(pvname)
-
-        if (posname in self._pvs and
-            self._pvs[posname] is not None and
-            self._pvs[posname].connected):
-            self._pvs[posname].get() # make sure PV is connected
-            c  = self._pvs[posname].get_ctrlvars()
-            if c is not None: ctrlvars = c
-        return ctrlvars
-
-    @EpicsFunction
-    def SetMotorLimits(self):
-        m1name = self.m1choice.GetStringSelection()
-        m1 = self._pvs[m1name]
-        if m1.lower_ctrl_limit is None:
-            m1.get_ctrlvars()
-        xmin,xmax =  m1.lower_ctrl_limit, m1.upper_ctrl_limit
-        self.m1units.SetLabel(m1.units)
-        self.m1step.SetMin(-abs(xmax-xmin))
-        self.m1step.SetMax( abs(xmax-xmin))
-        self.m1start.SetMin(xmin)
-        self.m1start.SetMax(xmax)
-        self.m1stop.SetMin(xmin)
-        self.m1stop.SetMax(xmax)
-
-        m2name = self.m2choice.GetStringSelection()
-        if not self.m2choice.IsEnabled() or len(m2name) < 1:
-            return
-
-        m2 = self._pvs[m2name]
-        if m2.lower_ctrl_limit is None:
-            m2.get_ctrlvars()
-
-        xmin,xmax =  m2.lower_ctrl_limit, m2.upper_ctrl_limit
-        self.m2units.SetLabel( m2.units)
-        self.m2step.SetMin(-abs(xmax-xmin))
-        self.m2step.SetMax( abs(xmax-xmin))
-        self.m2start.SetMin(xmin)
-        self.m2start.SetMax(xmax)
-        self.m2stop.SetMin(xmin)
-        self.m2stop.SetMax(xmax)
-
-    def onDimension(self,evt=None):
-        cnf = self.config
-        dim = self.dimchoice.GetSelection() + 1
-        cnf['scan']['dimension'] = dim
-        if dim == 1:
-            self.m2npts.SetLabel("1")
-            self.m2choice.Disable()
-            for m in (self.m2start,self.m2units,self.m2stop,self.m2step):
-                m.Disable()
-        else:
-            self.m2choice.Enable()
-            for m in (self.m2start,self.m2units,self.m2stop,self.m2step):
-                m.Enable()
-        self.onM2step()
-
-    def onM1Select(self,evt=None):
-        m1name = evt.GetString()
-        m2name = self.m2choice.GetStringSelection()
-
-        sm_labels = self.config['slow_positioners'].values()[:]
-        sm_labels.remove(m1name)
-        if m1name == m2name:
-            m2name = sm_labels[0]
-
-        self.m2choice.Clear()
-        self.m2choice.AppendItems(sm_labels)
-        self.m2choice.SetStringSelection(m2name)
-        self.SetMotorLimits()
-
-    def onM2Select(self,evt=None):
-        self.SetMotorLimits()
-
-    def onM2step(self, value=None, **kw):
-        try:
-            s1 = self.m2start.GetValue()
-            s2 = self.m2stop.GetValue()
-            ds = self.m2step.GetValue()
-            npts2 = 1 + int(0.5  + abs(s2-s1)/(max(ds,1.e-10)))
-            if npts2 > MAX_POINTS:
-                npts2 = MAX_POINTS
-            if self.config['scan']['dimension'] == 1:
-                npts2 = 1
-            self.m2npts.SetLabel("  %i" % npts2)
-            maptime = int((self.t_rowtime + 1.25) * max(1, npts2))
-            self.maptime.SetLabel("%s" % timedelta(seconds=maptime))
-        except AttributeError:
-            pass
-
-    def calcRowTime(self, value=None, **kw):
-        try:
-            s1 = self.m1start.GetValue()
-            s2 = self.m1stop.GetValue()
-            ds = self.m1step.GetValue()
-            pixt = self.pixtime.GetValue()
-            npts = 1 + int(0.5  + abs(s2-s1)/(max(ds,1.e-10)))
-            if npts > MAX_POINTS:
-                npts = MAX_POINTS
-            self.m1npts.SetLabel("  %i" % npts)
-            self.t_rowtime = pixt * max(1, npts-1)
-            self.rowtime.SetLabel("%.1f" % (self.t_rowtime))
-
-            npts2 = float(self.m2npts.GetLabel().strip())
-            maptime = int((self.t_rowtime + 1.25) * max(1, npts2))
-            self.maptime.SetLabel("%s" % timedelta(seconds=maptime))
-
-        except AttributeError:
-            pass
-
-    @EpicsFunction
-    def xonStartScan(self, evt=None):
-        fname = str(self.filename.GetValue())
-        if os.path.exists(fname):
-            fname = increment_filename(fname)
-            self.filename.SetValue(fname)
-
-        sname = 'CurrentScan.ini'
-        if os.path.exists(sname):
-            shutil.copy(sname, 'PreviousScan.ini')
-
-        self.SaveConfigFile(sname, scan_only=True)
-        self.mapper.StartScan(fname, sname)
-
-        # setup escan saver
-        self.data_mode   = 'w'
-        self.data_fname  = os.path.abspath(os.path.join(
-            nativepath(self.mapper.basedir), self.mapper.filename))
-
-        self.usertitles.Disable()
-        self.filename.Disable()
-        self.abortbutton.Enable()
-        self.start_time = time.time()
-
-    @EpicsFunction
-    def xonAbortScan(self,evt=None):
-        self.mapper.AbortScan()
 
 class ScanApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, config=None, dbname=None, **kws):
