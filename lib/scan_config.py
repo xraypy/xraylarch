@@ -20,6 +20,8 @@ filename = test.dat
 filemode = increment
 basedir = //cars5/Data/xas_user/Nov2012/
 extrapvs_file =
+pos_settle_time = 0.01
+det_settle_time = 0.01
 #--------------------------#
 [positioners]
 # index = label || drivePV  || readbackPV
@@ -47,8 +49,8 @@ positioners= X, Y, Theta
 #--------------------------#
 [detectors]
 # index = label || DetectorPV  || options
-1 = scaler1 || 13IDE:scaler1 || kind=scaler, use_calc=True
-### 2 = mcs1    || 13IDE:SIS1    || kind=mcs
+1 = scaler1  || 13IDE:scaler1  || kind=scaler, nchan=8, use_calc=True
+2 = multimca || 13XRM:dxpMercury  || kind=multimca, nmcas=4, nrois=32, use_net=False, use_full=True
 #--------------------------#
 [counters]
 # index = label || PVname
@@ -60,8 +62,52 @@ positioners= X, Y, Theta
 2 = I0 Preamp Sensitivity Number || 13IDE:A1sens_num.VAL
 3 = I0 Preamp Sensitivity Units  || 13IDE:A1sens_unit.VAL
 """
-
 DEF_CONFFILE = os.path.join(get_homedir(), '.pyscan', 'scan_config.ini')
+
+def opts2dict(opts_string):
+    """convert options string like
+    x = a, n = 3, w = True
+    into a dictionary.  Rules are:
+      1. split to key=val on ','
+      2. split to key, val
+      3. trim all words
+      4. convert True/False/None strings to python objects
+      5. convert integers to python ints"""
+    d = {}
+    for expr in opts_string.split(','):
+        words = expr.split('=')
+        key = words[0]
+        if len(words) == 1:
+            val = 'True'
+        else:
+            val = words[1]
+        val.strip()
+        if val == 'True':
+            val = True
+        elif val == 'False':
+            val = False
+        elif val == 'None':
+            val = None
+        else:
+            try:
+                val = int(val)
+            except ValueError:
+                try:
+                    val = float(val)
+                except ValueError:
+                    pass
+        d[key.strip()] = val
+    return d
+
+def dict2opts(d):
+    """convert options dict to options string
+    sorts keys alphabetically, so output order is consistent
+    """
+    w = []
+    for key in sorted(d.keys()):
+        w.append("%s=%s" % (key, repr(d[key])))
+    return ', '.join(w)
+
 
 class ScanConfig(object):
     #  sections            name      ordered?
@@ -85,10 +131,10 @@ class ScanConfig(object):
         self.filename = filename
         if (os.path.exists(filename) and
             os.path.isfile(filename)):
-            ret = self._cp.read(fname)
+            ret = self._cp.read(filename)
             if len(ret) == 0:
                 time.sleep(0.1)
-                self._cp.read(fname)
+                self._cp.read(filename)
         else:
             self._cp.readfp(StringIO(DEFAULT_CONF))
         self.Read()
@@ -98,11 +144,11 @@ class ScanConfig(object):
         if (filename is not None and
             (os.path.exists(filename) and
              os.path.isfile(filename))):
-            ret = self._cp.read(fname)
+            ret = self._cp.read(filename)
             if len(ret) == 0:
                 time.sleep(0.1)
-                self._cp.read(fname)
-            self.filename = fname
+                self._cp.read(filename)
+            self.filename = filename
 
         # process sections
         for sect, ordered in self.__sects.items():
@@ -121,7 +167,13 @@ class ScanConfig(object):
                     if len(words) == 1:
                         words = words[0]
                     else:
-                        words = tuple(words)
+                        tmp = []
+                        for w in words:
+                            if ',' in w and '=' in w:
+                                tmp.append(opts2dict(w))
+                            else:
+                                tmp.append(w)
+                        words = tuple(tmp)
                     thissect[label] = words
                 else:
                     thissect[opt] = val
@@ -139,18 +191,25 @@ class ScanConfig(object):
 
         out = ['### Epics Scan Configuration: %s' % (get_timestamp())]
         for sect, ordered in self.__sects.items():
-            out.append('#-----------------------#\n[%s]' % sect)
+            out.append('#------------------------------#\n[%s]' % sect)
             if sect == 'setup':
                 for name, val in self.setup.items():
                     out.append("%s = %s" % (name, val))
             elif sect == 'detectors':
                 out.append(DET_LEGEND)
-                print 'sect = det'
                 idx = 0
                 for key, val in getattr(self, sect).items():
                     idx = idx + 1
                     if isinstance(val, (list, tuple)):
-                        val = ' || '.join(val)
+                        wout = []
+                        for w in val:
+                            if isinstance(w, dict):
+                                wout.append(dict2opts(w))
+                            elif isinstance(w, (str, unicode)):
+                                wout.append(w)
+                            else:
+                                wout.append(repr(w))
+                        val = ' || '.join(wout)
                     out.append("%i = %s || %s"  % (idx, key, val))
 
             else:

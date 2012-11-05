@@ -61,9 +61,11 @@ class HideShow(wx.Choice):
         self.SetSelection({False:0, True:1}[default])
 
 class YesNo(wx.Choice):
-    def __init__(self, parent, defaultyes=True, size=(75, -1)):
+    def __init__(self, parent, defaultyes=True,
+                 choices=('No', 'Yes'),
+                 size=(75, -1)):
         wx.Choice.__init__(self, parent, -1, size=size)
-        self.choices = ('No', 'Yes')
+        self.choices = choices
         self.Clear()
         self.SetItems(self.choices)
         self.SetSelection({False:0, True:1}[defaultyes])
