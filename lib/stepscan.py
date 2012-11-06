@@ -263,7 +263,7 @@ class StepScan(object):
             self.datafile.write_data(breakpoint=breakpoint)
         return out
 
-    def pre_scan(self):
+    def pre_scan(self, **kws):
         if self.dwelltime is not None:
             self.min_dwelltime = self.dwelltime
             self.max_dwelltime = self.dwelltime
@@ -276,7 +276,7 @@ class StepScan(object):
                 d.dwelltime = self.dwelltime
 
         [pv.connect() for  (desc, pv) in self.extra_pvs]
-        return [m() for m in self.pre_scan_methods]
+        return [m(scan=self) for m in self.pre_scan_methods]
 
     def post_scan(self):
         return [m() for m in self.post_scan_methods]
@@ -324,7 +324,7 @@ class StepScan(object):
             c.clear()
         self.pos_actual = []
 
-    def run(self, filename=None, comments=None):
+    def run(self, filename, comments=None):
         """ run the actual scan:
            Verify, Save original positions,
            Setup output files and messenger thread,
@@ -332,6 +332,8 @@ class StepScan(object):
            Loop over points
            run post_scan methods
         """
+        self.filename  = filename
+
         ts_start = time.time()
         if not self.verify_scan():
             print 'Cannot execute scan'
