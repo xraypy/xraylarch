@@ -292,7 +292,7 @@ class ScalerDetector(DetectorMixin):
                           ('scaler read_delay', '%s.DLY' % prefix)]
         self.extra_pvs.extend(self._counter.extra_pvs)
 
-    def pre_scan(self, **kws):
+    def pre_scan(self, scan=None, **kws):
         self.scaler.OneShotMode()
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
@@ -306,34 +306,63 @@ class AreaDetector(DetectorMixin):
     trigger / dwelltime, uses array counter as only counter
     """
     trigger_suffix = 'Acquire'
-    def __init__(self, prefix, **kws):
+    _valid_file_plugins = ('TIFF1', 'JPEG1', 'NetCDF1',
+                           'HDF1', 'Nexus1', 'Magick1')
+    def __init__(self, prefix, file_plugin=None, **kws):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         DetectorMixin.__init__(self, prefix, **kws)
-        self.dwelltime_pv = PV('%sAcquireTime' % prefix)
+        self.dwelltime_pv = PV('%scam1:AcquireTime' % prefix)
         self.dwelltime    = None
-        self.counters = [Counter("%sArrayCounter_RBV" % prefix,
+        self.file_plugin  = None
+        self.counters = [Counter("%scam1:ArrayCounter_RBV" % prefix,
                                  label='Image Counter')]
+        if file_plugin in self._valid_file_plugins:
+            self.file_plugin = file_plugin
+            f_counter = Counter("%s%s:FileNumebr_RBV" % (prefix, file_pluging),
+                                label='File Counter')
+            self.counters.append(f_counter)
 
-    def pre_scan(self, **kws):
+
+    def pre_scan(self, scan=None, **kws):
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
-        caput("%sImageMode" % (self.prefix), 0)      # single image capture
-        caput("%sArrayCallbacks" % (self.prefix), 1) # enable callbacks
+        caput("%scam1:ImageMode" % (self.prefix), 0)      # single image capture
+        caput("%scam1:ArrayCallbacks" % (self.prefix), 1) # enable callbacks
+        if self.file_plugin is not None:
+            fpre = "%s%s" % (sself.prefix, self.file_plugin)
+            pref = scan.filename.replace('.', '_')
+            ext = self.file_plugin[:-1]
+            caput("%s:FileName" % fpre, pref)
+            caput("%s:FileTemplate" % fpre, '%%s%%s_%%4.4d.%s' % ext)
+            caput("%s:EnableCallbacks" % fpre, 1)
+            caput("%s:AutoIncrement" % fpre, 1)
+            caput("%s:AutoSave" % fpre, 1)
+
+
+    def post_scan(self, **kws):
+        if self.file_plugin is not None:
+            fpre = "%s%s" % (sself.prefix, self.file_plugin)
+            caput("%s:EnableCallbacks" % fpre, 0)
+            caput("%s:AutoSave" % fpre, 0)
+
 
 class McaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
-    def __init__(self, prefix, save_spectra=True, **kws):
+    def __init__(self, prefix, save_spectra=True, nrois=32, use_net=False,
+                 use_full=False, **kws):
+
         DetectorMixin.__init__(self, prefix, **kws)
         self.mca = Mca(prefix)
         self.dwelltime_pv = PV('%s.PRTM' % prefix)
         self.dwelltime    = None
         self.trigger = Trigger("%sEraseStart" % prefix)
-        self._counter = McaCounter(prefix, nchan=nchan, use_calc=use_calc)
+        self._counter = McaCounter(prefix, nrois=nrois, use_full=use_full,
+                                   use_net=use_net)
         self.counters = self._counter.counters
 
-    def pre_scan(self, **kws):
+    def pre_scan(self, scan=None, **kws):
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
@@ -362,7 +391,7 @@ class MultiMcaDetector(DetectorMixin):
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
 
-    def pre_scan(self, **kws):
+    def pre_scan(self, scan=None, **kws):
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)

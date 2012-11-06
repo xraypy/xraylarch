@@ -7,8 +7,13 @@ import wx.lib.scrolledpanel as scrolled
 
 from ..ordereddict import OrderedDict
 from .gui_utils import GUIColors, set_font_with_children, YesNo
-from .gui_utils import add_button, pack, SimpleText
+from .gui_utils import add_button, pack, SimpleText, FloatCtrl
 from .pvconnector import PVNameCtrl
+
+LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+
+AD_File_plugins = ('None','TIFF1', 'JPEG1', 'NetCDF1',
+                   'HDF1', 'Nexus1', 'Magick1')
 
 class DetectorFrame(wx.Frame) :
     """Frame to Setup Scan Detectors"""
@@ -18,9 +23,6 @@ class DetectorFrame(wx.Frame) :
         self.pvlist = pvlist
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
-        labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        tstyle    = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 
         self.Font10=wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         titlefont = wx.Font(13, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -28,46 +30,44 @@ class DetectorFrame(wx.Frame) :
         wx.Frame.__init__(self, None, -1, 'Epics Scanning: Detector Setup')
         self.SetFont(self.Font10)
 
-        sizer = wx.GridBagSizer(10, 7)
+        sizer = wx.GridBagSizer(12, 4)
         panel = scrolled.ScrolledPanel(self, size=(725, 500))
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
 
         # title row
         title = SimpleText(panel, 'Detector Setup',  font=titlefont,
-                           minsize=(130, -1),   colour=self.colors.title, style=tstyle)
+                           minsize=(130, -1),   colour=self.colors.title, style=LEFT)
 
-        sizer.Add(title,        (0, 0), (1, 2), labstyle|wx.ALL, 2)
+        sizer.Add(title,        (0, 0), (1, 1), LEFT|wx.ALL, 2)
 
         add_new = add_button(panel, 'Add Detector',     size=(120, -1),
                             action=self.onNewDetector)
-        sizer.Add(add_new,      (0, 3), (1, 1), wx.ALIGN_CENTER|wx.ALL, 2)
+        sizer.Add(add_new,      (0, 2), (1, 2), LEFT, 2)
 
         ir = 1
         self.add_subtitle(panel, sizer, ir, 'Available Detectors')
-        ir += 1
-        sizer.Add(SimpleText(panel, label='Type',  size=(50, -1)),
-                  (ir, 0), (1, 1), labstyle, 1)
-        sizer.Add(SimpleText(panel, label='PV Prefix', size=(175, -1)),
-                  (ir, 1), (1, 1), labstyle, 1)
+        ir +=1
+        sizer.Add(SimpleText(panel, label='Kind',  size=(75, -1)),
+                  (ir, 0), (1, 1), LEFT, 1)
+        sizer.Add(SimpleText(panel, label='PV prefix', size=(175, -1)),
+                  (ir, 1), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='Use?', size=(100, -1)),
-                  (ir, 2), (1, 1), labstyle, 1)
-        sizer.Add(SimpleText(panel, label='Options', size=(200, -1)),
-                  (ir, 3), (1, 1), labstyle, 1)
+                  (ir, 2), (1, 1), LEFT, 1)
+        sizer.Add(SimpleText(panel, label='Options:', size=(100, -1)),
+                  (ir, 3), (1, 1), LEFT, 1)
         self.widlist = []
         for key, value in self.config.detectors.items():
             ir +=1
             pvname, opts = value
-
-            desc   = SimpleText(panel, label=opts['kind'], size=(100, -1))
+            desc   = SimpleText(panel, label=opts['kind'].title(), size=(100, -1))
             pvctrl = PVNameCtrl(panel, value=pvname, pvlist=self.pvlist, size=(175, -1))
-            opanel, owids = self.opts_panel(panel, opts)
-
             use    = YesNo(panel)
-            sizer.Add(desc,   (ir, 0), (1, 1), labstyle, 1)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 1)
-            sizer.Add(use,    (ir, 2), (1, 1), labstyle, 1)
-            sizer.Add(opanel, (ir, 3), (1, 1), labstyle, 1)
+            sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
+            sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
+            opanel, owids = self.opts_panel(panel, opts)
+            sizer.Add(opanel, (ir, 3), (1, 1), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 1)
             wids = ['detectors', desc, pvctrl, use]
             wids.extend(owids)
             self.widlist.append(tuple(wids))
@@ -75,26 +75,23 @@ class DetectorFrame(wx.Frame) :
         ir += 1
         self.add_subtitle(panel, sizer, ir, 'Additional Counters')
 
-        for i,v in self.config.counters.items():
-            print i, v
-
         ###
         ir += 1
         sizer.Add(SimpleText(panel, label='Label',  size=(50, -1)),
-                  (ir, 0), (1, 1), labstyle, 1)
+                  (ir, 0), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='PV name', size=(175, -1)),
-                  (ir, 1), (1, 1), labstyle, 1)
+                  (ir, 1), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='Use?', size=(100, -1)),
-                  (ir, 2), (1, 1), labstyle, 1)
+                  (ir, 2), (1, 2), LEFT, 1)
 
         for label, pv in self.config.counters.items():
             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
             pvctrl = PVNameCtrl(panel, value=pv, pvlist=self.pvlist, size=(175, -1))
             use     = YesNo(panel)
             ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), labstyle, 1)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 1)
-            sizer.Add(use,    (ir, 2), (1, 1), labstyle, 1)
+            sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
+            sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             self.widlist.append(('counters', desc, pvctrl, use))
 
         for i in range(4):
@@ -102,9 +99,9 @@ class DetectorFrame(wx.Frame) :
             pvctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
             use     = YesNo(panel)
             ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), labstyle, 1)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 1)
-            sizer.Add(use,    (ir, 2), (1, 1), labstyle, 1)
+            sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
+            sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             self.widlist.append(('counters', desc, pvctrl, use))
         ###
 
@@ -125,23 +122,49 @@ class DetectorFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-    def opts_panel(self, parent, options):
+    def opts_panel(self, parent, opts):
         pane = wx.Panel(parent)
         sizer  = wx.BoxSizer(wx.HORIZONTAL)
-        kind = options.pop('kind').lower()
-        l = SimpleText(pane, repr(options))
-        sizer.Add(l, 1, wx.GROW, 1)
-        print 'OPTIONS: ', options
+        kind = opts.pop('kind').lower()
+        wids = []
         if kind == 'scaler':
-            print 'scaler::'
+            sizer.Add(SimpleText(pane, '#Channels=', size=(100, -1)), 0,  LEFT, 0)
+            nchan = FloatCtrl(pane, value=opts.get('nchan', 8),
+                              size=(25, -1), precision=0, minval=0)
+            sizer.Add(nchan, 0, LEFT, 0)
+            sizer.Add(SimpleText(pane, 'Use Raw/Calc:', size=(120, -1)), 0,  LEFT, 0)
+            val = {True:1, False:0}[opts.get('use_calc', True)]
+            use_calc = YesNo(pane, choices=('Raw', 'Calc'), size=(75, -1))
+            sizer.Add(use_calc, 0,  LEFT, 0)
+            wids = [nchan, use_calc]
+        elif kind.startswith('area'):
+            sizer.Add(SimpleText(pane, 'Use File Plugin:', size=(120, -1)), 0,  LEFT, 0)
+            plugin = wx.Choice(pane, choices=AD_File_plugins)
+            plugin.SetStringSelection(opts.get('file_plugin', 'None'))
+            sizer.Add(plugin, 0, LEFT, 0)
+            wids = [plugin]
         elif kind == 'mca':
             print 'mca::'
         elif kind.startswith('multi'):
-            print 'multi mca::'
-        elif kind.startswith('area'):
-            print 'area detector::'
+            sizer.Add(SimpleText(pane, '#MCAs=', size=(80, -1)), 0,  LEFT, 0)
+            nchan = FloatCtrl(pane, value=opts.get('nmcas', 4),
+                              size=(25, -1), precision=0, minval=0)
+            sizer.Add(nchan, 0, LEFT, 0)
+            sizer.Add(SimpleText(pane, '#ROIs=', size=(80, -1)), 0,  LEFT, 0)
+            nrois = FloatCtrl(pane, value=opts.get('nrois', 32),
+                              size=(25, -1), precision=0, minval=0)
+            sizer.Add(nrois, 0, LEFT, 0)
+            sizer.Add(SimpleText(pane, 'Use Sum/Net:', size=(120, -1)), 0,  LEFT, 0)
+            val = {True:1, False:0}[opts.get('use_net', False)]
+            use_net = YesNo(pane, choices=('Sum', 'Net'), size=(75, -1))
+            sizer.Add(use_net, 0,  LEFT, 0)
+            sizer.Add(SimpleText(pane, 'Save Full Spectra:', size=(120, -1)), 0,  LEFT, 0)
+            val = {True:1, False:0}[opts.get('use_full', False)]
+            use_full = YesNo(pane, size=(75, -1))
+            sizer.Add(use_full, 0,  LEFT, 0)
+            wids = [nchan, nrois, use_net, use_full]
+
         pack(pane, sizer)
-        wids = [l]
         return pane, wids
 
     def add_subtitle(self, panel, sizer, row, text):
