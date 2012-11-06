@@ -44,15 +44,18 @@ class EpicsPVList(object):
         self.pvs = {}
         self.in_progress = {}
         self.timeout = timeout
-        print 'EpicsPVList : ', parent
         self.etimer = wx.Timer(parent)
-        self.etimer.Bind(wx.EVT_TIMER, self.onTimer)
-
+        parent.Bind(wx.EVT_TIMER, self.onTimer, self.etimer)
+        self.etimer.Start(75)
+        
     def onTimer(self, event=None):
         "timer event handler: looks for in_progress, may timeout"
-        if len(self.in_progress) == 0:
-            self.etimer.Stop()
+        time.sleep(0.001)
+        print 'epics timer poll' ,  len(self.in_progress) 
+        if len(self.in_progress) == 0:            
+            return
         for pvname in self.in_progress:
+            print 'waiting for connect: ', pvname
             self.__connect(pvname)
             if time.time() - self.in_progress[pvname][2] > self.timeout:
                 print 'timed out waiting for ', pvname
@@ -63,19 +66,18 @@ class EpicsPVList(object):
         """try to connect epics PV, executing
         action(wid=wid, pvname=pvname, pv=pv)
         """
+        print 'Connect pv ', pvname, wid, action
+        print ' inprogress  = ', len(self.in_progress)
         if pvname is None or len(pvname) < 1:
             return
         if pvname not in self.in_progress:
-            if pvname not in self.pvs:
-                self.pvs[pvname] = epics.PV(pvname)
+            self.pvs[pvname] = epics.PV(pvname)
             self.in_progress[pvname] = (wid, action, time.time())
-
-            if not self.etimer.IsRunning():
-                self.etimer.Start(75)
-
+            
     @EpicsFunction
     def __connect(self, pvname):
         """if a new epics PV has connected, run the requested action"""
+        print ' __connect!! ', pvname
         if pvname not in self.pvs:
             pv = self.pvs[pvname] = epics.PV(pvname)
         else:

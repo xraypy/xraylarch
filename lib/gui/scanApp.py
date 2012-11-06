@@ -83,6 +83,10 @@ class ScanFrame(wx.Frame):
         wx.Frame.__init__(self, None, -1, **kwds)
 
         self.pvlist = EpicsPVList(self)
+#         self.etimer = wx.Timer(self)
+#         self.Bind(wx.EVT_TIMER, self.onEpicsTimer, self.etimer)
+#         self.etimer.Start(75)
+# 
 
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -170,12 +174,29 @@ class ScanFrame(wx.Frame):
         self._larch = larch.Interpreter()
         for span in self.scanpanels:
             span.larch = self._larch
-
+        print 'initialized larch in %.3f sec', (time.time()-t0)
+        
     def init_epics(self):
         for desc, pvname in self.config.positioners.items():
             for j in pvname: self.pvlist.connect_pv(j)
         for desc, pvname in self.config.extra_pvs.items():
             self.pvlist.connect_pv(pvname)
+
+
+    def onEpicsTimer(self, event=None):
+        "timer event handler: looks for in_progress, may timeout"
+        print 'epics timer event'
+        # self.pvlist.poll()
+#         
+#         if len(self.in_progress) == 0:
+#             return
+#         for pvname in self.in_progress:
+#             print 'waiting for connect: ', pvname
+#             self.__connect(pvname)
+#             if time.time() - self.in_progress[pvname][2] > self.timeout:
+#                 print 'timed out waiting for ', pvname
+#                 self.in_progress.pop(pvname)
+# 
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
@@ -222,8 +243,8 @@ class ScanFrame(wx.Frame):
         add_menu(self, hmenu, "&About",
                   "More information about this program",  self.onAbout)
 
-        self.menubar.Append(fmenu, "&File\tCtrl+F")
-        self.menubar.Append(pmenu, "&Setup\tCtrl+E")
+        self.menubar.Append(fmenu, "&File")
+        self.menubar.Append(pmenu, "&Setup")
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
 
