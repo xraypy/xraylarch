@@ -6,12 +6,13 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from ..ordereddict import OrderedDict
-from .gui_utils import GUIColors, set_font_with_children, YesNo
-from .gui_utils import add_button, pack, SimpleText, FloatCtrl
+from .gui_utils import GUIColors, set_font_with_children, YesNo, Closure
+from .gui_utils import add_button, add_choice, pack, SimpleText, FloatCtrl
 from .pvconnector import PVNameCtrl
 
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 
+DET_CHOICES = ('scaler', 'single mca', 'multimca', 'areaDetector')
 AD_File_plugins = ('None','TIFF1', 'JPEG1', 'NetCDF1',
                    'HDF1', 'Nexus1', 'Magick1')
 
@@ -41,8 +42,8 @@ class DetectorFrame(wx.Frame) :
 
         sizer.Add(title,        (0, 0), (1, 1), LEFT|wx.ALL, 2)
 
-        add_new = add_button(panel, 'Add Detector',     size=(120, -1),
-                            action=self.onNewDetector)
+        add_new = add_button(panel, 'View all Triggers and Counters',     size=(120, -1),
+                            action=self.onView)
         sizer.Add(add_new,      (0, 2), (1, 2), LEFT, 2)
 
         ir = 1
@@ -71,6 +72,22 @@ class DetectorFrame(wx.Frame) :
             wids = ['detectors', desc, pvctrl, use]
             wids.extend(owids)
             self.widlist.append(tuple(wids))
+
+        # select a new detector
+        ir += 1
+        for i in range(2):
+            ir +=1
+            desc   = add_choice(panel, DET_CHOICES, size=(125, -1),
+                                action=Closure(self.onNewDetector, row=ir))
+            pvctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
+            use    = YesNo(panel)
+            sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
+            sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
+            wids = ['newdetector', ir, desc, pvctrl, use]
+            wids.extend(owids)
+            self.widlist.append(tuple(wids))
+
 
         ir += 1
         self.add_subtitle(panel, sizer, ir, 'Additional Counters')
@@ -144,7 +161,20 @@ class DetectorFrame(wx.Frame) :
             sizer.Add(plugin, 0, LEFT, 0)
             wids = [plugin]
         elif kind == 'mca':
-            print 'mca::'
+            sizer.Add(SimpleText(pane, '#ROIs=', size=(80, -1)), 0,  LEFT, 0)
+            nrois = FloatCtrl(pane, value=opts.get('nrois', 32),
+                              size=(25, -1), precision=0, minval=0)
+            sizer.Add(nrois, 0, LEFT, 0)
+            sizer.Add(SimpleText(pane, 'Use Sum/Net:', size=(120, -1)), 0,  LEFT, 0)
+            val = {True:1, False:0}[opts.get('use_net', False)]
+            use_net = YesNo(pane, choices=('Sum', 'Net'), size=(75, -1))
+            sizer.Add(use_net, 0,  LEFT, 0)
+            sizer.Add(SimpleText(pane, 'Save Full Spectra:', size=(120, -1)), 0,  LEFT, 0)
+            val = {True:1, False:0}[opts.get('use_full', False)]
+            use_full = YesNo(pane, size=(75, -1))
+            sizer.Add(use_full, 0,  LEFT, 0)
+            wids = [nrois, use_net, use_full]
+
         elif kind.startswith('multi'):
             sizer.Add(SimpleText(pane, '#MCAs=', size=(80, -1)), 0,  LEFT, 0)
             nchan = FloatCtrl(pane, value=opts.get('nmcas', 4),
@@ -187,8 +217,11 @@ class DetectorFrame(wx.Frame) :
         pack(bpanel, sizer)
         return bpanel
 
-    def onNewDetector(self, event=None):
-        print 'frame to add new detector'
+    def onView(self, event=None):
+        print 'list all triggers, list all counters with add/remove button'
+
+    def onNewDetector(self, event=None, row=0):
+        print 'add new detector ', row
 
     def onOK(self, event=None):
         step_pos = OrderedDict()
