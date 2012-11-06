@@ -11,6 +11,7 @@ from .gui_utils import add_button, add_choice, pack, SimpleText, FloatCtrl
 from .pvconnector import PVNameCtrl
 
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+CEN  = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 
 DET_CHOICES = ('scaler', 'single mca', 'multimca', 'areaDetector')
 AD_File_plugins = ('None','TIFF1', 'JPEG1', 'NetCDF1',
@@ -31,8 +32,8 @@ class DetectorFrame(wx.Frame) :
         wx.Frame.__init__(self, None, -1, 'Epics Scanning: Detector Setup')
         self.SetFont(self.Font10)
 
-        sizer = wx.GridBagSizer(12, 4)
-        panel = scrolled.ScrolledPanel(self, size=(725, 500))
+        sizer = wx.GridBagSizer(12, 5)
+        panel = scrolled.ScrolledPanel(self, size=(750, 525))
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
 
@@ -42,12 +43,15 @@ class DetectorFrame(wx.Frame) :
 
         sizer.Add(title,        (0, 0), (1, 1), LEFT|wx.ALL, 2)
 
-        add_new = add_button(panel, 'View all Triggers and Counters',     size=(120, -1),
-                            action=self.onView)
-        sizer.Add(add_new,      (0, 2), (1, 2), LEFT, 2)
+        add_new = add_button(panel, 'Show all Triggers and Counters',
+                             size=(250, -1), action=self.onView)
+        sizer.Add(add_new,      (0, 1), (1, 2), LEFT, 2)
 
         ir = 1
-        self.add_subtitle(panel, sizer, ir, 'Available Detectors')
+        sizer.Add(self.add_subtitle(panel, 'Available Detectors'),
+                  (ir, 0),  (1, 5),  LEFT, 1)
+        
+    
         ir +=1
         sizer.Add(SimpleText(panel, label='Kind',  size=(75, -1)),
                   (ir, 0), (1, 1), LEFT, 1)
@@ -58,39 +62,39 @@ class DetectorFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, label='Options:', size=(100, -1)),
                   (ir, 3), (1, 1), LEFT, 1)
         self.widlist = []
+        
         for key, value in self.config.detectors.items():
             ir +=1
             pvname, opts = value
-            desc   = SimpleText(panel, label=opts['kind'].title(), size=(100, -1))
+            desc   = SimpleText(panel, label=opts['kind'].title().strip(), size=(125, -1))
             pvctrl = PVNameCtrl(panel, value=pvname, pvlist=self.pvlist, size=(175, -1))
             use    = YesNo(panel)
-            sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
+            sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             opanel, owids = self.opts_panel(panel, opts)
             sizer.Add(opanel, (ir, 3), (1, 1), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 1)
-            wids = ['detectors', desc, pvctrl, use]
+            wids = ['det', ir, desc, pvctrl, use]
             wids.extend(owids)
-            self.widlist.append(tuple(wids))
+            self.widlist.append(wids)
 
         # select a new detector
-        ir += 1
         for i in range(2):
             ir +=1
-            desc   = add_choice(panel, DET_CHOICES, size=(125, -1),
-                                action=Closure(self.onNewDetector, row=ir))
-            pvctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
+            desc   = add_choice(panel, DET_CHOICES, size=(125, -1))
+            pvctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist,
+                                action=Closure(self.onNewDetector, row=ir),
+                                size=(175, -1))
             use    = YesNo(panel)
-            sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
+            sizer.Add(desc,   (ir, 0), (1, 1), CEN, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
-            wids = ['newdetector', ir, desc, pvctrl, use]
-            wids.extend(owids)
-            self.widlist.append(tuple(wids))
-
+            wids = ['det', ir, desc, pvctrl, use]
+            self.widlist.append(wids)
 
         ir += 1
-        self.add_subtitle(panel, sizer, ir, 'Additional Counters')
+        sizer.Add(self.add_subtitle(panel, 'Additional Counters'),
+                  (ir, 0),  (1, 5),  LEFT, 1)
 
         ###
         ir += 1
@@ -100,7 +104,7 @@ class DetectorFrame(wx.Frame) :
                   (ir, 1), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='Use?', size=(100, -1)),
                   (ir, 2), (1, 2), LEFT, 1)
-
+ 
         for label, pv in self.config.counters.items():
             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
             pvctrl = PVNameCtrl(panel, value=pv, pvlist=self.pvlist, size=(175, -1))
@@ -111,7 +115,7 @@ class DetectorFrame(wx.Frame) :
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             self.widlist.append(('counters', desc, pvctrl, use))
 
-        for i in range(4):
+        for i in range(3):
             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
             pvctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
             use     = YesNo(panel)
@@ -121,12 +125,8 @@ class DetectorFrame(wx.Frame) :
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             self.widlist.append(('counters', desc, pvctrl, use))
         ###
-
         ir += 1
         sizer.Add(self.make_buttons(panel), (ir, 0), (1, 3), wx.ALIGN_CENTER|wx.GROW, 1)
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(350, 5), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), wx.ALIGN_LEFT|wx.GROW|wx.ALL, 1)
 
         pack(panel, sizer)
 
@@ -197,13 +197,22 @@ class DetectorFrame(wx.Frame) :
         pack(pane, sizer)
         return pane, wids
 
-    def add_subtitle(self, panel, sizer, row, text):
+    def add_OLsubtitle(self, panel, sizer, row, text):
         sizer.Add(wx.StaticLine(panel, size=(50, 2), style=wx.LI_HORIZONTAL),
                   (row, 0), (1, 1), wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.GROW, 3)
         sizer.Add(SimpleText(panel, text,  colour='#333377'),
                   (row, 1), (1, 1), wx.ALIGN_LEFT|wx.GROW|wx.ALL, 3)
         sizer.Add(wx.StaticLine(panel, size=(50, 2), style=wx.LI_HORIZONTAL),
                   (row, 2), (1, 2), wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.GROW, 3)
+
+    def add_subtitle(self, panel, text): 
+        p = wx.Panel(panel)
+        s = wx.BoxSizer(wx.HORIZONTAL)
+        s.Add(wx.StaticLine(p, size=(120, 3), style=wx.LI_HORIZONTAL), 0, LEFT, 5)
+        s.Add(SimpleText(p, text,  colour='#333377'),  0, LEFT, 5)
+        s.Add(wx.StaticLine(p, size=(260, 3), style=wx.LI_HORIZONTAL), 1, LEFT, 5)
+        pack(p, s)
+        return p
 
 
     def make_buttons(self, panel):
@@ -220,7 +229,7 @@ class DetectorFrame(wx.Frame) :
     def onView(self, event=None):
         print 'list all triggers, list all counters with add/remove button'
 
-    def onNewDetector(self, event=None, row=0):
+    def onNewDetector(self, event=None, **kws):
         print 'add new detector ', row
 
     def onOK(self, event=None):

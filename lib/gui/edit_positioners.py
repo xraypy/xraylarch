@@ -10,6 +10,7 @@ from .gui_utils import GUIColors, set_font_with_children, YesNo
 from .gui_utils import add_button, pack, SimpleText
 from .pvconnector import PVNameCtrl
 
+LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 class PositionerFrame(wx.Frame) :
     """Frame to Setup Scan Positioners"""
     def __init__(self, parent=None, pos=(-1, -1),
@@ -39,11 +40,12 @@ class PositionerFrame(wx.Frame) :
 
         # title row
         title = SimpleText(panel, 'Positioners Setup',  font=titlefont,
-                           minsize=(130, -1),   colour=self.colors.title, style=tstyle)
+                           colour=self.colors.title, style=tstyle)
 
-        sizer.Add(title,        (0, 1), (1, 3), labstyle|wx.ALL, 0)
+        sizer.Add(title,        (0, 0), (1, 3), LEFT, 5)
         ir = 1
-        self.add_subtitle(panel, sizer, ir, 'Linear/Mesh Scan Positioners')
+        sizer.Add(self.add_subtitle(panel, 'Linear/Mesh Scan Positioners'),
+                  (ir, 0),  (1, 4),  LEFT, 1)
         ir += 1
         sizer.Add(SimpleText(panel, label='Description', size=(175, -1)),
                   (ir, 0), (1, 1), rlabstyle, 2)
@@ -79,7 +81,8 @@ class PositionerFrame(wx.Frame) :
 
         # xafs
         ir += 1
-        self.add_subtitle(panel, sizer, ir, 'Energy for XAFS Scans')
+        sizer.Add(self.add_subtitle(panel, 'Energy for XAFS Scans'), 
+                  (ir, 0),  (1, 4),  LEFT, 1)
 
         drive_pv = self.config.xafs['energy_drive']
         read_pv = self.config.xafs['energy_read']
@@ -94,7 +97,8 @@ class PositionerFrame(wx.Frame) :
 
         # slew scans
         ir += 1
-        self.add_subtitle(panel, sizer, ir, 'Slew Scan Positioners')
+        sizer.Add(self.add_subtitle(panel, 'Slew Scan Positioners'), 
+                  (ir, 0),  (1, 4),  LEFT, 1)
 
         for label, pvs in self.config.slewscan_positioners.items():
             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
@@ -119,13 +123,13 @@ class PositionerFrame(wx.Frame) :
             self.widlist.append(('slewscan', desc, pvctrl, rdctrl, None))
 
         ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(350, 5), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), wx.ALIGN_LEFT|wx.GROW|wx.ALL, 3)
+        sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 4), wx.ALIGN_LEFT|wx.EXPAND, 3)
         #
         ir += 1
         sizer.Add(self.make_buttons(panel), (ir, 0), (1, 3), wx.ALIGN_CENTER|wx.GROW, 3)
         ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(350, 5), style=wx.LI_HORIZONTAL),
+        sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
                   (ir, 0), (1, 4), wx.ALIGN_LEFT|wx.GROW|wx.ALL, 3)
 
         pack(panel, sizer)
@@ -139,13 +143,14 @@ class PositionerFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-    def add_subtitle(self, panel, sizer, row, text):
-        sizer.Add(wx.StaticLine(panel, size=(50, 2), style=wx.LI_HORIZONTAL),
-                  (row, 0), (1, 1), wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.GROW, 3)
-        sizer.Add(SimpleText(panel, text,  colour='#333377'),
-                  (row, 1), (1, 1), wx.ALIGN_LEFT|wx.GROW|wx.ALL, 3)
-        sizer.Add(wx.StaticLine(panel, size=(50, 2), style=wx.LI_HORIZONTAL),
-                  (row, 2), (1, 2), wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.GROW, 3)
+    def add_subtitle(self, panel, text): 
+        p = wx.Panel(panel)
+        s = wx.BoxSizer(wx.HORIZONTAL)
+        s.Add(wx.StaticLine(p, size=(120, 3), style=wx.LI_HORIZONTAL), 0, LEFT, 5)
+        s.Add(SimpleText(p, text,  colour='#333377'),  0, LEFT, 5)
+        s.Add(wx.StaticLine(p, size=(200, 3), style=wx.LI_HORIZONTAL), 1, LEFT, 5)
+        pack(p, s)
+        return p
 
     def make_buttons(self, panel):
         bpanel = wx.Panel(panel, size=(200, 25))
