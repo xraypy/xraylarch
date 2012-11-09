@@ -250,23 +250,25 @@ function as above::
 contents::
 
     larch> show(g)
-    == Group: 3 symbols ==
+    == Group 0x1b8cbfb0: 3 symbols ==
       data: array<shape=(100,), type=dtype('int32')>
       name: 'here is a string'
       x: 1002.8
 
-The :func:`group` function can take arguments of attribute names and
-values, so that this group could have been created with a single call::
+(The **'0x1b8cbfb0'** is discussed in more detail below in
+:ref:`tut-objectids_sec`).  The :func:`group` function can take arguments
+of attribute names and values, so that this group could have been created
+with a single call::
 
     larch> g = group(x=1002.8, name='here is a string', data=arange(100))
 
-Many Larch functions will return groups or take a 'group' argument to write
-data into.  For example, the built-in functions that reads data from an
-external file will likely organize that data into a group and that group
-perhaps something like::
+Many Larch functions act on groups, either returning groups, expecting
+groups as certain arguments, or taking a 'group' argument to write data
+into.  For example, the built-in functions that read data from an external
+files will likely organize that data into a group and that group perhaps
+something like::
 
     larch> cu = read_ascii('cu_150k.xmu')
-
 
 Builtin Larch Groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -383,7 +385,8 @@ appending to it with the 'append' method::
 
 All lists will have an 'append' method, as well as several others:
 
-    * count -- to return the number of times a particular element occurss in the list
+    * append -- add an element to the end of the list
+    * count -- to return the number of times a particular element occurs in the list
     * extend -- to extend a list with another list
     * index -- to find the first occurance of an element
     * insert -- to insert an element in a particular place.
@@ -599,19 +602,103 @@ You can also add more elements to a dictionary by assigning to a new key::
     larch> atomic_weight['B']  = 10.811
     larch> atomic_weight['C']  = 12.01
 
-Dictionaries have several methods, such as to return all the keys or all
-the values, with::
+Dictionaries have several methods.  These include
+
+    * clear -- remove all elements from a dictionary.
+    * copy -- make a copy of a dictionary.
+    * get -- get an element by name.
+    * has_key -- return whether a dictionary has a key.
+    * items -- return a list of (key, value) tuples
+    * keys  -- return a list of keys.
+    * values -- return a list of values.
+    * pop -- remove an element by key, return the value.
+    * popitem -- remove the "next" item, return (key, value)
+    * update -- add or overwrite items from another dictionary.
+
+For example:
 
     larch> atomic_weight.keys()
     ['Be', 'C', 'B', 'H', 'Li', 'He']
     larch> atomic_weight.values()
     [9.0120000000000005, 12.01, 10.811, 1.008, 6.9000000000000004, 4.0026000000000002]
 
-Note that the keys and values are not in the order they were entered in,
-but do have the same order.
+Note that the keys and values are not in the order they were entered.  If
+you add more elements to the dictionary, the new order can be unrelated to
+the old order.  What is guaranteed is that the order of the list of keys
+will always match the order of the list of values.
 
 As with lists, dictionaries are mutable, and the values in a dictionary can
 be any object, including other lists and dictionaries, so that a dictionary
 can end up with a very complex structure.  Dictionaries are quite useful,
 and are in fact used throughout python.
+
+.. _tut-objectids_sec:
+
+Object identities, copying, and equality vs. equivalence
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+OK, this may be a bit advanced for a section in a *tutorial*, but there are
+a few important topics we need to make about objects, groups, and the idea
+of *mutability* discussed above.  Though it may at first pass seem
+surprising, these points are all related, and will come up several times in
+this document and in your use of Larch.  Those familiar with Fortran, C, or
+Java programming may need to read this more carefully, as Larch and Python
+actually work quite differently from those languages.  What we're aiming to
+cover here includes:
+
+  * what variable assignment really means.
+  * mutable and immutable objects.
+  * object identity.
+  * the difference between equality and equivalence.
+
+As mentioned above, each named quantity in Larch is simply a Python object
+(for the C, C++, and Java programmers, every variable is reference or
+pointer).  Assignment to a Larch variable as with::
+
+    larch> w = 1 + 2
+    larch> x = 'a string'
+    larch> y = ['a', 'b', 'c', 'd']
+    larch> z = some_function(3)
+
+first determines the *value* from the right-hand-side of the expression
+(1+2, 'a string', a list, and the return value of some_function()) then
+assigns the variable *name* (w, x, y, z) to point to the corresponding
+value.  Larch doesn't pre-assign variable names so that 'w' there can only
+ever hold an integer -- you can change not only its value but the *type* of
+data its pointing to::
+
+    larch> w = 3.25  # now a floating point number
+    larch> w = [1, 2, 3]  # now a list
+
+
+For this reason, a variable name is best thought of as something very
+different from the value it points to.  Of course, it is obvious when two
+different variable names are different, because the names are different.
+It is less clear whether the value the variables hold are different.
+
+Values of simple types (integer, float, string, tuple, and a few other
+builtin types) are said to be **immutable** --  the value itself cannot
+change.   You can reassign a name to a different value, but::
+
+    larch> w = 3.25
+    larch> w = 4.68
+
+doesn't change the value of 3.25.  Assignment to simple types then can be
+thought of as essentially making a fresh value for the name to point each
+time an assignment is made.  This isn't exactly true because Python sets
+pre-allocates small integers so that it is not making a new integer object
+every time you assign a number to 1, but it's a reasonable approximation
+for now.
+
+Several object types such as lists, dictionaries, arrays, and groups, all
+are meant to changeable after they are created: they are **mutable**.  That
+is, even after creating a list, you can append an element to it or you can
+remove an item from it, and so on.  These actions changes the *value* that
+the *name* points to.
+
+to the own **identity**, which you
+
+Two variables can point to the same object.
+< more >
+
 
