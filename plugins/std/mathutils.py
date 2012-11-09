@@ -21,6 +21,13 @@ def _deriv(arr, _larch=None, **kws):
     return np.gradient(arr)
 _deriv.__doc__ = np.gradient.__doc__
 
+def as_ndarray(obj):
+    """make sure a float, int, list of floats or ints,
+    or tuple of floats or ints, acts as a numpy array
+    """
+    if isinstance(obj, (float, int)):
+        return np.array([obj])
+    return np.asarray(obj)
 
 def index_of(array, value):
     """return index of array *at or below* value
@@ -103,6 +110,7 @@ def registerLarchPlugin():
     return ('_math', {'linregress': linregress,
                       'polyfit': polyfit,
                       'realimag': realimag,
+                      'as_ndarray': as_ndarray,
                       'complex_phase': complex_phase,
                       'deriv': _deriv,
                       'remove_dups': remove_dups,
