@@ -47,41 +47,42 @@ class EpicsPVList(object):
         self.etimer = wx.Timer(parent)
         parent.Bind(wx.EVT_TIMER, self.onTimer, self.etimer)
         self.etimer.Start(75)
-        
+
     def onTimer(self, event=None):
         "timer event handler: looks for in_progress, may timeout"
         time.sleep(0.001)
-        print 'epics timer poll' ,  len(self.in_progress) 
-        if len(self.in_progress) == 0:            
+        # print 'epics timer poll' ,  len(self.in_progress)
+        if len(self.in_progress) == 0:
             return
-        for pvname in self.in_progress:
-            print 'waiting for connect: ', pvname
-            self.__connect(pvname)
-            if time.time() - self.in_progress[pvname][2] > self.timeout:
-                print 'timed out waiting for ', pvname
-                self.in_progress.pop(pvname)
+        try:
+            for pvname in self.in_progress:
+                # print 'waiting for connect: ', pvname
+                self.__connect(pvname)
+                if time.time() - self.in_progress[pvname][2] > self.timeout:
+                    self.in_progress.pop(pvname)
+        except:
+            pass
 
     @EpicsFunction
     def connect_pv(self, pvname, wid=None, action=None):
         """try to connect epics PV, executing
         action(wid=wid, pvname=pvname, pv=pv)
         """
-        print 'Connect pv ', pvname, wid, action
-        print ' inprogress  = ', len(self.in_progress)
+        # print ' inprogress  = ', len(self.in_progress)
         if pvname is None or len(pvname) < 1:
             return
         if pvname not in self.in_progress:
             self.pvs[pvname] = epics.PV(pvname)
             self.in_progress[pvname] = (wid, action, time.time())
-            
+
     @EpicsFunction
     def __connect(self, pvname):
         """if a new epics PV has connected, run the requested action"""
-        print ' __connect!! ', pvname
+        # print ' __connect!! ', pvname
         if pvname not in self.pvs:
-            pv = self.pvs[pvname] = epics.PV(pvname)
-        else:
-            self.pvs[pvname].poll()
+            self.pvs[pvname] = epics.PV(pvname)
+        pv = self.pvs[pvname]
+        time.sleep(0.002)
 
         if not self.pvs[pvname].connected:
             return
@@ -91,5 +92,6 @@ class EpicsPVList(object):
         except KeyError:
             wid, action, itime = None, None, 0
         pv.get_ctrlvars()
+        print 'PV connected: ', pv
         if hasattr(action, '__call__'):
             action(wid=wid, pvname=pvname, pv=self.pvs[pvname])

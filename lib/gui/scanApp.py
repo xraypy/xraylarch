@@ -53,6 +53,7 @@ from .gui_utils import pack, add_button, add_menu, add_choice, add_menu
 # from mapper import mapper
 
 from ..file_utils import new_filename, increment_filename, nativepath
+from ..ordereddict import OrderedDict
 from ..scan_config import ScanConfig
 
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
@@ -75,24 +76,23 @@ class ScanFrame(wx.Frame):
     _cnf_default  = "scan.cnf"
 
     def __init__(self, conffile=None,  **kwds):
+
         if conffile is None:
             conffile = self._ini_default
         self.conffile = conffile
-        self.config = ScanConfig(conffile)
+
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
 
         self.pvlist = EpicsPVList(self)
-#         self.etimer = wx.Timer(self)
-#         self.Bind(wx.EVT_TIMER, self.onEpicsTimer, self.etimer)
-#         self.etimer.Start(75)
-# 
+        self.detectors  =  OrderedDict()  # list of available detectors and whether to use them
+        self.extra_counters = OrderedDict() # list of extra counters and whether to use them
+        self.config = ScanConfig(conffile)
 
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font11=wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-
 
         self.SetTitle("Epics Scans")
         self.SetSize((700, 575))
@@ -163,7 +163,7 @@ class ScanFrame(wx.Frame):
         bpanel.SetSizer(bsizer)
         bsizer.Fit(bpanel)
         wx.CallAfter(self.init_larch)
-        wx.CallAfter(self.init_epics)
+        wx.CallAfter(self.connect_epics)
         sizer.Add(bpanel, 0, ALL_CEN, 5)
         self.SetSizer(sizer)
         sizer.Fit(self)
@@ -174,20 +174,20 @@ class ScanFrame(wx.Frame):
         self._larch = larch.Interpreter()
         for span in self.scanpanels:
             span.larch = self._larch
-        print 'initialized larch in %.3f sec', (time.time()-t0)
-        
-    def init_epics(self):
+        print 'initialized larch in %.3f sec' % (time.time()-t0)
+
+    def connect_epics(self):
         for desc, pvname in self.config.positioners.items():
             for j in pvname: self.pvlist.connect_pv(j)
         for desc, pvname in self.config.extra_pvs.items():
             self.pvlist.connect_pv(pvname)
-
+        # configure detectors/ extra_counters here
 
     def onEpicsTimer(self, event=None):
         "timer event handler: looks for in_progress, may timeout"
         print 'epics timer event'
         # self.pvlist.poll()
-#         
+#
 #         if len(self.in_progress) == 0:
 #             return
 #         for pvname in self.in_progress:
@@ -196,7 +196,7 @@ class ScanFrame(wx.Frame):
 #             if time.time() - self.in_progress[pvname][2] > self.timeout:
 #                 print 'timed out waiting for ', pvname
 #                 self.in_progress.pop(pvname)
-# 
+#
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
@@ -265,7 +265,10 @@ class ScanFrame(wx.Frame):
                         scanpanels=self.scanpanels)
 
     def onSetupDetectors(self, evt=None):
-        DetectorFrame(self, config=self.config, pvlist=self.pvlist)
+        DetectorFrame(self, config=self.config,
+                      pvlist=self.pvlist,
+                      detectors=self.detectors,
+                      extra_counters=self.extra_counters)
 
     def onFolderSelect(self,evt):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
@@ -285,7 +288,9 @@ class ScanFrame(wx.Frame):
         print 'on SaveScan Def'
 
     def onReadScanDef(self, evt=None):
-        print 'on ReadScan Def'
+        print 'on ReadScan Def event (for a particular scan)'
+
+
 
     def onSaveSettings(self, evt=None):
         fout = self.conffile
@@ -311,6 +316,7 @@ class ScanFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             self.config.Read(path)
+            print 'read settings - should run init_epics to redefine self.detectors....'
             for p in self.scanpanels:
                 p.use_config(self.config)
         dlg.Destroy()

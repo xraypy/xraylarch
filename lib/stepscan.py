@@ -200,8 +200,6 @@ class StepScan(object):
         if (isinstance(counter, (Counter, DeviceCounter)) and
             counter not in self.counters):
             self.counters.append(counter)
-        else:
-            print 'Cannot add Counter? ', counter
         self.verified = False
 
     def add_trigger(self, trigger, label=None, value=1):
@@ -211,8 +209,6 @@ class StepScan(object):
         if (isinstance(trigger, Trigger) and
             trigger not in self.triggers):
             self.triggers.append(trigger)
-        else:
-            print 'Cannot add Trigger? ', trigger
         self.verified = False
 
     def add_extra_pvs(self, extra_pvs):

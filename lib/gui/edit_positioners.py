@@ -81,7 +81,7 @@ class PositionerFrame(wx.Frame) :
 
         # xafs
         ir += 1
-        sizer.Add(self.add_subtitle(panel, 'Energy for XAFS Scans'), 
+        sizer.Add(self.add_subtitle(panel, 'Energy for XAFS Scans'),
                   (ir, 0),  (1, 4),  LEFT, 1)
 
         drive_pv = self.config.xafs['energy_drive']
@@ -97,7 +97,7 @@ class PositionerFrame(wx.Frame) :
 
         # slew scans
         ir += 1
-        sizer.Add(self.add_subtitle(panel, 'Slew Scan Positioners'), 
+        sizer.Add(self.add_subtitle(panel, 'Slew Scan Positioners'),
                   (ir, 0),  (1, 4),  LEFT, 1)
 
         for label, pvs in self.config.slewscan_positioners.items():
@@ -143,7 +143,7 @@ class PositionerFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-    def add_subtitle(self, panel, text): 
+    def add_subtitle(self, panel, text):
         p = wx.Panel(panel)
         s = wx.BoxSizer(wx.HORIZONTAL)
         s.Add(wx.StaticLine(p, size=(120, 3), style=wx.LI_HORIZONTAL), 0, LEFT, 5)
@@ -155,15 +155,15 @@ class PositionerFrame(wx.Frame) :
     def make_buttons(self, panel):
         bpanel = wx.Panel(panel, size=(200, 25))
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        _ok    = add_button(bpanel, 'OK',     size=(70, -1),
-                            action=self.onOK)
-        _cancel = add_button(bpanel, 'Cancel', size=(70, -1), action=self.onCancel)
+        _ok    = add_button(bpanel, 'Apply',     size=(70, -1),
+                            action=self.onApply)
+        _cancel = add_button(bpanel, 'Close', size=(70, -1), action=self.onClose)
         sizer.Add(_ok,     0, wx.ALIGN_LEFT,  2)
         sizer.Add(_cancel, 0, wx.ALIGN_RIGHT,  2)
         pack(bpanel, sizer)
         return bpanel
 
-    def onOK(self, event=None):
+    def onApply(self, event=None):
         step_pos = OrderedDict()
         slew_pos = OrderedDict()
         energy_drive= self.config.xafs['energy_drive']
@@ -191,6 +191,6 @@ class PositionerFrame(wx.Frame) :
             p.use_config(self.config)
         self.Destroy()
 
-    def onCancel(self, event=None):
+    def onClose(self, event=None):
         self.Destroy()
 
