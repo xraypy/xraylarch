@@ -274,6 +274,17 @@ class Closure:
             return self.func(*self.args, **self.kws)
 
 
+class TextInput(wx.TextCtrl):
+    "simple text control"
+    def __init__(self, parent, value, action=None,
+                 font=None, colour=None, bgcolour=None,
+                 style=wx.ALIGN_CENTRE,  **kws):
+
+        wx.TextCtrl.__init__(self, parent, -1,
+                               label=label, style=style, **kws)
+
+
+
 class FloatCtrl(wx.TextCtrl):
     """ Numerical Float Control::
     a wx.TextCtrl that allows only numerical input, can take a precision argument
@@ -518,23 +529,23 @@ class SimpleText(wx.StaticText):
 class HyperText(wx.StaticText):
     """HyperText is a simple extension of wx.StaticText that
 
-       1. adds an underscore to the lable to appear to be a hyperlink
+       1. adds an underscore to the label to appear to be a hyperlink
        2. performs the supplied action on Left-Up button events
     """
-    def  __init__(self, parent, label, action=None, colour=(50, 50, 180)):
+    def  __init__(self, parent, label, action=None, colour=(50, 50, 180), **kws):
         self.action = action
-        wx.StaticText.__init__(self, parent, -1, label=label)
-        font  = self.GetFont() # .Bold()
+        wx.StaticText.__init__(self, parent, -1, label=label, **kws)
+        font  = self.GetFont().Bold()
         font.SetUnderlined(True)
         self.SetFont(font)
         self.SetForegroundColour(colour)
         self.Bind(wx.EVT_LEFT_UP, self.OnSelect)
 
-    def OnSelect(self, evt=None):
+    def OnSelect(self, event=None):
         "Left-Up Event Handler"
         if self.action is not None:
-            self.action(evt=evt, label=self.GetLabel())
-        evt.Skip()
+            self.action(event=event, label=self.GetLabel())
+        event.Skip()
 
 class DateTimeCtrl(object):
     """
