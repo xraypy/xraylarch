@@ -87,7 +87,7 @@ import numpy as np
 from epics import PV, poll
 
 from .detectors import Counter, DeviceCounter, Trigger
-from .outputfile import ASCIIScanFile
+from .datafile import ASCIIScanFile
 
 class ScanMessenger(threading.Thread):
     """ Provides a way to run user-supplied functions per scan point,
@@ -190,7 +190,8 @@ class StepScan(object):
         if comments is not None:
             self.comments = comments
 
-        return creator(name=self.filename,     mode=self.filemode,
+        return creator(name=self.filename,
+                       mode=self.filemode,
                        comments=self.comments, scan=self)
 
     def add_counter(self, counter, label=None):

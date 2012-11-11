@@ -11,7 +11,7 @@ from .detectors import Trigger, Counter, MotorCounter, get_detector
 from .detectors import (SimpleDetector, ScalerDetector, McaDetector,
                        MultiMcaDetector, AreaDetector)
 from .positioner import Positioner
-from .outputfile import ASCIIScanFile
+from .datafile import ASCIIScanFile
 
 from .stepscan import StepScan
 from .xafs_scan import XAFS_Scan, etok, ktoe
