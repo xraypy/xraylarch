@@ -82,14 +82,14 @@ class DeviceCounter():
     """Generic Multi-PV Counter to be base class for
     ScalerCounter, MCACounter, etc
     """
-    invalid_device_msg = 'DeviceCounter of incorrect type'
+    invalid_device_msg = 'DeviceCounter of incorrect Record Type'
     def __init__(self, prefix, rtype=None, fields=None, outpvs=None):
         if prefix.endswith('.VAL'):
             prefix = prefix[-4]
         self.prefix = prefix
         if rtype is not None:
             if not caget("%s.RTYP" % self.prefix) == rtype:
-                raise TypeError(invalid_device_msg)
+                raise TypeError(self.invalid_device_msg)
         self.outpvs = outpvs
         self.set_counters(fields)
 
@@ -130,15 +130,15 @@ class DeviceCounter():
 class MotorCounter(Counter):
     """Motor Counter: save Readback value
     """
-    invalid_device_msg = 'MotorCounter must use a motor'
+    invalid_device_msg = 'MotorCounter must use an Epics Motor'
     def __init__(self, prefix, label=None):
         pvname = '%s.RBV' % prefix
         if label is None:
             label = "%s(actual)" % caget('%s.DESC' % prefix)
-        Counter.__init__(self, pvname, label=label)
+        Counter.__init__(self, pvname, label=label, rtype='motor')
 
 class ScalerCounter(DeviceCounter):
-    invalid_device_msg = 'ScalerCounter must use a scaler'
+    invalid_device_msg = 'ScalerCounter must use an Epics Scaler'
     def __init__(self, prefix, outpvs=None, nchan=8,
                  use_calc=False,  use_unlabeled=False):
         DeviceCounter.__init__(self, prefix, rtype='scaler',
@@ -170,7 +170,7 @@ class DXPCounter(DeviceCounter):
 class McaCounter(DeviceCounter):
     """Simple MCA Counter: saves all ROIs (total or net) and, optionally full spectra
     """
-    invalid_device_msg = 'McaCounter must use a mca'
+    invalid_device_msg = 'McaCounter must use an Epics MCA'
     def __init__(self, prefix, outpvs=None, nrois=32,
                  use_net=False,  use_unlabeled=False, use_full=True):
         DeviceCounter.__init__(self, prefix, rtype='mca', outpvs=outpvs)
@@ -188,7 +188,7 @@ class McaCounter(DeviceCounter):
         self.set_counters(fields)
 
 class MultiMcaCounter(DeviceCounter):
-    invalid_device_msg = 'McaCounter must use a med'
+    invalid_device_msg = 'McaCounter must use an Epics Multi-Element MCA'
     _dxp_fields = (('InputCountRate', 'ICR'),
                    ('OutputCountRate', 'OCR'))
     def __init__(self, prefix, outpvs=None, nmcas=4, nrois=32,
@@ -210,25 +210,42 @@ class MultiMcaCounter(DeviceCounter):
                 ("PeakingTime (%s)" % dxp, "%s%s:PeakingTime" % (prefix, dxp))
                 ])
 
+        pvs = {}
+        t0 = time.time()
+        for imca in range(1, nmcas+1):
+            mca = 'mca%i' % imca
+            for i in range(nrois):
+                for suf in ('NM', 'HI'):
+                    pvname = '%s%s.R%i%s' % (prefix, mca, i, suf)
+                    pvs[pvname] = PV(pvname)
+
+        poll()
+        time.sleep(0.001)
+
         for i in range(nrois):
+            should_break = False
             for imca in range(1, nmcas+1):
                 mca = 'mca%i' % imca
-                dxp = 'dxp%i' % imca
-                roi = caget('%s%s.R%iNM' % (prefix, mca, i)).strip()
-                roi_hi  = caget('%s%s.R%iHI' % (prefix, mca, i))
+                namepv = '%s%s.R%iNM' % (prefix, mca, i)
+                rhipv  = '%s%s.R%iHI' % (prefix, mca, i)
+                roi    = pvs[namepv].get()
+                roi_hi = pvs[rhipv].get()
                 label = '%s (%s)'% (roi, mca)
+
                 if (len(roi) > 0 and roi_hi > 0) or use_unlabeled:
                     suff = '%s.R%i' % (mca, i)
                     if use_net:
                         suff = '%s.R%iN' %  (mca, i)
                     fields.append((suff, label))
                 if roi_hi < 1 and not search_all:
+                    should_break = True
                     break
-
+            if should_break:
+                break
         for dsuff, dname in self._dxp_fields:
             for imca in range(1, nmcas +1):
-                suff = '%s:%s' %  (dxpname, dsuff)
-                label = '%s (%s)'% (dname, dxpname)
+                suff = '%s:%s' %  (dname, dsuff)
+                label = '%s (%s)'% (dname, dname)
                 fields.append((suff, label)) # ... add dxp
 
         if use_full:
@@ -254,6 +271,12 @@ class DetectorMixin(Saveable):
         self.dwelltime_pv = None
         self.dwelltime = None
         self.extra_pvs = []
+        self._repr_extra = ''
+
+    def __repr__(self):
+        return "<%s: '%s', prefix='%s'%s>" % (self.__class__.__name__,
+                                              self.label, self.prefix,
+                                              self._repr_extra)
 
     def pre_scan(self, **kws):
         pass
@@ -290,6 +313,9 @@ class ScalerDetector(DetectorMixin):
         self.counters = self._counter.counters
         self.extra_pvs = [('scaler frequency', '%s.FREQ' % prefix),
                           ('scaler read_delay', '%s.DLY' % prefix)]
+        self._repr_extra = ', nchannels=%i, use_calc=%s' % (nchan,
+                                                            repr(use_calc))
+
         self.extra_pvs.extend(self._counter.extra_pvs)
 
     def pre_scan(self, scan=None, **kws):
@@ -319,10 +345,10 @@ class AreaDetector(DetectorMixin):
                                  label='Image Counter')]
         if file_plugin in self._valid_file_plugins:
             self.file_plugin = file_plugin
-            f_counter = Counter("%s%s:FileNumebr_RBV" % (prefix, file_pluging),
+            f_counter = Counter("%s%s:FileNumebr_RBV" % (prefix, file_plugin),
                                 label='File Counter')
             self.counters.append(f_counter)
-
+        self._repr_extra = ', file_plugin=%s' % repr(file_plugin)
 
     def pre_scan(self, scan=None, **kws):
         if (self.dwelltime is not None and
@@ -350,6 +376,7 @@ class AreaDetector(DetectorMixin):
 
 class McaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
+    repr_fmt = ', nrois=%i, use_net=%s, use_full=%s'
     def __init__(self, prefix, save_spectra=True, nrois=32, use_net=False,
                  use_full=False, **kws):
 
@@ -361,6 +388,7 @@ class McaDetector(DetectorMixin):
         self._counter = McaCounter(prefix, nrois=nrois, use_full=use_full,
                                    use_net=use_net)
         self.counters = self._counter.counters
+        self._repr_extra = self.repr_fmt % (nrois, repr(use_net), repr(use_full))
 
     def pre_scan(self, scan=None, **kws):
         if (self.dwelltime is not None and
@@ -370,6 +398,7 @@ class McaDetector(DetectorMixin):
 class MultiMcaDetector(DetectorMixin):
     trigger_suffix = 'EraseStart'
     collect_mode = 'CollectMode'
+    repr_fmt = ', nmcas=%i, nrois=%i, use_net=%s, use_full=%s'
 
     def __init__(self, prefix, label=None, nmcas=4, nrois=32,
                  search_all=False,  use_net=False,
@@ -390,6 +419,8 @@ class MultiMcaDetector(DetectorMixin):
 
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
+        self._repr_extra = self.repr_fmt % (nmcas, nrois,
+                                             repr(use_net), repr(use_full))
 
     def pre_scan(self, scan=None, **kws):
         if (self.dwelltime is not None and
@@ -427,4 +458,4 @@ def get_detector(name, kind=None, label=None, **kws):
         builder = AreaDetector
     elif kind in ('med', 'multimca'):
         builder = MultiMcaDetector
-    return builder(name, label=None, **kws)
+    return builder(name, label=label, **kws)

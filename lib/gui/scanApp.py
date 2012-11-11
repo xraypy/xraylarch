@@ -59,6 +59,9 @@ from ..scan_config import ScanConfig
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
                         SlewScanPanel,   XAFSScanPanel)
 
+from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
+                         MultiMcaDetector, AreaDetector, get_detector)
+
 from .pvconnector import PVNameCtrl, EpicsPVList
 from .edit_positioners import PositionerFrame
 from .edit_detectors import DetectorFrame
@@ -176,27 +179,21 @@ class ScanFrame(wx.Frame):
             span.larch = self._larch
         print 'initialized larch in %.3f sec' % (time.time()-t0)
 
+    @EpicsFunction
     def connect_epics(self):
+        t0 = time.time()
         for desc, pvname in self.config.positioners.items():
             for j in pvname: self.pvlist.connect_pv(j)
         for desc, pvname in self.config.extra_pvs.items():
             self.pvlist.connect_pv(pvname)
-        # configure detectors/ extra_counters here
-
-    def onEpicsTimer(self, event=None):
-        "timer event handler: looks for in_progress, may timeout"
-        print 'epics timer event'
-        # self.pvlist.poll()
-#
-#         if len(self.in_progress) == 0:
-#             return
-#         for pvname in self.in_progress:
-#             print 'waiting for connect: ', pvname
-#             self.__connect(pvname)
-#             if time.time() - self.in_progress[pvname][2] > self.timeout:
-#                 print 'timed out waiting for ', pvname
-#                 self.in_progress.pop(pvname)
-#
+        for desc, pvname in self.config.counters.items():
+            self.pvlist.connect_pv(pvname)
+        for label, val in self.config.detectors.items():
+            prefix, opts = val
+            opts['label'] = label
+            print 'det ', prefix, opts
+            self.detectors[label] = get_detector(prefix, **opts)
+        print 'connected to Epics PVs in %.3f sec' % (time.time()-t0)
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
