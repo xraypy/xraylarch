@@ -178,6 +178,17 @@ class ScanConfig(object):
                 else:
                     thissect[opt] = val
                 setattr(self, sect, thissect)
+        for key, val in self.positioners.items():
+            fi = []
+            if isinstance(val, (list, tuple)):
+                for v in val:
+                    if '.' not in v: v = '%s.VAL' % v
+                    fi.append(v)
+            else:
+                if '.' not in val:
+                    val = '%s.VAL' % val
+                fi = [val, val]
+            self.positioners[key] = tuple(fi)
 
     def Save(self, fname=None):
         "save config file"

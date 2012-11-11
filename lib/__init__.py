@@ -8,7 +8,7 @@ from . import ordereddict
 from .scan_config import ScanConfig
 
 from .detectors import Trigger, Counter, MotorCounter, get_detector
-from .detectors import (SimpleDetector, ScalerDetector,
+from .detectors import (SimpleDetector, ScalerDetector, McaDetector,
                        MultiMcaDetector, AreaDetector)
 from .positioner import Positioner
 from .outputfile import ASCIIScanFile

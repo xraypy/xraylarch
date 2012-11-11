@@ -36,7 +36,9 @@ class EpicsPVList(object):
     """a wx class to hold a list of PVs, and
     handle the connection of new PVs.
 
-    The main attribute is '.pvs', a dictionary of PVs, with pvname keys
+    The main attribute is '.pvs', a dictionary of PVs, with
+    pvname keys.
+
     The main way to use this is with the PVNameCtrl above
 
     """
@@ -51,7 +53,6 @@ class EpicsPVList(object):
     def onTimer(self, event=None):
         "timer event handler: looks for in_progress, may timeout"
         time.sleep(0.001)
-        # print 'epics timer poll' ,  len(self.in_progress)
         if len(self.in_progress) == 0:
             return
         try:
@@ -68,12 +69,20 @@ class EpicsPVList(object):
         """try to connect epics PV, executing
         action(wid=wid, pvname=pvname, pv=pv)
         """
-        # print ' inprogress  = ', len(self.in_progress)
         if pvname is None or len(pvname) < 1:
             return
+        if '.' not in pvname:
+            pvname = '%s.VAL' % pvname
         if pvname not in self.in_progress:
             self.pvs[pvname] = epics.PV(pvname)
             self.in_progress[pvname] = (wid, action, time.time())
+
+    @EpicsFunction
+    def add_pv(self, pv, wid=None, action=None):
+        """add an already connected PV to the pvlist"""
+        # print ' inprogress  = ', len(self.in_progress)
+        if isinstance(pv, epics.PV) and pv not in self.pvs:
+            self.pvs[pv.pvname] = pv
 
     @EpicsFunction
     def __connect(self, pvname):
@@ -92,6 +101,6 @@ class EpicsPVList(object):
         except KeyError:
             wid, action, itime = None, None, 0
         pv.get_ctrlvars()
-        print 'PV connected: ', pv
+        # print 'PV connected: ', pv
         if hasattr(action, '__call__'):
             action(wid=wid, pvname=pvname, pv=self.pvs[pvname])

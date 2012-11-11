@@ -57,17 +57,24 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         self.SetupScrolling()
         self._initialized = True
 
-    def setStepNpts(self, wids, label):
+    def setStepNpts(self, wids, label, fix_npts=False):
         "set step / npts for start/stop/step/npts list of widgets"
         start = wids[0].GetValue()
-        stop = wids[1].GetValue()
-        if label == 'npts':
+        stop  = wids[1].GetValue()
+        step = wids[2].GetValue()
+        if label == 'npts' or fix_npts:
             npts = max(2, wids[3].GetValue())
         else:
-            step = wids[2].GetValue()
-            npts = max(2, 1 + int(0.1 + abs(stop-start)/step))
-        wids[3].SetValue(npts, act=False)
+            try:
+                npts = max(2, 1 + int(0.1 + abs(stop-start)/abs(step)))
+            except ZeroDivisionError:
+                npts = 3
         wids[2].SetValue((stop-start)/(npts-1), act=False)
+        if not fix_npts:
+            try:
+                wids[3].SetValue(npts, act=False)
+            except AttributeError:
+                pass
 
     def top_widgets(self, panel, sizer, title, irow=1,
                     dwell_prec=3, dwell_value=1):
@@ -103,21 +110,23 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         sizer.Add(s2,      (irow, 0), (1, 4), LEFT, 2)
         return irow+1
 
-    def StartStopStepNpts(self, panel, i, npts=True, initvals=(-1,1,1,3)):
+    def StartStopStepNpts(self, panel, i, with_npts=True,
+                          initvals=(-1,1,1,3)):
         fsize = (95, -1)
         s0, s1, ds, ns = initvals
+
         start = FloatCtrl(panel, size=fsize, value=s0, act_on_losefocus=True,
                           action=Closure(self.onVal, index=i, label='start'))
         stop  = FloatCtrl(panel, size=fsize, value=s1, act_on_losefocus=True,
                           action=Closure(self.onVal, index=i, label='stop'))
         step  = FloatCtrl(panel, size=fsize, value=ds, act_on_losefocus=True,
                           action=Closure(self.onVal, index=i, label='step'))
-        if npts:
+        if with_npts:
             npts  = FloatCtrl(panel, precision=0,  value=ns, size=(50, -1),
                               act_on_losefocus=True,
                               action=Closure(self.onVal, index=i, label='npts'))
         else:
-            npts  = wx.StaticText(panel, -1, size=fsize, label='    1')
+            npts  = wx.StaticText(panel, -1, size=fsize, label=' ')
         return start, stop, step, npts
 
     def onVal(self, index=0, label=None, value=None, **kws):
@@ -130,10 +139,14 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                     offset = float(wids[2].GetLabel())
                 except:
                     offset = 0.0
+
                 if 1 == self.absrel.GetSelection(): # now relative (was absolute)
                     offset = -offset
+                print 'ON ABSREL ', offset
                 wids[3].SetValue(offset + wids[3].GetValue(), act=False)
                 wids[4].SetValue(offset + wids[4].GetValue(), act=False)
+
+                self.update_position_from_pv(index)
 
     def use_config(self, config):
         pass
@@ -177,7 +190,7 @@ class LinearScanPanel(GenericScanPanel):
             units = wx.StaticText(panel, -1, size=(30, -1), label='')
             cur = wx.StaticText(panel, -1, size=(80, -1), label='')
             start, stop, step, npts = self.StartStopStepNpts(panel, i,
-                                                             npts=(i==0))
+                                                             with_npts=(i==0))
 
             self.pos_settings.append((pos, units, cur, start, stop, step, npts))
             if i > 0:
@@ -201,14 +214,64 @@ class LinearScanPanel(GenericScanPanel):
 
         ir += 1
         self.layout(panel, sizer, ir)
+        self.update_position_from_pv(0)
+
 
     def onVal(self, index=0, label=None, value=None, **kws):
         if not self._initialized: return
-        if label in ('start', 'stop', 'step', 'npts'):
-            self.setStepNpts(self.pos_settings[index][3:], label)
+        npts = self.pos_settings[0][6]
+        wids = list(self.pos_settings[index][3:])
+
+        if index == 0:
+            self.setStepNpts(wids, label)
+            for index, w in enumerate(self.pos_settings[1:]):
+                if w[3].Enabled:
+                    wids = list(w[3:])
+                    wids[3] =  npts
+                    self.setStepNpts(wids, label, fix_npts=True)
+        else:
+            wids[3] = npts
+            self.setStepNpts(wids, label, fix_npts=True)
+
 
     def onPos(self, evt=None, index=0):
-        print 'On Position   ', index, evt
+        self.update_position_from_pv(index) # , name=evt.GetString())
+
+    @EpicsFunction
+    def update_position_from_pv(self, index, name=None):
+        if name is None:
+            name = self.pos_settings[index][0].GetStringSelection()
+
+        wids = self.pos_settings[index]
+        if name == 'None':
+            for i in (1, 2): wids[i].SetLabel('')
+            for i in (3, 4, 5): wids[i].Disable()
+            return
+        else:
+            for i in (3, 4, 5): wids[i].Enable()
+
+        pvnames = self.config.positioners[name]
+
+        if pvnames[0] not in self.pvlist.pvs:
+            self.pvlist.connect_pv(pvnames[0])
+            self.pvlist.connect_pv(pvnames[1])
+            return
+        pv1  = self.pvlist.pvs[pvnames[0]]
+        pv2  = self.pvlist.pvs[pvnames[1]]
+        hlim = pv1.upper_disp_limit
+        llim = pv1.lower_disp_limit
+        if hlim == llim:
+            hlim = llim = None
+        elif 1 == self.absrel.GetSelection(): # relative
+            hlim = hlim - pv1.value
+            llim = llim - pv1.value
+        wids[1].SetLabel(pv1.units)
+        wids[2].SetLabel(pv2.char_value)
+        for i in (3, 4):
+            wids[i].SetMin(llim)
+            wids[i].SetMax(hlim)
+            wids[i].SetPrecision(pv1.precision)
+
 
     def use_config(self, config):
         poslist = config.positioners.keys()
