@@ -48,6 +48,7 @@ class StepScanData(object):
         self.start_time = None
         self.stop_time = None
         self.data = []
+        self._valid = False
         if filename is not None:
             self.read(filename)
 
@@ -79,11 +80,10 @@ class StepScanData(object):
     def read(self, filename=None):
         if filename is not None:
             self.filename = filename
-        try:
-            fh = open(self.filename, 'r')
-        except IOError:
-            print 'cannot open file %s for read' % self.filename
-            return
+        self._valid = False
+        fh = open(self.filename, 'r')
+
+
         lines = fh.readlines()
         line0 = lines.pop(0)
         if not line0.startswith(FILETOP):
@@ -136,6 +136,7 @@ class StepScanData(object):
         #
         self.comments = '\n'.join(self.comments)
         self.data = np.array(self.data).transpose()
+        self._valid = True
 
 class ScanFile(object):
     """base Scan File -- intended to be inherited and
