@@ -31,8 +31,11 @@ from ..datafile import StepScanData
 
 from ..ordereddict import OrderedDict
 
-ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
-FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
+LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
+RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
+ALL_CEN =  wx.ALL|CEN
+
 
 FILE_WILDCARDS = "Scan Data Files(*.0*)|*.0*|Data Files(*.dat)|*.dat|All files (*.*)|*.*"
 
@@ -46,6 +49,7 @@ class PlotterFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, size=(600, 500),  **kwds)
 
+        self.data = None
         self.datafiles = {}
         self.filemap = {}
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -54,14 +58,14 @@ class PlotterFrame(wx.Frame):
         self.Font11=wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
 
         self.SetTitle("Step Scan Viewer")
-        self.SetSize((700, 575))
+        self.SetSize((750, 775))
         self.SetFont(self.Font11)
 
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
-        self.statusbar.SetStatusWidths([-3, -1])
-        statusbar_fields = ["Messages", "Status"]
+        self.statusbar.SetStatusWidths([-4, -1])
+        statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
@@ -84,9 +88,65 @@ class PlotterFrame(wx.Frame):
 
     def createDetailsPanel(self, parent):
         panel = wx.Panel(parent)
-        sizer = wx.GridBagSizer(8, 5)
-        title = SimpleText(panel, 'select arrays')
-        sizer.Add(title, (0, 0), (1, 5), ALL_CEN, 2)
+        sizer = wx.GridBagSizer(8, 15)
+        self.filename = SimpleText(panel, 'initializing...')
+        ir = 0
+        sizer.Add(self.filename, (ir, 0), (1, 12), ALL_CEN, 2)
+        # x-axis
+
+        self.x_choice = add_choice(panel, choices=[], size=(130, -1))
+        self.x_ops    = add_choice(panel, choices=('', 'log'), size=(120, -1))
+        # self.xchoice.SetItems(list of choices)
+        # self.xchoice.SetStringSelection(default string)
+
+        ir += 1
+        sizer.Add(SimpleText(panel, 'X = '), (ir, 1), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.x_ops,                (ir, 2), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.x_choice,             (ir, 4), (1, 1), RIGHT, 0)
+
+        self.y_ops1    = add_choice(panel, size=(120, -1),
+                                    choices=('', 'log', '-log', 'deriv', '-deriv',
+                                             'deriv(log', 'deriv(-log'))
+
+        self.y1_choice = add_choice(panel, choices=[], size=(130, -1))
+        self.y_ops2    = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
+        self.y2_choice = add_choice(panel, choices=[], size=(130, -1))
+        self.y_ops3    = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
+        self.y3_choice = add_choice(panel, choices=[], size=(130, -1))
+        self.y_ops1.SetSelection(0)
+        self.y_ops2.SetSelection(2)
+        self.y_ops3.SetSelection(3)
+
+        ir += 1
+        sizer.Add(SimpleText(panel, 'Y = '), (ir,  1), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y_ops1,               (ir,  2), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, '( ('),  (ir,  3), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y1_choice,            (ir,  4), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y_ops2,               (ir,  5), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y2_choice,            (ir,  6), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, ') '),   (ir,  7), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y_ops3,               (ir,  8), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y3_choice,            (ir,  9), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, ')'),    (ir, 10), (1, 1), ALL_CEN, 0)
+
+        self.plot_btn  = add_button(panel, "New Plot", action=self.onPlot)
+        self.oplot_btn = add_button(panel, "OverPlot", action=self.onOPlot)
+
+        ir += 1
+        sizer.Add(self.plot_btn,   (ir, 1), (1, 3), ALL_CEN, 2)
+        sizer.Add(self.oplot_btn,  (ir, 4), (1, 3), ALL_CEN, 2)
+
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(675, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 1), (1, 10), wx.ALIGN_CENTER)
+        ir += 1
+        sizer.Add(SimpleText(panel, 'Should add fitting options'),
+                  (ir, 1), (1, 10), wx.ALIGN_CENTER)
+
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(675, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 1), (1, 10), wx.ALIGN_CENTER)
+
         pack(panel, sizer)
         return panel
 
@@ -95,18 +155,49 @@ class PlotterFrame(wx.Frame):
         import larch
         self._larch = larch.Interpreter()
         print 'initialized larch in %.3f sec' % (time.time()-t0)
+        self.SetStatusText('ready')
+        self.filename.SetLabel('')
+
+    def onPlot(self, evt):    self.do_plot()
+
+    def onOPlot(self, evt):   self.do_plot(overplot=True)
+
+    def do_plot(self, overplot=False):
+        print ' Plot ', overplot
+        print self.x_choice.GetSelection()
+        if self.data is None:
+            self.SetStatus( 'cannot plot - no valid data')
 
     def ShowFile(self, evt=None, filename=None, **kws):
-        print 'show file details on rhs'
-        print evt
-        key = None
+        print 'show file details on rhs', evt, filename
+        if filename is None and hasattr(evt, 'GetStringSelection'):
+            filename = evt.GetStringSelection()
+
+        key = filename
         if filename in self.filemap:
             key = self.filemap[filename]
         if filename in self.datafiles:
             key = filename
-        print filename, key
-        dfile = self.datafiles[key]
-        print dfile
+
+        self.data = self.datafiles[key]
+
+        xcols, ycols = [], ['1']
+        for i, k in  enumerate(self.data.column_keys):
+            if k.startswith('p'):
+                xcols.append(self.data.column_names[i])
+            elif k.startswith('d'):
+                ycols.append(self.data.column_names[i])
+        ycols.extend(xcols)
+
+        self.filename.SetLabel(key)
+        self.x_choice.SetItems(xcols)
+        self.x_choice.SetSelection(0)
+        self.y1_choice.SetItems(ycols)
+        self.y1_choice.SetSelection(3)
+        self.y2_choice.SetItems(ycols)
+        self.y1_choice.SetSelection(4)
+        self.y3_choice.SetItems(ycols)
+        self.y1_choice.SetSelection(2)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
