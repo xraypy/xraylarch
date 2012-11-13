@@ -50,20 +50,21 @@ class PlotterFrame(wx.Frame):
 
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, None, -1, size=(600, 500),  **kwds)
+        wx.Frame.__init__(self, None, -1, size=(680, 600),  **kwds)
 
         self.data = None
         self.filemap = {}
         self.larch = None
 
-        self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font11=wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.Font10=wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.Font9 =wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
 
-        self.SetTitle("Step Scan Viewer")
-        self.SetSize((750, 775))
-        self.SetFont(self.Font11)
+        self.SetTitle("Step Scan Data File Viewer")
+        self.SetSize((850, 775))
+        self.SetFont(self.Font9)
 
         self.createMainPanel()
         self.createMenus()
@@ -93,14 +94,14 @@ class PlotterFrame(wx.Frame):
     def createDetailsPanel(self, parent):
         panel = wx.Panel(parent)
         panel.SetMinSize((600, 250))
-        sizer = wx.GridBagSizer(8, 15)
-        self.filename = SimpleText(panel, 'initializing...')
+        sizer = wx.GridBagSizer(8, 10)
+        self.title = SimpleText(panel, 'initializing...')
         ir = 0
-        sizer.Add(self.filename, (ir, 0), (1, 12), ALL_CEN, 2)
+        sizer.Add(self.title, (ir, 0), (1, 8), ALL_CEN, 2)
         # x-axis
 
-        self.x_choice = add_choice(panel, choices=[], size=(130, -1))
-        self.x_op     = add_choice(panel, choices=('', 'log'), size=(120, -1))
+        self.x_choice = add_choice(panel, choices=[], size=(120, -1))
+        self.x_op     = add_choice(panel, choices=('', 'log'), size=(80, -1))
         # self.xchoice.SetItems(list of choices)
         # self.xchoice.SetStringSelection(default string)
 
@@ -109,15 +110,15 @@ class PlotterFrame(wx.Frame):
         sizer.Add(self.x_op,                 (ir, 2), (1, 1), ALL_CEN, 0)
         sizer.Add(self.x_choice,             (ir, 4), (1, 1), RIGHT, 0)
 
-        self.y_op1     = add_choice(panel, size=(120, -1),
+        self.y_op1     = add_choice(panel, size=(80, -1),
                                     choices=('', 'log', '-log', 'deriv', '-deriv',
                                              'deriv(log', 'deriv(-log'))
 
-        self.y1_choice = add_choice(panel, choices=[], size=(130, -1))
-        self.y_op2     = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
-        self.y2_choice = add_choice(panel, choices=[], size=(130, -1))
-        self.y_op3     = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
-        self.y3_choice = add_choice(panel, choices=[], size=(130, -1))
+        self.y1_choice = add_choice(panel, choices=[], size=(120, -1))
+        self.y_op2     = add_choice(panel, choices=('+', '-', '*', '/'), size=(60, -1))
+        self.y2_choice = add_choice(panel, choices=[], size=(120, -1))
+        self.y_op3     = add_choice(panel, choices=('+', '-', '*', '/'), size=(60, -1))
+        self.y3_choice = add_choice(panel, choices=[], size=(120, -1))
         self.y_op1.SetSelection(0)
         self.y_op2.SetSelection(2)
         self.y_op3.SetSelection(3)
@@ -160,16 +161,11 @@ class PlotterFrame(wx.Frame):
         from larch import Interpreter
         from larch.wxlib import inputhook
         self.larch = Interpreter()
-        #self.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
-        #self.larch.symtable.set_symbol('_sys.wx.ping',    inputhook.ping)
-        #self.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
-        # self.larchtimer.Start(100)
-        print 'initialized larch in %.3f sec' % (time.time()-t0)
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
-        self.filename.SetLabel('')
+        self.title.SetLabel('')
 
 
     def onPlot(self, evt):    self.do_plot(newplot=True)
@@ -177,8 +173,9 @@ class PlotterFrame(wx.Frame):
     def onOPlot(self, evt):   self.do_plot(newplot=False)
 
     def do_plot(self, newplot=False):
-        print ' Plot ', newplot, self.data, self.groupname
-        ix = self.x_choice.GetStringSelection()
+
+        ix = self.x_choice.GetSelection()
+        x  = self.x_choice.GetStringSelection()
         if self.data is None and ix > -1:
             self.SetStatusText( 'cannot plot - no valid data')
         xop = self.x_op.GetStringSelection()
@@ -186,32 +183,40 @@ class PlotterFrame(wx.Frame):
         yop2 = self.y_op2.GetStringSelection()
         yop3 = self.y_op3.GetStringSelection()
 
-        iy1 = self.y1_choice.GetStringSelection()
-        iy2 = self.y2_choice.GetStringSelection()
-        iy3 = self.y3_choice.GetStringSelection()
-
+        y1 = self.y1_choice.GetStringSelection()
+        y2 = self.y2_choice.GetStringSelection()
+        y3 = self.y3_choice.GetStringSelection()
+        if y1 == '': y1 = '1'
+        if y2 == '': y2 = '1'
+        if y3 == '': y3 = '1'
+        
         gname = self.groupname
+        lgroup = getattr(self.larch.symtable, gname)
 
-        x = "%s.get_data('%s')" % (gname, ix)
+        xlabel = x
+        xunits = lgroup.column_units[ix]
+        if xunits != '':
+            xlabel = '%s (%s)' % (xlabel, xunits)
+
+        x = "%s.get_data('%s')" % (gname, x)
+
         if xop == 'log': x = "log(%s)" % x
 
-        y1 = iy1 if iy1 in ('0, 1') else "%s.get_data('%s')" % (gname, iy1)
-        y2 = iy2 if iy2 in ('0, 1') else "%s.get_data('%s')" % (gname, iy2)
-        y3 = iy3 if iy3 in ('0, 1') else "%s.get_data('%s')" % (gname, iy3)
+        y1 = y1 if y1 in ('0, 1') else "%s.get_data('%s')" % (gname, y1)
+        y2 = y2 if y2 in ('0, 1') else "%s.get_data('%s')" % (gname, y2)
+        y3 = y3 if y3 in ('0, 1') else "%s.get_data('%s')" % (gname, y3)
 
         y = "%s((%s %s %s) %s (%s))" % (yop1, y1, yop2, y2, yop3, y3)
         if '(' in yop1: y = "%s)" % y
 
         if xop == 'log': x = "log(%s)" % x
-        cmd = "plot(%s, %s, label='%s', xlabel='%s', new=%s)" % (x, y, self.data.fname,
-                                                                 ix, repr(newplot))
-        print "PLOT CMD " , cmd
+        fmt = "plot(%s, %s, label='%s', xlabel='%s', new=%s)" 
+        cmd = fmt % (x, y, self.data.fname, xlabel, repr(newplot))
         self.larch(cmd)
 
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
-        print 'show file details on rhs', filename
 
         key = filename
         if filename in self.filemap:
@@ -222,7 +227,7 @@ class PlotterFrame(wx.Frame):
         self.data = getattr(self.datagroups, key)
         self.groupname = key
 
-        xcols, ycols = [], ['1']
+        xcols, ycols = [], ['0', '1']
         for i, k in  enumerate(self.data.column_keys):
             if k.startswith('p'):
                 xcols.append(self.data.column_names[i])
@@ -230,15 +235,15 @@ class PlotterFrame(wx.Frame):
                 ycols.append(self.data.column_names[i])
         ycols.extend(xcols)
 
-        self.filename.SetLabel(self.data.filename)
+        self.title.SetLabel(self.data.filename)
         self.x_choice.SetItems(xcols)
         self.x_choice.SetSelection(0)
         self.y1_choice.SetItems(ycols)
         self.y1_choice.SetSelection(3)
         self.y2_choice.SetItems(ycols)
-        self.y1_choice.SetSelection(4)
+        self.y2_choice.SetSelection(1)
         self.y3_choice.SetItems(ycols)
-        self.y1_choice.SetSelection(2)
+        self.y3_choice.SetSelection(1)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
