@@ -41,6 +41,7 @@ class StepScanData(object):
         self.comments  = []
         self.column_keys    = []
         self.column_names   = []
+        self.column_units   = []
         self.column_pvnames = []
         self.breakpoints    = []
         self.breakpoint_times = []
@@ -124,13 +125,15 @@ class StepScanData(object):
                 elif mode in ('legend', 'extras'):
                     words = [w.strip() for w in val.split(SEP)]
                     if len(words) == 1: words.append('')
-                    desc, pvname = words
                     if mode == 'extras':
-                        extras[key] = (desc, pvname)
+                        extras[key] = (words[0], words[1])
                     else:
+                        if len(words) == 2: words.append('')
                         self.column_keys.append(key)
-                        self.column_names.append(desc)
-                        self.column_pvnames.append(pvname)
+                        self.column_names.append(words[0])
+                        self.column_units.append(words[1])
+                        self.column_pvnames.append(words[2])
+
             else: # data!
                 self.data.append([float(i) for i in line[:-1].split()])
         #
@@ -161,6 +164,7 @@ class ScanFile(object):
             self.filename  = filename
         if 'a' in mode or 'w' in mode:
             self.filename = new_filename(self.filename)
+            
         if isinstance(self.fh, file):
             self.fh.close()
         self.fh = open(self.filename, mode)
@@ -243,7 +247,7 @@ class ASCIIScanFile(ScanFile):
 
     def write_timestamp(self, label='Time'):
         "write timestamp"
-        self.write_lines(["%s%s: %s\n" % (COM2, label, get_timestamp())])
+        self.write_lines(["%s%s: %s" % (COM2, label, get_timestamp())])
 
     def write_comments(self):
         "write comment lines"
@@ -255,24 +259,26 @@ class ASCIIScanFile(ScanFile):
     def write_legend(self):
         "write legend"
         cols = []
-        legend = []
+        out = ['%sLegend Start: col_label: Name || units || EpicsPV' % COM2]
+        fmt = "%s %s: %s %s %s %s %s"
         for i, pos in enumerate(self.scan.positioners):
             key = 'p%i' % (i+1)
             cols.append("   %s  " % (key))
-            legend.append("%s %s: %s %s %s" % (COM1, key, pos.label,
-                                               SEP, pos.pv.pvname))
+            if pos.units in (None, 'None', ''):
+                pos.units = pos.pv.units
+
+            out.append(fmt % (COM1, key, pos.label, SEP, pos.units,
+                              SEP, pos.pv.pvname))
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i+1)
             cols.append("   %s  " % (key))
-            legend.append("%s %s: %s % %s" % (COM1, key, det.label,
-                                              SEP, det.pv.pvname))
-
-        out = ['%sLegend Start:' % COM2]
-        for l in legend:
-            out.append(l)
-        self.column_label = '%s %s' % (COM1, '\t'.join(cols))
+            if det.units in (None, 'None', ''):
+                det.units = det.pv.units
+            out.append(fmt % (COM1, key, det.label, SEP, det.units,
+                              SEP, det.pv.pvname))
         out.append('%sLegend End' % COM2)
         self.write_lines(out)
+        self.column_label = '%s %s' % (COM1, '\t'.join(cols))        
 
     def write_data(self, breakpoint=0, clear=False, close_file=False, verbose=False):
         "write data"

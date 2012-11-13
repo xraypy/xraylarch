@@ -56,12 +56,13 @@ Example usage:
 class Counter(Saveable):
     """simple scan counter object --
     a value that will be counted at each point in the scan"""
-    def __init__(self, pvname, label=None):
-        Saveable.__init__(self, pvname, label=label)
+    def __init__(self, pvname, label=None, units=''):
+        Saveable.__init__(self, pvname, label=label, units=units)
         self.pv  = PV(pvname)
         if label is None:
             label = pvname
         self.label = label
+        self.units = units
         self.clear()
 
     def __repr__(self):

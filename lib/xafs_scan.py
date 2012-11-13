@@ -59,13 +59,15 @@ class XAFS_Scan(StepScan):
 
     def save_config_file(self, configfile):
         """write configuration from INI file"""
+        print '== SAVE Config not complete!! '
         print self.label
-        print self.e0, self.dtime
-        print self.energy_pv
-        print self.read_pv
-        print self.detectors
-        for r in self.regions:
-            print r
+        #         print self.e0, self.dtime
+        #         print self.energy_pv
+        #         print self.read_pv
+        #         print self.detectors
+        #         for r in self.regions:
+        #             print r
+        print '== SAVE Config Done '
 
     def add_region(self, start, stop, step=None, npts=None,
                    relative=True, use_k=False, e0=None,
@@ -143,19 +145,19 @@ class XAFS_Scan(StepScan):
                         thispos = p
                 if thispos is None:
                     thispos = Positioner(d.dwelltime_pv.pvname,
-                                         label = "%s time" % d.label)
+                                         units = 's',
+                                         label = "%s_time" % d.label)
                     self.add_positioner(thispos)
                 thispos.array = self.dwelltimes
-        print 'Positioners: ', self.positioners
-        print 'Triggers: ', self.triggers
-        print 'Counters: ', self.counters
+        #print 'Positioners: ', self.positioners
+        #print 'Triggers: ', self.triggers
+        #print 'Counters: ', self.counters
         self.set_dwelltime(self.dwelltimes[0])
         if self.energy_pre_scan not in self.pre_scan_methods:
             self.pre_scan_methods.append(self.energy_pre_scan)
 
-    def energy_pre_scan(self):
+    def energy_pre_scan(self, scan=None):
         """special pre_scan command for XAFS scans
         put here to be overridden -- may need setting mono modes.
         """
         self.energy_pos.move_to_start()
-

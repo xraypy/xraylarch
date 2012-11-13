@@ -142,7 +142,7 @@ class StepScan(object):
     """
     General Step Scanning for Epics
     """
-    def __init__(self, filename=None, filemode='increment',
+    def __init__(self, filename=None, auto_increment=True,
                  configdb=None, comments=None, messenger=None):
         self.pos_settle_time = 1.e-3
         self.det_settle_time = 1.e-3
@@ -152,7 +152,7 @@ class StepScan(object):
         self.comments = comments
 
         self.filename = filename
-        self.filemode = filemode
+        self.auto_increment = auto_increment
         self.filetype = 'ASCII'
         self.configdb = configdb
 
@@ -191,7 +191,7 @@ class StepScan(object):
             self.comments = comments
 
         return creator(name=self.filename,
-                       mode=self.filemode,
+                       auto_increment=self.auto_increment,
                        comments=self.comments, scan=self)
 
     def add_counter(self, counter, label=None):
@@ -348,7 +348,11 @@ class StepScan(object):
         self.clear_data()
 
         self.datafile = self.open_output_file(filename=filename, comments=comments)
+        # self.filename =  self.datafile.filename
         self.datafile.write_data(breakpoint=0)
+
+        # print dir(self.datafile)
+        self.filename =  self.datafile.filename
 
         npts = len(self.positioners[0].array)
 

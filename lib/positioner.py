@@ -11,16 +11,20 @@ class Positioner(Saveable):
 This **ONLY** sets an ordinate value for scan, it does *NOT*
 do a readback on this position -- add a ScanDetector for that!
     """
-    def __init__(self, pvname, label=None, array=None, **kws):
-        Saveable.__init__(self, pvname, label=label,
+    def __init__(self, pvname, label=None, array=None, units=None, **kws):
+        Saveable.__init__(self, pvname, label=label, units=units,
                           array=array, **kws)
         if isinstance(pvname, PV):
             self.pv = pvname
         else:
             self.pv = PV(pvname)
         self.pv.connect()
+
+        self.units = units
         if self.pv.connected:
             self.pv.get_ctrlvars()
+            if units is None:
+                self.units = self.pv.units
 
         self.label = label
         if label is None and self.pv.connected:
