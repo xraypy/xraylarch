@@ -36,8 +36,11 @@ LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
 ALL_CEN =  wx.ALL|CEN
 
-
 FILE_WILDCARDS = "Scan Data Files(*.0*)|*.0*|Data Files(*.dat)|*.dat|All files (*.*)|*.*"
+
+def randname():
+    "return unique 10 name based on timestamp"
+    return 'g%s' % (hex(int(1.e6*time.time()))[3:12])
 
 class PlotterFrame(wx.Frame):
     _about = """StepScan Plotter
@@ -50,8 +53,11 @@ class PlotterFrame(wx.Frame):
         wx.Frame.__init__(self, None, -1, size=(600, 500),  **kwds)
 
         self.data = None
-        self.datafiles = {}
         self.filemap = {}
+        self.larch = None
+        # self.larchtimer = wx.Timer()
+        # self.Bind(wx.EVT_TIMER, self.onLarchTimer, self.larchtimer)
+
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -88,6 +94,7 @@ class PlotterFrame(wx.Frame):
 
     def createDetailsPanel(self, parent):
         panel = wx.Panel(parent)
+        panel.SetMinSize((600, 250))
         sizer = wx.GridBagSizer(8, 15)
         self.filename = SimpleText(panel, 'initializing...')
         ir = 0
@@ -152,34 +159,60 @@ class PlotterFrame(wx.Frame):
 
     def init_larch(self):
         t0 = time.time()
-        import larch
-        self._larch = larch.Interpreter()
+        from larch import Interpreter
+        from larch.wxlib import inputhook
+        self.larch = Interpreter()
+        self.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
+        self.larch.symtable.set_symbol('_sys.wx.ping',    inputhook.ping)
+        self.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
+        self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        self.larch.symtable.set_symbol('_sys.wx.parent', self)
+        # self.larchtimer.Start(100)
         print 'initialized larch in %.3f sec' % (time.time()-t0)
         self.SetStatusText('ready')
+        self.datagroups = self.larch.symtable
         self.filename.SetLabel('')
+
+#     def onLarchTimer(self, evt=None):
+#         try:
+#             self.larch.symtable.set_symbol('_sys.wx.force_wxupdate', True)
+#         except:
+#             pass
 
     def onPlot(self, evt):    self.do_plot()
 
     def onOPlot(self, evt):   self.do_plot(overplot=True)
 
     def do_plot(self, overplot=False):
-        print ' Plot ', overplot
-        print self.x_choice.GetSelection()
-        if self.data is None:
-            self.SetStatus( 'cannot plot - no valid data')
+        print ' Plot ', overplot, self.data, self.groupname
+        ix = self.x_choice.GetStringSelection()
+        if self.data is None and ix > -1:
+            self.SetStatusText( 'cannot plot - no valid data')
+
+        iy1 = self.y1_choice.GetStringSelection()
+        iy2 = self.y2_choice.GetStringSelection()
+        iy3 = self.y3_choice.GetStringSelection()
+
+        gname = self.groupname
+        cmd = "%s.get_data('%s'), %s.get_data('%s')" % (gname, ix,
+                                                        gname, iy1)
+        print cmd
+        self.larch("plot(%s, title=%s, new=%s)" % (cmd, self.data.filename,
+                                                   repr(not overplot)))
 
     def ShowFile(self, evt=None, filename=None, **kws):
-        print 'show file details on rhs', evt, filename
-        if filename is None and hasattr(evt, 'GetStringSelection'):
-            filename = evt.GetStringSelection()
+        if filename is None and evt is not None:
+            filename = evt.GetString()
+        print 'show file details on rhs', filename
 
         key = filename
         if filename in self.filemap:
             key = self.filemap[filename]
-        if filename in self.datafiles:
-            key = filename
-
-        self.data = self.datafiles[key]
+        if not hasattr(self.datagroups, key):
+            print 'cannot find key ', key
+            return
+        self.data = getattr(self.datagroups, key)
+        self.groupname = key
 
         xcols, ycols = [], ['1']
         for i, k in  enumerate(self.data.column_keys):
@@ -189,7 +222,7 @@ class PlotterFrame(wx.Frame):
                 ycols.append(self.data.column_names[i])
         ycols.extend(xcols)
 
-        self.filename.SetLabel(key)
+        self.filename.SetLabel(self.data.filename)
         self.x_choice.SetItems(xcols)
         self.x_choice.SetSelection(0)
         self.y1_choice.SetItems(ycols)
@@ -229,17 +262,22 @@ class PlotterFrame(wx.Frame):
                             style=wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
-            if path in self.datafiles:
-                print 'should ask for re-read?'
+            if path in self.filemap:
+                re_read = popup(self, "Re-read file '%s'?" % path, 'Re-read file?')
+                print 'read again ', re_read
             try:
                 dfile = StepScanData(path)
             except IOError:
                 print 'should popup ioerror'
-            if dfile._valid:
+            if dfile._valid and self.larch is not None:
                 p, fname = os.path.split(path)
-                self.datafiles[path] = StepScanData(path)
+                gname = randname()
+                if hasattr(self.datagroups, gname):
+                    time.sleep(0.002)
+                    gname = randname()
+                self.larch("%s = read_stepscan('%s')" % (gname, path))
                 self.filelist.Append(fname)
-                self.filemap[fname] = path
+                self.filemap[fname] = gname
                 self.ShowFile(filename=fname)
             else:
                 print 'should popup invalid file message'
