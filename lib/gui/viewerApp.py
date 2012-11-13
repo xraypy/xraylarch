@@ -13,6 +13,7 @@ To Do:
 import os
 import time
 import shutil
+from random import randrange
 
 from datetime import timedelta
 
@@ -38,9 +39,9 @@ ALL_CEN =  wx.ALL|CEN
 
 FILE_WILDCARDS = "Scan Data Files(*.0*)|*.0*|Data Files(*.dat)|*.dat|All files (*.*)|*.*"
 
-def randname():
-    "return unique 10 name based on timestamp"
-    return 'g%s' % (hex(int(1.e6*time.time()))[3:12])
+def randname(n=6):
+    "return random string of n (default 6) lowercase letters"
+    return ''.join([chr(randrange(26)+97) for i in range(n)])
 
 class PlotterFrame(wx.Frame):
     _about = """StepScan Plotter
@@ -106,7 +107,7 @@ class PlotterFrame(wx.Frame):
         # self.xchoice.SetStringSelection(default string)
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'X = '), (ir, 1), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, 'X='), (ir, 1), (1, 1), ALL_CEN, 0)
         sizer.Add(self.x_op,                 (ir, 2), (1, 1), ALL_CEN, 0)
         sizer.Add(self.x_choice,             (ir, 4), (1, 1), RIGHT, 0)
 
@@ -124,16 +125,16 @@ class PlotterFrame(wx.Frame):
         self.y_op3.SetSelection(3)
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'Y = '), (ir,  1), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y_op1,                (ir,  2), (1, 1), ALL_CEN, 0)
-        sizer.Add(SimpleText(panel, '( ('),  (ir,  3), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y1_choice,            (ir,  4), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y_op2,                (ir,  5), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y2_choice,            (ir,  6), (1, 1), ALL_CEN, 0)
-        sizer.Add(SimpleText(panel, ') '),   (ir,  7), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y_op3,                (ir,  8), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y3_choice,            (ir,  9), (1, 1), ALL_CEN, 0)
-        sizer.Add(SimpleText(panel, ')'),    (ir, 10), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, 'Y='),  (ir,  1), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y_op1,               (ir,  2), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, '(['),  (ir,  3), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y1_choice,           (ir,  4), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y_op2,               (ir,  5), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y2_choice,           (ir,  6), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, ']'),   (ir,  7), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y_op3,               (ir,  8), (1, 1), ALL_CEN, 0)
+        sizer.Add(self.y3_choice,           (ir,  9), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, ')'),   (ir, 10), (1, 1), ALL_CEN, 0)
 
         self.plot_btn  = add_button(panel, "New Plot", action=self.onPlot)
         self.oplot_btn = add_button(panel, "OverPlot", action=self.onOPlot)
@@ -202,16 +203,19 @@ class PlotterFrame(wx.Frame):
 
         if xop == 'log': x = "log(%s)" % x
 
+        ylabel = "%s([%s%s%s]%s%s)" % (yop1, y1, yop2, y2, yop3, y3)
+        
         y1 = y1 if y1 in ('0, 1') else "%s.get_data('%s')" % (gname, y1)
         y2 = y2 if y2 in ('0, 1') else "%s.get_data('%s')" % (gname, y2)
         y3 = y3 if y3 in ('0, 1') else "%s.get_data('%s')" % (gname, y3)
+
 
         y = "%s((%s %s %s) %s (%s))" % (yop1, y1, yop2, y2, yop3, y3)
         if '(' in yop1: y = "%s)" % y
 
         if xop == 'log': x = "log(%s)" % x
-        fmt = "plot(%s, %s, label='%s', xlabel='%s', new=%s)" 
-        cmd = fmt % (x, y, self.data.fname, xlabel, repr(newplot))
+        fmt = "plot(%s, %s, label='%s', xlabel='%s', ylabel='%s', new=%s)" 
+        cmd = fmt % (x, y, self.data.fname, xlabel, ylabel, repr(newplot))
         self.larch(cmd)
 
     def ShowFile(self, evt=None, filename=None, **kws):
@@ -275,6 +279,7 @@ class PlotterFrame(wx.Frame):
                             style=wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
+            path = path.replace('\\', '/')
             if path in self.filemap:
                 re_read = popup(self, "Re-read file '%s'?" % path, 'Re-read file?')
                 print 'read again ', re_read
@@ -284,10 +289,14 @@ class PlotterFrame(wx.Frame):
                 print 'should popup ioerror'
             if dfile._valid and self.larch is not None:
                 p, fname = os.path.split(path)
-                gname = randname()
+                #path = os.path.join(p, fname)
+                #print path
+
+                gname = randname(n=5)
                 if hasattr(self.datagroups, gname):
-                    time.sleep(0.002)
-                    gname = randname()
+                    time.sleep(0.005)
+                    gname = randname(n=6)
+                print 'Larch:: ', gname, path
                 self.larch("%s = read_stepscan('%s')" % (gname, path))
                 self.larch("%s.fname = '%s'" % (gname, fname))
                 self.filelist.Append(fname)
