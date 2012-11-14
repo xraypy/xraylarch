@@ -270,6 +270,16 @@ class PlotterFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,evt):
+        for nam in dir(self.larch.symtable._plotter):
+            obj = getattr(self.larch.symtable._plotter, nam)
+            try:
+                obj.Destroy()
+            except:
+                pass
+        for nam in dir(self.larch.symtable._sys.wx):
+            obj = getattr(self.larch.symtable._sys.wx, nam)
+            del obj
+
         self.Destroy()
 
     def onReadScan(self, evt=None):
