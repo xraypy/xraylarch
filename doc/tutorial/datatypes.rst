@@ -694,11 +694,29 @@ Several object types such as lists, dictionaries, arrays, and groups, all
 are meant to changeable after they are created: they are **mutable**.  That
 is, even after creating a list, you can append an element to it or you can
 remove an item from it, and so on.  These actions changes the *value* that
-the *name* points to.
+the object points to.  The object just points to a place in memory -- this
+does not have to change just because the value changes.
 
-to the own **identity**, which you
+This is somewhat different than the model for variable in languages such as
+C or Fortran where variables have fixed memory locations and specific types
+of data they can hold.   In Python and Larch, all objects point to some
+value.  For mutable data types, the value is allowed to change.  In
+addition, what the object points to can also change.
 
-Two variables can point to the same object.
-< more >
+Each object value has a unique memory location -- its identity.  The
+builtin :func:`id` function returns this identity.  Two variables are said
+to be *equivalent* if their values have the same identity -- the variables
+point to the same quantitiy.  Two variabales are *equal* if their values
+are the same, even if these values are held in different memory locations.
+And, of course, two differe variables can point to the same object.
+
+In practice, this is not as confusing as it sounds, and the model for data,
+variables, and values is generally very easy to deal with.  The most
+important thing to be aware of -- the thing most likely to cause trouble --
+is that assigning a variable to be a mutable object like a list,
+dictionary, or array does not make a copy of the object, but simply creates
+another variable that points to the same value.
+
+
 
 
