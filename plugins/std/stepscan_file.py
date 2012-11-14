@@ -21,6 +21,7 @@ class EpicsScanData(object):
         self.comments  = []
         self.column_keys    = []
         self.column_names   = []
+        self.column_units   = []
         self.column_pvnames = []
         self.breakpoints    = []
         self.breakpoint_times = []
@@ -104,13 +105,15 @@ class EpicsScanData(object):
                 elif mode in ('legend', 'extras'):
                     words = [w.strip() for w in val.split(SEP)]
                     if len(words) == 1: words.append('')
-                    desc, pvname = words
                     if mode == 'extras':
-                        extras[key] = (desc, pvname)
+                        extras[key] = (words[0], words[1])
                     else:
+                        if len(words) == 2: words.append('')
                         self.column_keys.append(key)
-                        self.column_names.append(desc)
-                        self.column_pvnames.append(pvname)
+                        self.column_names.append(words[0])
+                        self.column_units.append(words[1])
+                        self.column_pvnames.append(words[2])
+
             else: # data!
                 self.data.append([float(i) for i in line[:-1].split()])
         #
