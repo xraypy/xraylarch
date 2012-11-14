@@ -565,14 +565,14 @@ The plots resulting from both sets of Parameters are shown:
 
 
 From the plots alone, it is difficult to tell which of these fits is
-better, and it is probably say that these are both good fits, suggesting
-that component *s3* is important even if at a very small fraction, and that
-either component *s5* or *s6* (which aren't that different
+better, and it is probably best to say that these are both good fits.  This
+implies that component *s3* is important even if at a very small fraction,
+and that either component *s5* or *s6* (which aren't that different
 spectroscopically or chemically, see :ref:`Figure 5 <fitting_fig5>`) is
 present.  Of course, the analysis here is not meant to be definitive, and
-there are many more checks that could be done.  For what it's worth, Lengke
-*et al*   looked at many more unknown spectra, and also adjusted the energy
-ranges of the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the
-best components, and get concentrations of the components very similar to
-the ones here.
+there are many more checks that could be done.  To be clear, Lengke *et al*
+looked at many more unknown spectra, and also adjusted the energy ranges of
+the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the best
+components, with concentrations of the components very similar to the ones
+found here.  
 
