@@ -251,8 +251,19 @@ class ScanFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
+    @EpicsFunction
     def onClose(self,evt):
+        self.pvlist.etimer.Stop()
+        for nam, pv in self.pvlist.pvs.items():
+            pv.disconnect()
+            del pv
+        del self.pvlist
+        
+        epics.ca.poll(1.e-1, 3.0)
+        time.sleep(0.5)
+        
         self.Destroy()
+
 
     def onSetupMisc(self, evt=None):
         print 'need frame for general config'
