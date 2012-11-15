@@ -190,11 +190,11 @@ class PlotterFrame(wx.Frame):
         if y1 == '': y1 = '1'
         if y2 == '': y2 = '1'
         if y3 == '': y3 = '1'
-        
+
         gname = self.groupname
         lgroup = getattr(self.larch.symtable, gname)
 
-        xlabel = x
+        xlabel_ = xlabel = x
         xunits = lgroup.column_units[ix]
         if xunits != '':
             xlabel = '%s (%s)' % (xlabel, xunits)
@@ -203,18 +203,29 @@ class PlotterFrame(wx.Frame):
 
         if xop == 'log': x = "log(%s)" % x
 
-        ylabel = "%s([%s%s%s]%s%s)" % (yop1, y1, yop2, y2, yop3, y3)
-        
+        ylabel = "[%s%s%s]%s%s" % (y1, yop2, y2, yop3, y3)
+        if y2 == '1' and yop2 in ('*', '/') or y2 == '0' and yop2 in ('+', '-'):
+            ylabel = "(%s%s%s" % (y1, yop3, y3)
+            if y3 == '1' and yop3 in ('*', '/') or y3 == '0' and yop3 in ('+', '-'):
+                ylabel = "%s" % (y1)
+        elif y3 == '1' and yop3 in ('*', '/') or y3 == '0' and yop3 in ('+', '-'):
+            ylabel = "%s%s%s" % (y1, yop2, y2)
+        if yop1 != '':
+            yoplab = yop1.replace('deriv', 'd')
+            ylabel = '%s(%s)' % (yoplab, ylabel)
+            if '(' in yop1: ylabel = "%s)" % ylabel
+
         y1 = y1 if y1 in ('0, 1') else "%s.get_data('%s')" % (gname, y1)
         y2 = y2 if y2 in ('0, 1') else "%s.get_data('%s')" % (gname, y2)
         y3 = y3 if y3 in ('0, 1') else "%s.get_data('%s')" % (gname, y3)
 
-
         y = "%s((%s %s %s) %s (%s))" % (yop1, y1, yop2, y2, yop3, y3)
         if '(' in yop1: y = "%s)" % y
+        if 'deriv' in yop1:
+            y = "%s/deriv(%s)" % (y, x)
+            ylabel = '%s/d(%s)' % (ylabel, xlabel_)
 
-        if xop == 'log': x = "log(%s)" % x
-        fmt = "plot(%s, %s, label='%s', xlabel='%s', ylabel='%s', new=%s)" 
+        fmt = "plot(%s, %s, label='%s', xlabel='%s', ylabel='%s', new=%s)"
         cmd = fmt % (x, y, self.data.fname, xlabel, ylabel, repr(newplot))
         self.larch(cmd)
 
