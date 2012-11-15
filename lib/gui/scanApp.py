@@ -191,13 +191,29 @@ class ScanFrame(wx.Frame):
         for label, val in self.config.detectors.items():
             prefix, opts = val
             opts['label'] = label
-            print 'det ', prefix, opts
             self.detectors[label] = get_detector(prefix, **opts)
         print 'connected to Epics PVs in %.3f sec' % (time.time()-t0)
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
-        panel.generate_scan()
+        scan = panel.generate_scan()
+
+        for label, val in self.config.detectors.items():
+            prefix, opts = val
+            opts['label'] = label
+            scan.add_detector(get_detector(prefix, **opts))
+
+        for label, pvname in self.config.counters.items():
+            scan.add_counter(pvname, label=label)
+        scan.add_extra_pvs( self.config.extra_pvs.items())
+
+        print 'Scan '
+        print scan.positioners
+        print scan.triggers
+        print scan.detectors
+
+
+
 
     def onAbortScan(self, evt=None):
         print 'Abort Scan ', evt
@@ -258,10 +274,10 @@ class ScanFrame(wx.Frame):
             pv.disconnect()
             del pv
         del self.pvlist
-        
+
         epics.ca.poll(1.e-1, 3.0)
         time.sleep(0.5)
-        
+
         self.Destroy()
 
 
@@ -279,7 +295,7 @@ class ScanFrame(wx.Frame):
                       extra_counters=self.extra_counters)
 
     def onFolderSelect(self,evt):
-        style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
+        style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLEo
 
         dlg = wx.DirDialog(self, "Select Working Directory:", os.getcwd(),
                            style=style)

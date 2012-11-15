@@ -10,6 +10,7 @@ Current scan types:
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
+import numpy as np
 
 import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
@@ -17,7 +18,7 @@ from epics.wx import DelayedEpicsCallback, EpicsFunction
 from .gui_utils import SimpleText, FloatCtrl, Closure
 from .gui_utils import pack, add_choice
 
-from .. import etok, ktoe
+from .. import etok, ktoe, XAFS_Scan, StepScan, Positioner, Counter
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -152,7 +153,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         pass
 
     def generate_scan(self):
-        print 'generate scan ', self.__name__
+        print 'Def generate scan ', self.__name__
 
 class LinearScanPanel(GenericScanPanel):
     """ linear scan """
@@ -285,6 +286,25 @@ class LinearScanPanel(GenericScanPanel):
                 wids[0].SetItems(poslist)
                 wids[0].SetStringSelection(a)
 
+    def generate_scan(self):
+        print 'Linear generate scan ', self.__name__
+        scan = StepScan()
+        scan.dwelltime = float(self.dwelltime.GetValue())
+        is_relative =  self.absrel.GetSelection()
+        for i, wids in enumerate(self.pos_settings):
+            pos, u, cur, start, stop, dx, wnpts = wids
+            if i == 0:
+                npts = wnpts.GetValue()
+            if start.Enabled:
+                name = pos.GetStringSelection()
+                pvnames = self.config.positioners[name]
+                p = Positioner(pvnames[0], label=name)
+                p.array = np.linspace(start.GetValue(), stop.GetValue(), npts)
+                if is_relative:
+                    p.array += float(cur.GetLabel())
+                scan.add_counter(Counter(pvnames[1]))
+                scan.add_positioner(p)
+        return scan
 
 class XAFSScanPanel(GenericScanPanel):
     """xafs  scan """
