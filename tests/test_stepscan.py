@@ -34,7 +34,7 @@ sscan.add_extra_pvs((('Ring Current', 'Py:ao1'),
 def my_status_report(breakpoint=None):
     print 'Status Report at breakpoint %i ' % breakpoint
 
-sscan.at_break_methods.append(my_status_report)    
+sscan.at_break_methods.append(my_status_report)
 
 def report(scan=None, cpt=0, **kws):
     npts = len(scan.positioners[0].array)
@@ -50,8 +50,8 @@ def report(scan=None, cpt=0, **kws):
         print cpt, ' '.join(["%10f" % c.buff[ndet_pts-1] for c in scan.counters])
     except:
         pass
-        
-    
+
+
 sscan.messenger  = report
 comments = '''This is a test scan
 and this is the comment section

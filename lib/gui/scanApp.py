@@ -35,7 +35,7 @@ To Do:
 import os
 import time
 import shutil
-
+import json
 from datetime import timedelta
 
 import wx
@@ -198,21 +198,24 @@ class ScanFrame(wx.Frame):
         panel = self.nb.GetCurrentPage()
         scan = panel.generate_scan()
 
+        scan['detectors'] = []
+        scan['counters'] = []
+        scan['extra_pvs'] = []
+
         for label, val in self.config.detectors.items():
             prefix, opts = val
             opts['label'] = label
-            scan.add_detector(get_detector(prefix, **opts))
-
+            opts['prefix'] = prefix
+            scan['detectors'].append(opts)
         for label, pvname in self.config.counters.items():
-            scan.add_counter(pvname, label=label)
-        scan.add_extra_pvs( self.config.extra_pvs.items())
+            scan['counters'].append((label, pvname))
 
-        print 'Scan '
-        print scan.positioners
-        print scan.triggers
-        print scan.detectors
+        for label, pvname in self.config.extra_pvs.items():
+            scan['extra_pvs'].append((label, pvname))
 
-
+        print '======='
+        print json.dumps(scan)
+        print '======='
 
 
     def onAbortScan(self, evt=None):

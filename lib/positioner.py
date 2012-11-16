@@ -6,10 +6,12 @@ import numpy as np
 from epics import PV, caget
 from .saveable import Saveable
 
+
 class Positioner(Saveable):
     """a positioner for a scan
-This **ONLY** sets an ordinate value for scan, it does *NOT*
-do a readback on this position -- add a ScanDetector for that!
+    This sets an ordinate value for scan.
+
+    Not that it does *NOT* implay a readback on this position -- add a Counter for that!
     """
     def __init__(self, pvname, label=None, array=None, units=None, **kws):
         Saveable.__init__(self, pvname, label=label, units=units,
@@ -84,7 +86,6 @@ do a readback on this position -- add a ScanDetector for that!
     def move_to(self, value, wait=False, timeout=600):
         """move to a value, optionally waiting"""
         self.pv.put(value, wait=wait, timeout=timeout)
-
 
     def move_to_pos(self, i, wait=False, timeout=600):
         """move to i-th position in positioner array"""
