@@ -325,6 +325,12 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
                     scale_covar=True,  _larch=_larch)
     fit.leastsq()
 
+    # remove temporary parameters for _feffdat and reff
+    # that had been placed by _pathparams()
+    for pname in ('_feffdat', 'reff'):
+        if hasattr(params, pname):
+            delattr(params, pname)
+
     # scale uncertainties to sqrt(reduce chi-square)
     n_idp = 0
     for ds in datasets:
@@ -347,6 +353,11 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         for val, nam in zip(uvars, params.covar_vars):
             setattr(params, nam, ufloat((val.nominal_value,
                                          err_scale * val.std_dev())))
+        for nam, par in params.__dict__.items():
+            if isParameter(par) and par._ast is not None:
+                tmp = par._getval()
+                par.stderr = tmp.std_dev()
+
         for ds in datasets:
             for p in ds.pathlist:
                 for param in ('degen', 's02', 'e0', 'ei',
@@ -365,8 +376,8 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     for ds in datasets:
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
 
-    return Group(name='feffit fit results',   fit = fit,
-                 params = params, datasets = datasets)
+    return Group(name='feffit fit results', fit=fit, params=params,
+                 datasets=datasets)
 
 def feffit_report(result, min_correl=0.1, with_paths=True,
                   _larch=None, **kws):
@@ -384,8 +395,8 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         return
     topline = '=================== FEFFIT RESULTS ===================='
     header = '[[%s]]'
-    varformat = '   %12s = % f +/- %f   (init= % f)'
-    exprformat = '   %12s = % f   = \'%s\''
+    varformat  = '   %12s = % f +/- %f   (init= % f)'
+    exprformat = '   %12s = % f +/- %f  = \'%s\''
     out = [topline, header % 'Statistics']
 
     npts = len(params.residual)
@@ -432,7 +443,8 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
                                         var.stderr, var._initval))
 
             elif var.expr is not None:
-                exprs.append(exprformat % (name, var.value, var.expr))
+                exprs.append(exprformat % (name, var.value,
+                                           var.stderr, var.expr))
     if len(exprs) > 0:
         out.append(header % 'Constraint Expressions')
         out.extend(exprs)
