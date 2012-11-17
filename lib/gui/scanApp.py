@@ -49,9 +49,6 @@ from epics.wx import DelayedEpicsCallback, EpicsFunction
 from .gui_utils import SimpleText, FloatCtrl, Closure
 from .gui_utils import pack, add_button, add_menu, add_choice, add_menu
 
-# from config import FastMapConfig, conf_files, default_conf
-# from mapper import mapper
-
 from ..file_utils import new_filename, increment_filename, nativepath
 from ..ordereddict import OrderedDict
 from ..scan_config import ScanConfig
