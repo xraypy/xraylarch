@@ -336,11 +336,11 @@ After the initial read, the values of ``k``, ``p``, ``chi``, and
 
 .. _xafs_fig5:
 
-   Figure 5. Calculations of :math:`\chi(k)` for a Feff Path.
-
   .. image:: ../images/feffdat_example1.png
      :target: ../_images/feffdat_example1.png
      :width: 75 %
+
+  Figure 5. Calculations of :math:`\chi(k)` for a Feff Path.
 
 We can also use the data from the ``_feffdat`` group to look at the
 individual scattering components.  Thus to look at the scattering amplitude
@@ -353,11 +353,11 @@ which will produce a plot like this:
 
 .. _xafs_fig6:
 
-   Figure 6. Components of ``_feffdat`` group for a Feff Path.
-
   .. image:: ../images/feffdat_example2.png
      :target: ../_images/feffdat_example2.png
      :width: 75 %
+
+  Figure 6. Components of ``_feffdat`` group for a Feff Path.
 
 You can see here that the arrays in the ``_feffdat`` group are sampled at
 varying :math:`k` spacing, and that this spacing becomes fairly large at
@@ -381,11 +381,11 @@ group is up to date.
 
 .. _xafs_fig7:
 
-   Figure 7. Results for sum of :math:`\chi(k)` for list of paths.
-
   .. image:: ../images/feffdat_example3.png
      :target: ../_images/feffdat_example3.png
      :width: 75 %
+
+  Figure 7. Results for sum of :math:`\chi(k)` for list of paths.
 
 
 Example: Using Path Parameters when adding FEFF files
@@ -429,12 +429,12 @@ overridden by resetting ``_sys.paramGroup``, which can be done by passing a
 
 .. _xafs_fig8:
 
-   Figure 8. Results for making 2 different sums of paths using
-   parameterized Path Parameters
-
   .. image:: ../images/feffdat_example4.png
      :target: ../_images/feffdat_example4.png
      :width: 75 %
+
+  Figure 8. Results for making 2 different sums of paths using
+  parameterized Path Parameters
 
 
 The resulting plot shows the effect of changing :math:`E_0` and

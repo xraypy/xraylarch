@@ -122,51 +122,92 @@ There are then 3 principle functions for setting up and executing
     :returns:         a fit results group.
 
     The ``paramgroup`` is a group containing all fitting parameters for the
-    model.  This can be thought of as the principle group for a particular
-    fit.  On return, many outputs will actually be written to the
-    paramgroup.  The ``datasets`` argument can be either a single Feffit
-    Dataset as created by :func:`feffit_dataset` or a list of them.
+    model.  The ``datasets`` argument can be either a single Feffit Dataset
+    as created by :func:`feffit_dataset` or a list of them.  If
+    ``path_outputs==True``, all Feff Paths in the fit will be separately
+    Fourier transformed.
 
-    This function simply takes a parameter group, as does
-    :func:`_math.minimize`, and a Feffit dataset or list of Feffit
-    datasets.  If ``path_outputs==True``, all paths will be separately
-    Fourier transformed, with the result being put in the corresponding
-    FeffPath group.
+    When the fit is completed, the returned value will be a group
+    containing three objects:
 
-    This returns a group which contains three items for te Feffit results:
-      1. ``params``: the fit parameters. This will be identical to the
-         ``paramgroup`` passed in.
-      2. ``datasets``: an array of FeffitDataSet groups.  These will be
-         identical to the datasets passed in.
+      1. ``datasets``: an array of FeffitDataSet groups used in the fit.
+
+      2. ``params``: This will be identical to the input parameter group.
+
       3. a ``fit`` object, which points to the low-level fit.
 
-   On output, the ``paramgroup`` group will, of course, have the Parameter
-   values updated to the best-fit values.  It will also have several other
-   components written to it.
+    In addition, the output statistics listed below in
+    :ref:`Table of Feffit Output Statistics <xafs-feffit_stats_table>`.
+    will be written the ``paramgroup`` group.  Since each varied and constrained parameter
+    will also have best-values and estimated uncertainties, this allows the
+    parameter group to be considered the principle group for a particular
+    fit -- it holds the variable parameters and statistical results needed
+    to compare two fits.
 
-.. _xafs-feffit_partable1:
+    On output, a new sub-group called ``model`` will be created for each
+    Feffit Dataset. This will parallel the ``data`` group, in the sense
+    that it will have output arrays listed in the :ref:`Table of Feffit
+    Output Arrays <xafs-feffit_arrays_table>`.
 
-    Table of Feffit results written to the ``paramgroup`` group. Listed
-    here are the group component name and a description of its content.
+    If ``path_outputs==True``, all Feff Paths in the fit will be separately
+    Fourier transformed., with the result being put in the corresponding
+    FeffPath group.
 
-    ================= =====================================================================
-     attribute          description
-    ================= =====================================================================
-       chi_reduced      reduced chi-square statistic.
-       chi_square       chi-square statistic.
-       covar            covariance matrix.
-       covar_vars       list of variable names for rows and colums of covariance matrix.
-       errorbars        Flag whether error bars could be calculated.
-       fit_details      group with additional fit details.
-       message          output message from fit.
-       nfree            number of degrees of freedom in fit.
-       nvarys           number of variables in fit.
-    ================= =====================================================================
+.. index:: Feffit Output Statistics
+.. _xafs-feffit_stats_table:
+
+    Table of Feffit Output Statistics.  These values will be written to the
+    ``paramgroup`` group. Listed here are the group component name and a
+    description of its content.  Many of these are described in more detail
+    in :ref:`Fit Results and Outputss <fitting-results-sec>`
+
+        ================= =====================================================================
+         component name     description
+        ================= =====================================================================
+           chi_reduced      reduced chi-square statistic.
+           chi_square       chi-square statistic.
+           covar            covariance matrix.
+           covar_vars       list of variable names for rows and colums of covariance matrix.
+           errorbars        Flag whether error bars could be calculated.
+           fit_details      group with additional fit details.
+           message          output message from fit.
+           nfree            number of degrees of freedom in fit.
+           nvarys           number of variables in fit.
+        ================= =====================================================================
+
+.. index:: Feffit Output Arrays
+.. _xafs-feffit_arrays_table:
+
+    Table of Feffit Output Arrays.  The following arrays will be written
+    into the ``data`` and ``model`` sub-group for each dataset. The arrays
+    will be created using the Path Parameters used in the most recent fit
+    and the Feffit Transform group.  Many of these arrays have names
+    following the conventions for :func:`xftf` in section on :ref:`Fourier
+    Transforms for XAFS <xafs-ft_sec>`.
+
+        ================= =====================================================================
+         array name        description
+        ================= =====================================================================
+            k                  wavenumber array of :math:`k`.
+            chi                :math:`\chi(k)`.
+            kwin               window :math:`\Omega(k)` (length of input chi(k)).
+            r                  uniform array of :math:`R`, out to ``rmax_out``.
+            chir               complex array of :math:`\tilde\chi(R)`.
+            chir_mag           magnitude of :math:`\tilde\chi(R)`.
+            chir_pha           phase of :math:`\tilde\chi(R)`.
+            chir_re            real part of of :math:`\tilde\chi(R)`.
+            chir_im            imaginary part of :math:`\tilde\chi(R)`.
+        ================= =====================================================================
 
 
-   The Feffit Dataset objects will have several outputs written to it as well.
+:func:`feffit_report`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   << table of dataset output arrays (chir_mag etc) >>
+..  function:: feffit_report(fit_result)
+
+    return a printable report from a Feffit fit.
+
+    :param fit_result:  output group from :func:`feffit`.
 
 
 Example 1: Simple fit with 1 Path
@@ -198,9 +239,11 @@ This simply follows the essential steps:
  ``pathlist``,  which is a list of FeffPaths.
 
  5. The fit is run with :func:`feffit`, and the output group is saved.
+ This output group is used by :func:`feffit_report` to generate a fit
+ report (shown below).
 
- 6. A fit report is written from the output of :func:`feffit` and plots
-    are made from the dataset.
+ 6. Plots are made from the dataset, using rather long-winded :func:`plot`
+ commands.
 
 
 running this example prints out the following report::
@@ -235,25 +278,24 @@ running this example prints out the following report::
        amp, del_r           =  0.141
 
     [[Paths]]
-       feff dat file = feffcu01.dat
-         reff = 2.54780
-         geometry: Atom Label x, y, z ipot
+       feff.dat file = feffcu01.dat
+              Atom     x        y        z     ipot
                Cu    0.0000,  0.0000,  0.0000  0 (absorber)
                Cu    0.0000, -1.8016,  1.8016  1
+         reff   =  2.54780
          Degen  =  12.00000
          S02    =  0.93594 +/-  0.10108
          E0     =  3.90188 +/-  1.31856
          R      =  2.54196 +/-  0.00678
          deltar = -0.00584 +/-  0.00678
          sigma2 =  0.00871 +/-  0.00080
+
     =======================================================
 
-and generates the plots shown.
+and generates the plots shown below
 
-.. _xafs_fig9:
 
-   Figure 9. Results for Feffit for a simple 1-shell fit to a
-   spectrum from Cu metal.
+.. _xafs_fig12:
 
   .. image:: ../images/feffit_example1.png
      :target: ../_images/feffit_example1.png
@@ -262,4 +304,9 @@ and generates the plots shown.
      :target: ../_images/feffit_example2.png
      :width: 48 %
 
+  Figure 12. Results for Feffit for a simple 1-shell fit to a
+  spectrum from Cu metal.
 
+This is a pretty good fit to the first shell of Cu metal, and shows the
+basic mechanics of fitting XAFS data to Feff Paths.  There are several
+things that might be added to this for modeling more complex XAFS data.

@@ -2,19 +2,20 @@
 cu = read_ascii('cu_metal_rt.xdi')
 autobk(cu.energy, cu.mutrans, group=cu, rbkg=1.0, kw=1)
 
-fitparams = group(amp  = param(1, vary=True),
-                  delta_e0  = guess(0.1),
-                  ss2  = param(0.002, vary=True),
-                  delta_r = guess(0.) )
+fitparams = group(amp   = param(0.3, vary=True),
+                  de0   = guess(0.1),
+                  ss2   = param(0.002, vary=True),
+                  alpha = guess(0.))
 
 path1 = feffpath('feffcu01.dat',
-                 s02 = 'amp',
-                 e0 = 0,
-                 sigma2='ss2',
-                 deltar='delta_r')
+                 s02    = '3*amp',
+                 e0     = '2 + de0',
+                 sigma2 = 'ss2',
+                 deltar = param(expr='reff*alpha'))
 
 # can also set a path parameter this way:
-path1.e0 = param(expr='delta_e0')
+#   path1.e0 = param(expr='delta_e0')
+#   path1.deltar = param(expr='reff * alpha')
 
 trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=3, rmin=1.4, rmax=3.0)
 dset  = feffit_dataset(data=cu, pathlist=[path1], transform=trans)

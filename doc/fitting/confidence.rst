@@ -241,13 +241,7 @@ and a pair with high correlation::
 
 with the resulting Chi-square maps looking like this:
 
-.. _fit_conf_fig2:
-
-   Figure 2.  Chi-square maps for two pairs of variables for the fit to
-   Gaussian data.  With the best-fit chi-square value of 0.5134, the
-   contour map for relatively uncorrelated parameters *amp* and *cen* is
-   shown on the left, while that for the more highlycorrelated parameters
-   *amp* and *wid* is shown on the right.
+.. _fitting_fig9:
 
   .. image:: ../images/fit_example_conf3a.png
      :target: ../_images/fit_example_conf3a.png
@@ -255,6 +249,12 @@ with the resulting Chi-square maps looking like this:
   .. image:: ../images/fit_example_conf3b.png
      :target: ../_images/fit_example_conf3b.png
      :width: 48 %
+
+  Figure 9.  Chi-square maps for two pairs of variables for the fit to
+  Gaussian data.  With the best-fit chi-square value of 0.5134, the
+  contour map for relatively uncorrelated parameters *amp* and *cen* is
+  shown on the left, while that for the more highlycorrelated parameters
+  *amp* and *wid* is shown on the right.
 
 
 The circular map for the uncorrelated parameters *amp* and *cen*
@@ -273,12 +273,7 @@ exponential, we calculate the chi-square maps as::
 
 with the resulting contour plots:
 
-.. _fit_conf_fig3:
-
-   Figure 3.  Chi-square maps for two pairs of variables for the fit to
-   Double Exponential.  With the best-fit chi-square value of 0.1913, the
-   contour map for *a1 and *a2* is shown on the left, while that for *a1*
-   and *t2* is shown on the right.
+.. _fitting_fig10:
 
   .. image:: ../images/fit_example_conf4a.png
      :target: ../_images/fit_example_conf4a.png
@@ -286,6 +281,12 @@ with the resulting contour plots:
   .. image:: ../images/fit_example_conf4b.png
      :target: ../_images/fit_example_conf4b.png
      :width: 48 %
+
+  Figure 10.  Chi-square maps for two pairs of variables for the fit to
+  Double Exponential.  With the best-fit chi-square value of 0.1913, the
+  contour map for *a1 and *a2* is shown on the left, while that for *a1*
+  and *t2* is shown on the right.
+
 
 Here, the values of chi-square quickly grow very large away from the ideal
 fit.  More importantly, the maps are not remotely elliptical.
@@ -295,6 +296,3 @@ are informative, they are also fairly slow, re-running the fits many times.
 It is probably safe to rely on the automatic calculations of uncertainties
 and correlations, and use these methods on occasions of extremely high
 correlation, or when nearing a final analysis.
-
-
-

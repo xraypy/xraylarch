@@ -267,9 +267,13 @@ Here a a few example plots, to whet your appetite::
 
 will make this plot:
 
+.. _plotting_fig1:
+
   .. image:: ../images/plot_basic1.png
      :target: ../_images/plot_basic1.png
      :width: 60 %
+
+  Figure 1:  A Basic line plot.
 
 Adding a second curve, and setting some labels::
 
@@ -277,9 +281,13 @@ Adding a second curve, and setting some labels::
 
 will make this plot:
 
+.. _plotting_fig2:
+
   .. image:: ../images/plot_basic2.png
      :target: ../_images/plot_basic2.png
      :width: 60 %
+
+  Figure 2:  A line plot with two curves.
 
 
 Interactive Use of the Plot Windows
@@ -338,9 +346,14 @@ Options->'Configure Plot' (or right-click to bring up a popup menu, then
 select Configure) will bring up the plot configuration window, which looks
 like this:
 
+.. _plotting_fig3:
+
   .. image:: ../images/plot_config.png
      :target: ../_images/plot_config.png
      :width: 60 %
+
+  Figure 3:  Screenshot of the Configuration window for Plots.
+
 
 From here you can set the titles, labels, and styles, colors, symbols, and
 so on for the line traces.
@@ -439,12 +452,20 @@ image, generated with::
 
 is shown below:
 
+.. _plotting_fig4:
+
   .. image:: ../images/plot_image1.png
      :target: ../_images/plot_image1.png
      :width: 60 %
 
+  Figure 4: A false-color display of 2 dimensional image data.
+
 and as a contour plot, with a different color table:
+
+.. _plotting_fig5:
 
   .. image:: ../images/plot_contour1.png
      :target: ../_images/plot_contour1.png
      :width: 60 %
+
+  Figure 5: A contour plot of 2 dimensional image data.
