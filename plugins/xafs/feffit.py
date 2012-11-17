@@ -23,6 +23,15 @@ from xafsft import xftf_fast, xftr_fast, ftwindow
 
 from feffdat import FeffPathGroup, _ff2chi
 
+# check for uncertainties package
+HAS_UNCERTAIN = False
+try:
+    from uncertainties import ufloat, correlated_values
+    HAS_UNCERTAIN = True
+except ImportError:
+    pass
+
+
 class TransformGroup(Group):
     """A Group of transform parameters.
     The apply() method will return the result of applying the transform,
@@ -320,11 +329,38 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     n_idp = 0
     for ds in datasets:
         n_idp += ds.transform.n_idp
-    err_scale = sqrt(n_idp - params.nvarys)
+    err_scale = sqrt(params.chi_reduced)  #   / (n_idp - params.nvarys))
+
     for name in dir(params):
         p = getattr(params, name)
         if isParameter(p) and p.vary:
             p.stderr *= err_scale
+
+    # next, propagate uncertainties to path parameters.
+    if HAS_UNCERTAIN and params.covar is not None:
+        vsave, vbest = {}, []
+        for vname in params.covar_vars:
+            par = getattr(params, vname)
+            vsave[vname] = par
+            vbest.append(par.value)
+        uvars = correlated_values(vbest, params.covar)
+        for val, nam in zip(uvars, params.covar_vars):
+            setattr(params, nam, ufloat((val.nominal_value,
+                                         err_scale * val.std_dev())))
+
+        for ds in datasets:
+            for p in ds.pathlist:
+                for param in ('degen', 's02', 'e0', 'ei',
+                              'deltar', 'sigma2', 'third', 'fourth'):
+                    obj = getattr(p, param)
+                    if isParameter(obj):
+                        stderr  = 0
+                        if hasattr(obj.value, 'std_dev'):
+                            stderr = obj.value.std_dev()
+                        setattr(obj, 'stderr', stderr)
+
+        for vname in params.covar_vars:
+            setattr(params, vname, vsave[vname])
 
     # here we create outputs:
     for ds in datasets:

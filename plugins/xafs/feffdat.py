@@ -15,7 +15,7 @@ creates a group that contains the chi(k) for the sum of paths.
 
 import numpy as np
 import sys, os
-from larch import Group, Parameter, param_value, plugin_path
+from larch import Group, Parameter, isParameter, param_value, plugin_path
 
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xafs'))
@@ -198,8 +198,9 @@ class FeffPathGroup(Group):
                     val = kws[param]
             if isinstance(val, (str, unicode)):
                 thispar = Parameter(expr=val, _larch=self._larch)
-                if isinstance(thispar, Parameter):
-                    thispar = thispar.value
+
+                #if isinstance(thispar, Parameter):
+                #    thispar = thispar.value
                 setattr(self, param, thispar)
                 val = getattr(self, param)
             out.append(param_value(val))
@@ -222,18 +223,40 @@ class FeffPathGroup(Group):
             if ipot == 0: s = "%s (absorber)" % s
             out.append(s)
 
-        out.append('     Degen  = % .5f' % deg)
-        out.append('     S02    = % .5f' % s02)
-        out.append('     E0     = % .5f' % e0)
-        out.append('     R      = % .5f' % (self._feffdat.reff + delr))
-        out.append('     deltar = % .5f' % delr)
-        out.append('     sigma2 = % .5f' % ss2)
-        if c3 != 0:
-            out.append('     third  = % .5f' % c3)
-        if c4 != 0:
-            out.append('     fourth = % .5f' % c4)
-        if ei != 0:
-            out.append('     ei     = % .5f' % ei)
+        stderrs = {}
+        
+        for param in ('degen', 's02', 'e0', 'ei',
+                      'deltar', 'sigma2', 'third', 'fourth'):
+            val = getattr(self, param)
+            std = 0
+            if isParameter(val):
+                std = val.stderr
+                val = val.value
+                if isParameter(val):
+                    if val.stderr is not None:
+                        std = val.stderr
+            stderrs[param] = std
+            
+        def showval(title, par, val, stderrs, ifnonzero=False):
+            if val == 0 and ifnonzero:
+                return
+            s = '     %s=' % title
+            if title.startswith('R  '):
+                val = val + self._feffdat.reff
+            if stderrs[par] == 0:
+                s = '%s % .5f' % (s, val)
+            else:
+                s = '%s % .5f +/- % .5f' % (s, val, stderrs[par])
+            out.append(s)
+        showval('Degen  ', 'degen',  deg,  stderrs)
+        showval('S02    ', 's02',    s02,  stderrs)        
+        showval('E0     ', 'e0',     e0,   stderrs)          
+        showval('R      ', 'deltar', delr, stderrs)
+        showval('deltar ', 'deltar', delr, stderrs)
+        showval('sigma2 ', 'sigma2', ss2,  stderrs)
+        showval('third  ', 'third',  c3,   stderrs, ifnonzero=True)
+        showval('fourth ', 'fourth', c4,   stderrs, ifnonzero=True)
+        showval('Ei     ', 'ei',     ei,   stderrs, ifnonzero=True)
 
         return '\n'.join(out)
 
