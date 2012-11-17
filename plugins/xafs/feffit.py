@@ -325,11 +325,11 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
                     scale_covar=True,  _larch=_larch)
     fit.leastsq()
 
-    # scale uncertainties to sqrt(n_idp - n_varys)
+    # scale uncertainties to sqrt(reduce chi-square)
     n_idp = 0
     for ds in datasets:
         n_idp += ds.transform.n_idp
-    err_scale = sqrt(params.chi_reduced)  #   / (n_idp - params.nvarys))
+    err_scale = sqrt(params.chi_reduced)
 
     for name in dir(params):
         p = getattr(params, name)
@@ -347,7 +347,6 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         for val, nam in zip(uvars, params.covar_vars):
             setattr(params, nam, ufloat((val.nominal_value,
                                          err_scale * val.std_dev())))
-
         for ds in datasets:
             for p in ds.pathlist:
                 for param in ('degen', 's02', 'e0', 'ei',
