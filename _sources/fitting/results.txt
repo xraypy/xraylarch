@@ -1,3 +1,5 @@
+.. _fitting-results-sec:
+
 ============================
 Fit Results and Outputs
 ============================

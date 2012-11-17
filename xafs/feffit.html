@@ -79,6 +79,7 @@
 <li><a class="reference internal" href="#feffit-transform"><tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
 <li><a class="reference internal" href="#feffit-dataset"><tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
 <li><a class="reference internal" href="#feffit"><tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li><a class="reference internal" href="#feffit-report"><tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
 <li><a class="reference internal" href="#example-1-simple-fit-with-1-path">Example 1: Simple fit with 1 Path</a></li>
 </ul>
 </li>
@@ -247,33 +248,167 @@ group, as defined above.</p>
 <dl class="function">
 <dt id="_xafs.feffit">
 <tt class="descclassname">_xafs.</tt><tt class="descname">feffit</tt><big>(</big><em>paramgroup</em>, <em>datasets</em>, <em>rmax_out=10</em>, <em>path_outputs=True</em><big>)</big><a class="headerlink" href="#_xafs.feffit" title="Permalink to this definition">¶</a></dt>
-<dd><blockquote>
-<div>execute a Feffit fit.</div></blockquote>
-<dl class="docutils">
-<dt>This simply takes a parameter group, as does</dt>
-<dd><blockquote class="first">
-<div><p><a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a>, and a Feffit dataset or list of Feffit
-datasets.  If <tt class="docutils literal"><span class="pre">path_outputs==True</span></tt>, all paths will be separately
-Fourier transformed, with the result being put in the corresponding
-FeffPath group.</p>
-<dl class="docutils">
-<dt>This returns a group which contains the Feffit results, including:</dt>
-<dd><ol class="first last arabic simple">
-<li><tt class="docutils literal"><span class="pre">params</span></tt>: the fit parameters. This will be identical to the
-<tt class="docutils literal"><span class="pre">paramgroup</span></tt> passed in.</li>
-<li><tt class="docutils literal"><span class="pre">datasets</span></tt>: an array of FeffitDataSet groups.  These will be
-identical to the datasets passed in.</li>
+<dd><p>execute a Feffit fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>paramgroup</strong> &#8211; group containing parameters for fit</li>
+<li><strong>datasets</strong> &#8211; Feffit Dataset group or list of Feffit Dataset group.</li>
+<li><strong>rmax_out</strong> &#8211; maximum <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> value to calculate output arrays.</li>
+<li><strong>path_output</strong> &#8211; Flag to set whether all Path outputs should be written.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a fit results group.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The <tt class="docutils literal"><span class="pre">paramgroup</span></tt> is a group containing all fitting parameters for the
+model.  The <tt class="docutils literal"><span class="pre">datasets</span></tt> argument can be either a single Feffit Dataset
+as created by <a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><tt class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></tt></a> or a list of them.  If
+<tt class="docutils literal"><span class="pre">path_outputs==True</span></tt>, all Feff Paths in the fit will be separately
+Fourier transformed.</p>
+<p>When the fit is completed, the returned value will be a group
+containing three objects:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><tt class="docutils literal"><span class="pre">datasets</span></tt>: an array of FeffitDataSet groups used in the fit.</li>
+<li><tt class="docutils literal"><span class="pre">params</span></tt>: This will be identical to the input parameter group.</li>
 <li>a <tt class="docutils literal"><span class="pre">fit</span></tt> object, which points to the low-level fit.</li>
 </ol>
-</dd>
-</dl>
 </div></blockquote>
-<p>On output, the <tt class="docutils literal"><span class="pre">params</span></tt> group will, of course, have the Parameter
-values updated to the best-fit values.  The Feffit Dataset objects will
-have several outputs written to it for the data and model.</p>
-<p class="last">&lt;&lt; table of dataset output arrays (chir_mag, etc) &gt;&gt;</p>
-</dd>
-</dl>
+<p>In addition, the output statistics listed below in
+<a class="reference internal" href="#xafs-feffit-stats-table"><em>Table of Feffit Output Statistics</em></a>.
+will be written the <tt class="docutils literal"><span class="pre">paramgroup</span></tt> group.  Since each varied and constrained parameter
+will also have best-values and estimated uncertainties, this allows the
+parameter group to be considered the principle group for a particular
+fit &#8211; it holds the variable parameters and statistical results needed
+to compare two fits.</p>
+<p>On output, a new sub-group called <tt class="docutils literal"><span class="pre">model</span></tt> will be created for each
+Feffit Dataset. This will parallel the <tt class="docutils literal"><span class="pre">data</span></tt> group, in the sense
+that it will have output arrays listed in the <a class="reference internal" href="#xafs-feffit-arrays-table"><em>Table of Feffit
+Output Arrays</em></a>.</p>
+<p>If <tt class="docutils literal"><span class="pre">path_outputs==True</span></tt>, all Feff Paths in the fit will be separately
+Fourier transformed., with the result being put in the corresponding
+FeffPath group.</p>
+</dd></dl>
+
+<blockquote id="xafs-feffit-stats-table">
+<span id="index-0"></span><div><p>Table of Feffit Output Statistics.  These values will be written to the
+<tt class="docutils literal"><span class="pre">paramgroup</span></tt> group. Listed here are the group component name and a
+description of its content.  Many of these are described in more detail
+in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><em>Fit Results and Outputss</em></a></p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">component name</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>chi_reduced</td>
+<td>reduced chi-square statistic.</td>
+</tr>
+<tr class="row-odd"><td>chi_square</td>
+<td>chi-square statistic.</td>
+</tr>
+<tr class="row-even"><td>covar</td>
+<td>covariance matrix.</td>
+</tr>
+<tr class="row-odd"><td>covar_vars</td>
+<td>list of variable names for rows and colums of covariance matrix.</td>
+</tr>
+<tr class="row-even"><td>errorbars</td>
+<td>Flag whether error bars could be calculated.</td>
+</tr>
+<tr class="row-odd"><td>fit_details</td>
+<td>group with additional fit details.</td>
+</tr>
+<tr class="row-even"><td>message</td>
+<td>output message from fit.</td>
+</tr>
+<tr class="row-odd"><td>nfree</td>
+<td>number of degrees of freedom in fit.</td>
+</tr>
+<tr class="row-even"><td>nvarys</td>
+<td>number of variables in fit.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<blockquote id="xafs-feffit-arrays-table">
+<span id="index-1"></span><div><p>Table of Feffit Output Arrays.  The following arrays will be written
+into the <tt class="docutils literal"><span class="pre">data</span></tt> and <tt class="docutils literal"><span class="pre">model</span></tt> sub-group for each dataset. The arrays
+will be created using the Path Parameters used in the most recent fit
+and the Feffit Transform group.  Many of these arrays have names
+following the conventions for <a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a> in section on <a class="reference internal" href="xafsft.html#xafs-ft-sec"><em>Fourier
+Transforms for XAFS</em></a>.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="80%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">array name</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>k</td>
+<td>wavenumber array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>.</td>
+</tr>
+<tr class="row-odd"><td>chi</td>
+<td><img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</td>
+</tr>
+<tr class="row-even"><td>kwin</td>
+<td>window <img class="math" src="../_images/math/96353c36e52c43ad8175ee469239c4e6fcbe8230.png" alt="\Omega(k)"/> (length of input chi(k)).</td>
+</tr>
+<tr class="row-odd"><td>r</td>
+<td>uniform array of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>, out to <tt class="docutils literal"><span class="pre">rmax_out</span></tt>.</td>
+</tr>
+<tr class="row-even"><td>chir</td>
+<td>complex array of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+</tr>
+<tr class="row-odd"><td>chir_mag</td>
+<td>magnitude of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+</tr>
+<tr class="row-even"><td>chir_pha</td>
+<td>phase of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+</tr>
+<tr class="row-odd"><td>chir_re</td>
+<td>real part of of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+</tr>
+<tr class="row-even"><td>chir_im</td>
+<td>imaginary part of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+</div>
+<div class="section" id="feffit-report">
+<h2><a class="reference internal" href="#_xafs.feffit_report" title="_xafs.feffit_report"><tt class="xref py py-func docutils literal"><span class="pre">feffit_report()</span></tt></a><a class="headerlink" href="#feffit-report" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="_xafs.feffit_report">
+<tt class="descclassname">_xafs.</tt><tt class="descname">feffit_report</tt><big>(</big><em>fit_result</em><big>)</big><a class="headerlink" href="#_xafs.feffit_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a printable report from a Feffit fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fit_result</strong> &#8211; output group from <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 </div>
@@ -339,64 +474,67 @@ essentially sets the Fourier transform parameters and fit ranges.</p>
 <p>4. A Feffit Dataset is created with <a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><tt class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></tt></a>.  To begin the
 fit, this includes a <tt class="docutils literal"><span class="pre">data</span></tt> group, a <tt class="docutils literal"><span class="pre">transform</span></tt> group, and a
 <tt class="docutils literal"><span class="pre">pathlist</span></tt>,  which is a list of FeffPaths.</p>
-<ol class="arabic simple" start="5">
-<li>The fit is run with <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>, and the output group is saved.</li>
-<li>A fit report is written from the output of <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> and plots
-are made from the dataset.</li>
-</ol>
+<p>5. The fit is run with <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>, and the output group is saved.
+This output group is used by <a class="reference internal" href="#_xafs.feffit_report" title="_xafs.feffit_report"><tt class="xref py py-func docutils literal"><span class="pre">feffit_report()</span></tt></a> to generate a fit
+report (shown below).</p>
+<p>6. Plots are made from the dataset, using rather long-winded <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt>
+commands.</p>
 </div></blockquote>
 <p>running this example prints out the following report:</p>
 <div class="highlight-python"><pre>=================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys       = 106, 4
    nfree, nfcn_calls  = 102, 31
-   chi_square         = 6930.379153
-   reduced chi_square = 67.944894
+   chi_square         = 5407.674717
+   reduced chi_square = 53.016419
 
 [[Data]]
    n_independent      = 14.260
-   eps_k, eps_r       = 0.000173, 0.008240
+   eps_k, eps_r       = 0.000178, 0.008480
    fit space          = r
    r-range            = 1.400, 3.000
    k-range            = 3.000, 17.000
-   k window, dk       = bessel, 3.000
+   k window, dk       = kaiser, 3.000
    k-weight           = 2
    paths used in fit  = ['feffcu01.dat']
 
 [[Variables]]
-   amp            =  0.932276 +/- 0.045077   (init=  1.000000)
-   del_e0         =  3.962456 +/- 0.553577   (init=  0.100000)
-   del_r          = -0.005644 +/- 0.002969   (init=  0.000000)
-   sig2           =  0.008677 +/- 0.000364   (init=  0.002000)
+   amp            =  0.935940 +/- 0.101085   (init=  1.000000)
+   del_e0         =  3.901883 +/- 1.318563   (init=  0.100000)
+   del_r          = -0.005843 +/- 0.006784   (init=  0.000000)
+   sig2           =  0.008705 +/- 0.000795   (init=  0.002000)
 
 [[Correlations]]    (unreported correlations are &lt;  0.100)
-   amp, sig2            =  0.922
-   del_e0, del_r        =  0.908
-   del_r, sig2          =  0.160
-   amp, del_r           =  0.145
+   amp, sig2            =  0.928
+   del_e0, del_r        =  0.920
+   del_r, sig2          =  0.161
+   amp, del_r           =  0.141
 
 [[Paths]]
-   feff dat file = feffcu01.dat
-     reff = 2.54780
-     geometry: Atom Label x, y, z ipot
+   feff.dat file = feffcu01.dat
+          Atom     x        y        z     ipot
            Cu    0.0000,  0.0000,  0.0000  0 (absorber)
            Cu    0.0000, -1.8016,  1.8016  1
+     reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.93228
-     E0     =  3.96246
-     R      =  2.54216
-     deltar = -0.00564
-     sigma2 =  0.00868
+     S02    =  0.93594 +/-  0.10108
+     E0     =  3.90188 +/-  1.31856
+     R      =  2.54196 +/-  0.00678
+     deltar = -0.00584 +/-  0.00678
+     sigma2 =  0.00871 +/-  0.00080
+
 =======================================================</pre>
 </div>
-<p>and generates the plots shown.</p>
-<blockquote id="xafs-fig9">
-<div><blockquote>
-<div>Figure 9. Results for Feffit for a simple 1-shell fit to a
-spectrum from Cu metal.</div></blockquote>
-<a class="reference external image-reference" href="../_images/feffit_example1.png"><img alt="../_images/feffit_example1.png" src="../_images/feffit_example1.png" style="width: 48%;" /></a>
+<p>and generates the plots shown below</p>
+<blockquote id="xafs-fig12">
+<div><a class="reference external image-reference" href="../_images/feffit_example1.png"><img alt="../_images/feffit_example1.png" src="../_images/feffit_example1.png" style="width: 48%;" /></a>
 <a class="reference external image-reference" href="../_images/feffit_example2.png"><img alt="../_images/feffit_example2.png" src="../_images/feffit_example2.png" style="width: 48%;" /></a>
+<p>Figure 12. Results for Feffit for a simple 1-shell fit to a
+spectrum from Cu metal.</p>
 </div></blockquote>
+<p>This is a pretty good fit to the first shell of Cu metal, and shows the
+basic mechanics of fitting XAFS data to Feff Paths.  There are several
+things that might be added to this for modeling more complex XAFS data.</p>
 </div>
 </div>
 
@@ -432,7 +570,7 @@ spectrum from Cu metal.</div></blockquote>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

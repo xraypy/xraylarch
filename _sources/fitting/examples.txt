@@ -88,11 +88,11 @@ And the plot of data and fit will look like this:
 
 .. _fitting_fig1:
 
-     Figure 1.  Simple fit to mock data
-
   .. image:: ../images/fit_example1.png
      :target: ../_images/fit_example1.png
      :width: 65 %
+
+  Figure 1.  Simple fit to mock data
 
 
 Example 2: Fitting XANES Pre-edge Peaks
@@ -153,15 +153,16 @@ and the plots of the resulting best-fit and components look like these:
 
 .. _fitting_fig2:
 
-   Figure 2.  Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions and
-   an Error function
-
   .. image::  ../images/fit_example2a1.png
      :target: ../_images/fit_example2a1.png
      :width: 48 %
   .. image:: ../images/fit_example2a2.png
      :target: ../_images/fit_example2a2.png
      :width: 48 %
+
+  Figure 2.  Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions and
+  an Error function
+
 
 
 and we see the fit is pretty good.
@@ -232,15 +233,15 @@ moved significantly, as can be seen in the plots for this fit:
 
 .. _fitting_fig3:
 
-   Figure 3.  Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions and
-   an Error function
-
   .. image::  ../images/fit_example2b1.png
      :target: ../_images/fit_example2b1.png
      :width: 48 %
   .. image::  ../images/fit_example2b2.png
      :target: ../_images/fit_example2b2.png
      :width: 48 %
+
+  Figure 3.  Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions and
+  an Error function
 
 Finally for this example, we can replace the Gaussian peak shapes with
 other functional forms.   To use the Voigt function shown in the previous
@@ -283,15 +284,16 @@ For completeness,  the plots from this fit look like this:
 
 .. _fitting_fig4:
 
-   Figure 4.  Fit to Fe K-edge pre-edge and edge with 3 Voigt functions and
-   an Error function
-
   .. image:: ../images/fit_example2c1.png
      :target: ../_images/fit_example2c1.png
      :width: 48 %
   .. image:: ../images/fit_example2c2.png
      :target: ../_images/fit_example2c2.png
      :width: 48 %
+
+  Figure 4.  Fit to Fe K-edge pre-edge and edge with 3 Voigt functions and
+  an Error function
+
 
 It's difficult to see a dramatic difference in fit quality for this data,
 but the ability to explore fitting with different lineshapes like this is
@@ -335,15 +337,16 @@ important component.
 
 .. _fitting_fig5:
 
-   Figure 5.  Components used for Linear Combination Fits (left) and Fit
-   with components *s1* and *s2* (right).
-
   .. image:: ../images/fit_example3a.png
      :target: ../_images/fit_example3a.png
      :width: 48 %
   .. image:: ../images/fit_example3b.png
      :target: ../_images/fit_example3b.png
      :width: 48 %
+
+  Figure 5.  Components used for Linear Combination Fits (left) and Fit
+  with components *s1* and *s2* (right).
+
 
 To quantitatively fit these spectra, we read in all the data, and then
 create a single group *dat* that will contain all the data we need.  It
@@ -457,14 +460,14 @@ and the output plots for the best model look like this:
 
 .. _fitting_fig6:
 
-   Figure 6.  Fit with components *s1*, *s2*, and *s3*
-
   .. image:: ../images/fit_example3c1.png
      :target: ../_images/fit_example3c1.png
      :width: 48 %
   .. image:: ../images/fit_example3c2.png
      :target: ../_images/fit_example3c2.png
      :width: 48 %
+
+  Figure 6.  Fit with components *s1*, *s2*, and *s3*
 
 
 Of course, we aren't necessarily done here as we haven't exhausted all
@@ -543,8 +546,6 @@ The plots resulting from both sets of Parameters are shown:
 
 .. _fitting_fig7:
 
-   Figure 7: Fit with components *s1*, *s2*, *s3*, and *s6*
-
   .. image:: ../images/fit_example3d1.png
      :target: ../_images/fit_example3d1.png
      :width: 48 %
@@ -552,9 +553,9 @@ The plots resulting from both sets of Parameters are shown:
      :target: ../_images/fit_example3d2.png
      :width: 48 %
 
-.. _fitting_fig8:
+  Figure 7: Fit with components *s1*, *s2*, *s3*, and *s6*
 
-   Figure 8:  Fit with components *s1*, *s2*, *s3*, and *s5*
+.. _fitting_fig8:
 
   .. image:: ../images/fit_example3e1.png
      :target: ../_images/fit_example3e1.png
@@ -563,16 +564,16 @@ The plots resulting from both sets of Parameters are shown:
      :target: ../_images/fit_example3e2.png
      :width: 48 %
 
+  Figure 8:  Fit with components *s1*, *s2*, *s3*, and *s5*
 
 From the plots alone, it is difficult to tell which of these fits is
-better, and it is probably say that these are both good fits, suggesting
-that component *s3* is important even if at a very small fraction, and that
-either component *s5* or *s6* (which aren't that different
+better, and it is probably best to say that these are both good fits.  This
+implies that component *s3* is important even if at a very small fraction,
+and that either component *s5* or *s6* (which aren't that different
 spectroscopically or chemically, see :ref:`Figure 5 <fitting_fig5>`) is
 present.  Of course, the analysis here is not meant to be definitive, and
-there are many more checks that could be done.  For what it's worth, Lengke
-*et al*   looked at many more unknown spectra, and also adjusted the energy
-ranges of the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the
-best components, and get concentrations of the components very similar to
-the ones here.
-
+there are many more checks that could be done.  To be clear, Lengke *et al*
+looked at many more unknown spectra, and also adjusted the energy ranges of
+the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the best
+components, with concentrations of the components very similar to the ones
+found here.

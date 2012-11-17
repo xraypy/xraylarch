@@ -90,6 +90,7 @@
 <li><a class="reference internal" href="#a-second-look-at-strings">A second look at Strings</a></li>
 <li><a class="reference internal" href="#arrays">Arrays</a></li>
 <li><a class="reference internal" href="#dictionaries">Dictionaries</a></li>
+<li><a class="reference internal" href="#object-identities-copying-and-equality-vs-equivalence">Object identities, copying, and equality vs. equivalence</a></li>
 </ul>
 </li>
 </ul>
@@ -357,20 +358,23 @@ function as above:</p>
 <tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt> function to get a slightly more complete view of the group&#8217;s
 contents:</p>
 <div class="highlight-python"><pre>larch&gt; show(g)
-== Group: 3 symbols ==
+== Group 0x1b8cbfb0: 3 symbols ==
   data: array&lt;shape=(100,), type=dtype('int32')&gt;
   name: 'here is a string'
   x: 1002.8</pre>
 </div>
-<p>The <tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt> function can take arguments of attribute names and
-values, so that this group could have been created with a single call:</p>
+<p>(The <strong>&#8216;0x1b8cbfb0&#8217;</strong> is discussed in more detail below in
+<a class="reference internal" href="#tut-objectids-sec"><em>Object identities, copying, and equality vs. equivalence</em></a>).  The <tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt> function can take arguments
+of attribute names and values, so that this group could have been created
+with a single call:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Many Larch functions will return groups or take a &#8216;group&#8217; argument to write
-data into.  For example, the built-in functions that reads data from an
-external file will likely organize that data into a group and that group
-perhaps something like:</p>
+<p>Many Larch functions act on groups, either returning groups, expecting
+groups as certain arguments, or taking a &#8216;group&#8217; argument to write data
+into.  For example, the built-in functions that read data from an external
+files will likely organize that data into a group and that group perhaps
+something like:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">cu</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;cu_150k.xmu&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -500,7 +504,8 @@ appending to it with the &#8216;append&#8217; method:</p>
 <p>All lists will have an &#8216;append&#8217; method, as well as several others:</p>
 <blockquote>
 <div><ul class="simple">
-<li>count &#8211; to return the number of times a particular element occurss in the list</li>
+<li>append &#8211; add an element to the end of the list</li>
+<li>count &#8211; to return the number of times a particular element occurs in the list</li>
 <li>extend &#8211; to extend a list with another list</li>
 <li>index &#8211; to find the first occurance of an element</li>
 <li>insert &#8211; to insert an element in a particular place.</li>
@@ -700,20 +705,113 @@ larch&gt; print atomic_weight['He']
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="p">[</span><span class="s">&#39;C&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="mf">12.01</span>
 </pre></div>
 </div>
-<p>Dictionaries have several methods, such as to return all the keys or all
-the values, with:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span>
-<span class="p">[</span><span class="s">&#39;Be&#39;</span><span class="p">,</span> <span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="s">&#39;H&#39;</span><span class="p">,</span> <span class="s">&#39;Li&#39;</span><span class="p">,</span> <span class="s">&#39;He&#39;</span><span class="p">]</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
-<span class="p">[</span><span class="mf">9.0120000000000005</span><span class="p">,</span> <span class="mf">12.01</span><span class="p">,</span> <span class="mf">10.811</span><span class="p">,</span> <span class="mf">1.008</span><span class="p">,</span> <span class="mf">6.9000000000000004</span><span class="p">,</span> <span class="mf">4.0026000000000002</span><span class="p">]</span>
-</pre></div>
-</div>
-<p>Note that the keys and values are not in the order they were entered in,
-but do have the same order.</p>
+<p>Dictionaries have several methods.  These include</p>
+<blockquote>
+<div><ul class="simple">
+<li>clear &#8211; remove all elements from a dictionary.</li>
+<li>copy &#8211; make a copy of a dictionary.</li>
+<li>get &#8211; get an element by name.</li>
+<li>has_key &#8211; return whether a dictionary has a key.</li>
+<li>items &#8211; return a list of (key, value) tuples</li>
+<li>keys  &#8211; return a list of keys.</li>
+<li>values &#8211; return a list of values.</li>
+<li>pop &#8211; remove an element by key, return the value.</li>
+<li>popitem &#8211; remove the &#8220;next&#8221; item, return (key, value)</li>
+<li>update &#8211; add or overwrite items from another dictionary.</li>
+</ul>
+</div></blockquote>
+<p>For example:</p>
+<blockquote>
+<div>larch&gt; atomic_weight.keys()
+[&#8216;Be&#8217;, &#8216;C&#8217;, &#8216;B&#8217;, &#8216;H&#8217;, &#8216;Li&#8217;, &#8216;He&#8217;]
+larch&gt; atomic_weight.values()
+[9.0120000000000005, 12.01, 10.811, 1.008, 6.9000000000000004, 4.0026000000000002]</div></blockquote>
+<p>Note that the keys and values are not in the order they were entered.  If
+you add more elements to the dictionary, the new order can be unrelated to
+the old order.  What is guaranteed is that the order of the list of keys
+will always match the order of the list of values.</p>
 <p>As with lists, dictionaries are mutable, and the values in a dictionary can
 be any object, including other lists and dictionaries, so that a dictionary
 can end up with a very complex structure.  Dictionaries are quite useful,
 and are in fact used throughout python.</p>
+</div>
+<div class="section" id="object-identities-copying-and-equality-vs-equivalence">
+<span id="tut-objectids-sec"></span><h3>Object identities, copying, and equality vs. equivalence<a class="headerlink" href="#object-identities-copying-and-equality-vs-equivalence" title="Permalink to this headline">¶</a></h3>
+<p>OK, this may be a bit advanced for a section in a <em>tutorial</em>, but there are
+a few important topics we need to make about objects, groups, and the idea
+of <em>mutability</em> discussed above.  Though it may at first pass seem
+surprising, these points are all related, and will come up several times in
+this document and in your use of Larch.  Those familiar with Fortran, C, or
+Java programming may need to read this more carefully, as Larch and Python
+actually work quite differently from those languages.  What we&#8217;re aiming to
+cover here includes:</p>
+<blockquote>
+<div><ul class="simple">
+<li>what variable assignment really means.</li>
+<li>mutable and immutable objects.</li>
+<li>object identity.</li>
+<li>the difference between equality and equivalence.</li>
+</ul>
+</div></blockquote>
+<p>As mentioned above, each named quantity in Larch is simply a Python object
+(for the C, C++, and Java programmers, every variable is reference or
+pointer).  Assignment to a Larch variable as with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="s">&#39;a string&#39;</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">y</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">z</span> <span class="o">=</span> <span class="n">some_function</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>first determines the <em>value</em> from the right-hand-side of the expression
+(1+2, &#8216;a string&#8217;, a list, and the return value of some_function()) then
+assigns the variable <em>name</em> (w, x, y, z) to point to the corresponding
+value.  Larch doesn&#8217;t pre-assign variable names so that &#8216;w&#8217; there can only
+ever hold an integer &#8211; you can change not only its value but the <em>type</em> of
+data its pointing to:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">3.25</span>  <span class="c"># now a floating point number</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c"># now a list</span>
+</pre></div>
+</div>
+<p>For this reason, a variable name is best thought of as something very
+different from the value it points to.  Of course, it is obvious when two
+different variable names are different, because the names are different.
+It is less clear whether the value the variables hold are different.</p>
+<p>Values of simple types (integer, float, string, tuple, and a few other
+builtin types) are said to be <strong>immutable</strong> &#8211;  the value itself cannot
+change.   You can reassign a name to a different value, but:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">3.25</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">4.68</span>
+</pre></div>
+</div>
+<p>doesn&#8217;t change the value of 3.25.  Assignment to simple types then can be
+thought of as essentially making a fresh value for the name to point each
+time an assignment is made.  This isn&#8217;t exactly true because Python sets
+pre-allocates small integers so that it is not making a new integer object
+every time you assign a number to 1, but it&#8217;s a reasonable approximation
+for now.</p>
+<p>Several object types such as lists, dictionaries, arrays, and groups, all
+are meant to changeable after they are created: they are <strong>mutable</strong>.  That
+is, even after creating a list, you can append an element to it or you can
+remove an item from it, and so on.  These actions changes the <em>value</em> that
+the object points to.  The object just points to a place in memory &#8211; this
+does not have to change just because the value changes.</p>
+<p>This is somewhat different than the model for variable in languages such as
+C or Fortran where variables have fixed memory locations and specific types
+of data they can hold.   In Python and Larch, all objects point to some
+value.  For mutable data types, the value is allowed to change.  In
+addition, what the object points to can also change.</p>
+<p>Each object value has a unique memory location &#8211; its identity.  The
+builtin <tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt> function returns this identity.  Two variables are said
+to be <em>equivalent</em> if their values have the same identity &#8211; the variables
+point to the same quantitiy.  Two variabales are <em>equal</em> if their values
+are the same, even if these values are held in different memory locations.
+And, of course, two differe variables can point to the same object.</p>
+<p>In practice, this is not as confusing as it sounds, and the model for data,
+variables, and values is generally very easy to deal with.  The most
+important thing to be aware of &#8211; the thing most likely to cause trouble &#8211;
+is that assigning a variable to be a mutable object like a list,
+dictionary, or array does not make a copy of the object, but simply creates
+another variable that points to the same value.</p>
 </div>
 </div>
 </div>
@@ -750,7 +848,7 @@ and are in fact used throughout python.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

@@ -143,7 +143,7 @@ encapsulated in the :func:`xftf` function.
     If a ``group`` argument is provided, the following data arrays are put into it:
 
        ================= ===============================================================
-        attribute         meaning
+        array name         meaning
        ================= ===============================================================
         kwin               window :math:`\Omega(k)` (length of input chi(k)).
 	r                  uniform array of :math:`R`, out to ``rmax_out``.
@@ -209,7 +209,7 @@ the explicitly real :math:`\chi(k)`.
     If a ``group`` argument is provided, the following data arrays are put into it:
 
        ================= ===============================================================
-        attribute         meaning
+        array name         meaning
        ================= ===============================================================
         rwin               window :math:`\Omega(R)` (length of input chi(R)).
 	q                  uniform array of :math:`k`, out to ``qmax_out``.
@@ -278,7 +278,7 @@ available for constructing windows.  A sampling of windows is shown below.
 .. index:: Fourier Transform Window types
 .. _xafs-ftwin_table:
 
-    Table of Fourier Transform Window Types
+    Table of Fourier Transform Window Types.
 
        =================== =========================================================
         window name          description
@@ -340,12 +340,6 @@ Welch windows, and illustrated in the two following figures.
 
 .. _xafs_fig5:
 
-   Figure 5. Fourier Transform window examples and illustration of
-   parameter meaning for the Hanning, Parzen, and Welch windows.  Note that
-   :math:`\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5`, and that
-   the meaning of ``dx`` is to control the taper over which the window
-   changes from 0 to 1.  Here, ``xmin=5`` and ``xmax=15``.
-
   .. image::  ../images/ftwin_example1.png
      :target: ../_images/ftwin_example1.png
      :width: 48 %
@@ -353,14 +347,13 @@ Welch windows, and illustrated in the two following figures.
      :target: ../_images/ftwin_example2.png
      :width: 48 %
 
+  Figure 5. Fourier Transform window examples and illustration of
+  parameter meaning for the Hanning, Parzen, and Welch windows.  Note that
+  :math:`\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5`, and that
+  the meaning of ``dx`` is to control the taper over which the window
+  changes from 0 to 1.  Here, ``xmin=5`` and ``xmax=15``.
 
 .. _xafs_fig6:
-
-   Figure 6. Fourier Transform window examples and illustration of
-   parameter meaning.  On the left, a comparison of Welch, Parzen, and
-   Hanning with the same parameters is shown.  On the right, the effect of
-   ``dx2`` is shown as a different amount of taper on the high- and
-   low-``x`` end of the window.  As before, ``xmin=5`` and ``xmax=15``.
 
   .. image::  ../images/ftwin_example3.png
      :target: ../_images/ftwin_example3.png
@@ -368,6 +361,12 @@ Welch windows, and illustrated in the two following figures.
   .. image:: ../images/ftwin_example4.png
      :target: ../_images/ftwin_example4.png
      :width: 48 %
+
+  Figure 6. Fourier Transform window examples and illustration of
+  parameter meaning.  On the left, a comparison of Welch, Parzen, and
+  Hanning with the same parameters is shown.  On the right, the effect of
+  ``dx2`` is shown as a different amount of taper on the high- and
+  low-``x`` end of the window.  As before, ``xmin=5`` and ``xmax=15``.
 
 The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
 go to 1 at the average of ``xmin`` and ``xmax``, but do not stay at 1 over
@@ -380,17 +379,17 @@ approaches a nearly Gaussian lineshape.
 
 .. _xafs_fig7:
 
-   Figure 7. Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
-   Sine, and Gaussian windows with the same parameters is shown.  On the right, the effect of
-   ``dx`` is shown for the Kaiser-Bessel window, and a closer comparison to a
-   Gaussian window is made.
-
   .. image::  ../images/ftwin_example5.png
      :target: ../_images/ftwin_example5.png
      :width: 48 %
   .. image:: ../images/ftwin_example6.png
      :target: ../_images/ftwin_example6.png
      :width: 48 %
+
+  Figure 7. Fourier Transform windows. On the left, a comparison of
+  Kaiser-Bessel, Sine, and Gaussian windows with the same parameters is
+  shown.  On the right, the effect of ``dx`` is shown for the Kaiser-Bessel
+  window, and a closer comparison to a Gaussian window is made.
 
 
 Examples: Forward XAFS Fourier transforms
@@ -424,7 +423,6 @@ would result in the following results:
   .. image:: ../images/xft_example2.png
      :target: ../_images/xft_example2.png
      :width: 48 %
-
 
   Figure 8.  Comparison of the effect of different values of ``dk`` on real
   XAFS Fourier transforms.  Increasing ``dk`` reduces peak heights and

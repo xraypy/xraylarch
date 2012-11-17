@@ -252,7 +252,7 @@ encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xaf
 <col width="79%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">attribute</th>
+<tr class="row-odd"><th class="head">array name</th>
 <th class="head">meaning</th>
 </tr>
 </thead>
@@ -360,7 +360,7 @@ the explicitly real <img class="math" src="../_images/math/bb12e6fe6361a7e793c32
 <col width="79%" />
 </colgroup>
 <thead valign="bottom">
-<tr class="row-odd"><th class="head">attribute</th>
+<tr class="row-odd"><th class="head">array name</th>
 <th class="head">meaning</th>
 </tr>
 </thead>
@@ -463,7 +463,7 @@ Fourier Transform Window Types</em></a>.</p>
 </dd></dl>
 
 <blockquote id="xafs-ftwin-table">
-<span id="index-0"></span><div><p>Table of Fourier Transform Window Types</p>
+<span id="index-0"></span><div><p>Table of Fourier Transform Window Types.</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -533,24 +533,22 @@ window types and the effect of the various parameters.  The meanings of
 <tt class="docutils literal"><span class="pre">xmin</span></tt>, <tt class="docutils literal"><span class="pre">xmax</span></tt>, <tt class="docutils literal"><span class="pre">dx</span></tt> and <tt class="docutils literal"><span class="pre">dx2</span></tt> are identical for the Hanning, Parzen and
 Welch windows, and illustrated in the two following figures.</p>
 <blockquote id="xafs-fig5">
-<div><blockquote>
-<div>Figure 5. Fourier Transform window examples and illustration of
+<div><a class="reference external image-reference" href="../_images/ftwin_example1.png"><img alt="../_images/ftwin_example1.png" src="../_images/ftwin_example1.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/ftwin_example2.png"><img alt="../_images/ftwin_example2.png" src="../_images/ftwin_example2.png" style="width: 48%;" /></a>
+<p>Figure 5. Fourier Transform window examples and illustration of
 parameter meaning for the Hanning, Parzen, and Welch windows.  Note that
 <img class="math" src="../_images/math/2ae1ad42e768145863b64ec04691fd7ba83f3c31.png" alt="\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5"/>, and that
 the meaning of <tt class="docutils literal"><span class="pre">dx</span></tt> is to control the taper over which the window
-changes from 0 to 1.  Here, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</div></blockquote>
-<a class="reference external image-reference" href="../_images/ftwin_example1.png"><img alt="../_images/ftwin_example1.png" src="../_images/ftwin_example1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/ftwin_example2.png"><img alt="../_images/ftwin_example2.png" src="../_images/ftwin_example2.png" style="width: 48%;" /></a>
+changes from 0 to 1.  Here, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</p>
 </div></blockquote>
 <blockquote id="xafs-fig6">
-<div><blockquote>
-<div>Figure 6. Fourier Transform window examples and illustration of
+<div><a class="reference external image-reference" href="../_images/ftwin_example3.png"><img alt="../_images/ftwin_example3.png" src="../_images/ftwin_example3.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/ftwin_example4.png"><img alt="../_images/ftwin_example4.png" src="../_images/ftwin_example4.png" style="width: 48%;" /></a>
+<p>Figure 6. Fourier Transform window examples and illustration of
 parameter meaning.  On the left, a comparison of Welch, Parzen, and
 Hanning with the same parameters is shown.  On the right, the effect of
 <tt class="docutils literal"><span class="pre">dx2</span></tt> is shown as a different amount of taper on the high- and
-low-<tt class="docutils literal"><span class="pre">x</span></tt> end of the window.  As before, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</div></blockquote>
-<a class="reference external image-reference" href="../_images/ftwin_example3.png"><img alt="../_images/ftwin_example3.png" src="../_images/ftwin_example3.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/ftwin_example4.png"><img alt="../_images/ftwin_example4.png" src="../_images/ftwin_example4.png" style="width: 48%;" /></a>
+low-<tt class="docutils literal"><span class="pre">x</span></tt> end of the window.  As before, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</p>
 </div></blockquote>
 <p>The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
 go to 1 at the average of <tt class="docutils literal"><span class="pre">xmin</span></tt> and <tt class="docutils literal"><span class="pre">xmax</span></tt>, but do not stay at 1 over
@@ -561,13 +559,12 @@ and Kaiser-Bessel windows both go to zero at  <tt class="docutils literal"><span
 <span class="pre">dx/2</span></tt>.  For very large values of <tt class="docutils literal"><span class="pre">dx</span></tt>, the Kaiser-Bessel window
 approaches a nearly Gaussian lineshape.</p>
 <blockquote id="xafs-fig7">
-<div><blockquote>
-<div>Figure 7. Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
-Sine, and Gaussian windows with the same parameters is shown.  On the right, the effect of
-<tt class="docutils literal"><span class="pre">dx</span></tt> is shown for the Kaiser-Bessel window, and a closer comparison to a
-Gaussian window is made.</div></blockquote>
-<a class="reference external image-reference" href="../_images/ftwin_example5.png"><img alt="../_images/ftwin_example5.png" src="../_images/ftwin_example5.png" style="width: 48%;" /></a>
+<div><a class="reference external image-reference" href="../_images/ftwin_example5.png"><img alt="../_images/ftwin_example5.png" src="../_images/ftwin_example5.png" style="width: 48%;" /></a>
 <a class="reference external image-reference" href="../_images/ftwin_example6.png"><img alt="../_images/ftwin_example6.png" src="../_images/ftwin_example6.png" style="width: 48%;" /></a>
+<p>Figure 7. Fourier Transform windows. On the left, a comparison of
+Kaiser-Bessel, Sine, and Gaussian windows with the same parameters is
+shown.  On the right, the effect of <tt class="docutils literal"><span class="pre">dx</span></tt> is shown for the Kaiser-Bessel
+window, and a closer comparison to a Gaussian window is made.</p>
 </div></blockquote>
 </div>
 <div class="section" id="examples-forward-xafs-fourier-transforms">
@@ -700,7 +697,7 @@ array.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

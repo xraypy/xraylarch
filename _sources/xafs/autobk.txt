@@ -304,15 +304,14 @@ with the resulting outputs looking like this:
 
 .. _xafs_fig2:
 
-   Figure 2.  Example of simple usage of :func:`autobk`.
-
-
   .. image::  ../images/xafs_autobk1a.png
      :target: ../_images/xafs_autobk1a.png
      :width: 48 %
   .. image::  ../images/xafs_autobk1b.png
      :target: ../_images/xafs_autobk1b.png
      :width: 48 %
+
+  Figure 2.  Example of simple usage of :func:`autobk`.
 
 Thus demonstrating that we can process data on Cu metal.
 
@@ -328,15 +327,14 @@ The resulting outputs looks OK:
 
 .. _xafs_fig3:
 
-   Figure 3.  Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
-
-
   .. image::  ../images/xafs_autobk2a.png
      :target: ../_images/xafs_autobk2a.png
      :width: 48 %
   .. image::  ../images/xafs_autobk2b.png
      :target: ../_images/xafs_autobk2b.png
      :width: 48 %
+
+  Figure 3.  Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
 
 A close examimation of :math:`k^2\chi(k)` suggests we might be able to do
 better, which brings us to the next section.
@@ -355,11 +353,11 @@ results in the following comparison:
 
 .. _xafs_fig4:
 
-   Figure 4.  Influence of spline clamps of :math:`\chi(k)`
-
   .. image::  ../images/xafs_autobk3.png
      :target: ../_images/xafs_autobk3.png
      :width: 65 %
+
+  Figure 4.  Influence of spline clamps of :math:`\chi(k)`
 
 
 Using a Standard :math:`\chi(k)`

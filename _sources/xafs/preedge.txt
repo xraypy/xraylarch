@@ -92,8 +92,14 @@ A simple example of pre-edge subtraction::
 
 gives the following results:
 
+.. _xafs_fig1:
+
   .. image:: ../images/xafs_preedge.png
      :target: ../_images/xafs_preedge.png
-     :width: 60 %
+     :width: 75 %
+
+  Figure 1. XAFS Pre-edge subtraction.
+
+
 
 

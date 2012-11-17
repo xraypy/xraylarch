@@ -252,7 +252,7 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 .. [BrennanCowan] S. Brennan and P. L. Cowen, *A suite of programs for
     calculating x-ray absorption, reflection, and diffraction performance
     for a variety of materials at arbitrary wavelengths*, Review of
-    Scientific Instruments **63**, pp850--853 (1992) [`doi link <http://dx.doi.org/10.1063/1.1142625>`_].
+    Scientific Instruments **63**, pp850--853 (1992) [http://dx.doi.org/10.1063/1.1142625].
 
 .. [Chantler]   C. T. Chantler, Journal of Physical and Chemical Reference
     Data **24**, p71 (1995)
@@ -260,11 +260,11 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 .. [CromerLiberman] D. T. Cromer and D. A. Liberman *Anomalous dispersion
     calculations near to and on the long-wavelength side of an
     absorption-edge*, Acta Crystallographica **A37**, pp267-268 (1981)
-    [`doi link <http://dx.doi.org/10.1107/S0567739481000600>`_].
+    [http://dx.doi.org/10.1107/S0567739481000600].
 
 .. [ElamRavelSieber]   W. T. Elam, B. D. Ravel and J. R. Sieber, Radiation
     Physics and Chemistry **63** (2), pp121--128 (2002)
-    [`doi link <http://dx.doi.org/10.1016/S0969-806X(01)00227-4>`_].
+    [http://dx.doi.org/10.1016/S0969-806X(01)00227-4].
 
 .. [KeskiRahkonenKrause]  O. Keski-Rahkonen and M. O. Krause, *Total and Partial
     Atomic-Level Widths*, Atomic Data and Nuclear Data Tables **14**,
@@ -273,5 +273,5 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 .. [WaasmaierKirfel]  D. Waasmaier and A. Kirfel, *New Analytical
     Scattering Factor Functions for Free Atoms and Ions*,
     Acta Crystallographica **A51**, pp416-431 (1995)
-    [`doi link <http://dx.doi.org/10.1107/S0108767394013292>`_].
+    [http://dx.doi.org/10.1107/S0108767394013292].
 
