@@ -49,7 +49,16 @@ def _read_ascii(fname, commentchar='#;%', labels=None, sort=False, sort_column=0
                 islabel = False
             elif line[2:].strip().startswith('---'):
                 islabel = True
-            else:
+            elif '=' in line[1:]: # perhaps '# x = 22' format?
+                words = line[1:].split('=', 1)
+                key = fixName(words[0].strip())
+                if key.startswith('_'):
+                    key = key[1:]
+                if len(words) == 1:
+                    header_txt.append(words[0].strip())
+                else:
+                    header_kws[key] = words[1].strip()
+            elif ':' in line[1:]: # perhaps '# attribute: value' format?
                 words = line[1:].split(':', 1)
                 key = fixName(words[0].strip())
                 if key.startswith('_'):
