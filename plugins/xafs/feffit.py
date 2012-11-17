@@ -336,46 +336,58 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     for ds in datasets:
         n_idp += ds.transform.n_idp
     err_scale = sqrt(params.chi_reduced)
-
     for name in dir(params):
         p = getattr(params, name)
         if isParameter(p) and p.vary:
             p.stderr *= err_scale
-
-    # next, propagate uncertainties to path parameters.
+    # next, propagate uncertainties to constraints and path parameters.
     if HAS_UNCERTAIN and params.covar is not None:
         vsave, vbest = {}, []
+        # 1. save current params
         for vname in params.covar_vars:
             par = getattr(params, vname)
             vsave[vname] = par
             vbest.append(par.value)
+
+        # 2. get correlated uncertainties, set params accordingly
         uvars = correlated_values(vbest, params.covar)
         for val, nam in zip(uvars, params.covar_vars):
             setattr(params, nam, ufloat((val.nominal_value,
                                          err_scale * val.std_dev())))
+        # 3. evaluate constrained params, save stderr
         for nam, par in params.__dict__.items():
             if isParameter(par) and par._ast is not None:
-                tmp = par._getval()
-                par.stderr = tmp.std_dev()
-
+                par.stderr = 0
+                try:
+                    tmp = par._getval()
+                    par.stderr = tmp.std_dev()
+                except:
+                    pass
+        # 3. evaluate path params, save stderr
         for ds in datasets:
             for p in ds.pathlist:
                 for param in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
-                    obj = getattr(p, param)
-                    if isParameter(obj):
-                        stderr  = 0
-                        if hasattr(obj.value, 'std_dev'):
-                            stderr = obj.value.std_dev()
+                    try:
+                        obj = getattr(p, param)
+                        if isParameter(obj):
+                            stderr  = 0
+                            if hasattr(obj.value, 'std_dev'):
+                                stderr = obj.value.std_dev()
                         setattr(obj, 'stderr', stderr)
-
+                    except:
+                        pass
+        # 4. restore saved parameters
         for vname in params.covar_vars:
             setattr(params, vname, vsave[vname])
 
-    # here we create outputs:
+        # clear any errors evaluting uncertainties
+        if len(_larch.error) > 0:
+            _larch.error = []
+
+    # here we create outputs arrays for chi(k), chi(r):
     for ds in datasets:
         ds.save_ffts(rmax_out=rmax_out, path_outputs=path_outputs)
-
     return Group(name='feffit fit results', fit=fit, params=params,
                  datasets=datasets)
 
