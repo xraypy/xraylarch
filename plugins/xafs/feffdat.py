@@ -210,12 +210,11 @@ class FeffPathGroup(Group):
         "return  text report of parameters"
         (deg, s02, e0, ei, delr, ss2, c3, c4) = self._pathparams()
 
-        geomlabel  = '     geometry: Atom Label x, y, z ipot'
+        geomlabel  = '          Atom     x        y        z     ipot'
         geomformat = '           %s   % .4f, % .4f, % .4f  %i'
-        out = ['   feff dat file = %s' % self.filename]
+        out = ['   feff.dat file = %s' % self.filename]
         if self.label != self.filename:
             out.append('     label     = %s' % self.label)
-        out.append('     reff = %.5f' % self._feffdat.reff)
         out.append(geomlabel)
 
         for label, iz, ipot, x, y, z in self.geom:
@@ -224,7 +223,7 @@ class FeffPathGroup(Group):
             out.append(s)
 
         stderrs = {}
-        
+        out.append('     reff   =  %.5f' % self._feffdat.reff)
         for param in ('degen', 's02', 'e0', 'ei',
                       'deltar', 'sigma2', 'third', 'fourth'):
             val = getattr(self, param)
@@ -236,7 +235,7 @@ class FeffPathGroup(Group):
                     if val.stderr is not None:
                         std = val.stderr
             stderrs[param] = std
-            
+
         def showval(title, par, val, stderrs, ifnonzero=False):
             if val == 0 and ifnonzero:
                 return
@@ -249,8 +248,8 @@ class FeffPathGroup(Group):
                 s = '%s % .5f +/- % .5f' % (s, val, stderrs[par])
             out.append(s)
         showval('Degen  ', 'degen',  deg,  stderrs)
-        showval('S02    ', 's02',    s02,  stderrs)        
-        showval('E0     ', 'e0',     e0,   stderrs)          
+        showval('S02    ', 's02',    s02,  stderrs)
+        showval('E0     ', 'e0',     e0,   stderrs)
         showval('R      ', 'deltar', delr, stderrs)
         showval('deltar ', 'deltar', delr, stderrs)
         showval('sigma2 ', 'sigma2', ss2,  stderrs)
