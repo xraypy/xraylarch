@@ -80,7 +80,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
 
     def top_widgets(self, panel, sizer, title, irow=1,
                     dwell_prec=3, dwell_value=1):
-        self.absrel = add_choice(panel,('Absolute', 'Relative'),
+        self.absrel = add_choice(panel, ('Absolute', 'Relative'),
                                  action = self.onAbsRel)
         self.absrel.SetSelection(1)
         self.dwelltime = FloatCtrl(panel, precision=dwell_prec, value=dwell_value,
@@ -90,7 +90,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         self.est_time  = SimpleText(panel, '00:00:00')
         title  =  SimpleText(panel, "  %s" % title, font=self.Font13, colour='#880000',
                              style=LEFT)
-        alabel = SimpleText(panel, ' Mode:')
+        alabel = SimpleText(panel, ' Mode: ', size=(60, -1))
         tlabel = SimpleText(panel, ' Estimated Scan Time:')
         dlabel = SimpleText(panel, ' Time/Point (sec):')
 
@@ -176,19 +176,14 @@ class GenericScanPanel(scrolled.ScrolledPanel):
             llim = llim - mpv.value
         wids[1].SetLabel(units)
         wids[2].SetPV(mpv)
-        print 'BGCOL == ', self.bgcol
-        print 'BGCOL == ', self.GetBackgroundColour()
-        print 'FGCOL == ', self.GetForegroundColour()
-        # wids[2].SetBackgroundColour(self.bgcol)
-        print '== BGCOL == ', wids[2].GetBackgroundColour()
-        print '== FGCOL == ', wids[2].GetForegroundColour()
-
+        wids[2].SetBackgroundColour(self.bgcol)
         for i in (3, 4):
             wids[i].SetMin(llim)
             wids[i].SetMax(hlim)
             wids[i].SetPrecision(mpv.precision)
 
     def onAbsRel(self, evt=None):
+        "generic abs/rel"
         for index, wids in enumerate(self.pos_settings):
             if wids[3].Enabled:
                 try:
@@ -198,6 +193,12 @@ class GenericScanPanel(scrolled.ScrolledPanel):
 
                 if 1 == self.absrel.GetSelection(): # now relative (was absolute)
                     offset = -offset
+                wids[3].SetMin(wids[3].GetMin() + offset)
+                wids[3].SetMax(wids[3].GetMax() + offset)
+                wids[4].SetMin(wids[4].GetMin() + offset)
+                wids[4].SetMax(wids[4].GetMax() + offset)
+
+
                 wids[3].SetValue(offset + wids[3].GetValue(), act=False)
                 wids[4].SetValue(offset + wids[4].GetValue(), act=False)
                 self.update_position_from_pv(index)
@@ -239,7 +240,7 @@ class LinearScanPanel(GenericScanPanel):
 
             pos = add_choice(panel, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
-
+            pos.SetSelection(0)
             role = wx.StaticText(panel, -1, label=lab)
             units = wx.StaticText(panel, -1, label='', size=(40, -1))
             cur   = PVText(panel, pv=None, size=(100, -1))
@@ -302,7 +303,6 @@ class LinearScanPanel(GenericScanPanel):
                 wids[0].SetStringSelection(a)
 
     def generate_scan(self):
-        print 'Linear generate scan ', self.__name__
         s = {'type': 'linear',
              'dwelltime':  float(self.dwelltime.GetValue()),
              'positioners': []}
@@ -364,8 +364,10 @@ class XAFSScanPanel(GenericScanPanel):
             label, initvals = reg
             ir += 1
             reg   = wx.StaticText(panel, -1, size=(100, -1), label=' %s' % label)
-            start, stop, step, npts = self.StartStopStepNpts(panel, i, initvals=initvals)
-            dtime = FloatCtrl(panel, size=(65, -1), value=1, minval=0, precision=3,
+            start, stop, step, npts = self.StartStopStepNpts(panel, i,
+                                                             initvals=initvals)
+            dtime = FloatCtrl(panel, size=(65, -1), value=1, minval=0,
+                              precision=3,
                               action=Closure(self.onVal, index=i, label='dtime'))
 
             if i < 2:
@@ -428,10 +430,10 @@ class XAFSScanPanel(GenericScanPanel):
         s.Add(SimpleText(p, " Edge Energy:", size=(120, -1),
                          style=wx.ALIGN_LEFT), 0, CEN, 2)
         s.Add(self.e0,   0, LEFT, 2)
-        s.Add(SimpleText(p, "  Element:"),  0, LEFT, 2)
-        s.Add(self.elemchoice,              0, LEFT, 2)
-        s.Add(SimpleText(p, "  Edge:"),     0, LEFT, 2)
-        s.Add(self.edgechoice,              0, LEFT, 2)
+        s.Add(SimpleText(p, "  Element:  "),  0, LEFT, 3)
+        s.Add(self.elemchoice,                0, LEFT, 3)
+        s.Add(SimpleText(p, "  Edge:  "),     0, LEFT, 3)
+        s.Add(self.edgechoice,                0, LEFT, 3)
         pack(p, s)
         return p
 
@@ -499,6 +501,7 @@ class XAFSScanPanel(GenericScanPanel):
                 self.setStepNpts(self.reg_settings[index-1], label)
 
     def onAbsRel(self, evt=None):
+        """xafs abs/rel"""
         offset = self.e0.GetValue()
         if 1 == self.absrel.GetSelection(): # relative (was absolute)
             offset = -offset
@@ -555,11 +558,11 @@ class MeshScanPanel(GenericScanPanel):
         self.pos_settings = []
         pchoices=self.config.positioners.keys()
         fsize = (95, -1)
-        for i, label in enumerate(("Inner", "Outer")):
+        for i, label in enumerate((" Inner ", " Outer ")):
             lab = wx.StaticText(panel, -1, label=label)
             pos = add_choice(panel, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
-
+            pos.SetSelection(i)
             units = wx.StaticText(panel, -1, size=(40, -1), label='')
             cur   = PVText(panel, pv=None, size=(100, -1))
             start, stop, step, npts = self.StartStopStepNpts(panel, i)
@@ -603,8 +606,8 @@ class MeshScanPanel(GenericScanPanel):
     def generate_scan(self):
         s = {'type': 'mesh',
              'dwelltime':  float(self.dwelltime.GetValue()),
-             'fast': [],
-             'slow': []}
+             'inner': [],
+             'outer': []}
 
         is_relative =  self.absrel.GetSelection()
         for i, wids in enumerate(self.pos_settings):
@@ -617,8 +620,8 @@ class MeshScanPanel(GenericScanPanel):
             if is_relative:
                 p1 += float(cur.GetLabel())
                 p2 += float(cur.GetLabel())
-            mname = 'fast'
-            if i == 1: mname = 'slow'
+            mname = 'outer'
+            if i == 0: mname = 'inner'
             s[mname].append((name, pvnames, p1, p2, npts))
         return s
 
@@ -632,6 +635,13 @@ class SlewScanPanel(GenericScanPanel):
         sizer = wx.GridBagSizer(7, 8)
 
         ir = self.top_widgets(panel, sizer, 'Slew Scan (Fast Map) Setup')
+        
+        self.dimchoice = add_choice(panel, ('1', '2'),
+                                 action = self.onDim)
+        self.dimchoice.SetSelection(1)
+        sizer.Add(SimpleText(panel, ' Dimension:'), (ir-1, 5), (1, 1), CEN)
+        sizer.Add(self.dimchoice,                   (ir-1, 6), (1, 2), CEN)                             
+        
         sizer.Add(wx.StaticLine(panel, size=(675, 3), style=wx.LI_HORIZONTAL),
                   (ir, 0), (1, 8), wx.ALIGN_CENTER)
         ir += 1
@@ -643,13 +653,14 @@ class SlewScanPanel(GenericScanPanel):
 
         self.pos_settings = []
         fsize = (95, -1)
-        for i, label in enumerate(("Inner", "Outer")):
+        for i, label in enumerate((" Inner ", " Outer ")):
             lab = wx.StaticText(panel, -1, label=label)
             pchoices = self.config.positioners.keys()
             if i == 0:
                 pchoices = self.config.slewscan_positioners.keys()
             pos = add_choice(panel, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
+            pos.SetSelection(i)
             units = wx.StaticText(panel, -1, size=(40, -1), label='')
             cur   = PVText(panel, pv=None, size=(100, -1))
             start, stop, step, npts = self.StartStopStepNpts(panel, i)
@@ -677,6 +688,19 @@ class SlewScanPanel(GenericScanPanel):
         if label in ('start', 'stop', 'step', 'npts'):
             self.setStepNpts(self.pos_settings[index][3:], label)
 
+    def onDim(self, evt=None):
+        print 'on Dimension ', self.dimchoice.GetSelection()
+        wids = self.pos_settings[1]
+        self.update_position_from_pv(0)
+
+        if self.dimchoice.GetSelection() == 0: # 1-d
+            for i in (1, 2): wids[i].SetLabel('')
+            for i in (3, 4, 5, 6): wids[i].Disable()
+        else:
+            for i in (3, 4, 5, 6): wids[i].Enable()
+            self.update_position_from_pv(1)
+
+            
     def onPos(self, evt=None, index=0):
         self.update_position_from_pv(index)
 
@@ -694,11 +718,11 @@ class SlewScanPanel(GenericScanPanel):
 
 
     def generate_scan(self):
-        s = {'type': 'mesh',
+        s = {'type': 'slew',
              'dwelltime':  float(self.dwelltime.GetValue()),
              'dimension': 2,
-             'fast': [],
-             'slow': []}
+             'inner': [],
+             'outer': []}
 
         is_relative =  self.absrel.GetSelection()
         for i, wids in enumerate(self.pos_settings):
@@ -711,8 +735,8 @@ class SlewScanPanel(GenericScanPanel):
             if is_relative:
                 p1 += float(cur.GetLabel())
                 p2 += float(cur.GetLabel())
-            mname = 'fast'
-            if i == 1: mname = 'slow'
+            mname = 'outer'
+            if i == 01: mname = 'inner'
             s[mname].append((name, pvnames, p1, p2, npts))
         return s
 
