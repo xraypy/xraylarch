@@ -327,9 +327,9 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
 
     # remove temporary parameters for _feffdat and reff
     # that had been placed by _pathparams()
-    for pname in ('_feffdat', 'reff'):
-        if hasattr(params, pname):
-            delattr(params, pname)
+    #for pname in ('_feffdat', 'reff'):
+    #    if hasattr(params, pname):
+    #        delattr(params, pname)
 
     # scale uncertainties to sqrt(reduce chi-square)
     n_idp = 0
@@ -362,6 +362,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
                     tmp = par._getval()
                     par.stderr = tmp.std_dev()
                 except:
+                    print 'error with derived uncertainty ', par, par.name, par._ast
                     pass
         # 3. evaluate path params, save stderr
         for ds in datasets:
@@ -370,13 +371,15 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
                               'deltar', 'sigma2', 'third', 'fourth'):
                     try:
                         obj = getattr(p, param)
+                        stderr  = 0
                         if isParameter(obj):
-                            stderr  = 0
                             if hasattr(obj.value, 'std_dev'):
                                 stderr = obj.value.std_dev()
                         setattr(obj, 'stderr', stderr)
+                        print ' propagate ', param, obj, stderr
                     except:
-                        pass
+                        print 'error with param uncertainty ', param
+        print 'mmmm'
         # 4. restore saved parameters
         for vname in params.covar_vars:
             setattr(params, vname, vsave[vname])

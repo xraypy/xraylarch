@@ -210,6 +210,12 @@ class FeffPathGroup(Group):
         "return  text report of parameters"
         (deg, s02, e0, ei, delr, ss2, c3, c4) = self._pathparams()
 
+        # put 'reff' into the paramGroup so that it can be used in
+        # constraint expressions
+        reff = self._feffdat.reff
+        if self._larch.symtable._sys.paramGroup is not None:
+            self._larch.symtable._sys.paramGroup.reff = reff
+
         geomlabel  = '          Atom     x        y        z     ipot'
         geomformat = '           %s   % .4f, % .4f, % .4f  %i'
         out = ['   feff.dat file = %s' % self.filename]
@@ -228,6 +234,7 @@ class FeffPathGroup(Group):
                       'deltar', 'sigma2', 'third', 'fourth'):
             val = getattr(self, param)
             std = 0
+            # print '== param ', param, val, isParameter(val)
             if isParameter(val):
                 std = val.stderr
                 val = val.value

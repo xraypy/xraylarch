@@ -134,11 +134,11 @@ There are then 3 principle functions for setting up and executing
 
       2. ``params``: This will be identical to the input parameter group.
 
-      3. a ``fit`` object, which points to the low-level fit.
+      3. ``fit``: an object which points to the low-level fit.
 
-    In addition, the output statistics listed below in
-    :ref:`Table of Feffit Output Statistics <xafs-feffit_stats_table>`.
-    will be written the ``paramgroup`` group.  Since each varied and constrained parameter
+    In addition, the output statistics listed below in :ref:`Table of
+    Feffit Output Statistics <xafs-feffit_stats_table>`.  will be written
+    the ``paramgroup`` group.  Since each varied and constrained parameter
     will also have best-values and estimated uncertainties, this allows the
     parameter group to be considered the principle group for a particular
     fit -- it holds the variable parameters and statistical results needed
@@ -152,6 +152,11 @@ There are then 3 principle functions for setting up and executing
     If ``path_outputs==True``, all Feff Paths in the fit will be separately
     Fourier transformed., with the result being put in the corresponding
     FeffPath group.
+
+    A final note on the outputs of :func:`feffit`: the ``param`` sub-group in
+    the output is truly identical to the input ``paramgroup``.  It is not a
+    copy but points to the same group of values (see
+    :ref:`tutor-objectids_sec`).
 
 .. index:: Feffit Output Statistics
 .. _xafs-feffit_stats_table:
@@ -245,7 +250,6 @@ This simply follows the essential steps:
  6. Plots are made from the dataset, using rather long-winded :func:`plot`
  commands.
 
-
 running this example prints out the following report::
 
     =================== FEFFIT RESULTS ====================
@@ -309,4 +313,30 @@ and generates the plots shown below
 
 This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
-things that might be added to this for modeling more complex XAFS data.
+things that might be added to this for modeling more complex XAFS data,
+including adding more paths to a fit, including multiple-scattering paths,
+simultaneously modeling more than one data set, and building more complex
+fitting models.  We'll get to these in the following examples.
+
+But first, a small detour.  The plotting commands in the above example for
+plotting :math:`\chi(k)` and
+:math:`\chi(R)` for data and model will be useful for the other examples as
+well, so we'll create a slightly generalized function to make such plots
+and put it into a separate file, *doc_macros.lar*.  This will look like
+this:
+
+.. literalinclude:: ../../examples/feffit/doc_macros.lar
+
+and we can then replace the plot commands in the script above with::
+
+    run('doc_macros.lar')
+    show_chifit(dset, title='First shell fit to Cu')
+
+We'll use this in the examples below.
+
+
+
+Example 2: Fit 1 dataset with 3 Paths
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We'll continue with the Cu data set, and add more paths.
