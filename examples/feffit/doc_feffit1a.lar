@@ -1,0 +1,32 @@
+## examples/feffit/doc_feffit1a.lar
+
+# read data
+cu_data = read_ascii('cu.chi', labels='k, chi')
+
+# define fitting parameter group
+pars = group(amp    = param(1, vary=True),
+             del_e0 = guess(0.1),
+             sig2   = param(0.002, vary=True),
+             del_r  = guess(0.) )
+
+# define a Feff Path, give expressions for Path Parameters
+path1 = feffpath('feffcu01.dat',
+                 s02    = 'amp',
+                 e0     = 'del_e0',
+                 sigma2 = 'sig2',
+                 deltar = 'del_r')
+
+# set tranform / fit ranges
+trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=3, rmin=1.4, rmax=3.0)
+
+# define dataset to include data, pathlist, transform
+dset  = feffit_dataset(data=cu_data, pathlist=[path1], transform=trans)
+
+# perform fit!
+out = feffit(pars, dset)
+
+print feffit_report(out)
+
+run('doc_macros.lar')
+show_chifit(dset, title='First shell fit to Cu')
+## end examples/feffit/doc_feffit1a.lar
