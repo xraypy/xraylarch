@@ -81,6 +81,7 @@
 <li><a class="reference internal" href="#feffit"><tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
 <li><a class="reference internal" href="#feffit-report"><tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
 <li><a class="reference internal" href="#example-1-simple-fit-with-1-path">Example 1: Simple fit with 1 Path</a></li>
+<li><a class="reference internal" href="#example-2-fit-1-dataset-with-3-paths">Example 2: Fit 1 dataset with 3 Paths</a></li>
 </ul>
 </li>
 </ul>
@@ -277,12 +278,12 @@ containing three objects:</p>
 <div><ol class="arabic simple">
 <li><tt class="docutils literal"><span class="pre">datasets</span></tt>: an array of FeffitDataSet groups used in the fit.</li>
 <li><tt class="docutils literal"><span class="pre">params</span></tt>: This will be identical to the input parameter group.</li>
-<li>a <tt class="docutils literal"><span class="pre">fit</span></tt> object, which points to the low-level fit.</li>
+<li><tt class="docutils literal"><span class="pre">fit</span></tt>: an object which points to the low-level fit.</li>
 </ol>
 </div></blockquote>
-<p>In addition, the output statistics listed below in
-<a class="reference internal" href="#xafs-feffit-stats-table"><em>Table of Feffit Output Statistics</em></a>.
-will be written the <tt class="docutils literal"><span class="pre">paramgroup</span></tt> group.  Since each varied and constrained parameter
+<p>In addition, the output statistics listed below in <a class="reference internal" href="#xafs-feffit-stats-table"><em>Table of
+Feffit Output Statistics</em></a>.  will be written
+the <tt class="docutils literal"><span class="pre">paramgroup</span></tt> group.  Since each varied and constrained parameter
 will also have best-values and estimated uncertainties, this allows the
 parameter group to be considered the principle group for a particular
 fit &#8211; it holds the variable parameters and statistical results needed
@@ -294,6 +295,10 @@ Output Arrays</em></a>.</p>
 <p>If <tt class="docutils literal"><span class="pre">path_outputs==True</span></tt>, all Feff Paths in the fit will be separately
 Fourier transformed., with the result being put in the corresponding
 FeffPath group.</p>
+<p>A final note on the outputs of <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>: the <tt class="docutils literal"><span class="pre">param</span></tt> sub-group in
+the output is truly identical to the input <tt class="docutils literal"><span class="pre">paramgroup</span></tt>.  It is not a
+copy but points to the same group of values (see
+<a class="reference internal" href="../tutorial/datatypes.html#tutor-objectids-sec"><em>Object identities, copying, and equality vs. identity</em></a>).</p>
 </dd></dl>
 
 <blockquote id="xafs-feffit-stats-table">
@@ -534,7 +539,55 @@ spectrum from Cu metal.</p>
 </div></blockquote>
 <p>This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
-things that might be added to this for modeling more complex XAFS data.</p>
+things that might be added to this for modeling more complex XAFS data,
+including adding more paths to a fit, including multiple-scattering paths,
+simultaneously modeling more than one data set, and building more complex
+fitting models.  We&#8217;ll get to these in the following examples.</p>
+<p>But first, a small detour.  The plotting commands in the above example for
+plotting <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and
+<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> for data and model will be useful for the other examples as
+well, so we&#8217;ll create a slightly generalized function to make such plots
+and put it into a separate file, <em>doc_macros.lar</em>.  This will look like
+this:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_macros.lar</span>
+<span class="c">## general purpose macros, mostly for showing XAFS data</span>
+<span class="c">##</span>
+<span class="k">def</span> <span class="nf">show_chifit</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Data and Best-Fit&#39;</span><span class="p">,</span>
+                <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;show chi(k) and chi(r) data and best-fit for a dataset&quot;&quot;&quot;</span>
+    <span class="c"># first, make k-weighted chi(k)</span>
+    <span class="n">kw</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">kweight</span><span class="p">)</span>
+    <span class="n">data_chi_kw</span>  <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="n">kw</span>
+    <span class="n">model_chi_kw</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="n">kw</span>
+
+    <span class="c"># next, show k-weighted chi(k) in plot window 1</span>
+    <span class="n">newplot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">data_chi_kw</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$k \rm\,(\AA^{-1})$&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$k^2\chi(k) \rm\,(\AA^{-</span><span class="si">%i</span><span class="s">})$&#39;</span>  <span class="o">%</span> <span class="n">kw</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="n">show_legend</span><span class="p">)</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">model_chi_kw</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;fit&#39;</span><span class="p">)</span>
+
+    <span class="c"># show chi(R) in plot window 2</span>
+    <span class="n">newplot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">dataset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+            <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$R \rm\,(\AA)$&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s">&#39;label&#39;</span><span class="p">,</span>
+            <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$|\chi(R)| \rm\,(\AA^{-</span><span class="si">%i</span><span class="s">})$&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">kw</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span>
+            <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="n">show_legend</span><span class="p">)</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dataset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;fit&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">enddef</span>
+<span class="c">## end of examples/feffit/doc_macros.lar</span>
+</pre></div>
+</div>
+<p>and we can then replace the plot commands in the script above with:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">run</span><span class="p">(</span><span class="s">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
+<span class="n">show_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;First shell fit to Cu&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We&#8217;ll use this in the examples below.</p>
+</div>
+<div class="section" id="example-2-fit-1-dataset-with-3-paths">
+<h2>Example 2: Fit 1 dataset with 3 Paths<a class="headerlink" href="#example-2-fit-1-dataset-with-3-paths" title="Permalink to this headline">¶</a></h2>
+<p>We&#8217;ll continue with the Cu data set, and add more paths.</p>
 </div>
 </div>
 

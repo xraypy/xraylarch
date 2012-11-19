@@ -90,9 +90,9 @@
 <li><a class="reference internal" href="#a-second-look-at-strings">A second look at Strings</a></li>
 <li><a class="reference internal" href="#arrays">Arrays</a></li>
 <li><a class="reference internal" href="#dictionaries">Dictionaries</a></li>
-<li><a class="reference internal" href="#object-identities-copying-and-equality-vs-equivalence">Object identities, copying, and equality vs. equivalence</a></li>
 </ul>
 </li>
+<li><a class="reference internal" href="#object-identities-copying-and-equality-vs-identity">Object identities, copying, and equality vs. identity</a></li>
 </ul>
 </li>
 </ul>
@@ -131,7 +131,7 @@
           <div class="body">
             
   <div class="section" id="tutorial-basic-and-complex-data-types">
-<h1>Tutorial: Basic and Complex Data Types<a class="headerlink" href="#tutorial-basic-and-complex-data-types" title="Permalink to this headline">¶</a></h1>
+<span id="tutor-datatypes-sec"></span><h1>Tutorial: Basic and Complex Data Types<a class="headerlink" href="#tutorial-basic-and-complex-data-types" title="Permalink to this headline">¶</a></h1>
 <p>This section of the Larch tutorial describes the types of data that Larch
 has, and how to use them.</p>
 <div class="section" id="basic-data-types">
@@ -364,7 +364,7 @@ contents:</p>
   x: 1002.8</pre>
 </div>
 <p>(The <strong>&#8216;0x1b8cbfb0&#8217;</strong> is discussed in more detail below in
-<a class="reference internal" href="#tut-objectids-sec"><em>Object identities, copying, and equality vs. equivalence</em></a>).  The <tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt> function can take arguments
+<a class="reference internal" href="#tutor-objectids-sec"><em>Object identities, copying, and equality vs. identity</em></a>).  The <tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt> function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
@@ -735,8 +735,9 @@ be any object, including other lists and dictionaries, so that a dictionary
 can end up with a very complex structure.  Dictionaries are quite useful,
 and are in fact used throughout python.</p>
 </div>
-<div class="section" id="object-identities-copying-and-equality-vs-equivalence">
-<span id="tut-objectids-sec"></span><h3>Object identities, copying, and equality vs. equivalence<a class="headerlink" href="#object-identities-copying-and-equality-vs-equivalence" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="object-identities-copying-and-equality-vs-identity">
+<span id="tutor-objectids-sec"></span><h2>Object identities, copying, and equality vs. identity<a class="headerlink" href="#object-identities-copying-and-equality-vs-identity" title="Permalink to this headline">¶</a></h2>
 <p>OK, this may be a bit advanced for a section in a <em>tutorial</em>, but there are
 a few important topics we need to make about objects, groups, and the idea
 of <em>mutability</em> discussed above.  Though it may at first pass seem
@@ -750,7 +751,7 @@ cover here includes:</p>
 <li>what variable assignment really means.</li>
 <li>mutable and immutable objects.</li>
 <li>object identity.</li>
-<li>the difference between equality and equivalence.</li>
+<li>the difference between equality and identity.</li>
 </ul>
 </div></blockquote>
 <p>As mentioned above, each named quantity in Larch is simply a Python object
@@ -802,17 +803,98 @@ value.  For mutable data types, the value is allowed to change.  In
 addition, what the object points to can also change.</p>
 <p>Each object value has a unique memory location &#8211; its identity.  The
 builtin <tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt> function returns this identity.  Two variables are said
-to be <em>equivalent</em> if their values have the same identity &#8211; the variables
+to be <em>identical</em> if their values have the same identity &#8211; the variables
 point to the same quantitiy.  Two variabales are <em>equal</em> if their values
 are the same, even if these values are held in different memory locations.
-And, of course, two differe variables can point to the same object.</p>
-<p>In practice, this is not as confusing as it sounds, and the model for data,
-variables, and values is generally very easy to deal with.  The most
+And, of course, two different variables can point to the same object.</p>
+<p>You can test both equality (whether two variables hold equal value) and identity
+(whether two variables point to the same value).   First, the builtin
+<tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt> function will give the identity (essentially, the memory
+location) of a variable:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">id</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="mi">108444568</span>
+</pre></div>
+</div>
+<p>(the value shown will be different each time you run Larch).  Now if we
+assign another variable to <tt class="docutils literal"><span class="pre">x</span></tt>, we can use <tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt> to see why changing
+the value of one changes the value of the other:</p>
+<div class="highlight-python"><pre>larch&gt; y = x
+larch&gt; id(y)
+108444568      ### The same as id(x) !!
+larch&gt; y[1] = 'hello'
+larch&gt; print x
+[1, 'hello', 3, 4, 5]</pre>
+</div>
+<p>Here, <tt class="docutils literal"><span class="pre">x</span></tt> changed because it is identical to <tt class="docutils literal"><span class="pre">y</span></tt> and is mutable.
+However, if we make another variable that happens to have the same value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">z</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="s">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="nb">id</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+<span class="mi">108399752</span>
+</pre></div>
+</div>
+<p>Now changing an element of <tt class="docutils literal"><span class="pre">z</span></tt> will not change <tt class="docutils literal"><span class="pre">x</span></tt> or <tt class="docutils literal"><span class="pre">y</span></tt>.     You
+can test whether two variables have equal values with the boolean operator
+<cite>==</cite>.   Similarly, you can test whether two variables are identical with
+the  boolean operator <cite>is</cite>.  So:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">==</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="ow">is</span> <span class="n">y</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">==</span> <span class="n">z</span><span class="p">,</span> <span class="n">x</span> <span class="ow">is</span> <span class="n">z</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you want to make a copy of a mutable object, you can use the builtin
+<tt class="xref py py-func docutils literal"><span class="pre">copy()</span></tt> function:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">q</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">q</span> <span class="o">==</span> <span class="n">z</span><span class="p">,</span> <span class="n">q</span> <span class="ow">is</span> <span class="n">z</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Another, and very common way to make copies of lists and arrays is to
+create a new value that happens to have the same value.  For a list, a very
+common approach is to make a <em>full slice</em>:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">newx</span> <span class="o">=</span> <span class="n">x</span><span class="p">[:]</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">==</span> <span class="n">newx</span><span class="p">,</span> <span class="n">x</span> <span class="ow">is</span> <span class="n">newx</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and for arrays, you can multiply by 1 or add 0:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="n">array</span><span class="p">([</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">])</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="n">a</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">*</span> <span class="n">a</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">a</span> <span class="ow">is</span> <span class="n">b</span><span class="p">,</span> <span class="n">a</span> <span class="ow">is</span> <span class="n">c</span>
+<span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Note that doing <tt class="docutils literal"><span class="pre">a</span> <span class="pre">==</span> <span class="pre">b</span></tt> on arrays here would give an array of values, testing
+the values element-by-element.  This will be discussed the next section.</p>
+<p>Larch Groups are also mutable objects and so assignment to a group does not
+make a new copy of the group but another reference to the same group:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s">&#39;hello&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">h</span> <span class="o">=</span> <span class="n">g</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">h</span> <span class="ow">is</span> <span class="n">g</span>
+<span class="bp">True</span>
+</pre></div>
+</div>
+<p>If ask for the group to be printed or run the <tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt> function on a group:</p>
+<div class="highlight-python"><pre>larch&gt; g
+&lt;Group 0x6bf17f0&gt;
+larch&gt; show(g)
+== Group 0x6bf17f0: 2 symbols ==
+  x: 1
+  text: 'hello'</pre>
+</div>
+<p>we see the hexidecimal representation of its  memory address:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">id</span><span class="p">(</span><span class="n">g</span><span class="p">),</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
+<span class="p">(</span><span class="mi">113186800</span><span class="p">,</span> <span class="s">&#39;0x6bf17f0&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In practice, this issue is not as confusing as it sounds, and the model for
+data, variables, and values is generally very easy to deal with.  The most
 important thing to be aware of &#8211; the thing most likely to cause trouble &#8211;
 is that assigning a variable to be a mutable object like a list,
 dictionary, or array does not make a copy of the object, but simply creates
 another variable that points to the same value.</p>
-</div>
 </div>
 </div>
 

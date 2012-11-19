@@ -78,7 +78,10 @@
 <li><a class="reference internal" href="#">Tutorial: Basic Array Manipulation</a><ul>
 <li><a class="reference internal" href="#functions-for-creating-arrays">Functions for creating arrays</a></li>
 <li><a class="reference internal" href="#the-array-dtype-datatype">The array <em>dtype</em> &#8211; datatype</a></li>
+<li><a class="reference internal" href="#basic-array-manipulation">Basic array manipulation</a></li>
 <li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">Slicing and extracting sub-arrays</a></li>
+<li><a class="reference internal" href="#array-attributes-and-methods">Array attributes and methods</a></li>
+<li><a class="reference internal" href="#mathematical-functions-for-arrays">Mathematical functions for arrays</a></li>
 </ul>
 </li>
 </ul>
@@ -117,10 +120,29 @@
           <div class="body">
             
   <div class="section" id="tutorial-basic-array-manipulation">
-<h1>Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
+<span id="tutor-array-sec"></span><h1>Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
+<p>Arrays are sequences of numerical data, with each element having the same
+underlying data type &#8211; integers, real (floating point) numbers, or complex
+numbers.  Of course, arrays are very important for scientific data, and the
+majority of data you will be manipulating with Larch will be in the form of
+arrays.  Larch depends on the <a class="reference external" href="http://numpy.scipy.org/">numpy</a> library for providing basic array
+data types and the methods for fast manipulation of array data.  These
+arrays can be multi-dimensional, have their dimensionality change
+dynamically, an can be sliced (subsets of elements taken).  Many built-in
+functions will act on the whole array, generally element-by-element, in a
+highly efficient way, greatly reducing the need to &#8220;loop over&#8221; elements.</p>
+<p>This section introduces the creation, basic manipulation, and key
+properties of arrays.  The discussion here is not exhaustive, but is
+intended to get you far enough along to be able to manipulate arrays
+sufficiently for most needs.  The <a class="reference external" href="http://docs.scipy.org/doc">numpy documentation</a> is quite extensive
+and well-written, and should be consulted for more details.</p>
 <div class="section" id="functions-for-creating-arrays">
 <h2>Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference internal" href="#tutor-arraycreate-table"><em>Table of Array Creation Functions</em></a></p>
+<p>There are a handful of builtin functions for creating arrays from scratch.
+These are listed in <a class="reference internal" href="#tutor-arraycreate-table"><em>Table of Array Creation Functions</em></a> In addition, when dealing with data stored in
+files, reading the files (see <a class="reference internal" href="io.html#tutor-io-sec"><em>Tutorial: Reading and Writing Data</em></a>) with Larch will create
+arrys for you.  Like lists, arrays are <em>mutable</em>.  That is, elements of
+arrays can be changed without changing the rest of the array.</p>
 <blockquote id="tutor-arraycreate-table">
 <span id="index-0"></span><div><blockquote>
 <div>Table of Array Creation Functions.  These functions can all be used to
@@ -156,7 +178,15 @@ create arrays in Larch.</div></blockquote>
 </tr>
 <tr class="row-even"><td>linspace</td>
 <td>fill with bounds and N</td>
-<td>arra = linspace(0, 1, 11)</td>
+<td>arr = linspace(0, 1, 11)</td>
+</tr>
+<tr class="row-odd"><td>eye</td>
+<td>2-d identity matrix</td>
+<td>arr = eye(3)</td>
+</tr>
+<tr class="row-even"><td>meshgrid</td>
+<td>2-d mesh arrays</td>
+<td>mx, my = meshgrid(x, y)</td>
 </tr>
 </tbody>
 </table>
@@ -165,19 +195,25 @@ create arrays in Larch.</div></blockquote>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">i</span>
 <span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">])</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;f8&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">f</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">f</span>
 <span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">9.</span><span class="p">])</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;c16&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">complex</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">c</span>
 <span class="n">array</span><span class="p">([</span> <span class="mf">0.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">1.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">2.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">3.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">4.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">5.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">6.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>
         <span class="mf">7.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">8.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">,</span>  <span class="mf">9.</span><span class="o">+</span><span class="mf">0.j</span><span class="p">])</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">i3</span> <span class="o">=</span> <span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">i3</span>
+<span class="n">array</span><span class="p">([[</span> <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">]])</span>
 </pre></div>
 </div>
-<p>Here, the <strong>dtype</strong> argument sets the data type for the array members &#8211; in
-this case &#8216;f8&#8217; means &#8216;8 byte floating point&#8217; and &#8216;c16&#8217; means &#8216;16 byte
-complex&#8217; (i.e, double precision, and double precision complex,
-respectively).</p>
+<p>Here, the <strong>dtype</strong> argument sets the data type for the array members.  For
+example, <tt class="docutils literal"><span class="pre">float</span></tt> means a double precision floating point representation
+of a real number and complex means double precision complex floating point.
+The <a class="reference internal" href="#tutor-arraydtype-table"><em>Table of Array Data types</em></a> below
+lists the available data types that can be passed as a <tt class="docutils literal"><span class="pre">dtype</span></tt> argument.</p>
 <p>The <tt class="xref py py-func docutils literal"><span class="pre">linspace()</span></tt> function is particularly useful for creating arrays,
 as it takes a starting value, ending value, and number of points between
 these:</p>
@@ -200,6 +236,7 @@ the documentation string from the underlying numpy function):</p>
 
     The endpoint of the interval can optionally be excluded.
 
+
     Parameters
     ----------
     start : scalar
@@ -220,12 +257,802 @@ the documentation string from the underlying numpy function):</p>
 
     ....</pre>
 </div>
+<p>The <tt class="xref py py-func docutils literal"><span class="pre">eye()</span></tt> function creates a 2 dimensional square array (or, possibly
+<tt class="docutils literal"><span class="pre">matrix</span></tt>, though that term can connote additional meaning that a square
+array does not necessarily have) with values of 1 for the diagonal
+elements, and 0 elsewhere.</p>
+<p>The function <tt class="xref py py-func docutils literal"><span class="pre">meshgrid()</span></tt> can be used to build a mesh of values from two one dimensional
+arrays.  That is:</p>
+<div class="highlight-python"><pre>larch&gt; x = array([0, 1, 2, 3, 4])
+larch&gt; y = array([-1, 0.5, 0, 0.5, 1])
+larch&gt; mx, my = meshgrid(x, y)
+larch&gt; print mx
+array([[0, 1, 2, 3, 4],
+       [0, 1, 2, 3, 4],
+       [0, 1, 2, 3, 4],
+       [0, 1, 2, 3, 4],
+       [0, 1, 2, 3, 4]])
+larch&gt; print my
+array([[-1. , -1. , -1. , -1. , -1. ],
+       [-0.5, -0.5, -0.5, -0.5, -0.5],
+       [ 0. ,  0. ,  0. ,  0. ,  0. ],
+       [ 0.5,  0.5,  0.5,  0.5,  0.5],
+       [ 1. ,  1. ,  1. ,  1. ,  1. ]])</pre>
+</div>
+<p>That is, the values of each <tt class="docutils literal"><span class="pre">mx</span></tt> and <tt class="docutils literal"><span class="pre">my</span></tt> contain the coordinates of a
+two-dimensional mesh or map of the input <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> values.</p>
 </div>
 <div class="section" id="the-array-dtype-datatype">
 <h2>The array <em>dtype</em> &#8211; datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
+<p>Arrays are sequences of numbers stored in memory to make access to the
+elements of the arrays fast and memory use efficient.  As mentioned above,
+each array will use one of several storage conventions depending on what
+type of data is needed for the elements.  Basically, this dictates how many
+bytes to use and whether these values are meant to hold integers, real
+floating points, or complex floating point numbers. This information is
+encapsulated in the arrays <em>dtype</em>.  It can be one of several values,
+listed in the</p>
+<blockquote id="tutor-arraydtype-table">
+<span id="index-1"></span><div><blockquote>
+<div>Table of Array Data types.  Each array has exactly one of these create
+arrays in Larch.  The <strong>dtype</strong> can be used in any of the array creation
+functions using the <tt class="docutils literal"><span class="pre">dtype</span></tt> keyword argument (e.g,
+<tt class="docutils literal"><span class="pre">dtype=float32</span></tt>).</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="33%" />
+<col width="67%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>dtype</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>bool</td>
+<td>boolean (<tt class="docutils literal"><span class="pre">True</span></tt> or <tt class="docutils literal"><span class="pre">False</span></tt>)</td>
+</tr>
+<tr class="row-odd"><td>int8</td>
+<td>signed 8-bit integer (-128 to 127)</td>
+</tr>
+<tr class="row-even"><td>int16</td>
+<td>signed 16-bit integer (-32768 to 32767)</td>
+</tr>
+<tr class="row-odd"><td>int32</td>
+<td>signed 32-bit integer (-2**31 to 2**31-1)</td>
+</tr>
+<tr class="row-even"><td>int64</td>
+<td>signed 64-bit integer  (-2**63 to 2**63-1)</td>
+</tr>
+<tr class="row-odd"><td>uint8</td>
+<td>unsigned 8-bit integer (0 to 255)</td>
+</tr>
+<tr class="row-even"><td>uint16</td>
+<td>unsigned 16-bit integer (0 to 65535)</td>
+</tr>
+<tr class="row-odd"><td>uint32</td>
+<td>unsigned 32-bit integer (0 to 2**32)</td>
+</tr>
+<tr class="row-even"><td>uint64</td>
+<td>unsigned 64-integer (0 to 2**64)</td>
+</tr>
+<tr class="row-odd"><td>float32</td>
+<td>single precision float</td>
+</tr>
+<tr class="row-even"><td>float64 or float</td>
+<td>double precision float</td>
+</tr>
+<tr class="row-odd"><td>complex64</td>
+<td>single precision complex two float32s</td>
+</tr>
+<tr class="row-even"><td>complex128 or complex</td>
+<td>double precision complex, two float64s.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+<div class="section" id="basic-array-manipulation">
+<h2>Basic array manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h2>
+<p>Arrays can either be used as a single object, or individual or ranges of elements can be extracted
+from them.   Usually, mathematical operations and functions done to arrays are applied
+element-by-element.  For example:</p>
+<div class="highlight-python"><pre>larch&gt;  x = arange(5)
+larch&gt; print x
+[0 1 2 3 4]
+larch&gt; print 2*x+1
+[1 3 5 7 9]</pre>
+</div>
+<p>and so on for all of the basic mathematical operators.   To add to arrays of equal lengths
+together is also easy:</p>
+<div class="highlight-python"><pre>larch&gt;  y = array([10, 12, 14, 16, 18])
+larch&gt; print y - 3*x
+[10  9  8  7  6]</pre>
+</div>
+<p>If the arrays are not of equal length, an exception is raised. In that case, you can take a sub-set
+of the larger array to match the size of the smaller one.</p>
+<p>Boolean operators also apply to each element, so that:</p>
+<div class="highlight-python"><pre>larch&gt; print y &gt; 13
+[False False  True  True  True]</pre>
+</div>
+<p>The <tt class="xref py py-func docutils literal"><span class="pre">any()</span></tt> and <tt class="xref py py-func docutils literal"><span class="pre">all()</span></tt> functions (in the tables below) can be used to determine if any or
+all of the Boolean values are <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
+<p>You can extract single elements from arrays with brackets, just as for lists:</p>
+<div class="highlight-python"><pre>larch&gt; print y[2]
+14
+larch&gt; print (y-3*x)[2]
+7</pre>
+</div>
+<p>which leads us to the next section.</p>
 </div>
 <div class="section" id="slicing-and-extracting-sub-arrays">
 <h2>Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
+<p>An important aspect of arrays is that they can be treated as a single entity.  That is, <tt class="docutils literal"><span class="pre">sin(x)</span></tt>
+operates on each element of <tt class="docutils literal"><span class="pre">x</span></tt>.  But sometimes it is necessary to get a particular element from
+an array or work on only a selected part of an array.  To do these, one takes a sub-set of the array
+&#8211; a <strong>slice</strong>.  For extracting contiguous portions of 1-dimension arrays, this is pretty
+straightforward, using the range of indices needed for the slice between square brackets <tt class="docutils literal"><span class="pre">[</span></tt> and
+<tt class="docutils literal"><span class="pre">]</span></tt>.  For example:</p>
+<div class="highlight-python"><pre>larch&gt; arr = linspace(0, 2, 21)
+larch&gt; print arr
+[ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2  1.3  1.4
+  1.5  1.6  1.7  1.8  1.9  2. ]
+larch&gt; print arr[20]
+2.0
+larch&gt; print arr[15]
+1.5
+larch&gt; print arr[10:15]
+[ 1.   1.1  1.2  1.3  1.4]</pre>
+</div>
+<p>The general syntax for a slice is pretty complicated, but the simplest cases are straightforward.
+As with lists, <tt class="docutils literal"><span class="pre">arr[i]</span></tt> selects value at index <tt class="docutils literal"><span class="pre">i</span></tt> (counting from 0).  Similarly, <tt class="docutils literal"><span class="pre">arr[i:j]</span></tt>
+selects elements starting at <tt class="docutils literal"><span class="pre">i</span></tt> and ending at (but not including &#8211; see the example above)
+<tt class="docutils literal"><span class="pre">j</span></tt>.  If <tt class="docutils literal"><span class="pre">i</span></tt> is omitted,
+it is taken as 0 (the first element), and if <tt class="docutils literal"><span class="pre">j</span></tt> is omitted, it defaults to the last element of
+the array.  In addition, if <tt class="docutils literal"><span class="pre">i</span></tt> and/or <tt class="docutils literal"><span class="pre">j</span></tt> are negative, they count from the end of the array:</p>
+<div class="highlight-python"><pre>larch&gt; print arr[:-8]
+[ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2]
+larch&gt; print arr[-2:]
+[ 1.9  2.]</pre>
+</div>
+<p>A slice can take a third argument <tt class="docutils literal"><span class="pre">k</span></tt> &#8211; the stride &#8211; which allows selection of every <tt class="docutils literal"><span class="pre">k</span></tt>
+elements.  That is:</p>
+<div class="highlight-python"><pre>larch&gt; print arr[1:6:2]
+[ 0.1  0.3  0.5]
+larch&gt; print arr[::2]
+[ 0.   0.2  0.4  0.6  0.8  1.   1.2  1.4  1.6  1.8  2. ]</pre>
+</div>
+<p>If <tt class="docutils literal"><span class="pre">k</span></tt> is negative, it starts from the end of the array:</p>
+<div class="highlight-python"><pre>larch&gt; print arr[::-3]
+[2.   1.7  1.4  1.1  0.8  0.5  0.2]</pre>
+</div>
+<p>For mult-dimensional arrays, slices can be made for each dimension, with slices separated by
+commas.  If no slice is given, the whole array along that dimension is used.  Thus:</p>
+<div class="highlight-python"><pre>larch&gt; x = arange(30).reshape((6, 5)
+larch&gt; print x
+[[ 0  1  2  3  4]
+ [ 5  6  7  8  9]
+ [10 11 12 13 14]
+ [15 16 17 18 19]
+ [20 21 22 23 24]
+ [25 26 27 28 29]]
+larch&gt; print x[2]  # third row
+[10 11 12 13 14]
+larch&gt; print x[:,1]  # second column
+[ 1  6 11 16 21 26]
+larch&gt; print x[:3,2:5]
+[[ 2  3  4]
+ [ 7  8  9]
+ [12 13 14]]</pre>
+</div>
+<p>Note that multi-dimensional arrays use a layout like C and unlike Fortran by default.  In addition
+to the comma-based syntax shown above to extract different dimensions or use brackets around each
+dimension:</p>
+<div class="highlight-python"><pre>larch&gt; print x[1][:4]  # second row, first 4 columns
+[5 6 7 8]
+larch&gt; print x[1,:4]   # same
+[5 6 7 8]</pre>
+</div>
+<p>In general, the syntax for a slice is then <tt class="docutils literal"><span class="pre">arr[i1:j1,:k1,</span> <span class="pre">i2:j2:k2,</span> <span class="pre">...]</span></tt> with default values for <tt class="docutils literal"><span class="pre">i</span></tt>
+of 0, for <tt class="docutils literal"><span class="pre">j</span></tt> of the length of the array, and for <tt class="docutils literal"><span class="pre">k</span></tt> of 1.</p>
+</div>
+<div class="section" id="array-attributes-and-methods">
+<h2>Array attributes and methods<a class="headerlink" href="#array-attributes-and-methods" title="Permalink to this headline">¶</a></h2>
+<p>Arrays have several useful attributes and methods.  As mentioned above, each array has a
+<tt class="xref py py-data docutils literal"><span class="pre">dtype</span></tt> attribute describing how its data is mapped in memory.  In addition, each
+has a <tt class="xref py py-data docutils literal"><span class="pre">size</span></tt> attribute giving the number of elements, a <tt class="xref py py-data docutils literal"><span class="pre">ndim</span></tt> giving the
+number of dimensions, and <tt class="xref py py-data docutils literal"><span class="pre">shape</span></tt> giving the a tuple with the length along each
+dimension.  The dimensionality and shape of a multi-dimensional array can be specified
+by setting the value of <tt class="xref py py-data docutils literal"><span class="pre">shape</span></tt> to the desired value:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span>
+<span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">9.</span><span class="p">,</span> <span class="mf">11.</span><span class="p">,</span> <span class="mf">12.</span><span class="p">])</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span>
+<span class="n">array</span><span class="p">([[</span> <span class="mf">0.</span><span class="p">,</span>  <span class="mf">1.</span><span class="p">,</span>  <span class="mf">2.</span><span class="p">,</span>  <span class="mf">3.</span><span class="p">,</span>  <span class="mf">4.</span><span class="p">,</span>  <span class="mf">5.</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mf">6.</span><span class="p">,</span>  <span class="mf">7.</span><span class="p">,</span>  <span class="mf">8.</span><span class="p">,</span>  <span class="mf">9.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">11.</span><span class="p">]])</span>
+</pre></div>
+</div>
+<blockquote id="tutor-arraymethods-table">
+<span id="index-2"></span><div><blockquote>
+<div>Table of Array Attribute and Methods.  Those ending with parentheses (<tt class="docutils literal"><span class="pre">()</span></tt>) are
+methods, that act on the array.  Most of the attributes and the vast majority of
+methods return a value based on the array contents, leaving the array unchanged.  The
+attributes and methods marked <tt class="docutils literal"><span class="pre">read/write</span></tt> operate in place, changing the array.</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="27%" />
+<col width="54%" />
+<col width="19%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>attribute</strong></th>
+<th class="head"><strong>description</strong></th>
+<th class="head"><strong>notes</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>dtype</td>
+<td>data type</td>
+<td>read only</td>
+</tr>
+<tr class="row-odd"><td>size</td>
+<td>number of elements  (int)</td>
+<td>read only</td>
+</tr>
+<tr class="row-even"><td>ndim</td>
+<td>number of dimensions (int)</td>
+<td>read only</td>
+</tr>
+<tr class="row-odd"><td>shape</td>
+<td>length along each dimension (tuple)</td>
+<td>read/write</td>
+</tr>
+<tr class="row-even"><td>real</td>
+<td>real part of array</td>
+<td>read/write</td>
+</tr>
+<tr class="row-odd"><td>imag</td>
+<td>imaginary part of array</td>
+<td>read/write</td>
+</tr>
+<tr class="row-even"><td>resize()</td>
+<td>grow/shrink array to specified size</td>
+<td>read/write</td>
+</tr>
+<tr class="row-odd"><td>conjugate()</td>
+<td>conjugate of array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>all()</td>
+<td>boolean: if all values are <tt class="docutils literal"><span class="pre">True</span></tt></td>
+<td>(non-zero)</td>
+</tr>
+<tr class="row-odd"><td>any()</td>
+<td>boolean: if any value is <tt class="docutils literal"><span class="pre">True</span></tt></td>
+<td>(non-zero)</td>
+</tr>
+<tr class="row-even"><td>min()</td>
+<td>minimum value of array elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>max()</td>
+<td>maximum value of array elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>mean()</td>
+<td>mean value of array elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>std()</td>
+<td>standard deviation of array elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>prod()</td>
+<td>product of array elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>sum()</td>
+<td>sum of array elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>argmin()</td>
+<td>index of first minimum value</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>argmax()</td>
+<td>index of first maximum value</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>argsort()</td>
+<td>array of indices for sorted array</td>
+<td>(min to max)</td>
+</tr>
+<tr class="row-odd"><td>cumprod()</td>
+<td>array of cumulative product of elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>cumsum()</td>
+<td>array of cumulative sum of elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>astype()</td>
+<td>array re-cast as a different <tt class="docutils literal"><span class="pre">dtype</span></tt></td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>round()</td>
+<td>array of rounded elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>diagonal()</td>
+<td>array of diagonal elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>trace()</td>
+<td>sum of diagonal elements()</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>transpose()</td>
+<td>transpose of array</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>flatten()</td>
+<td>array &#8220;flattened&#8221; to 1-dimension</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-odd"><td>tolist()</td>
+<td>list containing array elements</td>
+<td>&nbsp;</td>
+</tr>
+<tr class="row-even"><td>reshape()</td>
+<td>array reshaped to specified shape tuple</td>
+<td>&nbsp;</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div>
+<div class="section" id="mathematical-functions-for-arrays">
+<h2>Mathematical functions for arrays<a class="headerlink" href="#mathematical-functions-for-arrays" title="Permalink to this headline">¶</a></h2>
+<p>Many of the basic mathemetical functions in larch automatically work on arrays
+element-by-element.  For example, <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> returns the square-root of a single
+value or for each element in an array:</p>
+<div class="highlight-python"><pre>larch&gt; print sqrt(3)
+1.73205080757
+larch&gt; x = arange(10)
+larch&gt; print sqrt(x)
+[ 0.          1.          1.41421356  1.73205081  2.          2.23606798
+  2.44948974  2.64575131  2.82842712  3.        ]</pre>
+</div>
+<p>The numpy library provides the underlying functions, and they are much faster than
+looping over elements of the array:</p>
+<div class="highlight-python"><pre>larch&gt; for el in x:  # this is much slower than sqrt(x)!!
+.....&gt;     print el, sqrt(el)
+.....&gt; endfor
+0 0.0
+1 1.0
+2 1.41421356237
+3 1.73205080757
+4 2.0
+5 2.2360679775
+6 2.44948974278
+7 2.64575131106
+8 2.82842712475
+9 3.0</pre>
+</div>
+<p>There are a large number of general purpose mathematical functions available in larch &#8211;
+the <tt class="docutils literal"><span class="pre">_math</span></tt> group contains over 500 items on startup.  A partial list is given in the
+The <a class="reference internal" href="#tutor-arrayfuncs-table"><em>Table of Array-aware Mathematical functions</em></a> below.
+What&#8217;s more, many more are available by importing them from the scipy library.</p>
+<blockquote id="tutor-arrayfuncs-table">
+<span id="index-3"></span><div><blockquote>
+<div>Table of Array-aware Mathematical functions.  More info on each of these can be found with the
+builtin <tt class="xref py py-func docutils literal"><span class="pre">help()</span></tt> function.  The table is broken up by categories to make printing easier.</div></blockquote>
+<p><strong>General Purpose Functions</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>function</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>all</td>
+<td>all values are <tt class="docutils literal"><span class="pre">True</span></tt></td>
+</tr>
+<tr class="row-odd"><td>allclose</td>
+<td>all values of 2 arrays are close</td>
+</tr>
+<tr class="row-even"><td>info</td>
+<td>print information about array storage</td>
+</tr>
+<tr class="row-odd"><td>fabs</td>
+<td>absolute value of values</td>
+</tr>
+<tr class="row-even"><td>sqrt</td>
+<td>square root of values</td>
+</tr>
+<tr class="row-odd"><td>exp</td>
+<td>exponential of values</td>
+</tr>
+<tr class="row-even"><td>expm1</td>
+<td>exp(x) - 1   for values x</td>
+</tr>
+<tr class="row-odd"><td>exp2</td>
+<td>2**x for values x</td>
+</tr>
+<tr class="row-even"><td>ln / log</td>
+<td>natural logarithm of values</td>
+</tr>
+<tr class="row-odd"><td>log1p</td>
+<td>log(x) + 1 for values x</td>
+</tr>
+<tr class="row-even"><td>log10</td>
+<td>base-10 logarithm of values</td>
+</tr>
+<tr class="row-odd"><td>log2</td>
+<td>base-2 logarithm of values</td>
+</tr>
+<tr class="row-even"><td>mod</td>
+<td>modulus of values</td>
+</tr>
+<tr class="row-odd"><td>ldexp</td>
+<td>x * 2**y for values x and y</td>
+</tr>
+<tr class="row-even"><td>fmin</td>
+<td>element-wise minima of two arrays</td>
+</tr>
+<tr class="row-odd"><td>fmax</td>
+<td>element-wise maxima of two arrays</td>
+</tr>
+<tr class="row-even"><td>fmod</td>
+<td>element-wise modulus of two arrays</td>
+</tr>
+<tr class="row-odd"><td>frexp</td>
+<td>split value into fractional and exponent</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Trigonometry Functions</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>function</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>angle</td>
+<td>phase angle for complex values</td>
+</tr>
+<tr class="row-odd"><td>acos  / arccos</td>
+<td>inverse of cosine</td>
+</tr>
+<tr class="row-even"><td>asin  / arcsin</td>
+<td>inverse of sine</td>
+</tr>
+<tr class="row-odd"><td>atan  / arctan</td>
+<td>inverse of tangent</td>
+</tr>
+<tr class="row-even"><td>atan2 / arctan2</td>
+<td>inverse of tangent of ratio of two values</td>
+</tr>
+<tr class="row-odd"><td>acosh / arccosh</td>
+<td>inverse of hyperbolic cosine</td>
+</tr>
+<tr class="row-even"><td>asinh / arcsinh</td>
+<td>inverse of hyperbolic sine</td>
+</tr>
+<tr class="row-odd"><td>atanh / arctanh</td>
+<td>inverse of hyperbolic tangent</td>
+</tr>
+<tr class="row-even"><td>cos</td>
+<td>cosine</td>
+</tr>
+<tr class="row-odd"><td>cosh</td>
+<td>hyperbolic cosine</td>
+</tr>
+<tr class="row-even"><td>sin</td>
+<td>sine</td>
+</tr>
+<tr class="row-odd"><td>sinh</td>
+<td>hyperbolic sine</td>
+</tr>
+<tr class="row-even"><td>tan</td>
+<td>tangent</td>
+</tr>
+<tr class="row-odd"><td>tanh</td>
+<td>hyperbolic tangent</td>
+</tr>
+<tr class="row-even"><td>deg2rad</td>
+<td>convert degrees to radians</td>
+</tr>
+<tr class="row-odd"><td>rad2deg</td>
+<td>convert radians to degrees</td>
+</tr>
+<tr class="row-even"><td>hypot</td>
+<td>hypotenuse (distance) of two values</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Array Manipulation and Re-shaping</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>function</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>append</td>
+<td>append a value to an array</td>
+</tr>
+<tr class="row-odd"><td>insert</td>
+<td>insert a value into a specified location of an array</td>
+</tr>
+<tr class="row-even"><td>concatenate</td>
+<td>Join a sequence of arrays together</td>
+</tr>
+<tr class="row-odd"><td>tile</td>
+<td>build array by repeating an array a number of times</td>
+</tr>
+<tr class="row-even"><td>repeat</td>
+<td>repeat elements of an array a number of times</td>
+</tr>
+<tr class="row-odd"><td>split</td>
+<td>Split array into sub-arrays vertically (row)</td>
+</tr>
+<tr class="row-even"><td>hsplit</td>
+<td>Split array into sub-arrays horizontally (column)</td>
+</tr>
+<tr class="row-odd"><td>dsplit</td>
+<td>Split array into sub-arrays along the 3rd axixpth (depth)</td>
+</tr>
+<tr class="row-even"><td>hstack</td>
+<td>Stack arrays in sequence horizontally (column)</td>
+</tr>
+<tr class="row-odd"><td>vstack</td>
+<td>Stack arrays in sequence vertically (row )</td>
+</tr>
+<tr class="row-even"><td>dstack</td>
+<td>Stack arrays in sequence along third dimension (depth)</td>
+</tr>
+<tr class="row-odd"><td>take</td>
+<td>take values at specified indices</td>
+</tr>
+<tr class="row-even"><td>choose</td>
+<td>construct array from index array and a set of arrays</td>
+</tr>
+<tr class="row-odd"><td>where</td>
+<td>select array elements depending on an input condition</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Statistical Functions</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>function</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>average</td>
+<td>average value of an array, with optional weights</td>
+</tr>
+<tr class="row-odd"><td>max</td>
+<td>maximum value of an array</td>
+</tr>
+<tr class="row-even"><td>mean</td>
+<td>mean value of an array</td>
+</tr>
+<tr class="row-odd"><td>median</td>
+<td>median value of an array</td>
+</tr>
+<tr class="row-even"><td>min</td>
+<td>minimum value of an array</td>
+</tr>
+<tr class="row-odd"><td>var</td>
+<td>variance of an array</td>
+</tr>
+<tr class="row-even"><td>std</td>
+<td>standard deviation of an array</td>
+</tr>
+<tr class="row-odd"><td>trapz</td>
+<td>integrate using composite trapezoidal rule</td>
+</tr>
+<tr class="row-even"><td>remainder</td>
+<td>remainder of division (<tt class="docutils literal"><span class="pre">x1</span> <span class="pre">-</span> <span class="pre">floor(x1</span> <span class="pre">/</span> <span class="pre">x2)</span> <span class="pre">*</span> <span class="pre">x2</span></tt>)</td>
+</tr>
+<tr class="row-odd"><td>percentile</td>
+<td>returns the given  percentile of array elements</td>
+</tr>
+<tr class="row-even"><td>ceil</td>
+<td>ceiling values (round &#8220;up&#8221;) of input</td>
+</tr>
+<tr class="row-odd"><td>floor</td>
+<td>floor values (round &#8220;down&#8221;) of input</td>
+</tr>
+<tr class="row-even"><td>round</td>
+<td>round values (away from 0) of input</td>
+</tr>
+<tr class="row-odd"><td>clip</td>
+<td>set upper/lower bounds on array values</td>
+</tr>
+<tr class="row-even"><td>digitize</td>
+<td>indices of bins for binned values</td>
+</tr>
+<tr class="row-odd"><td>bincount</td>
+<td>number of occurrences of each value in array</td>
+</tr>
+<tr class="row-even"><td>histogram</td>
+<td>build a histogram from an array</td>
+</tr>
+<tr class="row-odd"><td>histogram2d</td>
+<td>build a 2-d histogram from two arrays</td>
+</tr>
+<tr class="row-even"><td>convolve</td>
+<td>discrete convolution of two 1-d arrays</td>
+</tr>
+<tr class="row-odd"><td>correlate</td>
+<td>cross-correlation of two 1-d arrays</td>
+</tr>
+<tr class="row-even"><td>cumprod</td>
+<td>cumulative product</td>
+</tr>
+<tr class="row-odd"><td>cumsum</td>
+<td>cumulative sum</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Multi-dimensional and Matrix Functions</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>function</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>tril</td>
+<td>upper triagonal of an array</td>
+</tr>
+<tr class="row-odd"><td>triu</td>
+<td>lower triagonal of an array</td>
+</tr>
+<tr class="row-even"><td>diagonal</td>
+<td>diagonal elements of an array</td>
+</tr>
+<tr class="row-odd"><td>trace</td>
+<td>sum of diagonal elements</td>
+</tr>
+<tr class="row-even"><td>dot</td>
+<td>dot product of two arrays</td>
+</tr>
+<tr class="row-odd"><td>inner</td>
+<td>inner product of two arrays</td>
+</tr>
+<tr class="row-even"><td>outer</td>
+<td>outer product of two arrays</td>
+</tr>
+<tr class="row-odd"><td>kron</td>
+<td>Kronecker product of two arrays</td>
+</tr>
+<tr class="row-even"><td>swapaxes</td>
+<td>rotate axes of an array</td>
+</tr>
+<tr class="row-odd"><td>transpose</td>
+<td>transpose array</td>
+</tr>
+<tr class="row-even"><td>fliplr</td>
+<td>Flip an array horizontally</td>
+</tr>
+<tr class="row-odd"><td>flipud</td>
+<td>Flip an array vertically</td>
+</tr>
+<tr class="row-even"><td>rot90</td>
+<td>rotate an array 90 degrees counter clockwise</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Array and Signal Processing</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>function</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>diff</td>
+<td>finite difference of array elements</td>
+</tr>
+<tr class="row-odd"><td>gradient</td>
+<td>gradient of an array</td>
+</tr>
+<tr class="row-even"><td>interp</td>
+<td>linear interpolation of 1-d arrays</td>
+</tr>
+<tr class="row-odd"><td>poly</td>
+<td>Evaluate a polynomial at a point</td>
+</tr>
+<tr class="row-even"><td>root</td>
+<td>the roots of a polynomial</td>
+</tr>
+<tr class="row-odd"><td>polyfit</td>
+<td>least squares polynomial fit</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Random number generation and other</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>function</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>random.random</td>
+<td>randomly distributed reals, on [0, 1).</td>
+</tr>
+<tr class="row-odd"><td>random.randint</td>
+<td>array of random integers, over specified range</td>
+</tr>
+<tr class="row-even"><td>random.normal</td>
+<td>normally distributed random numbers</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fourier transforms</strong></p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="22%" />
+<col width="78%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><strong>function</strong></th>
+<th class="head"><strong>description</strong></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>fft.fft</td>
+<td>Fourier transform of a 1-d array</td>
+</tr>
+<tr class="row-odd"><td>fft.ifft</td>
+<td>inverse Fourier transform of a 1-d array</td>
+</tr>
+<tr class="row-even"><td>fft.fft2</td>
+<td>Fourier transform of a 2-d array</td>
+</tr>
+<tr class="row-odd"><td>fft.ifft2</td>
+<td>inverse Fourier transform of a 2-d array</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>Many other functions that work on arrays are available from numpy subpackages and from scipy.</p>
 </div>
 </div>
 
