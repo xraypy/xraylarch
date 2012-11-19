@@ -24,4 +24,4 @@ def show_chifit(dataset, kweight=2, title='Data and Best-Fit',
     plot(dataset.model.r, dataset.model.chir_mag, label='fit', win=2)
 
 enddef
-## examples/feffit/doc_macros.lar
+## end of examples/feffit/doc_macros.lar
