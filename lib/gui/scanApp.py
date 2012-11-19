@@ -37,6 +37,7 @@ import time
 import shutil
 import json
 from datetime import timedelta
+from threading import Thread
 
 import wx
 import wx.lib.agw.flatnotebook as flat_nb
@@ -54,12 +55,12 @@ from ..ordereddict import OrderedDict
 from ..scan_config import ScanConfig
 
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
-                        SlewScanPanel,   XAFSScanPanel)
+                          SlewScanPanel,   XAFSScanPanel)
 
 from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
                          MultiMcaDetector, AreaDetector, get_detector)
 
-from .pvconnector import PVNameCtrl, EpicsPVList
+from .pvconnector import  EpicsPVList
 from .edit_positioners import PositionerFrame
 from .edit_detectors import DetectorFrame
 
@@ -84,7 +85,7 @@ class ScanFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
 
-        self.pvlist = EpicsPVList(self)
+        self.pvlist = {} # EpicsPVList(self)
         self.detectors  =  OrderedDict()  # list of available detectors and whether to use them
         self.extra_counters = OrderedDict() # list of extra counters and whether to use them
         self.config = ScanConfig(conffile)
@@ -98,6 +99,12 @@ class ScanFrame(wx.Frame):
         self.SetSize((700, 575))
         self.SetFont(self.Font11)
 
+        self._larch = None
+        self.larch_status = 1 
+        self.epics_status = 1
+        self.conntimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onTimer, self.conntimer)
+        
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -105,6 +112,7 @@ class ScanFrame(wx.Frame):
         statusbar_fields = ["Messages", "Status"]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
+
 
     def createMainPanel(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -119,6 +127,7 @@ class ScanFrame(wx.Frame):
                               ('Slew Scan',        SlewScanPanel),
                               ('XAFS Scan',        XAFSScanPanel)):
 
+            print name
             p = creator(self, config=self.config, pvlist=self.pvlist)
             self.nb.AddPage(p, name, True)
             self.scanpanels.append(p)
@@ -162,35 +171,58 @@ class ScanFrame(wx.Frame):
 
         bpanel.SetSizer(bsizer)
         bsizer.Fit(bpanel)
-        wx.CallAfter(self.init_larch)
-        wx.CallAfter(self.connect_epics)
         sizer.Add(bpanel, 0, ALL_CEN, 5)
         self.SetSizer(sizer)
+        # self.connect_epics()
+        self.conntimer.Start(100)
         sizer.Fit(self)
 
+    def onTimer(self, evt=None):
+        if self.larch_status > 0:
+            self.ini_larch_thread = Thread(target=self.init_larch)
+            self.ini_larch_thread.start()
+            
+        if self.epics_status > 0:
+            self.ini_epics_thread = Thread(target=self.connect_epics)
+            self.ini_epics_thread.start()
+        if self.epics_status == 0 and self.larch_status  == 0:
+            self.ini_larch_thread.join()
+            self.ini_epics_thread.join()
+            for spanel in self.scanpanels:
+                spanel.initialize_positions()
+            self.conntimer.Stop()
+
+            
     def init_larch(self):
         t0 = time.time()
+        self.larch_status = -1
         import larch
         self._larch = larch.Interpreter()
         for span in self.scanpanels:
             span.larch = self._larch
-        print 'initialized larch in %.3f sec' % (time.time()-t0)
+        self.larch_status = 0
+        print 'larch initialized %.3f s ' % (time.time()-t0)
 
     @EpicsFunction
     def connect_epics(self):
         t0 = time.time()
         for desc, pvname in self.config.positioners.items():
-            for j in pvname: self.pvlist.connect_pv(j)
+             for j in pvname:
+                 self.pvlist[j] = epics.PV(j)
         for desc, pvname in self.config.extra_pvs.items():
-            self.pvlist.connect_pv(pvname)
+            self.pvlist[pvname] = epics.PV(pvname)
+
         for desc, pvname in self.config.counters.items():
-            self.pvlist.connect_pv(pvname)
+            self.pvlist[pvname] = epics.PV(pvname)
+
         for label, val in self.config.detectors.items():
             prefix, opts = val
             opts['label'] = label
             self.detectors[label] = get_detector(prefix, **opts)
-        print 'connected to Epics PVs in %.3f sec' % (time.time()-t0)
 
+        self.epics_status = 0
+        print 'epics initialized %.3f s ' % (time.time()-t0)        
+        
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
         scan = panel.generate_scan()
@@ -210,10 +242,10 @@ class ScanFrame(wx.Frame):
         for label, pvname in self.config.extra_pvs.items():
             scan['extra_pvs'].append((label, pvname))
 
-        print '======='
+        print '=== Start Scan ==='
+        #for k, v in scan.items():
+        #    print k, v
         print json.dumps(scan)
-        print '======='
-
 
     def onAbortScan(self, evt=None):
         print 'Abort Scan ', evt
@@ -267,19 +299,25 @@ class ScanFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    @EpicsFunction
     def onClose(self,evt):
-        self.pvlist.etimer.Stop()
-        for nam, pv in self.pvlist.pvs.items():
-            pv.disconnect()
-            del pv
-        del self.pvlist
+        self.shutdown_epics()
+
+    @EpicsFunction
+    def shutdown_epics(self):
+        print 'shutdown epics start'
+        #         for nam, pv in self.pvlist.pvs.items():
+        # #             pv.clear_callbacks()
+        # #             pv.disconnect()
+        # #             del pv
+        # #         del self.pvlist
+        for nam, pv in self.pvlist.items():
+            pv.clear_callbacks()
 
         epics.ca.poll(1.e-1, 3.0)
-        time.sleep(0.5)
-
+        time.sleep(1.)
+        epics.ca.finalize_libca()
+        print 'shutdown epics done'
         self.Destroy()
-
 
     def onSetupMisc(self, evt=None):
         print 'need frame for general config'
@@ -295,7 +333,7 @@ class ScanFrame(wx.Frame):
                       extra_counters=self.extra_counters)
 
     def onFolderSelect(self,evt):
-        style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLEo
+        style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
 
         dlg = wx.DirDialog(self, "Select Working Directory:", os.getcwd(),
                            style=style)
@@ -359,4 +397,7 @@ class ScanApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         return True
 
 if __name__ == "__main__":
-    ScanApp().MainLoop()
+    app = wx.App()
+    i = ScanFrame()
+    i.Show()
+    app.MainLoop()

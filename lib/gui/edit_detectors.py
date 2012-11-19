@@ -11,7 +11,8 @@ from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
 
 from .gui_utils import GUIColors, set_font_with_children, YesNo, Closure
 from .gui_utils import add_button, add_choice, pack, SimpleText, FloatCtrl, HyperText
-from .pvconnector import PVNameCtrl
+
+# from .pvconnector import PVNameCtrl
 
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 CEN  = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.ALL
@@ -30,7 +31,6 @@ class DetectorFrame(wx.Frame) :
         if extra_counters is None: extra_counters = OrderedDict()
         self.detectors = detectors
         self.extra_counter = extra_counters
-        self.pvlist = pvlist
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 
@@ -119,7 +119,7 @@ class DetectorFrame(wx.Frame) :
 
         for label, pv in self.config.counters.items():
             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-            pvctrl = PVNameCtrl(panel, value=pv, pvlist=self.pvlist, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value=pv,  size=(175, -1))
             use     = YesNo(panel)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
@@ -129,7 +129,7 @@ class DetectorFrame(wx.Frame) :
 
         for i in range(3):
             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
-            pvctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
             use     = YesNo(panel)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
