@@ -8,7 +8,7 @@ import wx.lib.scrolledpanel as scrolled
 from ..ordereddict import OrderedDict
 from .gui_utils import GUIColors, set_font_with_children, YesNo
 from .gui_utils import add_button, pack, SimpleText
-from .pvconnector import PVNameCtrl
+
 
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 class PositionerFrame(wx.Frame) :
@@ -59,8 +59,8 @@ class PositionerFrame(wx.Frame) :
         self.widlist = []
         for label, pvs in self.config.positioners.items():
             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-            pvctrl = PVNameCtrl(panel, value=pvs[0], pvlist=self.pvlist, size=(175, -1))
-            rdctrl = PVNameCtrl(panel, value=pvs[1], pvlist=self.pvlist, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value=pvs[0],  size=(175, -1))
+            rdctrl = wx.TextCtrl(panel, value=pvs[1],  size=(175, -1))
             delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
@@ -71,8 +71,8 @@ class PositionerFrame(wx.Frame) :
 
         for i in range(4):
             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
-            pvctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
-            rdctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
+            rdctrl = wx.TextCtrl(panel, value='', size=(175, -1))
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
@@ -87,8 +87,8 @@ class PositionerFrame(wx.Frame) :
         drive_pv = self.config.xafs['energy_drive']
         read_pv = self.config.xafs['energy_read']
         desc   = wx.TextCtrl(panel, -1, value='Energy PV', size=(175, -1))
-        pvctrl = PVNameCtrl(panel, value=drive_pv, pvlist=self.pvlist, size=(175, -1))
-        rdctrl = PVNameCtrl(panel, value=read_pv, pvlist=self.pvlist, size=(175, -1))
+        pvctrl = wx.TextCtrl(panel, value=drive_pv, size=(175, -1))
+        rdctrl = wx.TextCtrl(panel, value=read_pv,  size=(175, -1))
         ir +=1
         sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
         sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
@@ -102,8 +102,8 @@ class PositionerFrame(wx.Frame) :
 
         for label, pvs in self.config.slewscan_positioners.items():
             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-            pvctrl = PVNameCtrl(panel, value=pvs[0], pvlist=self.pvlist, size=(175, -1))
-            rdctrl = PVNameCtrl(panel, value=pvs[1], pvlist=self.pvlist, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value=pvs[0], size=(175, -1))
+            rdctrl = wx.TextCtrl(panel, value=pvs[1], size=(175, -1))
             delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
@@ -114,8 +114,8 @@ class PositionerFrame(wx.Frame) :
 
         for i in range(1):
             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
-            pvctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
-            rdctrl = PVNameCtrl(panel, value='', pvlist=self.pvlist, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
+            rdctrl = wx.TextCtrl(panel, value='', size=(175, -1))
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)

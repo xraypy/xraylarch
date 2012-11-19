@@ -13,7 +13,7 @@ import wx.lib.scrolledpanel as scrolled
 import numpy as np
 
 import epics
-from epics.wx import DelayedEpicsCallback, EpicsFunction, PVText
+from epics.wx import EpicsFunction, PVText
 
 from .gui_utils import SimpleText, FloatCtrl, Closure
 from .gui_utils import pack, add_choice
@@ -136,6 +136,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
 
     @EpicsFunction
     def update_position_from_pv(self, index, name=None):
+        print 'update pos from pv ', index
         if not hasattr(self, 'pos_settings'):
             return
         if name is None:
@@ -153,19 +154,19 @@ class GenericScanPanel(scrolled.ScrolledPanel):
 
         if '.' not in pvnames[1]: pvnames[1] = pvnames[1] + '.VAL'
         if '.' not in pvnames[0]: pvnames[0] = pvnames[0] + '.VAL'
-        if pvnames[0] not in self.pvlist.pvs:
-            self.pvlist.connect_pv(pvnames[0])
-            self.pvlist.connect_pv(pvnames[1])
+        if pvnames[0] not in self.pvlist: 
+            self.pvlist[pvnames[0]] = epics.PV(pvnames[0])
+            self.pvlist[pvnames[1]] = epics.PV(pvnames[1])
             return
         unitspv = pvnames[1][:-4] + '.EGU'
-        has_unitspv = unitspv in self.pvlist.pvs
+        has_unitspv = unitspv in self.pvlist
         if not has_unitspv:
-            self.pvlist.connect_pv(unitspv)
+            self.pvlist[unitspv]  = epics.PV(unitspv)
 
-        mpv  = self.pvlist.pvs[pvnames[1]]
+        mpv  = self.pvlist[pvnames[1]]
         units = mpv.units
         if has_unitspv:
-            units  = self.pvlist.pvs[unitspv].get()
+            units  = self.pvlist[unitspv].get()
 
         hlim = mpv.upper_disp_limit
         llim = mpv.lower_disp_limit
@@ -203,6 +204,12 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                 wids[4].SetValue(offset + wids[4].GetValue(), act=False)
                 self.update_position_from_pv(index)
 
+    def initialize_positions(self):
+        if hasattr(self, 'pos_settings'):
+            for index in range(len(self.pos_settings)):
+                self.update_position_from_pv(index)
+            
+            
     def use_config(self, config):
         pass
 
@@ -336,6 +343,7 @@ class XAFSScanPanel(GenericScanPanel):
     def __init__(self, parent, **kws):
         GenericScanPanel.__init__(self, parent, size=(750, 325), **kws)
         self.reg_settings = []
+        self.cur_units = []
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(7, 7)
 
@@ -375,7 +383,7 @@ class XAFSScanPanel(GenericScanPanel):
             else:
                 units = add_choice(panel, self.units_list,
                                    action=Closure(self.onVal, label='units', index=i))
-                # action=Closure(self.onUnitsChoice, index=i))
+            self.cur_units.append('eV')                
 
             self.reg_settings.append((start, stop, step, npts, dtime, units))
             if i >= nregs:
@@ -449,6 +457,7 @@ class XAFSScanPanel(GenericScanPanel):
         if not self._initialized: return
         wids = self.reg_settings[index]
         units = self.getUnits(index)
+        old_units = self.cur_units[index]
         e0_off = 0
         if 0 == self.absrel.GetSelection(): # absolute
             e0_off = self.e0.GetValue()
@@ -468,15 +477,15 @@ class XAFSScanPanel(GenericScanPanel):
                 else:
                     for wid in reg: wid.Disable()
         elif label == 'units':
-            if units == 'eV': # was 1/A, convert to eV
+            if units == 'eV' and old_units != 'eV': # was 1/A, convert to eV
                 wids[0].SetValue(ktoe(wids[0].GetValue()) + e0_off)
                 wids[1].SetValue(ktoe(wids[1].GetValue()) + e0_off)
                 wids[2].SetValue(2.0)
-            else:
+            elif units != 'eV' and old_units == 'eV': # was eV, convert to 1/A
                 wids[0].SetValue(etok(wids[0].GetValue() - e0_off))
                 wids[1].SetValue(etok(wids[1].GetValue() - e0_off))
                 wids[2].SetValue(0.05)
-
+            self.cur_units[index] = units
             self.setStepNpts(wids, label)
 
         if label in ('start', 'stop', 'step', 'npts'):
@@ -515,8 +524,9 @@ class XAFSScanPanel(GenericScanPanel):
         edge = self.edgechoice.GetStringSelection()
         elem = self.elemchoice.GetStringSelection()
         if self.larch is not None:
-            e0val = self.larch( "xray_edge('%s', '%s')" % (elem, edge))
-            self.e0.SetValue(e0val[0])
+            #e0val = self.larch( "xray_edge('%s', '%s')" % (elem, edge))
+            #self.e0.SetValue(e0val[0])
+            self.e0.SetValue(8200) 
 
     def generate_scan(self):
         s = {'type': 'xafs',
@@ -527,12 +537,13 @@ class XAFSScanPanel(GenericScanPanel):
              'regions': []}
         for index, wids in enumerate(self.reg_settings):
             start, stop, step, npts, dtime, units =  wids
-            p1 = start.GetValue()
-            p2 = stop.GetValue()
-            np = npts.GetValue()
-            dt = dtime.GetValue()
-            un = self.getUnits(index)
-            s['regions'].append((p1, p2, np, dt, un))
+            if start.Enabled:
+                p1 = start.GetValue()
+                p2 = stop.GetValue()
+                np = npts.GetValue()
+                dt = dtime.GetValue()
+                un = self.getUnits(index)
+                s['regions'].append((p1, p2, np, dt, un))
         return s
 
 class MeshScanPanel(GenericScanPanel):
@@ -700,7 +711,6 @@ class SlewScanPanel(GenericScanPanel):
             for i in (3, 4, 5, 6): wids[i].Enable()
             self.update_position_from_pv(1)
 
-            
     def onPos(self, evt=None, index=0):
         self.update_position_from_pv(index)
 
@@ -727,17 +737,18 @@ class SlewScanPanel(GenericScanPanel):
         is_relative =  self.absrel.GetSelection()
         for i, wids in enumerate(self.pos_settings):
             pos, u, cur, start, stop, dx, wnpts = wids
-            npts = wnpts.GetValue()
-            name = pos.GetStringSelection()
-            pvnames = self.config.positioners[name]
-            p1 = start.GetValue()
-            p2 = stop.GetValue()
-            if is_relative:
-                p1 += float(cur.GetLabel())
-                p2 += float(cur.GetLabel())
-            mname = 'outer'
-            if i == 01: mname = 'inner'
-            s[mname].append((name, pvnames, p1, p2, npts))
+            if start.Enabled:
+                npts = wnpts.GetValue()
+                name = pos.GetStringSelection()
+                pvnames = self.config.positioners[name]
+                p1 = start.GetValue()
+                p2 = stop.GetValue()
+                if is_relative:
+                    p1 += float(cur.GetLabel())
+                    p2 += float(cur.GetLabel())
+                mname = 'outer'
+                if i == 01: mname = 'inner'
+                s[mname].append((name, pvnames, p1, p2, npts))
         return s
 
 

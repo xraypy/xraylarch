@@ -535,7 +535,10 @@ class HyperText(wx.StaticText):
     def  __init__(self, parent, label, action=None, colour=(50, 50, 180), **kws):
         self.action = action
         wx.StaticText.__init__(self, parent, -1, label=label, **kws)
-        font  = self.GetFont().Bold()
+        try:
+            font  = self.GetFont().Bold()
+        except AttributeError:
+            pass
         font.SetUnderlined(True)
         self.SetFont(font)
         self.SetForegroundColour(colour)
