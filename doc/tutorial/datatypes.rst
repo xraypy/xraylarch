@@ -1,3 +1,5 @@
+.. _tutor-datatypes_sec:
+
 ============================================
 Tutorial: Basic and Complex Data Types
 ============================================
@@ -256,7 +258,7 @@ contents::
       x: 1002.8
 
 (The **'0x1b8cbfb0'** is discussed in more detail below in
-:ref:`tut-objectids_sec`).  The :func:`group` function can take arguments
+:ref:`tutor-objectids_sec`).  The :func:`group` function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call::
 
@@ -632,10 +634,10 @@ be any object, including other lists and dictionaries, so that a dictionary
 can end up with a very complex structure.  Dictionaries are quite useful,
 and are in fact used throughout python.
 
-.. _tut-objectids_sec:
+.. _tutor-objectids_sec:
 
-Object identities, copying, and equality vs. equivalence
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Object identities, copying, and equality vs. identity
+=========================================================
 
 OK, this may be a bit advanced for a section in a *tutorial*, but there are
 a few important topics we need to make about objects, groups, and the idea
@@ -649,7 +651,7 @@ cover here includes:
   * what variable assignment really means.
   * mutable and immutable objects.
   * object identity.
-  * the difference between equality and equivalence.
+  * the difference between equality and identity.
 
 As mentioned above, each named quantity in Larch is simply a Python object
 (for the C, C++, and Java programmers, every variable is reference or
@@ -669,7 +671,6 @@ data its pointing to::
 
     larch> w = 3.25  # now a floating point number
     larch> w = [1, 2, 3]  # now a list
-
 
 For this reason, a variable name is best thought of as something very
 different from the value it points to.  Of course, it is obvious when two
@@ -705,13 +706,101 @@ addition, what the object points to can also change.
 
 Each object value has a unique memory location -- its identity.  The
 builtin :func:`id` function returns this identity.  Two variables are said
-to be *equivalent* if their values have the same identity -- the variables
+to be *identical* if their values have the same identity -- the variables
 point to the same quantitiy.  Two variabales are *equal* if their values
 are the same, even if these values are held in different memory locations.
-And, of course, two differe variables can point to the same object.
+And, of course, two different variables can point to the same object.
 
-In practice, this is not as confusing as it sounds, and the model for data,
-variables, and values is generally very easy to deal with.  The most
+You can test both equality (whether two variables hold equal value) and identity
+(whether two variables point to the same value).   First, the builtin
+:func:`id` function will give the identity (essentially, the memory
+location) of a variable::
+
+    larch> x = [1, 2, 3, 4, 5]
+    larch> id(x)
+    108444568
+
+(the value shown will be different each time you run Larch).  Now if we
+assign another variable to ``x``, we can use :func:`id` to see why changing
+the value of one changes the value of the other::
+
+    larch> y = x
+    larch> id(y)
+    108444568      ### The same as id(x) !!
+    larch> y[1] = 'hello'
+    larch> print x
+    [1, 'hello', 3, 4, 5]
+
+Here, ``x`` changed because it is identical to ``y`` and is mutable.
+However, if we make another variable that happens to have the same value::
+
+    larch> z = [1, 'hello', 3, 4, 5]
+    larch> id(z)
+    108399752
+
+Now changing an element of ``z`` will not change ``x`` or ``y``.     You
+can test whether two variables have equal values with the boolean operator
+`==`.   Similarly, you can test whether two variables are identical with
+the  boolean operator `is`.  So::
+
+    larch> x == y, x is y
+    (True, True)
+    larch> x == z, x is z
+    (True, False)
+
+If you want to make a copy of a mutable object, you can use the builtin
+:func:`copy` function::
+
+    larch> q = copy(z)
+    larch> q == z, q is z
+    (True, False)
+
+Another, and very common way to make copies of lists and arrays is to
+create a new value that happens to have the same value.  For a list, a very
+common approach is to make a *full slice*::
+
+    larch> newx = x[:]
+    larch> x == newx, x is newx
+    (True, False)
+
+and for arrays, you can multiply by 1 or add 0::
+
+    larch> a = array([1., 2., 3., 4., 5., 6.])
+    larch> b = a
+    larch> c = 1 * a
+    larch> a is b, a is c
+    (True, False)
+
+
+Note that doing ``a == b`` on arrays here would give an array of values, testing
+the values element-by-element.  This will be discussed the next section.
+
+Larch Groups are also mutable objects and so assignment to a group does not
+make a new copy of the group but another reference to the same group::
+
+    larch> g = group(x=1, text='hello')
+    larch> h = g
+    larch> h is g
+    True
+
+If ask for the group to be printed or run the :func:`show` function on a group::
+
+    larch> g
+    <Group 0x6bf17f0>
+    larch> show(g)
+    == Group 0x6bf17f0: 2 symbols ==
+      x: 1
+      text: 'hello'
+
+we see the hexidecimal representation of its  memory address::
+
+    larch> id(g), hex(id(g))
+    (113186800, '0x6bf17f0')
+
+
+
+In practice, this issue is not as confusing as it sounds, and the model for
+data, variables, and values is generally very easy to deal with.  The most
 important thing to be aware of -- the thing most likely to cause trouble --
 is that assigning a variable to be a mutable object like a list,
 dictionary, or array does not make a copy of the object, but simply creates
