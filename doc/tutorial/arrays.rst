@@ -186,6 +186,134 @@ listed in the
    complex128 or complex     double precision complex, two float64s.
   ========================= ===================================================
 
+
+
+Basic array manipulation
+===========================================
+
+Arrays can either be used as a single object, or individual or ranges of elements can be extracted
+from them.   Usually, mathematical operations and functions done to arrays are applied
+element-by-element.  For example::
+
+    larch>  x = arange(5)
+    larch> print x
+    [0 1 2 3 4]
+    larch> print 2*x+1
+    [1 3 5 7 9]
+
+and so on for all of the basic mathematical operators.   To add to arrays of equal lengths
+together is also easy::
+
+    larch>  y = array([10, 12, 14, 16, 18])
+    larch> print y - 3*x
+    [10  9  8  7  6]
+
+If the arrays are not of equal length, an exception is raised. In that case, you can take a sub-set
+of the larger array to match the size of the smaller one.
+
+
+Boolean operators also apply to each element, so that::
+
+    larch> print y > 13
+    [False False  True  True  True]
+
+The :func:`any` and :func:`all` functions (in the tables below) can be used to determine if any or
+all of the Boolean values are ``True``.
+
+
+You can extract single elements from arrays with brackets, just as for lists::
+
+    larch> print y[2]
+    14
+    larch> print (y-3*x)[2]
+    7
+
+which leads us to the next section.
+
+
+Slicing and extracting sub-arrays
+=====================================
+
+An important aspect of arrays is that they can be treated as a single entity.  That is, ``sin(x)``
+operates on each element of ``x``.  But sometimes it is necessary to get a particular element from
+an array or work on only a selected part of an array.  To do these, one takes a sub-set of the array
+-- a **slice**.  For extracting contiguous portions of 1-dimension arrays, this is pretty
+straightforward, using the range of indices needed for the slice between square brackets ``[`` and
+``]``.  For example::
+
+    larch> arr = linspace(0, 2, 21)
+    larch> print arr
+    [ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2  1.3  1.4
+      1.5  1.6  1.7  1.8  1.9  2. ]
+    larch> print arr[20]
+    2.0
+    larch> print arr[15]
+    1.5
+    larch> print arr[10:15]
+    [ 1.   1.1  1.2  1.3  1.4]
+
+The general syntax for a slice is pretty complicated, but the simplest cases are straightforward.
+As with lists, ``arr[i]`` selects value at index ``i`` (counting from 0).  Similarly, ``arr[i:j]``
+selects elements starting at ``i`` and ending at (but not including -- see the example above)
+``j``.  If ``i`` is omitted,
+it is taken as 0 (the first element), and if ``j`` is omitted, it defaults to the last element of
+the array.  In addition, if ``i`` and/or ``j`` are negative, they count from the end of the array::
+
+    larch> print arr[:-8]
+    [ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2]
+    larch> print arr[-2:]
+    [ 1.9  2.]
+
+A slice can take a third argument ``k`` -- the stride -- which allows selection of every ``k``
+elements.  That is::
+
+    larch> print arr[1:6:2]
+    [ 0.1  0.3  0.5]
+    larch> print arr[::2]
+    [ 0.   0.2  0.4  0.6  0.8  1.   1.2  1.4  1.6  1.8  2. ]
+
+If ``k`` is negative, it starts from the end of the array::
+
+    larch> print arr[::-3]
+    [2.   1.7  1.4  1.1  0.8  0.5  0.2]
+
+
+For mult-dimensional arrays, slices can be made for each dimension, with slices separated by
+commas.  If no slice is given, the whole array along that dimension is used.  Thus::
+
+    larch> x = arange(30).reshape((6, 5)
+    larch> print x
+    [[ 0  1  2  3  4]
+     [ 5  6  7  8  9]
+     [10 11 12 13 14]
+     [15 16 17 18 19]
+     [20 21 22 23 24]
+     [25 26 27 28 29]]
+    larch> print x[2]  # third row
+    [10 11 12 13 14]
+    larch> print x[:,1]  # second column
+    [ 1  6 11 16 21 26]
+    larch> print x[:3,2:5]
+    [[ 2  3  4]
+     [ 7  8  9]
+     [12 13 14]]
+
+Note that multi-dimensional arrays use a layout like C and unlike Fortran by default.  In addition
+to the comma-based syntax shown above to extract different dimensions or use brackets around each
+dimension::
+
+    larch> print x[1][:4]  # second row, first 4 columns
+    [5 6 7 8]
+    larch> print x[1,:4]   # same
+    [5 6 7 8]
+
+In general, the syntax for a slice is then ``arr[i1:j1,:k1, i2:j2:k2, ...]`` with default values for ``i``
+of 0, for ``j`` of the length of the array, and for ``k`` of 1.
+
+
+
+
+
 Array attributes and methods
 ===========================================
 
@@ -401,6 +529,8 @@ What's more, many more are available by importing them from the scipy library.
   +-----------------+--------------------------------------------------------------+
   |  dstack         |  Stack arrays in sequence along third dimension (depth)      |
   +-----------------+--------------------------------------------------------------+
+  | take            |  take values at specified indices                            |
+  +-----------------+--------------------------------------------------------------+
   | choose          |  construct array from index array and a set of arrays        |
   +-----------------+--------------------------------------------------------------+
   | where           | select array elements depending on an input condition        |
@@ -427,25 +557,25 @@ What's more, many more are available by importing them from the scipy library.
   +-----------------+--------------------------------------------------------------+
   | trapz           |  integrate using composite trapezoidal rule                  |
   +-----------------+--------------------------------------------------------------+
-  | remainder       |                                                              |
+  | remainder       |  remainder of division (``x1 - floor(x1 / x2) * x2``)        |
   +-----------------+--------------------------------------------------------------+
-  | percentile      |                                                              |
+  | percentile      |  returns the given  percentile of array elements             |
   +-----------------+--------------------------------------------------------------+
-  | ceil            |                                                              |
+  | ceil            |  ceiling values (round "up") of input                        |
   +-----------------+--------------------------------------------------------------+
-  | floor           |                                                              |
+  | floor           |  floor values (round "down") of input                        |
   +-----------------+--------------------------------------------------------------+
-  | round           |                                                              |
+  | round           |  round values (away from 0) of input                         |
   +-----------------+--------------------------------------------------------------+
-  | clip            |    set upper/lower bounds on array values                    |
+  | clip            |  set upper/lower bounds on array values                      |
   +-----------------+--------------------------------------------------------------+
-  | digitize        |                                                              |
+  | digitize        |  indices of bins for binned values                           |
   +-----------------+--------------------------------------------------------------+
-  | bincount        |                                                              |
+  | bincount        |  number of occurrences of each value in array                |
   +-----------------+--------------------------------------------------------------+
-  | histogram       |                                                              |
+  | histogram       |  build a histogram from an array                             |
   +-----------------+--------------------------------------------------------------+
-  | histogram2d     |                                                              |
+  | histogram2d     |  build a 2-d histogram from two arrays                       |
   +-----------------+--------------------------------------------------------------+
   | convolve        |    discrete convolution of two 1-d arrays                    |
   +-----------------+--------------------------------------------------------------+
@@ -469,8 +599,6 @@ What's more, many more are available by importing them from the scipy library.
   +-----------------+--------------------------------------------------------------+
   | trace           | sum of diagonal elements                                     |
   +-----------------+--------------------------------------------------------------+
-  | take            |                                                              |
-  +-----------------+--------------------------------------------------------------+
   | dot             | dot product of two arrays                                    |
   +-----------------+--------------------------------------------------------------+
   | inner           | inner product of two arrays                                  |
@@ -478,8 +606,6 @@ What's more, many more are available by importing them from the scipy library.
   | outer           | outer product of two arrays                                  |
   +-----------------+--------------------------------------------------------------+
   | kron            | Kronecker product of two arrays                              |
-  +-----------------+--------------------------------------------------------------+
-  | tensordot       |                                                              |
   +-----------------+--------------------------------------------------------------+
   |  swapaxes       |  rotate axes of an array                                     |
   +-----------------+--------------------------------------------------------------+
@@ -515,29 +641,27 @@ What's more, many more are available by importing them from the scipy library.
   +-----------------+--------------------------------------------------------------+
   | **function**    |   **description**                                            |
   +=================+==============================================================+
-  | random.random   |  randomly distributed floating point numbers                 |
+  | random.random   |  randomly distributed reals, on [0, 1).                      |
   +-----------------+--------------------------------------------------------------+
-  | random.randint  |  array of random integers                                    |
-  +-----------------+--------------------------------------------------------------+
-  | random.randrange|  array of random integers                                    |
+  | random.randint  |  array of random integers, over specified range              |
   +-----------------+--------------------------------------------------------------+
   | random.normal   |  normally distributed random numbers                         |
   +-----------------+--------------------------------------------------------------+
-  | fft             |    fourier transform of an array                             |
+
+  **Fourier transforms**
+
   +-----------------+--------------------------------------------------------------+
-  | i0              |    modified first order bessel function                      |
+  | **function**    |   **description**                                            |
+  +=================+==============================================================+
+  | fft.fft         |  Fourier transform of a 1-d array                            |
+  +-----------------+--------------------------------------------------------------+
+  | fft.ifft        |  inverse Fourier transform of a 1-d array                    |
+  +-----------------+--------------------------------------------------------------+
+  | fft.fft2        |  Fourier transform of a 2-d array                            |
+  +-----------------+--------------------------------------------------------------+
+  | fft.ifft2       |  inverse Fourier transform of a 2-d array                    |
   +-----------------+--------------------------------------------------------------+
 
 
-Slicing and extracting sub-arrays
-=====================================
+Many other functions that work on arrays are available from numpy subpackages and from scipy.
 
-While it is very An important aspect of arrays
-
-
-
-
-Other useful functions for arrays
-=====================================
-
-Also need discussion of ``a == b`` and all() function.
