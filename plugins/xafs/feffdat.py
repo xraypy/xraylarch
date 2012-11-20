@@ -18,14 +18,17 @@ import sys, os
 from larch import Group, Parameter, isParameter, param_value, plugin_path
 
 sys.path.insert(0, plugin_path('std'))
+sys.path.insert(0, plugin_path('xray'))
 sys.path.insert(0, plugin_path('xafs'))
 
 from xafsutils import ETOK
+from xraydb_plugin import atomic_mass
 
 SMALL = 1.e-6
 
 class FeffDatFile(Group):
-    def __init__(self, filename=None, **kws):
+    def __init__(self, filename=None, _larch=None, **kws):
+        self._larch = _larch
         kwargs = dict(name='feff.dat: %s' % filename)
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
@@ -48,6 +51,20 @@ class FeffDatFile(Group):
 
     @nleg.setter
     def nleg(self, val):     pass
+
+    @property
+    def rmass(self):
+        """reduced mass for a path"""
+        if self.__rmass is None:
+            amass = 0
+            for label, iz, ipot, x, y, z in self.geom:
+                m = atomic_mass(iz, _larch=self._larch)
+                amass += 1.0/max(1., m)
+            self.__rmass = 1./amass
+        return self.__rmass
+
+    @rmass.setter
+    def rmass(self, val):     pass
 
     def __read(self, filename):
         try:
@@ -126,6 +143,8 @@ class FeffDatFile(Group):
         self.rep = data[6]
         self.pha = data[1] + data[3]
         self.amp = data[2] * data[4]
+        self.__rmass = None  # reduced mass of path
+
 
 class FeffPathGroup(Group):
     def __init__(self, filename=None, _larch=None,
@@ -138,12 +157,11 @@ class FeffPathGroup(Group):
         Group.__init__(self, **kwargs)
         self._larch = _larch
         self.filename = filename
-        self._feffdat = FeffDatFile(filename=filename)
+        self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
 
         self.geom  = self._feffdat.geom
         self.degen = degen if degen is not None else self._feffdat.degen
         self.label = label if label is not None else filename
-
         self.s02    = 1 if s02    is None else s02
         self.e0     = 0 if e0     is None else e0
         self.ei     = 0 if ei     is None else ei
@@ -151,7 +169,6 @@ class FeffPathGroup(Group):
         self.sigma2 = 0 if sigma2 is None else sigma2
         self.third  = 0 if third  is None else third
         self.fourth = 0 if fourth is None else fourth
-
         self.k = None
         self.chi = None
 
@@ -166,6 +183,12 @@ class FeffPathGroup(Group):
 
     @nleg.setter
     def nleg(self, val):     pass
+
+    @property
+    def rmass(self): return self._feffdat.rmass
+
+    @rmass.setter
+    def rmass(self, val):  pass
 
     def __repr__(self):
         if self.filename is not None:
@@ -213,8 +236,9 @@ class FeffPathGroup(Group):
         # put 'reff' into the paramGroup so that it can be used in
         # constraint expressions
         reff = self._feffdat.reff
-        if self._larch.symtable._sys.paramGroup is not None:
-            self._larch.symtable._sys.paramGroup.reff = reff
+        self._larch.symtable._sys.paramGroup._feffdat = self._feffdat
+        self._larch.symtable._sys.paramGroup.reff = reff
+
 
         geomlabel  = '          Atom     x        y        z     ipot'
         geomformat = '           %s   % .4f, % .4f, % .4f  %i'
@@ -241,6 +265,7 @@ class FeffPathGroup(Group):
                 if isParameter(val):
                     if val.stderr is not None:
                         std = val.stderr
+            if std is None: std = -1
             stderrs[param] = std
 
         def showval(title, par, val, stderrs, ifnonzero=False):

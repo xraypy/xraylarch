@@ -1,16 +1,48 @@
 #!/usr/bin/env python
 # models for debye-waller factors for xafs
 
-def sigma2_eins(t, teins, _larch=None):
-    """calculate XAFS sigma2 using the Einstein model
-    for the 'current path'"""
+import numpy as np
+
+EINS_FACTOR = 24.254360157751783
+
+def sigma2_eins(t, theta, path=None, _larch=None):
+    """calculate sigma2 for path in einstein model
+
+    sigma2 = sigma2_eins(t, theta, path=None)
+
+    if path is not given, the 'current path' is used.
+
+    sigma2 = EINS_FACTOR/(theta*reduced_mass*np.tanh(theta/(2.0*t)))
+
+    reduced_mass = reduced mass of Path (in amu)
+    EINS_FACTOR = hbarc*hbarc/(2 * k_boltz * amu)
+    k_boltz = 8.6173324e-5  # [eV / K]
+    amu     = 931.494061e6  # [eV / (c*c)]
+    hbarc   = 1973.26938    # [eV * A]
+    """
+    rmass = None
+    if path is None:
+        try:
+            rmass = _larch.symtable._sys.paramGroup._feffdat.rmass
+        except:
+            pass
+    else:
+        rmass = path.rmass
+    if rmass is None:
+        return 0.
+    if abs(theta) < 1.e-5: theta = 1.e-5
+    if abs(t) < 1.e-5: t = 1.e-5
+    return EINS_FACTOR/(theta*rmass*np.tanh(theta/(2.0*t)))
+
+
 
 fortrancode = """
 subroutine eins(x, nx, y, ny, ierr)
 c
 c calculate debye waller in einstein model
 c  inputs
-c     x  = theta on input, sigma2 on output
+c     x  = theta on input, sigm
+a2 on output
 c     y  = temp
 c
 c  calculate sigma^2 in the eisntein model inputs:
@@ -32,7 +64,6 @@ c
        return
 c  end function nptstk
        end
-
 
 c
 c  copyright (c) 1998  matt newville
@@ -62,7 +93,7 @@ c  construct reduced mass (in amu) using function at_weight
           rminv = rminv +  one /max(one, a)
   50   continue
        rminv  = factor*max(small, min(big, rminv))
-c
+
 c       print*, ' eins: ', rminv, nx, ipth, x(1), y(1), y(2)
 c       print*,  inpath, jfeff, nlgpth(jfeff), 1./rminv
        do 100 ipt = 1, nx
@@ -85,3 +116,7 @@ c end subroutine eins
        end
 
 """
+
+def registerLarchPlugin():
+    return ('_xafs', {'eins': sigma2_eins})
+

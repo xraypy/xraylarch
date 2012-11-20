@@ -341,7 +341,8 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         if isParameter(p) and p.vary:
             p.stderr *= err_scale
     # next, propagate uncertainties to constraints and path parameters.
-    if HAS_UNCERTAIN and params.covar is not None:
+    covar = getattr(params, 'covar', None)
+    if HAS_UNCERTAIN and covar is not None:
         vsave, vbest = {}, []
         # 1. save current params
         for vname in params.covar_vars:
@@ -367,19 +368,19 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         # 3. evaluate path params, save stderr
         for ds in datasets:
             for p in ds.pathlist:
+                _larch.symtable._sys.paramGroup._feffdat = p._feffdat
+                _larch.symtable._sys.paramGroup.reff = p._feffdat.reff
+
                 for param in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
-                    try:
-                        obj = getattr(p, param)
-                        stderr  = 0
-                        if isParameter(obj):
-                            if hasattr(obj.value, 'std_dev'):
-                                stderr = obj.value.std_dev()
+                    obj = getattr(p, param)
+                    stderr  = 0
+                    if isParameter(obj):
+                        if hasattr(obj.value, 'std_dev'):
+                            stderr = obj.value.std_dev()
                         setattr(obj, 'stderr', stderr)
-                        print ' propagate ', param, obj, stderr
-                    except:
-                        print 'error with param uncertainty ', param
-        print 'mmmm'
+
+
         # 4. restore saved parameters
         for vname in params.covar_vars:
             setattr(params, vname, vsave[vname])
