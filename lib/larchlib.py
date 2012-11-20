@@ -328,6 +328,7 @@ def get_dll(libname):
         _paths[key] = add2path(key, thisdir)
 
     dllpath = ctypes.util.find_library(libname)
+        
     if dllpath is None:
         fname = _dylib_formats[sys.platform] % libname
         dllpath = os.path.join(thisdir, fname)
@@ -335,7 +336,8 @@ def get_dll(libname):
     loaddll = ctypes.cdll.LoadLibrary
     if sys.platform == 'win32':
         loaddll = ctypes.windll.LoadLibrary
-    dll = loaddll(dllpath)
     for key, val in _paths.items():
         os.environ[key] = val
+
+    dll = loaddll(dllpath)
     return dll
