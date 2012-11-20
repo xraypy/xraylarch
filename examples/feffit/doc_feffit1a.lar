@@ -28,5 +28,5 @@ out = feffit(pars, dset)
 print feffit_report(out)
 
 run('doc_macros.lar')
-show_chifit(dset, title='First shell fit to Cu')
+plot_chifit(dset, title='First shell fit to Cu')
 ## end examples/feffit/doc_feffit1a.lar

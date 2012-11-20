@@ -319,18 +319,21 @@ simultaneously modeling more than one data set, and building more complex
 fitting models.  We'll get to these in the following examples.
 
 But first, a small detour.  The plotting commands in the above example for
-plotting :math:`\chi(k)` and
-:math:`\chi(R)` for data and model will be useful for the other examples as
-well, so we'll create a slightly generalized function to make such plots
-and put it into a separate file, *doc_macros.lar*.  This will look like
-this:
+plotting :math:`\chi(k)` and :math:`\chi(R)` for data and model will be
+useful for the other examples as well, so we'll create a slightly
+generalized function to make such plots and put this and several other
+plotting functions into a separate file, *doc_macros.lar*.  This will look
+like this:
 
 .. literalinclude:: ../../examples/feffit/doc_macros.lar
 
-Using this,  we can then replace the plot commands in the script above with::
+This defines several new plotting functions :func:`plot_chifit`,
+:func:`plot_path_k`, and :func:`plot_path_r`, and so on which we'll find
+useful in later examples.  Using the first of these, we can then replace
+the plot commands in the script above with::
 
     run('doc_macros.lar')
-    show_chifit(dset, title='First shell fit to Cu')
+    plot_chifit(dset, title='First shell fit to Cu')
 
 and get reproducible plots without having to copy and paste the same code
 fragment everywhere.  We'll use this in the examples below.
@@ -471,6 +474,32 @@ With plots of data and fits as shown below.
 
 Here, we show both the magnitude and real part of :math:`\chi(R)`.  The fit
 to the real part shows excellent agreement over the fit :math:`R` range of
-[1.4, 3.4] :math:`\AA`.
+[1.4, 3.4] :math:`\AA`.  It is often useful the contributions from the
+indvidual paths.  With the macros defined above, this is pretty
+straightforward, as we can just do::
 
+    plot_modelpaths_k(dset, offset=-1)
+    plot_modelpaths_r(dset, comp='re', offset=-1, xmax=6)
+
+to generate the following plots of the contributions of the differnt paths:
+
+
+.. _xafs_fig14:
+
+  .. image:: ../images/feffit_example5.png
+     :target: ../_images/feffit_example5.png
+     :width: 48 %
+  .. image:: ../images/feffit_example6.png
+     :target: ../_images/feffit_example6.png
+     :width: 48 %
+
+  Figure 14. Path contributions to full mode for the 3-shell fit to Cu
+  spectrum.
+
+Example 3: Fit 3 datasets with 3 Paths each
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+We'll extend the above example by adding two more data sets.  This
+highlights another key concept in modeling XAFS data and reducing the
+number of freely varying parameters in a fit.
 

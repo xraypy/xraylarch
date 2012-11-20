@@ -5,7 +5,10 @@ label_k     = r'$k \rm\,(\AA^{-1})$'
 label_r     = r'$R \rm\,(\AA)$'
 label_chikw = r'$k^2\chi(k) \rm\,(\AA^{-%i})$'
 label_chir  = r'$|\chi(R)| \rm\,(\AA^{-%i})$'
-def show_chifit(dataset, kweight=2, rmax=8,  title='Data and Best-Fit', show_legend=True):
+label_chirre  = r'${\rm Re}[\chi(R)] \rm\,(\AA^{-%i})$'
+label_chirim  = r'${\rm Im}[\chi(R)] \rm\,(\AA^{-%i})$'
+label_chirpha = r'${\rm Phase}[\chi(R)] \rm\,(\AA^{-%i})$'
+def plot_chifit(dataset, kweight=2, rmax=8,  title='Data and Best-Fit', show_legend=True):
     """show chi(k) and chi(r) data and best-fit for a dataset"""
     # make k-weighted chi(k)
     kw = int(kweight)
@@ -26,4 +29,97 @@ def show_chifit(dataset, kweight=2, rmax=8,  title='Data and Best-Fit', show_leg
     plot(dataset.model.r, dataset.data.chir_re,   color='blue', label='',     win=2)
     plot(dataset.model.r, dataset.model.chir_re,  color='red',  label='',     win=2)
 enddef
+
+
+def plot_path_k(dataset, ipath, kweight=None, offset=0, label=None, **extra):
+    "plot k-weighted chi(k) for a particular path in a dataset"
+    path = dataset.pathlist[ipath]
+    if label is None:
+        label = 'path %i' % (ipath)
+    endif
+    if kweight is None:
+        kweight = dataset.transform.kweight
+    endif
+    kw = int(kweight)
+    chi_kw = offset + path.chi * path.k**kw
+
+    plot(path.k, chi_kw, label=label, 
+        xlabel=label_k, ylabel=label_chikw % kw, **extra)
+
+enddef
+
+def plot_path_r(dataset, ipath, comp='mag', offset=0, label=None, **extra):
+    "plot chi(r) for a particular path in a dataset"
+    path = dataset.pathlist[ipath]
+    if label is None:
+        label = 'path %i' % (ipath)
+    endif
+    kw = int(dataset.transform.kweight)
+    if comp == 're':
+        chir= path.chir_re
+        ylabel = label_chirre % kw
+    elif comp == 'im':
+        chir= path.chir_im
+        ylabel = label_chirim % kw   
+    elif comp == 'phase':
+        chir= path.chir_pha
+        ylabel = label_chirpha % kw       
+    else:
+        chir = path.chir_mag
+        ylabel = label_chir % kw
+    endif
+
+    chir = offset + chir
+    plot(path.r, chir, label=label, xlabel=label_r, ylabel=ylabel, **extra)
+
+enddef
+
+def plot_modelpaths_k(dataset, kweight=None, offset=-1, title='Model and Paths', **extra):
+    """show chi(k) for sum and individual paths"""
+    # make k-weighted chi(k)
+    if kweight is None:
+        kweight = dataset.transform.kweight
+    endif
+    kw = int(kweight)
+    model = dataset.model
+
+    model_chi_kw = model.chi * model.k**kw
+
+    newplot(model.k, model_chi_kw, title=title,
+            xlabel=label_r, ylabel=label_chikw % kw,
+            color='blue', label='sum', win=1, **extra)
+
+    for ipath in range(len(dataset.pathlist)):
+        plot_path_k(dataset, ipath, kweight=kw, offset=(ipath+1)*offset)        
+    endfor
+enddef
+
+def plot_modelpaths_r(dataset, comp='mag', offset=-0.5, title='Model and Paths', **extra):
+    """show chi(r) for sum and individual paths"""
+    # make k-weighted chi(k)
+    kw = int(dataset.transform.kweight)
+    model = dataset.model
+    if comp == 're':
+        chir= model.chir_re
+        ylabel = label_chirre % kw
+    elif comp == 'im':
+        chir= model.chir_im
+        ylabel = label_chirim % kw   
+    elif comp == 'phase':
+        chir= model.chir_pha
+        ylabel = label_chirpha % kw       
+    else:
+        chir = model.chir_mag
+        ylabel = label_chir % kw
+    endif
+
+    newplot(model.r, chir, label='sum', xlabel=label_r, ylabel=ylabel, title=title, **extra)
+
+    for ipath in range(len(dataset.pathlist)):
+        plot_path_r(dataset, ipath, comp=comp, offset=(ipath+1)*offset)
+    endfor
+enddef
+
+
 ## end of examples/feffit/doc_macros.lar
+
