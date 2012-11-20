@@ -339,4 +339,98 @@ We'll use this in the examples below.
 Example 2: Fit 1 dataset with 3 Paths
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We'll continue with the Cu data set, and add more paths.
+We'll continue with the Cu data set, and add more paths.  This is fairly
+straightforward, though a main concern of XAFS analysis comes up that we
+should address.  This is that there simply is not enough freedom in the
+XAFS signal to measure all the Path Parameters independently.   Thus we
+need to be able to apply constraints to the Path Parameters.
+
+Here, for example, we apply the same amplitude reduction factor and the
+same :math:`E_0` shift to all Paths.  We also scale the change in distance
+by an expansion factor :math:`\alpha`, using the builtin value of half-path
+distance, ``reff``.
+
+.. literalinclude:: ../../examples/feffit/doc_feffit2.lar
+
+Here we simply create ``path2`` and ``path3`` using nearly the same parameters
+as for ``path1`` -- only ``sigma2`` is allowed to vary independently for
+each path.  Note that we also increased the :math:`R` range for the fit.
+
+The output for this fit is being::
+
+    =================== FEFFIT RESULTS ====================
+    [[Statistics]]
+       npts, nvarys       = 146, 6
+       nfree, nfcn_calls  = 140, 50
+       chi_square         = 7701.538999
+       reduced chi_square = 55.010993
+
+    [[Data]]
+       n_independent      = 19.608
+       eps_k, eps_r       = 0.000178, 0.008480
+       fit space          = r
+       r-range            = 1.400, 3.600
+       k-range            = 3.000, 17.000
+       k window, dk       = kaiser, 3.000
+       k-weight           = 2
+       paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
+
+    [[Variables]]
+       alpha          = -0.001970 +/- 0.002731   (init=  0.000000)
+       amp            =  0.933500 +/- 0.104437   (init=  1.000000)
+       del_e0         =  4.106844 +/- 1.337739   (init=  0.100000)
+       sig2_1         =  0.008675 +/- 0.000826   (init=  0.002000)
+       sig2_2         =  0.012120 +/- 0.002648   (init=  0.002000)
+       sig2_3         =  0.006568 +/- 0.008944   (init=  0.002000)
+
+    [[Correlations]]    (unreported correlations are <  0.100)
+       amp, sig2_1          =  0.928
+       alpha, del_e0        =  0.921
+       amp, sig2_2          =  0.323
+       sig2_1, sig2_2       =  0.301
+       amp, sig2_3          =  0.272
+       sig2_1, sig2_3       =  0.269
+       alpha, sig2_1        =  0.185
+       del_e0, sig2_3       =  0.182
+       alpha, amp           =  0.166
+       alpha, sig2_3        =  0.153
+
+    [[Paths]]
+       feff.dat file = feff0001.dat
+              Atom     x        y        z     ipot
+               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
+               Cu    0.0000, -1.8016,  1.8016  1
+         reff   =  2.54780
+         Degen  =  12.00000
+         S02    =  0.93350 +/-  0.10444
+         E0     =  4.10684 +/-  1.33774
+         R      =  2.54278 +/-  0.00696
+         deltar = -0.00502 +/-  0.00696
+         sigma2 =  0.00868 +/-  0.00083
+
+       feff.dat file = feff0002.dat
+              Atom     x        y        z     ipot
+               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
+               Cu   -3.6032,  0.0000,  0.0000  1
+         reff   =  3.60320
+         Degen  =  6.00000
+         S02    =  0.93350 +/-  0.10444
+         E0     =  4.10684 +/-  1.33774
+         R      =  3.59610 +/-  0.00984
+         deltar = -0.00710 +/-  0.00984
+         sigma2 =  0.01212 +/-  0.00265
+
+       feff.dat file = feff0003.dat
+              Atom     x        y        z     ipot
+               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
+               Cu    1.8016, -1.8016,  0.0000  1
+               Cu    1.8016,  0.0000, -1.8016  1
+         reff   =  3.82180
+         Degen  =  48.00000
+         S02    =  0.93350 +/-  0.10444
+         E0     =  4.10684 +/-  1.33774
+         R      =  3.81427 +/-  0.01044
+         deltar = -0.00753 +/-  0.01044
+         sigma2 =  0.00657 +/-  0.00894
+
+    =======================================================
