@@ -17,7 +17,7 @@ path1 = feffpath('feffcu01.dat',
                  deltar = 'del_r')
 
 # set tranform / fit ranges
-trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=3, rmin=1.4, rmax=3.0)
+trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=4, window='kaiser', rmin=1.4, rmax=3.0)
 
 # define dataset to include data, pathlist, transform
 dset  = feffit_dataset(data=cu_data, pathlist=[path1], transform=trans)
