@@ -34,7 +34,7 @@ plot(dset.data.k,  dset.data.chi *dset.data.k**2, new=True,
 plot(dset.model.k, dset.model.chi*dset.model.k**2, label='fit')
 
 plot(dset.data.r,  dset.data.chir_mag, new=True, win=2,
-     xlabel=r'$R \rm\,(\AA)$', data='label',
+     xlabel=r'$R \rm\,(\AA)$', label='data',
      ylabel=r'$|\chi(R)| \rm\,(\AA^{-3})$',
      title='First shell fit to Cu', show_legend=True)
 plot(dset.model.r, dset.model.chir_mag, label='fit', win=2)

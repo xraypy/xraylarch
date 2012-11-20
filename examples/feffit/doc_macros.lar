@@ -18,7 +18,7 @@ def show_chifit(dataset, kweight=2, title='Data and Best-Fit',
 
     # show chi(R) in plot window 2
     newplot(dataset.data.r,  dataset.data.chir_mag, win=2,
-            xlabel=r'$R \rm\,(\AA)$', data='label',
+            xlabel=r'$R \rm\,(\AA)$', label='data',
             ylabel=r'$|\chi(R)| \rm\,(\AA^{-%i})$' % (kw+1),
             title=title, show_legend=show_legend)
     plot(dataset.model.r, dataset.model.chir_mag, label='fit', win=2)
