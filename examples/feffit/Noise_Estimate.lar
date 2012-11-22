@@ -1,0 +1,35 @@
+p1 = feffpath('feff0001.dat')
+p1.e0 = 2
+p1.sigma2 = 0.013
+path2chi(p1)
+
+eps_off = 8.6e-6
+for iscale in range(16):
+    scale = 2.e-7 *  2**iscale
+
+    eps = []
+    for  i in range(100):
+        sum = p1.chi + random.normal(size=len(p1.chi), scale=scale)
+        fdat = group(k=p1.k, chi=sum)
+        trans = feffit_transform(kmin=4, kmax=16, kweight=1, dk=4,
+                                  window='hanning', rmin=1.4, rmax=3.0)
+        d1 = feffit_dataset(data=fdat, pathlist=[p1], transform=trans)
+        d1.prepare_fit()
+        eps.append(trans.epsilon_k)
+    endfor
+    trans._xafsft(fdat.chi, group=fdat, rmax_out=16)
+
+    if iscale == 0:
+         newplot(fdat.k, fdat.chi*fdat.k)
+         plot(fdat.k, fdat.kwin*0.7)
+         newplot(fdat.r, fdat.chir_mag, rmax=13, win=2)
+         print ' I  InputNoise| Estimated Noise       =>  Ratio'
+    else:
+        update_trace(fdat.k, fdat.chi*fdat.k, trace=1, win=1)
+        update_trace(fdat.r, fdat.chir_mag, trace=1, win=2)
+    endif
+    eps = array(eps)
+    eave = eps.mean()
+    pred = sqrt(scale**2 + eps_off**2)
+    print ' %2.2i  %.7f  | %.7f +/-  %.7f  => %.7f || %.7f=> %.7f' % (iscale, scale, eave, eps.std(), eave/scale, pred, pred/eave)
+endfor
