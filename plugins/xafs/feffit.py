@@ -273,6 +273,12 @@ class FeffitDataSet(Group):
 
         self.__prepared = True
 
+    def estimate_noise(self, rmin=15, rmax=25):
+        self.prepare_fit()
+        if rmin != 15 and rmax != 25:
+            self.transform._estimate_noise(self.__chi, rmin=rmax, rmax=max)
+        return self.transform.epsilon_k
+
     def _residual(self, paramgroup=None):
         """return the residual for this data set
         residual = self.transform.apply(data_chi - model_chi)
