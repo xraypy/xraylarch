@@ -324,8 +324,20 @@ def get_dll(libname):
                       'darwin': 'lib%s.dylib'}
 
     thisdir = os.path.join(sys_larchdir, 'dlls', get_dlldir())
+    dirs = [thisdir]
+
+    loaddll = ctypes.cdll.LoadLibrary
+
+    if sys.platform == 'win32':
+        loaddll = ctypes.windll.LoadLibrary
+        dirs.append(sys_larchdir)
+        
+    if hasattr(sys, 'frozen'): # frozen with py2exe!!
+        dirs.append(os.path.dirname(sys.executable))
+
     for key in _paths:
-        _paths[key] = add2path(key, thisdir)
+        for d in dirs:
+            _paths[key] = add2path(key, d)
 
     dllpath = ctypes.util.find_library(libname)
         
@@ -333,11 +345,6 @@ def get_dll(libname):
         fname = _dylib_formats[sys.platform] % libname
         dllpath = os.path.join(thisdir, fname)
 
-    loaddll = ctypes.cdll.LoadLibrary
-    if sys.platform == 'win32':
-        loaddll = ctypes.windll.LoadLibrary
-    for key, val in _paths.items():
-        os.environ[key] = val
 
     dll = loaddll(dllpath)
     return dll
