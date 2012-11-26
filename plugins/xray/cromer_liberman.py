@@ -9,6 +9,7 @@ from larch.larchlib import plugin_path, get_dll
 
 # put the 'std' and 'xafs' (this!) plugin directories into sys.path
 sys.path.insert(0, plugin_path('xray'))
+from xraydb import as_ndarray
 from xraydb_plugin import core_width, atomic_number
 
 MODNAME = '_xray'
@@ -37,7 +38,8 @@ def f1f2(z, energies, width=None, edge=None, _larch=None):
     if CLLIB is None:
         CLLIB = get_dll('cldata')
 
-    en = energies[:]
+    en = as_ndarray(energies)
+
     if not isinstance(z, int):
         z  = atomic_number(z, _larch=_larch)
         if z is None:

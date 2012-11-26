@@ -21,6 +21,9 @@ import epics
 import Image
 import sqlalchemy
 import wx
+import ctypes
+import ctypes.util
+ldll =  ctypes.windll.LoadLibrary
 
 matplotlib.use('WXAgg')
 import wxmplot
@@ -42,9 +45,6 @@ for n in os.listdir(dlldir):
 for n in scipy_dlls:
     extra_files.append(os.path.join(sys.prefix, n))
 
-
-print 'Extra files = ', extra_files
-        
 apps = []
 for script, iconfile in (('larch', 'larch.ico'),):
     apps.append({'script': 'larch', 'icon_resources': [(0, iconfile)]})
@@ -53,11 +53,11 @@ for script, iconfile in (('larch', 'larch.ico'),):
 # pu2exe.org for options
 py2exe_opts = {'optimize':1,
                 'bundle_files':2,
-               'includes': ['epics', 'ctypes', 'wx', 'ConfigParser',
+               'includes': ['epics', 'ctypes', 'ctypes.util', 'wx', 'ConfigParser',
                             'numpy', 'scipy', 'matplotlib', 'h5py',
                             'Image', 'MySQLdb', 'sqlite3', 'sqlalchemy',
                             'xdrlib', 'zlib', 'struct', 'datetime', 'xml',
-                            're', 'warnings', 'json', 'wxmplot'
+                            're', 'warnings', 'json', 'wxmplot',
                             ],
                'packages': ['MySQLdb', 'sqlite3', 'sqlalchemy.dialects.mysql',
                             'sqlalchemy.dialects.sqlite',
@@ -71,13 +71,11 @@ py2exe_opts = {'optimize':1,
                             'PIL.ImageTk', 'FixTk''_gtkagg', '_tkagg',
                             'qt', 'PyQt4Gui', 'Carbon', 'email'],
                'dll_excludes': ['libgdk-win32-2.0-0.dll',
-                                'libgobject-2.0-0.dll']
+                                'libgobject-2.0-0.dll', 'libzmq.dll']
                }
 
 # include matplotlib datafiles
-
 setup(name = "Larch",
-      #windows = apps,
       console = apps,
       options = {'py2exe': py2exe_opts},
       data_files = mpl_data_files)
