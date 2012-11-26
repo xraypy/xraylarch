@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Downloading and Installation &mdash; larch 0.9.15 documentation</title>
+    <title>Downloading and Installation &mdash; larch 0.9.16 documentation</title>
     
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.9.15',
+        VERSION:     '0.9.16',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.15 documentation" href="index.html" />
+    <link rel="top" title="larch 0.9.16 documentation" href="index.html" />
     <link rel="next" title="Larch: Motivation and Overview" href="overview.html" />
     <link rel="prev" title="Programming with Larch" href="devel/index.html" /> 
   </head>
@@ -74,8 +74,12 @@
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Downloading and Installation</a><ul>
+<li><a class="reference internal" href="#binary-installation">Binary Installation</a></li>
+<li><a class="reference internal" href="#source-installation">Source Installation</a><ul>
 <li><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#license">License</a></li>
 </ul>
 </li>
@@ -116,8 +120,19 @@
             
   <div class="section" id="downloading-and-installation">
 <h1>Downloading and Installation<a class="headerlink" href="#downloading-and-installation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="binary-installation">
+<h2>Binary Installation<a class="headerlink" href="#binary-installation" title="Permalink to this headline">¶</a></h2>
+<p>A binary installer,  <a class="reference external" href="http://cars9.uchicago.edu/software/python/larch/src/larch-0.9.16.exe">larch-0.9.16.exe</a>,  is available for Windows.  This
+installs a working version of the larch command-line program onto your
+system.  To date, testing has been fairly minimal.  If you try this out,
+please send positive and negative feedback to the Ifeffit mailing list.</p>
+</div>
+<div class="section" id="source-installation">
+<h2>Source Installation<a class="headerlink" href="#source-installation" title="Permalink to this headline">¶</a></h2>
+<p>Installation from Source is necessary for Linux and Mac OS X, and is
+recommended for people interested in programming with Larch on Windows.</p>
 <div class="section" id="prerequisites">
-<h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
 <p>Larch requires Python version 2.6 or higher.  Support for Python 3.X is
 partial, in that the core of Larch does work, and numpy, and scipy, and
 matplotlib have all been ported to Python 3.X.  But the testing for Python
@@ -126,18 +141,20 @@ not yet been ported to Python 3.X.</p>
 <p>Numpy, matplotlib, and wxPython are all required for Larch, and scipy is
 strongly encouraged (and some functionality depends on it).  These are
 simply installed as standard packages on almost all platforms.</p>
-<p>All development is being done through the <a class="reference external" href="http://github.com/xraypy/xraylarch">larch github repository</a>.  To
+<p>You can either download the tarball,  <a class="reference external" href="http://cars9.uchicago.edu/software/python/larch/src/larch-0.9.16.tgz">larch-0.9.16.tgz</a>,  or use the
+development version from the <a class="reference external" href="http://github.com/xraypy/xraylarch">larch github repository</a>.  To
 get a read-only copy of the latest version, use:</p>
 <div class="highlight-python"><pre>git clone http://github.com/xraypy/xraylarch.git</pre>
 </div>
 </div>
 <div class="section" id="installation">
-<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<h3>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h3>
 <p>Installation from source on any platform is:</p>
-<div class="highlight-python"><pre>python setup.py install</pre>
+<div class="highlight-python"><pre>tar xvzf larch-0.9.16.tgz
+cd larch-0.9.16/
+python setup.py install</pre>
 </div>
-<p>We&#8217;ll build and distribute Windows binaries and use the Python Package
-Index soon....</p>
+</div>
 </div>
 <div class="section" id="license">
 <h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
@@ -210,7 +227,7 @@ distributed under the following license:
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.2pre.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
