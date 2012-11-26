@@ -2,6 +2,27 @@
 Downloading and Installation
 ====================================
 
+
+.. _larch-0.9.16.tgz: http://cars9.uchicago.edu/software/python/larch/src/larch-0.9.16.tgz
+.. _larch-0.9.16.exe: http://cars9.uchicago.edu/software/python/larch/src/larch-0.9.16.exe
+.. _larch github repository:   http://github.com/xraypy/xraylarch
+
+Binary Installation
+=========================
+
+A binary installer,  `larch-0.9.16.exe`_,  is available for Windows.  This
+installs a working version of the larch command-line program onto your
+system.  To date, testing has been fairly minimal.  If you try this out,
+please send positive and negative feedback to the Ifeffit mailing list.
+
+
+Source Installation
+=========================
+
+Installation from Source is necessary for Linux and Mac OS X, and is
+recommended for people interested in programming with Larch on Windows.
+
+
 Prerequisites
 ~~~~~~~~~~~~~~~
 
@@ -15,27 +36,26 @@ Numpy, matplotlib, and wxPython are all required for Larch, and scipy is
 strongly encouraged (and some functionality depends on it).  These are
 simply installed as standard packages on almost all platforms.
 
-.. _larch github repository:   http://github.com/xraypy/xraylarch
 
-All development is being done through the `larch github repository`_.  To
+You can either download the tarball,  `larch-0.9.16.tgz`_,  or use the
+development version from the `larch github repository`_.  To
 get a read-only copy of the latest version, use::
 
    git clone http://github.com/xraypy/xraylarch.git
 
 
 Installation
-~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Installation from source on any platform is::
 
+   tar xvzf larch-0.9.16.tgz
+   cd larch-0.9.16/
    python setup.py install
 
 
-We'll build and distribute Windows binaries and use the Python Package
-Index soon....
-
 License
-~~~~~~~~~~~~~~~~~
+============
 
 This code and all material associated with it are distributed under the
 BSD License:

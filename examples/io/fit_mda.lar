@@ -1,0 +1,39 @@
+
+def read_mdascan(fname):
+    mda = read_mda(fname)
+    pos0 = mda.scan1.p[0]
+    det0 = mda.scan1.d[0]
+    xlabel = "%s ($\\rm {\\mu}m$)" % (pos0.desc)
+    return group(x=1000*(pos0.data), y=det0.data/1000.0,
+                 xlabel=xlabel, ylabel=det0.name)
+enddef
+
+
+def fit_voigt(pars, data):
+    return pars.off + pars.amp*voigt(data.x, pars.cen, pars.wid) - data.y
+enddef
+
+def fit_scan(sname):
+    # create data
+    data = read_mdascan('%s.mda' % sname)
+
+    newplot(data.x, data.y, label='data',
+            xlabel=data.xlabel, ylabel=data.ylabel, marker='o')
+
+    # create group for parameters
+    params = group(off = param(0,     vary=True),
+                   amp = param(10.0,  vary=True),
+                   cen = param(-862, vary=True),
+                   wid = param(1, vary=True))
+
+    # final = fit_voigt(params, data) + data.y
+    fit = minimize(fit_voigt, params, args=(data,))
+
+    final = fit_voigt(params, data) + data.y
+    plot(data.x, final, color='red', label='fit', marker='+')
+    save_plot('fit_%s.png' % sname)
+    return params # fit_report(params)
+enddef
+
+params = fit_scan('SampleScan')
+print 'Voigt Sigma = % .5f (% .5f)' % (params.wid.value, params.wid.stderr)

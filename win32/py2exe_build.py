@@ -25,6 +25,10 @@ import ctypes
 import ctypes.util
 ldll =  ctypes.windll.LoadLibrary
 
+from larch.larchlib import get_dll
+
+cllib = get_dll('cldata')
+
 matplotlib.use('WXAgg')
 import wxmplot
 
