@@ -345,6 +345,4 @@ def get_dll(libname):
         fname = _dylib_formats[sys.platform] % libname
         dllpath = os.path.join(thisdir, fname)
 
-
-    dll = loaddll(dllpath)
-    return dll
+    return loaddll(dllpath)
