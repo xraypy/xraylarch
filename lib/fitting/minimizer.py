@@ -215,7 +215,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
                 take(eye(self.nvarys),infodict['ipvt'] - 1,0))
         try:
             cov = inv(dot(transpose(rvec),rvec))
-        except LinAlgError:
+        except (LinAlgError, ValueError):
             cov = None
 
         message = 'Fit succeeded.'
