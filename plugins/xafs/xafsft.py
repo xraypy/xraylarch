@@ -170,11 +170,13 @@ def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
     Returns weighted chi, window function which can easily be multiplied
     and used in xftf_fast.
     """
-    n    = int( 0.25 + max(k)/kstep)
-    k_   = linspace(0, n*kstep, n+1)
+    if dk2 is None: dk2 = dk
+    npts = int(1.01 + max(k)/kstep)
+    k_max = max(max(k), kmax+dk2)
+    k_   = kstep * np.arange(int(1.01+k_max/kstep), dtype='float64')
     chi_ = interp(k_, k, chi)
     win  = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
-    return (chi_ *k_**kweight, win)
+    return ((chi_ *k_**kweight)[:npts], win[:npts])
 
 def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """

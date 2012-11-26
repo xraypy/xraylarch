@@ -92,7 +92,6 @@ class TransformGroup(Group):
 
     def _estimate_noise(self, chi, rmin=15.0, rmax=25.0, all_kweights=True):
         """estimage noise in a chi spectrum from its high r components"""
-        # print 'Estimate Noise!! ', rmin, self.transform.rmin
         self.make_karrays()
 
         save = self.rmin, self.rmax, self.fitspace
@@ -106,10 +105,7 @@ class TransformGroup(Group):
         irmax = min(self.nfft/2,  int(1.01 + rmax/self.rstep))
         highr = [realimag(chir_[irmin:irmax]) for chir_ in chir]
         # get average of window function value, we will scale eps_r scale by this
-        ikmin = index_of(self.k_, self.kmin)
-        ikmax = index_of(self.k_, self.kmax)
-        kwin_ave = self.kwin[ikmin:ikmax].sum()/(ikmax-ikmin)
-
+        kwin_ave = self.kwin.sum()*self.kstep/(self.kmax-self.kmin)
         eps_r = [(sqrt((chi*chi).sum() / len(chi)) / kwin_ave) for chi in highr]
         eps_k = []
         # use Parseval's theorem to convert epsilon_r to epsilon_k,
@@ -122,7 +118,6 @@ class TransformGroup(Group):
             w = 2 * kw + 1
             scale = sqrt((2*pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
             eps_k.append(scale*eps_r[i])
-
 
         self.rmin, self.rmax, self.fitspace = save
 
