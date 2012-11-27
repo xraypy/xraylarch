@@ -34,10 +34,10 @@ def _wxupdate(_larch=None, **kws):
     symtable = ensuremod(_larch, '_sys')
     symtable = ensuremod(_larch, '_sys.wx')
     input_handler = symtable.get_symbol('_sys.wx.inputhook').input_handler
-    wxping = symtable.get_symbol('_sys.wx.ping')
+    # wxping = symtable.get_symbol('_sys.wx.ping')
     if input_handler is not None:
         symtable.set_symbol("_sys.wx.force_wxupdate", True)
-        wxping(0.002)
+        #wxping(0.002)
 
 class wxLarchTimer(wx.MiniFrame):
    """hidden wx frame that contains only a timer widget.
@@ -51,7 +51,7 @@ class wxLarchTimer(wx.MiniFrame):
        self.timer = wx.Timer(self, tid)
        wx.EVT_TIMER(self, tid, self.OnTimer)
        self.symtable = _larch.symtable
-       self.wxping =self.symtable.get_symbol('_sys.wx.ping')
+       # self.wxping =self.symtable.get_symbol('_sys.wx.ping')
 
    def Start(self, polltime = None):
        if polltime is None: polltime = self.polltime
@@ -59,14 +59,15 @@ class wxLarchTimer(wx.MiniFrame):
        self.timer.Start(polltime)
 
    def Stop(self):
-       self.wxping(0.005)
+       # self.wxping(0.005)
+       self.symtable.set_symbol("_sys.wx.force_wxupdate", True)       
        self.timer.Stop()
        self.Destroy()
-
+       
    def OnTimer(self, event=None):
        """timer events -- here we execute any un-executed shell code"""
        self.symtable.set_symbol('_sys.wx.force_wxupdate', True)
-       self.wxping(0.001)
+       # self.wxping(0.001)
        time.sleep(0.001)
 
 # @SafeWxCall
@@ -74,7 +75,7 @@ def _gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
     symtable = ensuremod(_larch, '_sys')
     symtable = ensuremod(_larch, '_sys.wx')
-    wxping = _larch.symtable.get_symbol('_sys.wx.ping')
+    # wxping = _larch.symtable.get_symbol('_sys.wx.ping')
 
     parent = wxLarchTimer(_larch)
 
@@ -83,7 +84,6 @@ def _gcd(wxparent=None, _larch=None, **kws):
                        style = wx.DD_DEFAULT_STYLE)
     path = None
     parent.Start()
-    print dlg.IsModal()
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
 
