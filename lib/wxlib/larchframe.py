@@ -164,7 +164,7 @@ class LarchFrame(wx.Frame):
     def BuildFrame(self, parent=None, **kwds):
         wx.Frame.__init__(self, parent, -1, size=(600,400),
                           style= wx.DEFAULT_FRAME_STYLE)
-        self.SetTitle('WXLarch')
+        self.SetTitle('LarchGUI')
         self.SetFont(wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, False))
         sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
         sbar = self.CreateStatusBar(2, wx.CAPTION|wx.THICK_FRAME)
@@ -286,11 +286,11 @@ class LarchFrame(wx.Frame):
         event.Skip()
 
     def onAbout(self, event=None):
-        about_msg =  """wxLarch:
+        about_msg =  """LarchGui:
         %s""" % (INFO)
 
         dlg = wx.MessageDialog(self, about_msg,
-                               "About wxLarch", wx.OK | wx.ICON_INFORMATION)
+                               "About LarchGui", wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
