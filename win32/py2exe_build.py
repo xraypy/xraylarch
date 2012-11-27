@@ -35,7 +35,7 @@ import wxmplot
 ca = epics.ca.initialize_libca()
 mpl_data_files = matplotlib.get_py2exe_datafiles()
 
-extra_files = ['inno_setup.iss', 'COPYING', 'README.txt']
+extra_files = ['inno_setup.iss', 'COPYING', 'README.txt', 'larch.ico']
 scipy_dlls = ['lib/site-packages/scipy/optimize/minpack2.pyd',
               'lib/site-packages/scipy/interpolate/dftipack.pyd',
               'lib/site-packages/scipy/integrate/_quadpack.pyd',
@@ -49,10 +49,8 @@ for n in os.listdir(dlldir):
 for n in scipy_dlls:
     extra_files.append(os.path.join(sys.prefix, n))
 
-apps = []
-for script, iconfile in (('larch', 'larch.ico'),):
-    apps.append({'script': 'larch', 'icon_resources': [(0, iconfile)]})
-    extra_files.append(iconfile)
+windows_apps = [{'script': 'larch_gui', 'icon_resources': [(0, 'larch.ico')]}]
+console_apps = [{'script': 'larch',     'icon_resources': [(0, 'larch.ico')]}]
 
 # pu2exe.org for options
 py2exe_opts = {'optimize':1,
@@ -80,7 +78,8 @@ py2exe_opts = {'optimize':1,
 
 # include matplotlib datafiles
 setup(name = "Larch",
-      console = apps,
+      windows = windows_apps,
+      console = console_apps,
       options = {'py2exe': py2exe_opts},
       data_files = mpl_data_files)
  
