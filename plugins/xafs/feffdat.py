@@ -362,6 +362,19 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
     """calculate chi(k) for a Feff Path,
     optionally setting path parameter values
     output chi array will be written to path group
+
+    Parameters:
+    ------------
+      path:        a FeffPath Group
+      paramgroup:  a Parameter Group for calculating Path Parameters [None]
+      kmax:        maximum k value for chi calculation [20].
+      kstep:       step in k value for chi calculation [0.05].
+      k:           explicit array of k values to calculate chi.
+
+    Returns:
+    ---------
+      None - outputs are written to path group
+    
     """
     if not isinstance(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
@@ -373,8 +386,24 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
 
 def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
             k=None, kmax=None, kstep=0.05, **kws):
-    """sum the XAFS for a set of Feff Paths... assumes that the
-    Path Parameters are set"""
+    """sum chi(k) for a list of FeffPath Groups.
+ 
+    Parameters:
+    ------------
+      pathlist:    a list of FeffPath Groups
+      paramgroup:  a Parameter Group for calculating Path Parameters [None]
+      group:       a Group to which the outputs are written  [None]
+      kmax:        maximum k value for chi calculation [20].
+      kstep:       step in k value for chi calculation [0.05].
+      k:           explicit array of k values to calculate chi.
+    Returns:
+    ---------
+       None -- output arrays for k and chi are written to group.
+
+    This essentially calls path2chi() for each of the paths in the
+    pathlist and writes the resulting arrays to group.k and group.chi.
+
+    """
     msg = _larch.writer.write
     if (paramgroup is not None and _larch is not None and
          _larch.symtable.isgroup(paramgroup)):
@@ -396,7 +425,29 @@ def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
 def feffpath(filename=None, _larch=None, label=None, s02=None,
              degen=None, e0=None,ei=None, deltar=None, sigma2=None,
              third=None, fourth=None, **kws):
-    """create a feff path"""
+    """create a Feff Path Group from a *feffNNNN.dat* file.
+
+    Parameters:
+    -----------
+      filename:  name (full path of) *feffNNNN.dat* file
+      label:     label for path   [file name]
+      degen:     path degeneracy, N [taken from file]
+      s02:       S_0^2    value or parameter [1.0]
+      e0:        E_0      value or parameter [0.0]
+      deltar:    delta_R  value or parameter [0.0]
+      sigma2:    sigma^2  value or parameter [0.0]
+      third:     c_3      value or parameter [0.0]
+      fourth:    c_4      value or parameter [0.0]
+      ei:        E_i      value or parameter [0.0]
+ 
+    For all the options described as **value or parameter** either a
+    numerical value or a Parameter (as created by param()) can be given.
+
+    Returns:
+    ---------
+        a FeffPath Group.
+
+    """
     return FeffPathGroup(filename=filename, label=label, s02=s02,
                          degen=degen, e0=e0, ei=ei, deltar=deltar,
                          sigma2=sigma2, third=third, fourth=fourth,
