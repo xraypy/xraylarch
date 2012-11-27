@@ -59,8 +59,34 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
            pre_edge_kws=None, nclamp=2, clamp_lo=1, clamp_hi=1,
            calc_uncertainties=False, _larch=None, **kws):
     """Use Autobk algorithm to remove XAFS background
-    Options are:
-      rbkg -- distance out to which the chi(R) is minimized
+
+    Parameters:
+    -----------
+      energy:    1-d array of x-ray energies, in eV
+      mu:        1-d array of mu(E)
+      group:     output group (and input group for e0 and edge_step.
+      rbkg:      distance (in Ang) for chi(R) above
+                 which the signal is ignored. Default = 1.
+      e0:        edge energy, in eV.  If None, it will be determined.
+      edge_step: edge step.  If None, it will be determined.
+      pre_edge_kws:  keyword arguments to pass to pre_edge()
+      nknots:    number of knots in spline.  If None, it will be determined.
+      kmin:      minimum k value   [0]
+      kmax:      maximum k value   [full data range].
+      kweight:   k weight for FFT.  [1]
+      dk:        FFT window window parameter.  [0]
+      win:       FFT window function name.     ['hanning']
+      nfft:      array size to use for FFT [2048]
+      kstep:     k step size to use for FFT [0.05]
+      k_std:     optional k array for standard chi(k).
+      chi_std:   optional chi array for standard chi(k).
+      nclamp:    number of energy end-points for clamp [2]
+      clamp_lo:  weight of low-energy clamp [1]
+      clamp_hi:  weight of high-energy clamp [1]
+      calc_uncertaintites:  Flag to calculate uncertainties in
+                            mu_0(E) and chi(k) [False]
+
+    Output arrays are written to the provided group.
     """
     if _larch is None:
         raise Warning("cannot calculate autobk spline -- larch broken?")

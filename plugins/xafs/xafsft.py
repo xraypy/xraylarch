@@ -21,7 +21,31 @@ VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par', 'wel', 'sin', 'bes']
 def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
              window='hanning', _larch=None, **kws):
     """
-    calculate and return XAFS FT Window function
+    create a Fourier transform window array.
+
+    Parameters:
+    -------------
+      x:        1-d array array to build window on.
+      xmin:     starting x for FT Window
+      xmax:     ending x for FT Window
+      dx:       tapering parameter for FT Window
+      dx2:      second tapering parameter for FT Window (=dx)
+      window:   name of window type 
+
+    Returns:
+    ----------
+    1-d window array.
+
+    Notes:
+    -------
+    Valid Window names:
+        hanning              cosine-squared taper
+        parzen               linear taper
+        welch                quadratic taper
+	gaussian             Gaussian (normal) function window
+	sine                 sine function window
+	kaiser               Kaiser-Bessel function-derived window
+   
     """
     if window is None:
         window = VALID_WINDOWS[0]
@@ -95,9 +119,42 @@ def xftr(r, chir, group=None, rmin=0, rmax=20,
             dr=1, dr2=None, rw=0, window='kaiser', qmax_out=None,
             nfft=2048, kstep=0.05, _larch=None, **kws):
     """
+    reverse XAFS Fourier transform, from chi(R) to chi(q).
+
     calculate reverse XAFS Fourier transform
     This assumes that chir_re and (optional chir_im are
     on a uniform r-grid given by r.
+
+    Parameters:
+    ------------
+      r:        1-d array of distance.
+      chir:     1-d array of chi(R)
+      group:    output Group
+      qmax_out: highest *k* for output data (30 Ang^-1)
+      rweight:  exponent for weighting spectra by r^rweight (0)
+      rmin:     starting *R* for FT Window
+      rmax:     ending *R* for FT Window
+      dr:       tapering parameter for FT Window
+      dr2:      second tapering parameter for FT Window
+      window:   name of window type
+      nfft:     value to use for N_fft (2048).
+      kstep:    value to use for delta_k (0.05).
+
+    Returns:
+    ---------
+      None -- outputs are written to supplied group.
+
+    Notes:
+    -------
+    Arrays written to output group:    
+        rwin               window Omega(R) (length of input chi(R)).
+	q                  uniform array of k, out to qmax_out.
+	chiq               complex array of chi(k).
+	chiq_mag           magnitude of chi(k).
+	chiq_pha           phase of chi(k).
+	chiq_re            real part of chi(k).
+	chiq_im            imaginary part of chi(k).
+
     """
     if _larch is None:
         raise Warning("cannot do xftr -- larch broken?")
@@ -133,7 +190,39 @@ def xftr(r, chir, group=None, rmin=0, rmax=20,
 def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
            window='kaiser', rmax_out=10, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
-    calculate forward XAFS Fourier transform
+    forward XAFS Fourier transform, from chi(k) to chi(R), using
+    common XAFS conventions.
+
+    Parameters:
+    -----------
+      k:        1-d array of photo-electron wavenumber in Ang^-1
+      chi:      1-d array of chi
+      group:    output Group
+      rmax_out: highest R for output data (10 Ang)
+      kweight:  exponent for weighting spectra by k**kweight
+      kmin:     starting k for FT Window
+      kmax:     ending k for FT Window
+      dk:       tapering parameter for FT Window
+      dk2:      second tapering parameter for FT Window
+      window:   name of window type
+      nfft:     value to use for N_fft (2048).
+      kstep:    value to use for delta_k (0.05 Ang^-1).
+
+    Returns:
+    ---------
+      None   -- outputs are written to supplied group.
+
+    Notes:
+    -------
+    Arrays written to output group:
+        kwin               window function Omega(k) (length of input chi(k)).
+	r                  uniform array of R, out to rmax_out.
+	chir               complex array of chi(R).
+	chir_mag           magnitude of chi(R).
+	chir_pha           phase of chi(R).
+	chir_re            real part of chi(R).
+	chir_im            imaginary part of chi(R).
+
     """
     if _larch is None:
         raise Warning("cannot do xftf -- larch broken?")
@@ -187,6 +276,17 @@ def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     and simply returns the complex chi(R), not setting any larch data.
 
     This is useful for repeated FTs, as inside loops.
+
+    Parameters:
+    ------------
+      chi:      1-d array of chi to be transformed
+      nfft:     value to use for N_fft (2048).
+      kstep:    value to use for delta_k (0.05).
+
+    Returns:
+    --------
+      complex 1-d array chi(R)
+
     """
     cchi = zeros(nfft, dtype='complex128')
     cchi[0:len(chi)] = chi
@@ -194,11 +294,22 @@ def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
 
 def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
-    calculate reverse XAFS Fourier transform.  Unlike xftr(),
-    this assumes that:
-      1. data is already on a uniform grid
-      2. any windowing and/or kweighting has been applied.
-    and simply returns the complex chi(R), not setting any larch data.
+    calculate reverse XAFS Fourier transform, from chi(R) to
+    chi(q), using common XAFS conventions.  This version demands
+    chir be the complex chi(R) as created from xftf().
+
+    It returns the complex array of chi(q) without putting any
+    values into an output group.
+
+    Parameters:
+    -------------
+      chir:     1-d array of chi(R) to be transformed
+      nfft:     value to use for N_fft (2048).
+      kstep:    value to use for delta_k (0.05).
+
+    Returns:
+    ----------
+      complex 1-d array for chi(q).
 
     This is useful for repeated FTs, as inside loops.
     """

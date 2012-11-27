@@ -302,14 +302,80 @@ class FeffitDataSet(Group):
                 xft(p.chi, group=p, rmax_out=rmax_out)
 
 def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
+    """create a Feffit Dataset group.
+
+     Parameters:
+     ------------
+      data:     group containing experimental EXAFS (needs arrays 'k' and 'chi').
+      pathlis:  list of FeffPath groups, as created from feffpath()
+      transform: Feffit Transform group.
+
+     Returns:
+     ----------
+      a Feffit Dataset group.
+
+   
+    """
     return FeffitDataSet(data=data, pathlist=pathlist,
                          transform=transform, _larch=_larch)
 
 def feffit_transform(_larch=None, **kws):
+    """create a feffit transform group
+
+     Parameters:
+     --------------
+       fitspace: name of FT type for fit  ('r').
+       kmin:     starting *k* for FT Window (0).
+       kmax:     ending *k* for FT Window (20).
+       dk:       tapering parameter for FT Window (4).
+       dk2:      second tapering parameter for FT Window (None).
+       window:   name of window type ('kaiser').
+       nfft:     value to use for N_fft (2048).
+       kstep:    value to use for delta_k (0.05).
+       kweight:  exponent for weighting spectra by k^kweight (2).
+       rmin:     starting *R* for Fit Range and/or reverse FT Window (0).
+       rmax:     ending *R* for Fit Range and/or reverse FT Window (10).
+       dr:       tapering parameter for reverse FT Window 0.
+       rwindow:  name of window type for reverse FT Window ('kaiser').
+
+     Returns:
+     ----------
+       a feffit transform group.
+
+    """
     return TransformGroup(_larch=_larch, **kws)
 
 def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws):
-    """run feff-fit"""
+    """execute a Feffit fit: a fit of feff paths to a list of datasets
+
+    Parameters:
+    ------------
+      paramgroup:   group containing parameters for fit
+      datasets:     Feffit Dataset group or list of Feffit Dataset group.
+      rmax_out:     maximum R value to calculate output arrays.
+      path_output:  Flag to set whether all Path outputs should be written.
+
+    Returns:
+    ---------
+      a fit results group.  This will contain subgroups of:
+
+        datasets: an array of FeffitDataSet groups used in the fit.
+        params:   This will be identical to the input parameter group.
+        fit:      an object which points to the low-level fit.
+
+     Statistical parameters will be put into the params group.  Each
+     dataset will have a 'data' and 'model' subgroup, each with arrays:
+        k            wavenumber array of k
+        chi          chi(k).
+        kwin         window Omega(k) (length of input chi(k)).
+        r            uniform array of R, out to rmax_out.
+        chir         complex array of chi(R).
+        chir_mag     magnitude of chi(R).
+        chir_pha     phase of chi(R).
+        chir_re      real part of chi(R).
+        chir_im      imaginary part of chi(R).
+
+    """
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residual function """
         return concatenate([d._residual() for d in datasets])
@@ -398,7 +464,19 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
 
 def feffit_report(result, min_correl=0.1, with_paths=True,
                   _larch=None, **kws):
-    """print report of fit for feffit"""
+    """return a printable report of fit for feffit
+
+    Parameters:
+    ------------
+      result:      Feffit result, output group from feffit()
+      min_correl:  minimum correlation to report [0.1]
+      wit_paths:   boolean (True/False) for whether to list all paths [True]
+      
+    Returns:
+    ---------
+      printable string of report.
+      
+    """
     input_ok = False
     try:
         fit    = result.fit
