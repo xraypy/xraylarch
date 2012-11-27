@@ -186,14 +186,14 @@ class LarchFrame(wx.Frame):
         self.output.SetInsertionPointEnd()
         self.output.SetFont(sfont)
 
-        self.helppanel = wx.TextCtrl(nbook, -1,  ' ',
-                                     style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
+#         self.helppanel = wx.TextCtrl(nbook, -1,  ' ',
+#                                      style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
 
         self.datapanel = Filling(nbook,  rootLabel='_main')
 
         nbook.AddPage(self.output,      'Output', select=1)
         nbook.AddPage(self.datapanel,   'Data')
-        nbook.AddPage(self.helppanel,   'Help')
+        # nbook.AddPage(self.helppanel,   'Help')
 
         self.nbook = nbook
 

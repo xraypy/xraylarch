@@ -5,10 +5,11 @@ try:
     import lib as larch
 except ImportError:
     import larch
+    # print 'use installed larch'
+    
+from larch.wxlib import larchframe
 
-from larch.wx import larchframe
-
-app = wx.PySimpleApp()
+app = wx.App()
 frame = larchframe.LarchFrame(None)
 frame.Show()
 app.MainLoop()
