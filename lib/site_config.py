@@ -12,7 +12,12 @@ import os
 import sys
 from . import site_configdata
 
-join = os.path.join
+def unixdir(f):
+    return f.replace('\\', '/')
+
+def join(*args):
+    return unixdir(os.path.join(*args))
+    
 exists = os.path.exists
 abspath = os.path.abspath
 curdir = abspath('.')
@@ -36,7 +41,7 @@ def get_homedir():
 
     if home_dir is None:
         home_dir = os.path.abspath('.')
-    return home_dir
+    return unixdir(home_dir)
 
 
 # general-use system path
@@ -45,8 +50,9 @@ usr_larchdir = site_configdata.unix_userdir
 
 # windows
 if os.name == 'nt':
-    sys_larchdir = site_configdata.win_installdir
-    usr_larchdir = site_configdata.win_userdir
+    sys_larchdir = unixdir(site_configdata.win_installdir)
+    usr_larchdir = unixdir(site_configdata.win_userdir)
+
 
 home_dir = get_homedir()
 
@@ -100,9 +106,9 @@ def make_larch_userdirs():
 
 
 if 'LARCHDIR' in os.environ:
-    usr_larchdir = os.environ['LARCHDIR']
+    usr_larchdir = unixdir(os.environ['LARCHDIR'])
 else:
-    usr_larchdir = abspath(join(home_dir, usr_larchdir))
+    usr_larchdir = unixdir(abspath(join(home_dir, usr_larchdir)))
 
 # modules_path, plugins_path
 #  determine the search path for modules
@@ -111,9 +117,9 @@ modules_path, plugins_path = [], []
 modpath = []
 
 if 'LARCHPATH' in os.environ:
-    modpath.append(os.environ['LARCHPATH'].split(':'))
+    modpath.extend([unixdir(s) for s in os.environ['LARCHPATH'].split(':')])
 else:
-    modpath.append(usr_larchdir)
+    modpath.append(unixdir(usr_larchdir))
 
 modpath.append(sys_larchdir)
 
@@ -135,8 +141,9 @@ for folder in (sys_larchdir, usr_larchdir):
         init_files.append(ifile)
 
 if 'LARCHSTARTUP' in os.environ:
-    if exists(os.environ['LARCHSTARTUP']):
-        init_files.append(os.environ['LARCHSTARTUP'])
+    startup = os.environ['LARCHSTARTUP']
+    if exists(startup):
+        init_files.append(unixdir(startup))
 
 # history file:
 history_file = join(home_dir, '.larch_history')
