@@ -228,7 +228,7 @@ To accout for this, you can proved a spectrum of :math:`\chi(k)` for a
 standard that is meant to be close to the spectrum being analyzed.  This is
 done by providing 2 arrays: ``k_std`` and ``chi_std``, which need to be the
 same lenth.  By providing these, the best values for :math:`\mu_0(E)` will
-be those that minimize the the Fourier transorm of the difference of
+be those that minimize the Fourier transorm of the difference of
 :math:`\chi(k)` for the data and standard.  This can be especially helpful
 to give more consistent background for a set of related spectra.
 

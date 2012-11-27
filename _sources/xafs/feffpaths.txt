@@ -256,7 +256,7 @@ where :math:`p_{\rm real}` and :math:`\lambda` are the values from Feff
 (``_feffdat.rep`` and ``_feffdat.lam``) and :math:`E_i` is the complex energy
 shift from the parameter ``ei``.  Note that :math:`i` is used as the complex
 number following the physics literature, while within Larch ``1j`` is used.
-The complex wavenumber :math:`p` includes a self-energy term (due the the
+The complex wavenumber :math:`p` includes a self-energy term (due to the
 presence of multiple electrons in the system) and is meant to be referenced
 to the absorption threshod while :math:`k` is meant to be referenced to the
 Fermi level.  Thus :math:`p_{\rm real} \approx \Sigma + k`, where

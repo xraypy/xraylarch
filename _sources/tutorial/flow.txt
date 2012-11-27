@@ -172,7 +172,7 @@ then printing the value of x, which will result in printing out::
     b
     c
 
-Similar to the the *if* statement above, the for loop has the form::
+Similar to the *if* statement above, the for loop has the form::
 
    for <varlist> in <sequence>:
        <statements>

@@ -25,7 +25,7 @@ least-squares approach, and many existing tools for helping to find the
 minimal values of :math:`S`.  These justifcations are not without criticism
 or caveats, but we'll leave that aside for now.
 
-It is common to include a multiplicative factor to each component in in the
+It is common to include a multiplicative factor to each component in the
 least-squares equation above, so that the different samples (or data
 points) might be given more or less weight.  Again, there are several
 approaches to this, with one of the most common approaches to weight by the
