@@ -150,7 +150,7 @@ encapsulated in the :func:`xftf` function.
 	chir               complex array of :math:`\tilde\chi(R)`.
 	chir_mag           magnitude of :math:`\tilde\chi(R)`.
 	chir_pha           phase of :math:`\tilde\chi(R)`.
-	chir_re            real part of of :math:`\tilde\chi(R)`.
+	chir_re            real part of :math:`\tilde\chi(R)`.
 	chir_im            imaginary part of :math:`\tilde\chi(R)`.
        ================= ===============================================================
 
@@ -216,7 +216,7 @@ the explicitly real :math:`\chi(k)`.
 	chiq               complex array of :math:`\tilde\chi(k)`.
 	chiq_mag           magnitude of :math:`\tilde\chi(k)`.
 	chiq_pha           phase of :math:`\tilde\chi(k)`.
-	chiq_re            real part of of :math:`\tilde\chi(k)`.
+	chiq_re            real part of :math:`\tilde\chi(k)`.
 	chiq_im            imaginary part of :math:`\tilde\chi(k)`.
        ================= ===============================================================
 

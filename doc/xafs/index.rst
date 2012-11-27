@@ -38,7 +38,7 @@ The XAFS-specific functions in Larch are kept in the :data:`_xafs` Group,
 which can be easily accessed, as this is in the default search path.  Note
 that many of the XAFS functions take a **group** argument, which is a group
 into which resulting data are written.  That is, many of the functions have
-several output arrays and groups.  Many of of the functions will return
+several output arrays and groups.  Many of the functions will return
 the most fundamental result, but this will be a minimal subset of the
 possible outputs that would go into the supplied **group**.
 

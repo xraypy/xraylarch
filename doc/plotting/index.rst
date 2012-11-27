@@ -258,7 +258,7 @@ same meaning, as indicated by the right-most column.
 Plot Examples
 ~~~~~~~~~~~~~~
 
-Here a a few example plots, to whet your appetite::
+Here are a few example plots, to whet your appetite::
 
     x = linspace(0, 10, 101)
     y1 = sin(x)

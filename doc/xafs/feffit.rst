@@ -200,7 +200,7 @@ There are then 3 principle functions for setting up and executing
             chir               complex array of :math:`\tilde\chi(R)`.
             chir_mag           magnitude of :math:`\tilde\chi(R)`.
             chir_pha           phase of :math:`\tilde\chi(R)`.
-            chir_re            real part of of :math:`\tilde\chi(R)`.
+            chir_re            real part of :math:`\tilde\chi(R)`.
             chir_im            imaginary part of :math:`\tilde\chi(R)`.
         ================= =====================================================================
 

@@ -51,7 +51,7 @@ This file and others like it can be read with the builtin
    :type labels:  string, ``None``, or ``False``
 
     The commentchar argument (#;% by default) sets the valid comment characters:
-    if the the first character in a line matches one of these, the line is marked
+    if the first character in a line matches one of these, the line is marked
     as a  header lines.
 
     Header lines continue until a line with '#----' (that is, any
