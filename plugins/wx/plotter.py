@@ -43,9 +43,10 @@ MAX_WINDOWS = 16
 
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
-        PlotFrame.__init__(self, parent=wxparent, size=size,
+        PlotFrame.__init__(self, parent=None, size=size,
                            output_title='plot2d',
                            exit_callback=self.onExit, **kws)
+
         self.Show()
         self.Raise()
         self.panel.cursor_callback = self.onCursor
@@ -81,7 +82,7 @@ class PlotDisplay(PlotFrame):
 
 class ImageDisplay(ImageFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
-        ImageFrame.__init__(self, parent=wxparent, size=size,
+        ImageFrame.__init__(self, parent=None, size=size,
                                   exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
