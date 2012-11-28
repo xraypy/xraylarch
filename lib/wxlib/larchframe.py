@@ -12,20 +12,14 @@ from readlinetextctrl import ReadlineTextCtrl
 from larchfilling import Filling
 import inputhook
 
-INFO = """  Larch version %s    using python %s  and numpy %s
-  Copyright M. Newville, T. Trainor (2010)"""
-
-INFO = INFO % (larch.__version__,
-               "%i.%i.%i" % (sys.version_info[:3]),
-               numpy.__version__)
-
-BANNER = """
-==================================================
-                                     Welcome to Larch
+header = ('=' * 60)
+BANNER = """%s
+  Larch %s (%s) M. Newville, T. Trainor
+  using python %s, numpy %s, wx version %s
 %s
-==================================================
-
-"""  % (INFO)
+"""  %  (header, larch.__version__, larch.__date__,
+         '%i.%i.%i' % sys.version_info[:3],
+         numpy.__version__, wx.__version__, header)
 
 def makeColorPanel(parent, color):
     p = wx.Panel(parent, -1)
@@ -147,7 +141,7 @@ class LarchFrame(wx.Frame):
                                     size = (65,-1),
                                     style = pstyle)
         histFile= larch.site_config.history_file
-        self.input = ReadlineTextCtrl(panel, -1,  '', size=(500,-1),
+        self.input = ReadlineTextCtrl(panel, -1,  '', size=(525,-1),
                                  historyfile=histFile, mode='emacs',
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
 
@@ -163,11 +157,11 @@ class LarchFrame(wx.Frame):
         return panel
 
     def BuildFrame(self, parent=None, **kwds):
-        wx.Frame.__init__(self, parent, -1, size=(600,400),
+        wx.Frame.__init__(self, parent, -1, size=(650, 525),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
-        self.SetFont(wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, False))
-        sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
+        self.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, False))
+        sfont = wx.Font(11,  wx.MODERN, wx.NORMAL, wx.NORMAL, False)
         sbar = self.CreateStatusBar(2, wx.CAPTION|wx.THICK_FRAME)
 
         self.SetStatusWidths([-2,-1])
@@ -188,8 +182,8 @@ class LarchFrame(wx.Frame):
         self.output.SetFont(sfont)
 
         self.datapanel = Filling(nbook,  rootLabel='_main')
-        nbook.AddPage(self.output,      'Output', select=1)
-        nbook.AddPage(self.datapanel,   'Data')
+        nbook.AddPage(self.output,      'Output Buffer', select=1)
+        nbook.AddPage(self.datapanel,   'Data Browser')
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, border=2)
@@ -211,21 +205,23 @@ class LarchFrame(wx.Frame):
 
     def BuildMenus(self):
         ID_ABOUT = wx.NewId()
-        ID_CLOSE  = wx.NewId()
+        ID_CLOSE = wx.NewId()
         ID_FREAD = wx.NewId()
         ID_FSAVE = wx.NewId()
+        ID_CHDIR = wx.NewId()
 
         ID_PSETUP  = wx.NewId()
         ID_PREVIEW = wx.NewId()
         ID_PRINT = wx.NewId()
 
         fmenu = wx.Menu()
-        fmenu.Append(ID_FREAD, "&Read", "Read Configuration File")
-        fmenu.Append(ID_FSAVE, "&Save", "Save Configuration File")
-        fmenu.AppendSeparator()
-        fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
-        fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
-        fmenu.Append(ID_PRINT, "&Print\tCtrl+P", "Print Plot")
+        #fmenu.Append(ID_FREAD, "&Read", "Read Configuration File")
+        #fmenu.Append(ID_FSAVE, "&Save", "Save Configuration File")
+        fmenu.Append(ID_CHDIR, 'Change Working Directory\tCtrl+W',
+                     'Change Directory')
+        #fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
+        #fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
+        # fmenu.Append(ID_PRINT, "&Print\tCtrl+P", "Print Plot")
         fmenu.AppendSeparator()
         fmenu.Append(ID_CLOSE, "E&xit", "Terminate the program")
 
@@ -239,6 +235,7 @@ class LarchFrame(wx.Frame):
 
         self.Bind(wx.EVT_MENU,  self.onAbout, id=ID_ABOUT)
         self.Bind(wx.EVT_MENU,  self.onClose, id=ID_CLOSE)
+        self.Bind(wx.EVT_MENU,  self.onChangeDir, id=ID_CHDIR)
 
     def onText(self, event=None):
         text =  event.GetString()
@@ -271,6 +268,16 @@ class LarchFrame(wx.Frame):
             p.Refresh()
         event.Skip()
 
+    def onChangeDir(self, event=None):
+        dlg = wx.DirDialog(None, 'Choose a Working Directory',
+                           defaultPath = os.getcwd(),
+                           style = wx.DD_DEFAULT_STYLE)
+        
+        if dlg.ShowModal() == wx.ID_OK:
+            os.chdir(dlg.GetPath())
+        dlg.Destroy()
+        return os.getcwd()
+        
     def onAbout(self, event=None):
         about_msg =  """LarchGui:
         %s""" % (INFO)

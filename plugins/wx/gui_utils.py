@@ -74,25 +74,13 @@ class wxLarchTimer(wx.MiniFrame):
 # @SafeWxCall
 def _gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
-    symtable = ensuremod(_larch, '_sys')
-    symtable = ensuremod(_larch, '_sys.wx')
-    wxping = _larch.symtable.get_symbol('_sys.wx.ping')
-    gparent = _larch.symtable.get_symbol('_sys.wx.wxapp').GetTopWindow()
-    parent = wxLarchTimer(gparent, _larch)
-
-    dlg = wx.DirDialog(parent, 'Choose Directory',
+    dlg = wx.DirDialog(None, 'Choose Directory',
                        defaultPath = os.getcwd(),
                        style = wx.DD_DEFAULT_STYLE)
-    path = None
-    # parent.Start()
+
     if dlg.ShowModal() == wx.ID_OK:
-        path = dlg.GetPath()
-
-    parent.Stop()
+        os.chdir(dlg.GetPath())
     dlg.Destroy()
-
-    if path is not None:
-        os.chdir(path)
     return os.getcwd()
 
 
@@ -135,7 +123,7 @@ def _fileprompt(wxparent=None, _larch=None,
         if message is None:
             message = 'Save As '
 
-    parent.Start()
+    #parent.Start()
     dlg = wx.FileDialog(parent=parent, message=message,
                         defaultDir = os.getcwd(),
                         defaultFile= fname,
@@ -144,7 +132,7 @@ def _fileprompt(wxparent=None, _larch=None,
     path = None
     if dlg.ShowModal() == wx.ID_OK:
         path = dlg.GetPath()
-    parent.Stop()
+    #parent.Stop()
     dlg.Destroy()
     parent.Destroy()
     return path
