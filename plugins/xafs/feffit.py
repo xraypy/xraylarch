@@ -271,7 +271,7 @@ class FeffitDataSet(Group):
     def estimate_noise(self, rmin=15, rmax=25):
         self.prepare_fit()
         if rmin != 15 and rmax != 25:
-            self.transform._estimate_noise(self.__chi, rmin=rmax, rmax=max)
+            self.transform._estimate_noise(self.__chi, rmin=rmin, rmax=rmax)
         return self.transform.epsilon_k
 
     def _residual(self, paramgroup=None):
@@ -314,7 +314,7 @@ def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
      ----------
       a Feffit Dataset group.
 
-   
+
     """
     return FeffitDataSet(data=data, pathlist=pathlist,
                          transform=transform, _larch=_larch)
@@ -471,11 +471,11 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
       result:      Feffit result, output group from feffit()
       min_correl:  minimum correlation to report [0.1]
       wit_paths:   boolean (True/False) for whether to list all paths [True]
-      
+
     Returns:
     ---------
       printable string of report.
-      
+
     """
     input_ok = False
     try:
