@@ -79,7 +79,21 @@ There are then 3 principle functions for setting up and executing
     :returns:        a Feffit Transform group
 
     The parameters stored in the returned group object will be used to
-    control how the fit is performed.
+    control how the fit is performed.  That is, the Transform group
+    determines the Fourier transform parameters and fit space for a fit.
+    All the arguments passed in will be stored as variables of the same
+    name in the Feffit Transform group.  Several additional variables will
+    be stored in this group as well, and are set once the group has been
+    used to do some transforms.  These include:
+
+      ================= =====================================================================
+       component name        description
+      ================= =====================================================================
+         epsilon_k        estimated noise in the :math:`\chi(k)` data.
+         epsilon_r        estimated noise in the :math:`\chi(R)` data.
+         n_idp            estimated number of independent points in the data.
+      ================= =====================================================================
+
 
 :func:`feffit_dataset`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -107,6 +121,8 @@ There are then 3 principle functions for setting up and executing
     sent to :func:`ff2chi` to caclulate the model :math:`\chi` to compare
     to the experimental data.  Finally, ``transform`` is a Feffit transform
     group, as defined above.
+
+
 
 :func:`feffit`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -256,31 +272,31 @@ running this example prints out the following report::
     [[Statistics]]
        npts, nvarys       = 106, 4
        nfree, nfcn_calls  = 102, 31
-       chi_square         = 5067.945057
-       reduced chi_square = 49.685736
-    
+       chi_square         = 5511.562862
+       reduced chi_square = 54.034930
+
     [[Data]]
        n_independent      = 14.260
-       eps_k, eps_r       = 0.000180, 0.008540
+       eps_k, eps_r       = 0.000172, 0.008189
        fit space          = r
        r-range            = 1.400, 3.000
        k-range            = 3.000, 17.000
        k window, dk       = kaiser, 4.000
        k-weight           = 2
        paths used in fit  = ['feffcu01.dat']
-    
+
     [[Variables]]
-       amp            =  0.934846 +/- 0.097346   (init=  1.000000)
-       del_e0         =  3.861892 +/- 1.269075   (init=  0.100000)
-       del_r          = -0.006031 +/- 0.006476   (init=  0.000000)
-       sig2           =  0.008698 +/- 0.000762   (init=  0.002000)
-    
+       amp            =  0.934846 +/- 0.101517   (init=  1.000000)
+       del_e0         =  3.861891 +/- 1.323453   (init=  0.100000)
+       del_r          = -0.006031 +/- 0.006754   (init=  0.000000)
+       sig2           =  0.008698 +/- 0.000794   (init=  0.002000)
+
     [[Correlations]]    (unreported correlations are <  0.100)
        amp, sig2            =  0.928
        del_e0, del_r        =  0.920
        del_r, sig2          =  0.159
        amp, del_r           =  0.138
-    
+
     [[Paths]]
        feff.dat file = feffcu01.dat
               Atom     x        y        z     ipot
@@ -288,12 +304,12 @@ running this example prints out the following report::
                Cu    0.0000, -1.8016,  1.8016  1
          reff   =  2.54780
          Degen  =  12.00000
-         S02    =  0.93485 +/-  0.09735
-         E0     =  3.86189 +/-  1.26908
-         R      =  2.54177 +/-  0.00648
-         deltar = -0.00603 +/-  0.00648
-         sigma2 =  0.00870 +/-  0.00076
-    
+         S02    =  0.93485 +/-  0.10152
+         E0     =  3.86189 +/-  1.32345
+         R      =  2.54177 +/-  0.00675
+         deltar = -0.00603 +/-  0.00675
+         sigma2 =  0.00870 +/-  0.00079
+
     =======================================================
 
 and generates the plots shown below
@@ -355,7 +371,7 @@ Here, we use two of the most common types of constraints.  First, we apply
 the same amplitude reduction factor and the same :math:`E_0` shift to all
 Paths.  These may seem obvious for this example, but for more complicated
 examples, either including shells of mixed species or Feff Paths generated
-from different calculation, these become less obvious.  
+from different calculation, these become less obvious.
 
 Second, we introduce a scale the change in distance by a singple expansion
 factor :math:`\alpha` (``alpha`` in the script), and using the builtin
@@ -374,7 +390,7 @@ Here we simply create ``path2`` and ``path3`` using nearly the same parameters
 as for ``path1``.   Compared to the previous example, the other changess
 are that the  :math:`R` range for the fit has been increased so that the
 fit will try to fit the second shell, and that  ``sigma2`` is allowed to
-vary independently for each path.  
+vary independently for each path.
 
 The output for this fit is a bit longer, being::
 
@@ -384,7 +400,7 @@ The output for this fit is a bit longer, being::
        nfree, nfcn_calls  = 126, 50
        chi_square         = 4312.647261
        reduced chi_square = 34.227359
-    
+
     [[Data]]
        n_independent      = 17.825
        eps_k, eps_r       = 0.000180, 0.008540
@@ -394,7 +410,7 @@ The output for this fit is a bit longer, being::
        k window, dk       = kaiser, 4.000
        k-weight           = 2
        paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
-    
+
     [[Variables]]
        alpha          = -0.002436 +/- 0.001754   (init=  0.000000)
        amp            =  0.931861 +/- 0.067134   (init=  1.000000)
@@ -402,7 +418,7 @@ The output for this fit is a bit longer, being::
        sig2_1         =  0.008663 +/- 0.000527   (init=  0.002000)
        sig2_2         =  0.013728 +/- 0.002425   (init=  0.002000)
        sig2_3         =  0.008167 +/- 0.006718   (init=  0.002000)
-    
+
     [[Correlations]]    (unreported correlations are <  0.100)
        amp, sig2_1          =  0.930
        alpha, del_e0        =  0.922
@@ -415,7 +431,7 @@ The output for this fit is a bit longer, being::
        alpha, amp           =  0.161
        alpha, sig2_3        =  0.146
        del_e0, sig2_2       = -0.123
-    
+
     [[Paths]]
        feff.dat file = feff0001.dat
               Atom     x        y        z     ipot
@@ -428,7 +444,7 @@ The output for this fit is a bit longer, being::
          R      =  2.54159 +/-  0.00447
          deltar = -0.00621 +/-  0.00447
          sigma2 =  0.00866 +/-  0.00053
-    
+
        feff.dat file = feff0002.dat
               Atom     x        y        z     ipot
                Cu    0.0000,  0.0000,  0.0000  0 (absorber)
@@ -440,7 +456,7 @@ The output for this fit is a bit longer, being::
          R      =  3.59442 +/-  0.00632
          deltar = -0.00878 +/-  0.00632
          sigma2 =  0.01373 +/-  0.00243
-    
+
        feff.dat file = feff0003.dat
               Atom     x        y        z     ipot
                Cu    0.0000,  0.0000,  0.0000  0 (absorber)
@@ -453,9 +469,9 @@ The output for this fit is a bit longer, being::
          R      =  3.81249 +/-  0.00670
          deltar = -0.00931 +/-  0.00670
          sigma2 =  0.00817 +/-  0.00672
-    
+
     =======================================================
-    
+
 With plots of data and fits as shown below.
 
 
