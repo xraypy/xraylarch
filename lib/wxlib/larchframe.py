@@ -6,11 +6,11 @@ import os
 
 import wx
 import numpy
-
 import larch
 
 from readlinetextctrl import ReadlineTextCtrl
 from larchfilling import Filling
+import inputhook
 
 INFO = """  Larch version %s    using python %s  and numpy %s
   Copyright M. Newville, T. Trainor (2010)"""
@@ -26,7 +26,6 @@ BANNER = """
 ==================================================
 
 """  % (INFO)
-
 
 def makeColorPanel(parent, color):
     p = wx.Panel(parent, -1)
@@ -47,6 +46,11 @@ class LarchWxShell(object):
         self.larch.writer = self
         self.larch.add_plugin('wx', wxparent=wxparent, inputhandler=self.onUpdate)
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
+        self.symtable.set_symbol('_sys.wx.inputhook',   inputhook)
+        self.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
+        self.symtable.set_symbol('_sys.wx.force_wxupdate', False)
+        self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
         self.SetPrompt()
         for fname in larch.site_config.init_files:
@@ -70,8 +74,6 @@ class LarchWxShell(object):
             else:
                 self.prompt.SetLabel(self.ps1)
                 self.prompt.SetForegroundColour('#000075')
-
-
             self.prompt.Refresh()
 
     def write(self, text, color=None):
@@ -81,9 +83,8 @@ class LarchWxShell(object):
                 self.output.SetForegroundColour(color)
             self.output.WriteText(text)
             self.output.SetForegroundColour(prev_color)
-            # self.output.SetInsertionPointEnd()
-            self.output.ShowPosition(self.output.GetLastPosition()-100)
-
+            self.output.SetInsertionPointEnd()
+            self.output.ShowPosition(self.output.GetLastPosition()-10)
 
     def execute(self, text=None):
         if text is not None:
@@ -175,7 +176,7 @@ class LarchFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.BuildMenus()
 
-        nbook = wx.Notebook(self, -1, style=wx.BK_DEFAULT)
+        self.nbook = nbook = wx.Notebook(self, -1, style=wx.BK_DEFAULT)
         nbook.SetBackgroundColour('#E9E9EA')
         self.SetBackgroundColour('#E9EEE0')
 
@@ -186,31 +187,19 @@ class LarchFrame(wx.Frame):
         self.output.SetInsertionPointEnd()
         self.output.SetFont(sfont)
 
-#         self.helppanel = wx.TextCtrl(nbook, -1,  ' ',
-#                                      style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
-
         self.datapanel = Filling(nbook,  rootLabel='_main')
-
         nbook.AddPage(self.output,      'Output', select=1)
         nbook.AddPage(self.datapanel,   'Data')
-        # nbook.AddPage(self.helppanel,   'Help')
-
-        self.nbook = nbook
 
         sizer = wx.BoxSizer(wx.VERTICAL)
-        opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND,
-                    border=2)
-
-        #ID_TIMER = wx.NewId()
-        #wx.EVT_TIMER(self, ID_TIMER, self.onTimer)
-        #self.timer = wx.Timer(self, ID_TIMER)
-
+        opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, border=2)
         sizer.Add(nbook,  1, **opts)
         sizer.Add(self.InputPanel(self),  0, **opts)
 
         self.SetSizer(sizer)
         self.Refresh()
         self.SetStatusText("Ready", 0)
+        self.Raise()
 
     def onTimer(self, event=None):
         symtable = self.larchshell.symtable
@@ -280,9 +269,6 @@ class LarchFrame(wx.Frame):
             except:
                 print 'cannot set size'
             p.Refresh()
-
-
-
         event.Skip()
 
     def onAbout(self, event=None):
