@@ -149,7 +149,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None, image=False):
         display = _larch.symtable.get_symbol(symname, create=True)
     if display is None:
         display = creator(window=win, wxparent=wxparent, size=size, _larch=_larch)
-        _larch.symtable.set_symbol(symname, display)
+    _larch.symtable.set_symbol(symname, display)
     if display is not None:
         display.SetTitle(title)
     return display
@@ -462,6 +462,17 @@ def _saveimg(fname, _larch=None, **kws):
     kws.update({'image':True})
     _saveplot(fname, _larch=_larch, **kws)
 
+def _closeDisplays(_larch=None, **kws):
+    names = PLOT_DISPLAYS.keys()
+    for name in names:
+        win = PLOT_DISPLAYS.pop(name)
+        win.Destroy()
+    names = IMG_DISPLAYS.keys()
+    for name in names:
+        win = IMG_DISPLAYS.pop(name)
+        win.Destroy()
+
+
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
                       'oplot':_oplot,
@@ -475,6 +486,7 @@ def registerLarchPlugin():
                       'save_plot': _saveplot,
                       'save_image': _saveimg,
                       'get_display':_getDisplay,
+                      'close_all_displays':_closeDisplays,
                       'get_cursor': _getcursor,
                       'imshow':_imshow,
                       'contour':_contour,
