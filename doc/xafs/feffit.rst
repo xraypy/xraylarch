@@ -394,16 +394,17 @@ vary independently for each path.
 
 The output for this fit is a bit longer, being::
 
+
     =================== FEFFIT RESULTS ====================
     [[Statistics]]
        npts, nvarys       = 132, 6
        nfree, nfcn_calls  = 126, 50
-       chi_square         = 4312.647261
-       reduced chi_square = 34.227359
+       chi_square         = 4690.150785
+       reduced chi_square = 37.223419
 
     [[Data]]
        n_independent      = 17.825
-       eps_k, eps_r       = 0.000180, 0.008540
+       eps_k, eps_r       = 0.000172, 0.008189
        fit space          = r
        r-range            = 1.400, 3.400
        k-range            = 3.000, 17.000
@@ -412,12 +413,12 @@ The output for this fit is a bit longer, being::
        paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
 
     [[Variables]]
-       alpha          = -0.002436 +/- 0.001754   (init=  0.000000)
-       amp            =  0.931861 +/- 0.067134   (init=  1.000000)
-       del_e0         =  3.855156 +/- 0.871283   (init=  0.100000)
-       sig2_1         =  0.008663 +/- 0.000527   (init=  0.002000)
-       sig2_2         =  0.013728 +/- 0.002425   (init=  0.002000)
-       sig2_3         =  0.008167 +/- 0.006718   (init=  0.002000)
+       alpha          = -0.002436 +/- 0.001829   (init=  0.000000)
+       amp            =  0.931861 +/- 0.070011   (init=  1.000000)
+       del_e0         =  3.855156 +/- 0.908617   (init=  0.100000)
+       sig2_1         =  0.008663 +/- 0.000550   (init=  0.002000)
+       sig2_2         =  0.013728 +/- 0.002529   (init=  0.002000)
+       sig2_3         =  0.008167 +/- 0.007006   (init=  0.002000)
 
     [[Correlations]]    (unreported correlations are <  0.100)
        amp, sig2_1          =  0.930
@@ -439,11 +440,11 @@ The output for this fit is a bit longer, being::
                Cu    0.0000, -1.8016,  1.8016  1
          reff   =  2.54780
          Degen  =  12.00000
-         S02    =  0.93186 +/-  0.06713
-         E0     =  3.85516 +/-  0.87128
-         R      =  2.54159 +/-  0.00447
-         deltar = -0.00621 +/-  0.00447
-         sigma2 =  0.00866 +/-  0.00053
+         S02    =  0.93186 +/-  0.07001
+         E0     =  3.85516 +/-  0.90862
+         R      =  2.54159 +/-  0.00466
+         deltar = -0.00621 +/-  0.00466
+         sigma2 =  0.00866 +/-  0.00055
 
        feff.dat file = feff0002.dat
               Atom     x        y        z     ipot
@@ -451,11 +452,11 @@ The output for this fit is a bit longer, being::
                Cu   -3.6032,  0.0000,  0.0000  1
          reff   =  3.60320
          Degen  =  6.00000
-         S02    =  0.93186 +/-  0.06713
-         E0     =  3.85516 +/-  0.87128
-         R      =  3.59442 +/-  0.00632
-         deltar = -0.00878 +/-  0.00632
-         sigma2 =  0.01373 +/-  0.00243
+         S02    =  0.93186 +/-  0.07001
+         E0     =  3.85516 +/-  0.90862
+         R      =  3.59442 +/-  0.00659
+         deltar = -0.00878 +/-  0.00659
+         sigma2 =  0.01373 +/-  0.00253
 
        feff.dat file = feff0003.dat
               Atom     x        y        z     ipot
@@ -464,13 +465,13 @@ The output for this fit is a bit longer, being::
                Cu    1.8016,  0.0000, -1.8016  1
          reff   =  3.82180
          Degen  =  48.00000
-         S02    =  0.93186 +/-  0.06713
-         E0     =  3.85516 +/-  0.87128
-         R      =  3.81249 +/-  0.00670
-         deltar = -0.00931 +/-  0.00670
-         sigma2 =  0.00817 +/-  0.00672
-
+         S02    =  0.93186 +/-  0.07001
+         E0     =  3.85516 +/-  0.90862
+         R      =  3.81249 +/-  0.00699
+         deltar = -0.00931 +/-  0.00699
+         sigma2 =  0.00817 +/-  0.00701
     =======================================================
+
 
 With plots of data and fits as shown below.
 
@@ -515,7 +516,13 @@ to generate the following plots of the contributions of the differnt paths:
 Example 3: Fit 3 datasets with 3 Paths each
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We'll extend the above example by adding two more data sets.  This
-highlights another key concept in modeling XAFS data and reducing the
-number of freely varying parameters in a fit.
+We'll extend the above example by adding two more data sets.  Since the
+three data sets have some things in common, we'll be able to use some
+variable parameters for all data sets.  This further allows us to reduce
+the number of freely varying parameters in a model of XAFS data.
 
+
+Here, we'll use data on Cu metal measured at three different temperatures.
+Since there is no phase change in the material over this temperature range,
+the structure changes in small and predictable ways that lends itself to
+simple parameterization.
