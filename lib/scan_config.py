@@ -25,9 +25,10 @@ det_settle_time = 0.01
 #--------------------------#
 [positioners]
 # index = label || drivePV  || readbackPV
-1 = MotorX || 13IDE:m10  || 13IDE:m10.RBV
-2 = MotorY || 13IDE:m11  || 13IDE:m11.RBV
-3 = Energy || 13IDE:En:Energy  || 13IDE:En:E_RBV
+1 = MotorX || 13IDE:m10     || 13IDE:m10.RBV
+2 = MotorY || 13IDE:m11     || 13IDE:m11.RBV
+3 = MotorZ || 13IDE:m9      || 13IDE:m9.RBV
+4 = Energy || 13IDE:En:Energy  || 13IDE:En:E_RBV
 #--------------------------#
 [xafs]
 energy_drive = 13IDE:En:Energy.VAL

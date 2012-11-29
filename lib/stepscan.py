@@ -414,6 +414,7 @@ class StepScan(object):
 
                 # wait, then read read counters and actual positions
                 time.sleep(self.det_settle_time)
+
                 [c.read() for c in self.counters]
                 self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
