@@ -205,10 +205,10 @@ class MultiMcaCounter(DeviceCounter):
             mca = 'mca%i' % imca
             dxp = 'dxp%i' % imca
             extras.extend([
-                ("CalibOffset (%s)" % mca, "%s%s.CALO" % (prefix, mca)),
-                ("CalibSlope (%s)" % mca, "%s%s.CALS" % (prefix, mca)),
-                ("CalibQuad (%s)" % mca, "%s%s.CALQ" % (prefix, mca)),
-                ("PeakingTime (%s)" % dxp, "%s%s:PeakingTime" % (prefix, dxp))
+                ("Calib_Offset (%s)" % mca, "%s%s.CALO" % (prefix, mca)),
+                ("Calib_Slope (%s)" % mca, "%s%s.CALS" % (prefix, mca)),
+                ("Calib_Quad (%s)" % mca, "%s%s.CALQ" % (prefix, mca)),
+                ("Peaking_Time (%s)" % dxp, "%s%s:PeakingTime" % (prefix, dxp))
                 ])
 
         pvs = {}
@@ -243,10 +243,11 @@ class MultiMcaCounter(DeviceCounter):
                     break
             if should_break:
                 break
+        
         for dsuff, dname in self._dxp_fields:
             for imca in range(1, nmcas +1):
-                suff = '%s:%s' %  (dname, dsuff)
-                label = '%s (%s)'% (dname, dname)
+                suff = 'dxp%i:%s' %  (imca, dsuff)
+                label = '%s (dxp%i)' % (dname, imca)
                 fields.append((suff, label)) # ... add dxp
 
         if use_full:

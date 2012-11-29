@@ -146,8 +146,8 @@ class ScanFrame(wx.Frame):
         self.filename = wx.TextCtrl(bpanel, -1, self.config.setup['filename'])
         self.filename.SetMinSize((400, 25))
 
-        self.usertitles = wx.TextCtrl(bpanel, -1, "", style=wx.TE_MULTILINE)
-        self.usertitles.SetMinSize((400, 75))
+        self.user_comms = wx.TextCtrl(bpanel, -1, "", style=wx.TE_MULTILINE)
+        self.user_comms.SetMinSize((400, 75))
 
         self.msg1  = SimpleText(bpanel, "<message1>", size=(200, -1))
         self.msg2  = SimpleText(bpanel, "<message2>", size=(200, -1))
@@ -162,7 +162,7 @@ class ScanFrame(wx.Frame):
         bsizer.Add(SimpleText(bpanel, "Comments:"),        (2, 0), (1, 1), sty)
         bsizer.Add(self.nscans,     (0, 1), (1, 1), sty, 2)
         bsizer.Add(self.filename,   (1, 1), (1, 2), sty, 2)
-        bsizer.Add(self.usertitles, (2, 1), (1, 2), sty, 2)
+        bsizer.Add(self.user_comms, (2, 1), (1, 2), sty, 2)
         bsizer.Add(self.msg1,       (0, 4), (1, 1), sty, 2)
         bsizer.Add(self.msg2,       (1, 4), (1, 1), sty, 2)
         bsizer.Add(self.msg3,       (2, 4), (1, 1), sty, 2)
@@ -242,10 +242,14 @@ class ScanFrame(wx.Frame):
         for label, pvname in self.config.extra_pvs.items():
             scan['extra_pvs'].append((label, pvname))
 
-        print '=== Start Scan ==='
-        #for k, v in scan.items():
-        #    print k, v
-        print json.dumps(scan)
+        scan['nscans'] = int(self.nscans.GetValue())
+        scan['filename'] = self.filename.GetValue()
+        scan['user_comments'] = self.user_comms.GetValue()
+        scan['pos_settle_time'] = 0.010
+        scan['det_settle_time'] = 0.010
+        print '=== Start Scan ===> scan.cnf'
+        f = open('scan.cnf', 'w')
+        f.write("%s\n" % json.dumps(scan, ensure_ascii=True))
 
     def onAbortScan(self, evt=None):
         print 'Abort Scan ', evt
@@ -351,8 +355,6 @@ class ScanFrame(wx.Frame):
 
     def onReadScanDef(self, evt=None):
         print 'on ReadScan Def event (for a particular scan)'
-
-
 
     def onSaveSettings(self, evt=None):
         fout = self.conffile
