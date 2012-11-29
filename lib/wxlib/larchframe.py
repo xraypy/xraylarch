@@ -38,13 +38,13 @@ class LarchWxShell(object):
         self.prompt = prompt
         self.output = output
         self.larch.writer = self
-        self.larch.add_plugin('wx', wxparent=wxparent, inputhandler=self.onUpdate)
+        self.larch.add_plugin('wx', wxparent=wxparent)
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
         self.symtable.set_symbol('_sys.wx.inputhook',   inputhook)
         self.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
         self.symtable.set_symbol('_sys.wx.force_wxupdate', False)
-        self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
-        self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
+        # self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        # self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
         self.SetPrompt()
         for fname in larch.site_config.init_files:
@@ -272,15 +272,15 @@ class LarchFrame(wx.Frame):
         dlg = wx.DirDialog(None, 'Choose a Working Directory',
                            defaultPath = os.getcwd(),
                            style = wx.DD_DEFAULT_STYLE)
-        
+
         if dlg.ShowModal() == wx.ID_OK:
             os.chdir(dlg.GetPath())
         dlg.Destroy()
         return os.getcwd()
-        
+
     def onAbout(self, event=None):
         about_msg =  """LarchGui:
-        %s""" % (INFO)
+        %s""" % (BANNER)
 
         dlg = wx.MessageDialog(self, about_msg,
                                "About LarchGui", wx.OK | wx.ICON_INFORMATION)
@@ -293,6 +293,7 @@ class LarchFrame(wx.Frame):
         ret = dlg.ShowModal()
         if ret == wx.ID_YES:
             self.input.SaveHistory()
+            self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
             self.Destroy()
         else:
             try:
