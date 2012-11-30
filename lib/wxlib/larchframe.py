@@ -37,18 +37,20 @@ class LarchWxShell(object):
         self.symtable = self.larch.symtable
         self.prompt = prompt
         self.output = output
+        self.input  = input
         self.larch.writer = self
         self.larch.add_plugin('wx', wxparent=wxparent)
         self.symtable.set_symbol('_builtin.force_wxupdate', False)
         self.symtable.set_symbol('_sys.wx.inputhook',   inputhook)
         self.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
         self.symtable.set_symbol('_sys.wx.force_wxupdate', False)
-        # self.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        self.symtable.set_symbol('_sys.wx.wxapp', output)
         # self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
         self.SetPrompt()
         for fname in larch.site_config.init_files:
             self.execute("run('%s')" % fname)
+        
 
     def onUpdate(self, event=None):
         symtable = self.symtable
@@ -79,6 +81,9 @@ class LarchWxShell(object):
             self.output.SetForegroundColour(prev_color)
             self.output.SetInsertionPointEnd()
             self.output.ShowPosition(self.output.GetLastPosition()-10)
+            self.output.ProcessPendingEvents()
+            self.output.Refresh()            
+            self.output.Update()
 
     def execute(self, text=None):
         if text is not None:
@@ -104,7 +109,8 @@ class LarchWxShell(object):
             block, fname, lineno = self.inptext.get()
             ret = self.larch.eval(block,
                                   fname=fname, lineno=lineno)
-
+            self.input.SetFocus()
+            self.symtable.set_symbol('_sys.wx.force_wxupdate', True)         
             if hasattr(ret, '__call__') and not isinstance(ret,type):
                 try:
                     if 1 == len(block.split()):
@@ -130,7 +136,8 @@ class LarchFrame(wx.Frame):
         self.BuildFrame(parent=parent, **kwds)
         self.larchshell = LarchWxShell(wxparent=self,
                                        prompt = self.prompt,
-                                       output  = self.output)
+                                       output = self.output,
+                                       input  = self.input)
         self.datapanel.SetRootObject(self.larchshell.symtable)
         #self.timer.Start(200)
 
@@ -245,7 +252,7 @@ class LarchFrame(wx.Frame):
             self.onClose()
         else:
             self.input.AddToHistory(text)
-            wx.CallAfter(self.larchshell.execute, text)
+            self.larchshell.execute(text)
             wx.CallAfter(self.datapanel.tree.display)
 
     def onResize(self, event=None):
