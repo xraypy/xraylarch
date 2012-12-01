@@ -1,1 +1,14 @@
 Modules/Plugins that use a shared library should live here, then install .dll/.so/.dylib to appropriate plugin folder
+
+For Windows:
+   > conf/use_mingw.bat
+ You may need tweaking to point to your installation of MinGW and Msys.
+
+For Mac OSX:  You may need to tweak conf/Mk.darwin to point to your gfortran installation,
+   or modify and run conf/Build_UniversalGFortran_Darwin.sh to build Universal Gfortran libs
+
+For each directory:
+  cd Directory
+  python ../configure.py
+  make install
+
