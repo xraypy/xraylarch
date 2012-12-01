@@ -14,6 +14,8 @@ creates a group that contains the chi(k) for the sum of paths.
 """
 
 import numpy as np
+from scipy.interpolate import splrep, splev, UnivariateSpline
+
 import sys, os
 from larch import Group, Parameter, isParameter, param_value, plugin_path
 
@@ -293,7 +295,7 @@ class FeffPathGroup(Group):
 
     def _calc_chi(self, k=None, kmax=None, kstep=None, degen=None, s02=None,
                  e0=None, ei=None, deltar=None, sigma2=None,
-                 third=None, fourth=None, debug=False, **kws):
+                 third=None, fourth=None, debug=False, interp='cubic', **kws):
         """calculate chi(k) with the provided parameters"""
         if self._feffdat.reff < 0.05:
             self._larch.writer.write('reff is too small to calculate chi(k)')
@@ -329,10 +331,16 @@ class FeffPathGroup(Group):
         q = np.sign(en)*np.sqrt(abs(en))
 
         # lookup Feff.dat values (pha, amp, rep, lam)
-        pha = np.interp(q, self._feffdat.k, self._feffdat.pha)
-        amp = np.interp(q, self._feffdat.k, self._feffdat.amp)
-        rep = np.interp(q, self._feffdat.k, self._feffdat.rep)
-        lam = np.interp(q, self._feffdat.k, self._feffdat.lam)
+        if interp.startswith('lin'):
+            pha = np.interp(q, self._feffdat.k, self._feffdat.pha)
+            amp = np.interp(q, self._feffdat.k, self._feffdat.amp)
+            rep = np.interp(q, self._feffdat.k, self._feffdat.rep)
+            lam = np.interp(q, self._feffdat.k, self._feffdat.lam)
+        else:
+            pha = UnivariateSpline(self._feffdat.k, self._feffdat.pha, s=0)(q)
+            amp = UnivariateSpline(self._feffdat.k, self._feffdat.amp, s=0)(q)
+            rep = UnivariateSpline(self._feffdat.k, self._feffdat.rep, s=0)(q)
+            lam = UnivariateSpline(self._feffdat.k, self._feffdat.lam, s=0)(q)
 
         if debug:
             self.debug_k   = q
@@ -374,7 +382,7 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
     Returns:
     ---------
       None - outputs are written to path group
-    
+
     """
     if not isinstance(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
@@ -387,7 +395,7 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
 def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
             k=None, kmax=None, kstep=0.05, **kws):
     """sum chi(k) for a list of FeffPath Groups.
- 
+
     Parameters:
     ------------
       pathlist:    a list of FeffPath Groups
@@ -439,7 +447,7 @@ def feffpath(filename=None, _larch=None, label=None, s02=None,
       third:     c_3      value or parameter [0.0]
       fourth:    c_4      value or parameter [0.0]
       ei:        E_i      value or parameter [0.0]
- 
+
     For all the options described as **value or parameter** either a
     numerical value or a Parameter (as created by param()) can be given.
 
