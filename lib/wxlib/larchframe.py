@@ -50,7 +50,7 @@ class LarchWxShell(object):
         self.SetPrompt()
         for fname in larch.site_config.init_files:
             self.execute("run('%s')" % fname)
-        
+
 
     def onUpdate(self, event=None):
         symtable = self.symtable
@@ -81,8 +81,8 @@ class LarchWxShell(object):
             self.output.SetForegroundColour(prev_color)
             self.output.SetInsertionPointEnd()
             self.output.ShowPosition(self.output.GetLastPosition()-10)
-            self.output.ProcessPendingEvents()
-            self.output.Refresh()            
+            # self.output.ProcessPendingEvents()
+            self.output.Refresh()
             self.output.Update()
 
     def execute(self, text=None):
@@ -110,7 +110,7 @@ class LarchWxShell(object):
             ret = self.larch.eval(block,
                                   fname=fname, lineno=lineno)
             self.input.SetFocus()
-            self.symtable.set_symbol('_sys.wx.force_wxupdate', True)         
+            self.symtable.set_symbol('_sys.wx.force_wxupdate', True)
             if hasattr(ret, '__call__') and not isinstance(ret,type):
                 try:
                     if 1 == len(block.split()):
@@ -252,7 +252,7 @@ class LarchFrame(wx.Frame):
             self.onClose()
         else:
             self.input.AddToHistory(text)
-            self.larchshell.execute(text)
+            wx.CallAfter(self.larchshell.execute, text)
             wx.CallAfter(self.datapanel.tree.display)
 
     def onResize(self, event=None):
