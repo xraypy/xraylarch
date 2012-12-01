@@ -10,6 +10,12 @@
 
 import  os, sys
 from platform import uname, architecture
+
+if len(sys.argv) < 1:
+    print 'usage:  configure.py DirectoryName'
+    sys.exit
+target = sys.argv[1]
+print 'Target ' , target
 system, node, release, version, mach, processor = uname()
 arch = architecture()[0]
 
@@ -29,9 +35,10 @@ else:
         dlldir = 'darwin'
         makefile = 'Mk.darwin'
 
-if dlldir is not None:
-    os.system('cp %s Mk.config' % makefile)
-    fout = open('Mk.install', 'w')
+print 'MAKEFILE ', dlldir, makefile
+if target is not None and dlldir is not None:
+    os.system('cp conf/%s %s/Mk.config' % (makefile, target))
+    fout = open('%s/Mk.install' % target, 'w')
     fout.write("INSTALLDIR=../../dlls/%s/" % dlldir)
     fout.write("")
     fout.close()
