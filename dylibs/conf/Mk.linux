@@ -3,8 +3,10 @@
 F77        = gfortran -O2 -Wall -fPIC
 AR         = ar
 RANLIB     = ranlib
-CLLIB      = libcldata.a
-SHAREDLIB  = libcldata.so
 CC         = gcc -O2 -fPIC
 LINK       = gcc -O2 -fPIC -shared
 LINK_FLAGS = -lgfortran -lgfortranbegin
+
+DLLPRE     = lib
+DLLEXT     = so
+

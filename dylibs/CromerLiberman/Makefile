@@ -11,6 +11,10 @@
 include Mk.config
 include Mk.install
 
+INSTALLNAME = cldata
+STATICLIB   = $(DLLPRE)$(INSTALLNAME).a
+SHAREDLIB   = $(DLLPRE)$(INSTALLNAME).$(DLLEXT)
+
 .f.o:
 	$(F77) -c $*.f
 
@@ -27,12 +31,12 @@ clcalc.o:  cldata.f
 $(SHAREDLIB): $(OBJ)
 	$(LINK) -o $(SHAREDLIB) $(OBJ) $(LINK_FLAGS)
 
-$(CLLIB): $(OBJ)
-	$(AR) cru $(CLLIB) $(OBJ)
-	$(RANLIB) $(CLLIB)
+$(STATICLIB): $(OBJ)
+	$(AR) cru $(STATICLIB) $(OBJ)
+	$(RANLIB) $(STATICLIB)
 
 clean :
-	rm -f $(OBJ)  $(CLLIB) $(SHAREDLIB)
+	rm -f $(OBJ)  $(STATICLIB) $(SHAREDLIB)
 
 install: $(SHAREDLIB)
 	mkdir -p $(INSTALLDIR)
@@ -42,6 +46,6 @@ distrib:
 	mkdir -p src/
 	cp $(SRC) $(INC)  src/
 	cp $(MAKEFILE) src/Makefile
-	tar czvf CLlib.tar.gz src/
+	tar czvf $(INSTALLNAME)-src.tar.gz src/
 
 
