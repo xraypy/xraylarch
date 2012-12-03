@@ -40,15 +40,18 @@ def sigma2_eins(t, theta, path=None, _larch=None):
     """
     if path is None:
         try:
-            path = _larch.symtable._sys.paramGroup._feffdat
+            path = _larch.symtable._sys.paramGroup
         except:
             pass
-    if path is None:
-        return 0.0
+    try:
+        fdat = path._feffdat
+    except:
+        return 0.00
+
     if theta < 1.e-5: theta = 1.e-5
     if t < 1.e-5: t = 1.e-5
     tx = 2.0*t/theta
-    return EINS_FACTOR/(theta * path.rmass * np.tanh(tx))
+    return EINS_FACTOR/(theta * fdat.rmass * np.tanh(tx))
 
 def sigma2_debye(t, theta, path=None, _larch=None):
     """calculate sigma2 for a Feff Path wih the correlated Debye model
@@ -65,34 +68,37 @@ def sigma2_debye(t, theta, path=None, _larch=None):
     (_sys.paramGroup._feffdat) is used.
     """
     global FEFF6LIB
-    if path is None:
-        try:
-            path = _larch.symtable._sys.paramGroup._feffdat
-        except:
-            pass
-    if path is None:
-        return 0.0
-
     if FEFF6LIB is None:
         FEFF6LIB = get_dll('feff6')
+        FEFF6LIB.sigma2_debye.restype = ctypes.c_double
+        
+    if path is None:
+        try:
+            path = _larch.symtable._sys.paramGroup
+        except:
+            pass
+    try:
+        fdat = path._feffdat
+    except:
+        return 0.00
+    if theta < 1.e-5: theta = 1.e-5
+    if t < 1.e-5: t = 1.e-5
 
-    fdat = path._feffdat
-    npts  = len(path.geom)
-    nat   = ctypes.pointer(ctypes.c_int(npts))
-    t     = ctypes.pointer(ctypes.c_double(t))
-    theta = ctypes.pointer(ctypes.c_double(theta))
-    rnorm = ctypes.pointer(ctypes.c_double(fdat.rnorman))
-    x     = (npts*ctypes.c_double)()
-    y     = (npts*ctypes.c_double)()
-    z     = (npts*ctypes.c_double)()
-    mass  = (npts*ctypes.c_double)()
-    for i in range(len(path.geom)):
-        sym, iz, ipot, ax, ay, az =  path.geom[i]
-        x[i], y[i], z[i], mass[i] = ax, ay, az, atomic_mass(iz, _larch=_larch)
+    npts = len(fdat.geom)
+    nat  = ctypes.pointer(ctypes.c_int(npts))
+    t    = ctypes.pointer(ctypes.c_double(t))
+    th   = ctypes.pointer(ctypes.c_double(theta))
+    rs   = ctypes.pointer(ctypes.c_double(fdat.rnorman))
+    ax   = (npts*ctypes.c_double)()
+    ay   = (npts*ctypes.c_double)()
+    az   = (npts*ctypes.c_double)()
+    am   = (npts*ctypes.c_double)()
+    for i, dat in enumerate(fdat.geom):
+        s, iz, ip, x, y, z =  dat
+        ax[i], ay[i], az[i], am[i] = x, y, z, atomic_mass(iz, _larch=_larch)
 
-    FEFF6LIB.sigma2_debye.restype = ctypes.c_double
-    return FEFF6LIB.sigma2_debye(nat, t, theta, rnorm, x, y, z, mass)
+    return FEFF6LIB.sigma2_debye(nat, t, th, rs, ax, ay, az, am)
 
 def registerLarchPlugin():
-    return ('_xafs', {'eins': sigma2_eins,
-                      'debye': sigma2_debye})
+    return ('_xafs', {'sigma2_eins': sigma2_eins,
+                      'sigma2_debye': sigma2_debye})
