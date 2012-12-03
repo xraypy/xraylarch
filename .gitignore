@@ -4,7 +4,14 @@
 .deps
 doc/_build
 doc/*.pdf
+MANIFEST
 build
 dist
+dylibs/*/*.o
+dylibs/*/*.dll
+dylibs/*/*.so
+dylibs/*/*.dylib
+dylibs/*/Mk.install
+dylibs/*/Mk.config
 sandbox/
 NonGit/
