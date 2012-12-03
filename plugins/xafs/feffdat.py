@@ -392,8 +392,7 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
         if (paramgroup is not None and
             _larch.symtable.isgroup(paramgroup)):
             _larch.symtable._sys.paramGroup = paramgroup
-        else:
-            paramgroup = Group()
+        elif not hasattr(_larch.symtable._sys, 'paramGroup'):
             _larch.symtable._sys.paramGroup = Group()
     path._calc_chi(**kws)
 
