@@ -302,8 +302,8 @@ path be ordered enough for the cumulant expansion to work.  A highly
 disordered system can be modeled by applying a more complex weighting to a
 set of paths -- that is, a histogram of paths.
 
-.. index:: XAFS :math:`\sigma^2`, Einstein Model
-.. index:: XAFS :math:`\sigma^2`, Correlated Debye Model
+.. index:: Einstein Model for sigma2
+.. index:: Correlated Debye Model for sigma2
 
 .. _xafs-sigma2calcs_sec:
 
