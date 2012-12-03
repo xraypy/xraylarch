@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include "feff6_interfaces.h"
 
 _EXPORT(double) sigma2_debye(int *natoms, double *tk, double *theta, double *rnorm,

@@ -54,23 +54,23 @@ c     index 0 and index nleg both refer to central atom.
        double precision  x(*), y(*), z(*), atwt(*)
        external dist, corrfn
 c
+       sig2 = 0.d0
        do 800 i0 = 1, natoms
           i1 = 1 + mod(i0, natoms)
-         do 800 j0 = 1, natoms
-            j1 = 1 + mod(j0, natoms)
+          do 800 j0 = i0, natoms
+             j1 = 1 + mod(j0, natoms)
 c  calculate r_i-r_i-1 and r_j-r_j-1 and the rest of the
 c  distances, and get the partial cosine term:
-c       cosine(i,j) = r_i.r_j / ((r_i - r_i-1) * (r_j - r_j-1))
-           ri0j0 = dist(x(i0), y(i0), z(i0), x(j0), y(j0), z(j0))
-           ri1j1 = dist(x(i1), y(i1), z(i1), x(j1), y(j1), z(j1))
-           ri0j1 = dist(x(i0), y(i0), z(i0), x(j1), y(j1), z(j1))
-           ri1j0 = dist(x(i1), y(i1), z(i1), x(j0), y(j0), z(j0))
-           ri0i1 = dist(x(i0), y(i0), z(i0), x(i1), y(i1), z(i1))
-           rj0j1 = dist(x(j0), y(j0), z(j0), x(j1), y(j1), z(j1))
-
+c       cosine(i,j) = r_i.r_j / ((r_i0- r_i-1) * (r_j - r_j-1))
+           ri0j0  = dist(x(i0), y(i0), z(i0), x(j0), y(j0), z(j0))
+           ri1j1  = dist(x(i1), y(i1), z(i1), x(j1), y(j1), z(j1))
+           ri0j1  = dist(x(i0), y(i0), z(i0), x(j1), y(j1), z(j1))
+           ri1j0  = dist(x(i1), y(i1), z(i1), x(j0), y(j0), z(j0))
+           ri0i1  = dist(x(i0), y(i0), z(i0), x(i1), y(i1), z(i1))
+           rj0j1  = dist(x(j0), y(j0), z(j0), x(j1), y(j1), z(j1))
            ridotj = ((x(i0) - x(i1)) * (x(j0) - x(j1)) +
-     $          (y(i0) - y(i1)) * (y(j0) - y(j1)) +
-     $          (z(i0) - z(i1)) * (z(j0) - z(j1)) ) / (ri0i1*rj0j1)
+     $               (y(i0) - y(i1)) * (y(j0) - y(j1)) +
+     $               (z(i0) - z(i1)) * (z(j0) - z(j1)) )
 c
 c  call corrfn to get the correlations between atom pairs
            ci0j0 = corrfn(ri0j0, theta, tk, atwt(i0), atwt(j0), rnorm)
@@ -79,8 +79,8 @@ c  call corrfn to get the correlations between atom pairs
            ci1j0 = corrfn(ri1j0, theta, tk, atwt(i1), atwt(j0), rnorm)
 c
 c  combine outputs of corrfn to give the debye-waller factor for
-c    this atom pair.   !!! note: don't double count (i.eq.j) terms !!!
-           sig2ij = ridotj * (ci0j0 + ci1j1 - ci0j1 - ci1j0)
+c  this atom pair. !! note: don't double count (i.eq.j) terms !!!
+           sig2ij = ridotj*(ci0j0 + ci1j1 - ci0j1 - ci1j0)/(ri0i1*rj0j1)
            if (j0.eq.i0) sig2ij = sig2ij / 2.d0
            sig2 = sig2 + sig2ij
  800   continue
@@ -116,12 +116,17 @@ c  solution by numerical integration
 c
 c  parameters pi, bohr, con
 c  con=hbar**2/kb*amu)*10**20   in ang**2 units
-c  hbar=1.0549x10**-34 amu=1.65979x10-27kg kb=1.3807x10-23
+c    k_boltz = 8.6173324e-5  # [eV / K]
+c    amu     = 931.494061e6  # [eV / (c*c)]
+c    hbarc   = 1973.26938    # [eV * A]
+c    bohr    = 0.52917721    # [A]
+c conh = (3/2.)* hbar**2 / (kb*amu) ~= 72.76
+c conr = (9*pi/2)**(1/3.0) / bohr   ~=  4.57
        implicit none
        double precision rs, theta, tk,  rij, rx, tx, am1, am2
-       double precision conr, conh, rmass, debint, at_weight
-       parameter (conh = 72.8385d0, conr = 4.5693346333d0)
-       external at_weight, debint
+       double precision conr, conh, rmass, debint
+       parameter (conh = 72.7630804732553d0, conr = 4.5693349700844d0)
+       external debint
 c
 c  theta in degrees k, t temperature in degrees k
        rx     = conr  * rij / rs
