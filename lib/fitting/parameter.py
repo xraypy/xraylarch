@@ -1,5 +1,5 @@
 from numpy import arcsin, cos, inf, nan, sin, sqrt
-
+import json
 # uncertainties package
 HAS_UNCERTAIN = False
 try:
@@ -58,6 +58,11 @@ class Parameter(object):
                          vary=self.vary, expr=self.expr,
                          stderr=self.stderr, correl=self.correl,
                          name=self.name,  _larch=self._larch)
+    def asjson(self):
+        return {'name': self.name, 'val': self._val,
+                'min': self.min,   'max': self.max,
+                'vary': self.vary, 'expr': self.expr,
+                'stderr': self.stderr, 'correl': self.correl}
 
     @property
     def expr(self):
