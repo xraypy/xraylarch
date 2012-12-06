@@ -24,24 +24,45 @@ class LarchServer(SimpleXMLRPCServer):
                                     logRequests=False, allow_none=True, **kws)
         self.initialized = False
         self.register_introspection_functions()
-        self.register_function(self.list_contents, 'dir')
+        self.register_function(self.list_dir,      'ls')
+        self.register_function(self.change_dir,    'chdir')
+        self.register_function(self.current_dir,   'cwd')
         self.register_function(self.exit,          'exit')
         self.register_function(self.larch_exec,    'larch')
-        self.register_function(self.wx_interact,   'wx_interact')
+        self.register_function(self.wx_update,     'wx_update')
         self.register_function(self.get_data,      'get_data')
 
     def run(self):
         """run server until keep_alive is set to False"""
         print( 'Serving Larch at port %s' % repr(self.port))
+        self.help()
         try:
             while self.keep_alive:
                 self.handle_request()
         except KeyboardInterrupt:
             sys.exit()
 
-    def list_contents(self, dir_name):
+    def list_dir(self, dir_name):
         """list contents of a directory: """
         return os.listdir(dir_name)
+
+    def change_dir(self, dir_name):
+        """change directory"""
+        return os.chdir(dir_name)
+
+    def current_dir(self):
+        """change directory"""
+        ret = os.getcwd()
+        if sys.platform == 'win32':
+            ret = ret.replace('\\','/')
+        return ret
+
+    def help(self):
+        print 'LarchServer: '
+        print dir(self)
+        print 'Registered Functions:'
+        print ('ls', 'chdir', 'cwd', 'exit', 'larch', 'wx_update',  'get_data')
+        print self.funcs.keys()
 
     def exit(self, app=None, **kws):
         "shutdown LarchServer"
@@ -69,7 +90,7 @@ class LarchServer(SimpleXMLRPCServer):
         print('Larch Initialized!')
         self.initialized = True
 
-    def wx_interact(self, timeout):
+    def wx_update(self, timeout):
         "allow wx widgets to update until timeout expires"
         if self.wx_evtloop is not None:
             t0 = time.time()
