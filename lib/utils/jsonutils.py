@@ -4,8 +4,7 @@
 """
 
 import larch
-from larch.larchlib import isParameter, Parameter
-from larch.symboltable import Group
+from larch import isParameter, Parameter, Group
 
 import numpy as np
 import json
@@ -52,7 +51,7 @@ def json_decode(value, _larch=None):
     return json decoded object from larch symbol table
     for Parameter decoding, a non-None larch instance
     must be passed in
-    """    
+    """
     out = None
     if isinstance(value, dict):
         classname = value.get('__class__', None)
@@ -71,9 +70,9 @@ def json_decode(value, _larch=None):
                 if attr == 'value': attr='val'
                 if val is not None:
                     args[attr] = val
-                
+
             out = Parameter(**args)
     if out is None:
         out = json.loads(value)
     return out
-        
+
