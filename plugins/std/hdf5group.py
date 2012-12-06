@@ -25,7 +25,7 @@ def h5group(fname, _larch=None):
         if isinstance(val, h5py.Group):
             setattr(top, current,  group(name=tname+'/'+current))
             if len(val.attrs) > 0:
-                top.attrs = dict(val.attrs)
+                getattr(top, current).attrs = dict(val.attrs)
         else:
             dat = fh.get(key)
             try:
