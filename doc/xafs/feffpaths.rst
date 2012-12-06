@@ -310,16 +310,17 @@ set of paths -- that is, a histogram of paths.
 Models for Calculating :math:`\sigma^2`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The values for :math:`\sigma^2` in the EXAFS equation get a lot of
-attention as they are often the only term used to account for thermal and
-static disorder in an ensemble of Paths that makes up a full EXAFS spectra.
-Borrowing from Feff, Larch provides two functions that use simple models to
-calculate :math:`\sigma^2` for a Path.  These are known to appy reasonably
-well to very simple systems (such as metals and solids with few atomic
+The value for :math:`\sigma^2` in the EXAFS equation gets a lot of
+attention in the EXAFS literature, as it is often the only term used to
+account for thermal and static disorder in an ensemble of Paths that makes
+up a full EXAFS spectra.  Borrowing from Feff, Larch provides two functions
+that use simple models to calculate :math:`\sigma^2` for a Path.  Both
+functions, :func:`sigma2_eins` and :func:`sigma2_debye` take arguments of
+sample temperature, a characteristic temperature, and a FeffPath, and
+return a value of :math:`sigma^2`.  These are known to appy reasonably well
+to very simple systems (such as metals and solids with few atomic
 components), and less well to complex systems, including anything with
-organic ligands.  Both functions, :func:`sigma2_eins` and
-:func:`sigma2_debye` take arguments of sample temperature, a characteristic
-temperature, and a FeffPath, and return a value of :math:`sigma^2`.
+organic ligands.
 
 ..  function:: sigma2_eins(t, theta, path=None)
 
