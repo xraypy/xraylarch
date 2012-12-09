@@ -510,7 +510,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         out.append('   n_independent      = %.3f'  % (ds.n_idp))
         out.append('   epsilon_k          = %.6f'  % (ds.epsilon_k))
         out.append('   epsilon_r          = %.6f'  % (ds.epsilon_r))
-        out.append('   fit space          = %s  '  % (tr.fitspace))
+        out.append('   fit space          = \'%s\''  % (tr.fitspace))
         out.append('   r-range            = %.3f, %.3f' % (tr.rmin, tr.rmax))
         out.append('   k-range            = %.3f, %.3f' % (tr.kmin, tr.kmax))
         kwin = '   k window, dk       = \'%s\', %.3f'   % (tr.window, tr.dk)
