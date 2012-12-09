@@ -665,7 +665,7 @@ parameter ``theta``::
     larch> _dlo = sigma2_eins(10, pars.theta-pars.theta.stderr) - _ave
     larch> _dhi = sigma2_eins(10, pars.theta+pars.theta.stderr) - _ave
     larch> print "sigma2(T=10) = %.5f  (%+.5f, %+.5f)" % (_ave, _dlo, _dhi)
-    sigma2(T=10) = 0.00329  (+0.00068, -0.00048)
+    sigma2(T=10) = 0.00328  (+0.00011, -0.00011)
 
 and so forth to get an estimate of the range of values for the ``sigma2``
 Path parameters.  The output plots for the fits to the three datasets are
@@ -707,4 +707,9 @@ of problems that can be modeled.
 Example 4: Comparing Fits in different Fit Spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We now return to
+We now turn to one of the topics for how to decide on some of the fit
+Transform parameters.  In particular, we compare doing fits in unfiltered
+k-space, R-space, and filter k-space (or "q space").  We switch from Cu
+metal data to data on a simple metal oxide, FeO.
+
+
