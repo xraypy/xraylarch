@@ -166,21 +166,22 @@ This essentially calls :func:`path2chi` for each of the paths in the
 ``pathlist`` and writes the resulting arrays for :math:`k` and :math:`\chi` the
 sum of :math:`\chi` for all the paths) to ``group.k`` and ``group.chi``.
 
-.. index:: Feff.dat File Group
+.. index:: _feffdat File Group
 
 .. _xafs-feffdat_sec:
 
-The Feff.Dat File Group
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+The _feffdat Group: Full Details of the Feff.Dat File
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each FeffPath Group will have a ``_feffdat`` sub-group which contains the results of the Feff
-calculation.  Many of these (including the arrays of data) are used for the calculations of
-:math:`\chi(k)` for that Path, while others (such as ``geom`` and ``nleg``) are copied into the
-FeffPath Group, and others still (such as ``exch`` and ``rnorman``) are left only in the
-``_feffdat`` Group, though they may be used for further study.
-
-As with the FeffPath Group, this Group has an expected set of components that
-should be treated as read-only.
+Each FeffPath Group will have a ``_feffdat`` sub-group which contains the
+data from the underlying *feffNNNN.dat* file for the results of the Feff
+calculation.  Many of the components of this group are used for the
+calculations of :math:`\chi(k)` for that Path, though some (such as
+``exch`` and ``edge``) are kept only for informational purposes.  Some
+components from this sub-group (notably as ``geom`` and ``nleg``) are
+copied into the FeffPath Group.  As with the FeffPath Group, this Group has
+an expected set of components that should be treated as read-only unless
+you really know what you're doing.
 
 .. _xafs-feffdat_table:
 
@@ -300,6 +301,49 @@ the cumulant expansion.  All that is required is that contribution from each
 path be ordered enough for the cumulant expansion to work.  A highly
 disordered system can be modeled by applying a more complex weighting to a
 set of paths -- that is, a histogram of paths.
+
+.. index:: Einstein Model for sigma2
+.. index:: Correlated Debye Model for sigma2
+
+.. _xafs-sigma2calcs_sec:
+
+Models for Calculating :math:`\sigma^2`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The value for :math:`\sigma^2` in the EXAFS equation gets a lot of
+attention in the EXAFS literature, as it is often the only term used to
+account for thermal and static disorder in an ensemble of Paths that makes
+up a full EXAFS spectra.  Borrowing from Feff, Larch provides two functions
+that use simple models to calculate :math:`\sigma^2` for a Path.  Both
+functions, :func:`sigma2_eins` and :func:`sigma2_debye` take arguments of
+sample temperature, a characteristic temperature, and a FeffPath, and
+return a value of :math:`sigma^2`.  These are known to appy reasonably well
+to very simple systems (such as metals and solids with few atomic
+components), and less well to complex systems, including anything with
+organic ligands.
+
+..  function:: sigma2_eins(t, theta, path=None)
+
+    calculate :math:`\sigma^2` in the Einstein model.
+
+    :param t:      sample temperature (in K)
+    :param theta:  Einstein temperature (in K)
+    :param path:   a FeffPath Group  [``None``]
+
+The `path` argument can be left ``None``.  This will try to use the
+''current FeffData group", (`_sys.paramGroup._feffdat`), which is updated
+during fits with :func:`feffit` and when summing paths with :func:`ff2chi`.
+
+..  function:: sigma2_debye(t, theta, path=None)
+
+    calculate :math:`\sigma^2` in the Debye model.
+
+    :param t:      sample temperature (in K)
+    :param theta:  Debye temperature (in K)
+    :param path:   a FeffPath Group  [``None``]
+
+As with :func:`sigma2_eins, the `path` argument can be left ``None``, and the
+''current FeffData group", (`_sys.paramGroup._feffdat`), will be used.
 
 Example:  Reading a FEFF file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

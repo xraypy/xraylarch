@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS: Reading and using Feff Paths &mdash; larch 0.9.16 documentation</title>
+    <title>XAFS: Reading and using Feff Paths &mdash; larch 0.9.17 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.16',
+        VERSION:     '0.9.17',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.16 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.17 documentation" href="../index.html" />
     <link rel="up" title="XAFS Analysis" href="index.html" />
     <link rel="next" title="XAFS: Fitting XAFS to Feff Paths" href="feffit.html" />
     <link rel="prev" title="XAFS: Fourier Transforms for XAFS" href="xafsft.html" /> 
@@ -78,8 +78,9 @@
 <li><a class="reference internal" href="#">XAFS: Reading and using Feff Paths</a><ul>
 <li><a class="reference internal" href="#feffpath-and-feffpath-groups"><tt class="docutils literal"><span class="pre">feffpath()</span></tt> and FeffPath Groups</a></li>
 <li><a class="reference internal" href="#path2chi-and-ff2chi-generating-for-a-feffpath"><tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a FeffPath</a></li>
-<li><a class="reference internal" href="#the-feff-dat-file-group">The Feff.Dat File Group</a></li>
+<li><a class="reference internal" href="#the-feffdat-group-full-details-of-the-feff-dat-file">The _feffdat Group: Full Details of the Feff.Dat File</a></li>
 <li><a class="reference internal" href="#the-exafs-equation-using-feff-and-feffpath-groups">The EXAFS Equation using Feff and FeffPath Groups</a></li>
+<li><a class="reference internal" href="#models-for-calculating">Models for Calculating <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/></a></li>
 <li><a class="reference internal" href="#example-reading-a-feff-file">Example:  Reading a FEFF file</a></li>
 <li><a class="reference internal" href="#example-adding-feff-files">Example:  Adding FEFF files</a></li>
 <li><a class="reference internal" href="#example-using-path-parameters-when-adding-feff-files">Example: Using Path Parameters when adding FEFF files</a></li>
@@ -164,7 +165,7 @@ values or fitting Parameters as defined by <a class="reference internal" href=".
 array</em> attributes are the arrays output from <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a>.  Finally, the
 sub-group <tt class="docutils literal"><span class="pre">_feffdat</span></tt> contains the low-level data as read directly from the
 <em>feffNNNN.dat</em> file, which is detailed in the next section,
-<a class="reference internal" href="#xafs-feffdat-sec"><em>The Feff.Dat File Group</em></a>.</p>
+<a class="reference internal" href="#xafs-feffdat-sec"><em>The _feffdat Group: Full Details of the Feff.Dat File</em></a>.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -353,15 +354,17 @@ in <a class="reference internal" href="../fitting/parameters.html#fitting-namesp
 <tt class="docutils literal"><span class="pre">pathlist</span></tt> and writes the resulting arrays for <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> the
 sum of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> for all the paths) to <tt class="docutils literal"><span class="pre">group.k</span></tt> and <tt class="docutils literal"><span class="pre">group.chi</span></tt>.</p>
 </div>
-<div class="section" id="the-feff-dat-file-group">
-<span id="xafs-feffdat-sec"></span><span id="index-1"></span><h2>The Feff.Dat File Group<a class="headerlink" href="#the-feff-dat-file-group" title="Permalink to this headline">¶</a></h2>
-<p>Each FeffPath Group will have a <tt class="docutils literal"><span class="pre">_feffdat</span></tt> sub-group which contains the results of the Feff
-calculation.  Many of these (including the arrays of data) are used for the calculations of
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for that Path, while others (such as <tt class="docutils literal"><span class="pre">geom</span></tt> and <tt class="docutils literal"><span class="pre">nleg</span></tt>) are copied into the
-FeffPath Group, and others still (such as <tt class="docutils literal"><span class="pre">exch</span></tt> and <tt class="docutils literal"><span class="pre">rnorman</span></tt>) are left only in the
-<tt class="docutils literal"><span class="pre">_feffdat</span></tt> Group, though they may be used for further study.</p>
-<p>As with the FeffPath Group, this Group has an expected set of components that
-should be treated as read-only.</p>
+<div class="section" id="the-feffdat-group-full-details-of-the-feff-dat-file">
+<span id="xafs-feffdat-sec"></span><span id="index-1"></span><h2>The _feffdat Group: Full Details of the Feff.Dat File<a class="headerlink" href="#the-feffdat-group-full-details-of-the-feff-dat-file" title="Permalink to this headline">¶</a></h2>
+<p>Each FeffPath Group will have a <tt class="docutils literal"><span class="pre">_feffdat</span></tt> sub-group which contains the
+data from the underlying <em>feffNNNN.dat</em> file for the results of the Feff
+calculation.  Many of the components of this group are used for the
+calculations of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for that Path, though some (such as
+<tt class="docutils literal"><span class="pre">exch</span></tt> and <tt class="docutils literal"><span class="pre">edge</span></tt>) are kept only for informational purposes.  Some
+components from this sub-group (notably as <tt class="docutils literal"><span class="pre">geom</span></tt> and <tt class="docutils literal"><span class="pre">nleg</span></tt>) are
+copied into the FeffPath Group.  As with the FeffPath Group, this Group has
+an expected set of components that should be treated as read-only unless
+you really know what you&#8217;re doing.</p>
 <blockquote id="xafs-feffdat-table">
 <div><p>Table of Feff.dat components.  Listed here is the component read from
 the Feff.dat file and stored in the <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group for each FeffPath.</p>
@@ -514,6 +517,63 @@ the cumulant expansion.  All that is required is that contribution from each
 path be ordered enough for the cumulant expansion to work.  A highly
 disordered system can be modeled by applying a more complex weighting to a
 set of paths &#8211; that is, a histogram of paths.</p>
+<span class="target" id="index-3"></span></div>
+<div class="section" id="models-for-calculating">
+<span id="xafs-sigma2calcs-sec"></span><span id="index-4"></span><h2>Models for Calculating <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/><a class="headerlink" href="#models-for-calculating" title="Permalink to this headline">¶</a></h2>
+<p>The value for <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/> in the EXAFS equation gets a lot of
+attention in the EXAFS literature, as it is often the only term used to
+account for thermal and static disorder in an ensemble of Paths that makes
+up a full EXAFS spectra.  Borrowing from Feff, Larch provides two functions
+that use simple models to calculate <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/> for a Path.  Both
+functions, <a class="reference internal" href="#_xafs.sigma2_eins" title="_xafs.sigma2_eins"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_eins()</span></tt></a> and <a class="reference internal" href="#_xafs.sigma2_debye" title="_xafs.sigma2_debye"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_debye()</span></tt></a> take arguments of
+sample temperature, a characteristic temperature, and a FeffPath, and
+return a value of <img class="math" src="../_images/math/3e230e3b1a98128ef5cbb1eac93609c5f378c2c0.png" alt="sigma^2"/>.  These are known to appy reasonably well
+to very simple systems (such as metals and solids with few atomic
+components), and less well to complex systems, including anything with
+organic ligands.</p>
+<dl class="function">
+<dt id="_xafs.sigma2_eins">
+<tt class="descclassname">_xafs.</tt><tt class="descname">sigma2_eins</tt><big>(</big><em>t</em>, <em>theta</em>, <em>path=None</em><big>)</big><a class="headerlink" href="#_xafs.sigma2_eins" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/> in the Einstein model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>t</strong> &#8211; sample temperature (in K)</li>
+<li><strong>theta</strong> &#8211; Einstein temperature (in K)</li>
+<li><strong>path</strong> &#8211; a FeffPath Group  [<tt class="docutils literal"><span class="pre">None</span></tt>]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>The <cite>path</cite> argument can be left <tt class="docutils literal"><span class="pre">None</span></tt>.  This will try to use the
+&#8216;&#8217;current FeffData group&#8221;, (<cite>_sys.paramGroup._feffdat</cite>), which is updated
+during fits with <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> and when summing paths with <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a>.</p>
+<dl class="function">
+<dt id="_xafs.sigma2_debye">
+<tt class="descclassname">_xafs.</tt><tt class="descname">sigma2_debye</tt><big>(</big><em>t</em>, <em>theta</em>, <em>path=None</em><big>)</big><a class="headerlink" href="#_xafs.sigma2_debye" title="Permalink to this definition">¶</a></dt>
+<dd><p>calculate <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/> in the Debye model.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>t</strong> &#8211; sample temperature (in K)</li>
+<li><strong>theta</strong> &#8211; Debye temperature (in K)</li>
+<li><strong>path</strong> &#8211; a FeffPath Group  [<tt class="docutils literal"><span class="pre">None</span></tt>]</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>As with <tt class="xref py py-func docutils literal"><span class="pre">sigma2_eins,</span> <span class="pre">the</span> <span class="pre">`path()</span></tt> argument can be left <tt class="docutils literal"><span class="pre">None</span></tt>, and the
+&#8216;&#8217;current FeffData group&#8221;, (<cite>_sys.paramGroup._feffdat</cite>), will be used.</p>
 </div>
 <div class="section" id="example-reading-a-feff-file">
 <h2>Example:  Reading a FEFF file<a class="headerlink" href="#example-reading-a-feff-file" title="Permalink to this headline">¶</a></h2>
@@ -718,7 +778,7 @@ evaluating any mathematical expressions we&#8217;ve defined for the path
 parameters.   At this point, the strings <tt class="docutils literal"><span class="pre">del_e0</span></tt> and <tt class="docutils literal"><span class="pre">amp</span></tt> for the
 path parameters for path 1 and 2 are converted into Parameters and
 evaluated.</p>
-<p id="index-3">After plotting the results, we then change the values of the parameters.
+<p id="index-5">After plotting the results, we then change the values of the parameters.
 We could re-run <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a>, but we can also just run <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a>
 on the paths for which we want to recalculate <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.  Note that we
 specify the <tt class="docutils literal"><span class="pre">paramgroup</span></tt> to <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> here.  Strictly speaking,
@@ -775,7 +835,7 @@ values in a fit of XAFS data to such a sum of paths.</p>
     </div>
     <div class="footer">
         &copy; Copyright 2012, Matthew Newville.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre.
     </div>
   </body>
 </html>

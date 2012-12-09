@@ -53,8 +53,3 @@ listed below.
    xafsft
    feffpaths
    feffit
-
-
-
-
-
