@@ -144,8 +144,8 @@ class TransformGroup(Group):
         return xftr_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
 class FeffitDataSet(Group):
-    def __init__(self, data=None, pathlist=None, transform=None, _larch=None, **kws):
-
+    def __init__(self, data=None, pathlist=None, transform=None,
+                 _larch=None, **kws):
         self._larch = _larch
         Group.__init__(self, **kws)
 
@@ -165,7 +165,6 @@ class FeffitDataSet(Group):
 
     def prepare_fit(self):
         trans = self.transform
-
         trans.make_karrays()
         ikmax = int(1.01 + max(self.data.k)/trans.kstep)
         # ikmax = index_of(trans.k_, max(self.data.k))
@@ -178,10 +177,10 @@ class FeffitDataSet(Group):
                 eps_k = interp(self.model.k, self.data.k, self.data.epsilon_k)
             self.set_epsilon_k(eps_k)
         else:
-            self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=25.0)
+            self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
         self.__prepared = True
 
-    def estimate_noise(self, chi=None, rmin=15.0, rmax=25.0, all_kweights=True):
+    def estimate_noise(self, chi=None, rmin=15.0, rmax=30.0, all_kweights=True):
         """estimage noise in a chi spectrum from its high r components"""
         trans = self.transform
         trans.make_karrays()
@@ -576,10 +575,33 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     out.append('='*len(topline))
     return '\n'.join(out)
 
+def estimate_noise(dset, rmin=15, rmax=30, _larch=None, **kws):
+    """estimate noise in an XAFS dataset
+
+    Parameters:
+    ------------
+      dataset:     Feffit dataset (required)
+      rmin:        minimum R value used for esitmate [15.0]
+      rmax:        maximum R value used for esitmate [30.0]
+
+    Returns:
+    ---------
+      estimate of noise in chi(k)
+    """
+    if _larch is None:
+        return
+    msg = _larch.writer.write
+    if not isinstance(dset, FeffitDataSet):
+        msg('estimate_noise(): 1st argument must be a Feffit Dataset\n')
+        return
+    dset.estimate_noise(rmin=rmin, rmax=rmax)
+    return dset.epsilon_k
+
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
                       'feffit_dataset': feffit_dataset,
                       'feffit_transform': feffit_transform,
-                      'feffit_report': feffit_report})
+                      'feffit_report': feffit_report,
+                      'estimate_noise': estimate_noise})
 
 
