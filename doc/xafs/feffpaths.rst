@@ -317,8 +317,8 @@ up a full EXAFS spectra.  Borrowing from Feff, Larch provides two functions
 that use simple models to calculate :math:`\sigma^2` for a Path.  Both
 functions, :func:`sigma2_eins` and :func:`sigma2_debye` take arguments of
 sample temperature, a characteristic temperature, and a FeffPath, and
-return a value of :math:`sigma^2`.  These are known to appy reasonably well
-to very simple systems (such as metals and solids with few atomic
+return a value of :math:`\sigma^2`.  These are known to appy reasonably
+well to very simple systems (such as metals and solids with few atomic
 components), and less well to complex systems, including anything with
 organic ligands.
 
