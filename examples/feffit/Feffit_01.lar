@@ -8,12 +8,11 @@ fitparams = group(amp  = guess(1),
                   delr = guess(0.)
                   )
 
-path1 = read_feffdat('feffcu01.dat')
-path1.s02    = param(expr='amp')
-path1.e0     = param(expr='de0')
-path1.sigma2 = param(expr='ss2')
-path1.deltar = param(expr='delr')
-
+path1 = feffpath('feffcu01.dat',
+                 s02 = 'amp',
+                 e0  = 'de0',
+                 sigma2 = 'ss2',
+                 deltar = 'delr')
 
 trans = feffit_transform(kmin=3, kmax=17, kw=2, dk=3, window='hanning', rmin=1.4, rmax=3.0)
 d1    = feffit_dataset(data=cu, pathlist=[path1], transform=trans)
@@ -22,61 +21,8 @@ out = feffit(fitparams, d1)
 
 print fit_report(fitparams)
 
-# print 'EPS k, r = ', trans.epsilon_k, trans.epsilon_r
-# newplot(d1.data.r, d1.data.chir_re, xmin=1.3, xmax=3.1)
-#   plot(d1.model.r, d1.model.chir_re)
-# ir1 = index_of(d1.model.r, 1.4) 
-# ir2 = index_of(d1.model.r, 3.0) # @ + 1
-# 
-# newplot(d1.model.r[ir1:ir2], d1.model.chir_re[ir1:ir2], win=2)
-#    plot(d1.model.r[ir1:ir2], d1.data.chir_re[ir1:ir2], win=2)
-# 
-# residr = (d1.model.chir_re[ir1:ir2] - d1.data.chir_re[ir1:ir2])/trans.epsilon_r
-# residi = (d1.model.chir_im[ir1:ir2] - d1.data.chir_im[ir1:ir2])/trans.epsilon_r
-# 
-# print ir1, ir2, d1.model.r[ir1:ir2]
-# 
-# plot(d1.model.r[:ir2+30], ((d1.model.chir_re-d1.data.chir_re)/trans.epsilon_r)[:ir2+30], color='purple', linewidth=1, win=2)
-# 
-# plot(d1.model.r[ir1:ir2], residr, color='red', style='dotted', win=2)
-# plot(d1.model.r[ir1:ir2], residi, color='red', style='dashed', win=2)
-# 
-# 
-# plot(d1.model.r[ir1:ir2], residi, color='red', style='dashed', win=2)
-# 
-# resid = concatenate([residi, residr])
-# print len(resid)
-# print (resid*resid).sum()/(len(resid) -4)
-# 
-# #########################################################################
-# 
-# m = group(r=d1.model.r[:])
-# 
-# m.chir = d1.model.chir - d1.data.chir
-# 
-# xafsift(m.r, m.chir, rmin=1.4, rmax=3.0, dr=0.5, rwindow='hanning', group=m)
-# 
-# show(m)
-# 
-# newplot(m.r, m.chir.real*m.rwin)
-#  plot(m.r, m.chir.imag*m.rwin)
-# 
-# 
-# n = group(k =m.q, chi=m.chiq_re)
-# 
-# xafsft(n.k, n.chi, kmin=2, kmax=17, dk=4, group=n)
-# 
-# show(n)
-# 
-# newplot(n.r, n.chir_mag, win=4)
-# 
-# # feffit(1-3, chi = data.chi, k=data.k,group = fit)
-# #
-# # show @variables, chi_square, r_factor, n_idp, &fit_iteration
-# #
-# # newplot data.r, data.chir_mag, xmax=7
-# # plot    fit.r,  fit.chir_mag
-# # showpath 1  "color=blue"
-# # showpath 2  "color=red"
-# # showpath 3  "color=black"
-# ;
+newplot(d1.data.r, d1.data.chir_mag, color='blue', label='data',
+        show_legend=True,xlabel=r'$R \rm(\AA)$', xmax=6)
+   plot(d1.model.r, d1.model.chir_mag, color='red', label='fit')
+   plot(d1.data.r, d1.data.chir_re, color='blue', label='')
+   plot(d1.model.r, d1.model.chir_re, color='red', label='')
