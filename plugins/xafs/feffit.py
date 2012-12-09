@@ -45,7 +45,7 @@ class TransformGroup(Group):
     """
     def __init__(self, kmin=0, kmax=20, kweight=2, dk=4, dk2=None,
                  window='kaiser', nfft=2048, kstep=0.05,
-                 rmin = 0, rmax=10, dr=0, rwindow='kaiser',
+                 rmin = 0, rmax=10, dr=0, dr2=None, rwindow='hanning',
                  fitspace='r', _larch=None, **kws):
         Group.__init__(self)
         self.kmin = kmin
@@ -60,6 +60,8 @@ class TransformGroup(Group):
         self.rmin = rmin
         self.rmax = rmax
         self.dr = dr
+        self.dr2 = dr2
+        if dr2 is None: self.dr2 = self.dr
         self.rwindow = rwindow
         self.__nfft = 0
         self.__kstep = None
@@ -72,8 +74,6 @@ class TransformGroup(Group):
 
         self.kwin = None
         self.rwin = None
-        # self.xafsft = self._xafsft
-        # self.estimate_noise = self._estimate_noise
         self.make_karrays()
 
     def __repr__(self):
@@ -89,52 +89,6 @@ class TransformGroup(Group):
         self.rstep = pi/(self.kstep*self.nfft)
         self.k_ = self.kstep * arange(self.nfft, dtype='float64')
         self.r_ = self.rstep * arange(self.nfft, dtype='float64')
-
-    def _estimate_noise(self, chi, rmin=15.0, rmax=25.0, all_kweights=True):
-        """estimage noise in a chi spectrum from its high r components"""
-        self.make_karrays()
-
-        save = self.rmin, self.rmax, self.fitspace
-
-        all_kweights = all_kweights and isinstance(self.kweight, Iterable)
-        if all_kweights:
-            chir = [self.fftf(chi, kweight=kw) for kw in self.kweight]
-        else:
-            chir = [self.fftf(chi)]
-        irmin = int(0.01 + rmin/self.rstep)
-        irmax = min(self.nfft/2,  int(1.01 + rmax/self.rstep))
-        highr = [realimag(chir_[irmin:irmax]) for chir_ in chir]
-        # get average of window function value, we will scale eps_r scale by this
-        kwin_ave = self.kwin.sum()*self.kstep/(self.kmax-self.kmin)
-        eps_r = [(sqrt((chi*chi).sum() / len(chi)) / kwin_ave) for chi in highr]
-        eps_k = []
-        # use Parseval's theorem to convert epsilon_r to epsilon_k,
-        # compensating for kweight
-        if all_kweights:
-            kweights = self.kweight[:]
-        else:
-            kweights = [self.kweight]
-        for i, kw in enumerate(kweights):
-            w = 2 * kw + 1
-            scale = sqrt((2*pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
-            eps_k.append(scale*eps_r[i])
-
-        self.rmin, self.rmax, self.fitspace = save
-
-        self.n_idp  = 2*(self.rmax-self.rmin)*(self.kmax-self.kmin)/pi
-        self.epsilon_k = eps_k
-        self.epsilon_r = eps_r
-        if len(eps_r) == 1:
-            self.epsilon_k = eps_k[0]
-            self.epsilon_r = eps_r[0]
-
-    def set_epsilon_k(self, eps_k):
-        """set epsilon_k and epsilon_r -- ucertainties in chi(k) and chi(R)"""
-        w = 2 * self.get_kweight() + 1
-        scale = 2*sqrt((pi*w)/(self.kstep*(self.kmax**w - self.kmin**w)))
-        eps_r = eps_k / scale
-        self.epsilon_k = eps_k
-        self.epsilon_r = eps_r
 
     def _xafsft(self, chi, group=None, rmax_out=10, **kws):
         "returns "
@@ -185,49 +139,9 @@ class TransformGroup(Group):
             self.rwin = ftwindow(self.r_, xmin=self.rmin, xmax=self.rmax,
                                  dx=self.dr, dx2=self.dr2, window=self.rwindow)
 
-        cx = chir * self.rwin[:len(chir)] * self.r_[:len(chir)]**self.rw,
+        cx = chir * self.rwin[:len(chir)]
+        # print 'FFTR"   ', chir[:30], self.rwin[:30]
         return xftr_fast(cx, kstep=self.kstep, nfft=self.nfft)
-
-    def apply(self, chi, eps_scale=False, all_kweights=True, **kws):
-        """apply transform, returns real/imag components
-        eps_scale: scale by appropriaat epsilon_k or epsilon_r
-        """
-        # print 'this  is transform apply ', len(chi), chi[5:10], kws
-        for key, val in kws.items():
-            if key == 'kw': key = 'kweight'
-            setattr(self, key, val)
-
-        all_kweights = all_kweights and isinstance(self.kweight, Iterable)
-        # print 'fit space = ', self.fitspace
-        if self.fitspace == 'k':
-            if all_kweights:
-                return np.concatenate([chi * self.k_[:len(chi)]**kw for kw in self.kweight])
-            else:
-                return chi * self.k_[:len(chi)]**self.kweight
-        elif self.fitspace in ('r', 'q'):
-            self.make_karrays()
-            out = []
-            if all_kweights:
-                # print 'Apply -- use all kweights ', self.kweight
-                chir = [self.fftf(chi, kweight=kw) for kw in self.kweight]
-                eps_r = self.epsilon_r
-            else:
-                chir = [self.fftf(chi)]
-                eps_r = [self.epsilon_r]
-            if self.fitspace == 'r':
-                irmin = int(0.01 + self.rmin/self.rstep)
-                irmax = min(self.nfft/2,  int(1.01 + self.rmax/self.rstep))
-                for i, chir_ in enumerate(chir):
-                    if eps_scale:
-                        chir_ = chir_ /(eps_r[i])
-                    out.append( realimag(chir_[irmin:irmax]))
-            else:
-                chiq = [self.fftr(self.r_, c) for c in chir]
-                iqmin = int(0.01 + self.kmin/self.kstep)
-                iqmax = min(self.nfft/2,  int(1.01 + self.kmax/self.kstep))
-                for chiq_ in chiq:
-                    out.append( realimag(chiq[iqmin:iqmax]))
-            return np.concatenate(out)
 
 class FeffitDataSet(Group):
     def __init__(self, data=None, pathlist=None, transform=None, _larch=None, **kws):
@@ -262,19 +176,61 @@ class FeffitDataSet(Group):
             eps_k = self.data.epsilon_k
             if isinstance(self.eps_k, numpy.ndarray):
                 eps_k = interp(self.model.k, self.data.k, self.data.epsilon_k)
-                trans.set_epsilon_k(eps_k)
+            self.set_epsilon_k(eps_k)
         else:
-            trans._estimate_noise(self.__chi, rmin=15.0, rmax=25.0)
-
+            self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=25.0)
         self.__prepared = True
 
-    def estimate_noise(self, rmin=15, rmax=25):
-        self.prepare_fit()
-        if rmin != 15 and rmax != 25:
-            self.transform._estimate_noise(self.__chi, rmin=rmin, rmax=rmax)
-        return self.transform.epsilon_k
+    def estimate_noise(self, chi=None, rmin=15.0, rmax=25.0, all_kweights=True):
+        """estimage noise in a chi spectrum from its high r components"""
+        trans = self.transform
+        trans.make_karrays()
+        if chi is None: chi = self.__chi
 
-    def _residual(self, paramgroup=None):
+        save = trans.rmin, trans.rmax, trans.fitspace
+
+        all_kweights = all_kweights and isinstance(trans.kweight, Iterable)
+        if all_kweights:
+            chir = [trans.fftf(chi, kweight=kw) for kw in trans.kweight]
+        else:
+            chir = [trans.fftf(chi)]
+        irmin = int(0.01 + rmin/trans.rstep)
+        irmax = min(trans.nfft/2,  int(1.01 + rmax/trans.rstep))
+        highr = [realimag(chir_[irmin:irmax]) for chir_ in chir]
+        # get average of window function value, we will scale eps_r scale by this
+        kwin_ave = trans.kwin.sum()*trans.kstep/(trans.kmax-trans.kmin)
+        eps_r = [(sqrt((chi*chi).sum() / len(chi)) / kwin_ave) for chi in highr]
+        eps_k = []
+        # use Parseval's theorem to convert epsilon_r to epsilon_k,
+        # compensating for kweight
+        if all_kweights:
+            kweights = trans.kweight[:]
+        else:
+            kweights = [trans.kweight]
+        for i, kw in enumerate(kweights):
+            w = 2 * kw + 1
+            scale = sqrt((2*pi*w)/(trans.kstep*(trans.kmax**w - trans.kmin**w)))
+            eps_k.append(scale*eps_r[i])
+
+        trans.rmin, trans.rmax, trans.fitspace = save
+
+        self.n_idp  = 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
+        self.epsilon_k = eps_k
+        self.epsilon_r = eps_r
+        if len(eps_r) == 1:
+            self.epsilon_k = eps_k[0]
+            self.epsilon_r = eps_r[0]
+
+    def set_epsilon_k(self, eps_k):
+        """set epsilon_k and epsilon_r -- ucertainties in chi(k) and chi(R)"""
+        trans = self.transform
+        w = 2 * trans.get_kweight() + 1
+        scale = 2*sqrt((pi*w)/(trans.kstep*(trans.kmax**w - trans.kmin**w)))
+        eps_r = eps_k / scale
+        self.epsilon_k = eps_k
+        self.epsilon_r = eps_r
+
+    def _residual(self, paramgroup=None, data_only=False, **kws):
         """return the residual for this data set
         residual = self.transform.apply(data_chi - model_chi)
         where model_chi is the result of ff2chi(pathlist)
@@ -283,14 +239,49 @@ class FeffitDataSet(Group):
             self._larch.symtable.isgroup(paramgroup)):
             self._larch.symtable._sys.paramGroup = paramgroup
         if not isinstance(self.transform, TransformGroup):
-            print "Transform for DataSet is not set"
             return
         if not self.__prepared:
             self.prepare_fit()
 
         _ff2chi(self.pathlist, k=self.model.k,
                 _larch=self._larch, group=self.model)
-        return self.transform.apply(self.__chi-self.model.chi, eps_scale=True)
+
+        eps_k = max(1.e-12, self.epsilon_k)
+        diff  = (self.__chi - self.model.chi)
+        if data_only:  # for extracting transformed data separately from residual
+            diff  = self.__chi
+        trans = self.transform
+        k     = trans.k_[:len(diff)]
+
+        all_kweights = isinstance(trans.kweight, Iterable)
+        if trans.fitspace == 'k':
+            iqmin = max(0, int(0.01 + trans.kmin/trans.kstep))
+            iqmax = min(trans.nfft/2,  int(0.01 + trans.kmax/trans.kstep))
+            if all_kweights:
+                return np.concatenate([((diff/eps_k)*k**kw)[iqmin:iqmax] for kw in trans.kweight])
+            else:
+                return ((diff/eps_k) * k**trans.kweight)[iqmin:iqmax]
+        else:
+            out = []
+            if all_kweights:
+                chir = [trans.fftf(diff, kweight=kw) for kw in trans.kweight]
+                eps_r = self.epsilon_r
+            else:
+                chir = [trans.fftf(diff)]
+                eps_r = [self.epsilon_r]
+            if trans.fitspace == 'r':
+                irmin = max(0, int(0.01 + trans.rmin/trans.rstep))
+                irmax = min(trans.nfft/2,  int(0.01 + trans.rmax/trans.rstep))
+                for i, chir_ in enumerate(chir):
+                    chir_ = chir_ / (eps_r[i])
+                    out.append(realimag(chir_[irmin:irmax]))
+            else:
+                chiq = [trans.fftr(c)/eps for c, eps in zip(chir, eps_r)]
+                iqmin = max(0, int(0.01 + trans.kmin/trans.kstep))
+                iqmax = min(trans.nfft/2,  int(0.01 + trans.kmax/trans.kstep))
+                for chiq_ in chiq:
+                    out.append( realimag(chiq_[iqmin:iqmax])[::2])
+            return np.concatenate(out)
 
     def save_ffts(self, rmax_out=10, path_outputs=True):
         "save fft outputs"
@@ -377,7 +368,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
 
     """
     def _resid(params, datasets=None, _larch=None, **kws):
-        """ this is the residual function """
+        """ this is the residual function"""
         return concatenate([d._residual() for d in datasets])
 
     if isinstance(datasets, FeffitDataSet):
@@ -390,7 +381,10 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     fitkws = dict(datasets=datasets)
     fit = Minimizer(_resid, params, fcn_kws=fitkws,
                     scale_covar=True,  _larch=_larch)
+
     fit.leastsq()
+    dat = concatenate([d._residual(data_only=True) for d in datasets])
+    params.rfactor = (params.fit_details.fvec**2).sum() / (dat**2).sum()
 
     # remove temporary parameters for _feffdat and reff
     # that had been placed by _pathparams()
@@ -398,11 +392,15 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     #    if hasattr(params, pname):
     #        delattr(params, pname)
 
-    # scale uncertainties to sqrt(reduce chi-square)
     n_idp = 0
     for ds in datasets:
-        n_idp += ds.transform.n_idp
-    err_scale = sqrt(params.chi_reduced)
+        n_idp += ds.n_idp
+
+    # With scale_covar = True, Minimizer() scales the uncertainties
+    # by reduced chi-square assuming params.nfree is the correct value
+    # for degrees-of-freedom. But n_idp-params.nvarys is a better measure,
+    # so we rescale uncertainties here.
+    err_scale = sqrt(params.nfree / (n_idp - params.nvarys))
     for name in dir(params):
         p = getattr(params, name)
         if isParameter(p) and p.vary:
@@ -446,7 +444,6 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
                         if hasattr(obj.value, 'std_dev'):
                             stderr = obj.value.std_dev()
                         setattr(obj, 'stderr', stderr)
-
 
         # 4. restore saved parameters
         for vname in params.covar_vars:
@@ -496,11 +493,11 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
 
     npts = len(params.residual)
 
-    out.append('   npts, nvarys       = %i, %i' % (npts, params.nvarys))
-    out.append('   nfree, nfcn_calls  = %i, %i' % (params.nfree,
-                                                   params.fit_details.nfev))
-    out.append('   chi_square         = %f'     % (params.chi_square))
-    out.append('   reduced chi_square = %f'     % (params.chi_reduced))
+    out.append('   npts, nvarys, nfree= %i, %i, %i' % (npts, params.nvarys,
+                                                       params.nfree))
+    out.append('   chi_square         = %.8g'  % (params.chi_square))
+    out.append('   reduced chi_square = %.8g'  % (params.chi_reduced))
+    out.append('   r-factor           = %.8g'  % (params.rfactor))
     out.append(' ')
     if len(datasets) == 1:
         out.append(header % 'Data')
@@ -510,13 +507,13 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         tr = ds.transform
         if len(datasets) > 1:
             out.append(' dataset %i:' % (i+1))
-        out.append('   n_independent      = %.3f '  % (tr.n_idp))
-        out.append('   eps_k, eps_r       = %f, %f' % (tr.epsilon_k,
-                                                       tr.epsilon_r))
-        out.append('   fit space          = %s  '   % (tr.fitspace))
+        out.append('   n_independent      = %.3f'  % (ds.n_idp))
+        out.append('   epsilon_k          = %.6f'  % (ds.epsilon_k))
+        out.append('   epsilon_r          = %.6f'  % (ds.epsilon_r))
+        out.append('   fit space          = %s  '  % (tr.fitspace))
         out.append('   r-range            = %.3f, %.3f' % (tr.rmin, tr.rmax))
         out.append('   k-range            = %.3f, %.3f' % (tr.kmin, tr.kmax))
-        kwin = '   k window, dk       = %s, %.3f'   % (tr.window, tr.dk)
+        kwin = '   k window, dk       = \'%s\', %.3f'   % (tr.window, tr.dk)
         if tr.dk2 is not None:
             kwin = "%s, %.3f" % (kwin, tr.dk2)
         out.append(kwin)
@@ -571,7 +568,9 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     if with_paths:
         out.append(' ')
         out.append(header % 'Paths')
-        for ds in datasets:
+        for ids, ds in enumerate(datasets):
+            if len(datasets) > 1:
+                out.append(' dataset %i:' % (ids+1))
             for p in ds.pathlist:
                 out.append('%s\n' % p.report())
     out.append('='*len(topline))
