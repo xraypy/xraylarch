@@ -50,7 +50,7 @@ def sigma2_eins(t, theta, path=None, _larch=None):
 
     if theta < 1.e-5: theta = 1.e-5
     if t < 1.e-5: t = 1.e-5
-    tx = 2.0*t/theta
+    tx = theta/(2.0*t)
     return EINS_FACTOR/(theta * fdat.rmass * np.tanh(tx))
 
 def sigma2_debye(t, theta, path=None, _larch=None):
@@ -71,7 +71,7 @@ def sigma2_debye(t, theta, path=None, _larch=None):
     if FEFF6LIB is None:
         FEFF6LIB = get_dll('feff6')
         FEFF6LIB.sigma2_debye.restype = ctypes.c_double
-        
+
     if path is None:
         try:
             path = _larch.symtable._sys.paramGroup
