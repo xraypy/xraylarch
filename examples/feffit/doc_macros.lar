@@ -8,26 +8,27 @@ label_chir  = r'$|\chi(R)| \rm\,(\AA^{-%i})$'
 label_chirre  = r'${\rm Re}[\chi(R)] \rm\,(\AA^{-%i})$'
 label_chirim  = r'${\rm Im}[\chi(R)] \rm\,(\AA^{-%i})$'
 label_chirpha = r'${\rm Phase}[\chi(R)] \rm\,(\AA^{-%i})$'
-def plot_chifit(dataset, kweight=2, rmax=8,  title='Data and Best-Fit', show_legend=True):
+def plot_chifit(dataset, kweight=2, rmax=8,  title='Data and Best-Fit',
+                win=1, show_legend=True):
     """show chi(k) and chi(r) data and best-fit for a dataset"""
     # make k-weighted chi(k)
     kw = int(kweight)
     data_chi_kw  = dataset.data.chi * dataset.data.k**kw
     model_chi_kw = dataset.model.chi * dataset.model.k**kw
 
-    # show k-weighted chi(k) in plot window 1
+    # show k-weighted chi(k) in first plot window
     newplot(dataset.data.k, data_chi_kw, title=title,
             xlabel=label_k, ylabel=label_chikw % kw,
-            show_legend=show_legend,     color='blue', label='data', win=1)
-    plot(dataset.model.k, model_chi_kw,  color='red',  label='fit',  win=1)
+            show_legend=show_legend,     color='blue', label='data', win=win)
+    plot(dataset.model.k, model_chi_kw,  color='red',  label='fit',  win=win)
 
-    # show chi(R) in plot window 2
+    # show chi(R) in second plot window
     newplot(dataset.data.r,  dataset.data.chir_mag, xmax=rmax, title=title,
             xlabel=label_r,  ylabel=label_chir % (kw+1),
-            show_legend=show_legend,              color='blue', label='data', win=2)
-    plot(dataset.model.r, dataset.model.chir_mag, color='red',  label='fit',  win=2)
-    plot(dataset.model.r, dataset.data.chir_re,   color='blue', label='',     win=2)
-    plot(dataset.model.r, dataset.model.chir_re,  color='red',  label='',     win=2)
+            show_legend=show_legend,              color='blue', label='data', win=win+1)
+    plot(dataset.model.r, dataset.model.chir_mag, color='red',  label='fit',  win=win+1)
+    plot(dataset.model.r, dataset.data.chir_re,   color='blue', label='',     win=win+1)
+    plot(dataset.model.r, dataset.model.chir_re,  color='red',  label='',     win=win+1)
 enddef
 
 
@@ -43,7 +44,7 @@ def plot_path_k(dataset, ipath, kweight=None, offset=0, label=None, **extra):
     kw = int(kweight)
     chi_kw = offset + path.chi * path.k**kw
 
-    plot(path.k, chi_kw, label=label, 
+    plot(path.k, chi_kw, label=label,
         xlabel=label_k, ylabel=label_chikw % kw, **extra)
 
 enddef
@@ -60,10 +61,10 @@ def plot_path_r(dataset, ipath, comp='mag', offset=0, label=None, **extra):
         ylabel = label_chirre % kw
     elif comp == 'im':
         chir= path.chir_im
-        ylabel = label_chirim % kw   
+        ylabel = label_chirim % kw
     elif comp == 'phase':
         chir= path.chir_pha
-        ylabel = label_chirpha % kw       
+        ylabel = label_chirpha % kw
     else:
         chir = path.chir_mag
         ylabel = label_chir % kw
@@ -90,7 +91,7 @@ def plot_modelpaths_k(dataset, kweight=None, offset=-1, title='Model and Paths',
             color='blue', label='sum', win=1, **extra)
 
     for ipath in range(len(dataset.pathlist)):
-        plot_path_k(dataset, ipath, kweight=kw, offset=(ipath+1)*offset)        
+        plot_path_k(dataset, ipath, kweight=kw, offset=(ipath+1)*offset)
     endfor
 enddef
 
@@ -104,10 +105,10 @@ def plot_modelpaths_r(dataset, comp='mag', offset=-0.5, title='Model and Paths',
         ylabel = label_chirre % kw
     elif comp == 'im':
         chir= model.chir_im
-        ylabel = label_chirim % kw   
+        ylabel = label_chirim % kw
     elif comp == 'phase':
         chir= model.chir_pha
-        ylabel = label_chirpha % kw       
+        ylabel = label_chirpha % kw
     else:
         chir = model.chir_mag
         ylabel = label_chir % kw
