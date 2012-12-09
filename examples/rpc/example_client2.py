@@ -1,18 +1,16 @@
 
 import xmlrpclib
-lserve = xmlrpclib.ServerProxy('http://localhost:7112')
+lserve = xmlrpclib.ServerProxy('http://localhost:4966')
 
-###print dir(proxy) #.available()
-print lserve.system.listMethods()
-print lserve.cwd()
-lserve.chdir('examples/feffit')
-print lserve.cwd()
-print lserve.ls('.')
+# print lserve.system.listMethods()
+lserve.chdir('/Users/newville/Codes/xraylarch/examples/feffit')
 lserve.larch("run('doc_feffit1.lar')")
-lserve.larch("run('doc_feffit1.lar')")
+print '## Messages: '
+print lserve.get_messages()
 
-# print getattr(proxy, 'dir')
-# print 'dir():', proxy.dir('/tmp')
-
-# proxy.exit()
-## print 'list_contents():', proxy.list_contents('/tmp')
+# allow interaction with plots drwan by server, for a while: 
+i = 0
+while i < 400:
+    i = i + 1
+    lserve.wx_update(0.1)
+print ' Done!'
