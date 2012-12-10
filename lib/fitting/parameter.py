@@ -59,10 +59,14 @@ class Parameter(object):
                          stderr=self.stderr, correl=self.correl,
                          name=self.name,  _larch=self._larch)
     def asjson(self):
-        return {'name': self.name, 'val': self._val,
-                'min': self.min,   'max': self.max,
-                'vary': self.vary, 'expr': self.expr,
-                'stderr': self.stderr, 'correl': self.correl}
+        val = self._val
+        if self.expr is not None: val = 0.
+        return json.dumps({'name': self.name, 'val': val,
+                           'min': self.min,   'max': self.max,
+                           'vary': self.vary, 'expr': self.expr,
+                           'stderr': self.stderr, 'correl': self.correl})
+
+
 
     @property
     def expr(self):
