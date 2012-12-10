@@ -16,7 +16,7 @@ if major < 2 or (major == 2 and minor < 6):
 from .symboltable import Group, SymbolTable
 from .fitting import Minimizer, Parameter, isParameter, param_value
 from .shell import shell
-from .larchlib import plugin_path
+from .larchlib import plugin_path, isNamedClass
 from .interpreter import Interpreter
 from .inputText import InputText
 from .utils import Closure, fixName

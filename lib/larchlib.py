@@ -317,6 +317,14 @@ def get_dlldir():
         return 'darwin'
     return ''
 
+def isNamedClass(obj, cls):
+    """this is essentially a replacement for
+      isinstance(obj, cls)
+    that looks if an objects class name matches that of a class
+    obj.__class__.__name__ == cls.__name__
+    """
+    return  obj.__class__.__name__ == cls.__name__
+
 def get_dll(libname):
     """find and load a shared library"""
     _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
@@ -331,7 +339,7 @@ def get_dll(libname):
     if sys.platform == 'win32':
         loaddll = ctypes.windll.LoadLibrary
         dirs.append(sys_larchdir)
-        
+
     if hasattr(sys, 'frozen'): # frozen with py2exe!!
         dirs.append(os.path.dirname(sys.executable))
 
@@ -340,7 +348,7 @@ def get_dll(libname):
             _paths[key] = add2path(key, d)
 
     dllpath = ctypes.util.find_library(libname)
-        
+
     if dllpath is None:
         fname = _dylib_formats[sys.platform] % libname
         dllpath = os.path.join(thisdir, fname)
