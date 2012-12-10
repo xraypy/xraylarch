@@ -10,7 +10,8 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
 from scipy.optimize import leastsq as scipy_leastsq
 
-from larch import Group, Parameter, isParameter, Minimizer, plugin_path
+from larch import (Group, Parameter, isParameter, Minimizer,
+                   plugin_path, isNamedClass)
 
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xafs'))
@@ -31,7 +32,6 @@ try:
 except ImportError:
     pass
 
-
 class TransformGroup(Group):
     """A Group of transform parameters.
     The apply() method will return the result of applying the transform,
@@ -47,7 +47,7 @@ class TransformGroup(Group):
                  window='kaiser', nfft=2048, kstep=0.05,
                  rmin = 0, rmax=10, dr=0, dr2=None, rwindow='hanning',
                  fitspace='r', _larch=None, **kws):
-        Group.__init__(self)
+        Group.__init__(self, **kws)
         self.kmin = kmin
         self.kmax = kmax
         self.kweight = kweight
@@ -237,7 +237,7 @@ class FeffitDataSet(Group):
         if (paramgroup is not None and
             self._larch.symtable.isgroup(paramgroup)):
             self._larch.symtable._sys.paramGroup = paramgroup
-        if not isinstance(self.transform, TransformGroup):
+        if not isNamedClass(self.transform, TransformGroup):
             return
         if not self.__prepared:
             self.prepare_fit()
@@ -364,17 +364,20 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         chir_pha     phase of chi(R).
         chir_re      real part of chi(R).
         chir_im      imaginary part of chi(R).
-
     """
+
     def _resid(params, datasets=None, _larch=None, **kws):
         """ this is the residual function"""
         return concatenate([d._residual() for d in datasets])
 
-    if isinstance(datasets, FeffitDataSet):
-        datasets = [datasets]
+    print 'FEFFIT : ', datasets, type(datasets)
+    print isinstance(datasets, FeffitDataSet)
+    print isNamedClass(datasets, FeffitDataSet)
 
+    if isNamedClass(datasets, FeffitDataSet):
+        datasets = [datasets]
     for ds in datasets:
-        if not isinstance(ds, FeffitDataSet):
+        if not isNamedClass(ds, FeffitDataSet):
             print "feffit needs a list of FeffitDataSets"
             return
     fitkws = dict(datasets=datasets)
@@ -591,7 +594,7 @@ def estimate_noise(dset, rmin=15, rmax=30, _larch=None, **kws):
     if _larch is None:
         return
     msg = _larch.writer.write
-    if not isinstance(dset, FeffitDataSet):
+    if not isNamedClass(dset, FeffitDataSet):
         msg('estimate_noise(): 1st argument must be a Feffit Dataset\n')
         return
     dset.estimate_noise(rmin=rmin, rmax=rmax)

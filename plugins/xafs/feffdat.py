@@ -16,7 +16,8 @@ creates a group that contains the chi(k) for the sum of paths.
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 import sys, os
-from larch import Group, Parameter, isParameter, param_value, plugin_path
+from larch import (Group, Parameter, isParameter,
+                   param_value, plugin_path, isNamedClass)
 
 sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xray'))
@@ -158,10 +159,12 @@ class FeffPathGroup(Group):
         Group.__init__(self, **kwargs)
         self._larch = _larch
         self.filename = filename
-        self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
-
-        self.geom  = self._feffdat.geom
-        self.degen = degen if degen is not None else self._feffdat.degen
+        def_degen = 1
+        if filename is not None:
+            self._feffdat = FeffDatFile(filename=filename, _larch=_larch)
+            self.geom  = self._feffdat.geom
+            def_degen  = self._feffdat.degen
+        self.degen = degen if degen is not None else def_degen
         self.label = label if label is not None else filename
         self.s02    = 1 if s02    is None else s02
         self.e0     = 0 if e0     is None else e0
@@ -385,7 +388,7 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
       None - outputs are written to path group
 
     """
-    if not isinstance(path, FeffPathGroup):
+    if not isNamedClass(path, FeffPathGroup):
         msg('%s is not a valid Feff Path' % path)
         return
     if _larch is not None:
@@ -421,7 +424,7 @@ def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
          _larch.symtable.isgroup(paramgroup)):
         _larch.symtable._sys.paramGroup = paramgroup
     for path in pathlist:
-        if not isinstance(path, FeffPathGroup):
+        if not isNamedClass(path, FeffPathGroup):
             msg('%s is not a valid Feff Path' % path)
             return
         path._calc_chi(k=k, kstep=kstep, kmax=kmax)
