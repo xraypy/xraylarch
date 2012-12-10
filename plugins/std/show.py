@@ -25,11 +25,12 @@ def _get(sym=None, _larch=None, **kws):
 
 
 def _show(sym=None, _larch=None, with_private=False, **kws):
-    """display group members,
+    """display group members.
     Options
     -------
     with_private:  show 'private' members ('__private__')
-    
+
+    See Also:  show_tree()
     """
     if _larch is None:
         raise Warning("cannot show group -- larch broken?")
@@ -77,5 +78,30 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
 
     _larch.writer.write("%s\n" % '\n'.join(out))
 
+
+def show_tree(group, _larch=None, indent=0, **kws):
+    """show members of a Group, with a tree structure for sub-groups
+
+    > show_tree(group1)
+
+    """
+    for item in dir(group):
+        if (item.startswith('__') and item.endswith('__')):
+            continue
+        obj = getattr(group, item)
+        dval = None
+        if _larch.symtable.isgroup(obj):
+            _larch.writer.write('%s %s: %s\n' % (indent*' ', item, obj))
+            show_tree(obj, indent=indent+3, _larch=_larch)
+        else:
+            dval = repr(obj)
+            if isinstance(obj, numpy.ndarray):
+                if len(obj) > 10 or len(obj.shape)>1:
+                    dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
+                                                         repr(obj.dtype))
+            _larch.writer.write('%s %s: %s\n' % (indent*' ', item, dval))
+
+
 def registerLarchPlugin():
-    return ('_builtin', {'show': _show, 'get': _get})
+    return ('_builtin', {'show': _show, 'get': _get,
+                         'show_tree': show_tree})

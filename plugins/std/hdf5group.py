@@ -41,6 +41,10 @@ def h5group(fname, _larch=None):
     fh.visititems(Closure(func=add_component, top=top))
     return top
 
+def show_h5tree(h5group, _larch=None, **kws):
+    """show tree structure of hdf5 file"""
+    print 'FH ', h5group
+
 def registerLarchPlugin():
     return ('_io', {'h5group': h5group})
 
