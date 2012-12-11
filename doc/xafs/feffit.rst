@@ -519,7 +519,7 @@ to generate the following plots of the contributions of the different paths:
   Figure 14. Path contributions to full mode for the 3-shell fit to Cu
   spectrum.
 
-Example 3: Fit 3 datasets with 3 Paths each
+Example 3: Fit 3 datasets with 1 Path each
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We'll extend the above example by adding two more data sets.  Since the
@@ -536,21 +536,23 @@ simple parameterization.  In the interest of brevity, we'll only use one
 path, but the example could easily be extended to include more paths.
 
 
-In this example, we have three distinct datasets, so we'll have 3 distinct
-lists of paths.  Each of these path lists will have a single path, that
-have many parameters in common, but some that will be different for each
-data set.  As with the previous example, we use the same amplitude
-reduction factor :math:`E_0` shift to all data sets.
-
-And again, we allow distances to vary, but constrain them so that the
-change is linear in the sample temperature, as if there were a simple
-linear expansion in :math:`R`.  To do this, we set ``deltar = 'dr_off +
-T*alpha*reff'``, where ``T`` is the temperature for the dataset.  For
-:math:`\sigma^2` we'll use one of the built-in models described in
-:ref:`Models for Calculating sigma2 <xafs-sigma2calcs_sec>`.  Here we'll
-use :func:`sigma2_eins`, but :func:`sigma2_debye` can be used as well, and
-does a better job for multiple-scattering paths in simple systems. The full
-script for the fit looks like this:
+In this example, we have three distinct datasets, so we'll have three lists
+of paths.  Each of these will have a single path.  Since we're modeling
+nearly the same structure, the three paths will use the same Feff.dat file
+and have many parameters in common, but some parameters will be different
+for each data set.  As with the previous example, we use the same amplitude
+reduction factor :math:`E_0` shift to all data sets.  We allow distances to
+vary, but constrain them so that the change is linear in the sample
+temperature, as if there were a simple linear expansion in :math:`R`.  To
+do this, we set ``deltar = 'dr_off + T*alpha*reff'``, where ``T`` is the
+temperature for the dataset.  For :math:`\sigma^2` we'll use one of the
+built-in models described in :ref:`Models for Calculating sigma2
+<xafs-sigma2calcs_sec>`.  Here we'll use :func:`sigma2_eins`, but
+:func:`sigma2_debye` can be used as well, and does a better job for
+multiple-scattering paths in simple systems.  The model then uses 2
+variable parameters for three temperature-dependent distances and 1
+variable parameter for three temperature-dependent mean-square
+displacements. The full script for the fit looks like this:
 
 .. literalinclude:: ../../examples/feffit/doc_feffit3.lar
 
