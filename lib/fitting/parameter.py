@@ -1,5 +1,7 @@
 from numpy import arcsin, cos, inf, nan, sin, sqrt
 import json
+from ..larchlib import isNamedClass
+
 # uncertainties package
 HAS_UNCERTAIN = False
 try:
@@ -44,8 +46,8 @@ class Parameter(object):
             hasattr(_larch, 'parse') and
             hasattr(_larch, 'symtable')):
             self._larch = _larch
-        if self._larch is not None and name is not None:
-            self._larch.symtable.set_symbol(name, self)
+        #if self._larch is not None and name is not None:
+        #    self._larch.symtable.set_symbol(name, self)
 
     def __copy__(self):
         return Parameter(val=self._val, min=self.min, max=self.max,
@@ -65,8 +67,6 @@ class Parameter(object):
                            'min': self.min,   'max': self.max,
                            'vary': self.vary, 'expr': self.expr,
                            'stderr': self.stderr, 'correl': self.correl})
-
-
 
     @property
     def expr(self):
@@ -168,7 +168,10 @@ class Parameter(object):
                      self.vary, self._expr))
 
     def __repr__(self):
-        w = [repr(self._getval())]
+        val = self._getval()
+        if isNamedClass(val, Parameter):
+            val = val._getval()
+        w = [repr(val)]
         if self._expr is not None:
             w.append("expr='%s'" % self._expr)
         else:

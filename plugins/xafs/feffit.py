@@ -370,9 +370,9 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         """ this is the residual function"""
         return concatenate([d._residual() for d in datasets])
 
-    print 'FEFFIT : ', datasets, type(datasets)
-    print isinstance(datasets, FeffitDataSet)
-    print isNamedClass(datasets, FeffitDataSet)
+    #print 'FEFFIT : ', datasets, type(datasets)
+    #print isinstance(datasets, FeffitDataSet)
+    #print isNamedClass(datasets, FeffitDataSet)
 
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]

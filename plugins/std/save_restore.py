@@ -170,9 +170,9 @@ def restore(fname,  group=None, _larch=None):
                 return me
             elif ltype == 'parameter':
                 kws = json.loads(val['json'].value)
-                print 'Parameter ', kws
                 if kws['expr'] is not None:
                     kws.pop('val')
+                kws['_larch'] = _larch
                 return Parameter(**kws)
             elif ltype in ('list', 'tuple'):
                 me = []
