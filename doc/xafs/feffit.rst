@@ -543,7 +543,27 @@ with plots:
 Example 5: Comparing Fits in different Fit Spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-We now turn to one of the topics for how to decide on some of the fit
-Transform parameters.  In particular, we compare doing fits in unfiltered
-k-space, R-space, and filter k-space (or "q space").  We'll use the FeO
-data from the previous example.
+We now turn to comparing fits in unfiltered k-space, R-space, and filter
+k-space (or "q space").  This is partly to illustrate the preference for
+using R- or q-space for fitting, and partly to demonstrate how one can run
+similar fits and compare the results.  We'll use the FeO data from the
+previous example.
+
+To change fitting models and transform parameters, we'll make copies of the
+parameter groups and dataset groups, make a few changes, and re-run the
+fits.  For example, we can change the fitting space with::
+
+    larch> pars2 = copy(pars)   # copy parameters
+    larch> dset2 = copy(dset)   # copy dataset
+    larch> dset2.transform.fitspace = 'q'
+
+    larch> out2  = feffit(pars2, dset2)
+
+Now we can compare the results either by plotting models from the different
+copies of the dataset or by viewing the parameter values and fit statistics.
+
+
+
+
+
+
