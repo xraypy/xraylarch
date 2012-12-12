@@ -5,6 +5,7 @@
 
 import sys, os
 from collections import Iterable
+from copy import copy
 import numpy as np
 from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 
@@ -78,6 +79,24 @@ class TransformGroup(Group):
 
     def __repr__(self):
         return '<FeffitTransform Group: %s>' % self.__name__
+
+    def __copy__(self):
+        return TransformGroup(kmin=self.kmin, kmax=self.kmax,
+                              kweight=self.kweight, dk=self.dk, dk2=self.dk2,
+                              window=self.window, kstep=self.kstep,
+                              rmin=self.rmin, rmax=self.rmax,
+                              dr=self.dr, dr2=self.dr2,
+                              rwindow=self.rwindow, nfft=self.nfft,
+                              fitspace=self.fitspace, _larch=self._larch)
+
+    def __deepcopy__(self, memo):
+        return TransformGroup(kmin=self.kmin, kmax=self.kmax,
+                              kweight=self.kweight, dk=self.dk, dk2=self.dk2,
+                              window=self.window, kstep=self.kstep,
+                              rmin=self.rmin, rmax=self.rmax,
+                              dr=self.dr, dr2=self.dr2,
+                              rwindow=self.rwindow, nfft=self.nfft,
+                              fitspace=self.fitspace, _larch=self._larch)
 
     def make_karrays(self, k=None, chi=None):
         "this should be run in kstep or nfft changes"
@@ -163,6 +182,17 @@ class FeffitDataSet(Group):
     def __repr__(self):
         return '<FeffitDataSet Group: %s>' % self.__name__
 
+    def __copy__(self):
+        return FeffitDataSet(data=self.data.__copy__(),
+                             pathlist=self.pathlist[:],
+                             transform=self.transform.__copy__(),
+                             _larch=self._larch)
+
+    def __deepcopy__(self, memo):
+        return FeffitDataSet(data=self.data.__deepcopy__(memo),
+                             pathlist=self.pathlist[:],
+                             transform=self.transform.__deepcopy__(memo),
+                             _larch=self._larch)
     def prepare_fit(self):
         trans = self.transform
         trans.make_karrays()
@@ -435,7 +465,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         # 3. evaluate path params, save stderr
         for ds in datasets:
             for p in ds.pathlist:
-                _larch.symtable._sys.paramGroup._feffdat = p._feffdat
+                _larch.symtable._sys.paramGroup._feffdat = copy(p._feffdat)
                 _larch.symtable._sys.paramGroup.reff = p._feffdat.reff
 
                 for param in ('degen', 's02', 'e0', 'ei',
@@ -509,9 +539,16 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         tr = ds.transform
         if len(datasets) > 1:
             out.append(' dataset %i:' % (i+1))
-        out.append('   n_independent      = %.3f'  % (ds.n_idp))
-        out.append('   epsilon_k          = %.6f'  % (ds.epsilon_k))
-        out.append('   epsilon_r          = %.6f'  % (ds.epsilon_r))
+        if isinstance(tr.kweight, Iterable):
+            eps_k = ', '.join(['%.6f' % eps for eps in ds.epsilon_k])
+            eps_r = ', '.join(['%.6f' % eps for eps in ds.epsilon_r])
+            kweigh = ', '.join(['%i' % kwe for kwe in tr.kweight])
+        else:
+            eps_k = '%.6f' % ds.epsilon_k
+            eps_r = '%.6f' % ds.epsilon_r
+            kweigh = '%i' % tr.kweight
+
+
         out.append('   fit space          = \'%s\''  % (tr.fitspace))
         out.append('   r-range            = %.3f, %.3f' % (tr.rmin, tr.rmax))
         out.append('   k-range            = %.3f, %.3f' % (tr.kmin, tr.kmax))
@@ -519,10 +556,14 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         if tr.dk2 is not None:
             kwin = "%s, %.3f" % (kwin, tr.dk2)
         out.append(kwin)
-        out.append('   k-weight           = %s' % (repr(tr.kweight)))
         pathfiles = [p.filename for p in ds.pathlist]
         out.append('   paths used in fit  = %s' % (repr(pathfiles)))
-    #
+        out.append('   k-weight           = %s' % kweigh)
+        out.append('   epsilon_k          = %s'  % eps_k)
+        out.append('   epsilon_r          = %s'  % eps_r)
+        out.append('   n_independent      = %.3f'  % (ds.n_idp))
+
+        #
     out.append(' ')
     out.append(header % 'Variables')
 

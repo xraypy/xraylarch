@@ -42,6 +42,12 @@ class FeffDatFile(Group):
             return '<Feff.dat File Group: %s>' % self.filename
         return '<Feff.dat File Group (empty)>'
 
+    def __copy__(self):
+        return FeffDatFile(filename=self.filename, _larch=self._larch)
+
+    def __deepcopy__(self, memo):
+        return FeffDatFile(filename=self.filename, _larch=self._larch)
+
     @property
     def reff(self): return self.__reff__
 
@@ -175,6 +181,18 @@ class FeffPathGroup(Group):
         self.fourth = 0 if fourth is None else fourth
         self.k = None
         self.chi = None
+
+    def __copy__(self):
+        return FeffPathGroup(filename=self.filename, _larch=self._larch,
+                             s02=self.s02, degen=self.degen, e0=self.e0,
+                             ei=self.ei, deltar=self.deltar, sigma2=self.sigma2,
+                             third=self.third, fourth=self.fourth)
+
+    def __deepcopy__(self, memo):
+        return FeffPathGroup(filename=self.filename, _larch=self._larch,
+                             s02=self.s02, degen=self.degen, e0=self.e0,
+                             ei=self.ei, deltar=self.deltar, sigma2=self.sigma2,
+                             third=self.third, fourth=self.fourth)
 
     @property
     def reff(self): return self._feffdat.reff
