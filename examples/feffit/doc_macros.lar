@@ -121,6 +121,12 @@ def plot_modelpaths_r(dataset, comp='mag', offset=-0.5, title='Model and Paths',
     endfor
 enddef
 
+def write_report(filename, out):
+    "write report to file"
+    f = open(filename, 'w')
+    f.write(out)
+    f.close()
+enddef
 
 ## end of examples/feffit/doc_macros.lar
 

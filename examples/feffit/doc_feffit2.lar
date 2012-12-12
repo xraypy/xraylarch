@@ -33,6 +33,8 @@ report = feffit_report(out)
 
 print report
 run('doc_macros.lar')
+write_report('doc_feffit2.out', report)
+
 plot_chifit(dset, title='Three-shell fit to Cu', rmax=5)
 
 # ## end examples/feffit/doc_feffit2.lar

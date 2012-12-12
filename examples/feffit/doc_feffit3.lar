@@ -44,6 +44,7 @@ report = feffit_report(out)
 
 print report
 run('doc_macros.lar')
+write_report('doc_feffit3.out', report)
 
 plot_chifit(dset_10, title='fit to Cu, 10K', rmax=5, win=1)
 plot_chifit(dset_50, title='fit to Cu, 50K', rmax=5, win=3)

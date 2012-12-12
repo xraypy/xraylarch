@@ -246,7 +246,6 @@ Example 1: Simple fit with 1 Path
 We start with a fairly minimal example, fitting spectra read from a data
 file with a single Feff Path.
 
-
 .. literalinclude:: ../../examples/feffit/doc_feffit1.lar
 
 
@@ -275,52 +274,9 @@ This simply follows the essential steps:
  6. Plots are made from the dataset, using rather long-winded :func:`plot`
  commands.
 
-running this example prints out the following report::
+running this example prints out the following report:
 
-    =================== FEFFIT RESULTS ====================
-    [[Statistics]]
-       npts, nvarys, nfree= 104, 4, 100
-       chi_square         = 6853.2901
-       reduced chi_square = 68.532901
-       r-factor           = 0.0028522676
-
-    [[Data]]
-       n_independent      = 14.260
-       epsilon_k          = 0.000150
-       epsilon_r          = 0.007111
-       fit space          = 'r'
-       r-range            = 1.400, 3.000
-       k-range            = 3.000, 17.000
-       k window, dk       = 'kaiser', 4.000
-       k-weight           = 2
-       paths used in fit  = ['feffcu01.dat']
-
-    [[Variables]]
-       amp            =  0.930915 +/- 0.042009   (init=  1.000000)
-       del_e0         =  3.860819 +/- 0.550083   (init=  0.100000)
-       del_r          = -0.005996 +/- 0.002807   (init=  0.000000)
-       sig2           =  0.008670 +/- 0.000330   (init=  0.002000)
-
-    [[Correlations]]    (unreported correlations are <  0.100)
-       amp, sig2            =  0.929
-       del_e0, del_r        =  0.920
-       del_r, sig2          =  0.159
-       amp, del_r           =  0.137
-
-    [[Paths]]
-       feff.dat file = feffcu01.dat
-              Atom     x        y        z     ipot
-               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-               Cu    0.0000, -1.8016,  1.8016  1
-         reff   =  2.54780
-         Degen  =  12.00000
-         S02    =  0.93091 +/-  0.04201
-         E0     =  3.86082 +/-  0.55008
-         R      =  2.54180 +/-  0.00281
-         deltar = -0.00600 +/-  0.00281
-         sigma2 =  0.00867 +/-  0.00033
-
-    =======================================================
+.. literalinclude:: ../../examples/feffit/doc_feffit1.out
 
 and generates the plots shown below
 
@@ -401,86 +357,9 @@ are that the  :math:`R` range for the fit has been increased so that the
 fit will try to fit the second shell, and that  ``sigma2`` is allowed to
 vary independently for each path.
 
-The output for this fit is a bit longer, being::
+The output for this fit is a bit longer, being:
 
-    =================== FEFFIT RESULTS ====================
-    [[Statistics]]
-       npts, nvarys, nfree= 130, 6, 124
-       chi_square         = 5826.6649
-       reduced chi_square = 46.989233
-       r-factor           = 0.0023935584
-
-    [[Data]]
-       n_independent      = 17.825
-       epsilon_k          = 0.000150
-       epsilon_r          = 0.007111
-       fit space          = 'r'
-       r-range            = 1.400, 3.400
-       k-range            = 3.000, 17.000
-       k window, dk       = 'kaiser', 4.000
-       k-weight           = 2
-       paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
-
-    [[Variables]]
-       alpha          = -0.002470 +/- 0.000950   (init=  0.000000)
-       amp            =  0.928995 +/- 0.036148   (init=  1.000000)
-       del_e0         =  3.821552 +/- 0.472780   (init=  0.100000)
-       sig2_1         =  0.008643 +/- 0.000285   (init=  0.002000)
-       sig2_2         =  0.014079 +/- 0.001441   (init=  0.002000)
-       sig2_3         =  0.008410 +/- 0.003766   (init=  0.002000)
-
-    [[Correlations]]    (unreported correlations are <  0.100)
-       amp, sig2_1          =  0.930
-       alpha, del_e0        =  0.922
-       amp, sig2_3          =  0.239
-       sig2_1, sig2_3       =  0.237
-       amp, sig2_2          =  0.222
-       sig2_1, sig2_2       =  0.208
-       alpha, sig2_1        =  0.179
-       alpha, amp           =  0.159
-       del_e0, sig2_3       =  0.155
-       del_e0, sig2_2       = -0.140
-       alpha, sig2_3        =  0.138
-
-    [[Paths]]
-       feff.dat file = feff0001.dat
-              Atom     x        y        z     ipot
-               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-               Cu    0.0000, -1.8016,  1.8016  1
-         reff   =  2.54780
-         Degen  =  12.00000
-         S02    =  0.92899 +/-  0.03615
-         E0     =  3.82155 +/-  0.47278
-         R      =  2.54151 +/-  0.00242
-         deltar = -0.00629 +/-  0.00242
-         sigma2 =  0.00864 +/-  0.00028
-
-       feff.dat file = feff0002.dat
-              Atom     x        y        z     ipot
-               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-               Cu   -3.6032,  0.0000,  0.0000  1
-         reff   =  3.60320
-         Degen  =  6.00000
-         S02    =  0.92899 +/-  0.03615
-         E0     =  3.82155 +/-  0.47278
-         R      =  3.59430 +/-  0.00342
-         deltar = -0.00890 +/-  0.00342
-         sigma2 =  0.01408 +/-  0.00144
-
-       feff.dat file = feff0003.dat
-              Atom     x        y        z     ipot
-               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-               Cu    1.8016, -1.8016,  0.0000  1
-               Cu    1.8016,  0.0000, -1.8016  1
-         reff   =  3.82180
-         Degen  =  48.00000
-         S02    =  0.92899 +/-  0.03615
-         E0     =  3.82155 +/-  0.47278
-         R      =  3.81236 +/-  0.00363
-         deltar = -0.00944 +/-  0.00363
-         sigma2 =  0.00841 +/-  0.00377
-
-    =======================================================
+.. literalinclude:: ../../examples/feffit/doc_feffit2.out
 
 With plots of data and fits as shown below.
 
@@ -560,101 +439,9 @@ Here we read in 3 datasets for :math:`\mu(E)` data and do the background
 subtraction on each of them.  We define 5 fitting parameters, including the
 characteristic (here, Einstein) temperature which will determine the value of
 :math:`\sigma^2`, and two parameters for the linear temperature dependence
-of :math:`R`. The output for this fit is::
+of :math:`R`. The output for this fit is:
 
-    =================== FEFFIT RESULTS ====================
-    [[Statistics]]
-       npts, nvarys, nfree= 390, 5, 385
-       chi_square         = 20675.228
-       reduced chi_square = 53.701891
-       r-factor           = 0.016295917
-
-    [[Datasets (3)]]
-     dataset 1:
-       n_independent      = 17.825
-       epsilon_k          = 0.000927
-       epsilon_r          = 0.044076
-       fit space          = 'r'
-       r-range            = 1.400, 3.400
-       k-range            = 3.000, 17.000
-       k window, dk       = 'kaiser', 4.000
-       k-weight           = 2
-       paths used in fit  = ['feff0001.dat']
-     dataset 2:
-       n_independent      = 17.825
-       epsilon_k          = 0.000843
-       epsilon_r          = 0.040062
-       fit space          = 'r'
-       r-range            = 1.400, 3.400
-       k-range            = 3.000, 17.000
-       k window, dk       = 'kaiser', 4.000
-       k-weight           = 2
-       paths used in fit  = ['feff0001.dat']
-     dataset 3:
-       n_independent      = 17.825
-       epsilon_k          = 0.000433
-       epsilon_r          = 0.020563
-       fit space          = 'r'
-       r-range            = 1.400, 3.400
-       k-range            = 3.000, 17.000
-       k window, dk       = 'kaiser', 4.000
-       k-weight           = 2
-       paths used in fit  = ['feff0001.dat']
-
-    [[Variables]]
-       alpha          =  0.000011 +/- 0.000007   (init=  0.000000)
-       amp            =  0.874377 +/- 0.032285   (init=  1.000000)
-       del_e0         =  5.066476 +/- 0.629972   (init=  2.000000)
-       dr_off         = -0.001836 +/- 0.002941   (init=  0.000000)
-       theta          =  233.081978 +/- 7.792662   (init=  250.000000)
-
-    [[Correlations]]    (unreported correlations are <  0.100)
-       amp, theta           = -0.865
-       del_e0, dr_off       =  0.757
-       alpha, dr_off        = -0.458
-       alpha, del_e0        =  0.110
-
-    [[Paths]]
-     dataset 1:
-       feff.dat file = feff0001.dat
-              Atom     x        y        z     ipot
-               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-               Cu    0.0000, -1.8016,  1.8016  1
-         reff   =  2.54780
-         Degen  =  12.00000
-         S02    =  0.87438 +/-  0.03229
-         E0     =  5.06648 +/-  0.62997
-         R      =  2.54624 +/-  0.00295
-         deltar = -0.00156 +/-  0.00295
-         sigma2 =  0.00328
-
-     dataset 2:
-       feff.dat file = feff0001.dat
-              Atom     x        y        z     ipot
-               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-               Cu    0.0000, -1.8016,  1.8016  1
-         reff   =  2.54780
-         Degen  =  12.00000
-         S02    =  0.87438 +/-  0.03229
-         E0     =  5.06648 +/-  0.62997
-         R      =  2.54737 +/-  0.00307
-         deltar = -0.00043 +/-  0.00307
-         sigma2 =  0.00334
-
-     dataset 3:
-       feff.dat file = feff0001.dat
-              Atom     x        y        z     ipot
-               Cu    0.0000,  0.0000,  0.0000  0 (absorber)
-               Cu    0.0000, -1.8016,  1.8016  1
-         reff   =  2.54780
-         Degen  =  12.00000
-         S02    =  0.87438 +/-  0.03229
-         E0     =  5.06648 +/-  0.62997
-         R      =  2.55017 +/-  0.00392
-         deltar =  0.00237 +/-  0.00392
-         sigma2 =  0.00503
-
-    =======================================================
+.. literalinclude:: ../../examples/feffit/doc_feffit3.out
 
 Note that, while uncertainties are estimated for Path parameters that are
 simple expressions of variables (such as ``S02`` and even ``deltar``), but
@@ -682,14 +469,12 @@ given below.
      :target: ../_images/feffit_3temp2.png
      :width: 48 %
 
-
   .. image:: ../images/feffit_3temp3.png
      :target: ../_images/feffit_3temp3.png
      :width: 48 %
   .. image:: ../images/feffit_3temp4.png
      :target: ../_images/feffit_3temp4.png
      :width: 48 %
-
 
   .. image:: ../images/feffit_3temp5.png
      :target: ../_images/feffit_3temp5.png
@@ -706,12 +491,59 @@ these example are deliberately simple and meant to be illustrative of the
 capabilities and procedures and should not be viewed as limiting the types
 of problems that can be modeled.
 
-Example 4: Comparing Fits in different Fit Spaces
+Example 4: Measuring Coordination number
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For this and the following example, we switch from Cu metal data to data on
+a simple metal oxide, FeO.  The structure is a basic rock-salt structure,
+and we'll model 2 paths for Fe-O and Fe-Fe in this structure.  While the
+data is imperfect, we'll use it to illustrate a few points in modeling
+EXAFS data.
+
+
+For the examples above with Cu metal, we tacitly assumed that the
+coordination number for the different paths was correct, and we adjusted an
+:math:`S_0^2` parameter.  But, as with many analyses on real systems of
+research interest, we'd like to fit the coordination number for the two
+different paths here.  To do this, we set an :math:`S_0^2` parameter to a
+fixed value, and also force ``degen`` (the number of equivalent paths in
+the structure used to generate the Feff.dat files) to be 1 for each path.
+Instead, we'll define parameters ``n1`` and ``n2``, and set the Fe-O path's
+amplitude to be ``s02*n1`` and the Fe-Fe path's amplitude to be ``s02*n2``.
+We'll allow ``n1`` and ``n2`` to vary in the fit, and also define variable
+parameters for the other path parameters, including separate variables for
+:math:`\delta_R` and :math:`\sigma^2`.  The script for this fit is below:
+
+.. literalinclude:: ../../examples/feffit/doc_feffit4.lar
+
+The most important point here is the definitions used in setting up the
+amplitudes for the paths:  first, that we set ``degen`` to 1, and second
+that we used the expression ``s02*n1`` and so forth for the value of the
+Path's amplitude.   A secondary note is that we gave two different
+k-weights to :func:`feffit_transform`, which causes both k-weights to be
+used in the fit.
+
+The resulting output is
+
+.. literalinclude:: ../../examples/feffit/doc_feffit4.out
+
+with plots:
+
+.. _xafs_fig16:
+
+  .. image:: ../images/feffit_feo_k.png
+     :target: ../_images/feffit_feo_k.png
+     :width: 48 %
+  .. image:: ../images/feffit_feo_r.png
+     :target: ../_images/feffit_feo_r.png
+     :width: 48 %
+
+  Figure 16. Fits to 2-path fit to FeO EXAFS.
+
+Example 5: Comparing Fits in different Fit Spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 We now turn to one of the topics for how to decide on some of the fit
 Transform parameters.  In particular, we compare doing fits in unfiltered
-k-space, R-space, and filter k-space (or "q space").  We switch from Cu
-metal data to data on a simple metal oxide, FeO.
-
-
+k-space, R-space, and filter k-space (or "q space").  We'll use the FeO
+data from the previous example.

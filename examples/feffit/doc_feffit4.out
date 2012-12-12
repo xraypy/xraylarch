@@ -1,0 +1,68 @@
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 288, 7, 281
+   chi_square         = 8775.7777
+   reduced chi_square = 31.230526
+   r-factor           = 0.011044287
+ 
+[[Data]]
+   fit space          = 'r'
+   r-range            = 1.000, 3.200
+   k-range            = 2.000, 13.500
+   k window, dk       = 'kaiser', 3.000
+   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
+   k-weight           = 2, 3
+   epsilon_k          = 0.000232, 0.000190
+   epsilon_r          = 0.006206, 0.058007
+   n_independent      = 16.106
+ 
+[[Variables]]
+   de0            = -1.429964 +/- 0.803446   (init=  0.100000)
+   delr_1         = -0.030326 +/- 0.008948   (init=  0.000000)
+   delr_2         =  0.048697 +/- 0.006895   (init=  0.000000)
+   n1             =  5.196147 +/- 0.805889   (init=  6.000000)
+   n2             =  12.045503 +/- 1.346408   (init=  12.000000)
+   sig2_1         =  0.011942 +/- 0.002263   (init=  0.002000)
+   sig2_2         =  0.013295 +/- 0.001096   (init=  0.002000)
+ 
+[[Correlations]]    (unreported correlations are <  0.100)
+   n2, sig2_2           =  0.935 
+   de0, delr_2          =  0.898 
+   n1, sig2_1           =  0.885 
+   de0, delr_1          =  0.621 
+   delr_1, delr_2       =  0.563 
+   delr_2, sig2_2       =  0.223 
+   delr_2, n2           =  0.215 
+   delr_1, sig2_1       =  0.210 
+   de0, n1              = -0.208 
+   delr_2, n1           = -0.172 
+   delr_1, n1           =  0.163 
+   de0, sig2_1          = -0.135 
+   delr_2, sig2_1       = -0.109 
+ 
+[[Paths]]
+   feff.dat file = feff_feo01.dat
+          Atom     x        y        z     ipot
+           Fe    0.0000,  0.0000,  0.0000  0 (absorber)
+           O    0.0000,  2.1387,  0.0000  1
+     reff   =  2.13870
+     Degen  =  1.00000
+     S02    =  3.63730 +/-  0.56412
+     E0     = -1.42996 +/-  0.80345
+     R      =  2.10837 +/-  0.00895
+     deltar = -0.03033 +/-  0.00895
+     sigma2 =  0.01194 +/-  0.00226
+
+   feff.dat file = feff_feo02.dat
+          Atom     x        y        z     ipot
+           Fe    0.0000,  0.0000,  0.0000  0 (absorber)
+           Fe    2.1387,  0.0000, -2.1387  2
+     reff   =  3.02460
+     Degen  =  1.00000
+     S02    =  8.43185 +/-  0.94249
+     E0     = -1.42996 +/-  0.80345
+     R      =  3.07330 +/-  0.00690
+     deltar =  0.04870 +/-  0.00690
+     sigma2 =  0.01329 +/-  0.00110
+
+=======================================================

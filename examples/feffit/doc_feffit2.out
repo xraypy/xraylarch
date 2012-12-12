@@ -1,0 +1,78 @@
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 130, 6, 124
+   chi_square         = 5826.6649
+   reduced chi_square = 46.989233
+   r-factor           = 0.0023935584
+ 
+[[Data]]
+   fit space          = 'r'
+   r-range            = 1.400, 3.400
+   k-range            = 3.000, 17.000
+   k window, dk       = 'kaiser', 4.000
+   paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
+   k-weight           = 2
+   epsilon_k          = 0.000150
+   epsilon_r          = 0.007111
+   n_independent      = 17.825
+ 
+[[Variables]]
+   alpha          = -0.002470 +/- 0.000950   (init=  0.000000)
+   amp            =  0.928995 +/- 0.036148   (init=  1.000000)
+   del_e0         =  3.821552 +/- 0.472780   (init=  0.100000)
+   sig2_1         =  0.008643 +/- 0.000285   (init=  0.002000)
+   sig2_2         =  0.014079 +/- 0.001441   (init=  0.002000)
+   sig2_3         =  0.008410 +/- 0.003766   (init=  0.002000)
+ 
+[[Correlations]]    (unreported correlations are <  0.100)
+   amp, sig2_1          =  0.930 
+   alpha, del_e0        =  0.922 
+   amp, sig2_3          =  0.239 
+   sig2_1, sig2_3       =  0.237 
+   amp, sig2_2          =  0.222 
+   sig2_1, sig2_2       =  0.208 
+   alpha, sig2_1        =  0.179 
+   alpha, amp           =  0.159 
+   del_e0, sig2_3       =  0.155 
+   del_e0, sig2_2       = -0.140 
+   alpha, sig2_3        =  0.138 
+ 
+[[Paths]]
+   feff.dat file = feff0001.dat
+          Atom     x        y        z     ipot
+           Cu    0.0000,  0.0000,  0.0000  0 (absorber)
+           Cu    0.0000, -1.8016,  1.8016  1
+     reff   =  2.54780
+     Degen  =  12.00000
+     S02    =  0.92899 +/-  0.03615
+     E0     =  3.82155 +/-  0.47278
+     R      =  2.54151 +/-  0.00242
+     deltar = -0.00629 +/-  0.00242
+     sigma2 =  0.00864 +/-  0.00028
+
+   feff.dat file = feff0002.dat
+          Atom     x        y        z     ipot
+           Cu    0.0000,  0.0000,  0.0000  0 (absorber)
+           Cu   -3.6032,  0.0000,  0.0000  1
+     reff   =  3.60320
+     Degen  =  6.00000
+     S02    =  0.92899 +/-  0.03615
+     E0     =  3.82155 +/-  0.47278
+     R      =  3.59430 +/-  0.00342
+     deltar = -0.00890 +/-  0.00342
+     sigma2 =  0.01408 +/-  0.00144
+
+   feff.dat file = feff0003.dat
+          Atom     x        y        z     ipot
+           Cu    0.0000,  0.0000,  0.0000  0 (absorber)
+           Cu    1.8016, -1.8016,  0.0000  1
+           Cu    1.8016,  0.0000, -1.8016  1
+     reff   =  3.82180
+     Degen  =  48.00000
+     S02    =  0.92899 +/-  0.03615
+     E0     =  3.82155 +/-  0.47278
+     R      =  3.81236 +/-  0.00363
+     deltar = -0.00944 +/-  0.00363
+     sigma2 =  0.00841 +/-  0.00377
+
+=======================================================
