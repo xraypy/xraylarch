@@ -9,15 +9,18 @@
 
 import os
 import sys
-from copy import deepcopy
+from copy import copy, deepcopy
 from glob import glob
 
 MODNAME = '_builtin'
 
 def _copy(obj, **kws):
     """copy an object"""
-    return deepcopy(obj)
+    return copy(obj)
 
+def _deepcopy(obj, **kws):
+    """deep copy an object"""
+    return deepcopy(obj)
 
 def _parent(name, _larch=None, **kw):
     "print out parent group name of an object"
@@ -116,6 +119,7 @@ with the  pagelength option:
               pagelength=pagelength, **kws)
 
 def registerLarchPlugin():
-    return ('_builtin', {'copy': _copy,  'more': _more,
+    return ('_builtin', {'copy': _copy, 'deepcopy': _deepcopy,
+                         'more': _more,
                          'parent': _parent,  'ls': _ls,
                          'cd': _cd,  'cwd': _cwd })
