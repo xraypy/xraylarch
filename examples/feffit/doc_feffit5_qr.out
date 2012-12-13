@@ -1,0 +1,69 @@
+*** R Space***
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 288, 7, 281
+   chi_square         = 8775.7777
+   reduced chi_square = 31.230526
+   r-factor           = 0.011044287
+ 
+[[Data]]
+   fit space          = 'r'
+   r-range            = 1.000, 3.200
+   k-range            = 2.000, 13.500
+   k window, dk       = 'kaiser', 3.000
+   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
+   k-weight           = 2, 3
+   epsilon_k          = 0.000232, 0.000190
+   epsilon_r          = 0.006206, 0.058007
+   n_independent      = 16.106
+ 
+[[Variables]]
+   de0            = -1.429964 +/- 0.803446   (init=  0.100000)
+   delr_1         = -0.030326 +/- 0.008948   (init=  0.000000)
+   delr_2         =  0.048697 +/- 0.006895   (init=  0.000000)
+   n1             =  5.196147 +/- 0.805889   (init=  6.000000)
+   n2             =  12.045503 +/- 1.346408   (init=  12.000000)
+   sig2_1         =  0.011942 +/- 0.002263   (init=  0.002000)
+   sig2_2         =  0.013295 +/- 0.001096   (init=  0.002000)
+ 
+[[Correlations]]    (unreported correlations are <  0.500)
+   n2, sig2_2           =  0.935 
+   de0, delr_2          =  0.898 
+   n1, sig2_1           =  0.885 
+   de0, delr_1          =  0.621 
+   delr_1, delr_2       =  0.563 
+=======================================================*** Q Space***
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 460, 7, 453
+   chi_square         = 34575.741
+   reduced chi_square = 76.326138
+   r-factor           = 0.0089110854
+ 
+[[Data]]
+   fit space          = 'q'
+   r-range            = 1.000, 3.200
+   k-range            = 2.000, 13.500
+   k window, dk       = 'kaiser', 3.000
+   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
+   k-weight           = 2, 3
+   epsilon_k          = 0.000232, 0.000190
+   epsilon_r          = 0.006206, 0.058007
+   n_independent      = 16.106
+ 
+[[Variables]]
+   de0            = -1.401961 +/- 0.723563   (init= -1.429964)
+   delr_1         = -0.030091 +/- 0.008069   (init= -0.030326)
+   delr_2         =  0.049025 +/- 0.006216   (init=  0.048697)
+   n1             =  5.341548 +/- 0.767711   (init=  5.196147)
+   n2             =  12.082721 +/- 1.215497   (init=  12.045503)
+   sig2_1         =  0.012301 +/- 0.002103   (init=  0.011942)
+   sig2_2         =  0.013328 +/- 0.000988   (init=  0.013295)
+ 
+[[Correlations]]    (unreported correlations are <  0.500)
+   n2, sig2_2           =  0.935 
+   de0, delr_2          =  0.898 
+   n1, sig2_1           =  0.892 
+   de0, delr_1          =  0.623 
+   delr_1, delr_2       =  0.566 
+=======================================================

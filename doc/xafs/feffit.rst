@@ -551,19 +551,56 @@ previous example.
 
 To change fitting models and transform parameters, we'll make copies of the
 parameter groups and dataset groups, make a few changes, and re-run the
-fits.  For example, we can change the fitting space with::
+fits.  For example, we can change the fitting space with (see
+examples/feffit/doc_feffit5.lar)::
 
     larch> pars2 = copy(pars)   # copy parameters
     larch> dset2 = copy(dset)   # copy dataset
     larch> dset2.transform.fitspace = 'q'
 
+Now we can run :func:`feffit` with the new parameter group and Dataset
+group, and compare the results either by plotting models from the different
+copies of the dataset or by viewing the parameter values and fit statistics
+with::
+
     larch> out2  = feffit(pars2, dset2)
+    larch> print '*** R Space ***'
+    larch> print feffit_report(out, with_paths=False, min_correl=0.5)
+    larch> print '*** Q Space ***'
+    larch> print feffit_report(out2, with_paths=False, min_correl=0.5)
 
-Now we can compare the results either by plotting models from the different
-copies of the dataset or by viewing the parameter values and fit statistics.
+which gives
 
+.. literalinclude:: ../../examples/feffit/doc_feffit5_qr.out
 
+We can see that the results are not very different -- the best fit values
+and uncertainties for the varied parameters are quite close for the fit in
+'R' space and 'Q' space.
 
+Now, we can try the fit in unfiltered 'K' space::
 
+    larch> pars3 = copy(pars)   # copy parameters
+    larch> dset3 = copy(dset)   # copy dataset
+    larch> dset3.transform.kweight = 2
+    larch> dset3.transform.fitspace = 'k'
+    larch> out3 = feffit(pars3, dset3)
+    larch  print feffit_report(out3, with_paths=False, min_correl=0.5)
+
+(we need to specify only one k-weight for a k-space fit) which gives:
+
+.. literalinclude:: ../../examples/feffit/doc_feffit5_k.out
+
+This has pretty similar best-fit values, but dramatically larger estimates
+of the errors.  The spectrum is really very poorly fit in k-space because
+we have not accounted for the higher R components.  Using R (and Q) space,
+we're able to limit the R range used in determining whether the
+goodness-of-fit, but we can't do this with an unfiltered k-space fit.  This
+is why it is recommended to not fit in unfiltered k space: the
+uncertainties in the parameters is too large.
+
+Of course, here we've changed only one thing between these three fits --
+the fitting 'space'.  The process of copying the  parameter group and
+dataset, making modifications and re-doing fits can also include changing
+what is varied and what constraints are placed between parameters.
 
 

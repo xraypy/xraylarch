@@ -1,0 +1,35 @@
+*** K Space***
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 230, 7, 223
+   chi_square         = 1.14397e+08
+   reduced chi_square = 512991.04
+   r-factor           = 0.11863982
+ 
+[[Data]]
+   fit space          = 'k'
+   r-range            = 1.000, 3.200
+   k-range            = 2.000, 13.500
+   k window, dk       = 'kaiser', 3.000
+   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
+   k-weight           = 2
+   epsilon_k          = 0.000232
+   epsilon_r          = 0.006206
+   n_independent      = 16.106
+ 
+[[Variables]]
+   de0            = -1.281853 +/- 2.241267   (init= -1.429964)
+   delr_1         = -0.032992 +/- 0.033970   (init= -0.030326)
+   delr_2         =  0.051794 +/- 0.024663   (init=  0.048697)
+   n1             =  4.921674 +/- 1.940342   (init=  5.196147)
+   n2             =  14.321834 +/- 5.696827   (init=  12.045503)
+   sig2_1         =  0.010947 +/- 0.007784   (init=  0.011942)
+   sig2_2         =  0.014987 +/- 0.004618   (init=  0.013295)
+ 
+[[Correlations]]    (unreported correlations are <  0.500)
+   n2, sig2_2           =  0.920 
+   n1, sig2_1           =  0.873 
+   de0, delr_2          =  0.848 
+   de0, delr_1          =  0.753 
+   delr_1, delr_2       =  0.642 
+=======================================================
