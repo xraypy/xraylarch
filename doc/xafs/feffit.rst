@@ -593,14 +593,21 @@ Now, we can try the fit in unfiltered 'K' space::
 This has pretty similar best-fit values, but dramatically larger estimates
 of the errors.  The spectrum is really very poorly fit in k-space because
 we have not accounted for the higher R components.  Using R (and Q) space,
-we're able to limit the R range used in determining whether the
-goodness-of-fit, but we can't do this with an unfiltered k-space fit.  This
-is why it is recommended to not fit in unfiltered k space: the
-uncertainties in the parameters is too large.
+we're able to limit the R range used in determining the parameter values,
+estimated uncertainties, and the goodness-of-fit statistics.  But since we
+can't place these limits on what portion of the data is being compared to
+the model spectra in unfiltered k-space fit, the uncertainties reflect the
+fact that the full experimental spectrum is not well model.  This is why it
+is recommended to not fit in unfiltered k space: the uncertainties in the
+parameters is too large.
 
 Of course, here we've changed only one thing between these three fits --
-the fitting 'space'.  The process of copying the  parameter group and
+the fitting 'space'.  The process of copying the parameter group and
 dataset, making modifications and re-doing fits can also include changing
-what is varied and what constraints are placed between parameters.
+what parametres are varied, and what constraints are placed between
+parameters.
+
+
+
 
 

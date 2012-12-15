@@ -10,8 +10,9 @@ out2 = feffit(pars2, dset2)
 f = open('doc_feffit5_qr.out', 'w')
 f.write('*** R Space***\n')
 f.write(feffit_report(out, with_paths=False, min_correl=0.5))
-f.write('*** Q Space***\n')
+f.write('\n*** Q Space***\n')
 f.write(feffit_report(out2, with_paths=False, min_correl=0.5))
+f.write('\n')
 f.close()
 
 
@@ -24,5 +25,6 @@ out3 = feffit(pars3, dset3)
 f = open('doc_feffit5_k.out', 'w')
 f.write('*** K Space***\n')
 f.write(feffit_report(out3, with_paths=False, min_correl=0.5))
-
+f.write('\n')
+f.close()
 ## end examples/feffit/doc_feffit5.lar
