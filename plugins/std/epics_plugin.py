@@ -15,7 +15,6 @@ def caget(pvname, _larch=None, **kws):
 
 caget.__doc__ = epics.caget.__doc__
 
-
 def caput(pvname, value, _larch=None, **kws):
     if _larch is None or not HAS_PYEPICS: return
     return epics.caput(pvname, value, **kws)
@@ -27,7 +26,6 @@ def PV(pvname, _larch=None, **kws):
     return epics.PV(pvname, **kws)
 
 PV.__doc__ = epics.PV.__doc__
-
 
 def registerLarchPlugin():
     plugins = {}

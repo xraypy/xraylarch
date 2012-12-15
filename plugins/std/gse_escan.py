@@ -972,5 +972,5 @@ def gsescan_group(fname, _larch=None, **kws):
     return group
 
 def registerLarchPlugin():
-    return ('_io', {'gsescan': gsescan_group})
+    return ('_io', {'read_gsescan': gsescan_group})
 

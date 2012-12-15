@@ -12,7 +12,7 @@ sys.path.insert(0, plugin_path('std'))
 
 from xdi import XDIFile
 
-def xdigroup(fname, _larch=None):
+def read_xdi(fname, _larch=None):
     """simple mapping of XDI file to larch groups"""
     if _larch is None:
         raise Warning("cannot read xdigroup -- larch broken?")
@@ -26,4 +26,4 @@ def xdigroup(fname, _larch=None):
     return group
 
 def registerLarchPlugin():
-    return ('_io', {'xdigroup': xdigroup})
+    return ('_io', {'read_xdi': read_xdi})
