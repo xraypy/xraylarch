@@ -578,8 +578,6 @@ class Interpreter:
                         out.append(self.run(node.elt))
         return out
 
-
-    #
     def on_excepthandler(self, node): # ('type', 'name', 'body')
         "exception handler..."
         # print("except handler %s / %s " % (node.type, ast.dump(node.name)))
@@ -602,15 +600,15 @@ class Interpreter:
 
                     if htype is None or isinstance(this_exc, htype):
                         self.error = []
+                        no_errors = True
+                        self._interrupt = None
                         if hnd.name is not None:
                             self.node_assign(hnd.name, e_value)
                         for tline in hnd.body:
                             self.run(tline)
-                        break
         if no_errors:
             for tnode in node.orelse:
                 self.run(tnode)
-
 
     def on_raise(self, node):    # ('type', 'inst', 'tback')
         "raise statement"
