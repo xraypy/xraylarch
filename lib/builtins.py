@@ -395,7 +395,7 @@ def _addplugin(plugin, _larch=None, **kws):
                 except:
                     write('Warning: %s is not a valid plugin\n' %
                           pjoin(mod, fname))
-
+                    write("   error:  %s\n" % (repr(sys.exc_info()[1])))
         else:
             fh, modpath, desc = mod
             out = imp.load_module(plugin, fh, modpath, desc)
