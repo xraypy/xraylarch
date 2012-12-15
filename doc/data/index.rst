@@ -3,6 +3,8 @@
 .. _scipy:   http://scipy.org/
 .. _h5py:    http://code.google.com/p/h5py/
 .. _pyepics: http://pyepics.github.com/pyepics/
+.. _xdi:     https://github.com/XraySpectroscopy/XAS-Data-Interchange
+
 
 ============================
 Reading and Writing Data
@@ -264,11 +266,11 @@ Reading XAFS Data Interchange (XDI) Files
 ==========================================
 
 The X-ray Data Interchange Format has been developed as part of an effort
-to standardize the format of XAFS data files.
+to standardize the format of XAFS data files (see `xdi`_.)
 
 .. function:: read_xdi(filename)
 
-   read an XDI data file into a group.
+   read an XDI data file into a Larch group.
 
 
 Saving and Restoring Larch Groups
