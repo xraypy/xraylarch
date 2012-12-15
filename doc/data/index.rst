@@ -1,13 +1,19 @@
-.. _tutor-io_sec:
+.. _data-io_chapter:
 
-=======================================================
-Tutorial: Reading and Writing Data
-=======================================================
+.. _scipy:   http://scipy.org/
+.. _h5py:    http://code.google.com/p/h5py/
+.. _pyepics: http://pyepics.github.com/pyepics/
 
-Larch has several built-in functions for reading scientific data.  The
-intention that the types of supported files will increase.  In addition,
-many Python modules for reading standard types of image data can be used.
+============================
+Reading and Writing Data
+============================
 
+Larch has several built-in functions for reading and writing scientific
+data.  The intention is that the types and varieties of supported files
+will increase.  In addition, because standard Python modules can be used
+from Larch, many types of standard data and image types can be used by
+importing the appropriate Python module.  This chapter describes the Larch
+functions for data handling.
 
 .. module:: _io
    :synopsis: Basic Input/Output Functions
@@ -35,7 +41,6 @@ information.  For instance::
 
 This file and others like it can be read with the builtin
 :func:`read_ascii` function.
-
 
 .. function:: read_ascii(filename, comentchar='#;*%', labels=None)
 
@@ -121,17 +126,22 @@ and to get the data as a 2-D array::
 
 .. function::  write_group(filename, group, scalars=None, arrays=None, arrays_like=None,  commentchar='#')
 
-   write data from a specified group to an ASCII data file
+   write data from a specified group to an ASCII data file.
+   This is pretty minimal and may work poorly for large groups of complex
+   data.
+
 
 Using HDF5 Files
 ========================
 
+
 HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
 "metadata" about the data, and can be explored with a variety of tools.
+The interface used in Larch is based on `h5py`_, which should be consulted
+for further documentation.
 
-
-.. function h5_group(filename)
+.. function:: h5_group(filename)
 
     opens and maps and HDF5 file to a Larch Group, with HDF5 Groups map as
     Larch Groups.  Note that the full set of data is not read and
@@ -167,3 +177,123 @@ data heirarchy of the HDF5 file, and pick out the needed data::
 This interface is general-purpose but somewhat low-level.  As HDF5 formats
 and schemas become standardized, better interfaces can easily be made on
 top of this approach.
+
+
+Reading NetCDF Files
+============================
+
+NetCDF4 is an older and less flexible file format than HDF5, but is
+efficient for storing array data and still in wide use.
+
+.. function:: netcdf_group(filename)
+
+  returns a group with data from a NetCDF4 file.
+
+.. function:: netcdf_file(filename, mode='r')
+
+  opens and returns a netcdf file.
+
+
+Reading TIFF Images
+============================
+
+TIFF is a popular image format used by many cameras and detectors. The
+interface used in Larch is based on code from Chrisoph Gohlke.
+
+.. function:: read_tiff(fname)
+
+   reads a TIFF image from a TIFF File.  This returns just the image data as an
+   array, and does return any metadata.
+
+.. function:: tiff_object(fname)
+
+   opens and returns a TIFF file.  This is useful for extracting metadata
+   and multiple series.
+
+
+Working with Epics Channel Access
+===================================
+
+Many synchrotron facilities use the Epics control system.  If the Epics
+Channel Access layer, which requires network access and configuration
+discussed elsewhere, are set correcty, then Larch can read and write data
+from Epics Process Variables (PVs).  The interface used in Larch is based
+on `pyepics`_, which should be consulted for further documentation. The
+access is encapsulated into three functions:
+
+.. function:: caget(PV_name, as_string=False)
+
+   get the value of the Process Variable.  The optional ``as_string``
+   argument ensures the returned value is the string representation for the
+   variable.
+
+.. function:: caput(PV_name, value, wait=False)
+
+   set the value of the Process Variable.  If the optional ``wait`` is
+   ``True``, the function will not return until the put "completes". For
+   some types of data, this may wait for some process (moving a motor,
+   triggering a detector) to finish before returning.
+
+.. function:: PV(PV_name)
+
+   create and return an Epics PV object for a Process Variable.  This will
+   have get() and put() methods, and allows you to add callback functions
+   which will be run with new values everytime the PV value changes.
+
+Reading Scan Data from Various Sources
+========================================
+
+This list is minimal, but can be expanded easily.
+
+.. function:: read_mda(filename, maxdim=4)
+
+   read an MDA (multi-Dimensional Array) file from the Epics SScan Record,
+   and return a group based on the scans it contains.  This is not very
+   well tested -- use with caution!
+
+.. function:: read_gsescan(filename)
+
+   read a (old-style) GSECARS Escan data file into a group.
+
+.. function:: read_stepscan(filename)
+
+   read a GSECARS StepScan data file into a group.
+
+
+Reading XAFS Data Interchange (XDI) Files
+==========================================
+
+The X-ray Data Interchange Format has been developed as part of an effort
+to standardize the format of XAFS data files.
+
+.. function:: read_xdi(filename)
+
+   read an XDI data file into a group.
+
+
+Saving and Restoring Larch Groups
+=========================================
+
+It is often useful to save groups of data and be able to open them again
+later.  The :func:`save` / :func:`restore` mechanism here allows you to
+save the state of a number of Larch groups and use them in another session.
+
+Some precautions should be kept in mind, as not all Larch data is easily
+transferrable.  Most importantly, Python functions cannot be saved to any
+sort of data that can be recovered in a meaningful way.  This is actually
+not as big of a problem as you might expect: you want to save **data**, and
+the functions will be present in the later session.  All the built-in Larch
+groups and data structures can be saved and restored.
+
+.. function:: save(filename, list_of_groups)
+
+    save a set of Larch groups and data into an HDF5 file.
+
+
+.. function:: restore(filename, group=None)
+
+    recover groups from a Larch 'save' file.  If ``group`` is None, the
+    groups in the save file will be returned (in the order in which they
+    were saved).  If ``group`` is an existing Larch group, the groups in
+    the save file will be put inside that group.
+

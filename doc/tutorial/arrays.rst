@@ -30,7 +30,7 @@ Functions for creating arrays
 There are a handful of builtin functions for creating arrays from scratch.
 These are listed in :ref:`Table of Array Creation Functions
 <tutor_arraycreate_table>` In addition, when dealing with data stored in
-files, reading the files (see :ref:`tutor-io_sec`) with Larch will create
+files, reading the files (see :ref:`data-io_chapter`) with Larch will create
 arrys for you.  Like lists, arrays are *mutable*.  That is, elements of
 arrays can be changed without changing the rest of the array.
 
