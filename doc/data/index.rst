@@ -1,11 +1,5 @@
 .. _data-io_chapter:
 
-.. _scipy:   http://scipy.org/
-.. _h5py:    http://code.google.com/p/h5py/
-.. _pyepics: http://pyepics.github.com/pyepics/
-.. _xdi:     https://github.com/XraySpectroscopy/XAS-Data-Interchange
-
-
 ============================
 Reading and Writing Data
 ============================
@@ -20,6 +14,10 @@ functions for data handling.
 .. module:: _io
    :synopsis: Basic Input/Output Functions
 
+.. _scipy:   http://scipy.org/
+.. _h5py:    http://code.google.com/p/h5py/
+.. _pyepics: http://pyepics.github.com/pyepics/
+.. _xdi:     https://github.com/XraySpectroscopy/XAS-Data-Interchange
 
 Simple ASCII Column Files
 ============================
@@ -242,16 +240,17 @@ access is encapsulated into three functions:
    have get() and put() methods, and allows you to add callback functions
    which will be run with new values everytime the PV value changes.
 
-Reading Scan Data from Various Sources
-========================================
+Reading Scan Data from APS Beamlines
+===========================================
 
-This list is minimal, but can be expanded easily.
+This list is minimal, but can be expanded easily to accomodate more
+facilities and beamlines.
 
 .. function:: read_mda(filename, maxdim=4)
 
-   read an MDA (multi-Dimensional Array) file from the Epics SScan Record,
-   and return a group based on the scans it contains.  This is not very
-   well tested -- use with caution!
+   read a binary MDA (multi-Dimensional Array) file from the Epics SScan
+   Record, and return a group based on the scans it contains.  This is not
+   very well tested -- use with caution!
 
 .. function:: read_gsescan(filename)
 
@@ -263,7 +262,7 @@ This list is minimal, but can be expanded easily.
 
 
 Reading XAFS Data Interchange (XDI) Files
-==========================================
+=============================================
 
 The X-ray Data Interchange Format has been developed as part of an effort
 to standardize the format of XAFS data files (see `xdi`_.)
@@ -297,5 +296,7 @@ groups and data structures can be saved and restored.
     recover groups from a Larch 'save' file.  If ``group`` is None, the
     groups in the save file will be returned (in the order in which they
     were saved).  If ``group`` is an existing Larch group, the groups in
-    the save file will be put inside that group.
+    the save file will be put inside that group, and will not be returned.
+
+
 
