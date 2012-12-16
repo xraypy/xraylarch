@@ -34,8 +34,8 @@ The idea is that having these different problem areas connected by a common
 .. toctree::
    :maxdepth: 3
 
-   installation
-   overview
+   downloads/index.rst
+   overview/index.rst
    tutorial/index.rst
    plotting/index.rst
    data/index.rst
