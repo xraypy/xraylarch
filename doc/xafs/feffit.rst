@@ -469,12 +469,16 @@ given below.
      :target: ../_images/feffit_3temp2.png
      :width: 48 %
 
+  **a**
+
   .. image:: ../images/feffit_3temp3.png
      :target: ../_images/feffit_3temp3.png
      :width: 48 %
   .. image:: ../images/feffit_3temp4.png
      :target: ../_images/feffit_3temp4.png
      :width: 48 %
+
+  **b**
 
   .. image:: ../images/feffit_3temp5.png
      :target: ../_images/feffit_3temp5.png
@@ -483,8 +487,10 @@ given below.
      :target: ../_images/feffit_3temp6.png
      :width: 48 %
 
-  Figure 15. Fit to Cu metal at 10 K, 50 K, and 150 K, from a simultaneous
-  fit to all 3 datasets with 5 variables used.
+  **c**
+
+  Figure 15. Fit to Cu metal at (a) 10 K, (b) 50 K, and (c) 150 K, from a
+  simultaneous fit to all 3 datasets with 5 variables used.
 
 Again, in the interest of brevity and consistency through this chapter,
 these example are deliberately simple and meant to be illustrative of the

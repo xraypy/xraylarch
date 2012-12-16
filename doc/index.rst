@@ -32,7 +32,7 @@ The idea is that having these different problem areas connected by a common
 *macro language* will strengthen the analytic tools for all of them.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
 
    installation
    overview

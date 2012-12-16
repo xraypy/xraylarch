@@ -2,17 +2,35 @@
 Downloading and Installation
 ====================================
 
-.. _larch-0.9.17.tgz:  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.tgz
-.. _larch-0.9.17.exe:  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.exe
-.. _larch github repository: http://github.com/xraypy/xraylarch
+.. _larch-0.9.17.tgz (github):  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.tgz
+.. _larch-0.9.17.exe (github):  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.exe
+.. _larch-0.9.17.tgz (CARS):    http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.17.tgz
+.. _larch-0.9.17.exe (CARS):    http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.17.exe
+.. _larch github repository:    http://github.com/xraypy/xraylarch
 
-Binary Installation
-=========================
 
-A binary installer, `larch-0.9.17.exe`_,  is available for Windows.  This
-installs a working version of the larch command-line program onto your
-system.  To date, testing has been fairly minimal.  If you try this out,
-please send positive and negative feedback to the Ifeffit mailing list.
+Downloads
+================
+
++-----------------+------------+----------------------------------------------+
+|  Download Type  | Platformsn |   Location                                   |
++=================+============+==============================================+
+| Source tarball  | All        |  `larch-0.9.17.tgz (CARS)`_  or              |
+|                 |            |  `larch-0.9.17.tgz (github)`_                |
++-----------------+------------+----------------------------------------------+
+| Win32 Installer | Windows    |  `larch-0.9.17.exe (CARS)`_  or              |
+|                 |            |  `larch-0.9.17.exe (github)`_                |
++-----------------+------------+----------------------------------------------+
+|  Development    | All        |  `larch github repository`_                  |
++-----------------+------------+----------------------------------------------+
+
+Binary Installation (Windows)
+==================================
+
+The binary installer for Windows installs a working version of the larch
+command-line program and primitive Larch GUI onto your system.  To date,
+testing has been fairly minimal.  If you try this out, please send positive
+and negative feedback to the Ifeffit mailing list.
 
 
 Source Installation
@@ -36,9 +54,9 @@ strongly encouraged (and some functionality depends on it).  These are
 simply installed as standard packages on almost all platforms.
 
 
-You can either download the tarball,  `larch-0.9.17.tgz`_,  or use the
-development version from the `larch github repository`_.  To
-get a read-only copy of the latest version, use::
+You can either download the tarball above, or use the development version
+from the `larch github repository`_.  To get a read-only copy of the latest
+version, use::
 
    git clone http://github.com/xraypy/xraylarch.git
 
