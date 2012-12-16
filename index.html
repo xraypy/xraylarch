@@ -26,7 +26,7 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <link rel="top" title="larch 0.9.17 documentation" href="#" />
-    <link rel="next" title="Downloading and Installation" href="installation.html" /> 
+    <link rel="next" title="Downloading and Installation" href="downloads/index.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left;
@@ -50,10 +50,10 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="installation.html" title="Downloading and Installation"
+          <a href="downloads/index.html" title="Downloading and Installation"
              accesskey="N">next</a> |</li>
    <li><a href="contents.html">contents</a>|&nbsp;</li>
-   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="data/index.html">data</a>|&nbsp;</li>
    <li><a href="plotting/index.html">plot</a>|&nbsp;</li>
@@ -71,7 +71,8 @@
 <p>Current version: <b>0.9.17</b></p>
 <p>Downloads:
 <ul>
-  <li>&nbsp; &nbsp; <a href="http://cars.uchicago.edu/software/python/xraylarch/src/">cars.uchicago.edu</a>
+  <li>&nbsp; &nbsp; <a href="http://xraypy.github.com/xraylarch/downloads/">github.com</a>
+  <li>&nbsp; &nbsp; <a href="http://cars.uchicago.edu/xraylarch/downloads/">cars.uchicago.edu</a>
 </ul>
 <p>
 
@@ -80,7 +81,7 @@ Development version: <br> &nbsp; &nbsp; <a href="https://github.com/xraypy/xrayl
 <h3>Documentation</h3>
 
 <a href="larch.pdf">  PDF Format</a> <br>
-<a href="larch.epub"> E-Book Format (beta)</a>
+<a href="larch.epub"> E-Book Format (experimental)</a>
 <hr>
 <p>
 <div id="searchbox" style="display: none">
@@ -131,16 +132,183 @@ synchrotrons and x-ray sources. It has several related target application areas:
 <em>macro language</em> will strengthen the analytic tools for all of them.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="installation.html">Downloading and Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overview.html">Larch: Motivation and Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">Larch Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">Plotting and Displaying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data/index.html">Reading and Writing Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">Fitting and Modeling Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">XAFS Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="downloads/index.html">Downloading and Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="downloads/index.html#binary-installation-windows">Binary Installation (Windows)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="downloads/index.html#source-installation">Source Installation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="downloads/index.html#prerequisites">Prerequisites</a></li>
+<li class="toctree-l3"><a class="reference internal" href="downloads/index.html#installation">Installation</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="downloads/index.html#license">License</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="overview/index.html">Larch: Motivation and Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview/index.html#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview/index.html#design-principles-key-concepts">Design Principles, Key Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview/index.html#capabilities">Capabilities</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">Larch Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/start.html">Tutorial: Getting Started</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/start.html#larch-as-a-basic-calculator">Larch as a Basic Calculator</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/datatypes.html">Tutorial: Basic and Complex Data Types</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/datatypes.html#basic-data-types">Basic Data Types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/datatypes.html#objects-and-groups">Objects and Groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/datatypes.html#more-complex-data-structures-lists-arrays-dictionaries">More Complex Data Structures:  Lists, Arrays, Dictionaries</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/datatypes.html#object-identities-copying-and-equality-vs-identity">Object identities, copying, and equality vs. identity</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/arrays.html">Tutorial: Basic Array Manipulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/arrays.html#functions-for-creating-arrays">Functions for creating arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/arrays.html#the-array-dtype-datatype">The array <em>dtype</em> &#8211; datatype</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/arrays.html#basic-array-manipulation">Basic array manipulation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/arrays.html#slicing-and-extracting-sub-arrays">Slicing and extracting sub-arrays</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/arrays.html#array-attributes-and-methods">Array attributes and methods</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/arrays.html#mathematical-functions-for-arrays">Mathematical functions for arrays</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/flow.html">Tutorial: Conditional Execution and Flow Control</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/flow.html#conditional-evaluation-with-if-and-else">Conditional Evaluation with if and else</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/flow.html#for-loops">For loops</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/flow.html#while-loops">While loops</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/errors.html">Tutorial: Dealing With Errors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/errors.html#syntax-errors">Syntax Errors</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/errors.html#exceptions">Exceptions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/errors.html#try-and-except">Try and Except</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/errors.html#raising-your-own-exceptions">Raising your own exceptions</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/procedures.html">Tutorial: Writing Functions or Procedures</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/procedures.html#def-statement">Def statement</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/procedures.html#namespace-and-scope-inside-a-procedure">Namespace and &#8220;Scope&#8221; inside a Procedure</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/procedures.html#the-return-statement-and-multiple-return-values">The return statement, and multiple Return values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/procedures.html#keyword-arguments">Keyword arguments</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/procedures.html#documentation-strings">Documentation Strings</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/modules.html">Tutorial: Running Larch Scripts, and Modules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/modules.html#running-a-larch-script-with-run">Running a larch script with <tt class="docutils literal"><span class="pre">run()</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/modules.html#importing-a-larch-script-as-a-module">Importing a Larch Script as a Module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/modules.html#namespaces-again">Namespaces, again</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial/builtins.html">Tutorial: Builtin Functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/builtins.html#builtin-data-values">Builtin data values</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tutorial/builtins.html#builtin-functions">Builtin functions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">Plotting and Displaying Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#line-plots">Line Plots</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="plotting/index.html#plotting-commands">Plotting commands</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plotting/index.html#plot-examples">Plot Examples</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plotting/index.html#interactive-use-of-the-plot-windows">Interactive Use of the Plot Windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plotting/index.html#using-tex-like-commands-for-labels-and-titles">Using TeX-like commands for labels and titles</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#image-display-and-contour">Image Display and Contour</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="data/index.html">Reading and Writing Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#simple-ascii-column-files">Simple ASCII Column Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#using-hdf5-files">Using HDF5 Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-netcdf-files">Reading NetCDF Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-tiff-images">Reading TIFF Images</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#working-with-epics-channel-access">Working with Epics Channel Access</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-scan-data-from-aps-beamlines">Reading Scan Data from APS Beamlines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#reading-xafs-data-interchange-xdi-files">Reading XAFS Data Interchange (XDI) Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data/index.html#saving-and-restoring-larch-groups">Saving and Restoring Larch Groups</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">Fitting and Modeling Data</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="fitting/overview.html">Fitting Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/parameters.html">Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fitting/parameters.html#setting-bounds">setting bounds</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fitting/parameters.html#algebraic-constraints">algebraic constraints</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/minimize.html"><tt class="docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/results.html">Fit Results and Outputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/lineshapes.html">Some Builtin Line-shape Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/examples.html">Fit Examples</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fitting/examples.html#example-1-fitting-a-simple-gaussian">Example 1: Fitting a Simple Gaussian</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fitting/examples.html#example-2-fitting-xanes-pre-edge-peaks">Example 2: Fitting XANES Pre-edge Peaks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fitting/examples.html#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/confidence.html">Advanced Confidence Intervals and Chi-square maps</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fitting/confidence.html#confidence-interval-example-1">Confidence interval, Example 1</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fitting/confidence.html#confidence-interval-example-2">Confidence interval, Example 2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="fitting/confidence.html#chi-square-maps">Chi-square Maps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">XAFS Analysis</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xafs/preedge.html">XAFS: Pre-edge Subtraction and Normalization</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="xafs/preedge.html#example">Example</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/autobk.html">XAFS: Post-edge Background Subtraction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="xafs/autobk.html#the-autobk-function">The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/autobk.html#the-autobk-algorithm">The AUTOBK Algorithm</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/autobk.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/xafsft.html">XAFS: Fourier Transforms for XAFS</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="xafs/xafsft.html#overview-of-xafs-fourier-transforms">Overview of XAFS Fourier transforms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/xafsft.html#forward-xafs-fourier-transforms">Forward XAFS Fourier transforms (<img class="math" src="_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/xafsft.html#reverse-xafs-fourier-transforms">Reverse XAFS Fourier transforms (<img class="math" src="_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/xafsft.html#ftwindow-generating-fourier-transform-windows"><tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/xafsft.html#catalog-of-fourier-transform-window">Catalog of Fourier transform window</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/xafsft.html#examples-forward-xafs-fourier-transforms">Examples: Forward XAFS Fourier transforms</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/xafsft.html#examples-reverse-xafs-fourier-transforms-fourier-filtering">Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/feffpaths.html">XAFS: Reading and using Feff Paths</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffpaths.html#feffpath-and-feffpath-groups"><tt class="docutils literal"><span class="pre">feffpath()</span></tt> and FeffPath Groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath"><tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <img class="math" src="_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a FeffPath</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">The _feffdat Group: Full Details of the Feff.Dat File</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">The EXAFS Equation using Feff and FeffPath Groups</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffpaths.html#models-for-calculating">Models for Calculating <img class="math" src="_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/></a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffpaths.html#example-reading-a-feff-file">Example:  Reading a FEFF file</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffpaths.html#example-adding-feff-files">Example:  Adding FEFF files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffpaths.html#example-using-path-parameters-when-adding-feff-files">Example: Using Path Parameters when adding FEFF files</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/feffit.html">XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#feffit-transform"><tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#feffit-dataset"><tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#feffit"><tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#feffit-report"><tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#example-1-simple-fit-with-1-path">Example 1: Simple fit with 1 Path</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#example-2-fit-1-dataset-with-3-paths">Example 2: Fit 1 dataset with 3 Paths</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#example-3-fit-3-datasets-with-1-path-each">Example 3: Fit 3 datasets with 1 Path each</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#example-4-measuring-coordination-number">Example 4: Measuring Coordination number</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/feffit.html#example-5-comparing-fits-in-different-fit-spaces">Example 5: Comparing Fits in different Fit Spaces</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="xray/index.html">X-ray Databases</a></li>
 <li class="toctree-l1"><a class="reference internal" href="xrf/index.html">X-ray Fluorescence Analaysis with Larch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="devel/index.html">Programming with Larch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devel/index.html">Programming with Larch</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="devel/index.html#differences-between-larch-and-python">Differences between Larch and Python</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="devel/index.html#code-block-ends">Code Block Ends</a></li>
+<li class="toctree-l3"><a class="reference internal" href="devel/index.html#groups-vs-modules">Groups vs Modules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="devel/index.html#symbol-lookup-rules">Symbol Lookup Rules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="devel/index.html#unimplemented-features">Unimplemented features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="devel/index.html#modules">Modules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="devel/index.html#plugins">Plugins</a></li>
+</ul>
+</li>
 </ul>
 </div>
 </div>
@@ -158,10 +326,10 @@ synchrotrons and x-ray sources. It has several related target application areas:
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="installation.html" title="Downloading and Installation"
+          <a href="downloads/index.html" title="Downloading and Installation"
              >next</a> |</li>
    <li><a href="contents.html">contents</a>|&nbsp;</li>
-   <li><a href="installation.html">download</a>|&nbsp;</li>
+   <li><a href="downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
    <li><a href="data/index.html">data</a>|&nbsp;</li>
    <li><a href="plotting/index.html">plot</a>|&nbsp;</li>
@@ -173,7 +341,7 @@ synchrotrons and x-ray sources. It has several related target application areas:
       </ul>
     </div>
     <div class="footer">
-        &copy; Copyright 2012, Matthew Newville.
+        &copy; Copyright Matthew Newville, The University of Chicago, 2012.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2pre.
     </div>
   </body>

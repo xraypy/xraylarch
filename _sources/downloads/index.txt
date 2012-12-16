@@ -9,20 +9,24 @@ Downloading and Installation
 .. _larch github repository:    http://github.com/xraypy/xraylarch
 
 
-Downloads
-================
+Larch is still in active development.  The downloads labeled with Status of **Beta** are
+considered working, but have not been rigorously or extensively tested, and probably
+contain some bugs and unintended features.
 
-+-----------------+------------+----------------------------------------------+
-|  Download Type  | Platformsn |   Location                                   |
-+=================+============+==============================================+
-| Source tarball  | All        |  `larch-0.9.17.tgz (CARS)`_  or              |
-|                 |            |  `larch-0.9.17.tgz (github)`_                |
-+-----------------+------------+----------------------------------------------+
-| Win32 Installer | Windows    |  `larch-0.9.17.exe (CARS)`_  or              |
-|                 |            |  `larch-0.9.17.exe (github)`_                |
-+-----------------+------------+----------------------------------------------+
-|  Development    | All        |  `larch github repository`_                  |
-+-----------------+------------+----------------------------------------------+
+The recommended download options are:
+
++---------+-----------------+-----------+-------------------------------------------------------+
+| Status  | Download Type   | Platforms |   Download / Command                                  |
++=========+=================+===========+=======================================================+
+| Beta    | Source tarball  | All       |  `larch-0.9.17.tgz (CARS)`_  or                       |
+|         |                 |           |  `larch-0.9.17.tgz (github)`_                         |
++---------+-----------------+-----------+-------------------------------------------------------+
+| Beta    | Win32 Installer | Windows   |  `larch-0.9.17.exe (CARS)`_  or                       |
+|         |                 |           |  `larch-0.9.17.exe (github)`_                         |
++---------+-----------------+-----------+-------------------------------------------------------+
+| Devel   | Source kit      | All       | git clone http://github.com/xraypy/xraylarch.git      |
++---------+-----------------+-----------+-------------------------------------------------------+
+
 
 Binary Installation (Windows)
 ==================================
@@ -78,4 +82,4 @@ documentation, and all material associated with Larch are distributed under
 the BSD License:
 
 
-.. literalinclude:: ../COPYING
+.. literalinclude:: ../../COPYING

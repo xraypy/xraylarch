@@ -7,11 +7,18 @@ either the program larch, basic Larch interpreter, or larch_gui, the
 enhanced GUI interpreter::
 
    C:> larch
-     Larch 0.9.7  M. Newville, T. Trainor (2011)
-     using python 2.6.5, numpy 1.5.1
+     Larch 0.9.17 (9-Dec-2012) M. Newville, T. Trainor
+     using python 2.7.3, numpy 1.6.2, wx-enabled, wx version 2.9.4.0
    larch>
 
-For Windows and Mac OS X users, executable applications will be available.
+
+For Windows, you can start larch_gui or the larch shell program from the
+Windows Start Menu.
+
+As of this writing, the Larch GUI is little more than an enhanced command-line
+shell, though it does include a "Data Browser" menu that allows you to view
+a tree-like display of all the data in a Larch session, and to show help on
+Larch functions.
 
 
 Larch as a Basic Calculator
