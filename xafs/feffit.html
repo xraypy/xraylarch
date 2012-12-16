@@ -60,6 +60,7 @@
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
@@ -82,8 +83,9 @@
 <li><a class="reference internal" href="#feffit-report"><tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
 <li><a class="reference internal" href="#example-1-simple-fit-with-1-path">Example 1: Simple fit with 1 Path</a></li>
 <li><a class="reference internal" href="#example-2-fit-1-dataset-with-3-paths">Example 2: Fit 1 dataset with 3 Paths</a></li>
-<li><a class="reference internal" href="#example-3-fit-3-datasets-with-3-paths-each">Example 3: Fit 3 datasets with 3 Paths each</a></li>
-<li><a class="reference internal" href="#example-4-comparing-fits-in-different-fit-spaces">Example 4: Comparing Fits in different Fit Spaces</a></li>
+<li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">Example 3: Fit 3 datasets with 1 Path each</a></li>
+<li><a class="reference internal" href="#example-4-measuring-coordination-number">Example 4: Measuring Coordination number</a></li>
+<li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">Example 5: Comparing Fits in different Fit Spaces</a></li>
 </ul>
 </li>
 </ul>
@@ -490,6 +492,9 @@ file with a single Feff Path.</p>
 <span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">fout</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;doc_feffit1.out&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+<span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
      <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$k \rm\,(\AA^{-1})$&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span>
@@ -533,30 +538,30 @@ commands.</p>
    chi_square         = 6853.2901
    reduced chi_square = 68.532901
    r-factor           = 0.0028522676
-
+ 
 [[Data]]
-   n_independent      = 14.260
-   epsilon_k          = 0.000150
-   epsilon_r          = 0.007111
    fit space          = 'r'
    r-range            = 1.400, 3.000
    k-range            = 3.000, 17.000
    k window, dk       = 'kaiser', 4.000
-   k-weight           = 2
    paths used in fit  = ['feffcu01.dat']
-
+   k-weight           = 2
+   epsilon_k          = 0.000150
+   epsilon_r          = 0.007111
+   n_independent      = 14.260
+ 
 [[Variables]]
    amp            =  0.930915 +/- 0.042009   (init=  1.000000)
    del_e0         =  3.860819 +/- 0.550083   (init=  0.100000)
    del_r          = -0.005996 +/- 0.002807   (init=  0.000000)
    sig2           =  0.008670 +/- 0.000330   (init=  0.002000)
-
+ 
 [[Correlations]]    (unreported correlations are &lt;  0.100)
-   amp, sig2            =  0.929
-   del_e0, del_r        =  0.920
-   del_r, sig2          =  0.159
-   amp, del_r           =  0.137
-
+   amp, sig2            =  0.929 
+   del_e0, del_r        =  0.920 
+   del_r, sig2          =  0.159 
+   amp, del_r           =  0.137 
+ 
 [[Paths]]
    feff.dat file = feffcu01.dat
           Atom     x        y        z     ipot
@@ -714,6 +719,12 @@ like this:</p>
     <span class="n">endfor</span>
 <span class="n">enddef</span>
 
+<span class="k">def</span> <span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
+    <span class="s">&quot;write report to file&quot;</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="n">enddef</span>
 
 <span class="c">## end of examples/feffit/doc_macros.lar</span>
 </pre></div>
@@ -789,6 +800,8 @@ one another.</p>
 
 <span class="k">print</span> <span class="n">report</span>
 <span class="n">run</span><span class="p">(</span><span class="s">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
+<span class="n">write_report</span><span class="p">(</span><span class="s">&#39;doc_feffit2.out&#39;</span><span class="p">,</span> <span class="n">report</span><span class="p">)</span>
+
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Three-shell fit to Cu&#39;</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
 
 <span class="c"># ## end examples/feffit/doc_feffit2.lar</span>
@@ -806,18 +819,18 @@ vary independently for each path.</p>
    chi_square         = 5826.6649
    reduced chi_square = 46.989233
    r-factor           = 0.0023935584
-
+ 
 [[Data]]
-   n_independent      = 17.825
-   epsilon_k          = 0.000150
-   epsilon_r          = 0.007111
    fit space          = 'r'
    r-range            = 1.400, 3.400
    k-range            = 3.000, 17.000
    k window, dk       = 'kaiser', 4.000
-   k-weight           = 2
    paths used in fit  = ['feff0001.dat', 'feff0002.dat', 'feff0003.dat']
-
+   k-weight           = 2
+   epsilon_k          = 0.000150
+   epsilon_r          = 0.007111
+   n_independent      = 17.825
+ 
 [[Variables]]
    alpha          = -0.002470 +/- 0.000950   (init=  0.000000)
    amp            =  0.928995 +/- 0.036148   (init=  1.000000)
@@ -825,20 +838,20 @@ vary independently for each path.</p>
    sig2_1         =  0.008643 +/- 0.000285   (init=  0.002000)
    sig2_2         =  0.014079 +/- 0.001441   (init=  0.002000)
    sig2_3         =  0.008410 +/- 0.003766   (init=  0.002000)
-
+ 
 [[Correlations]]    (unreported correlations are &lt;  0.100)
-   amp, sig2_1          =  0.930
-   alpha, del_e0        =  0.922
-   amp, sig2_3          =  0.239
-   sig2_1, sig2_3       =  0.237
-   amp, sig2_2          =  0.222
-   sig2_1, sig2_2       =  0.208
-   alpha, sig2_1        =  0.179
-   alpha, amp           =  0.159
-   del_e0, sig2_3       =  0.155
-   del_e0, sig2_2       = -0.140
-   alpha, sig2_3        =  0.138
-
+   amp, sig2_1          =  0.930 
+   alpha, del_e0        =  0.922 
+   amp, sig2_3          =  0.239 
+   sig2_1, sig2_3       =  0.237 
+   amp, sig2_2          =  0.222 
+   sig2_1, sig2_2       =  0.208 
+   alpha, sig2_1        =  0.179 
+   alpha, amp           =  0.159 
+   del_e0, sig2_3       =  0.155 
+   del_e0, sig2_2       = -0.140 
+   alpha, sig2_3        =  0.138 
+ 
 [[Paths]]
    feff.dat file = feff0001.dat
           Atom     x        y        z     ipot
@@ -903,8 +916,8 @@ straightforward, as we can just do:</p>
 spectrum.</p>
 </div></blockquote>
 </div>
-<div class="section" id="example-3-fit-3-datasets-with-3-paths-each">
-<h2>Example 3: Fit 3 datasets with 3 Paths each<a class="headerlink" href="#example-3-fit-3-datasets-with-3-paths-each" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="example-3-fit-3-datasets-with-1-path-each">
+<h2>Example 3: Fit 3 datasets with 1 Path each<a class="headerlink" href="#example-3-fit-3-datasets-with-1-path-each" title="Permalink to this headline">¶</a></h2>
 <p>We&#8217;ll extend the above example by adding two more data sets.  Since the
 three data sets have some things in common, we&#8217;ll be able to use some a
 smaller number of total variable parameters for all data sets than if we
@@ -916,20 +929,22 @@ Since there is no phase change in the material over this temperature range,
 the structure changes in small and predictable ways that lends itself to
 simple parameterization.  In the interest of brevity, we&#8217;ll only use one
 path, but the example could easily be extended to include more paths.</p>
-<p>In this example, we have three distinct datasets, so we&#8217;ll have 3 distinct
-lists of paths.  Each of these path lists will have a single path, that
-have many parameters in common, but some that will be different for each
-data set.  As with the previous example, we use the same amplitude
-reduction factor <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> shift to all data sets.</p>
-<p>And again, we allow distances to vary, but constrain them so that the
-change is linear in the sample temperature, as if there were a simple
-linear expansion in <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>.  To do this, we set <tt class="docutils literal"><span class="pre">deltar</span> <span class="pre">=</span> <span class="pre">'dr_off</span> <span class="pre">+</span>
-<span class="pre">T*alpha*reff'</span></tt>, where <tt class="docutils literal"><span class="pre">T</span></tt> is the temperature for the dataset.  For
-<img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/> we&#8217;ll use one of the built-in models described in
-<a class="reference internal" href="feffpaths.html#xafs-sigma2calcs-sec"><em>Models for Calculating sigma2</em></a>.  Here we&#8217;ll
-use <a class="reference internal" href="feffpaths.html#_xafs.sigma2_eins" title="_xafs.sigma2_eins"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_eins()</span></tt></a>, but <a class="reference internal" href="feffpaths.html#_xafs.sigma2_debye" title="_xafs.sigma2_debye"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_debye()</span></tt></a> can be used as well, and
-does a better job for multiple-scattering paths in simple systems. The full
-script for the fit looks like this:</p>
+<p>In this example, we have three distinct datasets, so we&#8217;ll have three lists
+of paths.  Each of these will have a single path.  Since we&#8217;re modeling
+nearly the same structure, the three paths will use the same Feff.dat file
+and have many parameters in common, but some parameters will be different
+for each data set.  As with the previous example, we use the same amplitude
+reduction factor <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> shift to all data sets.  We allow distances to
+vary, but constrain them so that the change is linear in the sample
+temperature, as if there were a simple linear expansion in <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>.  To
+do this, we set <tt class="docutils literal"><span class="pre">deltar</span> <span class="pre">=</span> <span class="pre">'dr_off</span> <span class="pre">+</span> <span class="pre">T*alpha*reff'</span></tt>, where <tt class="docutils literal"><span class="pre">T</span></tt> is the
+temperature for the dataset.  For <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/> we&#8217;ll use one of the
+built-in models described in <a class="reference internal" href="feffpaths.html#xafs-sigma2calcs-sec"><em>Models for Calculating sigma2</em></a>.  Here we&#8217;ll use <a class="reference internal" href="feffpaths.html#_xafs.sigma2_eins" title="_xafs.sigma2_eins"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_eins()</span></tt></a>, but
+<a class="reference internal" href="feffpaths.html#_xafs.sigma2_debye" title="_xafs.sigma2_debye"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_debye()</span></tt></a> can be used as well, and does a better job for
+multiple-scattering paths in simple systems.  The model then uses 2
+variable parameters for three temperature-dependent distances and 1
+variable parameter for three temperature-dependent mean-square
+displacements. The full script for the fit looks like this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffit3.lar</span>
 
 <span class="c"># read 3 datasets</span>
@@ -976,6 +991,7 @@ script for the fit looks like this:</p>
 
 <span class="k">print</span> <span class="n">report</span>
 <span class="n">run</span><span class="p">(</span><span class="s">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
+<span class="n">write_report</span><span class="p">(</span><span class="s">&#39;doc_feffit3.out&#39;</span><span class="p">,</span> <span class="n">report</span><span class="p">)</span>
 
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset_10</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;fit to Cu, 10K&#39;</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset_50</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;fit to Cu, 50K&#39;</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
@@ -995,52 +1011,52 @@ of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0c
    chi_square         = 20675.228
    reduced chi_square = 53.701891
    r-factor           = 0.016295917
-
+ 
 [[Datasets (3)]]
  dataset 1:
-   n_independent      = 17.825
+   fit space          = 'r'
+   r-range            = 1.400, 3.400
+   k-range            = 3.000, 17.000
+   k window, dk       = 'kaiser', 4.000
+   paths used in fit  = ['feff0001.dat']
+   k-weight           = 2
    epsilon_k          = 0.000927
    epsilon_r          = 0.044076
+   n_independent      = 17.825
+ dataset 2:
    fit space          = 'r'
    r-range            = 1.400, 3.400
    k-range            = 3.000, 17.000
    k window, dk       = 'kaiser', 4.000
-   k-weight           = 2
    paths used in fit  = ['feff0001.dat']
- dataset 2:
-   n_independent      = 17.825
+   k-weight           = 2
    epsilon_k          = 0.000843
    epsilon_r          = 0.040062
+   n_independent      = 17.825
+ dataset 3:
    fit space          = 'r'
    r-range            = 1.400, 3.400
    k-range            = 3.000, 17.000
    k window, dk       = 'kaiser', 4.000
-   k-weight           = 2
    paths used in fit  = ['feff0001.dat']
- dataset 3:
-   n_independent      = 17.825
+   k-weight           = 2
    epsilon_k          = 0.000433
    epsilon_r          = 0.020563
-   fit space          = 'r'
-   r-range            = 1.400, 3.400
-   k-range            = 3.000, 17.000
-   k window, dk       = 'kaiser', 4.000
-   k-weight           = 2
-   paths used in fit  = ['feff0001.dat']
-
+   n_independent      = 17.825
+ 
 [[Variables]]
    alpha          =  0.000011 +/- 0.000007   (init=  0.000000)
    amp            =  0.874377 +/- 0.032285   (init=  1.000000)
    del_e0         =  5.066476 +/- 0.629972   (init=  2.000000)
    dr_off         = -0.001836 +/- 0.002941   (init=  0.000000)
    theta          =  233.081978 +/- 7.792662   (init=  250.000000)
-
+ 
 [[Correlations]]    (unreported correlations are &lt;  0.100)
-   amp, theta           = -0.865
-   del_e0, dr_off       =  0.757
-   alpha, dr_off        = -0.458
-   alpha, del_e0        =  0.110
-
+   amp, theta           = -0.865 
+   del_e0, dr_off       =  0.757 
+   alpha, dr_off        = -0.458 
+   alpha, del_e0        =  0.110 
+ 
 [[Paths]]
  dataset 1:
    feff.dat file = feff0001.dat
@@ -1113,12 +1129,318 @@ these example are deliberately simple and meant to be illustrative of the
 capabilities and procedures and should not be viewed as limiting the types
 of problems that can be modeled.</p>
 </div>
-<div class="section" id="example-4-comparing-fits-in-different-fit-spaces">
-<h2>Example 4: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-4-comparing-fits-in-different-fit-spaces" title="Permalink to this headline">¶</a></h2>
-<p>We now turn to one of the topics for how to decide on some of the fit
-Transform parameters.  In particular, we compare doing fits in unfiltered
-k-space, R-space, and filter k-space (or &#8220;q space&#8221;).  We switch from Cu
-metal data to data on a simple metal oxide, FeO.</p>
+<div class="section" id="example-4-measuring-coordination-number">
+<h2>Example 4: Measuring Coordination number<a class="headerlink" href="#example-4-measuring-coordination-number" title="Permalink to this headline">¶</a></h2>
+<p>For this and the following example, we switch from Cu metal data to data on
+a simple metal oxide, FeO.  The structure is a basic rock-salt structure,
+and we&#8217;ll model 2 paths for Fe-O and Fe-Fe in this structure.  While the
+data is imperfect, we&#8217;ll use it to illustrate a few points in modeling
+EXAFS data.</p>
+<p>For the examples above with Cu metal, we tacitly assumed that the
+coordination number for the different paths was correct, and we adjusted an
+<img class="math" src="../_images/math/fc923d7c827eca7b3f461463e11c982710c3bcb1.png" alt="S_0^2"/> parameter.  But, as with many analyses on real systems of
+research interest, we&#8217;d like to fit the coordination number for the two
+different paths here.  To do this, we set an <img class="math" src="../_images/math/fc923d7c827eca7b3f461463e11c982710c3bcb1.png" alt="S_0^2"/> parameter to a
+fixed value, and also force <tt class="docutils literal"><span class="pre">degen</span></tt> (the number of equivalent paths in
+the structure used to generate the Feff.dat files) to be 1 for each path.
+Instead, we&#8217;ll define parameters <tt class="docutils literal"><span class="pre">n1</span></tt> and <tt class="docutils literal"><span class="pre">n2</span></tt>, and set the Fe-O path&#8217;s
+amplitude to be <tt class="docutils literal"><span class="pre">s02*n1</span></tt> and the Fe-Fe path&#8217;s amplitude to be <tt class="docutils literal"><span class="pre">s02*n2</span></tt>.
+We&#8217;ll allow <tt class="docutils literal"><span class="pre">n1</span></tt> and <tt class="docutils literal"><span class="pre">n2</span></tt> to vary in the fit, and also define variable
+parameters for the other path parameters, including separate variables for
+<img class="math" src="../_images/math/7d545c3c0b81e9752d292d66ebd0e4e8f72f4fc3.png" alt="\delta_R"/> and <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/>.  The script for this fit is below:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffit4.lar</span>
+
+<span class="n">feo_dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;feo_xafs.dat&#39;</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="s">&#39;energy xmu&#39;</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">feo_dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">feo_dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">feo_dat</span><span class="p">)</span>
+
+<span class="c"># define fitting parameter group</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">n1</span>     <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+             <span class="n">n2</span>     <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+             <span class="n">s02</span>    <span class="o">=</span> <span class="mf">0.700</span><span class="p">,</span>
+             <span class="n">de0</span>    <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.1</span><span class="p">),</span>
+             <span class="n">sig2_1</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+             <span class="n">delr_1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.</span><span class="p">),</span>
+             <span class="n">sig2_2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.002</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">),</span>
+             <span class="n">delr_2</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span>  <span class="p">)</span>
+
+<span class="c"># define Feff Paths, give expressions for Path Parameters</span>
+<span class="n">path_feo</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo01.dat&#39;</span><span class="p">,</span>
+                    <span class="n">degen</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                    <span class="n">s02</span>    <span class="o">=</span> <span class="s">&#39;s02*n1&#39;</span><span class="p">,</span>
+                    <span class="n">e0</span>     <span class="o">=</span> <span class="s">&#39;de0&#39;</span><span class="p">,</span>
+                    <span class="n">sigma2</span> <span class="o">=</span> <span class="s">&#39;sig2_1&#39;</span><span class="p">,</span>
+                    <span class="n">deltar</span> <span class="o">=</span> <span class="s">&#39;delr_1&#39;</span><span class="p">)</span>
+
+<span class="n">path_fefe</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;feff_feo02.dat&#39;</span><span class="p">,</span>
+                     <span class="n">degen</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                     <span class="n">s02</span>    <span class="o">=</span> <span class="s">&#39;s02*n2&#39;</span><span class="p">,</span>
+                     <span class="n">e0</span>     <span class="o">=</span> <span class="s">&#39;de0&#39;</span><span class="p">,</span>
+                     <span class="n">sigma2</span> <span class="o">=</span> <span class="s">&#39;sig2_2&#39;</span><span class="p">,</span>
+                     <span class="n">deltar</span> <span class="o">=</span> <span class="s">&#39;delr_2&#39;</span><span class="p">)</span>
+
+<span class="c"># set tranform / fit ranges</span>
+<span class="n">trans</span> <span class="o">=</span> <span class="n">feffit_transform</span><span class="p">(</span><span class="n">kmin</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mf">13.5</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span>
+                         <span class="n">dk</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="n">window</span><span class="o">=</span><span class="s">&#39;kaiser&#39;</span><span class="p">,</span>
+                         <span class="n">rmin</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">3.2</span><span class="p">,</span> <span class="n">fitspace</span><span class="o">=</span><span class="s">&#39;r&#39;</span><span class="p">)</span>
+
+<span class="c"># define dataset to include data, pathlist, transform</span>
+<span class="n">dset</span>  <span class="o">=</span> <span class="n">feffit_dataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">feo_dat</span><span class="p">,</span> <span class="n">pathlist</span><span class="o">=</span><span class="p">[</span><span class="n">path_feo</span><span class="p">,</span> <span class="n">path_fefe</span><span class="p">],</span>
+                       <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
+<span class="k">print</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+<span class="n">run</span><span class="p">(</span><span class="s">&#39;doc_macros.lar&#39;</span><span class="p">)</span>
+<span class="n">write_report</span><span class="p">(</span><span class="s">&#39;doc_feffit4.out&#39;</span><span class="p">,</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+
+<span class="n">plot_chifit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Two-path fit to FeO&#39;</span><span class="p">)</span>
+<span class="c">## end examples/feffit/doc_feffit4.lar</span>
+</pre></div>
+</div>
+<p>The most important point here is the definitions used in setting up the
+amplitudes for the paths:  first, that we set <tt class="docutils literal"><span class="pre">degen</span></tt> to 1, and second
+that we used the expression <tt class="docutils literal"><span class="pre">s02*n1</span></tt> and so forth for the value of the
+Path&#8217;s amplitude.   A secondary note is that we gave two different
+k-weights to <a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><tt class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></tt></a>, which causes both k-weights to be
+used in the fit.</p>
+<p>The resulting output is</p>
+<div class="highlight-python"><pre>=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 288, 7, 281
+   chi_square         = 8775.7777
+   reduced chi_square = 31.230526
+   r-factor           = 0.011044287
+ 
+[[Data]]
+   fit space          = 'r'
+   r-range            = 1.000, 3.200
+   k-range            = 2.000, 13.500
+   k window, dk       = 'kaiser', 3.000
+   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
+   k-weight           = 2, 3
+   epsilon_k          = 0.000232, 0.000190
+   epsilon_r          = 0.006206, 0.058007
+   n_independent      = 16.106
+ 
+[[Variables]]
+   de0            = -1.429964 +/- 0.803446   (init=  0.100000)
+   delr_1         = -0.030326 +/- 0.008948   (init=  0.000000)
+   delr_2         =  0.048697 +/- 0.006895   (init=  0.000000)
+   n1             =  5.196147 +/- 0.805889   (init=  6.000000)
+   n2             =  12.045503 +/- 1.346408   (init=  12.000000)
+   sig2_1         =  0.011942 +/- 0.002263   (init=  0.002000)
+   sig2_2         =  0.013295 +/- 0.001096   (init=  0.002000)
+ 
+[[Correlations]]    (unreported correlations are &lt;  0.100)
+   n2, sig2_2           =  0.935 
+   de0, delr_2          =  0.898 
+   n1, sig2_1           =  0.885 
+   de0, delr_1          =  0.621 
+   delr_1, delr_2       =  0.563 
+   delr_2, sig2_2       =  0.223 
+   delr_2, n2           =  0.215 
+   delr_1, sig2_1       =  0.210 
+   de0, n1              = -0.208 
+   delr_2, n1           = -0.172 
+   delr_1, n1           =  0.163 
+   de0, sig2_1          = -0.135 
+   delr_2, sig2_1       = -0.109 
+ 
+[[Paths]]
+   feff.dat file = feff_feo01.dat
+          Atom     x        y        z     ipot
+           Fe    0.0000,  0.0000,  0.0000  0 (absorber)
+           O    0.0000,  2.1387,  0.0000  1
+     reff   =  2.13870
+     Degen  =  1.00000
+     S02    =  3.63730 +/-  0.56412
+     E0     = -1.42996 +/-  0.80345
+     R      =  2.10837 +/-  0.00895
+     deltar = -0.03033 +/-  0.00895
+     sigma2 =  0.01194 +/-  0.00226
+
+   feff.dat file = feff_feo02.dat
+          Atom     x        y        z     ipot
+           Fe    0.0000,  0.0000,  0.0000  0 (absorber)
+           Fe    2.1387,  0.0000, -2.1387  2
+     reff   =  3.02460
+     Degen  =  1.00000
+     S02    =  8.43185 +/-  0.94249
+     E0     = -1.42996 +/-  0.80345
+     R      =  3.07330 +/-  0.00690
+     deltar =  0.04870 +/-  0.00690
+     sigma2 =  0.01329 +/-  0.00110
+
+=======================================================</pre>
+</div>
+<p>with plots:</p>
+<blockquote id="xafs-fig16">
+<div><a class="reference external image-reference" href="../_images/feffit_feo_k.png"><img alt="../_images/feffit_feo_k.png" src="../_images/feffit_feo_k.png" style="width: 48%;" /></a>
+<a class="reference external image-reference" href="../_images/feffit_feo_r.png"><img alt="../_images/feffit_feo_r.png" src="../_images/feffit_feo_r.png" style="width: 48%;" /></a>
+<p>Figure 16. Fits to 2-path fit to FeO EXAFS.</p>
+</div></blockquote>
+</div>
+<div class="section" id="example-5-comparing-fits-in-different-fit-spaces">
+<h2>Example 5: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-5-comparing-fits-in-different-fit-spaces" title="Permalink to this headline">¶</a></h2>
+<p>We now turn to comparing fits in unfiltered k-space, R-space, and filter
+k-space (or &#8220;q space&#8221;).  This is partly to illustrate the preference for
+using R- or q-space for fitting, and partly to demonstrate how one can run
+similar fits and compare the results.  We&#8217;ll use the FeO data from the
+previous example.</p>
+<p>To change fitting models and transform parameters, we&#8217;ll make copies of the
+parameter groups and dataset groups, make a few changes, and re-run the
+fits.  For example, we can change the fitting space with (see
+examples/feffit/doc_feffit5.lar):</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">pars2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">pars</span><span class="p">)</span>   <span class="c"># copy parameters</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">dset</span><span class="p">)</span>   <span class="c"># copy dataset</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">dset2</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">fitspace</span> <span class="o">=</span> <span class="s">&#39;q&#39;</span>
+</pre></div>
+</div>
+<p>Now we can run <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> with the new parameter group and Dataset
+group, and compare the results either by plotting models from the different
+copies of the dataset or by viewing the parameter values and fit statistics
+with:</p>
+<div class="highlight-python"><pre>larch&gt; out2  = feffit(pars2, dset2)
+larch&gt; print '*** R Space ***'
+larch&gt; print feffit_report(out, with_paths=False, min_correl=0.5)
+larch&gt; print '*** Q Space ***'
+larch&gt; print feffit_report(out2, with_paths=False, min_correl=0.5)</pre>
+</div>
+<p>which gives</p>
+<div class="highlight-python"><pre>*** R Space***
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 288, 7, 281
+   chi_square         = 8775.7777
+   reduced chi_square = 31.230526
+   r-factor           = 0.011044287
+ 
+[[Data]]
+   fit space          = 'r'
+   r-range            = 1.000, 3.200
+   k-range            = 2.000, 13.500
+   k window, dk       = 'kaiser', 3.000
+   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
+   k-weight           = 2, 3
+   epsilon_k          = 0.000232, 0.000190
+   epsilon_r          = 0.006206, 0.058007
+   n_independent      = 16.106
+ 
+[[Variables]]
+   de0            = -1.429964 +/- 0.803446   (init=  0.100000)
+   delr_1         = -0.030326 +/- 0.008948   (init=  0.000000)
+   delr_2         =  0.048697 +/- 0.006895   (init=  0.000000)
+   n1             =  5.196147 +/- 0.805889   (init=  6.000000)
+   n2             =  12.045503 +/- 1.346408   (init=  12.000000)
+   sig2_1         =  0.011942 +/- 0.002263   (init=  0.002000)
+   sig2_2         =  0.013295 +/- 0.001096   (init=  0.002000)
+ 
+[[Correlations]]    (unreported correlations are &lt;  0.500)
+   n2, sig2_2           =  0.935 
+   de0, delr_2          =  0.898 
+   n1, sig2_1           =  0.885 
+   de0, delr_1          =  0.621 
+   delr_1, delr_2       =  0.563 
+=======================================================
+*** Q Space***
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 460, 7, 453
+   chi_square         = 34575.741
+   reduced chi_square = 76.326138
+   r-factor           = 0.0089110854
+ 
+[[Data]]
+   fit space          = 'q'
+   r-range            = 1.000, 3.200
+   k-range            = 2.000, 13.500
+   k window, dk       = 'kaiser', 3.000
+   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
+   k-weight           = 2, 3
+   epsilon_k          = 0.000232, 0.000190
+   epsilon_r          = 0.006206, 0.058007
+   n_independent      = 16.106
+ 
+[[Variables]]
+   de0            = -1.401961 +/- 0.723563   (init= -1.429964)
+   delr_1         = -0.030091 +/- 0.008069   (init= -0.030326)
+   delr_2         =  0.049025 +/- 0.006216   (init=  0.048697)
+   n1             =  5.341548 +/- 0.767711   (init=  5.196147)
+   n2             =  12.082721 +/- 1.215497   (init=  12.045503)
+   sig2_1         =  0.012301 +/- 0.002103   (init=  0.011942)
+   sig2_2         =  0.013328 +/- 0.000988   (init=  0.013295)
+ 
+[[Correlations]]    (unreported correlations are &lt;  0.500)
+   n2, sig2_2           =  0.935 
+   de0, delr_2          =  0.898 
+   n1, sig2_1           =  0.892 
+   de0, delr_1          =  0.623 
+   delr_1, delr_2       =  0.566 
+=======================================================
+</pre>
+</div>
+<p>We can see that the results are not very different &#8211; the best fit values
+and uncertainties for the varied parameters are quite close for the fit in
+&#8216;R&#8217; space and &#8216;Q&#8217; space.</p>
+<p>Now, we can try the fit in unfiltered &#8216;K&#8217; space:</p>
+<div class="highlight-python"><pre>larch&gt; pars3 = copy(pars)   # copy parameters
+larch&gt; dset3 = copy(dset)   # copy dataset
+larch&gt; dset3.transform.kweight = 2
+larch&gt; dset3.transform.fitspace = 'k'
+larch&gt; out3 = feffit(pars3, dset3)
+larch  print feffit_report(out3, with_paths=False, min_correl=0.5)</pre>
+</div>
+<p>(we need to specify only one k-weight for a k-space fit) which gives:</p>
+<div class="highlight-python"><pre>*** K Space***
+=================== FEFFIT RESULTS ====================
+[[Statistics]]
+   npts, nvarys, nfree= 230, 7, 223
+   chi_square         = 1.14397e+08
+   reduced chi_square = 512991.04
+   r-factor           = 0.11863982
+ 
+[[Data]]
+   fit space          = 'k'
+   r-range            = 1.000, 3.200
+   k-range            = 2.000, 13.500
+   k window, dk       = 'kaiser', 3.000
+   paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
+   k-weight           = 2
+   epsilon_k          = 0.000232
+   epsilon_r          = 0.006206
+   n_independent      = 16.106
+ 
+[[Variables]]
+   de0            = -1.281853 +/- 2.241267   (init= -1.429964)
+   delr_1         = -0.032992 +/- 0.033970   (init= -0.030326)
+   delr_2         =  0.051794 +/- 0.024663   (init=  0.048697)
+   n1             =  4.921674 +/- 1.940342   (init=  5.196147)
+   n2             =  14.321834 +/- 5.696827   (init=  12.045503)
+   sig2_1         =  0.010947 +/- 0.007784   (init=  0.011942)
+   sig2_2         =  0.014987 +/- 0.004618   (init=  0.013295)
+ 
+[[Correlations]]    (unreported correlations are &lt;  0.500)
+   n2, sig2_2           =  0.920 
+   n1, sig2_1           =  0.873 
+   de0, delr_2          =  0.848 
+   de0, delr_1          =  0.753 
+   delr_1, delr_2       =  0.642 
+=======================================================
+</pre>
+</div>
+<p>This has pretty similar best-fit values, but dramatically larger estimates
+of the errors.  The spectrum is really very poorly fit in k-space because
+we have not accounted for the higher R components.  Using R (and Q) space,
+we&#8217;re able to limit the R range used in determining the parameter values,
+estimated uncertainties, and the goodness-of-fit statistics.  But since we
+can&#8217;t place these limits on what portion of the data is being compared to
+the model spectra in unfiltered k-space fit, the uncertainties reflect the
+fact that the full experimental spectrum is not well model.  This is why it
+is recommended to not fit in unfiltered k space: the uncertainties in the
+parameters is too large.</p>
+<p>Of course, here we&#8217;ve changed only one thing between these three fits &#8211;
+the fitting &#8216;space&#8217;.  The process of copying the parameter group and
+dataset, making modifications and re-doing fits can also include changing
+what parametres are varied, and what constraints are placed between
+parameters.</p>
 </div>
 </div>
 
@@ -1143,6 +1465,7 @@ metal data to data on a simple metal oxide, FeO.</p>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>

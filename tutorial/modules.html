@@ -60,6 +60,7 @@
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
@@ -129,8 +130,8 @@ it into Larch.  The distinction can be subtle, and has to with where the
 variables &#8220;live&#8221; within your larch session.  We&#8217;ll discuss both
 possibilities and their differences here.</p>
 <div class="section" id="running-a-larch-script-with-run">
-<h2>Running a larch script with <tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this headline">¶</a></h2>
-<p>If you have a Larch script, you can run it with the built-in <tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt>
+<h2>Running a larch script with <a class="reference internal" href="builtins.html#run" title="run"><tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt></a><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this headline">¶</a></h2>
+<p>If you have a Larch script, you can run it with the built-in <a class="reference internal" href="builtins.html#run" title="run"><tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt></a>
 function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># file myscript.lar</span>
 <span class="k">print</span> <span class="s">&#39;hello from myscript.lar!&#39;</span>
@@ -178,9 +179,9 @@ we&#8217;ll see more below.</p>
 the name is not in quotes.  The content of the file is still run, and the
 <tt class="docutils literal"><span class="pre">print</span></tt> statements still print output.  But now the variables <tt class="docutils literal"><span class="pre">name</span></tt>,
 <tt class="docutils literal"><span class="pre">phi</span></tt>, and <tt class="docutils literal"><span class="pre">i</span></tt> are held in a group named <tt class="docutils literal"><span class="pre">myscript</span></tt>.  Compared to the
-<tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt> function  above, this provides better organization, as the
+<a class="reference internal" href="builtins.html#run" title="run"><tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt></a> function  above, this provides better organization, as the
 variable names are not in the top-level group, but in their own group.</p>
-<p>The <tt class="docutils literal"><span class="pre">import</span></tt> statement is much more versatile than the <tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt>
+<p>The <tt class="docutils literal"><span class="pre">import</span></tt> statement is much more versatile than the <a class="reference internal" href="builtins.html#run" title="run"><tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt></a>
 function.   First, the <tt class="docutils literal"><span class="pre">import</span></tt> statement looks for files with extensions
 of <tt class="docutils literal"><span class="pre">.lar</span></tt> or <tt class="docutils literal"><span class="pre">.py</span></tt>, so that you can import python modules (files of
 python code) or larch scripts.</p>
@@ -221,6 +222,7 @@ python code) or larch scripts.</p>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>

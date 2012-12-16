@@ -35,4 +35,3 @@ Contents:
    procedures
    modules
    builtins
-   io

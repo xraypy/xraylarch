@@ -38,6 +38,7 @@ The idea is that having these different problem areas connected by a common
    installation
    overview
    tutorial/index.rst
+   data/index.rst
    plotting/index.rst
    fitting/index.rst
    xafs/index.rst

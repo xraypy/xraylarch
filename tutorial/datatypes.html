@@ -60,6 +60,7 @@
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
@@ -260,7 +261,7 @@ object types.</p>
 <h3>Objects<a class="headerlink" href="#objects" title="Permalink to this headline">¶</a></h3>
 <p>All Larch variables are Python objects, and so have a well-defined <strong>type</strong>
 and a set of <strong>attributes</strong> and <strong>methods</strong> that go with it.   To see the
-Python type of any variable, use the builtin <tt class="xref py py-func docutils literal"><span class="pre">type()</span></tt> function:</p>
+Python type of any variable, use the builtin <a class="reference internal" href="builtins.html#type" title="type"><tt class="xref py py-func docutils literal"><span class="pre">type()</span></tt></a> function:</p>
 <div class="highlight-python"><pre>larch&gt; type(1)
 &lt;type 'int'&gt;
 larch&gt; type('1')
@@ -306,7 +307,7 @@ callable methods.</p>
 strings have many attributes and methods, as do the container objects
 (list, array, tuple, dictionary) we&#8217;ll see shortly.</p>
 <p>To get a listing of all the attributes and methods of a object, use the
-builtin <tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt> function:</p>
+builtin <a class="reference internal" href="builtins.html#dir" title="dir"><tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 <span class="p">[</span><span class="s">&#39;__abs__&#39;</span><span class="p">,</span> <span class="s">&#39;__add__&#39;</span><span class="p">,</span> <span class="s">&#39;__and__&#39;</span><span class="p">,</span> <span class="s">&#39;__class__&#39;</span><span class="p">,</span> <span class="s">&#39;__cmp__&#39;</span><span class="p">,</span> <span class="s">&#39;__coerce__&#39;</span><span class="p">,</span> <span class="s">&#39;__delattr__&#39;</span><span class="p">,</span> <span class="s">&#39;__div__&#39;</span><span class="p">,</span> <span class="s">&#39;__divmod__&#39;</span><span class="p">,</span> <span class="s">&#39;__doc__&#39;</span><span class="p">,</span> <span class="s">&#39;__float__&#39;</span><span class="p">,</span> <span class="s">&#39;__floordiv__&#39;</span><span class="p">,</span> <span class="s">&#39;__format__&#39;</span><span class="p">,</span> <span class="s">&#39;__getattribute__&#39;</span><span class="p">,</span> <span class="s">&#39;__getnewargs__&#39;</span><span class="p">,</span> <span class="s">&#39;__hash__&#39;</span><span class="p">,</span> <span class="s">&#39;__hex__&#39;</span><span class="p">,</span> <span class="s">&#39;__index__&#39;</span><span class="p">,</span> <span class="s">&#39;__init__&#39;</span><span class="p">,</span> <span class="s">&#39;__int__&#39;</span><span class="p">,</span> <span class="s">&#39;__invert__&#39;</span><span class="p">,</span> <span class="s">&#39;__long__&#39;</span><span class="p">,</span> <span class="s">&#39;__lshift__&#39;</span><span class="p">,</span> <span class="s">&#39;__mod__&#39;</span><span class="p">,</span> <span class="s">&#39;__mul__&#39;</span><span class="p">,</span> <span class="s">&#39;__neg__&#39;</span><span class="p">,</span> <span class="s">&#39;__new__&#39;</span><span class="p">,</span> <span class="s">&#39;__nonzero__&#39;</span><span class="p">,</span> <span class="s">&#39;__oct__&#39;</span><span class="p">,</span> <span class="s">&#39;__or__&#39;</span><span class="p">,</span> <span class="s">&#39;__pos__&#39;</span><span class="p">,</span> <span class="s">&#39;__pow__&#39;</span><span class="p">,</span> <span class="s">&#39;__radd__&#39;</span><span class="p">,</span> <span class="s">&#39;__rand__&#39;</span><span class="p">,</span> <span class="s">&#39;__rdiv__&#39;</span><span class="p">,</span> <span class="s">&#39;__rdivmod__&#39;</span><span class="p">,</span> <span class="s">&#39;__reduce__&#39;</span><span class="p">,</span> <span class="s">&#39;__reduce_ex__&#39;</span><span class="p">,</span> <span class="s">&#39;__repr__&#39;</span><span class="p">,</span> <span class="s">&#39;__rfloordiv__&#39;</span><span class="p">,</span> <span class="s">&#39;__rlshift__&#39;</span><span class="p">,</span> <span class="s">&#39;__rmod__&#39;</span><span class="p">,</span> <span class="s">&#39;__rmul__&#39;</span><span class="p">,</span> <span class="s">&#39;__ror__&#39;</span><span class="p">,</span> <span class="s">&#39;__rpow__&#39;</span><span class="p">,</span> <span class="s">&#39;__rrshift__&#39;</span><span class="p">,</span> <span class="s">&#39;__rshift__&#39;</span><span class="p">,</span> <span class="s">&#39;__rsub__&#39;</span><span class="p">,</span> <span class="s">&#39;__rtruediv__&#39;</span><span class="p">,</span> <span class="s">&#39;__rxor__&#39;</span><span class="p">,</span> <span class="s">&#39;__setattr__&#39;</span><span class="p">,</span> <span class="s">&#39;__sizeof__&#39;</span><span class="p">,</span> <span class="s">&#39;__str__&#39;</span><span class="p">,</span> <span class="s">&#39;__sub__&#39;</span><span class="p">,</span> <span class="s">&#39;__subclasshook__&#39;</span><span class="p">,</span> <span class="s">&#39;__truediv__&#39;</span><span class="p">,</span> <span class="s">&#39;__trunc__&#39;</span><span class="p">,</span> <span class="s">&#39;__xor__&#39;</span><span class="p">,</span> <span class="s">&#39;conjugate&#39;</span><span class="p">,</span> <span class="s">&#39;denominator&#39;</span><span class="p">,</span> <span class="s">&#39;imag&#39;</span><span class="p">,</span> <span class="s">&#39;numerator&#39;</span><span class="p">,</span> <span class="s">&#39;real&#39;</span><span class="p">]</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="s">&#39;a string&#39;</span><span class="p">)</span>
@@ -331,7 +332,7 @@ larch&gt; print myvar
 22.13</pre>
 </div>
 <p>You can create your own groups and add data to it with the builtin
-<tt class="xref py py-meth docutils literal"><span class="pre">group()</span></tt> function:</p>
+<a class="reference internal" href="builtins.html#group" title="group"><tt class="xref py py-meth docutils literal"><span class="pre">group()</span></tt></a> function:</p>
 <div class="highlight-python"><pre>larch&gt; g = group()
 larch&gt; g
 &lt;Group&gt;</pre>
@@ -348,14 +349,14 @@ larch&gt; print g.x/5
 from the above discussion of objects, the &#8216;.&#8217; (dot) notation implies that
 &#8216;x&#8217;, &#8216;name&#8217;, and &#8216;data&#8217; are attributes of &#8216;g&#8217; &#8211; that&#8217;s entirely correct.
 Groups have no other properties than the data attributes (and functions)
-you add to them.  Since they&#8217;re objects, you can use the <tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt>
+you add to them.  Since they&#8217;re objects, you can use the <a class="reference internal" href="builtins.html#dir" title="dir"><tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt></a>
 function as above:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>(Note that the order shown may vary).  You can also use the builtin
-<tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt> function to get a slightly more complete view of the group&#8217;s
+<a class="reference internal" href="builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function to get a slightly more complete view of the group&#8217;s
 contents:</p>
 <div class="highlight-python"><pre>larch&gt; show(g)
 == Group 0x1b8cbfb0: 3 symbols ==
@@ -364,7 +365,7 @@ contents:</p>
   x: 1002.8</pre>
 </div>
 <p>(The <strong>&#8216;0x1b8cbfb0&#8217;</strong> is discussed in more detail below in
-<a class="reference internal" href="#tutor-objectids-sec"><em>Object identities, copying, and equality vs. identity</em></a>).  The <tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt> function can take arguments
+<a class="reference internal" href="#tutor-objectids-sec"><em>Object identities, copying, and equality vs. identity</em></a>).  The <a class="reference internal" href="builtins.html#group" title="group"><tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt></a> function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
@@ -526,7 +527,7 @@ optional custom comparison function passed in), do this:</p>
 </pre></div>
 </div>
 <p>as that will sort the list, then happily set &#8216;my_list&#8217; to None.</p>
-<p>You can get the length of a list with the built-in <tt class="xref py py-func docutils literal"><span class="pre">len()</span></tt> function,
+<p>You can get the length of a list with the built-in <a class="reference internal" href="builtins.html#len" title="len"><tt class="xref py py-func docutils literal"><span class="pre">len()</span></tt></a> function,
 and test whether a particular element is in a list with the <cite>in</cite> operator:</p>
 <div class="highlight-python"><pre>larch&gt; my_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
 larch&gt; print len(my_list)
@@ -802,14 +803,14 @@ of data they can hold.   In Python and Larch, all objects point to some
 value.  For mutable data types, the value is allowed to change.  In
 addition, what the object points to can also change.</p>
 <p>Each object value has a unique memory location &#8211; its identity.  The
-builtin <tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt> function returns this identity.  Two variables are said
+builtin <a class="reference internal" href="builtins.html#id" title="id"><tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt></a> function returns this identity.  Two variables are said
 to be <em>identical</em> if their values have the same identity &#8211; the variables
 point to the same quantitiy.  Two variabales are <em>equal</em> if their values
 are the same, even if these values are held in different memory locations.
 And, of course, two different variables can point to the same object.</p>
 <p>You can test both equality (whether two variables hold equal value) and identity
 (whether two variables point to the same value).   First, the builtin
-<tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt> function will give the identity (essentially, the memory
+<a class="reference internal" href="builtins.html#id" title="id"><tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt></a> function will give the identity (essentially, the memory
 location) of a variable:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="nb">id</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -817,7 +818,7 @@ location) of a variable:</p>
 </pre></div>
 </div>
 <p>(the value shown will be different each time you run Larch).  Now if we
-assign another variable to <tt class="docutils literal"><span class="pre">x</span></tt>, we can use <tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt> to see why changing
+assign another variable to <tt class="docutils literal"><span class="pre">x</span></tt>, we can use <a class="reference internal" href="builtins.html#id" title="id"><tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt></a> to see why changing
 the value of one changes the value of the other:</p>
 <div class="highlight-python"><pre>larch&gt; y = x
 larch&gt; id(y)
@@ -844,7 +845,7 @@ the  boolean operator <cite>is</cite>.  So:</p>
 </pre></div>
 </div>
 <p>If you want to make a copy of a mutable object, you can use the builtin
-<tt class="xref py py-func docutils literal"><span class="pre">copy()</span></tt> function:</p>
+<a class="reference internal" href="builtins.html#copy" title="copy"><tt class="xref py py-func docutils literal"><span class="pre">copy()</span></tt></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">q</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">q</span> <span class="o">==</span> <span class="n">z</span><span class="p">,</span> <span class="n">q</span> <span class="ow">is</span> <span class="n">z</span>
 <span class="p">(</span><span class="bp">True</span><span class="p">,</span> <span class="bp">False</span><span class="p">)</span>
@@ -876,7 +877,7 @@ make a new copy of the group but another reference to the same group:</p>
 <span class="bp">True</span>
 </pre></div>
 </div>
-<p>If ask for the group to be printed or run the <tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt> function on a group:</p>
+<p>If ask for the group to be printed or run the <a class="reference internal" href="builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function on a group:</p>
 <div class="highlight-python"><pre>larch&gt; g
 &lt;Group 0x6bf17f0&gt;
 larch&gt; show(g)
@@ -919,6 +920,7 @@ another variable that points to the same value.</p>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>

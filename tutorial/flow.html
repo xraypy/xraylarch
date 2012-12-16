@@ -60,6 +60,7 @@
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
@@ -303,7 +304,7 @@ endfor</pre>
 </div>
 <p>Compared to a C for loop or Fortran do loop, the Larch for loop is much
 more like a  <em>foreach</em> loop.  The common C / Fortran use case of interating
-over a set of integers can be emulated using the builtin <tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt>
+over a set of integers can be emulated using the builtin <a class="reference internal" href="builtins.html#range" title="range"><tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt></a>
 function which generates a sequence of integers.   Thus:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">):</span>
    <span class="k">print</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="o">/</span><span class="mf">2.0</span>
@@ -318,10 +319,10 @@ function which generates a sequence of integers.   Thus:</p>
 <span class="mi">4</span><span class="p">,</span> <span class="mf">2.0</span>
 </pre></div>
 </div>
-<p>Note that the builtin <tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt> function generates a sequence of
+<p>Note that the builtin <a class="reference internal" href="builtins.html#range" title="range"><tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt></a> function generates a sequence of
 integers, and can take more than 1 argument to indicate a starting value
 and step.  It is important to note that the sequence that is iterated order
-does not be generated from the <tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt> function, but can be any list,
+does not be generated from the <a class="reference internal" href="builtins.html#range" title="range"><tt class="xref py py-func docutils literal"><span class="pre">range()</span></tt></a> function, but can be any list,
 array, or Python sequence.  Importantly, this includes strings(!) so that:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">for</span> <span class="n">char</span> <span class="ow">in</span> <span class="s">&#39;hello&#39;</span><span class="p">:</span>  <span class="k">print</span> <span class="n">char</span>
 </pre></div>
@@ -375,7 +376,7 @@ c 3
 b 2
 d 4</pre>
 </div>
-<p>The builtin <tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt> function is similarly useful, turning a sequence of
+<p>The builtin <a class="reference internal" href="builtins.html#zip" title="zip"><tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt></a> function is similarly useful, turning a sequence of
 lists or arrays into a sequence of tuples of the corresponding elements of
 the lists or arrays.  Thus:</p>
 <div class="highlight-python"><pre>larch&gt; a = range(10)
@@ -385,9 +386,9 @@ larch&gt; print zip(a, b, c)
 [(0, 0.0, 1.0), (1, 0.8414709848078965, 0.54030230586813977),
  (2, 0.90929742682568171, -0.41614683654714241), ....]</pre>
 </div>
-<p>(Note that for arrays or lists of unequal length, <tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt> will return
+<p>(Note that for arrays or lists of unequal length, <a class="reference internal" href="builtins.html#zip" title="zip"><tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt></a> will return
 tuples until any of its arguments runs out of elements).   Thus a for loop
-can make use of the <tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt> function to iterate over multiple arrays:</p>
+can make use of the <a class="reference internal" href="builtins.html#zip" title="zip"><tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt></a> function to iterate over multiple arrays:</p>
 <div class="highlight-python"><pre>larch&gt; a = arange(101)/10.0
 larch&gt; print 'X   SIN(X)  SIN(Y)\n================\n'
 larch&gt; for a, sval, cval in zip(a, sin(a), cos(a)):
@@ -395,7 +396,7 @@ larch&gt; for a, sval, cval in zip(a, sin(a), cos(a)):
 .....&gt; endfor</pre>
 </div>
 <p>will print a table of sine and cosine values.</p>
-<p>A final utility of note for loops is <tt class="xref py py-func docutils literal"><span class="pre">enumerate()</span></tt> which will return a
+<p>A final utility of note for loops is <a class="reference internal" href="builtins.html#enumerate" title="enumerate"><tt class="xref py py-func docutils literal"><span class="pre">enumerate()</span></tt></a> which will return a
 tuple of (index, value) for a sequence.   That is:</p>
 <div class="highlight-python"><pre>larch&gt; for i, a in ('a', b', 'c'):
 .....&gt;     print i, a
@@ -508,6 +509,7 @@ while loop:</p>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
    <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
    <li><a href="../fitting/index.html">fit</a>|&nbsp;</li>
    <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
