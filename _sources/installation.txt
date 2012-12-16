@@ -2,15 +2,14 @@
 Downloading and Installation
 ====================================
 
-
-.. _larch-0.9.16.tgz: http://cars9.uchicago.edu/software/python/larch/src/larch-0.9.16.tgz
-.. _larch-0.9.16.exe: http://cars9.uchicago.edu/software/python/larch/src/larch-0.9.16.exe
-.. _larch github repository:   http://github.com/xraypy/xraylarch
+.. _larch-0.9.17.tgz:  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.tgz
+.. _larch-0.9.17.exe:  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.exe
+.. _larch github repository: http://github.com/xraypy/xraylarch
 
 Binary Installation
 =========================
 
-A binary installer,  `larch-0.9.16.exe`_,  is available for Windows.  This
+A binary installer, `larch-0.9.17.exe`_,  is available for Windows.  This
 installs a working version of the larch command-line program onto your
 system.  To date, testing has been fairly minimal.  If you try this out,
 please send positive and negative feedback to the Ifeffit mailing list.
@@ -37,7 +36,7 @@ strongly encouraged (and some functionality depends on it).  These are
 simply installed as standard packages on almost all platforms.
 
 
-You can either download the tarball,  `larch-0.9.16.tgz`_,  or use the
+You can either download the tarball,  `larch-0.9.17.tgz`_,  or use the
 development version from the `larch github repository`_.  To
 get a read-only copy of the latest version, use::
 
@@ -49,16 +48,16 @@ Installation
 
 Installation from source on any platform is::
 
-   tar xvzf larch-0.9.16.tgz
-   cd larch-0.9.16/
+   tar xvzf larch-0.9.XX.tgz
+   cd larch-0.9.XX/
    python setup.py install
-
 
 License
 ============
 
-This code and all material associated with it are distributed under the
-BSD License:
+Except where explicitly noted in the indivdidal files, the code,
+documentation, and all material associated with Larch are distributed under
+the BSD License:
 
 
 .. literalinclude:: ../COPYING

@@ -10,7 +10,7 @@ in EXAFS analysis, converting the measured :math:`\mu(E)` into the
 :math:`\chi(k)` ready for quantitative analysis.  In Larch, this step is
 performed by the :func:`autobk` function, which has many options and
 subtleties.  This section is devoted to background subtraction with the
-:math:`autobk` function and the underlying algorithm it uses.
+:func:`autobk` function and the underlying algorithm it uses.
 
 The :func:`autobk` function
 =============================

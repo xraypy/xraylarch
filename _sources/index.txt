@@ -34,12 +34,11 @@ The idea is that having these different problem areas connected by a common
 .. toctree::
    :maxdepth: 1
 
-   contents
    installation
    overview
    tutorial/index.rst
-   data/index.rst
    plotting/index.rst
+   data/index.rst
    fitting/index.rst
    xafs/index.rst
    xray/index.rst

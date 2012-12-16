@@ -25,10 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.17 documentation" href="../index.html" />
-    <link rel="up" title="XAFS Analysis" href="index.html" />
-    <link rel="next" title="X-ray Databases" href="../xray/index.html" />
-    <link rel="prev" title="XAFS: Reading and using Feff Paths" href="feffpaths.html" /> 
+    <link rel="top" title="larch 0.9.17 documentation" href="../index.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left;
@@ -51,12 +48,6 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
-        <li class="right" >
-          <a href="../xray/index.html" title="X-ray Databases"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="feffpaths.html" title="XAFS: Reading and using Feff Paths"
-             accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -66,8 +57,7 @@
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xray/xrf.html">XRF</a>|&nbsp;</li>
-
-          <li><a href="index.html" accesskey="U">XAFS Analysis</a> &raquo;</li> 
+ 
       </ul>
     </div>
 
@@ -90,12 +80,6 @@
 </li>
 </ul>
 
-  <h4>Previous topic</h4>
-  <p class="topless"><a href="feffpaths.html"
-                        title="previous chapter">XAFS: Reading and using Feff Paths</a></p>
-  <h4>Next topic</h4>
-  <p class="topless"><a href="../xray/index.html"
-                        title="next chapter">X-ray Databases</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/feffit.txt"
@@ -1147,7 +1131,7 @@ Instead, we&#8217;ll define parameters <tt class="docutils literal"><span class=
 amplitude to be <tt class="docutils literal"><span class="pre">s02*n1</span></tt> and the Fe-Fe path&#8217;s amplitude to be <tt class="docutils literal"><span class="pre">s02*n2</span></tt>.
 We&#8217;ll allow <tt class="docutils literal"><span class="pre">n1</span></tt> and <tt class="docutils literal"><span class="pre">n2</span></tt> to vary in the fit, and also define variable
 parameters for the other path parameters, including separate variables for
-<img class="math" src="../_images/math/7d545c3c0b81e9752d292d66ebd0e4e8f72f4fc3.png" alt="\delta_R"/> and <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/>.  The script for this fit is below:</p>
+<img class="math" src="../_images/math/3b949109c5d7b0ce70c280f17cfc63036d7ccc96.png" alt="\Delta R"/> and <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/>.  The script for this fit is below:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffit4.lar</span>
 
 <span class="n">feo_dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;feo_xafs.dat&#39;</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="s">&#39;energy xmu&#39;</span><span class="p">)</span>
@@ -1456,12 +1440,6 @@ parameters.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
-        <li class="right" >
-          <a href="../xray/index.html" title="X-ray Databases"
-             >next</a> |</li>
-        <li class="right" >
-          <a href="feffpaths.html" title="XAFS: Reading and using Feff Paths"
-             >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../installation.html">download</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -1471,8 +1449,7 @@ parameters.</p>
    <li><a href="index.html">XAFS</a>|&nbsp;</li>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xray/xrf.html">XRF</a>|&nbsp;</li>
-
-          <li><a href="index.html" >XAFS Analysis</a> &raquo;</li> 
+ 
       </ul>
     </div>
     <div class="footer">
