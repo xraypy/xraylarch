@@ -2,10 +2,9 @@
 Downloading and Installation
 ====================================
 
-
-.. _larch-0.9.17.tgz: http://xraypy.github.com/xraylarch/dist/larch-0.9.17.tgz
-.. _larch-0.9.17.exe: http://xraypy.github.com/xraylarch/dist/larch-0.9.17.exe
-.. _larch github repository:   http://github.com/xraypy/xraylarch
+.. _larch-0.9.17.tgz:  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.tgz
+.. _larch-0.9.17.exe:  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.exe
+.. _larch github repository: http://github.com/xraypy/xraylarch
 
 Binary Installation
 =========================
