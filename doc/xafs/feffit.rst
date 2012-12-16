@@ -512,7 +512,7 @@ Instead, we'll define parameters ``n1`` and ``n2``, and set the Fe-O path's
 amplitude to be ``s02*n1`` and the Fe-Fe path's amplitude to be ``s02*n2``.
 We'll allow ``n1`` and ``n2`` to vary in the fit, and also define variable
 parameters for the other path parameters, including separate variables for
-:math:`\delta_R` and :math:`\sigma^2`.  The script for this fit is below:
+:math:`\Delta R` and :math:`\sigma^2`.  The script for this fit is below:
 
 .. literalinclude:: ../../examples/feffit/doc_feffit4.lar
 
