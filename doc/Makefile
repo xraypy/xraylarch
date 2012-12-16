@@ -6,7 +6,7 @@ SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
 BUILDDIR      = _build
 
-INSTALLDIR = /www/apache/htdocs/software/python/larch
+INSTALLDIR = ../downloads/
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4

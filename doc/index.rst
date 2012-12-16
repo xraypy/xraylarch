@@ -32,6 +32,15 @@ The idea is that having these different problem areas connected by a common
 *macro language* will strengthen the analytic tools for all of them.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
-   contents
+   installation
+   overview
+   tutorial/index.rst
+   plotting/index.rst
+   data/index.rst
+   fitting/index.rst
+   xafs/index.rst
+   xray/index.rst
+   xrf/index.rst
+   devel/index.rst
