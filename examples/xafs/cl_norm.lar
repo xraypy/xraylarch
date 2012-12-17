@@ -1,0 +1,41 @@
+##          mod  = a0 + ex * (a1 + a2 * ex) + spldat(i) * st
+##          fv(i) = (mod - xmudat(i)) * splfit(i)
+
+fname = 'cu_rt01.xmu'
+cu = read_ascii(fname, labels='energy xmu i0')
+pre_edge(cu.energy, cu.xmu, group=cu)
+
+cu.f1, cu.f2 = f1f2_cl(29, cu.energy, width=3)
+
+step, e0 = pre_edge(cu.energy, cu.f2, e0=cu.e0)
+cu.en = (cu.energy-e0)/1000.
+cu.f2 = cu.f2 / step
+
+# create a group of fit parameters
+params = group(offset = guess(-.0),
+               slope  = guess(0.001),
+               step   = guess(1.0) )
+
+init = params.offset + cu.en * params.slope + cu.f2 * params.step
+
+# define objective function for fit residual
+def resid(p, dat):
+    model = p.offset + dat.en * p.slope + dat.f2 * p.step
+    return (dat.xmu - model)
+enddef
+
+# perform fit
+minimize(resid, params, args=(cu,))
+
+# make final array
+final = params.offset + cu.en * params.slope + cu.f2 * params.step
+
+# plot results
+plot(cu.energy, cu.xmu, label='data', show_legend=True, new=True)
+plot(cu.energy,   init, label='initial', color='black', style='dotted')
+plot(cu.energy,  final, label='final', color='black', style='solid')
+
+# print report of parameters, uncertainties
+print fit_report(params)
+
+##
