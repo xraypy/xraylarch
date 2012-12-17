@@ -59,6 +59,7 @@ def f1f2(z, energies, width=None, edge=None, _larch=None):
         estep = (en[1:] - en[:-1]).min()
         emin = min(en) - e_extra
         emax = max(en) + e_extra
+
         npts = 1 + abs(emax-emin+estep*0.02)/abs(estep)
         en   = np.linspace(emin, emax, npts)
         nk   = int(e_extra / estep)
@@ -78,14 +79,11 @@ def f1f2(z, energies, width=None, edge=None, _larch=None):
         p_en[i] = en[i]
 
     nout = CLLIB.f1f2(p_z, p_npts, p_en, p_f1, p_f2)
-    if nout == 0:
-        f1 = np.array([i for i in p_f1[:npts]])
-        f2 = np.array([i for i in p_f2[:npts]])
-
+    f1 = np.array([i for i in p_f1[:]])
+    f2 = np.array([i for i in p_f2[:]])
     if width is not None: # do the convolution
         f1 = np.interp(energies, en, convolve(f1, lor)[nk:-nk])/scale
         f2 = np.interp(energies, en, convolve(f2, lor)[nk:-nk])/scale
-
     return (f1, f2)
 
 def loren(x, cen=0, sigma=1):

@@ -18,7 +18,7 @@ c  matthew newville oct 1996
        integer  iz, npts
        integer  i, j, k, nxpts, maxpts
        integer  nparms(92,24), norb(92), nparmz(24), norbz
-       parameter  (maxpts = 2048)
+       parameter  (maxpts = 65536)
        double precision  binden(92,24), xnrg(92,24,11), xsc(92,24,11)
        double precision  benaz(24),    xnrgz(24,11),   xscz(24,11)
        double precision  relcor(92), kpcor(92), xnrdat(5), kev2ry
