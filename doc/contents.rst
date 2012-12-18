@@ -8,8 +8,8 @@ Table of Contents
    downloads/index.rst
    overview/index.rst
    tutorial/index.rst
-   plotting/index.rst
    data/index.rst
+   plotting/index.rst
    fitting/index.rst
    xafs/index.rst
    xray/index.rst
