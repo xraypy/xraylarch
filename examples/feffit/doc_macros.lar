@@ -123,9 +123,13 @@ enddef
 
 def write_report(filename, out):
     "write report to file"
-    f = open(filename, 'w')
-    f.write(out)
-    f.close()
+    try:
+        f = open(filename, 'w')
+        f.write(out)
+        f.close()
+    except:
+        print 'could not write %s' % filename
+    endtry
 enddef
 
 ## end of examples/feffit/doc_macros.lar

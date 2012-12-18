@@ -26,9 +26,13 @@ dset  = feffit_dataset(data=cu_data, pathlist=[path1], transform=trans)
 out = feffit(pars, dset)
 
 print feffit_report(out)
-fout = open('doc_feffit1.out', 'w')
-fout.write(feffit_report(out))
-fout.close()
+try:
+    fout = open('doc_feffit1.out', 'w')
+    fout.write(feffit_report(out))
+    fout.close()
+except:
+    print 'could not write doc_feffit1.lar'
+endtry
 
 plot(dset.data.k,  dset.data.chi *dset.data.k**2, new=True,
      xlabel=r'$k \rm\,(\AA^{-1})$', label='data',
