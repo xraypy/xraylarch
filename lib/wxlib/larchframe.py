@@ -299,9 +299,16 @@ class LarchFrame(wx.Frame):
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         ret = dlg.ShowModal()
         if ret == wx.ID_YES:
-            self.input.SaveHistory()
-            self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
-            self.Destroy()
+            try:
+                self.input.SaveHistory()
+                self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
+            except:
+                pass
+            try:
+                self.Destroy()
+            except:
+                pass
+            sys.exit()
         else:
             try:
                 event.Veto()

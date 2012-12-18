@@ -70,7 +70,10 @@ class ReadlineTextCtrl(wx.TextCtrl):
         # 2. other non-text characters are passed without change
         if key == wx.WXK_UP:
             self.hist_mark = max(0, self.hist_mark-1)
-            self.SetValue(self.hist_buff[self.hist_mark])
+            try:
+                self.SetValue(self.hist_buff[self.hist_mark])
+            except:
+                pass
             self.SetInsertionPointEnd()
             do_skip = False
         elif key == wx.WXK_DOWN:
