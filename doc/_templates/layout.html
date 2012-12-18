@@ -1,6 +1,7 @@
 {% extends "!layout.html" %}
 
 {% block rootrellink %}
+   <li><a href="{{ pathto('index')}}">larch</a>|&nbsp;</li>
    <li><a href="{{ pathto('contents')}}">contents</a>|&nbsp;</li>
    <li><a href="{{ pathto('downloads/index') }}">downloads</a>|&nbsp;</li>
    <li><a href="{{ pathto('tutorial/index') }}">tutorial</a>|&nbsp;</li>
@@ -17,7 +18,7 @@
             height:100px; padding: 0">
 <table><tr>
   <td width=20% padding=0>
-    <a href="#">
+    <a href="{{pathto('index')}}">
        <img src="{{pathto("_static/larchcones.png", 1)}}" width=90% alt="larchcones"/>
     </a>
   </td><td width=80% padding=0>
