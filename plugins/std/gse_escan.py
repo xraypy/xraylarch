@@ -526,16 +526,16 @@ class EscanData:
                 self.dt_factor.shape = (self.dt_factor.shape[0], ny, nx)
 
             self.x = self.pos[0,0,:]
-            try:
-                self.realtime = self.pos[2,:,:]
-            except:
-                self.realtime = self.pos[1,:,:]
+            #try:
+            #    #self.realtime = self.pos[2,:,:]
+            #except:
+            #    self.realtime = self.pos[1,:,:]
         else:
             self.x        = self.pos[0]
-            try:
-                self.realtime = self.pos[2]
-            except:
-                self.realtime = self.pos[1]
+            #try:
+            #    self.realtime = self.pos[2]
+            #except:
+            #    self.realtime = self.pos[1]
             nx = len(self.x)
             self.y = []
 
