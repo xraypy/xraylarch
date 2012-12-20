@@ -12,13 +12,13 @@ except ImportError:
     print "Error: Escan_data can't load numpy"
     sys.exit(1)
 
-has_h5 = False
-# try:
-#     import h5py
-#     has_h5 = True
-# except ImportError:
-#     print "Warning HDF5 not available"
-#     has_h5 = False
+# has_h5 = False
+try:
+    import h5py
+    has_h5 = True
+except ImportError:
+    print "Warning HDF5 not available"
+    has_h5 = False
 
 def _cleanfile(x):
     for o in ' ./?(){}[]",&%^#@$': x = x.replace(o,'_')
@@ -259,7 +259,7 @@ class EscanData:
         scangroup = add_group(maingroup,'scan', attrs=scan_attrs)
 
         scan_data = ['det', 'pos', 'sums','sums_list', 'sums_names',
-                     'scan_regions', 'user_titles', 'realtime',
+                     'scan_regions', 'user_titles', # 'realtime',
                      'pos_desc', 'pos_addr', 'det_desc', 'det_addr']
 
         for attr in scan_data:
@@ -584,6 +584,7 @@ class EscanData:
         col_details = []
         col_legend = None
         ntotal_at_2d = []
+        ny_counter = 0
         mode = None
         while lines:
             key, raw = self._getline(lines)
@@ -604,7 +605,9 @@ class EscanData:
                 mode = None
                 if len(tmp_dat)>0:
                     ntotal_at_2d.append(len(tmp_dat))
-
+                print '.',
+                if len(tmp_y) % 50 == 0: print
+                    
             elif mode == 'epics scan':             # real numeric column data
                 print 'Warning: file appears to have a second scan appended!'
                 break
