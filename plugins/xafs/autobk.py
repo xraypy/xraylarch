@@ -36,21 +36,21 @@ def spline_eval(kraw, mu, knots, coefs, order, kout):
 
 def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
             kraw=None, mu=None, kout=None, ftwin=1, kweight=1, chi_std=None,
-            nclamp=2, clamp_lo=1, clamp_hi=1, **kws):
+            nclamp=0, clamp_lo=1, clamp_hi=1, **kws):
 
     coefs = [getattr(pars, FMT_COEF % i) for i in range(ncoefs)]
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     if chi_std is not None:
         chi = chi - chi_std
-    sum2 = (chi*chi).sum() * nclamp / 10.0
-    out = realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
+    out = np.zeros(2*(irbkg+nclamp))
+    out[:2*irbkg] = realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
 
+    sum2 = (chi*chi).sum() * nclamp / 10.0
     if clamp_lo > 0 and nclamp > 0:
-        out = np.concatenate((out, clamp_lo*chi[:nclamp]/sum2))
-    #print clamp_hi, nclamp, sum2, len(coefs),
-    #print kout[-nclamp:]**kweight*clamp_hi*chi[-nclamp:]/sum2
+        out[-2*nclamp:-nclamp]=  clamp_lo*chi[:nclamp]/sum2
     if clamp_hi > 0 and nclamp > 0:
-        out = np.concatenate((out, clamp_hi*chi[-nclamp:]*(kout[-nclamp:]**kweight)/sum2))
+        out[-nclamp:] = \
+                      clamp_hi*chi[-nclamp:]*(kout[-nclamp:]**kweight)/sum2
     return out
 
 def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
