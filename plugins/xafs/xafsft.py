@@ -6,7 +6,8 @@ import sys
 import numpy as np
 from numpy import (pi, arange, zeros, ones, sin, cos,
                    exp, log, sqrt, where, interp, linspace)
-from numpy.fft import fft, ifft
+# from numpy.fft import fft, ifft
+from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
 import larch
@@ -115,7 +116,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         fwin =  exp(-(((x - cen)**2)/(2*dx1*dx1)))
     return fwin
 
-def xftr(r, chir, group=None, rmin=0, rmax=20,
+def xftr(r, chir, group=None, rmin=0, rmax=20, with_phase=False,
             dr=1, dr2=None, rw=0, window='kaiser', qmax_out=None,
             nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -139,7 +140,8 @@ def xftr(r, chir, group=None, rmin=0, rmax=20,
       window:   name of window type
       nfft:     value to use for N_fft (2048).
       kstep:    value to use for delta_k (0.05).
-
+      with_phase: output the phase as well as magnitude, real, imag  [False]
+      
     Returns:
     ---------
       None -- outputs are written to supplied group.
@@ -151,9 +153,11 @@ def xftr(r, chir, group=None, rmin=0, rmax=20,
 	q                  uniform array of k, out to qmax_out.
 	chiq               complex array of chi(k).
 	chiq_mag           magnitude of chi(k).
-	chiq_pha           phase of chi(k).
 	chiq_re            real part of chi(k).
 	chiq_im            imaginary part of chi(k).
+	chiq_pha           phase of chi(k) if with_phase=True
+                           (a noticable performance hit)
+
 
     """
     if _larch is None:
@@ -183,11 +187,13 @@ def xftr(r, chir, group=None, rmin=0, rmax=20,
         group.rwin =  win[:len(chir)]
         group.chiq     =  out[:nkpts]
         group.chiq_mag =  mag[:nkpts]
-        group.chiq_pha =  complex_phase(out[:nkpts])
         group.chiq_re  =  out.real[:nkpts]
         group.chiq_im  =  out.imag[:nkpts]
+        if with_phase:
+            group.chiq_pha =  complex_phase(out[:nkpts])
 
-def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
+
+def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None, with_phase=False,
            window='kaiser', rmax_out=10, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     forward XAFS Fourier transform, from chi(k) to chi(R), using
@@ -207,6 +213,7 @@ def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
       window:   name of window type
       nfft:     value to use for N_fft (2048).
       kstep:    value to use for delta_k (0.05 Ang^-1).
+      with_phase: output the phase as well as magnitude, real, imag  [False]
 
     Returns:
     ---------
@@ -219,9 +226,10 @@ def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
 	r                  uniform array of R, out to rmax_out.
 	chir               complex array of chi(R).
 	chir_mag           magnitude of chi(R).
-	chir_pha           phase of chi(R).
 	chir_re            real part of chi(R).
 	chir_im            imaginary part of chi(R).
+	chir_pha           phase of chi(R) if with_phase=True
+                           (a noticable performance hit)
 
     """
     if _larch is None:
@@ -246,9 +254,11 @@ def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
         group.r    =  r[:irmax]
         group.chir =  out[:irmax]
         group.chir_mag =  mag[:irmax]
-        group.chir_pha =  complex_phase(out[:irmax])
         group.chir_re  =  out.real[:irmax]
         group.chir_im  =  out.imag[:irmax]
+        if with_phase:
+            group.chir_pha =  complex_phase(out[:irmax])
+
 
 def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
                 window='kaiser', nfft=2048, kstep=0.05, _larch=None):
@@ -263,9 +273,9 @@ def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
     npts = int(1.01 + max(k)/kstep)
     k_max = max(max(k), kmax+dk2)
     k_   = kstep * np.arange(int(1.01+k_max/kstep), dtype='float64')
-    chi_ = interp(k_, k, chi)
+    #chi_ = interp(k_, k, chi)
     win  = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
-    return ((chi_ *k_**kweight)[:npts], win[:npts])
+    return ((chi[:npts] *k_[:npts]**kweight), win[:npts])
 
 def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
