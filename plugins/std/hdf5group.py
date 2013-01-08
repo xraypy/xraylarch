@@ -48,7 +48,7 @@ def h5group(fname, _larch=None):
     """
     if _larch is None:
         raise Warning("cannot run h5group: larch broken?")
-    fh = h5py.File(fname, mode)
+    fh = h5py.File(fname, 'r')
     group = _larch.symtable.create_group
 
     def add_component(key, val, top):

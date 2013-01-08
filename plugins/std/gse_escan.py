@@ -526,16 +526,8 @@ class EscanData:
                 self.dt_factor.shape = (self.dt_factor.shape[0], ny, nx)
 
             self.x = self.pos[0,0,:]
-            #try:
-            #    #self.realtime = self.pos[2,:,:]
-            #except:
-            #    self.realtime = self.pos[1,:,:]
         else:
-            self.x        = self.pos[0]
-            #try:
-            #    self.realtime = self.pos[2]
-            #except:
-            #    self.realtime = self.pos[1]
+            self.x = self.pos[0]
             nx = len(self.x)
             self.y = []
 
@@ -605,9 +597,6 @@ class EscanData:
                 mode = None
                 if len(tmp_dat)>0:
                     ntotal_at_2d.append(len(tmp_dat))
-                print '.',
-                if len(tmp_y) % 50 == 0: print
-                    
             elif mode == 'epics scan':             # real numeric column data
                 print 'Warning: file appears to have a second scan appended!'
                 break
