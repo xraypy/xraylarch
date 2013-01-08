@@ -59,6 +59,12 @@ else:
 # can we, and should we, use wx?
 HAS_WX = False
 if not options.nowx:
+    if not hasattr(sys, 'frozen'):
+        try:
+            import wxversion
+            wxversion.ensureMinimal('2.8')
+        except:
+            pass
     try:
         import wx
         HAS_WX = True

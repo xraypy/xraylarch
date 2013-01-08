@@ -8,6 +8,14 @@ tweaked by M Newville, based on reading modified inputhookwx from IPython
 
 import sys
 import time
+
+if not hasattr(sys, 'frozen'):
+    try:
+        import wxversion
+        wxversion.ensureMinimal('2.8')
+    except:
+        pass
+
 import wx
 from time import sleep
 from select import select

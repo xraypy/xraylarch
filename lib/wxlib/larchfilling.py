@@ -9,10 +9,18 @@ __author__ = "Patrick K. O'Brien <pobrien@orbtech.com>"
 __cvsid__ = "$Id: filling.py 37633 2006-02-18 21:40:57Z RD $"
 __revision__ = "$Revision: 37633 $"
 
+
+import sys
+if not hasattr(sys, 'frozen'):
+    try:
+        import wxversion
+        wxversion.ensureMinimal('2.8')
+    except:
+        pass
+
 import wx
 import numpy
 import wx.html as html
-import sys
 import types
 from  cStringIO import StringIO
 from wx.py import dispatcher
