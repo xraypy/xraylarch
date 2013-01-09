@@ -33,7 +33,7 @@ def js2ascii(inp):
 
 def messenger(cpt=0, npts=1, scan=None, **kws):
     if cpt == 1:
-        print dir(scan)
+        pass # print dir(scan)
     msg = '%i,' % cpt
     if cpt % 15 == 0: msg = "%s\n" % msg
     # print [d.buff for d in scan.counters]
