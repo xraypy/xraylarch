@@ -16,7 +16,9 @@ def run_scanfile(scanfile):
     fh = open(scanfile, 'r')
     text = fh.read()
     fh.close()
-    run_scan(text)
+    conf = json.loads(text, object_hook=js2ascii)
+    run_scan(conf)
+
 
 def js2ascii(inp):
     """convert unicode in json text to ASCII"""
@@ -38,9 +40,7 @@ def messenger(cpt=0, npts=1, scan=None, **kws):
     sys.stdout.write(msg)
     sys.stdout.flush()
     
-def run_scan(json_text):
-    conf = json.loads(json_text, object_hook=js2ascii)
-
+def run_scan(conf):
     if conf['type'] == 'xafs':
         scan  = XAFS_Scan()
         isrel = conf['is_relative']
@@ -71,11 +71,11 @@ def run_scan(json_text):
                 scan.add_counter(pvs[1], label="%s(read)" % label)
 
     for det in conf['detectors']:
-        name = det.pop('prefix')
-        scan.add_detector(get_detector(name, **det))
+        scan.add_detector(get_detector(**det))
 
-    for label, pvname  in conf['counters']:
-        scan.add_counter(pvname, label=label)
+    if 'counters' in conf:
+        for label, pvname  in conf['counters']:
+            scan.add_counter(pvname, label=label)
 
     scan.add_extra_pvs(conf['extra_pvs'])
 
