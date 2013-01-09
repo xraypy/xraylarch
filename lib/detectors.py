@@ -136,7 +136,7 @@ class MotorCounter(Counter):
         pvname = '%s.RBV' % prefix
         if label is None:
             label = "%s(actual)" % caget('%s.DESC' % prefix)
-        Counter.__init__(self, pvname, label=label, rtype='motor')
+        Counter.__init__(self, pvname, label=label) # , rtype='motor')
 
 class ScalerCounter(DeviceCounter):
     invalid_device_msg = 'ScalerCounter must use an Epics Scaler'
@@ -435,28 +435,27 @@ class MultiMcaDetector(DetectorMixin):
         caput("%sReadAll.SCAN"   % (self.prefix), 9)
         caput("%sStatusAll.SCAN" % (self.prefix), 9)
 
-def get_detector(name, kind=None, label=None, **kws):
+def get_detector(prefix, kind=None, label=None, **kws):
     """returns best guess of which Detector class to use
            Mca, MultiMca, Motor, Scaler, Simple
     based on kind and/or record type.
     """
+    dtypes = {'scaler': ScalerDetector,
+              'motor': MotorDetector,
+              'area': AreaDetector,
+              'mca': McaDetector,
+              'med': MultiMcaDetector,
+              'multimca': MultiMcaDetector,
+              None: SimpleDetector}
+
     if kind is None:
-        prefix = name
         if prefix.endswith('.VAL'):
             prefix = prefix[-4]
         rtyp == caget("%s.RTYP", prefix)
         if rtyp in ('motor', 'mca', 'scaler'):
             kind = rtyp
-    builder = SimpleDetector
-    kind = kind.lower()
-    if kind == 'scaler':
-        builder = ScalerDetector
-    elif kind == 'motor':
-        builder = MotorDetector
-    elif kind == 'mca':
-        builder = MCADetector
-    elif kind == 'area':
-        builder = AreaDetector
-    elif kind in ('med', 'multimca'):
-        builder = MultiMcaDetector
-    return builder(name, label=label, **kws)
+    else:
+        kind = kind.lower()
+            
+    builder = dtypes.get(kind, SimpleDetector)
+    return builder(prefix, label=label, **kws)
