@@ -149,9 +149,9 @@ class ScanFrame(wx.Frame):
         self.user_comms = wx.TextCtrl(bpanel, -1, "", style=wx.TE_MULTILINE)
         self.user_comms.SetMinSize((400, 75))
 
-        self.msg1  = SimpleText(bpanel, "<message1>", size=(200, -1))
-        self.msg2  = SimpleText(bpanel, "<message2>", size=(200, -1))
-        self.msg3  = SimpleText(bpanel, "<message3>", size=(200, -1))
+        self.msg1  = SimpleText(bpanel, "    ", size=(200, -1))
+        self.msg2  = SimpleText(bpanel, "    ", size=(200, -1))
+        self.msg3  = SimpleText(bpanel, "    ", size=(200, -1))
         self.start_btn = add_button(bpanel, "Start Scan", action=self.onStartScan)
         self.abort_btn = add_button(bpanel, "Abort Scan", action=self.onAbortScan)
         self.abort_btn.Disable()

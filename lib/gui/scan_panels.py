@@ -11,7 +11,7 @@ import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import numpy as np
-
+from datetime import timedelta
 import epics
 from epics.wx import EpicsFunction, PVText
 
@@ -77,6 +77,16 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                 wids[3].SetValue(npts, act=False)
             except AttributeError:
                 pass
+        self.setScanTime()
+
+    def setScanTime(self):
+        dtime = (float(self.dwelltime.GetValue()) + 
+                 float(self.config.setup['pos_settle_time']) +
+                 float(self.config.setup['det_settle_time']) )
+        for p in self.pos_settings:
+            if hasattr(p[6], 'GetValue'):
+                dtime *= float(p[6].GetValue())
+        self.est_time.SetLabel(str(timedelta(seconds=int(dtime))))
 
     def top_widgets(self, panel, sizer, title, irow=1,
                     dwell_prec=3, dwell_value=1):
@@ -87,11 +97,11 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                                    act_on_losefocus=True, minval=0, size=(80, -1),
                                    action=Closure(self.onVal, label='dwelltime'))
 
-        self.est_time  = SimpleText(panel, '00:00:00')
+        self.est_time  = SimpleText(panel, '  00:00:00  ')
         title  =  SimpleText(panel, "  %s" % title, font=self.Font13, colour='#880000',
                              style=LEFT)
         alabel = SimpleText(panel, ' Mode: ', size=(60, -1))
-        tlabel = SimpleText(panel, ' Estimated Scan Time:')
+        tlabel = SimpleText(panel, ' Estimated Scan Time:  ')
         dlabel = SimpleText(panel, ' Time/Point (sec):')
 
         p1 = wx.Panel(panel)
@@ -136,7 +146,6 @@ class GenericScanPanel(scrolled.ScrolledPanel):
 
     @EpicsFunction
     def update_position_from_pv(self, index, name=None):
-        print 'update pos from pv ', index
         if not hasattr(self, 'pos_settings'):
             return
         if name is None:
@@ -405,7 +414,8 @@ class XAFSScanPanel(GenericScanPanel):
         l = wx.StaticLine(panel, size=(675, 3), style=wx.LI_HORIZONTAL|wx.GROW)
         sizer.Add(l, (ir, 0), (1, 7), wx.ALIGN_CENTER)
 
-        self.kwtimechoice = add_choice(panel, ('0', '1', '2', '3'), size=(70, -1))
+        self.kwtimechoice = add_choice(panel, ('0', '1', '2', '3'), size=(70, -1),
+                                     action=Closure(self.onVal, label='kwpow'))
 
         self.kwtime = FloatCtrl(panel, precision=3, value=0, minval=0,
                                 size=(65, -1),
@@ -419,6 +429,29 @@ class XAFSScanPanel(GenericScanPanel):
 
         ir += 1
         self.layout(panel, sizer, ir)
+
+    def setScanTime(self):
+        etime = (float(self.config.setup['pos_settle_time']) +
+                 float(self.config.setup['det_settle_time']) )
+        dtime = 0.0
+        kwt_max = float(self.kwtime.GetValue())
+        kwt_pow = float(self.kwtimechoice.GetStringSelection())
+        print ' Set  XAFS Scan Time ', etime, kwt_pow, kwt_max
+        dtimes = []
+        for reg in self.reg_settings:
+            nx = float(reg[3].GetValue())
+            dx = float(reg[4].GetValue()) 
+            if reg[4].Enabled:
+                dtimes.append((nx, dx))
+        if kwt_pow != 0:
+            #nx, dx = dtimes.pop()
+            print 'need to calc k-weighted time correctly!!'
+            
+        for nx, dx in dtimes:
+            dtime += nx*(dx + etime)
+            
+        self.est_time.SetLabel(str(timedelta(seconds=int(dtime))))
+
 
     def make_e0panel(self, panel):
         p = wx.Panel(panel)
@@ -454,11 +487,14 @@ class XAFSScanPanel(GenericScanPanel):
 
     def onVal(self, evt=None, index=0, label=None, value=None, **kws):
         "XAFS onVal"
+        print 'XAFS Value ', index, label
         if not self._initialized: return
         wids = self.reg_settings[index]
         units = self.getUnits(index)
         old_units = self.cur_units[index]
         e0_off = 0
+        update_esttime = label in ('dtime', 'dwelltime',
+                                   'kwpow', 'kwtime', 'step', 'npts')
         if 0 == self.absrel.GetSelection(): # absolute
             e0_off = self.e0.GetValue()
 
@@ -469,6 +505,7 @@ class XAFSScanPanel(GenericScanPanel):
                 self.kwtime.SetValue(value)
             except:
                 pass
+            update_esttime = True
         elif label == 'nreg':
             nregs = value
             for ireg, reg in enumerate(self.reg_settings):
@@ -476,6 +513,7 @@ class XAFSScanPanel(GenericScanPanel):
                     for wid in reg: wid.Enable()
                 else:
                     for wid in reg: wid.Disable()
+
         elif label == 'units':
             if units == 'eV' and old_units != 'eV': # was 1/A, convert to eV
                 wids[0].SetValue(ktoe(wids[0].GetValue()) + e0_off)
@@ -508,6 +546,9 @@ class XAFSScanPanel(GenericScanPanel):
                         value = ktoe(value) + e0_off
                 self.reg_settings[index-1][1].SetValue(value, act=False)
                 self.setStepNpts(self.reg_settings[index-1], label)
+
+        if update_esttime:
+            self.setScanTime()
 
     def onAbsRel(self, evt=None):
         """xafs abs/rel"""
