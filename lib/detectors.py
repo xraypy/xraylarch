@@ -232,8 +232,8 @@ class MultiMcaCounter(DeviceCounter):
                 roi    = pvs[namepv].get()
                 roi_hi = pvs[rhipv].get()
                 label = '%s (%s)'% (roi, mca)
-
-                if (len(roi) > 0 and roi_hi > 0) or use_unlabeled:
+                if (roi is not None and (len(roi) > 0 and roi_hi > 0) or
+                    use_unlabeled): 
                     suff = '%s.R%i' % (mca, i)
                     if use_net:
                         suff = '%s.R%iN' %  (mca, i)
@@ -247,14 +247,13 @@ class MultiMcaCounter(DeviceCounter):
         for dsuff, dname in self._dxp_fields:
             for imca in range(1, nmcas +1):
                 suff = 'dxp%i:%s' %  (imca, dsuff)
-                label = '%s (dxp%i)' % (dname, imca)
-                fields.append((suff, label)) # ... add dxp
+                label = '%s%i' % (dname, imca)
+                fields.append((suff, label)) 
 
         if use_full:
             for imca in range(1, nmcas+1):
-                mca = 'mca%i' % imca
-                fields.append(('%s%s.VAL' % (prefix, mca),
-                               'mca spectra (%s)' % mca))
+                mca = 'mca%i.VAL' % imca
+                fields.append((mca, 'spectra%i' % imca))
         self.extra_pvs = extras
         self.set_counters(fields)
 
