@@ -27,14 +27,14 @@ def StrCol(name, size=None, **kws):
         return Column(name, String(size), **kws)
 
 def NamedTable(tablename, metadata, keyid='id', nameid='name',
-               name=True, notes=True, attributes=True, cols=None):
+               name=True, notes=True, with_pv=False,  cols=None):
     args  = [Column(keyid, Integer, primary_key=True)]
     if name:
         args.append(StrCol(nameid, nullable=False, unique=True))
     if notes:
         args.append(StrCol('notes'))
-    if attributes:
-        args.append(StrCol('attributes'))
+    if with_pv:
+        args.append(StrCol('pvname', size=64))
     if cols is not None:
         args.extend(cols)
     return Table(tablename, metadata, *args)
@@ -52,7 +52,7 @@ class InitialData:
               'stopping', 'aborted', 'finished', 'unknown', ]
     
 
-def  make_newdb(dbname, server= 'sqlite', user='', password='',
+def make_newdb(dbname, server= 'sqlite', user='', password='',
                 host='localhost'):
     engine  = create_engine('%s:///%s' % (server, dbname))
     metadata =  MetaData(engine)
@@ -65,17 +65,29 @@ def  make_newdb(dbname, server= 'sqlite', user='', password='',
     pv = NamedTable('pv', metadata)
 
     cmds = NamedTable('commands', metadata,
-                          cols=[StrCol('command'),
-                                StrCol('arguments'),
-                                PointerCol('status'),
-                                StrCol('output_value'),
-                                StrCol('output_file')])
-
+                      cols=[StrCol('command'),
+                            StrCol('arguments'),
+                            PointerCol('status'),
+                            StrCol('output_value'),
+                            StrCol('output_file')])
+    
     monitored_pvs = NamedTable('monitored_pvs', metadata,
                                cols=[Column('date', DateTime),
                                      PointerCol('pv'),
                                      StrCol('value')])
+    # each scan should have a list (or join table) of monitored pvs
+    # that it fetches as written metadata
+
+    positioners = NamedTable('positioners', metadata, with_pv=True)
+    counters    = NamedTable('counters', metadata, with_pv=True)
+    detectors   = NamedTable('detectors', metadata, with_pv=True,
+                             cols=[StrCol('kind',   size=64),
+                                   StrCol('options', size=1024)])
+    scans = NamedTable('scans', metadata,
+                       cols=[StrCol('value', size=2048),
+                             IntCol('time_last_used')])
     
+
     metadata.create_all()
     session = sessionmaker(bind=engine)()
 
