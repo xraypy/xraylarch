@@ -1,27 +1,15 @@
 import time
-import numpy as np
-import lib as scan
 import sys
-sscan = scan.StepScan()
-from .detectors import Counter, get_detector
-from .positioner import Positioner
-from .datafile import ASCIIScanFile
-from .stepscan import StepScan
-from .xafs_scan import XAFS_Scan
 import json
+import numpy as np
 
-
-def run_scanfile(scanfile):
-    print 'running scan from ', scanfile
-    fh = open(scanfile, 'r')
-    text = fh.read()
-    fh.close()
-    conf = json.loads(text, object_hook=js2ascii)
-    run_scan(conf)
-
+from ..detectors import detector
+from ..positioner import Positioner
+from ..stepscan import StepScan
+from ..xafs_scan import XAFS_Scan
 
 def js2ascii(inp):
-    """convert unicode in json text to ASCII"""
+    """convert input unicode json text to pure ASCII/utf-8"""
     if isinstance(inp, dict):
         return dict([(js2ascii(k), js2ascii(v)) for k, v in inp.iteritems()])
     elif isinstance(inp, list):
@@ -31,16 +19,34 @@ def js2ascii(inp):
     else:
         return inp
 
+def read_scanconf(scanfile):
+    """read a scan defined (with JSON-encoded string) in a file,
+    return scan configuration dictionary"""
+    fh = open(scanfile, 'r')
+    text = fh.read()
+    fh.close()
+    return json.loads(text, object_hook=js2ascii)
+
+
+def run_scanfile(scanfile):
+    """run a scan defined (with JSON-encoded string) in a file"""
+    run_scan(read_scanconf(scanfile))
+
 def messenger(cpt=0, npts=1, scan=None, **kws):
     if cpt == 1:
         pass # print dir(scan)
     msg = '%i,' % cpt
-    if cpt % 15 == 0: msg = "%s\n" % msg
-    # print [d.buff for d in scan.counters]
+    if cpt % 15 == 0:
+        msg = "%s\n" % msg
     sys.stdout.write(msg)
     sys.stdout.flush()
+
+def debug_scan(**conf):
+    print 'debug scan !'
+    print conf
     
 def run_scan(conf):
+    """runs a scan as specified in a scan configuration dictionary"""
     if conf['type'] == 'xafs':
         scan  = XAFS_Scan()
         isrel = conf['is_relative']
@@ -79,10 +85,6 @@ def run_scan(conf):
 
     scan.add_extra_pvs(conf['extra_pvs'])
 
-    #for attr in dir(scan):
-    #    if not attr.startswith('_'):
-    #        print attr, getattr(scan, attr)
-    
     scan.dwelltime = conf['dwelltime']
     scan.comments  = conf['user_comments']
     scan.filename  = conf['filename']

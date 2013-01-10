@@ -17,4 +17,4 @@ from .stepscan import StepScan
 from .xafs_scan import XAFS_Scan, etok, ktoe
 
 from .spec_emulator import SpecScan
-from .scan_server import run_scanfile, run_scan
+from .server import run_scanfile, run_scan, debug_scan, read_scanconf
