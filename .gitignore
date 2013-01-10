@@ -1,5 +1,4 @@
 *.pyc
-*.ein
 *~
 *#
 *.dat
@@ -8,6 +7,5 @@ doc/*.pdf
 tests/.coverage*
 build
 dist
-junk
-NonGit
+sandbox
 
