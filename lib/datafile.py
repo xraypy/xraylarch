@@ -259,7 +259,7 @@ class ASCIIScanFile(ScanFile):
     def write_legend(self):
         "write legend"
         cols = []
-        out = ['%sLegend Start: col_label: Name || units || EpicsPV' % COM2]
+        out = ['%sLegend Start: Column: Name || EpicsPV || units' % COM2]
         fmt = "%s %s: %s %s %s %s %s"
         for i, pos in enumerate(self.scan.positioners):
             key = 'p%i' % (i+1)
@@ -267,15 +267,17 @@ class ASCIIScanFile(ScanFile):
             if pos.units in (None, 'None', ''):
                 pos.units = pos.pv.units
 
-            out.append(fmt % (COM1, key, pos.label, SEP, pos.units,
-                              SEP, pos.pv.pvname))
+            out.append(fmt % (COM1, key, pos.label, 
+                              SEP, pos.pv.pvname,
+                              SEP, pos.units))
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i+1)
             cols.append("   %s  " % (key))
             if det.units in (None, 'None', ''):
                 det.units = det.pv.units
-            out.append(fmt % (COM1, key, det.label, SEP, det.units,
-                              SEP, det.pv.pvname))
+            out.append(fmt % (COM1, key, det.label, 
+                              SEP, det.pv.pvname,
+                              SEP, det.units))
         out.append('%sLegend End' % COM2)
         self.write_lines(out)
         self.column_label = '%s %s' % (COM1, '\t'.join(cols))        
