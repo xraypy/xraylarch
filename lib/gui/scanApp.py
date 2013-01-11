@@ -52,7 +52,7 @@ from .gui_utils import pack, add_button, add_menu, add_choice, add_menu
 
 from ..file_utils import new_filename, increment_filename, nativepath
 from ..ordereddict import OrderedDict
-from ..scan_config import ScanConfig
+from ..station_config import StationConfig
 
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
                           SlewScanPanel,   XAFSScanPanel)
@@ -88,7 +88,7 @@ class ScanFrame(wx.Frame):
         self.pvlist = {} # EpicsPVList(self)
         self.detectors  =  OrderedDict()  # list of available detectors and whether to use them
         self.extra_counters = OrderedDict() # list of extra counters and whether to use them
-        self.config = ScanConfig(conffile)
+        self.config = StationConfig(conffile)
 
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
