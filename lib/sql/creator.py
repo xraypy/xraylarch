@@ -12,19 +12,22 @@ from sqlalchemy.orm import sessionmaker, create_session
 from sqlalchemy import MetaData, create_engine, \
      Table, Column, Integer, Float, String, Text, DateTime, ForeignKey
 
-from utils import dumpsql, backup_versions
+# from utils import dumpsql, backup_versions
 
 def PointerCol(name, other=None, keyid='id', **kws):
     if other is None:
         other = name
     return Column("%s_%s" % (name, keyid), None,
                   ForeignKey('%s.%s' % (other, keyid), **kws))
-    
+
 def StrCol(name, size=None, **kws):
     if size is None:
         return Column(name, Text, **kws)
     else:
         return Column(name, String(size), **kws)
+
+def IntCol(name, **kws):
+    return Column(name, Integer, **kws)
 
 def NamedTable(tablename, metadata, keyid='id', nameid='name',
                name=True, notes=True, with_pv=False,  cols=None):
@@ -97,22 +100,17 @@ def make_newdb(dbname, server= 'sqlite', user='', password='',
     now = datetime.isoformat(datetime.now())
 
     for key, value in InitialData.info:
+        print 'INIT info ', key, value
         if value == '<now>':
             value = now
         info.insert().execute(key=key, value=value)
-
-    for key, value in InitialData.info:
-        if value == '<now>':
-            value = now
-        info.insert().execute(key=key, value=value)
-
 
     session.commit()    
 
     
 if __name__ == '__main__':
     dbname = 'ScanDb.sdb'
-    backup_versions(dbname)
+    # backup_versions(dbname)
     make_newdb(dbname)
     print '''%s  created and initialized.''' % dbname
-    dumpsql(dbname)
+    # dumpsql(dbname)
