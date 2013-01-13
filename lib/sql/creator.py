@@ -43,53 +43,59 @@ def NamedTable(tablename, metadata, keyid='id', nameid='name',
     return Table(tablename, metadata, *args)
 
 class InitialData:
-    info    = [["version", "1.1"],
-               ["verify_erase", "1"],
-               ["verify_move",   "1"],
-               ["verify_overwrite",  "1"],
-               ["epics_prefix",   ""],               
+    info    = [["version", "1.0"],
+               ["user_name", ""],
+               ["experiment_id",  ""],
+               ["user_folder",    ""],
                ["create_date", '<now>'],
                ["modify_date", '<now>']]
 
     status = ['requested', 'canceled', 'starting', 'running', 'aborting',
-              'stopping', 'aborted', 'finished', 'unknown', ]
-    
+              'stopping', 'aborted', 'finished', 'unknown']
 
 def make_newdb(dbname, server= 'sqlite', user='', password='',
                 host='localhost'):
     engine  = create_engine('%s:///%s' % (server, dbname))
     metadata =  MetaData(engine)
-    
+
     info = Table('info', metadata,
-                     Column('key', Text, primary_key=True, unique=True), 
+                     Column('key', Text, primary_key=True, unique=True),
                      StrCol('value'))
 
     status = NamedTable('status', metadata)
-    pv = NamedTable('pv', metadata)
-
-    cmds = NamedTable('commands', metadata,
-                      cols=[StrCol('command'),
-                            StrCol('arguments'),
-                            PointerCol('status'),
-                            StrCol('output_value'),
-                            StrCol('output_file')])
-    
-    monitored_pvs = NamedTable('monitored_pvs', metadata,
-                               cols=[Column('date', DateTime),
-                                     PointerCol('pv'),
-                                     StrCol('value')])
-    # each scan should have a list (or join table) of monitored pvs
-    # that it fetches as written metadata
 
     positioners = NamedTable('positioners', metadata, with_pv=True)
     counters    = NamedTable('counters', metadata, with_pv=True)
     detectors   = NamedTable('detectors', metadata, with_pv=True,
                              cols=[StrCol('kind',   size=64),
                                    StrCol('options', size=1024)])
-    scans = NamedTable('scans', metadata,
-                       cols=[StrCol('value', size=2048),
-                             IntCol('time_last_used')])
-    
+
+    scans = NamedTable('scandefs', metadata,
+                       cols=[StrCol('text', size=2048),
+                             Column('time_last_used', DateTime)])
+
+    cmds = NamedTable('commands', metadata, name=False,
+                      cols=[StrCol('command'),
+                            StrCol('arguments'),
+                            PointerCol('status'),
+                            PointerCol('scandefs'),
+                            Column('request_time', DateTime),
+                            Column('start_time', DateTime),
+                            Column('complete_time', DateTime),
+                            StrCol('output_value'),
+                            StrCol('output_file')])
+
+    macros = NamedTable('macros', metadata,
+                        cols=[StrCol('arguments'),
+                              StrCol('text'),
+                              StrCol('output')])
+
+
+    monpvs = NamedTable('monitor_pvs', metadata)
+    monvals = NamedTable('monitor_values', metadata, name=False,{'Zn': 1e-05, 'Fe': 3.0, 'O': 4.0}
+                         cols=[Column('date', DateTime),
+                               PointerCol('monitor_pvs'),
+                               StrCol('value')])
 
     metadata.create_all()
     session = sessionmaker(bind=engine)()
@@ -105,9 +111,12 @@ def make_newdb(dbname, server= 'sqlite', user='', password='',
             value = now
         info.insert().execute(key=key, value=value)
 
-    session.commit()    
+    scans.insert().execute(name='NULL', text='')
 
-    
+
+    session.commit()
+
+
 if __name__ == '__main__':
     dbname = 'ScanDb.sdb'
     # backup_versions(dbname)
