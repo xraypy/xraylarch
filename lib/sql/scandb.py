@@ -48,14 +48,14 @@ def isScanDB(dbname, server='sqlite', **kws):
     must be a sqlite db file, with tables named
        'postioners', 'detectors', and 'scans'
     """
-    _tables = ('info', 'positioners', 'detectors', 'scans')
+    _tables = ('info', 'positioners', 'detectors', 'scandefs')
     result = False
     try:
         engine = make_engine(dbname, server=server, **kws)
         meta = MetaData(engine)
         meta.reflect()
         if all([t in meta.tables for t in _tables]):
-            keys = [row.keyname for row in
+            keys = [row.name for row in
                     meta.tables['info'].select().execute().fetchall()]
             result = 'version' in keys and 'create_date' in keys
     except:
@@ -131,7 +131,7 @@ def make_newdb(dbname, server='sqlite', **kws):
     engine  = make_engine(dbname, server, **kws)
     metadata =  MetaData(engine)
     info = Table('info', metadata,
-                 Column('key', Text, primary_key=True, unique=True),
+                 Column('name', Text, primary_key=True, unique=True),
                  StrCol('value'))
 
     status = NamedTable('status', metadata)
@@ -175,7 +175,7 @@ def make_newdb(dbname, server='sqlite', **kws):
         status.insert().execute(name=name)
 
     NOW = datetime.isoformat(datetime.now())
-    for key, value in (("version", "1.0"),
+    for name, value in (("version", "1.0"),
                        ("user_name", ""),
                        ("experiment_id",  ""),
                        ("user_folder",    ""),
@@ -183,7 +183,7 @@ def make_newdb(dbname, server='sqlite', **kws):
                        ("modify_date", '<now>')):
         if value == '<now>':
             value = NOW
-        info.insert().execute(key=key, value=value)
+        info.insert().execute(name=name, value=value)
     session.commit()
 
 class _BaseTable(object):
@@ -195,10 +195,10 @@ class _BaseTable(object):
 
 class InfoTable(_BaseTable):
     "general information table (versions, etc)"
-    keyname, value = None, None
+    name, value = None, None
     def __repr__(self):
         name = self.__class__.__name__
-        fields = ['%s=%s' % (getattr(self, 'key', '?'),
+        fields = ['%s=%s' % (getattr(self, 'name', '?'),
                              getattr(self, 'value', '?'))]
         return "<%s(%s)>" % (name, ', '.join(fields))
 
@@ -245,7 +245,7 @@ class CommandsTable(_BaseTable):
 
 class ScanDB(object):
     "interface to Scans Database"
-    def __init__(self, server='sqlite', dbname=None):
+    def __init__(self, server='sqlite', dbname=None, **kws):
         self.dbname = dbname
         self.server = server
         self.tables = None
@@ -256,7 +256,7 @@ class ScanDB(object):
         self.pvs = {}
         self.restoring_pvs = []
         if dbname is not None or server=='mysql':
-            self.connect(dbname, server=server)
+            self.connect(dbname, server=server, **kws)
 
     def create_newdb(self, dbname, connect=False):
         "create a new, empty database"
@@ -274,8 +274,8 @@ class ScanDB(object):
             if not isScanDB(dbname):
                 raise ValueError("'%s' is not an Scans file!" % dbname)
 
-            if backup:
-                save_backup(dbname)
+            #if backup:
+            #    save_backup(dbname)
         self.dbname = dbname
         self.engine = make_engine(dbname, server)
         self.conn = self.engine.connect()
@@ -289,16 +289,16 @@ class ScanDB(object):
             clear_mappers()
         except:
             pass
-        mapper(ScansTable,      tables['scans'])
-        mapper(InfoTable,       tables['info'])
-        mapper(PostionersTable, table['positioners'])
-        mapper(CountersTable,   table['counters'])
-        mapper(DetectorsTable,  table['detectors'])
-        mapper(ScanDefsTable,   table['scandefs'])
-        mapper(CommandsTable,   table['commands'])
-        mapper(MacrosTable,     table['macros'])
-        mapper(MonitorPVsTable, table['monitor_pvs'])
-        mapper(MonitorValuesTable, table['monitor_values'])
+
+        mapper(InfoTable,        tables['info'])
+        mapper(PositionersTable, tables['positioners'])
+        mapper(CountersTable,    tables['counters'])
+        mapper(DetectorsTable,   tables['detectors'])
+        mapper(ScanDefsTable,    tables['scandefs'])
+        mapper(CommandsTable,    tables['commands'])
+        mapper(MacrosTable,      tables['macros'])
+        mapper(MonitorPVsTable,  tables['monitor_pvs'])
+        mapper(MonitorValuesTable, tables['monitor_values'])
 
     def commit(self):
         "commit session state"
@@ -316,23 +316,23 @@ class ScanDB(object):
         "generic query"
         return self.session.query(*args, **kws)
 
-    def get_info(self, keyname, default=None):
-        """get a value from a key in the info table"""
-        errmsg = "get_info expected 1 or None value for keyname='%s'"
-        out = self.query(InfoTable).filter(InfoTable.keyname==keyname).all()
-        thisrow = None_or_one(out, errmsg % keyname)
+    def get_info(self, name, default=None):
+        """get a value for an entry in the info table"""
+        errmsg = "get_info expected 1 or None value for name='%s'"
+        out = self.query(InfoTable).filter(InfoTable.name==name).all()
+        thisrow = None_or_one(out, errmsg % name)
         if thisrow is None:
             return default
         return thisrow.value
 
-    def set_info(self, keyname, value):
+    def set_info(self, name, value):
         """set key / value in the info table"""
         table = self.tables['info']
-        vals  = self.query(table).filter(InfoTable.keyname==keyname).all()
+        vals  = self.query(table).filter(InfoTable.name==name).all()
         if len(vals) < 1:
-            table.insert().execute(keyname=keyname, value=value)
+            table.insert().execute(name=name, value=value)
         else:
-            table.update(whereclause="keyname='%s'" % keyname).execute(value=value)
+            table.update(whereclause="name='%s'" % name).execute(value=value)
 
     def set_hostpid(self, clear=False):
         """set hostname and process ID, as on intial set up"""
@@ -370,7 +370,6 @@ class ScanDB(object):
 
         return me
 
-
     def _get_foreign_keyid(self, table, value, name='name',
                            keyid='id', default=None):
         """generalized lookup for foreign key
@@ -399,18 +398,58 @@ arguments
 
         return default
 
-    def get_all_scans(self):
-        """return list of scans
-        """
-        return [m for m in self.query(ScansTable)]
+    def _getall(self, table):
+        """return all rows from a table"""
+        return [m for m in self.query(table)]
 
-    def get_scan(self, name):
-        """return scan by name
-        """
-        if isinstance(name, ScansTable):
+    def all_info(self):
+        """return all info rows"""
+        return self._getall(InforTable)
+
+    def all_positioners(self):
+        """return all positioners"""
+        return self._getall(PositionersTable)
+
+    def all_counters(self):
+        """return all counters"""
+        return self._getall(CountersTable)
+
+    def all_detectors(self):
+        """return all detectors"""
+        return self._getall(DetectorsTable)
+
+    def all_scandefs(self):
+        """return all scan definitions"""
+        return self._getall(ScanDefsTable)
+
+    def all_macros(self):
+        """return all macro definitions"""
+        return self._getall(MacrosTable)
+
+    def all_commands(self):
+        """return all commands definitions"""
+        return self._getall(CommandsTable)
+
+    def all_monitorpvs(self):
+        """return all monitored PV names"""
+        return self._getall(MonitorPVsTable)
+
+    def all_monitorvalues(self):
+        """return all monitored PV values"""
+        return self._getall(MonitorValuesTable)
+
+    def _getrow_byname(self, table, name, one_or_none=False):
+        """return named row from a table"""
+        if isinstance(name, table):
             return name
-        out = self.query(ScansTable).filter(ScansTable.name==name).all()
-        return None_or_one(out, 'get_scans expected 1 or None Scan')
+        out = self.query(table).filter(table.name==name).all()
+        if one_or_none:
+            return None_or_one(out, 'expected 1 or None from table %s' % table)
+        return out
+
+    def get_scandef(self, name):
+        """return scandef by name"""
+        return _getrow_byname(ScanDefsTable, name, one_or_none=True)
 
     def add_scan(self, name, notes=None, value=None, **kws):
         """add scan"""
@@ -418,14 +457,14 @@ arguments
         kws['value'] = value
         kws['time_last_used'] = 0
         name = name.strip()
-        row = self.__addRow(ScansTable, ('name',), (name,), **kws)
+        row = self.__addRow(ScanDefsTable, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         return row
 
     def add_info(self, key, value):
         """add Info key value pair -- returns Info instance"""
-        row = self.__addRow(InfoTable, ('keyname', 'value'), (key, value))
+        row = self.__addRow(InfoTable, ('name', 'value'), (key, value))
         self.commit()
         return row
 
@@ -436,9 +475,8 @@ arguments
         tab = self.tables['scans']
         self.conn.execute(tab.delete().where(tab.c.id==s.id))
 
-
 if __name__ == '__main__':
-    dbname = 'ScanDb.sdb'
+    dbname = 'Test1.sdb'
     make_newdb(dbname)
     print '''%s  created and initialized.''' % dbname
     # dumpsql(dbname)
