@@ -79,6 +79,17 @@ def isotime2datetime(isotime):
     susec = int(1e6*float('.%s' % sfrac))
     return datetime(syear, smon, sday, shour, smin, ssec, susec)
 
+def make_datetime(t=None, iso=False):
+    """unix timestamp to datetime iso format
+    if t is None, current time is used"""
+    if t is None:
+        dt = datetime.now()
+    else:
+        dt = datetime.utcfromtimestamp(t)
+    if iso:
+        return datetime.isoformat(dt)
+    return dt
+    
 
 class ScanDBException(Exception):
     """DB Access Exception: General Errors"""
@@ -174,7 +185,7 @@ def make_newdb(dbname, server='sqlite', **kws):
     for name in CMD_STATUS:
         status.insert().execute(name=name)
 
-    NOW = datetime.isoformat(datetime.now())
+    NOW = make_datetime(iso=True)
     for name, value in (("version", "1.0"),
                        ("user_name", ""),
                        ("experiment_id",  ""),
@@ -245,7 +256,7 @@ class CommandsTable(_BaseTable):
 
 class ScanDB(object):
     "interface to Scans Database"
-    def __init__(self, server='sqlite', dbname=None, **kws):
+    def __init__(self, dbname=None, server='sqlite', **kws):
         self.dbname = dbname
         self.server = server
         self.tables = None
@@ -302,7 +313,7 @@ class ScanDB(object):
 
     def commit(self):
         "commit session state"
-        self.set_info('modify_date', datetime.isoformat(datetime.now()))
+        self.set_info('modify_date', make_datetime())
         return self.session.commit()
 
     def close(self):
@@ -316,10 +327,13 @@ class ScanDB(object):
         "generic query"
         return self.session.query(*args, **kws)
 
-    def get_info(self, name, default=None):
+    def get_info(self, name=None, default=None):
         """get a value for an entry in the info table"""
         errmsg = "get_info expected 1 or None value for name='%s'"
-        out = self.query(InfoTable).filter(InfoTable.name==name).all()
+        table = self.tables['info']
+        if name is None:
+            return self.query(table).all()        
+        out = self.query(table).filter(InfoTable.name==name).all()
         thisrow = None_or_one(out, errmsg % name)
         if thisrow is None:
             return default
@@ -398,45 +412,21 @@ arguments
 
         return default
 
-    def _getall(self, table):
-        """return all rows from a table"""
-        return [m for m in self.query(table)]
-
-    def all_info(self):
-        """return all info rows"""
-        return self._getall(InforTable)
-
-    def all_positioners(self):
-        """return all positioners"""
-        return self._getall(PositionersTable)
-
-    def all_counters(self):
-        """return all counters"""
-        return self._getall(CountersTable)
-
-    def all_detectors(self):
-        """return all detectors"""
-        return self._getall(DetectorsTable)
-
-    def all_scandefs(self):
-        """return all scan definitions"""
-        return self._getall(ScanDefsTable)
-
-    def all_macros(self):
-        """return all macro definitions"""
-        return self._getall(MacrosTable)
+    def all_rows(self, table):
+        """return all rows from a named table"""
+        return self.query(self.tables[table]).all()
 
     def all_commands(self):
         """return all commands definitions"""
-        return self._getall(CommandsTable)
+        return self.get_all('commands')
 
     def all_monitorpvs(self):
         """return all monitored PV names"""
-        return self._getall(MonitorPVsTable)
+        return self.get_all('monitor_pvs')
 
     def all_monitorvalues(self):
         """return all monitored PV values"""
-        return self._getall(MonitorValuesTable)
+        return self.get_all('monitor_values')
 
     def _getrow_byname(self, table, name, one_or_none=False):
         """return named row from a table"""
@@ -449,30 +439,24 @@ arguments
 
     def get_scandef(self, name):
         """return scandef by name"""
-        return _getrow_byname(ScanDefsTable, name, one_or_none=True)
+        return self._getrow_byname(ScanDefsTable, name, one_or_none=True)
 
-    def add_scan(self, name, notes=None, value=None, **kws):
+    def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
         kws['notes'] = notes
-        kws['value'] = value
-        kws['time_last_used'] = 0
+        kws['text']  = text
+        kws['time_last_used'] = make_datetime(0)
         name = name.strip()
         row = self.__addRow(ScanDefsTable, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         return row
 
-    def add_info(self, key, value):
-        """add Info key value pair -- returns Info instance"""
-        row = self.__addRow(InfoTable, ('name', 'value'), (key, value))
-        self.commit()
-        return row
-
-    def remove_scan(self, scan):
-        s = self.get_scan(scan)
+    def remove_scandef(self, scan):
+        s = self.get_scandef(scan)
         if s is None:
             raise ScanDBException('Remove Scan needs valid scan')
-        tab = self.tables['scans']
+        tab = self.tables['scandefs']
         self.conn.execute(tab.delete().where(tab.c.id==s.id))
 
 if __name__ == '__main__':
