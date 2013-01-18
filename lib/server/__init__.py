@@ -3,7 +3,8 @@ import sys
 import json
 import numpy as np
 
-from ..detectors import detector
+from ..detectors import get_detector
+
 from ..positioner import Positioner
 from ..stepscan import StepScan
 from ..xafs_scan import XAFS_Scan
