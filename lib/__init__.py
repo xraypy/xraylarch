@@ -5,7 +5,7 @@ __version__ = '0.3'
 from . import file_utils
 from . import ordereddict
 
-from .scan_config import ScanConfig
+from .station_config import StationConfig
 
 from .detectors import Trigger, Counter, MotorCounter, get_detector
 from .detectors import (SimpleDetector, ScalerDetector, McaDetector,
