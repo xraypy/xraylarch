@@ -77,10 +77,10 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                 wids[3].SetValue(npts, act=False)
             except AttributeError:
                 pass
-        self.setScanTime()
 
     def setScanTime(self):
-        dtime = (float(self.dwelltime.GetValue()) + 
+        "set estimated scan time"
+        dtime = (float(self.dwelltime.GetValue()) +
                  float(self.config.setup['pos_settle_time']) +
                  float(self.config.setup['det_settle_time']) )
         for p in self.pos_settings:
@@ -163,7 +163,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
 
         if '.' not in pvnames[1]: pvnames[1] = pvnames[1] + '.VAL'
         if '.' not in pvnames[0]: pvnames[0] = pvnames[0] + '.VAL'
-        if pvnames[0] not in self.pvlist: 
+        if pvnames[0] not in self.pvlist:
             self.pvlist[pvnames[0]] = epics.PV(pvnames[0])
             self.pvlist[pvnames[1]] = epics.PV(pvnames[1])
             return
@@ -217,8 +217,8 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         if hasattr(self, 'pos_settings'):
             for index in range(len(self.pos_settings)):
                 self.update_position_from_pv(index)
-            
-            
+
+
     def use_config(self, config):
         pass
 
@@ -302,6 +302,7 @@ class LinearScanPanel(GenericScanPanel):
         else:
             wids[3] = npts
             self.setStepNpts(wids, label, fix_npts=True)
+        self.setScanTime()
 
     def onPos(self, evt=None, index=0):
         self.update_position_from_pv(index)
@@ -392,7 +393,7 @@ class XAFSScanPanel(GenericScanPanel):
             else:
                 units = add_choice(panel, self.units_list,
                                    action=Closure(self.onVal, label='units', index=i))
-            self.cur_units.append('eV')                
+            self.cur_units.append('eV')
 
             self.reg_settings.append((start, stop, step, npts, dtime, units))
             if i >= nregs:
@@ -440,16 +441,16 @@ class XAFSScanPanel(GenericScanPanel):
         dtimes = []
         for reg in self.reg_settings:
             nx = float(reg[3].GetValue())
-            dx = float(reg[4].GetValue()) 
+            dx = float(reg[4].GetValue())
             if reg[4].Enabled:
                 dtimes.append((nx, dx))
         if kwt_pow != 0:
             #nx, dx = dtimes.pop()
             print 'need to calc k-weighted time correctly!!'
-            
+
         for nx, dx in dtimes:
             dtime += nx*(dx + etime)
-            
+
         self.est_time.SetLabel(str(timedelta(seconds=int(dtime))))
 
 
@@ -487,7 +488,6 @@ class XAFSScanPanel(GenericScanPanel):
 
     def onVal(self, evt=None, index=0, label=None, value=None, **kws):
         "XAFS onVal"
-        print 'XAFS Value ', index, label
         if not self._initialized: return
         wids = self.reg_settings[index]
         units = self.getUnits(index)
@@ -547,8 +547,7 @@ class XAFSScanPanel(GenericScanPanel):
                 self.reg_settings[index-1][1].SetValue(value, act=False)
                 self.setStepNpts(self.reg_settings[index-1], label)
 
-        if update_esttime:
-            self.setScanTime()
+        self.setScanTime()
 
     def onAbsRel(self, evt=None):
         """xafs abs/rel"""
@@ -640,6 +639,7 @@ class MeshScanPanel(GenericScanPanel):
         if not self._initialized: return
         if label in ('start', 'stop', 'step', 'npts'):
             self.setStepNpts(self.pos_settings[index][3:], label)
+        self.setScanTime()
 
     def onPos(self, evt=None, index=0):
         self.update_position_from_pv(index)
@@ -686,13 +686,13 @@ class SlewScanPanel(GenericScanPanel):
         sizer = wx.GridBagSizer(7, 8)
 
         ir = self.top_widgets(panel, sizer, 'Slew Scan (Fast Map) Setup')
-        
+
         self.dimchoice = add_choice(panel, ('1', '2'),
                                  action = self.onDim)
         self.dimchoice.SetSelection(1)
         sizer.Add(SimpleText(panel, ' Dimension:'), (ir-1, 5), (1, 1), CEN)
-        sizer.Add(self.dimchoice,                   (ir-1, 6), (1, 2), CEN)                             
-        
+        sizer.Add(self.dimchoice,                   (ir-1, 6), (1, 2), CEN)
+
         sizer.Add(wx.StaticLine(panel, size=(675, 3), style=wx.LI_HORIZONTAL),
                   (ir, 0), (1, 8), wx.ALIGN_CENTER)
         ir += 1
@@ -738,6 +738,7 @@ class SlewScanPanel(GenericScanPanel):
         if not self._initialized: return
         if label in ('start', 'stop', 'step', 'npts'):
             self.setStepNpts(self.pos_settings[index][3:], label)
+        self.setScanTime()
 
     def onDim(self, evt=None):
         print 'on Dimension ', self.dimchoice.GetSelection()
