@@ -171,11 +171,20 @@ def make_newdb(dbname, server='sqlite', **kws):
                             StrCol('output_value'),
                             StrCol('output_file')])
 
-    monpvs = NamedTable('monitor_pvs', metadata)
-    monvals = NamedTable('monitor_values', metadata,
+    monpvs = NamedTable('monitorpvs', metadata)
+    monvals = NamedTable('monitorvalues', metadata,
                          cols=[Column('date', DateTime),
-                               PointerCol('monitor_pvs'),
+                               PointerCol('monitorpvs'),
                                StrCol('value')])
+
+    scandat = NamedTable('scandata', metadata, name=False,
+                         cols=[PointerCol('scandefs'),
+                               StrCol('output_file'),
+                               StrCol('pos'),
+                               StrCol('det'),
+                               StrCol('breakpoints'),
+                               Column('last_update', DateTime)])
+
     metadata.create_all()
     session = sessionmaker(bind=engine)()
 
@@ -207,11 +216,11 @@ class _BaseTable(object):
 class InfoTable(_BaseTable):
     "general information table (versions, etc)"
     name, value = None, None
-    def __repr__(self):
-        name = self.__class__.__name__
-        fields = ['%s=%s' % (getattr(self, 'name', '?'),
-                             getattr(self, 'value', '?'))]
-        return "<%s(%s)>" % (name, ', '.join(fields))
+#     def __repr__(self):
+#         name = self.__class__.__name__
+#         fields = ['%s=%s' % (getattr(self, 'name', '?'),
+#                              getattr(self, 'value', '?'))]
+#         return "<%s(%s)>" % (name, ', '.join(fields))
 
 class StatusTable(_BaseTable):
     "status table"
@@ -240,7 +249,7 @@ class MonitorPVsTable(_BaseTable):
 class MonitorValuesTable(_BaseTable):
     "monitor PV Values table"
     name, notes, date, = None, None, None
-    monitor_pvs, monitor_pvs_id = None, None
+    monitorpvs, monitorpvs_id = None, None
 
 class MacrosTable(_BaseTable):
     "macros table"
@@ -253,6 +262,11 @@ class CommandsTable(_BaseTable):
     status_id, scandefs_id = None, None
     request_time, start_time, complete_time = None, None, None
     output_value, output_file = None, None
+
+class ScanDataTable(_BaseTable):
+    scandefs, scandefs_id = None, None
+    notes, output_file, last_update = None, None, None
+    pos, det, breakpoints = None, None, None
 
 class ScanDB(object):
     "interface to Scans Database"
@@ -295,21 +309,19 @@ class ScanDB(object):
         self.metadata =  MetaData(self.engine)
         self.metadata.reflect()
         tables = self.tables = self.metadata.tables
-
+        self.classes = {}
         try:
             clear_mappers()
         except:
             pass
 
-        mapper(InfoTable,        tables['info'])
-        mapper(PositionersTable, tables['positioners'])
-        mapper(CountersTable,    tables['counters'])
-        mapper(DetectorsTable,   tables['detectors'])
-        mapper(ScanDefsTable,    tables['scandefs'])
-        mapper(CommandsTable,    tables['commands'])
-        mapper(MacrosTable,      tables['macros'])
-        mapper(MonitorPVsTable,  tables['monitor_pvs'])
-        mapper(MonitorValuesTable, tables['monitor_values'])
+        for t_cls in (InfoTable, PositionersTable, CountersTable,
+                      DetectorsTable, ScanDefsTable, CommandsTable,
+                      ScanDataTable, MacrosTable,
+                      MonitorPVsTable, MonitorValuesTable):
+            name = t_cls.__name__.replace('Table', '').lower()
+            mapper(t_cls, tables[name])
+            self.classes[name] = t_cls
 
     def commit(self):
         "commit session state"
@@ -387,13 +399,14 @@ class ScanDB(object):
     def _get_foreign_keyid(self, table, value, name='name',
                            keyid='id', default=None):
         """generalized lookup for foreign key
-arguments
-    table: a valid table class, as mapped by mapper.
-    value: can be one of the following
-         table instance:  keyid is returned
-         string:          'name' attribute (or set which attribute with 'name' arg)
-            a valid id
-            """
+        arguments
+        ---------
+           table: a valid table class, as mapped by mapper.
+           value: can be one of the following table instance:
+              keyid is returned string
+        'name' attribute (or set which attribute with 'name' arg)
+        a valid id
+        """
         if isinstance(value, table):
             return getattr(table, keyid)
         else:
@@ -412,25 +425,33 @@ arguments
 
         return default
 
-    def all_rows(self, table):
-        """return all rows from a named table"""
-        return self.query(self.tables[table]).all()
+    def getall(self, table):
+        """return rows from a named table"""
+        # if table in self.classes:
+        return self.query(self.classes[table]).all()
 
-    def all_commands(self):
-        """return all commands definitions"""
-        return self.get_all('commands')
 
-    def all_monitorpvs(self):
-        """return all monitored PV names"""
-        return self.get_all('monitor_pvs')
+    def updatewhere(self, table, where, vals):
+        """update a named table with dicts for 'where' and 'vals'"""
+        if table in self.classes:
+            table = self.classes[table]
 
-    def all_monitorvalues(self):
-        """return all monitored PV values"""
-        return self.get_all('monitor_values')
+        print 'Update where:: ', where
+        whereclause = ','.join(
+            ["%s=%s" % (str(k), repr(v)) for k, v in where.items()])
+        print 'Update where: (needs testing): ', where, whereclause
 
-    def _getrow_byname(self, table, name, one_or_none=False):
+        self.tables[table].update(whereclause=whereclause
+                                  ).executue(**vals)
+        self.commit()
+
+    def getrow_byname(self, table, name, one_or_none=False):
         """return named row from a table"""
-        if isinstance(name, table):
+        if table in self.classes:
+            table = self.classes[table]
+
+        print type(table)
+        if isinstance(name, Table):
             return name
         out = self.query(table).filter(table.name==name).all()
         if one_or_none:
@@ -439,7 +460,7 @@ arguments
 
     def get_scandef(self, name):
         """return scandef by name"""
-        return self._getrow_byname(ScanDefsTable, name, one_or_none=True)
+        return self.getrow_byname(ScanDefsTable, name, one_or_none=True)
 
     def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
@@ -460,7 +481,7 @@ arguments
         self.conn.execute(tab.delete().where(tab.c.id==s.id))
 
 if __name__ == '__main__':
-    dbname = 'Test1.sdb'
+    dbname = 'Test.sdb'
     make_newdb(dbname)
     print '''%s  created and initialized.''' % dbname
     # dumpsql(dbname)
