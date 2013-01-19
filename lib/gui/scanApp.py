@@ -63,6 +63,7 @@ from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
 from .pvconnector import  EpicsPVList
 from .edit_positioners import PositionerFrame
 from .edit_detectors import DetectorFrame
+from .edit_general import SetupFrame
 
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
@@ -100,11 +101,11 @@ class ScanFrame(wx.Frame):
         self.SetFont(self.Font11)
 
         self._larch = None
-        self.larch_status = 1 
+        self.larch_status = 1
         self.epics_status = 1
         self.conntimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.conntimer)
-        
+
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -181,7 +182,7 @@ class ScanFrame(wx.Frame):
         if self.larch_status > 0:
             self.ini_larch_thread = Thread(target=self.init_larch)
             self.ini_larch_thread.start()
-            
+
         if self.epics_status > 0:
             self.ini_epics_thread = Thread(target=self.connect_epics)
             self.ini_epics_thread.start()
@@ -192,7 +193,7 @@ class ScanFrame(wx.Frame):
                 spanel.initialize_positions()
             self.conntimer.Stop()
 
-            
+
     def init_larch(self):
         t0 = time.time()
         self.larch_status = -1
@@ -221,8 +222,8 @@ class ScanFrame(wx.Frame):
             self.detectors[label] = get_detector(prefix, **opts)
 
         self.epics_status = 0
-        print 'epics initialized %.3f s ' % (time.time()-t0)        
-        
+        print 'epics initialized %.3f s ' % (time.time()-t0)
+
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
         scan = panel.generate_scan()
@@ -308,23 +309,14 @@ class ScanFrame(wx.Frame):
 
     @EpicsFunction
     def shutdown_epics(self):
-        print 'shutdown epics start'
-        #         for nam, pv in self.pvlist.pvs.items():
-        # #             pv.clear_callbacks()
-        # #             pv.disconnect()
-        # #             del pv
-        # #         del self.pvlist
         for nam, pv in self.pvlist.items():
             pv.clear_callbacks()
-
         epics.ca.poll(1.e-1, 3.0)
-        time.sleep(1.)
-        epics.ca.finalize_libca()
-        print 'shutdown epics done'
         self.Destroy()
 
     def onSetupMisc(self, evt=None):
         print 'need frame for general config'
+        SetupFrame(self, config=self.config, pvlist=self.pvlist)
 
     def onSetupPositioners(self, evt=None):
         PositionerFrame(self, config=self.config, pvlist=self.pvlist,
