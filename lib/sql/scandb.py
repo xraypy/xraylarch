@@ -89,7 +89,7 @@ def make_datetime(t=None, iso=False):
     if iso:
         return datetime.isoformat(dt)
     return dt
-    
+
 
 class ScanDBException(Exception):
     """DB Access Exception: General Errors"""
@@ -266,7 +266,7 @@ class ScanDB(object):
         self.metadata = None
         self.pvs = {}
         self.restoring_pvs = []
-        if dbname is not None or server=='mysql':
+        if dbname is not None:
             self.connect(dbname, server=server, **kws)
 
     def create_newdb(self, dbname, connect=False):
@@ -276,7 +276,7 @@ class ScanDB(object):
             time.sleep(0.5)
             self.connect(dbname, backup=False)
 
-    def connect(self, dbname, server='sqlite', backup=True):
+    def connect(self, dbname, server='sqlite', **kws):
         "connect to an existing database"
         if server == 'sqlite':
             if not os.path.exists(dbname):
@@ -288,7 +288,7 @@ class ScanDB(object):
             #if backup:
             #    save_backup(dbname)
         self.dbname = dbname
-        self.engine = make_engine(dbname, server)
+        self.engine = make_engine(dbname, server, **kws)
         self.conn = self.engine.connect()
         self.session = sessionmaker(bind=self.engine)()
 
@@ -332,7 +332,7 @@ class ScanDB(object):
         errmsg = "get_info expected 1 or None value for name='%s'"
         table = self.tables['info']
         if name is None:
-            return self.query(table).all()        
+            return self.query(table).all()
         out = self.query(table).filter(InfoTable.name==name).all()
         thisrow = None_or_one(out, errmsg % name)
         if thisrow is None:
