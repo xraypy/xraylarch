@@ -233,7 +233,7 @@ class MultiMcaCounter(DeviceCounter):
                 roi_hi = pvs[rhipv].get()
                 label = '%s (%s)'% (roi, mca)
                 if (roi is not None and (len(roi) > 0 and roi_hi > 0) or
-                    use_unlabeled): 
+                    use_unlabeled):
                     suff = '%s.R%i' % (mca, i)
                     if use_net:
                         suff = '%s.R%iN' %  (mca, i)
@@ -243,12 +243,12 @@ class MultiMcaCounter(DeviceCounter):
                     break
             if should_break:
                 break
-        
+
         for dsuff, dname in self._dxp_fields:
             for imca in range(1, nmcas +1):
                 suff = 'dxp%i:%s' %  (imca, dsuff)
                 label = '%s%i' % (dname, imca)
-                fields.append((suff, label)) 
+                fields.append((suff, label))
 
         if use_full:
             for imca in range(1, nmcas+1):
@@ -456,6 +456,9 @@ def get_detector(prefix, kind=None, label=None, **kws):
             kind = rtyp
     else:
         kind = kind.lower()
-            
+
     builder = dtypes.get(kind, SimpleDetector)
-    return builder(prefix, label=label, **kws)
+    try:
+        return builder(prefix, label=label, **kws)
+    except TypeError:
+        return None
