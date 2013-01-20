@@ -431,26 +431,19 @@ class ScanDB(object):
         return self.query(self.classes[table]).all()
 
 
-    def updatewhere(self, table, where, vals):
+    def update_where(self, table, where, vals):
         """update a named table with dicts for 'where' and 'vals'"""
-        if table in self.classes:
-            table = self.classes[table]
-
-        print 'Update where:: ', where
-        whereclause = ','.join(
-            ["%s=%s" % (str(k), repr(v)) for k, v in where.items()])
-        print 'Update where: (needs testing): ', where, whereclause
-
-        self.tables[table].update(whereclause=whereclause
-                                  ).executue(**vals)
+        if table in self.tables:
+            table = self.tables[table]
+        constraints = ["%s=%s" % (str(k), repr(v)) for k, v in where.items()]
+        whereclause = ' AND '.join(constraints)
+        table.update(whereclause=whereclause).execute(**vals)
         self.commit()
 
     def getrow_byname(self, table, name, one_or_none=False):
         """return named row from a table"""
         if table in self.classes:
             table = self.classes[table]
-
-        print type(table)
         if isinstance(name, Table):
             return name
         out = self.query(table).filter(table.name==name).all()
@@ -460,7 +453,7 @@ class ScanDB(object):
 
     def get_scandef(self, name):
         """return scandef by name"""
-        return self.getrow_byname(ScanDefsTable, name, one_or_none=True)
+        return self.getrow_byname('scandefs', name, one_or_none=True)
 
     def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
