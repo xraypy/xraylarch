@@ -13,8 +13,8 @@ from datetime import datetime
 
 # from utils import backup_versions, save_backup
 
-from sqlalchemy import MetaData, and_, create_engine, \
-     Table, Column, Integer, Float, String, Text, DateTime, ForeignKey
+from sqlalchemy import MetaData, and_, create_engine, text, func,\
+     Table, Column, ColumnDefault, Integer, Float, String, Text, DateTime, ForeignKey
 
 from sqlalchemy.orm import sessionmaker,  mapper, clear_mappers, relationship
 from sqlalchemy.exc import IntegrityError
@@ -57,7 +57,7 @@ def isScanDB(dbname, server='sqlite', **kws):
         if all([t in meta.tables for t in _tables]):
             keys = [row.name for row in
                     meta.tables['info'].select().execute().fetchall()]
-            result = 'version' in keys and 'create_date' in keys
+            result = 'version' in keys and 'experiment_id' in keys
     except:
         pass
     return result
@@ -138,12 +138,15 @@ def NamedTable(tablename, metadata, keyid='id', nameid='name',
         args.extend(cols)
     return Table(tablename, metadata, *args)
 
+    
 def make_newdb(dbname, server='sqlite', **kws):
     engine  = make_engine(dbname, server, **kws)
     metadata =  MetaData(engine)
     info = Table('info', metadata,
                  Column('name', Text, primary_key=True, unique=True),
-                 StrCol('value'))
+                 StrCol('value'),
+                 Column('modify_time', DateTime),
+                 Column('create_time', DateTime, default=datetime.now))
 
     status = NamedTable('status', metadata)
     pos    = NamedTable('positioners', metadata, with_pv=True)
@@ -153,7 +156,9 @@ def make_newdb(dbname, server='sqlite', **kws):
                               StrCol('options', size=1024)])
     scans = NamedTable('scandefs', metadata,
                        cols=[StrCol('text', size=2048),
-                             Column('time_last_used', DateTime)])
+                             Column('modify_time', DateTime),
+                             Column('last_used_time', DateTime)])
+                 
 
     macros = NamedTable('macros', metadata,
                         cols=[StrCol('arguments'),
@@ -165,17 +170,20 @@ def make_newdb(dbname, server='sqlite', **kws):
                             StrCol('arguments'),
                             PointerCol('status'),
                             PointerCol('scandefs'),
-                            Column('request_time', DateTime),
-                            Column('start_time', DateTime),
+                            Column('request_time', DateTime,
+                                   default=datetime.now),
+                            Column('start_time',    DateTime),
                             Column('complete_time', DateTime),
                             StrCol('output_value'),
                             StrCol('output_file')])
 
-    monpvs = NamedTable('monitorpvs', metadata)
-    monvals = NamedTable('monitorvalues', metadata,
-                         cols=[Column('date', DateTime),
-                               PointerCol('monitorpvs'),
-                               StrCol('value')])
+    monpvs  = NamedTable('monitorpvs', metadata)
+    monvals = Table('monitorvalues', metadata,
+                    Column('id', Integer, primary_key=True),                    
+                    PointerCol('monitorpvs'),
+                    StrCol('value'),
+                    Column('time', DateTime))
+    
 
     scandat = NamedTable('scandata', metadata, name=False,
                          cols=[PointerCol('scandefs'),
@@ -183,7 +191,7 @@ def make_newdb(dbname, server='sqlite', **kws):
                                StrCol('pos'),
                                StrCol('det'),
                                StrCol('breakpoints'),
-                               Column('last_update', DateTime)])
+                               Column('modify_time', DateTime)])
 
     metadata.create_all()
     session = sessionmaker(bind=engine)()
@@ -194,16 +202,12 @@ def make_newdb(dbname, server='sqlite', **kws):
     for name in CMD_STATUS:
         status.insert().execute(name=name)
 
-    NOW = make_datetime(iso=True)
+    # NOW = datetime.now()
     for name, value in (("version", "1.0"),
-                       ("user_name", ""),
-                       ("experiment_id",  ""),
-                       ("user_folder",    ""),
-                       ("create_date", '<now>'),
-                       ("modify_date", '<now>')):
-        if value == '<now>':
-            value = NOW
-        info.insert().execute(name=name, value=value)
+                        ("user_name", ""),
+                        ("experiment_id",  ""),
+                        ("user_folder",    "")):
+        info.insert().execute(name=name, value=value) # , create_time=NOW)
     session.commit()
 
 class _BaseTable(object):
@@ -215,7 +219,8 @@ class _BaseTable(object):
 
 class InfoTable(_BaseTable):
     "general information table (versions, etc)"
-    name, value = None, None
+    name, value, modify_time = None, None, None
+    
 #     def __repr__(self):
 #         name = self.__class__.__name__
 #         fields = ['%s=%s' % (getattr(self, 'name', '?'),
@@ -236,11 +241,11 @@ class CountersTable(_BaseTable):
 
 class DetectorsTable(_BaseTable):
     "detectors table"
-    name, notes, pvname, kind, options = None, None, None, None, None
+    name, notes, pvname, kind, options = [None]*5
 
 class ScanDefsTable(_BaseTable):
     "scandefs table"
-    name, notes, text, time_last_used = None, None, None, None
+    name, notes, text, modify_time, last_used_time = [None]*5
 
 class MonitorPVsTable(_BaseTable):
     "monitor PV table"
@@ -248,7 +253,7 @@ class MonitorPVsTable(_BaseTable):
 
 class MonitorValuesTable(_BaseTable):
     "monitor PV Values table"
-    name, notes, date, = None, None, None
+    id, time, value = None, None, None
     monitorpvs, monitorpvs_id = None, None
 
 class MacrosTable(_BaseTable):
@@ -265,7 +270,7 @@ class CommandsTable(_BaseTable):
 
 class ScanDataTable(_BaseTable):
     scandefs, scandefs_id = None, None
-    notes, output_file, last_update = None, None, None
+    notes, output_file, modify_time = None, None, None
     pos, det, breakpoints = None, None, None
 
 class ScanDB(object):
@@ -323,6 +328,20 @@ class ScanDB(object):
             mapper(t_cls, tables[name])
             self.classes[name] = t_cls
 
+        # set onupdate and default constraints for several datetime columns
+        # notw use of ColumnDefault to wrap onpudate/default func
+        fnow = ColumnDefault(datetime.now)
+        for tname, cname in (('info',  'modify_time'),
+                             ('scandefs', 'modify_time'),
+                             ('scandata', 'modify_time'),
+                             ('monitorvalues', 'time')):
+            self.tables[tname].columns[cname].onupdate =  fnow
+
+        for tname, cname in (('info', 'create_time'),
+                             ('commands', 'request_time')):
+            self.tables[tname].columns[cname].default = fnow
+
+            
     def commit(self):
         "commit session state"
         self.set_info('modify_date', make_datetime())
@@ -459,7 +478,6 @@ class ScanDB(object):
         """add scan"""
         kws['notes'] = notes
         kws['text']  = text
-        kws['time_last_used'] = make_datetime(0)
         name = name.strip()
         row = self.__addRow(ScanDefsTable, ('name',), (name,), **kws)
         self.session.add(row)
