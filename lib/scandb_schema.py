@@ -54,7 +54,7 @@ def PointerCol(name, other=None, keyid='id', **kws):
     if other is None:
         other = name
     return Column("%s_%s" % (name, keyid), None,
-                  ForeignKey('%s.%s' % (other, keyid), **kws))
+                  ForeignKey('%s.%s' % (other, keyid)), **kws)
 
 def NamedTable(tablename, metadata, keyid='id', nameid='name',
                name=True, notes=True, with_pv=False, cols=None):
@@ -107,7 +107,6 @@ class MonitorPVs(_BaseTable):
 class MonitorValues(_BaseTable):
     "monitor PV Values table"
     id, time, value = None, None, None
-    monitorpvs, monitorpvs_id = None, None
 
 class Macros(_BaseTable):
     "macros table"
@@ -116,13 +115,12 @@ class Macros(_BaseTable):
 class Commands(_BaseTable):
     "commands table"
     command, notes, arguments = None, None, None
-    status, scandefs = None, None
-    status_id, scandefs_id = None, None
+    status, status_name = None, None
+    scandef, scandefs_id = None, None
     request_time, start_time, complete_time = None, None, None
     output_value, output_file = None, None
 
 class ScanData(_BaseTable):
-    scandefs, scandefs_id = None, None
     notes, output_file, modify_time = None, None, None
     pos, det, breakpoints = None, None, None
 
@@ -232,17 +230,14 @@ def map_scandb(metadata):
                   ScanData, Macros, Status,
                   MonitorPVs, MonitorValues):
         name = t_cls.__name__.lower()
-        props = {}
-        if name == 'monitorvalues':
-            props={'monitorpvs': relationship(MonitorPVs,
-                                              backref='values')}
-        elif name == 'commands':
-            props = {'status': relationship(Status, backref='cstatus'),
-                     'scandefs': relationship(ScanDefs, backref='scan')}
-        elif name == 'scandata':
-            props = {'scandefs': relationship(ScanDefs, backref='scan')}
-
-        mapper(t_cls, tables[name], properties=props)
+        # props = {}
+        #if name == 'commands':
+        #    props = {'status_name': relationship(Status),
+        #             'scandef': relationship(ScanDefs, backref='scan')}
+        #elif name == 'scandata':
+        #    props = {'scandef': relationship(ScanDefs, backref='scanname')}
+        # mapper(t_cls, tables[name], properties=props)
+        mapper(t_cls, tables[name])
         classes[name] = t_cls
 
     # set onupdate and default constraints for several datetime columns
@@ -250,12 +245,12 @@ def map_scandb(metadata):
     fnow = ColumnDefault(datetime.now)
     for tname, cname in (('info',  'modify_time'),
                          ('scandefs', 'modify_time'),
-                         ('scandata', 'modify_time'),
-                         ('monitorvalues', 'time')):
+                         ('scandata', 'modify_time')):
         tables[tname].columns[cname].onupdate =  fnow
 
     for tname, cname in (('info', 'create_time'),
-                         ('commands', 'request_time')):
+                         ('commands', 'request_time'),
+                         ('monitorvalues', 'time')):
         tables[tname].columns[cname].default = fnow
     return tables, classes
 
