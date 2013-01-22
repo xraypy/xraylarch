@@ -18,4 +18,5 @@ from .xafs_scan import XAFS_Scan, etok, ktoe
 
 from .spec_emulator import SpecScan
 from .server import run_scanfile, run_scan, debug_scan, read_scanconf
-from .scandb import create_scandb
+from .scandb_schema import create_scandb
+from .scandb import ScanDB
