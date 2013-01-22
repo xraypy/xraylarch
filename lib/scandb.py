@@ -8,40 +8,18 @@ import os
 import json
 import time
 from socket import gethostname
-
 from datetime import datetime
 
 # from utils import backup_versions, save_backup
-
-from sqlalchemy import MetaData, and_, create_engine, text, func,\
-     Table, Column, ColumnDefault, Integer, Float, String, Text, DateTime, ForeignKey
-
-from sqlalchemy.orm import sessionmaker,  mapper, clear_mappers, relationship
+from sqlalchemy import MetaData, Table
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import  NoResultFound
-from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
 from sqlalchemy.dialects import sqlite, mysql, postgresql
 
-## status states for commands
-CMD_STATUS = ('requested', 'canceled', 'starting', 'running', 'aborting',
-               'stopping', 'aborted', 'finished', 'unknown')
-
-def make_engine(dbname, server='sqlite', user='', password='',
-                host='', port=None):
-    """create databse engine"""
-    if server == 'sqlite':
-        return create_engine('sqlite:///%s' % (dbname),
-                             poolclass=SingletonThreadPool)
-    elif server in ('mysql', 'postgresql'):
-        if server == 'mysql':
-            conn_str= 'mysql+mysqldb://%s:%s@%s:%i/%s'
-            if port is None: port = 3306
-        elif server == 'postgresql':
-            conn_str= 'postgresql+psycopg2://%s:%s@%s:%i/%s'
-            if port is None: port = 5432
-        return create_engine(conn_str % (user, password, host, port, dbname))
+from scandb_schema import make_engine, create_scandb, map_scandb
 
 def isScanDB(dbname, server='sqlite', **kws):
     """test if a file is a valid scan database:
@@ -90,15 +68,6 @@ def make_datetime(t=None, iso=False):
         return datetime.isoformat(dt)
     return dt
 
-
-class ScanDBException(Exception):
-    """DB Access Exception: General Errors"""
-    def __init__(self, msg):
-        Exception.__init__(self)
-        self.msg = msg
-    def __str__(self):
-        return self.msg
-
 def None_or_one(val, msg='Expected 1 or None result'):
     """expect result (as from query.all() to return
     either None or exactly one result
@@ -109,183 +78,6 @@ def None_or_one(val, msg='Expected 1 or None result'):
         return None
     else:
         raise ScanDBException(msg)
-
-def IntCol(name, **kws):
-    return Column(name, Integer, **kws)
-
-def StrCol(name, size=None, **kws):
-    val = Text
-    if size is not None:
-        val = String(size)
-    return Column(name, val, **kws)
-
-def PointerCol(name, other=None, keyid='id', **kws):
-    if other is None:
-        other = name
-    return Column("%s_%s" % (name, keyid), None,
-                  ForeignKey('%s.%s' % (other, keyid), **kws))
-
-def NamedTable(tablename, metadata, keyid='id', nameid='name',
-               name=True, notes=True, with_pv=False, cols=None):
-    args  = [Column(keyid, Integer, primary_key=True)]
-    if name:
-        args.append(StrCol(nameid, size=512, nullable=False, unique=True))
-    if notes:
-        args.append(StrCol('notes'))
-    if with_pv:
-        args.append(StrCol('pvname', size=64))
-    if cols is not None:
-        args.extend(cols)
-    return Table(tablename, metadata, *args)
-
-    
-def create_scandb(dbname, server='sqlite', **kws):
-    """Create a ScanDB:
-
-    arguments:
-    ---------
-    dbname    name of database (filename for sqlite server)
-
-    options:
-    --------
-    server    type of database server ([sqlite], mysql, postgresql)
-    host      host serving database   (mysql,postgresql only)
-    port      port number for database (mysql,postgresql only)
-    user      user name for database (mysql,postgresql only)
-    password  password for database (mysql,postgresql only)
-    """
-    
-    engine  = make_engine(dbname, server, **kws)
-    metadata =  MetaData(engine)
-    info = Table('info', metadata,
-                 Column('name', Text, primary_key=True, unique=True),
-                 StrCol('value'),
-                 Column('modify_time', DateTime),
-                 Column('create_time', DateTime, default=datetime.now))
-
-    status = NamedTable('status', metadata)
-    pos    = NamedTable('positioners', metadata, with_pv=True)
-    cnts   = NamedTable('counters', metadata, with_pv=True)
-    det    = NamedTable('detectors', metadata, with_pv=True,
-                        cols=[StrCol('kind',   size=64),
-                              StrCol('options', size=1024)])
-    scans = NamedTable('scandefs', metadata,
-                       cols=[StrCol('text', size=2048),
-                             Column('modify_time', DateTime),
-                             Column('last_used_time', DateTime)])
-                 
-
-    macros = NamedTable('macros', metadata,
-                        cols=[StrCol('arguments'),
-                              StrCol('text'),
-                              StrCol('output')])
-
-    cmds = NamedTable('commands', metadata, name=False,
-                      cols=[StrCol('command'),
-                            StrCol('arguments'),
-                            PointerCol('status'),
-                            PointerCol('scandefs'),
-                            Column('request_time', DateTime,
-                                   default=datetime.now),
-                            Column('start_time',    DateTime),
-                            Column('complete_time', DateTime),
-                            StrCol('output_value'),
-                            StrCol('output_file')])
-
-    monpvs  = NamedTable('monitorpvs', metadata)
-    monvals = Table('monitorvalues', metadata,
-                    Column('id', Integer, primary_key=True),                    
-                    PointerCol('monitorpvs'),
-                    StrCol('value'),
-                    Column('time', DateTime))
-    
-
-    scandat = NamedTable('scandata', metadata, name=False,
-                         cols=[PointerCol('scandefs'),
-                               StrCol('output_file'),
-                               StrCol('pos'),
-                               StrCol('det'),
-                               StrCol('breakpoints'),
-                               Column('modify_time', DateTime)])
-
-    metadata.create_all()
-    session = sessionmaker(bind=engine)()
-
-    # add some initial data:
-    scans.insert().execute(name='NULL', text='')
-
-    for name in CMD_STATUS:
-        status.insert().execute(name=name)
-
-    for name, value in (("version", "1.0"),
-                        ("user_name", ""),
-                        ("experiment_id",  ""),
-                        ("user_folder",    "")):
-        info.insert().execute(name=name, value=value) 
-    session.commit()
-
-class _BaseTable(object):
-    "generic class to encapsulate SQLAlchemy table"
-    def __repr__(self):
-        name = self.__class__.__name__
-        fields = ['%s' % getattr(self, 'name', 'UNNAMED')]
-        return "<%s(%s)>" % (name, ', '.join(fields))
-
-class InfoTable(_BaseTable):
-    "general information table (versions, etc)"
-    name, value, modify_time = None, None, None
-    
-#     def __repr__(self):
-#         name = self.__class__.__name__
-#         fields = ['%s=%s' % (getattr(self, 'name', '?'),
-#                              getattr(self, 'value', '?'))]
-#         return "<%s(%s)>" % (name, ', '.join(fields))
-
-class StatusTable(_BaseTable):
-    "status table"
-    name, notes = None, None
-
-class PositionersTable(_BaseTable):
-    "positioners table"
-    name, notes, pvname = None, None, None
-
-class CountersTable(_BaseTable):
-    "counters table"
-    name, notes, pvname = None, None, None
-
-class DetectorsTable(_BaseTable):
-    "detectors table"
-    name, notes, pvname, kind, options = [None]*5
-
-class ScanDefsTable(_BaseTable):
-    "scandefs table"
-    name, notes, text, modify_time, last_used_time = [None]*5
-
-class MonitorPVsTable(_BaseTable):
-    "monitor PV table"
-    name, notes = None, None
-
-class MonitorValuesTable(_BaseTable):
-    "monitor PV Values table"
-    id, time, value = None, None, None
-    monitorpvs, monitorpvs_id = None, None
-
-class MacrosTable(_BaseTable):
-    "macros table"
-    name, notes, arguments, text, output = None, None, None, None, None
-
-class CommandsTable(_BaseTable):
-    "commands table"
-    command, notes, arguments = None, None, None
-    status, scandefs = None, None
-    status_id, scandefs_id = None, None
-    request_time, start_time, complete_time = None, None, None
-    output_value, output_file = None, None
-
-class ScanDataTable(_BaseTable):
-    scandefs, scandefs_id = None, None
-    notes, output_file, modify_time = None, None, None
-    pos, det, breakpoints = None, None, None
 
 class ScanDB(object):
     """
@@ -329,38 +121,10 @@ class ScanDB(object):
         self.engine = make_engine(dbname, server, **kws)
         self.conn = self.engine.connect()
         self.session = sessionmaker(bind=self.engine)()
-
         self.metadata =  MetaData(self.engine)
         self.metadata.reflect()
-        tables = self.tables = self.metadata.tables
-        self.classes = {}
-        try:
-            clear_mappers()
-        except:
-            pass
+        self.tables, self.classes = map_scandb(self.metadata)
 
-        for t_cls in (InfoTable, PositionersTable, CountersTable,
-                      DetectorsTable, ScanDefsTable, CommandsTable,
-                      ScanDataTable, MacrosTable,
-                      MonitorPVsTable, MonitorValuesTable):
-            name = t_cls.__name__.replace('Table', '').lower()
-            mapper(t_cls, tables[name])
-            self.classes[name] = t_cls
-
-        # set onupdate and default constraints for several datetime columns
-        # notw use of ColumnDefault to wrap onpudate/default func
-        fnow = ColumnDefault(datetime.now)
-        for tname, cname in (('info',  'modify_time'),
-                             ('scandefs', 'modify_time'),
-                             ('scandata', 'modify_time'),
-                             ('monitorvalues', 'time')):
-            self.tables[tname].columns[cname].onupdate =  fnow
-
-        for tname, cname in (('info', 'create_time'),
-                             ('commands', 'request_time')):
-            self.tables[tname].columns[cname].default = fnow
-
-            
     def commit(self):
         "commit session state"
         self.set_info('modify_date', make_datetime())
@@ -381,9 +145,10 @@ class ScanDB(object):
         """get a value for an entry in the info table"""
         errmsg = "get_info expected 1 or None value for name='%s'"
         table = self.tables['info']
+        cls   = self.classes['info']
         if name is None:
             return self.query(table).all()
-        out = self.query(table).filter(InfoTable.name==name).all()
+        out = self.query(table).filter(cls.name==name).all()
         thisrow = None_or_one(out, errmsg % name)
         if thisrow is None:
             return default
@@ -392,7 +157,8 @@ class ScanDB(object):
     def set_info(self, name, value):
         """set key / value in the info table"""
         table = self.tables['info']
-        vals  = self.query(table).filter(InfoTable.name==name).all()
+        cls   = self.classes['info']
+        vals  = self.query(table).filter(cls.name==name).all()
         if len(vals) < 1:
             table.insert().execute(name=name, value=value)
         else:
@@ -478,27 +244,35 @@ class ScanDB(object):
         table.update(whereclause=whereclause).execute(**vals)
         self.commit()
 
-    def getrow_byname(self, table, name, one_or_none=False):
+    def _get_table(self, tablename):
+        "return (self.tables, self.classes) for a table name"
+        if tablename not in self.classes:
+            return None
+        return self.classes[tablename], self.tables[tablename]
+
+    def getrow(self, table, name, one_or_none=False):
         """return named row from a table"""
-        if table in self.classes:
-            table = self.classes[table]
+        cls, table = self._get_table(table)
+        if table is None: return None
         if isinstance(name, Table):
             return name
-        out = self.query(table).filter(table.name==name).all()
+        out = self.query(table).filter(cls.name==name).all()
         if one_or_none:
             return None_or_one(out, 'expected 1 or None from table %s' % table)
         return out
 
+    # Scan Definitions
     def get_scandef(self, name):
         """return scandef by name"""
-        return self.getrow_byname('scandefs', name, one_or_none=True)
+        return self.getrow('scandefs', name, one_or_none=True)
 
     def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
+        cls, table = self._get_table('scandefs')
         kws['notes'] = notes
         kws['text']  = text
         name = name.strip()
-        row = self.__addRow(ScanDefsTable, ('name',), (name,), **kws)
+        row = self.__addRow(table, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         return row
@@ -509,6 +283,35 @@ class ScanDB(object):
             raise ScanDBException('Remove Scan needs valid scan')
         tab = self.tables['scandefs']
         self.conn.execute(tab.delete().where(tab.c.id==s.id))
+
+    # Monitor PVs
+    def add_monitorpv(self, name, notes=''):
+        """ """
+        cls, table = self._get_table('monitorpvs')
+        vals  = self.query(table).filter(cls.name == name).all()
+        if len(vals) < 1:
+            table.insert().execute(name=name, notes=notes)
+        elif notes is not '':
+            table.update(whereclause="name='%s'" % name).execute(notes=notes)
+        return self.query(table).filter(cls.name == name).one()
+
+    def record_monitorpv(self, pvname, value, commit=False):
+        """save value for monitor pvs"""
+        pv = self.add_monitorpv(pvname)
+        cls, table = self._get_table('monitorvalues')
+        mval = cls()
+        mval.monitorpvs = pv
+        print 'M: ', dir(mval), pv, value
+        mval.value = value
+        self.session.add(mval)
+        if commit:
+            self.commit()
+
+
+    def get_monitorvalues(self, pvname, start_date=None, end_date=None):
+        """get values for a monitorpvs given a time range
+        """
+        pass
 
 if __name__ == '__main__':
     dbname = 'Test.sdb'
