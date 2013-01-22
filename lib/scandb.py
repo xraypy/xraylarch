@@ -11,7 +11,7 @@ from socket import gethostname
 from datetime import datetime
 
 # from utils import backup_versions, save_backup
-from sqlalchemy import MetaData, Table
+from sqlalchemy import MetaData, Table, select, and_
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import  NoResultFound
@@ -297,21 +297,43 @@ class ScanDB(object):
 
     def record_monitorpv(self, pvname, value, commit=False):
         """save value for monitor pvs"""
-        pv = self.add_monitorpv(pvname)
+        if pvname not in self.pvs:
+            pv = self.add_monitorpv(pvname)
+            self.pvs[pvname] = pv.id
+
         cls, table = self._get_table('monitorvalues')
         mval = cls()
-        mval.monitorpvs = pv
-        print 'M: ', dir(mval), pv, value
+        mval.monitorpvs_id = self.pvs[pvname]
         mval.value = value
         self.session.add(mval)
         if commit:
             self.commit()
 
-
     def get_monitorvalues(self, pvname, start_date=None, end_date=None):
-        """get values for a monitorpvs given a time range
+        """get (value, time) pairs for a monitorpvs given a time range
         """
+        if pvname not in self.pvs:
+            pv = self.add_monitorpv(pvname)
+            self.pvs[pvname] = pv.id
+            
+        cls, valtab = self._get_table('monitorvalues')
+        cls, pvstab = self._get_table('monitorpvs')
+
+        query = select([valtab.c.value, valtab.c.time],
+                       valtab.c.monitorpvs_id==self.pvs[pvname])
+        if start_date is not None:
+            query = query.where(valtab.c.time >= start_date)
+        if end_date is not None:
+            query = query.where(valtab.c.time <= end_date)
+
+        return query.execute().fetchall()
+
+
+    # commands
+    def add_command(self, name, **kws):
+        """add command"""
         pass
+    
 
 if __name__ == '__main__':
     dbname = 'Test.sdb'
