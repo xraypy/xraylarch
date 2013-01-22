@@ -269,8 +269,7 @@ class ScanDB(object):
     def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
         cls, table = self._get_table('scandefs')
-        kws['notes'] = notes
-        kws['text']  = text
+        kws.update('notes': notes, 'text': text})
         name = name.strip()
         row = self.__addRow(table, ('name',), (name,), **kws)
         self.session.add(row)
@@ -283,6 +282,56 @@ class ScanDB(object):
             raise ScanDBException('Remove Scan needs valid scan')
         tab = self.tables['scandefs']
         self.conn.execute(tab.delete().where(tab.c.id==s.id))
+
+    # macros
+    def get_macro(self, name):
+        """return macro by name"""
+        return self.getrow('macros', name, one_or_none=True)
+
+
+    def add_macro(self, name, text, arguments='',
+                  output='', notes='', **kws):
+        """add macro"""
+        cls, table = self._get_table('macros')
+        name = name.strip()
+        kws.update({'notes': notes, 'text': text,
+                    'arguments': arguments})
+        row = self.__addRow(table, ('name',), (name,), **kws)
+        self.session.add(row)
+        self.commit()
+        return row
+
+    # positioners
+    def get_positioner(self, name):
+        """return positioner by name"""
+        return self.getrow('positioners', name, one_or_none=True)
+
+    def add_positioner(self, name, pvname, notes='', **kws):
+        """add positioner"""
+        cls, table = self._get_table('positioners')
+        name = name.strip()
+        kws.update({'notes': notes, 'pvname': pvname})
+        row = self.__addRow(table, ('name',), (name,), **kws)
+        self.session.add(row)
+        self.commit()
+        return row
+
+    # detectors
+    def get_detector(self, name):
+        """return detector by name"""
+        return self.getrow('detectors', name, one_or_none=True)
+
+    def add_detector(self, name, pvname, kind='', options='',
+                     notes='', **kws):
+        """add detector"""
+        cls, table = self._get_table('detectors')
+        name = name.strip()
+        kws.update({'notes': notes, 'pvname': pvname,
+                    'kind': kind, 'options': options})
+        row = self.__addRow(table, ('name',), (name,), **kws)
+        self.session.add(row)
+        self.commit()
+        return row
 
     # Monitor PVs
     def add_monitorpv(self, name, notes=''):
@@ -329,11 +378,23 @@ class ScanDB(object):
         return query.execute().fetchall()
 
 
-    # commands
-    def add_command(self, name, **kws):
+
+    # commands -- a very different interface
+    def get_commands(self, status=None):
+        """return command by status"""
+        print 'get command by status'
+
+    def add_command(self, command, arguments='', **kws):
         """add command"""
-        pass
-    
+        cls, table = self._get_table('commands')
+        kws.update({'arguments': arguments})
+
+        row = self.__addRow(table, ('command',), (command,), **kws)
+        self.session.add(row)
+        self.commit()
+        return row
+
+
 
 if __name__ == '__main__':
     dbname = 'Test.sdb'
