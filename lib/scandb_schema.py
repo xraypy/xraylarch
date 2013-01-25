@@ -117,8 +117,13 @@ class Commands(_BaseTable):
     command, notes, arguments = None, None, None
     status, status_name = None, None
     scandef, scandefs_id = None, None
-    request_time, start_time, complete_time = None, None, None
+    request_time, start_time, modify_time = None, None, None
     output_value, output_file = None, None
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        fields = ['%s' % getattr(self, 'command', 'Unknown')]
+        return "<%s(%s)>" % (name, ', '.join(fields))
 
 class ScanData(_BaseTable):
     notes, output_file, modify_time = None, None, None
@@ -174,7 +179,7 @@ def create_scandb(dbname, server='sqlite', **kws):
                             Column('request_time', DateTime,
                                    default=datetime.now),
                             Column('start_time',    DateTime),
-                            Column('complete_time', DateTime),
+                            Column('modify_time',   DateTime),
                             StrCol('output_value'),
                             StrCol('output_file')])
 
@@ -244,6 +249,7 @@ def map_scandb(metadata):
     # note use of ColumnDefault to wrap onpudate/default func
     fnow = ColumnDefault(datetime.now)
     for tname, cname in (('info',  'modify_time'),
+                         ('commands', 'modify_time'),
                          ('scandefs', 'modify_time'),
                          ('scandata', 'modify_time')):
         tables[tname].columns[cname].onupdate =  fnow

@@ -124,6 +124,10 @@ class ScanDB(object):
         self.metadata =  MetaData(self.engine)
         self.metadata.reflect()
         self.tables, self.classes = map_scandb(self.metadata)
+        self.status_codes = {}
+        for row in self.getall('status'):
+            self.status_codes[row.name] = row.id
+        
 
     def commit(self):
         "commit session state"
@@ -184,21 +188,21 @@ class ScanDB(object):
 
     def __addRow(self, table, argnames, argvals, **kws):
         """add generic row"""
-        me = table() #
+        table = table()
         for name, val in zip(argnames, argvals):
-            setattr(me, name, val)
+            setattr(table, name, val)
         for key, val in kws.items():
             if key == 'attributes':
                 val = json_encode(val)
-            setattr(me, key, val)
+            setattr(table, key, val)
         try:
-            self.session.add(me)
+            self.session.add(table)
             # self.session.commit()
         except IntegrityError, msg:
             self.session.rollback()
             raise Warning('Could not add data to table %s\n%s' % (table, msg))
 
-        return me
+        return table
 
     def _get_foreign_keyid(self, table, value, name='name',
                            keyid='id', default=None):
@@ -234,7 +238,6 @@ class ScanDB(object):
         # if table in self.classes:
         return self.query(self.classes[table]).all()
 
-
     def update_where(self, table, where, vals):
         """update a named table with dicts for 'where' and 'vals'"""
         if table in self.tables:
@@ -269,9 +272,9 @@ class ScanDB(object):
     def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
         cls, table = self._get_table('scandefs')
-        kws.update('notes': notes, 'text': text})
+        kws.update({'notes': notes, 'text': text})
         name = name.strip()
-        row = self.__addRow(table, ('name',), (name,), **kws)
+        row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         return row
@@ -296,7 +299,7 @@ class ScanDB(object):
         name = name.strip()
         kws.update({'notes': notes, 'text': text,
                     'arguments': arguments})
-        row = self.__addRow(table, ('name',), (name,), **kws)
+        row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         return row
@@ -311,7 +314,7 @@ class ScanDB(object):
         cls, table = self._get_table('positioners')
         name = name.strip()
         kws.update({'notes': notes, 'pvname': pvname})
-        row = self.__addRow(table, ('name',), (name,), **kws)
+        row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         return row
@@ -328,7 +331,7 @@ class ScanDB(object):
         name = name.strip()
         kws.update({'notes': notes, 'pvname': pvname,
                     'kind': kind, 'options': options})
-        row = self.__addRow(table, ('name',), (name,), **kws)
+        row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         return row
@@ -378,23 +381,51 @@ class ScanDB(object):
         return query.execute().fetchall()
 
 
-
-    # commands -- a very different interface
+    # commands -- a more complex interface
     def get_commands(self, status=None):
         """return command by status"""
-        print 'get command by status'
+            
+        cls, table = self._get_table('commands')
+        if status is None:
+            return self.query(table).all()
 
-    def add_command(self, command, arguments='', **kws):
+        if status not in self.status_codes:
+            status = 'unknown'
+
+        statid = self.status_codes[status]
+        return self.query(table).filter(cls.status_id==statid).all()
+
+
+
+    def add_command(self, command, arguments='',output_value='',
+                    output_file='', **kws):
         """add command"""
         cls, table = self._get_table('commands')
-        kws.update({'arguments': arguments})
 
-        row = self.__addRow(table, ('command',), (command,), **kws)
+        statid = self.status_codes.get('requested', 1)
+
+        kws.update({'arguments': arguments,
+                    'output_file': output_file,
+                    'output_value': output_value,
+                    'status_id': statid})
+        row = self.__addRow(cls, ('command',), (command,), **kws)
         self.session.add(row)
         self.commit()
         return row
 
+    def set_command_status(self, id, status):
+        """set the status of a command (by id)"""
+        cls, table = self._get_table('commands')
+        if status not in self.status_codes:
+            status = 'unknown'
+        statid = self.status_codes[status]
+        table.update(whereclause="id='%i'" % id).execute(status_id=statid)
 
+    def cancel_command(self, id):
+        """cancel command"""
+        self.set_command_status(id, 'canceled')
+        self.commit()
+        
 
 if __name__ == '__main__':
     dbname = 'Test.sdb'
