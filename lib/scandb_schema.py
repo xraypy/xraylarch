@@ -22,8 +22,11 @@ from sqlalchemy.pool import SingletonThreadPool
 from sqlalchemy.dialects import sqlite, mysql, postgresql
 
 ## status states for commands
-CMD_STATUS = ('requested', 'canceled', 'starting', 'running', 'aborting',
-               'stopping', 'aborted', 'finished', 'unknown')
+CMD_STATUS = ('unknown', 'requested', 'canceled', 'starting', 'running',
+               'aborting', 'stopping', 'aborted', 'finished')
+
+PV_TYPES = (('numeric', 'Numeric Value'),   ('enum',  'Enumeration Value'),
+           ('string',  'String Value'),    ('motor', 'Motor Value'))
 
 def make_engine(dbname, server='sqlite', user='', password='',
                 host='', port=None):
@@ -78,21 +81,21 @@ class _BaseTable(object):
 
 class Info(_BaseTable):
     "general information table (versions, etc)"
-    name, value, modify_time = None, None, None
+    keyname, value, modify_time = None, None, None
 
 class Status(_BaseTable):
     "status table"
     name, notes = None, None
 
-class Positioners(_BaseTable):
+class ScanPositioners(_BaseTable):
     "positioners table"
     name, notes, pvname = None, None, None
 
-class Counters(_BaseTable):
+class ScanCounters(_BaseTable):
     "counters table"
     name, notes, pvname = None, None, None
 
-class Detectors(_BaseTable):
+class ScanDetectors(_BaseTable):
     "detectors table"
     name, notes, pvname, kind, options = [None]*5
 
@@ -100,9 +103,14 @@ class ScanDefs(_BaseTable):
     "scandefs table"
     name, notes, text, modify_time, last_used_time = [None]*5
 
-class MonitorPVs(_BaseTable):
-    "monitor PV table"
+class PVTypes(_BaseTable):
+    "pvtype table"
     name, notes = None, None
+
+class PVs(_BaseTable):
+    "pv table"
+    name, notes = None, None
+    is_monitor = 0
 
 class MonitorValues(_BaseTable):
     "monitor PV Values table"
@@ -129,6 +137,39 @@ class ScanData(_BaseTable):
     notes, output_file, modify_time = None, None, None
     pos, det, breakpoints = None, None, None
 
+class Instruments(_BaseTable):
+    "instrument table"
+    name, notes = None, None
+
+class Positions(_BaseTable):
+    "position table"
+    pvs, instrument, instrument_id, date, name, notes = None, None, None, None, None, None
+
+class Position_PV(_BaseTable):
+    "position-pv join table"
+    name, notes, pv, value = None, None, None, None
+    def __repr__(self):
+        name = self.__class__.__name__
+        fields = ['%s=%s' % (getattr(self, 'pv', '?'),
+                             getattr(self, 'value', '?'))]
+        return "<%s(%s)>" % (name, ', '.join(fields))
+
+class Instrument_PV(_BaseTable):
+    "intruemnt-pv join table"
+    name, id, instrument, pv, display_order = None, None, None, None, None
+    def __repr__(self):
+        name = self.__class__.__name__
+        fields = ['%s/%s' % (getattr(getattr(self, 'instrument', '?'),'name','?'),
+                             getattr(getattr(self, 'pv', '?'), 'name', '?'))]
+        return "<%s(%s)>" % (name, ', '.join(fields))
+
+class Instrument_Precommand(_BaseTable):
+    "instrument precommand table"
+    name, notes = None, None
+
+class Instrument_Postcommand(_BaseTable):
+    "instrument postcommand table"
+    name, notes = None, None
 
 def create_scandb(dbname, server='sqlite', **kws):
     """Create a ScanDB:
@@ -149,15 +190,15 @@ def create_scandb(dbname, server='sqlite', **kws):
     engine  = make_engine(dbname, server, **kws)
     metadata =  MetaData(engine)
     info = Table('info', metadata,
-                 Column('name', Text, primary_key=True, unique=True),
+                 Column('keyname', Text, primary_key=True, unique=True),
                  StrCol('value'),
                  Column('modify_time', DateTime),
                  Column('create_time', DateTime, default=datetime.now))
 
     status = NamedTable('status', metadata)
-    pos    = NamedTable('positioners', metadata, with_pv=True)
-    cnts   = NamedTable('counters', metadata, with_pv=True)
-    det    = NamedTable('detectors', metadata, with_pv=True,
+    pos    = NamedTable('scanpositioners', metadata, with_pv=True)
+    cnts   = NamedTable('scancounters', metadata, with_pv=True)
+    det    = NamedTable('scandetectors', metadata, with_pv=True,
                         cols=[StrCol('kind',   size=64),
                               StrCol('options', size=1024)])
     scans = NamedTable('scandefs', metadata,
@@ -174,7 +215,7 @@ def create_scandb(dbname, server='sqlite', **kws):
     cmds = NamedTable('commands', metadata, name=False,
                       cols=[StrCol('command'),
                             StrCol('arguments'),
-                            PointerCol('status'),
+                            PointerCol('status', default=1),
                             PointerCol('scandefs'),
                             Column('request_time', DateTime,
                                    default=datetime.now),
@@ -183,21 +224,56 @@ def create_scandb(dbname, server='sqlite', **kws):
                             StrCol('output_value'),
                             StrCol('output_file')])
 
-    monpvs  = NamedTable('monitorpvs', metadata)
+    pvtypes = NamedTable('pvtypes', metadata)
+    pv      = NamedTable('pvs', metadata,
+                         cols=[PointerCol('pvtypes'),
+                               Column('is_monitor', Integer, default=0)])
+
     monvals = Table('monitorvalues', metadata,
                     Column('id', Integer, primary_key=True),
-                    PointerCol('monitorpvs'),
+                    PointerCol('pvs'),
                     StrCol('value'),
                     Column('time', DateTime))
 
-
     scandat = NamedTable('scandata', metadata, name=False,
                          cols=[PointerCol('scandefs'),
-                               StrCol('output_file'),
+                               StrCol('output_file', default=''),
                                StrCol('pos'),
                                StrCol('det'),
-                               StrCol('breakpoints'),
+                               StrCol('breakpoints', default=''),
                                Column('modify_time', DateTime)])
+
+    instrument = NamedTable('instruments', metadata,
+                            cols=[Column('show', Integer, default=1),
+                                  Column('display_order', Integer, default=0)])
+
+    position  = NamedTable('positions', metadata,
+                           cols=[Column('modify_time', DateTime),
+                                 PointerCol('instruments')])
+
+    instrument_precommand = NamedTable('instrument_precommand', metadata,
+                                       cols=[Column('exec_order', Integer),
+                                             PointerCol('commands'),
+                                             PointerCol('instruments')])
+
+    instrument_postcommand = NamedTable('instrument_postcommand', metadata,
+                                        cols=[Column('exec_order', Integer),
+                                              PointerCol('commands'),
+                                              PointerCol('instruments')])
+
+    instrument_pv = Table('instrument_pv', metadata,
+                          Column('id', Integer, primary_key=True),
+                          PointerCol('instruments'),
+                          PointerCol('pvs'),
+                          Column('display_order', Integer, default=0))
+
+
+    position_pv = Table('position_pv', metadata,
+                        Column('id', Integer, primary_key=True),
+                        StrCol('notes'),
+                        PointerCol('positions'),
+                        PointerCol('pvs'),
+                        StrCol('value'))
 
     metadata.create_all()
     session = sessionmaker(bind=engine)()
@@ -208,11 +284,14 @@ def create_scandb(dbname, server='sqlite', **kws):
     for name in CMD_STATUS:
         status.insert().execute(name=name)
 
-    for name, value in (("version", "1.0"),
+    for name, notes in PV_TYPES:
+        pvtypes.insert().execute(name=name, notes=notes)
+
+    for keyname, value in (("version", "1.0"),
                         ("user_name", ""),
                         ("experiment_id",  ""),
                         ("user_folder",    "")):
-        info.insert().execute(name=name, value=value)
+        info.insert().execute(keyname=keyname, value=value)
     session.commit()
 
 def map_scandb(metadata):
@@ -230,26 +309,79 @@ def map_scandb(metadata):
     except:
         pass
 
-    for t_cls in (Info, Positioners, Counters,
-                  Detectors, ScanDefs, Commands,
-                  ScanData, Macros, Status,
-                  MonitorPVs, MonitorValues):
-        name = t_cls.__name__.lower()
-        # props = {}
+    for cls in (Info, Status, PVTypes, PVs, MonitorValues, Macros, Commands,
+                ScanData, ScanPositioners, ScanCounters, ScanDetectors, ScanDefs,
+                Instruments, Positions, Position_PV, Instrument_PV,
+                Instrument_Precommand, Instrument_Postcommand):
+
+        name = cls.__name__.lower()
+        props = {}
+        if name == 'commands':
+            props = {'status': relationship(Status),
+                     'scandefs': relationship(ScanDefs)}
+        elif name == 'scandata':
+            props = {'scandefs': relationship(ScanDefs)}
+        elif name == 'monitorvalues':
+            props = {'pv': relationship(PVs)}
+        elif name == 'pvs':
+            props = {'pvtype': relationship(PVTypes)}
+        elif name == 'instruments':
+            properties={'pvs': relationship(PVs,
+                                            backref='instruments',
+                                            secondary=tables['instrument_pv'])}
+
+        mapper(cls, tables[name], properties=props)
+        classes[name] = cls
+
+    mapping_Settings = """
+        props = {}
+
         #if name == 'commands':
         #    props = {'status_name': relationship(Status),
         #             'scandef': relationship(ScanDefs, backref='scan')}
         #elif name == 'scandata':
         #    props = {'scandef': relationship(ScanDefs, backref='scanname')}
         # mapper(t_cls, tables[name], properties=props)
-        mapper(t_cls, tables[name])
-        classes[name] = t_cls
+
+        mapper(Instrument, tables['instrument'],
+               properties={'pvs': relationship(PV,
+                                               backref='instrument',
+                                    secondary=tables['instrument_pv'])})
+
+        mapper(PVType,   tables['pvtype'],
+               properties={'pv':
+                           relationship(PV, backref='pvtype')})
+
+        mapper(Position, tables['position'],
+               properties={'instrument': relationship(Instrument,
+                                                      backref='positions'),
+                           'pvs': relationship(Position_PV) })
+
+        mapper(Instrument_PV, tables['instrument_pv'],
+               properties={'pv':relationship(PV),
+                           'instrument':relationship(Instrument)})
+
+        mapper(Position_PV, tables['position_pv'],
+               properties={'pv':relationship(PV)})
+
+        mapper(Instrument_Precommand,  tables['instrument_precommand'],
+               properties={'instrument': relationship(Instrument,
+                                                      backref='precommands'),
+                           'command':   relationship(Command,
+                                                     backref='inst_precoms')})
+        mapper(Instrument_Postcommand,   tables['instrument_postcommand'],
+               properties={'instrument': relationship(Instrument,
+                                                      backref='postcommands'),
+                           'command':   relationship(Command,
+                                                     backref='inst_postcoms')})
+    """
 
     # set onupdate and default constraints for several datetime columns
     # note use of ColumnDefault to wrap onpudate/default func
     fnow = ColumnDefault(datetime.now)
     for tname, cname in (('info',  'modify_time'),
                          ('commands', 'modify_time'),
+                         ('positions', 'modify_time'),
                          ('scandefs', 'modify_time'),
                          ('scandata', 'modify_time')):
         tables[tname].columns[cname].onupdate =  fnow
