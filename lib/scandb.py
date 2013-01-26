@@ -26,17 +26,17 @@ def isScanDB(dbname, server='sqlite', **kws):
     must be a sqlite db file, with tables named
        'postioners', 'detectors', and 'scans'
     """
-    _tables = ('info', 'positioners', 'detectors', 'scandefs')
+    _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
     result = False
-    try:
+    if True:
         engine = make_engine(dbname, server=server, **kws)
         meta = MetaData(engine)
         meta.reflect()
         if all([t in meta.tables for t in _tables]):
-            keys = [row.name for row in
+            keys = [row.keyname for row in
                     meta.tables['info'].select().execute().fetchall()]
             result = 'version' in keys and 'experiment_id' in keys
-    except:
+    else:
         pass
     return result
 
@@ -127,7 +127,7 @@ class ScanDB(object):
         self.status_codes = {}
         for row in self.getall('status'):
             self.status_codes[row.name] = row.id
-        
+
 
     def commit(self):
         "commit session state"
@@ -145,28 +145,26 @@ class ScanDB(object):
         "generic query"
         return self.session.query(*args, **kws)
 
-    def get_info(self, name=None, default=None):
+    def get_info(self, key=None, default=None):
         """get a value for an entry in the info table"""
         errmsg = "get_info expected 1 or None value for name='%s'"
-        table = self.tables['info']
-        cls   = self.classes['info']
-        if name is None:
+        cls, table = self._get_table('info')
+        if key is None:
             return self.query(table).all()
-        out = self.query(table).filter(cls.name==name).all()
-        thisrow = None_or_one(out, errmsg % name)
+        out = self.query(table).filter(cls.keyname==key).all()
+        thisrow = None_or_one(out, errmsg % key)
         if thisrow is None:
             return default
         return thisrow.value
 
-    def set_info(self, name, value):
+    def set_info(self, key, value):
         """set key / value in the info table"""
-        table = self.tables['info']
-        cls   = self.classes['info']
-        vals  = self.query(table).filter(cls.name==name).all()
+        cls, table = self._get_table('info')
+        vals  = self.query(table).filter(cls.keyname==key).all()
         if len(vals) < 1:
-            table.insert().execute(name=name, value=value)
+            table.insert().execute(keyname=key, value=value)
         else:
-            table.update(whereclause="name='%s'" % name).execute(value=value)
+            table.update(whereclause="keyname='%s'" % key).execute(value=value)
 
     def set_hostpid(self, clear=False):
         """set hostname and process ID, as on intial set up"""
@@ -336,26 +334,32 @@ class ScanDB(object):
         self.commit()
         return row
 
-    # Monitor PVs
-    def add_monitorpv(self, name, notes=''):
+    # List of PVs
+    def add_pv(self, name, notes='', monitor=False):
         """ """
-        cls, table = self._get_table('monitorpvs')
+        cls, table = self._get_table('pvs')
         vals  = self.query(table).filter(cls.name == name).all()
+        ismon = {False:0, True:1}[monitor]
         if len(vals) < 1:
-            table.insert().execute(name=name, notes=notes)
+            table.insert().execute(name=name, notes=notes, is_monitor=ismon)
         elif notes is not '':
-            table.update(whereclause="name='%s'" % name).execute(notes=notes)
-        return self.query(table).filter(cls.name == name).one()
+            where = "name='%s'" % name
+            table.update(whereclause=where).execute(notes=notes,
+                                                    is_monitor=ismon)
+        thispv = self.query(table).filter(cls.name == name).one()
+        if name not in self.pvs:
+            self.pvs[name] = thispv.id
+        return thispv
 
     def record_monitorpv(self, pvname, value, commit=False):
         """save value for monitor pvs"""
         if pvname not in self.pvs:
-            pv = self.add_monitorpv(pvname)
+            pv = self.add_pv(pvname, monitor=True)
             self.pvs[pvname] = pv.id
 
         cls, table = self._get_table('monitorvalues')
         mval = cls()
-        mval.monitorpvs_id = self.pvs[pvname]
+        mval.pv_id = self.pvs[pvname]
         mval.value = value
         self.session.add(mval)
         if commit:
@@ -367,9 +371,8 @@ class ScanDB(object):
         if pvname not in self.pvs:
             pv = self.add_monitorpv(pvname)
             self.pvs[pvname] = pv.id
-            
+
         cls, valtab = self._get_table('monitorvalues')
-        cls, pvstab = self._get_table('monitorpvs')
 
         query = select([valtab.c.value, valtab.c.time],
                        valtab.c.monitorpvs_id==self.pvs[pvname])
@@ -380,11 +383,10 @@ class ScanDB(object):
 
         return query.execute().fetchall()
 
-
     # commands -- a more complex interface
     def get_commands(self, status=None):
         """return command by status"""
-            
+
         cls, table = self._get_table('commands')
         if status is None:
             return self.query(table).all()
@@ -425,7 +427,7 @@ class ScanDB(object):
         """cancel command"""
         self.set_command_status(id, 'canceled')
         self.commit()
-        
+
 
 if __name__ == '__main__':
     dbname = 'Test.sdb'
