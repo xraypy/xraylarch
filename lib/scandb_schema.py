@@ -163,11 +163,11 @@ class Instrument_PV(_BaseTable):
                              getattr(getattr(self, 'pv', '?'), 'name', '?'))]
         return "<%s(%s)>" % (name, ', '.join(fields))
 
-class Instrument_Precommand(_BaseTable):
+class Instrument_Precommands(_BaseTable):
     "instrument precommand table"
     name, notes = None, None
 
-class Instrument_Postcommand(_BaseTable):
+class Instrument_Postcommands(_BaseTable):
     "instrument postcommand table"
     name, notes = None, None
 
@@ -251,12 +251,12 @@ def create_scandb(dbname, server='sqlite', **kws):
                            cols=[Column('modify_time', DateTime),
                                  PointerCol('instruments')])
 
-    instrument_precommand = NamedTable('instrument_precommand', metadata,
+    instrument_precommand = NamedTable('instrument_precommands', metadata,
                                        cols=[Column('exec_order', Integer),
                                              PointerCol('commands'),
                                              PointerCol('instruments')])
 
-    instrument_postcommand = NamedTable('instrument_postcommand', metadata,
+    instrument_postcommand = NamedTable('instrument_postcommands', metadata,
                                         cols=[Column('exec_order', Integer),
                                               PointerCol('commands'),
                                               PointerCol('instruments')])
@@ -312,7 +312,7 @@ def map_scandb(metadata):
     for cls in (Info, Status, PVTypes, PVs, MonitorValues, Macros, Commands,
                 ScanData, ScanPositioners, ScanCounters, ScanDetectors, ScanDefs,
                 Instruments, Positions, Position_PV, Instrument_PV,
-                Instrument_Precommand, Instrument_Postcommand):
+                Instrument_Precommands, Instrument_Postcommands):
 
         name = cls.__name__.lower()
         props = {}
@@ -329,52 +329,27 @@ def map_scandb(metadata):
             properties={'pvs': relationship(PVs,
                                             backref='instruments',
                                             secondary=tables['instrument_pv'])}
+        elif name == 'positions':
+            properties={'instrument': relationship(Instruments,
+                                            backref='positions'),
+                        'pvs': relationship(Position_PV)}
+        elif name == 'instrument_pv':
+            properties={'pv': relationship(PVs),
+                        'instrument': relationship(Instruments)}
+        elif name == 'position_pv':
+            properties={'pv': relationship(PVs)}
+        elif name == 'instrument_precommands':
+            properties={'instrument': relationship(Instruments,
+                                                   backref='precommands'),
+                        'command': relationship(Commands)}
+        elif name == 'instrument_postcommands':
+            properties={'instrument': relationship(Instruments,
+                                                   backref='postcommands'),
+                        'command': relationship(Commands)}
 
         mapper(cls, tables[name], properties=props)
         classes[name] = cls
 
-    mapping_Settings = """
-        props = {}
-
-        #if name == 'commands':
-        #    props = {'status_name': relationship(Status),
-        #             'scandef': relationship(ScanDefs, backref='scan')}
-        #elif name == 'scandata':
-        #    props = {'scandef': relationship(ScanDefs, backref='scanname')}
-        # mapper(t_cls, tables[name], properties=props)
-
-        mapper(Instrument, tables['instrument'],
-               properties={'pvs': relationship(PV,
-                                               backref='instrument',
-                                    secondary=tables['instrument_pv'])})
-
-        mapper(PVType,   tables['pvtype'],
-               properties={'pv':
-                           relationship(PV, backref='pvtype')})
-
-        mapper(Position, tables['position'],
-               properties={'instrument': relationship(Instrument,
-                                                      backref='positions'),
-                           'pvs': relationship(Position_PV) })
-
-        mapper(Instrument_PV, tables['instrument_pv'],
-               properties={'pv':relationship(PV),
-                           'instrument':relationship(Instrument)})
-
-        mapper(Position_PV, tables['position_pv'],
-               properties={'pv':relationship(PV)})
-
-        mapper(Instrument_Precommand,  tables['instrument_precommand'],
-               properties={'instrument': relationship(Instrument,
-                                                      backref='precommands'),
-                           'command':   relationship(Command,
-                                                     backref='inst_precoms')})
-        mapper(Instrument_Postcommand,   tables['instrument_postcommand'],
-               properties={'instrument': relationship(Instrument,
-                                                      backref='postcommands'),
-                           'command':   relationship(Command,
-                                                     backref='inst_postcoms')})
-    """
 
     # set onupdate and default constraints for several datetime columns
     # note use of ColumnDefault to wrap onpudate/default func
