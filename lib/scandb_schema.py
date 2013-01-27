@@ -236,7 +236,7 @@ def create_scandb(dbname, server='sqlite', **kws):
                     Column('time', DateTime))
 
     scandat = NamedTable('scandata', metadata, name=False,
-                         cols=[PointerCol('scandefs'),
+                         cols=[PointerCol('commands'),
                                StrCol('output_file', default=''),
                                StrCol('pos'),
                                StrCol('det'),
@@ -320,7 +320,7 @@ def map_scandb(metadata):
             props = {'status': relationship(Status),
                      'scandefs': relationship(ScanDefs)}
         elif name == 'scandata':
-            props = {'scandefs': relationship(ScanDefs)}
+            props = {'commands': relationship(Commands)}
         elif name == 'monitorvalues':
             props = {'pv': relationship(PVs)}
         elif name == 'pvs':
