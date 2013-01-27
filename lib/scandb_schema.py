@@ -288,9 +288,13 @@ def create_scandb(dbname, server='sqlite', **kws):
         pvtypes.insert().execute(name=name, notes=notes)
 
     for keyname, value in (("version", "1.0"),
-                        ("user_name", ""),
-                        ("experiment_id",  ""),
-                        ("user_folder",    "")):
+                           ("user_name", ""),
+                           ("experiment_id",  ""),
+                           ("user_folder",    ""),
+                           ("request_command_abort", "0"),
+                           ("request_command_pause", "0"),
+                           ("request_command_resume", "0"),
+                           ("request_shutdown", "0") ):
         info.insert().execute(keyname=keyname, value=value)
     session.commit()
 
