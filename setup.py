@@ -123,6 +123,28 @@ setup(name = 'larch',
 
 site_config.make_larch_userdirs()
 
+def fix_permissions(*dirnames):
+    """
+    set permissions on a list of directories to match
+    thoseof the HOME directory
+    """
+    home = os.environ['HOME']
+    stat =  os.stat(home)
+    for dname in (dirnames):
+        folder = os.path.join(home, '.%s' % dname)
+        for top, dirs, files in os.walk(folder):
+            os.chown(top, stat.st_uid, stat.st_gid)
+            for d in dirs:
+                dname = os.path.join(top, d)
+                os.chown(dname, stat.st_uid, stat.st_gid)
+                os.chmod(dname, 0750)
+            for d in files:
+                dname = os.path.join(top, d)
+                os.chown(dname, stat.st_uid, stat.st_gid)
+                os.chmod(dname, 0640)
+
+fix_permissions('matplotlib', 'larch')
+
 if deps_ok and not os.path.exists('.deps'):
     f = open('.deps', 'w')
     f.write('1\n')
