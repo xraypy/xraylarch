@@ -3,12 +3,14 @@ Installation instructions for Larch
 
 To install the Larch, use::
 
+   python setup.py build
    python setup.py install
 
 On modern linux and OS X systems, you will probably need to install with super-user
 privileges, as with::
 
-   sude python setup.py install
+   python setup.py build
+   sudo python setup.py install
 
 Requirements and Dependencies
 ===============================
@@ -19,7 +21,7 @@ Python:
 Larch requires Python 2.6 or higher.  Python 2.7 is *STRONGLY* recommended,
 unless you have no choice.  Moderate testing has been done with Python 3.2,
 but not all modules (notably, wx) are available for it at this writing
-(Sept 2012).  At some point in the future, Larch will probably switch to
+(Jan 2013).  At some point in the future, Larch will probably switch to
 Python 3, possibly to only supporting use from Python 3.
 
 Several Python packages are needed for Larch.  All of these are easily
@@ -43,6 +45,7 @@ Mac OS X, do:
     ~> cd dependencies
     ~> tar xvzf setuptools-0.6c11.tar.gz
     ~> cd setuptools-0.6c11
+    ~> python setup.py build
     ~> sudo python setup.py install
 
 For windows, easy_install is installed in C:\Python2.7\Scripts\easy_install.exe
@@ -77,13 +80,13 @@ They are all available as simple installs:
   matplotlib: http://sourceforge.net/projects/matplotlib/files/matplotlib/
   wxmplot:    https://github.com/newville/wxmplot
 
-The wxPython 2.9 series is recommended, and is required on 64-bit Mac OS X.
+The wxPython 2.8 series is required.  The 2.9 series is recommended, and is required
+on 64-bit Mac OS X.
 
 Matplotlib can be installed from binaries or via easy_install, but does need a C compiler.
 
 WXMplot is pure python and can be install as binaries or with easy_install
 on all systems.
-
 
 Recommended Modules: sqlalchemy, h5py, epics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -98,9 +101,12 @@ http://code.google.com/p/h5py/.  This can be installed with:
 
 though this needs working C (and Fortran?) compilers.
 
-The PyEpics module provides support for interacting with the Epics control system.  The
-python module is pure Python (and so can be installed with easy_install), but requires the
-base Epics Channel Access library to be installed to actually work.
+Optional Modules: epics
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The PyEpics module provides support for interacting with the Epics control system.
+The python module is pure Python (and so can be installed with easy_install), but
+requires the base Epics Channel Access library to be installed to actually work.
 
 What is Installed
 ===========================
@@ -163,6 +169,6 @@ You can customize the installed locations by adjusting these values prior
 to installation.
 
 Matt Newville <newville@cars.uchicago.edu>
-Last Update:  26-Sept-2012
+Last Update:  28-Jan-2013
 
 
