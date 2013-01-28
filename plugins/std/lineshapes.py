@@ -35,8 +35,8 @@ def voigt(x, cen=0, sigma=1, gamma=None):
     if gamma is None:
         gamma = sigma
     cen   = param_value(cen)
-    sigma = param_value(sigma)    
-    gamma = param_value(gamma)    
+    sigma = param_value(sigma)
+    gamma = param_value(gamma)
 
     z = (x-cen + 1j*gamma)/ (sigma*sqrt(2))
     return wofz(z).real / (sigma*s2pi)
@@ -62,6 +62,15 @@ def pearson7(x, cen=0, sigma=1, expon=0.5):
     expon = param_value(expon)
     scale = gamma(expon) * sqrt((2**(1/expon) -1)) / (gamma(expon-0.5)) / (sigma*sqrt(pi))
     return scale / (1 + ( ((1.0*x-cen)/sigma)**2) * (2**(1/expon) -1) )**expon
+
+def lognormal(x, cen=0, sigma=1):
+    """log-normal function
+    lognormal(x, cen, sigma)
+          = (1/x) * exp(-(ln(x) - cen)/ (2* sigma**2))
+    """
+    cen = param_value(cen)
+    sigma = param_value(sigma)
+    return (1./x) * exp(-(ln(x) - cen)/ (2* sigma**2))
 
 def _erf(x):
     """error function.  = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])"""
@@ -89,6 +98,7 @@ def registerLarchPlugin():
                       'voigt': voigt,
                       'pvoigt': pvoigt,
                       'pearson7': pearson7,
+                      'lognormal': lognormal,
                       'gammaln': _gammaln,
                       'erf': _erf,
                       'erfc': _erfc,
