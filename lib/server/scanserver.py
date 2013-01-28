@@ -3,7 +3,7 @@
 import time
 import threading
 
-from .scandb import ScanDB
+from ..scandb import ScanDB
 
 class ScanServer():
     def __init__(self, dbname=None, **kws):
