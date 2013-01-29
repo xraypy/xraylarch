@@ -93,6 +93,9 @@ class Interpreter:
         mathgroup    = symtable._math
         setattr(mathgroup, 'j', 1j)
 
+        # system-specific settings
+        site_config.system_settings()
+
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
 

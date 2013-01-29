@@ -17,7 +17,7 @@ def unixdir(f):
 
 def join(*args):
     return unixdir(os.path.join(*args))
-    
+
 exists = os.path.exists
 abspath = os.path.abspath
 curdir = abspath('.')
@@ -161,6 +161,17 @@ def show_site_config():
 ========================
 """ % (home_dir, usr_larchdir, history_file, init_files,
        modules_path, plugins_path))
+
+def system_settings():
+    """set system-specific settings, such as
+    Environmental Variables.
+
+    This is run by the interpreter on startup."""
+    # ubuntu / unity hack
+    if ('linux' in os.uname()[0].lower() and
+        'ubuntu' in os.uname()[3].lower() ):
+        os.environ['UBUNTU_MENUPROXY'] = 0
+
 
 if __name__ == '__main__':
     show_site_config()
