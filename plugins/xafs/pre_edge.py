@@ -117,8 +117,8 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         p2 = min(len(energy), p1 + 2)
 
     omu  = mu*energy**nvict
-    coefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
-    pre_edge = (coefs[0] * energy + coefs[1]) * energy**(-nvict)
+    pcoefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
+    pre_edge = (pcoefs[0] * energy + pcoefs[1]) * energy**(-nvict)
     # normalization
     p1 = min(np.where(energy >= norm1+e0)[0])
     p2 = max(np.where(energy <= norm2+e0)[0])
@@ -136,6 +136,9 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         group.edge_step  = edge_step
         group.pre_edge   = pre_edge
         group.post_edge  = post_edge
+        group.pre_slope  = pcoefs[0]
+        group.pre_offest = pcoefs[1]
+        group.norm_coefs = reversed(list(coefs))
     return edge_step, e0
 
 def registerLarchPlugin():
