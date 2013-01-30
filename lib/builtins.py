@@ -488,3 +488,6 @@ local_funcs = {'_builtin': {'group':_group,
                         'minimize': fitting.minimize,
                         'fit_report': fitting.fit_report},
                }
+
+# list of supported valid commands -- don't need parentheses for these
+valid_commands = ('show', 'run', 'help')

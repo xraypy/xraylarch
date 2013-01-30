@@ -124,6 +124,10 @@ class Interpreter:
             if os.path.isdir(pdir):
                 self.add_plugin(pdir)
 
+        # set valid commands from builtins
+        for cmd in builtins.valid_commands:
+            self.symtable._sys.valid_commands.append(cmd)
+
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))
 
