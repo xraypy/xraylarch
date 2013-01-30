@@ -469,6 +469,10 @@ class SymbolTable(Group):
 
             self.set_symbol("%s.%s" % (groupname, key), val)
 
+        plugin_init = getattr(plugin, 'initializeLarchPlugin', None)
+        if plugin_init is not None:
+            plugin_init(self)
+
     def show_group(self, groupname):
         """display group members --- simple version for tests"""
         out = []
