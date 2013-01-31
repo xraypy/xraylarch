@@ -170,8 +170,7 @@ def system_settings():
     # ubuntu / unity hack
     if ('linux' in os.uname()[0].lower() and
         'ubuntu' in os.uname()[3].lower() ):
-        os.environ['UBUNTU_MENUPROXY'] = 0
-
+        os.environ['UBUNTU_MENUPROXY'] = '0'
 
 if __name__ == '__main__':
     show_site_config()
