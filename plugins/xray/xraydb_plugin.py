@@ -14,7 +14,6 @@ def get_xraydb(_larch):
     symname = '%s._xraydb' % MODNAME
     if _larch.symtable.has_symbol(symname):
         return _larch.symtable.get_symbol(symname)
-
     xraydb = xrayDB()
     _larch.symtable.set_symbol(symname, xraydb)
     return xraydb
@@ -316,6 +315,11 @@ def core_width(element=None, edge=None, _larch=None):
     xdb = get_xraydb(_larch)
     return xdb.corehole_width(element=element, edge=edge)
 
+
+def initializeLarchPlugin(_larch=None):
+    """initialize xraydb"""
+    if _larch is not None:
+        xdb = get_xraydb(_larch)
 
 def registerLarchPlugin():
     return (MODNAME, {'f0': f0, 'f0_ions': f0_ions,

@@ -481,8 +481,11 @@ def _closeDisplays(_larch=None, **kws):
         win.Destroy()
 
 
-def initializeLarchPlugin(symtable):
-    symtable._sys.valid_commands.extend(['plot', 'oplot', 'newplot', 'imshow', 'contour'])
+def initializeLarchPlugin(_larch=None):
+    """initialize plotter"""
+    cmds = ['plot', 'oplot', 'newplot', 'imshow', 'contour']
+    if _larch is not None:
+        _larch.symtable._sys.valid_commands.extend(cmds)
 
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,
