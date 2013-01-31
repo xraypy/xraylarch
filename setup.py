@@ -1,10 +1,15 @@
 #!/usr/bin/env python
 
 from distutils.core import setup
-import os, sys
+import os
+import sys
+import site
 import glob
 
 from lib import site_configdata, site_config, version
+
+cmdline_args = sys.argv[1:]
+
 
 required_modules = ('numpy', 'scipy', 'docutils', 'wx', 'matplotlib', 'wxmplot')
 
@@ -70,6 +75,16 @@ if os.name == 'nt':
     share_basedir = site_configdata.win_installdir
     user_basedir = site_configdata.win_userdir
 
+# print share_basedir
+# print user_basedir
+# print sys.prefix
+# print sys.exec_prefix
+# print site.USER_BASE
+# print site.USER_SITE
+#
+# print cmdline_args
+#
+
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch modules
 # and plugins
@@ -118,7 +133,8 @@ setup(name = 'larch',
       license = 'Python',
       description = 'A scientific data processing language in python',
       package_dir = {'larch': 'lib'},
-      packages = ['larch', 'larch.utils', 'larch.fitting', 'larch.wxlib'],
+      packages = ['larch', 'larch.utils', 'larch.wxlib',
+                  'larch.fitting', 'larch.fitting.uncertainties'],
       data_files  = data_files)
 
 site_config.make_larch_userdirs()
