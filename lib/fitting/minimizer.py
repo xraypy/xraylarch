@@ -46,13 +46,8 @@ try:
 except ImportError:
     pass
 
-# check for uncertainties package
-HAS_UNCERTAIN = False
-try:
-    import uncertainties
-    HAS_UNCERTAIN = True
-except ImportError:
-    pass
+# use local version of uncertainties package
+from . import uncertainties
 
 from .parameter import isParameter
 
@@ -69,6 +64,29 @@ class MinimizerException(Exception):
 
     def __str__(self):
         return "\n%s" % (self.msg)
+
+
+def larcheval_with_uncertainties(*vals,  **kwargs):
+    """
+    given values for variables, calculate object value.
+    This is used by the uncertainties package to calculate
+    the uncertainty in an object even with a complicated
+    expression.
+    """
+    _obj   = kwargs.get('_obj', None)
+    _pars  = kwargs.get('_pars', None)
+    _names = kwargs.get('_names', None)
+    _larch = kwargs.get('_larch', None)
+    if (_obj is None or _pars is None or
+        _names is None or _larch is None or
+        _obj._ast is None):
+        return 0
+    for val, name in zip(vals, _names):
+        _pars[name]._val = val
+    return _larch.eval(_obj._ast)
+
+uncertainties_eval = uncertainties.wrap(larcheval_with_uncertainties)
+
 
 class Minimizer(object):
     """general minimizer"""
@@ -274,23 +292,26 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             group.covar_vars = self.var_names
             group.covar = cov
 
-        if HAS_UNCERTAIN and cov is not None:
+        if cov is not None:
             # uncertainties for constrained parameters:
             #   get values with uncertainties (including correlations),
             #   temporarily set Parameter values to these,
             #   re-evaluate contrained parameters to extract stderr
             #   and then set Parameters back to best-fit value
             uvars = uncertainties.correlated_values(vbest, cov)
-            for val, nam in zip(uvars, self.var_names):
-                named_params[nam]._val = val
             for nam in dir(self.paramgroup):
                 obj = getattr(self.paramgroup, nam)
                 if isParameter(obj):
-                    try:
-                        if obj._ast is not None: # only constrained params
-                            obj.stderr = obj.value.std_dev()
-                    except:
-                        pass
+                    if obj._ast is not None: # only constrained params
+                        uval = uncertainties_eval(*uvars, _obj=obj,
+                                                  _names=self.var_names,
+                                                  _pars=named_params,
+                                                  _larch=self._larch)
+                        try:
+                            obj.stderr = uval.std_dev()
+                        except:
+                            pass
+
             for val, nam in zip(uvars, self.var_names):
                 named_params[nam]._val = val.nominal_value
             # clear any errors evaluting uncertainties
