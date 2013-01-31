@@ -19,6 +19,7 @@ try:
 except ImportError:
     print "Warning HDF5 not available"
     has_h5 = False
+has_h5 = False
 
 def _cleanfile(x):
     for o in ' ./?(){}[]",&%^#@$': x = x.replace(o,'_')
