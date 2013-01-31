@@ -387,8 +387,6 @@ class SymbolTable(Group):
         "delete a symbol"
         sym = self._lookup(name, create=False)
         parent, child = self.get_parent(name)
-        if isgroup(sym):
-            raise LookupError("symbol '%s' is a group" % (name))
         self.clear_callbacks(name)
         delattr(parent, child)
 
