@@ -117,8 +117,8 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         p2 = min(len(energy), p1 + 2)
 
     omu  = mu*energy**nvict
-    pcoefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
-    pre_edge = (pcoefs[0] * energy + pcoefs[1]) * energy**(-nvict)
+    precoefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
+    pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
     # normalization
     p1 = min(np.where(energy >= norm1+e0)[0])
     p2 = max(np.where(energy <= norm2+e0)[0])
@@ -126,19 +126,24 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         p2 = min(len(energy), p1 + 2)
     coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
     post_edge = 0
+    norm_coefs = []
     for n, c in enumerate(reversed(list(coefs))):
         post_edge += c * energy**(n-nvict)
+        norm_coefs.append(c)
     edge_step = post_edge[ie0] - pre_edge[ie0]
     norm  = (mu - pre_edge)/edge_step
     if _larch.symtable.isgroup(group):
         group.e0 = e0
         group.norm = norm
+        group.nvict = nvict
+        group.nnorm = nnorm
         group.edge_step  = edge_step
         group.pre_edge   = pre_edge
         group.post_edge  = post_edge
-        group.pre_slope  = pcoefs[0]
-        group.pre_offest = pcoefs[1]
-        group.norm_coefs = reversed(list(coefs))
+        group.pre_slope  = precoefs[0]
+        group.pre_offest = precoefs[1]
+        for i, c in enumerate(norm_coefs):
+            setattr(group, 'norm_c%i' % i, c)
     return edge_step, e0
 
 def registerLarchPlugin():
