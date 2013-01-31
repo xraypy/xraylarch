@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 from .parameter import Parameter, isParameter, param_value
-from .minimizer import Minimizer, minimize, fit_report
+from .minimizer import Minimizer, minimize, fit_report, uncertainties_eval
 from .confidence import conf_intervals , chisquare_map, conf_report, f_compare
-
-from . import uncertainties
 
 def f_test(ndata, nvars, chisquare, chisquare0, nfix=1):
     """return the F-test value for the following input values:
