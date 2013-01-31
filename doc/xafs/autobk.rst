@@ -27,7 +27,7 @@ The :func:`autobk` function
                       which the signal is ignored. Default = 1.
     :param e0:        edge energy, in eV.  If `None`, it will be determined.
     :param edge_step: edge step.  If `None`, it will be determined.
-    :param pre_edge_kws:  keyword arguments to pass to :func:`pre_edge`.
+    :param pre_edge_kws:  dictionary containing keyword arguments to pass to :func:`pre_edge`.
     :param nknots:    number of knots in spline.  If `None`, it will be determined.
     :param kmin:      minimum :math:`k` value   [0]
     :param kmax:      maximum :math:`k` value   [full data range].
@@ -69,10 +69,11 @@ The :func:`autobk` function
     input ``group`` has attributes ``e0`` and ``edge_step`` -- say, from
     running :func:`pre_edge` -- those values will be used.  If values
     cannot be found in either place, they will be determined by calling
-    :func:`pre_edge` from within :func:`autobk`.  The ``pre_edge_kws``
-    argument can be used here for parameters to pass to :func:`pre_edge`,
-    and the output parameters from it will be added to the output
-    ``group``.
+    :func:`pre_edge` from within :func:`autobk`, and the output parameters
+    from :func:`pre_edge` will be added to the output ``group`` here.
+    The ``pre_edge_kws`` argument can be used here to hold a dictionary of
+    parameters to pass to :func:`pre_edge`.
+
 
     If ``calc_uncertainties`` is set to ``True``, the outputs
     ``group.delta_chi`` and ``group.delta_bkg``, holding the uncertainties
@@ -315,11 +316,13 @@ with the resulting outputs looking like this:
 
 Thus demonstrating that we can process data on Cu metal.
 
-For a slightly more challenging example, we try the As K-edge of scorodit
-(:math:`\rm FeAsO4 \cdot (nH_2O)`).  Here, we  start by reading in data and
-constructing :math:`\mu(E)`, then run :func:`autobk` with all default
-settings:
-
+For a slightly more challenging example, we try the As K-edge of scorodite
+(:math:`\rm FeAsO4 \cdot (nH_2O)`).  Here, we start by reading in data and
+constructing :math:`\mu(E)`, then run :func:`autobk`.  We take most of the
+default values for pararmeters, but pass explicit parameters such as
+``nnorm`` to :func:`pre_edge` using ``pre_edge_kws``.  Setting these
+parameters is not critically important for this data set, and is mostly
+here to demonstrate the method for passing arguments to :func:`pre_edge`.
 
 .. literalinclude:: ../../examples/xafs/doc_autobk2.lar
 
