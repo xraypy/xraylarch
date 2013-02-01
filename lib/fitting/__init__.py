@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from .parameter import Parameter, isParameter, param_value
-from .minimizer import Minimizer, minimize, fit_report, uncertainties_eval
+from .minimizer import Minimizer, minimize, fit_report, eval_stderr
 from .confidence import conf_intervals , chisquare_map, conf_report, f_compare
 
 def f_test(ndata, nvars, chisquare, chisquare0, nfix=1):

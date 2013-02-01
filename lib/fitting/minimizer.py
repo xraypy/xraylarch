@@ -85,7 +85,28 @@ def larcheval_with_uncertainties(*vals,  **kwargs):
         _pars[name]._val = val
     return _larch.eval(_obj._ast)
 
-uncertainties_eval = uncertainties.wrap(larcheval_with_uncertainties)
+wrap_ueval = uncertainties.wrap(larcheval_with_uncertainties)
+
+def eval_stderr(obj, uvars, _names, _pars, _larch):
+    """evaluate uncertainty and set .stderr for a parameter `obj`
+    given the uncertain values `uvars` (a list of uncertainties.ufloats),
+    a list of parameter names that matches uvars, and a dict of param
+    objects, keyed by name.
+
+    This uses the uncertainties package wrapped function to evaluate
+    the uncertainty for an arbitrary expression (in obj._ast) of parameters.
+    """
+    if not isParameter(obj):
+        return
+    if obj._ast is None:
+        return
+    uval = wrap_ueval(*uvars, _obj=obj, _names=_names,
+                      _pars=_pars, _larch=_larch)
+    try:
+        obj.stderr = uval.std_dev()
+    except:
+        obj.stderr = 0
+
 
 
 class Minimizer(object):
@@ -301,16 +322,8 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             uvars = uncertainties.correlated_values(vbest, cov)
             for nam in dir(self.paramgroup):
                 obj = getattr(self.paramgroup, nam)
-                if isParameter(obj):
-                    if obj._ast is not None: # only constrained params
-                        uval = uncertainties_eval(*uvars, _obj=obj,
-                                                  _names=self.var_names,
-                                                  _pars=named_params,
-                                                  _larch=self._larch)
-                        try:
-                            obj.stderr = uval.std_dev()
-                        except:
-                            pass
+                eval_stderr(obj, uvars, self.var_names,
+                            named_params, self._larch)
 
             for val, nam in zip(uvars, self.var_names):
                 named_params[nam]._val = val.nominal_value
