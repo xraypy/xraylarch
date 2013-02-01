@@ -16,6 +16,7 @@ sys.path.insert(0, plugin_path('std'))
 from mathutils import index_nearest, remove_dups
 
 MODNAME = '_xafs'
+MAX_NNORM = 5
 
 def find_e0(energy, mu, group=None, _larch=None):
     """calculate E0 given mu(energy)
@@ -76,7 +77,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     norm1:   low E range (relative to E0) for post-edge fit
     norm2:   high E range (relative to E0) for post-edge fit
     nnorm:   number of terms in polynomial (that is, 1+degree) for
-             post-edge, normalization curve. Default=3 (quadratic)
+             post-edge, normalization curve. Default=3 (quadratic), max=5
 
     Returns
     -------
@@ -103,7 +104,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         e0 = find_e0(energy, mu, group=group, _larch=_larch)
 
     energy = remove_dups(energy)
-
+    nnorm = max(min(nnorm, MAX_NNORM), 1)
     p1 = min(np.where(energy >= e0-10.0)[0])
     p2 = max(np.where(energy <= e0+10.0)[0])
     ie0 = np.where(energy-e0 == min(abs(energy[p1:p2] - e0)))[0][0]
@@ -141,7 +142,10 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         group.pre_edge   = pre_edge
         group.post_edge  = post_edge
         group.pre_slope  = precoefs[0]
-        group.pre_offest = precoefs[1]
+        group.pre_offset = precoefs[1]
+        for i in range(MAX_NNORM):
+            if hasattr(group, 'norm_c%i' % i):
+                delattr(group, 'norm_c%i' % i)
         for i, c in enumerate(norm_coefs):
             setattr(group, 'norm_c%i' % i, c)
     return edge_step, e0
