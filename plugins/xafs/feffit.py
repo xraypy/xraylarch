@@ -25,13 +25,9 @@ from xafsft import xftf_fast, xftr_fast, ftwindow
 
 from feffdat import FeffPathGroup, _ff2chi
 
-# check for uncertainties package
-HAS_UNCERTAIN = False
-try:
-    from uncertainties import ufloat, correlated_values
-    HAS_UNCERTAIN = True
-except ImportError:
-    pass
+# use larch's uncertainties package
+from larch.fitting.uncertainties import correlated_values
+from larch.fitting import eval_stderr
 
 class TransformGroup(Group):
     """A Group of transform parameters.
@@ -437,9 +433,10 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         p = getattr(params, name)
         if isParameter(p) and p.vary:
             p.stderr *= err_scale
+
     # next, propagate uncertainties to constraints and path parameters.
     covar = getattr(params, 'covar', None)
-    if HAS_UNCERTAIN and covar is not None:
+    if covar is not None:
         vsave, vbest = {}, []
         # 1. save current params
         for vname in params.covar_vars:
@@ -449,19 +446,12 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
 
         # 2. get correlated uncertainties, set params accordingly
         uvars = correlated_values(vbest, params.covar)
-        for val, nam in zip(uvars, params.covar_vars):
-            setattr(params, nam, ufloat((val.nominal_value,
-                                         err_scale * val.std_dev())))
+
         # 3. evaluate constrained params, save stderr
-        for nam, par in params.__dict__.items():
-            if isParameter(par) and par._ast is not None:
-                par.stderr = 0
-                try:
-                    tmp = par._getval()
-                    par.stderr = tmp.std_dev()
-                except:
-                    print 'error with derived uncertainty ', par, par.name, par._ast
-                    pass
+        for nam in dir(params):
+            obj = getattr(params, nam)
+            eval_stderr(obj, uvars,  params.covar_vars, vsave, _larch)
+
         # 3. evaluate path params, save stderr
         for ds in datasets:
             for p in ds.pathlist:
@@ -471,13 +461,9 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
                 for param in ('degen', 's02', 'e0', 'ei',
                               'deltar', 'sigma2', 'third', 'fourth'):
                     obj = getattr(p, param)
-                    stderr  = 0
-                    if isParameter(obj):
-                        if hasattr(obj.value, 'std_dev'):
-                            stderr = obj.value.std_dev()
-                        setattr(obj, 'stderr', stderr)
+                    eval_stderr(obj, uvars,  params.covar_vars, vsave, _larch)
 
-        # 4. restore saved parameters
+        # restore saved parameters again
         for vname in params.covar_vars:
             setattr(params, vname, vsave[vname])
 
