@@ -424,7 +424,8 @@ def minimize(fcn, group,  args=None, kws=None, method='leastsq',
         fit.leastsq()
     return fit
 
-def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
+def fit_report(group, show_correl=True, min_correl=0.1, precision=None,
+               _larch=None, **kws):
     """print report of fit statistics given 'fit parameter group'
     """
     if not _larch.symtable.isgroup(group):
@@ -434,9 +435,16 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
 
     topline = '===================== FIT RESULTS ====================='
     header = '[[%s]] %s'
-    varformat  = '   %12s = %s (init= % f)'
     exprformat = '   %12s = %s = \'%s\''
     out = [topline]
+
+    varformat  = '   %12s = %s (init= % f)'
+    fmt_sca = "% f"
+    fmt_err = "% f +/- %f"
+    if precision is not None:
+        varformat  = '   %%12s = %%s (init= %% .%if)' % precision
+        fmt_sca = "%% .%if" % precision
+        fmt_err = "%% .%if +/- %%.%if" % (precision, precision)
 
     npts = len(group.residual)
     ofit = getattr(group, 'fit_details', None)
@@ -454,14 +462,18 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
     if hasattr(group, 'message'):
         out.append('   Message from fit    = %s' % (group.message))
 
-    out.append('   npts, nvarys, nfree = %i, %i, %i' % (npts, group.nvarys, group.nfree))
+    out.append('   npts, nvarys, nfree = %i, %i, %i' % (npts,
+                                                        group.nvarys,
+                                                        group.nfree))
 
     if hasattr(ofit, 'nfev'):
         out.append('   nfev (func calls)   = %i' % (ofit.nfev))
     if hasattr(group, 'chi_square'):
-        out.append('   chi_square          = %f' % (group.chi_square))
+        out.append(('   chi_square          = %s' % fmt_sca) %
+                   (group.chi_square))
     if hasattr(group, 'chi_reduced'):
-        out.append('   reduced chi_square  = %f' % (group.chi_reduced))
+        out.append(('   reduced chi_square  = %s' % fmt_sca) %
+                   (group.chi_reduced))
     out.append(' ')
     out.append(header % ('Variables',''))
     exprs = []
@@ -470,9 +482,9 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
         if len(name) < 14:
             name = (name + ' '*14)[:14]
         if isParameter(var):
-            sval = "% f" % var.value
+            sval = fmt_sca % var.value
             if var.stderr is not None:
-                sval = "% f +/- %f" % (var.value, var.stderr)
+                sval = fmt_err % (var.value, var.stderr)
             if var.vary:
                 out.append(varformat % (name, sval, var._initval))
             elif var.expr is not None:
@@ -506,9 +518,3 @@ def fit_report(group, show_correl=True, min_correl=0.1, _larch=None, **kws):
             out.append('   %s = % .3f ' % (name, val))
     out.append('='*len(topline))
     return '\n'.join(out)
-
-# def registerLarchPlugin():
-#     return ('_math', {'minimize': minimize,
-#                       'guess': guess,
-#                       'fit_report': fit_report})
-
