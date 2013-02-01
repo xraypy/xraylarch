@@ -443,12 +443,12 @@ of :math:`R`. The output for this fit is:
 
 .. literalinclude:: ../../examples/feffit/doc_feffit3.out
 
-Note that, while uncertainties are estimated for Path parameters that are
-simple expressions of variables (such as ``S02`` and even ``deltar``), but
-not for ``sigma2``, as this is calculated with a function call, which makes
-the automated error propagation cannot yet do.  For the case here, you can
-simply evaluate :func:`sigma2_eins` with the range of values for the
-parameter ``theta``::
+Note that an uncertainty is estimated for the Path parameters, including
+``sigma2``, which is calculated with the :func:`sigma2_eins` function.
+Such derived uncertainties do reflect the uncertainties and correlations
+between variables, but these derived uncertainties should definitely be
+viewed as estimates.  In this examples, a simplistic evaluation of one of
+the ``sigma2`` parameters using the estimated variance in the ``theta``::
 
     larch> _ave = sigma2_eins(10, pars.theta)
     larch> _dlo = sigma2_eins(10, pars.theta-pars.theta.stderr) - _ave
@@ -456,9 +456,12 @@ parameter ``theta``::
     larch> print "sigma2(T=10) = %.5f  (%+.5f, %+.5f)" % (_ave, _dlo, _dhi)
     sigma2(T=10) = 0.00328  (+0.00011, -0.00011)
 
-and so forth to get an estimate of the range of values for the ``sigma2``
-Path parameters.  The output plots for the fits to the three datasets are
-given below.
+gives an estimate about 3 times larger than the estimate automatically
+derived from the fit.  Of course, the simple evaluation ignores the
+correlation between parameters, and especially that if ``sigma2`` for one
+dataset increases, so must ``sigma2`` for the other datasets.
+
+The output plots for the fits to the three datasets are given below.
 
 .. _xafs_fig15:
 
