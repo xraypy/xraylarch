@@ -107,7 +107,7 @@ def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
 
     ncols, nrow = data.shape
     # set column labels
-    _labels = ['c%i' % (i+1) for i in range(ncols)]
+    _labels = ['col%i' % (i+1) for i in range(ncols)]
     if labels is None:
         _labelline = _labelline.lower()
         try:
