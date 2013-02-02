@@ -109,13 +109,22 @@ def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
     # set column labels
     _labels = ['col%i' % (i+1) for i in range(ncols)]
     if labels is None:
+        if _labelline[0] in COMMENTCHARS:
+            _labelline = _labelline[1:].strip()
         _labelline = _labelline.lower()
         try:
             labels = [fixName(l.strip()) for l in _labelline.split()]
         except:
             labels = []
+    elif isinstance(labels, str):
+        labels = labels.replace(',', ' ')
+        labels = [fixName(l.strip().lower()) for l in labels.split()]
+
     for i, lab in enumerate(labels):
-        _labels[i] = lab
+        try:
+            _labels[i] = lab
+        except:
+            pass
 
     attrs['column_labels'] = _labels
     if sort and sort_column >= 0 and sort_column < nrow:
