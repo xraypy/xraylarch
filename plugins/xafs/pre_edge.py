@@ -13,7 +13,7 @@ from larch.larchlib import plugin_path
 sys.path.insert(0, plugin_path('std'))
 
 # now we can reliably import other std and xafs modules...
-from mathutils import index_nearest, remove_dups
+from mathutils import index_of, index_nearest, remove_dups
 
 MODNAME = '_xafs'
 MAX_NNORM = 5
@@ -105,15 +105,14 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
 
     energy = remove_dups(energy)
     nnorm = max(min(nnorm, MAX_NNORM), 1)
-    p1 = min(np.where(energy >= e0-10.0)[0])
-    p2 = max(np.where(energy <= e0+10.0)[0])
-    ie0 = np.where(energy-e0 == min(abs(energy[p1:p2] - e0)))[0][0]
+    ie0 = index_nearest(energy, e0)
+    e0 = energy[ie0]
 
     if pre1 is None:  pre1  = min(energy) - e0
     if norm2 is None: norm2 = max(energy) - e0
 
-    p1 = min(np.where(energy >= pre1+e0)[0])
-    p2 = max(np.where(energy <= pre2+e0)[0])
+    p1 = index_of(energy, pre1+e0)
+    p2 = index_nearest(energy, pre2+e0)
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
 
@@ -121,8 +120,8 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     precoefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
     pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
     # normalization
-    p1 = min(np.where(energy >= norm1+e0)[0])
-    p2 = max(np.where(energy <= norm2+e0)[0])
+    p1 = index_of(energy, norm1+e0)
+    p2 = index_nearest(energy, norm2+e0)
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
     coefs = polyfit(energy[p1:p2], omu[p1:p2], nnorm)
