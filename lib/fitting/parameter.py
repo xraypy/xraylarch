@@ -2,14 +2,8 @@ from numpy import arcsin, cos, inf, nan, sin, sqrt
 import json
 from ..larchlib import isNamedClass
 
-# uncertainties package
-HAS_UNCERTAIN = False
-try:
-    import uncertainties
-    ufloat = uncertainties.ufloat
-    HAS_UNCERTAIN = True
-except ImportError:
-    pass
+# use local version of uncertainties package
+from . import uncertainties
 
 class Parameter(object):
     """returns a parameter object: a floating point value with bounds that can
@@ -81,8 +75,8 @@ class Parameter(object):
     def uvalue(self):
         """get value with uncertainties (uncertainties.ufloat)"""
         v = self._getval()
-        if HAS_UNCERTAIN and self.stderr is not None:
-            return ufloat((v, self.stderr))
+        if self.stderr is not None:
+            return uncertainties.ufloat((v, self.stderr))
         return v
 
     @property
