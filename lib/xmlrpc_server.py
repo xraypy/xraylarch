@@ -147,6 +147,8 @@ class LarchServer(SimpleXMLRPCServer):
                 block, fname, lineno = self.input.get()
                 if len(block) == 0:
                     continue
+                if self.local_echo:
+                    print block
                 ret = self.larch.eval(block, fname=fname, lineno=lineno)
                 if self.larch.error:
                     err = self.larch.error.pop(0)

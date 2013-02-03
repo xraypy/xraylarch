@@ -11,7 +11,8 @@ with options
   -d, --debug           set debug mode
   -x, --nowx            set no wx graphics mode
   -e, --exec            execute script from file(s) only
-  -r, --remote          run in remote server mode   (not yet implemented)
+  -r, --remote          run in remote server mode
+  -c, --echo            tell remote server to echo commands
   -p PORT, --port=PORT  port number for remote server
 """
 
@@ -43,6 +44,9 @@ parser.add_option("-r", "--remote", dest="server_mode", action="store_true",
 
 parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for remote server")
+
+parser.add_option("-c", "--echo", dest="echo", action="store_true",
+                  default=False, help="tell remote server to echo commands")
 
 (options, args) = parser.parse_args()
 
@@ -86,13 +90,12 @@ if len(__extra__)  > 0:
 
 if options.server_mode:
     from larch.xmlrpc_server import LarchServer
-    s = LarchServer(host='localhost', port=int(options.port))
+    s = LarchServer(host='localhost', port=int(options.port),
+                    local_echo=options.echo)
     s.run()
     sys.exit()
 
-
 shell = larch.shell(banner_msg=BANNER, quiet=options.quiet)
-
 
 def onCtrlC(*args, **kws):
     return 0
@@ -108,7 +111,7 @@ if HAS_WX:
     shell.larch.symtable.set_symbol('_sys.wx.inputhook', inputhook)
     shell.larch.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
     shell.larch.symtable.set_symbol('_sys.wx.force_wxupdate', False)
-    shell.larch.symtable.set_symbol('_sys.wx.wxapp', app) # app.GetTopWindow())
+    shell.larch.symtable.set_symbol('_sys.wx.wxapp', app)
     shell.larch.symtable.set_symbol('_sys.wx.parent',None)
     inputhook.ON_INTERRUPT = onCtrlC
     inputhook.WXLARCH_SYM = shell.larch.symtable
