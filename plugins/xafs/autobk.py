@@ -42,21 +42,20 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     bkg, chi = spline_eval(kraw, mu, knots, coefs, order, kout)
     if chi_std is not None:
         chi = chi - chi_std
-    out = np.zeros(2*(irbkg+nclamp))
-    out[:2*irbkg] = realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
-
-    sum2 = (chi*chi).sum() * nclamp / 10.0
-    if clamp_lo > 0 and nclamp > 0:
-        out[-2*nclamp:-nclamp]=  clamp_lo*chi[:nclamp]/sum2
-    if clamp_hi > 0 and nclamp > 0:
-        out[-nclamp:] = \
-                      clamp_hi*chi[-nclamp:]*(kout[-nclamp:]**kweight)/sum2
-    return out
+    out =  realimag(xftf_fast(chi*ftwin, nfft=nfft)[:irbkg])
+    if nclamp == 0:
+        return out
+    # spline clamps:
+    csum = (chi*chi).sum() * nclamp / 10.0
+    return np.concatenate(
+        (out,
+         abs(clamp_lo)*chi[:nclamp]/csum,
+         abs(clamp_hi)*chi[-nclamp:]*(kout[-nclamp:]**kweight)/csum))
 
 def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
-           pre_edge_kws=None, nclamp=2, clamp_lo=1, clamp_hi=1,
+           pre_edge_kws=None, nclamp=4, clamp_lo=1, clamp_hi=1,
            calc_uncertainties=False, _larch=None, **kws):
     """Use Autobk algorithm to remove XAFS background
 
@@ -185,15 +184,17 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
         group.chie = (mu-obkg)/edge_step
         group.k    = kout
         group.chi  = chi/edge_step
+
         # now fill in 'autobk_details' group
-        dg = group.autobk_details = Group()
-        dg.spline_pars = params
-        dg.init_bkg = np.copy(mu)
-        dg.init_bkg[ie0:ie0+len(bkg)] = initbkg
-        dg.init_chi = initchi/edge_step
-        dg.knots_e  = spl_e
-        dg.knots_y  = np.array([coefs[i] for i in range(nspl)])
-        dg.init_knots_y = spl_y
+        params.init_bkg = np.copy(mu)
+        params.init_bkg[ie0:ie0+len(bkg)] = initbkg
+        params.init_chi = initchi/edge_step
+        params.knots_e  = spl_e
+        params.knots_y  = np.array([coefs[i] for i in range(nspl)])
+        params.init_knots_y = spl_y
+        params.nfev = params.fit_details.nfev
+        group.autobk_details = params
+
         # uncertainties in mu0 and chi:  fairly slow!!
         if HAS_UNCERTAIN and calc_uncertainties:
             vbest, vstd = [], []
