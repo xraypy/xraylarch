@@ -25,6 +25,7 @@ class Parameter(object):
                  _larch=None, **kws):
         self._val = val
         self._initval = val
+        self._uval = None
         self.vary = vary
         self.min = min
         self.max = max
@@ -32,7 +33,6 @@ class Parameter(object):
         self._expr = expr
         self.stderr = stderr
         self.correl = correl
-        self.use_uvalue = False
         self._ast = None
         self._larch = None
         self._from_internal = lambda val: val
@@ -74,10 +74,11 @@ class Parameter(object):
     @property
     def uvalue(self):
         """get value with uncertainties (uncertainties.ufloat)"""
-        v = self._getval()
-        if self.stderr is not None:
-            return uncertainties.ufloat((v, self.stderr))
-        return v
+        return self._uval
+
+    @uvalue.setter
+    def uvalue(self, val):
+        self._uval = val
 
     @property
     def value(self):

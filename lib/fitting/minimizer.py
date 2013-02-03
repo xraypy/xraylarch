@@ -104,10 +104,10 @@ def eval_stderr(obj, uvars, _names, _pars, _larch):
                       _pars=_pars, _larch=_larch)
     try:
         obj.stderr = uval.std_dev()
+        obj._uval  = uval
     except:
         obj.stderr = 0
-
-
+        obj._uval  = None
 
 class Minimizer(object):
     """general minimizer"""
@@ -302,31 +302,35 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         if cov is not None:
             if self.scale_covar:
                 cov = cov * chisqr / nfree
-            for iv, name in enumerate(self.var_names):
-                p = named_params[name]
-                p.stderr = sqrt(cov[iv, iv])
-                p.correl = {}
-                for jv, name2 in enumerate(self.var_names):
-                    if jv != iv:
-                        p.correl[name2] = (cov[iv, jv]/
-                                           (p.stderr * sqrt(cov[jv, jv])))
             group.covar_vars = self.var_names
             group.covar = cov
 
-        if cov is not None:
             # uncertainties for constrained parameters:
             #   get values with uncertainties (including correlations),
             #   temporarily set Parameter values to these,
             #   re-evaluate contrained parameters to extract stderr
             #   and then set Parameters back to best-fit value
             uvars = uncertainties.correlated_values(vbest, cov)
+
+            # set stderr and correlations for variable, named parameters:
+            for iv, name in enumerate(self.var_names):
+                p = named_params[name]
+                p.stderr = uvars[iv].std_dev()
+                p._uval  = uvars[iv]
+                p.correl = {}
+                for jv, name2 in enumerate(self.var_names):
+                    if jv != iv:
+                        p.correl[name2] = (cov[iv, jv]/
+                                           (p.stderr * sqrt(cov[jv, jv])))
             for nam in dir(self.paramgroup):
                 obj = getattr(self.paramgroup, nam)
                 eval_stderr(obj, uvars, self.var_names,
                             named_params, self._larch)
 
-            for val, nam in zip(uvars, self.var_names):
-                named_params[nam]._val = val.nominal_value
+            # restore nominal values that may have been tweaked to calc
+            # other stderrs
+            for uval, nam in zip(uvars, self.var_names):
+                named_params[nam]._val  = uval.nominal_value
             # clear any errors evaluting uncertainties
             if self._larch.error:
                 self._larch.error = []

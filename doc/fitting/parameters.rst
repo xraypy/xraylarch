@@ -50,18 +50,19 @@ expression to use to evaluate its value as a **constrained Parameter**.
 A Parameter may have the following attributes to either control its value
 or give additional information about its value:
 
-     ============== ===================== ============= =============================
-      attribute      meaning               default       set by which functions:
-     ============== ===================== ============= =============================
-      value          value                               :func:`param`
-      vary           can change in fit    ``False``      :func:`param`
-      min            lower bound          ``None``       :func:`param`
-      max            upper bound          ``None``       :func:`param`
-      name           optional name        ``None``       :func:`param`
-      expr           algebraic constraint ``None``       :func:`param`
-      stderr         uncertainty           --            :func:`minimize`
-      correl         correlations          --            :func:`minimize`
-     ============== ===================== ============= =============================
+     ============== ========================== ============= =============================
+      attribute      meaning                    default       set by which functions:
+     ============== ========================== ============= =============================
+      value          value                                     :func:`param`
+      vary           can change in fit          ``False``      :func:`param`
+      min            lower bound                ``None``       :func:`param`
+      max            upper bound                ``None``       :func:`param`
+      name           optional name              ``None``       :func:`param`
+      expr           algebraic constraint       ``None``       :func:`param`
+      stderr         standard error                            :func:`minimize`
+      correl         correlations                              :func:`minimize`
+      uvalue         value with uncertainty                    :func:`minimize`
+     ============== ========================== ============= =============================
 
 ..  function:: guess(value, min=None, max=None, expr=None)
 
@@ -183,4 +184,31 @@ from a previous fit) when setting up a new fit (before you call
 sensibly call the objective function yourself, prior to doing a
 minimization.
 
+
+working with uncertainties
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _uncertaintes: http://packages.python.org/uncertainties/
+
+After a fit, each Parameter that was actually varied in the fit should be
+assigned information about the uncertainty in the fitted value as well as
+its best fit value.  On rare occasions (such as when a bes-fit value is
+very close to a bound) the setting of uncertainties is not possible.  The
+primary way the uncertainty for a Parameter is expressed is with the
+``stderr`` attribute, which holds the estimated standard error for the
+Parameter's value.  The correlation with all other Parameters is held in
+the ``correl`` attribute -- a dictionary with keys of variable names and
+values of correlation with that variable.  In addition, the two-dimensional
+covariance matrix will be held in the ``covar`` attribute of the parameter
+group for each fit.
+
+In addition, each Parameter will have a ``uvalue`` attribute which is a
+special object from the `uncertaintes`_ package that holds both the
+best-fit value and standard error.  A key feature of these ``uvalue``
+attributes is that they can be used in simple mathematical expressions
+(addition, subtraction, multiplication, division, exponentiation) and have
+the uncertainties automatically propagated to the result.  Note that each
+``uvalue`` include the correlations between variables, so the propagated
+uncertainties may differ somewhat from using the simplest formulas for
+propagating errors.
 

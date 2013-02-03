@@ -467,6 +467,9 @@ def my_eval(text, _larch=None):
                   new_module=None,  interactive=False,
                   printall=True)
 
+def _ufloat(arg, _larch=None):
+    return fitting.ufloat(arg)
+
 local_funcs = {'_builtin': {'group':_group,
                             'dir': _dir,
                             'which': _which,
@@ -486,7 +489,7 @@ local_funcs = {'_builtin': {'group':_group,
                         'chi2_map': fitting.chi2_map,
                         'is_param': fitting.is_param,
                         'minimize': fitting.minimize,
-                        'ufloat': fitting.ufloat,
+                        'ufloat': _ufloat,
                         'fit_report': fitting.fit_report},
                }
 
