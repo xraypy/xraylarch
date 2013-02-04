@@ -1,0 +1,11 @@
+## smoothing with by convolving with
+## lorentzian, gaussian, or voigt lineshape
+npts  = 101
+x     = arange(npts)
+step  = ones(npts)
+step[:npts/2] = zeros(npts/2)
+
+newplot( x, step, label='no smoothing', show_labels=True)
+   plot( x, smooth(step, 3.0),                  label='loren, sigma=3')
+   plot( x, smooth(step, 3.0, form='gaussian'), label='gauss, sigma=3')
+   plot( x, smooth(step, 3.0, form='voigt'),    label='voigt, sigma=3')

@@ -2,7 +2,7 @@
 """
 Some common lineshapes and distribution functions
 """
-from numpy import pi, log, exp, sqrt
+from numpy import pi, log, exp, sqrt, arange, concatenate, convolve
 
 from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
 from larch import param_value
@@ -21,7 +21,7 @@ def gaussian(x, cen=0, sigma=1):
 
 def lorentzian(x, cen=0, sigma=1):
     """1 dimensional lorentzian
-    lorenztian(x, cen, sigma)
+    lorentzian(x, cen, sigma)
     """
     cen = param_value(cen)
     sigma = param_value(sigma)
@@ -92,6 +92,34 @@ def _gammaln(x):
     """log of absolute value of gamma function"""
     return gammaln(x)
 
+def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=15):
+    """smooth an array with a lorentzian, gaussian, or voigt
+    lineshape:
+
+    smooth(x, sigma=1, gamma=None, form='lorentzian', npad=15)
+
+    arguments:
+    ----------
+      x      input array for convoution
+      sigma  primary width parameter for convolving function
+      gamma  secondary width parameter for convolving function
+      form   form for convolving function:
+                'lorentzian' or 'gaussian' or 'voigt'
+      npad   number of padding pixels to use [15]
+    """
+
+    wx = arange(2*npad)
+    if form.lower().startswith('gauss'):
+        win = gaussian(wx, cen=npad, sigma=sigma)
+    elif form.lower().startswith('voig'):
+        win = voigt(wx, cen=npad, sigma=sigma, gamma=gamma)
+    else:
+        win = lorentzian(wx, cen=npad, sigma=sigma)
+    xax = concatenate((x[2*npad:0:-1], x, x[-1:-2*npad-1:-1]))
+    out = convolve(win/win.sum(), xax, mode='valid')
+    nextra = int((len(out) - len(x))/2)
+    return out[nextra+1:len(out)-nextra]
+
 def registerLarchPlugin():
     return ('_math', {'gaussian': gaussian,
                       'lorentzian': lorentzian,
@@ -102,4 +130,5 @@ def registerLarchPlugin():
                       'gammaln': _gammaln,
                       'erf': _erf,
                       'erfc': _erfc,
-                      'wofz': _wofz})
+                      'wofz': _wofz,
+                      'smooth': smooth})
