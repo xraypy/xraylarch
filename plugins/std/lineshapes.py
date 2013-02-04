@@ -92,7 +92,7 @@ def _gammaln(x):
     """log of absolute value of gamma function"""
     return gammaln(x)
 
-def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=15):
+def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
     """smooth an array with a lorentzian, gaussian, or voigt
     lineshape:
 
@@ -105,9 +105,10 @@ def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=15):
       gamma  secondary width parameter for convolving function
       form   form for convolving function:
                 'lorentzian' or 'gaussian' or 'voigt'
-      npad   number of padding pixels to use [15]
+      npad   number of padding pixels to use [length of x]
     """
-
+    if npad is None:
+        npad  = len(x)
     wx = arange(2*npad)
     if form.lower().startswith('gauss'):
         win = gaussian(wx, cen=npad, sigma=sigma)
@@ -118,7 +119,7 @@ def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=15):
     xax = concatenate((x[2*npad:0:-1], x, x[-1:-2*npad-1:-1]))
     out = convolve(win/win.sum(), xax, mode='valid')
     nextra = int((len(out) - len(x))/2)
-    return out[nextra+1:len(out)-nextra]
+    return (out[nextra:])[:len(x)]
 
 def registerLarchPlugin():
     return ('_math', {'gaussian': gaussian,
