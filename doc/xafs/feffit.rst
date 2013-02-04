@@ -446,9 +446,9 @@ of :math:`R`. The output for this fit is:
 Note that an uncertainty is estimated for the Path parameters, including
 ``sigma2``, which is calculated with the :func:`sigma2_eins` function.
 Such derived uncertainties do reflect the uncertainties and correlations
-between variables, but these derived uncertainties should definitely be
-viewed as estimates.  In this examples, a simplistic evaluation of one of
-the ``sigma2`` parameters using the estimated variance in the ``theta``::
+between variables.  For example, a simplistic evaluation for the standard
+error in one of the ``sigma2`` parameters using the estimated variance in
+the ``theta`` might be done as follows:
 
     larch> _ave = sigma2_eins(10, pars.theta)
     larch> _dlo = sigma2_eins(10, pars.theta-pars.theta.stderr) - _ave
@@ -456,10 +456,11 @@ the ``sigma2`` parameters using the estimated variance in the ``theta``::
     larch> print "sigma2(T=10) = %.5f  (%+.5f, %+.5f)" % (_ave, _dlo, _dhi)
     sigma2(T=10) = 0.00328  (+0.00011, -0.00011)
 
-gives an estimate about 3 times larger than the estimate automatically
-derived from the fit.  Of course, the simple evaluation ignores the
-correlation between parameters, and especially that if ``sigma2`` for one
-dataset increases, so must ``sigma2`` for the other datasets.
+This gives an estimate about 3 times larger than the estimate automatically
+derived from the fit.  The reason for this is that the simple evaluation
+ignores the correlation between parameters, which is taken into account in
+the automatically derived uncertainties.  In this case, including this
+correlation significantly reduces the estimated uncertainty.
 
 The output plots for the fits to the three datasets are given below.
 
