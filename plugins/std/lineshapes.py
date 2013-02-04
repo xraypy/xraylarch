@@ -93,19 +93,22 @@ def _gammaln(x):
     return gammaln(x)
 
 def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
-    """smooth an array with a lorentzian, gaussian, or voigt
-    lineshape:
+    """smooth an array by convolution with a lorentzian,
+    gaussian, or voigt function.
 
-    smooth(x, sigma=1, gamma=None, form='lorentzian', npad=15)
+    smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None)
 
     arguments:
-    ----------
-      x      input array for convoution
-      sigma  primary width parameter for convolving function
-      gamma  secondary width parameter for convolving function
-      form   form for convolving function:
-                'lorentzian' or 'gaussian' or 'voigt'
-      npad   number of padding pixels to use [length of x]
+    ------------
+      x       input 1-d array for smoothing.
+      sigma   primary width parameter for convolving function
+      gamma   secondary width parameter for convolving function
+      form    name of convolving function:
+                 'lorentzian' or 'gaussian' or 'voigt' ['lorentzian']
+      npad    number of padding pixels to use [length of x]
+    returns:
+    --------
+      smoothed 1-d array with same length as input array x
     """
     if npad is None:
         npad  = len(x)
@@ -116,6 +119,7 @@ def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
         win = voigt(wx, cen=npad, sigma=sigma, gamma=gamma)
     else:
         win = lorentzian(wx, cen=npad, sigma=sigma)
+
     xax = concatenate((x[2*npad:0:-1], x, x[-1:-2*npad-1:-1]))
     out = convolve(win/win.sum(), xax, mode='valid')
     nextra = int((len(out) - len(x))/2)
