@@ -10,8 +10,8 @@ setup(name = 'stepscan',
       author_email = 'newville@cars.uchicago.edu',
       license = 'BSD',
       description = 'Epics Step Scanning library and applications',
-      package_dir = {'epics.stepscan': 'lib'},
-      packages = ['epics.stepscan'],
+      package_dir = {'epicsscan': 'lib'},
+      packages = ['epicsscan', 'epicsscan.server', 'epicsscan.gui'],
       data_files  = [('bin', ['bin/stepscan.py'])])
 
 errmsg = 'WARNING: epics.stepscan requires Python module "%s"'
