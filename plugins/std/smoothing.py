@@ -1,10 +1,65 @@
-#
-# code from from scipy cookbook
-#
+#!/usr/bin/env python
+"""
+Smoothing routines
 
-import numpy as np
+"""
+from numpy import pi, log, exp, sqrt, arange, concatenate, convolve
+from numpy import int, abs, linalg, mat
+
+
+from larch import param_value, plugin_path
+# put the 'std' (this!) plugin directories into sys.path
+sys.path.insert(0, plugin_path('std'))
+
+# now we can reliably import other std and xafs modules...
+from mathutils import index_of, index_nearest, realimag, remove_dups
+from lineshapes import gaussian, lorentzian, gauss
+
+
+def fconvolve(x, sigma=1, gamma=None, form='lorentzian', npad=None):
+    """convolve a 1-d array with a lorentzian, gaussian, or voigt function.
+
+    fconvolve(x, sigma=1, gamma=None, form='lorentzian', npad=None)
+
+    arguments:
+    ------------
+      x       input 1-d array for smoothing.
+      sigma   primary width parameter for convolving function
+      gamma   secondary width parameter for convolving function
+      form    name of convolving function:
+                 'lorentzian' or 'gaussian' or 'voigt' ['lorentzian']
+      npad    number of padding pixels to use [length of x]
+
+    returns:
+    --------
+      smoothed 1-d array with same length as input array x
+    """
+    if npad is None:
+        npad  = len(x)
+    wx = arange(2*npad)
+    if form.lower().startswith('gauss'):
+        win = gaussian(wx, cen=npad, sigma=sigma)
+    elif form.lower().startswith('voig'):
+        win = voigt(wx, cen=npad, sigma=sigma, gamma=gamma)
+    else:
+        win = lorentzian(wx, cen=npad, sigma=sigma)
+
+    xax = concatenate((x[2*npad:0:-1], x, x[-1:-2*npad-1:-1]))
+    out = convolve(win/win.sum(), xax, mode='valid')
+    nextra = int((len(out) - len(x))/2)
+    return (out[nextra:])[:len(x)]
+
+def smooth(x, y, sigma=1, gamma=None, form='lorentzian'):
+    """smooth a function y(x) by convolving wih a lorentzian, gaussian,
+    or voigt function.
+    
+    """
+    pass
 
 def savitzky_golay(y, window_size, order, deriv=0):
+    #
+    # code from from scipy cookbook
+
     """Smooth (and optionally differentiate) data with a Savitzky-Golay filter.
     The Savitzky-Golay filter removes high frequency noise from data.
     It has the advantage of preserving the original shape and
@@ -53,8 +108,8 @@ def savitzky_golay(y, window_size, order, deriv=0):
        Cambridge University Press ISBN-13: 9780521880688
     """
     try:
-        window_size = np.abs(np.int(window_size))
-        order = np.abs(np.int(order))
+        window_size = abs(int(window_size))
+        order = abs(int(order))
     except ValueError, msg:
         raise ValueError("window_size and order have to be of type int")
     if window_size % 2 != 1 or window_size < 1:
@@ -64,12 +119,17 @@ def savitzky_golay(y, window_size, order, deriv=0):
     order_range = range(order+1)
     half_window = (window_size -1) // 2
     # precompute coefficients
-    b = np.mat([[k**i for i in order_range] for k in range(-half_window, half_window+1)])
-    m = np.linalg.pinv(b).A[deriv]
+    b = mat([[k**i for i in order_range] for k in range(-half_window, half_window+1)])
+    m = linalg.pinv(b).A[deriv]
     # pad the signal at the extremes with
     # values taken from the signal itself
-    firstvals = y[0] - np.abs( y[1:half_window+1][::-1] - y[0] )
-    lastvals = y[-1] + np.abs(y[-half_window-1:-1][::-1] - y[-1])
-    y = np.concatenate((firstvals, y, lastvals))
-    return np.convolve( m, y, mode='valid')
+    firstvals = y[0] - abs( y[1:half_window+1][::-1] - y[0] )
+    lastvals = y[-1] + abs(y[-half_window-1:-1][::-1] - y[-1])
+    y = concatenate((firstvals, y, lastvals))
+    return convolve( m, y, mode='valid')
 
+
+
+def registerLarchPlugin():
+    return ('_math', {'savitzky_golay': savitzky_golay,
+                      'smooth': smooth})
