@@ -3,9 +3,9 @@
 Smoothing routines
 
 """
+import sys
 from numpy import pi, log, exp, sqrt, arange, concatenate, convolve
 from numpy import int, abs, linalg, mat
-
 
 from larch import param_value, plugin_path
 # put the 'std' (this!) plugin directories into sys.path
@@ -13,8 +13,7 @@ sys.path.insert(0, plugin_path('std'))
 
 # now we can reliably import other std and xafs modules...
 from mathutils import index_of, index_nearest, realimag, remove_dups
-from lineshapes import gaussian, lorentzian, gauss
-
+from lineshapes import gaussian, lorentzian, voigt
 
 def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
     """convolve a 1-d array with a lorentzian, gaussian, or voigt function.
@@ -52,7 +51,7 @@ def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
 def new_smooth(x, y, sigma=1, gamma=None, form='lorentzian'):
     """smooth a function y(x) by convolving wih a lorentzian, gaussian,
     or voigt function.
-    
+
     """
     pass
 
