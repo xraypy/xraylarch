@@ -26,7 +26,7 @@ from xafsft import xftf_fast, xftr_fast, ftwindow
 from feffdat import FeffPathGroup, _ff2chi
 
 # use larch's uncertainties package
-from larch.fitting.uncertainties import correlated_values
+from larch.fitting import correlated_values
 from larch.fitting import eval_stderr
 
 class TransformGroup(Group):
