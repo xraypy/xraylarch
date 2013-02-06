@@ -33,11 +33,13 @@ will contain fit statistics chisquare, etc.
    <newville@cars.uchicago.edu>
 """
 
-from numpy import dot, eye, ndarray, ones_like, sqrt, take, transpose, triu
+from numpy import (abs, array, dot, eye, ndarray, ones_like,
+sqrt, take, transpose, triu)
+
 from numpy.dual import inv
 from numpy.linalg import LinAlgError
-from scipy.optimize import leastsq as scipy_leastsq
-
+from scipy.optimize import _minpack
+from scipy.optimize.minpack import _check_func
 # check for scipy.optimize.minimize
 HAS_SCALAR_MIN = False
 try:
@@ -108,6 +110,160 @@ def eval_stderr(obj, uvars, _names, _pars, _larch):
     except:
         obj.stderr = 0
         obj._uval  = None
+
+
+
+def leastsq(func, x0, args=(), Dfun=None, ftol=1.49012e-8, xtol=1.49012e-8,
+            gtol=0.0, maxfev=0, epsfcn=0.0, factor=100, diag=None):
+    """
+    Minimize the sum of squares of a set of equations.
+    Adopted from scipy.optimize.leastsq
+
+    ::
+
+        x = arg min(sum(func(y)**2,axis=0))
+                 y
+
+    Parameters
+    ----------
+    func : callable
+        should take at least one (possibly length N vector) argument and
+        returns M floating point numbers.
+    x0 : ndarray
+        The starting estimate for the minimization.
+    args : tuple
+        Any extra arguments to func are placed in this tuple.
+    Dfun : callable
+        A function or method to compute the Jacobian of func with derivatives
+        across the rows. If this is None, the Jacobian will be estimated.
+    ftol : float
+        Relative error desired in the sum of squares.
+    xtol : float
+        Relative error desired in the approximate solution.
+    gtol : float
+        Orthogonality desired between the function vector and the columns of
+        the Jacobian.
+    maxfev : int
+        The maximum number of calls to the function. If zero, then 100*(N+1) is
+        the maximum where N is the number of elements in x0.
+    epsfcn : float
+        A suitable step length for the forward-difference approximation of the
+        Jacobian (for Dfun=None). If epsfcn is less than the machine precision,
+        it is assumed that the relative errors in the functions are of the
+        order of the machine precision.
+    factor : float
+        A parameter determining the initial step bound
+        (``factor * || diag * x||``). Should be in interval ``(0.1, 100)``.
+    diag : sequence
+        N positive entries that serve as a scale factors for the variables.
+
+    Returns
+    -------
+    x : ndarray
+        The solution (or the result of the last iteration for an unsuccessful
+        call).
+    cov_x : ndarray
+        Uses the fjac and ipvt optional outputs to construct an
+        estimate of the jacobian around the solution.  ``None`` if a
+        singular matrix encountered (indicates very flat curvature in
+        some direction).  This matrix must be multiplied by the
+        residual variance to get the covariance of the
+        parameter estimates -- see curve_fit.
+    infodict : dict
+        a dictionary of optional outputs with the key s::
+
+            - 'nfev' : the number of function calls
+            - 'fvec' : the function evaluated at the output
+            - 'fjac' : A permutation of the R matrix of a QR
+                     factorization of the final approximate
+                     Jacobian matrix, stored column wise.
+                     Together with ipvt, the covariance of the
+                     estimate can be approximated.
+            - 'ipvt' : an integer array of length N which defines
+                     a permutation matrix, p, such that
+                     fjac*p = q*r, where r is upper triangular
+                     with diagonal elements of nonincreasing
+                     magnitude. Column j of p is column ipvt(j)
+                     of the identity matrix.
+            - 'qtf'  : the vector (transpose(q) * fvec).
+
+    mesg : str
+        A string message giving information about the cause of failure.
+    ier : int
+        An integer flag.  If it is equal to 1, 2, 3 or 4, the solution was
+        found.  Otherwise, the solution was not found. In either case, the
+        optional output variable 'mesg' gives more information.
+
+    Notes
+    -----
+    "leastsq" is a wrapper around MINPACK's lmdif and lmder algorithms.
+
+    cov_x is a Jacobian approximation to the Hessian of the least squares
+    objective function.
+    This approximation assumes that the objective function is based on the
+    difference between some observed target data (ydata) and a (non-linear)
+    function of the parameters `f(xdata, params)` ::
+
+           func(params) = ydata - f(xdata, params)
+
+    so that the objective function is ::
+
+           min   sum((ydata - f(xdata, params))**2, axis=0)
+         params
+
+    """
+    x0 = array(x0, ndmin=1)
+    n = len(x0)
+    if not isinstance(args, tuple):
+        args = (args,)
+    m = _check_func('leastsq', 'func', func, x0, args, n)[0]
+    if n > m:
+        raise TypeError('Improper input: N=%s must not exceed M=%s' % (n, m))
+    if maxfev == 0:
+        maxfev = 200*(n + 1)
+    if Dfun is None:
+        retval = _minpack._lmdif(func, x0, args, 1, ftol, xtol,
+                                 gtol, maxfev, epsfcn, factor, diag)
+    else:
+        _check_func('leastsq', 'Dfun', Dfun, x0, args, n, (m, n))
+        retval = _minpack._lmder(func, Dfun, x0, args, 1, 0, ftol, xtol,
+                                 gtol, maxfev, factor, diag)
+
+    errors = {0:["Improper input parameters.", TypeError],
+              1:["Both actual and predicted relative reductions "
+                 "in the sum of squares\n  are at most %f" % ftol, None],
+              2:["The relative error between two consecutive "
+                 "iterates is at most %f" % xtol, None],
+              3:["Both actual and predicted relative reductions in "
+                 "the sum of squares\n  are at most %f and the "
+                 "relative error between two consecutive "
+                 "iterates is at \n  most %f" % (ftol,xtol), None],
+              4:["The cosine of the angle between func(x) and any "
+                 "column of the\n  Jacobian is at most %f in "
+                 "absolute value" % gtol, None],
+              5:["Number of calls to function has reached "
+                 "maxfev = %d." % maxfev, ValueError],
+              6:["ftol=%f is too small, no further reduction "
+                 "in the sum of squares\n  is possible.""" % ftol, ValueError],
+              7:["xtol=%f is too small, no further improvement in "
+                 "the approximate\n  solution is possible." % xtol, ValueError],
+              8:["gtol=%f is too small, func(x) is orthogonal to the "
+                 "columns of\n  the Jacobian to machine "
+                 "precision." % gtol, ValueError],
+              'unknown':["Unknown error.", TypeError]}
+
+    info = retval[-1]    # The FORTRAN return value
+    mesg = errors[info][0]
+    cov_x = None
+    if info in [1,2,3,4]:
+        perm = take(eye(n),retval[1]['ipvt']-1,0)
+        r = triu(transpose(retval[1]['fjac'])[:n,:])
+        R = dot(r, perm)
+        try:
+            cov_x = inv(dot(transpose(R),R))
+        except (LinAlgError, ValueError):
+            pass
+    return (retval[0], cov_x) + retval[1:-1] + (mesg, info)
 
 class Minimizer(object):
     """general minimizer"""
@@ -219,7 +375,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         """
         self.prepare_fit(force=True)
         toler = self.toler
-        lskws = dict(full_output=1, xtol=toler, ftol=toler,
+        lskws = dict(xtol=toler, ftol=toler,
                      gtol=toler, maxfev=1000*(self.nvarys+1), Dfun=None)
 
         lskws.update(self.kws)
@@ -229,7 +385,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             self.jacfcn = lskws['Dfun']
             lskws['Dfun'] = self.__jacobian
 
-        lsout = scipy_leastsq(self.__residual, self.vars, **lskws)
+        lsout = leastsq(self.__residual, self.vars, **lskws)
         del self.vars
 
         _best, cov, infodict, errmsg, ier = lsout
