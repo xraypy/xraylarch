@@ -5,7 +5,7 @@ Smoothing routines
 """
 import sys
 from numpy import pi, log, exp, sqrt, arange, concatenate, convolve
-from numpy import int, abs, linalg, mat
+from numpy import int, abs, linalg, mat, linspace, interp, diff
 
 from larch import param_value, plugin_path
 # put the 'std' (this!) plugin directories into sys.path
@@ -15,7 +15,7 @@ sys.path.insert(0, plugin_path('std'))
 from mathutils import index_of, index_nearest, realimag, remove_dups
 from lineshapes import gaussian, lorentzian, voigt
 
-def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
+def lsmooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
     """convolve a 1-d array with a lorentzian, gaussian, or voigt function.
 
     fconvolve(x, sigma=1, gamma=None, form='lorentzian', npad=None)
@@ -48,12 +48,57 @@ def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
     nextra = int((len(out) - len(x))/2)
     return (out[nextra:])[:len(x)]
 
-def new_smooth(x, y, sigma=1, gamma=None, form='lorentzian'):
+def smooth(x, y, sigma=1, gamma=None, npad=None, form='lorentzian'):
     """smooth a function y(x) by convolving wih a lorentzian, gaussian,
     or voigt function.
 
+    arguments:
+    ------------
+      x       input 1-d array for absicca
+      y       input 1-d array for ordinate: data to be smoothed
+      sigma   primary width parameter for convolving function
+      gamma   secondary width parameter for convolving function
+      delx    delta x to use for interpolation [mean of
+      form    name of convolving function:
+                 'lorentzian' or 'gaussian' or 'voigt' ['lorentzian']
+      npad    number of padding pixels to use [length of x]
+
+    returns:
+    --------
+      1-d array with same length as input array y
     """
-    pass
+    # make uniform x, y data
+    TINY = 1.e-12
+    xstep = min(diff(x))
+    if xstep < TINY:
+        raise Warning('Cannot smooth data: must be strictly increasing ')
+    npad = 5
+    xmin = xstep * int( (min(x) - npad*xstep)/xstep)
+    xmax = xstep * int( (max(x) + npad*xstep)/xstep)
+    npts = 1 + int(abs(xmax-xmin+xstep*0.1)/xstep)
+    x0  = linspace(xmin, xmax, npts)
+    y0  = interp(x0, x, y)
+
+    # put sigma in units of 1 for convolving window function
+    sigma *= 1.0 / xstep
+    if gamma is not None:
+        gamma *= 1.0 / xstep
+
+    wx = arange(2*npts)
+    if form.lower().startswith('gauss'):
+        win = gaussian(wx, cen=npts, sigma=sigma)
+    elif form.lower().startswith('voig'):
+        win = voigt(wx, cen=npts, sigma=sigma, gamma=gamma)
+    else:
+        win = lorentzian(wx, cen=npts, sigma=sigma)
+
+    y1 = concatenate((y0[npts:0:-1], y0, y0[-1:-npts-1:-1]))
+    y2 = convolve(win/win.sum(), y1, mode='valid')
+    if len(y2) > len(x0):
+        nex = int((len(y2) - len(x0))/2)
+        y2 = (y2[nex:])[:len(x0)]
+    return interp(x, x0, y2)
+
 
 def savitzky_golay(y, window_size, order, deriv=0):
     #
