@@ -16,7 +16,7 @@ from mathutils import index_of, index_nearest, realimag, remove_dups
 from lineshapes import gaussian, lorentzian, gauss
 
 
-def fconvolve(x, sigma=1, gamma=None, form='lorentzian', npad=None):
+def smooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
     """convolve a 1-d array with a lorentzian, gaussian, or voigt function.
 
     fconvolve(x, sigma=1, gamma=None, form='lorentzian', npad=None)
@@ -49,7 +49,7 @@ def fconvolve(x, sigma=1, gamma=None, form='lorentzian', npad=None):
     nextra = int((len(out) - len(x))/2)
     return (out[nextra:])[:len(x)]
 
-def smooth(x, y, sigma=1, gamma=None, form='lorentzian'):
+def new_smooth(x, y, sigma=1, gamma=None, form='lorentzian'):
     """smooth a function y(x) by convolving wih a lorentzian, gaussian,
     or voigt function.
     
@@ -127,7 +127,6 @@ def savitzky_golay(y, window_size, order, deriv=0):
     lastvals = y[-1] + abs(y[-half_window-1:-1][::-1] - y[-1])
     y = concatenate((firstvals, y, lastvals))
     return convolve( m, y, mode='valid')
-
 
 
 def registerLarchPlugin():
