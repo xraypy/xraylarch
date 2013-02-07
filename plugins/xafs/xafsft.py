@@ -31,7 +31,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
       xmax:     ending x for FT Window
       dx:       tapering parameter for FT Window
       dx2:      second tapering parameter for FT Window (=dx)
-      window:   name of window type 
+      window:   name of window type
 
     Returns:
     ----------
@@ -46,7 +46,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
 	gaussian             Gaussian (normal) function window
 	sine                 sine function window
 	kaiser               Kaiser-Bessel function-derived window
-   
+
     """
     if window is None:
         window = VALID_WINDOWS[0]
@@ -108,7 +108,8 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
             fwin[where(x<=x1)] = 0
             fwin[where(x>=x4)] = 0
         else: # better version
-            fwin = (bessel_i0(dx * sqrt(arg)) - 1) / (bessel_i0(dx) -1)
+            scale = max(1.e-10, bessel_i0(dx)-1)
+            fwin = (bessel_i0(dx * sqrt(arg)) - 1) / scale
     elif nam == 'sin':
         fwin[i1:i4+1] = sin(pi*(x4-x[i1:i4+1]) / (x4-x1))
     elif nam == 'gau':
@@ -141,14 +142,14 @@ def xftr(r, chir, group=None, rmin=0, rmax=20, with_phase=False,
       nfft:     value to use for N_fft (2048).
       kstep:    value to use for delta_k (0.05).
       with_phase: output the phase as well as magnitude, real, imag  [False]
-      
+
     Returns:
     ---------
       None -- outputs are written to supplied group.
 
     Notes:
     -------
-    Arrays written to output group:    
+    Arrays written to output group:
         rwin               window Omega(R) (length of input chi(R)).
 	q                  uniform array of k, out to qmax_out.
 	chiq               complex array of chi(k).
