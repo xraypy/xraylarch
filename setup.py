@@ -144,7 +144,10 @@ def fix_permissions(*dirnames):
     set permissions on a list of directories to match
     thoseof the HOME directory
     """
-    home = os.environ['HOME']
+    try:
+        home = os.environ['HOME']
+    except:
+        return
     stat =  os.stat(home)
     for dname in (dirnames):
         folder = os.path.join(home, '.%s' % dname)
