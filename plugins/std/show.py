@@ -5,9 +5,16 @@
 import sys
 import types
 import numpy
+from larch import Group
 
 def _get(sym=None, _larch=None, **kws):
-    """get object from symbol table from symbol name"""
+    """get object from symbol table from symbol name:
+
+    >>> g = group(a = 1,  b=2.3, z = 'a string')
+    >>> print get('g.z')
+    'a string'
+
+    """
     if _larch is None:
         raise Warning("cannot show group -- larch broken?")
     if sym is None:
@@ -101,7 +108,22 @@ def show_tree(group, _larch=None, indent=0, **kws):
                                                          repr(obj.dtype))
             _larch.writer.write('%s %s: %s\n' % (indent*' ', item, dval))
 
+def group2dict(group, _larch=None):
+    "return dictionary of group members"
+    return group.__dict__
+
+def dict2group(d, _larch=None):
+    "return group created from a dictionary"
+    return Group(**d)
+
+def initializeLarchPlugin(_larch=None):
+    """initialize show and friends"""
+    cmds = ['show', 'show_tree']
+    if _larch is not None:
+        _larch.symtable._sys.valid_commands.extend(cmds)
 
 def registerLarchPlugin():
     return ('_builtin', {'show': _show, 'get': _get,
+                         'group2dict': group2dict,
+                         'dict2group': dict2group,
                          'show_tree': show_tree})
