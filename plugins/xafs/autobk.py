@@ -107,10 +107,12 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
                        pre2=-50., norm1=100., norm2=None)
         if pre_edge_kws is not None:
             pre_kws.update(pre_edge_kws)
-        pedge_step, pe0 = pre_edge(energy, mu, group=group,
-                                   _larch=_larch, **pre_kws)
-        if e0 is None: e0 = pe0
-        if edge_step is None: edge_step = pedge_step
+        pre_edge(energy, mu, group=group, _larch=_larch, **pre_kws)
+
+        if e0 is None:
+            e0 = group.e0
+        if edge_step is None:
+            edge_step = group.edge_step
 
     # get array indices for rkbg and e0: irbkg, ie0
     ie0 = index_nearest(energy, e0)
