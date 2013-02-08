@@ -14,7 +14,9 @@ import larch
 from larch.larchlib import plugin_path
 
 sys.path.insert(0, plugin_path('std'))
+sys.path.insert(0, plugin_path('xafs'))
 from mathutils import complex_phase
+from xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
 VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par', 'wel', 'sin', 'bes']
@@ -182,16 +184,17 @@ def xftr(r, chir, group=None, rmin=0, rmax=20, with_phase=False,
     if qmax_out is None: qmax_out = 30.0
     q = linspace(0, qmax_out, int(1.05 + qmax_out/kstep))
     nkpts = len(q)
-    if _larch.symtable.isgroup(group):
-        group.q = q
-        mag = sqrt(out.real**2 + out.imag**2)
-        group.rwin =  win[:len(chir)]
-        group.chiq     =  out[:nkpts]
-        group.chiq_mag =  mag[:nkpts]
-        group.chiq_re  =  out.real[:nkpts]
-        group.chiq_im  =  out.imag[:nkpts]
-        if with_phase:
-            group.chiq_pha =  complex_phase(out[:nkpts])
+
+    group = set_xafsGroup(group, _larch=_larch)
+    group.q = q
+    mag = sqrt(out.real**2 + out.imag**2)
+    group.rwin =  win[:len(chir)]
+    group.chiq     =  out[:nkpts]
+    group.chiq_mag =  mag[:nkpts]
+    group.chiq_re  =  out.real[:nkpts]
+    group.chiq_im  =  out.imag[:nkpts]
+    if with_phase:
+        group.chiq_pha =  complex_phase(out[:nkpts])
 
 
 def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None, with_phase=False,
@@ -248,17 +251,17 @@ def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None, with_ph
 
     irmax = min(nfft/2, int(1.01 + rmax_out/rstep))
 
-    if _larch.symtable.isgroup(group):
-        r   = rstep * arange(irmax)
-        mag = sqrt(out.real**2 + out.imag**2)
-        group.kwin =  win[:len(chi)]
-        group.r    =  r[:irmax]
-        group.chir =  out[:irmax]
-        group.chir_mag =  mag[:irmax]
-        group.chir_re  =  out.real[:irmax]
-        group.chir_im  =  out.imag[:irmax]
-        if with_phase:
-            group.chir_pha =  complex_phase(out[:irmax])
+    group = set_xafsGroup(group, _larch=_larch)
+    r   = rstep * arange(irmax)
+    mag = sqrt(out.real**2 + out.imag**2)
+    group.kwin =  win[:len(chi)]
+    group.r    =  r[:irmax]
+    group.chir =  out[:irmax]
+    group.chir_mag =  mag[:irmax]
+    group.chir_re  =  out.real[:irmax]
+    group.chir_im  =  out.imag[:irmax]
+    if with_phase:
+        group.chir_pha =  complex_phase(out[:irmax])
 
 
 def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,

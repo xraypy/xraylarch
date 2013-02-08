@@ -11,9 +11,11 @@ from larch.larchlib import plugin_path
 
 # put the 'std' and 'xafs' (this!) plugin directories into sys.path
 sys.path.insert(0, plugin_path('std'))
+sys.path.insert(0, plugin_path('xafs'))
 
 # now we can reliably import other std and xafs modules...
 from mathutils import index_of, index_nearest, remove_dups
+from xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
 MAX_NNORM = 5
@@ -32,9 +34,12 @@ def find_e0(energy, mu, group=None, _larch=None):
 
     Returns
     -------
-    step, e0:    edge step, edge energy (in eV)
+     value for e0
 
-    If a group is supplied, group.e0 will also be set to this value.
+    
+    In addition, group.e0 will be set to value for e0
+    
+    
     """
     if _larch is None:
         raise Warning("cannot find e0 -- larch broken?")
@@ -49,9 +54,11 @@ def find_e0(energy, mu, group=None, _larch=None):
             (i+1 in high_deriv_pts) and
             (i-1 in high_deriv_pts)):
             idmu_max, dmu_max = i, dmu[i]
-    if _larch.symtable.isgroup(group):
-        group.e0 = energy[idmu_max+1]
-    return energy[idmu_max+1]
+            
+    e0 = energy[idmu_max+1]
+    group = set_xafsGroup(group, _larch=_larch)
+    group.e0 = e0
+    return e0
 
 def pre_edge(energy, mu, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
@@ -81,16 +88,17 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
 
     Returns
     -------
-    returns  (edge_step, e0)
+      None
 
-    if group is not None, the following attributes of that group are set:
+    The following attributes will be written to the output group:
         e0          energy origin
         edge_step   edge step
         norm        normalized mu(E)
         pre_edge    determined pre-edge curve
         post_edge   determined post-edge, normalization curve
 
-
+    (if the output group is None, _sys.xafsGroup will be written to)
+    
     Notes
     -----
        nvict gives an exponent to the energy term for the pre-edge fit.
@@ -132,22 +140,23 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         norm_coefs.append(c)
     edge_step = post_edge[ie0] - pre_edge[ie0]
     norm  = (mu - pre_edge)/edge_step
-    if _larch.symtable.isgroup(group):
-        group.e0 = e0
-        group.norm = norm
-        group.nvict = nvict
-        group.nnorm = nnorm
-        group.edge_step  = edge_step
-        group.pre_edge   = pre_edge
-        group.post_edge  = post_edge
-        group.pre_slope  = precoefs[0]
-        group.pre_offset = precoefs[1]
-        for i in range(MAX_NNORM):
-            if hasattr(group, 'norm_c%i' % i):
-                delattr(group, 'norm_c%i' % i)
-        for i, c in enumerate(norm_coefs):
-            setattr(group, 'norm_c%i' % i, c)
-    return edge_step, e0
+
+    group = set_xafsGroup(group, _larch=_larch)
+    group.e0 = e0
+    group.norm = norm
+    group.nvict = nvict
+    group.nnorm = nnorm
+    group.edge_step  = edge_step
+    group.pre_edge   = pre_edge
+    group.post_edge  = post_edge
+    group.pre_slope  = precoefs[0]
+    group.pre_offset = precoefs[1]
+    for i in range(MAX_NNORM):
+        if hasattr(group, 'norm_c%i' % i):
+            delattr(group, 'norm_c%i' % i)
+    for i, c in enumerate(norm_coefs):
+        setattr(group, 'norm_c%i' % i, c)
+    return 
 
 def registerLarchPlugin():
     return (MODNAME, {'find_e0': find_e0,

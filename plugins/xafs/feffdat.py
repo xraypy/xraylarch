@@ -23,7 +23,7 @@ sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xray'))
 sys.path.insert(0, plugin_path('xafs'))
 
-from xafsutils import ETOK
+from xafsutils import ETOK, set_xafsGroup
 from xraydb_plugin import atomic_mass
 
 SMALL = 1.e-6
@@ -451,9 +451,9 @@ def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
     for path in pathlist:
         out += path.chi
 
-    if _larch.symtable.isgroup(group):
-        group.k = k
-        group.chi = out
+    group = set_xafsGroup(group, _larch=_larch)
+    group.k = k
+    group.chi = out
 
 def feffpath(filename=None, _larch=None, label=None, s02=None,
              degen=None, e0=None,ei=None, deltar=None, sigma2=None,

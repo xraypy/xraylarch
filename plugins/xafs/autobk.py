@@ -14,7 +14,7 @@ sys.path.insert(0, plugin_path('xafs'))
 # now we can reliably import other std and xafs modules...
 from mathutils import index_of, index_nearest, realimag, remove_dups
 
-from xafsutils import ETOK
+from xafsutils import ETOK, set_xafsGroup
 from xafsft import ftwindow, xftf_fast
 from pre_edge import find_e0, pre_edge
 
@@ -178,56 +178,57 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
                            knots, coefs, order, kout)
     obkg = np.copy(mu)
     obkg[ie0:ie0+len(bkg)] = bkg
+
     # outputs to group
-    if _larch.symtable.isgroup(group):
-        group.bkg  = obkg
-        group.chie = (mu-obkg)/edge_step
-        group.k    = kout
-        group.chi  = chi/edge_step
+    group = set_xafsGroup(group, _larch=_larch)
+    group.bkg  = obkg
+    group.chie = (mu-obkg)/edge_step
+    group.k    = kout
+    group.chi  = chi/edge_step
 
-        # now fill in 'autobk_details' group
-        params.init_bkg = np.copy(mu)
-        params.init_bkg[ie0:ie0+len(bkg)] = initbkg
-        params.init_chi = initchi/edge_step
-        params.knots_e  = spl_e
-        params.knots_y  = np.array([coefs[i] for i in range(nspl)])
-        params.init_knots_y = spl_y
-        params.nfev = params.fit_details.nfev
-        group.autobk_details = params
+    # now fill in 'autobk_details' group
+    params.init_bkg = np.copy(mu)
+    params.init_bkg[ie0:ie0+len(bkg)] = initbkg
+    params.init_chi = initchi/edge_step
+    params.knots_e  = spl_e
+    params.knots_y  = np.array([coefs[i] for i in range(nspl)])
+    params.init_knots_y = spl_y
+    params.nfev = params.fit_details.nfev
+    group.autobk_details = params
 
-        # uncertainties in mu0 and chi:  fairly slow!!
-        if HAS_UNCERTAIN and calc_uncertainties:
-            vbest, vstd = [], []
-            for n in fit.var_names:
-                par = getattr(params, n)
-                vbest.append(par.value)
-                vstd.append(par.stderr)
-            uvars = uncertainties.correlated_values(vbest, params.covar)
-            # uncertainty in bkg (aka mu0)
-            # note that much of this is working around
-            # limitations in the uncertainty package that make it
-            #  1. take an argument list (not array)
-            #  2. work on returned scalars (but not arrays)
-            #  3. not handle kw args and *args well (so use
-            #     of global "index" is important here)
-            nkx = iemax-ie0 + 1
-            def my_dsplev(*args):
-                coefs = np.array(args)
-                return splev(kraw[:nkx], [knots, coefs, order])[index]
-            fdbkg = uncertainties.wrap(my_dsplev)
-            dmu0  = [fdbkg(*uvars).std_dev() for index in range(len(bkg))]
-            group.delta_bkg = np.zeros(len(mu))
-            group.delta_bkg[ie0:ie0+len(bkg)] = np.array(dmu0)
+    # uncertainties in mu0 and chi:  fairly slow!!
+    if HAS_UNCERTAIN and calc_uncertainties:
+        vbest, vstd = [], []
+        for n in fit.var_names:
+            par = getattr(params, n)
+            vbest.append(par.value)
+            vstd.append(par.stderr)
+        uvars = uncertainties.correlated_values(vbest, params.covar)
+        # uncertainty in bkg (aka mu0)
+        # note that much of this is working around
+        # limitations in the uncertainty package that make it
+        #  1. take an argument list (not array)
+        #  2. work on returned scalars (but not arrays)
+        #  3. not handle kw args and *args well (so use
+        #     of global "index" is important here)
+        nkx = iemax-ie0 + 1
+        def my_dsplev(*args):
+            coefs = np.array(args)
+            return splev(kraw[:nkx], [knots, coefs, order])[index]
+        fdbkg = uncertainties.wrap(my_dsplev)
+        dmu0  = [fdbkg(*uvars).std_dev() for index in range(len(bkg))]
+        group.delta_bkg = np.zeros(len(mu))
+        group.delta_bkg[ie0:ie0+len(bkg)] = np.array(dmu0)
 
-            # uncertainty in chi (see notes above)
-            def my_dchi(*args):
-                coefs = np.array(args)
-                b,chi = spline_eval(kraw[:nkx], mu[ie0:iemax+1],
-                                    knots, coefs, order, kout)
-                return chi[index]
-            fdchi = uncertainties.wrap(my_dchi)
-            dchi  = [fdchi(*uvars).std_dev() for index in range(len(kout))]
-            group.delta_chi = np.array(dchi)/edge_step
+        # uncertainty in chi (see notes above)
+        def my_dchi(*args):
+            coefs = np.array(args)
+            b,chi = spline_eval(kraw[:nkx], mu[ie0:iemax+1],
+                                knots, coefs, order, kout)
+            return chi[index]
+        fdchi = uncertainties.wrap(my_dchi)
+        dchi  = [fdchi(*uvars).std_dev() for index in range(len(kout))]
+        group.delta_chi = np.array(dchi)/edge_step
 
 def registerLarchPlugin():
     return ('_xafs', {'autobk': autobk})

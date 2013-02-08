@@ -21,13 +21,12 @@ sys.path.insert(0, plugin_path('xafs'))
 from mathutils import index_of, realimag, complex_phase
 
 # from minimizer import Minimizer
-from xafsft import xftf_fast, xftr_fast, ftwindow
+from xafsft import xftf_fast, xftr_fast, ftwindow, set_xafsGroup
 
 from feffdat import FeffPathGroup, _ff2chi
 
 # use larch's uncertainties package
-from larch.fitting import correlated_values
-from larch.fitting import eval_stderr
+from larch.fitting import correlated_values, eval_stderr
 
 class TransformGroup(Group):
     """A Group of transform parameters.
@@ -116,18 +115,17 @@ class TransformGroup(Group):
         out = self.fftf(chi)
 
         irmax = min(self.nfft/2, int(1.01 + rmax_out/self.rstep))
-        if self._larch.symtable.isgroup(group):
-            r   = self.rstep * arange(irmax)
-            mag = sqrt(out.real**2 + out.imag**2)
-            group.kwin  =  self.kwin[:len(chi)]
-            group.r    =  r[:irmax]
-            group.chir =  out[:irmax]
-            group.chir_mag =  mag[:irmax]
-            group.chir_pha =  complex_phase(out[:irmax])
-            group.chir_re  =  out.real[:irmax]
-            group.chir_im  =  out.imag[:irmax]
-        else:
-            return out[:irmax]
+
+        group = set_xafsGroup(group, _larch=_larch)
+        r   = self.rstep * arange(irmax)
+        mag = sqrt(out.real**2 + out.imag**2)
+        group.kwin  =  self.kwin[:len(chi)]
+        group.r    =  r[:irmax]
+        group.chir =  out[:irmax]
+        group.chir_mag =  mag[:irmax]
+        group.chir_pha =  complex_phase(out[:irmax])
+        group.chir_re  =  out.real[:irmax]
+        group.chir_im  =  out.imag[:irmax]
 
     def get_kweight(self):
         "if kweight is a list/tuple, use only the first one here"
