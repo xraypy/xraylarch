@@ -116,7 +116,7 @@ class TransformGroup(Group):
 
         irmax = min(self.nfft/2, int(1.01 + rmax_out/self.rstep))
 
-        group = set_xafsGroup(group, _larch=_larch)
+        group = set_xafsGroup(group, _larch=self._larch)
         r   = self.rstep * arange(irmax)
         mag = sqrt(out.real**2 + out.imag**2)
         group.kwin  =  self.kwin[:len(chi)]
