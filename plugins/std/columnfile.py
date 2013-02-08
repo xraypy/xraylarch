@@ -60,6 +60,8 @@ def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
 
     for line in text:
         line = line[:-1].strip()
+        if len(line) < 1:
+            continue
         # look for section transitions (going from bottom to top)
         if section == 'FOOTER' and getfloats(line) is not None:
             section = 'DATA'
