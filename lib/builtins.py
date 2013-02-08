@@ -494,4 +494,4 @@ local_funcs = {'_builtin': {'group':_group,
                }
 
 # list of supported valid commands -- don't need parentheses for these
-valid_commands = ('show', 'run', 'help')
+valid_commands = ('run', 'help')
