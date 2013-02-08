@@ -6,10 +6,8 @@ import sys
 import site
 import glob
 
-from lib import site_configdata, site_config, version
 
 cmdline_args = sys.argv[1:]
-
 
 required_modules = ('numpy', 'scipy', 'docutils', 'wx', 'matplotlib', 'wxmplot')
 
@@ -66,6 +64,10 @@ if not deps_ok:
         sys.exit()
     deps_ok = len(missing) == 0
 print '=============================='
+
+from lib import site_configdata, site_config, version
+
+
 ############
 # read installation locations from lib/site_configdata.py
 share_basedir = site_configdata.unix_installdir
