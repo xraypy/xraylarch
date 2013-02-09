@@ -2,9 +2,8 @@
 # read data
 dat = read_ascii('doc_example2.dat', labels='energy xmu i0')
 
-# perform pre-processing steps, here doing an XAFS pre-edge
-# removal
-step, e0 = pre_edge(dat.energy, dat.xmu, group=dat)
+# do pre-processing steps, here XAFS pre-edge removal
+pre_edge(dat.energy, dat.xmu, group=dat)
 
 # select data range to be considered in the fit here.
 # note that this could be done inside the objective function,

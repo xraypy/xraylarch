@@ -2,9 +2,8 @@
 # read data
 dat = read_ascii('doc_example2.dat', labels='energy xmu i0')
 
-# perform pre-processing steps, here doing an XAFS pre-edge
-# removal
-step, e0 = pre_edge(dat.energy, dat.xmu, group=dat)
+# do pre-processing steps, here XAFS pre-edge removal
+pre_edge(dat.energy, dat.xmu, group=dat)
 
 # select data range to be considered in the fit here.
 # note that this could be done inside the objective function,
@@ -17,7 +16,7 @@ def make_model(pars, data, components=False):
     """make model of spectra: 2 peak functions, 1 erf function, offset"""
     p1 = pars.amp1 * gaussian(data.e, pars.cen1, pars.wid1)
     p2 = pars.amp2 * gaussian(data.e, pars.cen2, pars.wid2)
-    p3 = pars.amp3 * gaussian(data.e, pars.cen3, pars.wid3)    
+    p3 = pars.amp3 * gaussian(data.e, pars.cen3, pars.wid3)
 
     e1 = pars.off + pars.erf_amp * erf( pars.erf_wid*(data.e - pars.erf_cen))
     sum = p1 + p2 + p3 + e1
@@ -63,7 +62,7 @@ final, f1, f2, f3, e1 = make_model(params, dat, components=True)
 plot(dat.e, dat.y,  label='data', marker='+',
      show_legend=True, legend_loc='ul',
      xlabel='Energy (eV)', ylabel='$\\mu(E)$',
-     title='Fe pre-edge peak-fit: best fit and residual',     
+     title='Fe pre-edge peak-fit: best fit and residual',
      new=True)
 
 plot(dat.e, final,  label='fit')
