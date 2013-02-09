@@ -3,7 +3,7 @@ import os
 fname = os.path.join('..', 'xafs', 'fe2o3_rt1.xmu')
 dat = read_ascii(fname, labels='energy xmu i0')
 
-o = pre_edge(dat.energy, dat.xmu, group=dat)
+pre_edge(dat.energy, dat.xmu, group=dat)
 
 i1, i2 = index_of(dat.energy, 7105), index_of(dat.energy, 7125)
 dat.e = dat.energy[i1:i2+1]
