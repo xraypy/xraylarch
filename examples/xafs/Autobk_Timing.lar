@@ -1,25 +1,24 @@
 # add_plugin('ab')
 import time
 doplot = False
-##- timer = debug##- timer()
+timer = debugtimer()
 t0 = time.time()
-n = 10
+n = 100
 for i in range(n):
     print ' --- ', i
-
     cu = read_ascii('cu_metal_rt.xdi')
     # cu = read_ascii('tests/data/cu_%3.3i.dat' % i)
-    ##- timer.add('read data file')
-    autobk(cu.energy, cu.mutrans, group=cu, rbkg=0.80, debug=True)
-    ##- timer.add('autobk done')
+    timer.add('read data file')
+    autobk(cu.energy, cu.mutrans, group=cu, rbkg=0.80) #  debug=True)
+    timer.add('autobk done')
 
-    xafsft(cu.k, cu.chi, kmin=1, kmax=21, dk=2, window='hanning',
-           kweight=2, group=cu, rmax_out=20)
-    ##- timer.add('xafsft done')
+    xftf(cu.k, cu.chi, kmin=1, kmax=21, dk=2, window='hanning',
+        kweight=2, group=cu, rmax_out=20)
+    timer.add('xftf done')
 
-    xafsift(cu.r, cu.chir, rmin=0.1, rmax=4, qmax_out=20,
-            dr=0, window='hanning', group=cu)
-    ##- timer.add('xafs ift done')
+    xftr(cu.r, cu.chir, rmin=0.1, rmax=4, qmax_out=20,
+         dr=0, window='hanning', group=cu)
+    timer.add('xftr done')
 
     if doplot:
         newplot(cu.energy, cu.mutrans)
@@ -47,7 +46,7 @@ for i in range(n):
     #endif
 endfor
 
-# ##- timer.show_report()
+timer.show_report()
 
 
 # show(cu)

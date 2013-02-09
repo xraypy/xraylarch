@@ -4,6 +4,7 @@ title = 'FeAsSO4  (scorodite)'
 dat = read_ascii(fname)
 dat.energy = dat.p1
 dat.xmu    = ln(dat.d1/dat.d2)
+
 autobk(dat.energy, dat.xmu, rbkg=1.0, group=dat,
        pre_edge_kws={'pre1':-100, 'pre2':-40, 'nnorm': 1})
 

@@ -2,9 +2,8 @@
 fname = 'fe2o3_rt1.xmu'
 dat = read_ascii(fname, labels='energy xmu i0')
 
-pre_edge(dat.energy, dat.xmu, group=dat)
-
-show(dat)
+pre_edge(dat.energy, dat.xmu, group=dat,
+         nnorm=2, norm1=50, norm2=550)
 
 newplot(dat.energy, dat.xmu,
         label=' $ \mu(E) $ ',

@@ -2,31 +2,8 @@
 fname = 'cu_rt01.xmu'
 cu = read_ascii(fname)
 
-step, e0 = pre_edge(cu.energy, cu.xmu, group=cu)
-
+pre_edge(cu.energy, cu.xmu, group=cu)
 
 autobk(cu.energy, cu.xmu, rbkg=1.0, kweight=1, group=cu)
 xafsft(cu.k, cu.chi, kmin=2, kmax=14.5, dk=2,
        kweight=2, window='han', group=cu)
-
-# write_group('cu_chi.dat', cu, arrays=('k', 'chi'))
-
-# newplot(cu.energy, cu.xmu,
-#         xlabel='Energy (eV)', ylabel=r'$\mu(E)$',
-#         xmin=e0-80, xmax=e0+120,
-#         title=fname)
-#
-# plot(cu.energy, cu.bkg, color='black')
-#
-# newplot(cu.k, cu.chi*cu.k**2, win=2,
-#         xlabel=r'$k (\AA^{-1})$', ylabel=r'$k^2 \chi(k)$',
-#         title =fname)
-#
-# yscale = 0.90*max(cu.chi*cu.k**2)
-#
-# plot(cu.k, cu.kwin*yscale, win=2)
-#
-# newplot(cu.r, cu.chir_mag, win=3,
-#         xlabel=r'$ R (\AA)$', ylabel=r'|chi(R)|' ,
-#         title=fname)
-# plot(cu.r, cu.chir.real, win=3,label=r'$  Re[\chi(R)]$')
