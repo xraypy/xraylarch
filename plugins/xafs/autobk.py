@@ -89,10 +89,14 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
     """
     if _larch is None:
         raise Warning("cannot calculate autobk spline -- larch broken?")
+    msg = _larch.writer.write
+    if 'kw' in kws:
+        kweight = kws.pop('kw')
+    if len(kws) > 0:
+        msg('Unknown arguments for autobk():\n')
+        msg('    %s\n' % (', '.join(kws.keys())))
 
-    if 'kw' in kws:  kweight = kws['kw']
     energy = remove_dups(energy)
-
     # if e0 or edge_step are not specified, get them, either from the
     # passed-in group or from running pre_edge()
     if edge_step is None:

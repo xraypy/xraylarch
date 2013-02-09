@@ -36,10 +36,10 @@ def find_e0(energy, mu, group=None, _larch=None):
     -------
      value for e0
 
-    
+
     In addition, group.e0 will be set to value for e0
-    
-    
+
+
     """
     if _larch is None:
         raise Warning("cannot find e0 -- larch broken?")
@@ -54,7 +54,7 @@ def find_e0(energy, mu, group=None, _larch=None):
             (i+1 in high_deriv_pts) and
             (i-1 in high_deriv_pts)):
             idmu_max, dmu_max = i, dmu[i]
-            
+
     e0 = energy[idmu_max+1]
     group = set_xafsGroup(group, _larch=_larch)
     group.e0 = e0
@@ -62,7 +62,7 @@ def find_e0(energy, mu, group=None, _larch=None):
 
 def pre_edge(energy, mu, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
-             norm1=100, norm2=None, _larch=None, **kws):
+             norm1=100, norm2=None, _larch=None):
     """pre edge subtraction, normalization for XAFS
 
     This performs a number of steps:
@@ -98,7 +98,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         post_edge   determined post-edge, normalization curve
 
     (if the output group is None, _sys.xafsGroup will be written to)
-    
+
     Notes
     -----
        nvict gives an exponent to the energy term for the pre-edge fit.
@@ -156,7 +156,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
             delattr(group, 'norm_c%i' % i)
     for i, c in enumerate(norm_coefs):
         setattr(group, 'norm_c%i' % i, c)
-    return 
+    return
 
 def registerLarchPlugin():
     return (MODNAME, {'find_e0': find_e0,

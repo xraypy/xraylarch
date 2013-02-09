@@ -394,10 +394,6 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         """ this is the residual function"""
         return concatenate([d._residual() for d in datasets])
 
-    #print 'FEFFIT : ', datasets, type(datasets)
-    #print isinstance(datasets, FeffitDataSet)
-    #print isNamedClass(datasets, FeffitDataSet)
-
     if isNamedClass(datasets, FeffitDataSet):
         datasets = [datasets]
     for ds in datasets:
@@ -476,7 +472,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
                  datasets=datasets)
 
 def feffit_report(result, min_correl=0.1, with_paths=True,
-                  _larch=None, **kws):
+                  _larch=None):
     """return a printable report of fit for feffit
 
     Parameters:
