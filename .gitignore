@@ -14,4 +14,4 @@ dylibs/*/*.dylib
 dylibs/*/Mk.install
 dylibs/*/Mk.config
 sandbox/
-NonGit/
+play/
