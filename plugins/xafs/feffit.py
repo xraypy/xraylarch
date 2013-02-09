@@ -603,33 +603,10 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     out.append('='*len(topline))
     return '\n'.join(out)
 
-def estimate_noise(dset, rmin=15, rmax=30, _larch=None, **kws):
-    """estimate noise in an XAFS dataset
-
-    Parameters:
-    ------------
-      dataset:     Feffit dataset (required)
-      rmin:        minimum R value used for esitmate [15.0]
-      rmax:        maximum R value used for esitmate [30.0]
-
-    Returns:
-    ---------
-      estimate of noise in chi(k)
-    """
-    if _larch is None:
-        return
-    msg = _larch.writer.write
-    if not isNamedClass(dset, FeffitDataSet):
-        msg('estimate_noise(): 1st argument must be a Feffit Dataset\n')
-        return
-    dset.estimate_noise(rmin=rmin, rmax=rmax)
-    return dset.epsilon_k
-
 def registerLarchPlugin():
     return ('_xafs', {'feffit': feffit,
                       'feffit_dataset': feffit_dataset,
                       'feffit_transform': feffit_transform,
-                      'feffit_report': feffit_report,
-                      'estimate_noise': estimate_noise})
+                      'feffit_report': feffit_report})
 
 
