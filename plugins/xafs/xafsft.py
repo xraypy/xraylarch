@@ -197,8 +197,9 @@ def xftr(r, chir, group=None, rmin=0, rmax=20, with_phase=False,
         group.chiq_pha =  complex_phase(out[:nkpts])
 
 
-def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None, with_phase=False,
-           window='kaiser', rmax_out=10, nfft=2048, kstep=0.05, _larch=None, **kws):
+def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
+         with_phase=False, window='kaiser', rmax_out=10,
+         nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     forward XAFS Fourier transform, from chi(k) to chi(R), using
     common XAFS conventions.
