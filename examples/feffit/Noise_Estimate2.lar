@@ -16,8 +16,8 @@ trans = feffit_transform(kmin=4, kmax=16, kweight=3, dk=8,
 d1 = feffit_dataset(data=fdat, pathlist=[p1], transform=trans)
 d1.prepare_fit()
 trans._xafsft(fdat.chi, group=fdat, rmax_out=32)
-print 'noise estimate k = ', trans.epsilon_k
-print 'noise estimate r = ', trans.epsilon_r, log(trans.epsilon_r)
+print 'noise estimate k = ', d1.epsilon_k
+print 'noise estimate r = ', d1.epsilon_r, log(d1.epsilon_r)
 newplot(fdat.r, (fdat.chir_mag), xmax=30, win=1)
 newplot(fdat.k, fdat.chi*fdat.k**2,  win=2)
    plot(fdat.k, fdat.kwin*2.0,  win=2)
