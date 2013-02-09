@@ -151,18 +151,20 @@ def fix_permissions(*dirnames):
     except:
         return
     stat =  os.stat(home)
+    def own(nam, mode=0750):
+        try:
+            os.chown(nam, stat.st_uid, stat.st_gid)
+            os.chmod(nam, mode)
+        except OSError:
+            pass
     for dname in (dirnames):
         folder = os.path.join(home, '.%s' % dname)
         for top, dirs, files in os.walk(folder):
-            os.chown(top, stat.st_uid, stat.st_gid)
+            own(top)
             for d in dirs:
-                dname = os.path.join(top, d)
-                os.chown(dname, stat.st_uid, stat.st_gid)
-                os.chmod(dname, 0750)
+                own(os.path.join(top, d))
             for d in files:
-                dname = os.path.join(top, d)
-                os.chown(dname, stat.st_uid, stat.st_gid)
-                os.chmod(dname, 0640)
+                own(os.path.join(top, d), mode=0640)
 
 fix_permissions('matplotlib', 'larch')
 
