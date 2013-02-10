@@ -12,6 +12,7 @@ AR           = ar
 RANLIB       = ranlib
 CC           = gcc -O2 $(ARCH_TARGS)
 LINK         = gcc -O2 $(ARCH_TARGS) $(MAC_SDK) -fPIC -shared
+LINK         = gcc -O2 $(ARCH_TARGS) -fPIC -shared
 LINK_FLAGS   = -L$(GFORT_LIBDIR) -lgfortran -lgfortranbegin
 
 DLLPRE       = lib
