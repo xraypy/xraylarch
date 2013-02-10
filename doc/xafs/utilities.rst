@@ -98,15 +98,19 @@ The :func:`estimate_noise` function
 This method uses the high-R portion of :math:`\chi(R)` (between **rmin**
 and **rmax**) as a measure of the noise level in the :math:`\chi(R)` data
 and uses Parseval's theorem to convert this noise level to that in
-:math:`\chi(k)`.  This method implicitly assumes that there is no signal
-in the high-R portion of the spectrum, and that the noise in the spectrum
-is "white" (independent of :math:`R`) .  Each of these assumptions can be
-legitimately questioned.  Then again, assuming these assumptions are
-invalid and disregarding the estimated noise level here would require
-knowledge of the noise in an XAFS spectrum that most users do not have.
+:math:`\chi(k)`.  This method implicitly assumes that there is no signal in
+the high-R portion of the spectrum, and that the noise in the spectrum is
+"white" (independent of :math:`R`) .  Each of these assumptions can be
+legitimately questioned.  Then again, making the assertion that these
+assumptions are invalid and disregarding the estimated noise level here
+would require knowledge of the noise in an XAFS spectrum that most users do
+not have.  At the very least, this estimate should be be interpreted as a
+minimal estimate of the noise level in :math:`\chi(k)`.
 
 The estimate for the output value **kmax_suggest** has a tendency to be
 pessimistic in how far out the :math:`\chi(k)` data goes before being
 dominated by noise, but has the advantage of being an impartial measure of
-data quality. It is particularly pessimistic for extremely good data.
+data quality. It is particularly pessimistic for extremely good data.  Then
+again, considering that the estimate for :math:`\epslion` is probably too
+small, the estimate may not be that bad.
 
