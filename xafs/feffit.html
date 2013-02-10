@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.17 documentation</title>
+    <title>XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.18 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.17',
+        VERSION:     '0.9.18',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.17 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.18 documentation" href="../index.html" />
     <link rel="up" title="XAFS Analysis" href="index.html" />
     <link rel="next" title="X-ray Databases" href="../xray/index.html" />
     <link rel="prev" title="XAFS: Reading and using Feff Paths" href="feffpaths.html" /> 
@@ -493,9 +493,13 @@ file with a single Feff Path.</p>
 <span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
 
 <span class="k">print</span> <span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-<span class="n">fout</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;doc_feffit1.out&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
-<span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
-<span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">fout</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">&#39;doc_feffit1.out&#39;</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">feffit_report</span><span class="p">(</span><span class="n">out</span><span class="p">))</span>
+    <span class="n">fout</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;could not write doc_feffit1.lar&#39;</span>
+<span class="n">endtry</span>
 
 <span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
      <span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$k \rm\,(\AA^{-1})$&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span>
@@ -536,9 +540,9 @@ commands.</p>
 <div class="highlight-python"><pre>=================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 104, 4, 100
-   chi_square         = 6853.2901
-   reduced chi_square = 68.532901
-   r-factor           = 0.0028522676
+   chi_square         = 6801.7789
+   reduced chi_square = 68.017789
+   r-factor           = 0.0028495332
  
 [[Data]]
    fit space          = 'r'
@@ -548,13 +552,13 @@ commands.</p>
    paths used in fit  = ['feffcu01.dat']
    k-weight           = 2
    epsilon_k          = 0.000150
-   epsilon_r          = 0.007111
+   epsilon_r          = 0.007135
    n_independent      = 14.260
  
 [[Variables]]
-   amp            =  0.930915 +/- 0.042009   (init=  1.000000)
-   del_e0         =  3.860819 +/- 0.550083   (init=  0.100000)
-   del_r          = -0.005996 +/- 0.002807   (init=  0.000000)
+   amp            =  0.930917 +/- 0.041989   (init=  1.000000)
+   del_e0         =  3.860832 +/- 0.549819   (init=  0.100000)
+   del_r          = -0.005996 +/- 0.002805   (init=  0.000000)
    sig2           =  0.008670 +/- 0.000330   (init=  0.002000)
  
 [[Correlations]]    (unreported correlations are &lt;  0.100)
@@ -570,8 +574,8 @@ commands.</p>
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.93091 +/-  0.04201
-     E0     =  3.86082 +/-  0.55008
+     S02    =  0.93092 +/-  0.04199
+     E0     =  3.86083 +/-  0.54982
      R      =  2.54180 +/-  0.00281
      deltar = -0.00600 +/-  0.00281
      sigma2 =  0.00867 +/-  0.00033
@@ -722,9 +726,13 @@ like this:</p>
 
 <span class="k">def</span> <span class="nf">write_report</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">out</span><span class="p">):</span>
     <span class="s">&quot;write report to file&quot;</span>
-    <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;w&#39;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&#39;could not write </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">filename</span>
+    <span class="n">endtry</span>
 <span class="n">enddef</span>
 
 <span class="c">## end of examples/feffit/doc_macros.lar</span>
@@ -835,7 +843,7 @@ vary independently for each path.</p>
 [[Variables]]
    alpha          = -0.002470 +/- 0.000950   (init=  0.000000)
    amp            =  0.928995 +/- 0.036148   (init=  1.000000)
-   del_e0         =  3.821552 +/- 0.472780   (init=  0.100000)
+   del_e0         =  3.821551 +/- 0.472779   (init=  0.100000)
    sig2_1         =  0.008643 +/- 0.000285   (init=  0.002000)
    sig2_2         =  0.014079 +/- 0.001441   (init=  0.002000)
    sig2_3         =  0.008410 +/- 0.003766   (init=  0.002000)
@@ -862,8 +870,8 @@ vary independently for each path.</p>
      Degen  =  12.00000
      S02    =  0.92899 +/-  0.03615
      E0     =  3.82155 +/-  0.47278
-     R      =  2.54151 +/-  0.00242
-     deltar = -0.00629 +/-  0.00242
+     R      =  2.54151 +/-  0.00075
+     deltar = -0.00629 +/-  0.00075
      sigma2 =  0.00864 +/-  0.00028
 
    feff.dat file = feff0002.dat
@@ -874,8 +882,8 @@ vary independently for each path.</p>
      Degen  =  6.00000
      S02    =  0.92899 +/-  0.03615
      E0     =  3.82155 +/-  0.47278
-     R      =  3.59430 +/-  0.00342
-     deltar = -0.00890 +/-  0.00342
+     R      =  3.59430 +/-  0.00106
+     deltar = -0.00890 +/-  0.00106
      sigma2 =  0.01408 +/-  0.00144
 
    feff.dat file = feff0003.dat
@@ -887,8 +895,8 @@ vary independently for each path.</p>
      Degen  =  48.00000
      S02    =  0.92899 +/-  0.03615
      E0     =  3.82155 +/-  0.47278
-     R      =  3.81236 +/-  0.00363
-     deltar = -0.00944 +/-  0.00363
+     R      =  3.81236 +/-  0.00112
+     deltar = -0.00944 +/-  0.00112
      sigma2 =  0.00841 +/-  0.00377
 
 =======================================================</pre>
@@ -1009,9 +1017,9 @@ of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0c
 <div class="highlight-python"><pre>=================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 390, 5, 385
-   chi_square         = 20675.228
-   reduced chi_square = 53.701891
-   r-factor           = 0.016295917
+   chi_square         = 20670.626
+   reduced chi_square = 53.689939
+   r-factor           = 0.016292295
  
 [[Datasets (3)]]
  dataset 1:
@@ -1021,8 +1029,8 @@ of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0c
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = 0.000927
-   epsilon_r          = 0.044076
+   epsilon_k          = 0.000926
+   epsilon_r          = 0.044030
    n_independent      = 17.825
  dataset 2:
    fit space          = 'r'
@@ -1031,8 +1039,8 @@ of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0c
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = 0.000843
-   epsilon_r          = 0.040062
+   epsilon_k          = 0.000842
+   epsilon_r          = 0.040020
    n_independent      = 17.825
  dataset 3:
    fit space          = 'r'
@@ -1041,16 +1049,16 @@ of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0c
    k window, dk       = 'kaiser', 4.000
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
-   epsilon_k          = 0.000433
-   epsilon_r          = 0.020563
+   epsilon_k          = 0.000432
+   epsilon_r          = 0.020536
    n_independent      = 17.825
  
 [[Variables]]
    alpha          =  0.000011 +/- 0.000007   (init=  0.000000)
-   amp            =  0.874377 +/- 0.032285   (init=  1.000000)
-   del_e0         =  5.066476 +/- 0.629972   (init=  2.000000)
-   dr_off         = -0.001836 +/- 0.002941   (init=  0.000000)
-   theta          =  233.081978 +/- 7.792662   (init=  250.000000)
+   amp            =  0.873471 +/- 0.032249   (init=  1.000000)
+   del_e0         =  5.066282 +/- 0.629893   (init=  2.000000)
+   dr_off         = -0.001837 +/- 0.002941   (init=  0.000000)
+   theta          =  233.042260 +/- 7.788144   (init=  250.000000)
  
 [[Correlations]]    (unreported correlations are &lt;  0.100)
    amp, theta           = -0.865 
@@ -1066,11 +1074,11 @@ of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0c
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.87438 +/-  0.03229
-     E0     =  5.06648 +/-  0.62997
-     R      =  2.54624 +/-  0.00295
-     deltar = -0.00156 +/-  0.00295
-     sigma2 =  0.00328
+     S02    =  0.87347 +/-  0.03225
+     E0     =  5.06628 +/-  0.62989
+     R      =  2.54624 +/-  0.00102
+     deltar = -0.00156 +/-  0.00102
+     sigma2 =  0.00328 +/-  0.00004
 
  dataset 2:
    feff.dat file = feff0001.dat
@@ -1079,11 +1087,11 @@ of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0c
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.87438 +/-  0.03229
-     E0     =  5.06648 +/-  0.62997
-     R      =  2.54737 +/-  0.00307
-     deltar = -0.00043 +/-  0.00307
-     sigma2 =  0.00334
+     S02    =  0.87347 +/-  0.03225
+     E0     =  5.06628 +/-  0.62989
+     R      =  2.54737 +/-  0.00094
+     deltar = -0.00043 +/-  0.00094
+     sigma2 =  0.00334 +/-  0.00004
 
  dataset 3:
    feff.dat file = feff0001.dat
@@ -1092,29 +1100,32 @@ of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0c
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.87438 +/-  0.03229
-     E0     =  5.06648 +/-  0.62997
-     R      =  2.55017 +/-  0.00392
-     deltar =  0.00237 +/-  0.00392
-     sigma2 =  0.00503
+     S02    =  0.87347 +/-  0.03225
+     E0     =  5.06628 +/-  0.62989
+     R      =  2.55017 +/-  0.00103
+     deltar =  0.00237 +/-  0.00103
+     sigma2 =  0.00503 +/-  0.00010
 
 =======================================================</pre>
 </div>
-<p>Note that, while uncertainties are estimated for Path parameters that are
-simple expressions of variables (such as <tt class="docutils literal"><span class="pre">S02</span></tt> and even <tt class="docutils literal"><span class="pre">deltar</span></tt>), but
-not for <tt class="docutils literal"><span class="pre">sigma2</span></tt>, as this is calculated with a function call, which makes
-the automated error propagation cannot yet do.  For the case here, you can
-simply evaluate <a class="reference internal" href="feffpaths.html#_xafs.sigma2_eins" title="_xafs.sigma2_eins"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_eins()</span></tt></a> with the range of values for the
-parameter <tt class="docutils literal"><span class="pre">theta</span></tt>:</p>
-<div class="highlight-python"><pre>larch&gt; _ave = sigma2_eins(10, pars.theta)
+<p>Note that an uncertainty is estimated for the Path parameters, including
+<tt class="docutils literal"><span class="pre">sigma2</span></tt>, which is calculated with the <a class="reference internal" href="feffpaths.html#_xafs.sigma2_eins" title="_xafs.sigma2_eins"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_eins()</span></tt></a> function.
+Such derived uncertainties do reflect the uncertainties and correlations
+between variables.  For example, a simplistic evaluation for the standard
+error in one of the <tt class="docutils literal"><span class="pre">sigma2</span></tt> parameters using the estimated variance in
+the <tt class="docutils literal"><span class="pre">theta</span></tt> might be done as follows:</p>
+<blockquote>
+<div>larch&gt; _ave = sigma2_eins(10, pars.theta)
 larch&gt; _dlo = sigma2_eins(10, pars.theta-pars.theta.stderr) - _ave
 larch&gt; _dhi = sigma2_eins(10, pars.theta+pars.theta.stderr) - _ave
-larch&gt; print "sigma2(T=10) = %.5f  (%+.5f, %+.5f)" % (_ave, _dlo, _dhi)
-sigma2(T=10) = 0.00328  (+0.00011, -0.00011)</pre>
-</div>
-<p>and so forth to get an estimate of the range of values for the <tt class="docutils literal"><span class="pre">sigma2</span></tt>
-Path parameters.  The output plots for the fits to the three datasets are
-given below.</p>
+larch&gt; print &#8220;sigma2(T=10) = %.5f  (%+.5f, %+.5f)&#8221; % (_ave, _dlo, _dhi)
+sigma2(T=10) = 0.00328  (+0.00011, -0.00011)</div></blockquote>
+<p>This gives an estimate about 3 times larger than the estimate automatically
+derived from the fit.  The reason for this is that the simple evaluation
+ignores the correlation between parameters, which is taken into account in
+the automatically derived uncertainties.  In this case, including this
+correlation significantly reduces the estimated uncertainty.</p>
+<p>The output plots for the fits to the three datasets are given below.</p>
 <blockquote id="xafs-fig15">
 <div><a class="reference external image-reference" href="../_images/feffit_3temp1.png"><img alt="../_images/feffit_3temp1.png" src="../_images/feffit_3temp1.png" style="width: 48%;" /></a>
 <a class="reference external image-reference" href="../_images/feffit_3temp2.png"><img alt="../_images/feffit_3temp2.png" src="../_images/feffit_3temp2.png" style="width: 48%;" /></a>
@@ -1225,7 +1236,7 @@ used in the fit.</p>
    n_independent      = 16.106
  
 [[Variables]]
-   de0            = -1.429964 +/- 0.803446   (init=  0.100000)
+   de0            = -1.429965 +/- 0.803446   (init=  0.100000)
    delr_1         = -0.030326 +/- 0.008948   (init=  0.000000)
    delr_2         =  0.048697 +/- 0.006895   (init=  0.000000)
    n1             =  5.196147 +/- 0.805889   (init=  6.000000)

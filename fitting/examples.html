@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fit Examples &mdash; larch 0.9.17 documentation</title>
+    <title>Fit Examples &mdash; larch 0.9.18 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.17',
+        VERSION:     '0.9.18',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.17 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.18 documentation" href="../index.html" />
     <link rel="up" title="Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
     <link rel="prev" title="Some Builtin Line-shape Functions" href="lineshapes.html" /> 
@@ -248,9 +248,8 @@ error-function.</li>
 <span class="c"># read data</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;doc_example2.dat&#39;</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy xmu i0&#39;</span><span class="p">)</span>
 
-<span class="c"># perform pre-processing steps, here doing an XAFS pre-edge</span>
-<span class="c"># removal</span>
-<span class="n">step</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
+<span class="c"># do pre-processing steps, here XAFS pre-edge removal</span>
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
 
 <span class="c"># select data range to be considered in the fit here.</span>
 <span class="c"># note that this could be done inside the objective function,</span>

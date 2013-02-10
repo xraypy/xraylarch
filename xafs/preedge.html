@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS: Pre-edge Subtraction and Normalization &mdash; larch 0.9.17 documentation</title>
+    <title>XAFS: Pre-edge Subtraction and Normalization &mdash; larch 0.9.18 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.17',
+        VERSION:     '0.9.18',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.17 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.18 documentation" href="../index.html" />
     <link rel="up" title="XAFS Analysis" href="index.html" />
     <link rel="next" title="XAFS: Post-edge Background Subtraction" href="autobk.html" />
     <link rel="prev" title="XAFS Analysis" href="index.html" /> 
@@ -157,7 +157,7 @@ post-edge, normalization curve. Default=3 (quadratic)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(edge_step, e0).</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">None.</p>
 </td>
 </tr>
 </tbody>
@@ -166,8 +166,8 @@ post-edge, normalization curve. Default=3 (quadratic)</li>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
-<col width="19%" />
-<col width="81%" />
+<col width="21%" />
+<col width="79%" />
 </colgroup>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">attribute</th>
@@ -189,6 +189,30 @@ post-edge, normalization curve. Default=3 (quadratic)</li>
 </tr>
 <tr class="row-even"><td>post_edge</td>
 <td>post-edge, normalization curve  (array)</td>
+</tr>
+<tr class="row-odd"><td>pre_slope</td>
+<td>slope of pre-edge line</td>
+</tr>
+<tr class="row-even"><td>pre_offset</td>
+<td>offset of pre-edge line</td>
+</tr>
+<tr class="row-odd"><td>nvict</td>
+<td>value of nvict used</td>
+</tr>
+<tr class="row-even"><td>nnorm</td>
+<td>value of nnorm used</td>
+</tr>
+<tr class="row-odd"><td>norm_c0</td>
+<td>constant of normalization polynomial</td>
+</tr>
+<tr class="row-even"><td>norm_c1</td>
+<td>linear coefficient of normalization polynomial</td>
+</tr>
+<tr class="row-odd"><td>norm_c2</td>
+<td>quadratic coefficient of normalizaion polynomial</td>
+</tr>
+<tr class="row-even"><td>norm_c*</td>
+<td>higher power coefficents of normalization polynomial</td>
 </tr>
 </tbody>
 </table>
@@ -212,20 +236,16 @@ checks to avoid spurious glitches.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>energy</strong> &#8211; array of x-ray energies, in eV</li>
 <li><strong>mu</strong> &#8211; array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
 <li><strong>group</strong> &#8211; output group</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">e0.</p>
-</td>
-</tr>
 </tbody>
 </table>
-<p>Returns e0, the edge energy, <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> in eV.  If a group is
-supplied, group.e0 will also be set to this value.</p>
+<p>The value of <tt class="docutils literal"><span class="pre">e0</span></tt> will be written to the output group.</p>
 </dd></dl>
 
 <div class="section" id="example">
@@ -234,7 +254,7 @@ supplied, group.e0 will also be set to this value.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy xmu i0&#39;</span><span class="p">)</span>
 
-<span class="n">step</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
 
 <span class="n">show</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
 

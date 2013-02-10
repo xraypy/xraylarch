@@ -91,7 +91,7 @@ An 'else' statement can be added to execute code if the test is False::
     if x == 0:
         print 'x is equal to 0!'
         x = 1
-    else
+    else:
         print 'x is not 0'
     endif
 

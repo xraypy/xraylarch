@@ -8,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.17 documentation</title>
+    <title>Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.18 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.17',
+        VERSION:     '0.9.18',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -25,7 +25,7 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <link rel="top" title="larch 0.9.17 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.18 documentation" href="../index.html" />
     <link rel="up" title="Larch Tutorial" href="index.html" />
     <link rel="next" title="Tutorial: Dealing With Errors" href="errors.html" />
     <link rel="prev" title="Tutorial: Basic Array Manipulation" href="arrays.html" /> 
@@ -200,12 +200,13 @@ required (see <a class="reference internal" href="../devel/index.html#code-block
 be run if x is equal to 0 &#8211; there is no restriction on how many statements
 can be run.</p>
 <p>An &#8216;else&#8217; statement can be added to execute code if the test is False:</p>
-<div class="highlight-python"><pre>if x == 0:
-    print 'x is equal to 0!'
-    x = 1
-else
-    print 'x is not 0'
-endif</pre>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;x is equal to 0!&#39;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&#39;x is not 0&#39;</span>
+<span class="n">endif</span>
+</pre></div>
 </div>
 <p>Multiple tests can be chained together with the &#8216;elif&#8217; (a contraction of
 &#8216;else if&#8217;):</p>
