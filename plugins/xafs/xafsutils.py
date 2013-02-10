@@ -2,7 +2,7 @@
 Utility functions used for xafs analysis
 """
 import numpy as np
-
+from larch import Group
 KTOE = 3.809980849311092
 ETOK = 1.0/KTOE
 
@@ -11,7 +11,7 @@ def etok(energy):
     return np.sqrt(energy/KTOE)
 
 def ktoe(k):
-    """convert photo-electron wavenumber to energy"""    
+    """convert photo-electron wavenumber to energy"""
     return k*k*KTOE
 
 
