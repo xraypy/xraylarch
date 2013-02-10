@@ -14,9 +14,8 @@ required_modules = ('numpy', 'scipy', 'docutils', 'wx', 'matplotlib', 'wxmplot')
 recommended_modules = {'basic processing analysis': ('numpy', 'scipy', 'docutils'),
                        'graphics and plotting': ('wx',),
                        'plotting': ('matplotlib', 'wxmplot'),
-                       'access to x-ray databases': ('sqlalchemy', ),
-                       'read hdf5 files': ('h5py', ),
-                       'propogate uncertainties': ('uncertainties', ),
+                       'accessing x-ray databases': ('sqlalchemy', ),
+                       'readng hdf5 files': ('h5py', ),
                        'using the EPICS control system': ('epics',)
                     }
 
