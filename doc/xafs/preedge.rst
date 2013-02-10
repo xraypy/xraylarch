@@ -30,19 +30,27 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
     :param nnorm:   number of terms in polynomial (that is, 1+degree) for
                     post-edge, normalization curve. Default=3 (quadratic)
 
-    :returns:  (edge_step, e0).
+    :returns:  None.
 
     If a ``group`` argument is provided, the following data is put into it:
 
-       ============   ==================================================
-        attribute      meaning
-       ============   ==================================================
-        e0             energy origin
-        edge_step      edge step
-        norm           normalized mu(E)   (array)
-        pre_edge       pre-edge curve (array)
-        post_edge      post-edge, normalization curve  (array)
-       ============   ==================================================
+       ==============   ======================================================
+        attribute        meaning
+       ==============   ======================================================
+        e0               energy origin
+        edge_step        edge step
+        norm             normalized mu(E)   (array)
+        pre_edge         pre-edge curve (array)
+        post_edge        post-edge, normalization curve  (array)
+        pre_slope        slope of pre-edge line
+        pre_offset       offset of pre-edge line
+        nvict            value of nvict used
+        nnorm            value of nnorm used
+        norm_c0          constant of normalization polynomial
+        norm_c1          linear coefficient of normalization polynomial
+        norm_c2          quadratic coefficient of normalizaion polynomial
+        norm_c*          higher power coefficents of normalization polynomial
+       ==============   ======================================================
 
 Notes:
    nvict gives an exponent to the energy term for the pre-edge fit.
@@ -61,11 +69,9 @@ Notes:
     :param energy:  array of x-ray energies, in eV
     :param   mu:    array of :math:`\mu(E)`
     :param group:   output group
-    :returns:       e0.
 
+    The value of ``e0`` will be written to the output group.
 
-    Returns e0, the edge energy, :math:`E_0` in eV.  If a group is
-    supplied, group.e0 will also be set to this value.
 
 Example
 =========
@@ -75,7 +81,7 @@ A simple example of pre-edge subtraction::
     fname = 'fe2o3_rt1.xmu'
     dat = read_ascii(fname, labels='energy xmu i0')
 
-    step, e0 = pre_edge(dat.energy, dat.xmu, group=dat)
+    pre_edge(dat.energy, dat.xmu, group=dat)
 
     show(dat)
 
