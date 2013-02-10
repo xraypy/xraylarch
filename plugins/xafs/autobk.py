@@ -93,12 +93,15 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
     if 'kw' in kws:
         kweight = kws.pop('kw')
     if len(kws) > 0:
-        msg('Unknown arguments for autobk():\n')
+        msg('Unrecognized arguments for autobk():\n')
         msg('    %s\n' % (', '.join(kws.keys())))
+        return
 
     energy = remove_dups(energy)
     # if e0 or edge_step are not specified, get them, either from the
     # passed-in group or from running pre_edge()
+    group = set_xafsGroup(group, _larch=_larch)
+
     if edge_step is None:
         if _larch.symtable.isgroup(group) and hasattr(group, 'edge_step'):
             edge_step = group.edge_step
@@ -117,6 +120,9 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
             e0 = group.e0
         if edge_step is None:
             edge_step = group.edge_step
+    if e0 is None or edge_step is None:
+        msg('autobk() could not determine e0 or edge_step!: trying running pre_edge first\n')
+        return
 
     # get array indices for rkbg and e0: irbkg, ie0
     ie0 = index_nearest(energy, e0)
