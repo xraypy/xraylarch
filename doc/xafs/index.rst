@@ -62,6 +62,7 @@ listed below.
 
    preedge
    autobk
+   utilities
    xafsft
    feffpaths
    feffit

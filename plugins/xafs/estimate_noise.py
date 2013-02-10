@@ -25,6 +25,8 @@ def estimate_noise(k, chi, rmin=15.0, rmax=30.0, kmin=0, kmax=20,
       k:        1-d array of photo-electron wavenumber in Ang^-1
       chi:      1-d array of chi
       group:    output Group
+      rmin:     minimum R value for high-R region of chi(R)
+      rmax:     maximum R value for high-R region of chi(R)
       kweight:  exponent for weighting spectra by k**kweight [1]
       kmin:     starting k for FT Window [0]
       kmax:     ending k for FT Window  [20]
@@ -36,14 +38,23 @@ def estimate_noise(k, chi, rmin=15.0, rmax=30.0, kmin=0, kmax=20,
 
     Returns:
     ---------
-      None   -- outputs are written to supplied group.
+      None   -- outputs are written to supplied group.  Values (scalars) written
+      to output group:
+        epsilon_k     estimated noise in chi(k)
+        epsilon_r     estimated noise in chi(R)
+        kmax_suggest  highest estimated k value where |chi(k)| > epsilon_k
 
     Notes:
     -------
-    Values (scalars) written to output group:
-        epsilon_k     estimated noise in chi(k)
-        epsilon_r     estimated noise in chi(R)
-        kmax_suggest  highest estimated k value where chi(k) > espsilon_k
+
+     1. This method uses the high-R portion of chi(R) as a measure of the noise
+        level in the chi(R) data and uses Parseval's theorem to convert this noise
+        level to that in chi(k).  This method implicitly assumes that there is no
+        signal in the high-R portion of the spectrum, and that the noise in the
+        spectrum s "white" (independent of R) .  Each of these assumptions can be
+        questioned.
+     2. The estimate for 'kmax_suggest' has a tendency to be fair but pessimistic
+        in how far out the chi(k) data goes before being dominated by noise.
     """
     if _larch is None:
         raise Warning("cannot estimate noise -- larch broken?")
