@@ -5,7 +5,7 @@ fitparams = group(amp  = guess(1),
                   delr = guess(0.)
                   )
 
-path1 = read_feffdat('feffcu01.dat')
+path1 = feffpath('feffcu01.dat')
 path1.s02    = param(expr='amp')
 path1.e0     = param(expr='de0')
 path1.sigma2 = param(expr='ss2')
