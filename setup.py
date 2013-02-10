@@ -97,7 +97,16 @@ data_files.append((mod_dir, modfiles))
 
 #dlls
 dll_maindir = os.path.join(share_basedir, 'dlls')
-for dx in ('win32', 'win64', 'linux32', 'linux64', 'darwin'):
+archs = []
+if os.name == 'nt':
+    archs.extend(['win32', 'win64'])
+else:
+    if sys.platform.lower().startswith('linux'):
+        archs.extend(['linux32', 'linux64'])
+    elif sys.platform.lower().startswith('darwin'):
+        archs.append('darwin')
+
+for dx in archs:
     dlldir = os.path.join(dll_maindir, dx)
     dllfiles = glob.glob('dlls/%s/*' % dx)
     data_files.append((dlldir, dllfiles))
