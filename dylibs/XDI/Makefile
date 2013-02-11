@@ -16,7 +16,7 @@ SHAREDLIB   = $(DLLPRE)$(INSTALLNAME).$(DLLEXT)
 
 default: $(SHAREDLIB)
 
-LINK_FLAGS   =
+LINK_FFLAGS  =
 LINK         = gcc -O2 $(ARCH_TARGS) -fPIC -shared
 XDIHEADERS = strutil.h xdifile.h
 
@@ -31,7 +31,7 @@ slre.o:  slre.h
 
 $(SHAREDLIB): $(OBJ)
 	@rm -f $@
-	$(LINK) -o $(SHAREDLIB) $(OBJ) $(LINK_FLAGS)
+	$(LINK) -o $(SHAREDLIB) $(OBJ) $(LINK_FFLAGS) $(LINK_CFLAGS)
 
 $(STATICLIB): $(OBJ)
 	$(AR) cru $(STATICLIB) $(OBJ)

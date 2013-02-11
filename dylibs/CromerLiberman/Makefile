@@ -29,7 +29,7 @@ OBJ = clcalc.o cromer.o crolib.o cl_f1f2.o
 clcalc.o:  cldata.f
 
 $(SHAREDLIB): $(OBJ)
-	$(LINK) -o $(SHAREDLIB) $(OBJ) $(LINK_FLAGS)
+	$(LINK) -o $(SHAREDLIB) $(OBJ) $(LINK_FFLAGS) $(LINK_CFLAGS)
 
 $(STATICLIB): $(OBJ)
 	$(AR) cru $(STATICLIB) $(OBJ)

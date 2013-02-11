@@ -1,1 +1,6 @@
 XDI file reader
+
+to build:
+
+ python ../configure.py
+ make install
