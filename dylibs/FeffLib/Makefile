@@ -19,7 +19,7 @@ SRC = sigms.f feff6_interfaces.c
 OBJ = sigms.o feff6_interfaces.o
 
 $(SHAREDLIB): $(OBJ)
-	$(LINK) -o $(SHAREDLIB) $(OBJ) $(LINK_FLAGS)
+	$(LINK) -o $(SHAREDLIB) $(OBJ) $(LINK_FFLAGS) $(LINK_CFLAGS) 
 
 $(STATICLIB): $(OBJ)
 	$(AR) cru $(STATICLIB) $(OBJ)

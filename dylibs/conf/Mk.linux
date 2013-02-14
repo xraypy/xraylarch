@@ -1,12 +1,12 @@
 # Make configuration for linux using gfortran
 
-F77        = gfortran -O2 -Wall -fPIC
-AR         = ar
-RANLIB     = ranlib
-CC         = gcc -O2 -fPIC
-LINK       = gcc -O2 -fPIC -shared
-LINK_FLAGS = -lgfortran -lgfortranbegin
+F77         = gfortran -O2 -Wall -fPIC
+AR          = ar
+RANLIB      = ranlib
+CC          = gcc -O2 -fPIC
+LINK        = gcc -O2 -fPIC -shared
+LINK_FFLAGS = -lgfortran -lgfortranbegin
 
-DLLPRE     = lib
-DLLEXT     = so
+DLLPRE      = lib
+DLLEXT      = so
 
