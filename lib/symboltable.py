@@ -459,8 +459,9 @@ class SymbolTable(Group):
                 nvars = val.func_code.co_argcount
                 if ((val.func_code.co_flags &8 != 0) or
                     '_larch' in val.func_code.co_varnames[:nvars]):
-                    kws.update({'_larch': self._larch})
-                val = Closure(func=val, _name=key, **kws)
+                    val = Closure(func=val, _larch=self._larch, _name=key, **kws)
+                else:
+                    val = Closure(func=val, _name=key, **kws)
 
             self.set_symbol("%s.%s" % (groupname, key), val)
 
