@@ -52,6 +52,9 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
           <a href="feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
              accesskey="N">next</a> |</li>
         <li class="right" >
@@ -626,9 +629,11 @@ calculate <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb
 <p>After the initial read, the values of <tt class="docutils literal"><span class="pre">k</span></tt>, <tt class="docutils literal"><span class="pre">p</span></tt>, <tt class="docutils literal"><span class="pre">chi</span></tt>, and
 <tt class="docutils literal"><span class="pre">chi_imag</span></tt> are set to <tt class="docutils literal"><span class="pre">None</span></tt>, and are not calculated until
 <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> is called.</p>
-<blockquote id="xafs-fig5">
-<div><a class="reference external image-reference" href="../_images/feffdat_example1.png"><img alt="../_images/feffdat_example1.png" src="../_images/feffdat_example1.png" style="width: 75%;" /></a>
-<p>Figure 5. Calculations of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a Feff Path.</p>
+<blockquote id="xafs-fig12">
+<div><div class="figure align-center" style="width: 100%">
+<a class="reference external image-reference" href="../_images/feffdat_example1.png"><img alt="../_images/feffdat_example1.png" src="../_images/feffdat_example1.png" style="width: 65%;" /></a>
+</div>
+<p>Figure 12. Calculations of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a Feff Path.</p>
 </div></blockquote>
 <p>We can also use the data from the <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group to look at the
 individual scattering components.  Thus to look at the scattering amplitude
@@ -652,9 +657,11 @@ like this:</p>
 </pre></div>
 </div>
 <p>which will produce a plot like this:</p>
-<blockquote id="xafs-fig6">
-<div><a class="reference external image-reference" href="../_images/feffdat_example2.png"><img alt="../_images/feffdat_example2.png" src="../_images/feffdat_example2.png" style="width: 75%;" /></a>
-<p>Figure 6. Components of <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group for a Feff Path.</p>
+<blockquote id="xafs-fig13">
+<div><div class="figure align-center" style="width: 100%">
+<a class="reference external image-reference" href="../_images/feffdat_example2.png"><img alt="../_images/feffdat_example2.png" src="../_images/feffdat_example2.png" style="width: 65%;" /></a>
+</div>
+<p>Figure 13. Components of <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group for a Feff Path.</p>
 </div></blockquote>
 <p>You can see here that the arrays in the <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group are sampled at
 varying <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> spacing, and that this spacing becomes fairly large at
@@ -710,9 +717,11 @@ a set of paths, which was done in this example to add the contributions of
 paths 3, 4, and 5.  This works because <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> runs <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a>
 for each path to be summed, so that the <tt class="docutils literal"><span class="pre">chi</span></tt> component of the FeffPath
 group is up to date.</p>
-<blockquote id="xafs-fig7">
-<div><a class="reference external image-reference" href="../_images/feffdat_example3.png"><img alt="../_images/feffdat_example3.png" src="../_images/feffdat_example3.png" style="width: 75%;" /></a>
-<p>Figure 7. Results for sum of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for list of paths.</p>
+<blockquote id="xafs-fig14">
+<div><div class="figure align-center" style="width: 100%">
+<a class="reference external image-reference" href="../_images/feffdat_example3.png"><img alt="../_images/feffdat_example3.png" src="../_images/feffdat_example3.png" style="width: 65%;" /></a>
+</div>
+<p>Figure 14. Results for sum of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for list of paths.</p>
 </div></blockquote>
 </div>
 <div class="section" id="example-using-path-parameters-when-adding-feff-files">
@@ -791,9 +800,11 @@ up names for expression in parameters.  That is, after the first call to
 and any subsequent need to evaluate parameters will use that until
 overridden by resetting <tt class="docutils literal"><span class="pre">_sys.paramGroup</span></tt>, which can be done by passing a
 <tt class="docutils literal"><span class="pre">paramgroup</span></tt> argument to <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a> or <a class="reference internal" href="#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a>.</p>
-<blockquote id="xafs-fig8">
-<div><a class="reference external image-reference" href="../_images/feffdat_example4.png"><img alt="../_images/feffdat_example4.png" src="../_images/feffdat_example4.png" style="width: 75%;" /></a>
-<p>Figure 8. Results for making 2 different sums of paths using
+<blockquote id="xafs-fig15">
+<div><div class="figure align-center" style="width: 100%">
+<a class="reference external image-reference" href="../_images/feffdat_example4.png"><img alt="../_images/feffdat_example4.png" src="../_images/feffdat_example4.png" style="width: 65%;" /></a>
+</div>
+<p>Figure 15. Results for making 2 different sums of paths using
 parameterized Path Parameters</p>
 </div></blockquote>
 <p>The resulting plot shows the effect of changing <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> and
@@ -817,6 +828,9 @@ values in a fit of XAFS data to such a sum of paths.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../np-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
         <li class="right" >
           <a href="feffit.html" title="XAFS: Fitting XAFS to Feff Paths"
              >next</a> |</li>

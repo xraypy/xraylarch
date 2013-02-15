@@ -459,7 +459,7 @@ would result in the following results:
      :target: ../_images/xft_example3.png
      :width: 48 %
   .. image:: ../images/xft_example4.png
-     :target: ../_images/xft_example4.png
+     :target: ../_images/xft_example4.psng
      :width: 48 %
 
   Figure 9.  Comparison of the effect of different window types
@@ -482,16 +482,16 @@ which results in
 
 .. _xafs_fig10:
 
-  .. image::  ../images/xft_example5.png
-     :target: ../_images/xft_example5.png
-     :width: 65 %
+.. figure::  ../images/xft_example5.png
+   :target: ../_images/xft_example5.png
+   :width: 65 %
+   :align: center
+   :figwidth: 100 %
 
-  Figure 10. The real and imaginary components of the XAFS Fourier
-  transform.
+   Figure 10. The real and imaginary components of the XAFS Fourier transform.
 
 In fact, in the analysis discussed with :func:`feffit`, the real and
 imaginary components are used, not simply the magnitude.
-
 
 Examples: Reverse XAFS Fourier transforms, Fourier Filtering
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
