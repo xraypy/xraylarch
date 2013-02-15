@@ -110,27 +110,31 @@ Development version: <br> &nbsp; &nbsp; <a href="https://github.com/xraypy/xrayl
   <div class="section" id="larch">
 <h1>Larch<a class="headerlink" href="#larch" title="Permalink to this headline">¶</a></h1>
 <p>Larch is a scientific data processing language that is designed to be easy
-to use for novices while also being complete enough complete enough for
-advanced data processing and analysis Larch provides a wide range of
-functionality for dealing with arrays of scientific data, and basic tools
-to make it easy to use and organize complex data.  Written in Python, and
-making heavy use of the wonderful libraries <a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>,
-and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>, Larch has syntax very close to Python, and can be easily
-extended with Python.</p>
+to use for novices while also being complete enough for advanced data
+processing and analysis. Larch provides a wide range of functionality for
+dealing with arrays of scientific data, and basic tools to make it easy to
+use and organize complex data.  Written in Python, and making heavy use of
+the wonderful libraries <a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>,
+Larch has syntax very close to Python, and can be easily extended with
+Python.</p>
 <p>Larch has been primarily developed for dealing with x-ray spectroscopic and
 scattering data, especially the kind of data collected at modern
 synchrotrons and x-ray sources. It has several related target application areas:</p>
 <blockquote>
 <div><ul class="simple">
-<li>XAFS analysis, becoming version Ifeffit Version2.</li>
-<li>tools for micro-XRF mapping visualization and analysis.</li>
-<li>quantitative XRF analysis.</li>
+<li>XAFS analysis, becoming version 2 of the Ifeffit Package.</li>
+<li>tools for visualizing and analyzing micro-X-ray fluorescence maps.</li>
+<li>tools for quantitative X-ray fluoresceence analysis.</li>
 <li>X-ray standing waves and surface scattering analysis.</li>
-<li>Data collection software for the above.</li>
+<li>Data collection software for the above kinds of data.</li>
 </ul>
 </div></blockquote>
-<p>The idea is that having these different problem areas connected by a common
-<em>macro language</em> will strengthen the analytic tools for all of them.</p>
+<p>The essential idea is that having these different problem areas connected
+by a common <em>macro language</em> will strengthen the analytic tools for all of
+them.</p>
+<p>Currently, Larch provides a complete set of XAFS Analysis tools (replacing
+all of the Ifeffit package), and has many extra tools for X-ray spectal
+analysis, data handling, and general-purpose data modeling.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="downloads/index.html">Downloading and Installation</a><ul>
@@ -260,6 +264,11 @@ synchrotrons and x-ray sources. It has several related target application areas:
 <li class="toctree-l3"><a class="reference internal" href="xafs/autobk.html#the-autobk-function">The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xafs/autobk.html#the-autobk-algorithm">The AUTOBK Algorithm</a></li>
 <li class="toctree-l3"><a class="reference internal" href="xafs/autobk.html#examples">Examples</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="xafs/utilities.html">XAFS: Utility functions</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="xafs/utilities.html#the-ktoe-and-etok-functions">The <tt class="docutils literal"><span class="pre">ktoe()</span></tt> and <tt class="docutils literal"><span class="pre">etok()</span></tt> functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="xafs/utilities.html#the-estimate-noise-function">The <tt class="docutils literal"><span class="pre">estimate_noise()</span></tt> function</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="xafs/xafsft.html">XAFS: Fourier Transforms for XAFS</a><ul>
