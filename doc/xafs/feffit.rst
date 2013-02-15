@@ -280,7 +280,7 @@ running this example prints out the following report:
 
 and generates the plots shown below
 
-.. _xafs_fig12:
+.. _xafs_fig16:
 
   .. image:: ../images/feffit_example1.png
      :target: ../_images/feffit_example1.png
@@ -289,7 +289,7 @@ and generates the plots shown below
      :target: ../_images/feffit_example2.png
      :width: 48 %
 
-  Figure 12. Results for Feffit for a simple 1-shell fit to a
+  Figure 16. Results for Feffit for a simple 1-shell fit to a
   spectrum from Cu metal.
 
 This is a pretty good fit to the first shell of Cu metal, and shows the
@@ -363,7 +363,7 @@ The output for this fit is a bit longer, being:
 
 With plots of data and fits as shown below.
 
-.. _xafs_fig13:
+.. _xafs_fig17:
 
   .. image:: ../images/feffit_example3.png
      :target: ../_images/feffit_example3.png
@@ -372,7 +372,7 @@ With plots of data and fits as shown below.
      :target: ../_images/feffit_example4.png
      :width: 48 %
 
-  Figure 13. Results for Feffit for a 3-shell fit to a spectrum from Cu
+  Figure 17. Results for Feffit for a 3-shell fit to a spectrum from Cu
   metal, constraining all path distances to expand with a single variable.
 
 Here, we show both the magnitude and real part of :math:`\chi(R)`.  The fit
@@ -386,7 +386,7 @@ straightforward, as we can just do::
 
 to generate the following plots of the contributions of the different paths:
 
-.. _xafs_fig14:
+.. _xafs_fig18:
 
   .. image:: ../images/feffit_example5.png
      :target: ../_images/feffit_example5.png
@@ -395,7 +395,7 @@ to generate the following plots of the contributions of the different paths:
      :target: ../_images/feffit_example6.png
      :width: 48 %
 
-  Figure 14. Path contributions to full mode for the 3-shell fit to Cu
+  Figure 18. Path contributions to full mode for the 3-shell fit to Cu
   spectrum.
 
 Example 3: Fit 3 datasets with 1 Path each
@@ -464,7 +464,7 @@ correlation significantly reduces the estimated uncertainty.
 
 The output plots for the fits to the three datasets are given below.
 
-.. _xafs_fig15:
+.. _xafs_fig19:
 
   .. image:: ../images/feffit_3temp1.png
      :target: ../_images/feffit_3temp1.png
@@ -493,7 +493,7 @@ The output plots for the fits to the three datasets are given below.
 
   **c**
 
-  Figure 15. Fit to Cu metal at (a) 10 K, (b) 50 K, and (c) 150 K, from a
+  Figure 19. Fit to Cu metal at (a) 10 K, (b) 50 K, and (c) 150 K, from a
   simultaneous fit to all 3 datasets with 5 variables used.
 
 Again, in the interest of brevity and consistency through this chapter,
@@ -539,7 +539,7 @@ The resulting output is
 
 with plots:
 
-.. _xafs_fig16:
+.. _xafs_fig20:
 
   .. image:: ../images/feffit_feo_k.png
      :target: ../_images/feffit_feo_k.png
@@ -548,7 +548,7 @@ with plots:
      :target: ../_images/feffit_feo_r.png
      :width: 48 %
 
-  Figure 16. Fits to 2-path fit to FeO EXAFS.
+  Figure 20. Fits to 2-path fit to FeO EXAFS.
 
 Example 5: Comparing Fits in different Fit Spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

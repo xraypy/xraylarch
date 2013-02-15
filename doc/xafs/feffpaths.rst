@@ -378,13 +378,15 @@ After the initial read, the values of ``k``, ``p``, ``chi``, and
 ``chi_imag`` are set to ``None``, and are not calculated until
 :func:`path2chi` is called.
 
-.. _xafs_fig5:
+.. _xafs_fig12:
 
-  .. image:: ../images/feffdat_example1.png
+  .. figure:: ../images/feffdat_example1.png
      :target: ../_images/feffdat_example1.png
-     :width: 75 %
+     :width: 65 %
+     :align: center
+     :figwidth: 100 %
 
-  Figure 5. Calculations of :math:`\chi(k)` for a Feff Path.
+  Figure 12. Calculations of :math:`\chi(k)` for a Feff Path.
 
 We can also use the data from the ``_feffdat`` group to look at the
 individual scattering components.  Thus to look at the scattering amplitude
@@ -395,13 +397,15 @@ like this:
 
 which will produce a plot like this:
 
-.. _xafs_fig6:
+.. _xafs_fig13:
 
-  .. image:: ../images/feffdat_example2.png
+  .. figure:: ../images/feffdat_example2.png
      :target: ../_images/feffdat_example2.png
-     :width: 75 %
+     :width: 65 %
+     :align: center
+     :figwidth: 100 %
 
-  Figure 6. Components of ``_feffdat`` group for a Feff Path.
+  Figure 13. Components of ``_feffdat`` group for a Feff Path.
 
 You can see here that the arrays in the ``_feffdat`` group are sampled at
 varying :math:`k` spacing, and that this spacing becomes fairly large at
@@ -423,13 +427,15 @@ paths 3, 4, and 5.  This works because :func:`ff2chi` runs :func:`path2chi`
 for each path to be summed, so that the ``chi`` component of the FeffPath
 group is up to date.
 
-.. _xafs_fig7:
+.. _xafs_fig14:
 
-  .. image:: ../images/feffdat_example3.png
+  .. figure:: ../images/feffdat_example3.png
      :target: ../_images/feffdat_example3.png
-     :width: 75 %
+     :width: 65 %
+     :align: center
+     :figwidth: 100 %
 
-  Figure 7. Results for sum of :math:`\chi(k)` for list of paths.
+  Figure 14. Results for sum of :math:`\chi(k)` for list of paths.
 
 
 Example: Using Path Parameters when adding FEFF files
@@ -471,13 +477,15 @@ and any subsequent need to evaluate parameters will use that until
 overridden by resetting ``_sys.paramGroup``, which can be done by passing a
 ``paramgroup`` argument to :func:`path2chi` or :func:`ff2chi`.
 
-.. _xafs_fig8:
+.. _xafs_fig15:
 
-  .. image:: ../images/feffdat_example4.png
+  .. figure:: ../images/feffdat_example4.png
      :target: ../_images/feffdat_example4.png
-     :width: 75 %
+     :width: 65 %
+     :align: center
+     :figwidth: 100 %
 
-  Figure 8. Results for making 2 different sums of paths using
+  Figure 15. Results for making 2 different sums of paths using
   parameterized Path Parameters
 
 
