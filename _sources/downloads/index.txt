@@ -9,23 +9,28 @@ Downloading and Installation
 .. _larch github repository:      http://github.com/xraypy/xraylarch
 
 
-Larch is still in active development.  The downloads labeled with Status of
-**Beta** are considered working, but have not been rigorously or extensively
-tested, and probably contain some bugs and unintended features.
+Larch is still in active development, and all releases should be considered
+**beta** releases.  That is, these **beta** releases are working, but have
+not been rigorously or extensively tested, and probably contain some bugs
+and unintended features.
 
-The recommended download options are:
+Downloads are available from the  
+`xraylarch project <http://sourceforge.net/projects/xraylarch>`_  
+at sourceforge.net or from 
+`CARS.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_  
+Recommended download options are:
 
-+---------+-----------------+-----------+-------------------------------------------------------+
-| Status  | Download Type   | Platforms |   Download / Command                                  |
-+=========+=================+===========+=======================================================+
-| Beta    | Source tarball  | All       |  `larch-0.9.18.tar.gz (CARS)`_  or                    |
-|         |                 |           |  `larch-0.9.18.tar.gz (sf.net)`_                      |
-+---------+-----------------+-----------+-------------------------------------------------------+
-| Beta    | Win32 Installer | Windows   |  `larch-0.9.18.exe (CARS)`_  or                       |
-|         |                 |           |  `larch-0.9.18.exe (sf.net)`_                         |
-+---------+-----------------+-----------+-------------------------------------------------------+
-| Devel   | Source kit      | All       | git clone http://github.com/xraypy/xraylarch.git      |
-+---------+-----------------+-----------+-------------------------------------------------------+
+  +---------+-----------------+-----------+-------------------------------------------------------+
+  | Status  | Download Type   | Platforms |   Download / Command                                  |
+  +=========+=================+===========+=======================================================+
+  | Beta    | Source tarball  | All       |  `larch-0.9.18.tar.gz (CARS)`_  or                    |
+  |         |                 |           |  `larch-0.9.18.tar.gz (sf.net)`_                      |
+  +---------+-----------------+-----------+-------------------------------------------------------+
+  | Beta    | Win32 Installer | Windows   |  `larch-0.9.18.exe (CARS)`_  or                       |
+  |         |                 |           |  `larch-0.9.18.exe (sf.net)`_                         |
+  +---------+-----------------+-----------+-------------------------------------------------------+
+  | Devel   | Source kit      | All       | git clone http://github.com/xraypy/xraylarch.git      |
+  +---------+-----------------+-----------+-------------------------------------------------------+
 
 
 Binary Installation (Windows)
