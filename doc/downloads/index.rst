@@ -2,39 +2,39 @@
 Downloading and Installation
 ====================================
 
-.. _larch-0.9.17.tgz (github):  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.tgz
-.. _larch-0.9.17.exe (github):  http://xraypy.github.com/xraylarch/downloads/larch-0.9.17.exe
-.. _larch-0.9.17.tgz (CARS):    http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.17.tgz
-.. _larch-0.9.17.exe (CARS):    http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.17.exe
-.. _larch github repository:    http://github.com/xraypy/xraylarch
+.. _larch-0.9.18.tar.gz (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.18.tar.gz/download
+.. _larch-0.9.18.exe (sf.net):    http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.18.exe/download
+.. _larch-0.9.18.tar.gz (CARS):   http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.18.tar.gz
+.. _larch-0.9.18.exe (CARS):      http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.18.exe
+.. _larch github repository:      http://github.com/xraypy/xraylarch
 
 
-Larch is still in active development.  The downloads labeled with Status of **Beta** are
-considered working, but have not been rigorously or extensively tested, and probably
-contain some bugs and unintended features.
+Larch is still in active development.  The downloads labeled with Status of
+**Beta** are considered working, but have not been rigorously or extensively
+tested, and probably contain some bugs and unintended features.
 
 The recommended download options are:
 
 +---------+-----------------+-----------+-------------------------------------------------------+
 | Status  | Download Type   | Platforms |   Download / Command                                  |
 +=========+=================+===========+=======================================================+
-| Beta    | Source tarball  | All       |  `larch-0.9.17.tgz (CARS)`_  or                       |
-|         |                 |           |  `larch-0.9.17.tgz (github)`_                         |
+| Beta    | Source tarball  | All       |  `larch-0.9.18.tar.gz (CARS)`_  or                    |
+|         |                 |           |  `larch-0.9.18.tar.gz (sf.net)`_                      |
 +---------+-----------------+-----------+-------------------------------------------------------+
-| Beta    | Win32 Installer | Windows   |  `larch-0.9.17.exe (CARS)`_  or                       |
-|         |                 |           |  `larch-0.9.17.exe (github)`_                         |
+| Beta    | Win32 Installer | Windows   |  `larch-0.9.18.exe (CARS)`_  or                       |
+|         |                 |           |  `larch-0.9.18.exe (sf.net)`_                         |
 +---------+-----------------+-----------+-------------------------------------------------------+
 | Devel   | Source kit      | All       | git clone http://github.com/xraypy/xraylarch.git      |
 +---------+-----------------+-----------+-------------------------------------------------------+
 
 
 Binary Installation (Windows)
-==================================
+================================
 
-The binary installer for Windows installs a working version of the larch
+The binary Windows installer provides working executables for the Larch
 command-line program and primitive Larch GUI onto your system.  To date,
-testing has been fairly minimal.  If you try this out, please send positive
-and negative feedback to the Ifeffit mailing list.
+testing of this GUI has been fairly minimal.  If you try this out, please
+send positive and negative feedback to the Ifeffit mailing list.
 
 
 Source Installation
@@ -47,20 +47,16 @@ recommended for people interested in programming with Larch on Windows.
 Prerequisites
 ~~~~~~~~~~~~~~~
 
-Larch requires Python version 2.6 or higher.  Support for Python 3.X is
-partial, in that the core of Larch does work, and numpy, and scipy, and
-matplotlib have all been ported to Python 3.X.  But the testing for Python
-3.X has been minimal, and the graphical interfaces, based on wxWidgets, has
-not yet been ported to Python 3.X.
+Larch requires Python version 2.6.4 or higher.  Support for Python 3.X is partial, in
+that the core of Larch does work, and numpy, and scipy, and matplotlib have all been
+ported to Python 3.X.  But the testing for Python 3.X has been minimal, and the
+graphical interfaces, based on wxWidgets, has not yet been ported to Python 3.X.
 
-Numpy, matplotlib, and wxPython are all required for Larch, and scipy is
-strongly encouraged (and some functionality depends on it).  These are
-simply installed as standard packages on almost all platforms.
+Numpy, scipy, matplotlib, and wxPython are all required for Larch.  These are best
+installed as standard packages on almost all platforms.
 
-
-You can either download the tarball above, or use the development version
-from the `larch github repository`_.  To get a read-only copy of the latest
-version, use::
+You can either download the tarball above, or use the development version from the
+`larch github repository`_.  To get a read-only copy of the latest version, use::
 
    git clone http://github.com/xraypy/xraylarch.git
 
