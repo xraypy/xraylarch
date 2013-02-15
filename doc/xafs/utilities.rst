@@ -111,6 +111,6 @@ The estimate for the output value **kmax_suggest** has a tendency to be
 pessimistic in how far out the :math:`\chi(k)` data goes before being
 dominated by noise, but has the advantage of being an impartial measure of
 data quality. It is particularly pessimistic for extremely good data.  Then
-again, considering that the estimate for :math:`\epslion` is probably too
+again, considering that the estimate for :math:`\epsilon` is probably too
 small, the estimate may not be that bad.
 
