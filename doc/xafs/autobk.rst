@@ -356,11 +356,9 @@ results in the following comparison:
 
 .. _xafs_fig4:
 
-  .. figure::  ../images/xafs_autobk3.png
+  .. image::  ../images/xafs_autobk3.png
      :target: ../_images/xafs_autobk3.png
      :width: 65 %
-     :align: center
-     :figwidth: 100 %
 
   Figure 4.  Influence of spline clamps of :math:`\chi(k)`
 
