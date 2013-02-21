@@ -14,7 +14,7 @@ MAX_FILESIZE = 10*1024*1024  # 10 Mb limit
 COMMENTCHARS = '#;%*!$'
 
 def getfloats(txt):
-    words = [w.strip() for w in txt.split()]
+    words = [w.strip() for w in txt.replace(',', ' ').split()]
     try:
         return [float(w) for w in words]
     except:
