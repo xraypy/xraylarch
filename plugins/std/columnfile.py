@@ -20,6 +20,9 @@ def getfloats(txt):
     except:
         return None
 
+def colname(txt):
+    return fixName(txt.strip().lower()).replace('.', '_')
+
 def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
     """read a column ascii column file, returning a group containing the data from the file.
 
@@ -101,7 +104,7 @@ def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
             words = hline.split('=', 1)
             keywds = words[0].split()
         if len(keywds) == 1:
-            key = fixName(keywds[0].strip())
+            key = colname(keywds[0])
             if key.startswith('_'):
                 key = key[1:]
             if len(words) > 1:
@@ -115,12 +118,12 @@ def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
             _labelline = _labelline[1:].strip()
         _labelline = _labelline.lower()
         try:
-            labels = [fixName(l.strip()) for l in _labelline.split()]
+            labels = [colname(l) for l in _labelline.split()]
         except:
             labels = []
     elif isinstance(labels, str):
         labels = labels.replace(',', ' ')
-        labels = [fixName(l.strip().lower()) for l in labels.split()]
+        labels = [colname(l) for l in labels.split()]
 
     for i, lab in enumerate(labels):
         try:
@@ -197,7 +200,7 @@ def _read_ascii0(fname, commentchar='#;%', labels=None, sort=False, sort_column=
                 islabel = True
             elif '=' in line[1:]: # perhaps '# x = 22' format?
                 words = line[1:].split('=', 1)
-                key = fixName(words[0].strip())
+                key = colname(words[0])
                 if key.startswith('_'):
                     key = key[1:]
                 if len(words) == 1:
@@ -206,7 +209,7 @@ def _read_ascii0(fname, commentchar='#;%', labels=None, sort=False, sort_column=
                     header_kws[key] = words[1].strip()
             elif ':' in line[1:]: # perhaps '# attribute: value' format?
                 words = line[1:].split(':', 1)
-                key = fixName(words[0].strip())
+                key = colname(words[0])
                 if key.startswith('_'):
                     key = key[1:]
                 if len(words) == 1:
@@ -239,11 +242,11 @@ def _read_ascii0(fname, commentchar='#;%', labels=None, sort=False, sort_column=
         except:
             labels = []
         for icol in range(ncol):
-            colname = 'col%i' % (1+icol)
+            cname = 'col%i' % (1+icol)
             if icol < len(labels):
-                colname = fixName(labels[icol].strip().lower())
-            kws[colname] = data[icol]
-            kws['column_labels'].append(colname)
+                cname = colname(labels[icol])
+            kws[cname] = data[icol]
+            kws['column_labels'].append(cname)
 
     group = kws
     if _larch is not None:
