@@ -48,7 +48,9 @@ RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class', 'continue',
                   'enddef', 'True', 'False', 'None')
 
 NAME_MATCH = re.compile(r"[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)*$").match
-VALID_NAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._'
+VALID_SNAME_CHARS = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
+VALID_NAME_CHARS = '.%s' % VALID_SNAME_CHARS
+
 def isValidName(name):
     "input is a valid name"
     if name in RESERVED_WORDS:
@@ -56,7 +58,7 @@ def isValidName(name):
     tnam = name[:].lower()
     return NAME_MATCH(tnam) is not None
 
-def fixName(name):
+def fixName(name, allow_dot=True):
     "try to fix string to be a valid name"
     if isValidName(name):
         return name
@@ -64,8 +66,11 @@ def fixName(name):
     if isValidName('_%s' % name):
         return '_%s' % name
     chars = []
+    valid_chars = VALID_SNAME_CHARS
+    if allow_dot:
+        valid_chars = VALID_NAME_CHARS
     for s in name:
-        if s not in VALID_NAME_CHARS:
+        if s not in valid_chars:
             s = '_'
         chars.append(s)
     name = ''.join(chars)
