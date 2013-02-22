@@ -5,7 +5,7 @@
 
 import h5py
 import numpy
-from larch.utils import Closure
+from larch.utils import Closure, fixName
 
 import scipy.io.netcdf
 
@@ -52,7 +52,7 @@ def h5group(fname, _larch=None):
     group = _larch.symtable.create_group
 
     def add_component(key, val, top):
-        parents = key.split('/')
+        parents = [fixName(w, allow_dot=False) for w in key.split('/')]
         current = parents.pop()
         for word in parents:
             if not hasattr(top, word):
@@ -60,19 +60,22 @@ def h5group(fname, _larch=None):
             top = getattr(top, word)
         tname = top.__name__
         if isinstance(val, h5py.Group):
-            setattr(top, current,  group(name=tname+'/'+current))
+            setattr(top, current,  group(name="%s/%s" % (tname, current)))
             if len(val.attrs) > 0:
-                getattr(top, current).attrs = dict(val.attrs)
+                getattr(top, current)._attrs = dict(val.attrs)
         else:
             dat = fh.get(key)
             try:
-                if len(dat) > 1 and dat.dtype.type == numpy.string_:
-                    dat = list(dat)
-            except:
+                if dat.dtype.type == numpy.string_:
+                    if len(dat) == 1:
+                        dat = dat.value
+                    else:
+                        dat = list(dat)
+            except (ValueError, TypeError):
                 pass
             setattr(top, current, dat)
             if len(val.attrs) > 0:
-                setattr(top, current+'_attrs', dict(val.attrs))
+                setattr(top, "%s_attrs" % current, dict(val.attrs))
     top = group(name=fname)
     top.h5_file = fh
     fh.visititems(Closure(func=add_component, top=top))
