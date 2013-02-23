@@ -19,8 +19,8 @@ scalar or array, depending on the input ``x``.
   f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}
 
 where *cen* is used for :math:`\mu`.
-The Full-Width at Half-Maximum is :math:`2\sigma\sqrt{2\ln{2}}`, or
-approximately 2.3548:math:`\sigma`
+The Full-Width at Half-Maximum is :math:`2\sigma\sqrt{2\ln{2}}`,
+approximately :math:`2.3548\sigma`
 
 .. function:: lorentzian(x, cen=0, sigma=1)
 
@@ -31,7 +31,7 @@ approximately 2.3548:math:`\sigma`
   f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]
 
 where *cen* is used for :math:`\mu`. The Full-Width at Half-Maximum is
-2:math:`\sigma`.
+:math:`2\sigma`.
 
 .. function:: voigt(x, cen=0, sigma=1, gamma=None)
 
@@ -55,7 +55,7 @@ and :func:`erfc` is the complimentary error function.  As above, *cen* is
 used for :math:`\mu` here, *sigma* for :math:`\sigma`, and *gamma* for the
 parameter :math:`\gamma`.  If *gamma* is left as ``None``, it is set equal
 to *sigma*.  For the case when :math:`\gamma = \sigma`, the Full-Width at
-Half-Maximum is :math:`\sim 3.6013\sigma`.
+Half-Maximum is approximately :math:`3.6013\sigma`.
 
 .. function:: pvoigt(x, cen=0, sigma=1, frac=0.5)
 
