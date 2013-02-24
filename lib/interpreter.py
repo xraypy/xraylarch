@@ -9,6 +9,7 @@ numpy functions are imported if available and used.
 from __future__ import division, print_function
 import os
 import sys
+import types
 import ast
 import math
 import numpy
@@ -636,7 +637,8 @@ class Interpreter:
         "function/procedure execution"
         #  ('func', 'args', 'keywords', 'starargs', 'kwargs')
         func = self.run(node.func)
-        if not hasattr(func, '__call__') and not isinstance(func, type):
+        if (not hasattr(func, '__call__') and
+            not isinstance(func, (type, types.ClassType)) ):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, exc=TypeError, msg=msg)
         args = [self.run(targ) for targ in node.args]
