@@ -51,6 +51,13 @@ OPERATORS = {
     ast.UAdd:   lambda a: +a,
     ast.USub:   lambda a: -a}
 
+PYTHON_RESERVED_WORDS = ('and', 'as', 'assert', 'break', 'class',
+                         'continue', 'def', 'del', 'elif', 'else',
+                         'except', 'exec', 'finally', 'for', 'from',
+                         'global', 'if', 'import', 'in', 'is', 'lambda',
+                         'not', 'or', 'pass', 'print', 'raise', 'return',
+                         'try', 'while', 'with', 'yield')
+
 class Interpreter:
     """larch program compiler and interpreter.
   This module compiles expressions and statements to AST representation,
@@ -175,6 +182,14 @@ class Interpreter:
         try:
             return ast.parse(text)
         except:
+            rwords = []
+            for word in PYTHON_RESERVED_WORDS:
+                if word in text:
+                    rwords.append(word)
+            if len(rwords) > 0:
+                rwords = ", ".join(rwords)
+                text = """May contain one of the following reserved words:
+    %s"""  %  (rwords)
             self.raise_exception(None, exc=SyntaxError, msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno)
 
