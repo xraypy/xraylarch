@@ -248,6 +248,7 @@ __all__ = [
     # in particular because NumPy might be unavailable.
     'ufloat',  # Main function: returns a number with uncertainty
 
+   'correlated_values',
     # Uniform access to nominal values and standard deviations:
     'nominal_value',
     'std_dev',
