@@ -92,7 +92,7 @@ class SymbolTable(Group):
     __invalid_name = InvalidName()
     _private = ('save_frame', 'restore_frame', 'set_frame',
                 'has_symbol', 'has_group', 'get_group',
-                'create_group', 'new_group',
+                'create_group', 'new_group', 'isgroup',
                 'get_symbol', 'set_symbol',  'del_symbol',
                 'get_parent', 'add_plugin', '_path', '__parents')
 
@@ -135,7 +135,7 @@ class SymbolTable(Group):
             if idirfull not in sys.path:
                 sys.path.append(idirfull)
 
-        self._sys.modules      = {'_main':self}
+        self._sys.modules = {'_main':self}
         for gname in self.core_groups:
             self._sys.modules[gname] = getattr(self, gname)
         self._fix_searchGroups()
@@ -328,6 +328,7 @@ class SymbolTable(Group):
             return False
 
     def isgroup(self, sym):
+        "test if symbol is a group"
         return isgroup(sym)
 
     def get_group(self, gname):

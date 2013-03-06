@@ -438,19 +438,33 @@ def _subgroups(obj, _larch=None, **kws):
         raise Warning("subgroups() argument must be a group")
 
 def _which(sym, _larch=None, **kws):
-    "return full path of object"
+    "return full path of object, or None if object cannot be found"
     if _larch is None:
         raise Warning("cannot run which() -- larch broken?")
     stable = _larch.symtable
-    out = []
     if hasattr(sym, '__name__'):
         sym = sym.__name__
     if isinstance(sym, (str, unicode)) and stable.has_symbol(sym):
         obj = stable.get_symbol(sym)
         if obj is not None:
             return '%s.%s' % (stable.get_parentpath(sym), sym)
+    return None
 
-    return 'not found'
+def _exists(sym, _larch=None):
+    "return True if a named symbol exists and can be found, False otherwise"
+    return which(sym, _larch=_larch, **kws) is not None
+
+def _isgroup(sym, _larch=None, **kws):
+    "return True if a named symbol exists and is a group, False otherwise"
+    if _larch is None:
+        raise Warning("cannot run isgroup() -- larch broken?")
+    stable = _larch.symtable
+    if hasattr(sym, '__name__'):
+        sym = sym.__name__
+    if isinstance(sym, (str, unicode)) and stable.has_symbol(sym):
+        obj = stable.get_symbol(sym)
+        return isgroup(obj)
+    return False
 
 def _pause(msg='Hit return to continue', _larch=None):
     if _larch is None:
@@ -473,6 +487,8 @@ def _ufloat(arg, _larch=None):
 local_funcs = {'_builtin': {'group':_group,
                             'dir': _dir,
                             'which': _which,
+                            'exists': _exists,
+                            'isgroup': _isgroup,
                             'subgroups': _subgroups,
                             'pause': _pause,
                             'sleep': _sleep,
