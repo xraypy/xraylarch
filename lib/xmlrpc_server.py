@@ -60,7 +60,6 @@ class LarchServer(SimpleXMLRPCServer):
 
     def run(self):
         """run server until keep_alive is set to False"""
-        print( 'Serving Larch at port %s' % repr(self.port))
         self.help()
         try:
             while self.keep_alive:
@@ -84,11 +83,26 @@ class LarchServer(SimpleXMLRPCServer):
         return ret
 
     def help(self):
-        print 'LarchServer: '
-        print dir(self)
-        print 'Registered Functions:'
-        print ('ls', 'chdir', 'cwd', 'exit', 'larch', 'wx_update',  'get_data')
-        print self.funcs.keys()
+        print( 'Serving Larch at port %s' % repr(self.port))        
+        # print dir(self)
+        print('Registered Functions:')
+        fnames = ['ls', 'chdir', 'cwd', 'exit', 'larch', 'wx_update',  'get_data']
+        for kname in self.funcs.keys():
+            if not kname.startswith('system') and kname not in fnames:
+                fnames.append(kname)
+                
+        out = ''
+        for fname in sorted(fnames):
+            if len(out) == 0:
+                out = fname
+            else:
+                out = "%s, %s" % (out, fname)
+            if len(out) > 70:
+                print("  %s" % out)
+                out = ''
+        if len(out) >  0:
+            print("  %s" % out)
+        
 
     def exit(self, app=None, **kws):
         "shutdown LarchServer"
@@ -115,7 +129,6 @@ class LarchServer(SimpleXMLRPCServer):
             self.larch.symtable.set_symbol('_sys.wx.parent',None)
             inputhook.ON_INTERRUPT = self.exit
             inputhook.WXLARCH_SYM = self.larch.symtable
-        print('Larch Initialized!')
         self.initialized = True
 
     def wx_update(self, timeout):
@@ -153,15 +166,15 @@ class LarchServer(SimpleXMLRPCServer):
                 if self.larch.error:
                     err = self.larch.error.pop(0)
                     fname, lineno = err.fname, err.lineno
-                    sys.stdout.write("%s\n" % err.get_error()[1])
+                    self.write("%s\n" % err.get_error()[1])
                     for err in self.larch.error:
                         if self.debug or ((err.fname != fname or err.lineno != lineno)
                                      and err.lineno > 0 and lineno > 0):
-                            sys.stdout.write("%s\n" % (err.get_error()[1]))
+                            self.write("%s\n" % (err.get_error()[1]))
                     self.input.clear()
                     break
                 elif ret is not None:
-                    sys.stdout.write("%s\n" % repr(ret))
+                    self.write("%s\n" % repr(ret))
         return ret is None
 
 if __name__ == '__main__':

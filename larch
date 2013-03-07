@@ -92,6 +92,7 @@ if options.server_mode:
     from larch.xmlrpc_server import LarchServer
     s = LarchServer(host='localhost', port=int(options.port),
                     local_echo=options.echo)
+    s.initialize_larch()
     s.run()
     sys.exit()
 

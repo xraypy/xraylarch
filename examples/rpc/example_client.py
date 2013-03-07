@@ -16,13 +16,19 @@ s.larch('g.z = cos(g.x)')
 
 # show and print will be done in server process of course!!!
 s.larch('show(g)')
+
 s.larch('print g.z[3:10]')
 
-gx  = json_decode(s.get_data('g.z'))
-print 'm = ', s.get_data('m')
-print 'x = ', s.get_data('x')
+print '== Messages:'
+print s.get_messages()
+print '=='
 
-print 'gx = ',  gx, type(gx), gx.dtype
+
+# gx  = json_decode(s.get_data('g.z'))
+# print 'm = ', s.get_data('m')
+# print 'x = ', s.get_data('x')
+# 
+# print 'gx = ',  gx, type(gx), gx.dtype
 
 # could tell server to exit!
 # s.exit()
