@@ -9,7 +9,30 @@ Authors/Modifications:
 """
 import numpy as np
 from deadtime import calc_icr, correction_factor
-from roi import ROI, Environment
+from roi import ROI
+
+class Environment:
+    """
+    The "environment" or related parameters for a detector.  These might include
+    things like motor positions, temperature, anything that describes the
+    experiment.
+
+    Attributes:
+    -----------
+    * name         # A string name of this parameter, e.g. "13IDD:m1"
+    * description  # A string description of this parameter, e.g. "X stage"
+    * value        # A string value of this parameter,  e.g. "14.223"
+    """
+    def __init__(self, desc='', addr='', val=''):
+        self.addr  = addr.strip()
+        self.val   = val.strip()
+        self.desc  = desc.strip()
+
+    def __repr__(self):
+        return "Environment(desc='%s', val='%s', addr='%s')" % (self.desc,
+                                                                self.val,
+                                                                self.addr)
+
 
 class MCA:
     """
