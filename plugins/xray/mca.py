@@ -7,28 +7,10 @@ Authors/Modifications:
 * Modified for Tdl, tpt
 * modified and simplified for Larch, M Newville
 """
-
 import numpy as np
 from deadtime import calc_icr, correction_factor
+from roi import ROI, Environment
 
-def channel_to_energy(channels, offset=0, slope=1, quad=0):
-    """
-    Converts channels to energy using the current calibration values
-    for the MCA.
-
-    Parameters:
-    -----------
-    * channels: The channel numbers to be converted to energy.  This can be
-      a single number or a sequence of channel numbers.
-
-    Outputs:
-    --------
-    * This function returns the equivalent energy for the input channels.
-    """
-    c  = np.asarray(channels, dtype=np.float)
-    return offset +  c * (slope + c * quad)
-
-########################################################################
 class MCA:
     """
     MultiChannel Analyzer (MCA) class
@@ -38,7 +20,6 @@ class MCA:
     * self.name        = 'mca'  # Name of the mca object
     * self.nchans      = 2048   # number of mca channels
     * self.data        = None   # MCA data
-    * self.channels    = None   # MCA channels value
 
     # Counting parameters
     * self.start_time   = ''    # Start time and date, a string
@@ -76,31 +57,19 @@ class MCA:
     Energy calibration is based on the following:
         energy = offset + slope*channel + quad*channel**2
 
-    If channels are not explicitly given, we'll assume:
-       channels = np.arange(NCHAN,dtype=int)
-    with NCHAN = 2048
     """
     ###############################################################################
-    def __init__(self, data=None, nchans=2048, channels=None, start_time='',
-                 offset=0, slope=0, quad=0,
+    def __init__(self, data=None, nchans=2048, start_time='',
+                 offset=0, slope=0, quad=0, name='mca',
                  real_time=0, live_time = 0, input_counts=0, tau=0, **kws):
-        """
-        Initialize the MCA structure
 
-        Parameters:
-        -----------
-        * data are the counts per channel
-        * channels are the corresponding channel numbers
-        """
-        self.det_type    = "MCA"
-        self.name        = 'mca'  # Name of the mca object
-        self.nchans      = nchans
-        self.data        = data
+        self.name    = name
+        self.nchans  = nchans
+        self.environ = []
+        self.rois    = []
+        self.data    = data
         if data is not None:
             self.nchans      = len(data)
-        self.channels    = channels
-        if channels is None:
-            self.channels = np.arange(self.nchans)
 
         # Calibration parameters
         self.offset       = offset # Offset
@@ -121,16 +90,35 @@ class MCA:
         self.icr_calc     = -1.0  # Calculated input count rate from above expression
         self.cor_factor   = 1.0   # Calculated correction factor based on icr,ocr,lt,rt
                                   # data_corrected = data * cor_factor
-                                  #
         self._calc_correction()
 
     def __repr__(self):
-        form = "<MCA %s, nchans=%d, total counts=%d, realtime=%.2f sec, livetime=%.2f sec>"
-        return form % (self.name, self.nchans, self.data.sum(),
-                       self.real_time, self.live_time)
+        form = "<MCA %s, nchans=%d, counts=%d, realtime=%d>"
+        return form % (self.name, self.nchans, self.data.sum(), self.real_time)
 
+    def add_roi(self, name='', left=0, right=0, bgr_width=3):
+        """add an ROI"""
+        name = name.strip()
+        roi = ROI(name=name, left=left, right=right, bgr_width=bgr_width)
 
-    ########################################################################
+        rnames = [r.name.lower() for r in self.rois]
+        if name.lower() in rnames:
+            iroi = rnames.index(name.lower())
+            self.rois[iroi] = roi
+        else:
+            self.rois.append(roi)
+
+    def get_roi_counts(self, roi, net=False):
+        """get roi counts"""
+        if isinstance(roi, ROI):
+            return roi.get_counts(self.data, net=net)
+        return None
+
+    def add_environ(self, desc='', val='', addr=''):
+        """add an Environment setting"""
+        if len(desc) > 0 and len(val) > 0:
+            self.environ.append(Environment(desc=desc, val=val, addr=addr))
+
     def update_correction(self, tau=None):
         """
         Update the deadtime correction
@@ -142,7 +130,6 @@ class MCA:
             self.tau = tau
         self._calc_correction()
 
-    ########################################################################
     def _calc_correction(self):
         """
         if self.tau > 0 this will be used in the correction factor calculation
@@ -199,8 +186,7 @@ class MCA:
         """
         Returns array of energy for each channel in the MCA spectra.
         """
-        energy = channel_to_energy(self.channels, offset=self.offset,
-                                   slope=self.slope, quad=self.quad)
-        return energy
+        chans = np.arange(self.nchans, dtype=np.float)
+        return self.offset +  chans * (self.slope + chans * self.quad)
 
     ####################################################################
