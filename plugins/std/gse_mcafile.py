@@ -259,5 +259,5 @@ def gsemca_group(fname, _larch=None, **kws):
     return group
 
 def registerLarchPlugin():
-    return ('_io', {'read_gsemca': gsemca_group})
+    return ('_io', {'_gsemca_old': gsemca_group})
 
