@@ -1,19 +1,16 @@
 """
 This module defines a region of interest class
-and utility functions.  Needs some more work.
+and utility functions.
 
 Authors/Modifications:
 -----------------------
 * Mark Rivers, GSECARS
-* See http://cars9.uchicago.edu/software/python/index.html
 * Modified for Tdl, tpt
 * simplified, modified for larch, M Newville
-
 """
 
 import numpy as np
 
-########################################################################
 class ROI(object):
     """
     Class that defines a Region-Of-Interest (ROI)
@@ -46,13 +43,11 @@ class ROI(object):
         self.net    = 0
         self.set_bounds(left, right)
 
-    ######################################################################################
     def __repr__(self):
         form = "<ROI %s: total=%g, net=%g, range=[%d, %d], center=%d, width=%d, nbgr=%d>"
         return form % (self.name, self.total, self.net, self.left, self.right,
                        self.center, self.width, self.bgr_width)
 
-    ######################################################################################
     def __cmp__(self, other):
         """
         Comparison operator.
@@ -111,7 +106,6 @@ def create_roi(name, left, right, bgr_width=3, _larch=None):
     return ROI(name=name, left=left, right=right, bgr_width=bgr_width)
 
 def registerLarchPlugin():
-    print 'register roi plugin'
     return ('_xrf', {'create_roi': create_roi})
 
 
