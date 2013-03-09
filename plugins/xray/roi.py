@@ -44,9 +44,8 @@ class ROI(object):
         self.set_bounds(left, right)
 
     def __repr__(self):
-        form = "<ROI %s: total=%g, net=%g, range=[%d, %d], center=%d, width=%d, nbgr=%d>"
-        return form % (self.name, self.total, self.net, self.left, self.right,
-                       self.center, self.width, self.bgr_width)
+        form = "ROI(name='%s', left=%i, right=%i, bgr_width=%i)"
+        return form % (self.name, self.left, self.right, self.bgr_width)
 
     def __cmp__(self, other):
         """
