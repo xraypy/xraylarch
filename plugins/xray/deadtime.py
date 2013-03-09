@@ -183,10 +183,10 @@ def correct_data(data,rt,lt,icr=None,ocr=None):
     """
     Apply deatime correction to data
     """
-    cor = correction_factor(rt,lt,icr,ocr)
+    cor = correction_factor(rt, lt, icr, ocr)
     return data * cor
 
-def calc_icr(ocr,tau):
+def calc_icr(ocr, tau):
     """
     Calculate the true icr from a given ocr and corresponding deadtime factor
     tau using a Newton-Raphson algorithm to solve the following expression.
@@ -210,37 +210,33 @@ def calc_icr(ocr,tau):
     # we cannot correct the data if ocr > ocr_max
     max_icr = 1/tau
     max_ocr = max_icr*E_INV
-    if ocr >= E_INV/tau:
+    if ocr > max_ocr:
         print 'ocr exceeds maximum correctible value of %g cps' % max_ocr
         return None
 
     # Newton loop
-    x1 = ocr
+    icr0 = ocr
     cnt = 0
-    while True:
-        x1tau = x1*tau
-        delta = (ocr*np.exp(x1tau) - x1) / (x1tau - 1)
-        x2 = x1 - delta
-        if  abs(x2 - x1) < 0.01:
-            icr = x1
+    while cnt < 100:
+        cnt += 1
+        delta = (ocr*np.exp(icr0*tau) - icr0) / (icr0*tau - 1)
+        if  abs(delta) < 0.01:
+            icr = icr0
             break
         else:
-            x1 = x2
-            if x1 > max_icr:
+            icr0 = icr0 - delta
+            if icr0 > max_icr:
                 # went over the top, we assume that
                 # the icr is less than 1/tau
-                x1 = 1.1 * ocr
-        if cnt > 100:
-            print 'Warning: icr calculation failed to converge'
-            icr = None
-            break
-        else:
-            cnt = cnt + 1
+                icr0 = 1.1 * ocr
 
+    if cnt >= 100:
+        print 'Warning: icr calculation failed to converge'
+        icr = None
     return icr
 
 ##############################################################################
-def fit(mon, ocr, offset=True):
+def fit_deadtime(mon, ocr, offset=True):
     """
     Fit a deatime curve and return optimized value of tau
 
@@ -267,7 +263,7 @@ def fit(mon, ocr, offset=True):
 
     Example:
     --------
-    >>params = fit(mon/time,ocr)
+    >>params = fit_deadtime(mon/time, ocr)
     >>tau = params[0]
     >>a   = params[1]
     >>off = params[2]
@@ -325,7 +321,7 @@ if __name__ == '__main__':
     print 'a= ', a, ' tau= ', tau
     ocr = a*mon*np.exp(-a*mon*tau)
     ocr_meas = ocr + 2*np.random.normal(size=len(ocr), scale=30.0)
-    (params,msg) = fit(mon,ocr_meas)
+    (params,msg) = fit_deadtime(mon,ocr_meas)
     tau = params[0]
     a   = params[1]
     #print msg
