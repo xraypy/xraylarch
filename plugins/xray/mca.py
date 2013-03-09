@@ -4,19 +4,32 @@ This module defines a device-independent MultiChannel Analyzer (MCA) class.
 Authors/Modifications:
 ----------------------
 * Mark Rivers, GSECARS
-* See http://cars9.uchicago.edu/software/python/index.html
 * Modified for Tdl, tpt
-
+* modified and simplified for Larch, M Newville
 """
-########################################################################
 
-import numpy as num
-
+import numpy as np
 from deadtime import calc_icr, correction_factor
-from calibration import channel_to_energy
+
+def channel_to_energy(channels, offset=0, slope=1, quad=0):
+    """
+    Converts channels to energy using the current calibration values
+    for the MCA.
+
+    Parameters:
+    -----------
+    * channels: The channel numbers to be converted to energy.  This can be
+      a single number or a sequence of channel numbers.
+
+    Outputs:
+    --------
+    * This function returns the equivalent energy for the input channels.
+    """
+    c  = np.asarray(channels, dtype=np.float)
+    return offset +  c * (slope + c * quad)
 
 ########################################################################
-class Mca:
+class MCA:
     """
     MultiChannel Analyzer (MCA) class
 
@@ -31,7 +44,7 @@ class Mca:
     * self.start_time   = ''    # Start time and date, a string
     * self.live_time    = 0.    # Elapsed live time in seconds
     * self.real_time    = 0.    # Elapsed real time in seconds
-    * self.read_time    = 0.    # Time that the Mca was last read in seconds
+    * self.read_time    = 0.    # Time that the MCA was last read in seconds
     * self.total_counts = 0.    # Total counts between the preset start and stop channels
     * self.input_counts = 0.    # Actual total input counts (eg given by detector software)
                                 # Note total_counts and input counts ARE NOT time normalized
@@ -46,8 +59,6 @@ class Mca:
     * self.offset       = 0.    # Offset
     * self.slope        = 1.0   # Slope
     * self.quad         = 0.    # Quadratic
-    * self.units        = 'keV' # Calibration units, a string
-    * self.two_theta    = 0.    # 2-theta of this Mca for energy-dispersive diffraction
 
     Notes:
     ------
@@ -59,24 +70,20 @@ class Mca:
        if tau > 0 this will be used in the correction factor calculation
        if tau = 0 then we assume ocr = icr in the correction factor calculation
        if tau < 0 (or None):
-          if input_counts > 0 this will be used for icr in the factor calculation
+       if input_counts > 0 this will be used for icr in the factor calculation
           if input_counts <= 0 we assume ocr = icr in the correction factor calculation
 
     Energy calibration is based on the following:
         energy = offset + slope*channel + quad*channel**2
 
     If channels are not explicitly given, we'll assume:
-       channels = num.arange(NCHAN,dtype=int)
+       channels = np.arange(NCHAN,dtype=int)
     with NCHAN = 2048
     """
     ###############################################################################
-    def __repr__(self):
-        form = "<Mca %s, nchans=%d, total counts=%d, realtime=%.2f sec, livetime=%.2f sec>"
-        return form % (self.name, self.nchans, self.data.sum(),
-                       self.real_time, self.live_time)
-
-    ###############################################################################
-    def __init__(self, data=None, channels=None, **kws):
+    def __init__(self, data=None, nchans=2048, channels=None, start_time='',
+                 offset=0, slope=0, quad=0,
+                 real_time=0, live_time = 0, input_counts=0, tau=0, **kws):
         """
         Initialize the MCA structure
 
@@ -87,92 +94,44 @@ class Mca:
         """
         self.det_type    = "MCA"
         self.name        = 'mca'  # Name of the mca object
-        self.nchans      = 2048   # number of mca channels
-        self.data        = []     # MCA data
-        self.channels    = []     # MCA channels value
+        self.nchans      = nchans
+        self.data        = data
+        if data is not None:
+            self.nchans      = len(data)
+        self.channels    = channels
+        if channels is None:
+            self.channels = np.arange(self.nchans)
+
+        # Calibration parameters
+        self.offset       = offset # Offset
+        self.slope        = slope  # Slope
+        self.quad         = quad   # Quadratic
 
         # Counting parameters
-        self.start_time   = ''    # Start time and date, a string
-        self.read_time    = 0.    # Time that the Mca was last read in seconds
-                                  # start_time and read_time are not used
-                                  # for any corrections
-        self.real_time    = 0.    # Elapsed real time in seconds (requested counting time)
-        self.live_time    = 0.    # Elapsed live time in seconds (time detector is live)
-        self.total_counts = 0.    # Total counts between the preset start and stop channels
-        self.input_counts = -1.0  # Actual total input counts (eg given by detector software)
+        self.start_time   = start_time
+        self.real_time    = real_time  # Elapsed real time in seconds (requested counting time)
+        self.live_time    = live_time  # Elapsed live time in seconds (time detector is live)
+        self.input_counts = input_counts # Actual total input counts (eg given by detector software)
                                   # Note total_counts and input counts ARE NOT time normalized
                                   #
-        self.tau          = -1.0  # Factor for deadtime/detector saturation calculations, ie
+        self.total_counts = 0.    # Total counts between the preset start and stop channels
+        self.tau          = tau   # Factor for deadtime/detector saturation calculations, ie
                                   #     ocr = icr * exp(-icr*tau)
         # Calculated correction values
         self.icr_calc     = -1.0  # Calculated input count rate from above expression
         self.cor_factor   = 1.0   # Calculated correction factor based on icr,ocr,lt,rt
                                   # data_corrected = data * cor_factor
                                   #
-        # Calibration parameters
-        self.offset       = 0.    # Offset
-        self.slope        = 1.0   # Slope
-        self.quad         = 0.    # Quadratic
-        self.units        = 'keV' # Calibration units, a string
-        self.two_theta    = 0.    # 2-theta of this Mca for energy-dispersive diffraction
-
-        # Init data and params
-        self.init_params(mca_params=kws)
-        self.init_data(data=data,channels=channels)
-
-    ###############################################################################
-    def init_params(self, mca_params={}):
-        """
-        set/reset parameters based on key word arguments
-
-        Parameters:
-        ----------
-        These can be any attribute of the class
-        """
-        for key in mca_params.keys():
-            setattr(self,key,mca_params[key])
-
-        # Make sure correction updated
         self._calc_correction()
 
-    ########################################################################
-    def get_calib_params(self):
-        """
-        return calibration data
-        """
-        return {'offset':self.offset, 'slope':self.slope, 'quad':self.quad,
-                'units':self.units, 'tth':self.two_theta}
+    def __repr__(self):
+        form = "<MCA %s, nchans=%d, total counts=%d, realtime=%.2f sec, livetime=%.2f sec>"
+        return form % (self.name, self.nchans, self.data.sum(),
+                       self.real_time, self.live_time)
+
 
     ########################################################################
-    def init_data(self, data=None, channels=None):
-        """
-        Init or reinit the data
-
-        Parameters:
-        -----------
-        * data: A numpy array of data (counts).
-        * channels: Array of channel numbers
-        """
-        if data is None:
-            self.data = num.zeros(self.nchans, dtype=num.int)
-        else:
-            self.data = num.asarray(data, dtype=num.int)
-
-        # Note if channels == None, assume the same
-        # length as data and channel[0] = 0
-        if channels is None:
-            self.channels = num.arange(len(self.data), dtype=num.int)
-        else:
-            self.channels = num.asarray(channels, dtype=num.int)
-
-        # Check
-        self.nchans = len(self.data)
-        if len(self.channels) != self.nchans:
-            raise "Data-channel length mismatch in MCA %s" % self.name
-        return
-
-    ########################################################################
-    def update_correction(self,tau=None):
+    def update_correction(self, tau=None):
         """
         Update the deadtime correction
 
@@ -206,7 +165,8 @@ class Mca:
 
         if self.tau >= 0:
             icr = calc_icr(ocr,self.tau)
-            #if icr == None: icr = 0
+            if icr is None:
+                icr = 0
             self.icr_calc = icr
         elif self.input_counts > 0:
             icr = self.input_counts / self.live_time
@@ -221,7 +181,7 @@ class Mca:
     ########################################################################
     def get_data(self, correct=True):
         """
-        Returns the data (counts) from the Mca
+        Returns the data (counts) from the MCA
 
         Note if correct == True the corrected data is returned. However,
         this does not (re)compute the correction factor, therefore, make
@@ -230,7 +190,7 @@ class Mca:
         """
         if correct:
             # note adding .5 rounds the data
-            return  (0.5 + self.cor_factor * self.data).astype(num.int)
+            return  (0.5 + self.cor_factor * self.data).astype(np.int)
         else:
             return self.data
 
