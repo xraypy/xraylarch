@@ -9,12 +9,12 @@ Authors/Modifications:
 
 Notes:
 ------
-Conventions for Med.get_data and Med.get_energy:
- * If Med.total == True the returned array will be dim: [1, nchans]
- * If Med.total == False the returned array will be dim: [n_detectors, nchans]
+Conventions for MultiMCA.get_data and MultiMCA.get_energy:
+ * If MultiMCA.total == True the returned array will be dim: [1, nchans]
+ * If MultiMCA.total == False the returned array will be dim: [n_detectors, nchans]
                    bad det's are zeros
- * If Med.align == True the first good detector will be used as the energy reference
- * If Med.correct == True deadtime corrections will be applied on Med.get_data()
+ * If MultiMCA.align == True the first good detector will be used as the energy reference
+ * If MultiMCA.correct == True deadtime corrections will be applied on MultiMCA.get_data()
 
 """
 ###########################################################################
@@ -39,7 +39,7 @@ def spline_interpolate(oldx, oldy, newx):
     # return cspline1d_eval(cspline1d(oldy), newx, dx=oldx[1]-oldx[0], x0=oldx[0])
 
 #########################################################################
-class Med:
+class MultiMCA:
     """
     The MED class --> collection of MCA objects.
 
@@ -66,7 +66,7 @@ class Med:
     """
     ########################################################################
     def __repr__(self):
-        return "<MED %s, n_mca=%d>" % (self.name, len(self.mcas))
+        return "<MultiMCA %s, n_mca=%d>" % (self.name, len(self.mcas))
 
     ########################################################################
     def __init__(self, mcas=None, name='med',
