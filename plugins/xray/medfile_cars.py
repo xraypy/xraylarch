@@ -244,6 +244,5 @@ def gsemca_group(fname, _larch=None, **kws):
     return group
 
 def registerLarchPlugin():
-    print 'register read_mca!'
     return ('_io', {'read_gsemca': gsemca_group})
 
