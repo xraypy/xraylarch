@@ -253,3 +253,38 @@ class MCA:
             f.write(" %10.4f  %12i  %12.6g\n" % (e, d, dlog))
         f.write("\n")
         f.close()
+
+    def save_mcafile(self, filename):
+        """write MCA file
+
+        Parameters:
+        -----------
+        * filename: output file name
+        """
+        fp = open(filename, 'w')
+        fp.write('VERSION:    3.1\n')
+        fp.write('ELEMENTS:   1\n')
+        fp.write('DATE:       %s\n' % self.start_time)
+        fp.write('CHANNELS:   %i\n' % len(self.data))
+        fp.write('REAL_TIME:  %f\n' % self.real_time)
+        fp.write('LIVE_TIME:  %f\n' % self.live_time)
+        fp.write('CAL_OFFSET: %e\n' % self.offset)
+        fp.write('CAL_SLOPE:  %e\n' % self.slope)
+        fp.write('CAL_QUAD:   %e\n' % self.quad)
+
+        # Write ROIS  in channel units
+        fp.write('ROIS:      %i\n' % len(self.rois))
+        for i, roi in enumerate(self.rois):
+            fp.write('ROI_%i_LEFT:  %i\n' % (i, roi.left))
+            fp.write('ROI_%i_RIGHT:  %i\n' % (i, roi.right))
+            fp.write('ROI_%i_LABEL: %s &\n' % (i, roi.name))
+
+        # environment
+        for e in self.environ:
+            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
+
+        # data
+        fp.write('DATA: \n')
+        for d in self.data:
+            fp.write(" %s\n" % d)
+        fp.close()

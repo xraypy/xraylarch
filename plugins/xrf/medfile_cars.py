@@ -201,8 +201,7 @@ class GSEMCA_File:
 
     def save_mcafile(self, filename):
         """
-        write multi-column MCA file
-
+        write multi-element MCA file
         Parameters:
         -----------
         * filename: output file name
@@ -228,14 +227,12 @@ class GSEMCA_File:
         fp.write('CAL_SLOPE:  %s\n' % ' '.join(slopes))
         fp.write('CAL_QUAD:   %s\n' % ' '.join(quads))
 
-        # Write ROIS
-        #MN... needs work below here
-        # note ROIS should always be in channel units!
-        # Write number of rois for each mca
+        # Write ROIS  in channel units
         nrois = ["%i" % len(m.rois) for m in self.mcas]
         rois = [m.rois for m in self.mcas]
         fp.write('ROIS:      %s\n' % ' '.join(nrois))
 
+        # assume number of ROIS is same for all elements
         for i in range(len(rois[0])):
             names = ' &  '.join([r[i].name  for r in rois])
             left  = ' '.join(['%i' % r[i].left  for r in rois])
@@ -243,16 +240,15 @@ class GSEMCA_File:
             fp.write('ROI_%i_LEFT:  %s\n' % (i, left))
             fp.write('ROI_%i_RIGHT:  %s\n' % (i, right))
             fp.write('ROI_%i_LABEL: %s &\n' % (i, names))
-        # Write environment
+
+        # environment
         for e in self.sum.environ:
             fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
-        # Write data
+        # data
         fp.write('DATA: \n')
         for i in range(nchans):
-            dat = ' '.join(["%i" % m.data[i] for m in self.mcas])
-            fp.write(" %s\n" % dat)
-        #
-        #     # All done
+            d = ' '.join(["%i" % m.data[i] for m in self.mcas])
+            fp.write(" %s\n" % d)
         fp.close()
 
 def gsemca_group(fname, _larch=None, **kws):
