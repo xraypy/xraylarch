@@ -3,15 +3,13 @@
 Smoothing routines
 
 """
-import sys
 from numpy import pi, log, exp, sqrt, arange, concatenate, convolve
 from numpy import int, abs, linalg, mat, linspace, interp, diff
 
-from larch import param_value, plugin_path
-# put the 'std' (this!) plugin directories into sys.path
-sys.path.insert(0, plugin_path('std'))
+import sys
+from larch.larchlib import plugin_path
+sys.path.insert(0, plugin_path('math'))
 
-# now we can reliably import other std and xafs modules...
 from mathutils import index_of, index_nearest, realimag, remove_dups
 from lineshapes import gaussian, lorentzian, voigt
 

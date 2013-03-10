@@ -4,7 +4,6 @@ import numpy as np
 import h5py
 from larch import Group, Parameter, isParameter, plugin_path
 
-sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xafs'))
 
 from feffdat import FeffPathGroup, FeffDatFile

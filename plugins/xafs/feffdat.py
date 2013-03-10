@@ -19,7 +19,6 @@ import sys, os
 from larch import (Group, Parameter, isParameter,
                    param_value, plugin_path, isNamedClass)
 
-sys.path.insert(0, plugin_path('std'))
 sys.path.insert(0, plugin_path('xray'))
 sys.path.insert(0, plugin_path('xafs'))
 

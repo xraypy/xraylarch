@@ -13,7 +13,7 @@ from scipy.special import i0 as bessel_i0
 import larch
 from larch.larchlib import plugin_path
 
-sys.path.insert(0, plugin_path('std'))
+sys.path.insert(0, plugin_path('math'))
 sys.path.insert(0, plugin_path('xafs'))
 from mathutils import complex_phase
 from xafsutils import set_xafsGroup

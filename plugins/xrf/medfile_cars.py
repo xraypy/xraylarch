@@ -6,6 +6,10 @@ import copy
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
+import sys
+from larch.larchlib import plugin_path
+sys.path.insert(0, plugin_path('xrf'))
+
 from mca import MCA
 
 MIN_SLOPE   = 1.e-12

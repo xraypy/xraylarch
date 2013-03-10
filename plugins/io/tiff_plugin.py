@@ -5,8 +5,7 @@ Read/Write TIFF Files, using tifffile.py from Christoph Gohlke
 import sys
 from larch.larchlib import plugin_path
 
-sys.path.insert(0, plugin_path('std'))
-
+sys.path.insert(0, plugin_path('io'))
 from tifffile import imread, imshow, TIFFfile
 
 def read_tiff(fname, _larch=None, *args, **kws):

@@ -14,9 +14,8 @@ from scipy.optimize import leastsq as scipy_leastsq
 from larch import (Group, Parameter, isParameter, Minimizer,
                    plugin_path, isNamedClass)
 
-sys.path.insert(0, plugin_path('std'))
+sys.path.insert(0, plugin_path('math'))
 sys.path.insert(0, plugin_path('xafs'))
-## sys.path.insert(0, plugin_path('fitter'))
 
 from mathutils import index_of, realimag, complex_phase
 

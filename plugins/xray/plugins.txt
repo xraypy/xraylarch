@@ -1,4 +1,3 @@
 xraydb_plugin.py
 cromer_liberman.py
-roi.py
-medfile_cars.py
+chemparser.py
