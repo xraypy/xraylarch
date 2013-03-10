@@ -126,8 +126,8 @@ class GSEMCA_File:
                 elif tag == 'ENVIRONMENT:':
                     addr, val = val.split('="')
                     val, desc  = val.split('"')
-                    val.strip()
-                    desc.strip()
+                    val = val.strip()
+                    desc = desc.strip()
                     if desc.startswith('(') and desc.endswith(')'):
                         desc = desc[1:-1]
                     environ.append((desc, val, addr))
@@ -165,7 +165,7 @@ class GSEMCA_File:
                           offset=offset, slope=slope, quad=quad,
                           real_time=rtime, live_time=ltime)
 
-            for desc, val, add in environ:
+            for desc, val, addr in environ:
                 thismca.add_environ(desc=desc, val=val, addr=addr)
 
             for roi in rois:
@@ -199,6 +199,62 @@ class GSEMCA_File:
         "write summed data to simple ASCII  column file"
         self.sum.save_columnfile(filename, headerlines=headerlines)
 
+    def save_mcafile(self, filename):
+        """
+        write multi-column MCA file
+
+        Parameters:
+        -----------
+        * filename: output file name
+        """
+        nchans = len(self.sum.data)
+        ndet   = len(self.mcas)
+
+        # formatted count times and calibration
+        rtimes  = ["%f" % m.real_time for m in self.mcas]
+        ltimes  = ["%f" % m.live_time for m in self.mcas]
+        offsets = ["%e" % m.offset    for m in self.mcas]
+        slopes  = ["%e" % m.slope     for m in self.mcas]
+        quads   = ["%e" % m.quad      for m in self.mcas]
+
+        fp = open(filename, 'w')
+        fp.write('VERSION:    3.1\n')
+        fp.write('ELEMENTS:   %i\n' % ndet)
+        fp.write('DATE:       %s\n' % self.mcas[0].start_time)
+        fp.write('CHANNELS:   %i\n' % nchans)
+        fp.write('REAL_TIME:  %s\n' % ' '.join(rtimes))
+        fp.write('LIVE_TIME:  %s\n' % ' '.join(ltimes))
+        fp.write('CAL_OFFSET: %s\n' % ' '.join(offsets))
+        fp.write('CAL_SLOPE:  %s\n' % ' '.join(slopes))
+        fp.write('CAL_QUAD:   %s\n' % ' '.join(quads))
+
+        # Write ROIS
+        #MN... needs work below here
+        # note ROIS should always be in channel units!
+        # Write number of rois for each mca
+        nrois = ["%i" % len(m.rois) for m in self.mcas]
+        rois = [m.rois for m in self.mcas]
+        fp.write('ROIS:      %s\n' % ' '.join(nrois))
+
+        for i in range(len(rois[0])):
+            names = ' &  '.join([r[i].name  for r in rois])
+            left  = ' '.join(['%i' % r[i].left  for r in rois])
+            right = ' '.join(['%i' % r[i].right for r in rois])
+            fp.write('ROI_%i_LEFT:  %s\n' % (i, left))
+            fp.write('ROI_%i_RIGHT:  %s\n' % (i, right))
+            fp.write('ROI_%i_LABEL: %s &\n' % (i, names))
+        # Write environment
+        for e in self.sum.environ:
+            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
+        # Write data
+        fp.write('DATA: \n')
+        for i in range(nchans):
+            dat = ' '.join(["%i" % m.data[i] for m in self.mcas])
+            fp.write(" %s\n" % dat)
+        #
+        #     # All done
+        fp.close()
+
 def gsemca_group(fname, _larch=None, **kws):
     """simple mapping of GSECARS MCA file to larch groups"""
     if _larch is None:
@@ -209,6 +265,7 @@ def gsemca_group(fname, _larch=None, **kws):
     group.__name__ ='GSE XRF Data file %s' % fname
     group.filename = xfile.filename
     group.save_columnfile = xfile.save_columnfile
+    group.save_mcafile = xfile.save_mcafile
 
     group.mcas     = xfile.mcas
     group.calib    = {'offset': xfile.sum.offset,

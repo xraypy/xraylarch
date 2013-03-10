@@ -27,6 +27,8 @@ class Environment:
         self.addr  = addr.strip()
         self.val   = val.strip()
         self.desc  = desc.strip()
+        if self.desc.startswith('(') and self.desc.endswith(')'):
+            self.desc = self.desc[1:-1]
 
     def __repr__(self):
         return "Environment(desc='%s', val='%s', addr='%s')" % (self.desc,
