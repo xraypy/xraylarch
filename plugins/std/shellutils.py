@@ -118,6 +118,12 @@ with the  pagelength option:
     show_more(text, filename=fname, _larch=_larch,
               pagelength=pagelength, **kws)
 
+def initializeLarchPlugin(_larch=None):
+    """initialize ls as a valid command"""
+    cmds = ['ls', 'cd', 'more']
+    if _larch is not None:
+        _larch.symtable._sys.valid_commands.extend(cmds)
+
 def registerLarchPlugin():
     return ('_builtin', {'copy': _copy, 'deepcopy': _deepcopy,
                          'more': _more,
