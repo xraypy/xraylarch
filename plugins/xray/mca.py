@@ -132,10 +132,21 @@ class MCA:
             self.rois.append(roi)
 
     def get_roi_counts(self, roi, net=False):
-        """get roi counts"""
+        """get roi counts for an roi"""
+        thisroi = None
         if isinstance(roi, ROI):
-            return roi.get_counts(self.data, net=net)
-        return None
+            thisroi = roi
+        elif isinstance(roi, int) and roi < len(self.rois):
+            thisroi = self.rois[roi]
+        elif isinstance(roi, (str, unicode)):
+            rnames = [r.name.lower() for r in self.rois]
+            for iroi, nam in enumerate(rnames):
+                if nam.startswith(roi.lower()):
+                    thisroi = self.rois[iroi]
+                    break
+        if thisroi is None:
+            return None
+        return thisroi.get_counts(self.data, net=net)
 
     def add_environ(self, desc='', val='', addr=''):
         """add an Environment setting"""
