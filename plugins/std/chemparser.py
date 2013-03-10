@@ -46,9 +46,9 @@ class ElementSequence:
         self.seq = list(seq)
         self.count = 1
 
-    def append(self, thing):      self.seq.append(thing)
-    def set_count(self, n):        self.count = n
-    def __len__(self):          return len(self.seq)
+    def append(self, thing):  self.seq.append(thing)
+    def set_count(self, n):   self.count = n
+    def __len__(self):        return len(self.seq)
 
     def add(self, weight, result):
         totalweight = weight * self.count
@@ -66,7 +66,7 @@ class Tokenizer:
         self.lasti = self.i
         m = LEXER(self.input, self.i)
         if m is None:
-            self.error("unexpected character")
+            self.error("unrecognized element or number")
         self.i = m.end()
         self.tvalue = m.group()
         if self.tvalue == "(":
@@ -110,22 +110,22 @@ class ChemFormulaParser(object):
             # parenthesized expression or straight name
             if self.tok.ttype == LPAREN:
                 self.tok.gettoken()
-                thisguy = self.parse_sequence()
+                thisseq = self.parse_sequence()
                 if self.tok.ttype != RPAREN:
                     self.tok.error("expected right paren")
                 self.tok.gettoken()
             else:
                 assert self.tok.ttype == NAME
                 if self.tok.tvalue in ELEMENTS:
-                    thisguy = ElementSequence(ELEMENTS[self.tok.tvalue])
+                    thisseq = ElementSequence(ELEMENTS[self.tok.tvalue])
                 else:
                     self.tok.error("'" + self.tok.tvalue + "' is not an element symbol")
                 self.tok.gettoken()
             # followed by optional count
             if self.tok.ttype == NUM:
-                thisguy.set_count(self.tok.tvalue)
+                thisseq.set_count(self.tok.tvalue)
                 self.tok.gettoken()
-            seq.append(thisguy)
+            seq.append(thisseq)
             if len(seq) == 0:
                 self.tok.error("empty sequence")
         return seq
@@ -133,22 +133,29 @@ class ChemFormulaParser(object):
 def chemparse(formula, _larch=None, **kws):
     '''parse a chemical formula to a dictionary of elemental abundances
 
-   larch> chemparse('Mn(SO4)2(H2O)7)')
-   {'H': 14.0, 'S': 2.0, 'Mn': 1, 'O': 15.0}
+    larch> chemparse('Mn(SO4)2(H2O)7)')
+    {'H': 14.0, 'S': 2.0, 'Mn': 1, 'O': 15.0}
 
 decimal values for stoichiometry are supported:
-   larch> chemparse('Zn1.e-5Fe3O4')
-   {'Zn': 1e-05, 'Fe': 3.0, 'O': 4.0}
+    larch> chemparse('Zn1.e-5Fe3O4')
+    {'Zn': 1e-05, 'Fe': 3.0, 'O': 4.0}
 
-Note that elements must use proper case:
-   CO is carbon monoxide, Co is cobalt, co is an error.
-
+Note that element names are case-sensitive, and that the
+proper capitalization must be used:
+    larch> chemparse('CO')
+    {'C': 1, 'O': 1}
+    larch> chemparse('Co')
+    {'Co': 1}
+    larch> chemparse('co')
+    ValueError: unrecognized element or number:
+    co
+    ^
     '''
     p = ChemFormulaParser()
     return p.parse(formula)
 
 def registerLarchPlugin():
-    return ('_math', {'chemparse': chemparse})
+    return ('_xray', {'chemparse': chemparse})
 
 if __name__ == '__main__':
     examples = ('H2O',  'Mg(SO4)2',
