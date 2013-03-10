@@ -9,12 +9,8 @@ from scipy.interpolate import UnivariateSpline
 import sys
 from larch.larchlib import plugin_path
 sys.path.insert(0, plugin_path('xrf'))
-
 from mca import MCA
-
-MIN_SLOPE   = 1.e-12
-MIN_EN     = -1.   # in keV
-MAX_EN     = 511.  # in keV
+from roi import ROI
 
 def str2floats(s):
     return [float(i) for i in s.split()]
@@ -26,19 +22,9 @@ def str2str(s, delim=None):
     s = s.strip()
     return [i.strip() for i in s.split(delim) if len(i) > 0]
 
-class MCA_ROI(object):
-    """Region of Interest for an MCA or Multi-Element MCA"""
-    def __init__(self, name=None, left=None, right=None, counts=None):
-        self.name = name
-        self.left = left
-        self.right = right
-    def get_counts(self, spectra):
-        """get integrated roi from specta"""
-
-class GSE_MCAFile:
+class GSEMCA_File:
     """
     Read GSECARS style MCA / Multi-element MCA files
-
     """
     def __init__(self, filename=None, bad=None, nchans=2048):
 
@@ -78,8 +64,6 @@ class GSE_MCAFile:
         --------
           align   align spectra in energy before summing (True).
         """
-        if self.nelems == 1:
-            return self.data
         mca0 = self._firstgood_mca()
         en  = mca0.get_energy()
         dat = 0
@@ -89,7 +73,7 @@ class GSE_MCAFile:
                 _en  = mca.get_energy()
                 mdat = UnivariateSpline(_en, mdat, s=0)(en)
             dat = dat + mdat
-        return dat
+        return dat.astype(np.int)
 
     def read(self, filename=None, bad=None):
         """read GSE MCA file"""
@@ -162,13 +146,12 @@ class GSE_MCAFile:
                 else:
                     pass # print " Warning: " , tag, " is not supported here!"
 
-        #  find first valid detector, identify bad detectors
+        #
         data =  np.array(data)
-        if self.nelems == 1:
-            data = data[0]
 
         ## Data has been read, now store in MCA objects
         start_time = head['start time']
+        sum_mca = None
         for imca in range(self.nelems):
             offset = head['offset'][imca]
             slope  = head['slope'][imca]
@@ -189,64 +172,55 @@ class GSE_MCAFile:
                 left = roi['left'][imca]
                 right = roi['right'][imca]
                 label = roi['label'][imca]
-                thismca.add_roi(name=label, left=left, right=right)
+                thismca.add_roi(name=label, left=left, right=right, sort=False)
             thismca.rois.sort()
             self.mcas.append(thismca)
+            if sum_mca is None:
+                sum_mca = copy.deepcopy(thismca)
+        sum_mca.data = self.get_data()
+        sum_mca.name = 'mcasum'
+        self.sum = sum_mca
         return
 
-    def write_ascii(self, file=None, elem=None, all=1, det=[]):
-        if file is None:
-            return -1
-        f = open(file, "w+")
-        f.write("# XRF data from %s\n" % (self.filename))
-
-        f.write("# energy calibration (offset/slope/quad)= (%.9g/%.9g%.9g)\n"\
-                %  self.get_calibration())
-        f.write("# Live Time, Real Time = %f, %f\n" %
-                (self.elapsed['real time'][0],   self.elapsed['live time'][0]))
-        f.write("# %i ROIS:\n" % self.nrois)
-        for r in self.rois:
-            try:
-                label = r['label'][0]
-                left  = r['left'][0]
-                right = r['right'][0]
-                f.write("#   %s : [%i, %i]\n" % (label, left, right))
-            except IndexError:
-                pass
-
-        f.write("#-------------------------\n")
-        f.write("#    energy       counts     log10(counts)\n")
-
-        e = self.get_energy()
-
-        if all == 1:
-            d = self.get_data(align=1)
+    def add_roi(self, name='', left=0, right=0, bgr_width=3, sort=True):
+        """add an ROI to the sum spectra"""
+        name = name.strip()
+        roi = ROI(name=name, left=left, right=right, bgr_width=bgr_width)
+        rnames = [r.name.lower() for r in self.sum.rois]
+        if name.lower() in rnames:
+            iroi = rnames.index(name.lower())
+            self.sum.rois[iroi] = roi
         else:
-            if elem is not None: elem = 0
-            d = self.get_data(detector=elem)
+            self.sum.rois.append(roi)
+        if sort:
+            self.sum.rois.sort()
 
-        for i in range(len(e)-1):
-            xlog = 0.
-            if  d[i] > 0:   xlog = np.log10(d[i])
-            f.write(" %10.4f  %12.3f  %10.5f\n" % (e[i],d[i],xlog))
-        f.write("\n")
-        f.close()
+    def save_columnfile(self, filename, headerlines=None):
+        "write summed data to simple ASCII  column file"
+        self.sum.save_columnfile(filename, headerlines=headerlines)
 
 def gsemca_group(fname, _larch=None, **kws):
     """simple mapping of GSECARS MCA file to larch groups"""
     if _larch is None:
         raise Warning("cannot read GSE XRF group -- larch broken?")
 
-    xfile = GSE_MCAFile(fname)
+    xfile = GSEMCA_File(fname)
     group = _larch.symtable.create_group()
     group.__name__ ='GSE XRF Data file %s' % fname
-    group.energy = xfile.get_energy()
-    group.data  = xfile.get_data()
-    for key, val in xfile.__dict__.items():
-        if not key.startswith('_'):
-            setattr(group, key, val)
+    group.filename = xfile.filename
+    group.save_columnfile = xfile.save_columnfile
+
+    group.mcas     = xfile.mcas
+    group.calib    = {'offset': xfile.sum.offset,
+                      'slope': xfile.sum.slope,
+                      'quad': xfile.sum.quad}
+    group.rois     = xfile.sum.rois
+    group.get_roi_counts = xfile.sum.get_roi_counts
+    for attr in ('rois', 'environ', 'energy', 'data', 'dt_factor',
+                 'icr_calc', 'input_counts', 'live_time', 'nchans',
+                 'real_time', 'start_time', 'tau'):
+        setattr(group, attr, getattr(xfile.sum, attr))
     return group
 
 def registerLarchPlugin():
     return ('_io', {'read_gsemca': gsemca_group})
-

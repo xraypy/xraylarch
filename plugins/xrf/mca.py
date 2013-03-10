@@ -56,8 +56,8 @@ class MCA:
     * self.tau          = -1.0  # Factor for deadtime/detector saturation calculations, ie
                                 #     ocr = icr * exp(-icr*tau)
     * self.icr_calc     = -1.0  # Calculated input count rate from above expression
-    * self.cor_factor   = 1.0   # Calculated correction factor based on icr,ocr,lt,rt
-                                # data_corrected = data * cor_factor
+    * self.dt_factor   = 1.0    # deadtime correction factor based on icr,ocr,lt,rt
+                                # data_corrected = data * dt_factor
                                 #
     # Calibration parameters
     * self.offset       = 0.    # Offset
@@ -83,7 +83,7 @@ class MCA:
     """
     ###############################################################################
     def __init__(self, data=None, nchans=2048, start_time='',
-                 offset=0, slope=0, quad=0, name='mca',
+                 offset=0, slope=0, quad=0, name='mca', dt_factor=1,
                  real_time=0, live_time = 0, input_counts=0, tau=0, **kws):
 
         self.name    = name
@@ -110,16 +110,17 @@ class MCA:
         self.tau          = tau   # Factor for deadtime/detector saturation calculations, ie
                                   #     ocr = icr * exp(-icr*tau)
         # Calculated correction values
-        self.icr_calc     = -1.0  # Calculated input count rate from above expression
-        self.cor_factor   = 1.0   # Calculated correction factor based on icr,ocr,lt,rt
-                                  # data_corrected = data * cor_factor
+        self.icr_calc    = -1.0  # Calculated input count rate from above expression
+        # corrected_data = data * dt_factor
+        self.dt_factor   = float(dt_factor)
+        self.get_energy()
         self._calc_correction()
 
     def __repr__(self):
         form = "<MCA %s, nchans=%d, counts=%d, realtime=%d>"
         return form % (self.name, self.nchans, self.data.sum(), self.real_time)
 
-    def add_roi(self, name='', left=0, right=0, bgr_width=3):
+    def add_roi(self, name='', left=0, right=0, bgr_width=3, sort=True):
         """add an ROI"""
         name = name.strip()
         roi = ROI(name=name, left=left, right=right, bgr_width=bgr_width)
@@ -130,6 +131,8 @@ class MCA:
             self.rois[iroi] = roi
         else:
             self.rois.append(roi)
+        if sort:
+            self.rois.sort()
 
     def get_roi_counts(self, roi, net=False):
         """get roi counts for an roi"""
@@ -176,7 +179,7 @@ class MCA:
                                 ie only lt correction
         """
         if self.live_time <= 0 or self.real_time <= 0:
-            self.cor_factor  = 1.0
+            self.dt_factor  = 1.0
             return
 
         if self.total_counts > 0:
@@ -193,11 +196,11 @@ class MCA:
             icr = self.input_counts / self.live_time
         else:
             icr = ocr = None
-        self.cor_factor  = correction_factor(self.real_time, self.live_time,
+        self.dt_factor  = correction_factor(self.real_time, self.live_time,
                                              icr=icr,  ocr=ocr)
-        if self.cor_factor <= 0:
+        if self.dt_factor <= 0:
             print "Error computing data correction factor --> setting to 1"
-            self.cor_factor = 1.0
+            self.dt_factor = 1.0
 
     ########################################################################
     def get_data(self, correct=True):
@@ -210,17 +213,41 @@ class MCA:
         corrected data...
         """
         if correct:
-            # note adding .5 rounds the data
-            return  (0.5 + self.cor_factor * self.data).astype(np.int)
+            return  (self.dt_factor * self.data).astype(np.int)
         else:
             return self.data
 
-    ########################################################################
     def get_energy(self):
         """
         Returns array of energy for each channel in the MCA spectra.
         """
         chans = np.arange(self.nchans, dtype=np.float)
-        return self.offset +  chans * (self.slope + chans * self.quad)
+        self.energy = self.offset +  chans * (self.slope + chans * self.quad)
+        return self.energy
 
-    ####################################################################
+    def save_columnfile(self, filename, headerlines=None):
+        "write summed data to simple ASCII column file for mca data"
+        f = open(filename, "w+")
+        f.write("#XRF data for %s\n" % self.name)
+        if headerlines is not None:
+            for i in headerlines:
+                f.write("#%s\n" % i)
+        f.write("#\n")
+        f.write("#EnergyCalib.offset = %.9g \n" % self.offset)
+        f.write("#EnergyCalib.slope = %.9g \n" % self.slope)
+        f.write("#EnergyCalib.quad  = %.9g \n" % self.quad)
+        f.write("#Acquire.RealTime  = %.9g \n" % self.real_time)
+        f.write("#Acquire.LiveTime  = %.9g \n" % self.live_time)
+        roiform = "#ROI_%i '%s': [%i, %i]\n"
+        for i, r in enumerate(self.rois):
+            f.write(roiform % (i+1, r.name, r.left, r.right))
+
+        f.write("#-----------------------------------------\n")
+        f.write("#    energy       counts     log_counts\n")
+
+        for e, d in zip(self.energy, self.data):
+            dlog = 0.
+            if  d > 0: dlog = np.log10(max(d, 1))
+            f.write(" %10.4f  %12i  %12.6g\n" % (e, d, dlog))
+        f.write("\n")
+        f.close()
