@@ -14,6 +14,7 @@ from .utils import Closure
 from . import larchlib
 from .symboltable import isgroup
 
+PLUGINSTXT = 'plugins.txt'
 
 helper = Helper()
 
@@ -372,18 +373,18 @@ def _addplugin(plugin, _larch=None, **kws):
             return
         if is_pkg:
             filelist = []
-            if 'plugins.txt' in os.listdir(mod):
+            if PLUGINSTXT in os.listdir(mod):
+                pfile = o.path.abspath(os.path.join(mod, PLUGINSTXT))
                 try:
-                    fx = open(os.path.abspath(os.path.join(mod,
-                                                           'plugins.txt')), 'r')
-                    for fname in fx.readlines():
-                        fname = fname[:-1].strip()
-                        if (not fname.startswith('#') and
-                            fname.endswith('.py') and len(fname) > 3):
-                            filelist.append(fname)
+                    with open(pfile, 'r') as pluginsfile:
+                        for name in pluginsfile:
+                            name = name[:-1].strip()
+                            if (not name.startswith('#') and
+                                name.endswith('.py') and len(name) > 3):
+                            filelist.append(name)
                 except:
-                    print("Warnging:: Error reading plugin file:\n %s\n" %
-                          os.path.abspath(os.path.join(mod, 'plugins.txt')))
+                    print("Warning:: Error reading plugin file:\n %s\n" %
+                          pfile)
             if len(filelist) == 0:
                 for fname in os.listdir(mod):
                     if fname.endswith('.py') and len(fname) > 3:
