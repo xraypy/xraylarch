@@ -374,7 +374,7 @@ def _addplugin(plugin, _larch=None, **kws):
         if is_pkg:
             filelist = []
             if PLUGINSTXT in os.listdir(mod):
-                pfile = o.path.abspath(os.path.join(mod, PLUGINSTXT))
+                pfile = os.path.abspath(os.path.join(mod, PLUGINSTXT))
                 try:
                     with open(pfile, 'r') as pluginsfile:
                         for name in pluginsfile:
