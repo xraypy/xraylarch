@@ -10,6 +10,7 @@ Authors/Modifications:
 import numpy as np
 from deadtime import calc_icr, correction_factor
 from roi import ROI
+from xrf_bgr import XRFBackground
 
 class Environment:
     """
@@ -114,6 +115,7 @@ class MCA:
         # Calculated correction values
         self.icr_calc    = -1.0  # Calculated input count rate from above expression
         # corrected_data = data * dt_factor
+        self.bgr = None
         self.dt_factor   = float(dt_factor)
         self.get_energy()
         self._calc_correction()
@@ -218,6 +220,13 @@ class MCA:
             return  (self.dt_factor * self.data).astype(np.int)
         else:
             return self.data
+
+    def fit_background(self, bottom_width=4, compress=4, exponent=2):
+        xrfbgr = XRFBackground(bottom_width=bottom_width,
+                            compress=compress,
+                            exponent=exponent)
+        xrfbgr.calc(self.data, slope=self.slope)
+        self.bgr = xrfbgr.bgr
 
     def get_energy(self):
         """

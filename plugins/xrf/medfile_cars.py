@@ -11,6 +11,7 @@ from larch.larchlib import plugin_path
 sys.path.insert(0, plugin_path('xrf'))
 from mca import MCA
 from roi import ROI
+from xrf_bgr import XRFBackground
 
 def str2floats(s):
     return [float(i) for i in s.split()]
@@ -252,7 +253,7 @@ class GSEMCA_File:
         fp.close()
 
 def gsemca_group(fname, _larch=None, **kws):
-    """simple mapping of GSECARS MCA file to larch groups"""
+    """read GSECARS MCA file to larch group"""
     if _larch is None:
         raise Warning("cannot read GSE XRF group -- larch broken?")
 
@@ -262,7 +263,6 @@ def gsemca_group(fname, _larch=None, **kws):
     group.filename = xfile.filename
     group.save_columnfile = xfile.save_columnfile
     group.save_mcafile = xfile.save_mcafile
-
     group.mcas     = xfile.mcas
     group.calib    = {'offset': xfile.sum.offset,
                       'slope': xfile.sum.slope,
@@ -275,5 +275,20 @@ def gsemca_group(fname, _larch=None, **kws):
         setattr(group, attr, getattr(xfile.sum, attr))
     return group
 
+def xrf_background(energy, data, group=None, _larch=None,
+                   bottom_width=4, compress=4, exponent=2, **kws):
+    """fit background for XRF spectra"""
+    if _larch is None:
+        raise Warning("cannot calculate xrf background -- larch broken?")
+
+    slope = (energy[-1] - energy[0])/len(energy)
+    xbgr = XRFBackground(bottom_width=bottom_width,
+                         compress=compress,
+                         exponent=exponent, **kws)
+    xbgr.calc(data, slope=slope)
+    if group is not None:
+        group.bgr = xbgr.bgr
+
 def registerLarchPlugin():
-    return ('_io', {'read_gsemca': gsemca_group})
+    return ('_io', {'read_gsemca': gsemca_group,
+                    'xrf_background': xrf_background})
