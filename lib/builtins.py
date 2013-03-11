@@ -381,7 +381,7 @@ def _addplugin(plugin, _larch=None, **kws):
                             name = name[:-1].strip()
                             if (not name.startswith('#') and
                                 name.endswith('.py') and len(name) > 3):
-                            filelist.append(name)
+                                filelist.append(name)
                 except:
                     print("Warning:: Error reading plugin file:\n %s\n" %
                           pfile)
