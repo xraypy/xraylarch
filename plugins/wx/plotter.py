@@ -28,6 +28,9 @@ import wx.lib.newevent
 import larch
 from wxmplot import PlotFrame, ImageFrame
 
+sys.path.insert(0, larch.plugin_path('wx'))
+from xrfdisplay import XRFDisplayFrame
+
 mpl_dir = os.path.join(larch.site_config.usr_larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir
 if not os.path.exists(mpl_dir):
@@ -46,8 +49,47 @@ from gui_utils import ensuremod
 
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
+XRF_DISPLAYS = {}
 MODNAME = '_plotter'
 MAX_WINDOWS = 16
+
+class XRFDisplay(XRFDisplayFrame):
+    def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
+        XRFDisplayFrame.__init__(self, parent=None, size=size,
+                                 output_title='XRF', 
+                                 exit_callback=self.onExit, **kws)            
+        self.Show()
+        self.Raise()
+        self.panel.cursor_callback = self.onCursor
+        self.window = int(window)
+        self._larch = _larch
+        self._xylims = {}
+        self.symname = '%s.xrf%i' % (MODNAME, self.window)
+        symtable = ensuremod(self._larch, MODNAME)
+
+        if symtable is not None:
+            symtable.set_symbol(self.symname, self)
+        if window not in XRF_DISPLAYS:
+            XRF_DISPLAYS[window] = self
+
+    def onExit(self, o, **kw):
+        try:
+            symtable = self._larch.symtable
+            if symtable.has_group(MODNAME):
+                symtable.del_symbol(self.symname)
+        except:
+            pass
+        if self.window in XRF_DISPLAYS:
+            XRF_DISPLAYS.pop(self.window)
+
+        self.Destroy()
+
+    def onCursor(self, x=None, y=None, **kw):
+        symtable = ensuremod(self._larch, MODNAME)
+        if symtable is None:
+            return
+        symtable.set_symbol('%s_xrf_x'  % self.symname, x)
+        symtable.set_symbol('%s_xrf_y'  % self.symname, y)
 
 class PlotDisplay(PlotFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
@@ -135,7 +177,8 @@ class ImageDisplay(ImageFrame):
         if iy is not None:  set('%s_iy' % self.symname, iy)
         if val is not None: set('%s_val' % self.symname, val)
 
-def _getDisplay(win=1, _larch=None, wxparent=None, size=None, image=False):
+def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
+                xrf=False, image=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if _larch is None:
@@ -151,6 +194,12 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None, image=False):
         display_dict = IMG_DISPLAYS
         title   = 'Image Window %i' % win
         symname = '%s.img%i' % (MODNAME, win)
+    elif xrf:
+        creator = XRFDisplay
+        display_dict = XRF_DISPLAYS
+        title   = 'XRF Displaye Window %i' % win
+        symname = '%s.xrf%i' % (MODNAME, win)
+        
     if win in display_dict:
         display = display_dict[win]
     else:
@@ -161,6 +210,57 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None, image=False):
     if display is not None:
         display.SetTitle(title)
     return display
+
+def _xrf_plot(x, y, mcagroup=None, win=1, new=False, _larch=None,
+              wxparent=None, size=None, **kws):
+    """xrf_plot(energy, data[, win=1], options])
+
+    Show XRF trace of energy, data
+
+    Parameters:
+    --------------
+        x :  array of ordinate values
+        y :  array of abscissa values (x and y must be same size!)
+
+        win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
+        new: flag (True/False, default False) for whether to start a new plot.
+        force_draw: flag (True/False, default Tree) for whether force a draw.
+                    This will take a little extra time, and is not needed when
+                    typing at the command-line, but is needed for plots to update
+                    from inside scripts.
+        label: label for trace
+        title:  title for Plot
+        xlabel: x-axis label
+        ylabel: y-axis label
+        ylog_scale: whether to show y-axis as log-scale (True or False)
+        grid: whether to draw background grid (True or False)
+
+        color: color for trace (name such as 'red', or '#RRGGBB' hex string)
+        style: trace linestyle (one of 'solid', 'dashed', 'dotted', 'dot-dash')
+        linewidth:  integer width of line
+        marker:  symbol to draw at eac point ('+', 'o', 'x', 'square', etc)
+        markersize: integer size of marker
+
+        drawstyle: style for joining line segments
+
+        dy: array for error bars in y (must be same size as y!)
+        yaxis='left'??
+        use_dates
+
+    See Also: oplot, newplot
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
+                          _larch=_larch, xrf=True)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+    if new:
+        plotter.plot(x, y, side=side, **kws)
+    else:
+        plotter.oplot(x, y, side=side, **kws)
+    if force_draw:
+        update(_larch=_larch)
+
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
           force_draw=True, side='left', **kws):
@@ -504,4 +604,5 @@ def registerLarchPlugin():
                       'get_cursor': _getcursor,
                       'imshow':_imshow,
                       'contour':_contour,
+                      'xrf_plot': _xrf_plot,
                       } )
