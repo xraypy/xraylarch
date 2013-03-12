@@ -101,24 +101,39 @@ def _fileprompt(wxparent=None, _larch=None,
     Returns name of selected file.
 
     options:
-       mode:  one of 'open' or 'save'
-       message: text to display in top window bar
+       mode:     one of 'open' or 'save'
+       fname:    default filename
+       message:  text to display in top window bar
+       multi:    whether multiple files are allowed [True]
+       choices:  list of (title, fileglob) to restrict choices
 
+    > x = fileprompt(choices=(('All Files', '*.*'), ('Python Files', '*.py')))
+       
     """
     symtable = ensuremod(_larch)
 
     gparent = _larch.symtable.get_symbol('_sys.wx.wxapp').GetTopWindow()
     parent = wxLarchTimer(gparent, _larch)
+    _def_choices =  [('All Files', '*.*')]
     if fname is None:
         try:
             fname = symtable.get_symbol("%s.default_filename" % MODNAME)
         except:
             fname = ''
-    if choices  is None:
+    if choices is None:
         try:
             choices = symtable.get_symbol("%s.ext_choices" % MODNAME)
         except:
-            choices = 'All Files (*.*)|*.*'
+            symtable.set_symbol("%s.ext_choices" % MODNAME, _def_choices)
+
+        choices = symtable.get_symbol("%s.ext_choices" % MODNAME)
+    wildcard = []
+    if choices is None or len(choices) < 1:
+        choices = _def_choices
+   
+    for title, fglob  in choices:
+        wildcard.append('%s (%s)|%s' % (title, fglob, fglob))
+    wildcard = '|'.join(wildcard)
 
     if mode == 'open':
         style = wx.OPEN|wx.CHANGE_DIR
@@ -133,14 +148,16 @@ def _fileprompt(wxparent=None, _larch=None,
 
     #parent.Start()
     dlg = wx.FileDialog(parent=parent, message=message,
-                        defaultDir = os.getcwd(),
-                        defaultFile= fname,
-                        wildcard = choices,
+                        defaultDir=os.getcwd(),
+                        defaultFile=fname,
+                        wildcard =wildcard,
                         style=style)
     path = None
     if dlg.ShowModal() == wx.ID_OK:
-        path = dlg.GetPath()
-    #parent.Stop()
+        path = dlg.GetPaths()
+        if len(path) == 1:
+            path = path[0]
+
     dlg.Destroy()
     parent.Destroy()
     return path
