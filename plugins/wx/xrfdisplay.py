@@ -12,7 +12,7 @@ from wx._core import PyDeadObjectError
 
 import numpy as np
 import matplotlib
-from wxmplot import PlotFrame, PlotPanel
+from wxmplot import BaseFrame, PlotPanel
 
 from larch import Group, Parameter, isParameter, plugin_path
 
@@ -39,6 +39,12 @@ FILE_ALREADY_READ = """The File
 has already been read.
 """
 
+def txt(label, panel, size=75, style=LEFT|wx.EXPAND):
+    return wx.StaticText(panel, label=label, size=(size, -1), style=style)
+
+def lin(panel, len=30, wid=2, style=wx.LI_HORIZONTAL):
+    return wx.StaticLine(panel, size=(len, wid), style=style)
+
 def set_choices(choicebox, choices):
     index = 0
     try:
@@ -51,16 +57,36 @@ def set_choices(choicebox, choices):
     choicebox.AppendItems(choices)
     choicebox.SetStringSelection(choices[index])
 
+class Menu_IDs:
+    def __init__(self):
+        self.EXIT   = wx.NewId()
+        self.SAVE   = wx.NewId()
+        self.CONFIG = wx.NewId()
+        self.UNZOOM = wx.NewId()
+        self.HELP   = wx.NewId()
+        self.ABOUT  = wx.NewId()
+        self.PRINT  = wx.NewId()
+        self.PSETUP = wx.NewId()
+        self.PREVIEW= wx.NewId()
+        self.CLIPB  = wx.NewId()
+        self.SELECT_COLOR = wx.NewId()
+        self.SELECT_SMOOTH= wx.NewId()
+        self.TOGGLE_LEGEND = wx.NewId()
+        self.TOGGLE_GRID = wx.NewId()
 
-class XRFDisplayFrame(wx.Frame):
+class XRFDisplayFrame(BaseFrame):
     _about = """XRF Spectral Viewer
   Matt Newville <newville @ cars.uchicago.edu>
   """
     def __init__(self, _larch=None, parent=None, size=(700, 400),
+                 axissize=None, axisbg=None, title='XRF Display',
                  exit_callback=None, output_title='XRF', **kws):
 
         kws["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, parent=None,  size=size,  **kws)
+        BaseFrame.__init__(self, parent=parent,
+                           title=title, size=size,
+                           axissize=axissize, axisbg=axisbg,
+                           **kws)
 
         self.data = None
         self.plotframe = None
@@ -84,15 +110,18 @@ class XRFDisplayFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
+        # self.BindMenuToPanel()
+
+
     def createMainPanel(self):
         self.wids = {}
         ctrlpanel = self.ctrlpanel = wx.Panel(self)
         roipanel = self.roipanel = wx.Panel(self)
         plotpanel = self.panel = PlotPanel(self, fontsize=7,
-                                           axisbg='#FDFDFA',
-                                           axissize=[0.04, 0.08, 0.94, 0.90],
-                                           output_title='test.xrf',
-                                           messenger=self.write_message)
+                                               axisbg='#FDFDFA',
+                                               axissize=[0.04, 0.08, 0.94, 0.90],
+                                               output_title='test.xrf',
+                                               messenger=self.write_message)
         ## need to customize cursor modes:
         # plotpane.add_cursor_mode('zoom', .....)
         # plotpane.add_cursor_mode('report', .....)
@@ -105,25 +134,20 @@ class XRFDisplayFrame(wx.Frame):
         rlabstyle = wx.ALIGN_RIGHT|wx.RIGHT|wx.TOP|wx.EXPAND
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
 
-        def txt(label, panel, size=100):
-            return wx.StaticText(panel, label=label, size=(size, -1), style=labstyle)
 
-        def lin(parent, len=120, wid=2, style=wx.LI_HORIZONTAL):
-            return wx.StaticLine(self, size=(len, wid), style=style)
-
-        self.wids['ylog'] = add_choice(ctrlpanel, choices=['log', 'linear'], size=(90, -1))
+        self.wids['ylog'] = add_choice(ctrlpanel, choices=['log', 'linear'], size=(80, -1))
         self.wids['ylog'].SetSelection(0)
 
-        self.wids['series'] = add_choice(ctrlpanel, choices=['K', 'L', 'M', 'N'], size=(60, -1))
+        self.wids['series'] = add_choice(ctrlpanel, choices=['K', 'L', 'M', 'N'], size=(80, -1))
         self.wids['series'].SetSelection(0)
-        self.wids['elems'] = add_choice(ctrlpanel, choices=['H', 'He'], size=(60, -1))
+        self.wids['elems'] = add_choice(ctrlpanel, choices=['H', 'He'], size=(80, -1))
         self.wids['elems'].SetSelection(0)
 
         ir = 0
         sizer.Add(txt('Settings:', ctrlpanel),  (ir, 0), (1, 2), labstyle)
 
         ir += 1
-        sizer.Add(lin(ctrlpanel, 120),         (ir, 0), (1, 2), labstyle)
+        sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
 
         ir += 1
         sizer.Add(txt('Series:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
@@ -134,7 +158,7 @@ class XRFDisplayFrame(wx.Frame):
         sizer.Add(self.wids['elems'],          (ir, 1), (1, 1), ctrlstyle)
 
         ir += 1
-        sizer.Add(lin(ctrlpanel, 120),         (ir, 0), (1, 2), labstyle)
+        sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
 
         ir += 1
         sizer.Add(txt('Y Scale:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
@@ -143,12 +167,45 @@ class XRFDisplayFrame(wx.Frame):
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
 
-        msizer = wx.BoxSizer(wx.HORIZONTAL)
-        msizer.Add(ctrlpanel, 0, wx.GROW|wx.ALL, 1)
-        msizer.Add(plotpanel, 1, wx.GROW|wx.ALL, 1)
-        msizer.Add(roipanel,  0, wx.GROW|wx.ALL, 1)
-        pack(self, msizer)
+        rsizer = wx.GridBagSizer(10, 3)
+        ir = 0
+        rsizer.Add(txt('Regions of Interest:', roipanel),  (ir, 0), (1, 2), labstyle)
+        ir += 1
+        rsizer.Add(lin(roipanel, 95),         (ir, 0), (1, 2), labstyle)
 
+        roipanel.SetSizer(rsizer)
+        rsizer.Fit(roipanel)
+
+        msizer = wx.BoxSizer(wx.HORIZONTAL)
+        msizer.Add(self.ctrlpanel, 0, wx.GROW|wx.ALL, 1)
+        msizer.Add(self.panel, 1, wx.GROW|wx.ALL, 1)
+        msizer.Add(self.roipanel,  0, wx.GROW|wx.ALL, 1)
+        pack(self, msizer)
+        self.add_rois()
+
+    def add_rois(self):
+        """ Add Roi names and counts to ROI Panel"""
+        sizer = wx.GridBagSizer(10, 3)
+        panel = self.roipanel
+        labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
+        ir = 0
+        sizer.Add(txt('Regions of Interest:', panel),  (ir, 0), (1, 2), labstyle)
+        ir += 1
+        sizer.Add(lin(panel, 95),         (ir, 0), (1, 2), labstyle)
+
+        for name, counts in (('Ar Ka', 2000), ('Ca Ka', 6000), ('Fe Ka', 213040),
+                             ('As Ka/Pb Lb1', 1234560)):
+            ir += 1
+            sizer.Add(txt(name, panel, style=LEFT|wx.EXPAND),
+                      (ir, 0), (1, 1), labstyle)
+            sizer.Add(txt("%i" % counts, panel, style=RIGHT|wx.EXPAND),
+                      (ir, 1), (1, 1), labstyle)
+
+        ir += 1
+        sizer.Add(lin(panel, 95),         (ir, 0), (1, 2), labstyle)
+
+        panel.SetSizer(sizer)
+        sizer.Fit(panel)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -181,19 +238,33 @@ class XRFDisplayFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
 
 
+    def BindMenuToPanel(self, panel=None):
+        if panel is None: panel = self.panel
+        if panel is not None:
+            p = panel
+            mids = self.menuIDs
+            self.Bind(wx.EVT_MENU, panel.configure,    id=mids.CONFIG)
+            self.Bind(wx.EVT_MENU, panel.toggle_legend, id=mids.TOGGLE_LEGEND)
+            self.Bind(wx.EVT_MENU, panel.toggle_grid, id=mids.TOGGLE_GRID)
+            self.Bind(wx.EVT_MENU, panel.configure,    id=mids.CONFIG)
+            self.Bind(wx.EVT_MENU, panel.unzoom,       id=mids.UNZOOM)
+
+            self.Bind(wx.EVT_MENU, panel.save_figure,  id=mids.SAVE)
+            self.Bind(wx.EVT_MENU, panel.Print,        id=mids.PRINT)
+            self.Bind(wx.EVT_MENU, panel.PrintSetup,   id=mids.PSETUP)
+            self.Bind(wx.EVT_MENU, panel.PrintPreview, id=mids.PREVIEW)
+            self.Bind(wx.EVT_MENU, panel.canvas.Copy_to_Clipboard,
+                      id=mids.CLIPB)
+
     def plot(self, x, y, mcagroup=None, **kws):
-        print 'plot x y!! '
-        plotpanel = self.panel
-        plotpanel.axes.get_yaxis().set_visible(False)
-        plotpanel.fig.set_frameon(False)
-        plotpanel.plot(x, y, **kws)
+        panel = self.panel
+        panel.plot(x, y, **kws)
+        panel.axes.get_yaxis().set_visible(False)
+        panel.unzoom_all()
+        panel.cursor_mode = 'zoom'
 
     def oplot(self, x, y, mcagroup=None, **kws):
-        print 'oplot x y!! '
-        plotpanel = self.panel
-        plotpanel.axes.get_yaxis().set_visible(False)
-        plotpanel.fig.set_frameon(False)
-        plotpanel.oplot(x, y, **kws)
+        panel.oplot(x, y, **kws)
 
     def onReadMCAFile(self, event=None):
         pass

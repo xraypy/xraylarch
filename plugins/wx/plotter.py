@@ -85,6 +85,7 @@ class XRFDisplay(XRFDisplayFrame):
         self.Destroy()
 
     def onCursor(self, x=None, y=None, **kw):
+
         symtable = ensuremod(self._larch, MODNAME)
         if symtable is None:
             return
@@ -211,7 +212,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display.SetTitle(title)
     return display
 
-def _xrf_plot(x, y, mcagroup=None, win=1, new=False, _larch=None,
+def _xrf_plot(x, y, mcagroup=None, win=1, new=True, _larch=None,
               wxparent=None, size=None, side='left', force_draw=True, **kws):
     """xrf_plot(energy, data[, win=1], options])
 
