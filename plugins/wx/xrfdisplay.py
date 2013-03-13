@@ -88,14 +88,16 @@ class XRFDisplayFrame(wx.Frame):
         self.wids = {}
         ctrlpanel = self.ctrlpanel = wx.Panel(self)
         roipanel = self.roipanel = wx.Panel(self)
-        plotpanel = self.plotpanel = PlotPanel(self, fontsize=7,
-                                               axisbg='#FDFDFA',
-                                               axissize=[0.08, 0.08, 0.88, 0.88],
-                                               output_title='test.xrf',
-                                               messenger=self.write_message)
+        plotpanel = self.panel = PlotPanel(self, fontsize=7,
+                                           axisbg='#FDFDFA',
+                                           axissize=[0.04, 0.08, 0.94, 0.90],
+                                           output_title='test.xrf',
+                                           messenger=self.write_message)
         ## need to customize cursor modes:
         # plotpane.add_cursor_mode('zoom', .....)
         # plotpane.add_cursor_mode('report', .....)
+
+
         sizer = wx.GridBagSizer(10, 4)
 
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
@@ -106,20 +108,47 @@ class XRFDisplayFrame(wx.Frame):
         def txt(label, panel, size=100):
             return wx.StaticText(panel, label=label, size=(size, -1), style=labstyle)
 
+        def lin(parent, len=120, wid=2, style=wx.LI_HORIZONTAL):
+            return wx.StaticLine(self, size=(len, wid), style=style)
+
         self.wids['ylog'] = add_choice(ctrlpanel, choices=['log', 'linear'], size=(90, -1))
         self.wids['ylog'].SetSelection(0)
 
-        sizer.Add(txt('Y Scale:', ctrlpanel),  (0, 0), (1, 1), labstyle)
-        sizer.Add(self.wids['ylog'],           (1, 0), (1, 1), ctrlstyle)
+        self.wids['series'] = add_choice(ctrlpanel, choices=['K', 'L', 'M', 'N'], size=(60, -1))
+        self.wids['series'].SetSelection(0)
+        self.wids['elems'] = add_choice(ctrlpanel, choices=['H', 'He'], size=(60, -1))
+        self.wids['elems'].SetSelection(0)
+
+        ir = 0
+        sizer.Add(txt('Settings:', ctrlpanel),  (ir, 0), (1, 2), labstyle)
+
+        ir += 1
+        sizer.Add(lin(ctrlpanel, 120),         (ir, 0), (1, 2), labstyle)
+
+        ir += 1
+        sizer.Add(txt('Series:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(self.wids['series'],          (ir, 1), (1, 1), ctrlstyle)
+
+        ir += 1
+        sizer.Add(txt('Elements:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(self.wids['elems'],          (ir, 1), (1, 1), ctrlstyle)
+
+        ir += 1
+        sizer.Add(lin(ctrlpanel, 120),         (ir, 0), (1, 2), labstyle)
+
+        ir += 1
+        sizer.Add(txt('Y Scale:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(self.wids['ylog'],           (ir, 1), (1, 1), ctrlstyle)
 
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
 
         msizer = wx.BoxSizer(wx.HORIZONTAL)
-        msizer.Add(ctrlpanel, 0, wx.GROW|wx.ALL, 5)
-        msizer.Add(plotpanel, 1, wx.GROW|wx.ALL, 5)
-        msizer.Add(roipanel, 0, wx.GROW|wx.ALL, 5)
+        msizer.Add(ctrlpanel, 0, wx.GROW|wx.ALL, 1)
+        msizer.Add(plotpanel, 1, wx.GROW|wx.ALL, 1)
+        msizer.Add(roipanel,  0, wx.GROW|wx.ALL, 1)
         pack(self, msizer)
+
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -152,9 +181,20 @@ class XRFDisplayFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
 
 
-    def plot(self, x, y, mcagroup=None, **kw):
-        print 'plot !! '
-        
+    def plot(self, x, y, mcagroup=None, **kws):
+        print 'plot x y!! '
+        plotpanel = self.panel
+        plotpanel.axes.get_yaxis().set_visible(False)
+        plotpanel.fig.set_frameon(False)
+        plotpanel.plot(x, y, **kws)
+
+    def oplot(self, x, y, mcagroup=None, **kws):
+        print 'oplot x y!! '
+        plotpanel = self.panel
+        plotpanel.axes.get_yaxis().set_visible(False)
+        plotpanel.fig.set_frameon(False)
+        plotpanel.oplot(x, y, **kws)
+
     def onReadMCAFile(self, event=None):
         pass
 

@@ -56,8 +56,8 @@ MAX_WINDOWS = 16
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
         XRFDisplayFrame.__init__(self, parent=None, size=size,
-                                 output_title='XRF', 
-                                 exit_callback=self.onExit, **kws)            
+                                 output_title='XRF',
+                                 exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()
         self.panel.cursor_callback = self.onCursor
@@ -199,7 +199,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display_dict = XRF_DISPLAYS
         title   = 'XRF Displaye Window %i' % win
         symname = '%s.xrf%i' % (MODNAME, win)
-        
+
     if win in display_dict:
         display = display_dict[win]
     else:
@@ -212,7 +212,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
     return display
 
 def _xrf_plot(x, y, mcagroup=None, win=1, new=False, _larch=None,
-              wxparent=None, size=None, **kws):
+              wxparent=None, size=None, side='left', force_draw=True, **kws):
     """xrf_plot(energy, data[, win=1], options])
 
     Show XRF trace of energy, data
