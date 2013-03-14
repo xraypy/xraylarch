@@ -46,7 +46,7 @@ class GSEMCA_File:
         above channel chan_min
         """
         for mca in self.mcas:
-            if mca.data[chan_min:].sum() > min_counts:
+            if mca.counts[chan_min:].sum() > min_counts:
                 return mca
 
     def get_energy(self, imca=None):
@@ -58,7 +58,7 @@ class GSEMCA_File:
         return mca.get_energy()
 
 
-    def get_data(self, align=True):
+    def get_counts(self, align=True):
         """ get summed MCA spectra,
 
         Options:
@@ -69,7 +69,7 @@ class GSEMCA_File:
         en  = mca0.get_energy()
         dat = 0
         for mca in self.mcas:
-            mdat = mca.data
+            mdat = mca.counts
             if align and mca != mca0:
                 _en  = mca.get_energy()
                 mdat = UnivariateSpline(_en, mdat, s=0)(en)
@@ -87,7 +87,7 @@ class GSEMCA_File:
         ndet       = 1  # Assume single element data
         nrow       = 0
         data_mode  = 0
-        data       = []
+        counts     = []
         rois       = []
         environ    = []
         head = {'live time':[], 'real time':[], 'start time':'',
@@ -96,7 +96,7 @@ class GSEMCA_File:
             l  = l.strip()
             if len(l) < 1: continue
             if data_mode == 1:
-                data.append(str2ints(l))
+                counts.append(str2ints(l))
             else:
                 pos = l.find(' ')
                 if (pos == -1): pos = len(l)
@@ -148,7 +148,7 @@ class GSEMCA_File:
                     pass # print " Warning: " , tag, " is not supported here!"
 
         #
-        data =  np.array(data)
+        counts =  np.array(counts)
 
         ## Data has been read, now store in MCA objects
         start_time = head['start time']
@@ -161,7 +161,7 @@ class GSEMCA_File:
             ltime  = head['real time'][imca]
             thismca = MCA(name='mca%i' % (imca+1),
                           nchans=self.nchans,
-                          data=data[:,imca],
+                          counts=counts[:,imca],
                           start_time=start_time,
                           offset=offset, slope=slope, quad=quad,
                           real_time=rtime, live_time=ltime)
@@ -178,7 +178,7 @@ class GSEMCA_File:
             self.mcas.append(thismca)
             if sum_mca is None:
                 sum_mca = copy.deepcopy(thismca)
-        sum_mca.data = self.get_data()
+        sum_mca.counts = self.get_counts()
         sum_mca.name = 'mcasum'
         self.sum = sum_mca
         return
@@ -197,7 +197,7 @@ class GSEMCA_File:
             self.sum.rois.sort()
 
     def save_columnfile(self, filename, headerlines=None):
-        "write summed data to simple ASCII  column file"
+        "write summed counts to simple ASCII  column file"
         self.sum.save_columnfile(filename, headerlines=headerlines)
 
     def save_mcafile(self, filename):
@@ -207,7 +207,7 @@ class GSEMCA_File:
         -----------
         * filename: output file name
         """
-        nchans = len(self.sum.data)
+        nchans = len(self.sum.counts)
         ndet   = len(self.mcas)
 
         # formatted count times and calibration
@@ -248,7 +248,7 @@ class GSEMCA_File:
         # data
         fp.write('DATA: \n')
         for i in range(nchans):
-            d = ' '.join(["%i" % m.data[i] for m in self.mcas])
+            d = ' '.join(["%i" % m.counts[i] for m in self.mcas])
             fp.write(" %s\n" % d)
         fp.close()
 
@@ -269,13 +269,13 @@ def gsemca_group(fname, _larch=None, **kws):
                       'quad': xfile.sum.quad}
     group.rois     = xfile.sum.rois
     group.get_roi_counts = xfile.sum.get_roi_counts
-    for attr in ('rois', 'environ', 'energy', 'data', 'dt_factor',
+    for attr in ('rois', 'environ', 'energy', 'counts', 'dt_factor',
                  'icr_calc', 'input_counts', 'live_time', 'nchans',
                  'real_time', 'start_time', 'tau'):
         setattr(group, attr, getattr(xfile.sum, attr))
     return group
 
-def xrf_background(energy, data, group=None, _larch=None,
+def xrf_background(energy, counts, group=None, _larch=None,
                    bottom_width=4, compress=4, exponent=2, **kws):
     """fit background for XRF spectra"""
     if _larch is None:
@@ -285,7 +285,7 @@ def xrf_background(energy, data, group=None, _larch=None,
     xbgr = XRFBackground(bottom_width=bottom_width,
                          compress=compress,
                          exponent=exponent, **kws)
-    xbgr.calc(data, slope=slope)
+    xbgr.calc(counts, slope=slope)
     if group is not None:
         group.bgr = xbgr.bgr
 

@@ -45,7 +45,7 @@ class MCA:
     -----------
     * self.name        = 'mca'  # Name of the mca object
     * self.nchans      = 2048   # number of mca channels
-    * self.data        = None   # MCA data
+    * self.counts      = None   # MCA data
 
     # Counting parameters
     * self.start_time   = ''    # Start time and date, a string
@@ -85,7 +85,7 @@ class MCA:
 
     """
     ###############################################################################
-    def __init__(self, data=None, nchans=2048, start_time='',
+    def __init__(self, counts=None, nchans=2048, start_time='',
                  offset=0, slope=0, quad=0, name='mca', dt_factor=1,
                  real_time=0, live_time = 0, input_counts=0, tau=0, **kws):
 
@@ -93,9 +93,9 @@ class MCA:
         self.nchans  = nchans
         self.environ = []
         self.rois    = []
-        self.data    = data
-        if data is not None:
-            self.nchans      = len(data)
+        self.counts  = counts
+        if counts is not None:
+            self.nchans      = len(counts)
 
         # Calibration parameters
         self.offset       = offset # Offset
@@ -114,7 +114,7 @@ class MCA:
                                   #     ocr = icr * exp(-icr*tau)
         # Calculated correction values
         self.icr_calc    = -1.0  # Calculated input count rate from above expression
-        # corrected_data = data * dt_factor
+        # corrected_counts = counts * dt_factor
         self.bgr = None
         self.dt_factor   = float(dt_factor)
         self.get_energy()
@@ -122,7 +122,7 @@ class MCA:
 
     def __repr__(self):
         form = "<MCA %s, nchans=%d, counts=%d, realtime=%d>"
-        return form % (self.name, self.nchans, self.data.sum(), self.real_time)
+        return form % (self.name, self.nchans, self.counts.sum(), self.real_time)
 
     def add_roi(self, name='', left=0, right=0, bgr_width=3, sort=True):
         """add an ROI"""
@@ -139,7 +139,7 @@ class MCA:
             self.rois.sort()
 
     def get_roi_counts(self, roi, net=False):
-        """get roi counts for an roi"""
+        """get counts for an roi"""
         thisroi = None
         if isinstance(roi, ROI):
             thisroi = roi
@@ -153,7 +153,7 @@ class MCA:
                     break
         if thisroi is None:
             return None
-        return thisroi.get_counts(self.data, net=net)
+        return thisroi.get_counts(self.counts, net=net)
 
     def add_environ(self, desc='', val='', addr=''):
         """add an Environment setting"""
@@ -203,29 +203,29 @@ class MCA:
         self.dt_factor  = correction_factor(self.real_time, self.live_time,
                                              icr=icr,  ocr=ocr)
         if self.dt_factor <= 0:
-            print "Error computing data correction factor --> setting to 1"
+            print "Error computing counts correction factor --> setting to 1"
             self.dt_factor = 1.0
 
     ########################################################################
-    def get_data(self, correct=True):
+    def get_counts(self, correct=True):
         """
-        Returns the data (counts) from the MCA
+        Returns the counts array from the MCA
 
-        Note if correct == True the corrected data is returned. However,
+        Note if correct == True the corrected counts is returned. However,
         this does not (re)compute the correction factor, therefore, make
         sure the correction factor is up to date before requesting
-        corrected data...
+        corrected counts...
         """
         if correct:
-            return  (self.dt_factor * self.data).astype(np.int)
+            return  (self.dt_factor * self.counts).astype(np.int)
         else:
-            return self.data
+            return self.counts
 
     def fit_background(self, bottom_width=4, compress=4, exponent=2):
         xrfbgr = XRFBackground(bottom_width=bottom_width,
                             compress=compress,
                             exponent=exponent)
-        xrfbgr.calc(self.data, slope=self.slope)
+        xrfbgr.calc(self.counts, slope=self.slope)
         self.bgr = xrfbgr.bgr
 
     def get_energy(self):
@@ -237,9 +237,9 @@ class MCA:
         return self.energy
 
     def save_columnfile(self, filename, headerlines=None):
-        "write summed data to simple ASCII column file for mca data"
+        "write summed counts to simple ASCII column file for mca counts"
         f = open(filename, "w+")
-        f.write("#XRF data for %s\n" % self.name)
+        f.write("#XRF counts for %s\n" % self.name)
         if headerlines is not None:
             for i in headerlines:
                 f.write("#%s\n" % i)
@@ -256,7 +256,7 @@ class MCA:
         f.write("#-----------------------------------------\n")
         f.write("#    energy       counts     log_counts\n")
 
-        for e, d in zip(self.energy, self.data):
+        for e, d in zip(self.energy, self.counts):
             dlog = 0.
             if  d > 0: dlog = np.log10(max(d, 1))
             f.write(" %10.4f  %12i  %12.6g\n" % (e, d, dlog))
@@ -274,7 +274,7 @@ class MCA:
         fp.write('VERSION:    3.1\n')
         fp.write('ELEMENTS:   1\n')
         fp.write('DATE:       %s\n' % self.start_time)
-        fp.write('CHANNELS:   %i\n' % len(self.data))
+        fp.write('CHANNELS:   %i\n' % len(self.counts))
         fp.write('REAL_TIME:  %f\n' % self.real_time)
         fp.write('LIVE_TIME:  %f\n' % self.live_time)
         fp.write('CAL_OFFSET: %e\n' % self.offset)
@@ -294,6 +294,6 @@ class MCA:
 
         # data
         fp.write('DATA: \n')
-        for d in self.data:
+        for d in self.counts:
             fp.write(" %s\n" % d)
         fp.close()
