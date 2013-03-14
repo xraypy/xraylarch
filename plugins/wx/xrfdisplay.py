@@ -69,6 +69,7 @@ class Menu_IDs:
         self.TOGGLE_LEGEND = wx.NewId()
         self.TOGGLE_GRID = wx.NewId()
 
+
 class XRFDisplayFrame(BaseFrame):
     _about = """XRF Spectral Viewer
   Matt Newville <newville @ cars.uchicago.edu>
@@ -85,6 +86,7 @@ class XRFDisplayFrame(BaseFrame):
         BaseFrame.__init__(self, parent=parent,
                            title=title, size=size,
                            axissize=axissize, axisbg=axisbg,
+                           exit_callback=exit_callback,
                            **kws)
 
         self.data = None
@@ -110,8 +112,6 @@ class XRFDisplayFrame(BaseFrame):
         statusbar_fields = ["XRF Display", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-
-        # self.BindMenuToPanel()
 
 
     def createMainPanel(self):
@@ -180,7 +180,7 @@ class XRFDisplayFrame(BaseFrame):
         ir = 0
         rsizer.Add(txt('  Regions of Interest: ', roipanel),  (ir, 0), (1, 2), labstyle)
         ir += 1
-        rsizer.Add(lin(roipanel, 120),         (ir, 0), (1, 2), labstyle)
+        rsizer.Add(lin(roipanel, 180),         (ir, 0), (1, 2), labstyle)
         roipanel.SetSizer(rsizer)
         rsizer.Fit(roipanel)
 
@@ -207,9 +207,9 @@ class XRFDisplayFrame(BaseFrame):
 
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ir = 0
-        sizer.Add(txt('  Regions of Interest  ', panel),  (ir, 0), (1, 2), labstyle)
+        sizer.Add(txt('  Regions of Interest:  ', panel),  (ir, 0), (1, 2), labstyle)
         ir += 1
-        sizer.Add(lin(panel, 105),         (ir, 0), (1, 2), labstyle)
+        sizer.Add(lin(panel, 180),         (ir, 0), (1, 2), labstyle)
 
         ir += 1
         sizer.Add(txt(' Name ', panel),  (ir, 0), (1, 1), labstyle)
@@ -219,17 +219,17 @@ class XRFDisplayFrame(BaseFrame):
         if mca is not None:
             for roi in mca.rois:
                 name = " %s " % roi.name
-                counts = "%d " % mca.get_roi_counts(roi.name)
+                counts = "%d  " % mca.get_roi_counts(roi.name)
                 ir += 1
                 sizer.Add(HyperText(panel, name, action=self.onROI,
-                                    size=(80, -1),
+                                    size=(90, -1),
                                     style=wx.ALIGN_LEFT|wx.EXPAND),
-                          (ir, 0), (1, 1), labstyle)
+                          (ir, 0), (1, 1), labstyle, 2)
                 sizer.Add(txt(counts, panel, style=wx.ALIGN_RIGHT|wx.EXPAND),
-                          (ir, 1), (1, 1), labstyle)
+                          (ir, 1), (1, 1), labstyle, 2)
 
         ir += 1
-        sizer.Add(lin(panel, 105),         (ir, 0), (1, 2), labstyle)
+        sizer.Add(lin(panel, 180),         (ir, 0), (1, 2), labstyle)
 
         panel.SetSizer(sizer)
         sizer.Fit(panel)
@@ -265,7 +265,6 @@ class XRFDisplayFrame(BaseFrame):
         self.panel.canvas.draw()
         self.panel.Refresh()
 
-
     def createMenus(self):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
@@ -283,8 +282,19 @@ class XRFDisplayFrame(BaseFrame):
                  "Save Column File",  self.onSaveColumnFile)
 
         fmenu.AppendSeparator()
+        add_menu(self, fmenu,  "&Save\tCtrl+S",
+                 "Save PNG Image of Plot", self.onSavePNG)
+        add_menu(self, fmenu, "&Copy\tCtrl+C",
+                 "Copy Plot Image to Clipboard",
+                 self.onCopyImage)
+        add_menu(self, fmenu, 'Page Setup...', 'Printer Setup', self.onPageSetup)
+        add_menu(self, fmenu, 'Print Preview...', 'Print Preview', self.onPrintPreview)
+        add_menu(self, fmenu, "&Print\tCtrl+P", "Print Plot", self.onPrint)
+
+
+        fmenu.AppendSeparator()
         add_menu(self, fmenu, "&Quit\tCtrl+Q",
-                  "Quit program", self.onClose)
+                  "Quit program", self.onExit)
 
         omenu = wx.Menu()
         add_menu(self, omenu, "&Calibrate Energy\tCtrl+B",
@@ -292,28 +302,52 @@ class XRFDisplayFrame(BaseFrame):
         add_menu(self, omenu, "&Fit background\tCtrl+G",
                  "Fit smooth background",  self.onFitbackground)
 
+        add_menu(self, omenu, "Zoom Out\tCtrl+Z",
+                 "Zoom out to full data range", self.unzoom)
+
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(omenu, "&Options")
         self.SetMenuBar(self.menubar)
+        self.Bind(wx.EVT_CLOSE,self.onExit)
+
+    def onSavePNG(self, event=None):
+        if self.panel is not None:
+            self.panel.save_figure(event=event)
+    def onCopyImage(self, event=None):
+        if self.panel is not None:
+            self.panel.canvas.Copy_to_Clipboard(event=event)
+    def onPageSetup(self, event=None):
+        if self.panel is not None:
+            self.panel.PrintSetup(event=event)
+
+    def onPrintPreview(self, event=None):
+        if self.panel is not None:
+            self.panel.PrintPreview(event=event)
+
+    def onPrint(self, event=None):
+        if self.panel is not None:
+            self.panel.Print(event=event)
 
 
-    def BindMenuToPanel(self, panel=None):
-        if panel is None: panel = self.panel
-        if panel is not None:
-            p = panel
-            mids = self.menuIDs
-            self.Bind(wx.EVT_MENU, panel.configure,    id=mids.CONFIG)
-            self.Bind(wx.EVT_MENU, panel.toggle_legend, id=mids.TOGGLE_LEGEND)
-            self.Bind(wx.EVT_MENU, panel.toggle_grid, id=mids.TOGGLE_GRID)
-            self.Bind(wx.EVT_MENU, panel.configure,    id=mids.CONFIG)
-            self.Bind(wx.EVT_MENU, panel.unzoom,       id=mids.UNZOOM)
+    def onExit(self, event=None):
+        try:
+            if hasattr(self.exit_callback, '__call__'):
+                self.exit_callback()
+        except:
+            pass
+        try:
+            if self.panel is not None:
+                self.panel.win_config.Close(True)
+            if self.panel is not None:
+                self.panel.win_config.Destroy()
+        except:
+            pass
 
-            self.Bind(wx.EVT_MENU, panel.save_figure,  id=mids.SAVE)
-            self.Bind(wx.EVT_MENU, panel.Print,        id=mids.PRINT)
-            self.Bind(wx.EVT_MENU, panel.PrintSetup,   id=mids.PSETUP)
-            self.Bind(wx.EVT_MENU, panel.PrintPreview, id=mids.PREVIEW)
-            self.Bind(wx.EVT_MENU, panel.canvas.Copy_to_Clipboard,
-                      id=mids.CLIPB)
+        try:
+            self.Destroy()
+        except:
+            pass
+
 
     def onLogLinear(self, event=None):
         self.plot(self.xdata, self.ydata,

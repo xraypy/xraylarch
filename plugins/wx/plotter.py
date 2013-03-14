@@ -85,7 +85,6 @@ class XRFDisplay(XRFDisplayFrame):
         self.Destroy()
 
     def onCursor(self, x=None, y=None, **kw):
-
         symtable = ensuremod(self._larch, MODNAME)
         if symtable is None:
             return
@@ -220,21 +219,13 @@ def _xrf_plot(x, y, mcagroup=None, win=1, new=True, _larch=None,
 
     Parameters:
     --------------
-        x :  array of ordinate values
-        y :  array of abscissa values (x and y must be same size!)
+        energy :  array of energies
+        counts :  array of counts
+        mcagroup:  Group counting MCA data (rois, etc)
 
         win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
         new: flag (True/False, default False) for whether to start a new plot.
-        force_draw: flag (True/False, default Tree) for whether force a draw.
-                    This will take a little extra time, and is not needed when
-                    typing at the command-line, but is needed for plots to update
-                    from inside scripts.
-        label: label for trace
-        title:  title for Plot
-        xlabel: x-axis label
-        ylabel: y-axis label
         ylog_scale: whether to show y-axis as log-scale (True or False)
-        grid: whether to draw background grid (True or False)
 
         color: color for trace (name such as 'red', or '#RRGGBB' hex string)
         style: trace linestyle (one of 'solid', 'dashed', 'dotted', 'dot-dash')
@@ -242,13 +233,7 @@ def _xrf_plot(x, y, mcagroup=None, win=1, new=True, _larch=None,
         marker:  symbol to draw at eac point ('+', 'o', 'x', 'square', etc)
         markersize: integer size of marker
 
-        drawstyle: style for joining line segments
-
-        dy: array for error bars in y (must be same size as y!)
-        yaxis='left'??
-        use_dates
-
-    See Also: oplot, newplot
+    See Also: oplot, plot
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
                           _larch=_larch, xrf=True)
@@ -256,11 +241,9 @@ def _xrf_plot(x, y, mcagroup=None, win=1, new=True, _larch=None,
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
     if new:
-        plotter.plot(x, y, side=side, **kws)
+        plotter.plot(x, y, **kws)
     else:
-        plotter.oplot(x, y, side=side, **kws)
-    if force_draw:
-        update(_larch=_larch)
+        plotter.oplot(x, y, **kws)
 
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
@@ -311,7 +294,6 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
         plotter.oplot(x, y, side=side, **kws)
     if force_draw:
         update(_larch=_larch)
-
 
 def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
                  side='left', redraw=False, **kws):
