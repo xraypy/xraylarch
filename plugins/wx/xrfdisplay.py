@@ -18,7 +18,8 @@ from larch import Group, Parameter, isParameter, plugin_path
 
 sys.path.insert(0, plugin_path('wx'))
 
-from wxutils import (SimpleText, EditableListBox, FloatCtrl, Closure, pack,
+from wxutils import (SimpleText, EditableListBox, FloatCtrl, HyperText,
+                     Closure, pack,
                      popup, add_button, add_menu, add_choice, add_menu)
 
 #from ..io.xrm_mapfile import (GSEXRM_MapFile, GSEXRM_FileStatus,
@@ -39,23 +40,17 @@ FILE_ALREADY_READ = """The File
 has already been read.
 """
 
-def txt(label, panel, size=75, style=LEFT|wx.EXPAND):
-    return wx.StaticText(panel, label=label, size=(size, -1), style=style)
+def txt(label, panel, size=75, colour=None,  style=None):
+    if style is None:
+        style = wx.ALIGN_LEFT|wx.ALL|wx.GROW
+    if colour is None:
+        colour = wx.Colour(0, 0, 50)
+    return SimpleText(panel, label, size=(size, -1),
+                      colour=colour, style=style)
 
 def lin(panel, len=30, wid=2, style=wx.LI_HORIZONTAL):
     return wx.StaticLine(panel, size=(len, wid), style=style)
 
-def set_choices(choicebox, choices):
-    index = 0
-    try:
-        current = choicebox.GetStringSelection()
-        if current in choices:
-            index = choices.index(current)
-    except:
-        pass
-    choicebox.Clear()
-    choicebox.AppendItems(choices)
-    choicebox.SetStringSelection(choices[index])
 
 class Menu_IDs:
     def __init__(self):
@@ -78,6 +73,10 @@ class XRFDisplayFrame(BaseFrame):
     _about = """XRF Spectral Viewer
   Matt Newville <newville @ cars.uchicago.edu>
   """
+    roi_fillcolor = '#EAEA44'
+    roi_color     = '#AA0000'
+    spectra_color = '#0000AA'
+
     def __init__(self, _larch=None, parent=None, size=(700, 400),
                  axissize=None, axisbg=None, title='XRF Display',
                  exit_callback=None, output_title='XRF', **kws):
@@ -92,6 +91,8 @@ class XRFDisplayFrame(BaseFrame):
         self.plotframe = None
         self.larch = _larch
         self.exit_callback = exit_callback
+        self.selected_roi = None
+        self.mca = None
 
         self.Font14 = wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font12 = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -134,78 +135,136 @@ class XRFDisplayFrame(BaseFrame):
         rlabstyle = wx.ALIGN_RIGHT|wx.RIGHT|wx.TOP|wx.EXPAND
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
 
-
-        self.wids['ylog'] = add_choice(ctrlpanel, choices=['log', 'linear'], size=(80, -1))
-        self.wids['ylog'].SetSelection(0)
-
-        self.wids['series'] = add_choice(ctrlpanel, choices=['K', 'L', 'M', 'N'], size=(80, -1))
-        self.wids['series'].SetSelection(0)
-        self.wids['elems'] = add_choice(ctrlpanel, choices=['H', 'He'], size=(80, -1))
-        self.wids['elems'].SetSelection(0)
+        self.wids['ylog'] = add_choice(ctrlpanel, size=(80, -1),
+                                       choices=['log', 'linear'],
+                                       action=self.onLogLinear)
+        self.wids['series'] = add_choice(ctrlpanel, size=(80, -1),
+                                         choices=['K', 'L', 'M', 'N'])
+        self.wids['elems'] = add_choice(ctrlpanel, size=(80, -1),
+                                        choices=['H', 'He'])
 
         ir = 0
-        sizer.Add(txt('Settings:', ctrlpanel),  (ir, 0), (1, 2), labstyle)
+        sizer.Add(txt('  Settings: ', ctrlpanel),  (ir, 0), (1, 2), labstyle)
 
         ir += 1
         sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
 
         ir += 1
-        sizer.Add(txt('Series:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(txt(' Series:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
         sizer.Add(self.wids['series'],          (ir, 1), (1, 1), ctrlstyle)
 
         ir += 1
-        sizer.Add(txt('Elements:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(txt(' Elements:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
         sizer.Add(self.wids['elems'],          (ir, 1), (1, 1), ctrlstyle)
 
         ir += 1
         sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
 
         ir += 1
-        sizer.Add(txt('Y Scale:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(txt(' Y Scale:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
         sizer.Add(self.wids['ylog'],           (ir, 1), (1, 1), ctrlstyle)
+
+        ir += 1
+        sizer.Add(txt(' ', ctrlpanel),  (ir, 0), (1, 1), wx.ALL|wx.EXPAND|labstyle)
+
+        ir += 1
+        sizer.Add(txt(' Counts: ', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        ir += 1
+        sizer.Add(txt('   : ', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+
 
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
 
         rsizer = wx.GridBagSizer(10, 3)
         ir = 0
-        rsizer.Add(txt('Regions of Interest:', roipanel),  (ir, 0), (1, 2), labstyle)
+        rsizer.Add(txt('  Regions of Interest: ', roipanel),  (ir, 0), (1, 2), labstyle)
         ir += 1
-        rsizer.Add(lin(roipanel, 95),         (ir, 0), (1, 2), labstyle)
-
+        rsizer.Add(lin(roipanel, 120),         (ir, 0), (1, 2), labstyle)
         roipanel.SetSizer(rsizer)
         rsizer.Fit(roipanel)
 
-        msizer = wx.BoxSizer(wx.HORIZONTAL)
-        msizer.Add(self.ctrlpanel, 0, wx.GROW|wx.ALL, 1)
-        msizer.Add(self.panel, 1, wx.GROW|wx.ALL, 1)
-        msizer.Add(self.roipanel,  0, wx.GROW|wx.ALL, 1)
-        pack(self, msizer)
-        self.add_rois()
+        style = wx.EXPAND|wx.ALL
 
-    def add_rois(self):
+        msizer = wx.BoxSizer(wx.HORIZONTAL)
+        msizer.Add(self.ctrlpanel, 0, style, 0)
+        msizer.Add(self.panel,     1, style, 0)
+        msizer.Add(self.roipanel,  0, style, 0)
+
+        pack(self, msizer)
+        self.add_rois(mca=None)
+
+    def add_rois(self, mca=None):
         """ Add Roi names and counts to ROI Panel"""
         sizer = wx.GridBagSizer(10, 3)
         panel = self.roipanel
+
+        for wid in self.roipanel.Children:
+            try:
+                wid.Destroy()
+            except PyDeadObjectError:
+                pass
+
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ir = 0
-        sizer.Add(txt('Regions of Interest:', panel),  (ir, 0), (1, 2), labstyle)
+        sizer.Add(txt('  Regions of Interest  ', panel),  (ir, 0), (1, 2), labstyle)
         ir += 1
-        sizer.Add(lin(panel, 95),         (ir, 0), (1, 2), labstyle)
-
-        for name, counts in (('Ar Ka', 2000), ('Ca Ka', 6000), ('Fe Ka', 213040),
-                             ('As Ka/Pb Lb1', 1234560)):
-            ir += 1
-            sizer.Add(txt(name, panel, style=LEFT|wx.EXPAND),
-                      (ir, 0), (1, 1), labstyle)
-            sizer.Add(txt("%i" % counts, panel, style=RIGHT|wx.EXPAND),
-                      (ir, 1), (1, 1), labstyle)
+        sizer.Add(lin(panel, 105),         (ir, 0), (1, 2), labstyle)
 
         ir += 1
-        sizer.Add(lin(panel, 95),         (ir, 0), (1, 2), labstyle)
+        sizer.Add(txt(' Name ', panel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(txt(' Counts ', panel, style=RIGHT|wx.EXPAND),
+                  (ir, 1), (1, 1), labstyle)
+
+        if mca is not None:
+            for roi in mca.rois:
+                name = " %s " % roi.name
+                counts = "%d " % mca.get_roi_counts(roi.name)
+                ir += 1
+                sizer.Add(HyperText(panel, name, action=self.onROI,
+                                    size=(80, -1),
+                                    style=wx.ALIGN_LEFT|wx.EXPAND),
+                          (ir, 0), (1, 1), labstyle)
+                sizer.Add(txt(counts, panel, style=wx.ALIGN_RIGHT|wx.EXPAND),
+                          (ir, 1), (1, 1), labstyle)
+
+        ir += 1
+        sizer.Add(lin(panel, 105),         (ir, 0), (1, 2), labstyle)
 
         panel.SetSizer(sizer)
         sizer.Fit(panel)
+
+    def onROI(self, evt=None, label=None):
+        name, left, right= None, -1, -1
+        label = label.lower().strip()
+        if self.mca is not None:
+            for roi in self.mca.rois:
+                if roi.name.lower()==label:
+                    name = roi.name
+                    left = roi.left
+                    right= roi.right
+
+        if name is None or right == -1:
+            return
+
+        if self.selected_roi  is not None:
+            try:
+                self.selected_roi.remove()
+            except:
+                pass
+
+        e = np.zeros(right-left+2)
+        r = np.ones(right-left+2)
+        e[1:-1] = self.mca.energy[left:right]
+        r[1:-1] = self.mca.counts[left:right]
+        e[0]    = e[1]
+        e[-1]   = e[-2]
+        fill = self.panel.axes.fill_between
+        self.selected_roi  = fill(e, r, color=self.roi_fillcolor)
+
+        self.panel.canvas.draw()
+        self.panel.Refresh()
+
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -256,12 +315,23 @@ class XRFDisplayFrame(BaseFrame):
             self.Bind(wx.EVT_MENU, panel.canvas.Copy_to_Clipboard,
                       id=mids.CLIPB)
 
-    def plot(self, x, y, mcagroup=None, **kws):
+    def onLogLinear(self, event=None):
+        self.plot(self.xdata, self.ydata,
+                  ylog_scale=('log' == event.GetString()))
+
+    def plot(self, x, y, mca=None, **kws):
         panel = self.panel
-        panel.plot(x, y, **kws)
+        kwargs = {'ylog_scale': True, 'xmin': 0}
+        kwargs.update(kws)
+        self.xdata = x
+        self.ydata = y
+        panel.plot(x, y, **kwargs)
         panel.axes.get_yaxis().set_visible(False)
         panel.unzoom_all()
         panel.cursor_mode = 'zoom'
+        if mca is not None:
+            self.mca = mca
+            self.add_rois(mca=mca)
 
     def oplot(self, x, y, mcagroup=None, **kws):
         panel.oplot(x, y, **kws)

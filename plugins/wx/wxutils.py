@@ -43,6 +43,18 @@ def add_choice(panel, choices, default=0, action=None, **kws):
     c.Bind(wx.EVT_CHOICE, action)
     return c
 
+def set_choices(choicebox, choices):
+    index = 0
+    try:
+        current = choicebox.GetStringSelection()
+        if current in choices:
+            index = choices.index(current)
+    except:
+        pass
+    choicebox.Clear()
+    choicebox.AppendItems(choices)
+    choicebox.SetStringSelection(choices[index])
+
 def popup(parent, message, title, style=None):
     """generic popup message dialog, returns
     output of MessageDialog.ShowModal()
@@ -213,8 +225,9 @@ class SimpleText(wx.StaticText):
     "simple static text wrapper"
     def __init__(self, parent, label, minsize=None,
                  font=None, colour=None, bgcolour=None,
-                 style=wx.ALIGN_CENTRE,  **kws):
-
+                 style=None, **kws):
+        if style is None:
+            style = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
         wx.StaticText.__init__(self, parent, -1,
                                label=label, style=style, **kws)
 
@@ -233,9 +246,10 @@ class HyperText(wx.StaticText):
        1. adds an underscore to the lable to appear to be a hyperlink
        2. performs the supplied action on Left-Up button events
     """
-    def  __init__(self, parent, label, action=None, colour=(50, 50, 180)):
+    def  __init__(self, parent, label, action=None, style=None,
+                  colour=(50, 50, 180), **kws):
         self.action = action
-        wx.StaticText.__init__(self, parent, -1, label=label)
+        wx.StaticText.__init__(self, parent, -1, label=label, style=style, **kws)
         font  = self.GetFont() # .Bold()
         font.SetUnderlined(True)
         self.SetFont(font)
