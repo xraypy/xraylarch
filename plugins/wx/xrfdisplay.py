@@ -95,6 +95,7 @@ class XRFDisplayFrame(BaseFrame):
         self.exit_callback = exit_callback
         self.selected_roi = None
         self.mca = None
+        self.rois_shown = False
 
         self.Font14 = wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font12 = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -176,7 +177,7 @@ class XRFDisplayFrame(BaseFrame):
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
 
-        rsizer = wx.GridBagSizer(10, 3)
+        rsizer = self.roisizer = wx.GridBagSizer(10, 3)
         ir = 0
         rsizer.Add(txt('  Regions of Interest: ', roipanel),  (ir, 0), (1, 2), labstyle)
         ir += 1
@@ -196,6 +197,8 @@ class XRFDisplayFrame(BaseFrame):
 
     def add_rois(self, mca=None):
         """ Add Roi names and counts to ROI Panel"""
+        if self.rois_shown: return
+        
         sizer = wx.GridBagSizer(10, 3)
         panel = self.roipanel
 
@@ -228,8 +231,12 @@ class XRFDisplayFrame(BaseFrame):
                 sizer.Add(txt(counts, panel, style=wx.ALIGN_RIGHT|wx.EXPAND),
                           (ir, 1), (1, 1), labstyle, 2)
 
+                self.rois_shown = True
         ir += 1
         sizer.Add(lin(panel, 180),         (ir, 0), (1, 2), labstyle)
+        pextra = wx.Panel(panel)
+        ir += 1
+        sizer.Add(pextra,      (ir, 0), (1, 2), wx.GROW|wx.ALL, 1)
 
         panel.SetSizer(sizer)
         sizer.Fit(panel)
@@ -354,18 +361,33 @@ class XRFDisplayFrame(BaseFrame):
                   ylog_scale=('log' == event.GetString()))
 
     def plot(self, x, y, mca=None, **kws):
+        if mca is not None:
+            self.mca = mca
+        mca = self.mca
         panel = self.panel
-        kwargs = {'ylog_scale': True, 'xmin': 0}
+        kwargs = {'ylog_scale': True, 'xlabel': 'E (keV)',
+                  'color': self.spectra_color}
         kwargs.update(kws)
-        self.xdata = x
-        self.ydata = y
-        panel.plot(x, y, **kwargs)
+        self.xdata = 1.0*x[:]
+        self.ydata = 1.0*y[:]
+        if mca is not None:
+            if not self.rois_shown:
+                self.add_rois(mca=mca)
+            yroi = -1*np.ones(len(y))
+            ydat = 1.0*y[:]
+            for r in mca.rois:
+                yroi[r.left:r.right] = y[r.left:r.right]
+                ydat[r.left+1:r.right-1] = -1
+            yroi = np.ma.masked_less(yroi, 0)
+            ydat = np.ma.masked_less(ydat, 0)
+            panel.plot(x, ydat, label='spectra', **kwargs)
+            kwargs['color'] = self.roi_color
+            panel.oplot(x, yroi, label='roi', **kwargs)            
+        else:
+            panel.plot(x, y, **kwargs)
         panel.axes.get_yaxis().set_visible(False)
         panel.unzoom_all()
         panel.cursor_mode = 'zoom'
-        if mca is not None:
-            self.mca = mca
-            self.add_rois(mca=mca)
 
     def oplot(self, x, y, mcagroup=None, **kws):
         panel.oplot(x, y, **kws)
