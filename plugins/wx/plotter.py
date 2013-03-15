@@ -56,7 +56,7 @@ MAX_WINDOWS = 16
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
         XRFDisplayFrame.__init__(self, parent=None, size=size,
-                                 output_title='XRF',
+                                 output_title='XRF', _larch=_larch,
                                  exit_callback=self.onExit, **kws)
         self.Show()
         self.Raise()

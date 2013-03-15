@@ -86,11 +86,20 @@ class XRFDisplayFrame(BaseFrame):
     _about = """XRF Spectral Viewer
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    roi_fillcolor = '#EAEA44'
+    major_elinecolor = (0.6, 0.6, 0.4, 0.4)
+    minor_elinecolor = (0.7, 0.7, 0.4, 0.3)
+    
+    roi_fillcolor = (0.9, 0.9, 0.5)
     roi_color     = '#AA0000'
     spectra_color = '#0000AA'
+    K_major = ('Ka1', 'Ka2', 'Kb1')
+    K_minor = ('Kb3', 'Kb2')
+    L_major = ('La1', 'Lb1', 'Lb3', 'Lb4')
+    L_minor = ('Ln', 'Ll', 'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2')
+    M_major = ('Ma', 'Mb', 'Mg', 'Mz')
+    
 
-    def __init__(self, _larch=None, parent=None, size=(700, 400),
+    def __init__(self, _larch=None, parent=None, size=(725, 450),
                  axissize=None, axisbg=None, title='XRF Display',
                  exit_callback=None, output_title='XRF', **kws):
 
@@ -121,8 +130,8 @@ class XRFDisplayFrame(BaseFrame):
 
         self.createMainPanel()
         self.createMenus()
-        self.statusbar = self.CreateStatusBar(2, 0)
-        self.statusbar.SetStatusWidths([-3, -1])
+        self.statusbar = self.CreateStatusBar(3)
+        self.statusbar.SetStatusWidths([-3, -1, -1])
         statusbar_fields = ["XRF Display", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
@@ -134,7 +143,7 @@ class XRFDisplayFrame(BaseFrame):
         roipanel = self.roipanel = wx.Panel(self)
         plotpanel = self.panel = PlotPanel(self, fontsize=7,
                                                axisbg='#FDFDFA',
-                                               axissize=[0.04, 0.08, 0.94, 0.90],
+                                               axissize=[0.03, 0.10, 0.94, 0.88],
                                                output_title='test.xrf',
                                                messenger=self.write_message)
         ## need to customize cursor modes:
@@ -152,35 +161,63 @@ class XRFDisplayFrame(BaseFrame):
         self.wids['ylog'] = add_choice(ctrlpanel, size=(80, -1),
                                        choices=['log', 'linear'],
                                        action=self.onLogLinear)
-        self.wids['series'] = add_choice(ctrlpanel, size=(80, -1),
-                                         choices=['K', 'L', 'M', 'N'])
         self.wids['elems'] = add_choice(ctrlpanel, size=(80, -1),
                                         choices=AT_SYMS,
                                         action=self.onShowLines)
 
+        spanel = wx.Panel(ctrlpanel)
+        ssizer = wx.BoxSizer(wx.HORIZONTAL)
+        
+        self.wids['kseries'] = wx.CheckBox(spanel, label='K')
+        self.wids['kseries'].SetValue(1)
+        self.wids['lseries'] = wx.CheckBox(spanel, label='L')
+        self.wids['lseries'].SetValue(1)
+        self.wids['mseries'] = wx.CheckBox(spanel, label='M')
+        self.wids['mseries'].SetValue(1)
+        
+        ssizer.Add(txt(' Series:', spanel), 0, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(self.wids['kseries'],    1, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(self.wids['lseries'],    1, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(self.wids['mseries'],    1, wx.EXPAND|wx.ALL, 0)
+
+        pack(spanel, ssizer)
+        
         self.wids['roilist'] = EditableListBox(ctrlpanel, self.onROI,
                                                right_click=False, size=(150, 100))
+
+        bpanel = wx.Panel(ctrlpanel)
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.wids['noroi'] = add_button(bpanel, 'hide roi',
+                                        action=self.onClearROIDisplay)
+        self.wids['newroi'] = add_button(bpanel, 'add roi',
+                                         action=self.onNewROI)
+
+        bsizer.Add(self.wids['noroi'],    1, wx.EXPAND|wx.ALL, 0)
+        bsizer.Add(self.wids['newroi'],    1, wx.EXPAND|wx.ALL, 0)
+
+        pack(bpanel, bsizer)
 
         self.wids['counts_tot'] = txt('   ', ctrlpanel)
         self.wids['counts_net'] = txt('   ', ctrlpanel)
         ir = 0
-        sizer.Add(txt('  Settings: ', ctrlpanel),  (ir, 0), (1, 2), labstyle)
-
-        ir += 1
         sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
 
         ir += 1
-        sizer.Add(txt(' Series:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
-        sizer.Add(self.wids['series'],          (ir, 1), (1, 1), ctrlstyle)
-
-        ir += 1
-        sizer.Add(txt(' Elements:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(txt(' Element:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
         sizer.Add(self.wids['elems'],          (ir, 1), (1, 1), ctrlstyle)
+        
+        ir += 1
+        sizer.Add(spanel, (ir, 0), (1, 2), labstyle)
 
         ir += 1
         sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
         ir += 1
         sizer.Add(txt(' Regions of Interest: ', ctrlpanel),  (ir, 0), (1, 2), labstyle)
+
+        ir += 1
+        sizer.Add(bpanel,  (ir, 0), (1, 2), labstyle)
+
         ir += 1
         sizer.Add(self.wids['roilist'],  (ir, 0), (1, 2), labstyle)
 
@@ -208,8 +245,8 @@ class XRFDisplayFrame(BaseFrame):
         msizer = wx.BoxSizer(wx.HORIZONTAL)
         msizer.Add(self.ctrlpanel, 0, style, 0)
         msizer.Add(self.panel,     1, style, 0)
-
         pack(self, msizer)
+        
         self.add_rois(mca=None)
 
     def add_rois(self, mca=None):
@@ -218,6 +255,17 @@ class XRFDisplayFrame(BaseFrame):
         if mca is not None:
             for roi in mca.rois:
                 self.wids['roilist'].Append(roi.name)
+
+    def onClearROIDisplay(self, evt=None):
+        if self.selected_roi  is not None:
+            try:
+                self.selected_roi.remove()
+            except:
+                pass
+        self.panel.canvas.draw()
+
+    def onNewROI(self, evt=None):
+        print  'on New ROI'
 
     def onROI(self, evt=None, label=None):
         if label is None and evt is not None:
@@ -321,7 +369,6 @@ class XRFDisplayFrame(BaseFrame):
         if self.panel is not None:
             self.panel.Print(event=event)
 
-
     def onExit(self, event=None):
         try:
             if hasattr(self.exit_callback, '__call__'):
@@ -341,12 +388,43 @@ class XRFDisplayFrame(BaseFrame):
         except:
             pass
 
+    
     def onShowLines(self, event=None):
-        elem = event.GetString()
-        print 'show markers for ', elem
-        # elines  = self.larch.symtable._xray.xray_lines(elem)
-        #print elines
+        elem  = event.GetString()
+        vline = self.panel.axes.axvline
 
+        elines = self.larch.symtable._xray.xray_lines(elem)
+        for marker in self.eline_markers:
+            try:
+                marker.remove()
+            except:
+                pass
+        self.eline_markers = []
+        miss = [-1, '']
+        minors, majors = [], []
+        if self.wids['kseries'].IsChecked():
+            majors.extend([elines.get(l, miss)[0]/1000 for l in self.K_major])
+            minors.extend([elines.get(l, miss)[0]/1000 for l in self.K_minor])
+        if self.wids['lseries'].IsChecked():
+            majors.extend([elines.get(l, miss)[0]/1000 for l in self.L_major])
+            minors.extend([elines.get(l, miss)[0]/1000 for l in self.L_minor])
+        if self.wids['mseries'].IsChecked():
+            majors.extend([elines.get(l, miss)[0]/1000 for l in self.M_major])
+
+        erange = [max(0, self.xdata.min()), self.xdata.max()]
+        for e in minors:
+            if e > erange[0] and e < erange[1]:
+                l = vline(e, color= self.minor_elinecolor, linewidth=0.75)
+                self.eline_markers.append(l)
+
+        for e in majors:
+            if e > erange[0] and e < erange[1]:
+                l = vline(e, color= self.major_elinecolor, linewidth=1.75)
+                self.eline_markers.append(l)
+                
+        self.panel.canvas.draw()
+
+        
     def onLogLinear(self, event=None):
         self.plot(self.xdata, self.ydata,
                   ylog_scale=('log' == event.GetString()))
