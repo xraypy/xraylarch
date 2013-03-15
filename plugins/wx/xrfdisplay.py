@@ -40,6 +40,18 @@ FILE_ALREADY_READ = """The File
 has already been read.
 """
 
+AT_SYMS = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
+           'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
+           'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As',
+           'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru',
+           'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs',
+           'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb',
+           'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os',
+           'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
+           'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk',
+           'Cf')
+
+
 def txt(label, panel, size=75, colour=None,  style=None):
     if style is None:
         style = wx.ALIGN_LEFT|wx.ALL|wx.GROW
@@ -96,6 +108,7 @@ class XRFDisplayFrame(BaseFrame):
         self.selected_roi = None
         self.mca = None
         self.rois_shown = False
+        self.eline_markers = []
 
         self.Font14 = wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font12 = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -142,8 +155,14 @@ class XRFDisplayFrame(BaseFrame):
         self.wids['series'] = add_choice(ctrlpanel, size=(80, -1),
                                          choices=['K', 'L', 'M', 'N'])
         self.wids['elems'] = add_choice(ctrlpanel, size=(80, -1),
-                                        choices=['H', 'He'])
+                                        choices=AT_SYMS,
+                                        action=self.onShowLines)
 
+        self.wids['roilist'] = EditableListBox(ctrlpanel, self.onROI,
+                                               right_click=False, size=(150, 100))
+
+        self.wids['counts_tot'] = txt('   ', ctrlpanel)
+        self.wids['counts_net'] = txt('   ', ctrlpanel)
         ir = 0
         sizer.Add(txt('  Settings: ', ctrlpanel),  (ir, 0), (1, 2), labstyle)
 
@@ -160,89 +179,52 @@ class XRFDisplayFrame(BaseFrame):
 
         ir += 1
         sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
+        ir += 1
+        sizer.Add(txt(' Regions of Interest: ', ctrlpanel),  (ir, 0), (1, 2), labstyle)
+        ir += 1
+        sizer.Add(self.wids['roilist'],  (ir, 0), (1, 2), labstyle)
+
+        ir += 1
+        sizer.Add(txt(' Counts:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(self.wids['counts_tot'],         (ir, 1), (1, 1), ctrlstyle)
+        ir += 1
+        sizer.Add(txt(' Net:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
+        sizer.Add(self.wids['counts_net'],         (ir, 1), (1, 1), ctrlstyle)
+
+        ir += 1
+        sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
 
         ir += 1
         sizer.Add(txt(' Y Scale:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
         sizer.Add(self.wids['ylog'],           (ir, 1), (1, 1), ctrlstyle)
 
-        ir += 1
-        sizer.Add(txt(' ', ctrlpanel),  (ir, 0), (1, 1), wx.ALL|wx.EXPAND|labstyle)
-
-        ir += 1
-        sizer.Add(txt(' Counts: ', ctrlpanel),  (ir, 0), (1, 1), labstyle)
-        ir += 1
-        sizer.Add(txt('   : ', ctrlpanel),  (ir, 0), (1, 1), labstyle)
-
 
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
 
-        rsizer = self.roisizer = wx.GridBagSizer(10, 3)
-        ir = 0
-        rsizer.Add(txt('  Regions of Interest: ', roipanel),  (ir, 0), (1, 2), labstyle)
-        ir += 1
-        rsizer.Add(lin(roipanel, 180),         (ir, 0), (1, 2), labstyle)
-        roipanel.SetSizer(rsizer)
-        rsizer.Fit(roipanel)
 
         style = wx.EXPAND|wx.ALL
 
         msizer = wx.BoxSizer(wx.HORIZONTAL)
         msizer.Add(self.ctrlpanel, 0, style, 0)
         msizer.Add(self.panel,     1, style, 0)
-        msizer.Add(self.roipanel,  0, style, 0)
 
         pack(self, msizer)
         self.add_rois(mca=None)
 
     def add_rois(self, mca=None):
-        """ Add Roi names and counts to ROI Panel"""
-        if self.rois_shown: return
-        
-        sizer = wx.GridBagSizer(10, 3)
-        panel = self.roipanel
-
-        for wid in self.roipanel.Children:
-            try:
-                wid.Destroy()
-            except PyDeadObjectError:
-                pass
-
-        labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
-        ir = 0
-        sizer.Add(txt('  Regions of Interest:  ', panel),  (ir, 0), (1, 2), labstyle)
-        ir += 1
-        sizer.Add(lin(panel, 180),         (ir, 0), (1, 2), labstyle)
-
-        ir += 1
-        sizer.Add(txt(' Name ', panel),  (ir, 0), (1, 1), labstyle)
-        sizer.Add(txt(' Counts ', panel, style=RIGHT|wx.EXPAND),
-                  (ir, 1), (1, 1), labstyle)
-
+        """ Add Roi names to roilist"""
+        self.wids['roilist'].Clear()
         if mca is not None:
             for roi in mca.rois:
-                name = " %s " % roi.name
-                counts = "%d  " % mca.get_roi_counts(roi.name)
-                ir += 1
-                sizer.Add(HyperText(panel, name, action=self.onROI,
-                                    size=(90, -1),
-                                    style=wx.ALIGN_LEFT|wx.EXPAND),
-                          (ir, 0), (1, 1), labstyle, 2)
-                sizer.Add(txt(counts, panel, style=wx.ALIGN_RIGHT|wx.EXPAND),
-                          (ir, 1), (1, 1), labstyle, 2)
-
-                self.rois_shown = True
-        ir += 1
-        sizer.Add(lin(panel, 180),         (ir, 0), (1, 2), labstyle)
-        pextra = wx.Panel(panel)
-        ir += 1
-        sizer.Add(pextra,      (ir, 0), (1, 2), wx.GROW|wx.ALL, 1)
-
-        panel.SetSizer(sizer)
-        sizer.Fit(panel)
+                self.wids['roilist'].Append(roi.name)
 
     def onROI(self, evt=None, label=None):
+        if label is None and evt is not None:
+            label = evt.GetString()
+
         name, left, right= None, -1, -1
+        counts_tot, counts_net = '', ''
         label = label.lower().strip()
         if self.mca is not None:
             for roi in self.mca.rois:
@@ -250,6 +232,8 @@ class XRFDisplayFrame(BaseFrame):
                     name = roi.name
                     left = roi.left
                     right= roi.right
+                    counts_tot = "%i" % roi.get_counts(self.mca.counts)
+                    counts_net = "%i" % roi.get_counts(self.mca.counts, net=True)
 
         if name is None or right == -1:
             return
@@ -268,6 +252,8 @@ class XRFDisplayFrame(BaseFrame):
         e[-1]   = e[-2]
         fill = self.panel.axes.fill_between
         self.selected_roi  = fill(e, r, color=self.roi_fillcolor)
+        self.wids['counts_tot'].SetLabel(counts_tot)
+        self.wids['counts_net'].SetLabel(counts_net)
 
         self.panel.canvas.draw()
         self.panel.Refresh()
@@ -355,6 +341,11 @@ class XRFDisplayFrame(BaseFrame):
         except:
             pass
 
+    def onShowLines(self, event=None):
+        elem = event.GetString()
+        print 'show markers for ', elem
+        # elines  = self.larch.symtable._xray.xray_lines(elem)
+        #print elines
 
     def onLogLinear(self, event=None):
         self.plot(self.xdata, self.ydata,
@@ -365,7 +356,8 @@ class XRFDisplayFrame(BaseFrame):
             self.mca = mca
         mca = self.mca
         panel = self.panel
-        kwargs = {'ylog_scale': True, 'xlabel': 'E (keV)',
+        kwargs = {'ylog_scale': True, 'grid': False,
+                  'xlabel': 'E (keV)',
                   'color': self.spectra_color}
         kwargs.update(kws)
         self.xdata = 1.0*x[:]
@@ -382,7 +374,7 @@ class XRFDisplayFrame(BaseFrame):
             ydat = np.ma.masked_less(ydat, 0)
             panel.plot(x, ydat, label='spectra', **kwargs)
             kwargs['color'] = self.roi_color
-            panel.oplot(x, yroi, label='roi', **kwargs)            
+            panel.oplot(x, yroi, label='roi', **kwargs)
         else:
             panel.plot(x, y, **kwargs)
         panel.axes.get_yaxis().set_visible(False)
@@ -454,13 +446,6 @@ class XRFDisplayFrame(BaseFrame):
                 # popup(self, NOT_GSEXRM_FILE % fname,
                 # "Not a Map file!")
                 return
-            if fname not in self.filemap:
-                self.filemap[fname] = xrmfile
-            if fname not in self.filelist.GetItems():
-                self.filelist.Append(fname)
-            if self.check_ownership(fname):
-                self.process_file(fname)
-            self.ShowFile(filename=fname)
 
 
 class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
