@@ -151,16 +151,17 @@ class EditableListBox(wx.ListBox):
     items and remove items from list
     supply select_action for EVT_LISTBOX selection action
     """
-    def __init__(self, parent, select_action):
-        wx.ListBox.__init__(self, parent)
+    def __init__(self, parent, select_action, right_click=True, **kws):
+        wx.ListBox.__init__(self, parent, **kws)
 
         self.SetBackgroundColour(wx.Colour(248, 248, 235))
         self.Bind(wx.EVT_LISTBOX,    select_action)
-        self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
-        for item in ('popup_up1', 'popup_dn1',
-                     'popup_upall', 'popup_dnall', 'popup_remove'):
-            setattr(self, item,  wx.NewId())
-            self.Bind(wx.EVT_MENU, self.onRightEvent, id=getattr(self, item))
+        if right_click:
+            self.Bind(wx.EVT_RIGHT_DOWN, self.onRightClick)
+            for item in ('popup_up1', 'popup_dn1',
+                         'popup_upall', 'popup_dnall', 'popup_remove'):
+                setattr(self, item,  wx.NewId())
+                self.Bind(wx.EVT_MENU, self.onRightEvent, id=getattr(self, item))
 
     def onRightClick(self, evt=None):
         menu = wx.Menu()
