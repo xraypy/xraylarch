@@ -18,9 +18,11 @@ from larch import Group, Parameter, isParameter, plugin_path
 
 sys.path.insert(0, plugin_path('wx'))
 
-from wxutils import (SimpleText, EditableListBox, FloatCtrl, HyperText,
+from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack,
                      popup, add_button, add_menu, add_choice, add_menu)
+
+from periodictable import PeriodicTablePanel
 
 #from ..io.xrm_mapfile import (GSEXRM_MapFile, GSEXRM_FileStatus,
 #                              GSEXRM_Exception, GSEXRM_NotOwner)
@@ -88,7 +90,7 @@ class XRFDisplayFrame(BaseFrame):
   """
     major_elinecolor = (0.6, 0.6, 0.4, 0.4)
     minor_elinecolor = (0.7, 0.7, 0.4, 0.3)
-    
+
     roi_fillcolor = (0.9, 0.9, 0.5)
     roi_color     = '#AA0000'
     spectra_color = '#0000AA'
@@ -97,7 +99,7 @@ class XRFDisplayFrame(BaseFrame):
     L_major = ('La1', 'Lb1', 'Lb3', 'Lb4')
     L_minor = ('Ln', 'Ll', 'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2')
     M_major = ('Ma', 'Mb', 'Mg', 'Mz')
-    
+
 
     def __init__(self, _larch=None, parent=None, size=(725, 450),
                  axissize=None, axisbg=None, title='XRF Display',
@@ -139,19 +141,17 @@ class XRFDisplayFrame(BaseFrame):
 
     def createMainPanel(self):
         self.wids = {}
-        ctrlpanel = self.ctrlpanel = wx.Panel(self)
+        ctrlpanel = self.ctrlpanel = wx.Panel(self,  size=(320, 450))
         roipanel = self.roipanel = wx.Panel(self)
         plotpanel = self.panel = PlotPanel(self, fontsize=7,
                                                axisbg='#FDFDFA',
                                                axissize=[0.03, 0.10, 0.94, 0.88],
                                                output_title='test.xrf',
                                                messenger=self.write_message)
-        ## need to customize cursor modes:
-        # plotpane.add_cursor_mode('zoom', .....)
-        # plotpane.add_cursor_mode('report', .....)
 
+        ptable = PeriodicTablePanel(self, action=self.onShowLines)
 
-        sizer = wx.GridBagSizer(10, 4)
+        sizer = wx.GridBagSizer(10, 3)
 
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
@@ -161,92 +161,81 @@ class XRFDisplayFrame(BaseFrame):
         self.wids['ylog'] = add_choice(ctrlpanel, size=(80, -1),
                                        choices=['log', 'linear'],
                                        action=self.onLogLinear)
-        self.wids['elems'] = add_choice(ctrlpanel, size=(80, -1),
-                                        choices=AT_SYMS,
-                                        action=self.onShowLines)
 
         spanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
-        
+
         self.wids['kseries'] = wx.CheckBox(spanel, label='K')
         self.wids['kseries'].SetValue(1)
         self.wids['lseries'] = wx.CheckBox(spanel, label='L')
         self.wids['lseries'].SetValue(1)
         self.wids['mseries'] = wx.CheckBox(spanel, label='M')
         self.wids['mseries'].SetValue(1)
-        
+
         ssizer.Add(txt(' Series:', spanel), 0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['kseries'],    1, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['lseries'],    1, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['mseries'],    1, wx.EXPAND|wx.ALL, 0)
 
         pack(spanel, ssizer)
-        
+
         self.wids['roilist'] = EditableListBox(ctrlpanel, self.onROI,
                                                right_click=False, size=(150, 100))
 
-        bpanel = wx.Panel(ctrlpanel)
-        bsizer = wx.BoxSizer(wx.HORIZONTAL)
-
-        self.wids['noroi'] = add_button(bpanel, 'hide roi',
+        self.wids['noroi'] = add_button(ctrlpanel, 'Hide', size=(70, -1),
                                         action=self.onClearROIDisplay)
-        self.wids['newroi'] = add_button(bpanel, 'add roi',
+        self.wids['delroi'] = add_button(ctrlpanel, 'Delete', size=(70, -1),
+                                         action=self.onNewROI)
+        self.wids['newroi'] = add_button(ctrlpanel, 'Add', size=(70, -1),
                                          action=self.onNewROI)
 
-        bsizer.Add(self.wids['noroi'],    1, wx.EXPAND|wx.ALL, 0)
-        bsizer.Add(self.wids['newroi'],    1, wx.EXPAND|wx.ALL, 0)
-
-        pack(bpanel, bsizer)
 
         self.wids['counts_tot'] = txt('   ', ctrlpanel)
         self.wids['counts_net'] = txt('   ', ctrlpanel)
-        ir = 0
-        sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
 
-        ir += 1
-        sizer.Add(txt(' Element:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
-        sizer.Add(self.wids['elems'],          (ir, 1), (1, 1), ctrlstyle)
-        
+        ir = 0
+        sizer.Add(ptable,  (ir, 0), (1, 3), wx.ALIGN_LEFT, border=0)
+
         ir += 1
         sizer.Add(spanel, (ir, 0), (1, 2), labstyle)
 
         ir += 1
-        sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
+        sizer.Add(lin(ctrlpanel, 195),   (ir, 0), (1, 3), labstyle)
         ir += 1
-        sizer.Add(txt(' Regions of Interest: ', ctrlpanel),  (ir, 0), (1, 2), labstyle)
-
+        sizer.Add(txt(' Regions of Interest: ', ctrlpanel),  (ir, 0), (1, 3), labstyle)
         ir += 1
-        sizer.Add(bpanel,  (ir, 0), (1, 2), labstyle)
+        sizer.Add(self.wids['noroi'],     (ir, 0), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(self.wids['delroi'],  (ir, 1), (1, 1),  wx.ALIGN_CENTER)
+        sizer.Add(self.wids['newroi'],  (ir, 2), (1, 1), wx.ALIGN_CENTER)
 
         ir += 1
         sizer.Add(self.wids['roilist'],  (ir, 0), (1, 2), labstyle)
 
         ir += 1
-        sizer.Add(txt(' Counts:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
-        sizer.Add(self.wids['counts_tot'],         (ir, 1), (1, 1), ctrlstyle)
+        sizer.Add(txt(' Counts:', ctrlpanel),  (ir, 0), (1,1), labstyle)
+        sizer.Add(txt(' Total ',  ctrlpanel),  (ir, 1), (1,1), labstyle)
+        sizer.Add(txt(' Net:',    ctrlpanel),  (ir, 2), (1,1), labstyle)
         ir += 1
-        sizer.Add(txt(' Net:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
-        sizer.Add(self.wids['counts_net'],         (ir, 1), (1, 1), ctrlstyle)
+        sizer.Add(self.wids['counts_tot'],         (ir, 1), (1, 1), ctrlstyle)
+        sizer.Add(self.wids['counts_net'],         (ir, 2), (1, 1), ctrlstyle)
 
         ir += 1
-        sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 2), labstyle)
+        sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 3), labstyle)
 
         ir += 1
         sizer.Add(txt(' Y Scale:', ctrlpanel),  (ir, 0), (1, 1), labstyle)
-        sizer.Add(self.wids['ylog'],           (ir, 1), (1, 1), ctrlstyle)
+        sizer.Add(self.wids['ylog'],           (ir, 1), (1, 2), ctrlstyle)
 
 
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
 
-
-        style = wx.EXPAND|wx.ALL
-
+        style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
         msizer = wx.BoxSizer(wx.HORIZONTAL)
-        msizer.Add(self.ctrlpanel, 0, style, 0)
-        msizer.Add(self.panel,     1, style, 0)
+        msizer.Add(self.ctrlpanel, 0, style, 2)
+        msizer.Add(self.panel,     1, style, 2)
         pack(self, msizer)
-        
+
         self.add_rois(mca=None)
 
     def add_rois(self, mca=None):
@@ -256,7 +245,8 @@ class XRFDisplayFrame(BaseFrame):
             for roi in mca.rois:
                 self.wids['roilist'].Append(roi.name)
 
-    def onClearROIDisplay(self, evt=None):
+
+    def onClearROIDisplay(self, event=None):
         if self.selected_roi  is not None:
             try:
                 self.selected_roi.remove()
@@ -264,12 +254,12 @@ class XRFDisplayFrame(BaseFrame):
                 pass
         self.panel.canvas.draw()
 
-    def onNewROI(self, evt=None):
+    def onNewROI(self, event=None):
         print  'on New ROI'
 
-    def onROI(self, evt=None, label=None):
-        if label is None and evt is not None:
-            label = evt.GetString()
+    def onROI(self, event=None, label=None):
+        if label is None and event is not None:
+            label = event.GetString()
 
         name, left, right= None, -1, -1
         counts_tot, counts_net = '', ''
@@ -388,12 +378,14 @@ class XRFDisplayFrame(BaseFrame):
         except:
             pass
 
-    
-    def onShowLines(self, event=None):
-        elem  = event.GetString()
-        vline = self.panel.axes.axvline
-
-        elines = self.larch.symtable._xray.xray_lines(elem)
+    def onShowLines(self, event=None, elem=None):
+        if elem is None:
+            elem  = event.GetString()
+        try:
+            vline = self.panel.axes.axvline
+            elines = self.larch.symtable._xray.xray_lines(elem)
+        except:
+            return
         for marker in self.eline_markers:
             try:
                 marker.remove()
@@ -421,10 +413,10 @@ class XRFDisplayFrame(BaseFrame):
             if e > erange[0] and e < erange[1]:
                 l = vline(e, color= self.major_elinecolor, linewidth=1.75)
                 self.eline_markers.append(l)
-                
+
         self.panel.canvas.draw()
 
-        
+
     def onLogLinear(self, event=None):
         self.plot(self.xdata, self.ydata,
                   ylog_scale=('log' == event.GetString()))
@@ -493,16 +485,16 @@ class XRFDisplayFrame(BaseFrame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def onAbout(self,evt):
+    def onAbout(self,event):
         dlg = wx.MessageDialog(self, self._about,"About XRF Viewer",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onClose(self,evt):
+    def onClose(self,event):
         self.Destroy()
 
-    def onReadFile(self, evt=None):
+    def onReadFile(self, event=None):
         dlg = wx.FileDialog(self, message="Read MCA File",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
@@ -529,12 +521,14 @@ class XRFDisplayFrame(BaseFrame):
 class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         wx.App.__init__(self)
+        print 'APP with mixin!'
 
     def OnInit(self):
         self.Init()
         frame = XRFDisplayFrame() #
         frame.Show()
         self.SetTopWindow(frame)
+        self.ShowInspectionTool()
         return True
 
 if __name__ == "__main__":

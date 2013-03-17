@@ -197,7 +197,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
     elif xrf:
         creator = XRFDisplay
         display_dict = XRF_DISPLAYS
-        title   = 'XRF Displaye Window %i' % win
+        title   = 'XRF Display Window %i' % win
         symname = '%s.xrf%i' % (MODNAME, win)
 
     if win in display_dict:
