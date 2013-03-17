@@ -43,6 +43,13 @@ def add_choice(panel, choices, default=0, action=None, **kws):
     c.Bind(wx.EVT_CHOICE, action)
     return c
 
+def add_checkbox(panel, label, check=True, action=None, **kws):
+    "add simple checkbox with bound action"
+    c = wx.CheckBox(panel, -1,  label=label, **kws)
+    c.SetValue({True:1, False:0}[check])
+    c.Bind(wx.EVT_CHECKBOX, action)
+    return c
+
 def set_choices(choicebox, choices):
     index = 0
     try:
