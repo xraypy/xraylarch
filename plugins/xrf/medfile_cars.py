@@ -269,6 +269,7 @@ def gsemca_group(fname, _larch=None, **kws):
                       'quad': xfile.sum.quad}
     group.rois     = xfile.sum.rois
     group.get_roi_counts = xfile.sum.get_roi_counts
+    group.add_roi  = xfile.add_roi
     for attr in ('rois', 'environ', 'energy', 'counts', 'dt_factor',
                  'icr_calc', 'input_counts', 'live_time', 'nchans',
                  'real_time', 'start_time', 'tau'):
