@@ -89,15 +89,16 @@ class Menu_IDs:
 
 class SettingsFrame(wx.Frame):
     """settings frame for XRFDisplay"""
-    klines = ['Ka1', 'Ka2', 'Kb1', 'Kb2', 'Kb3']
-    llines = ['La1', 'Lb1', 'Lb3', 'Lb4', 'Ln', 'Ll',
-              'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2']
+    k1lines = ['Ka1', 'Ka2', 'Kb1']
+    k2lines = ['Kb2', 'Kb3']
+    l1lines = ['La1', 'Lb1', 'Lb3', 'Lb4']
+    l2lines = ['La2', 'Ll',  'Lg2', 'Lg3', 'Lg1', 'Lb2,15']
     mlines = ['Ma', 'Mb', 'Mg', 'Mz']
 
-    def __init__(self, parent, conf, **kws):
+    def __init__(self, parent, conf, size=(600, 450), **kws):
         self.parent = parent
         kws['style'] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, parent, -1,
+        wx.Frame.__init__(self, parent, -1, size=size,
                           title='XRF Display Settings', **kws)
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         leftstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
@@ -107,7 +108,6 @@ class SettingsFrame(wx.Frame):
         self.conf  = conf
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(10, 10)
-        panel.SetSize((500, 225))
 
         def add_color(panel, name):
             cval = hexcolor(getattr(self.conf, name))
@@ -126,23 +126,26 @@ class SettingsFrame(wx.Frame):
                   (ir, 0), (1, 1), labstyle)
         sizer.Add(add_color(panel, 'spectra_color'),  (ir, 1), (1, 1), labstyle)
 
-        ir += 1
         sizer.Add(txt(panel, 'ROI Spectra Color:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(add_color(panel, 'roi_color'),  (ir, 1), (1, 1), leftstyle)
+                  (ir, 2), (1, 1), labstyle)
+        sizer.Add(add_color(panel, 'roi_color'),  (ir, 3), (1, 1), leftstyle)
+
         ir += 1
         sizer.Add(txt(panel, 'ROI Fill Color:', size=140),
                   (ir, 0), (1, 1), labstyle)
         sizer.Add(add_color(panel, 'roi_fillcolor'), (ir, 1), (1, 1), labstyle)
+
+        sizer.Add(txt(panel, 'Marker Color:', size=140),
+                  (ir, 2), (1, 1), labstyle)
+        sizer.Add(add_color(panel, 'marker_color'),  (ir, 3), (1, 1), leftstyle)
+
         ir += 1
         sizer.Add(txt(panel, 'Major Line Color:', size=140),
                   (ir, 0), (1, 1), labstyle)
         sizer.Add(add_color(panel, 'major_elinecolor'),  (ir, 1), (1, 1), labstyle)
-
-        ir += 1
         sizer.Add(txt(panel, 'Minor Line Color:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(add_color(panel, 'minor_elinecolor'), (ir, 1), (1, 1), labstyle)
+                  (ir, 2), (1, 1), labstyle)
+        sizer.Add(add_color(panel, 'minor_elinecolor'), (ir, 3), (1, 1), leftstyle)
 
         ir += 1
         sizer.Add(lin(panel, 375),   (ir, 0), (1, 4), labstyle)
@@ -157,35 +160,35 @@ class SettingsFrame(wx.Frame):
                       wx.EXPAND|wx.ALL, 0)
             pack(p, s)
             return p
-        k1panel = eline_panel(self.klines, conf.K_major, self.onKMajor)
-        k2panel = eline_panel(self.klines, conf.K_minor, self.onKMinor)
-        l1panel = eline_panel(self.llines, conf.L_major, self.onLMajor)
-        l2panel = eline_panel(self.llines, conf.L_minor, self.onLMinor)
+        k1panel = eline_panel(self.k1lines, conf.K_major, self.onKMajor)
+        k2panel = eline_panel(self.k2lines, conf.K_minor, self.onKMinor)
+        l1panel = eline_panel(self.l1lines, conf.L_major, self.onLMajor)
+        l2panel = eline_panel(self.l2lines, conf.L_minor, self.onLMinor)
         m1panel = eline_panel(self.mlines, conf.M_major, self.onMMajor)
 
         ir += 1
         sizer.Add(txt(panel, 'Major K Lines:', size=140),
                   (ir, 0), (1, 1), labstyle)
-        sizer.Add(k1panel, (ir, 1), (1, 3), labstyle|wx.EXPAND, 1)
+        sizer.Add(k1panel, (ir, 1), (1, 2), leftstyle, 1)
 
         ir += 1
         sizer.Add(txt(panel, 'Minor K Lines:', size=140),
                   (ir, 0), (1, 1), labstyle)
-        sizer.Add(k2panel, (ir, 1), (1, 3), labstyle)
+        sizer.Add(k2panel, (ir, 1), (1, 2), leftstyle)
 
         ir += 1
         sizer.Add(txt(panel, 'Major L Lines:', size=140),
                   (ir, 0), (1, 1), labstyle)
-        sizer.Add(l1panel, (ir, 1), (1, 4), labstyle)
+        sizer.Add(l1panel, (ir, 1), (1, 2), leftstyle)
         ir += 1
         sizer.Add(txt(panel, 'Minor L Lines:', size=140),
                   (ir, 0), (1, 1), labstyle)
-        sizer.Add(l2panel, (ir, 1), (1, 4), labstyle)
+        sizer.Add(l2panel, (ir, 1), (1, 3), leftstyle)
 
         ir += 1
         sizer.Add(txt(panel, 'Major M Lines:', size=140),
                   (ir, 0), (1, 1), labstyle)
-        sizer.Add(m1panel, (ir, 1), (1, 2), labstyle)
+        sizer.Add(m1panel, (ir, 1), (1, 2), leftstyle)
 
         ir += 1
         sizer.Add(add_button(panel, 'Done', size=(80, -1),
@@ -202,6 +205,11 @@ class SettingsFrame(wx.Frame):
             self.parent.panel.conf.set_trace_color(color, trace=0)
         elif item == 'roi_color':
             self.parent.panel.conf.set_trace_color(color, trace=1)
+        elif item == 'marker_color':
+            for lmark in self.parent.last_markers:
+                if lmark is not None:
+                    lmark.set_color(color)
+
         elif item == 'roi_fillcolor' and self.parent.roi_patch is not None:
             self.parent.roi_patch.set_color(color)
         elif item == 'major_elinecolor':
@@ -239,12 +247,10 @@ class SettingsFrame(wx.Frame):
     def onDone(self, event=None):
         self.Destroy()
 
-    def onSet(self, event=None):
-        print 'onSet'
-
 class XRFDisplayConfig:
     major_elinecolor = '#DAD8CA'
     minor_elinecolor = '#E0DAD0'
+    marker_color     = '#888888'
     roi_fillcolor    = '#F8F0BA'
     roi_color        = '#AA0000'
     spectra_color    = '#0000AA'
@@ -285,6 +291,7 @@ class XRFDisplayFrame(BaseFrame):
         self.zoom_lims = []
         self.last_rightdown = None
         self.last_leftdown = None
+        self.last_markers = [None, None]
         self.ylog_scale = True
 
         self.Font14 = wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -322,7 +329,24 @@ class XRFDisplayFrame(BaseFrame):
             y = self.mca.counts[ix]
         self.last_leftdown = x
         self.energy_for_zoom = x
-        self.write_message("Left-Click: E=%.3f, Counts=%g" % (x, y), panel=0)
+        self.draw_arrow(x, y, 0, 'Left-Click')
+
+    def draw_arrow(self, x, y, idx, title):
+        arrow = self.panel.axes.arrow
+        if self.last_markers[idx] is not None:
+            try:
+                self.last_markers[idx].remove()
+            except:
+                pass
+        ymin, ymax = self.panel.axes.get_ylim()
+        dy = int(min(ymax*0.99, 2.5*y) - y)
+        self.last_markers[idx] = arrow(x, y, 0, dy, shape='full',
+                                       width=0.015, head_width=0.0,
+                                       length_includes_head=True,
+                                       head_starts_at_zero=True,
+                                       color=self.conf.marker_color)
+        self.panel.canvas.draw()
+        self.write_message("%s: E=%.3f, Counts=%g" % (title, x, y), panel=idx)
 
     def on_rightdown(self, event=None):
         if event is None:
@@ -338,7 +362,7 @@ class XRFDisplayFrame(BaseFrame):
             x = self.mca.energy[ix]
             y = self.mca.counts[ix]
         self.last_rightdown = x
-        self.write_message("Right-Click: E=%.3f, Counts=%g" % (x, y), panel=1)
+        self.draw_arrow(x, y, 1, 'Right-Click')
 
     def createMainPanel(self):
         self.wids = {}
@@ -346,21 +370,20 @@ class XRFDisplayFrame(BaseFrame):
         roipanel = self.roipanel = wx.Panel(self)
         plotpanel = self.panel = PlotPanel(self, fontsize=7,
                                                axisbg='#FDFDFA',
-                                               axissize=[0.02, 0.09, 0.96, 0.90],
+                                               axissize=[0.02, 0.10, 0.96, 0.89],
                                                output_title='test.xrf',
                                                messenger=self.write_message)
         # these turn off drag-to-zoom and right-click popup for plot panel
+        self.panel.conf.labelfont.set_size(7)
         self.panel.onRightDown= self.on_rightdown
         self.panel.add_cursor_mode('zoom',  motion = self.ignoreEvent,
                                    leftup   = self.ignoreEvent,
                                    leftdown = self.on_leftdown,
                                    rightdown = self.on_rightdown)
 
-
         ptable = PeriodicTablePanel(self, action=self.onShowLines)
 
         sizer = wx.GridBagSizer(10, 4)
-
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
         rlabstyle = wx.ALIGN_RIGHT|wx.RIGHT|wx.TOP|wx.EXPAND
@@ -455,8 +478,7 @@ class XRFDisplayFrame(BaseFrame):
         msizer.Add(self.ctrlpanel, 0, style, 2)
         msizer.Add(self.panel,     1, style, 2)
         pack(self, msizer)
-
-        self.add_rois(mca=None)
+        self.set_roilist(mca=None)
 
     def onZoomIn(self, event=None):
         emin, emax = self.panel.axes.get_xlim()
@@ -492,7 +514,7 @@ class XRFDisplayFrame(BaseFrame):
             self.panel.axes.set_xlim((e1, e2))
             self.panel.canvas.draw()
 
-    def add_rois(self, mca=None):
+    def set_roilist(self, mca=None):
         """ Add Roi names to roilist"""
         self.wids['roilist'].Clear()
         if mca is not None:
@@ -511,28 +533,51 @@ class XRFDisplayFrame(BaseFrame):
 
     def onNewROI(self, event=None):
         label = self.wids['roiname'].GetValue()
-        print label, self.last_leftdown, self.last_rightdown
-        if self.mca is None:
+        if (self.last_leftdown is None or
+            self.last_rightdown is None or
+            self.mca is None):
             return
-        rois = self.mca.rois
         found = False
         for roi in self.mca.rois:
             if roi.name.lower()==label:
                 found = True
         left  = index_of(self.mca.energy, self.last_leftdown)
         right = index_of(self.mca.energy, self.last_rightdown)
+        if left > right:
+            left, right = right, left
         self.mca.add_roi(name=label, left=left, right=right, sort=True)
-        print  'New ROI '  , label, left, right
-
-        self.add_rois(mca=self.mca)
+        self.set_roilist(mca=self.mca)
+        for roi in self.mca.rois:
+            if roi.name.lower()==label:
+                selected_roi = roi
         self.plot(self.xdata, self.ydata)
+        self.onROI(label=label)
         if self.selected_elem is not None:
-            self.onShowLines(elem=self.parent.selected_elem)
-        if self.selected_roi is not None:
-            self.onROI(label=self.selected_roi.name)
+            self.onShowLines(elem=self.selected_elem)
 
     def onDelROI(self, event=None):
-        print  'on Del ROI', self.wids['roiname'].GetValue()
+        roiname = self.wids['roiname'].GetValue()
+        rdat = []
+        if self.mca is None:
+            return
+        for i in range(len(self.mca.rois)):
+            roi = self.mca.rois.pop(0)
+            if roi.name.lower() != roiname.lower():
+                rdat.append((roi.name, roi.left, roi.right))
+
+        for name, left, right in rdat:
+            self.mca.add_roi(name=name, left=left, right=right, sort=False)
+        self.mca.rois.sort()
+        self.set_roilist(mca=self.mca)
+        self.wids['roiname'].SetValue('')
+        try:
+            self.roi_patch.remove()
+        except:
+            pass
+
+        self.plot(self.xdata, self.ydata)
+        if self.selected_elem is not None:
+            self.onShowLines(elem=self.selected_elem)
 
     def onROI(self, event=None, label=None):
         if label is None and event is not None:
@@ -567,7 +612,7 @@ class XRFDisplayFrame(BaseFrame):
         e[0]    = e[1]
         e[-1]   = e[-2]
         fill = self.panel.axes.fill_between
-        self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor)
+        self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-10)
         self.wids['counts_tot'].SetLabel(counts_tot)
         self.wids['counts_net'].SetLabel(counts_net)
         self.panel.canvas.draw()
@@ -722,22 +767,24 @@ class XRFDisplayFrame(BaseFrame):
 
         self.panel.canvas.draw()
 
-
     def onLogLinear(self, event=None):
         self.ylog_scale = 'log' == event.GetString()
+        roiname = None
+        if self.selected_roi is not None:
+            roiname = self.selected_roi.name
         self.plot(self.xdata, self.ydata)
         if self.selected_elem is not None:
-            self.onShowLines(elem=self.parent.selected_elem)
-        if self.selected_roi is not None:
-            self.onROI(label=self.selected_roi.name)
+            self.onShowLines(elem=self.selected_elem)
+        if roiname is not None:
+            self.onROI(label=roiname)
 
     def plot(self, x, y, mca=None,  **kws):
         if mca is not None:
             self.mca = mca
         mca = self.mca
         panel = self.panel
-        panel.Freeze()
-        kwargs = {'grid': False,
+        panel.canvas.Freeze()
+        kwargs = {'grid': False, 'delay_draw': True,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'color': self.conf.spectra_color}
@@ -747,7 +794,7 @@ class XRFDisplayFrame(BaseFrame):
         self.ydata = 1.0*y[:]
         if mca is not None:
             if not self.rois_shown:
-                self.add_rois(mca=mca)
+                self.set_roilist(mca=mca)
             yroi = -1*np.ones(len(y))
             ydat = 1.0*y[:]
             for r in mca.rois:
@@ -755,7 +802,7 @@ class XRFDisplayFrame(BaseFrame):
                 ydat[r.left+1:r.right-1] = -1
             yroi = np.ma.masked_less(yroi, 0)
             ydat = np.ma.masked_less(ydat, 0)
-            panel.plot(x, ydat, label='spectra', **kwargs)
+            panel.plot(x, ydat, label='spectra',  **kwargs)
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='roi', **kwargs)
         else:
@@ -767,7 +814,9 @@ class XRFDisplayFrame(BaseFrame):
         else:
             panel.unzoom_all()
         panel.cursor_mode = 'zoom'
-        panel.Thaw()
+        panel.canvas.draw()
+        panel.canvas.Thaw()
+        panel.canvas.Refresh()
 
     def oplot(self, x, y, mcagroup=None, **kws):
         panel.oplot(x, y, **kws)
