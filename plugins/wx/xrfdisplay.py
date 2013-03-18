@@ -784,7 +784,8 @@ class XRFDisplayFrame(BaseFrame):
         mca = self.mca
         panel = self.panel
         panel.canvas.Freeze()
-        kwargs = {'grid': False, 'delay_draw': True,
+        kwargs = {'grid': False,
+                  # 'delay_draw': True, #  experimental wxmplot option
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'color': self.conf.spectra_color}
