@@ -300,7 +300,9 @@ def write_ascii(filename, *args, **kws):
             header.append(repr(arg))
 
 
-    buff = ['%s Output from Larch %s' % (com, time.ctime())]
+    buff = []
+    if header is None:
+        buff = ['%s Output from Larch %s' % (com, time.ctime())]
     for s in header:
         buff.append('%s %s' % (com, s))
     buff.append('%s---------------------------------'% com)
