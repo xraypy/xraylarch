@@ -369,8 +369,8 @@ def _plot_text(text, x, y, win=1, side='left', size=None,
                      rotation=rotation, ha=ha, va=va, **kws)
 
 def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
-                shape='full', color='black', width=1,
-                head_width=20, overhang=0,
+                shape='full', color='black',
+                width=0.02, head_width=0.20,
                _larch=None, wxparent=None,  size=None, **kws):
 
     """plot_arrow(x1, y1, x2, y2, win=1, options)
@@ -381,13 +381,13 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     --------------
         x1: starting x coordinate
         y1: starting y coordinate
-        x2: endnig x coordinate
+        x2: ending x coordinate
         y2: ending y coordinate
         side: which axis to use ('left' or 'right') for coordinates.
         shape:  arrow head shape ('full', 'left', 'right')
         color:  arrow color ('black')
-        width:  width of arrow line (in points. default=0.01)
-        head_width:  width of arrow head (in points. default=0.1)
+        width:  width of arrow line (in points. default=0.02)
+        head_width:  width of arrow head (in points. default=0.20)
         overhang:    amount the arrow is swept back (in points. default=0)
 
     See Also: plot, oplot, plot_text
@@ -396,11 +396,9 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
-    width = width/5000.0
-    head_width = head_width/1000.0
+    kwargs = {'length_includes_head': True}
     plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
-                      color=color, width=width, head_width=head_width,
-                      overhang=overhang, **kws)
+                      color=color, width=width, head_width=head_width, **kws)
 
 def _plot_axhline(y, xmin=None, xmax=None, win=1, size=None,
                   wxparent=None, _larch=None, **kws):
