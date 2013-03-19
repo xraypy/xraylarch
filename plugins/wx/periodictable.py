@@ -1,34 +1,5 @@
 import wx
-
-class HyperText(wx.StaticText):
-    """HyperText-like extension of wx.StaticText that
-        performs the supplied action on Left-Down button events
-    """
-    selcolour    = (180,  50,  50)
-    regcolour    = ( 50,  50, 180)
-    selbgcolour  = (250, 250, 230)
-    regbgcolour  = (240, 240, 245)
-    def  __init__(self, parent, label, onclick=None,style=None, **kws):
-        self.onclick = onclick
-        wx.StaticText.__init__(self, parent, -1, label=label, **kws)
-        self.regbgcolour = parent.GetBackgroundColour()
-        self.setNotSelected()
-        self.Bind(wx.EVT_LEFT_DOWN, self.onLeftDown)
-
-    def onLeftDown(self, event=None):
-        "Left-Down Event Handler"
-        self.setSelected()
-        if self.onclick is not None:
-            self.onclick(event=event, label=self.GetLabel())
-        event.Skip()
-
-    def setSelected(self):
-        self.SetForegroundColour(self.selcolour)
-        self.SetBackgroundColour(self.selbgcolour)
-
-    def setNotSelected(self):
-        self.SetForegroundColour(self.regcolour)
-        self.SetBackgroundColour(self.regbgcolour)
+import wx.lib.mixins.inspection
 
 class PeriodicTablePanel(wx.Panel):
     """periodic table of the elements"""
@@ -70,23 +41,42 @@ class PeriodicTablePanel(wx.Panel):
             'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
             'Md', 'No', 'Lr']
 
+    REG_FG = ( 20,  20, 120)
+    SEL_FG = (120,  20,  20)
+    SEL_BG = (250, 250, 200)
+
     def __init__(self, parent, title='Select Element',
-                 action=None, size=(300, 120), **kws):
+                 onselect=None, tooltip_msg=None,
+                 size=(345, 150), **kws):
         wx.Panel.__init__(self, parent, -1, size=size, **kws)
         self.parent = parent
-        self.action = action
+        self.onselect = onselect
+        self.tooltip_msg = tooltip_msg
         self.wids = {}
+        self.ctrls = {}
+        self.REG_BG = self.GetBackgroundColour()
         self.selected = None
         self.elemfont  = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.titlefont = wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.BuildPanel()
-        self.Bind(wx.EVT_KEY_UP, self.onKey)
 
-    def onKey(self, event=None):
+    def onKey(self, event=None, name=None):
         """support browsing through elements with arrow keys"""
-        if self.selected  in self.elems:
-            coords = self.elems[self.selected]
-            thiskey = event.GetKeyCode()
+        if self.selected is None:
+            return
+        selname = self.selected.GetLabel()
+        if selname  in self.elems:
+            coords = self.elems[selname]
+            if name is None and event is not None:
+                thiskey = event.GetKeyCode()
+            if name == 'left':
+                thiskey = wx.WXK_LEFT
+            elif name == 'right':
+                thiskey = wx.WXK_RIGHT
+            elif name == 'up':
+                thiskey = wx.WXK_UP
+            elif name == 'down':
+                thiskey = wx.WXK_DOWN
             newcoords = None
             if thiskey == wx.WXK_UP:
                 newcoords = (coords[0]-1, coords[1])
@@ -103,7 +93,7 @@ class PeriodicTablePanel(wx.Panel):
                     newcoords = (coords[0]-2, coords[1])
                 elif thiskey in (wx.WXK_LEFT, wx.WXK_RIGHT):
                     try:
-                        znum = self.syms.index(self.selected)
+                        znum = self.syms.index(selname)
                     except:
                         return
                     if thiskey == wx.WXK_LEFT and znum > 0:
@@ -118,35 +108,84 @@ class PeriodicTablePanel(wx.Panel):
                         newlabel = xlabel
                 if newlabel is not None:
                     self.onclick(label=newlabel)
-        event.Skip()
+        # event.Skip()
 
     def onclick(self, event=None, label=None):
-        if self.selected in self.wids:
-            self.wids[self.selected].setNotSelected()
-        self.selected = label
-        if self.action is not None:
-            self.action(elem=label, event=event)
-        self.wids[self.selected].setSelected()
+        textwid = None
+        if (label is None and event is not None and
+            event.Id in self.wids):
+                textwid = self.wids[event.Id]
+                label = textwid.GetLabel()
+        if label is None:
+            return
+        if textwid is None and label is not None:
+            textwid = self.ctrls[label]
 
-    def make_elem(self, label, size=(-1, -1)):
-        txt = HyperText(self, label, onclick=self.onclick, size=size)
-        self.wids[label] = txt
-        txt.SetFont(self.elemfont)
-        return txt
+        textwid.SetForegroundColour(self.SEL_FG)
+        textwid.SetBackgroundColour(self.SEL_BG)
+        if self.selected is not None and self.selected != textwid:
+            self.selected.SetForegroundColour(self.REG_FG)
+            self.selected.SetBackgroundColour(self.REG_BG)
 
+        self.selected = textwid
+        if self.onselect is not None:
+            self.onselect(elem=label, event=event)
+        self.Refresh()
+        
     def BuildPanel(self):
         sizer = wx.GridBagSizer(9, 18)
         for name, coords in self.elems.items():
-            sizer.Add(self.make_elem(name), coords,
-                      (1, 1), wx.ALIGN_LEFT, 0)
-        title = wx.StaticText(self, -1,
-                              label='Select Element')
-
+            wid = wx.NewId()
+            tw = wx.StaticText(self, wid, label=name)
+            tw.SetForegroundColour(self.REG_FG)
+            tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
+            if self.tooltip_msg is not None:
+                tw.SetToolTip(wx.ToolTip(self.tooltip_msg))
+            self.wids[wid] = tw
+            self.ctrls[name] = tw
+            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 1)
+        title = wx.StaticText(self, -1, label='Select Element')
         title.SetFont(self.titlefont)
         sizer.Add(title, (0, 3), (1, 10), wx.ALIGN_CENTER, 0)
-        sizer.SetEmptyCellSize((0, 0))
-        sizer.SetHGap(0)
-        sizer.SetVGap(0)
+        sizer.SetEmptyCellSize((1, 1))
+        sizer.SetHGap(1)
+        sizer.SetVGap(1)
+        self.Bind(wx.EVT_KEY_UP, self.onKey)
+
         self.SetSizer(sizer)
-        self.SetMinSize( self.GetBestSize() )
+        ix, iy = self.GetBestSize()
+        self.SetMinSize((ix+10, iy+10))
+        self.SetSize((ix+15, iy+15))
         sizer.Fit(self)
+
+class PTableFrame(wx.Frame):
+    def __init__(self, size=(350, 200)):
+        wx.Frame.__init__(self, parent=None, size=size)
+        panel = wx.Window(self)
+        ptab  = PeriodicTablePanel(panel, title='Periodic Table', 
+                                   tooltip_msg='Select Element',
+                                   onselect = self.onElement)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(ptab, 1, wx.EXPAND|wx.ALL, 5)
+        panel.SetSizer(sizer)
+        sizer.Fit(panel)
+        self.Raise()
+        
+    def onElement(self, elem=None, event=None):
+        print  'Element Selected:  ', elem
+        
+class PTableApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+    def __init__(self, **kws):
+        wx.App.__init__(self)
+
+    def OnInit(self):
+        self.Init()
+        frame = PTableFrame() #
+        frame.Show()
+        self.SetTopWindow(frame)
+        self.ShowInspectionTool()
+        return True
+
+if __name__ == "__main__":
+    PTableApp().MainLoop()
