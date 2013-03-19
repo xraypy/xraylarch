@@ -13,18 +13,19 @@ import wx.lib.colourselect  as csel
 
 import numpy as np
 import matplotlib
-from wxmplot import BaseFrame, PlotPanel
+from wxmplot import PlotPanel
 from wxmplot.colors import hexcolor
 
 from larch import Group, Parameter, isParameter, plugin_path
 
-sys.path.insert(0, plugin_path('wx'))
+#sys.path.insert(0, plugin_path('wx'))
 sys.path.insert(0, plugin_path('math'))
 from mathutils import index_of
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
-                     Closure, pack, popup, add_button,
+                     Closure, pack, popup, add_button, get_icon,
                      add_checkbox, add_menu, add_choice, add_menu)
+
 
 from periodictable import PeriodicTablePanel
 
@@ -112,7 +113,7 @@ class SettingsFrame(wx.Frame):
         def add_color(panel, name):
             cval = hexcolor(getattr(self.conf, name))
             c = csel.ColourSelect(panel,  -1, "", cval, size=(40, 25))
-            c.Bind(csel.EVT_COLOURSELECT,Closure(self.onColor, item=name))
+            c.Bind(csel.EVT_COLOURSELECT, Closure(self.onColor, item=name))
             return c
 
         ir = 0
@@ -261,7 +262,7 @@ class XRFDisplayConfig:
     L_minor = ['Ln', 'Ll', 'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2']
     M_major = ['Ma', 'Mb', 'Mg', 'Mz']
 
-class XRFDisplayFrame(BaseFrame):
+class XRFDisplayFrame(wx.Frame):
     _about = """XRF Spectral Viewer
   Matt Newville <newville @ cars.uchicago.edu>
   """
@@ -269,12 +270,10 @@ class XRFDisplayFrame(BaseFrame):
                  axissize=None, axisbg=None, title='XRF Display',
                  exit_callback=None, output_title='XRF', **kws):
 
-        kws["style"] = wx.DEFAULT_FRAME_STYLE
-        BaseFrame.__init__(self, parent=parent,
-                           title=title, size=size,
-                           axissize=axissize, axisbg=axisbg,
-                           exit_callback=exit_callback,
-                           **kws)
+        # kws["style"] = wx.DEFAULT_FRAME_STYLE|wx
+        wx.Frame.__init__(self, parent=parent,
+                          title=title, size=size,
+                          **kws)
         self.conf = XRFDisplayConfig()
         self.data = None
         self.plotframe = None
@@ -303,8 +302,8 @@ class XRFDisplayFrame(BaseFrame):
         self.SetTitle("XRF Spectra Viewer")
         self.SetFont(self.Font9)
 
-        self.createMainPanel()
-        self.createMenus()
+        self.createMainPanel(size=size)
+        #self.createMenus()
         self.statusbar = self.CreateStatusBar(3)
         self.statusbar.SetStatusWidths([-3, -1, -1])
         statusbar_fields = ["XRF Display", " "]
@@ -364,16 +363,19 @@ class XRFDisplayFrame(BaseFrame):
         self.last_rightdown = x
         self.draw_arrow(x, y, 1, 'Right-Click')
 
-    def createMainPanel(self):
+    def createMainPanel(self, size=(600,400)):
         self.wids = {}
-        ctrlpanel = self.ctrlpanel = wx.Panel(self,  size=(325, 475))
-        roipanel = self.roipanel = wx.Panel(self)
-        plotpanel = self.panel = PlotPanel(self, fontsize=7,
-                                               axisbg='#FDFDFA',
-                                               axissize=[0.02, 0.10, 0.96, 0.89],
-                                               output_title='test.xrf',
-                                               messenger=self.write_message)
-        # these turn off drag-to-zoom and right-click popup for plot panel
+        mainpanel = self # $ wx.Panel(self, size=size)
+        ctrlpanel = self.ctrlpanel = wx.Window(mainpanel,  size=(345, 550))
+
+        ptable = PeriodicTablePanel(ctrlpanel,  onselect=self.onShowLines,
+                                    tooltip_msg='Select Element for KLM Lines')
+
+        plotpanel = self.panel = PlotPanel(mainpanel, fontsize=7,
+                                           axisbg='#FDFDFA',
+                                           axissize=[0.02, 0.10, 0.96, 0.89],
+                                           output_title='test.xrf',
+                                           messenger=self.write_message)
         self.panel.conf.labelfont.set_size(7)
         self.panel.onRightDown= self.on_rightdown
         self.panel.add_cursor_mode('zoom',  motion = self.ignoreEvent,
@@ -381,9 +383,7 @@ class XRFDisplayFrame(BaseFrame):
                                    leftdown = self.on_leftdown,
                                    rightdown = self.on_rightdown)
 
-        ptable = PeriodicTablePanel(self, action=self.onShowLines)
-
-        sizer = wx.GridBagSizer(10, 4)
+        sizer = wx.GridBagSizer(11, 5)
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
         rlabstyle = wx.ALIGN_RIGHT|wx.RIGHT|wx.TOP|wx.EXPAND
@@ -399,9 +399,20 @@ class XRFDisplayFrame(BaseFrame):
                                           size=(80, -1),
                                           action=self.onZoomOut)
 
-
         spanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
+        for wname, dname in (('uparrow', 'up'),
+                           ('leftarrow', 'left'),
+                           ('rightarrow', 'right'),
+                           ('downarrow', 'down')):
+            self.wids[wname] = wx.BitmapButton(spanel, -1, 
+                                               get_icon(wname), 
+                                              style=wx.NO_BORDER)
+            self.wids[wname].Bind(wx.EVT_BUTTON,
+                                 Closure(ptable.onKey, name=dname))
+
+            ssizer.Add(self.wids[wname],  0, wx.EXPAND|wx.ALL, 2)
+
         self.wids['kseries'] = add_checkbox(spanel, ' K ',
                                             action=self.onSeriesSelect)
         self.wids['lseries'] = add_checkbox(spanel, ' L ',
@@ -409,15 +420,15 @@ class XRFDisplayFrame(BaseFrame):
         self.wids['mseries'] = add_checkbox(spanel, ' M ',
                                             action=self.onSeriesSelect)
 
-        ssizer.Add(txt(spanel, ' Series:'), 0, wx.EXPAND|wx.ALL, 0)
-        ssizer.Add(self.wids['kseries'],    1, wx.EXPAND|wx.ALL, 0)
-        ssizer.Add(self.wids['lseries'],    1, wx.EXPAND|wx.ALL, 0)
-        ssizer.Add(self.wids['mseries'],    1, wx.EXPAND|wx.ALL, 0)
-
+        ssizer.Add(txt(spanel, '  '),       1, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(self.wids['kseries'],    0, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(self.wids['lseries'],    0, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(self.wids['mseries'],    0, wx.EXPAND|wx.ALL, 0)
         pack(spanel, ssizer)
+
         self.wids['roilist'] = EditableListBox(ctrlpanel, self.onROI,
                                                right_click=False,
-                                               size=(80, 90))
+                                               size=(80, 120))
 
         self.wids['roiname'] = wx.TextCtrl(ctrlpanel, -1, '', size=(140, -1))
 
@@ -433,51 +444,55 @@ class XRFDisplayFrame(BaseFrame):
         self.wids['counts_tot'] = txt(ctrlpanel, ' Total: ', size=140)
         self.wids['counts_net'] = txt(ctrlpanel, ' Net:  ', size=140)
 
-        ir = 0
-        sizer.Add(ptable,  (ir, 0), (1, 4), wx.ALIGN_LEFT, border=0)
+        ir = 1
+        sizer.Add(ptable,  (ir, 1), (1, 4), wx.ALIGN_RIGHT|wx.EXPAND)
 
         ir += 1
-        sizer.Add(spanel, (ir, 1), (1, 3), labstyle)
+        sizer.Add(spanel, (ir, 1), (1, 4), labstyle)
 
         ir += 1
-        sizer.Add(lin(ctrlpanel, 195),   (ir, 0), (1, 4), labstyle)
+        sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
 
         # roi section...
         ir += 1
         sizer.Add(txt(ctrlpanel, ' Regions of Interest:', size=140),
-                  (ir, 0), (1, 2), labstyle)
-        sizer.Add(self.wids['roilist'],                     (ir, 2), (4, 2), labstyle)
+                  (ir, 1), (1, 2), labstyle)
+        sizer.Add(self.wids['roilist'],                     (ir, 3), (4, 2), labstyle)
 
-        sizer.Add(self.wids['roiname'],  (ir+1, 0), (1, 2), labstyle)
+        sizer.Add(self.wids['roiname'],  (ir+1, 1), (1, 2), labstyle)
 
-        sizer.Add(self.wids['newroi'],   (ir+2, 0), (1, 1), labstyle)
-        sizer.Add(self.wids['delroi'],   (ir+2, 1), (1, 1), labstyle)
-        sizer.Add(self.wids['noroi'],    (ir+3, 0), (1, 2), labstyle|wx.ALIGN_CENTER)
+        sizer.Add(self.wids['newroi'],   (ir+2, 1), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(self.wids['delroi'],   (ir+2, 2), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(self.wids['noroi'],    (ir+3, 1), (1, 2), wx.ALIGN_CENTER)
 
         ir += 4
-        sizer.Add(self.wids['counts_tot'],         (ir, 0), (1, 2), ctrlstyle)
-        sizer.Add(self.wids['counts_net'],         (ir, 2), (1, 2), ctrlstyle)
+        sizer.Add(self.wids['counts_tot'],         (ir, 1), (1, 2), ctrlstyle)
+        sizer.Add(self.wids['counts_net'],         (ir, 3), (1, 2), ctrlstyle)
 
         ir += 1
-        sizer.Add(lin(ctrlpanel, 95),         (ir, 0), (1, 4), labstyle)
+        sizer.Add(lin(ctrlpanel, 195),         (ir, 1), (1, 4), labstyle)
 
+        ir += 2
+        sizer.Add(txt(ctrlpanel, ' Energy Scale:'),  (ir, 1), (1, 2), labstyle)
+        sizer.Add(self.wids['zoom_in'],              (ir, 3), (1, 1), ctrlstyle)
+        sizer.Add(self.wids['zoom_out'],             (ir, 4), (1, 1), ctrlstyle)
         ir += 1
-        sizer.Add(txt(ctrlpanel, ' Counts Scale:'),  (ir, 0), (1, 2), labstyle)
-        sizer.Add(self.wids['ylog'],           (ir, 3), (1, 2), ctrlstyle)
+        sizer.Add(txt(ctrlpanel, ' Counts Scale:'),  (ir, 1), (1, 2), labstyle)
+        sizer.Add(self.wids['ylog'],                 (ir, 4), (1, 2), ctrlstyle)
+ 
         ir += 1
-        sizer.Add(txt(ctrlpanel, ' Energy Scale:'),  (ir, 0), (1, 2), labstyle)
-        sizer.Add(self.wids['zoom_in'],              (ir, 2), (1, 1), ctrlstyle)
-        sizer.Add(self.wids['zoom_out'],             (ir, 3), (1, 1), ctrlstyle)
+        sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
 
-
+        sizer.SetHGap(2)
+        sizer.SetVGap(2)
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
         msizer = wx.BoxSizer(wx.HORIZONTAL)
-        msizer.Add(self.ctrlpanel, 0, style, 2)
-        msizer.Add(self.panel,     1, style, 2)
-        pack(self, msizer)
+        msizer.Add(self.ctrlpanel, 0, style, 1)
+        msizer.Add(self.panel,     1, style, 1)
+        pack(mainpanel, msizer)
         self.set_roilist(mca=None)
 
     def onZoomIn(self, event=None):
@@ -665,7 +680,7 @@ class XRFDisplayFrame(BaseFrame):
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(omenu, "&Options")
         self.SetMenuBar(self.menubar)
-        self.Bind(wx.EVT_CLOSE,self.onExit)
+        self.Bind(wx.EVT_CLOSE, self.onExit)
 
     def onSavePNG(self, event=None):
         if self.panel is not None:
