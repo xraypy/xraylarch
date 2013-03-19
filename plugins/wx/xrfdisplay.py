@@ -303,7 +303,7 @@ class XRFDisplayFrame(wx.Frame):
         self.SetFont(self.Font9)
 
         self.createMainPanel(size=size)
-        #self.createMenus()
+        self.createMenus()
         self.statusbar = self.CreateStatusBar(3)
         self.statusbar.SetStatusWidths([-3, -1, -1])
         statusbar_fields = ["XRF Display", " "]
