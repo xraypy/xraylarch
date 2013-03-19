@@ -93,8 +93,8 @@ class SettingsFrame(wx.Frame):
     k1lines = ['Ka1', 'Ka2', 'Kb1']
     k2lines = ['Kb2', 'Kb3']
     l1lines = ['La1', 'Lb1', 'Lb3', 'Lb4']
-    l2lines = ['La2', 'Ll',  'Lg2', 'Lg3', 'Lg1', 'Lb2,15']
-    mlines = ['Ma', 'Mb', 'Mg', 'Mz']
+    l2lines = ['La2', 'Ll',  'Ln', 'Lg2', 'Lg3', 'Lg1', 'Lb2,15']
+    mlines  = ['Ma', 'Mb', 'Mg', 'Mz']
 
     def __init__(self, parent, conf, size=(600, 450), **kws):
         self.parent = parent
@@ -276,6 +276,7 @@ class XRFDisplayFrame(wx.Frame):
                           **kws)
         self.conf = XRFDisplayConfig()
         self.data = None
+        self.title = title
         self.plotframe = None
         self.larch = _larch
         self.exit_callback = exit_callback
@@ -339,14 +340,16 @@ class XRFDisplayFrame(wx.Frame):
                 pass
         ymin, ymax = self.panel.axes.get_ylim()
         dy = int(min(ymax*0.99, 2.5*y) - y)
-        self.last_markers[idx] = arrow(x, y, 0, dy, shape='full',
-                                       width=0.015, head_width=0.0,
-                                       length_includes_head=True,
-                                       head_starts_at_zero=True,
-                                       color=self.conf.marker_color)
-        self.panel.canvas.draw()
-        self.write_message("%s: E=%.3f, Counts=%g" % (title, x, y), panel=idx)
-
+        try:
+            self.last_markers[idx] = arrow(x, y, 0, dy, shape='full',
+                                           width=0.015, head_width=0.0,
+                                           length_includes_head=True,
+                                           head_starts_at_zero=True,
+                                           color=self.conf.marker_color)
+            self.panel.canvas.draw()
+            self.write_message("%s: E=%.3f, Counts=%g" % (title, x, y), panel=idx)
+        except:
+            pass
     def on_rightdown(self, event=None):
         if event is None:
             return
@@ -373,7 +376,7 @@ class XRFDisplayFrame(wx.Frame):
 
         plotpanel = self.panel = PlotPanel(mainpanel, fontsize=7,
                                            axisbg='#FDFDFA',
-                                           axissize=[0.02, 0.10, 0.96, 0.89],
+                                           axissize=[0.02, 0.09, 0.96, 0.90],
                                            output_title='test.xrf',
                                            messenger=self.write_message)
         self.panel.conf.labelfont.set_size(7)
@@ -802,7 +805,7 @@ class XRFDisplayFrame(wx.Frame):
         kwargs = {'grid': False,
                   # 'delay_draw': True, #  experimental wxmplot option
                   'ylog_scale': self.ylog_scale,
-                  'xlabel': 'E (keV)',
+                  'xlabel': 'E (keV)', 
                   'color': self.conf.spectra_color}
         kwargs.update(kws)
 
