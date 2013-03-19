@@ -184,12 +184,14 @@ class Interpreter:
         except:
             rwords = []
             for word in PYTHON_RESERVED_WORDS:
-                if word in text:
+                if (text.startswith('%s ' % word) or
+                    text.endswith(' %s' % word) or
+                    ' %s ' % word in text):
                     rwords.append(word)
             if len(rwords) > 0:
                 rwords = ", ".join(rwords)
-                text = """May contain one of the following reserved words:
-    %s"""  %  (rwords)
+                text = """May contain one of Python's reserved words:
+   %s"""  %  (rwords)
             self.raise_exception(None, exc=SyntaxError, msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno)
 
