@@ -163,7 +163,7 @@ def fix_permissions(*dirnames):
         try:
             os.chown(nam, stat.st_uid, stat.st_gid)
             os.chmod(nam, mode)
-        except OSError:
+        except AttributeError, OSError:
             pass
     for dname in (dirnames):
         folder = os.path.join(home, '.%s' % dname)
