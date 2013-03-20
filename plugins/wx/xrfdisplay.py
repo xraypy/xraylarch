@@ -766,7 +766,7 @@ class XRFDisplayFrame(wx.Frame):
 
         erange = [max(0, self.xdata.min()), self.xdata.max()]
         for label, eev in minors:
-            e = eev * 0.001
+            e = float(eev) * 0.001
             if e > erange[0] and e < erange[1]:
                 l = vline(e, color= self.conf.minor_elinecolor,
                           linewidth=0.75, zorder=-6)
@@ -774,7 +774,7 @@ class XRFDisplayFrame(wx.Frame):
                 self.minor_markers.append(l)
 
         for label, eev in majors:
-            e = eev * 0.001
+            e = float(eev) * 0.001
             if e > erange[0] and e < erange[1]:
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.75, zorder=-4)
