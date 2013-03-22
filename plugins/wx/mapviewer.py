@@ -43,13 +43,15 @@ from xrfdisplay import XRFDisplayFrame
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack, popup,
-                     add_button, add_menu, add_choice, add_menu)
+                     add_button, add_menu, add_choice)
 
 sys.path.insert(0, larch.plugin_path('xrf'))
 from mca import MCA
-     
-sys.path.insert(0, larch.plugin_path('xrfmap'))
 
+sys.path.insert(0, larch.plugin_path('io'))
+from fileutils import nativepath
+
+sys.path.insert(0, larch.plugin_path('xrfmap'))
 
 from xrm_mapfile import (GSEXRM_MapFile, GSEXRM_FileStatus,
                          GSEXRM_Exception, GSEXRM_NotOwner)
@@ -505,13 +507,30 @@ class MapViewerFrame(wx.Frame):
                  "Read Map File",  self.onReadFile)
         add_menu(self, fmenu, "&Open Map Folder\tCtrl+F",
                  "Read Map Folder",  self.onReadFolder)
-
+        add_menu(self, fmenu, 'Change &Working Folder',
+                  "Choose working directory",
+                  self.onFolderSelect)
         fmenu.AppendSeparator()
         add_menu(self, fmenu, "&Quit\tCtrl+Q",
                   "Quit program", self.onClose)
 
         self.menubar.Append(fmenu, "&File")
         self.SetMenuBar(self.menubar)
+
+    def onFolderSelect(self,evt):
+        style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
+        dlg = wx.DirDialog(self, "Select Working Directory:", os.getcwd(),
+                           style=style)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            basedir = os.path.abspath(str(dlg.GetPath()))
+            try:
+                os.chdir(nativepath(basedir))
+            except OSError:
+                print 'Changed folder failed'
+                pass
+        dlg.Destroy()
+        print 'Working Dir ', os.getcwd()
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,"About GSEXRM MapViewer",
@@ -614,15 +633,20 @@ class MapViewerFrame(wx.Frame):
 
         if self.filemap[filename].folder_has_newdata():
 
-            print 'PROCESS ', filename, xrm_map.folder_has_newdata()
+            print 'PROCESS  1 ', filename, xrm_map.folder_has_newdata()
+            self.processing_map = True
             dthread  = Thread(target=self.new_mapdata, args=(filename,))
             dthread.start()
+            time.sleep(0.05)
+            while self.processing_map:
+                time.sleep(0.25)
+                wx.Yield()
             dthread.join()
 
     def new_mapdata(self, filename):
         xrm_map = self.filemap[filename]
-
         nrows = len(xrm_map.rowdata)
+        self.processing_map = True
         if xrm_map.folder_has_newdata():
             irow = xrm_map.last_row + 1
             while irow < nrows:
@@ -631,31 +655,16 @@ class MapViewerFrame(wx.Frame):
                     xrm_map.add_rowdata(row)
                 irow  = irow + 1
                 time.sleep(.001)
+                self.message('Added row: %i of %i' % (irow, nrows))
                 wx.Yield()
 
         xrm_map.resize_arrays(xrm_map.last_row+1)
         xrm_map.h5root.flush()
-
-    def OLDprocess_file(self, filename):
-        """Request processing of map file.
-        This can take awhile, so is done in a separate thread,
-        with updates displayed in message bar
-        """
-        xrm_map = self.filemap[filename]
-        def on_process(row=0, maxrow=0, filename=None, status='unknown'):
-            print 'on process ', row, maxrow, filename, status
-            if maxrow < 1 or filename is None:
-                return
-            #self.SetStatusText('processing row=%i / %i for %s [%s]' %
-            #                   (row, maxrow, fname, status))
-
-        if xrm_map.folder_has_newdata():
-            print 'PROCESS ', filename, xrm_map.folder_has_newdata()
-            dthread  = Thread(target=self.filemap[filename].process,
-                              kwargs={'callback': on_process},
-                              name='process_thread')
-            dthread.start()
-            dthread.join()
+        self.processing_map = False
+        
+    def message(msg, win=0):
+        self.statusbar.SetStatusText(msg, win)
+        
 
     def check_ownership(self, fname):
         """
