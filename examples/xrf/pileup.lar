@@ -1,0 +1,9 @@
+s = read_gsemca('srm1832.mca')
+xrf_plot(s.energy, s.counts, mca=s)
+
+s.pileup = (convolve(s.counts/1000., s.counts/1000., 'full')/1700.0).astype(int)
+s.ep = (s.energy[1]-s.energy[0])*arange(len(s.pileup))
+
+show(s)
+newplot(s.energy, s.counts*1.0,  ylog_scale=True)
+plot(s.ep, s.pileup*1.0,  ylog_scale=True)
