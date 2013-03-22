@@ -9,7 +9,7 @@ from string import maketrans
 import wx
 import wx.lib.masked as masked
 from wx.lib.embeddedimage import PyEmbeddedImage
-import numpy
+import numpy as np
 
 def pack(window, sizer):
     "simple wxPython Pack"
@@ -310,12 +310,8 @@ def set_float(val):
             out = float(val)
         except ValueError:
             return None
-        if HAS_NUMPY:
-            if numpy.isnan(out):
-                out = default
-        else:
-            if not(out > 0) and not(out<0) and not(out==0):
-                out = default
+        if np.isnan(out):
+            out = default
     return out
 
 class Closure:
