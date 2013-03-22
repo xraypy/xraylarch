@@ -46,8 +46,7 @@ class PeriodicTablePanel(wx.Panel):
     SEL_BG = (250, 250, 200)
 
     def __init__(self, parent, title='Select Element',
-                 onselect=None, tooltip_msg=None,
-                 size=(345, 150), **kws):
+                 onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
         wx.Panel.__init__(self, parent, -1, size=size, **kws)
         self.parent = parent
         self.onselect = onselect
@@ -56,9 +55,10 @@ class PeriodicTablePanel(wx.Panel):
         self.ctrls = {}
         self.REG_BG = self.GetBackgroundColour()
         self.selected = None
-        self.elemfont  = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.titlefont = wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.elemfont  = wx.Font( 8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.titlefont = wx.Font( 9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.BuildPanel()
+
 
     def onKey(self, event=None, name=None):
         """support browsing through elements with arrow keys"""
@@ -131,7 +131,7 @@ class PeriodicTablePanel(wx.Panel):
         if self.onselect is not None:
             self.onselect(elem=label, event=event)
         self.Refresh()
-        
+
     def BuildPanel(self):
         sizer = wx.GridBagSizer(9, 18)
         for name, coords in self.elems.items():
@@ -154,27 +154,26 @@ class PeriodicTablePanel(wx.Panel):
 
         self.SetSizer(sizer)
         ix, iy = self.GetBestSize()
-        self.SetMinSize((ix+10, iy+10))
-        self.SetSize((ix+15, iy+15))
+        self.SetSize((ix+2, iy+2))
         sizer.Fit(self)
 
 class PTableFrame(wx.Frame):
-    def __init__(self, size=(350, 200)):
+    def __init__(self, size=(-1, -1)):
         wx.Frame.__init__(self, parent=None, size=size)
-        panel = wx.Window(self)
-        ptab  = PeriodicTablePanel(panel, title='Periodic Table', 
+        ptab  = PeriodicTablePanel(self, title='Periodic Table',
                                    tooltip_msg='Select Element',
                                    onselect = self.onElement)
-
+        sx, sy = ptab.GetBestSize()
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(ptab, 1, wx.EXPAND|wx.ALL, 5)
-        panel.SetSizer(sizer)
-        sizer.Fit(panel)
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+        self.SetMinSize((sx+10, sy+10))
         self.Raise()
-        
+
     def onElement(self, elem=None, event=None):
         print  'Element Selected:  ', elem
-        
+
 class PTableApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         wx.App.__init__(self)

@@ -18,7 +18,7 @@ from wxmplot.colors import hexcolor
 
 from larch import Group, Parameter, isParameter, plugin_path
 
-#sys.path.insert(0, plugin_path('wx'))
+sys.path.insert(0, plugin_path('wx'))
 sys.path.insert(0, plugin_path('math'))
 from mathutils import index_of
 
@@ -294,17 +294,11 @@ class XRFDisplayFrame(wx.Frame):
         self.last_markers = [None, None]
         self.ylog_scale = True
 
-        self.Font14 = wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font12 = wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font11 = wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font10 = wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font9  = wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-
         self.SetTitle("XRF Spectra Viewer")
-        self.SetFont(self.Font9)
 
-        self.createMainPanel(size=size)
+        self.createMainPanel()
         self.createMenus()
+        self.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
         self.statusbar = self.CreateStatusBar(3)
         self.statusbar.SetStatusWidths([-3, -1, -1])
         statusbar_fields = ["XRF Display", " "]
@@ -366,15 +360,13 @@ class XRFDisplayFrame(wx.Frame):
         self.last_rightdown = x
         self.draw_arrow(x, y, 1, 'Right-Click')
 
-    def createMainPanel(self, size=(600,400)):
+    def createMainPanel(self):
         self.wids = {}
-        mainpanel = self # $ wx.Panel(self, size=size)
-        ctrlpanel = self.ctrlpanel = wx.Window(mainpanel,  size=(345, 550))
-
+        ctrlpanel = wx.Panel(self)
         ptable = PeriodicTablePanel(ctrlpanel,  onselect=self.onShowLines,
                                     tooltip_msg='Select Element for KLM Lines')
 
-        plotpanel = self.panel = PlotPanel(mainpanel, fontsize=7,
+        plotpanel = self.panel = PlotPanel(self, fontsize=7,
                                            axisbg='#FDFDFA',
                                            axissize=[0.02, 0.09, 0.96, 0.90],
                                            output_title='test.xrf',
@@ -405,12 +397,12 @@ class XRFDisplayFrame(wx.Frame):
         spanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
         for wname, dname in (('uparrow', 'up'),
-                           ('leftarrow', 'left'),
-                           ('rightarrow', 'right'),
-                           ('downarrow', 'down')):
-            self.wids[wname] = wx.BitmapButton(spanel, -1, 
-                                               get_icon(wname), 
-                                              style=wx.NO_BORDER)
+                             ('leftarrow', 'left'),
+                             ('rightarrow', 'right'),
+                             ('downarrow', 'down')):
+            self.wids[wname] = wx.BitmapButton(spanel, -1,
+                                               get_icon(wname),
+                                               style=wx.NO_BORDER)
             self.wids[wname].Bind(wx.EVT_BUTTON,
                                  Closure(ptable.onKey, name=dname))
 
@@ -447,7 +439,7 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['counts_tot'] = txt(ctrlpanel, ' Total: ', size=140)
         self.wids['counts_net'] = txt(ctrlpanel, ' Net:  ', size=140)
 
-        ir = 1
+        ir = 0
         sizer.Add(ptable,  (ir, 1), (1, 4), wx.ALIGN_RIGHT|wx.EXPAND)
 
         ir += 1
@@ -482,20 +474,25 @@ class XRFDisplayFrame(wx.Frame):
         ir += 1
         sizer.Add(txt(ctrlpanel, ' Counts Scale:'),  (ir, 1), (1, 2), labstyle)
         sizer.Add(self.wids['ylog'],                 (ir, 4), (1, 2), ctrlstyle)
- 
+
         ir += 1
         sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
 
-        sizer.SetHGap(2)
-        sizer.SetVGap(2)
+        sizer.SetHGap(1)
+        sizer.SetVGap(1)
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
 
+        tx, ty = ptable.GetBestSize()
+        cx, cy = ctrlpanel.GetBestSize()
+        px, py = plotpanel.GetBestSize()
+        ctrlpanel.SetSize((tx+2, max(cy, py)+2))
+
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
         msizer = wx.BoxSizer(wx.HORIZONTAL)
-        msizer.Add(self.ctrlpanel, 0, style, 1)
+        msizer.Add(ctrlpanel, 0, style, 1)
         msizer.Add(self.panel,     1, style, 1)
-        pack(mainpanel, msizer)
+        pack(self, msizer)
         self.set_roilist(mca=None)
 
     def onZoomIn(self, event=None):
@@ -805,7 +802,7 @@ class XRFDisplayFrame(wx.Frame):
         kwargs = {'grid': False,
                   # 'delay_draw': True, #  experimental wxmplot option
                   'ylog_scale': self.ylog_scale,
-                  'xlabel': 'E (keV)', 
+                  'xlabel': 'E (keV)',
                   'color': self.conf.spectra_color}
         kwargs.update(kws)
 
@@ -907,7 +904,6 @@ class XRFDisplayFrame(wx.Frame):
 class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
         wx.App.__init__(self)
-        print 'APP with mixin!'
 
     def OnInit(self):
         self.Init()
