@@ -56,7 +56,7 @@ class xMAPData(object):
         ndet = 4 * nmod
         self.firstPixel   = 0
         self.numPixels    = 0
-        self.data         = np.zeros((npix, ndet, nchan), dtype='i2')
+        self.counts       = np.zeros((npix, ndet, nchan), dtype='i2')
         self.realTime     = np.zeros((npix, ndet), dtype='i8')
         self.liveTime     = np.zeros((npix, ndet), dtype='i8')
         self.inputCounts  = np.zeros((npix, ndet), dtype='i4')
@@ -135,11 +135,11 @@ def read_xmap_netcdf(fname, verbose=False):
             t_data = dat[:npix,data_slice]
             if mapmode == 2:
                 t_data = aslong(t_data)
-            xmapdat.data[p1:p2,:,:] = t_data.reshape(npix,4,nchans)
+            xmapdat.counts[p1:p2,:,:] = t_data.reshape(npix,4,nchans)
 
     t2 = time.time()
     xmapdat.numPixels = npix_total
-    xmapdat.data = xmapdat.data[:npix_total]
+    xmapdat.counts    = xmapdat.counts[:npix_total]
     xmapdat.realTime = clocktick * xmapdat.realTime[:npix_total]
     xmapdat.liveTime = clocktick * xmapdat.liveTime[:npix_total]
     xmapdat.inputCounts  = xmapdat.inputCounts[:npix_total]
@@ -148,13 +148,13 @@ def read_xmap_netcdf(fname, verbose=False):
         print '   time to read file    = %5.1f ms' % ((t1-t0)*1000)
         print '   time to extract data = %5.1f ms' % ((t2-t1)*1000)
         print '   read %i pixels ' %  npix_total
-        print '   data shape:    ' ,  xmapdat.data.shape
+        print '   data shape:    ' ,  xmapdat.counts.shape
     return xmapdat
 
 def test_read(fname):
     print fname,  os.stat(fname)
     fd = read_xmap_netcdf(fname, verbose=True)
-    print fd.data.shape
+    print fd.counts.shape
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xmap_netcdf': read_xmap_netcdf})
