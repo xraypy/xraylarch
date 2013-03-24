@@ -1,2 +1,2 @@
-s1 = read_gsemca('srm1832.mca')
-newplot(s1.energy, s1.data, ylog_scale=True)
+a = read_gsemca('srm1832.mca') 
+xrf_plot(a.energy, a.counts, mca=a)
