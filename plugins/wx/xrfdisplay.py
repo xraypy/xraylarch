@@ -807,21 +807,23 @@ class XRFDisplayFrame(wx.Frame):
 
         self.xdata = 1.0*x[:]
         self.ydata = 1.0*y[:]
+        yroi = None
+        ydat = 1.0*y[:]
         if mca is not None:
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
             yroi = -1*np.ones(len(y))
-            ydat = 1.0*y[:]
             for r in mca.rois:
                 yroi[r.left:r.right] = y[r.left:r.right]
                 ydat[r.left+1:r.right-1] = -1
             yroi = np.ma.masked_less(yroi, 0)
             ydat = np.ma.masked_less(ydat, 0)
-            panel.plot(x, ydat, label='spectra',  **kwargs)
+        panel.plot(x, ydat, label='spectra',  **kwargs)
+
+        if yroi is not None:
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='roi', **kwargs)
-        else:
-            panel.plot(x, y, **kwargs)
+
         panel.axes.get_yaxis().set_visible(False)
         if len(self.zoom_lims) > 0:
             x1, x2 = self.zoom_lims[-1]
