@@ -330,6 +330,115 @@ class TriColorMapPanel(wx.Panel):
             self.bscale.Enable()
             if self.bauto.GetValue() == 1:  self.bscale.Disable()
 
+
+
+class AreaSelectionPanel(wx.Panel):
+    delstr = """   Delete Area '%s'?
+
+WARNING: This cannot be undone!
+
+"""
+
+    def __init__(self, parent, owner, **kws):
+        wx.Panel.__init__(self, parent, -1, **kws)
+        self.owner = owner
+
+        sizer = wx.GridBagSizer(8, 3)
+
+        bpanel = wx.Panel(self)
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+
+        self.choice = add_choice(self, choices=[], size=(200, -1), action=self.onSelect)
+        self.desc   = wx.TextCtrl(self, -1, '', size=(200, -1))
+
+        self.onmap  = add_button(bpanel, 'Show Area on Map', size=(140, -1),
+                                      action=self.onShow)
+        self.clear  = add_button(bpanel, 'Clear Areas on Map', size=(140, -1),
+                                      action=self.onClear)
+        self.xrf    = add_button(bpanel, 'Show XRF Spectrum', size=(140, -1),
+                                      action=self.onXRF)
+
+        self.delete = add_button(self, 'Delete This Area', size=(140, -1),
+                                      action=self.onDelete)
+        self.update = add_button(self, 'Save Label', size=(140, -1),
+                                      action=self.onDesc)
+
+        bsizer.Add(self.onmap, 0, ALL_CEN, 2)
+        bsizer.Add(self.clear, 0, ALL_CEN, 2)
+        bsizer.Add(self.xrf, 0, ALL_CEN, 2)
+        pack(bpanel, bsizer)
+        def txt(s):
+            return SimpleText(self, s)
+        sizer.Add(txt('Defined Map Areas'), (0, 0), (1, 2), ALL_CEN, 2)
+        sizer.Add(txt('Area Name: '),       (1, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.choice,              (1, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.delete,              (1, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(txt('Label: '),           (2, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.desc,                (2, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.update,              (2, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(bpanel,                   (3, 0), (1, 3), ALL_LEFT, 2)
+        pack(self, sizer)
+
+    def set_choices(self, choices):
+        c = self.choice
+        c.Clear()
+        c.AppendItems(choices)
+        c.SetStringSelection(choices[0])
+
+    def _getarea(self):
+        dfile = self.owner.current_file
+        aname = self.choice.GetStringSelection()
+        return dfile.h5root['/xrfmap/areas/%s' % aname]
+
+    def onSelect(self, event=None):
+        area = self._getarea()
+        self.desc.SetValue(area.attrs['description'])
+
+    def onDesc(self, event=None):
+        area = self._getarea()
+        area.attrs['description'] = str(self.desc.GetValue())
+        self.owner.current_file.h5root.flush()
+
+    def onShow(self, event=None):
+        area = self._getarea()
+        aname = self.choice.GetStringSelection()
+        if len(self.owner.im_displays) > 0:
+            imd = self.owner.im_displays[-1]
+            imd.panel.add_highlight_area(area.value,
+                                         label=area.attrs['description'])
+
+    def onDelete(self, event=None):
+        area = self._getarea()
+        print 'delete area', area
+        dfile = self.owner.current_file
+        aname = self.choice.GetStringSelection()
+
+        erase = popup(self.owner, self.delstr % aname,  'Delete Area?',
+                     style=wx.YES_NO)
+        if erase:
+            del dfile.h5root['/xrfmap/areas/%s' % aname]
+
+    def onClear(self, event=None):
+        if len(self.owner.im_displays) > 0:
+            imd = self.owner.im_displays[-1]
+            imd.panel.highlight_areas = []
+            imd.panel.canvas.draw()
+
+    def _getmca_area(self, areaname):
+        self._mca = self.owner.current_file.get_mca_area(areaname)
+
+    def onXRF(self, event=None):
+        area = self._getarea()
+        aname = self.choice.GetStringSelection()
+        self._mca  = None
+        mca_thread = Thread(target=self._getmca_area, args=(aname,))
+        mca_thread.start()
+        self.owner.show_XRFDisplay()
+        mca_thread.join()
+        self.owner.xrfdisplay.plot(self._mca.energy,
+                                   self._mca.counts,
+                                   mca=self._mca)
+
 class MapViewerFrame(wx.Frame):
     _about = """XRF Map Viewer
   Matt Newville <newville @ cars.uchicago.edu>
@@ -340,7 +449,7 @@ class MapViewerFrame(wx.Frame):
     def __init__(self, conffile=None,  **kwds):
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, None, -1, size=(700, 400),  **kwds)
+        wx.Frame.__init__(self, None, -1, size=(700, 450),  **kwds)
 
         self.data = None
         self.filemap = {}
@@ -379,7 +488,7 @@ class MapViewerFrame(wx.Frame):
         # self.detailspanel = self.createViewOptsPanel(splitter)
 
         dpanel = self.detailspanel = wx.Panel(splitter)
-        dpanel.SetMinSize((575, 350))
+        dpanel.SetMinSize((575, 425))
         self.createNBPanels(dpanel)
         splitter.SplitVertically(self.filelist, self.detailspanel, 1)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -407,6 +516,9 @@ class MapViewerFrame(wx.Frame):
 
         self.nb.SetSelection(0)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
+
+        self.area_sel = AreaSelectionPanel(parent, owner=self)
+        sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
         pack(parent, sizer)
 
     def get_masked_mca(self, data, selected, detname, mask):
@@ -432,7 +544,6 @@ class MapViewerFrame(wx.Frame):
 
     def lassoHandler(self, data=None, selected=None, det=None, mask=None, **kws):
         t0 = time.time()
-
         detname = 'detsum'
         if det is not None:
             detname = 'det%i' % det
@@ -507,7 +618,6 @@ class MapViewerFrame(wx.Frame):
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
-        print 'ShowFile ', filename
 
         if not self.h5convert_done:
             return
@@ -525,6 +635,7 @@ class MapViewerFrame(wx.Frame):
         set_choices(self.nbpanels['3color'].rchoice, rois)
         set_choices(self.nbpanels['3color'].gchoice, rois)
         set_choices(self.nbpanels['3color'].bchoice, rois)
+        self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys())
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
