@@ -35,10 +35,8 @@ import numpy as np
 
 from wxmplot import ImageFrame
 import larch
-import larch.wxlib
 
 sys.path.insert(0, larch.plugin_path('wx'))
-
 from xrfdisplay import XRFDisplayFrame
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
@@ -107,6 +105,7 @@ def set_choices(choicebox, choices):
 
 class SimpleMapPanel(wx.Panel):
     """Panel of Controls for choosing what to display a simple ROI map"""
+
     def __init__(self, parent, owner, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
         self.owner = owner
@@ -335,6 +334,9 @@ class MapViewerFrame(wx.Frame):
     _about = """XRF Map Viewer
   Matt Newville <newville @ cars.uchicago.edu>
   """
+    cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
+                                   'Left-Drag to select points for XRF Spectra')}
+
     def __init__(self, conffile=None,  **kwds):
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
@@ -361,6 +363,12 @@ class MapViewerFrame(wx.Frame):
         statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
+
+        self.htimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onTimer, self.htimer)
+        self.h5convert_done = True
+        self.h5convert_irow = 0
+        self.h5convert_nrow = 0
 
     def createMainPanel(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -401,33 +409,42 @@ class MapViewerFrame(wx.Frame):
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
         pack(parent, sizer)
 
-    def lassoHandler(self, data=None, selected=None, det=None, mask=None, **kws):
-        print 'lasso ', data.shape, mask.shape, det
+    def get_masked_mca(self, data, selected, detname, mask):
+        t0 = time.time()
         mask.shape = data.shape[:2]
-        if det is None:
-            det = 'sum'
-        else:
-            det = '%i' % det
-        # det =self.det.GetStringSelection()
-        map = self.current_file.xrfmap['det%s' % det]
+        map = self.current_file.xrfmap[detname]
         energy  = map['energy'].value
         cal     = map['energy'].attrs
-        spectra = map['data'].value
+        spectra = map['counts'].value
         spectra = spectra.swapaxes(0, 1)[mask].sum(axis=0)
-        print ' det ', det,  spectra.sum()
         self.selected = selected
         self.mask = mask
-        thismca = MCA(counts=spectra, offset=cal['cal_offset'],
-                      slope=cal['cal_slope'])
-        thismca.energy = energy
+        self.current_file.add_area(mask)
 
+        self.sel_mca = MCA(counts=spectra, offset=cal['cal_offset'],
+                           slope=cal['cal_slope'])
+        self.sel_mca.energy = energy
         roinames = map['roi_names'].value[:]
         roilims  = map['roi_limits'].value[:]
         for roi, lims in zip(roinames, roilims):
-            thismca.add_roi(roi, left=lims[0], right=lims[1])
-        
+            self.sel_mca.add_roi(roi, left=lims[0], right=lims[1])
+        return
+
+    def lassoHandler(self, data=None, selected=None, det=None, mask=None, **kws):
+        t0 = time.time()
+
+        detname = 'detsum'
+        if det is not None:
+            detname = 'det%i' % det
+        mca_thread = Thread(target=self.get_masked_mca,
+                            args=(data, selected, detname, mask))
+        mca_thread.start()
         self.show_XRFDisplay()
-        self.xrfdisplay.plot(energy, spectra, mca=thismca)
+
+        mca_thread.join()
+        self.xrfdisplay.plot(self.sel_mca.energy,
+                             self.sel_mca.counts,
+                             mca=self.sel_mca)
 
     def show_XRFDisplay(self, do_raise=True, clear=True):
         "make sure plot frame is enabled, and visible"
@@ -447,9 +464,12 @@ class MapViewerFrame(wx.Frame):
 
     def add_imdisplay(self, title, det=None, config_on_frame=True):
         on_lasso = Closure(self.lassoHandler, det=det)
-        self.im_displays.append(ImageFrame(output_title=title,
-                                           lasso_callback=on_lasso,
-                                           config_on_frame=config_on_frame))
+        imframe = ImageFrame(output_title=title,
+                             lasso_callback=on_lasso,
+                             cursor_labels = self.cursor_menulabels,
+                             config_on_frame=config_on_frame)
+        self.im_displays.append(imframe)
+
 
     def display_map(self, map, title='', info='', x=None, y=None, det=None,
                     with_config=True):
@@ -464,6 +484,7 @@ class MapViewerFrame(wx.Frame):
                 on_lasso = Closure(self.lassoHandler, det=det)
                 imd = ImageFrame(output_title=title,
                                  lasso_callback=on_lasso,
+                                 cursor_labels = self.cursor_menulabels,
                                  config_on_frame=with_config)
                 imd.display(map, title=title, x=x, y=y)
                 displayed = True
@@ -477,7 +498,7 @@ class MapViewerFrame(wx.Frame):
 
     def init_larch(self):
         self.larch = larch.Interpreter()
-        self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        #self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
@@ -486,8 +507,13 @@ class MapViewerFrame(wx.Frame):
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
+        print 'ShowFile ', filename
+
+        if not self.h5convert_done:
+            return
         if self.check_ownership(filename):
             self.filemap[filename].process()
+
         self.current_file = self.filemap[filename]
         self.title.SetLabel("%s" % filename)
 
@@ -530,7 +556,6 @@ class MapViewerFrame(wx.Frame):
                 print 'Changed folder failed'
                 pass
         dlg.Destroy()
-        print 'Working Dir ', os.getcwd()
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,"About GSEXRM MapViewer",
@@ -560,6 +585,10 @@ class MapViewerFrame(wx.Frame):
         self.Destroy()
 
     def onReadFolder(self, evt=None):
+        if not self.h5convert_done:
+            print 'cannot open file while processing a map folder'
+            return
+
         dlg = wx.DirDialog(self, message="Read Map Folder",
                            defaultPath=os.getcwd(),
                            style=wx.OPEN)
@@ -586,6 +615,10 @@ class MapViewerFrame(wx.Frame):
             self.ShowFile(filename=fname)
 
     def onReadFile(self, evt=None):
+        if not self.h5convert_done:
+            print 'cannot open file while processing a map folder'
+            return
+
         dlg = wx.FileDialog(self, message="Read Map File",
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
@@ -601,7 +634,6 @@ class MapViewerFrame(wx.Frame):
 
         if read:
             parent, fname = os.path.split(path)
-            print 'READ  ', path
             xrmfile = GSEXRM_MapFile(filename=str(path))
             #try:
             #except:
@@ -614,6 +646,7 @@ class MapViewerFrame(wx.Frame):
                 self.filelist.Append(fname)
             if self.check_ownership(fname):
                 self.process_file(fname)
+            self.h5convert_done = True
             self.ShowFile(filename=fname)
 
     def onGSEXRM_Data(self,  **kws):
@@ -632,39 +665,54 @@ class MapViewerFrame(wx.Frame):
             xrm_map.read_master()
 
         if self.filemap[filename].folder_has_newdata():
+            print 'Has New Data! '
+            self.h5convert_fname = filename
+            self.h5convert_done = False
+            self.h5convert_irow, self.h5convert_nrow = 0, 0
+            self.h5convert_t0 = time.time()
+            self.htimer.Start(150)
+            self.h5convert_thread = Thread(target=self.new_mapdata,
+                                           args=(filename,))
+            self.h5convert_thread.start()
+            # self.new_mapdata(filename)
 
-            print 'PROCESS  1 ', filename, xrm_map.folder_has_newdata()
-            self.processing_map = True
-            dthread  = Thread(target=self.new_mapdata, args=(filename,))
-            dthread.start()
-            time.sleep(0.05)
-            while self.processing_map:
-                time.sleep(0.25)
-                wx.Yield()
-            dthread.join()
+    def onTimer(self, event):
+        fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
+        self.message('Processing %s:  row %i of %i' % (fname, irow, nrow))
+        if self.h5convert_done:
+            self.htimer.Stop()
+            self.h5convert_thread.join()
+            self.message('Processing %s: complete!' % fname)
+            self.ShowFile(filename=self.h5convert_fname)
 
     def new_mapdata(self, filename):
         xrm_map = self.filemap[filename]
         nrows = len(xrm_map.rowdata)
-        self.processing_map = True
+        self.h5convert_nrow = nrows
+        self.h5convert_done = False
         if xrm_map.folder_has_newdata():
             irow = xrm_map.last_row + 1
+            self.h5convert_irow = irow
             while irow < nrows:
-                row = xrm_map.read_rowdata(irow)
-                if row is not None:
-                    xrm_map.add_rowdata(row)
+                t0 = time.time()
+                self.h5convert_irow = irow
+                rowdat = xrm_map.read_rowdata(irow)
+                t1 = time.time()
+                xrm_map.add_rowdata(rowdat)
+                t2 = time.time()
                 irow  = irow + 1
-                time.sleep(.001)
-                self.message('Added row: %i of %i' % (irow, nrows))
-                wx.Yield()
+                try:
+                    wx.Yield()
+                except:
+                    pass
 
         xrm_map.resize_arrays(xrm_map.last_row+1)
         xrm_map.h5root.flush()
-        self.processing_map = False
-        
-    def message(msg, win=0):
+        self.h5convert_done = True
+        time.sleep(0.025)
+
+    def message(self, msg, win=0):
         self.statusbar.SetStatusText(msg, win)
-        
 
     def check_ownership(self, fname):
         """
@@ -677,18 +725,31 @@ class MapViewerFrame(wx.Frame):
                 self.filemap[fname].claim_hostid()
         return self.filemap[fname].check_hostid()
 
-class ViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, config=None, dbname=None, **kws):
-        self.config  = config
-        self.dbname  = dbname
-        wx.App.__init__(self)
+class MapViewer(wx.App):
+    def __init__(self, **kws):
+        wx.App.__init__(self, **kws)
+
+    def run(self):
+        self.MainLoop()
+
+    def createApp(self):
+        frame = MapViewerFrame()
+        frame.Show()
+        self.SetTopWindow(frame)
+
+    def OnInit(self):
+        self.createApp()
+        return True
+
+class DebugViewer(MapViewer, wx.lib.mixins.inspection.InspectionMixin):
+    def __init__(self, **kws):
+        MapViewer.__init__(self, **kws)
 
     def OnInit(self):
         self.Init()
-        frame = MapViewerFrame() #
-        frame.Show()
-        self.SetTopWindow(frame)
+        self.createApp()
+        self.ShowInspectionTool()
         return True
 
 if __name__ == "__main__":
-    ViewerApp().MainLoop()
+    DebugViewer().run()
