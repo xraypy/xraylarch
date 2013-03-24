@@ -251,7 +251,7 @@ class SettingsFrame(wx.Frame):
 class XRFDisplayConfig:
     major_elinecolor = '#DAD8CA'
     minor_elinecolor = '#E0DAD0'
-    marker_color     = '#888888'
+    marker_color     = '#77BB99'
     roi_fillcolor    = '#F8F0BA'
     roi_color        = '#AA0000'
     spectra_color    = '#0000AA'
@@ -333,7 +333,7 @@ class XRFDisplayFrame(wx.Frame):
             except:
                 pass
         ymin, ymax = self.panel.axes.get_ylim()
-        dy = int(min(ymax*0.99, 2.5*y) - y)
+        dy = int(max((ymax-ymin)*0.10,  min(ymax*0.99, 3*y)) - y)
         try:
             self.last_markers[idx] = arrow(x, y, 0, dy, shape='full',
                                            width=0.015, head_width=0.0,
@@ -504,11 +504,8 @@ class XRFDisplayFrame(wx.Frame):
 
         if self.mca is not None:
             dmin, dmax = self.mca.energy.min(), self.mca.energy.max()
-            if self.selected_roi is not None:
-                left, right = self.selected_roi.left, self.selected_roi.right
-                emid = self.mca.energy[(left+right)/2]
-            elif self.energy_for_zoom is not None:
-                emid = self.energy_for_zoom
+        if self.energy_for_zoom is not None:
+            emid = self.energy_for_zoom
         espan = erange/3.0
         e1 = max(dmin, emid-espan)
         e2 = min(dmax, emid+espan)
@@ -628,6 +625,8 @@ class XRFDisplayFrame(wx.Frame):
         e[-1]   = e[-2]
         fill = self.panel.axes.fill_between
         self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-10)
+        self.energy_for_zoom = self.mca.energy[(left+right)/2]
+
         self.wids['counts_tot'].SetLabel(counts_tot)
         self.wids['counts_net'].SetLabel(counts_net)
         self.panel.canvas.draw()
