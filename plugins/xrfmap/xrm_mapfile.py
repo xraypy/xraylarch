@@ -93,12 +93,14 @@ def create_xrfmap(h5root, dimension=2, folder='', start_time=None):
     g.attrs['type'] = 'roi maps'
     g.attrs['desc'] = 'ROI data, including summed and deadtime corrected maps'
 
-    xrfmap.create_group('config')
+    g = xrfmap.create_group('config')
     g.attrs['type'] = 'scan config'
     g.attrs['desc'] = '''scan configuration, including scan definitions,
     ROI definitions, MCA calibration, Environment Data, etc'''
 
-    g = xrfmap.create_group('positions')
+    xrfmap.create_group('areas')
+    xrfmap.create_group('positions')
+
     conf = xrfmap['config']
     for name in ('scan', 'general', 'environ', 'positioners',
                  'motor_controller', 'rois', 'mca_settings', 'mca_calib'):
@@ -717,6 +719,34 @@ class GSEXRM_MapFile(object):
             g = self.xrfmap['roimap'][bname]
             old, npts, nx = g.shape
             g.resize((nrow, npts, nx))
+
+    def add_area(self, mask, name=None, desc='unknown'):
+        """add a selected area, with optional name
+        the area is encoded as a boolean array the same size as the map
+
+        """
+        group = self.xrfmap['areas']
+        n_areas = len(group)
+        if name is None:
+            name = 'area_%i' % (n_areas + 1)
+            count = 0
+            while name in group and count < 999:
+                count += 1
+                name = 'area_%i' (n_areas+count)
+        ds = group.create_dataset(name, data=mask)
+        ds.attrs['description'] = desc
+
+    def get_area(self, name=None, desc=None):
+        """
+        get area by name or description
+        """
+        group = self.xrfmap['areas']
+        if name is not None and name in group:
+            return group[name]
+        if desc is not None:
+            for name in group:
+                if desc == group[name].attrs['description']:
+                    return group[name]
 
 
     def claim_hostid(self):
