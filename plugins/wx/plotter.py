@@ -211,7 +211,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display.SetTitle(title)
     return display
 
-def _xrf_plot(x, y, mcagroup=None, win=1, new=True, _larch=None,
+def _xrf_plot(x, y, mca=None, win=1, new=True, _larch=None,
               wxparent=None, size=None, side='left', force_draw=True, **kws):
     """xrf_plot(energy, data[, win=1], options])
 
@@ -221,7 +221,7 @@ def _xrf_plot(x, y, mcagroup=None, win=1, new=True, _larch=None,
     --------------
         energy :  array of energies
         counts :  array of counts
-        mcagroup:  Group counting MCA data (rois, etc)
+        mca:      Group counting MCA data (rois, etc)
 
         win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
         new: flag (True/False, default False) for whether to start a new plot.
@@ -241,9 +241,9 @@ def _xrf_plot(x, y, mcagroup=None, win=1, new=True, _larch=None,
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
     if new:
-        plotter.plot(x, y, **kws)
+        plotter.plot(x, y, mca=mca, **kws)
     else:
-        plotter.oplot(x, y, **kws)
+        plotter.oplot(x, y, mca=mca, **kws)
 
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
