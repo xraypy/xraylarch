@@ -9,15 +9,16 @@ import larch
 from larch.utils.debugtime import debugtime
 
 sys.path.insert(0, larch.plugin_path('io'))
-sys.path.insert(0, larch.plugin_path('xrfmap'))
+from fileutils import nativepath
 
+sys.path.insert(0, larch.plugin_path('xrf'))
+from mca import MCA
+
+sys.path.insert(0, larch.plugin_path('xrfmap'))
 from configfile import FastMapConfig
 from xmap_netcdf import read_xmap_netcdf
-from asciifiles import (readASCII, readMasterFile,
-                        readEnvironFile, parseEnviron,
-                        readROIFile)
-
-from fileutils import nativepath
+from asciifiles import (readASCII, readMasterFile, readROIFile,
+                        readEnvironFile, parseEnviron)
 
 NINIT = 16
 COMP = 4 # compression level
@@ -860,35 +861,64 @@ class GSEXRM_MapFile(object):
         dgroup= 'detsum'
         if det in (1, 2, 3, 4):
             dgroup = 'det%i' % det
-
+        map = self.xrfmap[dgroup]
         xslice = slice(xmin, xmax)
         yslice = slice(ymin, ymax)
 
-        counts= self.xrfmap["%s/counts" % dgroup][xslice, yslice, :]
+        counts= map['counts'][xslice, yslice, :]
         if dtcorrect and det in (1, 2, 3, 4):
-            dtfact = self.xrfmap["%s/dtfactor" % dgroup][xslice, yslice]
+            dtfact = map['dtfactor'][xslice, yslice]
             dtfact = dtfact.respace(dtfact.shape[0], dtfact.shape[1], 1)
             counts = counts.value * dtfact.value
-        return counts.sum(axis=0).sum(axis=0)
+
+        counts = counts.sum(axis=0).sum(axis=0)
+
+        ### create an MCA
+        energy  = map['energy'].value
+        cal     = map['energy'].attrs
+
+        thismca = MCA(counts=counts, offset=cal['cal_offset'],
+                      slope=cal['cal_slope'])
+        thismca.energy = energy
+        roinames = map['roi_names'].value[:]
+        roilims  = map['roi_limits'].value[:]
+        for roi, lims in zip(roinames, roilims):
+            thismca.add_roi(roi, left=lims[0], right=lims[1])
+        return thismca
 
     def get_mca_area(self, areaname, det=None, dtcorrect=True):
         """
         return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
         """
-        area = self.get_area(areaname)
+        area = self.get_area(areaname).value
         if area is None:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
         dgroup= 'detsum'
         if det in (1, 2, 3, 4):
             dgroup = 'det%i' % det
-        counts = self.xrfmap["%s/counts" % dgroup][area]
+        map = self.xrfmap[dgroup]
+
+        counts = map['counts'].value[area]
 
         if dtcorrect and det in (1, 2, 3, 4):
-            dtfact = self.xrfmap["%s/dtfactor" % dgroup][area]
+            dtfact = map['dtfactor'].value[area]
             dtfact = dtfact.respace(dtfact.shape[0], dtfact.shape[1], 1)
             counts = counts * dtfact
-        return counts.sum(axis=0).sum(axis=0)
+        counts = counts.sum(axis=0)
+
+        ### create an MCA
+        energy  = map['energy'].value
+        cal     = map['energy'].attrs
+
+        thismca = MCA(counts=counts, offset=cal['cal_offset'],
+                      slope=cal['cal_slope'])
+        thismca.energy = energy
+        roinames = map['roi_names'].value[:]
+        roilims  = map['roi_limits'].value[:]
+        for roi, lims in zip(roinames, roilims):
+            thismca.add_roi(roi, left=lims[0], right=lims[1])
+        return thismca
 
 
     def get_pos(self, name, mean=True):
