@@ -21,7 +21,7 @@ from asciifiles import (readASCII, readMasterFile, readROIFile,
                         readEnvironFile, parseEnviron)
 
 NINIT = 16
-COMP = 4 # compression level
+COMPRESSION_LEVEL = 4 # compression level
 
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have /xrfmap'
@@ -271,6 +271,7 @@ class GSEXRM_MapFile(object):
         self.folder   = folder
         self.status   = GSEXRM_FileStatus.err_notfound
         self.dimension = None
+        self.ndet       = None
         self.start_time = None
         self.xrfmap   = None
         self.h5root   = None
@@ -357,7 +358,7 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        kwargs = {'compression': 4}
+        kwargs = {'compression': COMPRESSION_LEVEL}
         kwargs.update(kws)
         d = group.create_dataset(name, data=data, **kwargs)
         if isinstance(attrs, dict):
@@ -384,13 +385,15 @@ class GSEXRM_MapFile(object):
         group['scan'].create_dataset('text', data=scantext)
 
         roidat, calib, dxp = readROIFile(os.path.join(self.folder, self.ROIFile))
+        self.ndet = len(calib['slope'])
+        self.xrfmap.attrs['N_Detectors'] = self.ndet
         roi_desc, roi_addr, roi_lim = [], [], []
         roi_slices = []
         for iroi, label, lims in roidat:
             roi_desc.append(label)
             roi_addr.append("%smca%%i.R%i" % (config['general']['xmap'], iroi))
-            roi_lim.append([lims[i] for i in range(4)])
-            roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(4)])
+            roi_lim.append([lims[i] for i in range(self.ndet)])
+            roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.ndet)])
         roi_lim = np.array(roi_lim)
 
         self.add_data(group['rois'], 'name',     roi_desc)
@@ -616,13 +619,15 @@ class GSEXRM_MapFile(object):
             self.add_data(dgrp, 'roi_limits', roi_limits[:,imca,:])
 
             dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
-                                compression=COMP, maxshape=(None, npts, nchan))
+                                compression=COMPRESSION_LEVEL,
+                                maxshape=(None, npts, nchan))
             for name, dtype in (('realtime', np.int),  ('livetime', np.int),
                                 ('dtfactor', np.float32),
                                 ('inpcounts', np.float32),
                                 ('outcounts', np.float32)):
                 dgrp.create_dataset(name, (NINIT, npts), dtype,
-                                    compression=COMP, maxshape=(None, npts))
+                                    compression=COMPRESSION_LEVEL,
+                                    maxshape=(None, npts))
 
         # add 'virtual detector' for corrected sum:
         dgrp = xrfmap.create_group('detsum')
@@ -635,7 +640,8 @@ class GSEXRM_MapFile(object):
         self.add_data(dgrp, 'roi_addrs', [s % 1 for s in roi_addrs])
         self.add_data(dgrp, 'roi_limits', roi_limits[: ,0, :])
         dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
-                            compression=COMP, maxshape=(None, npts, nchan))
+                            compression=COMPRESSION_LEVEL,
+                            maxshape=(None, npts, nchan))
 
         # roi map data
         scan = xrfmap['roimap']
@@ -668,8 +674,10 @@ class GSEXRM_MapFile(object):
             sums_list.append(slist)
 
         nsum = len(sums_list)
-        sums_list = np.array(sums_list)
         nsca = len(det_desc)
+
+        sums_list = np.array(sums_list)
+
         self.add_data(scan, 'det_name',    det_desc)
         self.add_data(scan, 'det_address', det_addr)
         self.add_data(scan, 'sum_name',    sums_desc)
@@ -681,7 +689,8 @@ class GSEXRM_MapFile(object):
                                 ('sum_raw', nsum, np.int32),
                                 ('sum_cor', nsum, np.float32)):
             scan.create_dataset(name, (NINIT, npts, nx), dtype,
-                                compression=COMP, maxshape=(None, npts, nx))
+                                compression=COMPRESSION_LEVEL,
+                                maxshape=(None, npts, nx))
 
         # positions
         pos = xrfmap['positions']
@@ -692,7 +701,8 @@ class GSEXRM_MapFile(object):
         self.add_data(pos, 'name',     self.pos_desc)
         self.add_data(pos, 'address',  self.pos_addr)
         pos.create_dataset('pos', (NINIT, npts, npos), dtype,
-                           compression=COMP, maxshape=(None, npts, npos))
+                           compression=COMPRESSION_LEVEL,
+                           maxshape=(None, npts, npos))
         self.h5root.flush()
 
     def resize_arrays(self, nrow):
@@ -736,11 +746,11 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_NotOwner(self.filename)
 
         group = self.xrfmap['areas']
-        name = 'area_1'
+        name = 'Area_001'
         if len(group) > 0:
             count = len(group)
             while name in group and count < 9999:
-                name = 'area_%i' % (count)
+                name = 'area_%3.3i' % (count)
                 count += 1
         ds = group.create_dataset(name, data=mask)
         if desc is None:
@@ -849,7 +859,10 @@ class GSEXRM_MapFile(object):
     def get_energy(self, det=None):
         """return energy array for a detector"""
         dgroup= 'detsum'
-        if det in (1, 2, 3, 4):
+        if self.ndet is None:
+            self.ndet =  self.xrfmap.attrs['N_Detectors']
+
+        if det in range(1, self.ndet+1):
             dgroup = 'det%i' % det
 
         return self.xrfmap["%s/energy" % dgroup].value
@@ -861,14 +874,16 @@ class GSEXRM_MapFile(object):
         xmin/xmax/ymin/ymax given in pixel units of the map
         """
         dgroup= 'detsum'
-        if det in (1, 2, 3, 4):
+        if self.ndet is None:
+            self.ndet =  self.xrfmap.attrs['N_Detectors']
+        if det in range(1, self.ndet+1):
             dgroup = 'det%i' % det
         map = self.xrfmap[dgroup]
         xslice = slice(xmin, xmax)
         yslice = slice(ymin, ymax)
 
         counts= map['counts'][xslice, yslice, :]
-        if dtcorrect and det in (1, 2, 3, 4):
+        if dtcorrect and det in range(1, self.ndet+1):
             dtfact = map['dtfactor'][xslice, yslice]
             dtfact = dtfact.respace(dtfact.shape[0], dtfact.shape[1], 1)
             counts = counts.value * dtfact.value
@@ -893,21 +908,27 @@ class GSEXRM_MapFile(object):
         return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
         """
+        x = debugtime()
         area = self.get_area(areaname).value
         if area is None:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
         dgroup= 'detsum'
-        if det in (1, 2, 3, 4):
+
+        if self.ndet is None:
+            self.ndet =  self.xrfmap.attrs['N_Detectors']
+        if det in range(1, self.ndet+1):
             dgroup = 'det%i' % det
+        x.add('get mca area 1')
         map = self.xrfmap[dgroup]
-
+        x.add('get mca area: map')
         counts = map['counts'].value[area]
-
-        if dtcorrect and det in (1, 2, 3, 4):
+        x.add('get mca area: map counts')
+        if dtcorrect and det in range(1, self.ndet+1):
             dtfact = map['dtfactor'].value[area]
             dtfact = dtfact.respace(dtfact.shape[0], dtfact.shape[1], 1)
             counts = counts * dtfact
         counts = counts.sum(axis=0)
+        x.add('get mca area: counts summed')
 
         ### create an MCA
         energy  = map['energy'].value
@@ -915,11 +936,14 @@ class GSEXRM_MapFile(object):
 
         thismca = MCA(counts=counts, offset=cal['cal_offset'],
                       slope=cal['cal_slope'])
+        x.add('get mca area: mca created ')        
         thismca.energy = energy
         roinames = map['roi_names'].value[:]
         roilims  = map['roi_limits'].value[:]
         for roi, lims in zip(roinames, roilims):
             thismca.add_roi(roi, left=lims[0], right=lims[1])
+        x.add('get mca area: done')
+        # x.show()
         return thismca
 
 
@@ -953,7 +977,9 @@ class GSEXRM_MapFile(object):
         """extract roi map for a pre-defined roi by name
         """
         imap = -1
-        if det in (1, 2, 3, 4):
+        if self.ndet is None:
+            self.ndet =  self.xrfmap.attrs['N_Detectors']
+        if det in range(1, self.ndet+1):
             mcaname = '(mca%i)' % det
             names = list(self.xrfmap['roimap/det_name'])
             dat = 'roimap/det_raw'
