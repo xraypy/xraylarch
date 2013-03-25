@@ -746,7 +746,7 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_NotOwner(self.filename)
 
         group = self.xrfmap['areas']
-        name = 'Area_001'
+        name = 'area_001'
         if len(group) > 0:
             count = len(group)
             while name in group and count < 9999:

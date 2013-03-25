@@ -444,7 +444,6 @@ WARNING: This cannot be undone!
 
         erase = popup(self.owner, self.delstr % aname,
                       'Delete Area?', style=wx.YES_NO)
-        print 'ERASE ? ', erase
         if erase:
             del dfile.xrfmap['areas/%s' % aname]
             self.set_choices(dfile.xrfmap['areas'].keys())
@@ -469,25 +468,18 @@ WARNING: This cannot be undone!
         aname = self.choice.GetStringSelection()
         label = area.attrs['description']
         self._mca  = None
-        dt.add(' create thread')
         
         mca_thread = Thread(target=self._getmca_area, args=(aname,))
-        dt.add(' created thread')        
         mca_thread.start()
-        dt.add(' started thread')        
         self.owner.show_XRFDisplay()
-        dt.add(' xrf shown')        
         mca_thread.join()
-        dt.add(' completed thread')                
         fname = self.owner.current_file.filename
         title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, label)
-        print len(self._mca.energy), self.owner.xrfdisplay
+
         self.owner.xrfdisplay.SetTitle(title)
         self.owner.xrfdisplay.plot(self._mca.energy,
                                    self._mca.counts,
                                    mca=self._mca)
-        dt.add(' plotted xrf')
-        #dt.show()
         
 class MapViewerFrame(wx.Frame):
     _about = """XRF Map Viewer
@@ -621,7 +613,6 @@ class MapViewerFrame(wx.Frame):
 
     def show_XRFDisplay(self, do_raise=True, clear=True):
         "make sure plot frame is enabled, and visible"
-        print 'show XRFDisplay'
         if self.xrfdisplay is None:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
         try:
