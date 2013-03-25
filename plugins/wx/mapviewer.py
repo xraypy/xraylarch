@@ -201,6 +201,8 @@ class TriColorMapPanel(wx.Panel):
                                   action=Closure(self.onSetRGBScale, color='g'))
         self.bchoice = add_choice(self, choices=[], size=(120, -1),
                                   action=Closure(self.onSetRGBScale, color='b'))
+        self.i0choice = add_choice(self, choices=[], size=(120, -1),
+                                   action=Closure(self.onSetRGBScale, color='i0'))
         self.show = add_button(self, 'Show Map', size=(90, -1), action=self.onShow3ColorMap)
 
         self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'], size=(80, -1))
@@ -224,16 +226,17 @@ class TriColorMapPanel(wx.Panel):
         self.bscale = FloatCtrl(self, precision=0, value=1, minval=0)
 
         ir = 0
+        sizer.Add(SimpleText(self, 'Detector'),  (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Red'),       (ir, 1), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Green'),     (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Blue'),      (ir, 3), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Detector'),  (ir, 0), (1, 1), ALL_CEN, 2)
+
 
         ir += 1
+        sizer.Add(self.det,                  (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(self.rchoice,              (ir, 1), (1, 1), ALL_CEN, 2)
         sizer.Add(self.gchoice,              (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(self.bchoice,              (ir, 3), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.det,                  (ir, 0), (1, 1), ALL_CEN, 2)
 
         ir += 1
         sizer.Add(self.rauto,            (ir, 1), (1, 1), ALL_CEN, 2)
@@ -245,11 +248,16 @@ class TriColorMapPanel(wx.Panel):
         sizer.Add(self.bscale,            (ir, 3), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Max Intensity:'),     (ir, 0), (1, 1), ALL_LEFT, 2)
 
+        ir += 1
+        sizer.Add(SimpleText(self, 'Normalization'), (ir, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.i0choice,             (ir, 1), (1, 2), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(self.cor,   (ir, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.newid, (ir, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.show,  (ir+1, 0), (1, 1), ALL_LEFT, 2)
+
+        ir += 1
+        sizer.Add(self.show,  (ir, 0), (1, 1), ALL_LEFT, 2)
 
         pack(self, sizer)
 
@@ -293,9 +301,21 @@ class TriColorMapPanel(wx.Panel):
         r = self.rchoice.GetStringSelection()
         g = self.gchoice.GetStringSelection()
         b = self.bchoice.GetStringSelection()
-        rmap = datafile.get_roimap(r, det=det, dtcorrect=dtcorrect)
-        gmap = datafile.get_roimap(g, det=det, dtcorrect=dtcorrect)
-        bmap = datafile.get_roimap(b, det=det, dtcorrect=dtcorrect)
+        i0 = self.i0choice.GetStringSelection()
+        mapshape= datafile.xrfmap['roimap/sum_cor'][:, :, 0].shape
+
+        rmap = np.ones(mapshape, dtype='float')
+        gmap = np.ones(mapshape, dtype='float')
+        bmap = np.ones(mapshape, dtype='float')
+        i0map = np.ones(mapshape, dtype='float')
+        if r != '1':
+            rmap  = datafile.get_roimap(r, det=det, dtcorrect=dtcorrect)
+        if g != '1':
+            gmap  = datafile.get_roimap(g, det=det, dtcorrect=dtcorrect)
+        if b != '1':
+            bmap  = datafile.get_roimap(b, det=det, dtcorrect=dtcorrect)
+        if i0 != '1':
+            i0map = datafile.get_roimap(i0, det=det, dtcorrect=dtcorrect)
 
         rscale = 1.0/self.rscale.GetValue()
         gscale = 1.0/self.gscale.GetValue()
@@ -304,11 +324,22 @@ class TriColorMapPanel(wx.Panel):
         if self.gauto.IsChecked():  gscale = 1.0/gmap.max()
         if self.bauto.IsChecked():  bscale = 1.0/bmap.max()
 
+        i0min = min(i0map[np.where(i0map>0)])
+        i0map[np.where(i0map<=0)] = i0min
+        i0map = i0map/i0map.max()
+
         title = '%s: (R, G, B) = (%s, %s, %s)' % (datafile.filename, r, g, b)
-        map = np.array([rmap*rscale, gmap*gscale, bmap*bscale]).swapaxes(0, 2).swapaxes(0, 1)
+        map = np.array([rmap*rscale/i0map, gmap*gscale/i0map, bmap*bscale/i0map])
+        map = map.swapaxes(0, 2).swapaxes(0, 1)
         if len(self.owner.im_displays) == 0 or not self.newid.IsChecked():
             iframe = self.owner.add_imdisplay(title, config_on_frame=False, det=det)
         self.owner.display_map(map, title=title, with_config=False, det=det)
+
+    def set_roi_choices(self, choices):
+        roichoices = ['1']
+        roichoices.extend(choices)
+        for cbox in (self.rchoice, self.bchoice, self.gchoice, self.i0choice):
+            set_choices(cbox, roichoices)
 
     def onAutoScale(self, event=None, color=None, **kws):
         if color=='r':
@@ -653,9 +684,8 @@ class MapViewerFrame(wx.Frame):
 
         set_choices(self.nbpanels['roimap'].roi1, rois)
         set_choices(self.nbpanels['roimap'].roi2, rois_extra)
-        set_choices(self.nbpanels['3color'].rchoice, rois)
-        set_choices(self.nbpanels['3color'].gchoice, rois)
-        set_choices(self.nbpanels['3color'].bchoice, rois)
+
+        self.nbpanels['3color'].set_roi_choices(rois)
         self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys())
 
     def createMenus(self):
