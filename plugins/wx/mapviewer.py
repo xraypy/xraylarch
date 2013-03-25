@@ -4,9 +4,6 @@ GUI for displaying maps from HDF5 files
 
 Needed Visualizations:
 
-   XRF spectra display for  full map or selected portions
-      choose defined ROIs or create new ROIs
-
    2x2 grid:
      +-------------+--------------+
      | map1        |  2-color map |
@@ -145,9 +142,6 @@ class SimpleMapPanel(wx.Panel):
         sizer.Add(self.newid, (ir,   2), (1, 4), ALL_LEFT, 2)
         sizer.Add(self.show,  (ir+1, 0), (1, 1), ALL_LEFT, 2)
 
-        sizer.Add(wx.StaticLine(self, size=(500, 3), style=wx.LI_HORIZONTAL),
-                  (ir+2, 0), (1, 6), ALL_CEN)
-
         pack(self, sizer)
 
 
@@ -256,9 +250,6 @@ class TriColorMapPanel(wx.Panel):
         sizer.Add(self.cor,   (ir, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.newid, (ir, 2), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.show,  (ir+1, 0), (1, 1), ALL_LEFT, 2)
-
-        sizer.Add(wx.StaticLine(self, size=(500, 3), style=wx.LI_HORIZONTAL),
-                  (ir+2, 0), (1, 5), ALL_CEN)
 
         pack(self, sizer)
 
@@ -379,16 +370,21 @@ WARNING: This cannot be undone!
         sizer.Add(bpanel,                   (3, 0), (1, 3), ALL_LEFT, 2)
         pack(self, sizer)
 
-    def set_choices(self, choices):
+    def set_choices(self, choices, show_last=False):
         c = self.choice
         c.Clear()
         c.AppendItems(choices)
-        c.SetStringSelection(choices[0])
+        if len(choices) > 0:
+            idx = 0
+            if show_last: idx = len(choices)-1
+            c.SetStringSelection(choices[idx])
+            area = self.owner.current_file.xrfmap['areas/%s' % choices[idx]]
+            self.desc.SetValue(area.attrs['description'])
 
     def _getarea(self):
         dfile = self.owner.current_file
         aname = self.choice.GetStringSelection()
-        return dfile.h5root['/xrfmap/areas/%s' % aname]
+        return dfile.xrfmap['areas/%s' % aname]
 
     def onSelect(self, event=None):
         area = self._getarea()
@@ -409,32 +405,40 @@ WARNING: This cannot be undone!
 
     def onDelete(self, event=None):
         area = self._getarea()
-        print 'delete area', area
         dfile = self.owner.current_file
         aname = self.choice.GetStringSelection()
 
-        erase = popup(self.owner, self.delstr % aname,  'Delete Area?',
-                     style=wx.YES_NO)
+        erase = popup(self.owner, self.delstr % aname,
+                      'Delete Area?', style=wx.YES_NO)
         if erase:
-            del dfile.h5root['/xrfmap/areas/%s' % aname]
+            del dfile.xrfmap['areas/%s' % aname]
+            self.set_choices(dfile.xrfmap['areas'].keys())
 
     def onClear(self, event=None):
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
-            imd.panel.highlight_areas = []
-            imd.panel.canvas.draw()
+            for area in imd.panel.conf.highlight_areas:
+                for w in area.collections + area.labelTexts:
+                    w.remove()
+
+            imd.panel.conf.highlight_areas = []
+            imd.panel.redraw()
 
     def _getmca_area(self, areaname):
         self._mca = self.owner.current_file.get_mca_area(areaname)
 
     def onXRF(self, event=None):
-        area = self._getarea()
+        area  = self._getarea()
         aname = self.choice.GetStringSelection()
+        label = area.attrs['description']
         self._mca  = None
         mca_thread = Thread(target=self._getmca_area, args=(aname,))
         mca_thread.start()
         self.owner.show_XRFDisplay()
         mca_thread.join()
+        fname = self.owner.current_file.filename
+        title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, label)
+        self.owner.xrfdisplay.SetTitle(title)
         self.owner.xrfdisplay.plot(self._mca.energy,
                                    self._mca.counts,
                                    mca=self._mca)
@@ -510,36 +514,44 @@ class MapViewerFrame(wx.Frame):
                                    ('3-Color ROI Map', '3color',  TriColorMapPanel)):
             #  ('2x2 Grid',         self.MapGridPanel)):
             # print 'panel ' , name, parent, creator
-            p = creator(parent, owner=self)
+            self.nbpanels[key] = p = creator(parent, owner=self)
             self.nb.AddPage(p, name, True)
-            self.nbpanels[key] = p
+            bgcol = p.GetBackgroundColour()
 
         self.nb.SetSelection(0)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
 
         self.area_sel = AreaSelectionPanel(parent, owner=self)
+        self.area_sel.SetBackgroundColour('#F0F0E8')
+
+        sizer.Add(wx.StaticLine(parent, size=(250, 2),
+                                style=wx.LI_HORIZONTAL),
+                  0,  wx.ALL|wx.EXPAND)
         sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
         pack(parent, sizer)
 
     def get_masked_mca(self, data, selected, detname, mask):
         t0 = time.time()
         mask.shape = data.shape[:2]
+        mask = mask.transpose()
         map = self.current_file.xrfmap[detname]
         energy  = map['energy'].value
         cal     = map['energy'].attrs
         spectra = map['counts'].value
-        spectra = spectra.swapaxes(0, 1)[mask].sum(axis=0)
+        spectra = spectra[mask].sum(axis=0)
         self.selected = selected
         self.mask = mask
-        self.current_file.add_area(mask)
+        name = self.current_file.add_area(mask)
 
         self.sel_mca = MCA(counts=spectra, offset=cal['cal_offset'],
                            slope=cal['cal_slope'])
         self.sel_mca.energy = energy
+        self.sel_mca.areaname = name
         roinames = map['roi_names'].value[:]
         roilims  = map['roi_limits'].value[:]
         for roi, lims in zip(roinames, roilims):
             self.sel_mca.add_roi(roi, left=lims[0], right=lims[1])
+
         return
 
     def lassoHandler(self, data=None, selected=None, det=None, mask=None, **kws):
@@ -553,9 +565,18 @@ class MapViewerFrame(wx.Frame):
         self.show_XRFDisplay()
 
         mca_thread.join()
+
+        fname = self.current_file.filename
+        aname = self.sel_mca.areaname
+        title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, aname)
+        self.xrfdisplay.SetTitle(title)
+
         self.xrfdisplay.plot(self.sel_mca.energy,
                              self.sel_mca.counts,
                              mca=self.sel_mca)
+        self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys(),
+                                  show_last=True)
+
 
     def show_XRFDisplay(self, do_raise=True, clear=True):
         "make sure plot frame is enabled, and visible"
