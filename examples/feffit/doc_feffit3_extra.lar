@@ -1,0 +1,6 @@
+# snippet that can be run after doc_feffit3.lar
+
+_ave = sigma2_eins(150, pars.theta)
+_dlo = sigma2_eins(150, pars.theta-pars.theta.stderr) - _ave
+_dhi = sigma2_eins(150, pars.theta+pars.theta.stderr) - _ave
+print "sigma2(T=150) = %.5f  (%+.5f, %+.5f)" % (_ave, _dlo, _dhi)
