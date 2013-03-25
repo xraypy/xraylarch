@@ -294,7 +294,7 @@ class XRFDisplayFrame(wx.Frame):
         self.last_markers = [None, None]
         self.ylog_scale = True
 
-        self.SetTitle("XRF Spectra Viewer")
+        self.SetTitle(title)
 
         self.createMainPanel()
         self.createMenus()
