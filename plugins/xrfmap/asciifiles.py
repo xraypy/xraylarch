@@ -75,11 +75,14 @@ def readROIFile(hfile):
         if a.lower().startswith('roi'):
             iroi = int(a[3:])
             name, dat = cp.get('rois',a).split('|')
-            xdat = [int(i) for i in dat.split()]
-            dat = [(xdat[0], xdat[1]), (xdat[2], xdat[3]),
-                   (xdat[4], xdat[5]), (xdat[6], xdat[7])]
+            lims = [int(i) for i in dat.split()]
+            ndet = len(lims)/2
+            dat = []
+            for i in range(ndet):
+                dat.append((lims[i*2], lims[i*2+1]))
             output.append((iroi, name.strip(), dat))
     roidata = sorted(output)
+                          
     calib = {}
 
     caldat = cp.options('calibration')
