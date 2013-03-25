@@ -727,7 +727,7 @@ class GSEXRM_MapFile(object):
             g.resize((nrow, npts, nx))
         self.h5root.flush()
 
-    def add_area(self, mask, name=None, desc='unknown'):
+    def add_area(self, mask, name=None, desc=None):
         """add a selected area, with optional name
         the area is encoded as a boolean array the same size as the map
 
@@ -736,16 +736,18 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_NotOwner(self.filename)
 
         group = self.xrfmap['areas']
-        n_areas = len(group)
-        if name is None:
-            name = 'area_%i' % (n_areas + 1)
-            count = 0
-            while name in group and count < 999:
+        name = 'area_1'
+        if len(group) > 0:
+            count = len(group)
+            while name in group and count < 9999:
+                name = 'area_%i' % (count)
                 count += 1
-                name = 'area_%i' (n_areas+count)
         ds = group.create_dataset(name, data=mask)
+        if desc is None:
+            desc = name
         ds.attrs['description'] = desc
         self.h5root.flush()
+        return name
 
     def get_area(self, name=None, desc=None):
         """
