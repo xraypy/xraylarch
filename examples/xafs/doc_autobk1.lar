@@ -1,5 +1,5 @@
 ## examples/xafs/doc_autobk1.lar
-fname = 'cu_rt01.xmu'
+fname = '../xafsdata/cu_rt01.xmu'
 cu = read_ascii(fname)
 autobk(cu.energy, cu.xmu, rbkg=1.0, group=cu)
 

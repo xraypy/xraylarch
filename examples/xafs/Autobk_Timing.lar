@@ -1,4 +1,3 @@
-# add_plugin('ab')
 import time
 doplot = False
 timer = debugtimer()
@@ -6,7 +5,7 @@ t0 = time.time()
 n = 100
 for i in range(n):
     print ' --- ', i
-    cu = read_ascii('cu_metal_rt.xdi')
+    cu = read_ascii('../xafsdata/cu_metal_rt.xdi')
     # cu = read_ascii('tests/data/cu_%3.3i.dat' % i)
     timer.add('read data file')
     autobk(cu.energy, cu.mutrans, group=cu, rbkg=0.80) #  debug=True)

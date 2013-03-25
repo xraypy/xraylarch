@@ -1,5 +1,5 @@
 ## examples/xafs/doc_xafsft3.lar
-dat = read_ascii('feo_rt1.xmu', labels='energy xmu i0')
+dat = read_ascii('../xafsdata/feo_rt1.xmu', labels='energy xmu i0')
 autobk(dat.energy, dat.xmu, group=dat, rbkg=1, kweight=2, clamp_hi=10)
 
 kweight = 2

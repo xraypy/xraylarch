@@ -1,5 +1,5 @@
 ## examples/xafs/doc_autobk3.lar
-fname = 'scorodite_as_xafs.001'
+fname = '../xafsdata/scorodite_as_xafs.001'
 title = 'FeAsSO4  (scorodite)'
 dat = read_ascii(fname)
 dat.energy = dat.p1

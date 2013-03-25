@@ -1,7 +1,7 @@
 ## examples/feffit/doc_feffit1.lar
 
 # read data
-cu_data = read_ascii('cu.chi', labels='k, chi')
+cu_data = read_ascii('../xafsdata/cu.chi', labels='k, chi')
 
 # define fitting parameter group
 pars = group(amp    = param(1, vary=True),

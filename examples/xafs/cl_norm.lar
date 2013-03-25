@@ -1,7 +1,7 @@
 ##          mod  = a0 + ex * (a1 + a2 * ex) + spldat(i) * st
 ##          fv(i) = (mod - xmudat(i)) * splfit(i)
 
-fname = 'cu_rt01.xmu'
+fname = '../xafsdata/cu_rt01.xmu'
 cu = read_ascii(fname, labels='energy xmu i0')
 pre_edge(cu.energy, cu.xmu, group=cu)
 

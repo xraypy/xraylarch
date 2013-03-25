@@ -1,5 +1,5 @@
 
-cu = read_ascii('cu.chi')
+cu = read_ascii('../xafsdata/cu.chi')
 
 fitparams = group(amp  = param(1, vary=True),
                   de0  = param(1, vary=True),

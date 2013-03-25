@@ -1,6 +1,6 @@
 ## examples/feffit/doc_feffit4.lar
 
-feo_dat = read_ascii('feo_xafs.dat', labels = 'energy xmu')
+feo_dat = read_ascii('../xafsdata/feo_xafs.dat', labels = 'energy xmu')
 autobk(feo_dat.energy, feo_dat.xmu, kweight=2, rbkg=0.8, group=feo_dat)
 
 # define fitting parameter group

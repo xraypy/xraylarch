@@ -1,5 +1,5 @@
 
-cu = read_ascii('cu_metal_rt.xdi')
+cu = read_ascii('../xafsdata/cu_metal_rt.xdi')
 autobk(cu.energy, cu.mutrans, group=cu, rbkg=1.0, kw=1)
 
 fitparams = group(amp  = guess(1),

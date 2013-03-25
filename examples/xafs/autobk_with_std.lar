@@ -1,10 +1,10 @@
 
-fname = 'cu_rt01.xmu'
-fname = 'cu.xmu'
+fname = '../xafsdata/cu.xmu'
+chi_fname = '../xafsdata/cu10k.chi'
 
 cu1 = read_ascii(fname)
 
-chidat = read_ascii('ifeffit_chik.dat', labels='k chi')
+chidat = read_ascii(chi_fname, labels='k chi')
 
 pre_edge(cu1.energy, cu1.xmu, group=cu1)
 

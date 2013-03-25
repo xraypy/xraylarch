@@ -1,6 +1,6 @@
 import os
 
-fname = os.path.join('..', 'xafs', 'fe2o3_rt1.xmu')
+fname = '../xafsdata/fe2o3_rt1.xmu'
 dat = read_ascii(fname, labels='energy xmu i0')
 
 pre_edge(dat.energy, dat.xmu, group=dat)
