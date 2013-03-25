@@ -32,6 +32,7 @@ import numpy as np
 
 from wxmplot import ImageFrame
 import larch
+from larch.utils.debugtime import debugtime
 
 sys.path.insert(0, larch.plugin_path('wx'))
 from xrfdisplay import XRFDisplayFrame
@@ -113,7 +114,9 @@ class SimpleMapPanel(wx.Panel):
         self.roi2 = add_choice(self, choices=[], size=(120, -1))
         self.scale = FloatCtrl(self, precision=4, value=1, size=(80,-1))
         self.op   = add_choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
-        self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'], size=(80, -1))
+        self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'],
+                               size=(80, -1))
+        
         self.newid  = wx.CheckBox(self, -1, 'Reuse Previous Display?')
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
         self.newid.SetValue(1)
@@ -441,6 +444,7 @@ WARNING: This cannot be undone!
 
         erase = popup(self.owner, self.delstr % aname,
                       'Delete Area?', style=wx.YES_NO)
+        print 'ERASE ? ', erase
         if erase:
             del dfile.xrfmap['areas/%s' % aname]
             self.set_choices(dfile.xrfmap['areas'].keys())
@@ -459,21 +463,32 @@ WARNING: This cannot be undone!
         self._mca = self.owner.current_file.get_mca_area(areaname)
 
     def onXRF(self, event=None):
+        dt = debugtime()
+        
         area  = self._getarea()
         aname = self.choice.GetStringSelection()
         label = area.attrs['description']
         self._mca  = None
+        dt.add(' create thread')
+        
         mca_thread = Thread(target=self._getmca_area, args=(aname,))
+        dt.add(' created thread')        
         mca_thread.start()
+        dt.add(' started thread')        
         self.owner.show_XRFDisplay()
+        dt.add(' xrf shown')        
         mca_thread.join()
+        dt.add(' completed thread')                
         fname = self.owner.current_file.filename
         title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, label)
+        print len(self._mca.energy), self.owner.xrfdisplay
         self.owner.xrfdisplay.SetTitle(title)
         self.owner.xrfdisplay.plot(self._mca.energy,
                                    self._mca.counts,
                                    mca=self._mca)
-
+        dt.add(' plotted xrf')
+        #dt.show()
+        
 class MapViewerFrame(wx.Frame):
     _about = """XRF Map Viewer
   Matt Newville <newville @ cars.uchicago.edu>
@@ -561,16 +576,12 @@ class MapViewerFrame(wx.Frame):
         sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
         pack(parent, sizer)
 
-    def get_masked_mca(self, data, selected, detname, mask):
-        t0 = time.time()
-        mask.shape = data.shape[:2]
-        mask = mask.transpose()
-        map = self.current_file.xrfmap[detname]
+    def get_masked_mca(self, data, detname, mask):
+        map     = self.current_file.xrfmap[detname]
         energy  = map['energy'].value
         cal     = map['energy'].attrs
         spectra = map['counts'].value
         spectra = spectra[mask].sum(axis=0)
-        self.selected = selected
         self.mask = mask
         name = self.current_file.add_area(mask)
 
@@ -585,16 +596,15 @@ class MapViewerFrame(wx.Frame):
 
         return
 
-    def lassoHandler(self, data=None, selected=None, det=None, mask=None, **kws):
-        t0 = time.time()
+    def lassoHandler(self, data=None,  det=None, mask=None, **kws):
+
         detname = 'detsum'
         if det is not None:
             detname = 'det%i' % det
         mca_thread = Thread(target=self.get_masked_mca,
-                            args=(data, selected, detname, mask))
+                            args=(data, detname, mask))
         mca_thread.start()
         self.show_XRFDisplay()
-
         mca_thread.join()
 
         fname = self.current_file.filename
@@ -611,10 +621,12 @@ class MapViewerFrame(wx.Frame):
 
     def show_XRFDisplay(self, do_raise=True, clear=True):
         "make sure plot frame is enabled, and visible"
+        print 'show XRFDisplay'
         if self.xrfdisplay is None:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
         try:
             self.xrfdisplay.Show()
+
         except wx.PyDeadObjectError:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
             self.xrfdisplay.Show()
@@ -726,6 +738,7 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,evt):
+        
         for xrmfile in self.filemap.values():
             xrmfile.close()
 
@@ -734,6 +747,11 @@ class MapViewerFrame(wx.Frame):
                 imd.Destroy()
             except:
                 pass
+
+        try:
+            self.xrfdisplay.Destroy()
+        except:
+            pass
 
         for nam in dir(self.larch.symtable._plotter):
             obj = getattr(self.larch.symtable._plotter, nam)
@@ -792,6 +810,7 @@ class MapViewerFrame(wx.Frame):
             if path in self.filemap:
                 read = popup(self, "Re-read file '%s'?" % path, 'Re-read file?',
                              style=wx.YES_NO)
+                
         dlg.Destroy()
 
         if read:
