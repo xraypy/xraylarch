@@ -15,3 +15,5 @@ dylibs/*/Mk.install
 dylibs/*/Mk.config
 sandbox/
 play/
+AMAP/
+
