@@ -72,6 +72,8 @@ def popup(parent, message, title, style=None):
     dlg = wx.MessageDialog(parent, message, title, style)
     ret = dlg.ShowModal()
     dlg.Destroy()
+    if style == wx.YES_NO:
+        ret = (ret == wx.ID_YES)
     return ret
 
 def empty_bitmap(width, height, value=255):
