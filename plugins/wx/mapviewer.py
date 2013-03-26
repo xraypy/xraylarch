@@ -116,7 +116,7 @@ class SimpleMapPanel(wx.Panel):
         self.op   = add_choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
         self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'],
                                size=(80, -1))
-        
+
         self.newid  = wx.CheckBox(self, -1, 'Reuse Previous Display?')
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
         self.newid.SetValue(1)
@@ -183,7 +183,8 @@ class SimpleMapPanel(wx.Panel):
         except:
             y = None
 
-        title = '%s: %s' % (datafile.filename, title)
+        pref, fname = os.path.split(datafile.filename)
+        title = '%s: %s' % (fname, title)
         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
         if len(self.owner.im_displays) == 0 or not self.newid.IsChecked():
             iframe = self.owner.add_imdisplay(title, det=det)
@@ -331,7 +332,8 @@ class TriColorMapPanel(wx.Panel):
         i0map[np.where(i0map<=0)] = i0min
         i0map = i0map/i0map.max()
 
-        title = '%s: (R, G, B) = (%s, %s, %s)' % (datafile.filename, r, g, b)
+        pref, fname = os.path.split(datafile.filename)
+        title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
         map = np.array([rmap*rscale/i0map, gmap*gscale/i0map, bmap*bscale/i0map])
         map = map.swapaxes(0, 2).swapaxes(0, 1)
         if len(self.owner.im_displays) == 0 or not self.newid.IsChecked():
@@ -463,24 +465,24 @@ WARNING: This cannot be undone!
 
     def onXRF(self, event=None):
         dt = debugtime()
-        
+
         area  = self._getarea()
         aname = self.choice.GetStringSelection()
         label = area.attrs['description']
         self._mca  = None
-        
+
         mca_thread = Thread(target=self._getmca_area, args=(aname,))
         mca_thread.start()
         self.owner.show_XRFDisplay()
         mca_thread.join()
-        fname = self.owner.current_file.filename
+        pref, fname = os.path.split(self.owner.current_file.filename)
         title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, label)
 
         self.owner.xrfdisplay.SetTitle(title)
         self.owner.xrfdisplay.plot(self._mca.energy,
                                    self._mca.counts,
                                    mca=self._mca)
-        
+
 class MapViewerFrame(wx.Frame):
     _about = """XRF Map Viewer
   Matt Newville <newville @ cars.uchicago.edu>
@@ -599,7 +601,7 @@ class MapViewerFrame(wx.Frame):
         self.show_XRFDisplay()
         mca_thread.join()
 
-        fname = self.current_file.filename
+        path, fname = os.path.split(self.current_file.filename)
         aname = self.sel_mca.areaname
         title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, aname)
         self.xrfdisplay.SetTitle(title)
@@ -729,7 +731,7 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,evt):
-        
+
         for xrmfile in self.filemap.values():
             xrmfile.close()
 
@@ -801,7 +803,7 @@ class MapViewerFrame(wx.Frame):
             if path in self.filemap:
                 read = popup(self, "Re-read file '%s'?" % path, 'Re-read file?',
                              style=wx.YES_NO)
-                
+
         dlg.Destroy()
 
         if read:
