@@ -43,8 +43,18 @@ def get_homedir():
         home_dir = os.path.abspath('.')
     return unixdir(home_dir)
 
+# set system and user-specific larch install directories
+# on unix, these would be (approximately, usually):
+#   sys_larchdir = /usr/share/larch
+#   usr_larchdir =  $USER/.larch
+#
+# on windows, these would be
+#   sys_larchdir = C:\Program Files\larch
+#   usr_larchdir = $USER/larch
 
-# general-use system path
+# when Frozen (as with Py2exe for windows or Py2app for Mac)
+# the system files may be altered.
+
 sys_larchdir = site_configdata.unix_installdir
 usr_larchdir = site_configdata.unix_userdir
 
@@ -53,6 +63,11 @@ if os.name == 'nt':
     sys_larchdir = unixdir(site_configdata.win_installdir)
     usr_larchdir = unixdir(site_configdata.win_userdir)
 
+# check for py2app, alter sys_larchdir
+if getattr(sys, 'frozen', '').startswith('macosx_app'):
+    tdir, exe = os.path.split(sys.executable)
+    contents, macos = os.path.split(tdir)
+    sys_larchdir = os.path.join(contents, 'Resources', 'larch')
 
 home_dir = get_homedir()
 
