@@ -1,5 +1,6 @@
 from setuptools import setup
 import epics
+import sys
 import os
 import wx
 import wx.lib.agw.flatnotebook
@@ -20,14 +21,19 @@ resource_files = ['COPYING']
 ## in lib/site_config.py to specify plugin path
 
 plugin_files = []
-psrc = "/usr/share/larch/"
+psrc = "/usr/share/larch"
 for dname in os.listdir('%s/plugins' % psrc):
-    pname = 'plugins/%s' % dname
+    pname = '%s/plugins/%s' % (psrc, dname)
     if os.path.isdir(pname):
-        flist = ['%s/%s/%s' % (psrc, pname, f) for f in os.listdir(pname) if not f.endswith('.pyc')]
-        plugin_files.append(("larch/%s" % pname, flist))
+        flist = ['%s/%s' % (pname, f) for f in os.listdir(pname) if not f.endswith('.pyc')]
+        plugin_files.append(("larch%s" % pname, flist))
 
-APP = ['GSE_MapViewer.py']
+
+dll_files = [("larch/dlls/darwin/",
+              ['%s/dlls/darwin/%s' % (psrc, f) for f in os.listdir('%s/dlls/darwin' % psrc)]
+              )]
+
+APP = ['../bin/GSE_MapViewer']
 DATA_FILES = []
 # OPTIONS = {'argv_emulation': True, 'includes': 'epics, wx, Image'}
 OPTIONS = {'includes': ['Image', 'ctypes', 'numpy', 'scipy', 'scipy.optimize',
@@ -38,18 +44,20 @@ OPTIONS = {'includes': ['Image', 'ctypes', 'numpy', 'scipy', 'scipy.optimize',
                         'h5py', 'h5py._objects', 'h5py.defs', 'h5py.utils', 'h5py._proxy',
                         'matplotlib', 'wxmplot', 'ConfigParser', 'fpformat',
                         'sqlalchemy', 'sqlalchemy.orm', 'sqlalchemy.pool',
-                        'sqlite', 'sqlalchemy.dialects.sqlite',
+                        'sqlite3', 'sqlalchemy.dialects.sqlite',
+
                         'xml.etree', 'xml.etree.cElementTree', 'xdrlib',
                         'epics', 'epics.devices'],
            'excludes': ['Tkinter', '_tkinter', 'Tkconstants', 'tcl',
                         '_imagingtk', 'PIL._imagingtk', 'ImageTk',
                         'PIL.ImageTk', 'FixTk''_gtkagg', '_tkagg',
-                        'qt', 'PyQt4Gui', 'email'],
+                        'matplotlib.tests',
+                        'qt', 'PyQt4Gui', 'email', 'IPython'],
            'site_packages': True,
            'resources': resource_files,
            'iconfile': 'GSEMap.icns',
                         }
 setup(app=APP,
       options={'py2app': OPTIONS},
-      data_files = mpl_data_files + plugin_files,
+      data_files = mpl_data_files + plugin_files + dll_files,
     )
