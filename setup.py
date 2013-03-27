@@ -89,7 +89,8 @@ if os.name == 'nt':
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch modules
 # and plugins
-data_files  = [('bin', ['larch', 'larch_gui'])]
+
+data_files  = [('bin', glob.glob('bin/*'))]
 
 mod_dir = os.path.join(share_basedir, 'modules')
 modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
