@@ -151,7 +151,10 @@ if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
     history_file = join(usr_larchdir, 'history.lar')
 
 def show_site_config():
+    is_frozen = repr(getattr(sys, 'frozen', None))
     print( """===  Larch Configuration
+  sys executable:       %s
+  sys frozen:           %s
   users home directory: %s
   users larch dir:      %s
   users history_file:   %s
@@ -159,7 +162,8 @@ def show_site_config():
   modules search path:  %s
   plugins search path:  %s
 ========================
-""" % (home_dir, usr_larchdir, history_file, init_files,
+""" % (sys.executable, is_frozen, home_dir, usr_larchdir,
+       history_file, init_files,
        modules_path, plugins_path))
 
 def system_settings():
