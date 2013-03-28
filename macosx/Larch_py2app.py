@@ -12,8 +12,8 @@ matplotlib.use('WXAgg')
 import wxmplot
 import larch
 
-APP = '../bin/GSE_MapViewer'
-ICONFILE = 'GSEMap.icns'
+APP = '../bin/larch_gui'
+ICONFILE = 'larch.icns'
 
 libca = epics.ca.initialize_libca()
 mpl_data_files = matplotlib.get_py2exe_datafiles()
