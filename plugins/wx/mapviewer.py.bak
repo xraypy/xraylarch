@@ -580,13 +580,16 @@ class MapViewerFrame(wx.Frame):
         pack(parent, sizer)
 
     def get_masked_mca(self, data, detname, mask):
+        # print 'Get MASKED MCA ! ', detname, mask.shape
+        # print type(data), data.shape
+        
         map     = self.current_file.xrfmap[detname]
-
+        # print map['count']
         energy  = map['energy'].value
         cal     = map['energy'].attrs
         spectra = map['counts'].value
         spectra = spectra[mask].sum(axis=0)
-        
+        # print 'MASKED Spectra'
         self.mask = mask
         name = self.current_file.add_area(mask)
 
@@ -598,7 +601,7 @@ class MapViewerFrame(wx.Frame):
         roilims  = map['roi_limits'].value[:]
         for roi, lims in zip(roinames, roilims):
             self.sel_mca.add_roi(roi, left=lims[0], right=lims[1])
-
+        # print 'get masked mca done!  ', self.sel_mca
         return
 
     def lassoHandler(self, data=None,  det=None, mask=None, **kws):
@@ -616,13 +619,13 @@ class MapViewerFrame(wx.Frame):
         aname = 'new area'
         if hasattr(self, 'sel_mca'):
             aname = self.sel_mca.areaname
-            title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, aname)
-            self.xrfdisplay.SetTitle(title)
+        title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, aname)
+        self.xrfdisplay.SetTitle(title)
 
-            self.xrfdisplay.plot(self.sel_mca.energy,
+        self.xrfdisplay.plot(self.sel_mca.energy,
                              self.sel_mca.counts,
                              mca=self.sel_mca)
-            self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys(),
+        self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys(),
                                   show_last=True)
 
 
