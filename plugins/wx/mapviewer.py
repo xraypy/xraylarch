@@ -541,9 +541,18 @@ class MapViewerFrame(wx.Frame):
         pack(self, sizer)
 
     def createNBPanels(self, parent):
-        self.title = SimpleText(parent, 'initializing...', size=(250, -1))
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.title, 0, ALL_CEN)
+
+        # title area:
+        tpanel = wx.Panel(parent)
+        self.title    = SimpleText(tpanel, 'initializing...', size=(400, -1))
+        self.subtitle = SimpleText(tpanel, ' no map data   ', size=(200, -1))
+        tsizer = wx.BoxSizer(wx.HORIZONTAL)
+        tsizer.Add(self.title,     0, ALL_CEN)
+        tsizer.Add(self.subtitle,  0, ALL_RIGHT)
+        pack(tpanel, tsizer)
+
+        sizer.Add(tpanel, 0, ALL_CEN)
 
         self.nb = flat_nb.FlatNotebook(parent, wx.ID_ANY, agwStyle=FNB_STYLE)
         self.nb.SetBackgroundColour('#FCFCFA')
@@ -676,13 +685,18 @@ class MapViewerFrame(wx.Frame):
         if filename is None and evt is not None:
             filename = evt.GetString()
 
-        if not self.h5convert_done:
+        if not self.h5convert_done or filename not in self.filemap:
             return
-        if self.check_ownership(filename):
-            self.filemap[filename].process()
+        if (self.check_ownership(filename) and
+            self.filemap[filename].folder_has_newdata()):
+            self.process_file(filename)
 
         self.current_file = self.filemap[filename]
         self.title.SetLabel("%s" % filename)
+
+        ny, nx, npos = self.filemap[filename].xrfmap['positions/pos'].shape
+
+        self.subtitle.SetLabel(" Map Size=%i x %i" % (nx, ny))
 
         rois = list(self.filemap[filename].xrfmap['roimap/sum_name'])
         rois_extra = [''] + rois
@@ -809,6 +823,7 @@ class MapViewerFrame(wx.Frame):
         if read:
             parent, fname = os.path.split(path)
             xrmfile = GSEXRM_MapFile(filename=str(path))
+
             #try:
             #except:
             #    popup(self, NOT_GSEXRM_FILE % fname,
@@ -820,7 +835,6 @@ class MapViewerFrame(wx.Frame):
                 self.filelist.Append(fname)
             if self.check_ownership(fname):
                 self.process_file(fname)
-            self.h5convert_done = True
             self.ShowFile(filename=fname)
 
     def onGSEXRM_Data(self,  **kws):
@@ -839,7 +853,6 @@ class MapViewerFrame(wx.Frame):
             xrm_map.read_master()
 
         if self.filemap[filename].folder_has_newdata():
-            print 'Has New Data! '
             self.h5convert_fname = filename
             self.h5convert_done = False
             self.h5convert_irow, self.h5convert_nrow = 0, 0
@@ -852,11 +865,11 @@ class MapViewerFrame(wx.Frame):
 
     def onTimer(self, event):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
-        self.message('Processing %s:  row %i of %i' % (fname, irow, nrow))
+        self.message('MapViewer Timer Processing %s:  row %i of %i' % (fname, irow, nrow))
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
-            self.message('Processing %s: complete!' % fname)
+            self.message('MapViewerTimer Processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
     def new_mapdata(self, filename):
