@@ -793,7 +793,7 @@ class MapViewerFrame(wx.Frame):
             try:
                 xrmfile = GSEXRM_MapFile(folder=str(path))
             except:
-                popup(self, NOT_GSEXRM_FOLDER % fname,
+                popup(self, NOT_GSEXRM_FOLDER % str(path),
                      "Not a Map folder")
                 return
             fname = xrmfile.filename
