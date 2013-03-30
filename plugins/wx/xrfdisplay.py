@@ -792,6 +792,9 @@ class XRFDisplayFrame(wx.Frame):
         if roiname is not None:
             self.onROI(label=roiname)
 
+    def plotmca(self, mca,  **kws):
+        self.plot(mca.energy, mca.counts, mca=mca, **kws)
+
     def plot(self, x, y, mca=None,  **kws):
         if mca is not None:
             self.mca = mca
