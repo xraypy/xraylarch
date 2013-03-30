@@ -761,7 +761,7 @@ class GSEXRM_MapFile(object):
 
     def get_area(self, name=None, desc=None):
         """
-        get area by name or description
+        get area group by name or description
         """
         group = self.xrfmap['areas']
         if name is not None and name in group:
@@ -879,72 +879,73 @@ class GSEXRM_MapFile(object):
         if det in range(1, self.ndet+1):
             dgroup = 'det%i' % det
         map = self.xrfmap[dgroup]
-        xslice = slice(xmin, xmax)
-        yslice = slice(ymin, ymax)
+        sx = slice(xmin, xmax)
+        sy = slice(ymin, ymax)
 
-        counts= map['counts'][xslice, yslice, :]
+        cell   = map['counts'].regionref[sx, sy, :]
+        nx, ny = (xmax-xmin, ymax-ymin)
+        ix, iy, nmca = map['counts'].shape
+        counts = map['counts'][cell].reshape(nx, ny, nmca)
+
         if dtcorrect and det in range(1, self.ndet+1):
-            dtfact = map['dtfactor'][xslice, yslice]
-            dtfact = dtfact.respace(dtfact.shape[0], dtfact.shape[1], 1)
-            counts = counts.value * dtfact.value
-
+            cell   = map['dtfactor'].regionref[sx, sy]
+            dtfact = map['dtfactor'][cell].reshape(nx, ny)
+            dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+            counts = counts * dtfact
         counts = counts.sum(axis=0).sum(axis=0)
 
-        ### create an MCA
-        energy  = map['energy'].value
-        cal     = map['energy'].attrs
-
-        thismca = MCA(counts=counts, offset=cal['cal_offset'],
-                      slope=cal['cal_slope'])
-        thismca.energy = energy
-        roinames = map['roi_names'].value[:]
-        roilims  = map['roi_limits'].value[:]
-        for roi, lims in zip(roinames, roilims):
-            thismca.add_roi(roi, left=lims[0], right=lims[1])
-        return thismca
+        areaname = 'rect: [%i:%i, %i:%i]' % (xmin, xmax, ymin, ymax)
+        return self._getmca(map, counts, areaname)
 
     def get_mca_area(self, areaname, det=None, dtcorrect=True):
         """
         return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
         """
-        x = debugtime()
         area = self.get_area(areaname).value
         if area is None:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
         dgroup= 'detsum'
-
         if self.ndet is None:
             self.ndet =  self.xrfmap.attrs['N_Detectors']
         if det in range(1, self.ndet+1):
             dgroup = 'det%i' % det
-        x.add('get mca area 1')
+
         map = self.xrfmap[dgroup]
-        x.add('get mca area: map')
-        counts = map['counts'].value[area]
-        x.add('get mca area: map counts')
+
+        # get slices for a cell and h5py regionref that holds
+        # the minimal rectangular box around the drawn area
+        sx, sy = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
+        mask   = area[sx, sy]
+        cell   = map['counts'].regionref[sx, sy, :]
+        nx, ny = mask.shape
+        ix, iy, nmca = map['counts'].shape
+        counts = map['counts'][cell].reshape(nx, ny, nmca)[mask]
+
         if dtcorrect and det in range(1, self.ndet+1):
-            dtfact = map['dtfactor'].value[area]
-            dtfact = dtfact.respace(dtfact.shape[0], dtfact.shape[1], 1)
+            cell   = map['dtfactor'].regionref[sx, sy]
+            dtfact = map['dtfactor'][cell].reshape(nx, ny)[mask]
+            dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
             counts = counts * dtfact
         counts = counts.sum(axis=0)
-        x.add('get mca area: counts summed')
 
-        ### create an MCA
-        energy  = map['energy'].value
+        return self._getmca(map, counts, areaname)
+
+    def _getmca(self, map, counts, name):
         cal     = map['energy'].attrs
+        _mca = MCA(counts=counts,
+                   offset=cal['cal_offset'],
+                   slope=cal['cal_slope'])
 
-        thismca = MCA(counts=counts, offset=cal['cal_offset'],
-                      slope=cal['cal_slope'])
-        x.add('get mca area: mca created ')        
-        thismca.energy = energy
+        _mca.energy =  map['energy'].value
+        _mca.areaname = name
         roinames = map['roi_names'].value[:]
         roilims  = map['roi_limits'].value[:]
         for roi, lims in zip(roinames, roilims):
-            thismca.add_roi(roi, left=lims[0], right=lims[1])
-        x.add('get mca area: done')
-        # x.show()
-        return thismca
+            _mca.add_roi(roi, left=lims[0], right=lims[1])
+        return _mca
+
+
 
 
     def get_pos(self, name, mean=True):
