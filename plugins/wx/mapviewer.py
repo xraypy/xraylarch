@@ -41,9 +41,6 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack, popup,
                      add_button, add_menu, add_choice)
 
-sys.path.insert(0, larch.plugin_path('xrf'))
-from mca import MCA
-
 sys.path.insert(0, larch.plugin_path('io'))
 from fileutils import nativepath
 
@@ -464,8 +461,6 @@ WARNING: This cannot be undone!
         self._mca = self.owner.current_file.get_mca_area(areaname)
 
     def onXRF(self, event=None):
-        dt = debugtime()
-
         area  = self._getarea()
         aname = self.choice.GetStringSelection()
         label = area.attrs['description']
@@ -475,13 +470,13 @@ WARNING: This cannot be undone!
         mca_thread.start()
         self.owner.show_XRFDisplay()
         mca_thread.join()
+
         pref, fname = os.path.split(self.owner.current_file.filename)
         title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, label)
 
         self.owner.xrfdisplay.SetTitle(title)
-        self.owner.xrfdisplay.plot(self._mca.energy,
-                                   self._mca.counts,
-                                   mca=self._mca)
+        self.owner.xrfdisplay.plotmca(self._mca)
+
 
 class MapViewerFrame(wx.Frame):
     _about = """XRF Map Viewer
@@ -579,51 +574,26 @@ class MapViewerFrame(wx.Frame):
         sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
         pack(parent, sizer)
 
-    def get_masked_mca(self, data, detname, mask):
-        map     = self.current_file.xrfmap[detname]
+    def get_mca_area(self, det, mask):
+        aname = self.current_file.add_area(mask)
+        self.sel_mca = self.current_file.get_mca_area(aname, det=det)
 
-        energy  = map['energy'].value
-        cal     = map['energy'].attrs
-        spectra = map['counts'].value
-        spectra = spectra[mask].sum(axis=0)
-        
-        self.mask = mask
-        name = self.current_file.add_area(mask)
-
-        self.sel_mca = MCA(counts=spectra, offset=cal['cal_offset'],
-                           slope=cal['cal_slope'])
-        self.sel_mca.energy = energy
-        self.sel_mca.areaname = name
-        roinames = map['roi_names'].value[:]
-        roilims  = map['roi_limits'].value[:]
-        for roi, lims in zip(roinames, roilims):
-            self.sel_mca.add_roi(roi, left=lims[0], right=lims[1])
-
-        return
-
-    def lassoHandler(self, data=None,  det=None, mask=None, **kws):
-
-        detname = 'detsum'
-        if det is not None:
-            detname = 'det%i' % det
-        mca_thread = Thread(target=self.get_masked_mca,
-                            args=(data, detname, mask))
+    def lassoHandler(self, mask=None, det=None, **kws):
+        mca_thread = Thread(target=self.get_mca_area, args=(det, mask))
         mca_thread.start()
+
         self.show_XRFDisplay()
         mca_thread.join()
 
-        path, fname = os.path.split(self.current_file.filename)
-        aname = 'new area'
         if hasattr(self, 'sel_mca'):
+            path, fname = os.path.split(self.current_file.filename)
             aname = self.sel_mca.areaname
             title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, aname)
             self.xrfdisplay.SetTitle(title)
 
-            self.xrfdisplay.plot(self.sel_mca.energy,
-                             self.sel_mca.counts,
-                             mca=self.sel_mca)
+            self.xrfdisplay.plotmca(self.sel_mca)
             self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys(),
-                                  show_last=True)
+                                      show_last=True)
 
 
     def show_XRFDisplay(self, do_raise=True, clear=True):
