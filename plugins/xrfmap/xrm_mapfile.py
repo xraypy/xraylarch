@@ -895,7 +895,7 @@ class GSEXRM_MapFile(object):
         counts = counts.sum(axis=0).sum(axis=0)
 
         areaname = 'rect: [%i:%i, %i:%i]' % (xmin, xmax, ymin, ymax)
-        return self._getmca(map, counts, areaname)
+        return self._getmca(dgroup, counts, areaname)
 
     def get_mca_area(self, areaname, det=None, dtcorrect=True):
         """
@@ -929,23 +929,33 @@ class GSEXRM_MapFile(object):
             counts = counts * dtfact
         counts = counts.sum(axis=0)
 
-        return self._getmca(map, counts, areaname)
+        return self._getmca(dgroup, counts, areaname)
 
-    def _getmca(self, map, counts, name):
-        cal     = map['energy'].attrs
+    def _getmca(self, dgroup, counts, name):
+        map  = self.xrfmap[dgroup]
+        cal  = map['energy'].attrs
         _mca = MCA(counts=counts,
                    offset=cal['cal_offset'],
                    slope=cal['cal_slope'])
 
         _mca.energy =  map['energy'].value
-        _mca.areaname = name
-        roinames = map['roi_names'].value[:]
-        roilims  = map['roi_limits'].value[:]
+        env_names = list(self.xrfmap['config/environ/name'])
+        env_addrs = list(self.xrfmap['config/environ/address'])
+        env_vals  = list(self.xrfmap['config/environ/value'])
+        for desc, val, addr in zip(env_names, env_vals, env_addrs):
+            _mca.add_environ(desc=desc, val=val, addr=addr)
+
+
+        roinames = list(map['roi_names'])
+        roilims  = list(map['roi_limits'])
         for roi, lims in zip(roinames, roilims):
             _mca.add_roi(roi, left=lims[0], right=lims[1])
+        _mca.areaname = name
+        path, fname = os.path.split(self.filename)
+        _mca.sourcefile = fname
+        fmt = "Data from File '%s', detector '%s', area '%s'"
+        _mca.info  =  fmt % (self.filename, dgroup, name)
         return _mca
-
-
 
 
     def get_pos(self, name, mean=True):
