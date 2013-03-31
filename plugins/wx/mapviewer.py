@@ -367,24 +367,25 @@ WARNING: This cannot be undone!
         wx.Panel.__init__(self, parent, -1, **kws)
         self.owner = owner
 
-        sizer = wx.GridBagSizer(8, 3)
+        sizer = wx.GridBagSizer(8, 5)
 
         bpanel = wx.Panel(self)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        self.choice = add_choice(self, choices=[], size=(200, -1), action=self.onSelect)
-        self.desc   = wx.TextCtrl(self, -1, '', size=(200, -1))
+        self.choice = add_choice(self, choices=[], size=(150, -1), action=self.onSelect)
+        self.desc   = wx.TextCtrl(self, -1,   '', size=(150, -1))
+        self.info   = wx.StaticText(self, -1, '', size=(150, -1))
 
-        self.onmap  = add_button(bpanel, 'Show Area on Map', size=(140, -1),
+        self.onmap  = add_button(bpanel, 'Show on Map', size=(120, -1),
                                       action=self.onShow)
-        self.clear  = add_button(bpanel, 'Clear Areas on Map', size=(140, -1),
+        self.clear  = add_button(bpanel, 'Clear Map', size=(120, -1),
                                       action=self.onClear)
-        self.xrf    = add_button(bpanel, 'Show XRF Spectrum', size=(140, -1),
+        self.xrf    = add_button(bpanel, 'Show Spectrum', size=(120, -1),
                                       action=self.onXRF)
 
-        self.delete = add_button(self, 'Delete This Area', size=(140, -1),
+        self.delete = add_button(self, 'Delete Area', size=(120, -1),
                                       action=self.onDelete)
-        self.update = add_button(self, 'Save Label', size=(140, -1),
+        self.update = add_button(self, 'Save Label', size=(120, -1),
                                       action=self.onDesc)
 
         bsizer.Add(self.onmap, 0, ALL_CEN, 2)
@@ -394,6 +395,7 @@ WARNING: This cannot be undone!
         def txt(s):
             return SimpleText(self, s)
         sizer.Add(txt('Defined Map Areas'), (0, 0), (1, 2), ALL_CEN, 2)
+        sizer.Add(self.info,                (0, 2), (1, 1), ALL_RIGHT, 2)
         sizer.Add(txt('Area Name: '),       (1, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.choice,              (1, 1), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.delete,              (1, 2), (1, 1), ALL_LEFT, 2)
@@ -421,6 +423,8 @@ WARNING: This cannot be undone!
 
     def onSelect(self, event=None):
         area = self._getarea()
+        npix = len(area.value[np.where(area.value)])
+        self.info.SetLabel("%i Pixels" % npix)
         self.desc.SetValue(area.attrs['description'])
 
     def onDesc(self, event=None):
@@ -518,16 +522,23 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_irow = 0
         self.h5convert_nrow = 0
 
+    def CloseFile(self, filename, event=None):
+        print 'Close file ', filename, filename in self.filemap
+        if filename in self.filemap:
+            self.filemap[filename].close()
+            self.filemap.pop(filename)
+
     def createMainPanel(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-        splitter.SetMinimumPaneSize(175)
+        splitter.SetMinimumPaneSize(275)
 
-        self.filelist = EditableListBox(splitter, self.ShowFile)
-        # self.detailspanel = self.createViewOptsPanel(splitter)
+        self.filelist = EditableListBox(splitter, self.ShowFile,
+                                        remove_action=self.CloseFile,
+                                        size=(250, -1))
 
         dpanel = self.detailspanel = wx.Panel(splitter)
-        dpanel.SetMinSize((575, 425))
+        dpanel.SetMinSize((625, 450))
         self.createNBPanels(dpanel)
         splitter.SplitVertically(self.filelist, self.detailspanel, 1)
         sizer = wx.BoxSizer(wx.VERTICAL)
