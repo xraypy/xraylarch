@@ -24,7 +24,8 @@ from mathutils import index_of
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack, popup, add_button, get_icon,
-                     add_checkbox, add_menu, add_choice, add_menu)
+                     add_checkbox, add_menu, add_choice, add_menu,
+                     FileSave, fix_filename)
 
 
 from periodictable import PeriodicTablePanel
@@ -39,8 +40,7 @@ ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 ALL_RIGHT =  wx.ALL|RIGHT
 
-## FILE_WILDCARDS = "X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*"
-## FILE_WILDCARDS = "X-ray Maps (*.0*)|*.0&"
+FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"
 
 FILE_ALREADY_READ = """The File
    '%s'
@@ -793,6 +793,7 @@ class XRFDisplayFrame(wx.Frame):
             self.onROI(label=roiname)
 
     def plotmca(self, mca,  **kws):
+        self.mca = mca
         self.plot(mca.energy, mca.counts, mca=mca, **kws)
 
     def plot(self, x, y, mca=None,  **kws):
@@ -853,8 +854,25 @@ class XRFDisplayFrame(wx.Frame):
         pass
 
     def onSaveMCAFile(self, event=None, **kws):
-        print '  onSaveMCAFile   '
-        pass
+        deffile = ''
+        if hasattr(self.mca, 'sourcefile'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
+        if hasattr(self.mca, 'areaname'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'areaname'))
+        if deffile == '':
+            deffile ='test'
+        if not deffile.endswith('.mca'):
+            deffile = deffile + '.mca'
+
+        deffile = fix_filename(str(deffile))
+
+        outfile = FileSave(self, "Save MCA File",
+                           default_file=deffile,
+                           wildcard=FILE_WILDCARDS)
+
+        if outfile is not None:
+            self.mca.save_mcafile(outfile)
+
 
     def onSaveColumnFile(self, event=None, **kws):
         print '  onSaveColumnFile   '
