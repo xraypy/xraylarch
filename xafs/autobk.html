@@ -494,7 +494,7 @@ features.</p>
 <p>The simplest example of reading data and doing background subtraction would
 using all the default inputs would be:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/xafs/doc_autobk1.lar</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;cu_rt01.xmu&#39;</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;../xafsdata/cu_rt01.xmu&#39;</span>
 <span class="n">cu</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 <span class="n">autobk</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu</span><span class="p">)</span>
 
@@ -525,7 +525,7 @@ default values for pararmeters, but pass explicit parameters such as
 parameters is not critically important for this data set, and is mostly
 here to demonstrate the method for passing arguments to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/xafs/doc_autobk2.lar</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;scorodite_as_xafs.001&#39;</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;../xafsdata/scorodite_as_xafs.001&#39;</span>
 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;FeAsSO4  (scorodite)&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">p1</span>
@@ -561,7 +561,7 @@ high-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61
 discussed above, we try a few options to study the effect of adding a
 clamp:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/xafs/doc_autobk3.lar</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;scorodite_as_xafs.001&#39;</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;../xafsdata/scorodite_as_xafs.001&#39;</span>
 <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;FeAsSO4  (scorodite)&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">energy</span> <span class="o">=</span> <span class="n">dat</span><span class="o">.</span><span class="n">p1</span>
@@ -591,9 +591,7 @@ clamp:</p>
 </div>
 <p>results in the following comparison:</p>
 <blockquote id="xafs-fig4">
-<div><div class="figure align-center" style="width: 100%">
-<a class="reference external image-reference" href="../_images/xafs_autobk3.png"><img alt="../_images/xafs_autobk3.png" src="../_images/xafs_autobk3.png" style="width: 65%;" /></a>
-</div>
+<div><a class="reference external image-reference" href="../_images/xafs_autobk3.png"><img alt="../_images/xafs_autobk3.png" src="../_images/xafs_autobk3.png" style="width: 65%;" /></a>
 <p>Figure 4.  Influence of spline clamps of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></p>
 </div></blockquote>
 </div>

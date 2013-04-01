@@ -126,8 +126,8 @@ scalar or array, depending on the input <tt class="docutils literal"><span class
 <div class="math">
 <p><img src="../_images/math/bdbc896d4c7f5f835f24376323ace5d04b583dff.png" alt="f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}"/></p>
 </div><p>where <em>cen</em> is used for <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>.
-The Full-Width at Half-Maximum is <img class="math" src="../_images/math/2058af8143906b3ff5439922f6e0c6a726a956c3.png" alt="2\sigma\sqrt{2\ln{2}}"/>, or
-approximately 2.3548:math:<cite>sigma</cite></p>
+The Full-Width at Half-Maximum is <img class="math" src="../_images/math/2058af8143906b3ff5439922f6e0c6a726a956c3.png" alt="2\sigma\sqrt{2\ln{2}}"/>,
+approximately <img class="math" src="../_images/math/3bf45f69a681a22791598f2cd42e6b216990f24c.png" alt="2.3548\sigma"/></p>
 <dl class="function">
 <dt id="lorentzian">
 <tt class="descname">lorentzian</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
@@ -137,7 +137,7 @@ approximately 2.3548:math:<cite>sigma</cite></p>
 <div class="math">
 <p><img src="../_images/math/4745a75d8ed4f59c889eb50bd0c60e847204d27c.png" alt="f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]"/></p>
 </div><p>where <em>cen</em> is used for <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>. The Full-Width at Half-Maximum is
-2:math:<cite>sigma</cite>.</p>
+<img class="math" src="../_images/math/4fc123f5b513e5fb6dfd17e590d44e0c299b026e.png" alt="2\sigma"/>.</p>
 <dl class="function">
 <dt id="voigt">
 <tt class="descname">voigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>gamma=None</em><big>)</big><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
@@ -156,7 +156,7 @@ approximately 2.3548:math:<cite>sigma</cite></p>
 used for <img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/> here, <em>sigma</em> for <img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>, and <em>gamma</em> for the
 parameter <img class="math" src="../_images/math/66981fa3920210c6ad8dbe5e968783d5dd7520c3.png" alt="\gamma"/>.  If <em>gamma</em> is left as <tt class="docutils literal"><span class="pre">None</span></tt>, it is set equal
 to <em>sigma</em>.  For the case when <img class="math" src="../_images/math/20fb4d83fed435ef0b693ac0ec3e009035d05fd3.png" alt="\gamma = \sigma"/>, the Full-Width at
-Half-Maximum is <img class="math" src="../_images/math/fabcdda06002ebeaf59b4839e5ec6f141692e20c.png" alt="\sim 3.6013\sigma"/>.</p>
+Half-Maximum is approximately <img class="math" src="../_images/math/ed088bd28780ea2eab616ec463d15bc17dfb3b3a.png" alt="3.6013\sigma"/>.</p>
 <dl class="function">
 <dt id="pvoigt">
 <tt class="descname">pvoigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>frac=0.5</em><big>)</big><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
