@@ -38,7 +38,8 @@ dll_files = [("larch/dlls/darwin/",
 
 DATA_FILES = []
 # OPTIONS = {'argv_emulation': True, 'includes': 'epics, wx, Image'}
-OPTIONS = {'includes': ['Image', 'ctypes', 'numpy', 'scipy', 'scipy.optimize',
+OPTIONS = {
+    'includes': ['Image', 'ctypes', 'numpy', 'scipy', 'scipy.optimize',
                         'wx', 'wx._core', 'wx.py', 'wxversion',
                         'wx.lib', 'wx.lib.*', 'wx.lib.masked', 'wx.lib.mixins',
                         'wx.lib.colourselect', 'wx.lib.newevent',
@@ -47,7 +48,6 @@ OPTIONS = {'includes': ['Image', 'ctypes', 'numpy', 'scipy', 'scipy.optimize',
                         'matplotlib', 'wxmplot', 'ConfigParser', 'fpformat',
                         'sqlalchemy', 'sqlalchemy.orm', 'sqlalchemy.pool',
                         'sqlite3', 'sqlalchemy.dialects.sqlite',
-
                         'xml.etree', 'xml.etree.cElementTree', 'xdrlib',
                         'epics', 'epics.devices'],
            'excludes': ['Tkinter', '_tkinter', 'Tkconstants', 'tcl',
