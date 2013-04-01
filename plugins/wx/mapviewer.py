@@ -114,13 +114,15 @@ class SimpleMapPanel(wx.Panel):
         self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'],
                                size=(80, -1))
 
-        self.newid  = wx.CheckBox(self, -1, 'Reuse Previous Display?')
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
-        self.newid.SetValue(1)
+
         self.cor.SetValue(1)
         self.op.SetSelection(0)
         self.det.SetSelection(0)
-        self.show = add_button(self, 'Show Map', size=(90, -1), action=self.onShowMap)
+        self.show_new = add_button(self, 'Show New Map',     size=(125, -1),
+                                   action=Closure(self.onShowMap, new=True))
+        self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
+                                   action=Closure(self.onShowMap, new=False))
 
         ir = 0
         sizer.Add(SimpleText(self, 'Detector'),          (ir, 0), (1, 1), ALL_CEN, 2)
@@ -139,13 +141,11 @@ class SimpleMapPanel(wx.Panel):
 
         ir += 1
         sizer.Add(self.cor,   (ir,   0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.newid, (ir,   2), (1, 4), ALL_LEFT, 2)
-        sizer.Add(self.show,  (ir+1, 0), (1, 1), ALL_LEFT, 2)
-
+        sizer.Add(self.show_new,  (ir+1, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.show_old,  (ir+1, 2), (1, 2), ALL_LEFT, 2)
         pack(self, sizer)
 
-
-    def onShowMap(self, event=None):
+    def onShowMap(self, event=None, new=True):
         datafile  = self.owner.current_file
         det =self.det.GetStringSelection()
         if det == 'sum':
@@ -183,7 +183,7 @@ class SimpleMapPanel(wx.Panel):
         pref, fname = os.path.split(datafile.filename)
         title = '%s: %s' % (fname, title)
         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
-        if len(self.owner.im_displays) == 0 or not self.newid.IsChecked():
+        if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=det)
         self.owner.display_map(map, title=title, info=info, x=x, y=y, det=det)
 
@@ -204,12 +204,15 @@ class TriColorMapPanel(wx.Panel):
                                   action=Closure(self.onSetRGBScale, color='b'))
         self.i0choice = add_choice(self, choices=[], size=(120, -1),
                                    action=Closure(self.onSetRGBScale, color='i0'))
-        self.show = add_button(self, 'Show Map', size=(90, -1), action=self.onShow3ColorMap)
+
+        self.show_new = add_button(self, 'Show New Map',     size=(125, -1),
+                               action=Closure(self.onShow3ColorMap, new=True))
+        self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
+                               action=Closure(self.onShow3ColorMap, new=False))
+
 
         self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'], size=(80, -1))
-        self.newid  = wx.CheckBox(self, -1, 'Reuse Previous Display?')
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
-        self.newid.SetValue(1)
         self.cor.SetValue(1)
 
         self.rauto = wx.CheckBox(self, -1, 'Autoscale?')
@@ -253,12 +256,11 @@ class TriColorMapPanel(wx.Panel):
         sizer.Add(SimpleText(self, 'Normalization'), (ir, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.i0choice,             (ir, 1), (1, 2), ALL_LEFT, 2)
 
-        ir += 1
-        sizer.Add(self.cor,   (ir, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.newid, (ir, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.cor,   (ir, 3), (1, 2), ALL_LEFT, 2)
 
         ir += 1
-        sizer.Add(self.show,  (ir, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.show_new,  (ir, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.show_old,  (ir, 2), (1, 2), ALL_LEFT, 2)
 
         pack(self, sizer)
 
@@ -290,7 +292,7 @@ class TriColorMapPanel(wx.Panel):
             self.bscale.SetValue(map.max())
             self.bscale.Disable()
 
-    def onShow3ColorMap(self, event=None):
+    def onShow3ColorMap(self, event=None, new=True):
         datafile = self.owner.current_file
         det =self.det.GetStringSelection()
         if det == 'sum':
@@ -333,7 +335,7 @@ class TriColorMapPanel(wx.Panel):
         title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
         map = np.array([rmap*rscale/i0map, gmap*gscale/i0map, bmap*bscale/i0map])
         map = map.swapaxes(0, 2).swapaxes(0, 1)
-        if len(self.owner.im_displays) == 0 or not self.newid.IsChecked():
+        if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, config_on_frame=False, det=det)
         self.owner.display_map(map, title=title, with_config=False, det=det)
 
