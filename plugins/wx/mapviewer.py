@@ -30,7 +30,7 @@ from wx._core import PyDeadObjectError
 import h5py
 import numpy as np
 
-from wxmplot import ImageFrame
+from wxmplot import ImageFrame, PlotFrame
 import larch
 from larch.utils.debugtime import debugtime
 
@@ -104,7 +104,6 @@ class SimpleMapPanel(wx.Panel):
     def __init__(self, parent, owner, **kws):
         wx.Panel.__init__(self, parent, -1, **kws)
         self.owner = owner
-
         sizer = wx.GridBagSizer(8, 5)
 
         self.roi1 = add_choice(self, choices=[], size=(120, -1))
@@ -123,6 +122,8 @@ class SimpleMapPanel(wx.Panel):
                                    action=Closure(self.onShowMap, new=True))
         self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
                                    action=Closure(self.onShowMap, new=False))
+        self.show_cor = add_button(self, 'Map1 vs. Map2', size=(125, -1),
+                                   action=self.onShowCorrel)
 
         ir = 0
         sizer.Add(SimpleText(self, 'Detector'),          (ir, 0), (1, 1), ALL_CEN, 2)
@@ -143,8 +144,44 @@ class SimpleMapPanel(wx.Panel):
         sizer.Add(self.cor,   (ir,   0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.show_new,  (ir+1, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.show_old,  (ir+1, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.show_cor,  (ir+1, 4), (1, 2), ALL_LEFT, 2)        
         pack(self, sizer)
 
+    def onClose(self):
+        for p in self.plotframes:
+            try:
+                p.Destroy()
+            except:
+                pass
+        
+        
+    def onShowCorrel(self, event=None):
+        roiname1 = self.roi1.GetStringSelection()
+        roiname2 = self.roi2.GetStringSelection()
+        if roiname1 == '' or roiname2 == '':
+            return
+        
+        datafile  = self.owner.current_file
+        det =self.det.GetStringSelection()
+        if det == 'sum':
+            det =  None
+        else:
+            det = int(det)
+        dtcorrect = self.cor.IsChecked()
+
+        map1 = datafile.get_roimap(roiname1, det=det, dtcorrect=dtcorrect).flatten()
+        map2 = datafile.get_roimap(roiname2, det=det, dtcorrect=dtcorrect).flatten()
+
+        path, fname = os.path.split(datafile.filename)
+        title ='%s: %s vs %s' %(fname, roiname2, roiname1)
+        pframe = PlotFrame(title=title, output_title=title)
+        pframe.plot(map2, map1, xlabel=roiname2, ylabel=roiname1,
+                    marker='o', markersize=4, linewidth=0)
+        pframe.Show()
+        pframe.Raise()
+        self.owner.plot_displays.append(pframe)
+
+        
     def onShowMap(self, event=None, new=True):
         datafile  = self.owner.current_file
         det =self.det.GetStringSelection()
@@ -499,6 +536,7 @@ class MapViewerFrame(wx.Frame):
         self.data = None
         self.filemap = {}
         self.im_displays = []
+        self.plot_displays = []
         self.larch = None
         self.xrfdisplay = None
 
@@ -634,7 +672,6 @@ class MapViewerFrame(wx.Frame):
                              config_on_frame=config_on_frame)
         self.im_displays.append(imframe)
 
-
     def display_map(self, map, title='', info='', x=None, y=None, det=None,
                     with_config=True):
         """display a map in an available image display"""
@@ -725,20 +762,20 @@ class MapViewerFrame(wx.Frame):
                 pass
         dlg.Destroy()
 
-    def onAbout(self,evt):
+    def onAbout(self, evt):
         dlg = wx.MessageDialog(self, self._about,"About GSEXRM MapViewer",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onClose(self,evt):
+    def onClose(self, evt):
 
         for xrmfile in self.filemap.values():
             xrmfile.close()
 
-        for imd in self.im_displays:
+        for disp in self.im_displays + self.plot_displays:
             try:
-                imd.Destroy()
+                disp.Destroy()
             except:
                 pass
 
