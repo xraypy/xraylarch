@@ -63,6 +63,19 @@ def pearson7(x, cen=0, sigma=1, expon=0.5):
     scale = gamma(expon) * sqrt((2**(1/expon) -1)) / (gamma(expon-0.5)) / (sigma*sqrt(pi))
     return scale / (1 + ( ((1.0*x-cen)/sigma)**2) * (2**(1/expon) -1) )**expon
 
+def fano(x, cen=0, gamma=1, q=1):
+    """Fano, or Breit-Wigner-Fano lineshape:
+        = (q*gamma/2 + x - cen)**2 / ( (gamma/2)**2 + (x - cen)**2 )
+    """
+    gam = gammma/2.0
+    return  (q*gam + x - cen)**2 / (gam*gam + (x-cen)**2)
+
+def logistic(x, cen=0, sigma=1.):
+    """Logistic lineshape (yet another sigmoidal curve)
+        = 1.  - 1. / (1 + exp((x-cen)/sigma))
+    """
+    return ( 1. - 1./(1. + exp((x-cen)/sigma)))
+
 def lognormal(x, cen=0, sigma=1):
     """log-normal function
     lognormal(x, cen, sigma)
@@ -100,6 +113,8 @@ def registerLarchPlugin():
                       'pearson7': pearson7,
                       'lognormal': lognormal,
                       'gammaln': _gammaln,
+                      'fano': fano,
+                      'logistic': logistic,
                       'erf': _erf,
                       'erfc': _erfc,
                       'wofz': _wofz})
