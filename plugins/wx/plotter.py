@@ -100,6 +100,7 @@ class PlotDisplay(PlotFrame):
         self.Show()
         self.Raise()
         self.panel.cursor_callback = self.onCursor
+        self.panel.cursor_mode = 'zoom'
         self.window = int(window)
         self._larch = _larch
         self._xylims = {}
