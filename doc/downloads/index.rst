@@ -2,11 +2,11 @@
 Downloading and Installation
 ====================================
 
-.. _larch-0.9.18.tar.gz (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.19.tar.gz/download
-.. _larch-0.9.18.tar.gz (CARS):   http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.19.tar.gz
+.. _larch-0.9.19.tar.gz (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.19.tar.gz/download
+.. _larch-0.9.19.tar.gz (CARS):   http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.19.tar.gz
 
-.. _LarchInstaller-0.9.19.exe (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/LarchInstaller-0.9.19.exe/download
-.. _LarchInstaller-0.9.19.exe (CARS):   http://cars.uchicago.edu/xraylarch/downloads/LarchInstaller-0.9.19.exe
+.. _LarchInstaller_0.9.19.exe (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/LarchInstaller_0.9.19.exe/download
+.. _LarchInstaller_0.9.19.exe (CARS):   http://cars.uchicago.edu/xraylarch/downloads/LarchInstaller_0.9.19.exe
 .. _larch github repository:      http://github.com/xraypy/xraylarch
 
 
