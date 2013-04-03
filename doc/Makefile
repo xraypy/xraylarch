@@ -22,14 +22,12 @@ html:
 
 epub:
 	$(SPHINXBUILD) -b epub $(ALLSPHINXOPTS) $(BUILDDIR)/epub
-	cp -pr $(BUILDDIR)/epub/*.epub $(BUILDDIR)/html/.
-
 
 pdf: latex
 	cd $(BUILDDIR)/latex && pdflatex larch.tex
 	cd $(BUILDDIR)/latex && makeindex -s python.ist larch.idx
 	cd $(BUILDDIR)/latex && pdflatex larch.tex
-	cp -pr $(BUILDDIR)/latex/larch.pdf $(BUILDDIR)/html/.
+	cp -pr $(BUILDDIR)/latex/larch.pdf $(BUILDDIR)/.
 
 all: html pdf
 
