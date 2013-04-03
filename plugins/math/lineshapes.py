@@ -67,7 +67,7 @@ def fano(x, cen=0, gamma=1, q=1):
     """Fano, or Breit-Wigner-Fano lineshape:
         = (q*gamma/2 + x - cen)**2 / ( (gamma/2)**2 + (x - cen)**2 )
     """
-    gam = gammma/2.0
+    gam = gamma/2.0
     return  (q*gam + x - cen)**2 / (gam*gam + (x-cen)**2)
 
 def logistic(x, cen=0, sigma=1.):
