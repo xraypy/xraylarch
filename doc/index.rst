@@ -11,7 +11,8 @@ Larch
 
 Larch is a scientific data processing language.  Initially designed for
 x-ray spectroscopic and scattering data collected at modern synchrotrons
-and x-ray sources, Larch is intended to be very easy to use for novices,
+and x-ray sources, it can also be used for general-purpose processing of
+scientific data.  Larch is intended to be very easy to use for novices,
 while also being complete enough for advanced data processing and
 analysis. Larch provides a wide range of functionality for dealing with
 arrays of scientific data, and basic tools to make it easy to use and
