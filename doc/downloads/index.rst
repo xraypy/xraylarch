@@ -27,8 +27,8 @@ Recommended download options are:
   | Beta    | Source tarball  | All       |  `larch-0.9.19.tar.gz (CARS)`_  or                    |
   |         |                 |           |  `larch-0.9.19.tar.gz (sf.net)`_                      |
   +---------+-----------------+-----------+-------------------------------------------------------+
-  | Beta    | Win32 Installer | Windows   |  `LarchInstaller-0.9.19.exe (CARS)`_  or              |
-  |         |                 |           |  `LarchInstaller-0.9.19.exe (sf.net)`_                |
+  | Beta    | Win32 Installer | Windows   |  `LarchInstaller_0.9.19.exe (CARS)`_  or              |
+  |         |                 |           |  `LarchInstaller_0.9.19.exe (sf.net)`_                |
   +---------+-----------------+-----------+-------------------------------------------------------+
   | Devel   | Source kit      | All       | git clone http://github.com/xraypy/xraylarch.git      |
   +---------+-----------------+-----------+-------------------------------------------------------+
