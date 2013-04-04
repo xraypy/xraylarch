@@ -49,10 +49,10 @@ def realimag(arr, _larch=None):
 def complex_phase(arr, _larch=None):
     "return phase, modulo 2pi jumps"
     phase = np.arctan2(arr.imag, arr.real)
-    for i in range(1, len(phase)):
-        while (phase[i] - phase[i-1]) > 1.5*np.pi:
-            phase[i] -= 2*np.pi
-    return phase
+    d   = np.diff(phase)/np.pi
+    out = 1.0*phase[:]
+    out[1:] -= np.pi*(np.round(abs(d))*np.sign(d)).cumsum()
+    return out
 
 def remove_dups(arr, tiny=1.e-8, frac=0.02):
     """avoid repeated successive values of an array that is expected
