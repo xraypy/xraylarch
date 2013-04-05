@@ -176,13 +176,9 @@ class MapMathPanel(wx.Panel):
             set_choices(wid, fnames)
 
     def onShowMap(self, evt, new=True):
-        print 'onShowMap ', new
         expr = str(self.expr.Value)
         main_file = None
         _larch = self.owner.larch
-        _larch.symtable.set_symbol('_map', larch.Group())
-
-        _larch.symtable.get_symbol('_sys.searchGroups').insert(1, '_map')
 
         for varname in self.varfile.keys():
             fname   = self.varfile[varname].GetStringSelection()
@@ -196,19 +192,10 @@ class MapMathPanel(wx.Panel):
             else:
                 map = self.owner.filemap[fname].get_roimap(roiname, det=det, dtcorrect=dtcorr)
 
-            vname = str('_map.%s' % varname)
-            print 'VAR ', varname, vname, map
-            _larch.symtable.set_symbol(vname, map)
+            _larch.symtable.set_symbol(str(varname), map)
             if main_file is None:
                 main_file = self.owner.filemap[fname]
         map = _larch.eval(expr)
-        print expr,  map
-        _larch.symbtable.set_symbol("_map.result", map)
-        _larch.eval("show(_map)")
-
-        map = _larch.symtable.get_symbol('_map.result')
-
-        print map.shape, map.min(), map.max()
 
         try:
             x = main_file.get_pos(0, mean=True)
@@ -219,14 +206,12 @@ class MapMathPanel(wx.Panel):
         except:
             y = None
 
-        pref, fname = os.path.split(datafile.filename)
+        fname = main_file.filename
         title = '%s: %s' % (fname, expr)
         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=None)
         self.owner.display_map(map, title=title, info=info, x=x, y=y, det=None)
-
-
 
 class SimpleMapPanel(wx.Panel):
     """Panel of Controls for choosing what to display a simple ROI map"""
