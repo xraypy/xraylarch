@@ -98,6 +98,136 @@ def set_choices(choicebox, choices):
     choicebox.SetStringSelection(choices[index])
 
 
+class MapMathPanel(wx.Panel):
+    """Panel of Controls for doing math on arrays from Map data"""
+    def __init__(self, parent, owner, **kws):
+        wx.Panel.__init__(self, parent, -1, **kws)
+        self.owner = owner
+        sizer = wx.GridBagSizer(8, 9)
+        self.show_new = add_button(self, 'Show New Map',     size=(125, -1),
+                                   action=Closure(self.onShowMap, new=True))
+        self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
+                                   action=Closure(self.onShowMap, new=False))
+
+        self.expr     = wx.TextCtrl(self, -1,   '', size=(250, -1))
+        ir = 0
+        sizer.Add(SimpleText(self, 'Expression:'),    (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(self.expr,                          (ir, 1), (1, 3), ALL_CEN, 2)
+
+        ir += 1
+        sizer.Add(self.show_new,  (ir, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.show_old,  (ir, 2), (1, 2), ALL_LEFT, 2)
+
+        ir += 1
+        sizer.Add(SimpleText(self, 'Name'),    (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'File'),        (ir, 1), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'ROI'),         (ir, 2), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Detector'),    (ir, 3), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'DT Correct?'), (ir, 4), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Shape'),       (ir, 5), (1, 1), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Range'),       (ir, 6), (1, 1), ALL_CEN, 2)
+
+        self.varfile  = {}
+        self.varroi   = {}
+        self.varshape   = {}
+        self.varrange   = {}
+        self.vardet   = {}
+        self.varcor   = {}
+        for varname in ('a', 'b', 'c', 'd', 'e'):
+            ir += 1
+            self.varfile[varname]   = vfile  = add_choice(self, choices=[], size=(200, -1),
+                                                          action=Closure(self.onROI, varname=varname))
+            self.varroi[varname]    = vroi   = add_choice(self, choices=[], size=(120, -1),
+                                                          action=Closure(self.onROI, varname=varname))
+            self.vardet[varname]    = vdet   = add_choice(self, choices=['sum', '1', '2', '3', '4'],  size=(70, -1))
+            self.varcor[varname]    = vcor   = wx.CheckBox(self, -1, ' ')
+            self.varshape[varname]  = vshape = SimpleText(self, 'Empty',   size=(80, -1))
+            self.varrange[varname]  = vrange = SimpleText(self, '[   :    ]', size=(150, -1))
+            vcor.SetValue(1)
+            vdet.SetSelection(0)
+
+            sizer.Add(SimpleText(self, "%s = " % varname),    (ir, 0), (1, 1), ALL_CEN, 2)
+            sizer.Add(vfile,                        (ir, 1), (1, 1), ALL_CEN, 2)
+            sizer.Add(vroi,                         (ir, 2), (1, 1), ALL_CEN, 2)
+            sizer.Add(vdet,                         (ir, 3), (1, 1), ALL_CEN, 2)
+            sizer.Add(vcor,                         (ir, 4), (1, 1), ALL_CEN, 2)
+            sizer.Add(vshape,                       (ir, 5), (1, 1), ALL_CEN, 2)
+            sizer.Add(vrange,                       (ir, 6), (1, 1), ALL_CEN, 2)
+
+        pack(self, sizer)
+
+    def onROI(self, evt, varname='a'):
+        fname   = self.varfile[varname].GetStringSelection()
+        roiname = self.varroi[varname].GetStringSelection()
+        dname   = self.vardet[varname].GetStringSelection()
+        dtcorr  = self.varcor[varname].IsChecked()
+        det =  None
+        if dname != 'sum':  det = int(dname)
+        map = self.owner.filemap[fname].get_roimap(roiname, det=det, dtcorrect=dtcorr)
+        self.varshape[varname].SetLabel(repr(map.shape))
+        self.varrange[varname].SetLabel("[%g: %g]" % (map.min(), map.max()))
+
+    def set_roi_choices(self, rois):
+        for wid in self.varroi.values():
+            set_choices(wid, ['1'] + rois)
+
+    def set_file_choices(self, fnames):
+        for wid in self.varfile.values():
+            set_choices(wid, fnames)
+
+    def onShowMap(self, evt, new=True):
+        print 'onShowMap ', new
+        expr = str(self.expr.Value)
+        main_file = None
+        _larch = self.owner.larch
+        _larch.symtable.set_symbol('_map', larch.Group())
+
+        _larch.symtable.get_symbol('_sys.searchGroups').insert(1, '_map')
+
+        for varname in self.varfile.keys():
+            fname   = self.varfile[varname].GetStringSelection()
+            roiname = self.varroi[varname].GetStringSelection()
+            dname   = self.vardet[varname].GetStringSelection()
+            dtcorr  = self.varcor[varname].IsChecked()
+            det =  None
+            if dname != 'sum':  det = int(dname)
+            if roiname == '1':
+                map = 1
+            else:
+                map = self.owner.filemap[fname].get_roimap(roiname, det=det, dtcorrect=dtcorr)
+
+            vname = str('_map.%s' % varname)
+            print 'VAR ', varname, vname, map
+            _larch.symtable.set_symbol(vname, map)
+            if main_file is None:
+                main_file = self.owner.filemap[fname]
+        map = _larch.eval(expr)
+        print expr,  map
+        _larch.symbtable.set_symbol("_map.result", map)
+        _larch.eval("show(_map)")
+
+        map = _larch.symtable.get_symbol('_map.result')
+
+        print map.shape, map.min(), map.max()
+
+        try:
+            x = main_file.get_pos(0, mean=True)
+        except:
+            x = None
+        try:
+            y = main_file.get_pos(1, mean=True)
+        except:
+            y = None
+
+        pref, fname = os.path.split(datafile.filename)
+        title = '%s: %s' % (fname, expr)
+        info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+        if len(self.owner.im_displays) == 0 or new:
+            iframe = self.owner.add_imdisplay(title, det=None)
+        self.owner.display_map(map, title=title, info=info, x=x, y=y, det=None)
+
+
+
 class SimpleMapPanel(wx.Panel):
     """Panel of Controls for choosing what to display a simple ROI map"""
 
@@ -111,10 +241,9 @@ class SimpleMapPanel(wx.Panel):
         self.scale = FloatCtrl(self, precision=4, value=1, size=(80,-1))
         self.op   = add_choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
         self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'],
-                               size=(80, -1))
+                               size=(70, -1))
 
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
-
         self.cor.SetValue(1)
         self.op.SetSelection(0)
         self.det.SetSelection(0)
@@ -141,10 +270,10 @@ class SimpleMapPanel(wx.Panel):
         sizer.Add(self.scale,         (ir, 5), (1, 1), ALL_CEN, 2)
 
         ir += 1
-        sizer.Add(self.cor,   (ir,   0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.cor,       (ir,   0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.show_new,  (ir+1, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.show_old,  (ir+1, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.show_cor,  (ir+1, 4), (1, 2), ALL_LEFT, 2)        
+        sizer.Add(self.show_cor,  (ir+1, 4), (1, 2), ALL_LEFT, 2)
         pack(self, sizer)
 
     def onClose(self):
@@ -153,14 +282,14 @@ class SimpleMapPanel(wx.Panel):
                 p.Destroy()
             except:
                 pass
-        
-        
+
+
     def onShowCorrel(self, event=None):
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
         if roiname1 == '' or roiname2 == '':
             return
-        
+
         datafile  = self.owner.current_file
         det =self.det.GetStringSelection()
         if det == 'sum':
@@ -181,7 +310,7 @@ class SimpleMapPanel(wx.Panel):
         pframe.Raise()
         self.owner.plot_displays.append(pframe)
 
-        
+
     def onShowMap(self, event=None, new=True):
         datafile  = self.owner.current_file
         det =self.det.GetStringSelection()
@@ -224,6 +353,11 @@ class SimpleMapPanel(wx.Panel):
             iframe = self.owner.add_imdisplay(title, det=det)
         self.owner.display_map(map, title=title, info=info, x=x, y=y, det=det)
 
+    def set_roi_choices(self, rois):
+        set_choices(self.roi1, rois)
+        set_choices(self.roi2, ['1'] + rois)
+
+
 class TriColorMapPanel(wx.Panel):
     """Panel of Controls for choosing what to display a 3 color ROI map"""
     def __init__(self, parent, owner, **kws):
@@ -248,7 +382,7 @@ class TriColorMapPanel(wx.Panel):
                                action=Closure(self.onShow3ColorMap, new=False))
 
 
-        self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'], size=(80, -1))
+        self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'], size=(70, -1))
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
         self.cor.SetValue(1)
 
@@ -606,8 +740,8 @@ class MapViewerFrame(wx.Frame):
 
         self.nbpanels = {}
         for name, key, creator in (('Simple ROI Map',  'roimap', SimpleMapPanel),
-                                   ('3-Color ROI Map', '3color',  TriColorMapPanel)):
-            #  ('2x2 Grid',         self.MapGridPanel)):
+                                   ('3-Color ROI Map', '3color',  TriColorMapPanel),
+                                   ('Map Math',  'mapmath',    MapMathPanel)):
             # print 'panel ' , name, parent, creator
             self.nbpanels[key] = p = creator(parent, owner=self)
             self.nb.AddPage(p, name, True)
@@ -723,12 +857,12 @@ class MapViewerFrame(wx.Frame):
         self.subtitle.SetLabel(" Map Size=%i x %i" % (nx, ny))
 
         rois = list(self.filemap[filename].xrfmap['roimap/sum_name'])
-        rois_extra = [''] + rois
+        for p in self.nbpanels.values():
+            if hasattr(p, 'set_roi_choices'):
+                p.set_roi_choices(rois)
+            if hasattr(p, 'set_file_choices'):
+                p.set_file_choices(self.filemap.keys())
 
-        set_choices(self.nbpanels['roimap'].roi1, rois)
-        set_choices(self.nbpanels['roimap'].roi2, rois_extra)
-
-        self.nbpanels['3color'].set_roi_choices(rois)
         self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys())
 
     def createMenus(self):
