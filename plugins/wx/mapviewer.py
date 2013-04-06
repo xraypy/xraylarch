@@ -30,12 +30,14 @@ from wx._core import PyDeadObjectError
 import h5py
 import numpy as np
 
-from wxmplot import ImageFrame, PlotFrame
+from wxmplot import PlotFrame
+
 import larch
 from larch.utils.debugtime import debugtime
 
 sys.path.insert(0, larch.plugin_path('wx'))
 from xrfdisplay import XRFDisplayFrame
+from mapimageframe import MapImageFrame
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack, popup,
@@ -784,10 +786,10 @@ class MapViewerFrame(wx.Frame):
 
     def add_imdisplay(self, title, det=None, config_on_frame=True):
         on_lasso = Closure(self.lassoHandler, det=det)
-        imframe = ImageFrame(output_title=title,
-                             lasso_callback=on_lasso,
-                             cursor_labels = self.cursor_menulabels,
-                             config_on_frame=config_on_frame)
+        imframe = MapImageFrame(output_title=title,
+                                lasso_callback=on_lasso,
+                                cursor_labels = self.cursor_menulabels,
+                                config_on_frame=config_on_frame)
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None, det=None,
@@ -801,10 +803,10 @@ class MapViewerFrame(wx.Frame):
                 displayed = True
             except IndexError:
                 on_lasso = Closure(self.lassoHandler, det=det)
-                imd = ImageFrame(output_title=title,
-                                 lasso_callback=on_lasso,
-                                 cursor_labels = self.cursor_menulabels,
-                                 config_on_frame=with_config)
+                imd = MapImageFrame(output_title=title,
+                                    lasso_callback=on_lasso,
+                                    cursor_labels = self.cursor_menulabels,
+                                    config_on_frame=with_config)
                 imd.display(map, title=title, x=x, y=y)
                 displayed = True
             except PyDeadObjectError:

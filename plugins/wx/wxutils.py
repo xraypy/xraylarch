@@ -351,6 +351,63 @@ class Closure:
             self.args = args
             return self.func(*self.args, **self.kws)
 
+class LabelEntry(wx.TextCtrl):
+    """
+    simple extension of TextCtrl.  Typical usage:
+       entry = LabelEntry(self, -1, value='22', color='black',
+                          labeltext='X = ',labelbgcolor='green',
+                          style=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE)
+       row   = wx.BoxSizer(wx.HORIZONTAL)
+       row.Add(entry.label, 1,wx.ALIGN_LEFT|wx.EXPAND)
+       row.Add(entry,    1,wx.ALIGN_LEFT|wx.EXPAND)
+
+    """
+    def __init__(self,parent, value, size=-1,
+                 font=None, action=None,
+                 bgcolor=None, color=None, style=None,
+                 labeltext=None, labelsize=-1,
+                 labelcolor=None, labelbgcolor=None):
+
+        if style is None:
+            style=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
+        if action is None:
+            action = self.GetValue
+        self.action = action
+
+        if labeltext is not None:
+            self.label = wx.StaticText(parent, -1, labeltext,
+                                       size = (labelsize,-1),
+                                       style = style)
+            if labelcolor:
+                self.label.SetForegroundColour(labelcolor)
+            if labelbgcolor:
+                self.label.SetBackgroundColour(labelbgcolor)
+            if font is not None:
+                self.label.SetFont(font)
+
+        try:
+            value = str(value)
+        except:
+            value = ' '
+
+        wx.TextCtrl.__init__(self, parent, -1, value,
+                             size=(size,-1),style=style)
+
+        self.Bind(wx.EVT_TEXT_ENTER, self.__act)
+        self.Bind(wx.EVT_KILL_FOCUS, self.__act)
+        if font is not None:
+            self.SetFont(font)
+        if color:
+            self.SetForegroundColour(color)
+        if bgcolor:
+            self.SetBackgroundColour(bgcolor)
+
+    def __act(self,event=None):
+        self.action(event=event)
+        val = self.GetValue()
+        event.Skip()
+        return val
+
 
 class FloatCtrl(wx.TextCtrl):
     """ Numerical Float Control::
