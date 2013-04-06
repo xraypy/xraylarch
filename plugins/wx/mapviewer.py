@@ -100,10 +100,13 @@ def set_choices(choicebox, choices):
     choicebox.SetStringSelection(choices[index])
 
 
-class MapMathPanel(wx.Panel):
+class MapMathPanel(scrolled.ScrolledPanel):
+
+
     """Panel of Controls for doing math on arrays from Map data"""
     def __init__(self, parent, owner, **kws):
-        wx.Panel.__init__(self, parent, -1, **kws)
+        scrolled.ScrolledPanel.__init__(self, parent, -1,
+                                        style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         self.owner = owner
         sizer = wx.GridBagSizer(8, 9)
         self.show_new = add_button(self, 'Show New Map',     size=(125, -1),
@@ -126,8 +129,6 @@ class MapMathPanel(wx.Panel):
         sizer.Add(SimpleText(self, 'ROI'),         (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Detector'),    (ir, 3), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'DT Correct?'), (ir, 4), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Shape'),       (ir, 5), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Range'),       (ir, 6), (1, 1), ALL_CEN, 2)
 
         self.varfile  = {}
         self.varroi   = {}
@@ -136,27 +137,31 @@ class MapMathPanel(wx.Panel):
         self.vardet   = {}
         self.varcor   = {}
         for varname in ('a', 'b', 'c', 'd', 'e'):
-            ir += 1
             self.varfile[varname]   = vfile  = add_choice(self, choices=[], size=(200, -1),
                                                           action=Closure(self.onROI, varname=varname))
             self.varroi[varname]    = vroi   = add_choice(self, choices=[], size=(120, -1),
                                                           action=Closure(self.onROI, varname=varname))
             self.vardet[varname]    = vdet   = add_choice(self, choices=['sum', '1', '2', '3', '4'],  size=(70, -1))
             self.varcor[varname]    = vcor   = wx.CheckBox(self, -1, ' ')
-            self.varshape[varname]  = vshape = SimpleText(self, 'Empty',   size=(80, -1))
-            self.varrange[varname]  = vrange = SimpleText(self, '[   :    ]', size=(150, -1))
+            self.varshape[varname]  = vshape = SimpleText(self, 'Array Shape = (, )',
+                                                          size=(200, -1))
+            self.varrange[varname]  = vrange = SimpleText(self, 'Range = [   :    ]',
+                                                          size=(200, -1))
             vcor.SetValue(1)
             vdet.SetSelection(0)
 
+            ir += 1
             sizer.Add(SimpleText(self, "%s = " % varname),    (ir, 0), (1, 1), ALL_CEN, 2)
             sizer.Add(vfile,                        (ir, 1), (1, 1), ALL_CEN, 2)
             sizer.Add(vroi,                         (ir, 2), (1, 1), ALL_CEN, 2)
             sizer.Add(vdet,                         (ir, 3), (1, 1), ALL_CEN, 2)
             sizer.Add(vcor,                         (ir, 4), (1, 1), ALL_CEN, 2)
-            sizer.Add(vshape,                       (ir, 5), (1, 1), ALL_CEN, 2)
-            sizer.Add(vrange,                       (ir, 6), (1, 1), ALL_CEN, 2)
+            ir +=1
+            sizer.Add(vshape,                       (ir, 1), (1, 1), ALL_LEFT, 2)
+            sizer.Add(vrange,                       (ir, 2), (1, 3), ALL_LEFT, 2)
 
         pack(self, sizer)
+        self.SetupScrolling()
 
     def onROI(self, evt, varname='a'):
         fname   = self.varfile[varname].GetStringSelection()
@@ -166,8 +171,8 @@ class MapMathPanel(wx.Panel):
         det =  None
         if dname != 'sum':  det = int(dname)
         map = self.owner.filemap[fname].get_roimap(roiname, det=det, dtcorrect=dtcorr)
-        self.varshape[varname].SetLabel(repr(map.shape))
-        self.varrange[varname].SetLabel("[%g: %g]" % (map.min(), map.max()))
+        self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
+        self.varrange[varname].SetLabel("Range = [%g: %g]" % (map.min(), map.max()))
 
     def set_roi_choices(self, rois):
         for wid in self.varroi.values():
@@ -225,7 +230,6 @@ class SimpleMapPanel(wx.Panel):
 
         self.roi1 = add_choice(self, choices=[], size=(120, -1))
         self.roi2 = add_choice(self, choices=[], size=(120, -1))
-        self.scale = FloatCtrl(self, precision=4, value=1, size=(80,-1))
         self.op   = add_choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
         self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'],
                                size=(70, -1))
@@ -246,21 +250,18 @@ class SimpleMapPanel(wx.Panel):
         sizer.Add(SimpleText(self, 'Map 1'),             (ir, 1), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Operator'),          (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Map 2'),             (ir, 3), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Factor'),            (ir, 5), (1, 1), ALL_CEN, 2)
 
         ir += 1
         sizer.Add(self.det,           (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(self.roi1,          (ir, 1), (1, 1), ALL_CEN, 2)
         sizer.Add(self.op,            (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(self.roi2,          (ir, 3), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, '/', size=(10,-1)), (ir, 4), (1, 1), CEN, 2)
-        sizer.Add(self.scale,         (ir, 5), (1, 1), ALL_CEN, 2)
 
         ir += 1
         sizer.Add(self.cor,       (ir,   0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.show_new,  (ir+1, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.show_old,  (ir+1, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.show_cor,  (ir+1, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.show_cor,  (ir+2, 0), (1, 2), ALL_LEFT, 2)
         pack(self, sizer)
 
     def onClose(self):
@@ -307,8 +308,6 @@ class SimpleMapPanel(wx.Panel):
         dtcorrect = self.cor.IsChecked()
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
-        scale    = self.scale.GetValue()
-        if abs(scale) < 1.e-8: scale = 1.e-8
 
         map      = datafile.get_roimap(roiname1, det=det, dtcorrect=dtcorrect)
         title    = roiname1
@@ -316,12 +315,12 @@ class SimpleMapPanel(wx.Panel):
         if roiname2 != '1':
             mapx = datafile.get_roimap(roiname2, det=det, dtcorrect=dtcorrect)
             op = self.op.GetStringSelection()
-            if   op == '+': map +=  mapx/scale
-            elif op == '-': map -=  mapx/scale
-            elif op == '*': map *=  mapx/scale
-            elif op == '/': map /=  mapx/scale
+            if   op == '+': map +=  mapx
+            elif op == '-': map -=  mapx
+            elif op == '*': map *=  mapx
+            elif op == '/': map /=  mapx
 
-            title = "(%s) %s (%s/%g)" % (roiname1, op, roiname2, scale)
+            title = "(%s) %s (%s)" % (roiname1, op, roiname2)
 
         try:
             x = datafile.get_pos(0, mean=True)
