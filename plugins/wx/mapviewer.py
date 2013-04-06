@@ -268,11 +268,10 @@ class SimpleMapPanel(wx.Panel):
             except:
                 pass
 
-
     def onShowCorrel(self, event=None):
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
-        if roiname1 == '' or roiname2 == '':
+        if roiname1 in ('', '1') or roiname2 in ('', '1'):
             return
 
         datafile  = self.owner.current_file
@@ -312,7 +311,7 @@ class SimpleMapPanel(wx.Panel):
         map      = datafile.get_roimap(roiname1, det=det, dtcorrect=dtcorrect)
         title    = roiname1
 
-        if roiname2 != '':
+        if roiname2 != '1':
             mapx = datafile.get_roimap(roiname2, det=det, dtcorrect=dtcorrect)
             op = self.op.GetStringSelection()
             if   op == '+': map +=  mapx/scale
