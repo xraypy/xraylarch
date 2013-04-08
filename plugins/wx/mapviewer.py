@@ -101,8 +101,6 @@ def set_choices(choicebox, choices):
 
 
 class MapMathPanel(scrolled.ScrolledPanel):
-
-
     """Panel of Controls for doing math on arrays from Map data"""
     def __init__(self, parent, owner, **kws):
         scrolled.ScrolledPanel.__init__(self, parent, -1,
@@ -529,7 +527,7 @@ WARNING: This cannot be undone!
 
         bpanel = wx.Panel(self)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
-
+        self.choices = {}
         self.choice = add_choice(self, choices=[], size=(150, -1), action=self.onSelect)
         self.desc   = wx.TextCtrl(self, -1,   '', size=(150, -1))
         self.info   = wx.StaticText(self, -1, '', size=(150, -1))
@@ -544,7 +542,7 @@ WARNING: This cannot be undone!
         self.delete = add_button(self, 'Delete Area', size=(120, -1),
                                       action=self.onDelete)
         self.update = add_button(self, 'Save Label', size=(120, -1),
-                                      action=self.onDesc)
+                                      action=self.onLabel)
 
         bsizer.Add(self.onmap, 0, ALL_CEN, 2)
         bsizer.Add(self.clear, 0, ALL_CEN, 2)
@@ -554,60 +552,65 @@ WARNING: This cannot be undone!
             return SimpleText(self, s)
         sizer.Add(txt('Defined Map Areas'), (0, 0), (1, 2), ALL_CEN, 2)
         sizer.Add(self.info,                (0, 2), (1, 1), ALL_RIGHT, 2)
-        sizer.Add(txt('Area Name: '),       (1, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(txt('Area: '),            (1, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.choice,              (1, 1), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.delete,              (1, 2), (1, 1), ALL_LEFT, 2)
-        sizer.Add(txt('Label: '),           (2, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(txt('New Label: '),       (2, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.desc,                (2, 1), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.update,              (2, 2), (1, 1), ALL_LEFT, 2)
         sizer.Add(bpanel,                   (3, 0), (1, 3), ALL_LEFT, 2)
         pack(self, sizer)
 
-    def set_choices(self, choices, show_last=False):
+    def set_choices(self, areas, show_last=False):
         c = self.choice
         c.Clear()
-        c.AppendItems(choices)
-        if len(choices) > 0:
+        self.choices =  dict([(areas[a].attrs['description'], a) for a in areas])
+        choice_labels = [areas[a].attrs['description'] for a in areas]
+
+        c.AppendItems(choice_labels)
+        if len(self.choices) > 0:
             idx = 0
-            if show_last: idx = len(choices)-1
-            c.SetStringSelection(choices[idx])
-            area = self.owner.current_file.xrfmap['areas/%s' % choices[idx]]
-            self.desc.SetValue(area.attrs['description'])
+            if show_last: idx = len(self.choices)-1
+            this_label = choice_labels[idx]
+            c.SetStringSelection(this_label)
+            self.desc.SetValue(this_label)
 
     def _getarea(self):
         dfile = self.owner.current_file
-        aname = self.choice.GetStringSelection()
-        return dfile.xrfmap['areas/%s' % aname]
+        return self.choices[self.choice.GetStringSelection()]
 
     def onSelect(self, event=None):
-        area = self._getarea()
+        aname = self._getarea()
+        area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         npix = len(area.value[np.where(area.value)])
         self.info.SetLabel("%i Pixels" % npix)
         self.desc.SetValue(area.attrs['description'])
 
-    def onDesc(self, event=None):
-        area = self._getarea()
-        area.attrs['description'] = str(self.desc.GetValue())
+    def onLabel(self, event=None):
+        aname = self._getarea()
+        area  = self.owner.current_file.xrfmap['areas/%s' % aname]
+        new_label = str(self.desc.GetValue())
+        area.attrs['description'] = new_label
         self.owner.current_file.h5root.flush()
-
+        self.set_choices(self.owner.current_file.xrfmap['areas'])
+        self.choice.SetStringSelection(new_label)
+        self.desc.SetValue(new_label)
     def onShow(self, event=None):
-        area = self._getarea()
-        aname = self.choice.GetStringSelection()
+        aname = self._getarea()
+        area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
             imd.panel.add_highlight_area(area.value,
                                          label=area.attrs['description'])
 
     def onDelete(self, event=None):
-        area = self._getarea()
-        dfile = self.owner.current_file
-        aname = self.choice.GetStringSelection()
-
+        aname = self._getarea()
         erase = popup(self.owner, self.delstr % aname,
                       'Delete Area?', style=wx.YES_NO)
         if erase:
-            del dfile.xrfmap['areas/%s' % aname]
-            self.set_choices(dfile.xrfmap['areas'].keys())
+            xrfmap = self.owner.current_file.xrfmap
+            del xrfmap['areas/%s' % aname]
+            self.set_choices(xrfmap['areas'])
 
     def onClear(self, event=None):
         if len(self.owner.im_displays) > 0:
@@ -623,8 +626,8 @@ WARNING: This cannot be undone!
         self._mca = self.owner.current_file.get_mca_area(areaname)
 
     def onXRF(self, event=None):
-        area  = self._getarea()
-        aname = self.choice.GetStringSelection()
+        aname = self._getarea()
+        area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         label = area.attrs['description']
         self._mca  = None
 
@@ -762,7 +765,7 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.SetTitle(title)
 
             self.xrfdisplay.plotmca(self.sel_mca)
-            self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys(),
+            self.area_sel.set_choices(self.current_file.xrfmap['areas'],
                                       show_last=True)
 
 
@@ -848,7 +851,7 @@ class MapViewerFrame(wx.Frame):
             if hasattr(p, 'set_file_choices'):
                 p.set_file_choices(self.filemap.keys())
 
-        self.area_sel.set_choices(self.current_file.xrfmap['areas'].keys())
+        self.area_sel.set_choices(self.current_file.xrfmap['areas'])
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
