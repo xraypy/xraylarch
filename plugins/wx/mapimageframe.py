@@ -29,7 +29,7 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
 
 class MapImageFrame(ImageFrame):
     """
-    MatPlotlib Image Display ons a wx.Frame, using ImagePanel
+    MatPlotlib Image Display on a wx.Frame, using ImagePanel
     """
 
     def __init__(self, parent=None, size=None,
@@ -63,7 +63,12 @@ class MapImageFrame(ImageFrame):
             contour_value = 1
         if self.config_on_frame and hasattr(self, 'contour_toggle'):
             self.contour_toggle.SetValue(contour_value)
+
+        self.bgcol = rgb2hex(self.GetBackgroundColour()[:3])
+        print "@ Display Background Colour ", self.bgcol 
+
         self.panel.redraw()
+        self.panel.fig.set_facecolor(self.bgcol)       
 
 
     def BuildMenu(self):
@@ -245,7 +250,7 @@ class MapImageFrame(ImageFrame):
         lsizer.Add(self.imin_val,       (5, 1), (1, 3), labstyle, 5)
         lsizer.Add(self.imax_val,       (6, 1), (1, 3), labstyle, 5)
 
-        zoom_mode = wx.RadioBox(self, -1, "Cursor Mode:",
+        zoom_mode = wx.RadioBox(lpanel, -1, "Cursor Mode:",
                                 wx.DefaultPosition, wx.DefaultSize,
                                 ('Zoom to Rectangle', 'Pick Area for XRF Spectrum'),
                                 1, wx.RA_SPECIFY_COLS)
