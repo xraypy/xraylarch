@@ -2,13 +2,17 @@
 """
 subclass of wxmplot.ImageFrame specific for Map Viewer -- adds custom menus
 """
+import sys
 import os
 import wx
 import numpy
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
-from wxutils import Closure, LabelEntry
+import larch
+
+sys.path.insert(0, larch.plugin_path('wx'))
+from wxutils import Closure, LabelEntry, SimpleText
 
 from wxmplot import ImageFrame
 from wxmplot.imagepanel import ImagePanel
@@ -18,7 +22,7 @@ from wxmplot.colors import rgb2hex
 
 CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to zoom to rectangular box'),
-                     'lasso': ('Select Points\tCtrl+X',
+                     'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                'Left-Drag to select points freehand'),
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
@@ -113,29 +117,17 @@ class MapImageFrame(ImageFrame):
         m = wx.Menu()
         m.Append(mids.UNZOOM, "Zoom Out\tCtrl+Z",
                  "Zoom out to full data range")
-        m.Append(mids.SAVE_CMAP, "Save Image of Colormap")
-        m.AppendSeparator()
         m.Append(mids.LOG_SCALE, "Log Scale Intensity\tCtrl+L", "", wx.ITEM_CHECK)
+        m.AppendSeparator()
         m.Append(mids.ROT_CW, 'Rotate clockwise\tCtrl+R', '')
         m.Append(mids.FLIP_V, 'Flip Top/Bottom\tCtrl+T', '')
         m.Append(mids.FLIP_H, 'Flip Left/Right\tCtrl+F', '')
-        # m.Append(mids.FLIP_O, 'Flip to Original', '')
         m.AppendSeparator()
-        m.Append(wx.NewId(), 'Cursor Modes : ',
-                 'Action taken on with Left-Click and Left-Drag')
+        m.Append(mids.SAVE_CMAP, "Save Image of Colormap")
 
-        clabs = self.cursor_menulabels
-        m.AppendRadioItem(mids.CUR_ZOOM,  clabs['zoom'][0],  clabs['zoom'][1])
-        m.AppendRadioItem(mids.CUR_LASSO, clabs['lasso'][0], clabs['lasso'][1])
-        m.AppendRadioItem(mids.CUR_PROF,  clabs['prof'][0],  clabs['prof'][1])
-        m.AppendSeparator()
         self.Bind(wx.EVT_MENU, self.onFlip,       id=mids.FLIP_H)
         self.Bind(wx.EVT_MENU, self.onFlip,       id=mids.FLIP_V)
-        self.Bind(wx.EVT_MENU, self.onFlip,       id=mids.FLIP_O)
         self.Bind(wx.EVT_MENU, self.onFlip,       id=mids.ROT_CW)
-        self.Bind(wx.EVT_MENU, self.onCursorMode, id=mids.CUR_ZOOM)
-        self.Bind(wx.EVT_MENU, self.onCursorMode, id=mids.CUR_PROF)
-        self.Bind(wx.EVT_MENU, self.onCursorMode, id=mids.CUR_LASSO)
 
         sm = wx.Menu()
         for itype in Interp_List:
@@ -144,13 +136,9 @@ class MapImageFrame(ImageFrame):
             self.Bind(wx.EVT_MENU, Closure(self.onInterp, name=itype), id=wid)
         self.user_menus  = [('&Options', m), ('Smoothing', sm)]
 
-
     def onCursorMode(self, event=None):
-        wid = event.GetId()
         self.panel.cursor_mode = 'zoom'
-        if wid == self.menuIDs.CUR_PROF:
-            self.panel.cursor_mode = 'profile'
-        elif wid == self.menuIDs.CUR_LASSO:
+        if 1 == event.GetInt():
             self.panel.cursor_mode = 'lasso'
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
@@ -254,29 +242,17 @@ class MapImageFrame(ImageFrame):
 
         lsizer.Add(self.imin_val.label, (5, 0), (1, 1), labstyle, 5)
         lsizer.Add(self.imax_val.label, (6, 0), (1, 1), labstyle, 5)
-        lsizer.Add(self.imin_val, (5, 1), (1, 3), labstyle, 5)
-        lsizer.Add(self.imax_val, (6, 1), (1, 3), labstyle, 5)
+        lsizer.Add(self.imin_val,       (5, 1), (1, 3), labstyle, 5)
+        lsizer.Add(self.imax_val,       (6, 1), (1, 3), labstyle, 5)
 
-#         contour_toggle = wx.CheckBox(lpanel, label='As Contour Plot?',
-#                                   size=(160, -1))
-#         contour_toggle.Bind(wx.EVT_CHECKBOX, self.onContourToggle)
-#         self.contour_toggle = contour_toggle
-#         contour_value = 0
-#         if conf.style == 'contour':
-#             contour_value = 1
-#         contour_toggle.SetValue(contour_value)
-#         contour_labels = wx.CheckBox(lpanel, label='Label Contours?',
-#                                      size=(160, -1))
-#         contour_labels.SetValue(1)
-#         contour_labels.Bind(wx.EVT_CHECKBOX, self.onContourLabels)
-#         self.contour_labels = contour_labels
-#         self.ncontours = LabelEntry(lpanel, 10, size=65, labeltext='N levels:',
-#                                    action = Closure(self.onContourLevels))
-#
-#         lsizer.Add(self.contour_toggle,  (7, 0), (1, 4), labstyle, 5)
-#         lsizer.Add(self.ncontours.label, (8, 0), (1, 1), labstyle, 5)
-#         lsizer.Add(self.ncontours,       (8, 1), (1, 3), labstyle, 5)
-#         lsizer.Add(self.contour_labels,  (9, 0), (1, 4), labstyle, 5)
+        zoom_mode = wx.RadioBox(self, -1, "Cursor Mode:",
+                                wx.DefaultPosition, wx.DefaultSize,
+                                ('Zoom to Rectangle', 'Pick Area for XRF Spectrum'),
+                                1, wx.RA_SPECIFY_COLS)
+        zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+
+        lsizer.Add(zoom_mode,  (7, 0), (1, 4), labstyle, 3)
+
 
         lpanel.SetSizer(lsizer)
         lpanel.Fit()
