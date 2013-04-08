@@ -110,6 +110,13 @@ class SettingsFrame(wx.Frame):
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(10, 10)
 
+        emin = FloatCtrl(panel, value=self.parent.conf.e_min, 
+                         minval=0, maxval=1000, precision=2,
+                         action=self.onErange, action_kw={'is_max':False})
+        emax = FloatCtrl(panel, value=self.parent.conf.e_max,
+                         minval=0, maxval=1000, precision=2,
+                         action=self.onErange, action_kw={'is_max':True})
+
         def add_color(panel, name):
             cval = hexcolor(getattr(self.conf, name))
             c = csel.ColourSelect(panel,  -1, "", cval, size=(40, 25))
@@ -192,6 +199,15 @@ class SettingsFrame(wx.Frame):
         sizer.Add(m1panel, (ir, 1), (1, 2), leftstyle)
 
         ir += 1
+        sizer.Add(txt(panel, 'Energy Min/Max (keV): ', size=140),
+                  (ir, 0), (1, 1), labstyle)
+        sizer.Add(emin, (ir, 1), (1, 2), leftstyle)
+        sizer.Add(emax, (ir, 3), (1, 2), leftstyle)
+
+        ir += 1
+        sizer.Add(lin(panel, 375),   (ir, 0), (1, 4), labstyle)
+
+        ir += 1
         sizer.Add(add_button(panel, 'Done', size=(80, -1),
                              action=self.onDone),  (ir, 0), (1, 1), leftstyle)
 
@@ -237,6 +253,12 @@ class SettingsFrame(wx.Frame):
     def onMMajor(self, event=None, label=None):
         self.onLine(label, event.IsChecked(), self.parent.conf.M_major)
 
+    def onErange(self, event=None, value=None, is_max=True):
+        if is_max:
+            self.parent.conf.e_max = float(value)
+        else:
+            self.parent.conf.e_min = float(value)
+
     def onLine(self, label, checked, plist):
         if label in plist and not checked:
             plist.remove(label)
@@ -261,6 +283,8 @@ class XRFDisplayConfig:
     L_major = ['La1', 'Lb1', 'Lb3', 'Lb4']
     L_minor = ['Ln', 'Ll', 'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2']
     M_major = ['Ma', 'Mb', 'Mg', 'Mz']
+    e_min   = 1.0
+    e_max   = 30.0
 
 class XRFDisplayFrame(wx.Frame):
     _about = """XRF Spectral Viewer
@@ -763,7 +787,8 @@ class XRFDisplayFrame(wx.Frame):
         erange = [max(0, self.xdata.min()), self.xdata.max()]
         for label, eev in minors:
             e = float(eev) * 0.001
-            if e > erange[0] and e < erange[1]:
+            if (e > erange[0] and e < erange[1] and
+                e >= conf.e_min and e <= conf.e_max):
                 l = vline(e, color= self.conf.minor_elinecolor,
                           linewidth=0.75, zorder=-6)
                 l.set_label(label)
@@ -771,7 +796,8 @@ class XRFDisplayFrame(wx.Frame):
 
         for label, eev in majors:
             e = float(eev) * 0.001
-            if e > erange[0] and e < erange[1]:
+            if (e > erange[0] and e < erange[1] and
+                e >= conf.e_min and e <= conf.e_max):
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.75, zorder=-4)
                 l.set_label(label)
