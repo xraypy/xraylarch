@@ -18,17 +18,21 @@ from wxmplot.colors import hexcolor
 
 from larch import Group, Parameter, isParameter, plugin_path
 
-sys.path.insert(0, plugin_path('wx'))
 sys.path.insert(0, plugin_path('math'))
 from mathutils import index_of
+
+sys.path.insert(0, plugin_path('wx'))
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack, popup, add_button, get_icon,
                      add_checkbox, add_menu, add_choice, add_menu,
                      FileSave, fix_filename)
 
-
 from periodictable import PeriodicTablePanel
+
+sys.path.insert(0, plugin_path('xrf'))
+
+from medfile_cars import GSEMCA_File
 
 #from ..io.xrm_mapfile import (GSEXRM_MapFile, GSEXRM_FileStatus,
 #                              GSEXRM_Exception, GSEXRM_NotOwner)
@@ -661,10 +665,10 @@ class XRFDisplayFrame(wx.Frame):
         fmenu = wx.Menu()
         add_menu(self, fmenu, "&Read MCA Spectra File\tCtrl+O",
                  "Read GSECARS MCA File",  self.onReadMCAFile)
-        add_menu(self, fmenu, "&Read XRM Map File\tCtrl+F",
-                 "Read GSECARS XRM MAp File",  self.onReadGSEXRMFile)
-        add_menu(self, fmenu, "&Open Epics MCA\tCtrl+E",
-                 "Read Epics MCA",  self.onOpenEpicsMCA)
+        # add_menu(self, fmenu, "&Read XRM Map File\tCtrl+F",
+        #          "Read GSECARS XRM MAp File",  self.onReadGSEXRMFile)
+        # add_menu(self, fmenu, "&Open Epics MCA\tCtrl+E",
+        #         "Read Epics MCA",  self.onOpenEpicsMCA)
 
         fmenu.AppendSeparator()
         add_menu(self, fmenu, "&Save MCA File\tCtrl+S",
