@@ -58,7 +58,7 @@ class GSEMCA_File:
         return mca.get_energy()
 
 
-    def get_counts(self, align=True):
+    def get_counts(self, dt_correct=True, align=True):
         """ get summed MCA spectra,
 
         Options:
@@ -73,6 +73,8 @@ class GSEMCA_File:
             if align and mca != mca0:
                 _en  = mca.get_energy()
                 mdat = UnivariateSpline(_en, mdat, s=0)(en)
+            if dt_correct:
+                mdat *= mca.dt_factor
             dat = dat + mdat
         return dat.astype(np.int)
 
@@ -158,7 +160,7 @@ class GSEMCA_File:
             slope  = head['slope'][imca]
             quad   = head['quad'][imca]
             rtime  = head['real time'][imca]
-            ltime  = head['real time'][imca]
+            ltime  = head['live time'][imca]
             thismca = MCA(name='mca%i' % (imca+1),
                           nchans=self.nchans,
                           counts=counts[:,imca],
@@ -179,6 +181,7 @@ class GSEMCA_File:
             if sum_mca is None:
                 sum_mca = copy.deepcopy(thismca)
         sum_mca.counts = self.get_counts()
+        sum_mca.raw    = self.get_counts(dt_correct=False)
         sum_mca.name = 'mcasum'
         self.sum = sum_mca
         return
@@ -272,7 +275,7 @@ def gsemca_group(fname, _larch=None, **kws):
     group.add_roi  = xfile.add_roi
     for attr in ('rois', 'environ', 'energy', 'counts', 'dt_factor',
                  'icr_calc', 'input_counts', 'live_time', 'nchans',
-                 'real_time', 'start_time', 'tau'):
+                 'real_time', 'start_time', 'tau', 'raw'):
         setattr(group, attr, getattr(xfile.sum, attr))
     return group
 
