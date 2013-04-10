@@ -289,7 +289,7 @@ def set_doc(doc_string):
 # Some types known to not depend on Variable objects are put in
 # CONSTANT_TYPES.  The most common types can be put in front, as this
 # may slightly improve the execution speed.
-CONSTANT_TYPES = (float, int, complex, long)
+CONSTANT_TYPES = (float, int, complex) # , long)
 
 ###############################################################################
 # Utility for issuing deprecation warnings
@@ -716,12 +716,12 @@ def wrap(f, derivatives_iter=None):
         # derivatives_wrt_args):
 
         for (func, f_derivative) in zip(aff_funcs, derivatives_wrt_args):
-            for (var, func_derivative) in func.derivatives.iteritems():
+            for (var, func_derivative) in func.derivatives.items():
                 derivatives_wrt_vars[var] += f_derivative * func_derivative
 
         for (vname, f_derivative) in zip(aff_varkws, derivatives_wrt_args):
             func = aff_kws[vname]
-            for (var, func_derivative) in func.derivatives.iteritems():
+            for (var, func_derivative) in func.derivatives.items():
                 derivatives_wrt_vars[var] += f_derivative * func_derivative
 
         # The function now returns an AffineScalarFunc object:
@@ -1001,7 +1001,7 @@ class AffineScalarFunc(object):
 
         # Calculation of the variance:
         error_components = {}
-        for (variable, derivative) in self.derivatives.iteritems():
+        for (variable, derivative) in self.derivatives.items():
             # Individual standard error due to variable:
             error_components[variable] = abs(derivative*variable._std_dev)
 
@@ -1081,7 +1081,7 @@ class AffineScalarFunc(object):
         return AffineScalarFunc(
             self._nominal_value,
             dict((copy.deepcopy(var), deriv)
-                 for (var, deriv) in self.derivatives.iteritems()))
+                 for (var, deriv) in self.derivatives.items()))
 
     def __getstate__(self):
         """
@@ -1097,7 +1097,7 @@ class AffineScalarFunc(object):
         """
         Hook for the pickle module.
         """
-        for (name, value) in data_dict.iteritems():
+        for (name, value) in data_dict.items():
             setattr(self, name, value)
 
 # Nicer name, for users: isinstance(ufloat(...), UFloat) is True:
@@ -1146,7 +1146,7 @@ def get_ops_with_reflection():
 
     # Conversion to Python functions:
     ops_with_reflection = {}
-    for (op, derivatives) in derivatives_list.iteritems():
+    for (op, derivatives) in derivatives_list.items():
         ops_with_reflection[op] = [
             eval("lambda x, y: %s" % expr) for expr in derivatives ]
 
@@ -1187,7 +1187,7 @@ def add_operators_to_AffineScalarFunc():
         }
 
     for (op, derivative) in (
-          simple_numerical_operators_derivatives.iteritems()):
+          simple_numerical_operators_derivatives.items()):
 
         attribute_name = "__%s__" % op
         # float objects don't exactly have the same attributes between
@@ -1205,7 +1205,7 @@ def add_operators_to_AffineScalarFunc():
     ########################################
 
     # Reversed versions (useful for float*AffineScalarFunc, for instance):
-    for (op, derivatives) in _ops_with_reflection.iteritems():
+    for (op, derivatives) in _ops_with_reflection.items():
         attribute_name = '__%s__' % op
         # float objects don't exactly have the same attributes between
         # different versions of Python (for instance, __div__ and
@@ -1379,7 +1379,7 @@ class Variable(AffineScalarFunc):
         """
         Hook for the standard pickle module.
         """
-        for (name, value) in data_dict.iteritems():
+        for (name, value) in data_dict.items():
             setattr(self, name, value)
 
 ###############################################################################

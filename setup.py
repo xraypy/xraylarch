@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
 from distutils.core import setup
 import os
 import sys
@@ -62,7 +63,7 @@ if not deps_ok:
 
         sys.exit()
     deps_ok = len(missing) == 0
-print '=============================='
+print('==============================')
 
 from lib import site_configdata, site_config, version
 
@@ -76,14 +77,14 @@ if os.name == 'nt':
     share_basedir = site_configdata.win_installdir
     user_basedir = site_configdata.win_userdir
 
-# print share_basedir
-# print user_basedir
-# print sys.prefix
-# print sys.exec_prefix
-# print site.USER_BASE
-# print site.USER_SITE
+# print( share_basedir)
+# print( user_basedir)
+# print( sys.prefix)
+# print( sys.exec_prefix)
+# print( site.USER_BASE)
+# print( site.USER_SITE)
 #
-# print cmdline_args
+# print( cmdline_args)
 #
 
 # construct list of files to install besides the normal python modules
@@ -160,11 +161,11 @@ def fix_permissions(*dirnames):
     except:
         return
     stat =  os.stat(home)
-    def own(nam, mode=0750):
+    def own(nam, mode=0o750):
         try:
             os.chown(nam, stat.st_uid, stat.st_gid)
             os.chmod(nam, mode)
-        except AttributeError, OSError:
+        except(AttributeError, OSError):
             pass
     for dname in (dirnames):
         folder = os.path.join(home, '.%s' % dname)
@@ -173,7 +174,7 @@ def fix_permissions(*dirnames):
             for d in dirs:
                 own(os.path.join(top, d))
             for d in files:
-                own(os.path.join(top, d), mode=0640)
+                own(os.path.join(top, d), mode=0o640)
 
 fix_permissions('matplotlib', 'larch')
 

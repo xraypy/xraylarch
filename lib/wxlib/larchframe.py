@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-
+from __future__ import print_function
 import sys
 import os
 
@@ -278,7 +278,7 @@ class LarchFrame(wx.Frame):
             try:
                 p.SetSize(size)
             except:
-                print 'cannot set size'
+                print( 'cannot set size')
             p.Refresh()
         event.Skip()
 

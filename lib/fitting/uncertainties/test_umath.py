@@ -21,7 +21,7 @@ from uncertainties import __author__
 
 ###############################################################################
 # Unit tests
-    
+
 def test_fixed_derivatives_math_funcs():
     """
     Comparison between function derivatives and numerical derivatives.
@@ -46,7 +46,7 @@ def test_fixed_derivatives_math_funcs():
         return umath.modf(x)[0]
     def int_part_modf(x):
         return umath.modf(x)[1]
-    
+
     test_uncertainties._compare_derivatives(
         frac_part_modf,
         uncertainties.NumericalDerivatives(
@@ -55,14 +55,14 @@ def test_fixed_derivatives_math_funcs():
         int_part_modf,
         uncertainties.NumericalDerivatives(
             lambda x: int_part_modf(x)))
-    
+
     ##
     # frexp(): returns a tuple:
     def mantissa_frexp(x):
         return umath.frexp(x)[0]
     def exponent_frexp(x):
         return umath.frexp(x)[1]
-    
+
     test_uncertainties._compare_derivatives(
         mantissa_frexp,
         uncertainties.NumericalDerivatives(
@@ -76,13 +76,13 @@ def test_compound_expression():
     """
     Test equality between different formulas.
     """
-    
+
     x = uncertainties.ufloat((3, 0.1))
-    
+
     # Prone to numerical errors (but not much more than floats):
     assert umath.tan(x) == umath.sin(x)/umath.cos(x)
 
-    
+
 def test_numerical_example():
     "Test specific numerical examples"
 
@@ -106,7 +106,7 @@ def test_monte_carlo_comparison():
     the direct calculation performed in this module and a Monte-Carlo
     simulation.
     """
-    
+
     try:
         import numpy
         import numpy.random
@@ -118,7 +118,7 @@ def test_monte_carlo_comparison():
     # Works on numpy.arrays of Variable objects (whereas umath.sin()
     # does not):
     sin_uarray_uncert = numpy.vectorize(umath.sin, otypes=[object])
-    
+
     # Example expression (with correlations, and multiple variables combined
     # in a non-linear way):
     def function(x, y):
@@ -151,9 +151,9 @@ def test_monte_carlo_comparison():
         function_samples = function(x_samples, y_samples)
 
         cov_mat = numpy.cov([x_samples, y_samples], function_samples)
-        
+
         return (numpy.median(function_samples), cov_mat)
-        
+
     (nominal_value_samples, covariances_samples) = monte_carlo_calc(1000000)
 
 
@@ -163,7 +163,7 @@ def test_monte_carlo_comparison():
 
     # We rely on the fact that covariances_samples very rarely has
     # null elements:
-    
+
     assert numpy.vectorize(test_uncertainties._numbers_close)(
         covariances_this_module,
         covariances_samples,
@@ -173,7 +173,7 @@ def test_monte_carlo_comparison():
         "* Monte-Carlo:\n%s\n* Direct calculation:\n%s"
         % (covariances_samples, covariances_this_module)
         )
-    
+
     # The nominal values must be close:
     assert test_uncertainties._numbers_close(
         nominal_value_this_module,
@@ -190,12 +190,12 @@ def test_monte_carlo_comparison():
            math.sqrt(covariances_samples[2, 2]))
         )
 
-    
+
 def test_math_module():
     "Operations with the math module"
 
     x = uncertainties.ufloat((-1.5, 0.1))
-    
+
     # The exponent must not be differentiated, when calculating the
     # following (the partial derivative with respect to the exponent
     # is not defined):
@@ -207,11 +207,11 @@ def test_math_module():
     # Python >=2.6 functions:
 
     if sys.version_info >= (2, 6):
-    
-        # factorial() must not be "damaged" by the umath module, so as 
-        # to help make it a drop-in replacement for math (even though 
-        # factorial() does not work on numbers with uncertainties 
-        # because it is restricted to integers, as for 
+
+        # factorial() must not be "damaged" by the umath module, so as
+        # to help make it a drop-in replacement for math (even though
+        # factorial() does not work on numbers with uncertainties
+        # because it is restricted to integers, as for
         # math.factorial()):
         assert umath.factorial(4) == 24
 
@@ -235,28 +235,28 @@ def test_math_module():
     ## version-specific manner (until the Nose issue is resolved).
 
     if sys.version_info < (2, 6):
-            
+
         try:
             math.log(0)
-        except OverflowError, err_math:  # "as", for Python 2.6+
+        except OverflowError(err_math):  # "as", for Python 2.6+
             pass
         else:
             raise Exception('OverflowError exception expected')
         try:
             umath.log(0)
-        except OverflowError, err_ufloat:  # "as", for Python 2.6+
+        except OverflowError(err_ufloat):  # "as", for Python 2.6+
             assert err_math.args == err_ufloat.args
         else:
             raise Exception('OverflowError exception expected')
         try:
             umath.log(uncertainties.ufloat((0, 0)))
-        except OverflowError, err_ufloat:  # "as", for Python 2.6+
+        except OverflowError( err_ufloat):  # "as", for Python 2.6+
             assert err_math.args == err_ufloat.args
         else:
             raise Exception('OverflowError exception expected')
         try:
             umath.log(uncertainties.ufloat((0, 1)))
-        except OverflowError, err_ufloat:  # "as", for Python 2.6+
+        except OverflowError( err_ufloat):  # "as", for Python 2.6+
             assert err_math.args == err_ufloat.args
         else:
             raise Exception('OverflowError exception expected')
@@ -265,31 +265,31 @@ def test_math_module():
 
         try:
             math.log(0)
-        except ValueError, err_math:
+        except ValueError( err_math):
             pass
         else:
             raise Exception('ValueError exception expected')
         try:
             umath.log(0)
-        except ValueError, err_ufloat:
+        except ValueError( err_ufloat):
             assert err_math.args == err_ufloat.args
         else:
             raise Exception('ValueError exception expected')
         try:
             umath.log(uncertainties.ufloat((0, 0)))
-        except ValueError, err_ufloat:
+        except ValueError( err_ufloat):
             assert err_math.args == err_ufloat.args
         else:
             raise Exception('ValueError exception expected')
         try:
             umath.log(uncertainties.ufloat((0, 1)))
-        except ValueError, err_ufloat:
+        except ValueError( err_ufloat):
             assert err_math.args == err_ufloat.args
         else:
             raise Exception('ValueError exception expected')
-        
+
     else:  # Python 3+
-        
+
         # !!! The tests should be made to work with Python 3 too!
         pass
-    
+

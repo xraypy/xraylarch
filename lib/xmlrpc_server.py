@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import print_function
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 import os
 import sys
@@ -46,11 +47,11 @@ class LarchServer(SimpleXMLRPCServer):
     def write(self, text):
         self.out_buffer.append(text)
         if self.local_echo:
-            print text
+            print( text)
 
     def get_messages(self):
         if self.local_echo:
-            print '== clear output buffer (%i)' % len(self.out_buffer)
+            print( '== clear output buffer (%i)' % len(self.out_buffer))
         out = '\n'.join(self.out_buffer)
         self.out_buffer = []
         return out
@@ -83,14 +84,14 @@ class LarchServer(SimpleXMLRPCServer):
         return ret
 
     def help(self):
-        print( 'Serving Larch at port %s' % repr(self.port))        
+        print( 'Serving Larch at port %s' % repr(self.port))
         # print dir(self)
         print('Registered Functions:')
         fnames = ['ls', 'chdir', 'cwd', 'exit', 'larch', 'wx_update',  'get_data']
         for kname in self.funcs.keys():
             if not kname.startswith('system') and kname not in fnames:
                 fnames.append(kname)
-                
+
         out = ''
         for fname in sorted(fnames):
             if len(out) == 0:
@@ -102,7 +103,7 @@ class LarchServer(SimpleXMLRPCServer):
                 out = ''
         if len(out) >  0:
             print("  %s" % out)
-        
+
 
     def exit(self, app=None, **kws):
         "shutdown LarchServer"
@@ -161,7 +162,7 @@ class LarchServer(SimpleXMLRPCServer):
                 if len(block) == 0:
                     continue
                 if self.local_echo:
-                    print block
+                    print( block)
                 ret = self.larch.eval(block, fname=fname, lineno=lineno)
                 if self.larch.error:
                     err = self.larch.error.pop(0)

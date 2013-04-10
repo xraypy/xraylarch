@@ -8,7 +8,7 @@ These tests can be run through the Nose testing framework.
 (c) 2010-2013 by Eric O. LEBIGOT (EOL).
 """
 
-from __future__ import division
+from __future__ import division, print_function
 
 # Standard modules
 import copy
@@ -30,7 +30,7 @@ from uncertainties import __author__
 # The following information is useful for making sure that the right
 # version of Python is running the tests (for instance with the Travis
 # Continuous Integration system):
-print "Testing with Python", sys.version
+# print "Testing with Python", sys.version
 
 ###############################################################################
 
@@ -155,8 +155,8 @@ def _compare_derivatives(func, numerical_derivatives,
                         # This message is useful: the user can see that
                         # tests are really performed (instead of not being
                         # performed, silently):
-                        print "Testing %s at %s, arg #%d" % (
-                            func.__name__, args, arg_num)
+                        print( "Testing %s at %s, arg #%d" % (
+                            func.__name__, args, arg_num))
 
                         if not _numbers_close(fixed_deriv_value,
                                               num_deriv_value, 1e-4):
@@ -174,7 +174,7 @@ def _compare_derivatives(func, numerical_derivatives,
                                     % (arg_num, func.__name__, args,
                                        fixed_deriv_value, num_deriv_value))
 
-            except ValueError, err:  # Arguments out of range, or of wrong type
+            except ValueError(err):  # Arguments out of range, or of wrong type
                 # Factorial(real) lands here:
                 if str(err).startswith('factorial'):
                     integer_arg_nums = set([0])
@@ -426,7 +426,7 @@ def test_comparison_ops():
             try:
                 assert correct_result == getattr(x, op)(y)
             except AssertionError:
-                print "Sampling results:", sampled_results
+                print( "Sampling results:", sampled_results)
                 raise Exception("Semantic value of %s %s (%s) %s not"
                                 " correctly reproduced."
                                 % (x, op, y, correct_result))
@@ -595,15 +595,12 @@ def test_wrapped_func_with_kwargs():
     Test wrapped functions with keyword args
     """
     def cos_plain(angle):
-        print 'COS PLAIN ', angle
         return math.cos(angle)
 
     def cos_kwargs(angle, **kwargs):
-        print 'COS KWARGS ', angle
         return math.cos(angle)
 
     def use_kwargs(angle, cos=True):
-        print 'USE KWARG ', angle
         if cos:
             return math.cos(angle)
         else:
@@ -757,13 +754,13 @@ def test_power():
     if sys.version_info < (3,):
         try:
             ufloat((-1, 0))**9.1
-        except Exception, err_ufloat:  # "as", for Python 2.6+
+        except Exception( err_ufloat):  # "as", for Python 2.6+
             pass
         else:
             raise Exception('An exception should have been raised')
         try:
             (-1)**9.1
-        except Exception, err_float:  # "as" for Python 2.6+
+        except Exception( err_float):  # "as" for Python 2.6+
             # UFloat and floats should raise the same error:
             assert err_ufloat.args == err_float.args
         else:

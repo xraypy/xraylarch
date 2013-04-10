@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-
+from __future__ import print_function
 import sys
 
 if not hasattr(sys, 'frozen'):
@@ -64,7 +64,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
         self.__SetMark()
         if event is not None:
             event.Skip()
-      
+
     def onChar(self, event):
         """ on Character event"""
         key   = event.GetKeyCode()
@@ -88,15 +88,15 @@ class ReadlineTextCtrl(wx.TextCtrl):
         elif key == wx.WXK_DOWN:
             self.hist_mark += 1
             if self.hist_mark >= len(self.hist_buff):
-                self.SetValue('')                
+                self.SetValue('')
             else:
                 self.SetValue(self.hist_buff[self.hist_mark])
-            self.SetInsertionPointEnd()            
+            self.SetInsertionPointEnd()
         elif key == wx.WXK_TAB:
             if self.notebooks is not None:
                 self.notebooks.AdvanceSelection()
                 self.SetFocus()
-                
+
         elif key == wx.WXK_HOME or (ctrl and key == 1): # ctrl-a
             self.SetInsertionPoint(0)
             self.SetSelection(0,0)
@@ -112,13 +112,13 @@ class ReadlineTextCtrl(wx.TextCtrl):
             if wx.TheClipboard.IsOpened():
                 cb_txt.SetData(str(entry))
                 wx.TheClipboard.SetData(cb_txt)
-                wx.TheClipboard.Close()                
-        elif ctrl and  key == 4: # d  
+                wx.TheClipboard.Close()
+        elif ctrl and  key == 4: # d
             mark = self.GetSelection()[1]
             self.SetValue("%s%s" % (entry[:mark], entry[mark+1:]))
             self.SetSelection(mark, mark)
             do_skip = False
-        elif ctrl and  key == 6: # f  
+        elif ctrl and  key == 6: # f
             mark = self.GetSelection()[1]
             self.SetSelection(mark+1, mark+1)
         elif ctrl and  key == 8: # h
@@ -132,8 +132,8 @@ class ReadlineTextCtrl(wx.TextCtrl):
         elif ctrl and key == 22: # v
             cb_txt = wx.TextDataObject()
             wx.TheClipboard.Open()
-            if wx.TheClipboard.IsOpened():            
-                wx.TheClipboard.GetData(cb_txt)                
+            if wx.TheClipboard.IsOpened():
+                wx.TheClipboard.GetData(cb_txt)
                 wx.TheClipboard.Close()
                 try:
                     self.SetValue(str(cb_txt.GetText()))
@@ -143,9 +143,9 @@ class ReadlineTextCtrl(wx.TextCtrl):
         elif ctrl and key == 24: # x
             cb_txt = wx.TextDataObject()
             wx.TheClipboard.Open()
-            if wx.TheClipboard.IsOpened():                        
+            if wx.TheClipboard.IsOpened():
                 cb_txt.SetData(str(entry))
-                wx.TheClipboard.GetData(cb_txt)                
+                wx.TheClipboard.GetData(cb_txt)
                 wx.TheClipboard.Close()
                 self.SetValue('')
         elif ctrl:
@@ -154,23 +154,23 @@ class ReadlineTextCtrl(wx.TextCtrl):
         if do_skip:
             event.Skip()
         return
-        
+
     def AddToHistory(self, text=''):
         if len(text.strip()) > 0:
             self.hist_buff.append(text)
             self.hist_mark = len(self.hist_buff)
-            
+
     def SaveHistory(self):
         try:
             fout = open(self.hist_file,'w')
         except IOError:
-            print 'Cannot save history ', self.hist_file
-            
+            print( 'Cannot save history ', self.hist_file)
+
         fout.write("# wxlarch history saved %s\n\n" % time.ctime())
         fout.write('\n'.join(self.hist_buff[-MAX_HISTORY:]))
         fout.write("\n")
         fout.close()
-     
+
     def LoadHistory(self):
         if os.path.exists(self.hist_file):
             self.hist_buff = []
@@ -186,6 +186,6 @@ class ReadlineTextCtrl(wx.TextCtrl):
         if len(txt.strip()) > 0:
             self.hist_buff.append(txt)
             self.hist_mark = len(self.hist_buff)
-           
+
         event.Skip()
 

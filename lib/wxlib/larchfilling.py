@@ -5,6 +5,8 @@ Larch Filling:  stolen and hacked from PyCrust's Filling module
 Filling is the gui tree control through which a user can navigate
 the local namespace or any object."""
 
+from __future__ import print_function
+
 __author__ = "Patrick K. O'Brien <pobrien@orbtech.com>"
 __cvsid__ = "$Id: filling.py 37633 2006-02-18 21:40:57Z RD $"
 __revision__ = "$Revision: 37633 $"
@@ -291,14 +293,14 @@ class FillingTree(wx.TreeCtrl):
 
         # This method will likely be replaced by the enclosing app to
         # do something more interesting, like write to a text control.
-        print text
+        print( text)
 
     def setStatusText(self, text):
         """Display status information."""
 
         # This method will likely be replaced by the enclosing app to
         # do something more interesting, like write to a status bar.
-        print text
+        print( text)
 
 
 class FillingText(editwindow.EditWindow):
