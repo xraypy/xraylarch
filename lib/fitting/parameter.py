@@ -109,7 +109,7 @@ class Parameter(object):
             if self.min > -inf:
                self._val = max(self.min, self._val)
             if self.max < inf:
-                self.value = min(self.max, self._val)
+                self._val = min(self.max, self._val)
         except(TypeError, ValueError):
             self._val = nan
         return self._val
