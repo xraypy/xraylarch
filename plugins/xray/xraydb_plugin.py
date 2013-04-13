@@ -281,6 +281,54 @@ def xray_line(element, line='Ka1', _larch=None):
     return lines.get(line.title(), None)
 
 
+
+def fluo_yield(symbol, edge, emission, energy, average=True,
+               energy_margin=-150, _larch=None):
+    """Given
+         atomic_symbol, edge, emission family, and incident energy,
+
+    where 'emission' is the family of emission lines ('Ka', 'Kb', 'Lb', etc)
+    returns
+
+    fluorescence_yield, weighted-average fluorescence energy, net_probability
+
+    fyield = 0  if energy < edge_energy + energy_margin (default=-150)
+
+    > fluo_yield('Fe', 'K', 'Ka', 8000)
+    0.350985, 6400.752419799043, 0.874576096
+
+    > fluo_yield('Fe', 'K', 'Ka', 6800)
+    0.0, 6400.752419799043, 0.874576096
+
+    > fluo_yield('Ag', 'L3', 'La', 6000)
+    0.052, 2982.129655446868, 0.861899000000000
+
+    compare to xray_lines() which gives the full set of emission lines
+    ('Ka1', 'Kb3', etc) and probabilities for each of these.
+
+    Adapted for Larch from code by Yong Choi
+    """
+    e0, fyield, jump = xray_edge(symbol, edge, _larch=_larch)
+    trans  = xray_lines(symbol, initial_level=edge, _larch=_larch)
+
+    lines = []
+    net_ener, net_prob = 0., 0.
+    for name, vals in trans.items():
+        en, prob = vals[0], vals[1]
+        if name.startswith(emission):
+            lines.append([name, en, prob])
+
+    for name, en, prob in lines:
+        if name.startswith(emission):
+            net_ener += en*prob
+            net_prob += prob
+    if net_prob <= 0:
+        net_prob = 1
+    net_ener = net_ener / net_prob
+    if energy < e0 + energy_margin:
+        fyield = 0
+    return fyield, net_ener, net_prob
+
 def CK_probability(element, initial, final, total=True, _larch=None):
     """return transition probability for an element, initial, and final levels.
 
@@ -338,6 +386,7 @@ def registerLarchPlugin():
                       'xray_edge': xray_edge,
                       'xray_lines': xray_lines,
                       'xray_line': xray_line,
+                      'fluo_yield': fluo_yield,
                       'core_width':  core_width,
                       'ck_probability': CK_probability,
                       })

@@ -54,6 +54,7 @@ then given.
       :func:`xray_line`          xray emission line data for an element and line
       :func:`xray_edges`         dictionary of all x-ray edges data for an element
       :func:`xray_lines`         dictionary of all x-ray emission line data for an element
+      :func:`fluo_yield`         fluorescence yield and weighted line energy
       :func:`core_width`         core level width for an element and edge (Keski-Rahkonen and Krause)
       :func:`mu_elam`            absorption cross-section
       :func:`coherent_xsec`      coherent cross-section
@@ -176,6 +177,25 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 
     return dictionary of all (emission energy, intensity, initial level, final level for an atomic
     number or symbol.  The keys of the dictionay are the names of the emission lines.
+
+.. function:: fluo_yield(z_or_symbol, edge, emission_family, incident_energy, energy_margin=-150)
+
+    return (fluorescent yield, average emission energy, probability)
+    for an atomic number or symbol, edge, emission family, and incident
+    energy.
+
+    Here, 'emission family' is the family of emission lines, 'Ka', 'Lb',
+    etc, that is comprised of several individual lines ('Ka1', 'Ka2',
+    'Lb2', etc).  The returned average emission energy will be the average
+    of the corresponding individual sub-line energies, weighted by the
+    probabilities of the individual lines.  The returned probability will
+    be the total probability for all lines in the family.
+
+    The fluorescence yield will also be returned, with value from
+    :func:`xray_edge` if the provided incident_energy is above or near the
+    corresponding edge energy.  The energy_margin controls the allowed
+    proximity to the edge energy, so that the returned fluorescence yield
+    will be 0 if the incident energy < edge energy + energy_margin.
 
 .. function:: core_width(z_or_symbol, edge)
 
