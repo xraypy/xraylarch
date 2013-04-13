@@ -15,10 +15,10 @@ Larch is still in active development, and all releases should be considered
 not been rigorously or extensively tested, and probably contain some bugs
 and unintended features.
 
-Downloads are available from the  
-`xraylarch project <http://sourceforge.net/projects/xraylarch>`_  
-at sourceforge.net or from 
-`CARS.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_  
+Downloads are available from the
+`xraylarch project <http://sourceforge.net/projects/xraylarch>`_
+at sourceforge.net or from
+`cars.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_
 Recommended download options are:
 
   +---------+-----------------+-----------+-------------------------------------------------------+

@@ -240,6 +240,13 @@ There are then 3 principle functions for setting up and executing
     :param fit_result:  output group from :func:`feffit`.
 
 
+Fit statistics and goodness-of-fit meassures for :func:`feffit`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The fit done by :func:`feffit` is conceptually very similar to the fits
+described in :ref:`fitting-minimize-sec`.
+
+
 Example 1: Simple fit with 1 Path
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
