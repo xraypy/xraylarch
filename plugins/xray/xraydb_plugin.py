@@ -282,7 +282,7 @@ def xray_line(element, line='Ka1', _larch=None):
 
 
 
-def fluo_yield(symbol, edge, emission, energy, average=True,
+def fluo_yield(symbol, edge, emission, energy,
                energy_margin=-150, _larch=None):
     """Given
          atomic_symbol, edge, emission family, and incident energy,
