@@ -28,7 +28,7 @@ class GSEXRM_FileStatus:
     created      = 'hdf5 has empty schema'  # xrfmap exists, no data
     hasdata      = 'hdf5 has map data'      # array sizes known
     err_notfound = 'file not found'
-    err_nothdf5  = 'file is not hdf5'
+    err_nothdf5  = 'file is not hdf5 (or cannot be read)'
 
 def getFileStatus(filename):
     # see if file exists:
@@ -301,7 +301,7 @@ class GSEXRM_MapFile(object):
         # file exists but is not hdf5
         if self.status ==  GSEXRM_FileStatus.err_nothdf5:
             raise GSEXRM_Exception(
-                "'%s' is not an HDF5 file" % self.filename)
+                "'%s' is not a readlable HDF5 file" % self.filename)
 
         # create empty HDF5 if needed
         if (self.status == GSEXRM_FileStatus.err_notfound and
