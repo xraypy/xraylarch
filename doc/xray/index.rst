@@ -65,6 +65,7 @@ then given.
       :func:`f1_chantler`        f'  anomalous factor (Chantler)
       :func:`f2_chantler`        f'' anomalous factor (Chantler)
       :func:`mu_chantler`        absorption cross-section (Chantler)
+      :func:`xray_delta_beta`    anomalous components of the index of refraction for a material
       :func:`f1f2_cl`            f' and f'' anomalous factors (Cromer and Liberman)
      ========================== =============================================================
 
@@ -191,11 +192,12 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     probabilities of the individual lines.  The returned probability will
     be the total probability for all lines in the family.
 
-    The fluorescence yield will also be returned, with value from
+    The fluorescence yield will also be returned, giving the same value as
     :func:`xray_edge` if the provided incident_energy is above or near the
     corresponding edge energy.  The energy_margin controls the allowed
     proximity to the edge energy, so that the returned fluorescence yield
     will be 0 if the incident energy < edge energy + energy_margin.
+
 
 .. function:: core_width(z_or_symbol, edge)
 
@@ -267,6 +269,41 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     :func:`core_width`, and its value is used.
 
     Note that both f' and f'' are returned here.
+
+
+.. function:: xray_delta_beta(material, formula, energy, photo_only=False)
+
+    return anomalous components of the index of refraction for a material,
+    using the tabulated scattering components from Chantler.
+
+    :param material: chemical formula  ('Fe2O3', 'CaMg(CO3)2', 'La1.9Sr0.1CuO4')
+    :param density:    material density in g/cm^3
+    :param energy:     x-ray energy in eV
+    :param photo_only: boolean for returning photo cross-section component only
+           	       if ``False`` (default), the total cross-section is returned.
+    :return:         (delta, beta, t_atten)
+
+    The returned tuple contains the components described in the table below
+
+      ============== ================= ===============================================
+         value         symbol            description
+      ============== ================= ===============================================
+         delta        :math:`\delta`     real part of index of refraction.
+         beta         :math:`\beta`      imaginary part of index of refraction.
+         t_atten      :math:`t_a`        attenuation length, in cm.
+      ============== ================= ===============================================
+
+    and correspond to the anomalous scattering components of the index of
+    refraction, defined in the equation below.  Here, :math:`t_{a} =
+    \lambda / 4\pi\beta`, and and :math:`\lambda` is the X-ray wavelength,
+    :math:`r_0` is the classical electron radius, and the sum is over the
+    atomic species with number :math:`n_j` and total complex scattering
+    factor :math:`f_j`.
+
+.. math::
+    n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}
+
+
 .. rubric:: References
 
 .. [BrennanCowan] S. Brennan and P. L. Cowen, *A suite of programs for
@@ -275,7 +312,7 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     Scientific Instruments **63**, pp850--853 (1992) [http://dx.doi.org/10.1063/1.1142625].
 
 .. [Chantler]   C. T. Chantler, Journal of Physical and Chemical Reference
-    Data **24**, p71 (1995)
+    Data **24**, p71 (1995) [http://www.nist.gov/pml/data/ffast/index.cfm].
 
 .. [CromerLiberman] D. T. Cromer and D. A. Liberman *Anomalous dispersion
     calculations near to and on the long-wavelength side of an

@@ -1,4 +1,5 @@
 import sys
+from math import pi
 import larch
 from larch import Group
 from larch.larchlib import plugin_path
@@ -6,9 +7,19 @@ from larch.larchlib import plugin_path
 # put the 'std' and 'xafs' (this!) plugin directories into sys.path
 sys.path.insert(0, plugin_path('xray'))
 
+from chemparser import chemparse
 from xraydb import xrayDB
 
 MODNAME = '_xray'
+
+# Useful constants
+R_ELECTRON = 2.8179403267e-13 # classical electron radius in cm
+AVOGARDO = 6.0221413e23  #atoms/mol
+
+# Planck's Constant h*c in eV*Ang
+#             hbar [ eV * s ]  c [ m/s ]   [ Ang/m ]
+#PLANCK_EVA = 6.58211928e-16 * 299792458 * 1.e10 * 2 * pi #
+PLANCK_EVA = 12398.4193
 
 def get_xraydb(_larch):
     symname = '%s._xraydb' % MODNAME
@@ -71,6 +82,20 @@ def chantler_energies(element, emin=0, emax=1.e9, _larch=None):
         return
     xdb = get_xraydb(_larch)
     return xdb.chantler_energies(element, emin=emin, emax=emax)
+
+def chantler_data(element, energy, column, _larch=None, **kws):
+    """returns data from Chantler tables.
+
+    arguments
+    ---------
+    element:  atomic number, atomic symbol for element
+    energy:   energy or array of energies in eV
+    column:   one of 'f1', 'f2', 'mu_photo', 'mu_incoh', 'mu_total'
+    """
+    if _larch is None:
+        return
+    xdb = get_xraydb(_larch)
+    return xdb._getChantler(element, energy, column=column, **kws)
 
 def f1_chantler(element, energy, _larch=None, **kws):
     """returns real part of anomalous x-ray scattering factor for
@@ -364,6 +389,72 @@ def core_width(element=None, edge=None, _larch=None):
     return xdb.corehole_width(element=element, edge=edge)
 
 
+###
+
+class Scatterer:
+    """Scattering Element
+
+    lamb=PLANCK_EVA /(eV0/1000.)*1e-11	# in cm, 1e-8cm = 1 Angstrom
+    Xsection=2* R_ELECTRON *lamb*f2/BARN    # in Barns/atom
+    """
+    def __init__(self, symbol, energy=10000, _larch=None):
+        # atomic symbol and incident x-ray energy (eV)
+        self.symbol = symbol
+        self.number = atomic_number(symbol, _larch=_larch)
+        self.mass   = atomic_mass(symbol, _larch=_larch)
+        self.f1     = chantler_data(symbol, energy, 'f1', _larch=_larch)
+        self.f1     = self.f1 + self.number
+        self.f2     = chantler_data(symbol, energy, 'f2', _larch=_larch)
+        self.mu_photo = chantler_data(symbol, energy, 'mu_photo', _larch=_larch)
+        self.mu_total = chantler_data(symbol, energy, 'mu_total', _larch=_larch)
+
+def xray_delta_beta(material, density, energy, photo_only=False, _larch=None):
+    """
+    return anomalous components of the index of refraction for a material,
+    using the tabulated scattering components from Chantler.
+
+    arguments:
+    ----------
+       material:   chemical formula  ('Fe2O3', 'CaMg(CO3)2', 'La1.9Sr0.1CuO4')
+       density:    material density in g/cm^3
+       energy:     x-ray energy in eV
+       photo_only: boolean for returning photo cross-section component only
+                   if False (default), the total cross-section is returned
+    returns:
+    ---------
+      (delta, beta, atlen)
+
+    where
+      delta :  real part of index of refraction
+      beta  :  imag part of index of refraction
+      atlen :  attenuation length in cm
+
+    These are the anomalous scattering components of the index of refraction:
+
+    n = 1 - delta - i*beta = 1 - lambda**2 * r0/(2*pi) Sum_j (n_j * fj)
+
+    Adapted for Larch from code by Yong Choi
+    """
+    lamb_cm = 1.e-8 * PLANCK_EVA / energy # lambda in cm
+    elements = []
+    for symbol, number in chemparse(material).items():
+        elements.append((number, Scatterer(symbol, energy, _larch=_larch)))
+
+    total_mass, delta, beta_photo, beta_total = 0, 0, 0, 0
+    for (number, scat) in elements:
+        weight      = density*number*AVOGARDO
+        delta      += weight * scat.f1
+        beta_photo += weight * scat.f2
+        beta_total += weight * scat.f2*(scat.mu_total/scat.mu_photo)
+        total_mass += number * scat.mass
+
+    scale = lamb_cm * lamb_cm * R_ELECTRON / (2*pi * total_mass)
+    delta = delta * scale
+    beta  = beta_total * scale
+    if photo_only:
+        beta  = beta_photo * scale
+    return delta, beta, lamb_cm/(4*pi*beta)
+
 def initializeLarchPlugin(_larch=None):
     """initialize xraydb"""
     if _larch is not None:
@@ -372,6 +463,7 @@ def initializeLarchPlugin(_larch=None):
 def registerLarchPlugin():
     return (MODNAME, {'f0': f0, 'f0_ions': f0_ions,
                       'chantler_energies': chantler_energies,
+                      'chantler_data': chantler_data,
                       'f1_chantler': f1_chantler,
                       'f2_chantler': f2_chantler,
                       'mu_chantler': mu_chantler,
@@ -389,6 +481,7 @@ def registerLarchPlugin():
                       'fluo_yield': fluo_yield,
                       'core_width':  core_width,
                       'ck_probability': CK_probability,
+                      'xray_delta_beta': xray_delta_beta,
                       })
 
 
