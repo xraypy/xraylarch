@@ -80,49 +80,54 @@ Acknowledgements
 ==================
 
 Larch was mostly written by and is maintained by Matt Newville
-<newville@cars.uchicago.ed>.  Bruce Ravel has had a great influence on the
-design and implementation of this code and has provided countless fixes for
-serious problems.  More than that, Larch would simply not exist without the
-long and fruitful collaboration we've enjoyed.  Tom Trainor had a profound
-influence on the original design of Larch, and in helping with the initial
-python implementation.  Yong Choi wrote the code for X-ray standing wave
-and reflectivity analysis and graciously allowed it to be included and
-modified for Larch.
+<newville@cars.uchicago.edu>.  Bruce Ravel has had an incalculable
+influence on the design and implementation of this code and has provided
+countless fixes for serious problems in design and execution in the early
+stages.  More than that, Larch would simply not exist without the long and
+fruitful collaboration we've enjoyed.  Tom Trainor had a very strong
+influence on the original design of Larch, and helped with the initial
+version of the python implementation.  Yong Choi wrote the code for X-ray
+standing wave and reflectivity analysis and graciously allowed it to be
+included and modified for Larch.
 
 Having begun as a rewrite of the Ifeffit XAFS Analysis Package, Larch also
-references and builds on quite a bit of code developed over many years at
-the University of Chicago and the University of Washington.  The existence
-of the code and a great deal of its initial design therefore owes a great
-thanks to Edward Stern, Yizhak Yacoby, Peter Livens, Steve Zabinsky, and
-John Rehr.  More specifically, code written by Steve Zabinsky and John Rehr
-for the manipulation of results from FEFF and for the calculation of
-thermal disorder parameters for XAFS are included in Larch with little
-modification.
+references and builds on quite a bit of code developed for XAFS over many
+years at the University of Chicago and the University of Washington.  The
+existence of the code and a great deal of its initial design therefore owes
+a great thanks to Edward Stern, Yizhak Yacoby, Peter Livens, Steve
+Zabinsky, and John Rehr.  More specifically, code written by Steve Zabinsky
+and John Rehr for the manipulation of results from FEFF and for the
+calculation of thermal disorder parameters for XAFS are included in Larch
+with little modification.  A great many people have provided excellent bug
+reports, feedback, in depth conversations, and suggestions for making
+Ifeffit better, including on the ifeffit mailing list.  Many of these
+contributions have found their way into Larch.
 
 Larch includes calculations for anomalous cross-sections based on the work
-of Cromer and Libermann, as implemented by Sean Brennan and Paul L. Cowen,
-is included in Larch.  Code to store are read the X-ray Scattering data
-from the Elam Tables was modified from code originally written by Darren
-S. Dale.  Refined values for anomalous scattering factors have been
-provided by Christopher T. Chantler.  Further details of the origin of much
-of the tabularized X-ray data is given in :ref:`xraydb-chapter`.
+of Cromer and Libermann, as implemented by Sean Brennan and Paul L. Cowen.
+Their code is included in Larch with only minor changes.  Code to store and
+read the X-ray Scattering data from the Elam Tables was modified from code
+originally written by Darren S. Dale.  Refined values for anomalous
+scattering factors have been provided directly by Christopher T. Chantler.
+Further details of the origin of much of the tabularized X-ray data is
+given in :ref:`xraydb-chapter`.
 
-As Larch builds on the the fantastic scientific codes written and
-maintained in python, specifically the numpy, scipy, and matplotlib
-libraries, the entire scientific python community deserves a hearty thanks.
-In particular, Larch directly includes code from Jonathon J. Helmus to
-implement robust setting of Parameter bounds as described in the MINUIT
-User's guide.  Code from Eric O. Lebigot's uncertainty package for
-automated calculation and propagation of uncertainties is also included in
-Larch.  Till Stensitzki wrote the code for improved, brute-force estimates
-of confidence intervals, and Christopher Deil provided many valuable
-suggestions for improving the parameterized fitting used in Larch.
+As Larch depends on the fantastic scientific librarie written and
+maintained in python, especially the numpy, scipy, and matplotlib, the
+entire scientific python community deserves a hearty thanks.  In
+particular, Larch includes code from Jonathan J. Helmus to implement robust
+setting of Parameter bounds as described in the MINUIT User's guide.  Till
+Stensitzki wrote the code for improved, brute-force estimates of confidence
+intervals, and Christopher Deil provided many valuable suggestions for
+improving the parameterized fitting used in Larch.  Eric O. Lebigot's
+uncertainty package for automated calculation and propagation of
+uncertainties is also included in Larch, with slight modification.
 
 
 License
 ============
 
-Except where explicitly noted in the indivdidal files, the code,
+Except where explicitly noted in the individual files, the code,
 documentation, and all material associated with Larch are distributed under
 the BSD License:
 
