@@ -1,14 +1,16 @@
-import math
-import cmath
-import numpy
-#import fluo  # used in Layer.get_index, change to readf1f2, stop using fluo
-# import readf1f2a
-
 # 9/20/2010: Y.Choi.
 # Reflectivity calculation using Parratt's recursive formula
 # Calculate reflected intensity as a function of angle or energy
 # Needs accesss to index of refraction data
 # layer0 is vaccum, layer1 is top film layer ...
+
+import math
+import cmath
+import numpy
+#import fluo  # used in Layer.get_index, change to readf1f2, stop using fluo
+import sys
+import larch
+sys.path.insert(0, larch.plugin_path('xray'))
 
 class Layer:
     def __init__(self, tag, composition='Si', density=2.33, thickness=1000.1234, rms=1e-3):
@@ -41,15 +43,21 @@ class Layer:
         self.relden=RelativeDensity
         self.thickness=thickness
         self.rms=roughness
+
     def get_index(self, energy=8370.0, indexNat=0):   # x-ray energy in eV, relative density
-        temp=readf1f2a.get_delta(self.composition, self.density*self.relden, energy, indexNat)  # used to be fluo
-        self.delta=temp[0]
-        self.beta=temp[1]
-        self.la=temp[2]                     # in cm,
-        self.Nat=temp[3]
-        self.trans=math.exp(-self.thickness*1e8/self.la)
+        # MN replace...
+        # temp=readf1f2a.get_delta(self.composition, self.density*self.relden, energy, indexNat)  # used to be fluo
+        #self.delta=temp[0]
+        #self.beta=temp[1]
+        #self.la=temp[2]                     # in cm,
+        #self.Nat=temp[3]
+        delta, beta, la = xray_delta_beta(self.composition,
+                                          self.density*self.relden, energy)
+        self.delta, self.beta, self.la = delta, beta, la
         #la attenuation length cm, NumLayer for multiple layers
+        self.trans=math.exp(-self.thickness*1e8/la)
         self.absrp=1.0-self.trans
+
     def cal_kz(self, k0, th_rad):   # calculate wavenumber in each layer
         temp = cmath.sqrt((math.sin(th_rad))**2 - 2.0*self.delta - 2.0*self.beta*1.0j)
         self.kz = k0*(temp.real + abs(temp.imag)*1.0J)
@@ -212,7 +220,7 @@ def reflectivity(eV0=14000.0, th_deg=[], mat=[], thick=[], den=[], rough=[], tag
 
 if __name__=='__main__':
     #test
-    reload(readf1f2a)
+    # reload(readf1f2a)
     import time
     a=time.clock()
     reflectivity()
