@@ -50,6 +50,7 @@ then given.
       :func:`atomic_symbol`      atomic symbol from number
       :func:`atomic_mass`        atomic mass
       :func:`atomic_density`     atomic density (for pure element)
+      :func:`chemparse`          parse a chemical formula to a dictionary of components
       :func:`xray_edge`          xray edge data for a particular element and edge
       :func:`xray_line`          xray emission line data for an element and line
       :func:`xray_edges`         dictionary of all x-ray edges data for an element
@@ -156,7 +157,19 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 
 .. function:: atomic_density(z_or_symbol)
 
-    return the density of the common form of a pure element, in gr/cm^3, from an atomic number or symbol.
+   return the density of the common form of a pure element, in gr/cm^3, from an atomic number or symbol.
+
+.. function:: chemparse(formula)
+
+   parse a chemical formula, returing a dictionary with element symbols as
+   keys and number for each element as values.  Fractional weights and
+   scientific notation for weights as long as the weight begins with a
+   number and not '.' (that is 'Fe0.3' but not 'Fe.3').   For example::
+
+        larch> chemparse("H2O")
+        {'H': 2.0, 'O': 1}
+        larch> chemparse("Mg0.2Fe0.8(SO4)2")
+        {'S': 2.0, 'Mg': 0.2, 'Fe': 0.8, 'O': 8.0}
 
 .. function:: xray_edge(z_or_symbol, edge_name)
 
@@ -271,19 +284,21 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     Note that both f' and f'' are returned here.
 
 
-.. function:: xray_delta_beta(material, formula, energy, photo_only=False)
+.. function:: xray_delta_beta(material, energy, photo_only=False)
 
     return anomalous components of the index of refraction for a material,
     using the tabulated scattering components from Chantler.
 
-    :param material: chemical formula  ('Fe2O3', 'CaMg(CO3)2', 'La1.9Sr0.1CuO4')
+    :param material:   chemical formula  ('Fe2O3', 'CaMg(CO3)2', 'La1.9Sr0.1CuO4')
     :param density:    material density in g/cm^3
     :param energy:     x-ray energy in eV
-    :param photo_only: boolean for returning photo cross-section component only
-           	       if ``False`` (default), the total cross-section is returned.
-    :return:         (delta, beta, t_atten)
+    :param photo_only: boolean for returning only the photo cross-section component
+                       for beta and t_atten. If ``False`` (the default value), the
+                       total cross-section is returned.
+    :return:           (delta, beta, t_atten)
 
-    The returned tuple contains the components described in the table below
+    The material formula is parsed by :func:`chemparse`.   The returned
+    tuple contains the components described in the table below
 
       ============== ================= ===============================================
          value         symbol            description
