@@ -1,22 +1,7 @@
-import math
-import numpy
-#import f1f2_data # an array of scattering factors from Chantler table
-# import readf1f2a as f1f2
-# import elam # FY from Elam data
-# import fluo_elem
-
-#global variables
-re=2.82e-13             # cm
-Barn=1e-24              # cm^2
-Nav=6.022e23            # atoms/mol
-pre_edge_margin=150.    # FY calculated from 150 eV below the absorption edge.
-fluo_emit_min=500.      # minimum energy for emitted fluorescence.  ignore fluorescence emissions below 500eV
-det_res=100.            # detector resoltuion in eV, used in sim_GaussPeaks
-# 11/8/2011 det_res changed to 150
-print2screen = 0
-
 """
-Y. Choi
+Fluorescence Intensity calculations: 
+   Y. Choi
+
 calculates fluorescence intensities for multiple elements at a fixed incident x-ray energy.
 measured fluorescence depends on net fluorescence yield and transmission.
 included are:
@@ -27,6 +12,7 @@ global variables: re, Barn, Nav, pre_edge_margin, fluo_emit_min, det_res
 AtNum2f1f2Xect: needs datafile readf1f2a.py which is from chantler table
 cal_NetYield2: for XRF calculations.  major and minor lines are calculated
                 output as 'Elemental_Sensitivity.txt'
+
 sim_spectra: keeps individual emission lines with significant intensity without weight-averaging
              each element can have a different relative concentration.
              makes strongest emission to 100 and scales the rest accordingly.
@@ -58,6 +44,20 @@ sim_spectra: keeps individual emission lines with significant intensity without 
 """
 
 
+import math
+import numpy
+import sys
+import larch
+
+#global variables
+R_ELECTRON = 2.8179403267e-13 # classical electron radius in cm
+AVOGARDO = 6.0221413e23  #atoms/mol
+BARN = 1.e-24
+
+pre_edge_margin=150.    # FY calculated from 150 eV below the absorption edge.
+fluo_emit_min=500.      # minimum energy for emitted fluorescence.  ignore fluorescence emissions below 500eV
+det_res=100.            # detector resoltuion in eV, used in sim_GaussPeaks
+
 '''
 ----------------------------------------------------------------------------------------------------------
 class: Material, ElemFY, SampleMatrix2
@@ -73,18 +73,21 @@ class Material:
         self.absrp=0.5                 # absorption
         self.delta=0.1                  # index of refraction, real part
         self.beta=0.1                   # index of refraction, imaginary part
-        temp=f1f2.get_ChemName(composition)
-        AtomList=temp[0]
-        AtomIndex=temp[1]
+        # MN replace
+        elements = chemparse(composition)
+        AtomList = elements.keys()
+        AtomIndex = elements.values()
         AtomWeight=0
         for (ii, atom) in enumerate(AtomList):
+            # MN replace...
             AtWt=f1f2.AtSym2AtWt(atom)
             index=AtomIndex[ii]
             AtomWeight = AtomWeight + index*AtWt
-        NumberDensity=density*Nav/AtomWeight
+        NumberDensity=density*AVOGARDRO/AtomWeight
         self.NumDen=NumberDensity       # number of molecules per cm^3
         self.AtWt=AtomWeight            # weight per mole
     def getLa(self, energy, NumLayer=1.0):    # get absorption legnth for incident x-ray, NumLayer for multiple layers
+        # MN replace...
         temp=f1f2.get_delta(self.composition, self.density, energy)
         # returns delta, beta, la_photoE, Nat, la_total
         self.delta=temp[0];     self.beta=temp[1]
@@ -106,6 +109,7 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
     def __init__(self, composition1='Si', density1=2.33, thickness1=0.1, \
                        composition2='Si', density2=2.33, thickness2=0.1, angle0=45.0, option='surface'):
         self.composition1 = composition1     # ex) Fe2O3
+        # MN replace:
         out=f1f2.get_ChemName(composition1)       # output from get_ChemName
         self.ElemList1 = out[0]              # list of elments in matrix: 'Fe', 'O' for Fe2O3
         self.ElemInd1 = out[1]               # list of index: 2, 3 for Fe2O3
@@ -113,6 +117,7 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         self.density1 = density1             # in g/cm^3
         self.thickness1 = thickness1         # top layer thickness in cm
         self.composition2 = composition2
+        # MN replace:
         out=f1f2.get_ChemName(composition2)
         self.ElemList2 = out[0]              # for the bottom substrate
         self.ElemInd2 = out[1]
@@ -150,12 +155,14 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         print self.txt
         # atom.conc is normalized to the number density of substrate1 molecule
         for (ii, item) in enumerate(self.ElemList1):
+            # MN replace:
             if f1f2.AtSym2AtNum(item)>=12:       # ignore elements below Mg
                 #atom=ElemFY(item, self.ElemFrt1[ii], 'substrate1')
                 atom=ElemFY(item, self.ElemInd1[ii], 'substrate1')
                 # eg. for Fe2O3, Fe concentration is 2 (=2 x Fe2O3 number density)
                 self.ElemListFY.append(atom)
         for (ii, item) in enumerate(self.ElemList2):
+            # MN replace:
             if f1f2.AtSym2AtNum(item)>=12:       # ignore elements below Mg
                 #atom=ElemFY(item, self.ElemFrt2[ii], 'substrate2')
                 atom=ElemFY(item, self.ElemInd2[ii]*AtNumDen2/AtNumDen1, 'substrate2')
@@ -204,6 +211,7 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
             self.inten0.append(0.5)
     def getPenetration(self, energy0):  # incident x-ray penetration(attenuation)
         # refraction at air/top layer interface
+        # MN replace:
         temp=f1f2.get_delta(self.composition1, self.density1, energy0)  # energy0: incident x-ray energy
         delta1=temp[0];  beta1=temp[1]
         la1=temp[4]     # in cm, temp[4] instead of temp[2], using total instead of photoelectric
@@ -214,6 +222,7 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         else:                                               # above critical angle
             angle_corrected1 = (self.angle**2.0 - angle_critical1**2.0)**(0.5)  # in radian
         # refraction at top/bottom layers interface
+        # MN replace:
         temp=f1f2.get_delta(self.composition2, self.density2, energy0)  # energy0: incident x-ray energy
         delta2=temp[0];  beta2=temp[1];
         la2=temp[4]     # in cm, temp[4] instead of temp[2], using total instead of photoelectric
@@ -231,12 +240,14 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
             self.inten0[ii] = inten0                            # incident x-ray attenuation
     def getLa(self, energy, NumLayer=1.0):  # emitted fluorescence trasmission attenuation up to top surface
         transmitted=1.0
+        # MN replace:
         temp=f1f2.get_delta(self.composition1, self.density1, energy)  # energy is for fluorescence
         self.delta1 = temp[0]
         self.beta1 = temp[1]
         self.la1 = temp[4]      # in cm, temp[4] instead of temp[2], using total instead of photoelectric
         # absorption length in cm at emitted fluorescence energy
         # temp[3]: atomic number density of the first element in atoms/cc
+        # MN replace:
         temp=f1f2.get_delta(self.composition2, self.density2, energy)  # energy is for fluorescence
         self.delta2 = temp[0]
         self.beta2 = temp[1]
@@ -397,16 +408,16 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
             print out1
         fo.write(out1)
     for (ii, atom) in enumerate(Atoms):
+        # MN replace:
         atnum=f1f2.AtSym2AtNum(atom.AtSym)
+        # MN replace:
         temp=f1f2.AtNum2f1f2Xsect(atnum, eV0)
         xsect=temp[2]                           # photo-electric cross-section for fluorescence yield, temp[4] is total for attenuation
         con=atom.Conc
         for (nn, edge) in enumerate(edges):
             emit=Fluo_lines[nn]
-            #edge='K';   emit='Ka'       # check K edge Ka emission
-            temp=fluo_elem.get_avgElamFY(atom.AtSym, edge,emit, eV0, useAvg=1)      # July2012: useAvg=1 causes problem
+            fy, emit_eV, emit_prob = fluo_yield(atom.AtSym, edge, emit, eV0) 
             print emit
-            fy=temp[0];    emit_eV=temp[1];    emit_prob=temp[2]
             if fy==0.0 or emit_prob==0:
                 continue                        # try next item if FY=0
             else:
@@ -470,13 +481,16 @@ def sim_spectra(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, sample=''):
     fo.write(out1)
     out2='#'
     for (ix,atom) in enumerate(Atoms):
+        # MN replace:
         atnum=f1f2.AtSym2AtNum(atom.AtSym)
         # con=Conc[ix]
         con=atom.Conc
         out2=out2+atom.AtSym+'['+str(con)+']   '
         for edge in ['K', 'L1', 'L2', 'L3']:
+            # MN replace:
             temp=f1f2.AtNum2f1f2Xsect(atnum, eV0)
             xsect=temp[2]           # photoelectric crosssection for each element at incident x-ray, fluorescence yield
+            # MN replace:
             temp=elam.use_ElamFY(atom.AtSym, edge)
             edge_eV=float(temp[2])   # absorption edge
             if eV0>edge_eV:
@@ -609,6 +623,7 @@ if __name__=='__main__':
         #print mat0.la, mat0.trans
         #print Assemble_QuadVortex(eV1)
         #print Assemble_Collimator(eV1, xHe=1, xAl=0,xKapton=0, WD=6.0, xsw=0)
+        # MN replace:
         matrix=SampleMatrix2('CaCO3', f1f2.nominal_density('CaCO3'), 0.001,'Fe2O3', f1f2.nominal_density('Fe2O3'), 0.001, 45.,  'all')
         eV0=7500.
         Atoms=[]
