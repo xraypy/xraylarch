@@ -161,15 +161,17 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 
 .. function:: chemparse(formula)
 
-   parse a chemical formula, returing a dictionary with element symbols as
-   keys and number for each element as values.  Fractional weights and
-   scientific notation for weights as long as the weight begins with a
-   number and not '.' (that is 'Fe0.3' but not 'Fe.3').   For example::
+   parse a chemical formula, returning a dictionary with element symbols as
+   keys and number for each element as values.  For example::
 
         larch> chemparse("H2O")
         {'H': 2.0, 'O': 1}
         larch> chemparse("Mg0.2Fe0.8(SO4)2")
         {'S': 2.0, 'Mg': 0.2, 'Fe': 0.8, 'O': 8.0}
+
+   Note that factional weights and even use of scientific notation for
+   weights is supported, as long as the weight begins with a number and not
+   '.'.   That is 'Fe0.8',  but not 'Fe.8'.
 
 .. function:: xray_edge(z_or_symbol, edge_name)
 
