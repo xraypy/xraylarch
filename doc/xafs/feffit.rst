@@ -11,16 +11,50 @@ fitting model to fit a set of FEFF calculations to XAFS data.  Many parts
 of the documentation so far have touched on important aspects of this
 process, and those sections will be referenced here.
 
-The basic approach is to create a model EXAFS :math:`\chi(k)` as a sum of
-scattering paths that will be compared to experimentally derived
-:math:`\chi(k)`.  The model will be parameterized in terms of Larch
-Parameters defined by :func:`_math.param`.  A fit, using the same fitting
-infrastructure as to :func:`_math.minimize` will be used to refine the
-values of the variable parameters in the model.  To be clear, the Path
-Parameters for all Feff Paths in the fits should be written in terms of
-variable parameters help in a single parameter group.  The refinement will
-be done by comparing the model and experimental :math:`\chi(k)` after a
-*Transformation* based on the Fourier transforms in :ref:`xafs-ft_sec`.
+
+The Feffit Strategy for Modeling EXAFS Data
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The basic approach to modeling EXAFS data in Larch is to create a model
+EXAFS :math:`\chi(k)` as a sum of scattering paths that will be compared to
+experimentally derived :math:`\chi(k)`.  The model will consist of a set of
+FEFF Scattering Paths representing the photo-electron scattering from
+different sets of atoms.  As discussed in ref:`xafs-feffpaths_sec`, these
+FEFF Paths have a fixed set of physically meaningful parameters than can be
+modified to alter the predicted contribution to :math:`\chi(k)`.  Any of
+these values can be defined as algebraic expressions of Larch Parameters
+defined by :func:`_math.param`.  The actual fit uses the same fitting
+infrastructure as to :func:`_math.minimize` to refine the values of the
+variable parameters in the model so as to best match the experimental data.
+Because :math:`\chi(k)` has known properties and :math:`k` dependencies, it
+is common to weight and Fourier transform (as described in
+:ref:`xafs-ft_sec`) for the analysis.  In general term, the the refinement
+process will compare experimental and model :math:`\chi(k)` after a
+*Transformation*.
+
+The model for :math:`\chi(k)` used to compare to data is
+
+.. math::
+
+  \chi(k) = \sum_{j} \chi_{j}(k, p_j)
+
+where :math:`\chi_j` is the EXAFS contribution for a FEFF Path, as given in
+:ref:`xafs-exafsequation_sec` for path :math:`j`, where :math:`p_j` is the
+set of adjustable Path Parameters (:math:`S_0^2`, :math:`E_0`,
+:math:`\delta{R}`, :math:`\sigma^2`, and so on).
+
+
+
+
+Fit statistics and goodness-of-fit meassures for :func:`feffit`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The fit done by :func:`feffit` is conceptually very similar to the fits
+described in :ref:`fitting-minimize-sec`.
+
+
+The Feffit functions in Larch
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The function :func:`feffit` is the principle function to do the fit of a
 set of Feff paths to XAFS spectra.  This essentially runs
@@ -38,6 +72,10 @@ it has a *Feffit Transform* group which holds the Fourier transform and
 fitting ranges to select how the data and model are to be compared.  In
 addition, a fit has a single parameter group, holding all the variable and
 constrained parameters used by all the paths and data sets in a fit.
+
+To be clear, the Path Parameters for all Feff Paths in the fits should be written in terms of
+variable parameters help in a single parameter group.
+
 
 There are then 3 principle functions for setting up and executing
 :func:`feffit`:
@@ -239,12 +277,6 @@ There are then 3 principle functions for setting up and executing
 
     :param fit_result:  output group from :func:`feffit`.
 
-
-Fit statistics and goodness-of-fit meassures for :func:`feffit`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The fit done by :func:`feffit` is conceptually very similar to the fits
-described in :ref:`fitting-minimize-sec`.
 
 
 Example 1: Simple fit with 1 Path
