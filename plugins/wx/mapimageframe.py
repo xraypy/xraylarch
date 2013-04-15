@@ -5,16 +5,17 @@ subclass of wxmplot.ImageFrame specific for Map Viewer -- adds custom menus
 import sys
 import os
 import wx
+from wx._core import PyDeadObjectError
 import numpy
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 import larch
 
-sys.path.insert(0, larch.plugin_path('wx'))
+sys.path.insert(0, larch.plugin_path('wx')) 
 from wxutils import Closure, LabelEntry, SimpleText
 
-from wxmplot import ImageFrame
+from wxmplot import ImageFrame, PlotFrame
 from wxmplot.imagepanel import ImagePanel
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex
@@ -42,7 +43,119 @@ class MapImageFrame(ImageFrame):
                             lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels,
                             output_title=output_title, **kws)
+        self.panel.add_cursor_mode('prof', motion = self.prof_motion,
+                                   leftdown = self.prof_leftdown,
+                                   leftup   = self.prof_leftup)
+        self.prof_plotter = None
+        self.zoom_ini =  None
+        self.lastpoint = [None, None]
+        self.rbbox = None
+        
+    def prof_motion(self, event=None):
+        if not event.inaxes or self.zoom_ini is None:
+            return
 
+        try:
+            xmax, ymax  = event.x, event.y
+        except:
+            return
+
+        xmin, ymin, xd, yd = self.zoom_ini
+        if event.xdata is not None:
+            self.lastpoint[0] = event.xdata
+        if event.ydata is not None:
+            self.lastpoint[1] = event.ydata
+        
+        yoff = self.panel.canvas.figure.bbox.height
+
+        ymin, ymax = yoff - ymin, yoff - ymax
+
+        zdc = wx.ClientDC(self.panel.canvas)
+        zdc.SetLogicalFunction(wx.XOR)
+        zdc.SetBrush(wx.TRANSPARENT_BRUSH)
+        zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
+        zdc.ResetBoundingBox()
+        zdc.BeginDrawing()
+
+        # erase previous box
+        if self.rbbox is not None:
+            zdc.DrawLine(*self.rbbox)
+        self.rbbox = (xmin, ymin, xmax, ymax)
+        zdc.DrawLine(*self.rbbox)
+        zdc.EndDrawing()
+        
+
+    def prof_leftdown(self, event=None):
+        self.panel.report_leftdown(event=event)
+        if event.inaxes:
+            self.lastpoint = [None, None]
+            self.zoom_ini = [event.x, event.y, event.xdata, event.ydata]
+
+
+    def prof_leftup(self, event=None):
+        if self.rbbox is not None:
+            zdc = wx.ClientDC(self.panel.canvas)
+            zdc.SetLogicalFunction(wx.XOR)
+            zdc.SetBrush(wx.TRANSPARENT_BRUSH)
+            zdc.SetPen(wx.Pen('White', 2, wx.SOLID))
+            zdc.ResetBoundingBox()
+            zdc.BeginDrawing()
+            zdc.DrawLine(*self.rbbox)
+            zdc.EndDrawing()
+            self.rbbox = None
+            
+        if self.zoom_ini is None or self.lastpoint[0] is None:
+            return
+        
+        x0 = int(self.zoom_ini[2])
+        x1 = int(self.lastpoint[0])
+        y0 = int(self.zoom_ini[3])
+        y1 = int(self.lastpoint[1])
+        dx, dy = abs(x1-x0), abs(y1-y0)        
+        
+        self.lastpoint, self.zoom_ini = [None, None], None
+
+        if dx < 2 and dy < 2:
+            return
+
+        outdat = []
+
+        if dy  > dx:
+            xlabel = 'Pixel (y)'
+            _y0 = min(int(y0), int(y1+0.5))
+            _y1 = max(int(y0), int(y1+0.5))
+
+            for iy in range(_y0, _y1):
+                ix = int(x0 + (iy-int(y0))*(x1-x0)/(y1-y0))
+                outdat.append((ix, iy))
+        else:
+            xlabel = 'Pixel (y)'
+            _x0 = min(int(x0), int(x1+0.5))
+            _x1 = max(int(x0), int(x1+0.5))
+            for ix in range(_x0, _x1):
+                iy = int(y0 + (ix-int(x0))*(y1-y0)/(x1-x0))
+                outdat.append((ix, iy))
+        x, z = [], []
+        for ix, iy in outdat:
+            #print 'DAT ', ix, iy, self.panel.conf.data[iy, ix]
+            x.append(ix)
+            z.append(self.panel.conf.data[iy,ix])
+
+        
+        if self.prof_plotter is not None:
+            try:
+                self.prof_plotter.Raise()
+            except AttributeError, PyDeadObjectError:
+                self.prof_plotter = None
+
+        if self.prof_plotter is None:
+            self.prof_plotter = PlotFrame(self, title='Profile')
+                
+        self.prof_plotter.plot(x, z, xlabel=xlabel)
+        self.prof_plotter.Show()
+                
+        self.zoom_ini = None
+        
     def display(self, img, title=None, colormap=None, style='image', **kw):
         """plot after clearing current plot """
         if title is not None:
@@ -65,11 +178,9 @@ class MapImageFrame(ImageFrame):
             self.contour_toggle.SetValue(contour_value)
 
         self.bgcol = rgb2hex(self.GetBackgroundColour()[:3])
-        print "@ Display Background Colour ", self.bgcol 
 
         self.panel.redraw()
         self.panel.fig.set_facecolor(self.bgcol)       
-
 
     def BuildMenu(self):
         mids = self.menuIDs
@@ -145,7 +256,9 @@ class MapImageFrame(ImageFrame):
         self.panel.cursor_mode = 'zoom'
         if 1 == event.GetInt():
             self.panel.cursor_mode = 'lasso'
-
+        elif 2 == event.GetInt():
+            self.panel.cursor_mode = 'prof'
+            
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask, **kws)
@@ -252,7 +365,9 @@ class MapImageFrame(ImageFrame):
 
         zoom_mode = wx.RadioBox(lpanel, -1, "Cursor Mode:",
                                 wx.DefaultPosition, wx.DefaultSize,
-                                ('Zoom to Rectangle', 'Pick Area for XRF Spectrum'),
+                                ('Zoom to Rectangle',
+                                 'Pick Area for XRF Spectrum',
+                                 'Show Line Profile'),
                                 1, wx.RA_SPECIFY_COLS)
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
 
