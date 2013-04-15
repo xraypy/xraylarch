@@ -41,9 +41,33 @@ The model for :math:`\chi(k)` used to compare to data is
 where :math:`\chi_j` is the EXAFS contribution for a FEFF Path, as given in
 :ref:`xafs-exafsequation_sec` for path :math:`j`, where :math:`p_j` is the
 set of adjustable Path Parameters (:math:`S_0^2`, :math:`E_0`,
-:math:`\delta{R}`, :math:`\sigma^2`, and so on).
+:math:`\delta{R}`, :math:`\sigma^2`, and so on) listed as ``Adjustable`` in
+the :ref:`Table of Feff Path Parameters <xafs-pathparams_table>`.
 
+The number of FEFF Paths used in the sum can be unlimited, and they do not
+need to originate from a single run of FEFF.  This can be important in
+modeling even moderately complex structures as a single run of FEFF is
+limited to having exactly one absorbing atom in a cluster of atoms and
+therefore cannot be used to model multi-site systems without multiple runs.
 
+Because a large number of FEFF Paths could be used to model an XAFS
+spectrum, and because each Feff Path has up to 8 adjustable parameters,
+there is the potential of having a very large number of parameters for a
+fit.  In principle, However, there is a limited amount of information in an
+XAFS spectrum.  A simple estimate of how many parameters could be
+independently measured is given from information theory of Shannon and
+Nyquist as
+
+.. math::
+
+    N_{\rm params} \approx  \frac{2 \Delta k \Delta R}{\pi}
+
+where :math:`\Delta k` and :math:`\Delta R` are the :math:`k` and :math:`R`
+range of the usable data under consideration.  In general, this greatly
+limits the number of parameters thar can be successfully used in a fit.  It
+should be noted that this limitation is inherent in XAFS (and many other
+techniques that rely on oscillatory signals), and not a consequence of
+using Fourier transforms in the analysis.
 
 
 Fit statistics and goodness-of-fit meassures for :func:`feffit`
