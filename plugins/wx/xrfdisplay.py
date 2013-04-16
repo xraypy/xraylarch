@@ -6,6 +6,7 @@ GUI Frame for XRF display, reading larch MCA group
 import sys
 import os
 import time
+import copy
 import wx
 import wx.lib.mixins.inspection
 from wx._core import PyDeadObjectError
@@ -26,13 +27,13 @@ sys.path.insert(0, plugin_path('wx'))
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack, popup, add_button, get_icon,
                      add_checkbox, add_menu, add_choice, add_menu,
-                     FileSave, fix_filename)
+                     FileOpen, FileSave, fix_filename)
 
 from periodictable import PeriodicTablePanel
 
 sys.path.insert(0, plugin_path('xrf'))
 
-from medfile_cars import GSEMCA_File
+from medfile_cars import GSEMCA_File, gsemca_group
 
 #from ..io.xrm_mapfile import (GSEXRM_MapFile, GSEXRM_FileStatus,
 #                              GSEXRM_Exception, GSEXRM_NotOwner)
@@ -276,7 +277,7 @@ class SettingsFrame(wx.Frame):
 
 class XRFDisplayConfig:
     major_elinecolor = '#DAD8CA'
-    minor_elinecolor = '#E0DAD0'
+    minor_elinecolor = '#F4DAC0'
     marker_color     = '#77BB99'
     roi_fillcolor    = '#F8F0BA'
     roi_color        = '#AA0000'
@@ -284,8 +285,11 @@ class XRFDisplayConfig:
 
     K_major = ['Ka1', 'Ka2', 'Kb1']
     K_minor = ['Kb3', 'Kb2']
+    K_minor = []
     L_major = ['La1', 'Lb1', 'Lb3', 'Lb4']
     L_minor = ['Ln', 'Ll', 'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2']
+    L_minor = []
+    
     M_major = ['Ma', 'Mb', 'Mg', 'Mz']
     e_min   = 1.0
     e_max   = 30.0
@@ -311,7 +315,8 @@ class XRFDisplayFrame(wx.Frame):
         self.roi_patch = None
         self.selected_roi = None
         self.selected_elem = None
-        self.mca = None
+        self.mca  = None
+        self.mca2 = None
         self.rois_shown = False
         self.major_markers = []
         self.minor_markers = []
@@ -351,7 +356,7 @@ class XRFDisplayFrame(wx.Frame):
             y = self.mca.counts[ix]
         self.last_leftdown = x
         self.energy_for_zoom = x
-        self.draw_arrow(x, y, 0, 'Left-Click')
+        self.draw_arrow(x, y, 0, 'Left:')
 
     def draw_arrow(self, x, y, idx, title):
         arrow = self.panel.axes.arrow
@@ -369,7 +374,7 @@ class XRFDisplayFrame(wx.Frame):
                                            head_starts_at_zero=True,
                                            color=self.conf.marker_color)
             self.panel.canvas.draw()
-            self.write_message("%s: E=%.3f, Counts=%g" % (title, x, y), panel=idx)
+            self.write_message("%s: E=%.3f, Counts=%g" % (title, x, y), panel=1+idx)
         except:
             pass
     def on_rightdown(self, event=None):
@@ -386,7 +391,7 @@ class XRFDisplayFrame(wx.Frame):
             x = self.mca.energy[ix]
             y = self.mca.counts[ix]
         self.last_rightdown = x
-        self.draw_arrow(x, y, 1, 'Right-Click')
+        self.draw_arrow(x, y, 1, 'Right:')
 
     def createMainPanel(self):
         self.wids = {}
@@ -397,6 +402,7 @@ class XRFDisplayFrame(wx.Frame):
         plotpanel = self.panel = PlotPanel(self, fontsize=7,
                                            axisbg='#FDFDFA',
                                            axissize=[0.02, 0.12, 0.96, 0.86],
+                                           # axissize=[0.12, 0.12, 0.86, 0.86],
                                            output_title='test.xrf',
                                            messenger=self.write_message)
         self.panel.conf.labelfont.set_size(7)
@@ -623,6 +629,7 @@ class XRFDisplayFrame(wx.Frame):
         if label is None and event is not None:
             label = event.GetString()
         self.wids['roiname'].SetValue(label)
+        msg = "Counts for ROI  %s: " % label
         name, left, right= None, -1, -1
         counts_tot, counts_net = '', ''
         label = label.lower().strip()
@@ -633,8 +640,11 @@ class XRFDisplayFrame(wx.Frame):
                     name = roi.name
                     left = roi.left
                     right= roi.right
-                    counts_tot = " Total: %i" % roi.get_counts(self.mca.counts)
-                    counts_net = " Net: %i" % roi.get_counts(self.mca.counts, net=True)
+                    ctot = roi.get_counts(self.mca.counts)
+                    cnet = roi.get_counts(self.mca.counts, net=True)
+                    counts_tot = " Total: %i" % ctot
+                    counts_net = " Net: %i" % cnet
+                    msg = "%s  Total: %i, Net: %i" % (msg, ctot, cnet)
                     self.selected_roi = roi
                     break
         if name is None or right == -1:
@@ -657,6 +667,7 @@ class XRFDisplayFrame(wx.Frame):
 
         self.wids['counts_tot'].SetLabel(counts_tot)
         self.wids['counts_net'].SetLabel(counts_net)
+        self.write_message(msg, panel=0)
         self.panel.canvas.draw()
         self.panel.Refresh()
 
@@ -698,6 +709,9 @@ class XRFDisplayFrame(wx.Frame):
                  "Configure Plot Colors, etc", self.panel.configure)
         add_menu(self, omenu, "Zoom Out\tCtrl+Z",
                  "Zoom out to full data range", self.unzoom_all)
+        add_menu(self, omenu, "Swap MCAs",
+                 "Swap Fore and Back MCAs", self.swap_mcas)
+
         omenu.AppendSeparator()
         add_menu(self, omenu, "&Calibrate Energy\tCtrl+B",
                  "Calibrate Energy",  self.onCalibrateEnergy)
@@ -712,6 +726,7 @@ class XRFDisplayFrame(wx.Frame):
     def onSavePNG(self, event=None):
         if self.panel is not None:
             self.panel.save_figure(event=event)
+            
     def onCopyImage(self, event=None):
         if self.panel is not None:
             self.panel.canvas.Copy_to_Clipboard(event=event)
@@ -833,7 +848,6 @@ class XRFDisplayFrame(wx.Frame):
         panel = self.panel
         panel.canvas.Freeze()
         kwargs = {'grid': False, 'xmin': 0,
-                  # 'delay_draw': True, #  experimental wxmplot option
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'color': self.conf.spectra_color}
@@ -843,7 +857,8 @@ class XRFDisplayFrame(wx.Frame):
         self.ydata = 1.0*y[:]
         yroi = None
         ydat = 1.0*y[:]
-        kwargs['ymax'] = (max(y) - min(y))*1.25
+        kwargs['ymax'] = max(ydat)*1.25
+        kwargs['ymin'] = 1
         if mca is not None:
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
@@ -853,6 +868,7 @@ class XRFDisplayFrame(wx.Frame):
                 ydat[r.left+1:r.right-1] = -1
             yroi = np.ma.masked_less(yroi, 0)
             ydat = np.ma.masked_less(ydat, 0)
+
         panel.plot(x, ydat, label='spectra',  **kwargs)
 
         if yroi is not None:
@@ -870,12 +886,39 @@ class XRFDisplayFrame(wx.Frame):
         panel.canvas.Thaw()
         panel.canvas.Refresh()
 
-    def oplot(self, x, y, mcagroup=None, **kws):
-        panel.oplot(x, y, **kws)
+    def oplot(self, x, y, **kws):
+        ymax = max( max(self.ydata), max(y))*1.25
+        kws.update({'zorder': -5, 'label': 'spectra2',
+                    'ymax' : ymax,
+                    'ylog_scale': True, 'color': 'darkgreen'})
+
+        self.panel.oplot(x, 1.0*y[:], **kws)
+
+    def swap_mcas(self, event=None):
+        self.mca, self.mca2 = self.mca2, self.mca
+        self.plotmca(self.mca)
+        self.oplot(self.mca2.energy, self.mca2.counts)
 
     def onReadMCAFile(self, event=None):
-        pass
+        dlg = wx.FileDialog(self, message="Open MCA File for reading",
+                            defaultDir=os.getcwd(),
+                            wildcard=FILE_WILDCARDS,
+                            style = wx.OPEN|wx.CHANGE_DIR)
 
+        fnew= None
+        if dlg.ShowModal() == wx.ID_OK:
+            fnew = os.path.abspath(dlg.GetPath())
+        dlg.Destroy()
+
+        if fnew is None:
+            return
+        _mca = gsemca_group(fnew, _larch=self.larch)
+        if self.mca is not None:
+            self.mca2 = copy.deepcopy(self.mca)
+            self.mca = _mca
+        self.plotmca(self.mca)
+        self.oplot(self.mca2.energy, self.mca2.counts)
+            
     def onReadGSEXRMFile(self, event=None, **kws):
         print '  onReadGSEXRMFile   '
         pass
