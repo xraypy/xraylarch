@@ -79,7 +79,7 @@ class ROI(object):
 
         #total and net cts
         self.total  = data[self.left:self.right+1].sum()
-        self.net    = self.total - bgr_counts
+        self.net    = self.total - bgr_counts*(self.right-self.left)
         out = self.total
         if net:
             out = self.net
