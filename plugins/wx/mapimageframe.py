@@ -88,7 +88,6 @@ class MapImageFrame(ImageFrame):
             self.lastpoint = [None, None]
             self.zoom_ini = [event.x, event.y, event.xdata, event.ydata]
 
-
     def prof_leftup(self, event=None):
         if self.rbbox is not None:
             zdc = wx.ClientDC(self.panel.canvas)
@@ -134,7 +133,8 @@ class MapImageFrame(ImageFrame):
             x.append(ix)
             y.append(iy)
             z.append(self.panel.conf.data[iy,ix])
-
+        self.prof_dat = dy>dx, outdat
+        
         if self.prof_plotter is not None:
             try:
                 self.prof_plotter.Raise()
@@ -145,26 +145,56 @@ class MapImageFrame(ImageFrame):
 
         if self.prof_plotter is None:
             self.prof_plotter = PlotFrame(self, title='Profile')
+            self.prof_plotter.panel.report_leftdown = self.prof_report_coords
+            
         xlabel, y2label = 'Pixel (x)',  'Pixel (y)'
-        y
+
         if dy > dx:
             x, y = y, x
             xlabel, y2label = y2label, xlabel
         self.prof_plotter.panel.clear() # reset_config()
         self.prof_plotter.plot(x, z, xlabel=xlabel, show_legend=True,
-                               xmin=min(x)-5, xmax=max(x)+5,
+                               xmin=min(x)-3, xmax=max(x)+3,
                                ylabel='counts', label='counts',
                                linewidth=2, marker='+', color='blue')
         self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
-                                # xmin=min(x)-5, xmax=max(x)+5,
                                 side='right', show_legend=True,
-                                color='#551111', linewidth=1, marker='+',
+                                color='#771111', linewidth=1, marker='+',
                                 markersize=3)
         self.prof_plotter.panel.unzoom_all()
         self.prof_plotter.Show()
-
         self.zoom_ini = None
 
+    def prof_report_coords(self, event=None):
+        """override report leftdown for profile plotter"""
+        if event is None:
+            return
+        ex, ey = event.x, event.y
+        msg = ''
+        plotpanel = self.prof_plotter.panel
+        axes  = plotpanel.fig.get_axes()[0]
+        write = plotpanel.write_message
+        try:
+            x, y = axes.transData.inverted().transform((ex, ey))
+        except:
+            x, y = event.xdata, event.ydata
+
+        if x is None or y is None:
+            return
+        
+        this_point = 0, 0, 0, 0, 0
+        for ix, iy in self.prof_dat[1]:
+            if (int(x) == ix and not self.prof_dat[0] or
+                int(x) == iy and self.prof_dat[0]):
+                this_point = (ix, iy,
+                              self.panel.xdata[ix],
+                              self.panel.ydata[iy],
+                              self.panel.conf.data[iy, ix])
+
+        msg = "Pixel [%i, %i], X, Y = [%.4f, %.4f], Intensity= %g" % this_point
+        write(msg,  panel=0)
+
+        
     def display(self, img, title=None, colormap=None, style='image', **kw):
         """plot after clearing current plot """
         if title is not None:
