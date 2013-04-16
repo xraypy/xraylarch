@@ -12,7 +12,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 import larch
 
-sys.path.insert(0, larch.plugin_path('wx')) 
+sys.path.insert(0, larch.plugin_path('wx'))
 from wxutils import Closure, LabelEntry, SimpleText
 
 from wxmplot import ImageFrame, PlotFrame
@@ -50,11 +50,10 @@ class MapImageFrame(ImageFrame):
         self.zoom_ini =  None
         self.lastpoint = [None, None]
         self.rbbox = None
-        
+
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
             return
-
         try:
             xmax, ymax  = event.x, event.y
         except:
@@ -65,9 +64,8 @@ class MapImageFrame(ImageFrame):
             self.lastpoint[0] = event.xdata
         if event.ydata is not None:
             self.lastpoint[1] = event.ydata
-        
-        yoff = self.panel.canvas.figure.bbox.height
 
+        yoff = self.panel.canvas.figure.bbox.height
         ymin, ymax = yoff - ymin, yoff - ymax
 
         zdc = wx.ClientDC(self.panel.canvas)
@@ -83,7 +81,6 @@ class MapImageFrame(ImageFrame):
         self.rbbox = (xmin, ymin, xmax, ymax)
         zdc.DrawLine(*self.rbbox)
         zdc.EndDrawing()
-        
 
     def prof_leftdown(self, event=None):
         self.panel.report_leftdown(event=event)
@@ -103,25 +100,23 @@ class MapImageFrame(ImageFrame):
             zdc.DrawLine(*self.rbbox)
             zdc.EndDrawing()
             self.rbbox = None
-            
+
         if self.zoom_ini is None or self.lastpoint[0] is None:
             return
-        
+
         x0 = int(self.zoom_ini[2])
         x1 = int(self.lastpoint[0])
         y0 = int(self.zoom_ini[3])
         y1 = int(self.lastpoint[1])
-        dx, dy = abs(x1-x0), abs(y1-y0)        
-        
-        self.lastpoint, self.zoom_ini = [None, None], None
+        dx, dy = abs(x1-x0), abs(y1-y0)
 
+        self.lastpoint, self.zoom_ini = [None, None], None
         if dx < 2 and dy < 2:
             return
 
         outdat = []
 
-        if dy  > dx:
-            xlabel = 'Pixel (y)'
+        if dy > dx:
             _y0 = min(int(y0), int(y1+0.5))
             _y1 = max(int(y0), int(y1+0.5))
 
@@ -129,33 +124,45 @@ class MapImageFrame(ImageFrame):
                 ix = int(x0 + (iy-int(y0))*(x1-x0)/(y1-y0))
                 outdat.append((ix, iy))
         else:
-            xlabel = 'Pixel (y)'
             _x0 = min(int(x0), int(x1+0.5))
             _x1 = max(int(x0), int(x1+0.5))
             for ix in range(_x0, _x1):
                 iy = int(y0 + (ix-int(x0))*(y1-y0)/(x1-x0))
                 outdat.append((ix, iy))
-        x, z = [], []
+        x, y, z = [], [], []
         for ix, iy in outdat:
-            #print 'DAT ', ix, iy, self.panel.conf.data[iy, ix]
             x.append(ix)
+            y.append(iy)
             z.append(self.panel.conf.data[iy,ix])
 
-        
         if self.prof_plotter is not None:
             try:
                 self.prof_plotter.Raise()
+                self.prof_plotter.clear()
+
             except AttributeError, PyDeadObjectError:
                 self.prof_plotter = None
 
         if self.prof_plotter is None:
             self.prof_plotter = PlotFrame(self, title='Profile')
-                
-        self.prof_plotter.plot(x, z, xlabel=xlabel)
+        xlabel, y2label = 'Pixel (x)',  'Pixel (y)'
+        y
+        if dy > dx:
+            x, y = y, x
+            xlabel, y2label = y2label, xlabel
+        self.prof_plotter.panel.reset_config()
+        self.prof_plotter.plot(x, z, xlabel=xlabel, ylabel='counts',
+                               label='counts',
+                               linewidth=2, marker='+', color='blue')
+        self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
+                                side='right', show_legend=True,
+                                color='#442222', linewidth=1, marker='+',
+                                markersize=3)
+        self.prof_plotter.panel.unzoom_all()
         self.prof_plotter.Show()
-                
+
         self.zoom_ini = None
-        
+
     def display(self, img, title=None, colormap=None, style='image', **kw):
         """plot after clearing current plot """
         if title is not None:
@@ -180,7 +187,7 @@ class MapImageFrame(ImageFrame):
         self.bgcol = rgb2hex(self.GetBackgroundColour()[:3])
 
         self.panel.redraw()
-        self.panel.fig.set_facecolor(self.bgcol)       
+        self.panel.fig.set_facecolor(self.bgcol)
 
     def BuildMenu(self):
         mids = self.menuIDs
@@ -258,7 +265,7 @@ class MapImageFrame(ImageFrame):
             self.panel.cursor_mode = 'lasso'
         elif 2 == event.GetInt():
             self.panel.cursor_mode = 'prof'
-            
+
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask, **kws)
