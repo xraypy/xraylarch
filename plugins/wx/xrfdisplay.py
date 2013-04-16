@@ -114,7 +114,7 @@ class SettingsFrame(wx.Frame):
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(10, 10)
 
-        emin = FloatCtrl(panel, value=self.parent.conf.e_min, 
+        emin = FloatCtrl(panel, value=self.parent.conf.e_min,
                          minval=0, maxval=1000, precision=2,
                          action=self.onErange, action_kw={'is_max':False})
         emax = FloatCtrl(panel, value=self.parent.conf.e_max,
@@ -396,7 +396,7 @@ class XRFDisplayFrame(wx.Frame):
 
         plotpanel = self.panel = PlotPanel(self, fontsize=7,
                                            axisbg='#FDFDFA',
-                                           axissize=[0.02, 0.09, 0.96, 0.90],
+                                           axissize=[0.02, 0.12, 0.96, 0.86],
                                            output_title='test.xrf',
                                            messenger=self.write_message)
         self.panel.conf.labelfont.set_size(7)
@@ -832,7 +832,7 @@ class XRFDisplayFrame(wx.Frame):
         mca = self.mca
         panel = self.panel
         panel.canvas.Freeze()
-        kwargs = {'grid': False,
+        kwargs = {'grid': False, 'xmin': 0,
                   # 'delay_draw': True, #  experimental wxmplot option
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
@@ -843,6 +843,7 @@ class XRFDisplayFrame(wx.Frame):
         self.ydata = 1.0*y[:]
         yroi = None
         ydat = 1.0*y[:]
+        kwargs['ymax'] = (max(y) - min(y))*1.25
         if mca is not None:
             if not self.rois_shown:
                 self.set_roilist(mca=mca)

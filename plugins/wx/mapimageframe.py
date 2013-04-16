@@ -150,13 +150,15 @@ class MapImageFrame(ImageFrame):
         if dy > dx:
             x, y = y, x
             xlabel, y2label = y2label, xlabel
-        self.prof_plotter.panel.reset_config()
-        self.prof_plotter.plot(x, z, xlabel=xlabel, ylabel='counts',
-                               label='counts',
+        self.prof_plotter.panel.clear() # reset_config()
+        self.prof_plotter.plot(x, z, xlabel=xlabel, show_legend=True,
+                               xmin=min(x)-5, xmax=max(x)+5,
+                               ylabel='counts', label='counts',
                                linewidth=2, marker='+', color='blue')
         self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
+                                # xmin=min(x)-5, xmax=max(x)+5,
                                 side='right', show_legend=True,
-                                color='#442222', linewidth=1, marker='+',
+                                color='#551111', linewidth=1, marker='+',
                                 markersize=3)
         self.prof_plotter.panel.unzoom_all()
         self.prof_plotter.Show()
