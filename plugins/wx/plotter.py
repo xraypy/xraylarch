@@ -212,7 +212,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display.SetTitle(title)
     return display
 
-def _xrf_plot(x, y, mca=None, win=1, new=True, _larch=None,
+def _xrf_plot(x, y=None, mca=None, win=1, new=True, _larch=None,
               wxparent=None, size=None, side='left', force_draw=True, **kws):
     """xrf_plot(energy, data[, win=1], options])
 
@@ -242,9 +242,15 @@ def _xrf_plot(x, y, mca=None, win=1, new=True, _larch=None,
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
     if new:
-        plotter.plot(x, y, mca=mca, **kws)
+        if y is None and mca is None:
+            plotter.plotmca(x, **kws)
+        else:
+            plotter.plot(x, y, mca=mca, **kws)
     else:
-        plotter.oplot(x, y, mca=mca, **kws)
+        if y is None and mca is None:
+            plotter.plotmca(x, background=True, **kws)
+        else:
+            plotter.oplot(x, y, mca=mca, **kws)
 
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
