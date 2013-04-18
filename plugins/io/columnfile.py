@@ -80,7 +80,7 @@ def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
             rowdat  = getfloats(line)
             if ncol is None:
                 ncol = len(rowdat)
-            elif ncol == len(rowdat):
+            if ncol == len(rowdat):
                 data.append(rowdat)
 
     # reverse header, footer, data, convert to arrays
