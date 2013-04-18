@@ -134,7 +134,7 @@ class MapImageFrame(ImageFrame):
             y.append(iy)
             z.append(self.panel.conf.data[iy,ix])
         self.prof_dat = dy>dx, outdat
-        
+
         if self.prof_plotter is not None:
             try:
                 self.prof_plotter.Raise()
@@ -146,7 +146,7 @@ class MapImageFrame(ImageFrame):
         if self.prof_plotter is None:
             self.prof_plotter = PlotFrame(self, title='Profile')
             self.prof_plotter.panel.report_leftdown = self.prof_report_coords
-            
+
         xlabel, y2label = 'Pixel (x)',  'Pixel (y)'
 
         if dy > dx:
@@ -154,11 +154,11 @@ class MapImageFrame(ImageFrame):
             xlabel, y2label = y2label, xlabel
         self.prof_plotter.panel.clear() # reset_config()
         self.prof_plotter.plot(x, z, xlabel=xlabel, show_legend=True,
-                               xmin=min(x)-3, xmax=max(x)+3,
+                               xmin=min(x)-3, xmax=max(x)+3, zorder=10,
                                ylabel='counts', label='counts',
                                linewidth=2, marker='+', color='blue')
         self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
-                                side='right', show_legend=True,
+                                side='right', show_legend=True, zorder=5,
                                 color='#771111', linewidth=1, marker='+',
                                 markersize=3)
         self.prof_plotter.panel.unzoom_all()
@@ -181,7 +181,7 @@ class MapImageFrame(ImageFrame):
 
         if x is None or y is None:
             return
-        
+
         this_point = 0, 0, 0, 0, 0
         for ix, iy in self.prof_dat[1]:
             if (int(x) == ix and not self.prof_dat[0] or
@@ -194,7 +194,7 @@ class MapImageFrame(ImageFrame):
         msg = "Pixel [%i, %i], X, Y = [%.4f, %.4f], Intensity= %g" % this_point
         write(msg,  panel=0)
 
-        
+
     def display(self, img, title=None, colormap=None, style='image', **kw):
         """plot after clearing current plot """
         if title is not None:
