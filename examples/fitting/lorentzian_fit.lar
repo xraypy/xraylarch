@@ -32,7 +32,7 @@ params.wid   = guess(0.40)
 x = minimize(resid, params, args=(mdat,), kws={'verbose':False})
 
 # status = resid(params, mdat) # , verbose=True)
-print 'Fit finishd: %i function calls' % params.nfcn_calls
+print 'Fit finishd: %i function calls' % params.fit_details.nfev
 show(params)
 
 newplot(mdat.x, mdat.y)
