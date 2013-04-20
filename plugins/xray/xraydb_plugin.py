@@ -2,24 +2,16 @@ import sys
 from math import pi
 import larch
 from larch import Group
-from larch.larchlib import plugin_path
+from larch.larchlib import use_plugin_path
 
-# put the 'std' and 'xafs' (this!) plugin directories into sys.path
-sys.path.insert(0, plugin_path('xray'))
+use_plugin_path('xray')
 
+from physical_constants import R_ELECTRON, AVOGADRO, PLANCK_EVA
 from chemparser import chemparse
 from xraydb import xrayDB
 
 MODNAME = '_xray'
 
-# Useful constants
-R_ELECTRON = 2.8179403267e-13 # classical electron radius in cm
-AVOGARDO = 6.0221413e23  #atoms/mol
-
-# Planck's Constant h*c in eV*Ang
-#             hbar [ eV * s ]  c [ m/s ]   [ Ang/m ]
-#PLANCK_EVA = 6.58211928e-16 * 299792458 * 1.e10 * 2 * pi #
-PLANCK_EVA = 12398.4193
 
 def get_xraydb(_larch):
     symname = '%s._xraydb' % MODNAME

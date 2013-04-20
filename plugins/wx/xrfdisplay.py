@@ -17,13 +17,13 @@ import matplotlib
 from wxmplot import PlotPanel
 from wxmplot.colors import hexcolor
 
-from larch import Group, Parameter, isParameter, plugin_path
+from larch import Group, Parameter, isParameter, use_plugin_path
 
-sys.path.insert(0, plugin_path('math'))
+use_plugin_path('math')
+use_plugin_path('xrf')
+use_plugin_path('wx')
+
 from mathutils import index_of
-
-sys.path.insert(0, plugin_path('wx'))
-
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack, popup, add_button, get_icon,
                      add_checkbox, add_menu, add_choice, add_menu,
@@ -31,12 +31,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl,
 
 from periodictable import PeriodicTablePanel
 
-sys.path.insert(0, plugin_path('xrf'))
-
 from medfile_cars import GSEMCA_File, gsemca_group
-
-#from ..io.xrm_mapfile import (GSEXRM_MapFile, GSEXRM_FileStatus,
-#                              GSEXRM_Exception, GSEXRM_NotOwner)
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -289,7 +284,7 @@ class XRFDisplayConfig:
     L_major = ['La1', 'Lb1', 'Lb3', 'Lb4']
     L_minor = ['Ln', 'Ll', 'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2']
     L_minor = []
-    
+
     M_major = ['Ma', 'Mb', 'Mg', 'Mz']
     e_min   = 1.0
     e_max   = 30.0
@@ -726,7 +721,7 @@ class XRFDisplayFrame(wx.Frame):
     def onSavePNG(self, event=None):
         if self.panel is not None:
             self.panel.save_figure(event=event)
-            
+
     def onCopyImage(self, event=None):
         if self.panel is not None:
             self.panel.canvas.Copy_to_Clipboard(event=event)
@@ -918,7 +913,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca = _mca
         self.plotmca(self.mca)
         self.oplot(self.mca2.energy, self.mca2.counts)
-            
+
     def onReadGSEXRMFile(self, event=None, **kws):
         print '  onReadGSEXRMFile   '
         pass

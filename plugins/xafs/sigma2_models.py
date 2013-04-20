@@ -1,20 +1,19 @@
 #!/usr/bin/env python
 # models for debye-waller factors for xafs
 
-import sys
 import ctypes
 import numpy as np
-from larch.larchlib import plugin_path, get_dll
+from larch.larchlib import use_plugin_path, get_dll
 
-sys.path.insert(0, plugin_path('xray'))
+use_plugin_path('xray')
 
 from xraydb_plugin import atomic_mass
-
-# EINS_FACTOR  = hbarc*hbarc/(2 * k_boltz * amu)
+import scipy.constants as consts
+# EINS_FACTOR  = hbarc*hbarc/(2 * k_boltz * amu) = 24.254360157751783
 #    k_boltz = 8.6173324e-5  # [eV / K]
 #    amu     = 931.494061e6  # [eV / (c*c)]
 #    hbarc   = 1973.26938    # [eV * A]
-EINS_FACTOR = 24.254360157751783
+EINS_FACTOR = 1.e20*consts.hbar**2/(2*consts.k*consts.atomic_mass)
 
 FEFF6LIB = None
 

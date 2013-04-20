@@ -2,7 +2,7 @@
 """
 subclass of wxmplot.ImageFrame specific for Map Viewer -- adds custom menus
 """
-import sys
+
 import os
 import wx
 from wx._core import PyDeadObjectError
@@ -12,7 +12,7 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 import larch
 
-sys.path.insert(0, larch.plugin_path('wx'))
+larch.use_plugin_path('wx')
 from wxutils import Closure, LabelEntry, SimpleText
 
 from wxmplot import ImageFrame, PlotFrame

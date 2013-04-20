@@ -284,6 +284,12 @@ def plugin_path(val):
     """
     return os.path.abspath(os.path.join(sys_larchdir, 'plugins', val))
 
+def use_plugin_path(val):
+    """include the specifed Larch plugin path in a module:
+
+    sys.path.insert(0, plugin_path(val))
+    """
+    sys.path.insert(0, plugin_path(val))
 
 def add2path(envvar='PATH', dirname='.'):
     """add specified dir to begninng of PATH and

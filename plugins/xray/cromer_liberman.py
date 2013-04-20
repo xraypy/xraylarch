@@ -1,14 +1,13 @@
 import os
-import sys
 import ctypes
 import numpy as np
 from scipy.signal import convolve
 
 import larch
-from larch.larchlib import plugin_path, get_dll
+from larch.larchlib import use_plugin_path, get_dll
 
-# put the 'std' and 'xafs' (this!) plugin directories into sys.path
-sys.path.insert(0, plugin_path('xray'))
+use_plugin_path('xray')
+
 from xraydb import as_ndarray
 from xraydb_plugin import core_width, atomic_number
 

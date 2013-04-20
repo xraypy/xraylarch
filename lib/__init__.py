@@ -13,7 +13,7 @@ major, minor = sys.version_info[0], sys.version_info[1]
 if major < 2 or (major == 2 and minor < 6):
     raise EnvironmentError('requires python 2.6 or higher')
 
-from .larchlib import plugin_path, isNamedClass
+from .larchlib import plugin_path, use_plugin_path, isNamedClass
 from .site_config import show_site_config
 from .symboltable import Group, SymbolTable
 from .fitting import Minimizer, Parameter, isParameter, param_value

@@ -3,7 +3,8 @@ Utility functions used for xafs analysis
 """
 import numpy as np
 from larch import Group
-KTOE = 3.809980849311092
+import scipy.constants as consts
+KTOE = 1.e20*consts.hbar**2 / (2*consts.m_e * consts.e) # 3.8099819442818976
 ETOK = 1.0/KTOE
 
 def etok(energy):

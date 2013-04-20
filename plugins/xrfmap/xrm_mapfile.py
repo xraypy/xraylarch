@@ -5,16 +5,16 @@ import time
 import h5py
 import numpy as np
 import larch
-
+from larch import use_plugin_path
 from larch.utils.debugtime import debugtime
 
-sys.path.insert(0, larch.plugin_path('io'))
-from fileutils import nativepath
+use_plugin_path('io')
+use_plugin_path('xrf')
+use_plugin_path('xrfmap')
 
-sys.path.insert(0, larch.plugin_path('xrf'))
+from fileutils import nativepath
 from mca import MCA
 
-sys.path.insert(0, larch.plugin_path('xrfmap'))
 from configfile import FastMapConfig
 from xmap_netcdf import read_xmap_netcdf
 from asciifiles import (readASCII, readMasterFile, readROIFile,

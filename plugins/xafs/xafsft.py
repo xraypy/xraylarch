@@ -2,7 +2,6 @@
 """
   XAFS Fourier transforms
 """
-import sys
 import numpy as np
 from numpy import (pi, arange, zeros, ones, sin, cos,
                    exp, log, sqrt, where, interp, linspace)
@@ -11,10 +10,11 @@ from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
 import larch
-from larch.larchlib import plugin_path
+from larch.larchlib import use_plugin_path
 
-sys.path.insert(0, plugin_path('math'))
-sys.path.insert(0, plugin_path('xafs'))
+use_plugin_path('math')
+use_plugin_path('xafs')
+
 from mathutils import complex_phase
 from xafsutils import set_xafsGroup
 

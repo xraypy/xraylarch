@@ -1,14 +1,13 @@
 #!/usr/bin/python
 
 import os
-import sys
 import copy
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
-import sys
-from larch.larchlib import plugin_path
-sys.path.insert(0, plugin_path('xrf'))
+from larch.larchlib import use_plugin_path
+use_plugin_path('xrf')
+
 from mca import MCA
 from roi import ROI
 from xrf_bgr import XRFBackground

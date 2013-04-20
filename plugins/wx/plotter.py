@@ -25,10 +25,11 @@ if not hasattr(sys, 'frozen'):
 import wx
 import wx.lib.newevent
 
-import larch
 from wxmplot import PlotFrame, ImageFrame
 
-sys.path.insert(0, larch.plugin_path('wx'))
+import larch
+larch.use_plugin_path('wx')
+from gui_utils import ensuremod
 from xrfdisplay import XRFDisplayFrame
 
 mpl_dir = os.path.join(larch.site_config.usr_larchdir, 'matplotlib')
@@ -39,12 +40,6 @@ if not os.path.exists(mpl_dir):
     except:
         pass
 
-
-here = os.path.join(larch.site_config.sys_larchdir, 'plugins', 'wx')
-sys.path.insert(0, here)
-
-# now we can reliably import other wx modules...
-from gui_utils import ensuremod
 
 
 IMG_DISPLAYS = {}

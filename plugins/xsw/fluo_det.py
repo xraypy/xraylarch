@@ -1,5 +1,5 @@
 """
-Fluorescence Intensity calculations: 
+Fluorescence Intensity calculations:
    Y. Choi
 
 calculates fluorescence intensities for multiple elements at a fixed incident x-ray energy.
@@ -47,12 +47,11 @@ sim_spectra: keeps individual emission lines with significant intensity without 
 import math
 import numpy
 import sys
-import larch
+from larch import use_plugin_path
+use_plugin_path('xray')
+use_plugin_path('xsw')
 
-#global variables
-R_ELECTRON = 2.8179403267e-13 # classical electron radius in cm
-AVOGARDO = 6.0221413e23  #atoms/mol
-BARN = 1.e-24
+from physical_constants import R_ELECTRON, AVOGADRO, BARN
 
 pre_edge_margin=150.    # FY calculated from 150 eV below the absorption edge.
 fluo_emit_min=500.      # minimum energy for emitted fluorescence.  ignore fluorescence emissions below 500eV
@@ -416,7 +415,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
         con=atom.Conc
         for (nn, edge) in enumerate(edges):
             emit=Fluo_lines[nn]
-            fy, emit_eV, emit_prob = fluo_yield(atom.AtSym, edge, emit, eV0) 
+            fy, emit_eV, emit_prob = fluo_yield(atom.AtSym, edge, emit, eV0)
             print emit
             if fy==0.0 or emit_prob==0:
                 continue                        # try next item if FY=0

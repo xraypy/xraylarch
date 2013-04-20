@@ -1,15 +1,12 @@
 #!/usr/bin/env python
-
-import sys, os
-
 import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 
-from larch import Group, Parameter, Minimizer, plugin_path
+from larch import Group, Parameter, Minimizer, use_plugin_path
 
-# put the 'std' and 'xafs' (this!) plugin directories into sys.path
-sys.path.insert(0, plugin_path('math'))
-sys.path.insert(0, plugin_path('xafs'))
+# use larch plugins
+use_plugin_path('math')
+use_plugin_path('xafs')
 
 # now we can reliably import other std and xafs modules...
 from mathutils import index_of, index_nearest, realimag, remove_dups

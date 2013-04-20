@@ -35,7 +35,10 @@ from wxmplot import PlotFrame
 import larch
 from larch.utils.debugtime import debugtime
 
-sys.path.insert(0, larch.plugin_path('wx'))
+larch.use_plugin_path('wx')
+larch.use_plugin_path('io')
+larch.use_plugin_path('xrfmap')
+
 from xrfdisplay import XRFDisplayFrame
 from mapimageframe import MapImageFrame
 
@@ -43,10 +46,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      Closure, pack, popup,
                      add_button, add_menu, add_choice)
 
-sys.path.insert(0, larch.plugin_path('io'))
 from fileutils import nativepath
-
-sys.path.insert(0, larch.plugin_path('xrfmap'))
 
 from xrm_mapfile import (GSEXRM_MapFile, GSEXRM_FileStatus,
                          GSEXRM_Exception, GSEXRM_NotOwner)

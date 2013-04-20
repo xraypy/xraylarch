@@ -2,13 +2,12 @@
 """
   Estimate Noise in an EXAFS spectrum
 """
-import sys
 from numpy import pi, sqrt, where
 from larch import Group
-from larch.larchlib import plugin_path
+from larch.larchlib import use_plugin_path
 
-sys.path.insert(0, plugin_path('math'))
-sys.path.insert(0, plugin_path('xafs'))
+use_plugin_path('math')
+use_plugin_path('xafs')
 
 from mathutils import index_of, realimag
 from xafsutils import set_xafsGroup

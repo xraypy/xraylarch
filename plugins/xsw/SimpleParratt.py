@@ -7,10 +7,8 @@
 import math
 import cmath
 import numpy
-#import fluo  # used in Layer.get_index, change to readf1f2, stop using fluo
-import sys
-import larch
-sys.path.insert(0, larch.plugin_path('xray'))
+from  larch import use_plugin_path
+use_plugin_path('xray')
 
 class Layer:
     def __init__(self, tag, composition='Si', density=2.33, thickness=1000.1234, rms=1e-3):

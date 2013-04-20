@@ -2,8 +2,6 @@
 """
    feffit sums Feff paths to match xafs data
 """
-
-import sys, os
 from collections import Iterable
 from copy import copy
 import numpy as np
@@ -12,10 +10,10 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 from scipy.optimize import leastsq as scipy_leastsq
 
 from larch import (Group, Parameter, isParameter, Minimizer,
-                   plugin_path, isNamedClass)
+                   use_plugin_path, isNamedClass)
 
-sys.path.insert(0, plugin_path('math'))
-sys.path.insert(0, plugin_path('xafs'))
+use_plugin_path('math')
+use_plugin_path('xafs')
 
 from mathutils import index_of, realimag, complex_phase
 

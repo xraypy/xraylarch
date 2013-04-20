@@ -15,12 +15,11 @@ creates a group that contains the chi(k) for the sum of paths.
 
 import numpy as np
 from scipy.interpolate import UnivariateSpline
-import sys, os
 from larch import (Group, Parameter, isParameter,
-                   param_value, plugin_path, isNamedClass)
+                   param_value, use_plugin_path, isNamedClass)
 
-sys.path.insert(0, plugin_path('xray'))
-sys.path.insert(0, plugin_path('xafs'))
+use_plugin_path('xray')
+use_plugin_path('xafs')
 
 from xafsutils import ETOK, set_xafsGroup
 from xraydb_plugin import atomic_mass

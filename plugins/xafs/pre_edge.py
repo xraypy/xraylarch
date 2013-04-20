@@ -3,15 +3,13 @@
   XAFS pre-edge subtraction, normalization algorithms
 """
 
-import sys
 import numpy as np
 from scipy import polyfit
 
-from larch.larchlib import plugin_path
+from larch.larchlib import use_plugin_path
 
-# put the 'std' and 'xafs' (this!) plugin directories into sys.path
-sys.path.insert(0, plugin_path('math'))
-sys.path.insert(0, plugin_path('xafs'))
+use_plugin_path('math')
+use_plugin_path('xafs')
 
 # now we can reliably import other std and xafs modules...
 from mathutils import index_of, index_nearest, remove_dups

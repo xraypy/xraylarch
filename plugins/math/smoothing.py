@@ -6,9 +6,8 @@ Smoothing routines
 from numpy import pi, log, exp, sqrt, arange, concatenate, convolve
 from numpy import int, abs, linalg, mat, linspace, interp, diff
 
-import sys
-from larch.larchlib import plugin_path
-sys.path.insert(0, plugin_path('math'))
+from larch.larchlib import use_plugin_path
+use_plugin_path('math')
 
 from mathutils import index_of, index_nearest, realimag, remove_dups
 from lineshapes import gaussian, lorentzian, voigt
