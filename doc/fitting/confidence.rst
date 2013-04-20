@@ -14,12 +14,11 @@ is the case.
 
 It is therefore fairly common to see analyses that include explicit
 exploration of Parameter values away from their best-fit solution, in order
-to determine the degree of confidence in the best-fit values.
-The Larch provides two main functions to help explore such cases.  To be
-sure, they are much slower than the automatic estimation of the
-uncertainties.  For many (perhaps most) cases, they do not provide much
-better insight than the automatic method.
-
+to determine the degree of confidence in the best-fit values. Larch
+provides two main functions to help explore such cases.  To be sure, they
+are much slower than the automatic estimation of the uncertainties.  For
+many (perhaps most) cases, they do not provide much better insight than the
+automatic method.
 
 .. function:: confidence_intervals(minimizer, sigmas=(1, 2, 3), prob_func=None, maxiter=200)
 

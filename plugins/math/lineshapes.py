@@ -63,11 +63,11 @@ def pearson7(x, cen=0, sigma=1, expon=0.5):
     scale = gamma(expon) * sqrt((2**(1/expon) -1)) / (gamma(expon-0.5)) / (sigma*sqrt(pi))
     return scale / (1 + ( ((1.0*x-cen)/sigma)**2) * (2**(1/expon) -1) )**expon
 
-def fano(x, cen=0, gamma=1, q=1):
-    """Fano, or Breit-Wigner-Fano lineshape:
-        = (q*gamma/2 + x - cen)**2 / ( (gamma/2)**2 + (x - cen)**2 )
+def breit_wigner(x, cen=0, sigma=1, q=1):
+    """Breit-Wigner-Fano lineshape:
+        = (q*sigma/2 + x - cen)**2 / ( (sigma/2)**2 + (x - cen)**2 )
     """
-    gam = gamma/2.0
+    gam = sigma/2.0
     return  (q*gam + x - cen)**2 / (gam*gam + (x-cen)**2)
 
 def logistic(x, cen=0, sigma=1.):
@@ -84,6 +84,16 @@ def lognormal(x, cen=0, sigma=1):
     cen = param_value(cen)
     sigma = param_value(sigma)
     return (1./x) * exp(-(ln(x) - cen)/ (2* sigma**2))
+
+def students_t(x, cen=0, sigma=1):
+    """Student's t distribution:
+        gamma((sigma+1)/2)   (1 + (x-cen)**2/sigma)^(-(sigma+1)/2)
+     =  -------------------------
+        sqrt(sigma*pi)gamma(sigma/2)
+
+    """
+    s1  = (sigma+1)/2.0
+    return (1 + (x-cen)**2/sigma)**(-s1) * gamma(s1) / (sqrt(sigma*pi)*gamma(sigma/2))
 
 def _erf(x):
     """error function.  = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])"""
@@ -113,7 +123,8 @@ def registerLarchPlugin():
                       'pearson7': pearson7,
                       'lognormal': lognormal,
                       'gammaln': _gammaln,
-                      'fano': fano,
+                      'breit_wigner': breit_wigner,
+                      'students_t': students_t,
                       'logistic': logistic,
                       'erf': _erf,
                       'erfc': _erfc,
