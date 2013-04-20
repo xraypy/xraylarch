@@ -8,8 +8,8 @@ One of the primary motivations for Larch was processing XAFS data.  Larch
 was originally conceived to be version 2 of Ifeffit, replacing and
 expanding all the XAFS analysis capabilities of that package.
 
-As of this writing (Feb, 2013), this replacement is essentially complete,
-with all the main functionality of Ifeffit 1 available in Larch.  There may
+As of this writing (April, 2013), this replacement is essentially complete,
+with all the main functionality of Ifeffit available in Larch.  There may
 still be a few minor features of Ifeffit that are not yet available.  There
 are some slight differences in implementation details, such that slightly
 different numerical results are obtained.  Importantly, some new features
@@ -32,7 +32,6 @@ Broadly speaking, Larch can do all of these steps.
 
 .. module:: _xafs
    :synopsis: Basic XAFS Functions
-
 
 The XAFS-specific functions in Larch are kept in the :data:`_xafs` Group,
 which can be easily accessed, as this is in the default search path.  The

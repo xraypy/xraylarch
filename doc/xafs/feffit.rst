@@ -69,12 +69,24 @@ should be noted that this limitation is inherent in XAFS (and many other
 techniques that rely on oscillatory signals), and not a consequence of
 using Fourier transforms in the analysis.
 
+Because of this fundamental information limit, it is usual to purposely
+limit the spectra being analyzed.  Of course, one usually limits how far
+out in energy to measure a signal based on the strength of the signal
+compared to some noise level.  This limits the :math:`k` range of useful
+data.  Given that finite range of data for :math:`\chi(k)`, the number of
+Paths that can be used to effectively this data will be limited.
+
 
 Fit statistics and goodness-of-fit meassures for :func:`feffit`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The fit done by :func:`feffit` is conceptually very similar to the fits
-described in :ref:`fitting-minimize-sec`.
+described in :ref:`fitting-minimize-sec`.   Therefore, many of the
+statistics discussed in :ref:`fitting-results-sec` are also generated for
+:func:`feffit`. In view of the limited amount of information, some of the
+traditional statistical definitions are altered slightly.   For example,
+The :math:`\chi^2` statistic is defined as
+
 
 
 The Feffit functions in Larch
