@@ -165,17 +165,23 @@ comes from Elam, Ravel, and Sieber.</p>
 <tr class="row-odd"><td><a class="reference internal" href="#_xray.atomic_density" title="_xray.atomic_density"><tt class="xref py py-func docutils literal"><span class="pre">atomic_density()</span></tt></a></td>
 <td>atomic density (for pure element)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_edge" title="_xray.xray_edge"><tt class="xref py py-func docutils literal"><span class="pre">xray_edge()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.chemparse" title="_xray.chemparse"><tt class="xref py py-func docutils literal"><span class="pre">chemparse()</span></tt></a></td>
+<td>parse a chemical formula to a dictionary of components</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_edge" title="_xray.xray_edge"><tt class="xref py py-func docutils literal"><span class="pre">xray_edge()</span></tt></a></td>
 <td>xray edge data for a particular element and edge</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_line" title="_xray.xray_line"><tt class="xref py py-func docutils literal"><span class="pre">xray_line()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_line" title="_xray.xray_line"><tt class="xref py py-func docutils literal"><span class="pre">xray_line()</span></tt></a></td>
 <td>xray emission line data for an element and line</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_edges" title="_xray.xray_edges"><tt class="xref py py-func docutils literal"><span class="pre">xray_edges()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_edges" title="_xray.xray_edges"><tt class="xref py py-func docutils literal"><span class="pre">xray_edges()</span></tt></a></td>
 <td>dictionary of all x-ray edges data for an element</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_lines" title="_xray.xray_lines"><tt class="xref py py-func docutils literal"><span class="pre">xray_lines()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_lines" title="_xray.xray_lines"><tt class="xref py py-func docutils literal"><span class="pre">xray_lines()</span></tt></a></td>
 <td>dictionary of all x-ray emission line data for an element</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.fluo_yield" title="_xray.fluo_yield"><tt class="xref py py-func docutils literal"><span class="pre">fluo_yield()</span></tt></a></td>
+<td>fluorescence yield and weighted line energy</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#_xray.core_width" title="_xray.core_width"><tt class="xref py py-func docutils literal"><span class="pre">core_width()</span></tt></a></td>
 <td>core level width for an element and edge (Keski-Rahkonen and Krause)</td>
@@ -207,7 +213,10 @@ comes from Elam, Ravel, and Sieber.</p>
 <tr class="row-odd"><td><a class="reference internal" href="#_xray.mu_chantler" title="_xray.mu_chantler"><tt class="xref py py-func docutils literal"><span class="pre">mu_chantler()</span></tt></a></td>
 <td>absorption cross-section (Chantler)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.f1f2_cl" title="_xray.f1f2_cl"><tt class="xref py py-func docutils literal"><span class="pre">f1f2_cl()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_delta_beta" title="_xray.xray_delta_beta"><tt class="xref py py-func docutils literal"><span class="pre">xray_delta_beta()</span></tt></a></td>
+<td>anomalous components of the index of refraction for a material</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.f1f2_cl" title="_xray.f1f2_cl"><tt class="xref py py-func docutils literal"><span class="pre">f1f2_cl()</span></tt></a></td>
 <td>f&#8217; and f&#8217;&#8217; anomalous factors (Cromer and Liberman)</td>
 </tr>
 </tbody>
@@ -451,6 +460,22 @@ line names</em></a>.  Finally, all energies are in eV.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="_xray.chemparse">
+<tt class="descclassname">_xray.</tt><tt class="descname">chemparse</tt><big>(</big><em>formula</em><big>)</big><a class="headerlink" href="#_xray.chemparse" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse a chemical formula, returning a dictionary with element symbols as
+keys and number for each element as values.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s">&quot;H2O&quot;</span><span class="p">)</span>
+<span class="p">{</span><span class="s">&#39;H&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s">&quot;Mg0.2Fe0.8(SO4)2&quot;</span><span class="p">)</span>
+<span class="p">{</span><span class="s">&#39;S&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;Mg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s">&#39;Fe&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Note that factional weights and even use of scientific notation for
+weights is supported, as long as the weight begins with a number and not
+&#8216;.&#8217;.   That is &#8216;Fe0.8&#8217;,  but not &#8216;Fe.8&#8217;.</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="_xray.xray_edge">
 <tt class="descclassname">_xray.</tt><tt class="descname">xray_edge</tt><big>(</big><em>z_or_symbol</em>, <em>edge_name</em><big>)</big><a class="headerlink" href="#_xray.xray_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>return (edge energy, fluorescence yield, edge jump) for an atomic number or symbol and
@@ -477,6 +502,25 @@ symbol.  The keys of the dictionay are the names of the edges.</p>
 <tt class="descclassname">_xray.</tt><tt class="descname">xray_lines</tt><big>(</big><em>z_or_symbol</em><big>)</big><a class="headerlink" href="#_xray.xray_lines" title="Permalink to this definition">¶</a></dt>
 <dd><p>return dictionary of all (emission energy, intensity, initial level, final level for an atomic
 number or symbol.  The keys of the dictionay are the names of the emission lines.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.fluo_yield">
+<tt class="descclassname">_xray.</tt><tt class="descname">fluo_yield</tt><big>(</big><em>z_or_symbol</em>, <em>edge</em>, <em>emission_family</em>, <em>incident_energy</em>, <em>energy_margin=-150</em><big>)</big><a class="headerlink" href="#_xray.fluo_yield" title="Permalink to this definition">¶</a></dt>
+<dd><p>return (fluorescent yield, average emission energy, probability)
+for an atomic number or symbol, edge, emission family, and incident
+energy.</p>
+<p>Here, &#8216;emission family&#8217; is the family of emission lines, &#8216;Ka&#8217;, &#8216;Lb&#8217;,
+etc, that is comprised of several individual lines (&#8216;Ka1&#8217;, &#8216;Ka2&#8217;,
+&#8216;Lb2&#8217;, etc).  The returned average emission energy will be the average
+of the corresponding individual sub-line energies, weighted by the
+probabilities of the individual lines.  The returned probability will
+be the total probability for all lines in the family.</p>
+<p>The fluorescence yield will also be returned, giving the same value as
+<a class="reference internal" href="#_xray.xray_edge" title="_xray.xray_edge"><tt class="xref py py-func docutils literal"><span class="pre">xray_edge()</span></tt></a> if the provided incident_energy is above or near the
+corresponding edge energy.  The energy_margin controls the allowed
+proximity to the edge energy, so that the returned fluorescence yield
+will be 0 if the incident energy &lt; edge energy + energy_margin.</p>
 </dd></dl>
 
 <dl class="function">
@@ -568,7 +612,72 @@ Lorentzian profile (with <tt class="docutils literal"><span class="pre">width</s
 <p>Note that both f&#8217; and f&#8217;&#8217; are returned here.</p>
 </dd></dl>
 
-<p class="rubric">References</p>
+<dl class="function">
+<dt id="_xray.xray_delta_beta">
+<tt class="descclassname">_xray.</tt><tt class="descname">xray_delta_beta</tt><big>(</big><em>material</em>, <em>energy</em>, <em>photo_only=False</em><big>)</big><a class="headerlink" href="#_xray.xray_delta_beta" title="Permalink to this definition">¶</a></dt>
+<dd><p>return anomalous components of the index of refraction for a material,
+using the tabulated scattering components from Chantler.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>material</strong> &#8211; chemical formula  (&#8216;Fe2O3&#8217;, &#8216;CaMg(CO3)2&#8217;, &#8216;La1.9Sr0.1CuO4&#8217;)</li>
+<li><strong>density</strong> &#8211; material density in g/cm^3</li>
+<li><strong>energy</strong> &#8211; x-ray energy in eV</li>
+<li><strong>photo_only</strong> &#8211; boolean for returning only the photo cross-section component
+for beta and t_atten. If <tt class="docutils literal"><span class="pre">False</span></tt> (the default value), the
+total cross-section is returned.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">(delta, beta, t_atten)</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The material formula is parsed by <a class="reference internal" href="#_xray.chemparse" title="_xray.chemparse"><tt class="xref py py-func docutils literal"><span class="pre">chemparse()</span></tt></a>.   The returned
+tuple contains the components described in the table below</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="18%" />
+<col width="22%" />
+<col width="60%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">value</th>
+<th class="head">symbol</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>delta</td>
+<td><img class="math" src="../_images/math/0a42a8b725c200085e5253db2d2fbf8dab898a8f.png" alt="\delta"/></td>
+<td>real part of index of refraction.</td>
+</tr>
+<tr class="row-odd"><td>beta</td>
+<td><img class="math" src="../_images/math/fdb63b9e51abe6bbb16acfb5d7b773ddbb5bf4a8.png" alt="\beta"/></td>
+<td>imaginary part of index of refraction.</td>
+</tr>
+<tr class="row-even"><td>t_atten</td>
+<td><img class="math" src="../_images/math/a3ef26da5881d2162eed4f62b73eabed2b7c152c.png" alt="t_a"/></td>
+<td>attenuation length, in cm.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>and correspond to the anomalous scattering components of the index of
+refraction, defined in the equation below.  Here, <img class="math" src="../_images/math/10b28762d00db7c1c551e91048ab18d96d17758d.png" alt="t_{a} =
+\lambda / 4\pi\beta"/>, and and <img class="math" src="../_images/math/ce4588fd900d02afcbd260bc07f54cce49a7dc4a.png" alt="\lambda"/> is the X-ray wavelength,
+<img class="math" src="../_images/math/630f232dcbff18b52c950e05ea525a8a119ff77b.png" alt="r_0"/> is the classical electron radius, and the sum is over the
+atomic species with number <img class="math" src="../_images/math/085e054fc24efb0150fde6a903934a919c87c1d6.png" alt="n_j"/> and total complex scattering
+factor <img class="math" src="../_images/math/fde5b6a2fc1ab440c112a594ad384f0ec48865e9.png" alt="f_j"/>.</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="../_images/math/e95e36891d0f52d262bb491a86f02555029066cc.png" alt="n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}"/></p>
+</div><p class="rubric">References</p>
 <table class="docutils citation" frame="void" id="brennancowan" rules="none">
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
@@ -582,7 +691,7 @@ Scientific Instruments <strong>63</strong>, pp850&#8211;853 (1992) [<a class="re
 <colgroup><col class="label" /><col /></colgroup>
 <tbody valign="top">
 <tr><td class="label"><a class="fn-backref" href="#id6">[Chantler]</a></td><td>C. T. Chantler, Journal of Physical and Chemical Reference
-Data <strong>24</strong>, p71 (1995)</td></tr>
+Data <strong>24</strong>, p71 (1995) [<a class="reference external" href="http://www.nist.gov/pml/data/ffast/index.cfm">http://www.nist.gov/pml/data/ffast/index.cfm</a>].</td></tr>
 </tbody>
 </table>
 <table class="docutils citation" frame="void" id="cromerliberman" rules="none">

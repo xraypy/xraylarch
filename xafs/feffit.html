@@ -81,6 +81,9 @@
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li><a class="reference internal" href="#the-feffit-strategy-for-modeling-exafs-data">The Feffit Strategy for Modeling EXAFS Data</a></li>
+<li><a class="reference internal" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit">Fit statistics and goodness-of-fit meassures for <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li><a class="reference internal" href="#the-feffit-functions-in-larch">The Feffit functions in Larch</a></li>
 <li><a class="reference internal" href="#feffit-transform"><tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
 <li><a class="reference internal" href="#feffit-dataset"><tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
 <li><a class="reference internal" href="#feffit"><tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
@@ -134,16 +137,70 @@ primary motivation for Larch.  In this section, we describe how to set up a
 fitting model to fit a set of FEFF calculations to XAFS data.  Many parts
 of the documentation so far have touched on important aspects of this
 process, and those sections will be referenced here.</p>
-<p>The basic approach is to create a model EXAFS <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> as a sum of
-scattering paths that will be compared to experimentally derived
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  The model will be parameterized in terms of Larch
-Parameters defined by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>.  A fit, using the same fitting
-infrastructure as to <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> will be used to refine the
-values of the variable parameters in the model.  To be clear, the Path
-Parameters for all Feff Paths in the fits should be written in terms of
-variable parameters help in a single parameter group.  The refinement will
-be done by comparing the model and experimental <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> after a
-<em>Transformation</em> based on the Fourier transforms in <a class="reference internal" href="xafsft.html#xafs-ft-sec"><em>XAFS: Fourier Transforms for XAFS</em></a>.</p>
+<div class="section" id="the-feffit-strategy-for-modeling-exafs-data">
+<h2>The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
+<p>The basic approach to modeling EXAFS data in Larch is to create a model
+EXAFS <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> as a sum of scattering paths that will be compared to
+experimentally derived <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  The model will consist of a set of
+FEFF Scattering Paths representing the photo-electron scattering from
+different sets of atoms.  As discussed in ref:<cite>xafs-feffpaths_sec</cite>, these
+FEFF Paths have a fixed set of physically meaningful parameters than can be
+modified to alter the predicted contribution to <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  Any of
+these values can be defined as algebraic expressions of Larch Parameters
+defined by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>.  The actual fit uses the same fitting
+infrastructure as to <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> to refine the values of the
+variable parameters in the model so as to best match the experimental data.
+Because <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> has known properties and <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> dependencies, it
+is common to weight and Fourier transform (as described in
+<a class="reference internal" href="xafsft.html#xafs-ft-sec"><em>XAFS: Fourier Transforms for XAFS</em></a>) for the analysis.  In general term, the the refinement
+process will compare experimental and model <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> after a
+<em>Transformation</em>.</p>
+<p>The model for <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> used to compare to data is</p>
+<div class="math">
+<p><img src="../_images/math/1ea28a56769efb8e2ea35fb08c869efe3635e815.png" alt="\chi(k) = \sum_{j} \chi_{j}(k, p_j)"/></p>
+</div><p>where <img class="math" src="../_images/math/05916738ce41f0ee9950287299c77ec134a7da44.png" alt="\chi_j"/> is the EXAFS contribution for a FEFF Path, as given in
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec"><em>The EXAFS Equation using Feff and FeffPath Groups</em></a> for path <img class="math" src="../_images/math/8122aa89ea6e80784c6513d22787ad86e36ad0cc.png" alt="j"/>, where <img class="math" src="../_images/math/f0a9cc9827a453a7403b1e5b13bf66527bdbf95b.png" alt="p_j"/> is the
+set of adjustable Path Parameters (<img class="math" src="../_images/math/fc923d7c827eca7b3f461463e11c982710c3bcb1.png" alt="S_0^2"/>, <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/>,
+<img class="math" src="../_images/math/a6109efe6592ee3e49d34c7e78edb5204535de86.png" alt="\delta{R}"/>, <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/>, and so on) listed as <tt class="docutils literal"><span class="pre">Adjustable</span></tt> in
+the <a class="reference internal" href="feffpaths.html#xafs-pathparams-table"><em>Table of Feff Path Parameters</em></a>.</p>
+<p>The number of FEFF Paths used in the sum can be unlimited, and they do not
+need to originate from a single run of FEFF.  This can be important in
+modeling even moderately complex structures as a single run of FEFF is
+limited to having exactly one absorbing atom in a cluster of atoms and
+therefore cannot be used to model multi-site systems without multiple runs.</p>
+<p>Because a large number of FEFF Paths could be used to model an XAFS
+spectrum, and because each Feff Path has up to 8 adjustable parameters,
+there is the potential of having a very large number of parameters for a
+fit.  In principle, However, there is a limited amount of information in an
+XAFS spectrum.  A simple estimate of how many parameters could be
+independently measured is given from information theory of Shannon and
+Nyquist as</p>
+<div class="math">
+<p><img src="../_images/math/a5c2f7ea5f4b92eba30c7acaa1566906c9d8e210.png" alt="N_{\rm params} \approx  \frac{2 \Delta k \Delta R}{\pi}"/></p>
+</div><p>where <img class="math" src="../_images/math/83db992a1bf9c6721470cff232c7842530571adb.png" alt="\Delta k"/> and <img class="math" src="../_images/math/3b949109c5d7b0ce70c280f17cfc63036d7ccc96.png" alt="\Delta R"/> are the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>
+range of the usable data under consideration.  In general, this greatly
+limits the number of parameters thar can be successfully used in a fit.  It
+should be noted that this limitation is inherent in XAFS (and many other
+techniques that rely on oscillatory signals), and not a consequence of
+using Fourier transforms in the analysis.</p>
+<p>Because of this fundamental information limit, it is usual to purposely
+limit the spectra being analyzed.  Of course, one usually limits how far
+out in energy to measure a signal based on the strength of the signal
+compared to some noise level.  This limits the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range of useful
+data.  Given that finite range of data for <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>, the number of
+Paths that can be used to effectively this data will be limited.</p>
+</div>
+<div class="section" id="fit-statistics-and-goodness-of-fit-meassures-for-feffit">
+<h2>Fit statistics and goodness-of-fit meassures for <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a><a class="headerlink" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit" title="Permalink to this headline">¶</a></h2>
+<p>The fit done by <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> is conceptually very similar to the fits
+described in <a class="reference internal" href="../fitting/minimize.html#fitting-minimize-sec"><em>minimize() and Objective Functions</em></a>.   Therefore, many of the
+statistics discussed in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><em>Fit Results and Outputs</em></a> are also generated for
+<a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>. In view of the limited amount of information, some of the
+traditional statistical definitions are altered slightly.   For example,
+The <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> statistic is defined as</p>
+</div>
+<div class="section" id="the-feffit-functions-in-larch">
+<h2>The Feffit functions in Larch<a class="headerlink" href="#the-feffit-functions-in-larch" title="Permalink to this headline">¶</a></h2>
 <p>The function <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> is the principle function to do the fit of a
 set of Feff paths to XAFS spectra.  This essentially runs
 <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> with a parameter group, but with a built-in
@@ -159,6 +216,8 @@ it has a <em>Feffit Transform</em> group which holds the Fourier transform and
 fitting ranges to select how the data and model are to be compared.  In
 addition, a fit has a single parameter group, holding all the variable and
 constrained parameters used by all the paths and data sets in a fit.</p>
+<p>To be clear, the Path Parameters for all Feff Paths in the fits should be written in terms of
+variable parameters help in a single parameter group.</p>
 <p>There are then 3 principle functions for setting up and executing
 <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>:</p>
 <blockquote>
@@ -177,6 +236,7 @@ the variable and constrained Parameters for the fit, and a dataset
 or list of datasets groups.</li>
 </ol>
 </div></blockquote>
+</div>
 <div class="section" id="feffit-transform">
 <h2><a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><tt class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></tt></a><a class="headerlink" href="#feffit-transform" title="Permalink to this headline">¶</a></h2>
 <dl class="function">

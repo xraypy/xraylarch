@@ -159,18 +159,19 @@ the calculation can be done correctly, Due to Larch&#8217;s flexibility, it is
 possible to delete, overwrite, or put inappropriate values into the
 components of a FeffPath Group, and care must be taken to avoid this.</p>
 <blockquote id="xafs-pathparams-table">
-<span id="index-0"></span><div><p>Table of FeffPath attributes, including the Path Parameters used in the
-EXAFS equation.  The attributes here are arranged by category.  The <em>Info</em>
-attributes are informational only.  The two <em>Numerical</em> attributes <tt class="docutils literal"><span class="pre">reff</span></tt>
-and <tt class="docutils literal"><span class="pre">nleg</span></tt> are used in the EXAFS equation but are meant to be constants
-and their values should not be changed.  The <em>Adjustable</em> attributes are the
-standard Adjustable, Numerical Path Parameters that can be changed to affect
-the resulting EXAFS <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  These can be set either as constant
-values or fitting Parameters as defined by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>.  The <em>Output
-array</em> attributes are the arrays output from <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a>.  Finally, the
-sub-group <tt class="docutils literal"><span class="pre">_feffdat</span></tt> contains the low-level data as read directly from the
-<em>feffNNNN.dat</em> file, which is detailed in the next section,
-<a class="reference internal" href="#xafs-feffdat-sec"><em>The _feffdat Group: Full Details of the Feff.Dat File</em></a>.</p>
+<span id="index-0"></span><div><p>Table of FeffPath Parameters, including the Path
+Parameters used in the EXAFS equation.  The attributes here are
+arranged by category.  The <em>Info</em> attributes are informational only.
+The two <em>Numerical</em> attributes <tt class="docutils literal"><span class="pre">reff</span></tt> and <tt class="docutils literal"><span class="pre">nleg</span></tt> are used in the
+EXAFS equation but are meant to be constants and their values should
+not be changed.  The <em>Adjustable</em> attributes are the standard
+Adjustable, Numerical Path Parameters that can be changed to affect the
+resulting EXAFS <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  These can be set either as constant
+values or fitting Parameters as defined by <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>.  The
+<em>Output array</em> attributes are the arrays output from <a class="reference internal" href="#_xafs.path2chi" title="_xafs.path2chi"><tt class="xref py py-func docutils literal"><span class="pre">path2chi()</span></tt></a>.
+Finally, the sub-group <tt class="docutils literal"><span class="pre">_feffdat</span></tt> contains the low-level data as read
+directly from the <em>feffNNNN.dat</em> file, which is detailed in the next
+section, <a class="reference internal" href="#xafs-feffdat-sec"><em>The _feffdat Group: Full Details of the Feff.Dat File</em></a>.</p>
 <table border="1" class="docutils">
 <colgroup>
 <col width="20%" />
@@ -466,7 +467,9 @@ and the sum is used as <img class="math" src="../_images/math/c60f21ac85a002e1af
 <div class="section" id="the-exafs-equation-using-feff-and-feffpath-groups">
 <span id="xafs-exafsequation-sec"></span><span id="index-2"></span><h2>The EXAFS Equation using Feff and FeffPath Groups<a class="headerlink" href="#the-exafs-equation-using-feff-and-feffpath-groups" title="Permalink to this headline">¶</a></h2>
 <p>Now we are ready to write down the full EXAFS equation used for a Feff Path
-using the terms defined above in the <a class="reference internal" href="#xafs-pathparams-table"><em>Table of Feff Path Parameters</em></a> and the <a class="reference internal" href="#xafs-feffdat-table"><em>Table of Feff.Dat Components</em></a>.  One of the trickier concepts is that we are
+using the terms defined above in the
+<a class="reference internal" href="#xafs-pathparams-table"><em>Table of Feff Path Parameters</em></a>
+and the <a class="reference internal" href="#xafs-feffdat-table"><em>Table of Feff.Dat Components</em></a>.  One of the trickier concepts is that we are
 evaluating at experimental values of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> while the Feff calculation
 is tabulated on its own set of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values and we may need to apply an
 energy shift of <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> to the Feff calculation.  Thus, first we find
@@ -478,7 +481,7 @@ feff}"/> are the <img class="math" src="../_images/math/8c325612684d41304b9751c1
 <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> will be used to access the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> dependent values from the
 Feff arrays.  Next, we note that we need the complex wavenumber, defined as</p>
 <div class="math">
-<p><img src="../_images/math/b100fa8ed524edd22778f5bc86ae184b44cae04b.png" alt="p = p' + i p'' = \sqrt{ \bigl\{ p_{\rm real}(k) - i / \lambda(k) \bigr\}^2 - i \,
+<p><img src="../_images/math/6a0be16405df5030333c88dc3d9f24975db78cab.png" alt="p = p' + i p'' = \sqrt{ \big[ p_{\rm real}(k) - i / \lambda(k) \big]^2 - i \,
      2 m_e E_i /{\hbar^2} }"/></p>
 </div><p>where <img class="math" src="../_images/math/ebc667a6b48c0f57dd85e1e4479e308b711c0b37.png" alt="p_{\rm real}"/> and <img class="math" src="../_images/math/ce4588fd900d02afcbd260bc07f54cce49a7dc4a.png" alt="\lambda"/> are the values from Feff
 (<tt class="docutils literal"><span class="pre">_feffdat.rep</span></tt> and <tt class="docutils literal"><span class="pre">_feffdat.lam</span></tt>) and <img class="math" src="../_images/math/f8f358aa01478e43f1a663db574b83f88d7be478.png" alt="E_i"/> is the complex energy

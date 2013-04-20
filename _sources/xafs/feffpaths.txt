@@ -46,18 +46,19 @@ components of a FeffPath Group, and care must be taken to avoid this.
 
 .. _xafs-pathparams_table:
 
-    Table of FeffPath attributes, including the Path Parameters used in the
-    EXAFS equation.  The attributes here are arranged by category.  The *Info*
-    attributes are informational only.  The two *Numerical* attributes ``reff``
-    and ``nleg`` are used in the EXAFS equation but are meant to be constants
-    and their values should not be changed.  The *Adjustable* attributes are the
-    standard Adjustable, Numerical Path Parameters that can be changed to affect
-    the resulting EXAFS :math:`\chi(k)`.  These can be set either as constant
-    values or fitting Parameters as defined by :func:`_math.param`.  The *Output
-    array* attributes are the arrays output from :func:`path2chi`.  Finally, the
-    sub-group ``_feffdat`` contains the low-level data as read directly from the
-    *feffNNNN.dat* file, which is detailed in the next section,
-    :ref:`xafs-feffdat_sec`.
+    Table of FeffPath Parameters, including the Path
+    Parameters used in the EXAFS equation.  The attributes here are
+    arranged by category.  The *Info* attributes are informational only.
+    The two *Numerical* attributes ``reff`` and ``nleg`` are used in the
+    EXAFS equation but are meant to be constants and their values should
+    not be changed.  The *Adjustable* attributes are the standard
+    Adjustable, Numerical Path Parameters that can be changed to affect the
+    resulting EXAFS :math:`\chi(k)`.  These can be set either as constant
+    values or fitting Parameters as defined by :func:`_math.param`.  The
+    *Output array* attributes are the arrays output from :func:`path2chi`.
+    Finally, the sub-group ``_feffdat`` contains the low-level data as read
+    directly from the *feffNNNN.dat* file, which is detailed in the next
+    section, :ref:`xafs-feffdat_sec`.
 
     +-----------------+-----------------+----------------------------------------------------+
     | attribute name  | category        | description                                        |
@@ -233,8 +234,9 @@ The EXAFS Equation using Feff and FeffPath Groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now we are ready to write down the full EXAFS equation used for a Feff Path
-using the terms defined above in the :ref:`Table of Feff Path Parameters
-<xafs-pathparams_table>` and the :ref:`Table of Feff.Dat Components
+using the terms defined above in the
+:ref:`Table of Feff Path Parameters <xafs-pathparams_table>`
+and the :ref:`Table of Feff.Dat Components
 <xafs-feffdat_table>`.  One of the trickier concepts is that we are
 evaluating at experimental values of :math:`k` while the Feff calculation
 is tabulated on its own set of :math:`k` values and we may need to apply an
@@ -250,7 +252,7 @@ feff}` are the :math:`k` values from Feff (``_feffdat.k``).  This shifted
 Feff arrays.  Next, we note that we need the complex wavenumber, defined as
 
 .. math::
-   p = p' + i p'' = \sqrt{ \bigl\{ p_{\rm real}(k) - i / \lambda(k) \bigr\}^2 - i \,
+   p = p' + i p'' = \sqrt{ \big[ p_{\rm real}(k) - i / \lambda(k) \big]^2 - i \,
         2 m_e E_i /{\hbar^2} }
 
 where :math:`p_{\rm real}` and :math:`\lambda` are the values from Feff

@@ -111,7 +111,106 @@
             
   <div class="section" id="x-ray-fluorescence-analysis-with-larch">
 <h1>X-ray Fluorescence Analysis with Larch<a class="headerlink" href="#x-ray-fluorescence-analysis-with-larch" title="Permalink to this headline">¶</a></h1>
-<p>X-ray Fluorescence Data can be maniuplated and displayed with Larch.</p>
+<p>X-ray Fluorescence Data can be manipulated and displayed with Larch.</p>
+<dl class="function">
+<dt id="read_gsemca">
+<tt class="descname">read_gsemca</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#read_gsemca" title="Permalink to this definition">¶</a></dt>
+<dd><p>read a GSECARS MCA spectra file, returning a Group</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> &#8211; name of GSECARS MCA file</td>
+</tr>
+</tbody>
+</table>
+<p>The returned Group has the following components:</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">component name</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>filename</td>
+<td>name of file</td>
+</tr>
+<tr class="row-odd"><td>mcas</td>
+<td>list of MCA objects for each MCA saved in the file</td>
+</tr>
+<tr class="row-even"><td>rois</td>
+<td>list of ROIs</td>
+</tr>
+<tr class="row-odd"><td>environ</td>
+<td>list of Environmental Variables</td>
+</tr>
+<tr class="row-even"><td>energy</td>
+<td>array of energy values</td>
+</tr>
+<tr class="row-odd"><td>counts</td>
+<td>array of counts, deadtime corrected and summed over MCAs</td>
+</tr>
+<tr class="row-even"><td>raw</td>
+<td>array of counts, summed over MCAs, not corrected.</td>
+</tr>
+<tr class="row-odd"><td>calib</td>
+<td>dictionary of calibration values</td>
+</tr>
+<tr class="row-even"><td>dt_factor</td>
+<td>deadtime correction factor</td>
+</tr>
+<tr class="row-odd"><td>real_time</td>
+<td>real time for data acquisition</td>
+</tr>
+<tr class="row-even"><td>live_time</td>
+<td>live time for data acquisition</td>
+</tr>
+<tr class="row-odd"><td>nchans</td>
+<td>number of energy points in spectra</td>
+</tr>
+<tr class="row-even"><td>get_roi_counts()</td>
+<td>function to get counts for a named ROI</td>
+</tr>
+<tr class="row-odd"><td>save_mcafile()</td>
+<td>function to save MCA to file</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="xrf_plot">
+<tt class="descname">xrf_plot</tt><big>(</big><em>energy</em>, <em>counts</em>, <em>mca=None</em><big>)</big><a class="headerlink" href="#xrf_plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>create an interactive window for displaying an X-ray Fluorescence spectra</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>energy</strong> &#8211; array of energy values</li>
+<li><strong>counts</strong> &#8211; array of counts</li>
+<li><strong>mca</strong> &#8211; MCA group (as read from <a class="reference internal" href="#read_gsemca" title="read_gsemca"><tt class="xref py py-func docutils literal"><span class="pre">read_gsemca()</span></tt></a>), containing
+ROI definitions, calibration values, and related data.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<p>An example plot is shown below</p>
+<blockquote id="xrf-fig1">
+<div><a class="reference external image-reference" href="../_images/xrf_display1.png"><img alt="../_images/xrf_display1.png" src="../_images/xrf_display1.png" style="width: 75%;" /></a>
+<p>Figure 1: Example XRF Display, showing X-ray Fluorescence spectra,
+defined ROIs (in red), and Periodic Table for showing predicted emission
+lines.</p>
+</div></blockquote>
 </div>
 
 

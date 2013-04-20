@@ -161,8 +161,8 @@ Half-Maximum is approximately <img class="math" src="../_images/math/ed088bd2878
 <dt id="pvoigt">
 <tt class="descname">pvoigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>frac=0.5</em><big>)</big><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>a pseudo-Voigt distribution function, which is a weighted sum of a
-Gaussian and Lorentzian function with the same values for <em>cen</em>
-(<img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>) and <em>sigma</em> (<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>), and <em>frac</em> setting the
+Gaussian and Lorentzian distribution functions with the same values for
+<em>cen</em> (<img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>) and <em>sigma</em> (<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>), and <em>frac</em> setting the
 Lorentzian fraction:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">pvoigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac</span><span class="p">)</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span><span class="o">*</span><span class="n">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
 </pre></div>
@@ -181,9 +181,42 @@ function, defined as</p>
 </div><p>where for <em>cen</em> (<img class="math" src="../_images/math/2d8c833ed800824727cd7bd2fb9de1a12ad7e674.png" alt="\mu"/>) and <em>sigma</em> (<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>) are as for the
 above lineshapes, and <em>expon</em> is <img class="math" src="../_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/>, and</p>
 <div class="math">
-<p><img src="../_images/math/28a63312fb45b227ad84a149f4cbe93e1a397cd1.png" alt="s = \frac{\gamma(p) \sqrt{2^{1/p} -1}}{ \sigma\sqrt{\pi}\,\gamma(p-1/2)}"/></p>
-</div><p>where <img class="math" src="../_images/math/33bbf6ed599196c0e8ec3a71668b736d2750bc2b.png" alt="\gamma(x)"/> is the gamma function.</p>
-<p>Several builtin special functions can also be used to create lineshapes
+<p><img src="../_images/math/42074c3ac25ce43eca582f71b8ba6f7096c156d2.png" alt="s = \frac{\Gamma(p) \sqrt{2^{1/p} -1}}{ \sigma\sqrt{\pi}\,\Gamma(p-1/2)}"/></p>
+</div><p>where <img class="math" src="../_images/math/36edacaf2ec3d06fb117f981d12f42cdee6cf940.png" alt="\Gamma(x)"/> is the gamma function.</p>
+<dl class="function">
+<dt id="students_t">
+<tt class="descname">students_t</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
+<dd><p>Student&#8217;s t distribution function.</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="../_images/math/1f808e5614348dceb6a41f377afdc83b22559095.png" alt="f(x, \mu, \sigma) = \frac{\Gamma(\frac{\sigma+1}{2})} {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})} \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}"/></p>
+</div><p>where <img class="math" src="../_images/math/36edacaf2ec3d06fb117f981d12f42cdee6cf940.png" alt="\Gamma(x)"/> is the gamma function.</p>
+<dl class="function">
+<dt id="breit_wigner">
+<tt class="descname">breit_wigner</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>q=1</em><big>)</big><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
+<dd><p>Breit-Wigner-Fano distribution function.</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="../_images/math/1872d5c44ab333cd97c973ce30d88e8d55cd2746.png" alt="f(x, \mu, \sigma, q) = \frac{(q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}"/></p>
+</div><dl class="function">
+<dt id="logistic">
+<tt class="descname">logistic</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#logistic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Logistic lineshape, a sigmoidal curve</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="../_images/math/23b9732e4acd0f884e7e85963829a0d79acb70b7.png" alt="f(x, \mu, \sigma) = 1  - \frac{1}{1 + e^{(x-\mu)/\sigma}}"/></p>
+</div><dl class="function">
+<dt id="lognormal">
+<tt class="descname">lognormal</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
+<dd><p>log-normal function</p>
+</dd></dl>
+
+<div class="math">
+<p><img src="../_images/math/bdf9030810652829beb4f2072460825fd17ac18c.png" alt="f(x, \mu, \sigma) = \frac{e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}"/></p>
+</div><p>Several builtin special functions can also be used to create lineshapes
 useful in fitting spectra and other x-ray data.  Some of these are detailed
 in the <a class="reference internal" href="#fit-funcs-table"><em>Table of Useful Line shapes</em></a>.</p>
 <blockquote id="fit-funcs-table">
@@ -200,19 +233,31 @@ in the <a class="reference internal" href="#fit-funcs-table"><em>Table of Useful
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>gaussian(x, cen, sigma)</td>
-<td>Gaussian, normal distribution.</td>
+<td>Gaussian, normal distribution</td>
 </tr>
 <tr class="row-odd"><td>lorentzian(x, cen, sigma)</td>
 <td>Lorentzian distribution</td>
 </tr>
 <tr class="row-even"><td>voigt(x, cen, sigma, gamma)</td>
-<td>Voigt function</td>
+<td>Voigt distribution</td>
 </tr>
 <tr class="row-odd"><td>pvoigt(x, cen, sigma, frac)</td>
-<td>pseudo-Voigt function</td>
+<td>pseudo-Voigt distribution</td>
 </tr>
 <tr class="row-even"><td>pearson7(x, cen, sigma, expon)</td>
-<td>Pearson-7 function</td>
+<td>Pearson-7 distribution</td>
+</tr>
+<tr class="row-odd"><td>students_t(x, cen, sigma)</td>
+<td>Student&#8217;s t distribution</td>
+</tr>
+<tr class="row-even"><td>breit_wigner(x, cen, sigma, q)</td>
+<td>Breit-Wigner-Fano distribution</td>
+</tr>
+<tr class="row-odd"><td>logistic(x, cen, sigma)</td>
+<td>Logistic distribution</td>
+</tr>
+<tr class="row-even"><td>lognormal(x, cen, sigma)</td>
+<td>Log-normal distribution</td>
 </tr>
 <tr class="row-odd"><td>arctan(x)</td>
 <td>Arc-tangent function</td>
@@ -235,8 +280,7 @@ etc) can be accessed from scipy.special:</p>
 <span class="kn">from</span> <span class="nn">scipy.special</span> <span class="kn">import</span> <span class="n">y1</span> <span class="c"># Bessel function of second kind of order 1</span>
 </pre></div>
 </div>
-<p>A host of functions to generate other distribution functions (Pareto,
-Student&#8217;s T, etc) can be accessed from scipy.stats.</p>
+<p>A host of functions to generate other distribution functions can be accessed from scipy.stats.</p>
 </div>
 
 
