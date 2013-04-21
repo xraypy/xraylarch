@@ -1,4 +1,7 @@
 #!/usr/bin/env python
+
+import inspect
+
 class Closure(object):
     """Give a reference to a function with arguments so that it
     can be called later, optionally changing the argument list.
@@ -25,7 +28,12 @@ class Closure(object):
         self.__name__ = _name
         if _name is None:
             self.__name__ = self.func.__name__
-
+        self._nkws  = 0
+        if  inspect.getargspec(self.func).defaults is not None:
+            self._nkws  = len(inspect.getargspec(self.func).defaults)
+        self._nargs = len(inspect.getargspec(self.func).args) - self._nkws
+        self._haskwargs = inspect.getargspec(self.func).keywords is not None
+        self._hasvarargs = inspect.getargspec(self.func).varargs is not None
 
     def __repr__(self):
         return "<function %s, file=%s>" % (self.__name__, self.__file__)
@@ -40,7 +48,6 @@ class Closure(object):
     @property
     def __file__(self):
         return self.func.func_code.co_filename
-            
 
     def __call__(self, *args, **c_kwds):
         if self.func is None:
@@ -50,4 +57,12 @@ class Closure(object):
         for key, val in list(self.kwds.items()):
             kwds[key] = val
         kwds.update(c_kwds)
+        ngot = len(args) + len(kwds)
+        nexp = self._nargs + self._nkws
+        if not self._haskwargs and (ngot > nexp):
+            exc_msg = "%s expected %i arguments, got %i "
+            if '_larch' in self.kwds:
+                ngot -= 1
+                nexp -= 1
+            raise TypeError(exc_msg % (self.__name__, nexp, ngot))
         return self.func(*args, **kwds)
