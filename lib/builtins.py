@@ -10,7 +10,6 @@ from .helper import Helper
 from . import inputText
 from . import site_config
 from . import fitting
-from .utils import Closure
 from . import larchlib
 from .symboltable import isgroup
 
