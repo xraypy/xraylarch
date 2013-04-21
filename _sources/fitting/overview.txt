@@ -1,3 +1,5 @@
+.. _fitting-overview-sec:
+
 ==================
 Fitting Overview
 ==================

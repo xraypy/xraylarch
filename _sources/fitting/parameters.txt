@@ -188,7 +188,7 @@ minimization.
 working with uncertainties
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. _uncertaintes: http://packages.python.org/uncertainties/
+.. _uncertainties: http://packages.python.org/uncertainties/
 
 After a fit, each Parameter that was actually varied in the fit should be
 assigned information about the uncertainty in the fitted value as well as
@@ -203,7 +203,7 @@ covariance matrix will be held in the ``covar`` attribute of the parameter
 group for each fit.
 
 In addition, each Parameter will have a ``uvalue`` attribute which is a
-special object from the `uncertaintes`_ package that holds both the
+special object from the `uncertainties`_ package that holds both the
 best-fit value and standard error.  A key feature of these ``uvalue``
 attributes is that they can be used in simple mathematical expressions
 (addition, subtraction, multiplication, division, exponentiation) and have

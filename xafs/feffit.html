@@ -176,7 +176,7 @@ XAFS spectrum.  A simple estimate of how many parameters could be
 independently measured is given from information theory of Shannon and
 Nyquist as</p>
 <div class="math">
-<p><img src="../_images/math/a5c2f7ea5f4b92eba30c7acaa1566906c9d8e210.png" alt="N_{\rm params} \approx  \frac{2 \Delta k \Delta R}{\pi}"/></p>
+<p><img src="../_images/math/1fc245015c63d5ff684a4093d0bd7c40e06b69cd.png" alt="N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi}"/></p>
 </div><p>where <img class="math" src="../_images/math/83db992a1bf9c6721470cff232c7842530571adb.png" alt="\Delta k"/> and <img class="math" src="../_images/math/3b949109c5d7b0ce70c280f17cfc63036d7ccc96.png" alt="\Delta R"/> are the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>
 range of the usable data under consideration.  In general, this greatly
 limits the number of parameters thar can be successfully used in a fit.  It
@@ -187,8 +187,20 @@ using Fourier transforms in the analysis.</p>
 limit the spectra being analyzed.  Of course, one usually limits how far
 out in energy to measure a signal based on the strength of the signal
 compared to some noise level.  This limits the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range of useful
-data.  Given that finite range of data for <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>, the number of
-Paths that can be used to effectively this data will be limited.</p>
+data.  In addition, the number of scattering paths that contribute to the
+XAFS diverges very quickly with <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>.  For any <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> interval
+then, the finite <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range sets an upper limit on the number of
+parameters available for describing the atomic partial pair distribution
+function that gives spectral weight in that interval.  The distance to
+which a structural model can determined from real XAFS data is therefore
+limited to 5 or so Angstroms.  Because of these inherent limitations, it is
+generally preferrable to analyze XAFS data by limiting the <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> range
+of the analysis by using Fourier transforms to convert <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to
+<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>.  The <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> function allows several choices of
+data transformations, including doing 0 (<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>, unfiltered), 1
+(<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>, or Fourier transformed), or 2 (math:<cite>q</cite>, or Fourier filtered)
+Fourier transforms.   Fitting in unfiltred <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> space is generally not
+recommended.</p>
 </div>
 <div class="section" id="fit-statistics-and-goodness-of-fit-meassures-for-feffit">
 <h2>Fit statistics and goodness-of-fit meassures for <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a><a class="headerlink" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit" title="Permalink to this headline">¶</a></h2>
@@ -196,8 +208,58 @@ Paths that can be used to effectively this data will be limited.</p>
 described in <a class="reference internal" href="../fitting/minimize.html#fitting-minimize-sec"><em>minimize() and Objective Functions</em></a>.   Therefore, many of the
 statistics discussed in <a class="reference internal" href="../fitting/results.html#fitting-results-sec"><em>Fit Results and Outputs</em></a> are also generated for
 <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>. In view of the limited amount of information, some of the
-traditional statistical definitions are altered slightly.   For example,
-The <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> statistic is defined as</p>
+traditional statistical definitions need to be carefully examid, and
+possibly altered slightly.   For example, the typical <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/>
+statistic (as given in <a class="reference internal" href="../fitting/overview.html#fitting-overview-sec"><em>Fitting Overview</em></a>) is</p>
+<div class="math">
+<p><img src="../_images/math/d64cb58349410e9f4b70b840b40b67b17fbea8f0.png" alt="\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2"/></p>
+</div><p>seems simple enough, but actually raises several questions, as we have to
+decide what each of the terms here is.  As above, we&#8217;ll typically analyze
+data in <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> space after a Fourier transform, so that the &#8220;data&#8221;
+<img class="math" src="../_images/math/092e364e1d9d19ad5fffb0b46ef4cc7f2da02c1c.png" alt="y"/> actually represents the real and imaginary components of
+<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>, and the &#8220;model&#8221; <img class="math" src="../_images/math/bb2c93730dbb48558bb3c4738c956c4e8f816437.png" alt="f"/> will also be the Fourier
+transform of the parameterized model for <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
+<p>Perhaps the largest questions are ones that are often dismissed as trivial
+in standard statistics discussions:</p>
+<p>Perhaps surprisingly, the first question is: what is <img class="math" src="../_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/>?  The
+<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> data can be measured (or sampled) on an arbitrarily fine
+grid, and a Fourier transform can use an arbitrary number of points.  Thus,
+the number of points for both <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> can
+easily be changed without actually changing the quality or quantity of the
+real data.  The best number to use for the sum over the number of data
+points is then <img class="math" src="../_images/math/3aa620e4e4efc024479fe3505787bfcf905f4212.png" alt="N_{\rm ind}"/> defined above.  Of course, we generally
+oversample the data, so the value for <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> used is</p>
+<div class="math">
+<p><img src="../_images/math/652bac7deb963dac3d4924309f91d4291e2ffbc9.png" alt="\chi^2 = \frac{N_{\rm ind}}{N}\sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2"/></p>
+</div><p>where the sum can be over an arbitrary number of samples of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>
+or <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>, but the actual range of the data sets <img class="math" src="../_images/math/21ca4e531e65d7fa3fae8821733d19efe7e54a72.png" alt="N_{\rm
+ind}"/>.</p>
+<p>A second consideration is what to use for <img class="math" src="../_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/>, the uncertainty
+in the &#8220;data&#8221;.  Of course, the uncertainty in the data, <img class="math" src="../_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/>,
+depends on the details of the data transformation (for example, whether
+fitting in <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> or <img class="math" src="../_images/math/0615acc3725de21025457e7d6f7694dab8e2f758.png" alt="q"/> space).  Estimating the noise level in
+any given spectrum is not at all trivial, and should generally involve a
+proper statistical treatment of the data.  For an individual spectrum, what
+can be done easily and automatically is to estimate the noise level
+assuming that the data is dominated by noise that is independent of
+<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>: white noise.  The function <a class="reference internal" href="utilities.html#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> does this, and
+the estimate derived from this method is used unless you specify a value
+for <tt class="docutils literal"><span class="pre">epsilon_k</span></tt> the noise level in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  Though usually
+<img class="math" src="../_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/> is taken to be a scalar value, it can be specfied as an
+array (of the same length as <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>) if more accurate measures for
+the uncertainty of the data is available.</p>
+<p>It turns out that <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> is almost always too big, and reduced
+<img class="math" src="../_images/math/a2cb6262216c249440689de92d0b2dd75a2f2a96.png" alt="chi^2"/> (that is, <img class="math" src="../_images/math/81cdaed1b9846fe5cd8d4dec86c4155029371476.png" alt="\chi^2/(p - N_{\rm ind})"/> where <img class="math" src="../_images/math/36f73fc1312ee0349b3f3a0f3bd9eb5504339011.png" alt="p"/> is
+the number of fitted parameters) is far greater than 1.  This is partly due
+to a poor assessment of the uncertainty in the data, and partly due to
+imperfections in the calculations that go into the model.  Together, these
+are often called &#8220;systematic errors&#8221; in the EXAFS literature.  Because of
+this issue, an alternative statistic <img class="math" src="../_images/math/aea4abd525af1cda58b073d556163d0370cb9eae.png" alt="\cal{R}"/> is often used as a
+supplement to <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> for EXAFS.  The <img class="math" src="../_images/math/aea4abd525af1cda58b073d556163d0370cb9eae.png" alt="\cal{R}"/> factor is
+defined as</p>
+<div class="math">
+<p><img src="../_images/math/716d64c7ac35eaf06fcee3082859f606bde7e08c.png" alt="{\cal{R}} = \frac{\sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta})}\big]^2}{\sum_{i=1}^{N} {y_i^2}}"/></p>
+</div><p>which is to say, the misfit scaled by the magnitude of the data.</p>
 </div>
 <div class="section" id="the-feffit-functions-in-larch">
 <h2>The Feffit functions in Larch<a class="headerlink" href="#the-feffit-functions-in-larch" title="Permalink to this headline">¶</a></h2>
