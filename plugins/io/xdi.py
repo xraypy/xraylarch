@@ -11,14 +11,12 @@ __version__ = '1.0.0'
 
 import larch
 from larch.larchlib import get_dll
+larch.use_plugin_path('xray')
+from physical_constants import RAD2DEG, PLANCK_HC
 
 try:
     from numpy import array, pi, exp, log, sin, arcsin
     HAS_NUMPY = True
-    RAD2DEG  = 180.0/pi
-    # from NIST.GOV CODATA:
-    # Planck constant over 2 pi times c: 197.3269718 (0.0000044) MeV fm
-    PLANCK_hc = 1973.269718 * 2 * pi # hc in eV * Ang = 12398.4193
 except ImportError:
     HAS_NUMPY = False
 
@@ -174,7 +172,7 @@ class XDIFile(object):
         # convert energy to angle, or vice versa
         if ix >= 0 and 'd_spacing' in self.attrs['mono']:
             dspace = float(self.attrs['mono']['d_spacing'])
-            omega = PLANCK_hc/(2*dspace)
+            omega = PLANCK_HC/(2*dspace)
             if xname == 'energy' and not hasattr(self, 'angle'):
                 energy_ev = self.energy
                 if xunits.lower() == 'kev':

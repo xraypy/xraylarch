@@ -6,7 +6,7 @@ from larch.larchlib import use_plugin_path
 
 use_plugin_path('xray')
 
-from physical_constants import R_ELECTRON, AVOGADRO, PLANCK_EVA
+from physical_constants import R_ELECTRON_CM, AVOGADRO, PLANCK_HC
 from chemparser import chemparse
 from xraydb import xrayDB
 
@@ -386,8 +386,8 @@ def core_width(element=None, edge=None, _larch=None):
 class Scatterer:
     """Scattering Element
 
-    lamb=PLANCK_EVA /(eV0/1000.)*1e-11	# in cm, 1e-8cm = 1 Angstrom
-    Xsection=2* R_ELECTRON *lamb*f2/BARN    # in Barns/atom
+    lamb=PLANCK_HC /(eV0/1000.)*1e-11    # in cm, 1e-8cm = 1 Angstrom
+    Xsection=2* R_ELECTRON_CM *lamb*f2/BARN    # in Barns/atom
     """
     def __init__(self, symbol, energy=10000, _larch=None):
         # atomic symbol and incident x-ray energy (eV)
@@ -427,7 +427,7 @@ def xray_delta_beta(material, density, energy, photo_only=False, _larch=None):
 
     Adapted for Larch from code by Yong Choi
     """
-    lamb_cm = 1.e-8 * PLANCK_EVA / energy # lambda in cm
+    lamb_cm = 1.e-8 * PLANCK_HC / energy # lambda in cm
     elements = []
     for symbol, number in chemparse(material).items():
         elements.append((number, Scatterer(symbol, energy, _larch=_larch)))
@@ -440,7 +440,7 @@ def xray_delta_beta(material, density, energy, photo_only=False, _larch=None):
         beta_total += weight * scat.f2*(scat.mu_total/scat.mu_photo)
         total_mass += number * scat.mass
 
-    scale = lamb_cm * lamb_cm * R_ELECTRON / (2*pi * total_mass)
+    scale = lamb_cm * lamb_cm * R_ELECTRON_CM / (2*pi * total_mass)
     delta = delta * scale
     beta  = beta_total * scale
     if photo_only:
