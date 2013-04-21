@@ -151,13 +151,14 @@ It turns out that :math:`\chi^2` is almost always too big, and reduced
 the number of fitted parameters) is far greater than 1.  This is partly due
 to a poor assessment of the uncertainty in the data, and partly due to
 imperfections in the calculations that go into the model.  Together, these
-are often called "systematic errors" in the EXAFS literature.    Because of
-this issue, an alternative statistic :math:`R` is often used as a
-supplement to :math:`\chi^2` for EXAFS.  The :math:`R` factor is defined as
+are often called "systematic errors" in the EXAFS literature.  Because of
+this issue, an alternative statistic :math:`\cal{R}` is often used as a
+supplement to :math:`\chi^2` for EXAFS.  The :math:`\cal{R}` factor is
+defined as
 
 .. math::
 
-    \chi^2 = \frac{\sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta})}\big]^2}{\sum_{i=1}^{N} {y_i^2}}
+    {\cal{R}} = \frac{\sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta})}\big]^2}{\sum_{i=1}^{N} {y_i^2}}
 
 which is to say, the misfit scaled by the magnitude of the data.
 
