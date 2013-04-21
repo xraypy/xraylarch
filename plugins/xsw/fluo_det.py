@@ -51,7 +51,7 @@ from larch import use_plugin_path
 use_plugin_path('xray')
 use_plugin_path('xsw')
 
-from physical_constants import R_ELECTRON, AVOGADRO, BARN
+from physical_constants import AVOGADRO, BARN
 
 pre_edge_margin=150.    # FY calculated from 150 eV below the absorption edge.
 fluo_emit_min=500.      # minimum energy for emitted fluorescence.  ignore fluorescence emissions below 500eV
