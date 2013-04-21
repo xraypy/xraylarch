@@ -60,7 +60,7 @@ Nyquist as
 
 .. math::
 
-    N_{\rm params} \approx  \frac{2 \Delta k \Delta R}{\pi}
+    N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi}
 
 where :math:`\Delta k` and :math:`\Delta R` are the :math:`k` and :math:`R`
 range of the usable data under consideration.  In general, this greatly
@@ -73,8 +73,20 @@ Because of this fundamental information limit, it is usual to purposely
 limit the spectra being analyzed.  Of course, one usually limits how far
 out in energy to measure a signal based on the strength of the signal
 compared to some noise level.  This limits the :math:`k` range of useful
-data.  Given that finite range of data for :math:`\chi(k)`, the number of
-Paths that can be used to effectively this data will be limited.
+data.  In addition, the number of scattering paths that contribute to the
+XAFS diverges very quickly with :math:`R`.  For any :math:`R` interval
+then, the finite :math:`k` range sets an upper limit on the number of
+parameters available for describing the atomic partial pair distribution
+function that gives spectral weight in that interval.  The distance to
+which a structural model can determined from real XAFS data is therefore
+limited to 5 or so Angstroms.  Because of these inherent limitations, it is
+generally preferrable to analyze XAFS data by limiting the :math:`R` range
+of the analysis by using Fourier transforms to convert :math:`\chi(k)` to
+:math:`\chi(R)`.  The :func:`feffit` function allows several choices of
+data transformations, including doing 0 (:math:`k`, unfiltered), 1
+(:math:`R`, or Fourier transformed), or 2 (math:`q`, or Fourier filtered)
+Fourier transforms.   Fitting in unfiltred :math:`k` space is generally not
+recommended.
 
 
 Fit statistics and goodness-of-fit meassures for :func:`feffit`
@@ -84,10 +96,70 @@ The fit done by :func:`feffit` is conceptually very similar to the fits
 described in :ref:`fitting-minimize-sec`.   Therefore, many of the
 statistics discussed in :ref:`fitting-results-sec` are also generated for
 :func:`feffit`. In view of the limited amount of information, some of the
-traditional statistical definitions are altered slightly.   For example,
-The :math:`\chi^2` statistic is defined as
+traditional statistical definitions need to be carefully examid, and
+possibly altered slightly.   For example, the typical :math:`\chi^2`
+statistic (as given in :ref:`fitting-overview-sec`) is
+
+.. math::
+
+    \chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2
+
+seems simple enough, but actually raises several questions, as we have to
+decide what each of the terms here is.  As above, we'll typically analyze
+data in :math:`R` space after a Fourier transform, so that the "data"
+:math:`y` actually represents the real and imaginary components of
+:math:`\chi(R)`, and the "model" :math:`f` will also be the Fourier
+transform of the parameterized model for :math:`\chi(k)`.
+
+Perhaps the largest questions are ones that are often dismissed as trivial
+in standard statistics discussions:
+
+Perhaps surprisingly, the first question is: what is :math:`N`?  The
+:math:`\chi(k)` data can be measured (or sampled) on an arbitrarily fine
+grid, and a Fourier transform can use an arbitrary number of points.  Thus,
+the number of points for both :math:`\chi(k)` and :math:`\chi(R)` can
+easily be changed without actually changing the quality or quantity of the
+real data.  The best number to use for the sum over the number of data
+points is then :math:`N_{\rm ind}` defined above.  Of course, we generally
+oversample the data, so the value for :math:`\chi^2` used is
+
+.. math::
+    \chi^2 = \frac{N_{\rm ind}}{N}\sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2
+
+where the sum can be over an arbitrary number of samples of :math:`\chi(k)`
+or :math:`\chi(R)`, but the actual range of the data sets :math:`N_{\rm
+ind}`.
+
+A second consideration is what to use for :math:`\epsilon`, the uncertainty
+in the "data".  Of course, the uncertainty in the data, :math:`\epsilon`,
+depends on the details of the data transformation (for example, whether
+fitting in :math:`R` or :math:`q` space).  Estimating the noise level in
+any given spectrum is not at all trivial, and should generally involve a
+proper statistical treatment of the data.  For an individual spectrum, what
+can be done easily and automatically is to estimate the noise level
+assuming that the data is dominated by noise that is independent of
+:math:`R`: white noise.  The function :func:`estimate_noise` does this, and
+the estimate derived from this method is used unless you specify a value
+for ``epsilon_k`` the noise level in :math:`\chi(k)`.  Though usually
+:math:`\epsilon` is taken to be a scalar value, it can be specfied as an
+array (of the same length as :math:`\chi(k)`) if more accurate measures for
+the uncertainty of the data is available.
 
 
+It turns out that :math:`\chi^2` is almost always too big, and reduced
+:math:`chi^2` (that is, :math:`\chi^2/(p - N_{\rm ind})` where :math:`p` is
+the number of fitted parameters) is far greater than 1.  This is partly due
+to a poor assessment of the uncertainty in the data, and partly due to
+imperfections in the calculations that go into the model.  Together, these
+are often called "systematic errors" in the EXAFS literature.    Because of
+this issue, an alternative statistic :math:`R` is often used as a
+supplement to :math:`\chi^2` for EXAFS.  The :math:`R` factor is defined as
+
+.. math::
+
+    \chi^2 = \frac{\sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta})}\big]^2}{\sum_{i=1}^{N} {y_i^2}}
+
+which is to say, the misfit scaled by the magnitude of the data.
 
 The Feffit functions in Larch
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -5,7 +5,7 @@ XAFS: Utility functions
 .. module:: _xafs
 
 There are a few functions for XAFS analysis that do not fall neatly into
-the pro
+the previous sections.  We will list them here.
 
 
 
