@@ -8,9 +8,9 @@ import sys
 import types
 import numpy
 import copy
-
 from .utils import Closure, fixName, isValidName
 from . import site_config
+
 
 class Group(object):
     """Group: a container for variables, modules, and subgroups.
@@ -457,12 +457,12 @@ class SymbolTable(Group):
             if hasattr(val, '__call__'):
                 # test whether plugin func has a '_larch' kw arg
                 #    func_code.co_flags & 8 == 'uses **kws'
+                kws.update({'func': val, '_name':key})
                 nvars = val.func_code.co_argcount
                 if ((val.func_code.co_flags &8 != 0) or
                     '_larch' in val.func_code.co_varnames[:nvars]):
-                    val = Closure(func=val, _larch=self._larch, _name=key, **kws)
-                else:
-                    val = Closure(func=val, _name=key, **kws)
+                    kws.update({'_larch':  self._larch})
+                val = Closure(**kws)
 
             self.set_symbol("%s.%s" % (groupname, key), val)
 
