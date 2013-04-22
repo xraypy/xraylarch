@@ -172,7 +172,7 @@ class GSEXRM_MapRow:
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
-        npts = min(gnpts, xnpts)
+        npts = min(gnpts, xnpts, snpts)
         if self.npts is None:
             self.npts = npts
         if snpts < self.npts:  # extend struck data if needed
