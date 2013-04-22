@@ -1,0 +1,3 @@
+[submodule "contrib/maurov"]
+	path = contrib/maurov
+	url = git://github.com/maurov/larch_plugins.git
