@@ -595,6 +595,7 @@ WARNING: This cannot be undone!
         self.set_choices(self.owner.current_file.xrfmap['areas'])
         self.choice.SetStringSelection(new_label)
         self.desc.SetValue(new_label)
+
     def onShow(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
@@ -772,12 +773,14 @@ class MapViewerFrame(wx.Frame):
     def show_XRFDisplay(self, do_raise=True, clear=True):
         "make sure plot frame is enabled, and visible"
         if self.xrfdisplay is None:
-            self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
+            self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
+                                              gsexrm_file=self.current_file)
         try:
             self.xrfdisplay.Show()
 
         except wx.PyDeadObjectError:
-            self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
+            self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
+                                              gsexrm_file=self.current_file)
             self.xrfdisplay.Show()
 
         if do_raise:
