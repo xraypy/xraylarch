@@ -293,9 +293,11 @@ class XRFDisplayFrame(wx.Frame):
     _about = """XRF Spectral Viewer
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, _larch=None, parent=None, size=(725, 450),
-                 axissize=None, axisbg=None, title='XRF Display',
-                 exit_callback=None, output_title='XRF', **kws):
+    def __init__(self, _larch=None, parent=None, gse_xrmfile=None,
+                 size=(725, 450), axissize=None, axisbg=None,
+                 title='XRF Display', exit_callback=None,
+                 output_title='XRF', **kws):
+
 
         # kws["style"] = wx.DEFAULT_FRAME_STYLE|wx
         wx.Frame.__init__(self, parent=parent,
@@ -303,6 +305,7 @@ class XRFDisplayFrame(wx.Frame):
                           **kws)
         self.conf = XRFDisplayConfig()
         self.data = None
+        self.gsexrmfile = gse_xrmfile
         self.title = title
         self.plotframe = None
         self.larch = _larch
@@ -573,6 +576,7 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.canvas.draw()
 
     def onNewROI(self, event=None):
+        # print 'OnNew ROI '
         label = self.wids['roiname'].GetValue()
         if (self.last_leftdown is None or
             self.last_rightdown is None or
@@ -589,9 +593,11 @@ class XRFDisplayFrame(wx.Frame):
         self.mca.add_roi(name=label, left=left, right=right, sort=True)
         self.set_roilist(mca=self.mca)
         for roi in self.mca.rois:
+            # print 'ROI ', roi
             if roi.name.lower()==label:
                 selected_roi = roi
         self.plot(self.xdata, self.ydata)
+        # print 'New ROI ', self.mca
         self.onROI(label=label)
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
@@ -665,6 +671,8 @@ class XRFDisplayFrame(wx.Frame):
         self.write_message(msg, panel=0)
         self.panel.canvas.draw()
         self.panel.Refresh()
+        # if self.gsexrmfile is not None:
+            # print 'Add ROI: ', self.gsexrmfile
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -941,7 +949,6 @@ class XRFDisplayFrame(wx.Frame):
 
         if outfile is not None:
             self.mca.save_mcafile(outfile)
-
 
     def onSaveColumnFile(self, event=None, **kws):
         print '  onSaveColumnFile   '
