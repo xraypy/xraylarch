@@ -32,13 +32,13 @@ try:
     from PyMca import specfilewrapper as specfile
     HAS_PYMCA = True
 except ImportError:
-    print "Warning: cannot load specfile -- PyMca not installed?"
+    pass # print "Warning: cannot load specfile -- PyMca not installed?"
 
 try:
     from PyMca import SimpleMath
     HAS_SIMPLEMATH = True
 except ImportError:
-    print "Warning: cannot load SimpleMath -- PyMca not installed?"
+    pass # print "Warning: cannot load SimpleMath -- PyMca not installed?"
 
 
 ### UTILITIES (the class is below!)
@@ -409,12 +409,13 @@ def str2rng(rngstr, _larch=None):
     return _str2rng(rngstr)
 
 def registerLarchPlugin():
-    return ('_io', {'read_specfile_scan': spec_getscan2group,
-                    'read_specfile_map' : spec_getmap2group,
-                    'read_specfile_mrg' : spec_getmrg2group,
-                    'str2rng' : str2rng
-                    })
-
+    if HAS_PYMCA:
+        return ('_io', {'read_specfile_scan': spec_getscan2group,
+                        'read_specfile_map' : spec_getmap2group,
+                        'read_specfile_mrg' : spec_getmrg2group,
+                        'str2rng' : str2rng
+                        })
+    return ('_io', {})
 ### TESTS ###
 def test01():
     """ test get_scan method """
