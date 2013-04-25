@@ -26,18 +26,20 @@ TODO
 import os, sys, warnings
 import numpy as np
 
+HAS_PYMCA = False
+HAS_SIMPLEMATH = False
 try:
     from PyMca import specfilewrapper as specfile
+    HAS_PYMCA = True
 except ImportError:
-    print "Error: cannot load specfile -- PyMca broken?"
-    sys.exit(1)
+    print "Error: cannot load specfile -- PyMca not installed?"
 
 try:
     from PyMca import SimpleMath
-    _hasSimpleMath = True
+    HAS_SIMPLEMATH = True
 except ImportError:
-    print "Warning: cannot load SimpleMath -- PyMca broken? -- some features will not work!"
-    _hasSimpleMath = False
+    print "Warning: cannot load SimpleMath -- PyMca not installed?"
+
 
 ### UTILITIES (the class is below!)
 
@@ -86,12 +88,12 @@ def _pymca_average(xdats, zdats):
     Parameters
     ----------
     - xdats, ydats : lists of arrays contaning the data to merge
-    
+
     Returns
     -------
     - xmrg, zmrg : 1D arrays containing the merged data
     """
-    if _hasSimpleMath is True:
+    if HAS_SIMPLEMATH:
         sm = SimpleMath.SimpleMath()
         print "Merging data (can take a while due to interpolation)..."
         return sm.average(xdats, zdats)
@@ -122,7 +124,7 @@ class SpecfileData(object):
         self.cmon = cmon
         self.csec = csec
         self.norm = norm
-        
+
     def get_scan(self, scan=None, scnt=None, **kws):
         """ get a single scan
 
@@ -139,7 +141,7 @@ class SpecfileData(object):
                'area' -> scan_datz = scan_datz/np.trapz(scan_datz)
                'max-min' -> scan_datz = scan_datz/(np.max(scan_datz)-np.min(scan_datz))
                'sum' -> scan_datz = scan_datz/np.sum(z)
- 
+
         Returns
         -------
         scan_datx : 1D array with x data (scanned axis)
@@ -180,7 +182,7 @@ class SpecfileData(object):
             _cntx = self.sd.alllabels()[0]
         else:
             _cntx = cntx
-        
+
         ## x-axis
         if scnt is None:
             #try to guess the scan type if it is not given
@@ -217,7 +219,7 @@ class SpecfileData(object):
                 scan_datz = scan_datz/np.sum(scan_datz)
             else:
                 raise NameError("Provide a correct normalization type string")
-        
+
         ## the motors dictionary
         scan_mots = dict(zip(self.sf.allmotors(), self.sd.allmotorpos()))
 
@@ -239,7 +241,7 @@ class SpecfileData(object):
 
     def get_map(self, scans=None, **kws):
         """ get a map composed of many scans repeated at different position of a given motor
-        
+
         Parameters
         ----------
         scans : scans to load in the map [string]
@@ -281,8 +283,8 @@ class SpecfileData(object):
         return xcol, ycol, zcol
 
     def grid_map(self, xcol, ycol, zcol, xystep=None):
-        """ grid (X, Y, Z) 1D data on a 2D regular mesh 
-        
+        """ grid (X, Y, Z) 1D data on a 2D regular mesh
+
         Parameters
         ----------
         xcol, ycol, zcol : 1D arrays repesenting the map (z is the intensity)
@@ -315,7 +317,7 @@ class SpecfileData(object):
 
     def get_mrg(self, scans=None, **kws):
         """ get a merged scan (average of many scans)
-        
+
         Parameters
         ----------
         scans : scans to load in the merge [string]
@@ -336,7 +338,7 @@ class SpecfileData(object):
         #check inputs - some already checked in get_scan()
         if scans is None:
             raise NameError("Provide a string representing the scans to merge - e.g. '100, 7:15, 50:90:3'")
-        
+
         _ct = 0
         xdats = []
         zdats = []
