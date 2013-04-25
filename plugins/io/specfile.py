@@ -32,7 +32,7 @@ try:
     from PyMca import specfilewrapper as specfile
     HAS_PYMCA = True
 except ImportError:
-    print "Error: cannot load specfile -- PyMca not installed?"
+    print "Warning: cannot load specfile -- PyMca not installed?"
 
 try:
     from PyMca import SimpleMath
