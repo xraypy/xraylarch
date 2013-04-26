@@ -286,14 +286,14 @@ class XRFDisplayConfig:
     L_minor = []
 
     M_major = ['Ma', 'Mb', 'Mg', 'Mz']
-    e_min   = 1.0
+    e_min   = 0.50
     e_max   = 30.0
 
 class XRFDisplayFrame(wx.Frame):
     _about = """XRF Spectral Viewer
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, _larch=None, parent=None, gse_xrmfile=None,
+    def __init__(self, _larch=None, parent=None, gsexrmfile=None,
                  size=(725, 450), axissize=None, axisbg=None,
                  title='XRF Display', exit_callback=None,
                  output_title='XRF', **kws):
@@ -305,7 +305,7 @@ class XRFDisplayFrame(wx.Frame):
                           **kws)
         self.conf = XRFDisplayConfig()
         self.data = None
-        self.gsexrmfile = gse_xrmfile
+        self.gsexrmfile = gsexrmfile
         self.title = title
         self.plotframe = None
         self.larch = _larch
