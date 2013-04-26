@@ -52,22 +52,26 @@ def get_homedir():
 #   sys_larchdir = C:\Program Files\larch
 #   usr_larchdir = $USER/larch
 
-# when Frozen (as with Py2exe for windows or Py2app for Mac)
-# the system files may be altered.
-
 sys_larchdir = site_configdata.unix_installdir
 usr_larchdir = site_configdata.unix_userdir
 
-# windows
-if os.name == 'nt':
-    sys_larchdir = unixdir(site_configdata.win_installdir)
-    usr_larchdir = unixdir(site_configdata.win_userdir)
+# frozen executables, as from cx_freeze, will have
+# these paths to be altered...
+if hasattr(sys, 'frozen'):
+    if os.name == 'nt':
+        usr_larchdir = unixdir(site_configdata.win_userdir)
+        sys_larchdir = unixdir(site_configdata.win_installdir)
+        try:
+            tdir, exe = os.path.split(sys.executable)
+            toplevel, bindir = os.path.split(tdir)
+            sys_larchdir = os.path.abspath(toplevel)
+        except:
+            pass
 
-# check for py2app, alter sys_larchdir
-if getattr(sys, 'frozen', '').startswith('macosx_app'):
-    tdir, exe = os.path.split(sys.executable)
-    contents, macos = os.path.split(tdir)
-    sys_larchdir = os.path.join(contents, 'Resources', 'larch')
+    elif sys.platform.lower().startswith('darwin'):
+        tdir, exe = os.path.split(sys.executable)
+        toplevel, bindir = os.path.split(tdir)
+        sys_larchdir = os.path.join(toplevel, 'Resources', 'larch')
 
 home_dir = get_homedir()
 
