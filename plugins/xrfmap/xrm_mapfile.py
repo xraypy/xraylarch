@@ -23,6 +23,7 @@ from asciifiles import (readASCII, readMasterFile, readROIFile,
 NINIT = 16
 COMPRESSION_LEVEL = 4 # compression level
 
+
 class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have /xrfmap'
     created      = 'hdf5 has empty schema'  # xrfmap exists, no data
@@ -266,9 +267,10 @@ class GSEXRM_MapFile(object):
     ROIFile    = 'ROI.dat'
     MasterFile = 'Master.dat'
 
-    def __init__(self, filename=None, folder=None):
+    def __init__(self, filename=None, folder=None, chunksize=None):
         self.filename = filename
         self.folder   = folder
+        self.chunksize=chunksize
         self.status   = GSEXRM_FileStatus.err_notfound
         self.dimension = None
         self.ndet       = None
@@ -593,6 +595,13 @@ class GSEXRM_MapFile(object):
             self.npts = row.npts
         npts = self.npts
         nmca, xnpts, nchan = row.counts.shape
+        
+        if self.chunksize is None:
+            nxx = min(xnpts-1, 2**int(np.log2(xnpts)))
+            nxm = 1024
+            if nxx > 256:
+                nxm = min(1024, int(65536*1.0/ nxx))
+            self.chunksize = (1, nxx, nxm)
         en_index = np.arange(nchan)
 
         xrfmap = self.xrfmap
@@ -620,6 +629,7 @@ class GSEXRM_MapFile(object):
 
             dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                 compression=COMPRESSION_LEVEL,
+                                chunks=self.chunksize,
                                 maxshape=(None, npts, nchan))
             for name, dtype in (('realtime', np.int),  ('livetime', np.int),
                                 ('dtfactor', np.float32),
@@ -641,8 +651,8 @@ class GSEXRM_MapFile(object):
         self.add_data(dgrp, 'roi_limits', roi_limits[: ,0, :])
         dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                             compression=COMPRESSION_LEVEL,
+                            chunks=self.chunksize,
                             maxshape=(None, npts, nchan))
-
         # roi map data
         scan = xrfmap['roimap']
         det_addr = [i.strip() for i in row.sishead[-2][1:].split('|')]
@@ -683,13 +693,14 @@ class GSEXRM_MapFile(object):
         self.add_data(scan, 'sum_name',    sums_desc)
         self.add_data(scan, 'sum_list',    sums_list)
 
-
+        nxx = min(nsca, 8)
         for name, nx, dtype in (('det_raw', nsca, np.int32),
                                 ('det_cor', nsca, np.float32),
                                 ('sum_raw', nsum, np.int32),
                                 ('sum_cor', nsum, np.float32)):
             scan.create_dataset(name, (NINIT, npts, nx), dtype,
                                 compression=COMPRESSION_LEVEL,
+                                chunks=(2, npts, nxx),
                                 maxshape=(None, npts, nx))
 
         # positions
