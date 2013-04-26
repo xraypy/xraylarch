@@ -57,10 +57,12 @@ usr_larchdir = site_configdata.unix_userdir
 
 # frozen executables, as from cx_freeze, will have
 # these paths to be altered...
+if os.name == 'nt':
+    usr_larchdir = unixdir(site_configdata.win_userdir)
+    sys_larchdir = unixdir(site_configdata.win_installdir)
+
 if hasattr(sys, 'frozen'):
     if os.name == 'nt':
-        usr_larchdir = unixdir(site_configdata.win_userdir)
-        sys_larchdir = unixdir(site_configdata.win_installdir)
         try:
             tdir, exe = os.path.split(sys.executable)
             toplevel, bindir = os.path.split(tdir)
