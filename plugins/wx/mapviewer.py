@@ -774,7 +774,7 @@ class MapViewerFrame(wx.Frame):
         "make sure plot frame is enabled, and visible"
         if self.xrfdisplay is None:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
-                                              gsexrm_file=self.current_file)
+                                              gsexrmfile=self.current_file)
         try:
             self.xrfdisplay.Show()
 
