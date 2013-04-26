@@ -5,8 +5,7 @@
 # layer0 is vaccum, layer1 is top film layer ...
 
 import math
-import cmath
-import numpy
+import numpy as np
 from  larch import use_plugin_path
 use_plugin_path('xray')
 
@@ -57,7 +56,7 @@ class Layer:
         self.absrp=1.0-self.trans
 
     def cal_kz(self, k0, th_rad):   # calculate wavenumber in each layer
-        temp = cmath.sqrt((math.sin(th_rad))**2 - 2.0*self.delta - 2.0*self.beta*1.0j)
+        temp = np.sqrt((math.sin(th_rad))**2 - 2.0*self.delta - 2.0*self.beta*1.0j)
         self.kz = k0*(temp.real + abs(temp.imag)*1.0J)
         #kz = k0 * sqrt((sin(th_rad))^2 - 2*delta - 2*beta*i)
     def cal_rr(self, kz0, kz1):
@@ -66,13 +65,13 @@ class Layer:
         self.rr = temp
     def cal_rf(self, rr, kz0, kz1):
         # add roughness effect to Fresnel coefficient, [RoughGauss], input:kz_(j), kz_(j+1), rr, rms
-        temp = rr*cmath.exp(-2.0*kz0*kz1*self.rms)
+        temp = rr*np.exp(-2.0*kz0*kz1*self.rms)
         self.rf = temp
     def cal_rrr(self, rf0, rrr1, kz1, d1):  # reflectivity, [Reflect]
         v = 2.0*kz1*d1
         u = -v.imag + v.real*1.0J
-        z1 = rrr1*cmath.exp(u) + rf0
-        z2 = 1.0 + rf0*rrr1*cmath.exp(u)
+        z1 = rrr1*np.exp(u) + rf0
+        z2 = 1.0 + rf0*rrr1*np.exp(u)
         z=z1/z2
         self.rrr=z
     def cal_tt(self, kz0, kz1):
@@ -82,9 +81,9 @@ class Layer:
     def cal_ttt(self, tf2, rf2, rrr0, d0, ttt2, kz0):
         #Fresnel coefficient [FresnelT], 0:ThisLayer_(i), 2: AboveLayer_(i-1)
         v1 = -2.0*d0*kz0.imag + (2.0*d0*kz0.real)*1.0J
-        v2 = cmath.exp(v1)
+        v2 = np.exp(v1)
         v3 = -d0*kz0.imag + (d0*kz0.real)*1.0J
-        v4 = cmath.exp(v3)
+        v4 = np.exp(v3)
         v5 = tf2*(ttt2*v4)
         v6 = rf2*(rrr0*v2)
         v7 = v6.real+1.0 + (v6.imag)*1.0J
@@ -98,7 +97,7 @@ def reflectivity(eV0=14000.0, th_deg=[], mat=[], thick=[], den=[], rough=[], tag
         th_min=0.0         # minimum th
         th_max=1.0          # maximum th
         th_step=0.002      # stepsize th
-        th_deg=numpy.arange(th_min, th_max+th_step, th_step)
+        th_deg = np.arange(th_min, th_max+th_step, th_step)
     th=[]               #   theta(incident angle) in radian
     qz=[]               #   momentum transfer (1/Angstrom)
     if mat==[] or thick==[] or den==[] or rough==[]:
@@ -150,7 +149,7 @@ def reflectivity(eV0=14000.0, th_deg=[], mat=[], thick=[], den=[], rough=[], tag
         # calculate reflectivity
         layers[NumLayers-1].rrr=0.0                     # nothing reflects back from below the substrate
         layers[NumLayers-2].rrr=layers[NumLayers-2].rf  # interface between the substrate and layer above it
-        ixs=numpy.arange(NumLayers-3, -1, -1)           # start from second interface from the substrate to 0
+        ixs = np.arange(NumLayers-3, -1, -1)           # start from second interface from the substrate to 0
         for ix in ixs:          # calculate RRR
             BelowLayer=layers[ix+1]
             ThisLayer=layers[ix]
@@ -159,13 +158,13 @@ def reflectivity(eV0=14000.0, th_deg=[], mat=[], thick=[], den=[], rough=[], tag
         # intenR is reflected intensity
         # calculate transmission
         layers[0].ttt=1.0 + 0J
-        ixs=numpy.arange(1, NumLayers-1, 1)     # from 1 to <(NumLayers-1)
+        ixs=np.arange(1, NumLayers-1, 1)     # from 1 to <(NumLayers-1)
         for ix in ixs:          # Calculate TTT
             ThisLayer=layers[ix]
             AboveLayer=layers[ix-1]
             ThisLayer.cal_ttt(AboveLayer.tf, AboveLayer.rf, ThisLayer.rrr, \
                               ThisLayer.thickness, AboveLayer.ttt, ThisLayer.kz)
-        ixs=numpy.arange(0, NumLayers-1, 1)     # from 1 to <(NumLayers-1)
+        ixs=np.arange(0, NumLayers-1, 1)     # from 1 to <(NumLayers-1)
         for ix in ixs:
             ThisLayer=layers[ix]
             ThisLayer.E_t=ThisLayer.ttt
@@ -187,19 +186,19 @@ def reflectivity(eV0=14000.0, th_deg=[], mat=[], thick=[], den=[], rough=[], tag
             ThisLayer = layers[layer_index]
             if layer_index==(NumLayers-1):   #inside substrate
                 cph = -xx*ThisLayer.kz
-                cph_t = cmath.exp(cph*(0.0+1.0J))
+                cph_t = np.exp(cph*(0.0+1.0J))
                 Etot = ThisLayer.E_t*cph_t
             elif layer_index==(NumLayers-2):    # layer above the substrate
                 d_n=0
                 cph = ThisLayer.kz*(xx-d_n)
-                cph_t = cmath.exp(cph*(0.0-1.0J))
-                cph_r = cmath.exp(cph*(0.0+1.0J))
+                cph_t = np.exp(cph*(0.0-1.0J))
+                cph_r = np.exp(cph*(0.0+1.0J))
                 Etot = ThisLayer.E_t*cph_t + ThisLayer.E_r*cph_r
             else:
                 d_n=FilmThick-ThisLayer.interface
                 cph = ThisLayer.kz*(xx-d_n)
-                cph_t = cmath.exp(cph*(0.0-1.0J))
-                cph_r = cmath.exp(cph*(0.0+1.0J))
+                cph_t = np.exp(cph*(0.0-1.0J))
+                cph_r = np.exp(cph*(0.0+1.0J))
                 Etot = ThisLayer.E_t*cph_t + ThisLayer.E_r*cph_r
             EFI = (Etot.real)**2 + (Etot.imag)**2
         if xsw_mode:
