@@ -14,6 +14,7 @@ import wx
 import wx.lib.agw.flatnotebook
 import numpy, scipy, matplotlib
 matplotlib.use('WXAgg')
+import sqlalchemy
 
 from scipy.sparse.csgraph import _validation
 from  scipy.io import netcdf
@@ -50,8 +51,11 @@ dll_files = [("larch/dlls/darwin/",
 
 DATA_FILES = []
 
-exe_opts = { # 'packages': ['wx', 'numpy', 'scipy', 'matplotlib', 'epics', 'sqlalchemy'],
-            'includes': ['Image', 'ctypes', 'numpy', 'scipy', 'scipy.optimize',
+exe_opts = {# 'packages': ['wx', 'numpy','sqlalchemy'],
+            'includes': ['Image', 'ctypes',
+                         'sqlalchemy', 'sqlalchemy.orm', 'sqlalchemy.pool',
+                         'sqlite3', 'sqlalchemy.dialects.sqlite',
+                         'numpy', 'scipy', 'scipy.optimize',
                          'scipy.signal', 'scipy.constants', 'scipy.fftpack',
                          'scipy.sparse.csgraph._validation',
                          'scipy.io.netcdf',
@@ -64,8 +68,6 @@ exe_opts = { # 'packages': ['wx', 'numpy', 'scipy', 'matplotlib', 'epics', 'sqla
                          'wx.lib.agw', 'wx.lib.agw.flatnotebook',
                          'h5py', 'h5py._objects', 'h5py.defs', 'h5py.utils', 'h5py._proxy',
                          'matplotlib', 'wxmplot', 'ConfigParser', 'fpformat',
-                         'sqlalchemy', 'sqlalchemy.orm', 'sqlalchemy.pool',
-                         'sqlite3', 'sqlalchemy.dialects.sqlite',
                          'xml.etree', 'xml.etree.cElementTree', 'xdrlib',
                          'epics', 'epics.devices', 'Carbon.Appearance'],
             'excludes': ['Tkinter', '_tkinter', 'Tkconstants', 'tcl',
