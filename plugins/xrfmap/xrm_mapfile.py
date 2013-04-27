@@ -595,7 +595,7 @@ class GSEXRM_MapFile(object):
             self.npts = row.npts
         npts = self.npts
         nmca, xnpts, nchan = row.counts.shape
-        
+
         if self.chunksize is None:
             nxx = min(xnpts-1, 2**int(np.log2(xnpts)))
             nxm = 1024
@@ -624,7 +624,7 @@ class GSEXRM_MapFile(object):
                                                      'cal_slope': slope[imca]})
 
             self.add_data(dgrp, 'roi_names', roi_names)
-            self.add_data(dgrp, 'roi_addrs', [s % (imca+1) for s in roi_addrs])
+            self.add_data(dgrp, 'roi_address', [s % (imca+1) for s in roi_addrs])
             self.add_data(dgrp, 'roi_limits', roi_limits[:,imca,:])
 
             dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
@@ -647,7 +647,7 @@ class GSEXRM_MapFile(object):
         self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
                                                  'cal_slope': slope[0]})
         self.add_data(dgrp, 'roi_names', roi_names)
-        self.add_data(dgrp, 'roi_addrs', [s % 1 for s in roi_addrs])
+        self.add_data(dgrp, 'roi_address', [s % 1 for s in roi_addrs])
         self.add_data(dgrp, 'roi_limits', roi_limits[: ,0, :])
         dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                             compression=COMPRESSION_LEVEL,
