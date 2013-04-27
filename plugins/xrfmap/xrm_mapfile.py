@@ -623,9 +623,9 @@ class GSEXRM_MapFile(object):
             self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[imca],
                                                      'cal_slope': slope[imca]})
 
-            self.add_data(dgrp, 'roi_names', roi_names)
+            self.add_data(dgrp, 'roi_name',    roi_names)
             self.add_data(dgrp, 'roi_address', [s % (imca+1) for s in roi_addrs])
-            self.add_data(dgrp, 'roi_limits', roi_limits[:,imca,:])
+            self.add_data(dgrp, 'roi_limits',  roi_limits[:,imca,:])
 
             dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                                 compression=COMPRESSION_LEVEL,
@@ -646,9 +646,9 @@ class GSEXRM_MapFile(object):
         en = 1.0*offset[0] + slope[0]*1.0*en_index
         self.add_data(dgrp, 'energy', en, attrs={'cal_offset':offset[0],
                                                  'cal_slope': slope[0]})
-        self.add_data(dgrp, 'roi_names', roi_names)
+        self.add_data(dgrp, 'roi_name',    roi_names)
         self.add_data(dgrp, 'roi_address', [s % 1 for s in roi_addrs])
-        self.add_data(dgrp, 'roi_limits', roi_limits[: ,0, :])
+        self.add_data(dgrp, 'roi_limits',  roi_limits[: ,0, :])
         dgrp.create_dataset('counts', (NINIT, npts, nchan), np.int16,
                             compression=COMPRESSION_LEVEL,
                             chunks=self.chunksize,
@@ -956,8 +956,12 @@ class GSEXRM_MapFile(object):
         for desc, val, addr in zip(env_names, env_vals, env_addrs):
             _mca.add_environ(desc=desc, val=val, addr=addr)
 
-
-        roinames = list(map['roi_names'])
+        # a workaround for poor practice -- some '1.3.0' files
+        # were built with 'roi_names', some with 'roi_name'
+        roiname = 'roi_name'
+        roiname not in map:
+            roiname = 'roi_names'
+        roinames = list(map[roiname])
         roilims  = list(map['roi_limits'])
         for roi, lims in zip(roinames, roilims):
             _mca.add_roi(roi, left=lims[0], right=lims[1])
