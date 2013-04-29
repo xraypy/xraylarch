@@ -959,7 +959,7 @@ class GSEXRM_MapFile(object):
         # a workaround for poor practice -- some '1.3.0' files
         # were built with 'roi_names', some with 'roi_name'
         roiname = 'roi_name'
-        roiname not in map:
+        if roiname not in map:
             roiname = 'roi_names'
         roinames = list(map[roiname])
         roilims  = list(map['roi_limits'])
