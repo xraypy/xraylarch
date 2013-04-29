@@ -49,7 +49,7 @@ class EscanData:
             if (k == 'message'):  self.message  = args[k]
 
         if self.filename not in ('',None):
-            self.read_data_file(fname=self.filename)
+            self.status = self.read_data_file(fname=self.filename)
 
     def clear_data(self):
         self.xdesc       = ''
@@ -945,7 +945,6 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
                     o.extend(["%12g" % s for s in sums[:,j,i]])
                     fout.write(" %s\n" % " ".join(o))
 
-
         fout.close()
 
 
@@ -955,6 +954,9 @@ def gsescan_group(fname, _larch=None, **kws):
         raise Warning("cannot read gsescan group -- larch broken?")
 
     escan = EscanData(fname)
+    if escan.status is not None:
+        raise ValueError('Not a valid Escan Data file')
+    
     group = _larch.symtable.create_group()
     group.__name__ ='GSE Escan Data file %s' % fname
     for key, val in escan.__dict__.items():
