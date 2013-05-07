@@ -16,9 +16,8 @@ Requirements
 
 TODO
 ----
-- get_mrg() : register the Larch method and put a test/example
-- _pymca_average() : find faster routine
-- correct wrong normalization for get_map!!!
+- _pymca_average() : use faster scipy.interpolate.interp1d
+- implement a 2D normalization in get_map
 - implement the case of dichroic measurements (two consecutive scans with flipped helicity)
 
 """
@@ -82,6 +81,13 @@ def _mot2array(motor, acopy):
     return np.multiply(a, motor)
 
 
+def _div_check(num, dnum):
+    """simple division check to avoid ZeroDivisionError"""
+    try:
+        return num/dnum
+    except ZeroDivisionError:
+        print "ERROR: found a division by zero"
+
 def _pymca_average(xdats, zdats):
     """this is a call to SimpleMath.average() method from PyMca/SimpleMath.py
 
@@ -95,7 +101,7 @@ def _pymca_average(xdats, zdats):
     """
     if HAS_SIMPLEMATH:
         sm = SimpleMath.SimpleMath()
-        print "Merging data (can take a while due to interpolation)..."
+        print "Merging data..."
         return sm.average(xdats, zdats)
     else:
         raise NameError("SimpleMath is not available -- this operation cannot be performed!")
@@ -138,10 +144,11 @@ class SpecfileData(object):
         csec : counter for time in seconds [string]
         scnt : scan type [string]
         norm : normalization [string]
-               'area' -> scan_datz = scan_datz/np.trapz(scan_datz)
-               'max-min' -> scan_datz = scan_datz/(np.max(scan_datz)-np.min(scan_datz))
-               'sum' -> scan_datz = scan_datz/np.sum(z)
-
+               'max' -> z/max(z)
+               'max-min' -> (z-min(z))/(max(z)-min(z))
+               'area' -> (z-min(z))/trapz(z, x)
+               'sum' -> (z-min(z)/sum(z)
+ 
         Returns
         -------
         scan_datx : 1D array with x data (scanned axis)
@@ -211,12 +218,14 @@ class SpecfileData(object):
         ### z-axis normalization, if required
         if norm is not None:
             _zlabel = "{0} norm by {1}".format(_zlabel, norm)
-            if norm == "area":
-                scan_datz = scan_datz/np.trapz(scan_datz)
+            if norm == "max":
+                scan_datz = _div_check(scan_datz, np.max(scan_datz))
             elif norm == "max-min":
-                scan_datz = scan_datz/(np.max(scan_datz)-np.min(scan_datz))
+                scan_datz = _div_check(scan_datz-np.min(scan_datz), np.max(scan_datz)-np.min(scan_datz))
+            elif norm == "area":
+                scan_datz = _div_check(scan_datz-np.min(scan_datz), np.trapz(scan_datz, scan_datx))
             elif norm == "sum":
-                scan_datz = scan_datz/np.sum(scan_datz)
+                scan_datz = _div_check(scan_datz-np.min(scan_datz), np.sum(scan_datz))
             else:
                 raise NameError("Provide a correct normalization type string")
 
@@ -396,9 +405,9 @@ def spec_getmrg2group(fname, scans=None, cntx=None, csig=None, cmon=None, csec=N
     s = SpecfileData(fname)
     group = _larch.symtable.create_group()
     group.__name__ = 'SPEC data file {0}; Merged scans {1}'.format(fname, scans)
-    xmrg, ymrg = s.get_mrg(scans=scans, cntx=cntx, csig=csig, cmon=cmon, csec=csec, norm=norm)
-    setattr(group, 'xmrg', xmrg)
-    setattr(group, 'ymrg', ymrg)
+    x, y = s.get_mrg(scans=scans, cntx=cntx, csig=csig, cmon=cmon, csec=csec, norm=norm)
+    setattr(group, 'x', x)
+    setattr(group, 'y', y)
 
     return group
 
@@ -415,7 +424,8 @@ def registerLarchPlugin():
                         'read_specfile_mrg' : spec_getmrg2group,
                         'str2rng' : str2rng
                         })
-    return ('_io', {})
+    else:
+        return ('_io', {})
 ### TESTS ###
 def test01():
     """ test get_scan method """
@@ -428,7 +438,7 @@ def test01():
     motor_counter = 'arr_xes_en'
     scan = 3
     t = SpecfileData(fname)
-    for norm in [None, "area", "max-min", "sum"]:
+    for norm in [None, "area", "max", "max-min", "sum"]:
         x, y, motors, infos = t.get_scan(scan, cntx=counter, csig=signal, cmon=monitor, csec=seconds, norm=norm)
         print "Read scan {0} with normalization {1}".format(scan, norm)
         import matplotlib.pyplot as plt
@@ -441,7 +451,7 @@ def test01():
         raw_input("Press Enter to close the plot window and continue...")
         plt.close()
 
-def test02(nlevels, norm):
+def test02(nlevels):
     """ test get_map method """
     import matplotlib.pyplot as plt
     import matplotlib.cm as cm
@@ -453,6 +463,7 @@ def test02(nlevels, norm):
     signal = 'zap_det_dtc'
     monitor = 'arr_I02sum'
     seconds = 'arr_seconds'
+    norm = None #normalizing each scan does not make sense, the whole map has to be normalized!
     xystep = 0.05
     t = SpecfileData(fname)
     xcol, ycol, zcol = t.get_map(scans=rngstr, cntx=counter, cnty=motor, csig=signal, cmon=monitor, csec=seconds, norm=norm)
@@ -498,7 +509,7 @@ def test03():
 if __name__ == '__main__':
     """ to run some tests/examples on this class, uncomment the following """
     #test01()
-    #test02(100, 'area')
+    #test02(100)
     #test03
     pass
 
