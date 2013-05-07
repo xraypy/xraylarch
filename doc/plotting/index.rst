@@ -118,7 +118,7 @@ same meaning, as indicated by the right-most column.
   +-------------+------------+---------+------------------------------------------------+-------------+
   | autoscale   | bool       | True    | whether to automatically set plot limits       |  no         |
   +-------------+------------+---------+------------------------------------------------+-------------+
-  | draw_legend | None/bool  | None    | whether to display legend (None: leave as is)  |  no         |
+  | show_legend | None/bool  | None    | whether to display legend (None: leave as is)  |  no         |
   +-------------+------------+---------+------------------------------------------------+-------------+
   | refresh     | bool       | True    | whether to refresh display                     |  no         |
   +-------------+------------+---------+------------------------------------------------+-------------+
