@@ -200,11 +200,6 @@ class SymbolTable(Group):
             sys.searchGroups == cache[3] and
             cache[4] is not None and not force):
             return cache[4]
-        # print( 'real _fix searchGroup! ', dir(sys.localGroup))
-        # print( cache)
-        # print( sys.localGroup==cache[0], sys.localGroup)
-        # print( sys.moduleGroup==cache[1], sys.moduleGroup)
-        # print( sys.searchGroups==cache[2])
 
         if sys.moduleGroup is None:
             sys.moduleGroup = self.top_group
@@ -251,8 +246,6 @@ class SymbolTable(Group):
 
         self._sys.searchGroups = cache[3] = snames[:]
         sys.searchGroupObjects = cache[4] = sgroups[:]
-        # print( 'Set searchGroups ', cache[3], cache[4])
-
         return sys.searchGroupObjects
 
     def get_parentpath(self, sym):
@@ -274,7 +267,6 @@ class SymbolTable(Group):
         debug = False # not ('force'in name)
         if debug:  print( '====\nLOOKUP ', name)
         searchGroups = self._fix_searchGroups()
-        #    print( ' .. ', searchGroups)
         self.__parents = []
         if self not in searchGroups:
             searchGroups.append(self)
@@ -286,8 +278,6 @@ class SymbolTable(Group):
         parts = name.split('.')
         if len(parts) == 1:
             for grp in searchGroups:
-                #if debug:
-                #    print( '->grp ', grp, hasattr(grp, name), self._private)
                 if public_attr(grp, name):
                     self.__parents.append(grp)
                     return getattr(grp, name)
