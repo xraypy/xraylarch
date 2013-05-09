@@ -11,7 +11,6 @@ import copy
 from .utils import Closure, fixName, isValidName
 from . import site_config
 
-
 class Group(object):
     """Group: a container for variables, modules, and subgroups.
 
@@ -20,7 +19,8 @@ class Group(object):
        _subgroups(): return list of subgroups
        _members():   return dict of members
     """
-    __private = ('_main', '_larch', '_parents', '__name__', '__private')
+    __private = ('_main', '_larch', '_parents', '__name__',
+                 '__private', '_subgroups', '_members')
     def __init__(self, name=None, **kws):
         if name is None:
             name = hex(id(self))
@@ -59,20 +59,31 @@ class Group(object):
 
     def __dir__(self):
         "return list of member names"
-        return [key for key in list(self.__dict__.keys())
+        cls_members = []
+        cname = self.__class__.__name__
+        if cname != 'SymbolTable' and hasattr(self, '__class__'):
+            cls_members = dir(self.__class__)
+
+        dict_keys = [key for key in self.__dict__ if key not in cls_members]
+
+        return [key for key in cls_members + dict_keys
                 if (not key.startswith('_SymbolTable_') and
-                    not key.startswith('_%s__' % self.__class__.__name__) and
+                    not key.startswith('_Group_') and
+                    not key.startswith(cname) and
+                    not (key.startswith('__') and key.endswith('__')) and
                     key not in self.__private)]
+
 
     def _subgroups(self):
         "return list of names of members that are sub groups"
-        return [k for k in dir(self) if isgroup(self.__dict__[k])]
+        return [k for k in self._members() if isgroup(self.__dict__[k])]
 
     def _members(self):
         "return members"
         r = {}
         for key in self.__dir__():
-            r[key] = self.__dict__[key]
+            if key in self.__dict__:
+                r[key] = self.__dict__[key]
         return r
 
 def isgroup(grp):
