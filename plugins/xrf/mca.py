@@ -12,6 +12,8 @@ from deadtime import calc_icr, correction_factor
 from roi import ROI
 from xrf_bgr import XRFBackground
 
+from larch import Group
+
 class Environment:
     """
     The "environment" or related parameters for a detector.  These might include
@@ -37,7 +39,7 @@ class Environment:
                                                                 self.addr)
 
 
-class MCA:
+class MCA(Group):
     """
     MultiChannel Analyzer (MCA) class
 
@@ -94,8 +96,6 @@ class MCA:
         self.environ = []
         self.rois    = []
         self.counts  = counts
-        if counts is not None:
-            self.nchans      = len(counts)
 
         # Calibration parameters
         self.offset       = offset # Offset
@@ -117,12 +117,16 @@ class MCA:
         # corrected_counts = counts * dt_factor
         self.bgr = None
         self.dt_factor   = float(dt_factor)
+        if counts is not None:
+            self.nchans      = len(counts)
+            self.total_counts =  counts.sum()
         self.get_energy()
         self._calc_correction()
+        Group.__init__(self)
 
     def __repr__(self):
         form = "<MCA %s, nchans=%d, counts=%d, realtime=%d>"
-        return form % (self.name, self.nchans, self.counts.sum(), self.real_time)
+        return form % (self.name, self.nchans, self.total_counts, self.real_time)
 
     def add_roi(self, name='', left=0, right=0, bgr_width=3, sort=True):
         """add an ROI"""

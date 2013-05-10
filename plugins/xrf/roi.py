@@ -10,8 +10,9 @@ Authors/Modifications:
 """
 
 import numpy as np
+from larch import Group
 
-class ROI(object):
+class ROI(Group):
     """
     Class that defines a Region-Of-Interest (ROI)
 
@@ -42,18 +43,11 @@ class ROI(object):
         self.total  = 0
         self.net    = 0
         self.set_bounds(left, right)
+        Group.__init__(self)
 
     def __repr__(self):
-        form = "ROI(name='%s', left=%i, right=%i, bgr_width=%i)"
+        form = "<ROI(name='%s', left=%i, right=%i, bgr_width=%i)>"
         return form % (self.name, self.left, self.right, self.bgr_width)
-
-    def __cmp__(self, other):
-        """
-        Comparison operator.
-
-        The .left field is used to define ROI ordering
-        """
-        return (self.left - other.left)
 
     def set_bounds(self, left=-1, right=-1):
         """set ROI bounds"""

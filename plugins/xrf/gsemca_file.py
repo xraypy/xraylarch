@@ -257,7 +257,7 @@ class GSEMCA_File(Group):
             fp.write(" %s\n" % d)
         fp.close()
 
-def gsemca_group(fname, _larch=None, **kws):
+def gsemca_group_old(fname, _larch=None, **kws):
     """read GSECARS MCA file to larch group"""
     if _larch is None:
         raise Warning("cannot read GSE XRF group -- larch broken?")
@@ -280,6 +280,10 @@ def gsemca_group(fname, _larch=None, **kws):
                  'real_time', 'start_time', 'tau', 'raw'):
         setattr(group, attr, getattr(xfile.sum, attr))
     return group
+
+def gsemca_group(fname, _larch=None, **kws):
+    """read GSECARS MCA file to larch group"""
+    return GSEMCA_File(fname)
 
 def xrf_background(energy, counts, group=None, _larch=None,
                    bottom_width=4, compress=4, exponent=2, **kws):
