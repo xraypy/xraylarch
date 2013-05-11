@@ -10,8 +10,10 @@ Authors/Modifications:
 """
 
 import numpy as np
+from functools import total_ordering
 from larch import Group
 
+@total_ordering
 class ROI(Group):
     """
     Class that defines a Region-Of-Interest (ROI)
@@ -29,7 +31,7 @@ class ROI(Group):
     * center    # Centroid
     * width     # Width
     """
-    def __init__(self, left=0, right=0, name='', bgr_width=3):
+    def __init__(self, left=0, right=0, name='', bgr_width=3, counts=None):
         """
         Parameters:
         -----------
@@ -43,7 +45,18 @@ class ROI(Group):
         self.total  = 0
         self.net    = 0
         self.set_bounds(left, right)
+        if counts is not None:
+            self.get_counts(counts)
         Group.__init__(self)
+
+    def __eq__(self, other):
+        """used for comparisons"""
+        return (self.left == getattr(other, 'left', None) and
+                self.right == getattr(other, 'right', None) and
+                self.bgr_width == getattr(other, 'bgr_width', None) )
+
+    def __lt__(self, other): return self.left < getattr(other, 'left', None)
+    def __le__(self, other): return self.left <= getattr(other, 'left', None)
 
     def __repr__(self):
         form = "<ROI(name='%s', left=%i, right=%i, bgr_width=%i)>"
