@@ -33,32 +33,35 @@ class GSEMCA_File(Group):
         Group.__init__(self,  **kwargs)
         self.nchans = nchans
         self.mcas   = []
+        self.__mca0 = None
         self.bad    = bad
         if bad is None:
             self.bad = []
-        self._det0      = -1  # main "good" detector for energy calibration
 
         self.filename = filename
         if filename:
             self.read(filename=filename)
 
-    def _firstgood_mca(self, chan_min=2, min_counts=2):
+    def __get_mca0(self, chan_min=2, min_counts=2):
         """ find first good detector for alignment
         'good' is defined as at least min_counts counts
         above channel chan_min
         """
-        for mca in self.mcas:
-            if mca.counts[chan_min:].sum() > min_counts:
-                return mca
+        if self.__mca0 is None:
+            for imca, mca in enumerate(self.mcas):
+                if mca.counts[chan_min:].sum() > min_counts:
+                    self.__mca0 = mca
+                elif imca not in self.bad:
+                    self.bad.append(imca)
+        return self.__mca0
 
     def get_energy(self, imca=None):
         "get energy, optionally selecting which mca to use"
-        if imca is None:
-            mca = self._firstgood_mca()
-        else:
+        if imca is not None:
             mca = self.mcas[imca]
+        else:
+            mca = self.__get_mca0()
         return mca.get_energy()
-
 
     def get_counts(self, dt_correct=True, align=True):
         """ get summed MCA spectra,
@@ -67,7 +70,7 @@ class GSEMCA_File(Group):
         --------
           align   align spectra in energy before summing (True).
         """
-        mca0 = self._firstgood_mca()
+        mca0 = self.__get_mca0()
         en  = mca0.get_energy()
         dat = 0
         for mca in self.mcas:
@@ -177,33 +180,38 @@ class GSEMCA_File(Group):
                 left = roi['left'][imca]
                 right = roi['right'][imca]
                 label = roi['label'][imca]
-                thismca.add_roi(name=label, left=left, right=right, sort=False)
+                thismca.add_roi(name=label, left=left, right=right,
+                                sort=False, counts=counts[:,imca])
             thismca.rois.sort()
             self.mcas.append(thismca)
-            if sum_mca is None:
-                sum_mca = copy.deepcopy(thismca)
-        sum_mca.counts = self.get_counts()
-        sum_mca.raw    = self.get_counts(dt_correct=False)
-        sum_mca.name = 'mcasum'
-        self.sum = sum_mca
+
+        mca0 = self.__get_mca0()
+        self.counts = self.get_counts()
+        self.raw    = self.get_counts(dt_correct=False)
+        self.name   = 'mcasum'
+        self.energy = mca0.energy[:]
+        self.environ = mca0.environ
+        self.rois = []
+        for roi in mca0.rois:
+            self.add_roi(name=roi.name, left=roi.left,
+                         right=roi.right, sort=False, counts=counts)
+        self.rois.sort()
         return
 
-    def add_roi(self, name='', left=0, right=0, bgr_width=3, sort=True):
+    def add_roi(self, name='', left=0, right=0, bgr_width=3,
+                counts=None, sort=True):
         """add an ROI to the sum spectra"""
         name = name.strip()
-        roi = ROI(name=name, left=left, right=right, bgr_width=bgr_width)
-        rnames = [r.name.lower() for r in self.sum.rois]
+        roi = ROI(name=name, left=left, right=right,
+                  bgr_width=bgr_width, counts=counts)
+        rnames = [r.name.lower() for r in self.rois]
         if name.lower() in rnames:
             iroi = rnames.index(name.lower())
-            self.sum.rois[iroi] = roi
+            self.rois[iroi] = roi
         else:
-            self.sum.rois.append(roi)
+            self.rois.append(roi)
         if sort:
-            self.sum.rois.sort()
-
-    def save_columnfile(self, filename, headerlines=None):
-        "write summed counts to simple ASCII  column file"
-        self.sum.save_columnfile(filename, headerlines=headerlines)
+            self.rois.sort()
 
     def save_mcafile(self, filename):
         """
@@ -212,7 +220,7 @@ class GSEMCA_File(Group):
         -----------
         * filename: output file name
         """
-        nchans = len(self.sum.counts)
+        nchans = len(self.counts)
         ndet   = len(self.mcas)
 
         # formatted count times and calibration
@@ -248,7 +256,7 @@ class GSEMCA_File(Group):
             fp.write('ROI_%i_LABEL: %s &\n' % (i, names))
 
         # environment
-        for e in self.sum.environ:
+        for e in self.environ:
             fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
         # data
         fp.write('DATA: \n')

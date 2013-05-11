@@ -128,10 +128,12 @@ class MCA(Group):
         form = "<MCA %s, nchans=%d, counts=%d, realtime=%d>"
         return form % (self.name, self.nchans, self.total_counts, self.real_time)
 
-    def add_roi(self, name='', left=0, right=0, bgr_width=3, sort=True):
+    def add_roi(self, name='', left=0, right=0, bgr_width=3,
+                counts=None, sort=True):
         """add an ROI"""
         name = name.strip()
-        roi = ROI(name=name, left=left, right=right, bgr_width=bgr_width)
+        roi = ROI(name=name, left=left, right=right,
+                  bgr_width=bgr_width, counts=counts)
 
         rnames = [r.name.lower() for r in self.rois]
         if name.lower() in rnames:
