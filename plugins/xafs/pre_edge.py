@@ -92,6 +92,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         e0          energy origin
         edge_step   edge step
         norm        normalized mu(E)
+        flat        flattened, normalized mu(E)
         pre_edge    determined pre-edge curve
         post_edge   determined post-edge, normalization curve
 
@@ -139,9 +140,15 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     edge_step = post_edge[ie0] - pre_edge[ie0]
     norm  = (mu - pre_edge)/edge_step
 
+    # generate flattened spectra
+    flat_diff  = post_edge - pre_edge
+    flat       = norm - flat_diff + flat_diff[ie0]
+    flat[:ie0] = norm[:ie0]
+
     group = set_xafsGroup(group, _larch=_larch)
     group.e0 = e0
     group.norm = norm
+    group.flat = flat 
     group.nvict = nvict
     group.nnorm = nnorm
     group.edge_step  = edge_step
