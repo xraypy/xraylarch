@@ -35,20 +35,24 @@ def h5file(fname, mode='r', _larch=None):
     """
     return h5py.File(fname, mode)
 
-def h5group(fname, _larch=None):
+def h5group(fname, mode='r+', _larch=None):
     """open an HDF5 file, and map to larch groups
     g = h5group('myfile.h5')
 
+    Arguments
+    ------
+     mode    string for file access mode ('r', 'w', etc)
+             default mode is 'r+' for read-write access.
+
     Notes:
     ------
-     1. This leaves the file open (for read).
-     2. The raw file handle will be held in the 'h5_file' group member.
-     3. Attributes of groups and datasets are generally placed in
+     1. The raw file handle will be held in the 'h5_file' group member.
+     2. Attributes of groups and datasets are generally placed in
        'itemname_attrs'.
     """
     if _larch is None:
         raise Warning("cannot run h5group: larch broken?")
-    fh = h5py.File(fname, 'r')
+    fh = h5py.File(fname, mode)
     group = _larch.symtable.create_group
 
     def add_component(key, val, top):
