@@ -22,33 +22,50 @@ from asciifiles import (readASCII, readMasterFile, readROIFile,
 
 NINIT = 16
 COMPRESSION_LEVEL = 4 # compression level
-
+DEFAULT_ROOTNAME = 'xrfmap'
 
 class GSEXRM_FileStatus:
-    no_xrfmap    = 'hdf5 does not have /xrfmap'
+    no_xrfmap    = 'hdf5 does not have top-level XRF map'
     created      = 'hdf5 has empty schema'  # xrfmap exists, no data
     hasdata      = 'hdf5 has map data'      # array sizes known
     err_notfound = 'file not found'
     err_nothdf5  = 'file is not hdf5 (or cannot be read)'
 
-def getFileStatus(filename):
+def getFileStatus(filename, root=None):
+    """return status, top-level group, and version"""
     # see if file exists:
+    status, top, vers = GSEXRM_FileStatus.err_notfound, '', ''
+    if root not in ('', None):
+        top = root
     if (not os.path.exists(filename) or
         not os.path.isfile(filename) ):
-        return GSEXRM_FileStatus.err_notfound
+        return status, top, vers
 
     # see if file is an H5 file
     try:
         fh = h5py.File(filename)
     except IOError:
-        return GSEXRM_FileStatus.err_nothdf5
-    if 'xrfmap' not in fh:
-        return GSEXRM_FileStatus.no_xrfmap
+        status = GSEXRM_FileStatus.err_nothdf5
+        return status, top, vers
 
-    if 'det1' in fh['/xrfmap']:
-        return GSEXRM_FileStatus.hasdata
+    status =  GSEXRM_FileStatus.no_xrfmap
+    if root is not None and root in fh:
+        group = fh[root]
+        if ('det1' in group and 'roimap' in group and
+            'Version' in group.attrs):
+            vers = group.attrs['Version']
+            top = root
+            status = GSEXRM_FileStatus.hasdata
+    else:
+        for name, group in fh.items():
+            if ('det1' in group and 'roimap' in group and
+                'Version' in group.attrs):
+                vers = group.attrs['Version']
+                top = name
+                status = GSEXRM_FileStatus.hasdata
+
     fh.close()
-    return GSEXRM_FileStatus.created
+    return status, top, vers
 
 def isGSEXRM_MapFolder(fname):
     "return whether folder a valid Scan Folder (raw data)"
@@ -61,7 +78,8 @@ def isGSEXRM_MapFolder(fname):
             return False
     return True
 
-H5ATTRS = {'Version': '1.3.0',
+H5ATTRS = {'Type': 'XRF 2D Map',
+           'Version': '1.4.0',
            'Title': 'Epics Scan Data',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time':'',
@@ -70,7 +88,8 @@ H5ATTRS = {'Version': '1.3.0',
            'Process_Machine':'',
            'Process_ID': 0}
 
-def create_xrfmap(h5root, dimension=2, folder='', start_time=None):
+def create_xrfmap(h5root, root=None, dimension=2,
+                  folder='', start_time=None):
     """creates a skeleton '/xrfmap' group in an open HDF5 file
 
     This is left as a function, not method of GSEXRM_MapFile below
@@ -85,9 +104,11 @@ def create_xrfmap(h5root, dimension=2, folder='', start_time=None):
     if start_time is None:
         start_time = time.ctime()
     attrs.update({'Dimension':dimension, 'Start_Time':start_time,
-                  'Map_Folder': folder, 'Last_Row': -1})
-
-    xrfmap = h5root.create_group('xrfmap')
+                  'Map_Folder': folder, 'Last_Row': -1,
+                  'Type': 'XRF 2D Map'})
+    if root in ('', None):
+        root = DEFAULT_ROOTNAME
+    xrfmap = h5root.create_group(root)
     for key, val in attrs.items():
         xrfmap.attrs[key] = str(val)
 
@@ -267,9 +288,11 @@ class GSEXRM_MapFile(object):
     ROIFile    = 'ROI.dat'
     MasterFile = 'Master.dat'
 
-    def __init__(self, filename=None, folder=None, chunksize=None):
+    def __init__(self, filename=None, folder=None, root=None,
+                 chunksize=None):
         self.filename = filename
         self.folder   = folder
+        self.root     = root
         self.chunksize=chunksize
         self.status   = GSEXRM_FileStatus.err_notfound
         self.dimension = None
@@ -285,19 +308,20 @@ class GSEXRM_MapFile(object):
 
         # initialize from filename or folder
         if self.filename is not None:
-            self.status   = getFileStatus(self.filename)
-
+            self.status, self.root, self.version = \
+                         getFileStatus(self.filename, root=root)
         elif isGSEXRM_MapFolder(self.folder):
             self.read_master()
             if self.filename is None:
                 raise GSEXRM_Exception(
                     "'%s' is not a valid GSEXRM Map folder" % self.folder)
-            self.status   = getFileStatus(self.filename)
+            self.status, self.root, self.version = \
+                         getFileStatus(self.filename, root=root)
 
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
-            self.open(self.filename, check_status=False)
+            self.open(self.filename, root=self.root, check_status=False)
             return
 
         # file exists but is not hdf5
@@ -312,21 +336,24 @@ class GSEXRM_MapFile(object):
             self.h5root = h5py.File(self.filename)
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 self.read_master()
-            create_xrfmap(self.h5root, dimension=self.dimension,
+            create_xrfmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
             self.status = GSEXRM_FileStatus.created
-            self.open(self.filename, check_status=False)
+            self.open(self.filename, root=self.root, check_status=False)
         else:
             raise GSEXRM_Exception(
                 "'GSEXMAP Error: could not locate map file or folder")
 
-    def open(self, filename, check_status=True):
+    def open(self, filename, root=None, check_status=True):
         """open GSEXRM HDF5 File :
         with check_status=False, this **must** be called
         for an existing, valid GSEXRM HDF5 File!!
         """
+        if root in ('', None):
+            root = DEFAULT_ROOTNAME
         if check_status:
-            self.status   = getFileStatus(filename)
+            self.status, self.root, self.version = \
+                         getFileStatus(filename, root=root)
             if self.status not in (GSEXRM_FileStatus.hasdata,
                                    GSEXRM_FileStatus.created):
                 raise GSEXRM_Exception(
@@ -334,7 +361,7 @@ class GSEXRM_MapFile(object):
         self.filename = filename
         if self.h5root is None:
             self.h5root = h5py.File(self.filename)
-        self.xrfmap = self.h5root['/xrfmap']
+        self.xrfmap = self.h5root[root]
         if self.folder is None:
             self.folder = self.xrfmap.attrs['Map_Folder']
         self.last_row = self.xrfmap.attrs['Last_Row']
@@ -1073,12 +1100,12 @@ class GSEXRM_MapFile(object):
 
         return np.array([rmap, gmap, bmap]).swapaxes(0, 2).swapaxes(0, 1)
 
-def read_xrfmap(filename):
+def read_xrfmap(filename, root=None):
     """read GSE XRM FastMap data from HDF5 file or raw map folder"""
     key = 'filename'
     if os.path.isdir(filename):
         key = 'folder'
-    kws = {key: filename}
+    kws = {key: filename, 'root': root}
     return GSEXRM_MapFile(**kws)
 
 def registerLarchPlugin():
