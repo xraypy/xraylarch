@@ -6,7 +6,7 @@
 import numpy as np
 from scipy import polyfit
 
-from larch.larchlib import use_plugin_path
+from larch import Group, Parameter, Minimizer, use_plugin_path
 
 use_plugin_path('math')
 use_plugin_path('xafs')
@@ -58,6 +58,10 @@ def find_e0(energy, mu, group=None, _larch=None):
     group.e0 = e0
     return e0
 
+def flat_resid(pars):
+    c0, c1, c2 =  pars.c0.value,  pars.c1.value,  pars.c2.value
+    return  (pars.mu - (c0 + pars.en * (c1 + pars.en * c2)))
+    
 def pre_edge(energy, mu, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, _larch=None):
@@ -92,6 +96,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
         e0          energy origin
         edge_step   edge step
         norm        normalized mu(E)
+        flat        flattened, normalized mu(E)
         pre_edge    determined pre-edge curve
         post_edge   determined post-edge, normalization curve
 
@@ -139,9 +144,29 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
     edge_step = post_edge[ie0] - pre_edge[ie0]
     norm  = (mu - pre_edge)/edge_step
 
+    # generate flattened spectra, by fitting a quadratic to .norm
+    # and removing that.  A simpler appoach:
+    #   flat_diff  = post_edge - pre_edge
+    #   flat       = norm - flat_diff + flat_diff[ie0]
+    #   flat[:ie0] = norm[:ie0]
+    # works, but still has some curvature to it.
+    fpars = Group(c0 = Parameter(0, vary=True),
+                  c1 = Parameter(0, vary=True),
+                  c2 = Parameter(0, vary=True),
+                  en = energy[p1:p2],
+                  mu = norm[p1:p2])
+    fit = Minimizer(flat_resid, fpars, _larch=_larch, toler=1.e-7)
+    fit.leastsq()
+    
+    fc0, fc1, fc2  = fpars.c0.value, fpars.c1.value, fpars.c2.value
+    flat_diff   = fc0 + energy * (fc1 + energy * fc2)
+    flat        = norm - flat_diff  + flat_diff[ie0]
+    flat[:ie0]  = norm[:ie0]
+
     group = set_xafsGroup(group, _larch=_larch)
     group.e0 = e0
     group.norm = norm
+    group.flat = flat 
     group.nvict = nvict
     group.nnorm = nnorm
     group.edge_step  = edge_step

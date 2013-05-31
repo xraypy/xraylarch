@@ -780,7 +780,7 @@ class MapViewerFrame(wx.Frame):
 
         except wx.PyDeadObjectError:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
-                                              gsexrm_file=self.current_file)
+                                              gsexrmfile=self.current_file)
             self.xrfdisplay.Show()
 
         if do_raise:

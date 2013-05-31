@@ -11,7 +11,6 @@ import copy
 from .utils import Closure, fixName, isValidName
 from . import site_config
 
-
 class Group(object):
     """Group: a container for variables, modules, and subgroups.
 
@@ -20,7 +19,8 @@ class Group(object):
        _subgroups(): return list of subgroups
        _members():   return dict of members
     """
-    __private = ('_main', '_larch', '_parents', '__name__', '__private')
+    __private = ('_main', '_larch', '_parents', '__name__',
+                 '__private', '_subgroups', '_members')
     def __init__(self, name=None, **kws):
         if name is None:
             name = hex(id(self))
@@ -59,20 +59,31 @@ class Group(object):
 
     def __dir__(self):
         "return list of member names"
-        return [key for key in list(self.__dict__.keys())
+        cls_members = []
+        cname = self.__class__.__name__
+        if cname != 'SymbolTable' and hasattr(self, '__class__'):
+            cls_members = dir(self.__class__)
+
+        dict_keys = [key for key in self.__dict__ if key not in cls_members]
+
+        return [key for key in cls_members + dict_keys
                 if (not key.startswith('_SymbolTable_') and
-                    not key.startswith('_%s__' % self.__class__.__name__) and
+                    not key.startswith('_Group_') and
+                    not key.startswith(cname) and
+                    not (key.startswith('__') and key.endswith('__')) and
                     key not in self.__private)]
+
 
     def _subgroups(self):
         "return list of names of members that are sub groups"
-        return [k for k in dir(self) if isgroup(self.__dict__[k])]
+        return [k for k in self._members() if isgroup(self.__dict__[k])]
 
     def _members(self):
         "return members"
         r = {}
         for key in self.__dir__():
-            r[key] = self.__dict__[key]
+            if key in self.__dict__:
+                r[key] = self.__dict__[key]
         return r
 
 def isgroup(grp):
@@ -189,11 +200,6 @@ class SymbolTable(Group):
             sys.searchGroups == cache[3] and
             cache[4] is not None and not force):
             return cache[4]
-        # print( 'real _fix searchGroup! ', dir(sys.localGroup))
-        # print( cache)
-        # print( sys.localGroup==cache[0], sys.localGroup)
-        # print( sys.moduleGroup==cache[1], sys.moduleGroup)
-        # print( sys.searchGroups==cache[2])
 
         if sys.moduleGroup is None:
             sys.moduleGroup = self.top_group
@@ -240,8 +246,6 @@ class SymbolTable(Group):
 
         self._sys.searchGroups = cache[3] = snames[:]
         sys.searchGroupObjects = cache[4] = sgroups[:]
-        # print( 'Set searchGroups ', cache[3], cache[4])
-
         return sys.searchGroupObjects
 
     def get_parentpath(self, sym):
@@ -263,7 +267,6 @@ class SymbolTable(Group):
         debug = False # not ('force'in name)
         if debug:  print( '====\nLOOKUP ', name)
         searchGroups = self._fix_searchGroups()
-        #    print( ' .. ', searchGroups)
         self.__parents = []
         if self not in searchGroups:
             searchGroups.append(self)
@@ -275,8 +278,6 @@ class SymbolTable(Group):
         parts = name.split('.')
         if len(parts) == 1:
             for grp in searchGroups:
-                #if debug:
-                #    print( '->grp ', grp, hasattr(grp, name), self._private)
                 if public_attr(grp, name):
                     self.__parents.append(grp)
                     return getattr(grp, name)

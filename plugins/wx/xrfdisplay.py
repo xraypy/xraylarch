@@ -31,7 +31,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl,
 
 from periodictable import PeriodicTablePanel
 
-from medfile_cars import GSEMCA_File, gsemca_group
+from gsemca_file import GSEMCA_File, gsemca_group
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL

@@ -596,7 +596,7 @@ Note that an uncertainty is estimated for the Path parameters, including
 Such derived uncertainties do reflect the uncertainties and correlations
 between variables.  For example, a simplistic evaluation for the standard
 error in one of the ``sigma2`` parameters using the estimated variance in
-the ``theta`` might be done as follows:
+the ``theta`` might be done as follows::
 
     larch> _ave = sigma2_eins(10, pars.theta)
     larch> _dlo = sigma2_eins(10, pars.theta-pars.theta.stderr) - _ave

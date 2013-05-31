@@ -5,7 +5,7 @@ import copy
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
-from larch.larchlib import use_plugin_path
+from larch import use_plugin_path, Group, param_value, Parameter
 use_plugin_path('xrf')
 
 from mca import MCA
@@ -22,40 +22,46 @@ def str2str(s, delim=None):
     s = s.strip()
     return [i.strip() for i in s.split(delim) if len(i) > 0]
 
-class GSEMCA_File:
+class GSEMCA_File(Group):
     """
     Read GSECARS style MCA / Multi-element MCA files
     """
-    def __init__(self, filename=None, bad=None, nchans=2048):
+    def __init__(self, filename=None, bad=None, nchans=2048, **kws):
 
+        kwargs = {'name': 'GSE MCA File: %s' % filename}
+        kwargs.update(kws)
+        Group.__init__(self,  **kwargs)
         self.nchans = nchans
         self.mcas   = []
+        self.__mca0 = None
         self.bad    = bad
         if bad is None:
             self.bad = []
-        self._det0      = -1  # main "good" detector for energy calibration
 
         self.filename = filename
         if filename:
             self.read(filename=filename)
 
-    def _firstgood_mca(self, chan_min=2, min_counts=2):
+    def __get_mca0(self, chan_min=2, min_counts=2):
         """ find first good detector for alignment
         'good' is defined as at least min_counts counts
         above channel chan_min
         """
-        for mca in self.mcas:
-            if mca.counts[chan_min:].sum() > min_counts:
-                return mca
+        if self.__mca0 is None:
+            for imca, mca in enumerate(self.mcas):
+                if mca.counts[chan_min:].sum() > min_counts:
+                    self.__mca0 = mca
+                elif imca not in self.bad:
+                    self.bad.append(imca)
+        return self.__mca0
 
     def get_energy(self, imca=None):
         "get energy, optionally selecting which mca to use"
-        if imca is None:
-            mca = self._firstgood_mca()
-        else:
+        if imca is not None:
             mca = self.mcas[imca]
+        else:
+            mca = self.__get_mca0()
         return mca.get_energy()
-
 
     def get_counts(self, dt_correct=True, align=True):
         """ get summed MCA spectra,
@@ -64,7 +70,7 @@ class GSEMCA_File:
         --------
           align   align spectra in energy before summing (True).
         """
-        mca0 = self._firstgood_mca()
+        mca0 = self.__get_mca0()
         en  = mca0.get_energy()
         dat = 0
         for mca in self.mcas:
@@ -174,33 +180,38 @@ class GSEMCA_File:
                 left = roi['left'][imca]
                 right = roi['right'][imca]
                 label = roi['label'][imca]
-                thismca.add_roi(name=label, left=left, right=right, sort=False)
+                thismca.add_roi(name=label, left=left, right=right,
+                                sort=False, counts=counts[:,imca])
             thismca.rois.sort()
             self.mcas.append(thismca)
-            if sum_mca is None:
-                sum_mca = copy.deepcopy(thismca)
-        sum_mca.counts = self.get_counts()
-        sum_mca.raw    = self.get_counts(dt_correct=False)
-        sum_mca.name = 'mcasum'
-        self.sum = sum_mca
+
+        mca0 = self.__get_mca0()
+        self.counts = self.get_counts()
+        self.raw    = self.get_counts(dt_correct=False)
+        self.name   = 'mcasum'
+        self.energy = mca0.energy[:]
+        self.environ = mca0.environ
+        self.rois = []
+        for roi in mca0.rois:
+            self.add_roi(name=roi.name, left=roi.left,
+                         right=roi.right, sort=False, counts=counts)
+        self.rois.sort()
         return
 
-    def add_roi(self, name='', left=0, right=0, bgr_width=3, sort=True):
+    def add_roi(self, name='', left=0, right=0, bgr_width=3,
+                counts=None, sort=True):
         """add an ROI to the sum spectra"""
         name = name.strip()
-        roi = ROI(name=name, left=left, right=right, bgr_width=bgr_width)
-        rnames = [r.name.lower() for r in self.sum.rois]
+        roi = ROI(name=name, left=left, right=right,
+                  bgr_width=bgr_width, counts=counts)
+        rnames = [r.name.lower() for r in self.rois]
         if name.lower() in rnames:
             iroi = rnames.index(name.lower())
-            self.sum.rois[iroi] = roi
+            self.rois[iroi] = roi
         else:
-            self.sum.rois.append(roi)
+            self.rois.append(roi)
         if sort:
-            self.sum.rois.sort()
-
-    def save_columnfile(self, filename, headerlines=None):
-        "write summed counts to simple ASCII  column file"
-        self.sum.save_columnfile(filename, headerlines=headerlines)
+            self.rois.sort()
 
     def save_mcafile(self, filename):
         """
@@ -209,7 +220,7 @@ class GSEMCA_File:
         -----------
         * filename: output file name
         """
-        nchans = len(self.sum.counts)
+        nchans = len(self.counts)
         ndet   = len(self.mcas)
 
         # formatted count times and calibration
@@ -245,7 +256,7 @@ class GSEMCA_File:
             fp.write('ROI_%i_LABEL: %s &\n' % (i, names))
 
         # environment
-        for e in self.sum.environ:
+        for e in self.environ:
             fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
         # data
         fp.write('DATA: \n')
@@ -254,7 +265,7 @@ class GSEMCA_File:
             fp.write(" %s\n" % d)
         fp.close()
 
-def gsemca_group(fname, _larch=None, **kws):
+def gsemca_group_old(fname, _larch=None, **kws):
     """read GSECARS MCA file to larch group"""
     if _larch is None:
         raise Warning("cannot read GSE XRF group -- larch broken?")
@@ -277,6 +288,10 @@ def gsemca_group(fname, _larch=None, **kws):
                  'real_time', 'start_time', 'tau', 'raw'):
         setattr(group, attr, getattr(xfile.sum, attr))
     return group
+
+def gsemca_group(fname, _larch=None, **kws):
+    """read GSECARS MCA file to larch group"""
+    return GSEMCA_File(fname)
 
 def xrf_background(energy, counts, group=None, _larch=None,
                    bottom_width=4, compress=4, exponent=2, **kws):
