@@ -173,7 +173,8 @@ class GSEXRM_MapRow:
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
-        npts = min(gnpts, xnpts, snpts)
+        # print 'Row Data ', gnpts, snpts, xnpts, self.realtime.shape
+        npts = min(gnpts, xnpts)
         if self.npts is None:
             self.npts = npts
         if snpts < self.npts:  # extend struck data if needed
@@ -210,7 +211,6 @@ class GSEXRM_MapRow:
             self.posvals.append(np.array([float(yvalue) for i in points]))
         self.posvals.append(self.realtime.sum(axis=1).astype('float32') / nmca)
         self.posvals.append(self.livetime.sum(axis=1).astype('float32') / nmca)
-
 
         total = None
         for imca in range(nmca):
