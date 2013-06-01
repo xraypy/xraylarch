@@ -402,7 +402,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
                       color=color, width=width, head_width=head_width, **kws)
 
-def _plot_axhline(y, xmin=None, xmax=None, win=1, size=None,
+def _plot_axhline(y, xmin=0, xmax=1, win=1, size=None,
                   wxparent=None, _larch=None, **kws):
     """plot_axhline(y, xmin=None, ymin=None, **kws)
 
@@ -420,8 +420,9 @@ def _plot_axhline(y, xmin=None, xmax=None, win=1, size=None,
     plotter.Raise()
 
     plotter.panel.axes.axhline(y, xmin=xmin, xmax=xmax, **kws)
+    plotter.panel.canvas.draw()
 
-def _plot_axvline(x, ymin=None, ymax=None, win=1, size=None,
+def _plot_axvline(x, ymin=0, ymax=1, win=1, size=None,
                   wxparent=None, _larch=None, **kws):
     """plot_axvline(y, xmin=None, ymin=None, **kws)
 
@@ -438,8 +439,8 @@ def _plot_axvline(x, ymin=None, ymax=None, win=1, size=None,
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
 
-    plotter.panel.axes.axvline(y, xmin=xmin, xmax=xmax, **kws)
-
+    plotter.panel.axes.axvline(x, ymin=ymin, ymax=ymax, **kws)
+    plotter.panel.canvas.draw()
 
 def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None, **kws):
     """get_cursor(win=1, timeout=30)
