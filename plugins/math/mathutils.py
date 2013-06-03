@@ -29,7 +29,7 @@ def as_ndarray(obj):
         return np.array([obj])
     return np.asarray(obj)
 
-def index_of(array, value):
+def index_of(array, value, _larch=None):
     """return index of array *at or below* value
     returns 0 if value < min(array)
     """
@@ -37,7 +37,7 @@ def index_of(array, value):
         return 0
     return max(np.where(array<=value)[0])
 
-def index_nearest(array, value):
+def index_nearest(array, value, _larch=None):
     """return index of array *nearest* to value
     """
     return np.abs(array-value).argmin()
