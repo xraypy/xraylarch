@@ -32,6 +32,9 @@ class TestCase(unittest.TestCase):
         os.unlink(fname)
         return out
 
+    def get_errors(self):
+        return self.session.error
+    
     def tearDown(self):
         if not self.stdout.closed:
             self.stdout.close()
@@ -73,3 +76,15 @@ class TestCase(unittest.TestCase):
         if isinstance(testval, np.ndarray):
             testval = np.all(testval)
         return self.assertFalse(testval)
+
+    def ExceptionRaised(self):
+        nerr =  len(self.session.error) 
+        for i in self.session.error:
+            print "see error message: %s'" % i.msg
+        self.session.error = []
+        return self.assertTrue(nerr > 0)
+        
+
+    def NoExceptionRaised(self):
+        return self.assertTrue(len(self.session.error) == 0)
+

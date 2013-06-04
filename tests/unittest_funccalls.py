@@ -10,7 +10,7 @@ from ut_base import TestCase
 from larch import Interpreter
 
 class TestEval(TestCase):
-    '''testing of asteval'''
+    '''testing of ast evaluation'''
 
     def test_function1(self):
         "test function definition and running"
@@ -23,7 +23,6 @@ def fcn(x, scale=2):
     return out
 """)
         self.session("a = fcn(4, scale=9)")
-
         self.isValue("a", 18)
         self.session("a = fcn(9, scale=0)")
         self.isValue("a", 3)
