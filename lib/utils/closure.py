@@ -31,8 +31,9 @@ class Closure(object):
         self._nkws  = 0
         if  inspect.getargspec(self.func).defaults is not None:
             self._nkws  = len(inspect.getargspec(self.func).defaults)
-        self._nargs = len(inspect.getargspec(self.func).args) - self._nkws
-        self._haskwargs = inspect.getargspec(self.func).keywords is not None
+        self._nargs   = len(inspect.getargspec(self.func).args) - self._nkws
+        self._argvars = self.func.func_code.co_varnames[:]
+        self._haskwargs  = inspect.getargspec(self.func).keywords is not None
         self._hasvarargs = inspect.getargspec(self.func).varargs is not None
 
     def __repr__(self):
@@ -52,16 +53,17 @@ class Closure(object):
     def __call__(self, *args, **c_kwds):
         if self.func is None:
             return None
-        # avoid overwriting self.kwds here!!
-        kwds = {}
-        for key, val in list(self.kwds.items()):
-            kwds[key] = val
+        kwds = self.kwds.copy()
         kwds.update(c_kwds)
+        if ('_larch' in kwds and not self._haskwargs and
+            '_larch' not in self._argvars):
+            kwds.pop('_larch')
+            
         ngot = len(args) + len(kwds)
         nexp = self._nargs + self._nkws
         if not self._haskwargs and (ngot > nexp):
             exc_msg = "%s expected %i arguments, got %i "
-            if '_larch' in self.kwds:
+            if '_larch' in kwds and '_larch' not in self._argvars:
                 ngot -= 1
                 nexp -= 1
             raise TypeError(exc_msg % (self.__name__, nexp, ngot))
