@@ -493,23 +493,3 @@ class SymbolTable(Group):
                 dval = repr(obj)
             out.append('  %s: %s' % (item, dval))
         self._larch.writer.write("%s\n" % '\n'.join(out))
-
-# if __name__ == '__main__':
-#     symtab = SymbolTable()
-#     symtab.group1 = Group(name='group1')
-#     symtab.group2 = Group(name='group2')
-#
-#     symtab.show_group('_sys')
-#     symtab.group1.x = 12.0
-#     symtab.group1.g1 = Group('g1')
-#
-#     symtab.show_group('group1')
-#     symtab.group1.g1.title = 'a string here'
-#     symtab.group1.g1.x = 99120.102
-#     symtab.group1.g1.e = 8980.0
-#
-#     symtab.show_group('group1.g1')
-#     symtab.list_groups()
-#
-#     print('group1 members , subgroups: ', dir(symtab.group1),
-#           symtab.group1._subgroups())
