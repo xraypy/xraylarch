@@ -197,6 +197,16 @@ class InputText:
                     self._larch.raise_exception(None, exc=IndexError, msg=msg)
         return self.empty_frame
 
+    def clean_text(self, text):
+        """  clean up text: strip comments,etc"""
+        text  = text.strip().rstrip()
+        # here we replace '#end' with '&end' so that it is not removed
+        # by strip_comments.  then below, we look for '&end' as an
+        # end-of-block token.
+        if text.startswith('#end'):
+            text = '&end%s' % text[4:]
+        return strip_comments(text)
+
     def convert(self):
         """
         Convert input buff (in self.input_buff) to valid python code
@@ -208,34 +218,26 @@ class InputText:
         self.input_buff.reverse()
         while self.input_buff:
             text, complete, eos, fname, lineno = self.input_buff.pop()
+            text = self.clean_text(text)
             long_text = eos in '"\''
             sindent = self.indent*(indent_level+1)
             while not complete:
                 tnext, complete, xeos, fname, lineno2 = self.input_buff.pop()
+                text = self.clean_text(text)
                 if long_text:
                     text = "%s\n%s" % (text, tnext)
                 else:
                     text = "%s\n  %s%s" % (text, sindent, tnext)
 
-            text  = text.strip().rstrip()
-            txt   = text.replace('(', ' (').replace(')', ' )')
-
             if text.startswith('"') or text.startswith("'"):
                 delim = text[0]
-                if text[0:3] == text[0]*3:
+                if text[0:3] == text[0]*3: # triple quote
                     delim = text[0:3]
                 while not find_delims(text, delim=delim)[0]:
                     tnext, complete, eos, fname, lineno2 = self.input_buff.pop()
                     text = "%s\n %s%s" % (text, sindent, tnext)
 
-            # here we replace '#end' with '&end' so that it is not removed
-            # by strip_comments.  then below, we look for '&end' as an
-            # end-of-block token.
-            if txt.startswith('#end'):
-                txt = '&end%s' % txt[4:]
-            txt = strip_comments(txt)
-
-            # thiskey, word2 = (txt.split() + [''])[0:2]
+            txt   = text.replace('(', ' (').replace(')', ' )')
             words = txt.split(' ', 1)
             thiskey = words.pop(0).strip()
 
