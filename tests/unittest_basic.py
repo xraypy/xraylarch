@@ -57,8 +57,7 @@ class TestEval(TestCase):
 
     def ftest_while(self):
         '''while loops'''
-        self.trytext("""
-n=0
+        self.trytext("""n=0
 while n < 8:
     n += 1
 endwhile
@@ -80,13 +79,13 @@ endwhile
 
         self.trytext("""
 n=0
-while n < 8:
+while n < 8:   # test while-else
     n += 1
 else:
-    n = -1
+    n += -1
 endwhile
 """)
-        self.isValue('n',  -1)
+        self.isValue('n',  7)
 
         self.trytext("""
 n=0
@@ -100,7 +99,6 @@ while n < 10:
         break
     endif
 endwhile
-print( 'finish: n = ', n)
 """)
         self.isValue('n',  6)
 

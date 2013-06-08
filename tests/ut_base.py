@@ -107,13 +107,8 @@ class TestCase(unittest.TestCase):
         return self.assertFalse(testval)
 
     def ExceptionRaised(self):
-        nerr =  len(self.session.error)
-        for i in self.session.error:
-            print "see error message: %s'" % i.msg
-        self.session.error = []
-        return self.assertTrue(nerr > 0)
-
+        return self.assertTrue(len(self.session.get_errors()) > 0)
 
     def NoExceptionRaised(self):
-        return self.assertTrue(len(self.session.error) == 0)
+        return self.assertTrue(len(self.session.get_errors()) == 0)
 
