@@ -151,7 +151,7 @@ class InputText:
         self.put(fh.read(), filename=fname, lineno=0)
         fh.close()
 
-    def put(self, text, filename=None, lineno=None ):
+    def put(self, text, filename=None, lineno=None):
         """add line of input code text"""
         self.fname = filename or self.filename or '<stdin>'
         if lineno is not None:
@@ -279,7 +279,7 @@ class InputText:
                     else: # one-liner form
                         oneliner = True
             elif thiskey in self.endkeys: # end of block
-                if not thiskey.startswith('&'):
+                if not thiskey.startswith('#'):
                     prefix = '#'
                 if len(self.keys) != 0:
                     self.current = None
@@ -306,8 +306,9 @@ class InputText:
                 else:
                     self._larch.raise_exception(None, exc=SyntaxError, msg=msg)
 
-            self.block.append('%s%s%s' % (self.indent*indent_level,
-                                          prefix, text))
+            pytext = '%s%s%s' % (self.indent*indent_level,
+                                 prefix, text)
+            self.block.append(pytext)
             if len(self.keys) == 0:
                 outtext = '\n'.join(self.block)
                 if '\n' in outtext:  outtext = outtext  + '\n'
