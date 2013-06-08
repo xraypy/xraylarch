@@ -16,4 +16,4 @@ dylibs/*/Mk.config
 sandbox/
 play/
 AMAP/
-
+*.h5
