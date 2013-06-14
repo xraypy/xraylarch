@@ -5,8 +5,8 @@ except:
 import sys
 import os
 
-interp = larch.interp()
-input  = larch.input()
+interp = larch.Interpreter()
+input  = larch.inputText.InputText(_larch=interp)
 
 def doFile(inputfile,output=None):
     try:
@@ -23,7 +23,7 @@ def doFile(inputfile,output=None):
         sys.stdout = fout
         def out(s):
             fout.write("%s\n"% s)
-        
+
     while input:
         block,fname,lineno = input.get()
         ret = interp.eval(block,fname=fname,lineno=lineno)
@@ -48,10 +48,10 @@ def doFile(inputfile,output=None):
 
     fout.flush()
     fout.close()
-    sys.stdout = save_stdout 
-    
+    sys.stdout = save_stdout
+
 def compareFiles(fname1,fname2):
-    
+
     text1 = open(fname1,'r').readlines()
     text2 = open(fname2,'r').readlines()
 
@@ -68,8 +68,8 @@ def compareFiles(fname1,fname2):
         diff.insert(0,"%s and %s differ!"%(fname1,fname2))
     if len(diff)>0:
         return "\n".join(diff)
-    return 'OK.' 
-            
+    return 'OK.'
+
 
 def testScript(script,output):
     tmpfile = '%s.test'% script
@@ -79,7 +79,7 @@ def testScript(script,output):
     if comp=='OK.':
         os.unlink(tmpfile)
 
-    
+
 def_tests = ('t1','t2','t3','evaltest1')
 if __name__ == '__main__':
     import sys
@@ -89,6 +89,6 @@ if __name__ == '__main__':
         tests = def_tests
     for t in tests:
         if t.endswith('.lar'): t = t[:-4]
-        script = '%s.lar' % t
-        output = '%s.out' % t
-        testScript(script,output)
+        script = os.path.join('larch_scripts', '%s.lar' % t)
+        output = os.path.join('larch_scripts', '%s.out' % t)
+        testScript(script, output)
