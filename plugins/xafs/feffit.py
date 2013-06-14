@@ -234,7 +234,7 @@ class FeffitDataSet(Group):
 
         trans.rmin, trans.rmax, trans.fitspace = save
 
-        self.n_idp  = 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
+        self.n_idp  = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
         self.epsilon_k = eps_k
         self.epsilon_r = eps_r
         if len(eps_r) == 1:
@@ -415,10 +415,16 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     for ds in datasets:
         n_idp += ds.n_idp
 
+    # here we rescale chi-square and reduced chi-square to n_idp
+    npts =  len(params.residual)
+    params.chi_square *=  n_idp*1.0 / npts
+    params.chi_reduced =  params.chi_square/(n_idp*1.0 - params.nvarys)
+
     # With scale_covar = True, Minimizer() scales the uncertainties
     # by reduced chi-square assuming params.nfree is the correct value
     # for degrees-of-freedom. But n_idp-params.nvarys is a better measure,
     # so we rescale uncertainties here.
+
     err_scale = sqrt(params.nfree / (n_idp - params.nvarys))
     for name in dir(params):
         p = getattr(params, name)
