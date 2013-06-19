@@ -192,7 +192,7 @@ working with uncertainties
 
 After a fit, each Parameter that was actually varied in the fit should be
 assigned information about the uncertainty in the fitted value as well as
-its best fit value.  On rare occasions (such as when a bes-fit value is
+its best fit value.  On rare occasions (such as when a best-fit value is
 very close to a bound) the setting of uncertainties is not possible.  The
 primary way the uncertainty for a Parameter is expressed is with the
 ``stderr`` attribute, which holds the estimated standard error for the

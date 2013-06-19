@@ -2,12 +2,12 @@
 Downloading and Installation
 ====================================
 
-.. _larch-0.9.19.tar.gz (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.19.tar.gz/download
-.. _larch-0.9.19.tar.gz (CARS):   http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.19.tar.gz
+.. _larch-0.9.20.tar.gz (sf.net):    http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.20.tar.gz/download
+.. _larch-0.9.20.tar.gz (CARS):      http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.20.tar.gz
 
-.. _LarchInstaller_0.9.19.exe (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/LarchInstaller_0.9.19.exe/download
-.. _LarchInstaller_0.9.19.exe (CARS):   http://cars.uchicago.edu/xraylarch/downloads/LarchInstaller_0.9.19.exe
-.. _larch github repository:      http://github.com/xraypy/xraylarch
+.. _LarchInstaller_0.9.20.exe (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/LarchInstaller_0.9.20.exe/download
+.. _LarchInstaller_0.9.20.exe (CARS):   http://cars.uchicago.edu/xraylarch/downloads/LarchInstaller_0.9.20.exe
+.. _larch github repository:            http://github.com/xraypy/xraylarch
 
 
 Larch is still in active development, and all releases should be considered
@@ -24,11 +24,11 @@ Recommended download options are:
   +---------+-----------------+-----------+-------------------------------------------------------+
   | Status  | Download Type   | Platforms |   Download / Command                                  |
   +=========+=================+===========+=======================================================+
-  | Beta    | Source tarball  | All       |  `larch-0.9.19.tar.gz (CARS)`_  or                    |
-  |         |                 |           |  `larch-0.9.19.tar.gz (sf.net)`_                      |
+  | Beta    | Source tarball  | All       |  `larch-0.9.20.tar.gz (CARS)`_  or                    |
+  |         |                 |           |  `larch-0.9.20.tar.gz (sf.net)`_                      |
   +---------+-----------------+-----------+-------------------------------------------------------+
-  | Beta    | Win32 Installer | Windows   |  `LarchInstaller_0.9.19.exe (CARS)`_  or              |
-  |         |                 |           |  `LarchInstaller_0.9.19.exe (sf.net)`_                |
+  | Beta    | Win32 Installer | Windows   |  `LarchInstaller_0.9.20.exe (CARS)`_  or              |
+  |         |                 |           |  `LarchInstaller_0.9.20.exe (sf.net)`_                |
   +---------+-----------------+-----------+-------------------------------------------------------+
   | Devel   | Source kit      | All       | git clone http://github.com/xraypy/xraylarch.git      |
   +---------+-----------------+-----------+-------------------------------------------------------+

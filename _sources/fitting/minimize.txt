@@ -37,11 +37,16 @@ A simple objective function that models data as a line might look like this::
 Here ``params`` is a Group containing two Parameters as defined by
 :func:`_math.param`, discussed earlier.
 
-To actually perform the fit, the :func:`minimize` function must be called.  This
-takes the objective function as its first argument, and the group containing all
-the Parameters as its second argument, keyword arguments for the optional
-arguments for the objective function, and several keyword arguments to
-alter the fitting process itself.
+To actually perform the fit, the :func:`minimize` function must be
+called.  This takes the objective function as its first argument, and
+the group containing all the Parameters as its second argument,
+keyword arguments for the optional arguments for the objective
+function, and several keyword arguments to alter the fitting process
+itself.  Here is the function call using the objective function
+defined above, assuming you have a group called ``data`` containing
+the data you are trying to fit::
+
+    minimize(residual, params, kws={'xdata': data.x 'ydata':data.y})
 
 As the fit proceeds, the values the Parameter values will be updated, and
 the objective function will be called to recalculate the residual array.
@@ -58,7 +63,11 @@ procedure decides it has found the best solution that it can.
          objective function. This will be passed as the first argument to the
          objective function.  The Group can contain other components in
          addition to the set of Parameters for the model.
-    :param args: a tuple of positional arguments to pass to the objective function.
+    :param args: a tuple of positional arguments to pass to the
+                 objective function.  Note that a single argument tuple
+                 is constructed by following a value with a comma (it
+                 is not sufficient to enclose a single value in
+                 parentheses)
     :param kws:  a dictionary of keyword/value arguments to pass to the objective function.
     :param method:  name (case insensitive) of minimization method to use (default='leastsq')
     :param extra_kws:  additional keywords to pass to fitting method.

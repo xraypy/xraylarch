@@ -10,7 +10,7 @@ Fourier transforms are central to understanding and using
 XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
 transforms as part of their processing, and many of the functions
 parameters and arguments described here have names and meanings used
-throughout the XAFS functionality of Larch.  For example, but
+throughout the XAFS functionality of Larch.  For example, both
 :func:`autobk` and :func:`feffit` rely on XAFS Fourier transforms, and use
 the XAFS Fourier transform function described here.
 
