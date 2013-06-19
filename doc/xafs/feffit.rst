@@ -15,7 +15,7 @@ process, and those sections will be referenced here.
 The Feffit Strategy for Modeling EXAFS Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The basic approach to modeling EXAFS data in Larch[NewvilleFEFFIT] is to
+The basic approach to modeling EXAFS data in Larch [Newville2001]_ is to
 create a model EXAFS :math:`\chi(k)` as a sum of scattering paths that will
 be compared to experimentally derived :math:`\chi(k)`. The model will
 consist of a set of FEFF Scattering Paths representing the photo-electron
@@ -63,13 +63,15 @@ Nyquist as
     N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1
 
 where :math:`\Delta k` and :math:`\Delta R` are the :math:`k` and :math:`R`
-range of the usable data under consideration.  E. A. Stern argues
-[SternNIDP] convincingly that the '+1' there could safely be put as '+2',
-but we'll remain conservative and keep the '+1.  In general, this greatly
-limits the number of parameters thar can be successfully used in a fit.  It
-should be noted that this limitation is inherent in XAFS (and many other
-techniques that rely on oscillatory signals), and not a consequence of
-using Fourier transforms in the analysis.
+range of the usable data under consideration.  E. A. Stern [Stern1993]_
+argues convincingly that the '+1' here should be '+2', but we'll remain
+conservative and keep the '+1', and use this value not only for fit
+statistics but to limit the maximum number of free variables allowed in a
+fit.  In general, this greatly limits the number of parameters thar can be
+successfully used in a fit.  It should be noted that this limitation is
+inherent in XAFS (and many other techniques that rely on oscillatory
+signals), and not a consequence of using Fourier transforms in the
+analysis.
 
 Because of this fundamental information limit, it is usual to purposely
 limit the spectra being analyzed.  Of course, one usually limits how far
@@ -141,11 +143,12 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 :math:`R`: white noise.  The function :func:`estimate_noise` does this
-[NewvBoyanSayers], and the estimate derived from this method is used unless
-you specify a value for ``epsilon_k`` the noise level in :math:`\chi(k)`.
-Though usually :math:`\epsilon` is taken to be a scalar value, it can be
-specfied as an array (of the same length as :math:`\chi(k)`) if more
-accurate measures for the uncertainty of the data is available.
+[NewvilleBoyanovSayers1999]_, and the estimate derived from this method is
+used unless you specify a value for ``epsilon_k`` the noise level in
+:math:`\chi(k)`.  Though usually :math:`\epsilon` is taken to be a scalar
+value, it can be specfied as an array (of the same length as
+:math:`\chi(k)`) if more accurate measures for the uncertainty of the data
+is available.
 
 
 It turns out that :math:`\chi^2` is almost always too big, and reduced
@@ -771,8 +774,17 @@ parameters.
 
 .. rubric:: References
 
-.. [NewvilleFEFFIT] M. Newville *EXAFS analysis using FEFF and FEFFIT*, J. Synchrotron Radiation,  **8**, pp 96-100, (2001).
+.. [Newville2001] M. Newville *EXAFS analysis using FEFF and FEFFIT*,
+   J. Synchrotron Radiation,  **8**, pp 96-100, (2001). 
+   [http://dx.doi.org/10.1107/S0909049500016290]
 
-.. [SternNidp]   E. A. Stern, *Number of relevant independent points in X-ray-absorption fine-structure spectra*, Physical Review **B48**, pp 9825-9827 (1993).
+.. [Stern1993]   E. A. Stern, *Number of relevant independent points in 
+   X-ray-absorption fine-structure spectra*, 
+   Physical Review **B48**, pp 9825-9827 (1993).
+   [http://dx.doi.org/10.1103/PhysRevB.48.9825]
 
-.. [NewvBoyanSayers] M. Newville, B. Boyanov, and D. E. Sayers,  *Estimation of uncertainties in XAFS data*, J. Synchrotron Radiation, **6**, pp 264-265 (1999).
+
+.. [NewvilleBoyanovSayers1999] M. Newville, B. Boyanov, and D. E. Sayers,  
+   *Estimation of uncertainties in XAFS data*, 
+   J. Synchrotron Radiation, **6**, pp 264-265 (1999).
+   [http://dx.doi.org/10.1107/S0909049598018147]
