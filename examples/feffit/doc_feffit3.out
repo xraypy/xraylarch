@@ -1,9 +1,9 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 390, 5, 385
-   chi_square         = 20670.626
-   reduced chi_square = 53.689939
-   r-factor           = 0.016292295
+   chi_square         = 2993.448
+   reduced chi_square = 58.152235
+   r-factor           = 0.016292904
  
 [[Datasets (3)]]
  dataset 1:
@@ -14,8 +14,8 @@
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
    epsilon_k          = 0.000926
-   epsilon_r          = 0.044030
-   n_independent      = 17.825
+   epsilon_r          = 0.044031
+   n_independent      = 18.825
  dataset 2:
    fit space          = 'r'
    r-range            = 1.400, 3.400
@@ -24,8 +24,8 @@
    paths used in fit  = ['feff0001.dat']
    k-weight           = 2
    epsilon_k          = 0.000842
-   epsilon_r          = 0.040020
-   n_independent      = 17.825
+   epsilon_r          = 0.040021
+   n_independent      = 18.825
  dataset 3:
    fit space          = 'r'
    r-range            = 1.400, 3.400
@@ -35,14 +35,14 @@
    k-weight           = 2
    epsilon_k          = 0.000432
    epsilon_r          = 0.020536
-   n_independent      = 17.825
+   n_independent      = 18.825
  
 [[Variables]]
    alpha          =  0.000011 +/- 0.000007   (init=  0.000000)
-   amp            =  0.873471 +/- 0.032249   (init=  1.000000)
-   del_e0         =  5.066282 +/- 0.629893   (init=  2.000000)
-   dr_off         = -0.001837 +/- 0.002941   (init=  0.000000)
-   theta          =  233.042260 +/- 7.788144   (init=  250.000000)
+   amp            =  0.873512 +/- 0.031297   (init=  1.000000)
+   del_e0         =  5.066323 +/- 0.611274   (init=  2.000000)
+   dr_off         = -0.001836 +/- 0.002854   (init=  0.000000)
+   theta          =  233.039328 +/- 7.557714   (init=  250.000000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, theta           = -0.865 
@@ -58,8 +58,8 @@
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.87347 +/-  0.03225
-     E0     =  5.06628 +/-  0.62989
+     S02    =  0.87351 +/-  0.03130
+     E0     =  5.06632 +/-  0.61127
      R      =  2.54624 +/-  0.00102
      deltar = -0.00156 +/-  0.00102
      sigma2 =  0.00328 +/-  0.00004
@@ -71,8 +71,8 @@
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.87347 +/-  0.03225
-     E0     =  5.06628 +/-  0.62989
+     S02    =  0.87351 +/-  0.03130
+     E0     =  5.06632 +/-  0.61127
      R      =  2.54737 +/-  0.00094
      deltar = -0.00043 +/-  0.00094
      sigma2 =  0.00334 +/-  0.00004
@@ -84,8 +84,8 @@
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.87347 +/-  0.03225
-     E0     =  5.06628 +/-  0.62989
+     S02    =  0.87351 +/-  0.03130
+     E0     =  5.06632 +/-  0.61127
      R      =  2.55017 +/-  0.00103
      deltar =  0.00237 +/-  0.00103
      sigma2 =  0.00503 +/-  0.00010

@@ -2,9 +2,9 @@
 =================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 230, 7, 223
-   chi_square         = 1.14397e+08
-   reduced chi_square = 512991.04
-   r-factor           = 0.11863982
+   chi_square         = 8585518.8
+   reduced chi_square = 849506.32
+   r-factor           = 0.11965559
  
 [[Data]]
    fit space          = 'k'
@@ -14,22 +14,22 @@
    paths used in fit  = ['feff_feo01.dat', 'feff_feo02.dat']
    k-weight           = 2
    epsilon_k          = 0.000232
-   epsilon_r          = 0.006206
-   n_independent      = 16.106
+   epsilon_r          = 0.006196
+   n_independent      = 17.106
  
 [[Variables]]
-   de0            = -1.281853 +/- 2.241267   (init= -1.429964)
-   delr_1         = -0.032992 +/- 0.033970   (init= -0.030326)
-   delr_2         =  0.051794 +/- 0.024663   (init=  0.048697)
-   n1             =  4.921674 +/- 1.940342   (init=  5.196147)
-   n2             =  14.321834 +/- 5.696827   (init=  12.045503)
-   sig2_1         =  0.010947 +/- 0.007784   (init=  0.011942)
-   sig2_2         =  0.014987 +/- 0.004618   (init=  0.013295)
+   de0            = -1.326923 +/- 2.134972   (init= -1.465619)
+   delr_1         = -0.032974 +/- 0.032155   (init= -0.030443)
+   delr_2         =  0.051383 +/- 0.023506   (init=  0.048434)
+   n1             =  4.856597 +/- 1.815980   (init=  5.237592)
+   n2             =  14.332947 +/- 5.435697   (init=  12.037383)
+   sig2_1         =  0.010700 +/- 0.007311   (init=  0.012039)
+   sig2_2         =  0.015012 +/- 0.004406   (init=  0.013301)
  
 [[Correlations]]    (unreported correlations are <  0.500)
    n2, sig2_2           =  0.920 
-   n1, sig2_1           =  0.873 
-   de0, delr_2          =  0.848 
-   de0, delr_1          =  0.753 
-   delr_1, delr_2       =  0.642 
+   n1, sig2_1           =  0.871 
+   de0, delr_2          =  0.847 
+   de0, delr_1          =  0.751 
+   delr_1, delr_2       =  0.640 
 =======================================================
