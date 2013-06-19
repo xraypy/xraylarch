@@ -9,28 +9,28 @@ Fitting XAFS data with structural models based on Feff calculations is a
 primary motivation for Larch.  In this section, we describe how to set up a
 fitting model to fit a set of FEFF calculations to XAFS data.  Many parts
 of the documentation so far have touched on important aspects of this
-process, and those sections will be referenced here.
+process, and those sections will be referenced here.  
 
 
 The Feffit Strategy for Modeling EXAFS Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The basic approach to modeling EXAFS data in Larch is to create a model
-EXAFS :math:`\chi(k)` as a sum of scattering paths that will be compared to
-experimentally derived :math:`\chi(k)`.  The model will consist of a set of
-FEFF Scattering Paths representing the photo-electron scattering from
-different sets of atoms.  As discussed in ref:`xafs-feffpaths_sec`, these
-FEFF Paths have a fixed set of physically meaningful parameters than can be
-modified to alter the predicted contribution to :math:`\chi(k)`.  Any of
-these values can be defined as algebraic expressions of Larch Parameters
-defined by :func:`_math.param`.  The actual fit uses the same fitting
-infrastructure as to :func:`_math.minimize` to refine the values of the
-variable parameters in the model so as to best match the experimental data.
-Because :math:`\chi(k)` has known properties and :math:`k` dependencies, it
-is common to weight and Fourier transform (as described in
-:ref:`xafs-ft_sec`) for the analysis.  In general term, the the refinement
-process will compare experimental and model :math:`\chi(k)` after a
-*Transformation*.
+The basic approach to modeling EXAFS data in Larch[NewvilleFEFFIT] is to
+create a model EXAFS :math:`\chi(k)` as a sum of scattering paths that will
+be compared to experimentally derived :math:`\chi(k)`. The model will
+consist of a set of FEFF Scattering Paths representing the photo-electron
+scattering from different sets of atoms.  As discussed in
+ref:`xafs-feffpaths_sec`, these FEFF Paths have a fixed set of physically
+meaningful parameters than can be modified to alter the predicted
+contribution to :math:`\chi(k)`.  Any of these values can be defined as
+algebraic expressions of Larch Parameters defined by :func:`_math.param`.
+The actual fit uses the same fitting infrastructure as to
+:func:`_math.minimize` to refine the values of the variable parameters in
+the model so as to best match the experimental data.  Because
+:math:`\chi(k)` has known properties and :math:`k` dependencies, it is
+common to weight and Fourier transform (as described in :ref:`xafs-ft_sec`)
+for the analysis.  In general term, the the refinement process will compare
+experimental and model :math:`\chi(k)` after a *Transformation*.
 
 The model for :math:`\chi(k)` used to compare to data is
 
@@ -60,10 +60,12 @@ Nyquist as
 
 .. math::
 
-    N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi}
+    N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1
 
 where :math:`\Delta k` and :math:`\Delta R` are the :math:`k` and :math:`R`
-range of the usable data under consideration.  In general, this greatly
+range of the usable data under consideration.  E. A. Stern argues
+[SternNIDP] convincingly that the '+1' there could safely be put as '+2',
+but we'll remain conservative and keep the '+1.  In general, this greatly
 limits the number of parameters thar can be successfully used in a fit.  It
 should be noted that this limitation is inherent in XAFS (and many other
 techniques that rely on oscillatory signals), and not a consequence of
@@ -121,7 +123,7 @@ the number of points for both :math:`\chi(k)` and :math:`\chi(R)` can
 easily be changed without actually changing the quality or quantity of the
 real data.  The best number to use for the sum over the number of data
 points is then :math:`N_{\rm ind}` defined above.  Of course, we generally
-oversample the data, so the value for :math:`\chi^2` used is
+oversample the data, so the value for :math:`\chi^2` used and reported is
 
 .. math::
     \chi^2 = \frac{N_{\rm ind}}{N}\sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2
@@ -138,12 +140,12 @@ any given spectrum is not at all trivial, and should generally involve a
 proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
-:math:`R`: white noise.  The function :func:`estimate_noise` does this, and
-the estimate derived from this method is used unless you specify a value
-for ``epsilon_k`` the noise level in :math:`\chi(k)`.  Though usually
-:math:`\epsilon` is taken to be a scalar value, it can be specfied as an
-array (of the same length as :math:`\chi(k)`) if more accurate measures for
-the uncertainty of the data is available.
+:math:`R`: white noise.  The function :func:`estimate_noise` does this
+[NewvBoyanSayers], and the estimate derived from this method is used unless
+you specify a value for ``epsilon_k`` the noise level in :math:`\chi(k)`.
+Though usually :math:`\epsilon` is taken to be a scalar value, it can be
+specfied as an array (of the same length as :math:`\chi(k)`) if more
+accurate measures for the uncertainty of the data is available.
 
 
 It turns out that :math:`\chi^2` is almost always too big, and reduced
@@ -767,5 +769,10 @@ parameters.
 
 
 
+.. rubric:: References
 
+.. [NewvilleFEFFIT] M. Newville *EXAFS analysis using FEFF and FEFFIT*, J. Synchrotron Radiation,  **8**, pp 96-100, (2001).
 
+.. [SternNidp]   E. A. Stern, *Number of relevant independent points in X-ray-absorption fine-structure spectra*, Physical Review **B48**, pp 9825-9827 (1993).
+
+.. [NewvBoyanSayers] M. Newville, B. Boyanov, and D. E. Sayers,  *Estimation of uncertainties in XAFS data*, J. Synchrotron Radiation, **6**, pp 264-265 (1999).
