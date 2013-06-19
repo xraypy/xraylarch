@@ -103,3 +103,6 @@ for fname in extra_files:
         pass
 
 
+if __name__ == '__main__':
+    print 'usage:  python py2exe_build.py py2exe'
+
