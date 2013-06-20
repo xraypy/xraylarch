@@ -25,6 +25,7 @@ import ctypes.util
 
 import scipy.io.netcdf
 from scipy.io.netcdf import netcdf_file
+import scipy.constants
 
 loadlib =  ctypes.windll.LoadLibrary
 
@@ -65,7 +66,8 @@ console_apps = [{'script': '../bin/larch',         'icon_resources': [(0, 'larch
 
 py2exe_opts = {'optimize':1,
                'bundle_files':2,
-               'includes': ['Image', 'ctypes', 'numpy', 'scipy', 'scipy.optimize',
+               'includes': ['Image', 'ctypes', 'numpy', 
+                            'scipy', 'scipy.optimize', 'scipy.constants', 
                             'wx', 'wx._core', 'wx.py', 'wxversion',
                             'wx.lib', 'wx.lib.*', 'wx.lib.masked', 'wx.lib.mixins',
                             'wx.lib.colourselect', 'wx.lib.newevent',
