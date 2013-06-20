@@ -5,6 +5,7 @@ Some common math utilities
 import numpy as np
 import scipy
 import scipy.stats
+from scipy.interpolate import interp1d
 
 # functions more or less directly from scipy or numpy
 def linregress(x, y, _larch=None):
@@ -14,6 +15,27 @@ linregress.__doc__ = scipy.stats.linregress.__doc__
 def polyfit(x, y, deg, rcond=None, full=False, _larch=None):
     return scipy.polyfit(x, y, deg, rcond=rcond, full=full)
 polyfit.__doc__ = scipy.polyfit.__doc__
+
+
+def _interp(x, y, xnew, kind='linear', fill_value=np.nan, _larch=None, **kws):
+    """interpolate x, y array onto new x values, using one of
+    linear, quadratic, or cubic interpolation
+
+        > ynew = interp(x, y, xnew, kind='linear')
+    arguments
+    ---------
+      x          original x values
+      y          original y values
+      xnew       new x values for values to be interpolated to  
+      kind       method to use: one of 'linear', 'quadratic', 'cubic'
+      fill_value value to use to fill values for out-of-range x values
+
+    see also: scipy.interpolate.interp1d
+    """
+    kwargs  = {'kind': kind, 'fill_value': fill_value,
+               'copy': False, 'bounds_error': False}
+    kwargs.update(kws)
+    return  interp1d(x, y, **kwargs)(xnew)
 
 def _deriv(arr, _larch=None, **kws):
     if not isinstance(arr, np.ndarray):
@@ -113,6 +135,7 @@ def registerLarchPlugin():
                       'as_ndarray': as_ndarray,
                       'complex_phase': complex_phase,
                       'deriv': _deriv,
+                      'interp': _interp,
                       'remove_dups': remove_dups,
                       'index_of': index_of,
                       'index_nearest': index_nearest,
