@@ -3,7 +3,8 @@
 spec_emulator.SpecScan provides Spec-like scanning functions
 based on EpicsApps.StepScan.
 
-    spec = SpecMode()
+    from epicsscan import SpecScan
+    spec = SpecScan()
     spec.add_motors(x='XX:m1', y='XX:m2')
     spec.add_detector('XX:scaler1')
     spec.set_scanfile(outputfile)
