@@ -3,7 +3,7 @@ Triggers, Counters, Detectors for Step Scan
 """
 
 import time
-from epics import PV, caget, caput, poll
+from epics_interface import PV, caget, caput, poll
 from epics.devices import Scaler, Mca, Struck
 from ordereddict import OrderedDict
 
@@ -451,7 +451,7 @@ def get_detector(prefix, kind=None, label=None, **kws):
     if kind is None:
         if prefix.endswith('.VAL'):
             prefix = prefix[-4]
-        rtyp == caget("%s.RTYP", prefix)
+        rtyp = caget("%s.RTYP" % prefix)
         if rtyp in ('motor', 'mca', 'scaler'):
             kind = rtyp
     else:

@@ -3,7 +3,7 @@ Positioner for Step Scan
 """
 import time
 import numpy as np
-from epics import PV, caget
+from epics_interface import PV, caget
 from .saveable import Saveable
 
 

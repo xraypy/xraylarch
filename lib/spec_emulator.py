@@ -27,7 +27,7 @@ yet to be implemented:
 from time import sleep
 from numpy import array, linspace
 
-from epics import PV, caget, poll
+from epics_interface import PV, caget, poll
 
 from .stepscan   import StepScan
 from .positioner import Positioner
@@ -106,6 +106,7 @@ class SpecScan(object):
         """internal function to start scans"""
         self._scan.counters = []
         self._scan.triggers = []
+        self._scan.dwelltime = dwelltime
         for d in self.detectors:
             self._scan.add_detector(d)
             d.dwelltime = dwelltime
