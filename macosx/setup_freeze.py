@@ -2,9 +2,9 @@
 setup.py script for cx_Freeze
 
 Usage:
-    python setup_freeze.py bdist_mac --bundle-iconfile=cameras.icns
-    cp cameras.icns build/GSE.../Contents/Resources/.
-    cp dlls/*.dylib builf/GSE.../Contents/MacOS/.
+    python setup_freeze.py bdist_mac --iconfile=GSEMap.icns
+
+then use disk utility to make a .dmg
 """
 
 from cx_Freeze import setup, Executable
@@ -52,24 +52,23 @@ dll_files = [("larch/dlls/darwin/",
 DATA_FILES = []
 
 exe_opts = {# 'packages': ['wx', 'numpy','sqlalchemy'],
-            'includes': ['Image', 'ctypes',
-                         'sqlalchemy', 'sqlalchemy.orm', 'sqlalchemy.pool',
-                         'sqlite3', 'sqlalchemy.dialects.sqlite',
-                         'numpy', 'scipy', 'scipy.optimize',
-                         'scipy.signal', 'scipy.constants', 'scipy.fftpack',
-                         'scipy.sparse.csgraph._validation',
-                         'scipy.io.netcdf',
+            'includes': ['Carbon', 'Carbon.Appearance', 'ConfigParser',
+                         'Image', 'ctypes', 'epics', 'epics.devices',
+                         'fpformat', 'h5py', 'h5py._objects',
+                         'h5py._proxy', 'h5py.defs', 'h5py.utils',
+                         'matplotlib', 'numpy', 'scipy',
+                         'scipy.constants', 'scipy.fftpack',
                          'scipy.io.matlab.mio5_utils',
-                         'scipy.io.matlab.streams',
-                         'wx', 'wx._core', 'wx.py', 'wxversion',
-                         'wx.lib', 'wx.lib.masked', 'wx.lib.mixins',
-                         'wx.lib.mixins.inspection',
-                         'wx.lib.colourselect', 'wx.lib.newevent',
-                         'wx.lib.agw', 'wx.lib.agw.flatnotebook',
-                         'h5py', 'h5py._objects', 'h5py.defs', 'h5py.utils', 'h5py._proxy',
-                         'matplotlib', 'wxmplot', 'ConfigParser', 'fpformat',
-                         'xml.etree', 'xml.etree.cElementTree', 'xdrlib',
-                         'epics', 'epics.devices', 'Carbon.Appearance'],
+                         'scipy.io.matlab.streams', 'scipy.io.netcdf',
+                         'scipy.optimize', 'scipy.signal',
+                         'scipy.sparse.csgraph._validation', 'sqlalchemy',
+                         'sqlalchemy.dialects.sqlite', 'sqlalchemy.orm',
+                         'sqlalchemy.pool', 'sqlite3', 'wx', 'wx._core',
+                         'wx.lib', 'wx.lib.agw', 'wx.lib.agw.flatnotebook',
+                         'wx.lib.colourselect', 'wx.lib.masked',
+                         'wx.lib.mixins', 'wx.lib.mixins.inspection',
+                         'wx.lib.newevent', 'wx.py', 'wxmplot', 'wxversion',
+                         'xdrlib', 'xml.etree', 'xml.etree.cElementTree'],
             'excludes': ['Tkinter', '_tkinter', 'Tkconstants', 'tcl',
                          '_imagingtk', 'PIL._imagingtk', 'ImageTk',
                          'PIL.ImageTk', 'FixTk''_gtkagg', '_tkagg',
@@ -94,7 +93,7 @@ def sys(cmd):
     print ' >> ', cmd
     os.system(cmd)
 
-sys("cp -pr  GSEMap.icns    %s/Resources/." % contents)
+sys("cp -pr GSEMap.icns  %s/Resources/." % contents)
 sys("cp -pr ../dlls/darwin/* %s/MacOS/." % contents)
 
 try:
