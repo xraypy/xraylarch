@@ -472,11 +472,18 @@ class EscanData:
         self.sums_list  = []
         self.dt_factor       = None
         self.correct_deadtime = False
-        icr,ocr = [],[]
+        icr, ocr = [], []
+        detpvs = []
         sum_name = None
         isum = -1
+
         for i, det in enumerate(self.det_desc):
             thisname, thispv = det, self.det_addr[i]
+            # avoid pvs listed more than once
+            if thispv in detpvs:
+                continue
+            else:
+                detpvs.append(thispv)
             if 'mca' in thisname and ':' in thisname:
                 thisname = thisname.replace('mca','').split(':')[1].strip()
             if thisname != sum_name:
@@ -956,7 +963,7 @@ def gsescan_group(fname, _larch=None, **kws):
     escan = EscanData(fname)
     if escan.status is not None:
         raise ValueError('Not a valid Escan Data file')
-    
+
     group = _larch.symtable.create_group()
     group.__name__ ='GSE Escan Data file %s' % fname
     for key, val in escan.__dict__.items():
