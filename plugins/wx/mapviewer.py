@@ -112,10 +112,34 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
                                    action=Closure(self.onShowMap, new=False))
 
-        self.expr     = wx.TextCtrl(self, -1,   '', size=(250, -1))
+        self.map_mode = add_choice(self, choices= ['Intensity', '3 Color'],
+                                   size=(160, -1), action=self.onMode)
+
+        self.expr_i = wx.TextCtrl(self, -1,   '', size=(120, -1))
+
         ir = 0
-        sizer.Add(SimpleText(self, 'Expression:'),    (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.expr,                          (ir, 1), (1, 3), ALL_CEN, 2)
+        sizer.Add(SimpleText(self, 'Map Mode:'),    (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(self.map_mode,                    (ir, 1), (1, 1), ALL_LEFT, 2)
+        sizer.Add(SimpleText(self, 'Enter Expressions for:'),    (ir, 2), (1, 3), ALL_LEFT, 2)
+
+        ir += 1
+        sizer.Add(SimpleText(self, 'Intensity:'),    (ir, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(self.expr_i,  (ir, 1), (1, 5), ALL_LEFT, 2)
+        ir += 1
+        sizer.Add(SimpleText(self, 'R, G, B:'),    (ir, 0), (1, 1), ALL_CEN, 2)
+        spanel = self # wx.Panel(self)
+        self.expr_r = wx.TextCtrl(spanel, -1,   '', size=(120, -1))
+        self.expr_g = wx.TextCtrl(spanel, -1,   '', size=(120, -1))
+        self.expr_b = wx.TextCtrl(spanel, -1,   '', size=(120, -1))
+        box = wx.BoxSizer(wx.HORIZONTAL)
+        box.Add(self.expr_r,  0, ALL_LEFT, 2)
+        box.Add(self.expr_g,  0, ALL_LEFT, 2)
+        box.Add(self.expr_b,  0, ALL_LEFT, 2)
+        #spanel.SetSizer(box)
+        #box.Fit(spanel)
+        # sizer.Add(spanel,  (ir, 1), (1, 7), ALL_LEFT, 2)
+        sizer.Add(box,  (ir, 1), (1, 5), ALL_LEFT, 2)
+
 
         ir += 1
         sizer.Add(self.show_new,  (ir, 0), (1, 2), ALL_LEFT, 2)
@@ -134,7 +158,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.varrange   = {}
         self.vardet   = {}
         self.varcor   = {}
-        for varname in ('a', 'b', 'c', 'd', 'e'):
+        for varname in ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'):
             self.varfile[varname]   = vfile  = add_choice(self, choices=[], size=(200, -1),
                                                           action=Closure(self.onROI, varname=varname))
             self.varroi[varname]    = vroi   = add_choice(self, choices=[], size=(120, -1),
@@ -160,6 +184,22 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         pack(self, sizer)
         self.SetupScrolling()
+        self.onMode(evt=None, choice='I')
+
+    def onMode(self, evt=None, choice=None):
+        mode = self.map_mode.GetStringSelection()[1]
+        if choice is not None:
+            mode = choice
+        self.expr_i.Disable()
+        self.expr_r.Disable()
+        self.expr_g.Disable()
+        self.expr_b.Disable()
+        if mode.startswith('I'):
+            self.expr_i.Enable()
+        else:
+            self.expr_r.Enable()
+            self.expr_g.Enable()
+            self.expr_b.Enable()
 
     def onROI(self, evt, varname='a'):
         fname   = self.varfile[varname].GetStringSelection()
@@ -181,7 +221,18 @@ class MapMathPanel(scrolled.ScrolledPanel):
             set_choices(wid, fnames)
 
     def onShowMap(self, evt, new=True):
-        expr = str(self.expr.Value)
+        mode = self.map_mode.GetStringSelection()
+        def get_expr(wid):
+            val = str(wid.Value)
+            if len(val) == 0:
+                val = '1'
+            return val
+        expr_i = get_expr(self.expr_i)
+        expr_r = get_expr(self.expr_r)
+        expr_g = get_expr(self.expr_g)
+        expr_b = get_expr(self.expr_b)
+
+
         main_file = None
         _larch = self.owner.larch
 
@@ -200,8 +251,20 @@ class MapMathPanel(scrolled.ScrolledPanel):
             _larch.symtable.set_symbol(str(varname), map)
             if main_file is None:
                 main_file = self.owner.filemap[fname]
-        map = _larch.eval(expr)
-
+        if mode.startswith('I'):
+            map = _larch.eval(expr_i)
+            info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+            title = '%s: %s' % (fname, expr_i)
+            subtitles = None
+        else:
+            rmap = _larch.eval(expr_r)
+            gmap = _larch.eval(expr_g)
+            bmap = _larch.eval(expr_b)
+            map = np.array([rmap, gmap, bmap])
+            map = map.swapaxes(0, 2).swapaxes(0, 1)
+            title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, expr_r, expr_g, expr_b)
+            subtitles = {'red': expr_r, 'blue': expr_b, 'green': expr_g}
+            info = ''
         try:
             x = main_file.get_pos(0, mean=True)
         except:
@@ -212,11 +275,12 @@ class MapMathPanel(scrolled.ScrolledPanel):
             y = None
 
         fname = main_file.filename
-        title = '%s: %s' % (fname, expr)
-        info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+
+
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=None)
-        self.owner.display_map(map, title=title, info=info, x=x, y=y, det=None)
+        self.owner.display_map(map, title=title, info=info, x=x, y=y,
+                               subtitles=subtitles, det=None)
 
 class SimpleMapPanel(wx.Panel):
     """Panel of Controls for choosing what to display a simple ROI map"""
@@ -340,7 +404,6 @@ class SimpleMapPanel(wx.Panel):
         set_choices(self.roi1, rois)
         set_choices(self.roi2, ['1'] + rois)
 
-
 class TriColorMapPanel(wx.Panel):
     """Panel of Controls for choosing what to display a 3 color ROI map"""
     def __init__(self, parent, owner, **kws):
@@ -350,14 +413,14 @@ class TriColorMapPanel(wx.Panel):
 
         self.SetMinSize((425, 275))
 
-        self.rchoice = add_choice(self, choices=[], size=(120, -1),
-                                  action=Closure(self.onSetRGBScale, color='r'))
-        self.gchoice = add_choice(self, choices=[], size=(120, -1),
-                                  action=Closure(self.onSetRGBScale, color='g'))
-        self.bchoice = add_choice(self, choices=[], size=(120, -1),
-                                  action=Closure(self.onSetRGBScale, color='b'))
-        self.i0choice = add_choice(self, choices=[], size=(120, -1),
-                                   action=Closure(self.onSetRGBScale, color='i0'))
+        self.rchoice = add_choice(self, choices=[], size=(120, -1))
+        # action=Closure(self.onSetRGBScale, color='r'))
+        self.gchoice = add_choice(self, choices=[], size=(120, -1))
+        # action=Closure(self.onSetRGBScale, color='g'))
+        self.bchoice = add_choice(self, choices=[], size=(120, -1))
+        # action=Closure(self.onSetRGBScale, color='b'))
+        self.i0choice = add_choice(self, choices=[], size=(120, -1))
+        # action=Closure(self.onSetRGBScale, color='i0'))
 
         self.show_new = add_button(self, 'Show New Map',     size=(125, -1),
                                action=Closure(self.onShow3ColorMap, new=True))
@@ -369,19 +432,19 @@ class TriColorMapPanel(wx.Panel):
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
         self.cor.SetValue(1)
 
-        self.rauto = wx.CheckBox(self, -1, 'Autoscale?')
-        self.gauto = wx.CheckBox(self, -1, 'Autoscale?')
-        self.bauto = wx.CheckBox(self, -1, 'Autoscale?')
-        self.rauto.SetValue(1)
-        self.gauto.SetValue(1)
-        self.bauto.SetValue(1)
-        self.rauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='r'))
-        self.gauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='g'))
-        self.bauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='b'))
+        #self.rauto = wx.CheckBox(self, -1, 'Autoscale?')
+        #self.gauto = wx.CheckBox(self, -1, 'Autoscale?')
+        #self.bauto = wx.CheckBox(self, -1, 'Autoscale?')
+        #self.rauto.SetValue(1)
+        #self.gauto.SetValue(1)
+        #self.bauto.SetValue(1)
+        #self.rauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='r'))
+        #self.gauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='g'))
+        #self.bauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='b'))
 
-        self.rscale = FloatCtrl(self, precision=0, value=1, minval=0)
-        self.gscale = FloatCtrl(self, precision=0, value=1, minval=0)
-        self.bscale = FloatCtrl(self, precision=0, value=1, minval=0)
+        #self.rscale = FloatCtrl(self, precision=0, value=1, minval=0)
+        #self.gscale = FloatCtrl(self, precision=0, value=1, minval=0)
+        #self.bscale = FloatCtrl(self, precision=0, value=1, minval=0)
 
         ir = 0
         sizer.Add(SimpleText(self, 'Detector'),  (ir, 0), (1, 1), ALL_CEN, 2)
@@ -389,22 +452,21 @@ class TriColorMapPanel(wx.Panel):
         sizer.Add(SimpleText(self, 'Green'),     (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(SimpleText(self, 'Blue'),      (ir, 3), (1, 1), ALL_CEN, 2)
 
-
         ir += 1
         sizer.Add(self.det,                  (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(self.rchoice,              (ir, 1), (1, 1), ALL_CEN, 2)
         sizer.Add(self.gchoice,              (ir, 2), (1, 1), ALL_CEN, 2)
         sizer.Add(self.bchoice,              (ir, 3), (1, 1), ALL_CEN, 2)
 
-        ir += 1
-        sizer.Add(self.rauto,            (ir, 1), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.gauto,            (ir, 2), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.bauto,            (ir, 3), (1, 1), ALL_CEN, 2)
-        ir += 1
-        sizer.Add(self.rscale,            (ir, 1), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.gscale,            (ir, 2), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.bscale,            (ir, 3), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Max Intensity:'),     (ir, 0), (1, 1), ALL_LEFT, 2)
+        #ir += 1
+        #sizer.Add(self.rauto,            (ir, 1), (1, 1), ALL_CEN, 2)
+        #sizer.Add(self.gauto,            (ir, 2), (1, 1), ALL_CEN, 2)
+        #sizer.Add(self.bauto,            (ir, 3), (1, 1), ALL_CEN, 2)
+        #ir += 1
+        #sizer.Add(self.rscale,            (ir, 1), (1, 1), ALL_CEN, 2)
+        #sizer.Add(self.gscale,            (ir, 2), (1, 1), ALL_CEN, 2)
+        #sizer.Add(self.bscale,            (ir, 3), (1, 1), ALL_CEN, 2)
+        #sizer.Add(SimpleText(self, 'Max Intensity:'),     (ir, 0), (1, 1), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(SimpleText(self, 'Normalization'), (ir, 0), (1, 1), ALL_LEFT, 2)
@@ -418,7 +480,7 @@ class TriColorMapPanel(wx.Panel):
 
         pack(self, sizer)
 
-    def onSetRGBScale(self, event=None, color=None, **kws):
+    def XXonSetRGBScale(self, event=None, color=None, **kws):
         datafile = self.owner.current_file
         det =self.det.GetStringSelection()
         if det == 'sum':
@@ -430,21 +492,12 @@ class TriColorMapPanel(wx.Panel):
         if color=='r':
             roi = self.rchoice.GetStringSelection()
             map = datafile.get_roimap(roi, det=det, dtcorrect=dtcorrect)
-            self.rauto.SetValue(1)
-            self.rscale.SetValue(map.max())
-            self.rscale.Disable()
         elif color=='g':
             roi = self.gchoice.GetStringSelection()
             map = datafile.get_roimap(roi, det=det, dtcorrect=dtcorrect)
-            self.gauto.SetValue(1)
-            self.gscale.SetValue(map.max())
-            self.gscale.Disable()
         elif color=='b':
             roi = self.bchoice.GetStringSelection()
             map = datafile.get_roimap(roi, det=det, dtcorrect=dtcorrect)
-            self.bauto.SetValue(1)
-            self.bscale.SetValue(map.max())
-            self.bscale.Disable()
 
     def onShow3ColorMap(self, event=None, new=True):
         datafile = self.owner.current_file
@@ -474,43 +527,25 @@ class TriColorMapPanel(wx.Panel):
         if i0 != '1':
             i0map = datafile.get_roimap(i0, det=det, dtcorrect=dtcorrect)
 
-        rscale = 1.0/self.rscale.GetValue()
-        gscale = 1.0/self.gscale.GetValue()
-        bscale = 1.0/self.bscale.GetValue()
-        if self.rauto.IsChecked():  rscale = 1.0/rmap.max()
-        if self.gauto.IsChecked():  gscale = 1.0/gmap.max()
-        if self.bauto.IsChecked():  bscale = 1.0/bmap.max()
-
         i0min = min(i0map[np.where(i0map>0)])
         i0map[np.where(i0map<=0)] = i0min
         i0map = i0map/i0map.max()
 
         pref, fname = os.path.split(datafile.filename)
         title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
-        map = np.array([rmap*rscale/i0map, gmap*gscale/i0map, bmap*bscale/i0map])
+        subtitles = {'red': r, 'green': g, 'blue': b}
+        map = np.array([rmap/i0map, gmap/i0map, bmap/i0map])
         map = map.swapaxes(0, 2).swapaxes(0, 1)
         if len(self.owner.im_displays) == 0 or new:
-            iframe = self.owner.add_imdisplay(title, config_on_frame=False, det=det)
-        self.owner.display_map(map, title=title, with_config=False, det=det)
+            iframe = self.owner.add_imdisplay(title, det=det)
+        self.owner.display_map(map, title=title, det=det,
+                               subtitles=subtitles)
 
     def set_roi_choices(self, choices):
         roichoices = ['1']
         roichoices.extend(choices)
         for cbox in (self.rchoice, self.bchoice, self.gchoice, self.i0choice):
             set_choices(cbox, roichoices)
-
-    def onAutoScale(self, event=None, color=None, **kws):
-        if color=='r':
-            self.rscale.Enable()
-            if self.rauto.GetValue() == 1:  self.rscale.Disable()
-        elif color=='g':
-            self.gscale.Enable()
-            if self.gauto.GetValue() == 1:  self.gscale.Disable()
-        elif color=='b':
-            self.bscale.Enable()
-            if self.bauto.GetValue() == 1:  self.bscale.Disable()
-
-
 
 class AreaSelectionPanel(wx.Panel):
     delstr = """   Delete Area '%s'?
@@ -686,7 +721,6 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_nrow = 0
 
     def CloseFile(self, filename, event=None):
-        print 'Close file ', filename, filename in self.filemap
         if filename in self.filemap:
             self.filemap[filename].close()
             self.filemap.pop(filename)
@@ -789,30 +823,29 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.panel.clear()
             self.xrfdisplay.panel.reset_config()
 
-    def add_imdisplay(self, title, det=None, config_on_frame=True):
+    def add_imdisplay(self, title, det=None):
         on_lasso = Closure(self.lassoHandler, det=det)
         imframe = MapImageFrame(output_title=title,
                                 lasso_callback=on_lasso,
-                                cursor_labels = self.cursor_menulabels,
-                                config_on_frame=config_on_frame)
+                                cursor_labels = self.cursor_menulabels)
         self.im_displays.append(imframe)
 
-    def display_map(self, map, title='', info='', x=None, y=None, det=None,
-                    with_config=True):
+    def display_map(self, map, title='', info='', x=None, y=None,
+                    det=None, subtitles=None):
         """display a map in an available image display"""
         displayed = False
         while not displayed:
             try:
                 imd = self.im_displays.pop()
-                imd.display(map, title=title, x=x, y=y)
+                imd.display(map, title=title, x=x, y=y,
+                            subtitles=subtitles)
                 displayed = True
             except IndexError:
                 on_lasso = Closure(self.lassoHandler, det=det)
                 imd = MapImageFrame(output_title=title,
                                     lasso_callback=on_lasso,
-                                    cursor_labels = self.cursor_menulabels,
-                                    config_on_frame=with_config)
-                imd.display(map, title=title, x=x, y=y)
+                                    cursor_labels = self.cursor_menulabels)
+                imd.display(map, title=title, x=x, y=y, subtitles=subtitles)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
