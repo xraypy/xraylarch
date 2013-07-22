@@ -183,17 +183,18 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         pack(self, sizer)
         self.SetupScrolling()
-        self.onMode(evt=None, choice='I')
+        self.onMode(evt=None, choice='int')
 
     def onMode(self, evt=None, choice=None):
-        mode = self.map_mode.GetStringSelection()[1]
+        mode = self.map_mode.GetStringSelection()
         if choice is not None:
             mode = choice
+        mode = mode.lower()
         self.expr_i.Disable()
         self.expr_r.Disable()
         self.expr_g.Disable()
         self.expr_b.Disable()
-        if mode.startswith('I'):
+        if mode.startswith('i'):
             self.expr_i.Enable()
         else:
             self.expr_r.Enable()
