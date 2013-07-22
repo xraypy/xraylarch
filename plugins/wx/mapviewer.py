@@ -112,34 +112,33 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
                                    action=Closure(self.onShowMap, new=False))
 
-        self.map_mode = add_choice(self, choices= ['Intensity', '3 Color'],
-                                   size=(160, -1), action=self.onMode)
+        self.map_mode = add_choice(self, choices= ['Intensity', 'R, G, B'],
+                                   size=(150, -1), action=self.onMode)
 
-        self.expr_i = wx.TextCtrl(self, -1,   '', size=(120, -1))
+        self.expr_i = wx.TextCtrl(self, -1,   '', size=(150, -1))
+        self.expr_r = wx.TextCtrl(self, -1,   '', size=(150, -1))
+        self.expr_g = wx.TextCtrl(self, -1,   '', size=(150, -1))
+        self.expr_b = wx.TextCtrl(self, -1,   '', size=(150, -1))
 
         ir = 0
         sizer.Add(SimpleText(self, 'Map Mode:'),    (ir, 0), (1, 1), ALL_CEN, 2)
         sizer.Add(self.map_mode,                    (ir, 1), (1, 1), ALL_LEFT, 2)
-        sizer.Add(SimpleText(self, 'Enter Expressions for:'),    (ir, 2), (1, 3), ALL_LEFT, 2)
+        txt = '''Enter Math Expressions for Map:
+ a+b,  (a-b)/c, log10(a+0.1),  etc'''
+
+        sizer.Add(SimpleText(self, txt),    (ir, 2), (2, 4), ALL_LEFT, 2)
 
         ir += 1
         sizer.Add(SimpleText(self, 'Intensity:'),    (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.expr_i,  (ir, 1), (1, 5), ALL_LEFT, 2)
+        sizer.Add(self.expr_i,  (ir, 1), (1, 1), ALL_LEFT, 2)
         ir += 1
         sizer.Add(SimpleText(self, 'R, G, B:'),    (ir, 0), (1, 1), ALL_CEN, 2)
-        spanel = self # wx.Panel(self)
-        self.expr_r = wx.TextCtrl(spanel, -1,   '', size=(120, -1))
-        self.expr_g = wx.TextCtrl(spanel, -1,   '', size=(120, -1))
-        self.expr_b = wx.TextCtrl(spanel, -1,   '', size=(120, -1))
+
         box = wx.BoxSizer(wx.HORIZONTAL)
         box.Add(self.expr_r,  0, ALL_LEFT, 2)
         box.Add(self.expr_g,  0, ALL_LEFT, 2)
         box.Add(self.expr_b,  0, ALL_LEFT, 2)
-        #spanel.SetSizer(box)
-        #box.Fit(spanel)
-        # sizer.Add(spanel,  (ir, 1), (1, 7), ALL_LEFT, 2)
         sizer.Add(box,  (ir, 1), (1, 5), ALL_LEFT, 2)
-
 
         ir += 1
         sizer.Add(self.show_new,  (ir, 0), (1, 2), ALL_LEFT, 2)
