@@ -116,7 +116,7 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         self.density1 = density1             # in g/cm^3
         self.thickness1 = thickness1         # top layer thickness in cm
         self.composition2 = composition2
-        # MN replace:
+        # MN replace with chemparse()
         out=f1f2.get_ChemName(composition2)
         self.ElemList2 = out[0]              # for the bottom substrate
         self.ElemInd2 = out[1]
