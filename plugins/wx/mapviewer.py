@@ -39,6 +39,9 @@ larch.use_plugin_path('wx')
 larch.use_plugin_path('io')
 larch.use_plugin_path('xrfmap')
 
+larch.use_plugin_path('std')
+from debugtime import DebugTimer
+
 from xrfdisplay import XRFDisplayFrame
 from mapimageframe import MapImageFrame
 
@@ -361,12 +364,14 @@ class SimpleMapPanel(wx.Panel):
 
 
     def onShowMap(self, event=None, new=True):
+
         datafile  = self.owner.current_file
         det =self.det.GetStringSelection()
         if det == 'sum':
             det =  None
         else:
             det = int(det)
+
         dtcorrect = self.cor.IsChecked()
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
@@ -396,6 +401,7 @@ class SimpleMapPanel(wx.Panel):
         pref, fname = os.path.split(datafile.filename)
         title = '%s: %s' % (fname, title)
         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
+
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=det)
         self.owner.display_map(map, title=title, info=info, x=x, y=y, det=det)
@@ -534,12 +540,24 @@ class TriColorMapPanel(wx.Panel):
         pref, fname = os.path.split(datafile.filename)
         title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
         subtitles = {'red': r, 'green': g, 'blue': b}
+
+        try:
+            x = datafile.get_pos(0, mean=True)
+        except:
+            x = None
+        try:
+            y = datafile.get_pos(1, mean=True)
+        except:
+            y = None
+
         map = np.array([rmap/i0map, gmap/i0map, bmap/i0map])
         map = map.swapaxes(0, 2).swapaxes(0, 1)
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=det)
         self.owner.display_map(map, title=title, det=det,
-                               subtitles=subtitles)
+                               x=x, y=y, subtitles=subtitles)
+
+
 
     def set_roi_choices(self, choices):
         roichoices = ['1']
@@ -851,7 +869,6 @@ class MapViewerFrame(wx.Frame):
                 displayed = False
         self.im_displays.append(imd)
         imd.SetStatusText(info, 1)
-
         imd.Show()
         imd.Raise()
 
