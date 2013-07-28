@@ -12,6 +12,9 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 import larch
 
+larch.use_plugin_path('std')
+from debugtime import DebugTimer
+
 larch.use_plugin_path('wx')
 from wxutils import Closure, LabelEntry, SimpleText
 
@@ -34,13 +37,14 @@ class MapImageFrame(ImageFrame):
     """
 
     def __init__(self, parent=None, size=None,
-                 lasso_callback=None,
+                 lasso_callback=None, mode='intensity', 
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
 
+        dbt = DebugTimer()
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
-                            cursor_labels=cursor_labels,
+                            cursor_labels=cursor_labels, mode=mode,
                             output_title=output_title, **kws)
         self.panel.add_cursor_mode('prof', motion = self.prof_motion,
                                    leftdown = self.prof_leftdown,
