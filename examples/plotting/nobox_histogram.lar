@@ -1,0 +1,35 @@
+#  example showing
+#    a) plotting with 'fullbox=False' to show only left/bottom axes
+#    b) dropping down to matplotlib level to use its hist() function
+#       to show a histogram
+
+from scipy.special import gamma
+
+sigma= 0.1
+beta = 0.5
+r0   = 3.0
+n    = 1
+qq   = 4. / beta**2
+prefactor = 2 * n / (sigma*abs(beta)*gamma(qq))
+
+r =  linspace(2.5, 3.5, 201)
+alpha = qq + (2*(r-r0)) / (beta*sigma)
+gr =  prefactor * exp(-alpha)*alpha**(qq-1)
+gr[where(gr<0)] = 0
+
+
+title = 'GNXAS-like distribution function'
+rx =  linspace(2.5, 3.5, 21)
+ax = qq + (2*(rx-r0)) / (beta*sigma)
+gx =  prefactor * exp(-ax)*ax**(qq-1)
+tgx = "n*beta^2/(2*sigma*beta) * exp[4/beta^2 + (r-r0)/(beta*sigma)] "
+gx[where(gx<0)] = 0
+
+newplot(r, gr, grid=False, xlabel=r'$R\,\rm(\AA)$', ylabel=r'$g(R)$', fullbox=False)
+
+# add a histogram using matplotlib hist() method
+paxes = get_display().panel.axes
+hx, hy, hpatches = paxes.hist(rx, weights=gx, bins=len(rx), rwidth=0.25, color='k')
+# you can modify these, for example:
+#   hpatches[12].set_color('blue')
+get_display().panel.canvas.draw()
