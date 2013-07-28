@@ -336,6 +336,14 @@ class SimpleMapPanel(wx.Panel):
             except:
                 pass
 
+    def onLasso(self, selected=None, mask=None, data=None, **kws):
+        print 'LASSO Event '
+        print kws.keys()
+        print selected
+        print mask.shape
+        print len(data)
+        
+        
     def onShowCorrel(self, event=None):
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
@@ -358,6 +366,8 @@ class SimpleMapPanel(wx.Panel):
         pframe = PlotFrame(title=title, output_title=title)
         pframe.plot(map2, map1, xlabel=roiname2, ylabel=roiname1,
                     marker='o', markersize=4, linewidth=0)
+        pframe.panel.cursor_mode = 'lasso'
+        pframe.panel.lasso_callback = self.onLasso
         pframe.Show()
         pframe.Raise()
         self.owner.plot_displays.append(pframe)
