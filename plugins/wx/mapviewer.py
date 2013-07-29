@@ -338,12 +338,17 @@ class SimpleMapPanel(wx.Panel):
 
     def onLasso(self, selected=None, mask=None, data=None, **kws):
         print 'LASSO Event '
-        print kws.keys()
+        datafile  = self.owner.current_file
+        ny, nx, npos = datafile.xrfmap['positions/pos'].shape
+        print 'Shape = ', datafile, ny, nx
         print selected
-        print mask.shape
-        print len(data)
-        
-        
+        indices = []
+        for idx in selected:
+            iy, ix = divmod(idx, ny)
+            indices.append((ix, iy))
+        print indices
+
+
     def onShowCorrel(self, event=None):
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
