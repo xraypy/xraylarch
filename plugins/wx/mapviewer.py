@@ -872,6 +872,8 @@ class MapViewerFrame(wx.Frame):
                 imd = self.im_displays.pop()
                 imd.display(map, title=title, x=x, y=y,
                             subtitles=subtitles)
+                for col, wid in  imd.wid_subtitles.items():
+                    wid.SetLabel("%s: %s" % (col.title(), subtitles[col]))
                 displayed = True
             except IndexError:
                 on_lasso = Closure(self.lassoHandler, det=det)
