@@ -16,6 +16,9 @@ Needed Visualizations:
          box in map:  show XRF spectra, highlight correlations
          lasso in correlations:  show XRF spectra, enhance map points
 """
+
+__version__ = '5 (30-July-2013)'
+
 import os
 import sys
 import time
@@ -713,9 +716,6 @@ WARNING: This cannot be undone!
 
 
 class MapViewerFrame(wx.Frame):
-    _about = """XRF Map Viewer
-  Matt Newville <newville @ cars.uchicago.edu>
-  """
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
@@ -935,7 +935,11 @@ class MapViewerFrame(wx.Frame):
         add_menu(self, fmenu, "&Quit\tCtrl+Q",
                   "Quit program", self.onClose)
 
+        hmenu = wx.Menu()
+        add_menu(self, hmenu, 'About', 'About MapViewer', self.onAbout)
+
         self.menubar.Append(fmenu, "&File")
+        self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
 
     def onFolderSelect(self,evt):
@@ -953,7 +957,14 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onAbout(self, evt):
-        dlg = wx.MessageDialog(self, self._about,"About GSEXRM MapViewer",
+        print 'onAbout xx ', evt
+        about = """GSECARS X-ray Microprobe Map Viewer:
+Matt Newville <newville @ cars.uchicago.edu>
+    MapViewer version: %s
+    Built with X-ray Larch version: %s
+    """  % (__version__, larch.__version__)
+
+        dlg = wx.MessageDialog(self, about, "About GSE XRM MapViewer",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
