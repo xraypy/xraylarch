@@ -63,7 +63,7 @@ class: Material, ElemFY, SampleMatrix2
 ----------------------------------------------------------------------------------------------------------
 '''
 class Material:
-    def __init__(self, composition, density, thickness=1):
+    def __init__(self, composition, density, thickness=1,_larch=None):
         self.composition=composition        # ex) SiO2
         self.density=density              # in g/cm^3
         self.thickness=thickness            # in cm
@@ -79,7 +79,7 @@ class Material:
         AtomWeight=0
         for (ii, atom) in enumerate(AtomList):
             # MN replace...
-            AtWt=f1f2.AtSym2AtWt(atom)
+            AtWt= atomic_mass(atom)
             index=AtomIndex[ii]
             AtomWeight = AtomWeight + index*AtWt
         NumberDensity=density*AVOGARDRO/AtomWeight
@@ -87,10 +87,10 @@ class Material:
         self.AtWt=AtomWeight            # weight per mole
     def getLa(self, energy, NumLayer=1.0):    # get absorption legnth for incident x-ray, NumLayer for multiple layers
         # MN replace...
-        temp=f1f2.get_delta(self.composition, self.density, energy)
+        temp= xray_delta_beta(self.composition, self.density, energy, _larch=_larch)
         # returns delta, beta, la_photoE, Nat, la_total
         self.delta=temp[0];     self.beta=temp[1]
-        self.la=temp[4]  # temp[4] (total) instead of temp[2] (photoelectric)
+        self.la=temp[2]  # temp[4] (total) instead of temp[2] (photoelectric)
         if NumLayer<0:  NumLayer=0     # Number of layers cannot be less than zero
         self.trans=math.exp(-self.thickness*NumLayer/self.la)  #la attenuation length cm, NumLayer for multiple layers
         self.absrp=1-self.trans
@@ -106,21 +106,22 @@ class ElemFY:  # fluorescing element
 
 class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two layers with different compositions
     def __init__(self, composition1='Si', density1=2.33, thickness1=0.1, \
-                       composition2='Si', density2=2.33, thickness2=0.1, angle0=45.0, option='surface'):
+                       composition2='Si', density2=2.33, thickness2=0.1, 
+                       angle0=45.0, option='surface', _larch=None):
         self.composition1 = composition1     # ex) Fe2O3
         # MN replace:
-        out=f1f2.get_ChemName(composition1)       # output from get_ChemName
-        self.ElemList1 = out[0]              # list of elments in matrix: 'Fe', 'O' for Fe2O3
-        self.ElemInd1 = out[1]               # list of index: 2, 3 for Fe2O3
-        self.ElemFrt1 = out[2]               # list of fraction: 0.4, 0.6 for Fe2O3
+        out= chemparse(composition1)         # output from get_ChemName
+        self.ElemList1 = out.keys()          # list of elments in matrix: 'Fe', 'O' for Fe2O3
+        self.ElemInd1 = out.values()         # list of index: 2, 3 for Fe2O3
+        # self.ElemFrt1 = out[2]             # list of fraction: 0.4, 0.6 for Fe2O3
         self.density1 = density1             # in g/cm^3
         self.thickness1 = thickness1         # top layer thickness in cm
         self.composition2 = composition2
         # MN replace with chemparse()
-        out=f1f2.get_ChemName(composition2)
-        self.ElemList2 = out[0]              # for the bottom substrate
-        self.ElemInd2 = out[1]
-        self.ElemFrt2 = out[2]
+        out=chemparse(composition2)
+        self.ElemList2 = out.keys()              # for the bottom substrate
+        self.ElemInd2 = out.values()
+        # self.ElemFrt2 = out[2]
         self.density2 = density2
         self.thickness2 = thickness2         # bottom layer thickness in cm
         self.angle = angle0*math.pi/180.     # in radian, incident beam angle, surface normal =pi/2
@@ -140,9 +141,9 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         self.ElemFrtFY =[]                  # fraction for fluorescing element
         self.Nat1=1                  # atomic number density in atoms/cc, for example # of Fe2O3/cm^3 for Fe2O3 substrate
         self.Nat2=1                  # atomic number density in atoms/cc
-        substrate1_material = Material(composition1, density1)
+        substrate1_material = Material(composition1, density1, _larch=_larch)
         AtNumDen1 = substrate1_material.NumDen      #  substrate1
-        substrate2_material = Material(composition2, density2)
+        substrate2_material = Material(composition2, density2, _larch=_larch)
         AtNumDen2 = substrate2_material.NumDen      #  substrate2, fixed 8/12/10
         self.Nat1=AtNumDen1
         self.Nat2=AtNumDen2
@@ -155,14 +156,14 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         # atom.conc is normalized to the number density of substrate1 molecule
         for (ii, item) in enumerate(self.ElemList1):
             # MN replace:
-            if f1f2.AtSym2AtNum(item)>=12:       # ignore elements below Mg
+            if atomic_number(item)>=12:       # ignore elements below Mg
                 #atom=ElemFY(item, self.ElemFrt1[ii], 'substrate1')
                 atom=ElemFY(item, self.ElemInd1[ii], 'substrate1')
                 # eg. for Fe2O3, Fe concentration is 2 (=2 x Fe2O3 number density)
                 self.ElemListFY.append(atom)
         for (ii, item) in enumerate(self.ElemList2):
             # MN replace:
-            if f1f2.AtSym2AtNum(item)>=12:       # ignore elements below Mg
+            if atomic_number(item)>=12:       # ignore elements below Mg
                 #atom=ElemFY(item, self.ElemFrt2[ii], 'substrate2')
                 atom=ElemFY(item, self.ElemInd2[ii]*AtNumDen2/AtNumDen1, 'substrate2')
                 self.ElemListFY.append(atom)
