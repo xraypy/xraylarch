@@ -52,6 +52,7 @@ scipy_dlls = ['lib/site-packages/scipy/optimize/minpack2.pyd',
               'lib/site-packages/scipy/integrate/_quadpack.pyd',
               'lib/site-packages/numpy/fft/fftpack_lite.pyd']
 
+
 dlldir = os.path.join(sys.prefix, 'DLLs')
 for n in os.listdir(dlldir):
     extra_files.append(os.path.join(dlldir, n))
@@ -59,10 +60,50 @@ for n in os.listdir(dlldir):
 for n in scipy_dlls:
     extra_files.append(os.path.join(sys.prefix, n))
 
-windows_apps = [{'script': '../bin/larch_gui',     'icon_resources': [(0, 'larch.ico')]},
-                {'script': '../bin/GSE_MapViewer', 'icon_resources': [(0, 'GSEMap.ico')]},
+
+style_xml = """
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+    <noInheritable/>
+    <assemblyIdentity
+        type="win32"
+        name="Microsoft.VC90.CRT"
+        version="9.0.21022.8"
+        processorArchitecture="x86"
+        publicKeyToken="1fc8b3b9a1e18e3b"
+    />
+    <file name="msvcr100.dll" /> <file name="msvcp100.dll" /> <file
+name="msvcm90.dll" />
+</assembly>"""
+m1 = """
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1"
+manifestVersion="1.0">
+<assemblyIdentity  version="5.0.0.0"
+    processorArchitecture="x86"
+    name="XrayLarch"    type="win32"/>
+<description>X-ray Larch</description>
+<dependency> <dependentAssembly>
+  <assemblyIdentity  type="win32"
+  name="Microsoft.Windows.Common-Controls"
+  version="6.0.0.0" processorArchitecture="X86"
+  publicKeyToken="6595b64144ccf1df"
+  language="*" /> </dependentAssembly>
+</dependency></assembly>
+"""
+
+windows_apps = [{'script': '../bin/larch_gui',
+                 'icon_resources': [(0, 'larch.ico')],
+                 #'other_resources': [(24, 1, style_xml)],
+                 },
+                {'script': '../bin/GSE_MapViewer',
+                 'icon_resources': [(0, 'GSEMap.ico')],
+                 #'other_resources': [(24, 1, style_xml)],
+                 },
                 ]
 console_apps = [{'script': '../bin/larch',         'icon_resources': [(0, 'larch.ico')]}]
+
 
 py2exe_opts = {'optimize':1,
                'bundle_files':2,
