@@ -970,6 +970,10 @@ class GSEXRM_MapFile(object):
         return self._getmca(dgroup, counts, areaname)
 
     def _getmca(self, dgroup, counts, name):
+        """return an MCA object for a detector group
+        (dgroup = 'det1', ... 'detsum')
+        with specified counts array and a name
+        """
         map  = self.xrfmap[dgroup]
         cal  = map['energy'].attrs
         _mca = MCA(counts=counts,
@@ -1100,6 +1104,51 @@ class GSEXRM_MapFile(object):
 
         return np.array([rmap, gmap, bmap]).swapaxes(0, 2).swapaxes(0, 1)
 
+    def add_roi(self, name, high, low,  address='', det=1,
+                overwrite=False, **kws):
+        """add named ROI to an XRFMap file.
+        These settings will be propogated through the
+        ROI maps and all detectors.
+
+        """
+        # data structures affected:
+        #   config/rois/address
+        #   config/rois/name
+        #   config/rois/limits
+        #   roimap/det_address
+        #   roimap/det_name
+        #   roimap/det_raw
+        #   roimap/det_cor
+        #   roimap/sum_list
+        #   roimap/sum_name
+        #   roimap/sum_raw
+        #   roimap/sum_cor
+        #   det{I}/roi_address      for I = 1, N_detectors (xrfmap attribute)
+        #   det{I}/roi_name         for I = 1, N_detectors (xrfmap attribute)
+        #   det{I}/roi_limits       for I = 1, N_detectors (xrfmap attribute)
+        #   detsum/roi_address      for I = 1, N_detectors (xrfmap attribute)
+        #   detsum/roi_name         for I = 1, N_detectors (xrfmap attribute)
+        #   detsum/roi_limits       for I = 1, N_detectors (xrfmap attribute)
+
+        roi_names = [i.lower().strip() for i in self.xrfmap['config/rois/name']]
+        if name.lower().strip() in roi_name:
+            if overwrite:
+                self.del_roi(name)
+            else:
+                print("An ROI named '%s' exists, use overwrite=True to overwrite" % name)
+                return
+        # 
+
+    def del_roi(self, name):
+        """ delete an ROI"""
+        roi_names = [i.lower().strip() for i in self.xrfmap['config/rois/name']]
+        if name.lower().strip() not in roi_name:
+            print("No ROI named '%s' found to delete" % name)
+            return
+        iroi = roi_name.index(name.lower().strip())
+        roi_names = [i in self.xrfmap['config/rois/name']]
+        roi_names.pop(iroi)
+        
 def read_xrfmap(filename, root=None):
     """read GSE XRM FastMap data from HDF5 file or raw map folder"""
     key = 'filename'
