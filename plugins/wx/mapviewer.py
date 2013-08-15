@@ -339,18 +339,17 @@ class SimpleMapPanel(wx.Panel):
             except:
                 pass
 
-    def onLasso(self, selected=None, mask=None, data=None, **kws):
-        print 'LASSO Event '
-        datafile  = self.owner.current_file
-        ny, nx, npos = datafile.xrfmap['positions/pos'].shape
-        print 'Shape = ', datafile, ny, nx
-        print selected
+    def onLasso(self, selected=None, mask=None, data=None, xrmfile=None, **kws):
+        if xrmfile is None:
+            xrmfile = self.owner.current_file
+        ny, nx, npos = xrmfile.xrfmap['positions/pos'].shape
+        # print 'on Lasso Shape = ', xrmfile, ny, nx
+        # print selected
         indices = []
         for idx in selected:
             iy, ix = divmod(idx, ny)
             indices.append((ix, iy))
-        print indices
-
+        # print indices
 
     def onShowCorrel(self, event=None):
         roiname1 = self.roi1.GetStringSelection()
@@ -375,7 +374,8 @@ class SimpleMapPanel(wx.Panel):
         pframe.plot(map2, map1, xlabel=roiname2, ylabel=roiname1,
                     marker='o', markersize=4, linewidth=0)
         pframe.panel.cursor_mode = 'lasso'
-        pframe.panel.lasso_callback = self.onLasso
+        pframe.panel.lasso_callback = Closure(self.onLasso, xrmfile=datafile)
+
         pframe.Show()
         pframe.Raise()
         self.owner.plot_displays.append(pframe)
@@ -700,13 +700,14 @@ WARNING: This cannot be undone!
 
     def onXRF(self, event=None):
         aname = self._getarea()
-        area  = self.owner.current_file.xrfmap['areas/%s' % aname]
+        xrmfile = self.owner.current_file
+        area  = xrmfile.xrfmap['areas/%s' % aname]
         label = area.attrs['description']
         self._mca  = None
 
         mca_thread = Thread(target=self._getmca_area, args=(aname,))
         mca_thread.start()
-        self.owner.show_XRFDisplay()
+        self.owner.show_XRFDisplay(xrmfile=xrmfile)
         mca_thread.join()
 
         pref, fname = os.path.split(self.owner.current_file.filename)
@@ -823,15 +824,16 @@ class MapViewerFrame(wx.Frame):
         self.sel_mca = xrmfile.get_mca_area(aname, det=det)
 
     def lassoHandler(self, mask=None, det=None, xrmfile=None, **kws):
+        # print 'LASSO ', xrmfile,  xrmfile.filename, det
         mca_thread = Thread(target=self.get_mca_area,
                             args=(det, mask), kwargs={'xrmfile':xrmfile})
         mca_thread.start()
 
-        self.show_XRFDisplay()
+        self.show_XRFDisplay(xrmfile=xrmfile)
         mca_thread.join()
 
         if hasattr(self, 'sel_mca'):
-            path, fname = os.path.split(self.current_file.filename)
+            path, fname = os.path.split(xrmfile.filename)
             aname = self.sel_mca.areaname
             title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, aname)
             self.xrfdisplay.SetTitle(title)
@@ -841,17 +843,19 @@ class MapViewerFrame(wx.Frame):
                                       show_last=True)
 
 
-    def show_XRFDisplay(self, do_raise=True, clear=True):
-        "make sure plot frame is enabled, and visible"
+    def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
+        "make sure plot frame is enabled, and visible" 
+        if xrmfile is None:
+            xrmfile = self.current_file
         if self.xrfdisplay is None:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
-                                              gsexrmfile=self.current_file)
+                                              gsexrmfile=xrmfile)
         try:
             self.xrfdisplay.Show()
 
         except wx.PyDeadObjectError:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
-                                              gsexrmfile=self.current_file)
+                                              gsexrmfile=xrmfile)
             self.xrfdisplay.Show()
 
         if do_raise:
@@ -965,7 +969,6 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onAbout(self, evt):
-        print 'onAbout xx ', evt
         about = """GSECARS X-ray Microprobe Map Viewer:
 Matt Newville <newville @ cars.uchicago.edu>
     MapViewer version: %s
