@@ -37,11 +37,13 @@ class MapImageFrame(ImageFrame):
     """
 
     def __init__(self, parent=None, size=None,
-                 lasso_callback=None, mode='intensity', 
+                 lasso_callback=None, mode='intensity',
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
 
         dbt = DebugTimer()
+        self.det = None
+        self.xrmfile = None
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels, mode=mode,
@@ -53,6 +55,11 @@ class MapImageFrame(ImageFrame):
         self.zoom_ini =  None
         self.lastpoint = [None, None]
         self.rbbox = None
+
+    def display(self, map, det=None, xrmfile=None, **kws):
+        self.det = det
+        self.xrmfile = xrmfile
+        ImageFrame.display(self, map, **kws)
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
@@ -206,7 +213,8 @@ class MapImageFrame(ImageFrame):
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
-            self.lasso_callback(data=data, selected=selected, mask=mask, **kws)
+            self.lasso_callback(data=data, selected=selected, mask=mask,
+                                det=self.det, xrmfile=self.xrmfile, **kws)
 
     def CustomConfig(self, panel, sizer, irow):
         """config panel for left-hand-side of frame"""

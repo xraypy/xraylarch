@@ -282,11 +282,11 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         fname = main_file.filename
 
-
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=None)
-        self.owner.display_map(map, title=title, info=info, x=x, y=y,
-                               subtitles=subtitles, det=None)
+        self.owner.display_map(map, title=title, subtitles=subtitles,
+                               info=info, x=x, y=y,
+                               det=None, xrmfile=None)
 
 class SimpleMapPanel(wx.Panel):
     """Panel of Controls for choosing what to display a simple ROI map"""
@@ -422,7 +422,8 @@ class SimpleMapPanel(wx.Panel):
 
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=det)
-        self.owner.display_map(map, title=title, info=info, x=x, y=y, det=det)
+        self.owner.display_map(map, title=title, info=info, x=x, y=y,
+                               det=det, xrmfile=datafile)
 
     def set_roi_choices(self, rois):
         set_choices(self.roi1, rois)
@@ -572,8 +573,8 @@ class TriColorMapPanel(wx.Panel):
         map = map.swapaxes(0, 2).swapaxes(0, 1)
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=det)
-        self.owner.display_map(map, title=title, det=det,
-                               x=x, y=y, subtitles=subtitles)
+        self.owner.display_map(map, title=title, subtitles=subtitles,
+                               x=x, y=y, det=det, xrmfile=datafile)
 
 
 
@@ -815,12 +816,15 @@ class MapViewerFrame(wx.Frame):
         sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
         pack(parent, sizer)
 
-    def get_mca_area(self, det, mask):
-        aname = self.current_file.add_area(mask)
-        self.sel_mca = self.current_file.get_mca_area(aname, det=det)
+    def get_mca_area(self, det, mask, xrmfile=None):
+        if xrmfile is None:
+            xrmfile = self.current_file
+        aname = xrmfile.add_area(mask)
+        self.sel_mca = xrmfile.get_mca_area(aname, det=det)
 
-    def lassoHandler(self, mask=None, det=None, **kws):
-        mca_thread = Thread(target=self.get_mca_area, args=(det, mask))
+    def lassoHandler(self, mask=None, det=None, xrmfile=None, **kws):
+        mca_thread = Thread(target=self.get_mca_area,
+                            args=(det, mask), kwargs={'xrmfile':xrmfile})
         mca_thread.start()
 
         self.show_XRFDisplay()
@@ -864,23 +868,25 @@ class MapViewerFrame(wx.Frame):
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None,
-                    det=None, subtitles=None):
+                    det=None, subtitles=None, xrmfile=None):
         """display a map in an available image display"""
         displayed = False
+        lasso_cb = Closure(self.lassoHandler, det=det, xrmfile=xrmfile)
         while not displayed:
             try:
                 imd = self.im_displays.pop()
                 imd.display(map, title=title, x=x, y=y,
-                            subtitles=subtitles)
-                for col, wid in  imd.wid_subtitles.items():
-                    wid.SetLabel("%s: %s" % (col.title(), subtitles[col]))
+                            subtitles=subtitles, det=det, xrmfile=xrmfile)
+                #for col, wid in imd.wid_subtitles.items():
+                #    wid.SetLabel("%s: %s" % (col.title(), subtitles[col]))
+                imd.lass_callback = lasso_cb
                 displayed = True
             except IndexError:
-                on_lasso = Closure(self.lassoHandler, det=det)
                 imd = MapImageFrame(output_title=title,
-                                    lasso_callback=on_lasso,
+                                    lasso_callback=lasso_cb,
                                     cursor_labels = self.cursor_menulabels)
-                imd.display(map, title=title, x=x, y=y, subtitles=subtitles)
+                imd.display(map, title=title, x=x, y=y, subtitles=subtitles,
+                            det=det, xrmfile=xrmfile)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
