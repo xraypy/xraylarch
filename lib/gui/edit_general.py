@@ -21,7 +21,7 @@ class SetupFrame(wx.Frame) :
         self.parent = parent
         self.config = config
         self.pvlist = pvlist
-        self.scanpanels = scanpanels
+        self.scanpanels = self.parent.scanpanels
 
         style     = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
         labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL

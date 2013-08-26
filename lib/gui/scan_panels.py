@@ -185,6 +185,10 @@ class GenericScanPanel(scrolled.ScrolledPanel):
             hlim = hlim - mpv.value
             llim = llim - mpv.value
         wids[1].SetLabel(units)
+        try:
+            wids[2].pv.clear_callbacks()
+        except:
+            pass
         wids[2].SetPV(mpv)
         wids[2].SetBackgroundColour(self.bgcol)
         for i in (3, 4):
