@@ -58,7 +58,7 @@ positioners= X, Y, Theta
 [detectors]
 # index = label || DetectorPV  || options
 1 = scaler1  || 13IDE:scaler1  || kind=scaler, nchan=8, use_calc=True
-2 = multimca || dxpMercury:  || kind=multimca, nmcas=4, nrois=32, use_net=False, use_full=True
+2 = multimca || 13SDD1:        || kind=multimca, nmcas=4, nrois=32, use_net=False, use_full=True
 #--------------------------#
 [counters]
 # index = label || PVname
