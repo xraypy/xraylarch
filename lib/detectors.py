@@ -89,7 +89,7 @@ class DeviceCounter():
             prefix = prefix[-4]
         self.prefix = prefix
         if rtype is not None:
-            if not caget("%s.RTYP" % self.prefix) == rtype:
+            if caget("%s.RTYP" % self.prefix) != rtype:
                 raise TypeError(self.invalid_device_msg)
         self.outpvs = outpvs
         self.set_counters(fields)
