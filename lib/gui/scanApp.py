@@ -45,7 +45,8 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 
 import epics
-from epics.wx import DelayedEpicsCallback, EpicsFunction
+from epics.wx import DelayedEpicsCallback, EpicsFunction, finalize_epics
+from epics.wx.utils import popup
 
 from .gui_utils import SimpleText, FloatCtrl, Closure
 from .gui_utils import pack, add_button, add_menu, add_choice, add_menu
@@ -105,7 +106,8 @@ class ScanFrame(wx.Frame):
         self.epics_status = 1
         self.conntimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.conntimer)
-
+        wx.EVT_CLOSE(self, self.onClose)
+        
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -304,15 +306,30 @@ class ScanFrame(wx.Frame):
         dlg.ShowModal()
         dlg.Destroy()
 
-    def onClose(self,evt):
-        self.shutdown_epics()
+    def onClose(self, evt=None):
+        print 'onClose '
+        ret = popup(self, "Really Quit?", "Exit Epics Scan?",
+                    style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
+        if ret == wx.ID_YES:
+            try: 
+                finalize_epics()
+                time.sleep(0.25)
+                print 'slept...'
+                epics.ca.poll(1.e-1, 3.0)
+                print 'polled ..'
+            except:
+                 pass
+            time.sleep(0.25)
+            print 'slept ...'
+            self.Destroy()
 
     @EpicsFunction
     def shutdown_epics(self):
+        print 'shutdown epics ..'
         for nam, pv in self.pvlist.items():
             pv.clear_callbacks()
-        epics.ca.poll(1.e-1, 3.0)
-        self.Destroy()
+        #epics.ca.poll(1.e-1, 3.0)
+        #self.Destroy()
 
     def onSetupMisc(self, evt=None):
         print 'need frame for general config'
