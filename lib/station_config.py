@@ -32,10 +32,13 @@ det_settle_time = 0.01
 #--------------------------#
 [positioners]
 # index = label || drivePV  || readbackPV
-1 = MotorX || 13IDE:m10     || 13IDE:m10.RBV
-2 = MotorY || 13IDE:m11     || 13IDE:m11.RBV
-3 = MotorZ || 13IDE:m9      || 13IDE:m9.RBV
-4 = Energy || 13IDE:En:Energy  || 13IDE:En:E_RBV
+1 = Fine X || 13XRM:m1  || 13XRM:m1.RBV
+2 = Fine Y || 13XRM:m2  || 13XRM:m2.RBV
+3 = Energy || 13IDE:En:Energy  || 13IDE:En:E_RBV
+4 = Theta  || 13XRM:m3  || 13XRM:m3.RBV
+5 = Focus Z || 13XRM:pm1 || 13XRM:pm1.RBV
+6 = Coarse X || 13XRM:pm2 || 13XRM:pm2.RBV
+7 = Coarse Y  || 13XRM:m6  || 13XRM:m6.RBV
 #--------------------------#
 [xafs]
 energy_drive = 13IDE:En:Energy.VAL
@@ -52,8 +55,8 @@ positioners= X, Y, Theta
 #--------------------------#
 [slewscan_positioners]
 # index = label || drivePV || readbackPV
-1 = MotorX || 13IDE:m10  || 13IDE:m10.RBV
-2 = MotorY || 13IDE:m11  || 13IDE:m11.RBV
+1 = Fine X || 13XRM:m1  || 13XRM:m1.RBV
+2 = Fine Y || 13XRM:m2  || 13XRM:m2.RBV
 #--------------------------#
 [detectors]
 # index = label || DetectorPV  || options
