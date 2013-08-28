@@ -194,7 +194,7 @@ class MultiMcaCounter(DeviceCounter):
                    ('OutputCountRate', 'OCR'))
     def __init__(self, prefix, outpvs=None, nmcas=4, nrois=32,
                  search_all = False,  use_net=False,
-                 use_unlabeled=False, use_full=True):
+                 use_unlabeled=False, use_full=False):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
