@@ -367,7 +367,6 @@ class AreaDetector(DetectorMixin):
             caput("%s:AutoIncrement" % fpre, 1)
             caput("%s:AutoSave" % fpre, 1)
 
-
     def post_scan(self, **kws):
         if self.file_plugin is not None:
             fpre = "%s%s" % (sself.prefix, self.file_plugin)
@@ -402,8 +401,8 @@ class MultiMcaDetector(DetectorMixin):
     repr_fmt = ', nmcas=%i, nrois=%i, use_net=%s, use_full=%s'
 
     def __init__(self, prefix, label=None, nmcas=4, nrois=32,
-                 search_all=False,  use_net=False,
-                 use_unlabeled=False, use_full=True):
+                 search_all=False,  use_net=False, use=True, 
+                 use_unlabeled=False, use_full=False):
         DetectorMixin.__init__(self, prefix, label=label)
 
         if not prefix.endswith(':'):
@@ -448,6 +447,7 @@ def get_detector(prefix, kind=None, label=None, **kws):
               'multimca': MultiMcaDetector,
               None: SimpleDetector}
 
+   
     if kind is None:
         if prefix.endswith('.VAL'):
             prefix = prefix[-4]
@@ -458,6 +458,7 @@ def get_detector(prefix, kind=None, label=None, **kws):
         kind = kind.lower()
 
     builder = dtypes.get(kind, SimpleDetector)
+    print 'DETECTOR ', prefix, kind, builder
     try:
         return builder(prefix, label=label, **kws)
     except TypeError:
