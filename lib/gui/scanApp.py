@@ -107,7 +107,7 @@ class ScanFrame(wx.Frame):
         self.conntimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.conntimer)
         wx.EVT_CLOSE(self, self.onClose)
-        
+
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -130,7 +130,7 @@ class ScanFrame(wx.Frame):
                               ('Slew Scan',        SlewScanPanel),
                               ('XAFS Scan',        XAFSScanPanel)):
 
-            print name
+            # print name
             p = creator(self, config=self.config, pvlist=self.pvlist)
             self.nb.AddPage(p, name, True)
             self.scanpanels.append(p)
@@ -311,7 +311,7 @@ class ScanFrame(wx.Frame):
         ret = popup(self, "Really Quit?", "Exit Epics Scan?",
                     style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
         if ret == wx.ID_YES:
-            try: 
+            try:
                 finalize_epics()
                 time.sleep(0.25)
                 print 'slept...'

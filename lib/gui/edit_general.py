@@ -59,70 +59,70 @@ class SetupFrame(wx.Frame) :
                   (ir, 3), (1, 1), labstyle, 2)
 
         self.widlist = []
-        for label, pvs in self.config.positioners.items():
-            desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value=pvs[0],  size=(175, -1))
-            rdctrl = wx.TextCtrl(panel, value=pvs[1],  size=(175, -1))
-            delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
-            ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-            sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-            sizer.Add(delpv,  (ir, 3), (1, 1), labstyle, 2)
-            self.widlist.append(('stepscan', desc, pvctrl, rdctrl, delpv))
-
-        for i in range(4):
-            desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-            rdctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-            ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-            sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-            self.widlist.append(('stepscan', desc, pvctrl, rdctrl, None))
-
-        # xafs
-        ir += 1
-        sizer.Add(self.add_subtitle(panel, 'Energy for XAFS Scans'),
-                  (ir, 0),  (1, 4),  LEFT, 1)
-
-        drive_pv = self.config.xafs['energy_drive']
-        read_pv = self.config.xafs['energy_read']
-        desc   = wx.TextCtrl(panel, -1, value='Energy PV', size=(175, -1))
-        pvctrl = wx.TextCtrl(panel, value=drive_pv, size=(175, -1))
-        rdctrl = wx.TextCtrl(panel, value=read_pv,  size=(175, -1))
-        ir +=1
-        sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-        sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-        sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-        self.widlist.append(('xafs', desc, pvctrl, rdctrl, None))
-
-        # slew scans
-        ir += 1
-        sizer.Add(self.add_subtitle(panel, 'Slew Scan Positioners'),
-                  (ir, 0),  (1, 4),  LEFT, 1)
-
-        for label, pvs in self.config.slewscan_positioners.items():
-            desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value=pvs[0], size=(175, -1))
-            rdctrl = wx.TextCtrl(panel, value=pvs[1], size=(175, -1))
-            delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
-            ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-            sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-            sizer.Add(delpv,  (ir, 3), (1, 1), labstyle, 2)
-            self.widlist.append(('slewscan', desc, pvctrl, rdctrl, delpv))
-
-        for i in range(1):
-            desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-            rdctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-            ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-            sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-            self.widlist.append(('slewscan', desc, pvctrl, rdctrl, None))
+#         for label, pvs in self.config.positioners.items():
+#             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
+#             pvctrl = wx.TextCtrl(panel, value=pvs[0],  size=(175, -1))
+#             rdctrl = wx.TextCtrl(panel, value=pvs[1],  size=(175, -1))
+#             delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
+#             ir +=1
+#             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
+#             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
+#             sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
+#             sizer.Add(delpv,  (ir, 3), (1, 1), labstyle, 2)
+#             self.widlist.append(('stepscan', desc, pvctrl, rdctrl, delpv))
+#
+#         for i in range(4):
+#             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
+#             pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
+#             rdctrl = wx.TextCtrl(panel, value='', size=(175, -1))
+#             ir +=1
+#             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
+#             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
+#             sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
+#             self.widlist.append(('stepscan', desc, pvctrl, rdctrl, None))
+#
+#         # xafs
+#         ir += 1
+#         sizer.Add(self.add_subtitle(panel, 'Energy for XAFS Scans'),
+#                   (ir, 0),  (1, 4),  LEFT, 1)
+#
+#         drive_pv = self.config.xafs['energy_drive']
+#         read_pv = self.config.xafs['energy_read']
+#         desc   = wx.TextCtrl(panel, -1, value='Energy PV', size=(175, -1))
+#         pvctrl = wx.TextCtrl(panel, value=drive_pv, size=(175, -1))
+#         rdctrl = wx.TextCtrl(panel, value=read_pv,  size=(175, -1))
+#         ir +=1
+#         sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
+#         sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
+#         sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
+#         self.widlist.append(('xafs', desc, pvctrl, rdctrl, None))
+#
+#         # slew scans
+#         ir += 1
+#         sizer.Add(self.add_subtitle(panel, 'Slew Scan Positioners'),
+#                   (ir, 0),  (1, 4),  LEFT, 1)
+#
+#         for label, pvs in self.config.slewscan_positioners.items():
+#             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
+#             pvctrl = wx.TextCtrl(panel, value=pvs[0], size=(175, -1))
+#             rdctrl = wx.TextCtrl(panel, value=pvs[1], size=(175, -1))
+#             delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
+#             ir +=1
+#             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
+#             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
+#             sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
+#             sizer.Add(delpv,  (ir, 3), (1, 1), labstyle, 2)
+#             self.widlist.append(('slewscan', desc, pvctrl, rdctrl, delpv))
+#
+#         for i in range(1):
+#             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
+#             pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
+#             rdctrl = wx.TextCtrl(panel, value='', size=(175, -1))
+#             ir +=1
+#             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
+#             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
+#             sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
+#             self.widlist.append(('slewscan', desc, pvctrl, rdctrl, None))
 
         ir += 1
         sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
