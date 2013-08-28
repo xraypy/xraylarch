@@ -1,5 +1,6 @@
 *.pyc
 *~
+*.BAK
 *#
 *.dat
 doc/_build
