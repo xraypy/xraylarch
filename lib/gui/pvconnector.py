@@ -73,6 +73,9 @@ class EpicsPVList(object):
             return
         if '.' not in pvname:
             pvname = '%s.VAL' % pvname
+        pvname = str(pvname)
+        if pvname in self.pvs:
+            return
         if pvname not in self.in_progress:
             self.pvs[pvname] = epics.PV(pvname)
             self.in_progress[pvname] = (wid, action, time.time())
@@ -87,11 +90,11 @@ class EpicsPVList(object):
     @EpicsFunction
     def __connect(self, pvname):
         """if a new epics PV has connected, run the requested action"""
-        #print ' __connect!! ', pvname
+        # print ' __connect!! ', pvname
         if pvname not in self.pvs:
             self.pvs[pvname] = epics.PV(pvname)
         pv = self.pvs[pvname]
-        time.sleep(0.001)
+        time.sleep(0.002)
 
         if not self.pvs[pvname].connected:
             return
@@ -101,6 +104,6 @@ class EpicsPVList(object):
         except KeyError:
             wid, action, itime = None, None, 0
         pv.get_ctrlvars()
-        #print 'PV connected: ', pv
+        # print 'PV connected: ', pv
         if hasattr(action, '__call__'):
             action(wid=wid, pvname=pvname, pv=self.pvs[pvname])
