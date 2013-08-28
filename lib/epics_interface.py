@@ -1,6 +1,6 @@
 ##
 
-USE_EPICS_EMULATOR = True
+USE_EPICS_EMULATOR = False #True
 
 import time
 
