@@ -20,6 +20,85 @@ CEN  = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 DET_CHOICES = ('Scaler', 'MCA', 'MultiMCA', 'AreaDetector')
 AD_File_plugins = ('None','TIFF1', 'JPEG1', 'NetCDF1', 'HDF1', 'Nexus1', 'Magick1')
 
+class DetectorDetailsDialog(wx.Dialog):
+    """Full list of detector settings"""
+    def __init__(self, parent, config, detkey):
+        self.config = config
+        self.detkey = detkey
+        detname = self.config.detectors[detkey][0]
+        title = "Settings for '%s'?" % (detname)
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
+        self.build_dialog(parent)
+
+    def build_dialog(self, parent):
+        panel = wx.Panel(self)
+        self.SetFont(parent.GetFont())
+        titlefont  = self.GetFont()
+        titlefont.PointSize += 2
+        titlefont.SetWeight(wx.BOLD)
+
+        sizer = wx.GridBagSizer(10, 3)
+
+        labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        tstyle    = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
+        # title row
+        i = 0
+        for titleword in (' Setting ', 'Value'):
+            txt =SimpleText(panel, titleword,
+                            font=titlefont,
+                            minsize=(100, -1),
+                            style=tstyle)
+
+            sizer.Add(txt, (0, i), (1, 1), labstyle, 1)
+            i = i + 1
+
+        sizer.Add(wx.StaticLine(panel, size=(150, -1),
+                                style=wx.LI_HORIZONTAL),
+                  (1, 0), (1, 4), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 0)
+
+        self.wids = {}
+        prefix, opts = self.config.detectors[self.detkey]
+        optkeys = opts.keys()
+        optkeys.sort()
+        irow = 2
+        for key in optkeys:
+            if key in ('use', 'kind'):
+                continue
+            val = opts[key]
+            # pvname = normalize_pvname(pvpos.pv.name)
+            label = SimpleText(panel, key, style=tstyle)
+
+            if val in (True, False, 'Yes', 'No'):
+                defval = val in (True, 'Yes')
+                wid = YesNo(panel, defaultyes=defval)
+            else:
+                wid   = wx.TextCtrl(panel, -1, value=str(val))
+
+            sizer.Add(label, (irow, 0), (1, 1), labstyle,  2)
+            sizer.Add(wid,   (irow, 1), (1, 1), rlabstyle, 2)
+            self.wids[key] = wid
+            irow  += 1
+
+        sizer.Add(wx.StaticLine(panel, size=(150, -1),
+                                style=wx.LI_HORIZONTAL),
+                  (irow, 0), (1, 4), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 0)
+
+        btnsizer = wx.StdDialogButtonSizer()
+        btn = wx.Button(panel, wx.ID_OK)
+        btn.SetDefault()
+        btnsizer.AddButton(btn)
+        btnsizer.AddButton(wx.Button(panel, wx.ID_CANCEL))
+
+        btnsizer.Realize()
+        sizer.Add(btnsizer, (irow+4, 2), (1, 2),
+                  wx.ALIGN_CENTER_VERTICAL|wx.ALL, 1)
+        pack(panel, sizer)
+
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(panel, 0, 0, 0)
+        pack(self, sizer)
+
 class DetectorFrame(wx.Frame) :
     """Frame to Setup Scan Detectors"""
     def __init__(self, parent=None, pos=(-1, -1), config=None, pvlist=None,
@@ -80,7 +159,7 @@ class DetectorFrame(wx.Frame) :
             det    = None
 
             detail = add_button(panel, ' Details',     size=(70, -1),
-                            action=Closure(self.onDetDetails, prefix=prefix, opts=opts, det=det))
+                            action=Closure(self.onDetDetails, detkey=key))
 
             sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
@@ -150,9 +229,17 @@ class DetectorFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-    def onDetDetails(self, evt=None, prefix=None, opts=None,  **kws):
-        print 'show detector detail frame: include options, trigger, etc'
-        print prefix, opts
+    def onDetDetails(self, evt=None, detkey=None, **kws):
+        dlg = DetectorDetailsDialog(self, self.config, detkey)
+        dlg.Raise()
+        if dlg.ShowModal() == wx.ID_OK:
+            for key, wid in dlg.wids.items():
+                if isinstance(wid, wx.TextCtrl):
+                    val = wid.GetValue()
+                elif isinstance(wid, YesNo):
+                    val =  {0:False, 1:True}[wid.GetSelection()]
+                self.config.detectors[detkey][1][key] = val
+        dlg.Destroy()
 
     def opts_panel(self, parent, opts):
         pane = wx.Panel(parent)
@@ -239,7 +326,7 @@ class DetectorFrame(wx.Frame) :
         print 'add new detector ', row
 
     def onApply(self, event=None):
-        print 'Detector apply'
+        print 'Apply Detector settings!'
 
     def onClose(self, event=None):
         self.Destroy()
