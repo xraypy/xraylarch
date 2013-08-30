@@ -187,7 +187,7 @@ class PositionerFrame(wx.Frame) :
         self.config.xafs['energy_read']  = energy_read
         self.config.positioners = step_pos
         self.config.slewscan_positioners = slew_pos
-        for p in self.scanpanels:
+        for p in self.scanpanels.values():
             p.use_config(self.config)
         self.Destroy()
 
