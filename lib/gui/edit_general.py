@@ -41,93 +41,27 @@ class SetupFrame(wx.Frame) :
         panel.SetBackgroundColour(self.colors.bg)
 
         # title row
-        title = SimpleText(panel, 'Server / Connection Setup',  font=titlefont,
+        title = SimpleText(panel, 'General Epics Scan Setup',  font=titlefont,
                            colour=self.colors.title, style=tstyle)
 
         sizer.Add(title,        (0, 0), (1, 3), LEFT, 5)
         ir = 1
-        sizer.Add(self.add_subtitle(panel, 'Linear/Mesh Scan Positioners'),
+        sizer.Add(self.add_subtitle(panel, 'Scan Timing:'),
                   (ir, 0),  (1, 4),  LEFT, 1)
+        self.wids = {}
         ir += 1
-        sizer.Add(SimpleText(panel, label='Description', size=(175, -1)),
-                  (ir, 0), (1, 1), rlabstyle, 2)
-        sizer.Add(SimpleText(panel, label='Drive PV', size=(175, -1)),
-                  (ir, 1), (1, 1), labstyle, 2)
-        sizer.Add(SimpleText(panel, label='Readback PV', size=(175, -1)),
-                  (ir, 2), (1, 1), labstyle, 2)
-        sizer.Add(SimpleText(panel, label='Remove?', size=(100, -1)),
-                  (ir, 3), (1, 1), labstyle, 2)
+        for label, setting in (('Positioner Settling Time', 'pos_settle_time'),
+                               ('Detector Settling Time', 'det_settle_time')):
+            desc = wx.StaticText(panel, -1, label=label, size=(175, -1))
+            val = self.config.setup.get(setting, '0')
+            ctrl = wx.TextCtrl(panel, value=val,  size=(100, -1))
+            self.wids[setting] = ctrl
+            sizer.Add(desc,  (ir, 0), (1, 1), wx.ALIGN_LEFT|wx.EXPAND, 3)
+            sizer.Add(ctrl,  (ir, 1), (1, 1), wx.ALIGN_LEFT|wx.EXPAND, 3)
+            ir += 1
 
-        self.widlist = []
-#         for label, pvs in self.config.positioners.items():
-#             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-#             pvctrl = wx.TextCtrl(panel, value=pvs[0],  size=(175, -1))
-#             rdctrl = wx.TextCtrl(panel, value=pvs[1],  size=(175, -1))
-#             delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
-#             ir +=1
-#             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-#             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-#             sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-#             sizer.Add(delpv,  (ir, 3), (1, 1), labstyle, 2)
-#             self.widlist.append(('stepscan', desc, pvctrl, rdctrl, delpv))
-#
-#         for i in range(4):
-#             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
-#             pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-#             rdctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-#             ir +=1
-#             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-#             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-#             sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-#             self.widlist.append(('stepscan', desc, pvctrl, rdctrl, None))
-#
-#         # xafs
-#         ir += 1
-#         sizer.Add(self.add_subtitle(panel, 'Energy for XAFS Scans'),
-#                   (ir, 0),  (1, 4),  LEFT, 1)
-#
-#         drive_pv = self.config.xafs['energy_drive']
-#         read_pv = self.config.xafs['energy_read']
-#         desc   = wx.TextCtrl(panel, -1, value='Energy PV', size=(175, -1))
-#         pvctrl = wx.TextCtrl(panel, value=drive_pv, size=(175, -1))
-#         rdctrl = wx.TextCtrl(panel, value=read_pv,  size=(175, -1))
-#         ir +=1
-#         sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-#         sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-#         sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-#         self.widlist.append(('xafs', desc, pvctrl, rdctrl, None))
-#
-#         # slew scans
-#         ir += 1
-#         sizer.Add(self.add_subtitle(panel, 'Slew Scan Positioners'),
-#                   (ir, 0),  (1, 4),  LEFT, 1)
-#
-#         for label, pvs in self.config.slewscan_positioners.items():
-#             desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-#             pvctrl = wx.TextCtrl(panel, value=pvs[0], size=(175, -1))
-#             rdctrl = wx.TextCtrl(panel, value=pvs[1], size=(175, -1))
-#             delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
-#             ir +=1
-#             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-#             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-#             sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-#             sizer.Add(delpv,  (ir, 3), (1, 1), labstyle, 2)
-#             self.widlist.append(('slewscan', desc, pvctrl, rdctrl, delpv))
-#
-#         for i in range(1):
-#             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
-#             pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-#             rdctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-#             ir +=1
-#             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-#             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-#             sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-#             self.widlist.append(('slewscan', desc, pvctrl, rdctrl, None))
-
-        ir += 1
         sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
                   (ir, 0), (1, 4), wx.ALIGN_LEFT|wx.EXPAND, 3)
-        #
         ir += 1
         sizer.Add(self.make_buttons(panel), (ir, 0), (1, 3), wx.ALIGN_CENTER|wx.GROW, 3)
         ir += 1
@@ -166,31 +100,10 @@ class SetupFrame(wx.Frame) :
         return bpanel
 
     def onApply(self, event=None):
-        step_pos = OrderedDict()
-        slew_pos = OrderedDict()
-        energy_drive= self.config.xafs['energy_drive']
-        energy_read = self.config.xafs['energy_read']
-        for wids in self.widlist:
-            kind = wids[0]
-            desc  = wids[1].GetValue().strip()
-            drive = wids[2].GetValue().strip()
-            read  = wids[3].GetValue().strip()
-            use  = len(desc) > 0
-            if wids[4] is not None:
-                use = use and wids[4].GetSelection()==1
-            if use and kind == 'stepscan':
-                step_pos[desc] = (drive, read)
-            elif use and kind == 'slewscan':
-                slew_pos[desc] = (drive, read)
-            elif use and kind == 'xafs':
-                energy_drive = drive
-                energy_read = read
-        self.config.xafs['energy_drive'] = energy_drive
-        self.config.xafs['energy_read']  = energy_read
-        self.config.positioners = step_pos
-        self.config.slewscan_positioners = slew_pos
-        for p in self.scanpanels:
-            p.use_config(self.config)
+        for setting in ('pos_settle_time', 'det_settle_time'):
+            self.config.setup[setting] = self.wids[setting].GetValue().strip()
+        for span in self.scanpanels.values():
+            span.use_config(self.config)
         self.Destroy()
 
     def onClose(self, event=None):
