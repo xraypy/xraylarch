@@ -61,13 +61,13 @@ from .scan_panels import (LinearScanPanel, MeshScanPanel,
 from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
                          MultiMcaDetector, AreaDetector, get_detector)
 
-from .pvconnector import  EpicsPVList
 from .edit_positioners import PositionerFrame
 from .edit_detectors import DetectorFrame
 from .edit_general import SetupFrame
 
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+
 
 class ScanFrame(wx.Frame):
     _about = """StepScan GUI
@@ -87,9 +87,11 @@ class ScanFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
 
-        self.pvlist = {} # EpicsPVList(self)
-        self.detectors  =  OrderedDict()  # list of available detectors and whether to use them
-        self.extra_counters = OrderedDict() # list of extra counters and whether to use them
+        self.pvlist = {} 
+        # list of available detectors and whether to use them
+        self.detectors  =  OrderedDict()  
+        # list of extra counters and whether to use them
+        self.extra_counters = OrderedDict() 
         self.config = StationConfig(conffile)
 
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -117,6 +119,11 @@ class ScanFrame(wx.Frame):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
 
+    def add_scanpanel(self, creator, title):
+        span = creator(self, config=self.config,  pvlist=self.pvlist)
+        self.nb.AddPage(span, title, True)
+        self.scanpanels[title] = span
+
     def createMainPanel(self):
         sizer = wx.BoxSizer(wx.VERTICAL)
 
@@ -124,16 +131,12 @@ class ScanFrame(wx.Frame):
         self.nb.SetBackgroundColour('#FCFCFA')
         self.SetBackgroundColour('#F0F0E8')
 
-        self.scanpanels = []
-        for name, creator in (('Linear Step Scan', LinearScanPanel),
-                              ('2-D Mesh Scan',    MeshScanPanel),
-                              ('Slew Scan',        SlewScanPanel),
-                              ('XAFS Scan',        XAFSScanPanel)):
-
-            # print name
-            p = creator(self, config=self.config, pvlist=self.pvlist)
-            self.nb.AddPage(p, name, True)
-            self.scanpanels.append(p)
+        self.scanpanels = {}
+        for name, creator in (('Linear Scan',  LinearScanPanel),
+                              ('Mesh Scan',    MeshScanPanel),
+                              ('Slew Scan',    SlewScanPanel),
+                              ('XAFS Scan',    XAFSScanPanel)):
+            self.add_scanpanel(creator, name)
 
         self.nb.SetSelection(0)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -176,7 +179,6 @@ class ScanFrame(wx.Frame):
         bsizer.Fit(bpanel)
         sizer.Add(bpanel, 0, ALL_CEN, 5)
         self.SetSizer(sizer)
-        # self.connect_epics()
         self.conntimer.Start(100)
         sizer.Fit(self)
 
@@ -189,10 +191,11 @@ class ScanFrame(wx.Frame):
             self.ini_epics_thread = Thread(target=self.connect_epics)
             self.ini_epics_thread.start()
         if self.epics_status == 0 and self.larch_status  == 0:
+            time.sleep(0.05)
             self.ini_larch_thread.join()
             self.ini_epics_thread.join()
-            for spanel in self.scanpanels:
-                spanel.initialize_positions()
+            for span in self.scanpanels.values():
+                span.initialize_positions()
             self.conntimer.Stop()
 
 
@@ -201,10 +204,9 @@ class ScanFrame(wx.Frame):
         self.larch_status = -1
         import larch
         self._larch = larch.Interpreter()
-        for span in self.scanpanels:
+        for span in self.scanpanels.values():
             span.larch = self._larch
         self.larch_status = 0
-        print 'larch initialized %.3f s ' % (time.time()-t0)
 
     @EpicsFunction
     def connect_epics(self):
@@ -224,7 +226,8 @@ class ScanFrame(wx.Frame):
             self.detectors[label] = get_detector(prefix, **opts)
 
         self.epics_status = 0
-        print 'epics initialized %.3f s ' % (time.time()-t0)
+        time.sleep(0.05)
+        # print 'epics initialized %.3f s ' % (time.time()-t0)
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
@@ -307,29 +310,10 @@ class ScanFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self, evt=None):
-        print 'onClose '
         ret = popup(self, "Really Quit?", "Exit Epics Scan?",
                     style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
         if ret == wx.ID_YES:
-            try:
-                finalize_epics()
-                time.sleep(0.25)
-                print 'slept...'
-                epics.ca.poll(1.e-1, 3.0)
-                print 'polled ..'
-            except:
-                 pass
-            time.sleep(0.25)
-            print 'slept ...'
             self.Destroy()
-
-    @EpicsFunction
-    def shutdown_epics(self):
-        print 'shutdown epics ..'
-        for nam, pv in self.pvlist.items():
-            pv.clear_callbacks()
-        #epics.ca.poll(1.e-1, 3.0)
-        #self.Destroy()
 
     def onSetupMisc(self, evt=None):
         print 'need frame for general config'
@@ -390,8 +374,8 @@ class ScanFrame(wx.Frame):
             path = dlg.GetPath()
             self.config.Read(path)
             print 'read settings - should run init_epics to redefine self.detectors....'
-            for p in self.scanpanels:
-                p.use_config(self.config)
+            for span in self.scanpanels.values():
+                span.use_config(self.config)
         dlg.Destroy()
 
 class ScanApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
