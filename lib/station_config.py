@@ -25,8 +25,6 @@ DEFAULT_CONF = """
 [setup]
 filename = test.dat
 filemode = increment
-basedir = //cars5/Data/xas_user/Nov2012/
-extrapvs_file =
 pos_settle_time = 0.01
 det_settle_time = 0.01
 #--------------------------#
@@ -60,8 +58,8 @@ positioners= X, Y, Theta
 #--------------------------#
 [detectors]
 # index = label || DetectorPV  || options
-1 = scaler1  || 13IDE:scaler1  || kind=scaler, nchan=8, use_calc=True
-2 = multimca || 13SDD1:        || kind=multimca, nmcas=4, nrois=32, use_net=False, use_full=True
+1 = scaler1     || 13IDE:scaler1  || kind=scaler, nchan=8, use_calc=True
+2 = me4         || 13SDD1:        || kind=multimca, nmcas=4, nrois=32, use_net=False, use_full=True
 #--------------------------#
 [counters]
 # index = label || PVname
