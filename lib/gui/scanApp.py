@@ -121,10 +121,9 @@ class ScanFrame(wx.Frame):
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
         self.statusbar.SetStatusWidths([-3, -1])
-        statusbar_fields = ["Messages", "Status"]
+        statusbar_fields = ["Initializing...", "Status"]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-
 
     def add_scanpanel(self, creator, title):
         span = creator(self, config=self.config,  pvlist=self.pvlist)
@@ -204,6 +203,9 @@ class ScanFrame(wx.Frame):
             for span in self.scanpanels.values():
                 span.initialize_positions()
             self.conntimer.Stop()
+            self.statusbar.SetStatusText('', 0)
+            self.statusbar.SetStatusText('Ready', 1)
+
 
 
     def init_larch(self):
@@ -265,17 +267,12 @@ class ScanFrame(wx.Frame):
         self.run_scan(scan)
 
     def scan_messenger(self, cpt=0, npts=1, scan=None, **kws):
-        if cpt == 1:
-            pass # print dir(scan)
-        msg = '%i,' % cpt
-        if cpt % 15 == 0:
-            msg = "%s\n" % msg
-        sys.stdout.write(msg)
-        sys.stdout.flush()
-
-
+        self.statusbar.SetStatusText('Point %i / %i, scan=%s' % 
+                                     (cpt, npts, repr(scan)), 0)
+        
     def run_scan(self, conf):
         """runs a scan as specified in a scan configuration dictionary"""
+        self.statusbar.SetStatusText('Starting...', 1)
         if conf['type'] == 'xafs':
             scan  = XAFS_Scan()
             isrel = conf['is_relative']
@@ -322,9 +319,24 @@ class ScanFrame(wx.Frame):
         scan.messenger = self.scan_messenger
 
         print 'Scan:: ', conf['filename'], conf['nscans']
+        self.statusbar.SetStatusText('Scanning ', 1)
         for i in range(conf['nscans']):
-            outfile = scan.run(conf['filename'], comments=conf['user_comments'])
-            print 'wrote %s' % outfile
+            fname = conf['filename']
+            comm = conf['user_comments']
+            self.scan_thread = Thread(target=scan.run, args=(fname,), 
+                                      kwargs={'comments':comm})
+            self.scan_thread.start()
+            time.sleep(0.5)
+            app = wx.GetApp()
+            while not scan.complete:
+                time.sleep(0.5)
+                print 'HERE ', scan.cpt, scan.npts
+                app.ProcessIdle()
+            print 'See scan complete!'
+            self.scan_thread.join()
+            print 'done!  wrote %s' % outfile
+            self.statusbar.SetStatusText('Wrote %s' %  outfile, 0)
+        self.statusbar.SetStatusText('Scan Complete', 1)
 
     def onAbortScan(self, evt=None):
         print 'Abort Scan ', evt
