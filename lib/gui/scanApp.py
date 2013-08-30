@@ -33,8 +33,10 @@ To Do:
 
 """
 import os
+import sys
 import time
 import shutil
+import numpy as np
 import json
 from datetime import timedelta
 from threading import Thread
@@ -51,6 +53,9 @@ from epics.wx.utils import popup
 from .gui_utils import SimpleText, FloatCtrl, Closure
 from .gui_utils import pack, add_button, add_menu, add_choice, add_menu
 
+from ..stepscan import StepScan
+from ..xafs_scan import XAFS_Scan
+
 from ..file_utils import new_filename, increment_filename, nativepath
 from ..ordereddict import OrderedDict
 from ..station_config import StationConfig
@@ -58,6 +63,7 @@ from ..station_config import StationConfig
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
                           SlewScanPanel,   XAFSScanPanel)
 
+from ..positioner import Positioner
 from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
                          MultiMcaDetector, AreaDetector, get_detector)
 
@@ -67,6 +73,7 @@ from .edit_general import SetupFrame
 
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+
 
 
 class ScanFrame(wx.Frame):
@@ -253,9 +260,71 @@ class ScanFrame(wx.Frame):
         scan['user_comments'] = self.user_comms.GetValue()
         scan['pos_settle_time'] = 0.010
         scan['det_settle_time'] = 0.010
-        print '=== Start Scan ===> scan.cnf'
         f = open('scan.cnf', 'w')
         f.write("%s\n" % json.dumps(scan, ensure_ascii=True))
+        self.run_scan(scan)
+
+    def scan_messenger(self, cpt=0, npts=1, scan=None, **kws):
+        if cpt == 1:
+            pass # print dir(scan)
+        msg = '%i,' % cpt
+        if cpt % 15 == 0:
+            msg = "%s\n" % msg
+        sys.stdout.write(msg)
+        sys.stdout.flush()
+
+
+    def run_scan(self, conf):
+        """runs a scan as specified in a scan configuration dictionary"""
+        if conf['type'] == 'xafs':
+            scan  = XAFS_Scan()
+            isrel = conf['is_relative']
+            e0    = conf['e0']
+            t_kw  = conf['time_kw']
+            t_max = conf['max_time']
+            nreg  = len(conf['regions'])
+            kws   = {'relative': isrel, 'e0':e0}
+
+            for i, det in enumerate(conf['regions']):
+                start, stop, npts, dt, units = det
+                kws['dtime'] =  dt
+                kws['use_k'] =  units.lower() !='ev'
+                if i == nreg-1: # final reg
+                    if t_max > 0.01 and t_kw>0 and kws['use_k']:
+                        kws['dtime_final'] = t_max
+                        kws['dtime_wt'] = t_kw
+                scan.add_region(start, stop, npts=npts, **kws)
+
+        elif conf['type'] == 'linear':
+            scan = StepScan()
+            for pos in conf['positioners']:
+                label, pvs, start, stop, npts = pos
+                p = Positioner(pvs[0], label=label)
+                p.array = np.linspace(start, stop, npts)
+                scan.add_positioner(p)
+                if len(pvs) > 0:
+                    scan.add_counter(pvs[1], label="%s(read)" % label)
+
+        for det in conf['detectors']:
+            scan.add_detector(get_detector(**det))
+
+        if 'counters' in conf:
+            for label, pvname  in conf['counters']:
+                scan.add_counter(pvname, label=label)
+
+        scan.add_extra_pvs(conf['extra_pvs'])
+
+        scan.dwelltime = conf['dwelltime']
+        scan.comments  = conf['user_comments']
+        scan.filename  = conf['filename']
+        scan.pos_settle_time = conf['pos_settle_time']
+        scan.det_settle_time = conf['det_settle_time']
+        scan.messenger = self.scan_messenger
+
+        print 'Scan:: ', conf['filename'], conf['nscans']
+        for i in range(conf['nscans']):
+            outfile = scan.run(conf['filename'], comments=conf['user_comments'])
+            print 'wrote %s' % outfile
 
     def onAbortScan(self, evt=None):
         print 'Abort Scan ', evt
