@@ -329,6 +329,7 @@ class StepScan(object):
            Loop over points
            run post_scan methods
         """
+        self.complete = False
         self.filename  = filename
 
         ts_start = time.time()
@@ -449,6 +450,9 @@ class StepScan(object):
         out = self.post_scan()
         self.check_outputs(out, msg='post scan')
 
+        print 'Setting SCAN Complete!! ', self.runtime
+        self.complete = True
+        print self.message_thread
         # end messenger thread
         if self.message_thread is not None:
             self.message_thread.cpt = None
