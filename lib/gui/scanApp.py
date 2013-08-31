@@ -94,11 +94,11 @@ class ScanFrame(wx.Frame):
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
 
-        self.pvlist = {} 
+        self.pvlist = {}
         # list of available detectors and whether to use them
-        self.detectors  =  OrderedDict()  
+        self.detectors  =  OrderedDict()
         # list of extra counters and whether to use them
-        self.extra_counters = OrderedDict() 
+        self.extra_counters = OrderedDict()
         self.config = StationConfig(conffile)
 
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -113,9 +113,13 @@ class ScanFrame(wx.Frame):
         self._larch = None
         self.larch_status = 1
         self.epics_status = 1
-        self.conntimer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onTimer, self.conntimer)
         wx.EVT_CLOSE(self, self.onClose)
+
+        self.inittimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onInitTimer, self.inittimer)
+
+        self.scantimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
 
         self.createMainPanel()
         self.createMenus()
@@ -185,28 +189,39 @@ class ScanFrame(wx.Frame):
         bsizer.Fit(bpanel)
         sizer.Add(bpanel, 0, ALL_CEN, 5)
         self.SetSizer(sizer)
-        self.conntimer.Start(100)
+        self.inittimer.Start(100)
         sizer.Fit(self)
 
-    def onTimer(self, evt=None):
+    def onScanTimer(self, evt=None):
+        if self.scan_cpt == self.scan.cpt:
+            return
+        self.scan_cpt = self.scan.cpt
+        msg = "Point %i / %i" % (self.scan.cpt, self.scan.npts)
+        self.statusbar.SetStatusText(msg, 0)
+        print 'ScanTimer : ' , msg, self.scan.complete, len(self.scan.positioners[0].array)
+        if self.scan.complete:
+            self.scantimer.Stop()
+
+    def onInitTimer(self, evt=None):
         if self.larch_status > 0:
             self.ini_larch_thread = Thread(target=self.init_larch)
             self.ini_larch_thread.start()
+            self.statusbar.SetStatusText('Larch Ready', 1)
 
         if self.epics_status > 0:
             self.ini_epics_thread = Thread(target=self.connect_epics)
             self.ini_epics_thread.start()
+            self.statusbar.SetStatusText('Epics Ready', 1)
+
         if self.epics_status == 0 and self.larch_status  == 0:
             time.sleep(0.05)
             self.ini_larch_thread.join()
             self.ini_epics_thread.join()
             for span in self.scanpanels.values():
                 span.initialize_positions()
-            self.conntimer.Stop()
+            self.inittimer.Stop()
             self.statusbar.SetStatusText('', 0)
             self.statusbar.SetStatusText('Ready', 1)
-
-
 
     def init_larch(self):
         t0 = time.time()
@@ -266,13 +281,10 @@ class ScanFrame(wx.Frame):
         f.write("%s\n" % json.dumps(scan, ensure_ascii=True))
         self.run_scan(scan)
 
-    def scan_messenger(self, cpt=0, npts=1, scan=None, **kws):
-        self.statusbar.SetStatusText('Point %i / %i, scan=%s' % 
-                                     (cpt, npts, repr(scan)), 0)
-        
     def run_scan(self, conf):
         """runs a scan as specified in a scan configuration dictionary"""
         self.statusbar.SetStatusText('Starting...', 1)
+
         if conf['type'] == 'xafs':
             scan  = XAFS_Scan()
             isrel = conf['is_relative']
@@ -316,27 +328,32 @@ class ScanFrame(wx.Frame):
         scan.filename  = conf['filename']
         scan.pos_settle_time = conf['pos_settle_time']
         scan.det_settle_time = conf['det_settle_time']
-        scan.messenger = self.scan_messenger
 
-        print 'Scan:: ', conf['filename'], conf['nscans']
+        self.scan = scan
+        self.scan_cpt = -1
+
         self.statusbar.SetStatusText('Scanning ', 1)
+        self.scantimer.Start(100)
+        app = wx.GetApp()
         for i in range(conf['nscans']):
-            fname = conf['filename']
-            comm = conf['user_comments']
-            self.scan_thread = Thread(target=scan.run, args=(fname,), 
-                                      kwargs={'comments':comm})
+            self.scan_thread = Thread(target=scan.run)
             self.scan_thread.start()
-            time.sleep(0.5)
-            app = wx.GetApp()
             while not scan.complete:
-                time.sleep(0.5)
-                print 'HERE ', scan.cpt, scan.npts
+                t0 = time.time()
+                eloop = wx.EventLoop()
+                eact = wx.EventLoopActivator(eloop)
+                while eloop.Pending() and time.time()-t0 < 0.25:
+                    eloop.Dispatch()
                 app.ProcessIdle()
-            print 'See scan complete!'
+                del eact
+                if scan.cpt > 2 and scan.cpt == scan.npts:
+                    break
+            self.scantimer.Stop()
             self.scan_thread.join()
-            print 'done!  wrote %s' % outfile
-            self.statusbar.SetStatusText('Wrote %s' %  outfile, 0)
+            print 'done!  wrote %s' % scan.filename
+            self.statusbar.SetStatusText('Wrote %s' %  scan.filename, 0)
         self.statusbar.SetStatusText('Scan Complete', 1)
+        self.scantimer.Stop()
 
     def onAbortScan(self, evt=None):
         print 'Abort Scan ', evt

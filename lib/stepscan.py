@@ -168,6 +168,10 @@ class StepScan(object):
         if filename is not None:
             self.datafile = self.open_output_file(filename=filename, comments=comments)
 
+        self.cpt = 0
+        self.npts = 0
+        self.complete = False
+
         self.extra_pvs = []
         self.positioners = []
         self.triggers = []
@@ -321,7 +325,7 @@ class StepScan(object):
             c.clear()
         self.pos_actual = []
 
-    def run(self, filename, comments=None):
+    def run(self, filename=None, comments=None):
         """ run the actual scan:
            Verify, Save original positions,
            Setup output files and messenger thread,
@@ -330,7 +334,10 @@ class StepScan(object):
            run post_scan methods
         """
         self.complete = False
-        self.filename  = filename
+        if filename is not None:
+            self.filename  = filename
+        if comments is not None:
+            self.comments = comments
 
         ts_start = time.time()
         if not self.verify_scan():
@@ -348,11 +355,10 @@ class StepScan(object):
 
         self.clear_data()
 
-        self.datafile = self.open_output_file(filename=filename, comments=comments)
-        # self.filename =  self.datafile.filename
-        self.datafile.write_data(breakpoint=0)
+        self.datafile = self.open_output_file(filename=self.filename,
+                                              comments=self.comments)
 
-        # print dir(self.datafile)
+        self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
 
         npts = len(self.positioners[0].array)
@@ -452,7 +458,7 @@ class StepScan(object):
 
         print 'Setting SCAN Complete!! ', self.runtime
         self.complete = True
-        print self.message_thread
+
         # end messenger thread
         if self.message_thread is not None:
             self.message_thread.cpt = None
