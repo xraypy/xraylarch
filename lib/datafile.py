@@ -164,7 +164,7 @@ class ScanFile(object):
             self.filename  = filename
         if 'a' in mode or 'w' in mode:
             self.filename = new_filename(self.filename)
-            
+
         if isinstance(self.fh, file):
             self.fh.close()
         self.fh = open(self.filename, mode)
@@ -265,22 +265,39 @@ class ASCIIScanFile(ScanFile):
             key = 'p%i' % (i+1)
             cols.append("   %s  " % (key))
             if pos.units in (None, 'None', ''):
-                pos.units = pos.pv.units
+                pos.units = ''
+                try:
+                    pos.units = pos.pv.units
+                except TypeError:
+                    time.sleep(0.02)
+                    try:
+                        pos.units = pos.pv.units
+                    except:
+                        pass
 
-            out.append(fmt % (COM1, key, pos.label, 
+            out.append(fmt % (COM1, key, pos.label,
                               SEP, pos.pv.pvname,
                               SEP, pos.units))
         for i, det in enumerate(self.scan.counters):
             key = 'd%i' % (i+1)
             cols.append("   %s  " % (key))
             if det.units in (None, 'None', ''):
-                det.units = det.pv.units
-            out.append(fmt % (COM1, key, det.label, 
+                det.units = ''
+                try:
+                    det.units = det.pv.units
+                except TypeError:
+                    time.sleep(0.02)
+                    try:
+                        det.units = det.pv.units
+                    except:
+                        pass
+
+            out.append(fmt % (COM1, key, det.label,
                               SEP, det.pv.pvname,
                               SEP, det.units))
         out.append('%sLegend End' % COM2)
         self.write_lines(out)
-        self.column_label = '%s %s' % (COM1, '\t'.join(cols))        
+        self.column_label = '%s %s' % (COM1, '\t'.join(cols))
 
     def write_data(self, breakpoint=0, clear=False, close_file=False, verbose=False):
         "write data"

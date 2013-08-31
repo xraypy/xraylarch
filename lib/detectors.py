@@ -173,7 +173,7 @@ class McaCounter(DeviceCounter):
     """
     invalid_device_msg = 'McaCounter must use an Epics MCA'
     def __init__(self, prefix, outpvs=None, nrois=32,
-                 use_net=False,  use_unlabeled=False, use_full=True):
+                 use_net=False,  use_unlabeled=False, use_full=False):
         DeviceCounter.__init__(self, prefix, rtype='mca', outpvs=outpvs)
         prefix = self.prefix
         fields = []
@@ -401,7 +401,7 @@ class MultiMcaDetector(DetectorMixin):
     repr_fmt = ', nmcas=%i, nrois=%i, use_net=%s, use_full=%s'
 
     def __init__(self, prefix, label=None, nmcas=4, nrois=32,
-                 search_all=False,  use_net=False, use=True, 
+                 search_all=False,  use_net=False, use=True,
                  use_unlabeled=False, use_full=False):
         DetectorMixin.__init__(self, prefix, label=label)
 
@@ -447,7 +447,7 @@ def get_detector(prefix, kind=None, label=None, **kws):
               'multimca': MultiMcaDetector,
               None: SimpleDetector}
 
-   
+
     if kind is None:
         if prefix.endswith('.VAL'):
             prefix = prefix[-4]
