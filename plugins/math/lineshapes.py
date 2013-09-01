@@ -82,8 +82,8 @@ def lognormal(x, cen=0, sigma=1):
           = (1/x) * exp(-(ln(x) - cen)/ (2* sigma**2))
     """
     cen = param_value(cen)
-    sigma = param_value(sigma)
-    return (1./x) * exp(-(ln(x) - cen)/ (2* sigma**2))
+    sig = param_value(sigma)
+    return (1./(x*sig*s2pi)) * exp(-(log(x) - cen)**2/ (2* sig**2))
 
 def students_t(x, cen=0, sigma=1):
     """Student's t distribution:
@@ -93,7 +93,8 @@ def students_t(x, cen=0, sigma=1):
 
     """
     s1  = (sigma+1)/2.0
-    return (1 + (x-cen)**2/sigma)**(-s1) * gamma(s1) / (sqrt(sigma*pi)*gamma(sigma/2))
+    denom = (sqrt(sigma*pi)*gamma(sigma/2))
+    return (1 + (x-cen)**2/sigma)**(-s1) * gamma(s1) / denom
 
 def _erf(x):
     """error function.  = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])"""

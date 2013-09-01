@@ -47,19 +47,24 @@ class FitModel(object):
 expected one of the following:
    %s
 """
-    def __init__(self, background=None, step=None, _larch=None, **kws):
+    def __init__(self, background=None, step=None, negative=None,
+                 _larch=None, **kws):
         self.params = Group()
         self._larch = _larch
         self.initialize_background(background=background, **kws)
-
-    def set_initval(self, param, value):
-        param.value = value
-        param._initval = value
 
     def add_param(self, name, value=0, vary=True, **kws):
         p = Parameter(val=value, name=name, vary=vary,
                       _larch=self._larch,  **kws)
         setattr(self.params, name, p)
+
+    def set_initval(self, param, value):
+        param.value = value
+        param._initval = value
+
+    def set_init_bkg(self,val):
+        if hasattr(self.params, 'bkg_offset'):
+            self.set_initval(self.params.bkg_offset, val)
 
     def initialize_background(self, background=None,
                               offset=0, slope=0, quad=0):
@@ -167,6 +172,7 @@ class ExponentialModel(FitModel):
             sval, oval = 1., np.log(abs(max(y)+1.e-9))
         self.set_initval(self.params.amplitude, np.exp(oval))
         self.set_initval(self.params.decay, (max(x)-min(x))/10.)
+        self.set_init_bkg(min(y))
 
     def model(self, params=None, x=None, **kws):
         if params is None:
@@ -181,34 +187,33 @@ class PeakModel(FitModel):
        sets bounds: sigma >= 0
        """
     def __init__(self, amplitude=1, center=0, sigma=1,
-                 background=None, **kws):
+                 negative=False, background=None, **kws):
         FitModel.__init__(self, background=background, **kws)
         self.add_param('amplitude', value=amplitude)
         self.add_param('center',  value=center)
         self.add_param('sigma',  value=sigma, min=0)
+        self.negative = negative
 
-    def guess_starting_values(self, y, x, negative=False):
+    def guess_starting_values(self, y, x):
         """could probably improve this"""
-        maxy, miny = max(y), min(y)
-        extremey = maxy
-        self.set_initval(self.params.amplitude, 5.*(maxy-miny))
-        if negative:
-            extremey = miny
-            self.params.amplitude.value = -(maxy - miny)*5.0
-        imaxy = index_nearest(y, extremey)
-        self.set_initval(self.params.center, x[imaxy])
+        ymax, ymin = max(y), min(y)
+        yex = ymax
+        self.set_initval(self.params.amplitude, 5.*(ymax-ymin))
+        if self.negative:
+            yex = ymin
+            self.params.amplitude.value = -(ymax - ymin)*5.0
+        iyex = index_nearest(y, yex)
+        self.set_initval(self.params.center, x[iyex])
 
-        halfy = extremey /2.0
+        halfy = yex /2.0
         ihalfy = index_of(y, halfy)
-        sig0 = abs(x[imaxy] - x[ihalfy])
+        sig0 = abs(x[iyex] - x[ihalfy])
         sig1 = 0.15*(max(x) - min(x))
         if sig1 < sig0 : sig0 = sig1
         self.set_initval(self.params.sigma,  sig0)
-
-        if hasattr(self.params, 'bkg_offset'):
-            bkg_off = miny
-            if negative:  bkg_off = maxy
-            self.set_initval(self.params.bkg_offset, bkg_off)
+        bkg0 = ymin
+        if self.negative: bkg0 = ymax
+        self.set_init_bkg(bkg0)
 
     def model(self, params=None, x=None, **kws):
         pass
@@ -217,9 +222,9 @@ class GaussianModel(PeakModel):
     """Gaussian Model:
     amplitude, center, sigma, optional background"""
     def __init__(self, amplitude=1, center=0, sigma=1,
-                 background=None, **kws):
+                 negative=False, background=None, **kws):
         PeakModel.__init__(self, amplitude=1, center=0, sigma=1,
-                           background=background, **kws)
+                           negative=negative, background=background, **kws)
         self.add_param('fwhm',  expr='2.354820*sigma', vary=False)
 
     def model(self, params=None, x=None, **kws):
@@ -235,9 +240,9 @@ class LorentzianModel(PeakModel):
     """Lorentzian Model:
     amplitude, center, sigma, optional background"""
     def __init__(self, amplitude=1, center=0, sigma=1,
-                 background=None, **kws):
+                 negative=False, background=None, **kws):
         PeakModel.__init__(self, amplitude=1, center=0, sigma=1,
-                           background=background, **kws)
+                           negative=negative, background=background, **kws)
         self.add_param('fwhm',  expr='2*sigma', vary=False)
 
     def model(self, params=None, x=None, **kws):
@@ -253,11 +258,19 @@ class VoigtModel(PeakModel):
     amplitude, center, sigma, optional background
     this version sets gamma=sigma
     """
-    def __init__(self, amplitude=1, center=0, sigma=1,
-                 background=None, **kws):
+    def __init__(self, amplitude=1, center=0, sigma=1, use_gamma=False,
+                 negative=False, background=None, **kws):
         PeakModel.__init__(self, amplitude=1, center=0, sigma=1,
-                           background=background, **kws)
+                           negative=negative, background=background, **kws)
         self.add_param('fwhm',  expr='3.60131*sigma', vary=False)
+        if use_gamma:
+            self.add_param('gamma',  vary=True)
+        else:
+            self.add_param('gamma',  expr='1.0*sigma', vary=False)
+
+    def guess_starting_values(self, y, x):
+        PeakModel.guess_starting_values(self, y, x)
+        self.set_initval(self.params.gamma, self.params.sigma._getval())
 
     def model(self, params=None, x=None, **kws):
         if params is None:
@@ -265,7 +278,9 @@ class VoigtModel(PeakModel):
         amp = params.amplitude.value
         cen = params.center.value
         sig = params.sigma.value
-        z = (x-cen + 1j*sig) / (sig*SQRT2)
+        gam = params.gamma.value
+        if gam is None: gam = sig
+        z = (x-cen + 1j*gam) / (sig*SQRT2)
         return amp*wofz(z).real / (sig*SQRT2PI)
 
 class StepModel(FitModel):
@@ -274,19 +289,27 @@ class StepModel(FitModel):
     which will give the functional form for going from 0 to height
    """
     def __init__(self, height=1, center=0, width=1, step='linear',
-                 background=None, **kws):
+                 negative=False, background=None, **kws):
         FitModel.__init__(self, background=background, **kws)
         self.add_param('height', value=height)
         self.add_param('center',  value=center)
         self.add_param('width',  value=width, min=0)
         self.step = step
+        self.negative=negative
 
-    def guess_starting_values(self, y, x):
+    def guess_starting_values(self, y, x, negative=False):
         ymin, ymax = min(y), max(y)
         xmin, xmax = min(x), max(x)
-        self.set_initval(self.params.height, ymax-ymin)
         self.set_initval(self.params.center, 0.5*(xmax+xmin))
         self.set_initval(self.params.width,  0.1*(xmax-xmin))
+
+        bkg0 = ymin
+        height0 = ymax - ymin
+        if self.negative:
+            bkg0 = ymax
+            height0 = -height0
+        self.set_initval(self.params.height, height0)
+        self.set_init_bkg(bkg0)
 
     def model(self, params=None, x=None, **kws):
         if params is None:
@@ -314,25 +337,33 @@ class RectangularModel(FitModel):
    """
     def __init__(self, height=1, center1=0, width1=1,
                  center2=1, width2=1, step='linear',
-                 background=None, **kws):
+                 negative=False, background=None, **kws):
         FitModel.__init__(self, background=background, **kws)
         self.add_param('height',   value=height)
         self.add_param('center1',  value=center1)
         self.add_param('width1',   value=width1, min=0)
         self.add_param('center2',  value=center2)
         self.add_param('width2',   value=width2, min=0)
-        self.add_param('midpoint',   expr='(center1+center2)/2.0',
-                       vary=False)
+        self.add_param('midpoint',
+                       expr='(center1+center2)/2.0', vary=False)
         self.step = step
+        self.negative = negative
 
     def guess_starting_values(self, y, x):
         ymin, ymax = min(y), max(y)
         xmin, xmax = min(x), max(x)
-        self.set_initval(self.params.height,       (ymax-ymin))
         self.set_initval(self.params.center1, 0.25*(xmax+xmin))
         self.set_initval(self.params.width1,  0.12*(xmax-xmin))
         self.set_initval(self.params.center2, 0.75*(xmax+xmin))
         self.set_initval(self.params.width2,  0.12*(xmax-xmin))
+
+        bkg0 = ymin
+        height0 = ymax - ymin
+        if self.negative:
+            bkg0 = ymax
+            height0 = -height0
+        self.set_initval(self.params.height, height0)
+        self.set_init_bkg(bkg0)
 
     def model(self, params=None, x=None, **kws):
         if params is None:
@@ -345,10 +376,9 @@ class RectangularModel(FitModel):
         arg1 = (x - center1)/max(width1, 1.e-13)
         arg2 = (center2 - x)/max(width2, 1.e-13)
         if self.step == 'atan':
-            out = (1 + np.arctan(arg1)/np.pi +
-                   np.arctan(arg2)/np.pi)/2.0
+            out = (np.arctan(arg1) + np.arctan(arg2))/np.pi
         elif self.step == 'erf':
-            out = (2 + erf(arg1) + erf(arg2))/4.0
+            out = 0.5*(erf(arg1) + erf(arg2))
         else: # 'linear'
             arg1[np.where(arg1<0)] =  0.0
             arg1[np.where(arg1>1)] =  1.0
@@ -365,9 +395,11 @@ MODELS = {'linear': LinearModel,
           'exponential': ExponentialModel,
           'gaussian': GaussianModel,
           'lorentzian': LorentzianModel,
-          'voigt': VoigtModel}
+          'voigt': VoigtModel,
+          }
 
-def fit_peak(x, y, model, dy=None, background=None, step=None, _larch=None):
+def fit_peak(x, y, model, dy=None, background=None, step=None,
+             negative=False, use_gamma=False, _larch=None):
     """fit peak to one a selection of simple 1d models
 
     out = fit_peak(x, y, model, dy=None,
@@ -380,13 +412,16 @@ def fit_peak(x, y, model, dy=None, background=None, step=None, _larch=None):
     dy          array of values for uncertainty in y data to be matched.
     model       name of model to use.  One of (case insensitive)
                      'linear', 'quadratic', 'step', 'rectangle',
-                     'exponential', 'gaussian', 'lorentzian', 'voigt'
+                      'gaussian', 'lorentzian', 'voigt', 'exponential'
     background  name of background model to use. One of (case insensitive)
                      None, 'constant', 'linear', or 'quadratic'
                 this is ignored when model is 'linear' or 'quadratic'
     step        name of step model to use for 'step' and 'rectangle' models.
                 One of (case insensitive):
                     'linear', 'erf', or 'atan'
+    negative    True/False for whether peak or steps are expected to go down.
+    use_gamma   True/False for whether to use separate gamma parameter for
+                voigt model.
     output:
     -------
     Group with fit parameters, and more...
@@ -394,14 +429,22 @@ def fit_peak(x, y, model, dy=None, background=None, step=None, _larch=None):
     if _larch is None:
         raise Warning("cannot fit peak -- larch broken?")
 
-    out = Group(x=x*1.0, y=y*1.0, dy=dy*1.0, model=model,
+    out = Group(x=x*1.0, y=y*1.0, dy=1.0, model=model,
                 background=background, step=step)
-
+    if dy is not None:
+        out.dy = 1.0*dy
     if model.lower() not in MODELS:
-        _larch.write.write('Unknown fit model: %s ' % model)
+        _larch.writer.write('Unknown fit model: %s ' % model)
         return None
-    mod = MODELS[model.lower()](background=background,
-                                step=step, _larch=_larch)
+
+    kwargs = dict(negative=negative, background=background,
+                  step=step, _larch=_larch)
+
+    fitclass = MODELS[model.lower()]
+    if fitclass == VoigtModel:
+        kwargs['use_gamma'] = use_gamma
+
+    mod = fitclass(**kwargs)
     mod.guess_starting_values(out.y, out.x)
 
     out.fit_init = mod.model(x=out.x)

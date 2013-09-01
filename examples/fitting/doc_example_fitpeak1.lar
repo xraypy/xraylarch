@@ -1,8 +1,11 @@
+## examples/fitting/doc_example_fitpeak1.lar
+# create mock data
 x = linspace(0, 100, 51)
 noise = random.normal(size=len(x), scale=0.1)
 y = 8.0 - x*0.025 + noise
-y = y + 89*voigt(x, 44.25, 4.75)
+y = y + 89*voigt(x, 44.25, 4.75, 2.0)
 
+# fit to Gaussian with linear background
 myfit = fit_peak(x, y, 'gaussian', background='linear')
 
 plot(myfit.x, myfit.y, marker='+', label='data',
@@ -10,4 +13,6 @@ plot(myfit.x, myfit.y, marker='+', label='data',
 plot(myfit.x, myfit.fit_init, label='init')
 plot(myfit.x, myfit.fit, label='best fit')
 
-print fit_report(myfit.params, min_correl=0.5)
+print fit_report(myfit.params, min_correl=0.3)
+
+## end examples/fitting/doc_example_fitpeak1.lar

@@ -13,7 +13,7 @@ a fairly easy general-purpose fitting function, Larch provides a
 lineshapes.
 
 
-.. function:: fit_peak(x, y, model, dy=None, background=None, step=None)
+.. function:: fit_peak(x, y, model, dy=None, background=None, step=None, negative=False, use_gamma=False)
 
     fit the data y at points x with a function described by model,
     optionally including uncertainties in y, a background polynomial, and a
@@ -29,6 +29,10 @@ lineshapes.
                         This is ignored when model is 'linear' or 'quadratic'
     :param step:        name of step model to use for 'step' and 'rectangle' models.
                         One of (case insensitive): 'linear', 'erf', or 'atan'
+    :param negative:    boolean for whether peak or steps are expected to
+                        go down (default ``False``)
+    :param use_gamma:   boolean for whether to use separate gamma parameter for
+                       'voigt' model (default ``False``).
 
     :returns:      a Group containing fit parameters, best-fit and
                    background functions, as detailed in
@@ -83,7 +87,6 @@ included, which (depending on the form chosen) will add parameters named
     ============= =================================================================
 
 
-
 Example: Fitting a Gaussian + background with :func:`fit_peak`
 =================================================================
 
@@ -92,7 +95,7 @@ Gaussian function to it, only do it in many fewer steps:
 
 .. literalinclude:: ../../examples/fitting/doc_example_fitpeak1.lar
 
-Here we simply create mock data that's fairly noisy, and ask it to be fit
+Here we first create mock data that's fairly noisy, and ask it to be fit
 to Gaussian, including a linear background, with a single command.  We then
 plot the results and print the report of parameters.  Note that the fit is
 pretty good at finding the peak center and shape, even though the model is
@@ -104,36 +107,39 @@ The printed output from ``fit_report(params)`` will look like this::
     [[Statistics]]    Fit succeeded,  method = 'leastsq'.
        Message from fit    = Fit succeeded.
        npts, nvarys, nfree = 51, 5, 46
-       nfev (func calls)   = 138
-       chi_square          =  0.764614
-       reduced chi_square  =  0.016622
+       nfev (func calls)   = 160
+       chi_square          =  0.741381
+       reduced chi_square  =  0.016117
 
     [[Variables]]
-       amplitude      =  97.066621 +/- 2.091332 (init=  26.864630)
-       bkg_offset     =  8.188188 +/- 0.040926 (init=  5.484111)
-       bkg_slope      = -0.025568 +/- 0.000631 (init=  0.000000)
-       center         =  44.307329 +/- 0.145076 (init=  44.000000)
-       sigma          =  5.238662 +/- 0.111549 (init=  15.000000)
+       amplitude      =  110.316958 +/- 1.724332 (init=  35.002462)
+       bkg_offset     =  8.128759 +/- 0.038694 (init=  5.450067)
+       bkg_slope      = -0.026001 +/- 0.000614 (init=  0.000000)
+       center         =  44.303784 +/- 0.088638 (init=  44.000000)
+       sigma          =  4.173981 +/- 0.066834 (init=  15.000000)
     [[Constraint Expressions]]
-       fwhm           =  12.336107 +/- 0.262679 = '2.354820*sigma'
+       fwhm           =  9.828974 +/- 0.157382 = '2.354820*sigma'
 
-    [[Correlations]]     (unreported correlations are <  0.500)
-       bkg_offset, bkg_slope = -0.826
-       amplitude, sigma     =  0.675
+    [[Correlations]]     (unreported correlations are <  0.300)
+       bkg_offset, bkg_slope = -0.834
+       amplitude, sigma     =  0.651
+       amplitude, bkg_offset = -0.412
     =======================================================
 
 And the plot of data and fit will look like this:
 
-.. _fitting_fig1:
+.. _fitting_fig9:
 
   .. image:: ../images/fit_peakfit1.png
      :target: ../_images/fit_peakfit1.png
      :width: 65 %
 
-  Figure 1.  Simple fit to mock data using :func:`fit_peak`
+  Figure 9.  Simple fit to mock data using :func:`fit_peak`
 
-The main point here is not just that the fit is good, but that it was
-accomplished so simply, with a single line of code.
+Although the fit is quite good, the model is probably imperfect, and using
+a Voigt function to fit to this data would give better results.  The main
+point here is not just that the fit is good, but that it was accomplished
+with a single line of code.
 
 Example: Fitting a Rectangular function with :func:`fit_peak`
 ================================================================
@@ -143,3 +149,51 @@ The fit is to a function that takes a step up and a step down.
 
 .. literalinclude:: ../../examples/fitting/doc_example_fitpeak2.lar
 
+Again, we first create mock data that's fairly noisy.  The data is clearly
+not exactly rectangular, but we ask it to be fit to a rectangular function
+plus a linear background.  The printed output from ``fit_report(params)``
+will look like this::
+
+    ===================== FIT RESULTS =====================
+    [[Statistics]]    Fit succeeded,  method = 'leastsq'.
+       Message from fit    = Fit succeeded.
+       npts, nvarys, nfree = 81, 7, 74
+       nfev (func calls)   = 99
+       chi_square          =  11.867568
+       reduced chi_square  =  0.160373
+
+    [[Variables]]
+       bkg_offset     =  5.923729 +/- 0.152985 (init=  5.072026)
+       bkg_slope      = -0.000659 +/- 0.001301 (init=  0.000000)
+       center1        =  27.751278 +/- 0.392722 (init=  40.000000)
+       center2        =  83.203400 +/- 0.190616 (init=  120.000000)
+       height         =  10.224378 +/- 0.137845 (init=  12.021120)
+       width1         =  11.596238 +/- 0.698650 (init=  19.200000)
+       width2         =  4.262621 +/- 0.378333 (init=  19.200000)
+    [[Constraint Expressions]]
+       midpoint       =  55.477339 +/- 0.207626 = '(center1+center2)/2.0'
+
+    [[Correlations]]     (unreported correlations are <  0.300)
+       bkg_offset, bkg_slope = -0.915
+       bkg_offset, height   = -0.654
+       bkg_offset, center1  =  0.542
+       height, width1       =  0.508
+       bkg_slope, center1   = -0.502
+       bkg_slope, height    =  0.500
+       bkg_offset, width1   = -0.403
+       bkg_slope, width1    =  0.345
+    =======================================================
+
+.. _fitting_fig10:
+
+  .. image:: ../images/fit_peakfit2.png
+     :target: ../_images/fit_peakfit2.png
+     :width: 65 %
+
+  Figure 10.  Simple fit to mock data to a rectangular function using :func:`fit_peak`
+
+Again, the principle point here is not how well the rectangular model
+matches the actual data here, but how simply one can model data to a
+selection of simple shapes.  While such analysis of data can be very
+useful, but should be considered preliminary, and one should be cautious
+about treating the results of such fits too seriously.
