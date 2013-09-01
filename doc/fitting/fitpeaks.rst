@@ -90,8 +90,10 @@ be included, which (depending on the form chosen) will add parameters named
 Example: Fitting a Gaussian + background with :func:`fit_peak`
 =================================================================
 
-As in the earlier example, here we make a simple mock data set and fit a
-Gaussian function to it, only do it in many fewer steps:
+As in the :ref:`Example in the previous section <fit_example1_sec>`, we
+make a simple mock data set and fit a Gaussian function to it. Here we also
+add a linear background, and do the whole fit in in one line instead of a
+dozen or so lines used before:
 
 .. literalinclude:: ../../examples/fitting/doc_example_fitpeak1.lar
 
