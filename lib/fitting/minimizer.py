@@ -658,10 +658,11 @@ def fit_report(group, show_correl=True, min_correl=0.1, precision=None,
             sval = fmt_sca % var.value
             if var.stderr is not None:
                 sval = fmt_err % (var.value, var.stderr)
-            if var.vary:
-                out.append(varformat % (name, sval, var._initval))
-            elif var.expr is not None:
+            if var.expr is not None:
                 exprs.append(exprformat % (name, sval, var.expr))
+            elif var.vary:
+                out.append(varformat % (name, sval, var._initval))
+
     if len(exprs) > 0:
         out.append(header % ('Constraint Expressions', ''))
         out.extend(exprs)

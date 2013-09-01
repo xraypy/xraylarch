@@ -1,0 +1,22 @@
+x = linspace(0, 100, 51)
+noise = random.normal(size=len(x), scale=0.1)
+y = 6.0 + x*0.005 + noise
+x0 = 30
+dx = 7
+sig = dx*0.6
+y = y + 89*gaussian(x, x0+0*dx,  sig)
+y = y + 66*gaussian(x, x0+1*dx,  sig)
+y = y + 78*gaussian(x, x0+2*dx,  sig)
+y = y + 75*gaussian(x, x0+3*dx,  sig)
+y = y + 70*gaussian(x, x0+4*dx,  sig)
+y = y + 73*gaussian(x, x0+5*dx,  sig)
+y = y + 72*gaussian(x, x0+6*dx,  sig)
+y = y + 71*gaussian(x, x0+7*dx,  sig)
+
+myfit = fit_peak(x, y, 'rectangle', background='linear', step='erf')
+
+plot(myfit.x, myfit.y, marker='+', label='data', new=True)
+# plot(myfit.x, myfit.fit_init, label='init')
+plot(myfit.x, myfit.fit, label='best fit')
+
+print fit_report(myfit.params, min_correl=0.33)

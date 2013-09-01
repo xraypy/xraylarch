@@ -1,0 +1,13 @@
+x = linspace(0, 100, 51)
+noise = random.normal(size=len(x), scale=0.1)
+y = 8.0 - x*0.025 + noise
+y = y + 89*voigt(x, 44.25, 4.75)
+
+myfit = fit_peak(x, y, 'gaussian', background='linear')
+
+plot(myfit.x, myfit.y, marker='+', label='data',
+     xlabel='x', ylabel='y', show_legend=True, new=True)
+plot(myfit.x, myfit.fit_init, label='init')
+plot(myfit.x, myfit.fit, label='best fit')
+
+print fit_report(myfit.params, min_correl=0.5)

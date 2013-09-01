@@ -166,7 +166,10 @@ class Parameter(object):
         val = self._getval()
         if isNamedClass(val, Parameter):
             val = val._getval()
-        w = [repr(val)]
+        w = []
+        if self.name is not None:
+            w.append("name=%s" % self.name)
+        w.append("val=%s" % repr(val))
         if self._expr is not None:
             w.append("expr='%s'" % self._expr)
         else:

@@ -12,14 +12,14 @@ y(x).  The second type of data display supported is the 2-dimensional image
 display, in which a grey scale or false color map shows an image
 representing a 2-dimensional array of intensity.
 
-Though not as fancy as many dedicated plotting and graphics packages, Larch
-attempts to provide satisfying and graphical displays of data, and the
-basic plots made with Larch can be high enough quality to include in
-publications.  In addition, both line plots and image display provide
-interactive features such as zooming in and out, changing properties such
-as colors and labels.  Finally, copying and saving images of the graphics
-is easy and can be done either with keyboard commands such as Ctrl-C or
-from dropdown menus on the graphic elements.
+Though not a dedicated plotting and graphics packages, Larch attempts to
+provide satisfying graphical displays of data, and the basic plots made
+with Larch are of high enough quality to include in publications.  In
+addition, both line plots and image display provide interactive features
+such as zooming in and out, changing properties such as colors and labels.
+Finally, copying and saving images of the graphics is easy and can be done
+either with keyboard commands such as Ctrl-C or from dropdown menus on the
+graphic elements.
 
 
 Line Plots

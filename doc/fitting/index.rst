@@ -28,4 +28,5 @@ algorithms) are used for those other functions as well.
    results
    lineshapes
    examples
+   fitpeaks
    confidence
