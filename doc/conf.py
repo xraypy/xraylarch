@@ -105,11 +105,13 @@ html_theme_path = ['sphinx/theme']
 # Sphinx are currently 'default' and 'sphinxdoc'.
 html_theme = 'default'
 html_theme = 'larchdoc'
+# html_theme = 'cloud'
+# html_theme_path.append(csp.get_theme_dir())
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#html_theme_options = {}
+html_theme_options = {'collapsiblesidebar': True}
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".

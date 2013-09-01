@@ -1,4 +1,4 @@
-{% extends "!layout.html" %}
+{% extends "default/layout.html" %}
 
 {% block rootrellink %}
    <li><a href="{{ pathto('index')}}">larch</a>|&nbsp;</li>
@@ -28,9 +28,7 @@
 
 {{ super() }}
 {% endblock %}
-
 {# put the sidebar before the body #}
-{% block sidebar1 %}
-{{ sidebar() }}
-{% endblock %}{% block sidebar2 %}{% endblock %}
+{% block sidebar1 %}{{ sidebar() }}{% endblock %}
+{% block sidebar2 %}{% endblock %}
 
