@@ -38,8 +38,6 @@ lineshapes.
                    background functions, as detailed in
                    :ref:`Table of fit_peak group members <fit_peak_output_table>`.
 
-The optional background function
-
 .. _fit_peak_models_table:
 
    Table of :func:`fit_peak` models.
@@ -60,10 +58,12 @@ The optional background function
      voigt          Voigt (with gamma=sigma)   amplitude, center, sigma
     ============= =========================== =========================================
 
-The *sigma* and *width* parameters will have a minimum value of 0.  For all
-models except *linear* and *quadratic*, an optional background can be
-included, which (depending on the form chosen) will add parameters named
+The *sigma* and *width* parameters will have a minimum value of 0.
+
+For all models except *linear* and *quadratic*, an optional background can
+be included, which (depending on the form chosen) will add parameters named
 *bkg_offset*, *bkg_slope*, and *bkg_quad*.
+
 
 
 .. _fit_peak_output_table:
@@ -194,6 +194,7 @@ will look like this::
 
 Again, the principle point here is not how well the rectangular model
 matches the actual data here, but how simply one can model data to a
-selection of simple shapes.  While such analysis of data can be very
-useful, but should be considered preliminary, and one should be cautious
-about treating the results of such fits too seriously.
+selection of simple shapes.  Such fits can be very useful for preliminary
+data visualization and analysis. Of course, one should be cautious about
+treating the results of such an automated approach as a final and best
+analysis of any data.
