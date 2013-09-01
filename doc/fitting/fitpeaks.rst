@@ -92,8 +92,8 @@ Example: Fitting a Gaussian + background with :func:`fit_peak`
 
 As in the :ref:`Example in the previous section <fit_example1_sec>`, we
 make a simple mock data set and fit a Gaussian function to it. Here we also
-add a linear background, and do the whole fit in in one line instead of a
-dozen or so lines used before:
+add a linear background, and do the whole fit with a single function,
+instead of a dozen or so lines of code used before:
 
 .. literalinclude:: ../../examples/fitting/doc_example_fitpeak1.lar
 
