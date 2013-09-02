@@ -1,7 +1,6 @@
 {% extends "default/layout.html" %}
 
 {% block rootrellink %}
-   <li><a href="{{ pathto('index')}}">larch</a>|&nbsp;</li>
    <li><a href="{{ pathto('contents')}}">contents</a>|&nbsp;</li>
    <li><a href="{{ pathto('downloads/index') }}">downloads</a>|&nbsp;</li>
    <li><a href="{{ pathto('tutorial/index') }}">tutorial</a>|&nbsp;</li>
@@ -25,9 +24,9 @@
           Larch: X-ray Data Analysis   </a></font>
 </td></tr></table>
 </div>
-
 {{ super() }}
 {% endblock %}
+
 {# put the sidebar before the body #}
 {% block sidebar1 %}{{ sidebar() }}{% endblock %}
 {% block sidebar2 %}{% endblock %}
