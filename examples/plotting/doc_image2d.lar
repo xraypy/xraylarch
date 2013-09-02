@@ -1,0 +1,19 @@
+## examples/plotting/doc_image2d.lar
+
+def gauss2d(x, y, x0, y0, sx, sy):
+    return outer(exp(-(((y-y0)/float(sy))**2)/2),
+                 exp(-(((x-x0)/float(sx))**2)/2))
+enddef
+
+ny, nx = 350, 400
+ix = arange(nx)
+iy = arange(ny)
+x  =  ix / 10.
+y  = -2 + iy / 10.0
+
+dat = 0.2 + (0.05*random.random(size=nx*ny).reshape(ny, nx) +
+             2.0*gauss2d(ix, iy, 190,   176,  57,  69))
+
+imshow(dat, x=x, y=y, colormap='coolwarm')
+
+## end of examples/plotting/doc_image2d.lar

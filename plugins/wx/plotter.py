@@ -523,7 +523,7 @@ def _contour(map, x=None, y=None, **kws):
     _imshow(map, x=x, y=y, **kws)
 
 def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
-              size=None, facecolor='w', edgecolor='w', quality=75,
+              size=None, facecolor='w', edgecolor='w', quality=90,
               image=False, **kws):
     """formats: png (default), svg, pdf, jpeg, tiff"""
     thisdir = os.path.abspath(os.curdir)

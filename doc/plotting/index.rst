@@ -226,49 +226,52 @@ same meaning, as indicated by the right-most column.
 
     draw arrow from x1, y1 to x2, y2.
 
-    :param    x1: starting x coordinate
-    :param    y1: starting y coordinate
-    :param    x2: endnig x coordinate
-    :param    y2: ending y coordinate
+    :param  x1: starting x coordinate
+    :param  y1: starting y coordinate
+    :param  x2: endnig x coordinate
+    :param  y2: ending y coordinate
     :param  win:   index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
-    :param    side: which axis to use ('left' or 'right') for coordinates.
-    :param    shape:  arrow head shape ('full', 'left', 'right')
-    :param    fg:     arrow fill color ('black')
-    :param    width:  width of arrow line (in points. default=0.01)
-    :param    head_width:  width of arrow head (in points. default=0.1)
-    :param    overhang:    amount the arrow is swept back (in points. default=0)
+    :param  side: which axis to use ('left' or 'right') for coordinates.
+    :param  shape:  arrow head shape ('full', 'left', 'right')
+    :param  fg:     arrow fill color ('black')
+    :param  width:  width of arrow line (in points. default=0.01)
+    :param  head_width:  width of arrow head (in points. default=0.1)
+    :param  overhang:    amount the arrow is swept back (in points. default=0)
 
 
-.. method:: save_plot(filename, dpi=300, format=None, win=1, facecolor='w', edgecolor='w', quality=75)
+.. method:: save_plot(filename, dpi=600, format=None, win=1, facecolor='w', edgecolor='w', transparent=False)
 
     save the current plot to a PNG or other output formats.
 
     :param filename: name of output file
     :param dpi:  resolution (dots per inch)
-    :param format:  output format (one of 'png', 'pdf', 'jpeg', 'jpg','tiff' or 'svg')
+    :param format:  output format (one of 'png', 'pdf', or 'svg')
     :param  win:   index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
     :param facecolor:  color of plot background (not supported for all formats)
     :param edgecolor:  color of plot frame color (not supported for all formats)
-    :param quality:    image quality (JPEG only?)
+    :param transparent:  whether to use a transparent background.
 
 
-.. method:: save_image(filename, dpi=300, format=None, win=1, facecolor='w', edgecolor='w', quality=75)
+.. method:: save_image(filename, dpi=600, format=None, win=1, facecolor='w', edgecolor='w', transparent=False)
 
     save the current 2D image from :meth:`imshow` to a PNG or other output formats.
 
     :param filename: name of output file
     :param dpi:  resolution (dots per inch)
-    :param format:  output format (one of 'png', 'pdf', 'jpeg', 'jpg','tiff' or 'svg')
+    :param format:  output format (one of 'png', 'pdf', or 'svg')
     :param  win:   index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
     :param facecolor:  color of plot background (not supported for all formats)
     :param edgecolor:  color of plot frame color (not supported for all formats)
-    :param quality:    image quality (JPEG only?)
+    :param transparent:  whether to use a transparent background.
+
 
 .. method:: get_display(win=1)
 
-   return the underlying Display object. For advanced usage, this contains
-   the PlotDisplay object, which is the wxPython frame.  The matplotlib
-   Axes object will be the ``panel.axes``.
+   return the underlying Display object. For advanced usage, this allows
+   access to the PlotDisplay object, which is the wxPython frame for the
+   plot window.  The plot itself is contained in the ``panel`` attribute,
+   which contains the matplotlib components  ``axes`` and ``canvas``.  For
+   more details, see :ref:`plot_mpl_sec`.
 
 
 Plot Examples
@@ -289,7 +292,7 @@ will make this plot:
      :target: ../_images/plot_basic1.png
      :width: 60 %
 
-  Figure 1:  A Basic line plot.
+  Figure 1:  A Basic x, y plot.
 
 Adding a second curve, and setting some labels::
 
@@ -313,7 +316,6 @@ From the main plot window, you can perform several tasks interactively:
 
 **Getting Cursor Position**:
 
-
 From the plot window you can click the left button of your mouse, and see
 the X, Y coordinates of where you clicked displayed in the status bar at
 the bottom of the plot window.   You can also read the values from the
@@ -322,7 +324,6 @@ window 1, and :data:`_plotter.plot2_x`  and on for other plot windows.
 
 
 **Zooming in and out**:
-
 
 Left-clicking on the plot window and then dragging the mouse around with
 the button still pressed will draw a rectangular box around part of the
@@ -339,23 +340,28 @@ the way back to fully zoomed out.
 
 To copy the plot image (just the main plot image, not all the Window
 decorations such as menus and status bar) to the sysem clipboard, type
-Ctrl-C (Apple-C for Mac OS X users).  You can then paste this into other
-applications such as rich text documents and slide presentation tools.
+Ctrl-C (Apple-C for Mac OS X users).  You can then paste this image into
+other applications such as rich text documents and slide presentations.
 
-**Save image to PNG**:
+**Save image to PNG, PDF, or SVG**:
 
-To save a copy of the plot image, use Ctrl-S (Apple-S for Mac OS X users).
-This will bring up a 'save file' dialog box for writing a PNG file of the
-plot.
+To save the plot image to a standard image format, use Ctrl-S (Apple-S for
+Mac OS X users).  This will bring up a 'save file' dialog box for writing
+an image file.  The images will be generally high resolution, and should be
+of sufficiently high quality to be acceptable for publication or public
+display.  Each of the supported image formats -- PNG (default), PDF, and
+SVG -- has its strengths and weaknesses. The PNG images use high resolution
+(600dpi) and anti-aliasing, and are generally higher quality than the SVG
+images.  The PDF images include real font information but does not use
+anti-aliasing.
 
 **Print image**:
 
 On many systems, you should be able to print directly from the Plot
 Window, using Ctrl-P (Apple-P for Mac OS X users).   This may not work on
-all systems.
+all systems, in which case saving an image and printing that should
 
 **Configuring the Plot**:
-
 
 From the Plot Window, either Ctrl-K (Apple-K for Mac OS X users) or
 Options->'Configure Plot' (or right-click to bring up a popup menu, then
@@ -371,9 +377,8 @@ like this:
   Figure 3:  Screenshot of the Configuration window for Plots.
 
 
-From here you can set the titles, labels, and styles, colors, symbols, and
-so on for the line traces.
-
+From here you can set the titles, axis labels, and styles, colors, symbols,
+labels, and so on for each of the line traces drawn.
 
 Using TeX-like commands for labels and titles
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -409,6 +414,7 @@ fonts, and examples, can be found at http://matplotlib.org/users/mathtext.html
 When using the Plot Configuration window to enter a TeX-like string, the
 text control box will be given a yellow background color (instead of the
 normal white color) if there is an error in rendering your TeX string.
+
 
 Image Display and Contour
 ==========================
@@ -448,23 +454,9 @@ From the Image Display Window, you zoom in on regions of the image, rotate
 the image, change the color table, change the intensity scaling, change the
 interpolattion algorithm used.  You can also toggle between showing an
 image of continuously varying intensities and a contour map.  An example
-image, generated with::
+image, generated with
 
-    def gauss2d(x, y, x0, y0, sx, sy):
-        return outer(exp(-(((y-y0)/float(sy))**2)/2),
-                     exp(-(((x-x0)/float(sx))**2)/2))
-    enddef
-
-    ny, nx = 350, 400
-    ix = arange(nx)
-    iy = arange(ny)
-    x  =  ix / 10.
-    y  = -2 + iy / 10.0
-
-    dat = 0.2 + (0.05*random.random(size=nx*ny).reshape(ny, nx) +
-                 2.0*gauss2d(ix, iy, 190,   176,  57,  69))
-
-    imshow(dat, x=x, y=y, colormap='coolwarm')
+.. literalinclude:: ../../examples/plotting/doc_image2d.lar
 
 is shown below:
 
@@ -485,3 +477,47 @@ and as a contour plot, with a different color table:
      :width: 60 %
 
   Figure 5: A contour plot of 2 dimensional image data.
+
+
+.. _plot_mpl_sec:
+
+Advanced Plotting: using matplotlib
+======================================
+
+.. _matplotlib: http://matplotlib.org/
+
+So far, this chapter has shown how to make simple plots and images.
+One of the main goals of Larch is to not only make the simple tasks very
+simple, but to keep the more difficult tasks possible and accessible.  To
+this end, you can access both the wxPython and matplotlib components of the
+plots and images to do plotting tasks not covered above.
+
+The `matplotlib`_ library offers a full range of line and image plotting
+functionality, as well as some support for 3-dimensioanl plotting.  Larch
+gives you access to the maplotlib API by giving you access to the
+matplotlib Axes and Canvas for any displayed plot.   To get this, you would
+use :func:`get_display` to get the current display window, then access the
+``panel.axes`` member::
+
+   larch> x = linspace(0, 10, 101)
+   larch> y = sin(x)
+   larch> plot(x, y)
+   larch> display = get_display(win=1)
+   larch> axes = display.pane.axes
+
+As an example of what you can do with this, here we make a histogram plot
+from a sampling of a more conitinuous distribution.  This  uses
+matplotlib's :func:`hist` function,
+
+.. literalinclude:: ../../examples/plotting/doc_use_mpl.lar
+
+which generates a plot that looks like
+
+.. _plotting_fig6:
+
+  .. image:: ../images/plot_histogram.png
+     :target: ../_images/plot_histogram.png
+     :width: 60 %
+
+  Figure 6: A histogram plot made using matplotlib's :func:`hist` function.
+
