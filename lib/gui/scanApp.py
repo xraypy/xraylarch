@@ -59,9 +59,11 @@ from ..xafs_scan import XAFS_Scan
 from ..file_utils import new_filename, increment_filename, nativepath
 from ..ordereddict import OrderedDict
 from ..station_config import StationConfig
+from ..scandb import ScanDB
 
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
                           SlewScanPanel,   XAFSScanPanel)
+
 
 from ..positioner import Positioner
 from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
@@ -100,7 +102,7 @@ class ScanFrame(wx.Frame):
         # list of extra counters and whether to use them
         self.extra_counters = OrderedDict()
         self.config = StationConfig(conffile)
-
+        print 'CONFIG ', conffile, self.config.server
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -111,8 +113,10 @@ class ScanFrame(wx.Frame):
         self.SetFont(self.Font11)
 
         self._larch = None
-        self.larch_status = 1
-        self.epics_status = 1
+        self._scandb = None
+        self.epics_status = 0
+        self.larch_status = 0
+        self.scandb_status = 0
         wx.EVT_CLOSE(self, self.onClose)
 
         self.inittimer = wx.Timer(self)
@@ -203,17 +207,22 @@ class ScanFrame(wx.Frame):
             self.scantimer.Stop()
 
     def onInitTimer(self, evt=None):
-        if self.larch_status > 0:
+        if self.larch_status == 0:
             self.ini_larch_thread = Thread(target=self.init_larch)
             self.ini_larch_thread.start()
-            self.statusbar.SetStatusText('Larch Ready', 1)
 
-        if self.epics_status > 0:
+        if self.epics_status == 0:
             self.ini_epics_thread = Thread(target=self.connect_epics)
             self.ini_epics_thread.start()
             self.statusbar.SetStatusText('Epics Ready', 1)
 
-        if self.epics_status == 0 and self.larch_status  == 0:
+        if self.scandb_status == 0:
+            self.ini_dbserver_thread = Thread(target=self.init_scandb)
+            self.ini_dbserver_thread.start()
+            self.statusbar.SetStatusText('Epics Ready', 1)
+
+        if (self.epics_status == 1 and self.larch_status == 1 and
+            self.scandb_status == 1):
             time.sleep(0.05)
             self.ini_larch_thread.join()
             self.ini_epics_thread.join()
@@ -224,14 +233,39 @@ class ScanFrame(wx.Frame):
             self.statusbar.SetStatusText('Ready', 1)
 
     def init_larch(self):
-        t0 = time.time()
         self.larch_status = -1
         import larch
         self._larch = larch.Interpreter()
         for span in self.scanpanels.values():
             span.larch = self._larch
-        self.larch_status = 0
+        print 'Larch Ready ' ,  time.ctime()
+        self.statusbar.SetStatusText('Larch Ready')
+        self.larch_status = 1
 
+    def init_scandb(self):
+        self.scandb_status = -1
+        if self.config.server.get('use', 'f').lower() not in ('true', '1'):
+            self.scandb_status = 1
+            return
+
+        kwargs = {'create': True}
+        kwargs.update(self.config.server)
+        dbname = kwargs.pop('dbname')
+        kwargs.pop('use')
+        if 'port' in kwargs:
+            kwargs['port'] = int(kwargs['port'])
+        if 'passwd' in kwargs:
+            pwd = kwargs.pop('passwd')
+            kwargs['password'] = pwd
+
+        self._scandb = ScanDB(dbname, **kwargs)
+        
+        for span in self.scanpanels.values():
+            span.scandb = self._scandb
+        self.statusbar.SetStatusText('Scan DB ready')
+        self.scandb_status = 1
+        print 'ScanDB Ready ' ,  time.ctime()
+        
     @EpicsFunction
     def connect_epics(self):
         t0 = time.time()
@@ -249,9 +283,10 @@ class ScanFrame(wx.Frame):
             opts['label'] = label
             self.detectors[label] = get_detector(prefix, **opts)
 
-        self.epics_status = 0
+        self.epics_status = 1
         time.sleep(0.05)
-        # print 'epics initialized %.3f s ' % (time.time()-t0)
+        self.statusbar.SetStatusText('Epics Ready')        
+        print 'Epics Ready ' ,  time.ctime()
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
