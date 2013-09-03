@@ -11,7 +11,7 @@ from socket import gethostname
 from datetime import datetime
 
 # from utils import backup_versions, save_backup
-from sqlalchemy import MetaData, Table, select, and_
+from sqlalchemy import MetaData, Table, select, and_, create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import  NoResultFound
@@ -19,26 +19,39 @@ from sqlalchemy.orm.exc import  NoResultFound
 # needed for py2exe?
 from sqlalchemy.dialects import sqlite, mysql, postgresql
 
-from scandb_schema import make_engine, create_scandb, map_scandb
+from scandb_schema import get_dbengine, create_scandb, map_scandb
 
-def isScanDB(dbname, server='sqlite', **kws):
+def isScanDB(dbname, server='sqlite',
+             user='', password='', host='', port=None, **kws):
     """test if a file is a valid scan database:
     must be a sqlite db file, with tables named
        'postioners', 'detectors', and 'scans'
     """
-    _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
-    result = False
-    if True:
-        engine = make_engine(dbname, server=server, **kws)
-        meta = MetaData(engine)
-        meta.reflect()
-        if all([t in meta.tables for t in _tables]):
-            keys = [row.keyname for row in
-                    meta.tables['info'].select().execute().fetchall()]
-            result = 'version' in keys and 'experiment_id' in keys
+    if server == 'sqlite':
+        if not os.path.exists(dbname):
+            return False
     else:
-        pass
-    return result
+        if port is None:
+            if server.startwsith('mys'): port = 3306
+            if server.startswith('post'):  port = 5432
+        conn = "%s://%s:%s@%s:%i/%s"
+       
+        try:
+            _db = create_engine(conn % (server, user, password,
+                                        host, port, dbname))
+        except:
+            return False
+       
+    _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
+    engine = get_dbengine(dbname, server=server, **kws)
+    meta = MetaData(engine)
+    meta.reflect()
+    if all([t in meta.tables for t in _tables]):
+        keys = [row.keyname for row in
+                meta.tables['info'].select().execute().fetchall()]
+        return 'version' in keys and 'experiment_id' in keys
+    return False
+
 
 def json_encode(val):
     "simple wrapper around json.dumps"
@@ -81,11 +94,9 @@ def None_or_one(val, msg='Expected 1 or None result'):
 
 class ScanDB(object):
     """
-
     Main Interface to Scans Database
-
     """
-    def __init__(self, dbname=None, server='sqlite', **kws):
+    def __init__(self, dbname=None, server='sqlite', create=False, **kws):
         self.dbname = dbname
         self.server = server
         self.tables = None
@@ -106,19 +117,16 @@ class ScanDB(object):
             time.sleep(0.5)
             self.connect(dbname, backup=False, **kws)
 
-    def connect(self, dbname, server='sqlite', **kws):
+    def connect(self, dbname, server='sqlite', create=False,
+                user='', password='', host='', port=None, **kws):
         "connect to an existing database"
-        if server == 'sqlite':
-            if not os.path.exists(dbname):
-                raise IOError("Database '%s' not found!" % dbname)
-
-            if not isScanDB(dbname):
+        if not isScanDB(dbname, user=user,
+                        password=password, host=host, port=port):
+            if not create:
                 raise ValueError("'%s' is not an Scans file!" % dbname)
 
-            #if backup:
-            #    save_backup(dbname)
         self.dbname = dbname
-        self.engine = make_engine(dbname, server, **kws)
+        self.engine =get_dbengine(dbname, server, create=create, **kws)
         self.conn = self.engine.connect()
         self.session = sessionmaker(bind=self.engine)()
         self.metadata =  MetaData(self.engine)
@@ -162,7 +170,9 @@ class ScanDB(object):
         cls, table = self._get_table('info')
         vals  = self.query(table).filter(cls.keyname==key).all()
         if len(vals) < 1:
-            table.insert().execute(keyname=key, value=value)
+            table.insert().execute(keyname=key,
+                                   value=value,
+                                   modify_time=datetime.now)
         else:
             table.update(whereclause="keyname='%s'" % key).execute(value=value)
 
@@ -270,7 +280,8 @@ class ScanDB(object):
     def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
         cls, table = self._get_table('scandefs')
-        kws.update({'notes': notes, 'text': text})
+        kws.update({'notes': notes, 'text': text,
+                    'modify_time':datetime.now})
         name = name.strip()
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
@@ -311,7 +322,8 @@ class ScanDB(object):
         """add positioner"""
         cls, table = self._get_table('positioners')
         name = name.strip()
-        kws.update({'notes': notes, 'pvname': pvname})
+        kws.update({'notes': notes, 'pvname': pvname,
+                    'modify_time':datetime.now})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
@@ -398,7 +410,6 @@ class ScanDB(object):
         return self.query(table).filter(cls.status_id==statid).all()
 
 
-
     def add_command(self, command, arguments='',output_value='',
                     output_file='', **kws):
         """add command"""
@@ -409,7 +420,9 @@ class ScanDB(object):
         kws.update({'arguments': arguments,
                     'output_file': output_file,
                     'output_value': output_value,
+                    'modify_time':datetime.now,
                     'status_id': statid})
+        
         row = self.__addRow(cls, ('command',), (command,), **kws)
         self.session.add(row)
         self.commit()

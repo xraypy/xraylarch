@@ -31,8 +31,28 @@ PV_TYPES = (('numeric', 'Numeric Value'),
             ('string',  'String Value'),
             ('motor', 'Motor Value') )
 
-def make_engine(dbname, server='sqlite', user='', password='',
-                host='', port=None):
+def hasdb_postgres(dbname, create=False,
+                   user='', password='', host='', port=5432):
+    """
+    return whether a database is known to the postgresql server,
+    optionally creating (but leaving it empty) said database.
+    """
+    dbname = dbname.lower()
+    conn_str= 'postgresql://%s:%s@%s:%i/%s'
+    query = "select datname from pg_database"
+    engine = create_engine(conn_str % (user, password, host, port, 'postgres'))
+    conn = engine.connect()
+    conn.execute("commit")
+    dbs = [i[0] for i in conn.execute(query).fetchall()]
+    if create and dbname not in dbs:
+        conn.execute("create database %s" % dbname)
+        conn.execute("commit")
+    dbs = [i[0] for i in conn.execute(query).fetchall()]
+    conn.close()
+    return dbname in dbs
+
+def get_dbengine(dbname, server='sqlite', create=False, 
+                user='', password='',  host='', port=None):
     """create databse engine"""
     if server == 'sqlite':
         return create_engine('sqlite:///%s' % (dbname),
@@ -44,16 +64,13 @@ def make_engine(dbname, server='sqlite', user='', password='',
         return create_engine(conn_str % (user, password, host, port, dbname))
 
     elif server == 'postgresql':
-        dbname = dbname.lower()
-        conn_str= 'postgresql+psycopg2://%s:%s@%s:%i/%s'
+        conn_str= 'postgresql://%s:%s@%s:%i/%s'
         if port is None:
             port = 5432
-        engine = create_engine(conn_str % (user, password, host, port, 'postgres'))
-        conn = engine.connect()
-        conn.execute("commit")
-        conn.execute("create database %s" % dbname)
-        conn.close()
+        hasdb_postgres(dbname, create=create, user=user, password=password,
+                       host=host, port=port)
         return create_engine(conn_str % (user, password, host, port, dbname))
+
     
 def IntCol(name, **kws):
     return Column(name, Integer, **kws)
@@ -183,7 +200,7 @@ class Instrument_Postcommands(_BaseTable):
     "instrument postcommand table"
     name, notes = None, None
 
-def create_scandb(dbname, server='sqlite', **kws):
+def create_scandb(dbname, server='sqlite', create=True, **kws):
     """Create a ScanDB:
 
     arguments:
@@ -199,7 +216,7 @@ def create_scandb(dbname, server='sqlite', **kws):
     password  password for database (mysql,postgresql only)
     """
 
-    engine  = make_engine(dbname, server, **kws)
+    engine  = get_dbengine(dbname, server, create=create, **kws)
     metadata =  MetaData(engine)
     info = Table('info', metadata,
                  Column('keyname', Text, primary_key=True, unique=True),
@@ -384,4 +401,3 @@ def map_scandb(metadata):
                          ('monitorvalues', 'time')):
         tables[tname].columns[cname].default = fnow
     return tables, classes
-

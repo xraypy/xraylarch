@@ -28,6 +28,15 @@ filemode = increment
 pos_settle_time = 0.01
 det_settle_time = 0.01
 #--------------------------#
+[server]
+use    = true
+dbname = epics_scan
+server = postgresql
+host   = mini.cars.aps.anl.gov
+user   = epics
+passwd = epics
+port   = 5432
+#--------------------------#
 [positioners]
 # index = label || drivePV  || readbackPV
 1 = Fine X || 13XRM:m1  || 13XRM:m1.RBV
@@ -121,12 +130,13 @@ def dict2opts(d):
 
 class StationConfig(object):
     #  sections            name      ordered?
-    __sects = OrderedDict((('setup',     False),
+    __sects = OrderedDict((('setup',       False),
+                           ('server',      False),
                            ('positioners', True),
                            ('detectors',   True),
                            ('counters',    True),
-                           ('xafs',      False),
-                           ('slewscan',  False),
+                           ('xafs',        False),
+                           ('slewscan',    False),
                            ('slewscan_positioners',  True),
                            ('extra_pvs',   True),
                            ))
@@ -139,6 +149,8 @@ class StationConfig(object):
         if filename is None:
             filename = DEF_CONFFILE
         self.filename = filename
+        # print 'StationConfig ', filename, os.path.abspath(filename)
+        # print os.path.exists(filename),   os.path.isfile(filename)
         if (os.path.exists(filename) and
             os.path.isfile(filename)):
             ret = self._cp.read(filename)
@@ -213,7 +225,7 @@ class StationConfig(object):
         out = ['### %s: %s' % (TITLE, get_timestamp())]
         for sect, ordered in self.__sects.items():
             out.append('#------------------------------#\n[%s]' % sect)
-            if sect == 'setup':
+            if sect in ('setup', 'server', 'slewscan', 'xafs'):
                 for name, val in self.setup.items():
                     out.append("%s = %s" % (name, val))
             elif sect == 'detectors':
