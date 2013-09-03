@@ -10,10 +10,11 @@ from datetime import datetime
 
 # from utils import backup_versions, save_backup
 
-from sqlalchemy import MetaData, and_, create_engine, text, func,\
-     Table, Column, ColumnDefault, Integer, Float, String, Text, DateTime, ForeignKey
+from sqlalchemy import (MetaData, and_, create_engine, text, func,
+                        Table, Column, ColumnDefault, ForeignKey, 
+                        Integer, Float, String, Text, DateTime)
 
-from sqlalchemy.orm import sessionmaker,  mapper, clear_mappers, relationship
+from sqlalchemy.orm import sessionmaker, mapper, clear_mappers, relationship
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.pool import SingletonThreadPool
@@ -25,8 +26,10 @@ from sqlalchemy.dialects import sqlite, mysql, postgresql
 CMD_STATUS = ('unknown', 'requested', 'canceled', 'starting', 'running',
                'aborting', 'stopping', 'aborted', 'finished')
 
-PV_TYPES = (('numeric', 'Numeric Value'),   ('enum',  'Enumeration Value'),
-           ('string',  'String Value'),    ('motor', 'Motor Value'))
+PV_TYPES = (('numeric', 'Numeric Value'),
+            ('enum',  'Enumeration Value'),
+            ('string',  'String Value'),
+            ('motor', 'Motor Value') )
 
 def make_engine(dbname, server='sqlite', user='', password='',
                 host='', port=None):
@@ -34,16 +37,24 @@ def make_engine(dbname, server='sqlite', user='', password='',
     if server == 'sqlite':
         return create_engine('sqlite:///%s' % (dbname),
                              poolclass=SingletonThreadPool)
-    elif server in ('mysql', 'postgresql'):
-        if server == 'mysql':
-            conn_str= 'mysql+mysqldb://%s:%s@%s:%i/%s'
-            if port is None: port = 3306
-        elif server == 'postgresql':
-            conn_str= 'postgresql+psycopg2://%s:%s@%s:%i/%s'
-            if port is None: port = 5432
+    elif server == 'mysql':
+        conn_str= 'mysql+mysqldb://%s:%s@%s:%i/%s'
+        if port is None:
+            port = 3306
         return create_engine(conn_str % (user, password, host, port, dbname))
 
-
+    elif server == 'postgresql':
+        dbname = dbname.lower()
+        conn_str= 'postgresql+psycopg2://%s:%s@%s:%i/%s'
+        if port is None:
+            port = 5432
+        engine = create_engine(conn_str % (user, password, host, port, 'postgres'))
+        conn = engine.connect()
+        conn.execute("commit")
+        conn.execute("create database %s" % dbname)
+        conn.close()
+        return create_engine(conn_str % (user, password, host, port, dbname))
+    
 def IntCol(name, **kws):
     return Column(name, Integer, **kws)
 
@@ -117,11 +128,11 @@ class MonitorValues(_BaseTable):
     id, time, value = None, None, None
 
 class Macros(_BaseTable):
-    "macros table"
+    "table of pre-defined macros"
     name, notes, arguments, text, output = None, None, None, None, None
 
 class Commands(_BaseTable):
-    "commands table"
+    "commands-to-be-executed table"
     command, notes, arguments = None, None, None
     status, status_name = None, None
     scandef, scandefs_id = None, None
@@ -143,7 +154,8 @@ class Instruments(_BaseTable):
 
 class Positions(_BaseTable):
     "position table"
-    pvs, instrument, instrument_id, date, name, notes = None, None, None, None, None, None
+    pvs, date, name, notes = None, None, None, None
+    instrument, instrument_id = None, None
 
 class Position_PV(_BaseTable):
     "position-pv join table"
@@ -276,6 +288,7 @@ def create_scandb(dbname, server='sqlite', **kws):
                         StrCol('value'))
 
     metadata.create_all()
+    
     session = sessionmaker(bind=engine)()
 
     # add some initial data:
@@ -299,7 +312,7 @@ def create_scandb(dbname, server='sqlite', **kws):
     session.commit()
 
 def map_scandb(metadata):
-    """ set up mapping of SQL metadata and classes
+    """set up mapping of SQL metadata and classes
     returns two dictionaries, tables and classes
     each with entries
     tables:    {tablename: table instance}
@@ -313,9 +326,10 @@ def map_scandb(metadata):
     except:
         pass
 
-    for cls in (Info, Status, PVTypes, PVs, MonitorValues, Macros, Commands,
-                ScanData, ScanPositioners, ScanCounters, ScanDetectors, ScanDefs,
-                Instruments, Positions, Position_PV, Instrument_PV,
+    for cls in (Info, Status, PVTypes, PVs, MonitorValues, Macros,
+                Commands, ScanData, ScanPositioners, ScanCounters,
+                ScanDetectors, ScanDefs, Instruments,
+                Positions, Position_PV, Instrument_PV,
                 Instrument_Precommands, Instrument_Postcommands):
 
         name = cls.__name__.lower()
