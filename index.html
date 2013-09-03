@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -15,7 +13,7 @@
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    '',
+        URL_ROOT:    './',
         VERSION:     '0.9.20',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
@@ -25,12 +23,13 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.20 documentation" href="#" />
     <link rel="next" title="Downloading and Installation" href="downloads/index.html" /> 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0">
-<table><tr>
+<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
+<table><tr><td width=0></td>
   <td width=25% padding=0>
     <a href="#">
        <img src="_static/larchcones.png" height=90px alt="larchcones"/>
@@ -41,7 +40,6 @@
 </td></tr></table>
 </div>
 
-
     <div class="related">
       <h3>Navigation</h3>
       <ul>
@@ -49,12 +47,8 @@
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="downloads/index.html" title="Downloading and Installation"
              accesskey="N">next</a> |</li>
-   <li><a href="#">larch</a>|&nbsp;</li>
    <li><a href="contents.html">contents</a>|&nbsp;</li>
    <li><a href="downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -67,7 +61,6 @@
  
       </ul>
     </div>
-
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper"><h3>Downloads</h3>
@@ -110,7 +103,6 @@ PDF:
         </div>
       </div>
 
-
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
@@ -118,29 +110,31 @@ PDF:
             
   <div class="section" id="larch">
 <h1>Larch<a class="headerlink" href="#larch" title="Permalink to this headline">¶</a></h1>
-<p>Larch is a scientific data processing language.  Initially designed for
-x-ray spectroscopic and scattering data collected at modern synchrotrons
-and x-ray sources, it can also be used for general-purpose processing of
-scientific data.  Larch is intended to be very easy to use for novices,
-while also being complete enough for advanced data processing and
-analysis. Larch provides a wide range of functionality for dealing with
-arrays of scientific data, and basic tools to make it easy to use and
-organize complex data.  Written in Python, and making heavy use of the
-wonderful libraries <a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>, Larch
-has syntax very close to Python, and can be easily extended with Python.</p>
-<p>Larch has several related target application areas:</p>
+<p>Larch is an open-source library and analysis toolkit for processing
+scientific data.  Initially designed for x-ray spectroscopic and scattering
+data collected at modern synchrotrons and x-ray sources, Larch also
+provides many general-purpose processing and analysis tools for dealing
+with arrays of scientific data and organize complex data sets.</p>
+<p>Larch is written in Python, making heavy use of the wonderful <a class="reference external" href="http://numpy.scipy.org/">numpy</a>,
+<a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a> libraries, and can be used directly as
+a Python library or extended using Python.  In addition, Larch provides a
+Python-like language (a <em>macro language</em>, or <em>domain specific language</em>)
+that is intended to be very easy to use for novices while also being
+complete enough for advanced data processing and analysis.</p>
+<p>Larch has several related target application areas, including:</p>
 <blockquote>
 <div><ul class="simple">
 <li>XAFS analysis, becoming version 2 of the Ifeffit Package.</li>
 <li>Visualizing and analyzing micro-X-ray fluorescence maps.</li>
-<li>Quantitative X-ray fluoresceence analysis.</li>
+<li>Quantitative X-ray fluorescence analysis.</li>
 <li>X-ray standing waves and surface scattering analysis.</li>
 <li>Data collection software for synchrotron data.</li>
 </ul>
 </div></blockquote>
 <p>The essential idea is that having these different areas connected by a
 common <em>macro language</em> will strengthen the analysis tools available for
-all of them.</p>
+all of them, and provide a very shallow barrier for those interested in
+scripting the manipulation and analysis of their data.</p>
 <p>Currently, Larch provides a complete set of XAFS Analysis tools (replacing
 all of the Ifeffit package), has some support for visualizing and analyzing
 XRF maps and spectra, and has many extra tools for X-ray spectral analysis,
@@ -159,8 +153,7 @@ data handling, and general-purpose data modeling.</p>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="overview/index.html">Larch: Motivation and Overview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="overview/index.html#overview">Overview</a></li>
-<li class="toctree-l2"><a class="reference internal" href="overview/index.html#design-principles-key-concepts">Design Principles, Key Concepts</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview/index.html#key-concepts-of-larch">Key Concepts of Larch</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview/index.html#capabilities">Capabilities</a></li>
 </ul>
 </li>
@@ -239,6 +232,7 @@ data handling, and general-purpose data modeling.</p>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="plotting/index.html#image-display-and-contour">Image Display and Contour</a></li>
+<li class="toctree-l2"><a class="reference internal" href="plotting/index.html#advanced-plotting-using-matplotlib">Advanced Plotting: using matplotlib</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="fitting/index.html">Fitting and Modeling Data</a><ul>
@@ -256,6 +250,11 @@ data handling, and general-purpose data modeling.</p>
 <li class="toctree-l3"><a class="reference internal" href="fitting/examples.html#example-1-fitting-a-simple-gaussian">Example 1: Fitting a Simple Gaussian</a></li>
 <li class="toctree-l3"><a class="reference internal" href="fitting/examples.html#example-2-fitting-xanes-pre-edge-peaks">Example 2: Fitting XANES Pre-edge Peaks</a></li>
 <li class="toctree-l3"><a class="reference internal" href="fitting/examples.html#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="fitting/fitpeaks.html">Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="fitting/fitpeaks.html#example-fitting-a-gaussian-background-with-fit-peak">Example: Fitting a Gaussian + background with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></li>
+<li class="toctree-l3"><a class="reference internal" href="fitting/fitpeaks.html#example-fitting-a-rectangular-function-with-fit-peak">Example: Fitting a Rectangular function with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="fitting/confidence.html">Advanced Confidence Intervals and Chi-square maps</a><ul>
@@ -351,12 +350,8 @@ data handling, and general-purpose data modeling.</p>
           <a href="genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="downloads/index.html" title="Downloading and Installation"
              >next</a> |</li>
-   <li><a href="#">larch</a>|&nbsp;</li>
    <li><a href="contents.html">contents</a>|&nbsp;</li>
    <li><a href="downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -371,7 +366,7 @@ data handling, and general-purpose data modeling.</p>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

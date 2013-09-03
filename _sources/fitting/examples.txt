@@ -16,6 +16,8 @@ argument, and returns an array to be minimized in the least-squares sense.
 The files for the examples shown here are all can be found in the
 *examples/fitting* folder of the main Larch distribution.
 
+.. _fit_example1_sec:
+
 Example 1: Fitting a Simple Gaussian
 ======================================
 

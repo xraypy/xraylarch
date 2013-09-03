@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -25,14 +23,15 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.20 documentation" href="../index.html" />
     <link rel="up" title="XAFS Analysis" href="index.html" />
     <link rel="next" title="X-ray Databases" href="../xray/index.html" />
     <link rel="prev" title="XAFS: Reading and using Feff Paths" href="feffpaths.html" /> 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0">
-<table><tr>
+<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
+<table><tr><td width=0></td>
   <td width=25% padding=0>
     <a href="../index.html">
        <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
@@ -43,7 +42,6 @@
 </td></tr></table>
 </div>
 
-
     <div class="related">
       <h3>Navigation</h3>
       <ul>
@@ -51,15 +49,11 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="../xray/index.html" title="X-ray Databases"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="feffpaths.html" title="XAFS: Reading and using Feff Paths"
              accesskey="P">previous</a> |</li>
-   <li><a href="../index.html">larch</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -73,7 +67,6 @@
           <li><a href="index.html" accesskey="U">XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
-
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
@@ -123,7 +116,6 @@
         </div>
       </div>
 
-
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
@@ -138,7 +130,7 @@ of the documentation so far have touched on important aspects of this
 process, and those sections will be referenced here.</p>
 <div class="section" id="the-feffit-strategy-for-modeling-exafs-data">
 <h2>The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
-<p>The basic approach to modeling EXAFS data in Larch <a class="reference internal" href="#newville2001">[Newville2001]</a> is to
+<p>The basic approach to modeling EXAFS data in Larch <a class="reference internal" href="#newville2001" id="id1">[Newville2001]</a> is to
 create a model EXAFS <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> as a sum of scattering paths that will
 be compared to experimentally derived <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>. The model will
 consist of a set of FEFF Scattering Paths representing the photo-electron
@@ -177,7 +169,7 @@ Nyquist as</p>
 <div class="math">
 <p><img src="../_images/math/24cf73c1d079c99066048fbcd87ec80828c65adb.png" alt="N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1"/></p>
 </div><p>where <img class="math" src="../_images/math/83db992a1bf9c6721470cff232c7842530571adb.png" alt="\Delta k"/> and <img class="math" src="../_images/math/3b949109c5d7b0ce70c280f17cfc63036d7ccc96.png" alt="\Delta R"/> are the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>
-range of the usable data under consideration.  E. A. Stern <a class="reference internal" href="#stern1993">[Stern1993]</a>
+range of the usable data under consideration.  E. A. Stern <a class="reference internal" href="#stern1993" id="id2">[Stern1993]</a>
 argues convincingly that the &#8216;+1&#8217; here should be &#8216;+2&#8217;, but we&#8217;ll remain
 conservative and keep the &#8216;+1&#8217;, and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -246,7 +238,7 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>: white noise.  The function <a class="reference internal" href="utilities.html#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> does this
-<a class="reference internal" href="#newvilleboyanovsayers1999">[NewvilleBoyanovSayers1999]</a>, and the estimate derived from this method is
+<a class="reference internal" href="#newvilleboyanovsayers1999" id="id3">[NewvilleBoyanovSayers1999]</a>, and the estimate derived from this method is
 used unless you specify a value for <tt class="docutils literal"><span class="pre">epsilon_k</span></tt> the noise level in
 <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  Though usually <img class="math" src="../_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/> is taken to be a scalar
 value, it can be specfied as an array (of the same length as
@@ -1628,15 +1620,11 @@ J. Synchrotron Radiation, <strong>6</strong>, pp 264-265 (1999).
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="../xray/index.html" title="X-ray Databases"
              >next</a> |</li>
         <li class="right" >
           <a href="feffpaths.html" title="XAFS: Reading and using Feff Paths"
              >previous</a> |</li>
-   <li><a href="../index.html">larch</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -1652,7 +1640,7 @@ J. Synchrotron Radiation, <strong>6</strong>, pp 264-265 (1999).
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

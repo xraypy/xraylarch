@@ -75,7 +75,7 @@ $(function() {
     sidebar.css('width', ssb_width_expanded);
     sidebarwrapper.show();
     sidebarbutton.css({
-        'margin-left': ssb_width_expanded-12,
+        'margin-left': ssb_width_expanded-8,
         'height': bodywrapper.height()
     });
     sidebarbutton.find('span').text('«');
@@ -87,7 +87,7 @@ $(function() {
     sidebarwrapper.css({
         'float': 'left',
         'margin-right': '0',
-        'width': ssb_width_expanded - 28
+        'width': ssb_width_expanded - 20
     });
     // create the button
     sidebar.append(
@@ -115,15 +115,15 @@ $(function() {
         'cursor': 'pointer',
         'height': bodywrapper.height(),
         'padding-top': '1px',
-        'margin-left': ssb_width_expanded - 12
+        'margin-left': ssb_width_expanded - 10
     });
 
     sidebarbutton.hover(
       function () {
-          $(this).css('background-color', dark_color);
+          $(this).css('background-color', '#AFC1C4');
       },
       function () {
-          $(this).css('background-color', light_color);
+          $(this).css('background-color', '#AFC1C4');
       }
     );
   }

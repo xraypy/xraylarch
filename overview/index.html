@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -25,13 +23,14 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.20 documentation" href="../index.html" />
     <link rel="next" title="Larch Tutorial" href="../tutorial/index.html" />
     <link rel="prev" title="Downloading and Installation" href="../downloads/index.html" /> 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0">
-<table><tr>
+<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
+<table><tr><td width=0></td>
   <td width=25% padding=0>
     <a href="../index.html">
        <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
@@ -42,7 +41,6 @@
 </td></tr></table>
 </div>
 
-
     <div class="related">
       <h3>Navigation</h3>
       <ul>
@@ -50,15 +48,11 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="../tutorial/index.html" title="Larch Tutorial"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../downloads/index.html" title="Downloading and Installation"
              accesskey="P">previous</a> |</li>
-   <li><a href="../index.html">larch</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -72,14 +66,12 @@
       </ul>
     </div>
 
-
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Larch: Motivation and Overview</a><ul>
-<li><a class="reference internal" href="#overview">Overview</a></li>
-<li><a class="reference internal" href="#design-principles-key-concepts">Design Principles, Key Concepts</a></li>
+<li><a class="reference internal" href="#key-concepts-of-larch">Key Concepts of Larch</a></li>
 <li><a class="reference internal" href="#capabilities">Capabilities</a></li>
 </ul>
 </li>
@@ -112,7 +104,6 @@
         </div>
       </div>
 
-
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
@@ -120,35 +111,60 @@
             
   <div class="section" id="larch-motivation-and-overview">
 <h1>Larch: Motivation and Overview<a class="headerlink" href="#larch-motivation-and-overview" title="Permalink to this headline">¶</a></h1>
-<p>Larch is a scientific data processing language.  Though having pretty
-general capabilities, it has been developed especially for processing and
-analyziing x-ray spectroscopic and scattering data collected at modern
-synchrotrons and x-ray sources.  Thus, Larch has several related target
-application areas, including XAFS, XRF, and X-ray standing waves.  The
-initial movitation for Larch was to replace the Ifeffit package for XAFS
-analysis, with the the ability to add XRF capabilites and to use it as a
-macro language for data collection and initial data processing and
-visualization were quickly added to the list of goals.</p>
-<p>Larch gives a simple command-line interface (a Read-Eval-Print Loop), but
-can also be scripted in &#8220;batch mode&#8221;.  GUIs can be built upon Larch by
-simply generating the commands, making it easy to separate the layout from
-the actual processing steps, so that the processing steps might be recorded
-and used to make a &#8220;batch script&#8221;.  In addition you can use Larch with
-remote-procedure calls, so that it can be run as a service, and called from
-a variety of languages and from different machines.</p>
-<div class="section" id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
-<p>Larch is written in Python, an interpreted (non-compiled) language that has
-become quite popular in a range of scientific disciplines.  Python is known
-for its very clear syntax and readability, and Larch has syntax that is
-built upon, and very closely related to Python&#8217;s.  Using Python in this way
-not only gives a fairly elegant and readable language, but also allows
-Larch to build upon many great efforts in Python, especially for scientific
-computing, including <a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>.  Using
-Python also turns out to make implementing Larch and adding complex
-functionality such as XAFS analysis capabilities simple.</p>
-<p>In fact, Larch is so closely related to Python that a few key points should
-be made:</p>
+<p>Larch is an attempt to bring together data processing routines for many
+synchrotron X-ray techniques, and to provide better scripting tools for
+data manipulation, visualization, and analysis.  The initial goal was to
+replace the Ifeffit package for XAFS analysis, in order to better deal with
+larger datasets, make it easier to modify and improve XAFS analysis
+algorithms, and to provide more modern data manipulation and visualization
+tools.  Visualization and analysis of X-ray fluorescence spatial maps and
+spectra as from X-ray microprobe beamlines was also a key requirement, and
+having tools for related techniques like X-ray standing waves and X-ray
+diffraction was highly desirable.  It was also hoped to be able to tie
+these visualization, processing, and analysis routines with data
+collection, to give a more seamless workflow.  Having both high-level
+routines that could be scripted and be used as the core functionality of
+GUIs was viewed as necessary.  Though a work in progress, Larch has already
+met most of these initial goals.</p>
+<p>Using Python to implement this set of tools is an obvious choice.  Python
+is a free, general-purpose interpreted language known for its clear syntax
+and readability.  It has become quite popular in a range of scientific
+disciplines due to many well-designed an supported libraries, including
+<a class="reference external" href="http://numpy.scipy.org/">numpy</a>, <a class="reference external" href="http://scipy.org/">scipy</a>, <a class="reference external" href="http://code.google.com/p/h5py/">h5py</a>, and <a class="reference external" href="http://matplotlib.org/">matplotlib</a>.  Python is being adopted by
+many groups in the synchrotron X-ray community, and being able to build on
+existing tools and tap into a large pool of scientists who are able and
+willing to work in Python was seen as a huge benefit.</p>
+<p>The key design decision for Larch is to build a domain-specific language or
+<em>macro language</em> as the framework to tie together the various
+functionality.  In the synchrotron community, many scientists are familiar
+with the Spec program for data collection, which is implemented as an
+interactive macro language - a language that is fairly general purpose, but
+also has many built in functions for interactively collecting diffraction
+data.  Ifeffit was built with a similar approach, though with a much worse
+macro language than Spec, though one that was complete and flexible enough
+for writing complex analysis scripts, and for GUIs to be built upon this
+macro language.  In some sense, Larch is an attempt to make something akin
+to <em>Spec for Data Analysis</em>, in which high-level analysis and visualization
+routines are readily available in a coherent scripting environment.</p>
+<p>Thus, Larch provides a macro language that gives a simple command-line
+interface (a Read-Eval-Print Loop).  Scripts can be written and be run
+&#8220;batch mode&#8221;.  GUIs can be built upon Larch by simply generating the
+commands, which makes it easy to separate the GUI controls layout from the
+actual processing steps, so that the processing steps might be recorded and
+used to make a script to reproduce or refine the steps defined from the
+GUI.  In addition you can use Larch with remote-procedure calls, so that it
+can be run as a service, and called from a variety of languages and from
+different machines.  Finally, Larch can be used as a Python library,
+nearly completely side-stepping the Larch macro language.</p>
+<p>The Larch macro language is implemented in Python with Python&#8217;s own
+language tools, and is very closely related to Python.  It is designed have
+a slightly shallower learching curve and less formal approach.  To be
+clear, it is a <em>worse</em> general purpose programming language than Python,
+but better suited to the tasks needed for manipulating and analyzing X-ray
+data.  Since its syntax is so closely related to Python, it is possible to
+write code that is both valid Python and Larch.</p>
+<p>In fact, the Larch language is so closely related to Python that a few key
+points should be made:</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>All data items in Larch are really Python objects.</li>
@@ -161,17 +177,17 @@ Python are close to one another.  This in itself can be seen as an
 advantage &#8211; Python is a popular, open-source, language that any programmer
 can easily learn.  Books and web documentation about Python are plentiful.
 If you known Python, Larch will be very easy to use, and vice versa.</p>
-</div>
-<div class="section" id="design-principles-key-concepts">
-<h2>Design Principles, Key Concepts<a class="headerlink" href="#design-principles-key-concepts" title="Permalink to this headline">¶</a></h2>
-<p>Since Larch is intended for processing scientific data, organization of
-data is a key consideration.  The main feature that Larch uses to help the
-user with organizing data is <strong>Group</strong>.  This is simply a container into
-which any sort of data can be placed, including other Groups.  This allows
-nested structures of data that can be accessed and manipulated easily via
-attributes, as with:</p>
+<div class="section" id="key-concepts-of-larch">
+<h2>Key Concepts of Larch<a class="headerlink" href="#key-concepts-of-larch" title="Permalink to this headline">¶</a></h2>
+<p>Since Larch is intended for processing scientific data, the organization of
+data is a key consideration.  There also needs to be some organization of
+functions and routines.  The main concept that Larch uses to help the user
+with organizing data is <strong>Group</strong>.  This is simply a container into which
+any sort of data or function can be placed, including other Groups.  The
+data in a Group can be accessed using a syntax of <strong>&lt;Group&gt;.&lt;Member&gt;</strong>,
+as with:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">11</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">10.2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;group 1&#39;</span><span class="p">)</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="o">*</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">my_group</span><span class="o">.</span><span class="n">scale</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -184,15 +200,17 @@ with the <a class="reference internal" href="../tutorial/builtins.html#show" tit
   scale: 10.2
   t: 'group 1'
   x: array&lt;shape=(11,), type=dtype('int32')&gt;
-  y: array&lt;shape=(11,), type=dtype('int32')&gt;</pre>
+  y: array&lt;shape=(11,), type=dtype('float64')&gt;</pre>
 </div>
 <p>which shows that this group has 4 components, and lists the components.
 As the <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> members hold array, the size and datatype of the
 array is shown.  Doing:</p>
-<div class="highlight-python"><pre>larch&gt; print my.group.y
-[  0   1   4   9  16  25  36  49  64  81 100]</pre>
+<div class="highlight-python"><pre>larch&gt; print my_group.y
+[  0.           8.58300405   9.27483375   1.43942408  -7.71938545
+  -9.7810276   -2.85003808   6.70126331  10.09145412   4.20360855
+  -5.54901533]</pre>
 </div>
-<p>will show the array elements.   The <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function will show a graph
+<p>will show the array elements.  The <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function will show a graph
 of y(x).</p>
 <p>Since much of what Larch is used for is modeling or fitting small data
 sets, another key organizing principle is the <strong>Parameter</strong>.  This holds a
@@ -216,8 +234,8 @@ and conditional evaluation (if-then-else).</li>
 <li>general-purpose minimization and curve-fitting.</li>
 </ul>
 </div></blockquote>
-<p>For XAFS analysis in particular, Larch is able to do most data processing
-and analysis steps needed, including:</p>
+<p>For XAFS analysis in particular, Larch is able to do essentially all the data processing
+and analysis steps that Ifeffit can do, including:</p>
 <blockquote>
 <div><ul class="simple">
 <li>pre-edge background subtraction and normalization</li>
@@ -244,15 +262,11 @@ and analysis steps needed, including:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../np-modindex.html" title="Python Module Index"
-             >modules</a> |</li>
-        <li class="right" >
           <a href="../tutorial/index.html" title="Larch Tutorial"
              >next</a> |</li>
         <li class="right" >
           <a href="../downloads/index.html" title="Downloading and Installation"
              >previous</a> |</li>
-   <li><a href="../index.html">larch</a>|&nbsp;</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -267,7 +281,7 @@ and analysis steps needed, including:</p>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
     </div>
   </body>
 </html>

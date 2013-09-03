@@ -1,12 +1,9 @@
 /*
- * sphinxdoc.css_t
+ * larchxdoc.css_t
  * ~~~~~~~~~~~~~~~
  *
- * Sphinx stylesheet -- sphinxdoc theme.  Originally created by
- * Armin Ronacher for Werkzeug.
- *
- * :copyright: Copyright 2007-2011 by the Sphinx team, see AUTHORS.
- * :license: BSD, see LICENSE for details.
+ * Sphinx stylesheet -- larchdoc theme.
+ * a combination of sphinxdoc and default themes
  *
  */
 
@@ -37,7 +34,7 @@ div.document {
 }
 
 div.bodywrapper {
-    margin: 0 240px 0 0;
+    margin: 0 0 0 240px;
     border-right: 1px solid #ccc;
 }
 
@@ -80,28 +77,31 @@ div.related ul li a:hover {
     color: #3CA8E7;
 }
 
+/* -- sidebar --------------------------------------------------------------- */
+
 div.sphinxsidebarwrapper {
     padding: 0;
 }
 
 div.sphinxsidebar {
     margin: 0;
-    padding: 0.5em 10px 10px 0;
-    width: 210px;
-    float: right;
+    padding: 2px 2px 2px 2px;
     font-size: 1em;
     text-align: left;
 }
-/* sort of sets sidebar to be sticky and on right-side,
-   but is not perfect, as the vertical spacing seems a
-   little bit off.
-    position: fixed;
-    overflow: auto;
-    right: 0;
-    top: 120px;
-    bottom: 0;
-*/
 
+ /* for collapsible sidebar */
+div#sidebarbutton {
+    background-color: #AFC1C4;
+    width: 10 px;
+}
+div#sidebarbutton.hover {
+    background-color: #AFC1C4;
+    width: 10 px;
+}
+
+
+/* #3c6e83; */
 
 div.sphinxsidebar h3, div.sphinxsidebar h4 {
     margin: 1em 0 0.5em 0;
@@ -126,6 +126,9 @@ div.sphinxsidebar ul {
 div.sphinxsidebar ul ul {
     margin-left: 20px;
 }
+
+
+/* -- end sidebar --*/
 
 div.footer {
     background-color: #E3EFF1;
