@@ -3,7 +3,7 @@
 Main GUI form for setting up and executing Step Scans
 
 Principle features:
-   1.  Overall Configuration file in home directory
+   1.  read configuration file, tie to database...
    2.  wx.ChoiceBox (exclusive panel) for
          Linear Scans
          Mesh Scans (2d maps)
@@ -76,22 +76,19 @@ from .edit_general import SetupFrame
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
-
-
 class ScanFrame(wx.Frame):
     _about = """StepScan GUI
   Matt Newville <newville @ cars.uchicago.edu>
   """
     _ini_wildcard = "Epics Scan Settings(*.ini)|*.ini|All files (*.*)|*.*"
-    _ini_default  = "epicsscans.ini"
+    ini_default  = "epicsscans.ini"
     _cnf_wildcard = "Scan Definition(*.cnf)|*.cnf|All files (*.*)|*.*"
     _cnf_default  = "scan.cnf"
 
-    def __init__(self, conffile=None,  **kwds):
+    def __init__(self, inifile=None,  **kwds):
 
-        if conffile is None:
-            conffile = self._ini_default
-        self.conffile = conffile
+        if inifile is None:
+            inifile = self.ini_default
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, **kwds)
@@ -101,9 +98,8 @@ class ScanFrame(wx.Frame):
         self.detectors  =  OrderedDict()
         # list of extra counters and whether to use them
         self.extra_counters = OrderedDict()
-        self.config = StationConfig(conffile)
 
-        self.init_scandb()
+        self.init_scandb(inifile)
         self._larch = None
         self.epics_status = 0
         self.larch_status = 0
@@ -120,28 +116,27 @@ class ScanFrame(wx.Frame):
         self.scantimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
 
+        # self.connect_epics()
         self.inittimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onInitTimer, self.inittimer)
         self.inittimer.Start(100)
 
-    def init_scandb(self):
+    def init_scandb(self, inifile):
         """initialize connection to scan db,
         make sure values from ini file are in database"""
+        config = StationConfig(inifile)        
         kwargs = {'create': True}
-        kwargs.update(self.config.pg_server)
+        kwargs.update(config.server)
         dbname = kwargs.pop('dbname')
-        kwargs.pop('use')
+        # kwargs.pop('use')
         if 'port' in kwargs:
             kwargs['port'] = int(kwargs['port'])
-        if 'passwd' in kwargs:
-            pwd = kwargs.pop('passwd')
-            kwargs['password'] = pwd
-        self._scandb = ScanDB(dbname, **kwargs)
-        self._scandb.read_station_config(self.config)
 
+        self._scandb = ScanDB(dbname, **kwargs)
+        self._scandb.read_station_config(config)
 
     def add_scanpanel(self, creator, title):
-        span = creator(self, config=self.config,  pvlist=self.pvlist)
+        span = creator(self, scandb=self._scandb, pvlist=self.pvlist)
         self.nb.AddPage(span, title, True)
         self.scanpanels[title] = span
 
@@ -165,7 +160,8 @@ class ScanFrame(wx.Frame):
         for name, creator in (('Linear Scan',  LinearScanPanel),
                               ('Mesh Scan',    MeshScanPanel),
                               ('Slew Scan',    SlewScanPanel),
-                              ('XAFS Scan',    XAFSScanPanel)):
+                              ('XAFS Scan',    XAFSScanPanel)
+                              ):
             self.add_scanpanel(creator, name)
 
         self.nb.SetSelection(0)
@@ -179,7 +175,7 @@ class ScanFrame(wx.Frame):
 
         self.nscans = FloatCtrl(bpanel, precision=0, value=1, minval=0, size=(45, -1))
 
-        self.filename = wx.TextCtrl(bpanel, -1, self.config.setup['filename'])
+        self.filename = wx.TextCtrl(bpanel, -1, self._scandb.get_info('filename', ''))
         self.filename.SetMinSize((400, 25))
 
         self.user_comms = wx.TextCtrl(bpanel, -1, "", style=wx.TE_MULTILINE)
@@ -217,7 +213,6 @@ class ScanFrame(wx.Frame):
         self.scan_cpt = self.scan.cpt
         msg = "Point %i / %i" % (self.scan.cpt, self.scan.npts)
         self.statusbar.SetStatusText(msg, 0)
-        print 'ScanTimer : ' , msg, self.scan.complete, len(self.scan.positioners[0].array)
         if self.scan.complete:
             self.scantimer.Stop()
 
@@ -227,9 +222,10 @@ class ScanFrame(wx.Frame):
             self.ini_larch_thread.start()
 
         if self.epics_status == 0:
+            # self.connect_epics()
+            # pass
             self.ini_epics_thread = Thread(target=self.connect_epics)
             self.ini_epics_thread.start()
-            self.statusbar.SetStatusText('Epics Ready', 1)
 
         if (self.epics_status == 1 and self.larch_status == 1):
             time.sleep(0.05)
@@ -254,19 +250,15 @@ class ScanFrame(wx.Frame):
     @EpicsFunction
     def connect_epics(self):
         t0 = time.time()
-        for desc, pvname in self.config.positioners.items():
-             for j in pvname:
-                 self.pvlist[j] = epics.PV(j)
-        for desc, pvname in self.config.extra_pvs.items():
-            self.pvlist[pvname] = epics.PV(pvname)
+        for db_pv in self._scandb.getall('pvs'):
+            name = db_pv.name
+            self.pvlist[name] = epics.PV(name)
 
-        for desc, pvname in self.config.counters.items():
-            self.pvlist[pvname] = epics.PV(pvname)
-
-        for label, val in self.config.detectors.items():
-            prefix, opts = val
-            opts['label'] = label
-            self.detectors[label] = get_detector(prefix, **opts)
+        for det in self._scandb.getall('scandetectors'):
+            opts = json.loads(det.options)
+            opts['label'] = det.name
+            opts['kind'] = det.kind 
+            self.detectors[det.name] = get_detector(det.pvname, **opts)
 
         self.epics_status = 1
         time.sleep(0.05)
@@ -279,7 +271,7 @@ class ScanFrame(wx.Frame):
         scan['detectors'] = []
         scan['counters'] = []
         scan['extra_pvs'] = []
-
+        print 'START SCAN ..'
         for label, val in self.config.detectors.items():
             prefix, opts = val
             opts['label'] = label
@@ -433,16 +425,14 @@ class ScanFrame(wx.Frame):
             self.Destroy()
 
     def onSetupMisc(self, evt=None):
-        print 'need frame for general config'
-        SetupFrame(self, config=self.config, pvlist=self.pvlist)
+        SetupFrame(self, pvlist=self.pvlist)
 
     def onSetupPositioners(self, evt=None):
-        PositionerFrame(self, config=self.config, pvlist=self.pvlist,
+        PositionerFrame(self, pvlist=self.pvlist,
                         scanpanels=self.scanpanels)
 
     def onSetupDetectors(self, evt=None):
-        DetectorFrame(self, config=self.config,
-                      pvlist=self.pvlist,
+        DetectorFrame(self,  pvlist=self.pvlist,
                       detectors=self.detectors,
                       extra_counters=self.extra_counters)
 
@@ -503,7 +493,7 @@ class ScanApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 
     def OnInit(self):
         self.Init()
-        frame = ScanFrame() # conf=self.conf, dbname=self.dbname)
+        frame = ScanFrame()
         frame.Show()
         self.SetTopWindow(frame)
         return True
