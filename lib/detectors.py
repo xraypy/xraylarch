@@ -458,7 +458,6 @@ def get_detector(prefix, kind=None, label=None, **kws):
         kind = kind.lower()
 
     builder = dtypes.get(kind, SimpleDetector)
-    print 'DETECTOR ', prefix, kind, builder
     try:
         return builder(prefix, label=label, **kws)
     except TypeError:

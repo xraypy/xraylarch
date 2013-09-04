@@ -172,19 +172,23 @@ class ScanDB(object):
 
         for name, data in config.positioners.items():
             thispos  = self.get_positioner(name)
+            drivepv, readpv = data
+            if '.' not in drivepv: drivepv = '%s.VAL' % drivepv
             if thispos is None:
-                self.add_positioner(name, data[0], readpv=data[1])
+                self.add_positioner(name, drivepv, readpv=readpv)
             else:
                 self.update_where('scanpositioners', {'name': name},
-                                  {'drivepv': data[0], 'readpv': data[1]})
+                                  {'drivepv': drivepv, 'readpv': readpv})
 
         for name, data in config.slewscan_positioners.items():
             thispos  = self.get_slewpositioner(name)
+            drivepv, readpv = data
+            if '.' not in drivepv: drivepv = '%s.VAL' % drivepv
             if thispos is None:
-                self.add_slewpositioner(name, data[0], readpv=data[1])
+                self.add_slewpositioner(name, drivepv, readpv=readpv)
             else:
                 self.update_where('slewscanpositioners', {'name': name},
-                                  {'drivepv': data[0], 'readpv': data[1]})
+                                  {'drivepv': drivepv, 'readpv': readpv})
 
         for name, pvname in config.counters.items():
             this  = self.get_counter(name)
@@ -302,8 +306,7 @@ class ScanDB(object):
         return default
 
     def getall(self, table):
-        """return rows from a named table"""
-        # if table in self.classes:
+        """return all rows from a named table"""
         return self.query(self.classes[table]).all()
 
     def update_where(self, table, where, vals):
