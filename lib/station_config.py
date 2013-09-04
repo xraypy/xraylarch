@@ -28,10 +28,9 @@ filemode = increment
 pos_settle_time = 0.01
 det_settle_time = 0.01
 #--------------------------#
-[server]
+[pg_server]
 use    = true
 dbname = epics_scan
-server = postgresql
 host   = mini.cars.aps.anl.gov
 user   = epics
 passwd = epics
@@ -131,7 +130,7 @@ def dict2opts(d):
 class StationConfig(object):
     #  sections            name      ordered?
     __sects = OrderedDict((('setup',       False),
-                           ('server',      False),
+                           ('pg_server',   False),
                            ('positioners', True),
                            ('detectors',   True),
                            ('counters',    True),
@@ -225,7 +224,7 @@ class StationConfig(object):
         out = ['### %s: %s' % (TITLE, get_timestamp())]
         for sect, ordered in self.__sects.items():
             out.append('#------------------------------#\n[%s]' % sect)
-            if sect in ('setup', 'server', 'slewscan', 'xafs'):
+            if sect in ('setup', 'pg_server', 'slewscan', 'xafs'):
                 for name, val in self.setup.items():
                     out.append("%s = %s" % (name, val))
             elif sect == 'detectors':
