@@ -22,7 +22,7 @@ from sqlalchemy.dialects import sqlite, mysql, postgresql
 from scandb_schema import get_dbengine, create_scandb, map_scandb
 
 def isScanDB(dbname, server='sqlite',
-             user='', password='', host='', port=None, **kws):
+             user='', password='', host='', port=None):
     """test if a file is a valid scan database:
     must be a sqlite db file, with tables named
        'postioners', 'detectors', and 'scans'
@@ -32,8 +32,8 @@ def isScanDB(dbname, server='sqlite',
             return False
     else:
         if port is None:
-            if server.startwsith('mys'): port = 3306
-            if server.startswith('post'):  port = 5432
+            if server.startswith('my'): port = 3306
+            if server.startswith('p'):  port = 5432
         conn = "%s://%s:%s@%s:%i/%s"
 
         try:
@@ -41,11 +41,16 @@ def isScanDB(dbname, server='sqlite',
                                         host, port, dbname))
         except:
             return False
-
+    
     _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
-    engine = get_dbengine(dbname, server=server, **kws)
-    meta = MetaData(engine)
-    meta.reflect()
+    engine = get_dbengine(dbname, server=server, create=False, 
+                          user=user, password=password, host=host, port=port)
+    try:
+        meta = MetaData(engine)
+        meta.reflect()
+    except:
+        return False
+    
     if all([t in meta.tables for t in _tables]):
         keys = [row.keyname for row in
                 meta.tables['info'].select().execute().fetchall()]
@@ -107,12 +112,11 @@ class ScanDB(object):
         self.pvs = {}
         self.restoring_pvs = []
         if dbname is not None:
-            self.connect(dbname, server=server, **kws)
+            self.connect(dbname, server=server, create=create, **kws)
 
-    def create_newdb(self, dbname, server='sqlite',
-                     connect=False, **kws):
+    def create_newdb(self, dbname, connect=False, **kws):
         "create a new, empty database"
-        create_scandb(dbname, server=server, **kws)
+        create_scandb(dbname,  **kws)
         if connect:
             time.sleep(0.5)
             self.connect(dbname, backup=False, **kws)
@@ -120,18 +124,24 @@ class ScanDB(object):
     def connect(self, dbname, server='sqlite', create=False,
                 user='', password='', host='', port=None, **kws):
         "connect to an existing database"
-        if not isScanDB(dbname, user=user,
-                        password=password, host=host, port=port):
-            if not create:
-                raise ValueError("'%s' is not an Scans file!" % dbname)
+        creds = dict(user=user, password=password, host=host,
+                     port=port, server=server)
+
+        if not isScanDB(dbname,  **creds):
+            if create:
+                en = get_dbengine(dbname, create=True, **creds)
+                create_scandb(dbname, create=True, **creds)
+            else:
+                raise ValueError("'%s' is not a Scan Database!" % dbname)
 
         self.dbname = dbname
-        self.engine =get_dbengine(dbname, server, create=create, **kws)
+        self.engine =get_dbengine(dbname, create=create, **creds)
         self.conn = self.engine.connect()
         self.session = sessionmaker(bind=self.engine)()
         self.metadata =  MetaData(self.engine)
         self.metadata.reflect()
         self.tables, self.classes = map_scandb(self.metadata)
+
         self.status_codes = {}
         for row in self.getall('status'):
             self.status_codes[row.name] = row.id
@@ -139,29 +149,57 @@ class ScanDB(object):
     def read_station_config(self, config):
         """convert station config to db entries"""
 
-        for key, val in self.config.setup.items():
+        for key, val in config.setup.items():
             self.set_info(key, val)
 
-        for key, val in self.config.xafs.items():
+        for key, val in config.xafs.items():
             self.set_info(key, val)
 
-        for name, data in self.config.positioners.items():
+        for key, val in config.slewscan.items():
+            self.set_info('slew_%s' % key, val)
+            
+        for name, data in config.detectors.items():
+            thisdet  = self.get_detector(name)
+            pvname, opts = data
+            dkind = opts.pop('kind')
+            opts = json_encode(opts)
+            if thisdet is None:
+                self.add_detector(name, pvname, kind=dkind, options=opts)
+            else:
+                self.update_where('scandetectors', {'name': name},
+                                  {'pvname': pvname, 'kind': dkind,
+                                   'options': opts})
+
+        for name, data in config.positioners.items():
             thispos  = self.get_positioner(name)
             if thispos is None:
                 self.add_positioner(name, data[0], readpv=data[1])
             else:
-                self.update_where('positioners', {'name:', name},
+                self.update_where('scanpositioners', {'name': name},
                                   {'drivepv': data[0], 'readpv': data[1]})
 
+        for name, data in config.slewscan_positioners.items():
+            thispos  = self.get_slewpositioner(name)
+            if thispos is None:
+                self.add_slewpositioner(name, data[0], readpv=data[1])
+            else:
+                self.update_where('slewscanpositioners', {'name': name},
+                                  {'drivepv': data[0], 'readpv': data[1]})
 
-        for name, data in self.config.detectors.items():
-            self.add_positioner(name, data[0], readpv=data[1])
+        for name, pvname in config.counters.items():
+            this  = self.get_counter(name)
+            if this is None:
+                self.add_counter(name, pvname)
+            else:
+                self.update_where('scancounters', {'name': name},
+                                  {'pvname': pvname})
 
-        # slewscan / slewscan_positioners
+        for name, pvname in config.extra_pvs.items():
+            this  = self.add_pv(pvname, notes=name, monitor=True)
+
 
     def commit(self):
         "commit session state"
-        self.set_info('modify_date', make_datetime())
         return self.session.commit()
 
     def close(self):
@@ -187,14 +225,14 @@ class ScanDB(object):
             return default
         return thisrow.value
 
+            
     def set_info(self, key, value):
         """set key / value in the info table"""
         cls, table = self._get_table('info')
         vals  = self.query(table).filter(cls.keyname==key).all()
         if len(vals) < 1:
             table.insert().execute(keyname=key,
-                                   value=value,
-                                   modify_time=datetime.now)
+                                   value=value)
         else:
             table.update(whereclause="keyname='%s'" % key).execute(value=value)
 
@@ -302,8 +340,8 @@ class ScanDB(object):
     def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
         cls, table = self._get_table('scandefs')
-        kws.update({'notes': notes, 'text': text,
-                    'modify_time':datetime.now})
+        kws.update({'notes': notes, 'text': text})
+        
         name = name.strip()
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
@@ -338,36 +376,69 @@ class ScanDB(object):
     # positioners
     def get_positioner(self, name):
         """return positioner by name"""
-        return self.getrow('positioners', name, one_or_none=True)
+        return self.getrow('scanpositioners', name, one_or_none=True)
 
     def add_positioner(self, name, drivepv, readpv=None, notes='', **kws):
         """add positioner"""
-        cls, table = self._get_table('positioners')
+        cls, table = self._get_table('scanpositioners')
         name = name.strip()
         kws.update({'notes': notes, 'drivepv': drivepv,
-                    'readpv': 'readpv', 'modify_time':datetime.now})
+                    'readpv': readpv})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
-        self.add_pv(drivepv)
+        self.add_pv(drivepv, notes=name)
         if readpv is not None:
-            self.add_pv(readpv)
+            self.add_pv(readpv, notes="%s readback" % name)
+        return row
+
+    def get_slewpositioner(self, name):
+        """return slewscan positioner by name"""
+        return self.getrow('slewscanpositioners', name, one_or_none=True)
+
+    def add_slewpositioner(self, name, drivepv, readpv=None, notes='', **kws):
+        """add slewscan positioner"""
+        cls, table = self._get_table('slewscanpositioners')
+        name = name.strip()
+        kws.update({'notes': notes, 'drivepv': drivepv,
+                    'readpv': readpv})
+        row = self.__addRow(cls, ('name',), (name,), **kws)
+        self.session.add(row)
+        self.commit()
+        self.add_pv(drivepv, notes=name)
+        if readpv is not None:
+            self.add_pv(readpv, notes="%s readback" % name)
         return row
 
     # detectors
     def get_detector(self, name):
         """return detector by name"""
-        return self.getrow('detectors', name, one_or_none=True)
+        return self.getrow('scandetectors', name, one_or_none=True)
 
-    def add_detector(self, name, pvname, kind='', options='',
-                     notes='', **kws):
+    def add_detector(self, name, pvname, kind='', options='', **kws):
         """add detector"""
-        cls, table = self._get_table('detectors')
+        cls, table = self._get_table('scandetectors')
         name = name.strip()
-        kws.update({'notes': notes, 'pvname': pvname,
+        kws.update({'pvname': pvname,
                     'kind': kind, 'options': options})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
+        self.commit()
+        return row
+
+    # counters -- simple, non-triggered PVs to add to detectors
+    def get_counter(self, name):
+        """return counter by name"""
+        return self.getrow('scancounters', name, one_or_none=True)
+
+    def add_counter(self, name, pvname, **kws):
+        """add counter (non-triggered detector)"""
+        cls, table = self._get_table('scancounters')
+        name = name.strip()
+        kws.update({'pvname': pvname})
+        row = self.__addRow(cls, ('name',), (name,), **kws)
+        self.session.add(row)
+        self.add_pv(pvname, notes=name)
         self.commit()
         return row
 
@@ -445,7 +516,6 @@ class ScanDB(object):
         kws.update({'arguments': arguments,
                     'output_file': output_file,
                     'output_value': output_value,
-                    'modify_time':datetime.now,
                     'status_id': statid})
 
         row = self.__addRow(cls, ('command',), (command,), **kws)

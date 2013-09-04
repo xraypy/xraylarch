@@ -21,7 +21,6 @@ from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
 from sqlalchemy.dialects import sqlite, mysql, postgresql
-from sqlalchemy.dialects.postgresql import array, ARRAY
 
 ## status states for commands
 CMD_STATUS = ('unknown', 'requested', 'canceled', 'starting', 'running',
@@ -32,8 +31,8 @@ PV_TYPES = (('numeric', 'Numeric Value'),
             ('string',  'String Value'),
             ('motor', 'Motor Value') )
 
-def hasdb_postgres(dbname, create=False,
-                   user='', password='', host='', port=5432):
+def hasdb_pg(dbname, create=False,
+             user='', password='', host='', port=5432):
     """
     return whether a database is known to the postgresql server,
     optionally creating (but leaving it empty) said database.
@@ -41,7 +40,8 @@ def hasdb_postgres(dbname, create=False,
     dbname = dbname.lower()
     conn_str= 'postgresql://%s:%s@%s:%i/%s'
     query = "select datname from pg_database"
-    engine = create_engine(conn_str % (user, password, host, port, 'postgres'))
+    engine = create_engine(conn_str % (user, password,
+                                       host, port, 'postgres'))
     conn = engine.connect()
     conn.execute("commit")
     dbs = [i[0] for i in conn.execute(query).fetchall()]
@@ -64,20 +64,23 @@ def get_dbengine(dbname, server='sqlite', create=False,
             port = 3306
         return create_engine(conn_str % (user, password, host, port, dbname))
 
-    elif server == 'postgresql':
+    elif server.startswith('p'):
         conn_str= 'postgresql://%s:%s@%s:%i/%s'
         if port is None:
             port = 5432
-        hasdb_postgres(dbname, create=create, user=user, password=password,
-                       host=host, port=port)
+        hasdb = hasdb_pg(dbname, create=create, user=user, password=password,
+                         host=host, port=port)
         return create_engine(conn_str % (user, password, host, port, dbname))
 
 
 def IntCol(name, **kws):
     return Column(name, Integer, **kws)
 
-def ArrayCol(name,  **kws):
-    return Column(name, ARRAY(FLOAT), **kws)
+def ArrayCol(name,  server='sqlite', **kws):
+    ArrayType = Text
+    if server.startswith('post'):
+        ArrayType = postgresql.ARRAY(Float)
+    return Column(name, ArrayType, **kws)
 
 def StrCol(name, size=None, **kws):
     val = Text
@@ -127,9 +130,6 @@ class SlewScanPositioners(_BaseTable):
     "positioners table for slew scans"
     name, notes, drivepv, readpv = [None]*4
 
-class SlewScan(_BaseTable):
-    "configuration for slewscan"
-    host, user, passwd, group, mode, controller = [None]*6
 
 class ScanCounters(_BaseTable):
     "counters table"
@@ -227,7 +227,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
     password  password for database (mysql,postgresql only)
     """
 
-    engine  = get_dbengine(dbname, server, create=create, **kws)
+    engine  = get_dbengine(dbname, server=server, create=create, **kws)
     metadata =  MetaData(engine)
     info = Table('info', metadata,
                  Column('keyname', Text, primary_key=True, unique=True),
@@ -239,13 +239,6 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
     slewpos    = NamedTable('slewscanpositioners', metadata,
                             cols=[StrCol('drivepv', size=128),
                                   StrCol('readpv',  size=128)])
-    slewscan   = NamedTable('slewscan', metadata,
-                            cols=[StrCol('host',    size=512),
-                                  StrCol('user',    size=512),
-                                  StrCol('passwd',  size=512),
-                                  StrCol('group',   size=512),
-                                  StrCol('mode',    size=512),
-                                  StrCol('controller', size=512)])
 
     pos    = NamedTable('scanpositioners', metadata,
                         cols=[StrCol('drivepv', size=128),
@@ -292,7 +285,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
 
     scandata = NamedTable('scandata', metadata,
                          cols = [PointerCol('commands'),
-                                 ArrayCol('data'),
+                                 ArrayCol('data', server=server),
                                  StrCol('breakpoints', default=''),
                                  Column('modify_time', DateTime)])
 
@@ -366,10 +359,9 @@ def map_scandb(metadata):
         clear_mappers()
     except:
         pass
-
     for cls in (Info, Status, PVTypes, PVs, MonitorValues, Macros,
                 Commands, ScanData, ScanPositioners, ScanCounters,
-                ScanDetectors, ScanDefs, SlewScan, SlewScanPositioners,
+                ScanDetectors, ScanDefs, SlewScanPositioners,
                 Positions, Position_PV, Instruments, Instrument_PV,
                 Instrument_Precommands, Instrument_Postcommands):
 
@@ -413,10 +405,10 @@ def map_scandb(metadata):
     # set onupdate and default constraints for several datetime columns
     # note use of ColumnDefault to wrap onpudate/default func
     fnow = ColumnDefault(datetime.now)
-
     for tname in ('info', 'commands', 'positions','scandefs', 'scandata',
                   'monitorvalues', 'commands'):
         tables[tname].columns['modify_time'].onupdate =  fnow
+        tables[tname].columns['modify_time'].default =  fnow
 
     for tname, cname in (('info', 'create_time'),
                          ('commands', 'request_time')):
