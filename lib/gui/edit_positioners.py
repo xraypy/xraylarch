@@ -14,10 +14,10 @@ LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 class PositionerFrame(wx.Frame) :
     """Frame to Setup Scan Positioners"""
     def __init__(self, parent=None, pos=(-1, -1),
-                 config=None, pvlist=None, scanpanels=None):
+                 scandb=None, pvlist=None, scanpanels=None):
 
         self.parent = parent
-        self.config = config
+        self.scandb = scandb
         self.pvlist = pvlist
         self.scanpanels = scanpanels
 
