@@ -17,9 +17,9 @@ class SetupFrame(wx.Frame) :
     DB Connection, Settling Times, Extra PVs
     """
     def __init__(self, parent=None, pos=(-1, -1),
-                 config=None, pvlist=None):
+                 scandb=None, pvlist=None):
         self.parent = parent
-        self.config = config
+        self.scandb = scandb
         self.pvlist = pvlist
         self.scanpanels = self.parent.scanpanels
 
@@ -53,7 +53,7 @@ class SetupFrame(wx.Frame) :
         for label, setting in (('Positioner Settling Time', 'pos_settle_time'),
                                ('Detector Settling Time', 'det_settle_time')):
             desc = wx.StaticText(panel, -1, label=label, size=(175, -1))
-            val = self.config.setup.get(setting, '0')
+            val = self.scandb.get_info('setting', '0')
             ctrl = wx.TextCtrl(panel, value=val,  size=(100, -1))
             self.wids[setting] = ctrl
             sizer.Add(desc,  (ir, 0), (1, 1), wx.ALIGN_LEFT|wx.EXPAND, 3)
@@ -101,9 +101,7 @@ class SetupFrame(wx.Frame) :
 
     def onApply(self, event=None):
         for setting in ('pos_settle_time', 'det_settle_time'):
-            self.config.setup[setting] = self.wids[setting].GetValue().strip()
-        for span in self.scanpanels.values():
-            span.use_config(self.config)
+            self.scandb.set_info(setting, self.wids[setting].GetValue().strip())
         self.Destroy()
 
     def onClose(self, event=None):

@@ -229,7 +229,6 @@ class ScanDB(object):
             return default
         return thisrow.value
 
-            
     def set_info(self, key, value):
         """set key / value in the info table"""
         cls, table = self._get_table('info')
