@@ -35,13 +35,13 @@ def isScanDB(dbname, server='sqlite',
             if server.startwsith('mys'): port = 3306
             if server.startswith('post'):  port = 5432
         conn = "%s://%s:%s@%s:%i/%s"
-       
+
         try:
             _db = create_engine(conn % (server, user, password,
                                         host, port, dbname))
         except:
             return False
-       
+
     _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
     engine = get_dbengine(dbname, server=server, **kws)
     meta = MetaData(engine)
@@ -136,6 +136,28 @@ class ScanDB(object):
         for row in self.getall('status'):
             self.status_codes[row.name] = row.id
 
+    def read_station_config(self, config):
+        """convert station config to db entries"""
+
+        for key, val in self.config.setup.items():
+            self.set_info(key, val)
+
+        for key, val in self.config.xafs.items():
+            self.set_info(key, val)
+
+        for name, data in self.config.positioners.items():
+            thispos  = self.get_positioner(name)
+            if thispos is None:
+                self.add_positioner(name, data[0], readpv=data[1])
+            else:
+                self.update_where('positioners', {'name:', name},
+                                  {'drivepv': data[0], 'readpv': data[1]})
+
+
+        for name, data in self.config.detectors.items():
+            self.add_positioner(name, data[0], readpv=data[1])
+
+        # slewscan / slewscan_positioners
 
     def commit(self):
         "commit session state"
@@ -318,15 +340,18 @@ class ScanDB(object):
         """return positioner by name"""
         return self.getrow('positioners', name, one_or_none=True)
 
-    def add_positioner(self, name, pvname, notes='', **kws):
+    def add_positioner(self, name, drivepv, readpv=None, notes='', **kws):
         """add positioner"""
         cls, table = self._get_table('positioners')
         name = name.strip()
-        kws.update({'notes': notes, 'pvname': pvname,
-                    'modify_time':datetime.now})
+        kws.update({'notes': notes, 'drivepv': drivepv,
+                    'readpv': 'readpv', 'modify_time':datetime.now})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
+        self.add_pv(drivepv)
+        if readpv is not None:
+            self.add_pv(readpv)
         return row
 
     # detectors
@@ -346,9 +371,9 @@ class ScanDB(object):
         self.commit()
         return row
 
-    # List of PVs
+    # add PV to list of PVs
     def add_pv(self, name, notes='', monitor=False):
-        """ """
+        """add pv to PV table if not already there """
         cls, table = self._get_table('pvs')
         vals  = self.query(table).filter(cls.name == name).all()
         ismon = {False:0, True:1}[monitor]
@@ -422,7 +447,7 @@ class ScanDB(object):
                     'output_value': output_value,
                     'modify_time':datetime.now,
                     'status_id': statid})
-        
+
         row = self.__addRow(cls, ('command',), (command,), **kws)
         self.session.add(row)
         self.commit()

@@ -11,7 +11,7 @@ from datetime import datetime
 # from utils import backup_versions, save_backup
 
 from sqlalchemy import (MetaData, and_, create_engine, text, func,
-                        Table, Column, ColumnDefault, ForeignKey, 
+                        Table, Column, ColumnDefault, ForeignKey,
                         Integer, Float, String, Text, DateTime)
 
 from sqlalchemy.orm import sessionmaker, mapper, clear_mappers, relationship
@@ -21,6 +21,7 @@ from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
 from sqlalchemy.dialects import sqlite, mysql, postgresql
+from sqlalchemy.dialects.postgresql import array, ARRAY
 
 ## status states for commands
 CMD_STATUS = ('unknown', 'requested', 'canceled', 'starting', 'running',
@@ -51,7 +52,7 @@ def hasdb_postgres(dbname, create=False,
     conn.close()
     return dbname in dbs
 
-def get_dbengine(dbname, server='sqlite', create=False, 
+def get_dbengine(dbname, server='sqlite', create=False,
                 user='', password='',  host='', port=None):
     """create databse engine"""
     if server == 'sqlite':
@@ -71,9 +72,12 @@ def get_dbengine(dbname, server='sqlite', create=False,
                        host=host, port=port)
         return create_engine(conn_str % (user, password, host, port, dbname))
 
-    
+
 def IntCol(name, **kws):
     return Column(name, Integer, **kws)
+
+def ArrayCol(name,  **kws):
+    return Column(name, ARRAY(FLOAT), **kws)
 
 def StrCol(name, size=None, **kws):
     val = Text
@@ -95,7 +99,7 @@ def NamedTable(tablename, metadata, keyid='id', nameid='name',
     if notes:
         args.append(StrCol('notes'))
     if with_pv:
-        args.append(StrCol('pvname', size=64))
+        args.append(StrCol('pvname', size=128))
     if cols is not None:
         args.extend(cols)
     return Table(tablename, metadata, *args)
@@ -117,11 +121,19 @@ class Status(_BaseTable):
 
 class ScanPositioners(_BaseTable):
     "positioners table"
-    name, notes, pvname = None, None, None
+    name, notes, drivepv, readpv = [None]*4
+
+class SlewScanPositioners(_BaseTable):
+    "positioners table for slew scans"
+    name, notes, drivepv, readpv = [None]*4
+
+class SlewScan(_BaseTable):
+    "configuration for slewscan"
+    host, user, passwd, group, mode, controller = [None]*6
 
 class ScanCounters(_BaseTable):
     "counters table"
-    name, notes, pvname = None, None, None
+    name, notes, pvname = [None]*3
 
 class ScanDetectors(_BaseTable):
     "detectors table"
@@ -142,7 +154,7 @@ class PVs(_BaseTable):
 
 class MonitorValues(_BaseTable):
     "monitor PV Values table"
-    id, time, value = None, None, None
+    id, modify_time, value = None, None, None
 
 class Macros(_BaseTable):
     "table of pre-defined macros"
@@ -162,8 +174,7 @@ class Commands(_BaseTable):
         return "<%s(%s)>" % (name, ', '.join(fields))
 
 class ScanData(_BaseTable):
-    notes, output_file, modify_time = None, None, None
-    pos, det, breakpoints = None, None, None
+    notes, data, breakpoints, modify_time = [None]*4
 
 class Instruments(_BaseTable):
     "instrument table"
@@ -221,20 +232,33 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
     info = Table('info', metadata,
                  Column('keyname', Text, primary_key=True, unique=True),
                  StrCol('value'),
-                 Column('modify_time', DateTime),
+                 Column('modify_time', DateTime, default=datetime.now),
                  Column('create_time', DateTime, default=datetime.now))
 
     status = NamedTable('status', metadata)
-    pos    = NamedTable('scanpositioners', metadata, with_pv=True)
+    slewpos    = NamedTable('slewscanpositioners', metadata,
+                            cols=[StrCol('drivepv', size=128),
+                                  StrCol('readpv',  size=128)])
+    slewscan   = NamedTable('slewscan', metadata,
+                            cols=[StrCol('host',    size=512),
+                                  StrCol('user',    size=512),
+                                  StrCol('passwd',  size=512),
+                                  StrCol('group',   size=512),
+                                  StrCol('mode',    size=512),
+                                  StrCol('controller', size=512)])
+
+    pos    = NamedTable('scanpositioners', metadata,
+                        cols=[StrCol('drivepv', size=128),
+                              StrCol('readpv',  size=128)])
     cnts   = NamedTable('scancounters', metadata, with_pv=True)
     det    = NamedTable('scandetectors', metadata, with_pv=True,
-                        cols=[StrCol('kind',   size=64),
-                              StrCol('options', size=1024)])
+                        cols=[StrCol('kind',   size=128),
+                              StrCol('options', size=2048)])
+
     scans = NamedTable('scandefs', metadata,
                        cols=[StrCol('text', size=2048),
                              Column('modify_time', DateTime),
                              Column('last_used_time', DateTime)])
-
 
     macros = NamedTable('macros', metadata,
                         cols=[StrCol('arguments'),
@@ -249,7 +273,8 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                             Column('request_time', DateTime,
                                    default=datetime.now),
                             Column('start_time',    DateTime),
-                            Column('modify_time',   DateTime),
+                            Column('modify_time',   DateTime,
+                                   default=datetime.now),
                             StrCol('output_value'),
                             StrCol('output_file')])
 
@@ -262,15 +287,14 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                     Column('id', Integer, primary_key=True),
                     PointerCol('pvs'),
                     StrCol('value'),
-                    Column('time', DateTime))
+                    Column('modify_time', DateTime))
 
-    scandat = NamedTable('scandata', metadata, name=False,
-                         cols=[PointerCol('commands'),
-                               StrCol('output_file', default=''),
-                               StrCol('pos'),
-                               StrCol('det'),
-                               StrCol('breakpoints', default=''),
-                               Column('modify_time', DateTime)])
+
+    scandata = NamedTable('scandata', metadata,
+                         cols = [PointerCol('commands'),
+                                 ArrayCol('data'),
+                                 StrCol('breakpoints', default=''),
+                                 Column('modify_time', DateTime)])
 
     instrument = NamedTable('instruments', metadata,
                             cols=[Column('show', Integer, default=1),
@@ -305,7 +329,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                         StrCol('value'))
 
     metadata.create_all()
-    
+
     session = sessionmaker(bind=engine)()
 
     # add some initial data:
@@ -345,8 +369,8 @@ def map_scandb(metadata):
 
     for cls in (Info, Status, PVTypes, PVs, MonitorValues, Macros,
                 Commands, ScanData, ScanPositioners, ScanCounters,
-                ScanDetectors, ScanDefs, Instruments,
-                Positions, Position_PV, Instrument_PV,
+                ScanDetectors, ScanDefs, SlewScan, SlewScanPositioners,
+                Positions, Position_PV, Instruments, Instrument_PV,
                 Instrument_Precommands, Instrument_Postcommands):
 
         name = cls.__name__.lower()
@@ -389,15 +413,12 @@ def map_scandb(metadata):
     # set onupdate and default constraints for several datetime columns
     # note use of ColumnDefault to wrap onpudate/default func
     fnow = ColumnDefault(datetime.now)
-    for tname, cname in (('info',  'modify_time'),
-                         ('commands', 'modify_time'),
-                         ('positions', 'modify_time'),
-                         ('scandefs', 'modify_time'),
-                         ('scandata', 'modify_time')):
-        tables[tname].columns[cname].onupdate =  fnow
+
+    for tname in ('info', 'commands', 'positions','scandefs', 'scandata',
+                  'monitorvalues', 'commands'):
+        tables[tname].columns['modify_time'].onupdate =  fnow
 
     for tname, cname in (('info', 'create_time'),
-                         ('commands', 'request_time'),
-                         ('monitorvalues', 'time')):
+                         ('commands', 'request_time')):
         tables[tname].columns[cname].default = fnow
     return tables, classes

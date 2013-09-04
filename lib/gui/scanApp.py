@@ -58,12 +58,12 @@ from ..xafs_scan import XAFS_Scan
 
 from ..file_utils import new_filename, increment_filename, nativepath
 from ..ordereddict import OrderedDict
+
 from ..station_config import StationConfig
 from ..scandb import ScanDB
 
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
                           SlewScanPanel,   XAFSScanPanel)
-
 
 from ..positioner import Positioner
 from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
@@ -102,28 +102,12 @@ class ScanFrame(wx.Frame):
         # list of extra counters and whether to use them
         self.extra_counters = OrderedDict()
         self.config = StationConfig(conffile)
-        print 'CONFIG ', conffile, self.config.server
-        self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font11=wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
 
-        self.SetTitle("Epics Scans")
-        self.SetSize((700, 575))
-        self.SetFont(self.Font11)
-
+        self.init_scandb()
         self._larch = None
-        self._scandb = None
         self.epics_status = 0
         self.larch_status = 0
-        self.scandb_status = 0
         wx.EVT_CLOSE(self, self.onClose)
-
-        self.inittimer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onInitTimer, self.inittimer)
-
-        self.scantimer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
 
         self.createMainPanel()
         self.createMenus()
@@ -133,12 +117,44 @@ class ScanFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
+        self.scantimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
+
+        self.inittimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onInitTimer, self.inittimer)
+        self.inittimer.Start(100)
+
+    def init_scandb(self):
+        """initialize connection to scan db,
+        make sure values from ini file are in database"""
+        kwargs = {'create': True}
+        kwargs.update(self.config.pg_server)
+        dbname = kwargs.pop('dbname')
+        kwargs.pop('use')
+        if 'port' in kwargs:
+            kwargs['port'] = int(kwargs['port'])
+        if 'passwd' in kwargs:
+            pwd = kwargs.pop('passwd')
+            kwargs['password'] = pwd
+        self._scandb = ScanDB(dbname, **kwargs)
+        self._scandb.read_station_config(self.config)
+
+
     def add_scanpanel(self, creator, title):
         span = creator(self, config=self.config,  pvlist=self.pvlist)
         self.nb.AddPage(span, title, True)
         self.scanpanels[title] = span
 
     def createMainPanel(self):
+        self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.Font11=wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+
+        self.SetTitle("Epics Scans")
+        self.SetSize((700, 575))
+        self.SetFont(self.Font11)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
 
         self.nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
@@ -193,7 +209,6 @@ class ScanFrame(wx.Frame):
         bsizer.Fit(bpanel)
         sizer.Add(bpanel, 0, ALL_CEN, 5)
         self.SetSizer(sizer)
-        self.inittimer.Start(100)
         sizer.Fit(self)
 
     def onScanTimer(self, evt=None):
@@ -216,13 +231,7 @@ class ScanFrame(wx.Frame):
             self.ini_epics_thread.start()
             self.statusbar.SetStatusText('Epics Ready', 1)
 
-        if self.scandb_status == 0:
-            self.ini_dbserver_thread = Thread(target=self.init_scandb)
-            self.ini_dbserver_thread.start()
-            self.statusbar.SetStatusText('Epics Ready', 1)
-
-        if (self.epics_status == 1 and self.larch_status == 1 and
-            self.scandb_status == 1):
+        if (self.epics_status == 1 and self.larch_status == 1):
             time.sleep(0.05)
             self.ini_larch_thread.join()
             self.ini_epics_thread.join()
@@ -238,34 +247,10 @@ class ScanFrame(wx.Frame):
         self._larch = larch.Interpreter()
         for span in self.scanpanels.values():
             span.larch = self._larch
-        print 'Larch Ready ' ,  time.ctime()
         self.statusbar.SetStatusText('Larch Ready')
         self.larch_status = 1
 
-    def init_scandb(self):
-        self.scandb_status = -1
-        if self.config.server.get('use', 'f').lower() not in ('true', '1'):
-            self.scandb_status = 1
-            return
 
-        kwargs = {'create': True}
-        kwargs.update(self.config.server)
-        dbname = kwargs.pop('dbname')
-        kwargs.pop('use')
-        if 'port' in kwargs:
-            kwargs['port'] = int(kwargs['port'])
-        if 'passwd' in kwargs:
-            pwd = kwargs.pop('passwd')
-            kwargs['password'] = pwd
-
-        self._scandb = ScanDB(dbname, **kwargs)
-        
-        for span in self.scanpanels.values():
-            span.scandb = self._scandb
-        self.statusbar.SetStatusText('Scan DB ready')
-        self.scandb_status = 1
-        print 'ScanDB Ready ' ,  time.ctime()
-        
     @EpicsFunction
     def connect_epics(self):
         t0 = time.time()
@@ -285,8 +270,7 @@ class ScanFrame(wx.Frame):
 
         self.epics_status = 1
         time.sleep(0.05)
-        self.statusbar.SetStatusText('Epics Ready')        
-        print 'Epics Ready ' ,  time.ctime()
+        self.statusbar.SetStatusText('Epics Ready')
 
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
