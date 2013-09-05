@@ -23,7 +23,7 @@ CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
 LINWID = 700
- 
+
 ELEM_LIST = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
              'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
              'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge',
@@ -50,16 +50,25 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                                         name=self.__name__)
         self.Font13=wx.Font(13, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.sizer = wx.GridBagSizer(8, 8)
-        self.get_pospvs()
+        self.get_positioners()
         self._initialized = False # used to shunt events while creating windows
 
-    def get_pospvs(self):
+    def get_positioners(self):
         self.poslist = []
         self.pospvs = {}
-        for pos in self.scandb.getall('scanpositioners'):
+        for pos in self.scandb.get_all('scanpositioners'):
             self.poslist.append(pos.name)
             self.pospvs[pos.name] = (pos.drivepv, pos.readpv)
-        
+
+        self.poslist.append('Dummy')
+        self.pospvs['Dummy'] = ('', '')
+        self.poslist.append('None')
+        self.pospvs['None'] = ('', '')
+
+        self.slewlist = []
+        for pos in self.scandb.get_all('slewscanpositioners'):
+            self.slewlist.append(pos.name)
+
     def hline(self):
         return wx.StaticLine(self, size=(700, 3),
                              style=wx.LI_HORIZONTAL|wx.GROW)
@@ -103,11 +112,11 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         self.absrel = add_choice(self, ('Absolute', 'Relative'),
                                  action = self.onAbsRel)
         self.absrel.SetSelection(1)
-        self.dwelltime = FloatCtrl(self, precision=dwell_prec, 
+        self.dwelltime = FloatCtrl(self, precision=dwell_prec,
                                    value=dwell_value,
-                                   act_on_losefocus=True, 
+                                   act_on_losefocus=True,
                                    minval=0, size=(80, -1),
-                                   action=Closure(self.onVal, 
+                                   action=Closure(self.onVal,
                                                   label='dwelltime'))
 
         self.est_time  = SimpleText(self, '  00:00:00  ')
@@ -166,7 +175,8 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         else:
             for i in (3, 4, 5, 6): wids[i].Enable()
         pvnames = self.pospvs[name]
-        
+        if len(pvnames[0]) < 1:
+            return
         if '.' not in pvnames[1]: pvnames[1] = pvnames[1] + '.VAL'
         if '.' not in pvnames[0]: pvnames[0] = pvnames[0] + '.VAL'
         if pvnames[0] not in self.pvlist:
@@ -230,7 +240,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
 
     def use_scandb(self, scandb):
         pass
-    
+
     def generate_scan(self):
         print 'Def generate scan ', self.__name__
 
@@ -254,12 +264,12 @@ class LinearScanPanel(GenericScanPanel):
             sizer.Add(SimpleText(self, lab), (ir, ic), (1, 1), s, 2)
 
         self.pos_settings = []
-        pchoices = self.poslist
+        pchoices = self.poslist[:]
         fsize = (95, -1)
         for i in range(3):
             lab = ' Follow'
             if i == 0: lab = ' Lead'
-            if i > 0 and 'None' not in pchoices:
+            if i > 0 and 'None' not in self.poslist:
                 pchoices.insert(0, 'None')
 
             pos = add_choice(self, pchoices, size=(100, -1),
@@ -311,15 +321,14 @@ class LinearScanPanel(GenericScanPanel):
         self.update_position_from_pv(index)
 
     def use_scandb(self, scandb):
-        poslist = [p.name for p in self.scandb.getall('scanpositioners')]
-        poslist.append('Dummy')
+        self.get_positioners()
         if hasattr(self, 'pos_settings'):
             for i, wids in enumerate(self.pos_settings):
                 a = wids[0].GetStringSelection()
                 wids[0].Clear()
-                if i > 0 and 'None' not in poslist:
-                    poslist.insert(0, 'None')
-                wids[0].SetItems(poslist)
+                #if i > 0: and 'None' not in self.poslist:
+                #    poslist.insert(0, 'None')
+                wids[0].SetItems(self.poslist)
                 wids[0].SetStringSelection(a)
 
     def generate_scan(self):
@@ -606,7 +615,7 @@ class MeshScanPanel(GenericScanPanel):
 
         self.pos_settings = []
         pchoices = [p.name for p in self.scandb.getall('scanpositioners')]
-        
+
         fsize = (95, -1)
         for i, label in enumerate((" Inner ", " Outer ")):
             lab = wx.StaticText(self, -1, label=label)
@@ -643,13 +652,12 @@ class MeshScanPanel(GenericScanPanel):
         self.update_position_from_pv(index)
 
     def use_scandb(self, scandb):
-        poslist = [p.name for p in self.scandb.getall('scanpositioners')]
-        poslist.append('Dummy')
+        self.get_positioners()
         if hasattr(self, 'pos_settings'):
             for i, wids in enumerate(self.pos_settings):
                 a = wids[0].GetStringSelection()
                 wids[0].Clear()
-                wids[0].SetItems(poslist)
+                wids[0].SetItems(self.poslist)
                 wids[0].SetStringSelection(a)
 
     def generate_scan(self):
@@ -664,7 +672,7 @@ class MeshScanPanel(GenericScanPanel):
             npts = wnpts.GetValue()
             name = pos.GetStringSelection()
             xpos = self.scandb.get_positioner(name)
-            pvnames = (xpos.drivepv, xpos.readpv)            
+            pvnames = (xpos.drivepv, xpos.readpv)
             p1 = start.GetValue()
             p2 = stop.GetValue()
             if is_relative:
@@ -706,7 +714,7 @@ class SlewScanPanel(GenericScanPanel):
             pchoices = [p.name for p in self.scandb.getall('scanpositioners')]
             if i == 0:
                 pchoices = [p.name for p in self.scandb.getall('slewscanpositioners')]
-        
+
             pos = add_choice(self, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
             pos.SetSelection(i)
@@ -751,17 +759,14 @@ class SlewScanPanel(GenericScanPanel):
         self.update_position_from_pv(index)
 
     def use_scandb(self, scandb):
-        slewlist = [p.name for p in scandb.getall('slewscanpositioners')]
-        poslist  = [p.name for p in scandb.getall('scanpositioners')]
-        poslist.append('Dummy')
+        self.get_positioners()
         inner = self.pos_settings[0][0]
         outer = self.pos_settings[1][0]
-        for wid, vals in ((inner, slewlist), (outer, poslist)):
+        for wid, vals in ((inner, self.slewlist), (outer, self.poslist)):
             a = wid.GetStringSelection()
             wid.Clear()
             wid.SetItems(vals)
             wid.SetStringSelection(a)
-
 
     def generate_scan(self):
         s = {'type': 'slew',
@@ -777,7 +782,7 @@ class SlewScanPanel(GenericScanPanel):
                 npts = wnpts.GetValue()
                 name = pos.GetStringSelection()
                 xpos = self.scandb.get_positioner(name)
-                pvnames = (xpos.drivepv, xpos.readpv)            
+                pvnames = (xpos.drivepv, xpos.readpv)
                 p1 = start.GetValue()
                 p2 = stop.GetValue()
                 if is_relative:

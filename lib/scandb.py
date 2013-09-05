@@ -41,16 +41,16 @@ def isScanDB(dbname, server='sqlite',
                                         host, port, dbname))
         except:
             return False
-    
+
     _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
-    engine = get_dbengine(dbname, server=server, create=False, 
+    engine = get_dbengine(dbname, server=server, create=False,
                           user=user, password=password, host=host, port=port)
     try:
         meta = MetaData(engine)
         meta.reflect()
     except:
         return False
-    
+
     if all([t in meta.tables for t in _tables]):
         keys = [row.keyname for row in
                 meta.tables['info'].select().execute().fetchall()]
@@ -157,7 +157,7 @@ class ScanDB(object):
 
         for key, val in config.slewscan.items():
             self.set_info('slew_%s' % key, val)
-            
+
         for name, data in config.detectors.items():
             thisdet  = self.get_detector(name)
             pvname, opts = data
@@ -343,7 +343,7 @@ class ScanDB(object):
         """add scan"""
         cls, table = self._get_table('scandefs')
         kws.update({'notes': notes, 'text': text})
-        
+
         name = name.strip()
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
@@ -376,6 +376,8 @@ class ScanDB(object):
         return row
 
     # positioners
+    def get_positioners(self):
+        return [p.name for p in self.getall('scanpositioners')]
     def get_positioner(self, name):
         """return positioner by name"""
         return self.getrow('scanpositioners', name, one_or_none=True)
