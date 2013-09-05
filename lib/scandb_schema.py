@@ -70,7 +70,8 @@ def get_dbengine(dbname, server='sqlite', create=False,
             port = 5432
         hasdb = hasdb_pg(dbname, create=create, user=user, password=password,
                          host=host, port=port)
-        return create_engine(conn_str % (user, password, host, port, dbname))
+        return create_engine(conn_str % (user, password, host, port, dbname),
+                             poolclass=SingletonThreadPool)
 
 
 def IntCol(name, **kws):
@@ -361,6 +362,8 @@ def map_scandb(metadata):
     """
     tables = metadata.tables
     classes = {}
+    map_props = {}
+    keyattrs = {}
     try:
         clear_mappers()
     except:
@@ -383,31 +386,37 @@ def map_scandb(metadata):
         elif name == 'pvs':
             props = {'pvtype': relationship(PVTypes)}
         elif name == 'instruments':
-            properties={'pvs': relationship(PVs,
-                                            backref='instruments',
-                                            secondary=tables['instrument_pv'])}
+            props ={'pvs': relationship(PVs,
+                                        backref='instruments',
+                                        secondary=tables['instrument_pv'])}
         elif name == 'positions':
-            properties={'instrument': relationship(Instruments,
-                                            backref='positions'),
-                        'pvs': relationship(Position_PV)}
+            props ={'instrument': relationship(Instruments,
+                                               backref='positions'),
+                    'pvs': relationship(Position_PV)}
         elif name == 'instrument_pv':
-            properties={'pv': relationship(PVs),
-                        'instrument': relationship(Instruments)}
+            props ={'pv': relationship(PVs),
+                    'instrument': relationship(Instruments)}
         elif name == 'position_pv':
-            properties={'pv': relationship(PVs)}
+            props ={'pv': relationship(PVs)}
         elif name == 'instrument_precommands':
-            properties={'instrument': relationship(Instruments,
-                                                   backref='precommands'),
-                        'command': relationship(Commands)}
+            props ={'instrument': relationship(Instruments,
+                                               backref='precommands'),
+                    'command': relationship(Commands)}
         elif name == 'instrument_postcommands':
-            properties={'instrument': relationship(Instruments,
-                                                   backref='postcommands'),
-                        'command': relationship(Commands)}
-
+            props ={'instrument': relationship(Instruments,
+                                               backref='postcommands'),
+                    'command': relationship(Commands)}
+        
         mapper(cls, tables[name], properties=props)
         classes[name] = cls
+        map_props[name] = props
+        keyattrs[name] = 'name'
 
-
+    keyattrs['info'] = 'keyname'
+    keyattrs['position_pv'] = 'id'
+    keyattrs['instrument_pv'] = 'id'
+    keyattrs['monitovalues'] = 'id'
+    
     # set onupdate and default constraints for several datetime columns
     # note use of ColumnDefault to wrap onpudate/default func
     fnow = ColumnDefault(datetime.now)
@@ -419,4 +428,5 @@ def map_scandb(metadata):
     for tname, cname in (('info', 'create_time'),
                          ('commands', 'request_time')):
         tables[tname].columns[cname].default = fnow
-    return tables, classes
+
+    return tables, classes, map_props, keyattrs

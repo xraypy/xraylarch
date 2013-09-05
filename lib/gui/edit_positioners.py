@@ -13,13 +13,12 @@ from .gui_utils import add_button, pack, SimpleText
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 class PositionerFrame(wx.Frame) :
     """Frame to Setup Scan Positioners"""
-    def __init__(self, parent=None, pos=(-1, -1),
-                 scandb=None, pvlist=None, scanpanels=None):
+    def __init__(self, parent, pos=(-1, -1)):
 
         self.parent = parent
-        self.scandb = scandb
-        self.pvlist = pvlist
-        self.scanpanels = scanpanels
+        self.scandb = parent._scandb
+        self.pvlist = parent.pvlist
+        self.scanpanels = parent.scanpanels
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
         labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
@@ -57,8 +56,7 @@ class PositionerFrame(wx.Frame) :
                   (ir, 3), (1, 1), labstyle, 2)
 
         self.widlist = []
-        # for label, pvs in self.config.positioners.items():
-        for pos in self.scandb.get_all('scanpositioners'):
+        for pos in self.scandb.getall('scanpositioners'):
             desc   = wx.TextCtrl(panel, -1, value=pos.name, size=(175, -1))
             pvctrl = wx.TextCtrl(panel, value=pos.drivepv,  size=(175, -1))
             rdctrl = wx.TextCtrl(panel, value=pos.readpv,  size=(175, -1))
@@ -101,10 +99,10 @@ class PositionerFrame(wx.Frame) :
         sizer.Add(self.add_subtitle(panel, 'Slew Scan Positioners'),
                   (ir, 0),  (1, 4),  LEFT, 1)
 
-        for label, pvs in self.config.slewscan_positioners.items():
-            desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value=pvs[0], size=(175, -1))
-            rdctrl = wx.TextCtrl(panel, value=pvs[1], size=(175, -1))
+        for pos in self.scandb.getall('slewscanpositioners'):
+            desc   = wx.TextCtrl(panel, -1, value=pos.name, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value=pos.drivepv,  size=(175, -1))
+            rdctrl = wx.TextCtrl(panel, value=pos.readpv,  size=(175, -1))
             delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
@@ -167,8 +165,8 @@ class PositionerFrame(wx.Frame) :
     def onApply(self, event=None):
         step_pos = OrderedDict()
         slew_pos = OrderedDict()
-        energy_drive= self.config.xafs['energy_drive']
-        energy_read = self.config.xafs['energy_read']
+        energy_drive= self.scandb.get_info('energy_drive')
+        energy_read = self.scandb.get_info('energy_read')
         for wids in self.widlist:
             kind = wids[0]
             desc  = wids[1].GetValue().strip()

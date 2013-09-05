@@ -7,12 +7,14 @@ Main Class for full Database:  ScanDB
 import os
 import json
 import time
+import atexit
 from socket import gethostname
 from datetime import datetime
 
 # from utils import backup_versions, save_backup
 from sqlalchemy import MetaData, Table, select, and_, create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, mapper
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import  NoResultFound
 
@@ -20,6 +22,13 @@ from sqlalchemy.orm.exc import  NoResultFound
 from sqlalchemy.dialects import sqlite, mysql, postgresql
 
 from scandb_schema import get_dbengine, create_scandb, map_scandb
+
+from scandb_schema import (Info, Status, PVTypes, PVs, MonitorValues,
+                           Macros, Commands, ScanData, ScanPositioners,
+                           ScanCounters, ScanDetectors, ScanDefs,
+                           SlewScanPositioners, Positions, Position_PV,
+                           Instruments, Instrument_PV,
+                           Instrument_Precommands, Instrument_Postcommands)
 
 def isScanDB(dbname, server='sqlite',
              user='', password='', host='', port=None):
@@ -135,16 +144,19 @@ class ScanDB(object):
                 raise ValueError("'%s' is not a Scan Database!" % dbname)
 
         self.dbname = dbname
-        self.engine =get_dbengine(dbname, create=create, **creds)
-        self.conn = self.engine.connect()
+        self.engine = get_dbengine(dbname, create=create, **creds)
+        self.conn   = self.engine.connect()
         self.session = sessionmaker(bind=self.engine)()
         self.metadata =  MetaData(self.engine)
         self.metadata.reflect()
-        self.tables, self.classes = map_scandb(self.metadata)
+        tabs, classes, mapprops, mapkeys = map_scandb(self.metadata)
+        self.tables, self.classes = tabs, classes
+        self.mapprops, self.mapkeys = mapprops, mapkeys
 
         self.status_codes = {}
         for row in self.getall('status'):
             self.status_codes[row.name] = row.id
+        atexit.register(self.close)
 
     def read_station_config(self, config):
         """convert station config to db entries"""
@@ -208,14 +220,36 @@ class ScanDB(object):
 
     def close(self):
         "close session"
-        self.set_hostpid(clear=True)
-        self.session.commit()
-        self.session.flush()
-        self.session.close()
-
+        try:
+            self.set_hostpid(clear=True)
+            self.session.commit()
+            self.session.flush()
+            self.session.close()
+            self.conn.close()
+        except:
+            pass
+        
     def query(self, *args, **kws):
         "generic query"
         return self.session.query(*args, **kws)
+
+    def _get_table(self, tablename):
+        "return (self.tables, self.classes) for a table name"
+        cls   = self.classes[tablename]
+        table = self.tables[tablename]
+        attr  = self.mapkeys[tablename]
+        props = self.mapprops[tablename]
+        if not hasattr(cls , attr):
+            mapper(cls, table, props)
+        return cls, table
+
+    def getall(self, tablename, orderby=None):
+        """return all rows from a named table"""
+        cls, table = self._get_table(tablename)
+        q = self.query(cls)
+        if orderby is not None and hasattr(cls, orderby):
+            q = q.order_by(getattr(cls, orderby))
+        return q.all()
 
     def get_info(self, key=None, default=None):
         """get a value for an entry in the info table"""
@@ -223,7 +257,8 @@ class ScanDB(object):
         cls, table = self._get_table('info')
         if key is None:
             return self.query(table).all()
-        out = self.query(table).filter(cls.keyname==key).all()
+
+        out = self.query(cls).filter(cls.keyname==key).all()
         thisrow = None_or_one(out, errmsg % key)
         if thisrow is None:
             return default
@@ -304,9 +339,6 @@ class ScanDB(object):
 
         return default
 
-    def getall(self, table):
-        """return all rows from a named table"""
-        return self.query(self.classes[table]).all()
 
     def update_where(self, table, where, vals):
         """update a named table with dicts for 'where' and 'vals'"""
@@ -317,12 +349,7 @@ class ScanDB(object):
         table.update(whereclause=whereclause).execute(**vals)
         self.commit()
 
-    def _get_table(self, tablename):
-        "return (self.tables, self.classes) for a table name"
-        if tablename not in self.classes:
-            return None
-        return self.classes[tablename], self.tables[tablename]
-
+    
     def getrow(self, table, name, one_or_none=False):
         """return named row from a table"""
         cls, table = self._get_table(table)
@@ -378,6 +405,7 @@ class ScanDB(object):
     # positioners
     def get_positioners(self):
         return [p.name for p in self.getall('scanpositioners')]
+    
     def get_positioner(self, name):
         """return positioner by name"""
         return self.getrow('scanpositioners', name, one_or_none=True)
