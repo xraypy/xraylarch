@@ -57,10 +57,11 @@ class PositionerFrame(wx.Frame) :
                   (ir, 3), (1, 1), labstyle, 2)
 
         self.widlist = []
-        for label, pvs in self.config.positioners.items():
-            desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value=pvs[0],  size=(175, -1))
-            rdctrl = wx.TextCtrl(panel, value=pvs[1],  size=(175, -1))
+        # for label, pvs in self.config.positioners.items():
+        for pos in self.scandb.get_all('scanpositioners'):
+            desc   = wx.TextCtrl(panel, -1, value=pos.name, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value=pos.drivepv,  size=(175, -1))
+            rdctrl = wx.TextCtrl(panel, value=pos.readpv,  size=(175, -1))
             delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
@@ -84,8 +85,8 @@ class PositionerFrame(wx.Frame) :
         sizer.Add(self.add_subtitle(panel, 'Energy for XAFS Scans'),
                   (ir, 0),  (1, 4),  LEFT, 1)
 
-        drive_pv = self.config.xafs['energy_drive']
-        read_pv = self.config.xafs['energy_read']
+        drive_pv = self.scandb.get_info('energy_drive')
+        read_pv = self.scandb.get_info('energy_read')
         desc   = wx.TextCtrl(panel, -1, value='Energy PV', size=(175, -1))
         pvctrl = wx.TextCtrl(panel, value=drive_pv, size=(175, -1))
         rdctrl = wx.TextCtrl(panel, value=read_pv,  size=(175, -1))

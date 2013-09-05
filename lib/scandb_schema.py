@@ -95,7 +95,7 @@ def PointerCol(name, other=None, keyid='id', **kws):
                   ForeignKey('%s.%s' % (other, keyid)), **kws)
 
 def NamedTable(tablename, metadata, keyid='id', nameid='name',
-               name=True, notes=True, with_pv=False, cols=None):
+               name=True, notes=True, with_pv=False, with_use=False, cols=None):
     args  = [Column(keyid, Integer, primary_key=True)]
     if name:
         args.append(StrCol(nameid, size=512, nullable=False, unique=True))
@@ -103,6 +103,8 @@ def NamedTable(tablename, metadata, keyid='id', nameid='name',
         args.append(StrCol('notes'))
     if with_pv:
         args.append(StrCol('pvname', size=128))
+    if with_use:
+        args.append(IntCol('use', default=1))
     if cols is not None:
         args.extend(cols)
     return Table(tablename, metadata, *args)
@@ -125,19 +127,23 @@ class Status(_BaseTable):
 class ScanPositioners(_BaseTable):
     "positioners table"
     name, notes, drivepv, readpv = [None]*4
+    use = 1
 
 class SlewScanPositioners(_BaseTable):
     "positioners table for slew scans"
     name, notes, drivepv, readpv = [None]*4
+    use = 1
 
 
 class ScanCounters(_BaseTable):
     "counters table"
     name, notes, pvname = [None]*3
+    use = 1
 
 class ScanDetectors(_BaseTable):
     "detectors table"
     name, notes, pvname, kind, options = [None]*5
+    use = 1
 
 class ScanDefs(_BaseTable):
     "scandefs table"
@@ -236,15 +242,15 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                  Column('create_time', DateTime, default=datetime.now))
 
     status = NamedTable('status', metadata)
-    slewpos    = NamedTable('slewscanpositioners', metadata,
+    slewpos    = NamedTable('slewscanpositioners', metadata, with_use=True,
                             cols=[StrCol('drivepv', size=128),
                                   StrCol('readpv',  size=128)])
 
-    pos    = NamedTable('scanpositioners', metadata,
+    pos    = NamedTable('scanpositioners', metadata, with_use=True,
                         cols=[StrCol('drivepv', size=128),
                               StrCol('readpv',  size=128)])
-    cnts   = NamedTable('scancounters', metadata, with_pv=True)
-    det    = NamedTable('scandetectors', metadata, with_pv=True,
+    cnts   = NamedTable('scancounters', metadata, with_pv=True, with_use=True)
+    det    = NamedTable('scandetectors', metadata, with_pv=True, with_use=True,
                         cols=[StrCol('kind',   size=128),
                               StrCol('options', size=2048)])
 
