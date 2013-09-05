@@ -254,7 +254,7 @@ class ScanFrame(wx.Frame):
             name = db_pv.name
             self.pvlist[name] = epics.PV(name)
 
-        for det in self._scandb.getall('scandetectors'):
+        for det in self._scandb.get_detectors():
             opts = json.loads(det.options)
             opts['label'] = det.name
             opts['kind'] = det.kind 

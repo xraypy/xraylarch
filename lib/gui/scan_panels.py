@@ -56,12 +56,12 @@ class GenericScanPanel(scrolled.ScrolledPanel):
     def get_positioners(self):
         self.pospvs = {'None': ('', ''), 'Dummy': ('', '')}
         self.poslist = ['None', 'Dummy']
-        for pos in self.scandb.getall('scanpositioners'):
+        for pos in self.scandb.get_positioners():
             self.poslist.append(pos.name)
             self.pospvs[pos.name] = (pos.drivepv, pos.readpv)
 
         self.slewlist = []
-        for pos in self.scandb.getall('slewscanpositioners'):
+        for pos in self.scandb.get_slewpositioners():
             self.slewlist.append(pos.name)
 
     def hline(self):
@@ -614,8 +614,7 @@ class MeshScanPanel(GenericScanPanel):
             sizer.Add(SimpleText(self, lab), (ir, ic), (1, 1), s, 2)
 
         self.pos_settings = []
-        pchoices = [p.name for p in self.scandb.getall('scanpositioners')]
-
+        pchoices = [p.name for p in self.scandb.get_positioners()]
         fsize = (95, -1)
         for i, label in enumerate((" Inner ", " Outer ")):
             lab = wx.StaticText(self, -1, label=label)
@@ -711,9 +710,9 @@ class SlewScanPanel(GenericScanPanel):
         fsize = (95, -1)
         for i, label in enumerate((" Inner ", " Outer ")):
             lab = wx.StaticText(self, -1, label=label)
-            pchoices = [p.name for p in self.scandb.getall('scanpositioners')]
+            pchoices = [p.name for p in self.scandb.get_positioners()]
             if i == 0:
-                pchoices = [p.name for p in self.scandb.getall('slewscanpositioners')]
+                pchoices = [p.name for p in self.scandb.get_slewpositioners()]
 
             pos = add_choice(self, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))

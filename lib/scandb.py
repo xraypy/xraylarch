@@ -404,7 +404,13 @@ class ScanDB(object):
 
     # positioners
     def get_positioners(self):
-        return [p.name for p in self.getall('scanpositioners')]
+        return self.getall('scanpositioners', orderby='id')
+
+    def get_slewpositioners(self):
+        return self.getall('slewscanpositioners', orderby='id')
+
+    def get_detectors(self):
+        return self.getall('scandetectors', orderby='id')
     
     def get_positioner(self, name):
         """return positioner by name"""

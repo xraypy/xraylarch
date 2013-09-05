@@ -63,7 +63,7 @@ class HideShow(wx.Choice):
 class YesNo(wx.Choice):
     def __init__(self, parent, defaultyes=True,
                  choices=('No', 'Yes'),
-                 size=(75, -1)):
+                 size=(60, -1)):
         wx.Choice.__init__(self, parent, -1, size=size)
         self.choices = choices
         self.Clear()
@@ -104,7 +104,7 @@ def set_sizer(panel, sizer=None, style=wx.VERTICAL, fit=False):
     """ utility for setting wx Sizer  """
     if sizer is None:
         sizer = wx.BoxSizer(style)
-    panel.SetAutoLayout(1)
+    panel.SetAutoLayout()
     panel.SetSizer(sizer)
     if fit:
         sizer.Fit(panel)
