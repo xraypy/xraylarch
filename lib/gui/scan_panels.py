@@ -54,19 +54,14 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         self._initialized = False # used to shunt events while creating windows
 
     def get_positioners(self):
-        self.poslist = []
-        self.pospvs = {}
-        for pos in self.scandb.get_all('scanpositioners'):
+        self.pospvs = {'None': ('', ''), 'Dummy': ('', '')}
+        self.poslist = ['None', 'Dummy']
+        for pos in self.scandb.getall('scanpositioners'):
             self.poslist.append(pos.name)
             self.pospvs[pos.name] = (pos.drivepv, pos.readpv)
 
-        self.poslist.append('Dummy')
-        self.pospvs['Dummy'] = ('', '')
-        self.poslist.append('None')
-        self.pospvs['None'] = ('', '')
-
         self.slewlist = []
-        for pos in self.scandb.get_all('slewscanpositioners'):
+        for pos in self.scandb.getall('slewscanpositioners'):
             self.slewlist.append(pos.name)
 
     def hline(self):
@@ -168,12 +163,20 @@ class GenericScanPanel(scrolled.ScrolledPanel):
             name = self.pos_settings[index][0].GetStringSelection()
 
         wids = self.pos_settings[index]
+        # clear current widgets for this row
+        try:
+            wids[2].pv.clear_callbacks()
+        except:
+            pass
+        for i in (1, 2):
+            wids[i].SetLabel('')
         if name == 'None':
-            for i in (1, 2): wids[i].SetLabel('')
-            for i in (3, 4, 5, 6): wids[i].Disable()
+            for i in (3, 4, 5, 6):
+                wids[i].Disable()
             return
-        else:
-            for i in (3, 4, 5, 6): wids[i].Enable()
+        for i in (3, 4, 5, 6):
+            wids[i].Enable()
+
         pvnames = self.pospvs[name]
         if len(pvnames[0]) < 1:
             return
@@ -201,10 +204,6 @@ class GenericScanPanel(scrolled.ScrolledPanel):
             hlim = hlim - mpv.value
             llim = llim - mpv.value
         wids[1].SetLabel(units)
-        try:
-            wids[2].pv.clear_callbacks()
-        except:
-            pass
         wids[2].SetPV(mpv)
         wids[2].SetBackgroundColour(self.bgcol)
         for i in (3, 4):
@@ -264,18 +263,19 @@ class LinearScanPanel(GenericScanPanel):
             sizer.Add(SimpleText(self, lab), (ir, ic), (1, 1), s, 2)
 
         self.pos_settings = []
-        pchoices = self.poslist[:]
         fsize = (95, -1)
         for i in range(3):
             lab = ' Follow'
-            if i == 0: lab = ' Lead'
-            if i > 0 and 'None' not in self.poslist:
-                pchoices.insert(0, 'None')
-
+            pchoices = self.poslist[:]
+            idefault = 0
+            if i == 0:
+                lab = ' Lead'
+                pchoices = pchoices[1:]
+                idefault = 1
             pos = add_choice(self, pchoices, size=(100, -1),
                              action=Closure(self.onPos, index=i))
-            pos.SetSelection(0)
-            role = wx.StaticText(self, -1, label=lab)
+            pos.SetSelection(idefault)
+            role  = wx.StaticText(self, -1, label=lab)
             units = wx.StaticText(self, -1, label='', size=(40, -1))
             cur   = PVText(self, pv=None, size=(100, -1))
             start, stop, step, npts = self.StartStopStepNpts(i, with_npts=(i==0))

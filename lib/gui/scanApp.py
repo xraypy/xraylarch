@@ -425,16 +425,13 @@ class ScanFrame(wx.Frame):
             self.Destroy()
 
     def onSetupMisc(self, evt=None):
-        SetupFrame(self, pvlist=self.pvlist)
+        SetupFrame(self)
 
     def onSetupPositioners(self, evt=None):
-        PositionerFrame(self, pvlist=self.pvlist,
-                        scanpanels=self.scanpanels)
+        PositionerFrame(self)
 
     def onSetupDetectors(self, evt=None):
-        DetectorFrame(self,  pvlist=self.pvlist,
-                      detectors=self.detectors,
-                      extra_counters=self.extra_counters)
+        DetectorFrame(self)
 
     def onFolderSelect(self,evt):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE

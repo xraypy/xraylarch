@@ -1,7 +1,7 @@
 
 import sys
 import time
-
+import json
 import wx
 import wx.lib.scrolledpanel as scrolled
 
@@ -22,11 +22,11 @@ AD_File_plugins = ('None','TIFF1', 'JPEG1', 'NetCDF1', 'HDF1', 'Nexus1', 'Magick
 
 class DetectorDetailsDialog(wx.Dialog):
     """Full list of detector settings"""
-    def __init__(self, parent, config, detkey):
-        self.config = config
-        self.detkey = detkey
-        detname = self.config.detectors[detkey][0]
-        title = "Settings for '%s'?" % (detname)
+    def __init__(self, parent, det=None):
+        self.scandb = parent.scandb
+        self.det = det
+        print 'detector details ', det
+        title = "Settings for '%s'?" % (det.name)
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
         self.build_dialog(parent)
 
@@ -58,7 +58,8 @@ class DetectorDetailsDialog(wx.Dialog):
                   (1, 0), (1, 4), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 0)
 
         self.wids = {}
-        prefix, opts = self.config.detectors[self.detkey]
+        prefix = self.det.pvname
+        opts   = json.loads(self.det.options)
         optkeys = opts.keys()
         optkeys.sort()
         irow = 2
@@ -68,13 +69,15 @@ class DetectorDetailsDialog(wx.Dialog):
             val = opts[key]
             # pvname = normalize_pvname(pvpos.pv.name)
             label = SimpleText(panel, key, style=tstyle)
-
+            if hasattr(val, 'startswith'):
+                if val.startswith("'") and val.endswith("'"):
+                    val = val[1:-1]
             if val in (True, False, 'Yes', 'No'):
                 defval = val in (True, 'Yes')
                 wid = YesNo(panel, defaultyes=defval)
             else:
                 wid   = wx.TextCtrl(panel, -1, value=str(val))
-
+            
             sizer.Add(label, (irow, 0), (1, 1), labstyle,  2)
             sizer.Add(wid,   (irow, 1), (1, 1), rlabstyle, 2)
             self.wids[key] = wid
@@ -101,15 +104,15 @@ class DetectorDetailsDialog(wx.Dialog):
 
 class DetectorFrame(wx.Frame) :
     """Frame to Setup Scan Detectors"""
-    def __init__(self, parent=None, pos=(-1, -1), config=None, pvlist=None,
-                 detectors=None,  extra_counters=None):
+    def __init__(self, parent, pos=(-1, -1)):
         self.parent = parent
-        self.config = config
-        self.pvlist = pvlist
-        if detectors is None: detectors = OrderedDict()
-        if extra_counters is None: extra_counters = OrderedDict()
-        self.detectors = detectors
-        self.extra_counter = extra_counters
+        self.scandb = parent._scandb
+        self.pvlist = parent.pvlist
+        self.pvlist = parent.pvlist
+        self.scanpanels = parent.scanpanels
+
+        self.detectors = self.scandb.getall('scandetectors', orderby='id')
+        self.counters = self.scandb.getall('scancounters', orderby='id')
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 
@@ -145,30 +148,26 @@ class DetectorFrame(wx.Frame) :
                   (ir, 1), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='Use?', size=(100, -1)),
                   (ir, 2), (1, 1), LEFT, 1)
-        sizer.Add(SimpleText(panel, label='Configure:', size=(100, -1)),
+        sizer.Add(SimpleText(panel, label='Details:', size=(80, -1)),
                   (ir, 3), (1, 1), LEFT, 1)
         self.widlist = []
-        for key, value in self.config.detectors.items():
+        for det in self.detectors:
             ir +=1
-            prefix, opts = value
-            if 'use' not in opts:
-                opts['use'] = 'Yes'
-            desc   = SimpleText(panel, label=opts['kind'].title().strip(), size=(125, -1))
-            pvctrl = wx.TextCtrl(panel, value=prefix,   size=(175, -1))
-            use    = YesNo(panel, defaultyes=(opts['use'] == 'Yes'))
-            det    = None
-
-            detail = add_button(panel, ' Details',     size=(70, -1),
-                            action=Closure(self.onDetDetails, detkey=key))
+            dkind  = det.kind.title().strip()
+            if dkind.startswith("'") and dkind.endswith("'"):
+                dkind = dkind[1:-1]
+            desc   = SimpleText(panel, label=dkind, size=(125, -1))
+            pvctrl = wx.TextCtrl(panel, value=det.pvname, size=(175, -1))
+            use    = YesNo(panel, defaultyes=(det.use in ('True', 1, None)))
+            detail = add_button(panel, 'Edit', size=(70, -1),
+                                action=Closure(self.onDetDetails, det=det))
 
             sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             sizer.Add(detail, (ir, 3), (1, 1), LEFT, 1)
 
-            #             opanel, owids = self.opts_panel(panel, opts)
-            #             sizer.Add(opanel, (ir, 3), (1, 1), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 1)
-            wids = ['det', ir, desc, pvctrl, detail, det]
+            wids = ['det', ir, desc, pvctrl, detail, None]
             self.widlist.append(wids)
 
         # select a new detector
@@ -196,10 +195,10 @@ class DetectorFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, label='Use?', size=(100, -1)),
                   (ir, 2), (1, 2), LEFT, 1)
 
-        for label, pv in self.config.counters.items():
-            desc   = wx.TextCtrl(panel, -1, value=label, size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value=pv,  size=(175, -1))
-            use     = YesNo(panel)
+        for counter in self.counters:
+            desc   = wx.TextCtrl(panel, -1, value=counter.name, size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value=counter.pvname,  size=(175, -1))
+            use     = YesNo(panel, defaultyes=(counter.use in ('True', 1, None)))
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), LEFT, 1)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
@@ -229,16 +228,19 @@ class DetectorFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-    def onDetDetails(self, evt=None, detkey=None, **kws):
-        dlg = DetectorDetailsDialog(self, self.config, detkey)
+    def onDetDetails(self, evt=None, det=None, **kws):
+        dlg = DetectorDetailsDialog(self, det=det)
         dlg.Raise()
         if dlg.ShowModal() == wx.ID_OK:
+            opts = {}
             for key, wid in dlg.wids.items():
                 if isinstance(wid, wx.TextCtrl):
                     val = wid.GetValue()
                 elif isinstance(wid, YesNo):
                     val =  {0:False, 1:True}[wid.GetSelection()]
-                self.config.detectors[detkey][1][key] = val
+                opts[key] = val
+            det.options = json.dumps(opts)
+            self.scandb.commit()
         dlg.Destroy()
 
     def opts_panel(self, parent, opts):
