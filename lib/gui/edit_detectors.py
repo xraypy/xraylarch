@@ -8,8 +8,10 @@ import wx.lib.scrolledpanel as scrolled
 from ..ordereddict import OrderedDict
 from ..detectors import DET_DEFAULT_OPTS, AD_FILE_PLUGINS
 
-from .gui_utils import GUIColors, set_font_with_children, YesNo, Closure
-from .gui_utils import add_button, add_choice, pack, SimpleText, FloatCtrl 
+from .gui_utils import (GUIColors, set_font_with_children, YesNo, Closure,
+                        add_button, add_choice, pack, SimpleText,FloatCtrl)
+
+from ..utils import strip_quotes
 
 # from .pvconnector import PVNameCtrl
 
@@ -80,9 +82,8 @@ class DetectorDetailsDialog(wx.Dialog):
             label = label.title()
             # pvname = normalize_pvname(pvpos.pv.name)
             label = SimpleText(panel, label, style=tstyle)
-            if hasattr(val, 'startswith'):
-                if val.startswith("'") and val.endswith("'"):
-                    val = val[1:-1]
+            val = strip_quotes(val)
+
             if val in (True, False, 'Yes', 'No'):
                 defval = val in (True, 'Yes')
                 wid = YesNo(panel, defaultyes=defval)
@@ -119,9 +120,7 @@ class DetectorFrame(wx.Frame) :
     """Frame to Setup Scan Detectors"""
     def __init__(self, parent, pos=(-1, -1)):
         self.parent = parent
-        self.scandb = parent._scandb
-        self.pvlist = parent.pvlist
-        self.pvlist = parent.pvlist
+        self.scandb = parent.scandb
         self.scanpanels = parent.scanpanels
 
         self.detectors = self.scandb.getall('scandetectors', orderby='id')
@@ -176,9 +175,8 @@ class DetectorFrame(wx.Frame) :
         self.widlist = []
         for det in self.detectors:
             ir +=1
+            dkind = strip_quotes(det.kind)
             dkind  = det.kind.title().strip()
-            if dkind.startswith("'") and dkind.endswith("'"):
-                dkind = dkind[1:-1]
             desc   = wx.TextCtrl(panel, value=det.name,   size=(125, -1))
             pvctrl = wx.TextCtrl(panel, value=det.pvname, size=(175, -1))
             use    = YesNo(panel, defaultyes=(det.use in ('True', 1, None)))

@@ -18,7 +18,7 @@ class PositionerFrame(wx.Frame) :
     def __init__(self, parent, pos=(-1, -1)):
 
         self.parent = parent
-        self.scandb = parent._scandb
+        self.scandb = parent.scandb
 
         style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
         labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
