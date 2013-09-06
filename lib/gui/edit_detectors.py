@@ -6,11 +6,10 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from ..ordereddict import OrderedDict
-from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
-                         MultiMcaDetector, AreaDetector)
+from ..detectors import DET_DEFAULT_OPTS, AD_FILE_PLUGINS
 
 from .gui_utils import GUIColors, set_font_with_children, YesNo, Closure
-from .gui_utils import add_button, add_choice, pack, SimpleText, FloatCtrl, HyperText
+from .gui_utils import add_button, add_choice, pack, SimpleText, FloatCtrl 
 
 # from .pvconnector import PVNameCtrl
 
@@ -18,14 +17,13 @@ LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
 CEN  = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 
 DET_CHOICES = ('scaler', 'mca', 'multimca', 'areadetector')
-AD_File_plugins = ('None','TIFF1', 'JPEG1', 'NetCDF1', 'HDF1', 'Nexus1', 'Magick1')
+AD_CHOICES = ['None'] + list(AD_FILE_PLUGINS)
 
 class DetectorDetailsDialog(wx.Dialog):
     """Full list of detector settings"""
     def __init__(self, parent, det=None):
         self.scandb = parent.scandb
         self.det = det
-        print 'detector details ', det
         title = "Settings for '%s'?" % (det.name)
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
         self.build_dialog(parent)
@@ -53,9 +51,8 @@ class DetectorDetailsDialog(wx.Dialog):
                             font=titlefont,
                             minsize=(100, -1),
                             style=tstyle)
-
             sizer.Add(txt, (0, i), (1, 1), labstyle, 1)
-            i = i + 1
+            i += 1
 
         sizer.Add(wx.StaticLine(panel, size=(150, -1),
                                 style=wx.LI_HORIZONTAL),
@@ -71,16 +68,29 @@ class DetectorDetailsDialog(wx.Dialog):
             if key in ('use', 'kind', 'label'):
                 continue
             val = opts[key]
+            label = key
+            for short, longw in (('_', ' '),
+                                 ('chan', 'channels'),
+                                 ('mcas', 'MCAs'),
+                                 ('rois', 'ROIs')):
+                label = label.replace(short, longw)
+                                
+            if label.startswith('n'):
+                label = '# of %s' % (label[1:])
+            label = label.title()
             # pvname = normalize_pvname(pvpos.pv.name)
-            label = SimpleText(panel, key, style=tstyle)
+            label = SimpleText(panel, label, style=tstyle)
             if hasattr(val, 'startswith'):
                 if val.startswith("'") and val.endswith("'"):
                     val = val[1:-1]
             if val in (True, False, 'Yes', 'No'):
                 defval = val in (True, 'Yes')
                 wid = YesNo(panel, defaultyes=defval)
+            elif key.lower() == 'file_plugin':
+                wid = add_choice(panel, AD_CHOICES, default=1)
             else:
-                wid   = wx.TextCtrl(panel, -1, value=str(val))
+                wid   = wx.TextCtrl(panel, -1, size=(80, -1),
+                                    value=str(val))
             
             sizer.Add(label, (irow, 0), (1, 1), labstyle,  2)
             sizer.Add(wid,   (irow, 1), (1, 1), rlabstyle, 2)
@@ -126,7 +136,7 @@ class DetectorFrame(wx.Frame) :
         self.SetFont(self.Font10)
 
         sizer = wx.GridBagSizer(12, 5)
-        panel = scrolled.ScrolledPanel(self, size=(600, 550))
+        panel = scrolled.ScrolledPanel(self, size=(625, 625))
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
 
@@ -160,6 +170,8 @@ class DetectorFrame(wx.Frame) :
                   (ir, 3), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='Details',  size=(60, -1)),
                   (ir, 4), (1, 1), LEFT, 1)
+        sizer.Add(SimpleText(panel, label='Erase?',  size=(60, -1)),
+                  (ir, 5), (1, 1), LEFT, 1)
 
         self.widlist = []
         for det in self.detectors:
@@ -174,14 +186,15 @@ class DetectorFrame(wx.Frame) :
                                 action=Closure(self.onDetDetails, det=det))
             kind = add_choice(panel, DET_CHOICES, size=(110, -1))
             kind.SetStringSelection(dkind)
-            
+            erase  = YesNo(panel, defaultyes=False)
             sizer.Add(desc,   (ir, 0), (1, 1),  CEN, 1)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             sizer.Add(kind,   (ir, 3), (1, 1), LEFT, 1)
             sizer.Add(detail, (ir, 4), (1, 1), LEFT, 1)
+            sizer.Add(erase,  (ir, 5), (1, 1), LEFT, 1)
 
-            self.widlist.append(('old_det', det, desc, pvctrl, use, kind))
+            self.widlist.append(('old_det', det, desc, pvctrl, use, kind, erase))
 
         # select a new detector
         for i in range(2):
@@ -195,7 +208,7 @@ class DetectorFrame(wx.Frame) :
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             sizer.Add(kind,   (ir, 3), (1, 1), LEFT, 1)
-            self.widlist.append(('new_det', None, desc, pvctrl, use, kind))
+            self.widlist.append(('new_det', None, desc, pvctrl, use, kind, False))
 
         ir += 1
         sizer.Add(self.add_subtitle(panel, 'Additional Counters'),
@@ -208,17 +221,22 @@ class DetectorFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, label='PV name', size=(175, -1)),
                   (ir, 1), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='Use?', size=(80, -1)),
-                  (ir, 2), (1, 2), LEFT, 1)
+                  (ir, 2), (1, 1), LEFT, 1)
+        sizer.Add(SimpleText(panel, label='Erase?', size=(80, -1)),
+                  (ir, 3), (1, 2), LEFT, 1)
 
         for counter in self.counters:
             desc   = wx.TextCtrl(panel, -1, value=counter.name, size=(125, -1))
             pvctrl = wx.TextCtrl(panel, value=counter.pvname,  size=(175, -1))
             use     = YesNo(panel, defaultyes=(counter.use in ('True', 1, None)))
+            erase  = YesNo(panel, defaultyes=False)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
-            self.widlist.append(('old_counter', counter, desc, pvctrl, use, None))
+            sizer.Add(erase,  (ir, 3), (1, 1), LEFT, 1)            
+            self.widlist.append(('old_counter', counter, desc,
+                                 pvctrl, use, None, erase))
 
         for i in range(2):
             desc   = wx.TextCtrl(panel, -1, value='', size=(125, -1))
@@ -228,10 +246,11 @@ class DetectorFrame(wx.Frame) :
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
-            self.widlist.append(('new_counter', None, desc, pvctrl, use, None))
+            self.widlist.append(('new_counter', None, desc,
+                                 pvctrl, use, None, False))
         ###
         ir += 1
-        sizer.Add(self.make_buttons(panel), (ir, 0), (1, 3), wx.ALIGN_CENTER|wx.GROW, 1)
+        sizer.Add(self.make_buttons(panel), (ir, 0), (1, 3), wx.ALIGN_LEFT, 1)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -326,31 +345,55 @@ class DetectorFrame(wx.Frame) :
         return p
 
     def make_buttons(self, panel):
-        bpanel = wx.Panel(panel, size=(200, 25))
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        _ok    = add_button(bpanel, 'Apply',     size=(70, -1),
-                            action=self.onApply)
-        _cancel = add_button(bpanel, 'Close', size=(70, -1), action=self.onClose)
-        sizer.Add(_ok,     0, wx.ALIGN_LEFT,  2)
-        sizer.Add(_cancel, 0, wx.ALIGN_RIGHT,  2)
-        pack(bpanel, sizer)
-        return bpanel
+        btnsizer = wx.StdDialogButtonSizer()
+        btn_ok = wx.Button(panel, wx.ID_OK)
+        btn_no = wx.Button(panel, wx.ID_CANCEL)
+        panel.Bind(wx.EVT_BUTTON, self.onApply, btn_ok)
+        panel.Bind(wx.EVT_BUTTON, self.onApply, btn_ok)
+        panel.Bind(wx.EVT_BUTTON, self.onClose, btn_no)
+        btn_ok.SetDefault()
+        btnsizer.AddButton(btn_ok)
+        btnsizer.AddButton(btn_no)
 
-    def onView(self, event=None, label=None):
-        print 'list all triggers, list all counters with add/remove button'
-
-    def onNewDetector(self, event=None, **kws):
-        print 'add new detector ', row
+        btnsizer.Realize()
+        return btnsizer
 
     def onApply(self, event=None):
-        print 'Apply Detector settings!'
         self.scandb.set_info('det_settle_time', float(self.settle_time.GetValue()))
         for w in self.widlist:
-            wtype, obj, desc, ctrl, use, kind = w
-            if wtype == 'old_det':
-                print 'old det!'
-            print wtype, obj
+            wtype, obj, name, pvname, use, kind, erase = w
+            use    = use.GetSelection()
+            name   = name.GetValue().strip()
+            pvname = pvname.GetValue().strip()
+            if len(name) < 1 or len(pvname) < 1:
+                continue
+            if kind is not None:
+                kind = kind.GetStringSelection()
+            if erase:
+                erase = erase.GetSelection()
+                
+            if erase:
+                if obj is not None:
+                    delete = self.scandb.del_detector
+                    if 'counter' in wtype:
+                        delete = self.scan.del_counter
+                    delete(name)
+            elif obj is not None:
+                obj.use    = use
+                obj.name   = name
+                obj.pvname = pvname
+                if kind is not None:
+                    obj.kind   = kind
+            elif 'det' in wtype:
+                opts = json.dumps(DET_DEFAULT_OPTS.get(kind, {}))
+                self.scandb.add_detector(name, pvname, kind,
+                                         options=opts, use=use)
+            elif 'counter' in wtype:
+                self.scandb.add_counter(name, pvname, use=use)
 
+        self.scandb.commit()
+        self.Destroy()
+        
     def onClose(self, event=None):
         self.Destroy()
 

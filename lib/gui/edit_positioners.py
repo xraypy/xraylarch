@@ -52,7 +52,7 @@ class PositionerFrame(wx.Frame) :
                   (ir, 1), (1, 1), labstyle, 2)
         sizer.Add(SimpleText(panel, label='Readback PV', size=(175, -1)),
                   (ir, 2), (1, 1), labstyle, 2)
-        sizer.Add(SimpleText(panel, label='Remove?', size=(100, -1)),
+        sizer.Add(SimpleText(panel, label='Erase?', size=(100, -1)),
                   (ir, 3), (1, 1), labstyle, 2)
 
         self.widlist = []
@@ -60,7 +60,7 @@ class PositionerFrame(wx.Frame) :
             desc   = wx.TextCtrl(panel, -1, value=pos.name, size=(175, -1))
             pvctrl = wx.TextCtrl(panel, value=pos.drivepv,  size=(175, -1))
             rdctrl = wx.TextCtrl(panel, value=pos.readpv,  size=(175, -1))
-            delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
+            delpv  = YesNo(panel)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
@@ -103,7 +103,7 @@ class PositionerFrame(wx.Frame) :
             desc   = wx.TextCtrl(panel, -1, value=pos.name, size=(175, -1))
             pvctrl = wx.TextCtrl(panel, value=pos.drivepv,  size=(175, -1))
             rdctrl = wx.TextCtrl(panel, value=pos.readpv,  size=(175, -1))
-            delpv  = YesNo(panel, choices=('Remove', 'Keep'), size=(100, -1))
+            delpv  = YesNo(panel)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
@@ -152,15 +152,18 @@ class PositionerFrame(wx.Frame) :
         return p
 
     def make_buttons(self, panel):
-        bpanel = wx.Panel(panel, size=(200, 25))
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        _ok    = add_button(bpanel, 'Apply',     size=(70, -1),
-                            action=self.onApply)
-        _cancel = add_button(bpanel, 'Close', size=(70, -1), action=self.onClose)
-        sizer.Add(_ok,     0, wx.ALIGN_LEFT,  2)
-        sizer.Add(_cancel, 0, wx.ALIGN_RIGHT,  2)
-        pack(bpanel, sizer)
-        return bpanel
+        btnsizer = wx.StdDialogButtonSizer()
+        btn_ok = wx.Button(panel, wx.ID_OK)
+        btn_no = wx.Button(panel, wx.ID_CANCEL)
+        panel.Bind(wx.EVT_BUTTON, self.onApply, btn_ok)
+        panel.Bind(wx.EVT_BUTTON, self.onApply, btn_ok)
+        panel.Bind(wx.EVT_BUTTON, self.onClose, btn_no)
+        btn_ok.SetDefault()
+        btnsizer.AddButton(btn_ok)
+        btnsizer.AddButton(btn_no)
+
+        btnsizer.Realize()
+        return btnsizer
 
     def onApply(self, event=None):
         step_pos = OrderedDict()
@@ -182,14 +185,16 @@ class PositionerFrame(wx.Frame) :
             elif use and kind == 'xafs':
                 energy_drive = drive
                 energy_read = read
-        self.config.xafs['energy_drive'] = energy_drive
-        self.config.xafs['energy_read']  = energy_read
-        self.config.positioners = step_pos
-        self.config.slewscan_positioners = slew_pos
-        for p in self.scanpanels.values():
-            p.use_config(self.config)
+        print ' need to update positioners in db!!! '
         self.Destroy()
 
+#         self.config.xafs['energy_drive'] = energy_drive
+#         self.config.xafs['energy_read']  = energy_read
+#         self.config.positioners = step_pos
+#         self.config.slewscan_positioners = slew_pos
+#         for p in self.scanpanels.values():
+#             p.use_config(self.config)
+# ;
     def onClose(self, event=None):
         self.Destroy()
 

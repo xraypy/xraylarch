@@ -9,6 +9,17 @@ from ordereddict import OrderedDict
 
 from .saveable import Saveable
 
+DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
+                    'areadetector': {'file_plugin': 'TIFF1',
+                                     'auto_increment': True},
+                    'mca': {'nrois': 16, 'use_full': False,
+                            'use_net': False},
+                    'multimca': {'nrois': 16, 'nmcas': 4,
+                                 'use_full': False, 'use_net': False}}
+
+AD_FILE_PLUGINS = ('TIFF1', 'JPEG1', 'NetCDF1',
+                   'HDF1', 'Nexus1', 'Magick1')
+
 class Trigger(Saveable):
     """Detector Trigger for a scan. The interface is:
     trig = ScanTrigger(pvname, value=1)
@@ -314,8 +325,8 @@ class ScalerDetector(DetectorMixin):
         self.counters = self._counter.counters
         self.extra_pvs = [('scaler frequency', '%s.FREQ' % prefix),
                           ('scaler read_delay', '%s.DLY' % prefix)]
-        self._repr_extra = ', nchannels=%i, use_calc=%s' % (nchan,
-                                                            repr(use_calc))
+        self._repr_extra = ', nchans=%i, use_calc=%s' % (nchan,
+                                                         repr(use_calc))
 
         self.extra_pvs.extend(self._counter.extra_pvs)
 
@@ -333,8 +344,6 @@ class AreaDetector(DetectorMixin):
     trigger / dwelltime, uses array counter as only counter
     """
     trigger_suffix = 'Acquire'
-    _valid_file_plugins = ('TIFF1', 'JPEG1', 'NetCDF1',
-                           'HDF1', 'Nexus1', 'Magick1')
     def __init__(self, prefix, file_plugin=None, **kws):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
@@ -344,7 +353,7 @@ class AreaDetector(DetectorMixin):
         self.file_plugin  = None
         self.counters = [Counter("%scam1:ArrayCounter_RBV" % prefix,
                                  label='Image Counter')]
-        if file_plugin in self._valid_file_plugins:
+        if file_plugin in AD_FILE_PLUGINS:
             self.file_plugin = file_plugin
             f_counter = Counter("%s%s:FileNumebr_RBV" % (prefix, file_plugin),
                                 label='File Counter')
