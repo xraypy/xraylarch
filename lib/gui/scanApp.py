@@ -3,8 +3,8 @@
 Main GUI form for setting up and executing Step Scans
 
 Principle features:
-   1.  read configuration file, tie to database...
-   2.  wx.ChoiceBox (exclusive panel) for
+   1. read simple configuration file, tie to database (postgres)
+   2. notebook panels for
          Linear Scans
          Mesh Scans (2d maps)
          XAFS Scans
@@ -13,23 +13,20 @@ Principle features:
    3.  Other notes:
        Linear Scans support Slave positioners
        A Scan Definition files describes an individual scan.
-       Separate popup window for Detectors (Trigger + set of Counters)
-       Allow adding any additional Counter
+       Separate window for configuring Detectors (Trigger + set of Counters)
+           and Positioners, including adding any additional Counter
        Builtin Support for Detectors: Scalers, MultiMCAs, and AreaDetectors
-       Give File Prefix on Scan Form
-       options window for settling times
-       Plot Window allows simple math of columns
-       Plot Window supports shows position has "Go To" button.
+       calculate / display estimated scan time on changes
 
-   4. To consider / add:
-       keep sqlite db of scan defs / scan names (do a scan like 'xxxx')
-       plot window can do simple analysis?
+       Give File Prefix on Scan Form
 
 To Do:
-  calculate / display estimated scan time on changes
-  plotting window with drop-downs for column math
-  detector selection
-  encapsulate (json?) scan parameters
+   Plot Window allows simple math of columns, has "Go To" button.
+   Plot window with drop-downs for column math, simple fits
+
+   Sequence Window
+   Edit Macros
+   
 
 """
 import os
@@ -132,11 +129,11 @@ class ScanFrame(wx.Frame):
         if 'port' in kwargs:
             kwargs['port'] = int(kwargs['port'])
 
-        self._scandb = ScanDB(dbname, **kwargs)
-        self._scandb.read_station_config(config)
+        self.scandb = ScanDB(dbname, **kwargs)
+        self.scandb.read_station_config(config)
 
     def add_scanpanel(self, creator, title):
-        span = creator(self, scandb=self._scandb, pvlist=self.pvlist)
+        span = creator(self, scandb=self.scandb, pvlist=self.pvlist)
         self.nb.AddPage(span, title, True)
         self.scanpanels[title] = span
 
@@ -175,7 +172,7 @@ class ScanFrame(wx.Frame):
 
         self.nscans = FloatCtrl(bpanel, precision=0, value=1, minval=0, size=(45, -1))
 
-        self.filename = wx.TextCtrl(bpanel, -1, self._scandb.get_info('filename', ''))
+        self.filename = wx.TextCtrl(bpanel, -1, self.scandb.get_info('filename', ''))
         self.filename.SetMinSize((400, 25))
 
         self.user_comms = wx.TextCtrl(bpanel, -1, "", style=wx.TE_MULTILINE)
@@ -184,8 +181,8 @@ class ScanFrame(wx.Frame):
         self.msg1  = SimpleText(bpanel, "    ", size=(200, -1))
         self.msg2  = SimpleText(bpanel, "    ", size=(200, -1))
         self.msg3  = SimpleText(bpanel, "    ", size=(200, -1))
-        self.start_btn = add_button(bpanel, "Start Scan", action=self.onStartScan)
-        self.abort_btn = add_button(bpanel, "Abort Scan", action=self.onAbortScan)
+        self.start_btn = add_button(bpanel, "Start", action=self.onStartScan)
+        self.abort_btn = add_button(bpanel, "Abort", action=self.onAbortScan)
         self.abort_btn.Disable()
 
         sty = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -250,13 +247,13 @@ class ScanFrame(wx.Frame):
     @EpicsFunction
     def connect_epics(self):
         t0 = time.time()
-        for db_pv in self._scandb.getall('pvs'):
+        for db_pv in self.scandb.getall('pvs'):
             name = db_pv.name
             if len(name) < 1:
                 continue
             self.pvlist[name] = epics.PV(name)
 
-        for det in self._scandb.get_detectors():
+        for det in self.scandb.get_detectors():
             opts = json.loads(det.options)
             opts['label'] = det.name
             opts['kind'] = det.kind 
@@ -269,30 +266,33 @@ class ScanFrame(wx.Frame):
     def onStartScan(self, evt=None):
         panel = self.nb.GetCurrentPage()
         scan = panel.generate_scan()
-
-        scan['detectors'] = []
-        scan['counters'] = []
-        scan['extra_pvs'] = []
-        print 'START SCAN ..'
-        for label, val in self.config.detectors.items():
-            prefix, opts = val
-            opts['label'] = label
-            opts['prefix'] = prefix
-            scan['detectors'].append(opts)
-        for label, pvname in self.config.counters.items():
-            scan['counters'].append((label, pvname))
-
-        for label, pvname in self.config.extra_pvs.items():
-            scan['extra_pvs'].append((label, pvname))
-
         scan['nscans'] = int(self.nscans.GetValue())
-        scan['filename'] = self.filename.GetValue()
+        fname = self.filename.GetValue()
+        scan['filename'] = fname
         scan['user_comments'] = self.user_comms.GetValue()
-        scan['pos_settle_time'] = 0.010
-        scan['det_settle_time'] = 0.010
-        f = open('scan.cnf', 'w')
-        f.write("%s\n" % json.dumps(scan, ensure_ascii=True))
-        self.run_scan(scan)
+
+        scan['pos_settle_time'] = float(self.scandb.get_info('pos_settle_time'))
+        scan['det_settle_time'] = float(self.scandb.get_info('det_settle_time'))
+        
+        scan['detectors'] = []
+        scan['counters']  = []
+        scan['extra_pvs'] = []
+        for det in self.scandb.get_detectors():
+            if det.use:
+                opts = json.loads(det.options)
+                opts['label']  = det.name
+                opts['prefix'] = det.pvname
+                opts['kind'] = det.kind
+                opts['notes'] = det.notes
+                scan['detectors'].append(opts)
+                
+        for ct in self.scandb.getall('scancounters'):
+            if ct.use:
+                scan['counters'].append((ct.name, ct.pvname))
+
+        scanname = time.strftime("%b%d_%H%M%S_")
+        self.scandb.add_scandef(scanname,  json.dumps(scan))
+        self.scandb.add_command('doscan', arguments=scanname, output_file=fname)
 
     def run_scan(self, conf):
         """runs a scan as specified in a scan configuration dictionary"""
