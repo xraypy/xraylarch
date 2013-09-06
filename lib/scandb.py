@@ -23,12 +23,14 @@ from sqlalchemy.dialects import sqlite, mysql, postgresql
 
 from scandb_schema import get_dbengine, create_scandb, map_scandb
 
-from scandb_schema import (Info, Status, PVTypes, PVs, MonitorValues,
+from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            Macros, Commands, ScanData, ScanPositioners,
                            ScanCounters, ScanDetectors, ScanDefs,
                            SlewScanPositioners, Positions, Position_PV,
                            Instruments, Instrument_PV,
                            Instrument_Precommands, Instrument_Postcommands)
+
+from .utils import strip_quotes
 
 def isScanDB(dbname, server='sqlite',
              user='', password='', host='', port=None):
@@ -170,10 +172,18 @@ class ScanDB(object):
         for key, val in config.slewscan.items():
             self.set_info('slew_%s' % key, val)
 
+        for name, pvname in config.extrapvs.items():
+            this = self.get_extrapv(name)
+            if this is None:
+                self.add_extrapv(name, pvname)
+            else:
+                self.update_where('extrapvs', {'name': name},
+                                  {'pvname': pvname})
+
         for name, data in config.detectors.items():
             thisdet  = self.get_detector(name)
             pvname, opts = data
-            dkind = opts.pop('kind')
+            dkind = strip_quotes(opts.pop('kind'))
             opts = json_encode(opts)
             if thisdet is None:
                 self.add_detector(name, pvname, kind=dkind, options=opts)
@@ -209,10 +219,6 @@ class ScanDB(object):
             else:
                 self.update_where('scancounters', {'name': name},
                                   {'pvname': pvname})
-
-        for name, pvname in config.extra_pvs.items():
-            this  = self.add_pv(pvname, notes=name, monitor=True)
-
 
     def commit(self):
         "commit session state"
@@ -338,7 +344,6 @@ class ScanDB(object):
                 return default
 
         return default
-
 
     def update_where(self, table, where, vals):
         """update a named table with dicts for 'where' and 'vals'"""
@@ -501,6 +506,30 @@ class ScanDB(object):
         self.commit()
         return row
 
+    # extra pvs: pvs recorded at breakpoints of scans
+    def get_extrapvs(self):
+        return self.getall('extrapvs', orderby='id')
+
+    def get_extrapv(self, name):
+        """return extrapv by name"""
+        return self.getrow('extrapvs', name, one_or_none=True)
+
+    def del_extrapv(self, name):
+        """delete extrapv by name"""
+        cls, table = self._get_table('extrapvs')
+        self.conn.execute(table.delete().where(table.c.name==name))
+
+    def add_extrapv(self, name, pvname, **kws):
+        """add extra pv (recorded at breakpoints in scans"""
+        cls, table = self._get_table('extrapvs')
+        name = name.strip()
+        kws.update({'pvname': pvname})
+        row = self.__addRow(cls, ('name',), (name,), **kws)
+        self.session.add(row)
+        self.add_pv(pvname, notes=name)
+        self.commit()
+        return row
+
     # add PV to list of PVs
     def add_pv(self, name, notes='', monitor=False):
         """add pv to PV table if not already there """
@@ -555,7 +584,6 @@ class ScanDB(object):
     # commands -- a more complex interface
     def get_commands(self, status=None):
         """return command by status"""
-
         cls, table = self._get_table('commands')
         if status is None:
             return self.query(table).all()
