@@ -453,6 +453,11 @@ class ScanDB(object):
         """return detector by name"""
         return self.getrow('scandetectors', name, one_or_none=True)
 
+    def del_detector(self, name):
+        """delete detector by name"""
+        cls, table = self._get_table('scandetectors')
+        self.conn.execute(table.delete().where(table.c.name==name))
+        
     def add_detector(self, name, pvname, kind='', options='', **kws):
         """add detector"""
         cls, table = self._get_table('scandetectors')
@@ -468,6 +473,11 @@ class ScanDB(object):
     def get_counter(self, name):
         """return counter by name"""
         return self.getrow('scancounters', name, one_or_none=True)
+
+    def del_counter(self, pvname):
+        """delete counter by name"""
+        cls, table = self._get_table('scancounters')
+        self.conn.execute(table.delete().where(table.c.name==name))
 
     def add_counter(self, name, pvname, **kws):
         """add counter (non-triggered detector)"""

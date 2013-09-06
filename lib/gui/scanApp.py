@@ -395,8 +395,8 @@ class ScanFrame(wx.Frame):
 
         # options
         pmenu = wx.Menu()
-        add_menu(self, pmenu, "General\tCtrl+G",
-                 "General Setup", self.onSetupMisc)
+        # add_menu(self, pmenu, "General\tCtrl+G",
+        #          "General Setup", self.onSetupMisc)
 
         add_menu(self, pmenu, "Positioners\tCtrl+P",
                   "Setup Motors and Positioners", self.onSetupPositioners)
