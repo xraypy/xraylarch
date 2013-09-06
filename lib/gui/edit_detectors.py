@@ -136,7 +136,7 @@ class DetectorFrame(wx.Frame) :
         self.SetFont(self.Font10)
 
         sizer = wx.GridBagSizer(12, 5)
-        panel = scrolled.ScrolledPanel(self, size=(625, 625))
+        panel = scrolled.ScrolledPanel(self, size=(675, 625))
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
 
@@ -248,6 +248,9 @@ class DetectorFrame(wx.Frame) :
             sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
             self.widlist.append(('new_counter', None, desc,
                                  pvctrl, use, None, False))
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 4), wx.ALIGN_LEFT|wx.EXPAND, 3)
         ###
         ir += 1
         sizer.Add(self.make_buttons(panel), (ir, 0), (1, 3), wx.ALIGN_LEFT, 1)
@@ -349,7 +352,6 @@ class DetectorFrame(wx.Frame) :
         btn_ok = wx.Button(panel, wx.ID_OK)
         btn_no = wx.Button(panel, wx.ID_CANCEL)
         panel.Bind(wx.EVT_BUTTON, self.onApply, btn_ok)
-        panel.Bind(wx.EVT_BUTTON, self.onApply, btn_ok)
         panel.Bind(wx.EVT_BUTTON, self.onClose, btn_no)
         btn_ok.SetDefault()
         btnsizer.AddButton(btn_ok)
@@ -362,6 +364,12 @@ class DetectorFrame(wx.Frame) :
         self.scandb.set_info('det_settle_time', float(self.settle_time.GetValue()))
         for w in self.widlist:
             wtype, obj, name, pvname, use, kind, erase = w
+            if erase not in (None, False):
+                erase = erase.GetSelection()
+            else:
+                erase = False
+
+
             use    = use.GetSelection()
             name   = name.GetValue().strip()
             pvname = pvname.GetValue().strip()
@@ -369,15 +377,11 @@ class DetectorFrame(wx.Frame) :
                 continue
             if kind is not None:
                 kind = kind.GetStringSelection()
-            if erase:
-                erase = erase.GetSelection()
-                
-            if erase:
-                if obj is not None:
-                    delete = self.scandb.del_detector
-                    if 'counter' in wtype:
-                        delete = self.scan.del_counter
-                    delete(name)
+            if erase and obj is not None:
+                delete = self.scandb.del_detector
+                if 'counter' in wtype:
+                    delete = self.scan.del_counter
+                delete(obj.name)
             elif obj is not None:
                 obj.use    = use
                 obj.name   = name

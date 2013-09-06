@@ -416,6 +416,17 @@ class ScanDB(object):
         """return positioner by name"""
         return self.getrow('scanpositioners', name, one_or_none=True)
 
+    def del_slewpositioner(self, name):
+        """delete slewscan positioner by name"""
+        cls, table = self._get_table('slewscanpositioners')
+        self.conn.execute(table.delete().where(table.c.name==name))
+
+    def del_positioner(self, name):
+        """delete positioner by name"""
+        cls, table = self._get_table('scanpositioners')
+        
+        self.conn.execute(table.delete().where(table.c.name==name))
+
     def add_positioner(self, name, drivepv, readpv=None, notes='', **kws):
         """add positioner"""
         cls, table = self._get_table('scanpositioners')
@@ -474,7 +485,7 @@ class ScanDB(object):
         """return counter by name"""
         return self.getrow('scancounters', name, one_or_none=True)
 
-    def del_counter(self, pvname):
+    def del_counter(self, name):
         """delete counter by name"""
         cls, table = self._get_table('scancounters')
         self.conn.execute(table.delete().where(table.c.name==name))
@@ -493,6 +504,8 @@ class ScanDB(object):
     # add PV to list of PVs
     def add_pv(self, name, notes='', monitor=False):
         """add pv to PV table if not already there """
+        if len(name) < 2:
+            return
         cls, table = self._get_table('pvs')
         vals  = self.query(table).filter(cls.name == name).all()
         ismon = {False:0, True:1}[monitor]
