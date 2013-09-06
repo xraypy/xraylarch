@@ -98,7 +98,7 @@ class ScanFrame(wx.Frame):
         self.detectors  =  OrderedDict()
         # list of extra counters and whether to use them
         self.extra_counters = OrderedDict()
-
+        self.subframes = {}
         self.init_scandb(inifile)
         self._larch = None
         self.epics_status = 0
@@ -252,6 +252,8 @@ class ScanFrame(wx.Frame):
         t0 = time.time()
         for db_pv in self._scandb.getall('pvs'):
             name = db_pv.name
+            if len(name) < 1:
+                continue
             self.pvlist[name] = epics.PV(name)
 
         for det in self._scandb.get_detectors():
@@ -422,16 +424,33 @@ class ScanFrame(wx.Frame):
         ret = popup(self, "Really Quit?", "Exit Epics Scan?",
                     style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
         if ret == wx.ID_YES:
+            for child in self.subframes.values():
+                try:
+                    child.Destroy()
+                except:
+                    pass
             self.Destroy()
 
+    def show_subframe(self, name, frameclass):
+        shown = False
+        if name in self.subframes:
+            try:
+                self.subframes[name].Raise()
+                shown = True
+            except:
+                del self.subframes[name]
+        if not shown:
+            self.subframes[name] = frameclass(self)
+
+        
     def onSetupMisc(self, evt=None):
-        SetupFrame(self)
+        self.show_subframe('misc', SetupFrame)
 
     def onSetupPositioners(self, evt=None):
-        PositionerFrame(self)
+        self.show_subframe('pos', PositionerFrame)        
 
     def onSetupDetectors(self, evt=None):
-        DetectorFrame(self)
+        self.show_subframe('det', DetectorFrame)                
 
     def onFolderSelect(self,evt):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE

@@ -64,6 +64,10 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         for pos in self.scandb.get_slewpositioners():
             self.slewlist.append(pos.name)
 
+    def update_positioners(self):
+        """meant to be overwritten"""
+        self.get_positioners()
+
     def hline(self):
         return wx.StaticLine(self, size=(700, 3),
                              style=wx.LI_HORIZONTAL|wx.GROW)
@@ -300,6 +304,22 @@ class LinearScanPanel(GenericScanPanel):
         self.layout()
         self.update_position_from_pv(0)
 
+    def update_positioners(self):
+        """meant to be overwritten"""
+        self.get_positioners()
+        for irow, row in enumerate(self.pos_settings):
+            thispos = row[0]
+            cur = thispos.GetStringSelection()
+            thispos.Clear()
+            if irow == 0: 
+                thispos.SetItems(self.poslist[1:])
+            else:
+                thispos.SetItems(self.poslist)
+            if cur in self.poslist:
+                thispos.SetStringSelection(cur)
+            else:
+                thispos.SetSelection(0)
+            
     def onVal(self, index=0, label=None, value=None, **kws):
         if not self._initialized: return
         npts = self.pos_settings[0][6]
@@ -638,8 +658,20 @@ class MeshScanPanel(GenericScanPanel):
 
         ir += 1
         sizer.Add(self.hline(), (ir, 0), (1, 8), wx.ALIGN_CENTER)
-
         self.layout()
+
+    def update_positioners(self):
+        """meant to be overwritten"""
+        self.get_positioners()
+        for irow, row in enumerate(self.pos_settings):
+            thispos = row[0]
+            cur = thispos.GetStringSelection()
+            thispos.Clear()
+            thispos.SetItems(self.poslist[1:])
+            if cur in self.poslist:
+                thispos.SetStringSelection(cur)
+            else:
+                thispos.SetSelection(0)
 
     def onVal(self, index=0, label=None, value=None, **kws):
         if not self._initialized: return
@@ -736,6 +768,22 @@ class SlewScanPanel(GenericScanPanel):
         sizer.Add(self.hline(), (ir, 0), (1, 8), wx.ALIGN_CENTER)
 
         self.layout()
+
+    def update_positioners(self):
+        """meant to be overwritten"""
+        self.get_positioners()
+        for irow, row in enumerate(self.pos_settings):
+            thispos = row[0]
+            cur = thispos.GetStringSelection()
+            thispos.Clear()
+            plist = self.poslist[2:]
+            if irow == 0:
+                plist = self.slewlist
+            thispos.SetItems(plist)
+            if cur in plist:
+                thispos.SetStringSelection(cur)
+            else:
+                thispos.SetSelection(0)
 
     def onVal(self, index=0, label=None, value=None, **kws):
         if not self._initialized: return
