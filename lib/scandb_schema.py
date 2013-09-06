@@ -125,6 +125,7 @@ class Status(_BaseTable):
     "status table"
     name, notes = None, None
 
+
 class ScanPositioners(_BaseTable):
     "positioners table"
     name, notes, drivepv, readpv = [None]*4
@@ -146,13 +147,14 @@ class ScanDetectors(_BaseTable):
     name, notes, pvname, kind, options = [None]*5
     use = 1
 
+class ExtraPVs(_BaseTable):
+    "extra pvs in scan table"
+    name, notes, pvname = None, None, None
+    use = 1
+
 class ScanDefs(_BaseTable):
     "scandefs table"
     name, notes, text, modify_time, last_used_time = [None]*5
-
-class PVTypes(_BaseTable):
-    "pvtype table"
-    name, notes = None, None
 
 class PVs(_BaseTable):
     "pv table"
@@ -171,7 +173,6 @@ class Commands(_BaseTable):
     "commands-to-be-executed table"
     command, notes, arguments = None, None, None
     status, status_name = None, None
-    scandef, scandefs_id = None, None
     request_time, start_time, modify_time = None, None, None
     output_value, output_file = None, None
 
@@ -260,6 +261,8 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                              Column('modify_time', DateTime),
                              Column('last_used_time', DateTime)])
 
+    extrapvs = NamedTable('extrapvs', metadata, with_pv=True, with_use=True)
+    
     macros = NamedTable('macros', metadata,
                         cols=[StrCol('arguments'),
                               StrCol('text'),
@@ -269,7 +272,6 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                       cols=[StrCol('command'),
                             StrCol('arguments'),
                             PointerCol('status', default=1),
-                            PointerCol('scandefs'),
                             Column('request_time', DateTime,
                                    default=datetime.now),
                             Column('start_time',    DateTime),
@@ -368,7 +370,7 @@ def map_scandb(metadata):
         clear_mappers()
     except:
         pass
-    for cls in (Info, Status, PVTypes, PVs, MonitorValues, Macros,
+    for cls in (Info, Status, PVs, MonitorValues, Macros, ExtraPVs,
                 Commands, ScanData, ScanPositioners, ScanCounters,
                 ScanDetectors, ScanDefs, SlewScanPositioners,
                 Positions, Position_PV, Instruments, Instrument_PV,
@@ -377,14 +379,11 @@ def map_scandb(metadata):
         name = cls.__name__.lower()
         props = {}
         if name == 'commands':
-            props = {'status': relationship(Status),
-                     'scandefs': relationship(ScanDefs)}
+            props = {'status': relationship(Status)}
         elif name == 'scandata':
             props = {'commands': relationship(Commands)}
         elif name == 'monitorvalues':
             props = {'pv': relationship(PVs)}
-        elif name == 'pvs':
-            props = {'pvtype': relationship(PVTypes)}
         elif name == 'instruments':
             props ={'pvs': relationship(PVs,
                                         backref='instruments',
@@ -413,6 +412,7 @@ def map_scandb(metadata):
         keyattrs[name] = 'name'
 
     keyattrs['info'] = 'keyname'
+    keyattrs['commands'] = 'command'
     keyattrs['position_pv'] = 'id'
     keyattrs['instrument_pv'] = 'id'
     keyattrs['monitovalues'] = 'id'

@@ -73,7 +73,7 @@ positioners= X, Y, Theta
 # index = label || PVname
 1 = MotorX_Steps  || 13IDE:m11.RRBV
 #--------------------------#
-[extra_pvs]
+[extrapvs]
 # index = label || PVname
 1 = Ring Current || S:SRcurrentAI.VAL
 2 = I0 Preamp Sensitivity Number || 13IDE:A1sens_num.VAL
@@ -137,7 +137,7 @@ class StationConfig(object):
                            ('xafs',        False),
                            ('slewscan',    False),
                            ('slewscan_positioners',  True),
-                           ('extra_pvs',   True),
+                           ('extrapvs',   True),
                            ))
 
     def __init__(self, filename=None, text=None):
