@@ -182,7 +182,7 @@ class Commands(_BaseTable):
         return "<%s(%s)>" % (name, ', '.join(fields))
 
 class ScanData(_BaseTable):
-    notes, data, breakpoints, modify_time = [None]*4
+    notes, pvname, data, breakpoints, modify_time = [None]*5
 
 class Instruments(_BaseTable):
     "instrument table"
@@ -292,7 +292,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                     Column('modify_time', DateTime))
 
 
-    scandata = NamedTable('scandata', metadata,
+    scandata = NamedTable('scandata', metadata, with_pv=True, 
                          cols = [PointerCol('commands'),
                                  ArrayCol('data', server=server),
                                  StrCol('breakpoints', default=''),
