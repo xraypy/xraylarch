@@ -8,3 +8,9 @@ def strip_quotes(t):
               (t.startswith(s1) and t.endswith(s1))):
             t = t[1:-1]
     return t
+
+def normalize_pvname(name):
+    """ make sure Epics PV name either ends with .VAL or .SOMETHING!"""
+    if  '.' in name:
+        return name
+    return "%s.VAL" % name
