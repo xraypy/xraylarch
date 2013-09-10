@@ -284,12 +284,15 @@ class DetectorMixin(Saveable):
         self.dwelltime = None
         self.extra_pvs = []
         self._repr_extra = ''
-
+        
     def __repr__(self):
         return "<%s: '%s', prefix='%s'%s>" % (self.__class__.__name__,
                                               self.label, self.prefix,
                                               self._repr_extra)
 
+    def connect_counters(self):
+        pass
+    
     def pre_scan(self, **kws):
         pass
 
@@ -416,22 +419,30 @@ class MultiMcaDetector(DetectorMixin):
 
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
-        self.prefix = prefix
-        self.dwelltime_pv = PV('%sPresetReal' % prefix)
-        self.dwelltime    = None
-        self.trigger = Trigger("%sEraseStart" % prefix)
-        self._counter = MultiMcaCounter(prefix, nmcas=nmcas, nrois=nrois,
-                                        search_all=search_all,
-                                        use_net=use_net,
-                                        use_unlabeled=use_unlabeled,
-                                        use_full=use_full)
+        self.prefix        = prefix
+        self.dwelltime_pv  = PV('%sPresetReal' % prefix)
+        self.trigger       = Trigger("%sEraseStart" % prefix)
+        self.dwelltime     = None
+        self.extra_pvs     = None 
+        self._counter      = None
+        self._connect_args = dict(nmcas=nmcas, nrois=nrois,
+                                  search_all=search_all,
+                                  use_net=use_net,
+                                  use_unlabeled=use_unlabeled,
+                                  use_full=use_full)
+        self._repr_extra = self.repr_fmt % (nmcas, nrois,
+                                            repr(use_net), repr(use_full))
 
+    def connect_counters(self):
+        self._counter = MultiMcaCounter(self.prefix, **self._connect_args)
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
-        self._repr_extra = self.repr_fmt % (nmcas, nrois,
-                                             repr(use_net), repr(use_full))
 
+        
     def pre_scan(self, scan=None, **kws):
+        if self._counter is None:
+            self.connect_counters()
+            
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
