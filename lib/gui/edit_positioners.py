@@ -196,6 +196,7 @@ class PositionerFrame(wx.Frame) :
                 delete(obj.name)
             elif obj is not None:
                 obj.name = name
+                obj.use = 1
                 obj.drivepv = drivepv
                 obj.readpv = readpv
             elif wtype == 'xafs':
