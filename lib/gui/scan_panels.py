@@ -18,6 +18,7 @@ from .gui_utils import SimpleText, FloatCtrl, Closure
 from .gui_utils import pack, add_choice
 
 from .. import etok, ktoe, XAFS_Scan, StepScan, Positioner, Counter
+from ..utils import normalize_pvname
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
@@ -64,6 +65,10 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         for pos in self.scandb.get_slewpositioners():
             self.slewlist.append(pos.name)
 
+    def load_scandict(self, scan):
+        """meant to be overwritten"""
+        pass
+    
     def update_positioners(self):
         """meant to be overwritten"""
         self.get_positioners()
@@ -110,7 +115,9 @@ class GenericScanPanel(scrolled.ScrolledPanel):
     def top_widgets(self, title, dwell_prec=3, dwell_value=1):
         self.absrel = add_choice(self, ('Absolute', 'Relative'),
                                  action = self.onAbsRel)
-        self.absrel.SetSelection(1)
+                
+        self.absrel_value = 0
+        self.absrel.SetSelection(0)
         self.dwelltime = FloatCtrl(self, precision=dwell_prec,
                                    value=dwell_value,
                                    act_on_losefocus=True,
@@ -181,11 +188,11 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         for i in (3, 4, 5, 6):
             wids[i].Enable()
 
-        pvnames = self.pospvs[name]
+        pvnames = list(self.pospvs[name])
         if len(pvnames[0]) < 1:
             return
-        if '.' not in pvnames[1]: pvnames[1] = pvnames[1] + '.VAL'
-        if '.' not in pvnames[0]: pvnames[0] = pvnames[0] + '.VAL'
+        pvnames[0] = normalize_pvname(pvnames[0])
+        pvnames[1] = normalize_pvname(pvnames[1])
         if pvnames[0] not in self.pvlist:
             self.pvlist[pvnames[0]] = epics.PV(pvnames[0])
             self.pvlist[pvnames[1]] = epics.PV(pvnames[1])
@@ -217,14 +224,17 @@ class GenericScanPanel(scrolled.ScrolledPanel):
 
     def onAbsRel(self, evt=None):
         "generic abs/rel"
+        if evt.GetSelection() == self.absrel_value:
+            return
+        self.absrel_value = evt.GetSelection()
         for index, wids in enumerate(self.pos_settings):
             if wids[3].Enabled:
                 try:
                     offset = float(wids[2].GetLabel())
                 except:
                     offset = 0.0
-
-                if 1 == self.absrel.GetSelection(): # now relative (was absolute)
+                # now relative (was absolute)
+                if 1 == self.absrel.GetSelection():
                     offset = -offset
                 wids[3].SetMin(wids[3].GetMin() + offset)
                 wids[3].SetMax(wids[3].GetMax() + offset)
@@ -303,6 +313,27 @@ class LinearScanPanel(GenericScanPanel):
         sizer.Add(self.hline(), (ir, 0), (1, 8), wx.ALIGN_CENTER)
         self.layout()
         self.update_position_from_pv(0)
+
+    def load_scandict(self, scan):
+        """load scan from scan dictionary"""
+        self.dwelltime.SetValue(scan['dwelltime'])
+        self.absrel.SetSelection(0)        
+        for i in (1, 2):
+            pos, units, cur, start, stop, step, npts = self.pos_settings[i]
+            pos.SetSelection(0)
+            start.Disable()
+            stop.Disable()
+            step.Disable()
+            npts.Disable()
+            self.update_position_from_pv(i)
+
+        for i, posdat in enumerate(scan['positioners']):
+            pos, units, cur, start, stop, step, npts = self.pos_settings[i]
+            pos.SetStringSelection(posdat[0])
+            start.SetValue(posdat[2])
+            stop.SetValue(posdat[3])
+            npts.SetValue(posdat[4])
+            self.update_position_from_pv(i)            
 
     def update_positioners(self):
         """meant to be overwritten"""
@@ -393,14 +424,15 @@ class XAFSScanPanel(GenericScanPanel):
         sizer.Add(self.hline(),  (ir, 0), (1, 8), wx.ALIGN_CENTER)
 
         nregs_wid = FloatCtrl(self, precision=0, value=3, minval=0, maxval=5,
-                            size=(25, -1),  act_on_losefocus=True,
-                            action=Closure(self.onVal, label='nreg'))
+                              size=(25, -1),  act_on_losefocus=True,
+                              action=Closure(self.onVal, label='nreg'))
         nregs = nregs_wid.GetValue()
 
         sizer.Add(SimpleText(self, "# Regions:"), (ir-1, 6), (1, 1), LEFT)
         sizer.Add(nregs_wid,                      (ir-1, 7), (1, 1), LEFT)
+ 
         ir += 1
-        sizer.Add(self.make_e0panel(),            (ir,   0), (1, 6), LEFT)
+        sizer.Add(self.make_e0panel(),   (ir,   0), (1, 8), LEFT)
         ir += 1
 
         sizer.Add(self.hline(),    (ir, 0), (1, 8), wx.ALIGN_CENTER)
@@ -410,9 +442,10 @@ class XAFSScanPanel(GenericScanPanel):
             sizer.Add(SimpleText(self, lab),  (ir, ic), (1, 1), LEFT, 2)
 
         for i, reg in enumerate((('Pre-Edge', (-50, -10, 5, 9)),
-                                  ('XANES',   (-10, 10, 1, 21)),
-                                  ('EXAFS1',  (10, 200, 2, 96)),
-                                  ('EXAFS2',  (200, 500, 3, 101)))):
+                                 ('XANES',   (-10, 10, 1, 21)),
+                                 ('EXAFS1',  (10, 200, 2, 96)),
+                                 ('EXAFS2',  (200, 500, 3, 101)),
+                                 ('EXAFS3',  (500, 1000, 5, 101)))):
             label, initvals = reg
             ir += 1
             reg   = wx.StaticText(self, -1, size=(100, -1), label=' %s' % label)
@@ -461,6 +494,32 @@ class XAFSScanPanel(GenericScanPanel):
         sizer.Add(self.kwtime, (ir, 5), (1, 1), LEFT, 2)
 
         self.layout()
+        self.inittimer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.display_energy, self.inittimer)
+        self.inittimer.Start(100)
+
+    def load_scandict(self, scan):
+        """load scan from scan dictionary"""
+        self.dwelltime.SetValue(scan['dwelltime'])
+        self.e0.SetValue(scan['e0'])
+        print 'load XAFS SCAN! '
+        self.absrel.SetSelection(1)        
+        for i in (1, 2, 3, 4):
+            pos, units, cur, start, stop, step, npts = self.reg_settings[i]
+            pos.SetSelection(0)
+            start.Disable()
+            stop.Disable()
+            step.Disable()
+            npts.Disable()
+            self.update_position_from_pv(i)
+
+#         for i, posdat in enumerate(scan['positioners']):
+#             pos, units, cur, start, stop, step, npts = self.pos_settings[i]
+#             pos.SetStringSelection(posdat[0])
+#             start.SetValue(posdat[2])
+#             stop.SetValue(posdat[3])
+#             npts.SetValue(posdat[4])
+#             self.update_position_from_pv(i)            
 
     def setScanTime(self):
         etime = (float(self.scandb.get_info('pos_settle_time')) +
@@ -468,7 +527,6 @@ class XAFSScanPanel(GenericScanPanel):
         dtime = 0.0
         kwt_max = float(self.kwtime.GetValue())
         kwt_pow = float(self.kwtimechoice.GetStringSelection())
-        print ' Set  XAFS Scan Time ', etime, kwt_pow, kwt_max
         dtimes = []
         for reg in self.reg_settings:
             nx = float(reg[3].GetValue())
@@ -485,30 +543,77 @@ class XAFSScanPanel(GenericScanPanel):
         self.est_time.SetLabel(str(timedelta(seconds=int(dtime))))
 
 
+    def top_widgets(self, title, dwell_prec=3, dwell_value=1):
+        self.absrel = add_choice(self, ('Absolute', 'Relative'),
+                                 size=(120, -1),
+                                 action = self.onAbsRel)
+        self.absrel.SetSelection(1)
+        self.dwelltime = FloatCtrl(self, precision=dwell_prec,
+                                   value=dwell_value,
+                                   act_on_losefocus=True,
+                                   minval=0, size=(65, -1),
+                                   action=Closure(self.onVal,
+                                                  label='dwelltime'))
+
+        self.est_time  = SimpleText(self, '  00:00:00  ')
+        title  =  SimpleText(self, " %s" % title, style=LEFT,
+                             font=self.Font13, colour='#880000')
+
+        alabel = SimpleText(self, ' Mode: ', size=(60, -1))
+        dlabel = SimpleText(self, ' Time/Point (sec):')
+        tlabel = SimpleText(self, ' Estimated Scan Time:  ')
+
+        sizer = self.sizer
+
+        sizer.Add(title,          (0, 0), (1, 3), LEFT,  3)
+        sizer.Add(tlabel,         (0, 4), (1, 2), RIGHT, 3)
+        sizer.Add(self.est_time,  (0, 6), (1, 2), CEN,   3)
+        sizer.Add(alabel,         (1, 0), (1, 1), LEFT,  3)
+        sizer.Add(self.absrel,    (1, 1), (1, 1), LEFT,  3)
+        sizer.Add(dlabel,         (1, 2), (1, 2), RIGHT, 3)
+        sizer.Add(self.dwelltime, (1, 4), (1, 1), LEFT,  3)
+       
+        # return next row for sizer
+        return 2
+
+
     def make_e0panel(self):
         p = wx.Panel(self)
         s = wx.BoxSizer(wx.HORIZONTAL)
-        self.e0 = FloatCtrl(p, precision=2, value=20000., minval=0, maxval=1e7,
+        self.e0 = FloatCtrl(p, precision=2, value=7000., minval=0, maxval=1e7,
                             size=(80, -1), act_on_losefocus=True,
                             action=Closure(self.onVal, label='e0'))
 
         self.elemchoice = add_choice(p, ELEM_LIST,
-                                     action=self.onEdgeChoice, size=(70, 25))
-        self.elemchoice.SetMaxSize((50, 20))
-        self.elemchoice.SetSelection(41)
+                                     action=self.onEdgeChoice, size=(70, -1))
+        self.elemchoice.SetMaxSize((60, 25))
+        self.elemchoice.SetSelection(27)
 
-        self.edgechoice = add_choice(p, self.edges_list,
+        self.edgechoice = add_choice(p, self.edges_list, size=(50, -1), 
                                      action=self.onEdgeChoice)
 
         s.Add(SimpleText(p, " Edge Energy:", size=(120, -1),
                          style=wx.ALIGN_LEFT), 0, CEN, 2)
         s.Add(self.e0,   0, LEFT, 2)
-        s.Add(SimpleText(p, "    Element:  "),  0, LEFT, 3)
-        s.Add(self.elemchoice,                   0, LEFT, 3)
-        s.Add(SimpleText(p, "     Edge:  "),     0, LEFT, 3)
-        s.Add(self.edgechoice,                   0, LEFT, 3)
+        s.Add(SimpleText(p, "   Element:  "),  0, LEFT, 3)
+        s.Add(self.elemchoice,                 0, LEFT, 3)
+        s.Add(SimpleText(p, "    Edge:  "),    0, LEFT, 3)
+        s.Add(self.edgechoice,                 0, LEFT, 3)
+        s.Add(SimpleText(p, "   Current Energy:", size=(120, -1),
+                         style=wx.ALIGN_LEFT), 0, CEN, 2)
+
+        self.energy_pv = PVText(p, pv=None, size=(100, -1))
+        s.Add(self.energy_pv, 0, CEN, 2)                     
         pack(p, s)
         return p
+
+    @EpicsFunction    
+    def display_energy(self, evt=None):
+        en_pvname = str(self.scandb.get_info('energy_read'))
+        if en_pvname in self.pvlist and self.energy_pv.pv is None:
+            self.energy_pv.SetPV(self.pvlist[en_pvname])
+            self.onEdgeChoice()
+            self.inittimer.Stop()
 
     def getUnits(self, index):
         un = self.reg_settings[index][5]
@@ -523,7 +628,12 @@ class XAFSScanPanel(GenericScanPanel):
         wids = self.reg_settings[index]
         units = self.getUnits(index)
         old_units = self.cur_units[index]
+        en_pvname = str(self.scandb.get_info('energy_read'))
+        if en_pvname in self.pvlist and self.energy_pv.pv is None:
+            self.energy_pv.SetPV(self.pvlist[en_pvname])
         e0_off = 0
+
+        
         update_esttime = label in ('dtime', 'dwelltime',
                                    'kwpow', 'kwtime', 'step', 'npts')
         if 0 == self.absrel.GetSelection(): # absolute
@@ -583,8 +693,11 @@ class XAFSScanPanel(GenericScanPanel):
     def onAbsRel(self, evt=None):
         """xafs abs/rel"""
         offset = self.e0.GetValue()
-        if 1 == self.absrel.GetSelection(): # relative (was absolute)
+
+        # relative (was absolute)
+        if 1 == self.absrel.GetSelection() and self.absrel_value == 0:
             offset = -offset
+            self.absrel_value = 1
         for index, wids in enumerate(self.reg_settings):
             units = self.getUnits(index)
             if units == 'eV':

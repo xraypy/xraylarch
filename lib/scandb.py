@@ -30,7 +30,7 @@ from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            Instruments, Instrument_PV,
                            Instrument_Precommands, Instrument_Postcommands)
 
-from .utils import strip_quotes
+from .utils import strip_quotes, normalize_pvname
 
 def isScanDB(dbname, server='sqlite',
              user='', password='', host='', port=None):
@@ -173,6 +173,7 @@ class ScanDB(object):
             self.set_info('slew_%s' % key, val)
 
         for name, pvname in config.extrapvs.items():
+            pvname = normalize_pvname(pvname)
             this = self.get_extrapv(name)
             if this is None:
                 self.add_extrapv(name, pvname)
@@ -183,6 +184,7 @@ class ScanDB(object):
         for name, data in config.detectors.items():
             thisdet  = self.get_detector(name)
             pvname, opts = data
+            pvname = normalize_pvname(pvname)
             dkind = strip_quotes(opts.pop('kind'))
             opts = json_encode(opts)
             if thisdet is None:
@@ -194,8 +196,8 @@ class ScanDB(object):
 
         for name, data in config.positioners.items():
             thispos  = self.get_positioner(name)
-            drivepv, readpv = data
-            if '.' not in drivepv: drivepv = '%s.VAL' % drivepv
+            drivepv = normalize_pvname(data[0])
+            readpv = normalize_pvname(data[1])
             if thispos is None:
                 self.add_positioner(name, drivepv, readpv=readpv)
             else:
@@ -204,8 +206,8 @@ class ScanDB(object):
 
         for name, data in config.slewscan_positioners.items():
             thispos  = self.get_slewpositioner(name)
-            drivepv, readpv = data
-            if '.' not in drivepv: drivepv = '%s.VAL' % drivepv
+            drivepv = normalize_pvname(data[0])
+            readpv = normalize_pvname(data[1])
             if thispos is None:
                 self.add_slewpositioner(name, drivepv, readpv=readpv)
             else:
@@ -213,6 +215,7 @@ class ScanDB(object):
                                   {'drivepv': drivepv, 'readpv': readpv})
 
         for name, pvname in config.counters.items():
+            pvname = normalize_pvname(pvname)
             this  = self.get_counter(name)
             if this is None:
                 self.add_counter(name, pvname)
@@ -250,14 +253,32 @@ class ScanDB(object):
         return cls, table
 
     def getall(self, tablename, orderby=None):
-        """return all rows from a named table"""
+        """return objects for all rows from a named table
+         orderby   to order results
+        """
         cls, table = self._get_table(tablename)
+        columns = table.c.keys()
         q = self.query(cls)
         if orderby is not None and hasattr(cls, orderby):
             q = q.order_by(getattr(cls, orderby))
         return q.all()
 
-    def get_info(self, key=None, default=None):
+    def select(self, tablename, orderby=None, **kws):
+        """return data for all rows from a named table,
+         orderby   to order results
+         key=val   to get entries matching a column (where clause)
+        """
+        cls, table = self._get_table(tablename)
+        columns = table.c.keys()
+        q = table.select()
+        for key, val in kws.items():
+            if key in columns:
+                q = q.where(getattr(table.c, key)==val)
+        if orderby is not None and hasattr(cls, orderby):
+            q = q.order_by(getattr(cls, orderby))
+        return q.execute().fetchall()
+
+    def get_info(self, key=None, default=None, as_int=False, as_bool=False):
         """get a value for an entry in the info table"""
         errmsg = "get_info expected 1 or None value for name='%s'"
         cls, table = self._get_table('info')
@@ -266,9 +287,14 @@ class ScanDB(object):
 
         out = self.query(cls).filter(cls.keyname==key).all()
         thisrow = None_or_one(out, errmsg % key)
-        if thisrow is None:
-            return default
-        return thisrow.value
+        out = default
+        if thisrow is not None:
+            out = thisrow.value
+        if as_int:
+            out = int(out)
+        if as_bool:
+            out = bool(int(out))
+        return out
 
     def set_info(self, key, value):
         """set key / value in the info table"""
@@ -371,6 +397,11 @@ class ScanDB(object):
         """return scandef by name"""
         return self.getrow('scandefs', name, one_or_none=True)
 
+    def del_scandef(self, name):
+        """delete scan defn by name"""
+        cls, table = self._get_table('scandefs')
+        self.conn.execute(table.delete().where(table.c.name==name))
+
     def add_scandef(self, name, text='', notes='', **kws):
         """add scan"""
         cls, table = self._get_table('scandefs')
@@ -408,14 +439,14 @@ class ScanDB(object):
         return row
 
     # positioners
-    def get_positioners(self):
-        return self.getall('scanpositioners', orderby='id')
+    def get_positioners(self, **kws):
+        return self.getall('scanpositioners', orderby='id', **kws)
 
-    def get_slewpositioners(self):
-        return self.getall('slewscanpositioners', orderby='id')
+    def get_slewpositioners(self, **kws):
+        return self.getall('slewscanpositioners', orderby='id', **kws)
 
-    def get_detectors(self):
-        return self.getall('scandetectors', orderby='id')
+    def get_detectors(self, **kws):
+        return self.getall('scandetectors', orderby='id', **kws)
     
     def get_positioner(self, name):
         """return positioner by name"""
@@ -436,6 +467,10 @@ class ScanDB(object):
         """add positioner"""
         cls, table = self._get_table('scanpositioners')
         name = name.strip()
+        drivepv = normalize_pvname(drivepv)
+        if readpv is not None:
+            readpv = normalize_pvname(readpv)
+
         kws.update({'notes': notes, 'drivepv': drivepv,
                     'readpv': readpv})
         row = self.__addRow(cls, ('name',), (name,), **kws)
@@ -454,6 +489,10 @@ class ScanDB(object):
         """add slewscan positioner"""
         cls, table = self._get_table('slewscanpositioners')
         name = name.strip()
+        drivepv = normalize_pvname(drivepv)
+        if readpv is not None:
+            readpv = normalize_pvname(readpv)
+        
         kws.update({'notes': notes, 'drivepv': drivepv,
                     'readpv': readpv})
         row = self.__addRow(cls, ('name',), (name,), **kws)
@@ -478,6 +517,7 @@ class ScanDB(object):
         """add detector"""
         cls, table = self._get_table('scandetectors')
         name = name.strip()
+        pvname = normalize_pvname(pvname)
         kws.update({'pvname': pvname,
                     'kind': kind, 'options': options})
         row = self.__addRow(cls, ('name',), (name,), **kws)
@@ -486,6 +526,9 @@ class ScanDB(object):
         return row
 
     # counters -- simple, non-triggered PVs to add to detectors
+    def get_counters(self, **kws):
+        return self.getall('scancounters', orderby='id', **kws)
+    
     def get_counter(self, name):
         """return counter by name"""
         return self.getrow('scancounters', name, one_or_none=True)
@@ -498,6 +541,7 @@ class ScanDB(object):
     def add_counter(self, name, pvname, **kws):
         """add counter (non-triggered detector)"""
         cls, table = self._get_table('scancounters')
+        pvname = normalize_pvname(pvname)
         name = name.strip()
         kws.update({'pvname': pvname})
         row = self.__addRow(cls, ('name',), (name,), **kws)
@@ -507,8 +551,8 @@ class ScanDB(object):
         return row
 
     # extra pvs: pvs recorded at breakpoints of scans
-    def get_extrapvs(self):
-        return self.getall('extrapvs', orderby='id')
+    def get_extrapvs(self, **kws):
+        return self.getall('extrapvs', orderby='id', **kws)
 
     def get_extrapv(self, name):
         """return extrapv by name"""
@@ -523,6 +567,7 @@ class ScanDB(object):
         """add extra pv (recorded at breakpoints in scans"""
         cls, table = self._get_table('extrapvs')
         name = name.strip()
+        pvname = normalize_pvname(pvname)        
         kws.update({'pvname': pvname})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
@@ -535,6 +580,7 @@ class ScanDB(object):
         """add pv to PV table if not already there """
         if len(name) < 2:
             return
+        name = normalize_pvname(name)
         cls, table = self._get_table('pvs')
         vals  = self.query(table).filter(cls.name == name).all()
         ismon = {False:0, True:1}[monitor]
@@ -551,6 +597,7 @@ class ScanDB(object):
 
     def record_monitorpv(self, pvname, value, commit=False):
         """save value for monitor pvs"""
+        pvname = normalize_pvname(pvname)
         if pvname not in self.pvs:
             pv = self.add_pv(pvname, monitor=True)
             self.pvs[pvname] = pv.id
@@ -566,6 +613,7 @@ class ScanDB(object):
     def get_monitorvalues(self, pvname, start_date=None, end_date=None):
         """get (value, time) pairs for a monitorpvs given a time range
         """
+        pvname = normalize_pvname(pvname)
         if pvname not in self.pvs:
             pv = self.add_monitorpv(pvname)
             self.pvs[pvname] = pv.id

@@ -67,8 +67,9 @@ from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
                          MultiMcaDetector, AreaDetector, get_detector)
 
 from .edit_positioners import PositionerFrame
-from .edit_detectors import DetectorFrame
-from .edit_general import SetupFrame
+from .edit_detectors   import DetectorFrame
+from .edit_general     import SetupFrame
+from .edit_extrapvs    import ExtraPVsFrame
 
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
@@ -78,7 +79,7 @@ class ScanFrame(wx.Frame):
   Matt Newville <newville @ cars.uchicago.edu>
   """
     _ini_wildcard = "Epics Scan Settings(*.ini)|*.ini|All files (*.*)|*.*"
-    ini_default  = "epicsscans.ini"
+    ini_default   = "epicsscans.ini"
     _cnf_wildcard = "Scan Definition(*.cnf)|*.cnf|All files (*.*)|*.*"
     _cnf_default  = "scan.cnf"
 
@@ -135,7 +136,8 @@ class ScanFrame(wx.Frame):
     def add_scanpanel(self, creator, title):
         span = creator(self, scandb=self.scandb, pvlist=self.pvlist)
         self.nb.AddPage(span, title, True)
-        self.scanpanels[title] = span
+        pname = title.split(' ')[0].lower()
+        self.scanpanels[pname] = span
 
     def createMainPanel(self):
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -214,13 +216,12 @@ class ScanFrame(wx.Frame):
             self.scantimer.Stop()
 
     def onInitTimer(self, evt=None):
+        # print 'on init ', self.larch_status, self.epics_status, time.ctime()
         if self.larch_status == 0:
             self.ini_larch_thread = Thread(target=self.init_larch)
             self.ini_larch_thread.start()
 
         if self.epics_status == 0:
-            # self.connect_epics()
-            # pass
             self.ini_epics_thread = Thread(target=self.connect_epics)
             self.ini_epics_thread.start()
 
@@ -252,47 +253,57 @@ class ScanFrame(wx.Frame):
             if len(name) < 1:
                 continue
             self.pvlist[name] = epics.PV(name)
-
         for det in self.scandb.get_detectors():
             opts = json.loads(det.options)
             opts['label'] = det.name
             opts['kind'] = det.kind 
             self.detectors[det.name] = get_detector(det.pvname, **opts)
-
+        
         self.epics_status = 1
         time.sleep(0.05)
         self.statusbar.SetStatusText('Epics Ready')
 
-    def onStartScan(self, evt=None):
-        panel = self.nb.GetCurrentPage()
-        scan = panel.generate_scan()
+    def generate_scan(self, scanname=None):
+        """generate scan definition from current values on GUI"""
+        if scanname is None:
+            scanname = time.strftime("__%b%d%H%M%S_")
+            
+        scan = self.nb.GetCurrentPage().generate_scan()
         scan['nscans'] = int(self.nscans.GetValue())
+
+        sdb = self.scandb
         fname = self.filename.GetValue()
         scan['filename'] = fname
         scan['user_comments'] = self.user_comms.GetValue()
 
-        scan['pos_settle_time'] = float(self.scandb.get_info('pos_settle_time'))
-        scan['det_settle_time'] = float(self.scandb.get_info('det_settle_time'))
+        scan['pos_settle_time'] = float(sdb.get_info('pos_settle_time'))
+        scan['det_settle_time'] = float(sdb.get_info('det_settle_time'))
         
         scan['detectors'] = []
         scan['counters']  = []
         scan['extra_pvs'] = []
-        for det in self.scandb.get_detectors():
-            if det.use:
-                opts = json.loads(det.options)
-                opts['label']  = det.name
-                opts['prefix'] = det.pvname
-                opts['kind'] = det.kind
-                opts['notes'] = det.notes
-                scan['detectors'].append(opts)
+        for det in sdb.select('scandetectors', use=1):
+            opts = json.loads(det.options)
+            opts['label']  = det.name
+            opts['prefix'] = det.pvname
+            opts['kind']   = det.kind
+            opts['notes']  = det.notes
+            scan['detectors'].append(opts)
                 
-        for ct in self.scandb.getall('scancounters'):
-            if ct.use:
-                scan['counters'].append((ct.name, ct.pvname))
+        for ct in sdb.select('scancounters', use=1):
+            scan['counters'].append((ct.name, ct.pvname))
 
-        scanname = time.strftime("%b%d_%H%M%S_")
-        self.scandb.add_scandef(scanname,  json.dumps(scan))
-        self.scandb.add_command('doscan', arguments=scanname, output_file=fname)
+        for ep in sdb.select('extrapvs', use=1):
+            scan['extra_pvs'].append((ep.name, ep.pvname))
+            
+        sdb.add_scandef(scanname,  json.dumps(scan))
+        return scanname
+
+    def onStartScan(self, evt=None):
+        scanname = self.generate_scan()
+        fname = self.filename.GetValue()
+        self.scandb.add_command('doscan', arguments=scanname,
+                                output_file=fname)
 
     def run_scan(self, conf):
         """runs a scan as specified in a scan configuration dictionary"""
@@ -375,17 +386,11 @@ class ScanFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         # file
         fmenu = wx.Menu()
-        add_menu(self, fmenu, "&Open Scan Definition\tCtrl+O",
-                 "Read Scan Defintion",  self.onReadScanDef)
         add_menu(self, fmenu,"&Save Scan Definition\tCtrl+S",
                   "Save Scan Definition", self.onSaveScanDef)
 
-        fmenu.AppendSeparator()
-        add_menu(self, fmenu, "Load Settings\tCtrl+L",
-                 "Load Settings", self.onLoadSettings)
-
-        add_menu(self, fmenu,"Save Settings\tCtrl+R",
-                  "Save Settings", self.onSaveSettings)
+        add_menu(self, fmenu, "&Read Scan Definition\tCtrl+O",
+                 "Read Scan Defintion",  self.onReadScanDef)
 
         fmenu.AppendSeparator()
 
@@ -404,6 +409,8 @@ class ScanFrame(wx.Frame):
                   "Setup Motors and Positioners", self.onSetupPositioners)
         add_menu(self, pmenu, "Detectors\tCtrl+D",
                   "Setup Detectors and Counters", self.onSetupDetectors)
+        add_menu(self, pmenu, "Extra PVs",
+                  "Setup Extra PVs to save with scan", self.onSetupExtraPVs)
         # help
         hmenu = wx.Menu()
         add_menu(self, hmenu, "&About",
@@ -449,6 +456,9 @@ class ScanFrame(wx.Frame):
     def onSetupPositioners(self, evt=None):
         self.show_subframe('pos', PositionerFrame)        
 
+    def onSetupExtraPVs(self, evt=None):
+        self.show_subframe('pvs', ExtraPVsFrame)        
+
     def onSetupDetectors(self, evt=None):
         self.show_subframe('det', DetectorFrame)                
 
@@ -464,13 +474,114 @@ class ScanFrame(wx.Frame):
                 os.chdir(nativepath(basedir))
             except OSError:
                 pass
+            self.scandb.set_info('user_folder', basedir)
         dlg.Destroy()
 
     def onSaveScanDef(self, evt=None):
-        print 'on SaveScan Def'
-
+        dlg = wx.TextEntryDialog(self, "Scan Name:",
+                                 "Enter Name for this Scan", "")
+        sname = ''
+        dlg.SetValue(sname)
+        if dlg.ShowModal() == wx.ID_OK:
+            sname =  dlg.GetValue()
+        dlg.Destroy()
+        if sname is not None:
+            scannames = [s.name for s in self.scandb.select('scandefs')]
+            name_exists = sname in scannames
+            if name_exists:
+                erase_ok = True
+                if self.scandb.get_info('scandefs_verify_overwrite', as_bool=True):
+                    erase_ok = popup(self,
+                                     "Overwrite Scan Definition '%s'?" % sname,
+                                     "Overwrite Scan Definition?",
+                                     style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
+                if erase_ok:
+                    self.scandb.del_scandef(sname)
+                    name_exists = False
+            if not name_exists and len(sname) > 0:
+                self.generate_scan(scanname=sname)
+                self.statusbar.SetStatusText("Saved scan '%s'" % sname)
+            else:
+                self.statusbar.SetStatusText("Could not overwrite scan '%s'" % sname)
+            
     def onReadScanDef(self, evt=None):
-        print 'on ReadScan Def event (for a particular scan)'
+        if self.scandb.get_info('scandefs_load_showall', as_bool=True):
+            scannames = [s.name for s in self.scandb.select('scandefs')]
+        else:
+            scannames = [s.name for s in self.scandb.select('scandefs') 
+                         if not s.name.startswith('__')]
+            
+        dlg = wx.SingleChoiceDialog(self, "Select Saved Scan:",
+                                    "", scannames)
+        sname = None
+        if dlg.ShowModal() == wx.ID_OK:
+            sname =  dlg.GetStringSelection()
+        dlg.Destroy()
+
+        if sname is not None:
+            self.statusbar.SetStatusText("Read Scan '%s'" % sname)
+            thisscan = json.loads(self.scandb.get_scandef(sname).text)
+            self.load_scandef( thisscan)
+            
+    def load_scandef(self, scan):
+        """load scan definition from dictionary, as stored
+        in scandb scandef.text field
+        """
+        print '===== Load Scan: ============== '
+        #for k,v in scan.items():
+        #    print k, v
+            
+        sdb = self.scandb
+        sdb.set_info('det_settle_time', scan['det_settle_time'])
+        sdb.set_info('pos_settle_time', scan['pos_settle_time'])
+
+        ep = [x.pvname for x in sdb.select('extrapvs')]
+        for name, pvname in scan['extra_pvs']:
+            if pvname not in ep:
+                self.scandb.add_extrapv(name, pvname)
+
+        for detdat  in scan['detectors']:
+            det = sdb.get_detector(detdat['label'])
+            if det is None:
+                name   = detdat.pop('label')
+                prefix = detdat.pop('prefix')
+                dkind  = detdat.pop('kind')
+                use    = detdat.pop('use')
+                opts   = json.dumps(detdat) 
+                sdb.add_detector(name, prefix,
+                                 kind=dkind,
+                                 options=opts,
+                                 use=use)
+            else:
+                det.prefix = detdat.pop('prefix')
+                det.dkind  = detdat.pop('kind')
+                det.use    = detdat.pop('use')
+                det.options = json.dumps(detdat) 
+
+        if 'positioners' in scan:
+            for data in scan['positioners']:
+                name = data[0]
+                pos = self.scandb.get_positioner(name)
+                name = data[0]
+                drivepv, readpv = data[1]
+                if pos is None:
+                    sdb.add_positioner(name, drivepv,
+                                       readpv=readpv)
+                else:
+                    pos.drivepv = drivepv
+                    pos.readpv = readpv
+                    
+        # now fill in page
+        pages = []
+        for n in range(self.nb.GetPageCount()):
+            pages.append(self.nb.GetPageText(n).lower())
+        stype = scan['type'].lower()
+        for i, pagetext in enumerate(pages):
+            if stype == pagetext:
+                self.nb.SetSelection(i)
+        span = self.scanpanels[stype]
+        # print 'Scan Panel ', span
+        span.load_scandict(scan)
 
     def onSaveSettings(self, evt=None):
         fout = self.conffile
@@ -497,8 +608,6 @@ class ScanFrame(wx.Frame):
             path = dlg.GetPath()
             self.config.Read(path)
             print 'read settings - should run init_epics to redefine self.detectors....'
-            for span in self.scanpanels.values():
-                span.use_config(self.config)
         dlg.Destroy()
 
 class ScanApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
