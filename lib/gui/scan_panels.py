@@ -416,6 +416,7 @@ class XAFSScanPanel(GenericScanPanel):
     units_list = ('eV', u'1/\u212B')
 
     def __init__(self, parent, **kws):
+        kws['size'] = (750, 400)
         GenericScanPanel.__init__(self, parent, **kws)
         self.reg_settings = []
         self.cur_units = []
@@ -424,14 +425,7 @@ class XAFSScanPanel(GenericScanPanel):
         ir = self.top_widgets('XAFS Scan')
         sizer.Add(self.hline(),  (ir, 0), (1, 8), wx.ALIGN_CENTER)
 
-        self.nregs_wid = FloatCtrl(self, precision=0, value=3, minval=0, maxval=5,
-                              size=(25, -1),  act_on_losefocus=True,
-                              action=Closure(self.onVal, label='nreg'))
         nregs = self.nregs_wid.GetValue()
-
-        sizer.Add(SimpleText(self, "# Regions:"), (ir-1, 6), (1, 1), LEFT)
-        sizer.Add(self.nregs_wid,                 (ir-1, 7), (1, 1), LEFT)
-
         ir += 1
         sizer.Add(self.make_e0panel(),   (ir,   0), (1, 8), LEFT)
         ir += 1
@@ -445,8 +439,8 @@ class XAFSScanPanel(GenericScanPanel):
         for i, reg in enumerate((('Pre-Edge', (-50, -10, 5, 9)),
                                  ('XANES',   (-10, 10, 1, 21)),
                                  ('EXAFS1',  (10, 200, 2, 96)),
-                                 ('EXAFS2',  (200, 500, 3, 101)),
-                                 ('EXAFS3',  (500, 1000, 5, 101)))):
+                                 ('EXAFS2',  (200, 800, 4, 151)))):
+
             label, initvals = reg
             ir += 1
             reg   = wx.StaticText(self, -1, size=(100, -1), label=' %s' % label)
@@ -502,7 +496,7 @@ class XAFSScanPanel(GenericScanPanel):
     def load_scandict(self, scan):
         """load scan for XAFS scan from scan dictionary
         as stored in db, or passed to stepscan"""
-        self.dwelltime.SetValue(scan['dwelltime'])
+
         self.kwtimemax.SetValue(scan['max_time'])
         self.kwtimechoice.SetSelection(scan['time_kw'])
 
@@ -517,15 +511,21 @@ class XAFSScanPanel(GenericScanPanel):
                 for wid in reg: wid.Disable()
 
         for ireg, reg in enumerate(scan['regions']):
-            start, stop, step, npts, dtime, units = self.reg_settings[i]
+            start, stop, step, npts, dtime, units = self.reg_settings[ireg]
+            # set units first!
+            this_units = reg[4]
+            if hasattr(units, 'SetStringSelection'):
+                if this_units in self.units_list:
+                    units.SetStringSelection(reg[4])
+                else:
+                    units.SetSelection(1)
+
             start.SetValue(reg[0])
             stop.SetValue(reg[1])
             npts.SetValue(reg[2])
             dtime.SetValue(reg[3])
-            if reg[4] in self.units_list:
-                units.SetStringSelection(reg[4])
-            else:
-                units.SetStringSelection(1)
+            if ireg == 0:
+                self.dwelltime.SetValue(reg[3])
 
     def setScanTime(self):
         etime = (float(self.scandb.get_info('pos_settle_time')) +
@@ -540,9 +540,10 @@ class XAFSScanPanel(GenericScanPanel):
             if reg[4].Enabled:
                 dtimes.append((nx, dx))
         if kwt_pow != 0:
-            #nx, dx = dtimes.pop()
-            print 'need to calc k-weighted time correctly!!'
-
+            nx, dx = dtimes.pop()
+            _vtime = (kwt_max-dx)*(1.0/(nx-1))**kwt_pow
+            for i in range(int(nx)):
+                dtime += (dx+etime)+ _vtime*(i**kwt_pow)
         for nx, dx in dtimes:
             dtime += nx*(dx + etime)
 
@@ -550,6 +551,7 @@ class XAFSScanPanel(GenericScanPanel):
 
 
     def top_widgets(self, title, dwell_prec=3, dwell_value=1):
+        "XAFS top widgets"
         self.absrel = add_choice(self, ('Absolute', 'Relative'),
                                  size=(120, -1),
                                  action = self.onAbsRel)
@@ -557,11 +559,18 @@ class XAFSScanPanel(GenericScanPanel):
         self.dwelltime = FloatCtrl(self, precision=dwell_prec,
                                    value=dwell_value,
                                    act_on_losefocus=True,
-                                   minval=0, size=(65, -1),
+                                   minval=0, size=(50, -1),
                                    action=Closure(self.onVal,
                                                   label='dwelltime'))
 
+
         self.est_time  = SimpleText(self, '  00:00:00  ')
+        self.nregs_wid = FloatCtrl(self, precision=0, value=3,
+                                   minval=1, maxval=4,
+                                   size=(25, -1),  act_on_losefocus=True,
+                                   action=Closure(self.onVal, label='nreg'))
+        nregs = self.nregs_wid.GetValue()
+
         title  =  SimpleText(self, " %s" % title, style=LEFT,
                              font=self.Font13, colour='#880000')
 
@@ -578,6 +587,8 @@ class XAFSScanPanel(GenericScanPanel):
         sizer.Add(self.absrel,    (1, 1), (1, 1), LEFT,  3)
         sizer.Add(dlabel,         (1, 2), (1, 2), RIGHT, 3)
         sizer.Add(self.dwelltime, (1, 4), (1, 1), LEFT,  3)
+        sizer.Add(SimpleText(self, "# Regions:"), (1, 5), (1, 1), LEFT)
+        sizer.Add(self.nregs_wid,                 (1, 6), (1, 1), LEFT)
 
         # return next row for sizer
         return 2
@@ -605,7 +616,7 @@ class XAFSScanPanel(GenericScanPanel):
         s.Add(self.elemchoice,                 0, LEFT, 3)
         s.Add(SimpleText(p, "    Edge:  "),    0, LEFT, 3)
         s.Add(self.edgechoice,                 0, LEFT, 3)
-        s.Add(SimpleText(p, "   Current Energy:", size=(120, -1),
+        s.Add(SimpleText(p, "   Current Energy:", size=(170, -1),
                          style=wx.ALIGN_LEFT), 0, CEN, 2)
 
         self.energy_pv = PVText(p, pv=None, size=(100, -1))
@@ -630,7 +641,8 @@ class XAFSScanPanel(GenericScanPanel):
 
     def onVal(self, evt=None, index=0, label=None, value=None, **kws):
         "XAFS onVal"
-        if not self._initialized: return
+        if not self._initialized:
+            return
         wids = self.reg_settings[index]
         units = self.getUnits(index)
         old_units = self.cur_units[index]
