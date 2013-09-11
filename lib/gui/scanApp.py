@@ -68,8 +68,12 @@ from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
 
 from .edit_positioners import PositionerFrame
 from .edit_detectors   import DetectorFrame
-from .edit_general     import SetupFrame
+from .edit_general     import SettingsFrame
 from .edit_extrapvs    import ExtraPVsFrame
+from .edit_scandefs    import ScandefsFrame
+from .edit_sequences   import SequencesFrame
+from .edit_macros      import MacrosFrame
+
 
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
@@ -396,19 +400,33 @@ class ScanFrame(wx.Frame):
                   "Choose working directory",  self.onFolderSelect)
         fmenu.AppendSeparator()
         add_menu(self, fmenu, "&Quit\tCtrl+Q",
-                  "Quit program", self.onClose)
+        "Quit program", self.onClose)
 
         # options
         pmenu = wx.Menu()
-        # add_menu(self, pmenu, "General\tCtrl+G",
-        #          "General Setup", self.onSetupMisc)
-
+        
         add_menu(self, pmenu, "Positioners\tCtrl+P",
-                  "Setup Motors and Positioners", self.onSetupPositioners)
+                 "Setup Motors and Positioners", self.onEditPositioners)
         add_menu(self, pmenu, "Detectors\tCtrl+D",
-                  "Setup Detectors and Counters", self.onSetupDetectors)
+                 "Setup Detectors and Counters", self.onEditDetectors)
         add_menu(self, pmenu, "Extra PVs",
-                  "Setup Extra PVs to save with scan", self.onSetupExtraPVs)
+                 "Setup Extra PVs to save with scan", self.onEditExtraPVs)
+        
+        add_menu(self, pmenu, "Scan Definitions",
+                 "Manage Saved Scans", self.onEditScans)
+        
+           
+        fmenu.AppendSeparator()
+        add_menu(self, pmenu, "Settings",
+                 "General Setup", self.onEditSettings)
+
+        # Sequences
+        smenu = wx.Menu()
+        add_menu(self, smenu, "Sequences",
+                  "Run Sequences of Scans",  self.onEditSequences)
+        add_menu(self, smenu, "Macros",
+                  "Edit Macros",  self.onEditMacros)
+
         # help
         hmenu = wx.Menu()
         add_menu(self, hmenu, "&About",
@@ -416,6 +434,7 @@ class ScanFrame(wx.Frame):
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(pmenu, "&Setup")
+        self.menubar.Append(smenu, "Sequences")
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
 
@@ -448,17 +467,26 @@ class ScanFrame(wx.Frame):
             self.subframes[name] = frameclass(self)
 
         
-    def onSetupMisc(self, evt=None):
-        self.show_subframe('misc', SetupFrame)
-
-    def onSetupPositioners(self, evt=None):
+    def onEditPositioners(self, evt=None):
         self.show_subframe('pos', PositionerFrame)        
 
-    def onSetupExtraPVs(self, evt=None):
+    def onEditExtraPVs(self, evt=None):
         self.show_subframe('pvs', ExtraPVsFrame)        
 
-    def onSetupDetectors(self, evt=None):
+    def onEditDetectors(self, evt=None):
         self.show_subframe('det', DetectorFrame)                
+
+    def onEditScans(self, evt=None):
+        self.show_subframe('scan', ScandefsFrame)
+
+    def onEditSettings(self, evt=None):
+        self.show_subframe('settings', SettingsFrame)
+        
+    def onEditSequences(self, evt=None):
+        self.show_subframe('sequences', SequencesFrame)        
+
+    def onEditMacros(self, evt=None):
+        self.show_subframe('macros', MacrosFrame)        
 
     def onFolderSelect(self,evt):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
@@ -572,32 +600,6 @@ class ScanFrame(wx.Frame):
             self.nb.SetSelection(inb)
             span.load_scandict(scan)
 
-    def onSaveSettings(self, evt=None):
-        fout = self.conffile
-        if fout is None:
-            fout = self._ini_default
-        dlg = wx.FileDialog(self, message="Save EpicsScan Settings",
-                            defaultDir=os.getcwd(),
-                            defaultFile=fout,
-                            wildcard=self._ini_wildcard,
-                            style=wx.SAVE|wx.CHANGE_DIR)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.config.Save(dlg.GetPath())
-        dlg.Destroy()
-
-    def onLoadSettings(self, evt=None):
-        fname = self.conffile
-        if fname is None: fname = ''
-        dlg = wx.FileDialog(self, message="Load EpicsScan Settings",
-                            defaultDir=os.getcwd(),
-                            defaultFile=fname,
-                            wildcard=self._ini_wildcard,
-                            style=wx.OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
-            self.config.Read(path)
-            print 'read settings - should run init_epics to redefine self.detectors....'
-        dlg.Destroy()
 
 class ScanApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, config=None, dbname=None, **kws):
