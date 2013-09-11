@@ -409,15 +409,16 @@ class ScanFrame(wx.Frame):
                  "Setup Motors and Positioners", self.onEditPositioners)
         add_menu(self, pmenu, "Detectors\tCtrl+D",
                  "Setup Detectors and Counters", self.onEditDetectors)
+        pmenu.AppendSeparator()
+
         add_menu(self, pmenu, "Extra PVs",
                  "Setup Extra PVs to save with scan", self.onEditExtraPVs)
         
         add_menu(self, pmenu, "Scan Definitions",
                  "Manage Saved Scans", self.onEditScans)
         
-           
-        fmenu.AppendSeparator()
-        add_menu(self, pmenu, "Settings",
+        pmenu.AppendSeparator()
+        add_menu(self, pmenu, "General Settings",
                  "General Setup", self.onEditSettings)
 
         # Sequences
