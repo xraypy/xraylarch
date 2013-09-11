@@ -133,11 +133,6 @@ class ScanFrame(wx.Frame):
         self.scandb = ScanDB(dbname, **kwargs)
         self.scandb.read_station_config(config)
 
-    def add_scanpanel(self, creator, title):
-        span = creator(self, scandb=self.scandb, pvlist=self.pvlist)
-        self.nb.AddPage(span, title, True)
-        pname = title.split(' ')[0].lower()
-        self.scanpanels[pname] = span
 
     def createMainPanel(self):
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -156,12 +151,15 @@ class ScanFrame(wx.Frame):
         self.SetBackgroundColour('#F0F0E8')
 
         self.scanpanels = {}
-        for name, creator in (('Linear Scan',  LinearScanPanel),
-                              ('Mesh Scan',    MeshScanPanel),
-                              ('Slew Scan',    SlewScanPanel),
-                              ('XAFS Scan',    XAFSScanPanel)
-                              ):
-            self.add_scanpanel(creator, name)
+        inb  = 0
+        for name, creator in (('Linear',  LinearScanPanel),
+                              ('Mesh',    MeshScanPanel),
+                              ('Slew',    SlewScanPanel),
+                              ('XAFS',    XAFSScanPanel)):
+            span = creator(self, scandb=self.scandb, pvlist=self.pvlist)
+            self.nb.AddPage(span, "%s Scan" % name, True)
+            self.scanpanels[name.lower()] =  (inb, span)
+            inb += 1
 
         self.nb.SetSelection(0)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
@@ -229,7 +227,7 @@ class ScanFrame(wx.Frame):
             time.sleep(0.05)
             self.ini_larch_thread.join()
             self.ini_epics_thread.join()
-            for span in self.scanpanels.values():
+            for inb, span in self.scanpanels.values():
                 span.initialize_positions()
             self.inittimer.Stop()
             self.statusbar.SetStatusText('', 0)
@@ -239,7 +237,7 @@ class ScanFrame(wx.Frame):
         self.larch_status = -1
         import larch
         self._larch = larch.Interpreter()
-        for span in self.scanpanels.values():
+        for inb, span in self.scanpanels.values():
             span.larch = self._larch
         self.statusbar.SetStatusText('Larch Ready')
         self.larch_status = 1
@@ -527,10 +525,6 @@ class ScanFrame(wx.Frame):
         """load scan definition from dictionary, as stored
         in scandb scandef.text field
         """
-        print '===== Load Scan: ============== '
-        #for k,v in scan.items():
-        #    print k, v
-            
         sdb = self.scandb
         sdb.set_info('det_settle_time', scan['det_settle_time'])
         sdb.set_info('pos_settle_time', scan['pos_settle_time'])
@@ -572,16 +566,11 @@ class ScanFrame(wx.Frame):
                     pos.readpv = readpv
                     
         # now fill in page
-        pages = []
-        for n in range(self.nb.GetPageCount()):
-            pages.append(self.nb.GetPageText(n).lower())
         stype = scan['type'].lower()
-        for i, pagetext in enumerate(pages):
-            if stype == pagetext:
-                self.nb.SetSelection(i)
-        span = self.scanpanels[stype]
-        # print 'Scan Panel ', span
-        span.load_scandict(scan)
+        if stype in self.scanpanels:
+            inb, span = self.scanpanels[stype]
+            self.nb.SetSelection(inb)
+            span.load_scandict(scan)
 
     def onSaveSettings(self, evt=None):
         fout = self.conffile
