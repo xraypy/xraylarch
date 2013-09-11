@@ -68,7 +68,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
     def load_scandict(self, scan):
         """meant to be overwritten"""
         pass
-    
+
     def update_positioners(self):
         """meant to be overwritten"""
         self.get_positioners()
@@ -115,7 +115,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
     def top_widgets(self, title, dwell_prec=3, dwell_value=1):
         self.absrel = add_choice(self, ('Absolute', 'Relative'),
                                  action = self.onAbsRel)
-                
+
         self.absrel_value = 0
         self.absrel.SetSelection(0)
         self.dwelltime = FloatCtrl(self, precision=dwell_prec,
@@ -315,9 +315,10 @@ class LinearScanPanel(GenericScanPanel):
         self.update_position_from_pv(0)
 
     def load_scandict(self, scan):
-        """load scan from scan dictionary"""
+        """load scan for linear scan from scan dictionary
+        as stored in db, or passed to stepscan"""
         self.dwelltime.SetValue(scan['dwelltime'])
-        self.absrel.SetSelection(0)        
+        self.absrel.SetSelection(0)
         for i in (1, 2):
             pos, units, cur, start, stop, step, npts = self.pos_settings[i]
             pos.SetSelection(0)
@@ -333,7 +334,7 @@ class LinearScanPanel(GenericScanPanel):
             start.SetValue(posdat[2])
             stop.SetValue(posdat[3])
             npts.SetValue(posdat[4])
-            self.update_position_from_pv(i)            
+            self.update_position_from_pv(i)
 
     def update_positioners(self):
         """meant to be overwritten"""
@@ -342,7 +343,7 @@ class LinearScanPanel(GenericScanPanel):
             thispos = row[0]
             cur = thispos.GetStringSelection()
             thispos.Clear()
-            if irow == 0: 
+            if irow == 0:
                 thispos.SetItems(self.poslist[1:])
             else:
                 thispos.SetItems(self.poslist)
@@ -350,7 +351,7 @@ class LinearScanPanel(GenericScanPanel):
                 thispos.SetStringSelection(cur)
             else:
                 thispos.SetSelection(0)
-            
+
     def onVal(self, index=0, label=None, value=None, **kws):
         if not self._initialized: return
         npts = self.pos_settings[0][6]
@@ -423,14 +424,14 @@ class XAFSScanPanel(GenericScanPanel):
         ir = self.top_widgets('XAFS Scan')
         sizer.Add(self.hline(),  (ir, 0), (1, 8), wx.ALIGN_CENTER)
 
-        nregs_wid = FloatCtrl(self, precision=0, value=3, minval=0, maxval=5,
+        self.nregs_wid = FloatCtrl(self, precision=0, value=3, minval=0, maxval=5,
                               size=(25, -1),  act_on_losefocus=True,
                               action=Closure(self.onVal, label='nreg'))
-        nregs = nregs_wid.GetValue()
+        nregs = self.nregs_wid.GetValue()
 
         sizer.Add(SimpleText(self, "# Regions:"), (ir-1, 6), (1, 1), LEFT)
-        sizer.Add(nregs_wid,                      (ir-1, 7), (1, 1), LEFT)
- 
+        sizer.Add(self.nregs_wid,                 (ir-1, 7), (1, 1), LEFT)
+
         ir += 1
         sizer.Add(self.make_e0panel(),   (ir,   0), (1, 8), LEFT)
         ir += 1
@@ -483,15 +484,15 @@ class XAFSScanPanel(GenericScanPanel):
         self.kwtimechoice = add_choice(self, ('0', '1', '2', '3'), size=(70, -1),
                                      action=Closure(self.onVal, label='kwpow'))
 
-        self.kwtime = FloatCtrl(self, precision=3, value=0, minval=0,
-                                size=(65, -1),
-                                action=Closure(self.onVal, label='kwtime'))
+        self.kwtimemax = FloatCtrl(self, precision=3, value=0, minval=0,
+                                   size=(65, -1),
+                                   action=Closure(self.onVal, label='kwtime'))
 
         ir += 1
         sizer.Add(SimpleText(self, "k-weight time of last region:"),  (ir, 1,), (1, 2), CEN, 3)
         sizer.Add(self.kwtimechoice, (ir, 3), (1, 1), LEFT, 2)
         sizer.Add(SimpleText(self, "Max Time:"),  (ir, 4,), (1, 1), CEN, 3)
-        sizer.Add(self.kwtime, (ir, 5), (1, 1), LEFT, 2)
+        sizer.Add(self.kwtimemax, (ir, 5), (1, 1), LEFT, 2)
 
         self.layout()
         self.inittimer = wx.Timer(self)
@@ -499,33 +500,38 @@ class XAFSScanPanel(GenericScanPanel):
         self.inittimer.Start(100)
 
     def load_scandict(self, scan):
-        """load scan from scan dictionary"""
+        """load scan for XAFS scan from scan dictionary
+        as stored in db, or passed to stepscan"""
         self.dwelltime.SetValue(scan['dwelltime'])
-        self.e0.SetValue(scan['e0'])
-        print 'load XAFS SCAN! '
-        self.absrel.SetSelection(1)        
-        for i in (1, 2, 3, 4):
-            pos, units, cur, start, stop, step, npts = self.reg_settings[i]
-            pos.SetSelection(0)
-            start.Disable()
-            stop.Disable()
-            step.Disable()
-            npts.Disable()
-            self.update_position_from_pv(i)
+        self.kwtimemax.SetValue(scan['max_time'])
+        self.kwtimechoice.SetSelection(scan['time_kw'])
 
-#         for i, posdat in enumerate(scan['positioners']):
-#             pos, units, cur, start, stop, step, npts = self.pos_settings[i]
-#             pos.SetStringSelection(posdat[0])
-#             start.SetValue(posdat[2])
-#             stop.SetValue(posdat[3])
-#             npts.SetValue(posdat[4])
-#             self.update_position_from_pv(i)            
+        self.e0.SetValue(scan['e0'])
+        self.absrel.SetSelection({True:1, False:0}[scan['is_relative']])   # relative!!
+        nregs = len(scan['regions'])
+        self.nregs_wid.SetValue(nregs)
+        for ireg, reg in enumerate(self.reg_settings):
+            if ireg < nregs:
+                for wid in reg: wid.Enable()
+            else:
+                for wid in reg: wid.Disable()
+
+        for ireg, reg in enumerate(scan['regions']):
+            start, stop, step, npts, dtime, units = self.reg_settings[i]
+            start.SetValue(reg[0])
+            stop.SetValue(reg[1])
+            npts.SetValue(reg[2])
+            dtime.SetValue(reg[3])
+            if reg[4] in self.units_list:
+                units.SetStringSelection(reg[4])
+            else:
+                units.SetStringSelection(1)
 
     def setScanTime(self):
         etime = (float(self.scandb.get_info('pos_settle_time')) +
                  float(self.scandb.get_info('det_settle_time')) )
         dtime = 0.0
-        kwt_max = float(self.kwtime.GetValue())
+        kwt_max = float(self.kwtimemax.GetValue())
         kwt_pow = float(self.kwtimechoice.GetStringSelection())
         dtimes = []
         for reg in self.reg_settings:
@@ -572,7 +578,7 @@ class XAFSScanPanel(GenericScanPanel):
         sizer.Add(self.absrel,    (1, 1), (1, 1), LEFT,  3)
         sizer.Add(dlabel,         (1, 2), (1, 2), RIGHT, 3)
         sizer.Add(self.dwelltime, (1, 4), (1, 1), LEFT,  3)
-       
+
         # return next row for sizer
         return 2
 
@@ -589,7 +595,7 @@ class XAFSScanPanel(GenericScanPanel):
         self.elemchoice.SetMaxSize((60, 25))
         self.elemchoice.SetSelection(27)
 
-        self.edgechoice = add_choice(p, self.edges_list, size=(50, -1), 
+        self.edgechoice = add_choice(p, self.edges_list, size=(50, -1),
                                      action=self.onEdgeChoice)
 
         s.Add(SimpleText(p, " Edge Energy:", size=(120, -1),
@@ -603,11 +609,11 @@ class XAFSScanPanel(GenericScanPanel):
                          style=wx.ALIGN_LEFT), 0, CEN, 2)
 
         self.energy_pv = PVText(p, pv=None, size=(100, -1))
-        s.Add(self.energy_pv, 0, CEN, 2)                     
+        s.Add(self.energy_pv, 0, CEN, 2)
         pack(p, s)
         return p
 
-    @EpicsFunction    
+    @EpicsFunction
     def display_energy(self, evt=None):
         en_pvname = str(self.scandb.get_info('energy_read'))
         if en_pvname in self.pvlist and self.energy_pv.pv is None:
@@ -633,7 +639,6 @@ class XAFSScanPanel(GenericScanPanel):
             self.energy_pv.SetPV(self.pvlist[en_pvname])
         e0_off = 0
 
-        
         update_esttime = label in ('dtime', 'dwelltime',
                                    'kwpow', 'kwtime', 'step', 'npts')
         if 0 == self.absrel.GetSelection(): # absolute
@@ -643,7 +648,7 @@ class XAFSScanPanel(GenericScanPanel):
             for wid in self.reg_settings:
                 wid[4].SetValue(value)
             try:
-                self.kwtime.SetValue(value)
+                self.kwtimemax.SetValue(value)
             except:
                 pass
             update_esttime = True
@@ -715,7 +720,7 @@ class XAFSScanPanel(GenericScanPanel):
         s = {'type': 'xafs',
              'e0': self.e0.GetValue(),
              'is_relative': 1==self.absrel.GetSelection(),
-             'max_time': self.kwtime.GetValue(),
+             'max_time': self.kwtimemax.GetValue(),
              'time_kw': int(self.kwtimechoice.GetSelection()),
              'regions': []}
         for index, wids in enumerate(self.reg_settings):
@@ -772,6 +777,19 @@ class MeshScanPanel(GenericScanPanel):
         ir += 1
         sizer.Add(self.hline(), (ir, 0), (1, 8), wx.ALIGN_CENTER)
         self.layout()
+
+    def load_scandict(self, scan):
+        """load scan for mesh scan from scan dictionary
+        as stored in db, or passed to stepscan"""
+        self.dwelltime.SetValue(scan['dwelltime'])
+        self.absrel.SetSelection(0)
+        for i, posdat in enumerate(scan['positioners']):
+            pos, units, cur, start, stop, step, npts = self.pos_settings[i]
+            pos.SetStringSelection(posdat[0])
+            start.SetValue(posdat[2])
+            stop.SetValue(posdat[3])
+            npts.SetValue(posdat[4])
+            self.update_position_from_pv(i)
 
     def update_positioners(self):
         """meant to be overwritten"""
@@ -881,6 +899,26 @@ class SlewScanPanel(GenericScanPanel):
         sizer.Add(self.hline(), (ir, 0), (1, 8), wx.ALIGN_CENTER)
 
         self.layout()
+
+    def load_scandict(self, scan):
+        """load scan for slew scan from scan dictionary
+        as stored in db, or passed to stepscan"""
+        self.dwelltime.SetValue(scan['dwelltime'])
+        self.absrel.SetSelection(0)
+        nregs = len(scan['positioners'])
+
+        pos, units, cur, start, stop, step, npts = self.pos_settings[1]
+        pos.SetSelection(0)
+
+        for i, posdat in enumerate(scan['positioners']):
+            pos, units, cur, start, stop, step, npts = self.pos_settings[i]
+            pos.SetStringSelection(posdat[0])
+            start.SetValue(posdat[2])
+            stop.SetValue(posdat[3])
+            npts.SetValue(posdat[4])
+            self.update_position_from_pv(i)
+
+        self.dimchoice.SetStringSelection("%i" % len(scan['positioners']))
 
     def update_positioners(self):
         """meant to be overwritten"""
