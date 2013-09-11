@@ -278,7 +278,8 @@ class ScanDB(object):
             q = q.order_by(getattr(cls, orderby))
         return q.execute().fetchall()
 
-    def get_info(self, key=None, default=None, as_int=False, as_bool=False):
+    def get_info(self, key=None, default=None,
+                 as_int=False, as_bool=False, with_notes=False):
         """get a value for an entry in the info table"""
         errmsg = "get_info expected 1 or None value for name='%s'"
         cls, table = self._get_table('info')
@@ -290,10 +291,16 @@ class ScanDB(object):
         out = default
         if thisrow is not None:
             out = thisrow.value
+
+        # print 'GET info: ', key, thisrow, out
         if as_int:
             out = int(out)
         if as_bool:
             out = bool(int(out))
+        if with_notes:
+            if thisrow is None:
+                return out, ''
+            return out, thisrow.notes
         return out
 
     def set_info(self, key, value):
