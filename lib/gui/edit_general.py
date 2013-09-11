@@ -11,7 +11,8 @@ from .gui_utils import GUIColors, set_font_with_children, YesNo
 from .gui_utils import add_button, pack, SimpleText
 
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-class SetupFrame(wx.Frame) :
+
+class SettingsFrame(wx.Frame) :
     """Frame for Setup General Settings:
 
     DB Connection, Settling Times, Extra PVs
