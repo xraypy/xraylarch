@@ -33,7 +33,8 @@ class ExtraPVsFrame(wx.Frame) :
 
         self.SetFont(self.Font10)
         sizer = wx.GridBagSizer(10, 5)
-        panel = scrolled.ScrolledPanel(self, size=(675, 500))
+        panel = scrolled.ScrolledPanel(self)
+        self.SetMinSize((550, 500))
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
 
@@ -90,7 +91,6 @@ class ExtraPVsFrame(wx.Frame) :
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
-
         pack(self, mainsizer)
         self.Show()
         self.Raise()

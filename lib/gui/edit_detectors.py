@@ -135,7 +135,8 @@ class DetectorFrame(wx.Frame) :
         self.SetFont(self.Font10)
 
         sizer = wx.GridBagSizer(12, 5)
-        panel = scrolled.ScrolledPanel(self, size=(675, 625))
+        panel = scrolled.ScrolledPanel(self) # , size=(675, 625))
+        self.SetMinSize((650, 500))
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
 
