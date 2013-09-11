@@ -126,10 +126,16 @@ def set_float(val, default=0):
                 out = default
     return out
 
-def pack(window, sizer):
+def pack(window, sizer, expand=1.1):
     "simple wxPython pack function"
+    tsize =  window.GetSize()
+    msize =  window.GetMinSize()
     window.SetSizer(sizer)
     sizer.Fit(window)
+    nsize = (10*int(expand*(max(msize[0], tsize[0])/10)),
+             10*int(expand*(max(msize[1], tsize[1])/10.)))
+    window.SetSize(nsize)
+    
 
 def add_button(parent, label, size=(-1, -1), action=None):
     "add simple button with bound action"
