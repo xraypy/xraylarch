@@ -593,7 +593,6 @@ class XAFSScanPanel(GenericScanPanel):
         # return next row for sizer
         return 2
 
-
     def make_e0panel(self):
         p = wx.Panel(self)
         s = wx.BoxSizer(wx.HORIZONTAL)
@@ -793,15 +792,17 @@ class MeshScanPanel(GenericScanPanel):
     def load_scandict(self, scan):
         """load scan for mesh scan from scan dictionary
         as stored in db, or passed to stepscan"""
+        
         self.dwelltime.SetValue(scan['dwelltime'])
         self.absrel.SetSelection(0)
-        for i, posdat in enumerate(scan['positioners']):
-            pos, units, cur, start, stop, step, npts = self.pos_settings[i]
+        for irow, name in ((0, 'inner'), (1, 'outer')):
+            pos, units, cur, start, stop, step, npts = self.pos_settings[irow]
+            posdat = scan[name]
             pos.SetStringSelection(posdat[0])
             start.SetValue(posdat[2])
             stop.SetValue(posdat[3])
             npts.SetValue(posdat[4])
-            self.update_position_from_pv(i)
+            self.update_position_from_pv(irow)
 
     def update_positioners(self):
         """meant to be overwritten"""
@@ -852,9 +853,9 @@ class MeshScanPanel(GenericScanPanel):
             if is_relative:
                 p1 += float(cur.GetLabel())
                 p2 += float(cur.GetLabel())
-            mname = 'outer'
-            if i == 0: mname = 'inner'
-            s[mname].append((name, pvnames, p1, p2, npts))
+            mname = 'inner'
+            if i > 0: mname = 'outer'
+            s[mname] = [name, pvnames, p1, p2, npts]
         return s
 
 class SlewScanPanel(GenericScanPanel):
@@ -915,22 +916,24 @@ class SlewScanPanel(GenericScanPanel):
     def load_scandict(self, scan):
         """load scan for slew scan from scan dictionary
         as stored in db, or passed to stepscan"""
+
+
+    def load_scandict(self, scan):
+        """load scan for mesh scan from scan dictionary
+        as stored in db, or passed to stepscan"""
         self.dwelltime.SetValue(scan['dwelltime'])
+        self.dimchoice.SetStringSelection('%i' % (scan['dwelltime']))
         self.absrel.SetSelection(0)
-        nregs = len(scan['positioners'])
-
-        pos, units, cur, start, stop, step, npts = self.pos_settings[1]
-        pos.SetSelection(0)
-
-        for i, posdat in enumerate(scan['positioners']):
-            pos, units, cur, start, stop, step, npts = self.pos_settings[i]
-            pos.SetStringSelection(posdat[0])
-            start.SetValue(posdat[2])
-            stop.SetValue(posdat[3])
-            npts.SetValue(posdat[4])
-            self.update_position_from_pv(i)
-
-        self.dimchoice.SetStringSelection("%i" % len(scan['positioners']))
+        for irow, name in ((0, 'inner'), (1, 'outer')):
+            pos, units, cur, start, stop, step, npts = self.pos_settings[irow]
+            posdat = scan[name]
+            if len(posdat) > 0:
+                pos.SetStringSelection(posdat[0])
+                start.SetValue(posdat[2])
+                stop.SetValue(posdat[3])
+                npts.SetValue(posdat[4])
+                self.update_position_from_pv(irow)
+                
 
     def update_positioners(self):
         """meant to be overwritten"""
@@ -998,9 +1001,9 @@ class SlewScanPanel(GenericScanPanel):
                 if is_relative:
                     p1 += float(cur.GetLabel())
                     p2 += float(cur.GetLabel())
-                mname = 'outer'
-                if i == 01: mname = 'inner'
-                s[mname].append((name, pvnames, p1, p2, npts))
+                mname = 'inner'
+                if i > 0: mname = 'outer'
+                s[mname] = [name, pvnames, p1, p2, npts]
         return s
 
 
