@@ -532,11 +532,17 @@ class ScanFrame(wx.Frame):
                 self.statusbar.SetStatusText("Could not overwrite scan '%s'" % sname)
             
     def onReadScanDef(self, evt=None):
-        if self.scandb.get_info('scandefs_load_showall', as_bool=True):
+        if self.scandb.get_info('scandefs_load_showauto', as_bool=True):
             scannames = [s.name for s in self.scandb.select('scandefs')]
         else:
             scannames = [s.name for s in self.scandb.select('scandefs') 
                          if not s.name.startswith('__')]
+
+        if not self.scandb.get_info('scandefs_load_showalltypes', as_bool=True):
+            print 'Need to weed scans by type ! '
+            print self.scanpanels
+            print self.nb.GetCurrentPage()
+            
             
         dlg = wx.SingleChoiceDialog(self, "Select Saved Scan:",
                                     "", scannames)
