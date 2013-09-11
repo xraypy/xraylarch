@@ -119,7 +119,11 @@ class _BaseTable(object):
 
 class Info(_BaseTable):
     "general information table (versions, etc)"
-    keyname, value, modify_time = None, None, None
+    keyname, value, notes, modify_time = [None]*4
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        return "<%s(%s='%s')>" % (name, self.keyname, str(self.value))
 
 class Status(_BaseTable):
     "status table"
@@ -239,6 +243,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
     metadata =  MetaData(engine)
     info = Table('info', metadata,
                  Column('keyname', Text, primary_key=True, unique=True),
+                 StrCol('notes'),
                  StrCol('value'),
                  Column('modify_time', DateTime, default=datetime.now),
                  Column('create_time', DateTime, default=datetime.now))
