@@ -221,15 +221,17 @@ class StepScan(object):
         if extra_pvs is None or len(extra_pvs) == 0:
             return
         for desc, pvname in extra_pvs:
-            if isinstance(pvname, str):
-                pv = PV(pvname)
-            else:
+            if isinstance(pvname, PV):
                 pv = pvname
+            else:
+                pv = PV(pvname)
+
             if (desc, pv) not in self.extra_pvs:
                 self.extra_pvs.append((desc, pv))
 
     def add_positioner(self, pos):
         """ add a Positioner """
+        print 'StepScan add positioner: ', pos, pos.extra_pvs
         self.add_extra_pvs(pos.extra_pvs)
         self.at_break_methods.append(pos.at_break)
         self.post_scan_methods.append(pos.post_scan)
