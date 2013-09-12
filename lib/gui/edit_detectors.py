@@ -121,7 +121,6 @@ class DetectorFrame(wx.Frame) :
     def __init__(self, parent, pos=(-1, -1)):
         self.parent = parent
         self.scandb = parent.scandb
-        self.scanpanels = parent.scanpanels
 
         self.detectors = self.scandb.getall('scandetectors', orderby='id')
         self.counters = self.scandb.getall('scancounters', orderby='id')

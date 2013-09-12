@@ -7,6 +7,7 @@ Current scan types:
     XAFS Scans
     Fly Scans (optional)
 """
+import json
 import wx
 import wx.lib.scrolledpanel as scrolled
 import numpy as np
@@ -528,6 +529,10 @@ class XAFSScanPanel(GenericScanPanel):
             if ireg == 0:
                 self.dwelltime.SetValue(reg[3])
 
+        self.kwtimemax.SetValue(scan['max_time'])
+        self.kwtimechoice.SetSelection(scan['time_kw'])
+                
+
     def setScanTime(self):
         etime = (float(self.scandb.get_info('pos_settle_time')) +
                  float(self.scandb.get_info('det_settle_time')) )
@@ -626,7 +631,9 @@ class XAFSScanPanel(GenericScanPanel):
 
     @EpicsFunction
     def display_energy(self, evt=None):
-        en_pvname = str(self.scandb.get_info('energy_read'))
+        enpos = str(self.scandb.get_info('xafs_energy'))
+        pos = self.scandb.get_positioner(enpos)
+        en_pvname = pos.readpv
         if en_pvname in self.pvlist and self.energy_pv.pv is None:
             self.energy_pv.SetPV(self.pvlist[en_pvname])
             self.onEdgeChoice()
@@ -646,7 +653,10 @@ class XAFSScanPanel(GenericScanPanel):
         wids = self.reg_settings[index]
         units = self.getUnits(index)
         old_units = self.cur_units[index]
-        en_pvname = str(self.scandb.get_info('energy_read'))
+
+        enpos = str(self.scandb.get_info('xafs_energy'))
+        pos = self.scandb.get_positioner(enpos)
+        en_pvname = str(pos.readpv)
         if en_pvname in self.pvlist and self.energy_pv.pv is None:
             self.energy_pv.SetPV(self.pvlist[en_pvname])
         e0_off = 0
@@ -730,14 +740,17 @@ class XAFSScanPanel(GenericScanPanel):
 
     def generate_scan(self):
         "generate xafs scan"
+        enpos = str(self.scandb.get_info('xafs_energy'))
+        enpos = self.scandb.get_positioner(enpos)
         s = {'type': 'xafs',
              'e0': self.e0.GetValue(),
              'dwelltime':  float(self.dwelltime.GetValue()),
              'is_relative': 1==self.absrel.GetSelection(),
              'max_time': self.kwtimemax.GetValue(),
              'time_kw': int(self.kwtimechoice.GetSelection()),
-             'energy_drive': self.scandb.get_info('energy_drive'),
-             'energy_read': self.scandb.get_info('energy_read'),
+             'energy_drive': enpos.drivepv,
+             'energy_read': enpos.readpv,
+             'extra_pvs': json.loads(enpos.extrapvs).items(),
              'regions': []}
         for index, wids in enumerate(self.reg_settings):
             start, stop, step, npts, dtime, units =  wids

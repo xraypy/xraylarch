@@ -68,7 +68,9 @@ class PositionerFrame(wx.Frame) :
                   (ir, 3), (1, 1), labstyle, 2)
 
         self.widlist = []
+        poslist = []
         for pos in self.scandb.getall('scanpositioners'):
+            poslist.append(pos.name)
             desc   = wx.TextCtrl(panel, -1, value=pos.name, size=(175, -1))
             pvctrl = wx.TextCtrl(panel, value=pos.drivepv,  size=(175, -1))
             rdctrl = wx.TextCtrl(panel, value=pos.readpv,  size=(175, -1))
@@ -92,19 +94,17 @@ class PositionerFrame(wx.Frame) :
 
         # xafs
         ir += 1
-        sizer.Add(self.add_subtitle(panel, 'Energy for XAFS Scans'),
+        sizer.Add(self.add_subtitle(panel, 'Positioner for XAFS Scans'),
                   (ir, 0),  (1, 4),  LEFT, 1)
 
-        drive_pv = self.scandb.get_info('energy_drive')
-        read_pv = self.scandb.get_info('energy_read')
-        desc   = wx.TextCtrl(panel, -1, value='Energy PV', size=(175, -1))
-        pvctrl = wx.TextCtrl(panel, value=drive_pv, size=(175, -1))
-        rdctrl = wx.TextCtrl(panel, value=read_pv,  size=(175, -1))
+        energy = self.scandb.get_info('xafs_energy')
+        desc   = wx.StaticText(panel, -1, label='Energy Positioner', size=(175, -1))
+        pvctrl = wx.Choice(panel, choices=poslist, size=(175, -1))
+        pvctrl.SetStringSelection(energy)
         ir +=1
         sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-        sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-        sizer.Add(rdctrl, (ir, 2), (1, 1), labstyle, 2)
-        self.widlist.append(('xafs', None, desc, pvctrl, rdctrl, None))
+        sizer.Add(pvctrl, (ir, 1), (1, 2), labstyle, 2)
+        self.widlist.append(('xafs', None, desc, pvctrl, None, None))
 
         # slew scans
         ir += 1
@@ -177,6 +177,10 @@ class PositionerFrame(wx.Frame) :
                              float(self.settle_time.GetValue()))
         for w in self.widlist:
             wtype, obj, name, drivepv, readpv, erase = w
+            if wtype == 'xafs':
+                name = drivepv.GetStringSelection()
+                energy = self.scandb.set_info('xafs_energy', name)
+                continue
             if erase is not None:
                 erase = erase.GetSelection()
             else:
@@ -199,16 +203,13 @@ class PositionerFrame(wx.Frame) :
                 obj.use = 1
                 obj.drivepv = drivepv
                 obj.readpv = readpv
-            elif wtype == 'xafs':
-                self.scandb.set_info('energy_read', readpv)
-                self.scandb.set_info('energy_drive', drivepv)
             elif obj is None and wtype == 'line':
                 self.scandb.add_positioner(name, drivepv, readpv=readpv)
             elif obj is None and wtype == 'slew':
                 self.scandb.add_slewpositioner(name, drivepv, readpv=readpv)
 
         self.scandb.commit()
-        for panel in self.parent.scanpanels.values():
+        for inb, panel in self.parent.scanpanels.values():
             panel.update_positioners()
 
         self.Destroy()
