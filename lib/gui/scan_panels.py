@@ -384,6 +384,7 @@ class LinearScanPanel(GenericScanPanel):
                 wids[0].SetStringSelection(a)
 
     def generate_scan(self):
+        "generate linear scan"
         s = {'type': 'linear',
              'dwelltime':  float(self.dwelltime.GetValue()),
              'positioners': []}
@@ -728,11 +729,15 @@ class XAFSScanPanel(GenericScanPanel):
             self.e0.SetValue(e0val[0])
 
     def generate_scan(self):
+        "generate xafs scan"
         s = {'type': 'xafs',
              'e0': self.e0.GetValue(),
+             'dwelltime':  float(self.dwelltime.GetValue()),
              'is_relative': 1==self.absrel.GetSelection(),
              'max_time': self.kwtimemax.GetValue(),
              'time_kw': int(self.kwtimechoice.GetSelection()),
+             'energy_drive': self.scandb.get_info('energy_drive'),
+             'energy_read': self.scandb.get_info('energy_read'),
              'regions': []}
         for index, wids in enumerate(self.reg_settings):
             start, stop, step, npts, dtime, units =  wids
@@ -836,6 +841,7 @@ class MeshScanPanel(GenericScanPanel):
                 wids[0].SetStringSelection(a)
 
     def generate_scan(self):
+        "generate mesh scan"
         s = {'type': 'mesh',
              'dwelltime':  float(self.dwelltime.GetValue()),
              'inner': [],
@@ -982,6 +988,7 @@ class SlewScanPanel(GenericScanPanel):
             wid.SetStringSelection(a)
 
     def generate_scan(self):
+        "generate slew scan"        
         s = {'type': 'slew',
              'dwelltime':  float(self.dwelltime.GetValue()),
              'dimension': 2,
