@@ -581,12 +581,12 @@ class ScanDB(object):
         cls, table = self._get_table('extrapvs')
         self.conn.execute(table.delete().where(table.c.name==name))
 
-    def add_extrapv(self, name, pvname, **kws):
+    def add_extrapv(self, name, pvname, use=True, **kws):
         """add extra pv (recorded at breakpoints in scans"""
         cls, table = self._get_table('extrapvs')
         name = name.strip()
         pvname = normalize_pvname(pvname)        
-        kws.update({'pvname': pvname})
+        kws.update({'pvname': pvname, 'use': int(use)})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.add_pv(pvname, notes=name)
