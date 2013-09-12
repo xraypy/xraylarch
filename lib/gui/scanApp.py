@@ -105,6 +105,7 @@ class ScanFrame(wx.Frame):
         self._larch = None
         self.epics_status = 0
         self.larch_status = 0
+        self.last_scanname = ''
         wx.EVT_CLOSE(self, self.onClose)
 
         self.createMainPanel()
@@ -390,11 +391,11 @@ class ScanFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         # file
         fmenu = wx.Menu()
-        add_menu(self, fmenu,"&Save Scan Definition\tCtrl+S",
-                  "Save Scan Definition", self.onSaveScanDef)
-
         add_menu(self, fmenu, "&Read Scan Definition\tCtrl+O",
                  "Read Scan Defintion",  self.onReadScanDef)
+
+        add_menu(self, fmenu,"&Save Scan Definition\tCtrl+S",
+                  "Save Scan Definition", self.onSaveScanDef)
 
         fmenu.AppendSeparator()
 
@@ -509,41 +510,52 @@ class ScanFrame(wx.Frame):
     def onSaveScanDef(self, evt=None):
         dlg = wx.TextEntryDialog(self, "Scan Name:",
                                  "Enter Name for this Scan", "")
-        sname = ''
-        dlg.SetValue(sname)
+        dlg.SetValue(self.last_scanname)
         if dlg.ShowModal() == wx.ID_OK:
             sname =  dlg.GetValue()
         dlg.Destroy()
         if sname is not None:
             scannames = [s.name for s in self.scandb.select('scandefs')]
-            name_exists = sname in scannames
-            if name_exists:
-                erase_ok = True
-                if self.scandb.get_info('scandefs_verify_overwrite', as_bool=True):
-                    erase_ok = popup(self,
-                                     "Overwrite Scan Definition '%s'?" % sname,
-                                     "Overwrite Scan Definition?",
-                                     style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
-                if erase_ok:
+            if sname in scannames:
+                _ok = wx.ID_NO
+                if self.scandb.get_info('scandefs_verify_overwrite',
+                                        as_bool=True):
+                    _ok =  popup(self,
+                                 "Overwrite Scan Definition '%s'?" % sname,
+                                 "Overwrite Scan Definition?",
+                                 style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
+                
+                if (_ok == wx.ID_YES):
                     self.scandb.del_scandef(sname)
-                    name_exists = False
-            if not name_exists and len(sname) > 0:
+                else:
+                    sname = ''
+            if len(sname) > 0:
                 self.generate_scan(scanname=sname)
                 self.statusbar.SetStatusText("Saved scan '%s'" % sname)
             else:
                 self.statusbar.SetStatusText("Could not overwrite scan '%s'" % sname)
+
+        if len(sname) > 0:
+            self.last_scanname = sname
             
     def onReadScanDef(self, evt=None):
-        if self.scandb.get_info('scandefs_load_showauto', as_bool=True):
-            scannames = [s.name for s in self.scandb.select('scandefs')]
-        else:
-            scannames = [s.name for s in self.scandb.select('scandefs') 
-                         if not s.name.startswith('__')]
 
+        _auto = self.scandb.get_info('scandefs_load_showauto', as_bool=True)
+        _all  = self.scandb.get_info('scandefs_load_showalltypes', as_bool=True)
+        stype = None
         if not self.scandb.get_info('scandefs_load_showalltypes', as_bool=True):
-            print 'Need to weed scans by type ! '
-            print self.scanpanels
-            print self.nb.GetCurrentPage()
+            inb =  self.nb.GetSelection()
+            for key, val in self.scanpanels.items():
+                if val[0] == inb:
+                    stype = key
+
+        scannames = []
+        for sdef in self.scandb.getall('scandefs'):
+            if (not _all) and stype != sdef.type:
+                continue
+            if (not _auto) and sdef.name.startswith('__'):
+                continue
+            scannames.append(sdef.name)
             
             
         dlg = wx.SingleChoiceDialog(self, "Select Saved Scan:",
@@ -557,6 +569,7 @@ class ScanFrame(wx.Frame):
             self.statusbar.SetStatusText("Read Scan '%s'" % sname)
             thisscan = json.loads(self.scandb.get_scandef(sname).text)
             self.load_scandef( thisscan)
+            self.last_scanname = sname            
             
     def load_scandef(self, scan):
         """load scan definition from dictionary, as stored
