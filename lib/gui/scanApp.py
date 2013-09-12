@@ -283,7 +283,8 @@ class ScanFrame(wx.Frame):
         
         scan['detectors'] = []
         scan['counters']  = []
-        scan['extra_pvs'] = []
+        if 'extra_pvs' not in scan:
+            scan['extra_pvs'] = []
         for det in sdb.select('scandetectors', use=1):
             opts = json.loads(det.options)
             opts['label']  = det.name
