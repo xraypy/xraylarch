@@ -158,7 +158,7 @@ class ExtraPVs(_BaseTable):
 
 class ScanDefs(_BaseTable):
     "scandefs table"
-    name, notes, text, modify_time, last_used_time = [None]*5
+    name, notes, text, type, modify_time, last_used_time = [None]*6
 
 class PVs(_BaseTable):
     "pv table"
@@ -262,7 +262,8 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                               StrCol('options', size=2048)])
 
     scans = NamedTable('scandefs', metadata,
-                       cols=[StrCol('text', size=2048),
+                       cols=[StrCol('text', size=4096),
+                             StrCol('type'),
                              Column('modify_time', DateTime),
                              Column('last_used_time', DateTime)])
 
