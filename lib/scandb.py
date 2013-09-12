@@ -409,10 +409,10 @@ class ScanDB(object):
         cls, table = self._get_table('scandefs')
         self.conn.execute(table.delete().where(table.c.name==name))
 
-    def add_scandef(self, name, text='', notes='', **kws):
+    def add_scandef(self, name, text='', notes='', type='', **kws):
         """add scan"""
         cls, table = self._get_table('scandefs')
-        kws.update({'notes': notes, 'text': text})
+        kws.update({'notes': notes, 'text': text, 'type': type})
 
         name = name.strip()
         row = self.__addRow(cls, ('name',), (name,), **kws)
