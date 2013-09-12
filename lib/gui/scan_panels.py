@@ -669,10 +669,6 @@ class XAFSScanPanel(GenericScanPanel):
         if label == 'dwelltime':
             for wid in self.reg_settings:
                 wid[4].SetValue(value)
-            try:
-                self.kwtimemax.SetValue(value)
-            except:
-                pass
             update_esttime = True
         elif label == 'nreg':
             nregs = value
