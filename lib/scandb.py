@@ -68,7 +68,6 @@ def isScanDB(dbname, server='sqlite',
         return 'version' in keys and 'experiment_id' in keys
     return False
 
-
 def json_encode(val):
     "simple wrapper around json.dumps"
     if val is None or isinstance(val, (str, unicode)):
@@ -470,44 +469,56 @@ class ScanDB(object):
         
         self.conn.execute(table.delete().where(table.c.name==name))
 
-    def add_positioner(self, name, drivepv, readpv=None, notes='', **kws):
+    def add_positioner(self, name, drivepv, readpv=None, notes='',
+                       extrapvs=None, **kws):
         """add positioner"""
         cls, table = self._get_table('scanpositioners')
         name = name.strip()
         drivepv = normalize_pvname(drivepv)
         if readpv is not None:
             readpv = normalize_pvname(readpv)
-
+        epvlist = []
+        if extrapvs is not None:
+            epvlist = [normalize_pvname(p) for p in extrapvs]
         kws.update({'notes': notes, 'drivepv': drivepv,
-                    'readpv': readpv})
+                    'readpv': readpv, 'extrapvs':json.dumps(evpvlist)})
+
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         self.add_pv(drivepv, notes=name)
         if readpv is not None:
             self.add_pv(readpv, notes="%s readback" % name)
+        for epv in epvlist:
+            self.add_pv(epv)
         return row
 
     def get_slewpositioner(self, name):
         """return slewscan positioner by name"""
         return self.getrow('slewscanpositioners', name, one_or_none=True)
 
-    def add_slewpositioner(self, name, drivepv, readpv=None, notes='', **kws):
+    def add_slewpositioner(self, name, drivepv, readpv=None, notes='',
+                           extrapvs=None, **kws):
         """add slewscan positioner"""
         cls, table = self._get_table('slewscanpositioners')
         name = name.strip()
         drivepv = normalize_pvname(drivepv)
         if readpv is not None:
             readpv = normalize_pvname(readpv)
-        
+        epvlist = []
+        if extrapvs is not None:
+            epvlist = [normalize_pvname(p) for p in extrapvs]
         kws.update({'notes': notes, 'drivepv': drivepv,
-                    'readpv': readpv})
+                    'readpv': readpv, 'extrapvs':json.dumps(evpvlist)})
+
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.commit()
         self.add_pv(drivepv, notes=name)
         if readpv is not None:
             self.add_pv(readpv, notes="%s readback" % name)
+        for epv in epvlist:
+            self.add_pv(epv)
         return row
 
     # detectors
