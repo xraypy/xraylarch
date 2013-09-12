@@ -218,7 +218,7 @@ class StepScan(object):
 
     def add_extra_pvs(self, extra_pvs):
         """add extra pvs (tuple of (desc, pvname))"""
-        if len(extra_pvs) == 0:
+        if extra_pvs is None or len(extra_pvs) == 0:
             return
         for desc, pvname in extra_pvs:
             if isinstance(pvname, str):
@@ -241,6 +241,9 @@ class StepScan(object):
 
     def add_detector(self, det):
         """ add a Detector -- needs to be derived from Detector_Mixin"""
+        if det.extra_pvs is None: # not fully connected!
+            det.connect_counters()
+
         self.add_extra_pvs(det.extra_pvs)
         self.at_break_methods.append(det.at_break)
         self.post_scan_methods.append(det.post_scan)
@@ -265,17 +268,6 @@ class StepScan(object):
         return out
 
     def pre_scan(self, **kws):
-        if self.dwelltime is not None:
-            self.min_dwelltime = self.dwelltime
-            self.max_dwelltime = self.dwelltime
-            if isinstance(self.dwelltime, (list, tuple)):
-                self.dwelltime = np.array(self.dwelltime)
-            if isinstance(self.dwelltime, np.ndarray):
-                self.min_dwelltime = min(self.dwelltime)
-                self.max_dwelltime = max(self.dwelltime)
-            for d in self.detectors:
-                d.dwelltime = self.dwelltime
-
         [pv.connect() for  (desc, pv) in self.extra_pvs]
         return [m(scan=self) for m in self.pre_scan_methods]
 
@@ -347,12 +339,11 @@ class StepScan(object):
         self.abort = False
         orig_positions = [p.current() for p in self.positioners]
 
-        out = self.pre_scan()
+        out = self.pre_scan()        
         self.check_outputs(out, msg='pre scan')
 
         out = [p.move_to_start(wait=False) for p in self.positioners]
         self.check_outputs(out, msg='move to start')
-
         self.clear_data()
 
         self.datafile = self.open_output_file(filename=self.filename,
@@ -363,6 +354,20 @@ class StepScan(object):
 
         npts = len(self.positioners[0].array)
 
+        self.dwelltime_varys = False
+        if self.dwelltime is not None:
+            self.min_dwelltime = self.dwelltime
+            self.max_dwelltime = self.dwelltime
+            if isinstance(self.dwelltime, (list, tuple)):
+                self.dwelltime = np.array(self.dwelltime)
+            if isinstance(self.dwelltime, np.ndarray):
+                self.min_dwelltime = min(self.dwelltime)
+                self.max_dwelltime = max(self.dwelltime)
+                self.dwelltime_varys = True
+            else:
+                for d in self.detectors:
+                    d.dwelltime = self.dwelltime                
+                
         self.message_thread = None
         if hasattr(self.messenger, '__call__'):
             self.message_thread = ScanMessenger(func=self.messenger,
@@ -372,7 +377,7 @@ class StepScan(object):
         self.npts = npts
         t0 = time.time()
         out = [p.move_to_start(wait=True) for p in self.positioners]
-        self.check_outputs(out, msg='move to start with wait')
+        self.check_outputs(out, msg='move to start, wait=True')
         [p.current() for p in self.positioners]
         [d.pv.get() for d in self.counters]
         i = -1
@@ -386,8 +391,12 @@ class StepScan(object):
             try:
                 point_ok = True
                 self.cpt = i+1
+
                 # move to next position, wait for moves to finish
                 [p.move_to_pos(i) for p in self.positioners]
+                if dwelltime_varys:
+                    for d in self.detectors:
+                        d.dwelltime = self.dwelltime[i]
                 t0 = time.time()
                 mcount = 0
                 while (not all([p.done for p in self.positioners]) and
