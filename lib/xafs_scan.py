@@ -31,13 +31,12 @@ class ScanRegion(Saveable):
 
 class XAFS_Scan(StepScan):
     def __init__(self, label=None, energy_pv=None, read_pv=None,
-                 e0=0, dtime=1, **kws):
+                 e0=0, **kws):
         self.label = label
         self.e0 = e0
         self.energies = []
-        self.dwelltimes   = []
         self.regions = []
-        self.dtime = dtime
+        self.dwelltime = []
         StepScan.__init__(self, **kws)
         self.energy_pos = None
         self.set_energy_pv(energy_pv, read_pv=read_pv)
@@ -46,28 +45,11 @@ class XAFS_Scan(StepScan):
         self.energy_pv = energy_pv
         self.read_pv = read_pv
         if energy_pv is not None:
-
             self.energy_pos = Positioner(energy_pv, label='Energy')
             self.positioners = []
             self.add_positioner(self.energy_pos)
         if read_pv is not None:
             self.add_counter(read_pv, label='Energy_readback')
-
-    def read_config_file(self, configfile):
-        """read configuration from INI file"""
-        pass
-
-    def save_config_file(self, configfile):
-        """write configuration from INI file"""
-        print '== SAVE Config not complete!! '
-        print self.label
-        #         print self.e0, self.dtime
-        #         print self.energy_pv
-        #         print self.read_pv
-        #         print self.detectors
-        #         for r in self.regions:
-        #             print r
-        print '== SAVE Config Done '
 
     def add_region(self, start, stop, step=None, npts=None,
                    relative=True, use_k=False, e0=None,
@@ -122,42 +104,6 @@ class XAFS_Scan(StepScan):
             _vtime = (dtime_final-dtime)*(1.0/(npts-1))**dtime_wt
             dt_arr= [dtime + _vtime *i**dtime_wt for i in range(npts)]
         self.energies.extend(en_arr)
-        self.dwelltimes.extend(dt_arr)
-
-    def clear(self):
-        self.regions = []
-        self.energies = []
-        self.dwelltimes = []
-
-    def load_scan(self):
-        print 'load scan'
-        if self.energy_pos is None:
-            print 'Need Energy Positioner!'
-            return
-        self.energy_pos.array = self.energies
-
-        # set detector dwelltime array
-        for d in self.detectors:
-            if d.dwelltime_pv is not None:
-                thispos = None
-                for p in self.positioners:
-                    if p.pv.pvname == d.dwelltime_pv.pvname:
-                        thispos = p
-                if thispos is None:
-                    thispos = Positioner(d.dwelltime_pv.pvname,
-                                         units = 's',
-                                         label = "%s_time" % d.label)
-                    self.add_positioner(thispos)
-                thispos.array = self.dwelltimes
-        #print 'Positioners: ', self.positioners
-        #print 'Triggers: ', self.triggers
-        #print 'Counters: ', self.counters
-        self.set_dwelltime(self.dwelltimes[0])
-        if self.energy_pre_scan not in self.pre_scan_methods:
-            self.pre_scan_methods.append(self.energy_pre_scan)
-
-    def energy_pre_scan(self, scan=None):
-        """special pre_scan command for XAFS scans
-        put here to be overridden -- may need setting mono modes.
-        """
-        self.energy_pos.move_to_start()
+        self.dwelltime.extend(dt_arr)
+        self.energy_pos.array = np.array(self.energies)
+        
