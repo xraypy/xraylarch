@@ -58,7 +58,11 @@ class HideShow(wx.Choice):
         self.choices = ('Hide', 'Show')
         self.Clear()
         self.SetItems(self.choices)
-        self.SetSelection({False:0, True:1}[default])
+        try:
+            default = int(default)
+        except:
+            default = 0
+        self.SetSelection(default)
 
 class YesNo(wx.Choice):
     def __init__(self, parent, defaultyes=True,
@@ -68,7 +72,11 @@ class YesNo(wx.Choice):
         self.choices = choices
         self.Clear()
         self.SetItems(self.choices)
-        self.SetSelection({False:0, True:1}[defaultyes])
+        try:
+            default = int(defaultyes)
+        except:
+            default = 0
+        self.SetSelection(default)
 
     def SetChoices(self, choices):
         self.Clear()
@@ -80,6 +88,11 @@ class YesNo(wx.Choice):
             self.SetSelection(0)
         elif choice in self.choices:
             self.SetSelection(self.choices.index(choice))
+
+class check(wx.CheckBox):
+    def __init__(self, parent, default=True, **kws):
+        wx.CheckBox.__init__(self, parent, -1, **kws)
+        self.SetValue(default)
 
 
 def make_steps(prec=3, tmin=0, tmax=10, base=10, steps=(1, 2, 5)):

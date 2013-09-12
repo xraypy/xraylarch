@@ -7,7 +7,7 @@ import wx.lib.scrolledpanel as scrolled
 
 from ..ordereddict import OrderedDict
 from .gui_utils import GUIColors, set_font_with_children, YesNo
-from .gui_utils import add_button, pack, SimpleText
+from .gui_utils import add_button, pack, SimpleText, check
 
 
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
@@ -49,7 +49,7 @@ class ExtraPVsFrame(wx.Frame) :
                   (ir, 0), (1, 1), rlabstyle, 2)
         sizer.Add(SimpleText(panel, label='PV Name', size=(175, -1)),
                   (ir, 1), (1, 1), labstyle, 2)
-        sizer.Add(SimpleText(panel, label='Use?', size=(60, -1)),
+        sizer.Add(SimpleText(panel, label='Use?'), 
                   (ir, 2), (1, 1), labstyle, 2)
         sizer.Add(SimpleText(panel, label='Erase?', size=(60, -1)),
                   (ir, 3), (1, 1), labstyle, 2)
@@ -58,7 +58,7 @@ class ExtraPVsFrame(wx.Frame) :
         for this in self.scandb.getall('extrapvs'):
             desc   = wx.TextCtrl(panel, -1, value=this.name, size=(175, -1))
             pvctrl = wx.TextCtrl(panel, value=this.pvname,  size=(175, -1))
-            usepv  = YesNo(panel, defaultyes=this.use)
+            usepv  = check(panel, default=this.use)
             delpv  = YesNo(panel, defaultyes=False)
             
             ir +=1
@@ -71,7 +71,7 @@ class ExtraPVsFrame(wx.Frame) :
         for i in range(3):
             desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
             pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-            usepv  = YesNo(panel, defaultyes=True)
+            usepv  = check(panel, default=True)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
@@ -121,7 +121,7 @@ class ExtraPVsFrame(wx.Frame) :
         for w in self.widlist:
             obj, name, pvname, usepv, erase = w
             if usepv is not None:
-                usepv = usepv.GetSelection()
+                usepv = usepv.IsChecked()
             else:
                 usepv = True
 

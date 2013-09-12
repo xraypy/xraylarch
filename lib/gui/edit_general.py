@@ -7,8 +7,8 @@ import wx
 import wx.lib.scrolledpanel as scrolled
 
 from ..ordereddict import OrderedDict
-from .gui_utils import GUIColors, set_font_with_children, YesNo
-from .gui_utils import add_button, pack, SimpleText
+from .gui_utils import GUIColors, set_font_with_children
+from .gui_utils import add_button, pack, SimpleText, check
 
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 
@@ -63,8 +63,7 @@ class SettingsFrame(wx.Frame) :
 
                 desc = wx.StaticText(panel, -1, label="%s: " % label, size=(300, -1))
                 if as_bool:
-                    ctrl = wx.CheckBox(panel)
-                    ctrl.SetValue(val)
+                    ctrl = check(panel, default=val)
                 else:
                     ctrl = wx.TextCtrl(panel, value=val,  size=(200, -1))
                 self.wids[vname] = ctrl

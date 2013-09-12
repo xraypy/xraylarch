@@ -9,7 +9,8 @@ from ..ordereddict import OrderedDict
 from ..detectors import DET_DEFAULT_OPTS, AD_FILE_PLUGINS
 
 from .gui_utils import (GUIColors, set_font_with_children, YesNo, Closure,
-                        add_button, add_choice, pack, SimpleText,FloatCtrl)
+                        add_button, add_choice, pack, check,
+                        SimpleText, FloatCtrl)
 
 from ..utils import strip_quotes
 
@@ -86,7 +87,7 @@ class DetectorDetailsDialog(wx.Dialog):
 
             if val in (True, False, 'Yes', 'No'):
                 defval = val in (True, 'Yes')
-                wid = YesNo(panel, defaultyes=defval)
+                wid = check(panel, default=defval)
             elif key.lower() == 'file_plugin':
                 wid = add_choice(panel, AD_CHOICES, default=1)
             else:
@@ -163,7 +164,7 @@ class DetectorFrame(wx.Frame) :
                   (ir, 0), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='PV prefix', size=(175, -1)),
                   (ir, 1), (1, 1), LEFT, 1)  
-        sizer.Add(SimpleText(panel, label='Use?',     size=(80, -1)),
+        sizer.Add(SimpleText(panel, label='Use?'),
                   (ir, 2), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='Kind',     size=(80, -1)),
                   (ir, 3), (1, 1), LEFT, 1)
@@ -179,7 +180,7 @@ class DetectorFrame(wx.Frame) :
             dkind  = det.kind.title().strip()
             desc   = wx.TextCtrl(panel, value=det.name,   size=(125, -1))
             pvctrl = wx.TextCtrl(panel, value=det.pvname, size=(175, -1))
-            use    = YesNo(panel, defaultyes=(det.use in ('True', 1, None)))
+            use    = check(panel, default=det.use)
             detail = add_button(panel, 'Edit', size=(60, -1),
                                 action=Closure(self.onDetDetails, det=det))
             kind = add_choice(panel, DET_CHOICES, size=(110, -1))
@@ -199,7 +200,7 @@ class DetectorFrame(wx.Frame) :
             ir +=1
             desc   = wx.TextCtrl(panel, value='',   size=(125, -1))            
             pvctrl = wx.TextCtrl(panel, value='',   size=(175, -1))
-            use    = YesNo(panel)
+            use    = check(panel, default=True)
             kind = add_choice(panel, DET_CHOICES, size=(110, -1))
             kind.SetStringSelection(dkind)            
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
@@ -218,7 +219,7 @@ class DetectorFrame(wx.Frame) :
                   (ir, 0), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='PV name', size=(175, -1)),
                   (ir, 1), (1, 1), LEFT, 1)
-        sizer.Add(SimpleText(panel, label='Use?', size=(80, -1)),
+        sizer.Add(SimpleText(panel, label='Use?'),
                   (ir, 2), (1, 1), LEFT, 1)
         sizer.Add(SimpleText(panel, label='Erase?', size=(80, -1)),
                   (ir, 3), (1, 2), LEFT, 1)
@@ -226,7 +227,7 @@ class DetectorFrame(wx.Frame) :
         for counter in self.counters:
             desc   = wx.TextCtrl(panel, -1, value=counter.name, size=(125, -1))
             pvctrl = wx.TextCtrl(panel, value=counter.pvname,  size=(175, -1))
-            use     = YesNo(panel, defaultyes=(counter.use in ('True', 1, None)))
+            use    = check(panel, default=counter.use)
             erase  = YesNo(panel, defaultyes=False)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
@@ -239,7 +240,7 @@ class DetectorFrame(wx.Frame) :
         for i in range(2):
             desc   = wx.TextCtrl(panel, -1, value='', size=(125, -1))
             pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-            use     = YesNo(panel)
+            use    = check(panel, default=True)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
@@ -367,8 +368,7 @@ class DetectorFrame(wx.Frame) :
             else:
                 erase = False
 
-
-            use    = use.GetSelection()
+            use    = use.IsChecked()
             name   = name.GetValue().strip()
             pvname = pvname.GetValue().strip()
             if len(name) < 1 or len(pvname) < 1:
