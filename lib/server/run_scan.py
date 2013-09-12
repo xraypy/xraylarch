@@ -39,20 +39,21 @@ def debug_scan(**conf):
 def run_scan(conf):
     """runs a scan as specified in a scan configuration dictionary"""
     if conf['type'] == 'xafs':
-        scan  = XAFS_Scan()
-        isrel = conf['is_relative']
-        e0    = conf['e0']
+
+        scan  = XAFS_Scan(energy_pv=conf['energy_drive'],
+                          read_pv=conf['energy_read'],
+                          e0 = conf['e0'])
+
         t_kw  = conf['time_kw']
         t_max = conf['max_time']
         nreg  = len(conf['regions'])
-        kws   = {'relative': isrel, 'e0':e0}
-
+        kws  = {'relative': conf['is_relative']}
         for i, det in enumerate(conf['regions']):
             start, stop, npts, dt, units = det
             kws['dtime'] =  dt
             kws['use_k'] =  units.lower() !='ev'
             if i == nreg-1: # final reg
-                if t_max > 0.01 and t_kw>0 and kws['use_k']:
+                if t_max > dt and t_kw>0 and kws['use_k']:
                     kws['dtime_final'] = t_max
                     kws['dtime_wt'] = t_kw
             scan.add_region(start, stop, npts=npts, **kws)
@@ -67,8 +68,9 @@ def run_scan(conf):
             if len(pvs) > 0:
                 scan.add_counter(pvs[1], label="%s(read)" % label)
 
-    for det in conf['detectors']:
-        scan.add_detector(get_detector(**det))
+    for dpars in conf['detectors']:
+        det = get_detector(**dpars)
+        scan.add_detector(det)
 
     if 'counters' in conf:
         for label, pvname  in conf['counters']:
@@ -76,15 +78,17 @@ def run_scan(conf):
 
     scan.add_extra_pvs(conf['extra_pvs'])
 
-    scan.dwelltime = conf['dwelltime']
-    scan.comments  = conf['user_comments']
-    scan.filename  = conf['filename']
-    scan.pos_settle_time = conf['pos_settle_time']
-    scan.det_settle_time = conf['det_settle_time']
+    scan.dwelltime = conf.get('dwelltime', 1)
+    scan.comments  = conf.get('user_comments', '')
+    scan.filename  = conf.get('filename', 'scan.dat')
+    scan.pos_settle_time = conf.get('pos_settle_time', 0.01)
+    scan.det_settle_time = conf.get('det_settle_time', 0.01)
     scan.messenger = messenger
 
+    print 'READY TO RUN SCAN '
+    return scan
     # print 'Scan:: ', conf['filename'], conf['nscans']
-    for i in range(conf['nscans']):
-        outfile = scan.run(conf['filename'], comments=conf['user_comments'])
-        print 'wrote %s' % outfile
+    #for i in range(conf['nscans']):
+    #    outfile = scan.run(conf['filename'], comments=conf['user_comments'])
+    #    print 'wrote %s' % outfile
 
