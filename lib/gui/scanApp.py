@@ -298,7 +298,8 @@ class ScanFrame(wx.Frame):
         for ep in sdb.select('extrapvs', use=1):
             scan['extra_pvs'].append((ep.name, ep.pvname))
             
-        sdb.add_scandef(scanname,  json.dumps(scan))
+        sdb.add_scandef(scanname,  text=json.dumps(scan),
+                        type=scan['type'])
         return scanname
 
     def onStartScan(self, evt=None):
