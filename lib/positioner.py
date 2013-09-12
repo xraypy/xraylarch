@@ -13,9 +13,10 @@ class Positioner(Saveable):
 
     Not that it does *NOT* implay a readback on this position -- add a Counter for that!
     """
-    def __init__(self, pvname, label=None, array=None, units=None, **kws):
+    def __init__(self, pvname, label=None, array=None, units=None,
+                 extra_pvs=None, **kws):
         Saveable.__init__(self, pvname, label=label, units=units,
-                          array=array, **kws)
+                          array=array, extra_pvs=extra_pvs, **kws)
         if isinstance(pvname, PV):
             self.pv = pvname
         else:
@@ -43,7 +44,10 @@ class Positioner(Saveable):
             self.label = desc
         if array is None: array  = []
         self.array = array
-        self.extra_pvs = []
+
+        if extra_pvs is None: extra_pvs = {}
+        self.extra_pvs = extra_pvs
+        print 'Positioner: ', label, pvname, extra_pvs
 
     def __repr__(self):
         out = "<Positioner '%s'" % (self.pv.pvname)

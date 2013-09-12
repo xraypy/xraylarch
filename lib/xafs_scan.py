@@ -31,21 +31,23 @@ class ScanRegion(Saveable):
 
 class XAFS_Scan(StepScan):
     def __init__(self, label=None, energy_pv=None, read_pv=None,
-                 e0=0, **kws):
+                 extra_pvs=None,  e0=0, **kws):
         self.label = label
         self.e0 = e0
         self.energies = []
         self.regions = []
-        self.dwelltime = []
         StepScan.__init__(self, **kws)
+        self.dwelltime = []
         self.energy_pos = None
-        self.set_energy_pv(energy_pv, read_pv=read_pv)
+        self.set_energy_pv(energy_pv, read_pv=read_pv, extra_pvs=extra_pvs)
 
-    def set_energy_pv(self, energy_pv, read_pv=None):
+    def set_energy_pv(self, energy_pv, read_pv=None, extra_pvs=None):
         self.energy_pv = energy_pv
         self.read_pv = read_pv
         if energy_pv is not None:
-            self.energy_pos = Positioner(energy_pv, label='Energy')
+            print 'XAFS_Scan set energy ' , energy_pv, extra_pvs
+            self.energy_pos = Positioner(energy_pv, label='Energy',
+                                         extra_pvs=extra_pvs)
             self.positioners = []
             self.add_positioner(self.energy_pos)
         if read_pv is not None:

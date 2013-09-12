@@ -132,12 +132,12 @@ class Status(_BaseTable):
 
 class ScanPositioners(_BaseTable):
     "positioners table"
-    name, notes, drivepv, readpv = [None]*4
+    name, notes, drivepv, readpv, extrapvs = [None]*5
     use = 1
 
 class SlewScanPositioners(_BaseTable):
     "positioners table for slew scans"
-    name, notes, drivepv, readpv = [None]*4
+    name, notes, drivepv, readpv, extrapvs = [None]*5
     use = 1
 
 
@@ -251,11 +251,14 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
     status = NamedTable('status', metadata)
     slewpos    = NamedTable('slewscanpositioners', metadata, with_use=True,
                             cols=[StrCol('drivepv', size=128),
-                                  StrCol('readpv',  size=128)])
+                                  StrCol('readpv',  size=128),
+                                  StrCol('extrapvs') ])
 
     pos    = NamedTable('scanpositioners', metadata, with_use=True,
                         cols=[StrCol('drivepv', size=128),
-                              StrCol('readpv',  size=128)])
+                              StrCol('readpv',  size=128),
+                              StrCol('extrapvs') ])
+
     cnts   = NamedTable('scancounters', metadata, with_pv=True, with_use=True)
     det    = NamedTable('scandetectors', metadata, with_pv=True, with_use=True,
                         cols=[StrCol('kind',   size=128),
