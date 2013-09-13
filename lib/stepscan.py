@@ -303,6 +303,7 @@ class StepScan(object):
         That is, return values must be None or evaluate to False
         to indicate success.
         """
+        print 'check outputs ', msg, out
         if any(out):
             raise Warning('error on output: %s' % msg)
 
@@ -327,6 +328,7 @@ class StepScan(object):
            Loop over points
            run post_scan methods
         """
+        print 'RUN '
         self.complete = False
         if filename is not None:
             self.filename  = filename
@@ -341,6 +343,7 @@ class StepScan(object):
         self.abort = False
         orig_positions = [p.current() for p in self.positioners]
 
+        print 'Run Prescan '
         out = self.pre_scan()        
         self.check_outputs(out, msg='pre scan')
 
@@ -386,6 +389,7 @@ class StepScan(object):
         ts_init = time.time()
         self.inittime = ts_init - ts_start
 
+        # print 'BEGIN SCAN '
         while not self.abort:
             i += 1
             if i >= npts:
@@ -396,7 +400,7 @@ class StepScan(object):
 
                 # move to next position, wait for moves to finish
                 [p.move_to_pos(i) for p in self.positioners]
-                if dwelltime_varys:
+                if self.dwelltime_varys:
                     for d in self.detectors:
                         d.dwelltime = self.dwelltime[i]
                 t0 = time.time()
@@ -413,6 +417,7 @@ class StepScan(object):
                 # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
                 time.sleep(self.pos_settle_time)
                 # start triggers, wait for them to finish
+                # print 'Trigger..'
                 [trig.start() for trig in self.triggers]
                 t0 = time.time()
                 time.sleep(max(0.01, self.min_dwelltime/4.0))
@@ -421,19 +426,21 @@ class StepScan(object):
                            (time.time() - t0 > self.min_dwelltime/2.0)):
                     if self.abort:
                         break
-                    poll(5.e-3, 0.25)
+                    poll(1.e-3, 0.25)
                 if self.abort:
                     break
                 self.trig_elapsed_times =  [time.time()-t0]
                 self.trig_elapsed_times.extend([t.runtime for t in self.triggers])
+                # print 'Triggers done ', self.trig_elapsed_times
                 for t in self.triggers:
-                    if t.runtime < self.min_dwelltime / 2.0:
+                    if t.runtime < self.min_dwelltime / 3.0:
                         point_ok = False
 
                 # wait, then read read counters and actual positions
                 time.sleep(self.det_settle_time)
 
                 [c.read() for c in self.counters]
+                # print 'Read Counters done'
                 self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
 
