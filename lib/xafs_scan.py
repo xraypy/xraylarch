@@ -45,7 +45,6 @@ class XAFS_Scan(StepScan):
         self.energy_pv = energy_pv
         self.read_pv = read_pv
         if energy_pv is not None:
-            print 'XAFS_Scan set energy ' , energy_pv, extra_pvs
             self.energy_pos = Positioner(energy_pv, label='Energy',
                                          extra_pvs=extra_pvs)
             self.positioners = []
@@ -108,4 +107,4 @@ class XAFS_Scan(StepScan):
         self.energies.extend(en_arr)
         self.dwelltime.extend(dt_arr)
         self.energy_pos.array = np.array(self.energies)
-        
+
