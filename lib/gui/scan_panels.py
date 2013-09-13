@@ -531,7 +531,7 @@ class XAFSScanPanel(GenericScanPanel):
 
         self.kwtimemax.SetValue(scan['max_time'])
         self.kwtimechoice.SetSelection(scan['time_kw'])
-                
+
 
     def setScanTime(self):
         etime = (float(self.scandb.get_info('pos_settle_time')) +
@@ -806,7 +806,7 @@ class MeshScanPanel(GenericScanPanel):
     def load_scandict(self, scan):
         """load scan for mesh scan from scan dictionary
         as stored in db, or passed to stepscan"""
-        
+
         self.dwelltime.SetValue(scan['dwelltime'])
         self.absrel.SetSelection(0)
         for irow, name in ((0, 'inner'), (1, 'outer')):
@@ -937,7 +937,7 @@ class SlewScanPanel(GenericScanPanel):
         """load scan for mesh scan from scan dictionary
         as stored in db, or passed to stepscan"""
         self.dwelltime.SetValue(scan['dwelltime'])
-        self.dimchoice.SetStringSelection('%i' % (scan['dwelltime']))
+        self.dimchoice.SetStringSelection('%i' % (scan['dimension']))
         self.absrel.SetSelection(0)
         for irow, name in ((0, 'inner'), (1, 'outer')):
             pos, units, cur, start, stop, step, npts = self.pos_settings[irow]
@@ -948,7 +948,7 @@ class SlewScanPanel(GenericScanPanel):
                 stop.SetValue(posdat[3])
                 npts.SetValue(posdat[4])
                 self.update_position_from_pv(irow)
-                
+
 
     def update_positioners(self):
         """meant to be overwritten"""
@@ -997,10 +997,10 @@ class SlewScanPanel(GenericScanPanel):
             wid.SetStringSelection(a)
 
     def generate_scan(self):
-        "generate slew scan"        
+        "generate slew scan"
         s = {'type': 'slew',
              'dwelltime':  float(self.dwelltime.GetValue()),
-             'dimension': 2,
+             'dimension': 1+self.dimchoice.GetSelection(),
              'inner': [],
              'outer': []}
 
