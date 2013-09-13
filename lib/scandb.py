@@ -302,16 +302,19 @@ class ScanDB(object):
             return out, thisrow.notes
         return out
 
-    def set_info(self, key, value):
+    def set_info(self, key, value, notes=None):
         """set key / value in the info table"""
         cls, table = self._get_table('info')
         vals  = self.query(table).filter(cls.keyname==key).all()
+        data = {'keyname': key, 'value': value}
+        if notes is not None:
+            data['notes'] = notes
         if len(vals) < 1:
-            table.insert().execute(keyname=key,
-                                   value=value)
+            table = table.insert()
         else:
-            table.update(whereclause="keyname='%s'" % key).execute(value=value)
-
+            table = table.update(whereclause="keyname='%s'" % key)
+        table.execute(**data)
+        
     def set_hostpid(self, clear=False):
         """set hostname and process ID, as on intial set up"""
         name, pid = '', '0'
