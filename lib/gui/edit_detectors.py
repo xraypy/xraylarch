@@ -78,8 +78,7 @@ class DetectorDetailsDialog(wx.Dialog):
             if label.startswith('n'):
                 label = '# of %s' % (label[1:])
             label = label.title()
-            # pvname = normalize_pvname(pvpos.pv.name)
-            label = SimpleText(panel, label, style=tstyle)
+            label = SimpleText(panel, label, style=LCEN)
             val = strip_quotes(val)
 
             if val in (True, False, 'Yes', 'No'):
@@ -87,9 +86,11 @@ class DetectorDetailsDialog(wx.Dialog):
                 wid = check(panel, default=defval)
             elif key.lower() == 'file_plugin':
                 wid = add_choice(panel, AD_CHOICES, default=1)
+            elif isinstance(val, (int, float)):
+                wid   = FloatCtrl(panel, value=val, size=(80, -1))
             else:
-                wid   = wx.TextCtrl(panel, -1, size=(80, -1),
-                                    value=str(val))
+                wid   = wx.TextCtrl(panel, value=val, size=(80, -1))
+                                    
             
             sizer.Add(label, (irow, 0), (1, 1), LCEN,  2)
             sizer.Add(wid,   (irow, 1), (1, 1), RCEN, 2)
@@ -100,16 +101,9 @@ class DetectorDetailsDialog(wx.Dialog):
                                 style=wx.LI_HORIZONTAL),
                   (irow, 0), (1, 4), CEN, 0)
 
-        btnsizer = wx.StdDialogButtonSizer()
-        btn = wx.Button(panel, wx.ID_OK)
-        btn.SetDefault()
-        btnsizer.AddButton(btn)
-        btnsizer.AddButton(wx.Button(panel, wx.ID_CANCEL))
-
-        btnsizer.Realize()
-        sizer.Add(btnsizer, (irow+4, 0), (1, 2), CEN, 2)
+        sizer.Add(okcancel(panel),
+                  (irow+1, 0), (1, 3), LCEN, 1)
         pack(panel, sizer)
-
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 0, 0, 0)
         pack(self, sizer)
@@ -269,6 +263,13 @@ class DetectorFrame(wx.Frame) :
             for key, wid in dlg.wids.items():
                 if isinstance(wid, wx.TextCtrl):
                     val = wid.GetValue()
+                    try:
+                        val = float(val)
+                    except:
+                        pass
+                    
+                elif isinstance(wid, wx.CheckBox):
+                    val =  wid.IsChecked()
                 elif isinstance(wid, YesNo):
                     val =  {0:False, 1:True}[wid.GetSelection()]
                 opts[key] = val
@@ -306,9 +307,9 @@ class DetectorFrame(wx.Frame) :
             elif 'det' in wtype:
                 opts = json.dumps(DET_DEFAULT_OPTS.get(kind, {}))
                 self.scandb.add_detector(name, pvname, kind,
-                                         options=opts, use=use)
+                                         options=opts, use=int(use))
             elif 'counter' in wtype:
-                self.scandb.add_counter(name, pvname, use=use)
+                self.scandb.add_counter(name, pvname, use=int(use))
 
         self.scandb.commit()
         self.Destroy()
