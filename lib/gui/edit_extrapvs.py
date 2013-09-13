@@ -1,17 +1,16 @@
-
 import sys
 import time
 
 import wx
 import wx.lib.scrolledpanel as scrolled
 
-from ..ordereddict import OrderedDict
-from .gui_utils import GUIColors, set_font_with_children, YesNo
-from .gui_utils import add_button, pack, SimpleText, check
+from .gui_utils import (GUIColors, set_font_with_children, YesNo,
+                        add_button, pack, SimpleText, check, okcancel,
+                        add_subtitle, Font, LCEN, CEN, RCEN)
 
-
-LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-CEN  = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+RCEN |= wx.ALL
+LCEN |= wx.ALL
+CEN  |= wx.ALL
 
 class ExtraPVsFrame(wx.Frame) :
     """Set Extra PVs"""
@@ -20,39 +19,35 @@ class ExtraPVsFrame(wx.Frame) :
         self.parent = parent
         self.scandb = parent.scandb
 
-        style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
-        labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        tstyle    = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-
-        self.Font10=wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        titlefont = wx.Font(13, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        LCEN  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+        RCEN = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 
         wx.Frame.__init__(self, None, -1,
-                          'Epics Scanning: Extra PVs Setup')
+                          'Epics Scanning: Extra PVs Setup',
+                          style  = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
 
-        self.SetFont(self.Font10)
+        self.SetFont(Font(9))
         sizer = wx.GridBagSizer(10, 5)
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((550, 500))
+        self.SetMinSize((525, 550))
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
 
         # title row
-        title = SimpleText(panel, 'Extra PVs Setup',  font=titlefont,
-                           colour=self.colors.title, style=tstyle)
+        title = SimpleText(panel, 'Extra PVs Setup',  font=Font(13),
+                           colour=self.colors.title, style=LCEN)
 
-        sizer.Add(title,        (0, 0), (1, 3), LEFT, 5)
+        sizer.Add(title,        (0, 0), (1, 3), LCEN, 5)
 
         ir = 1
         sizer.Add(SimpleText(panel, label='Description', size=(175, -1)),
-                  (ir, 0), (1, 1), rlabstyle, 2)
+                  (ir, 0), (1, 1), RCEN, 2)
         sizer.Add(SimpleText(panel, label='PV Name', size=(175, -1)),
-                  (ir, 1), (1, 1), labstyle, 2)
+                  (ir, 1), (1, 1), LCEN, 2)
         sizer.Add(SimpleText(panel, label='Use?'), 
-                  (ir, 2), (1, 1), labstyle, 2)
+                  (ir, 2), (1, 1), LCEN, 2)
         sizer.Add(SimpleText(panel, label='Erase?', size=(60, -1)),
-                  (ir, 3), (1, 1), labstyle, 2)
+                  (ir, 3), (1, 1), LCEN, 2)
 
         self.widlist = []
         for this in self.scandb.getall('extrapvs'):
@@ -62,10 +57,10 @@ class ExtraPVsFrame(wx.Frame) :
             delpv  = YesNo(panel, defaultyes=False)
             
             ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-            sizer.Add(usepv,  (ir, 2), (1, 1), labstyle, 2)
-            sizer.Add(delpv,  (ir, 3), (1, 1), labstyle, 2)            
+            sizer.Add(desc,   (ir, 0), (1, 1), RCEN, 2)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 2)
+            sizer.Add(usepv,  (ir, 2), (1, 1), LCEN, 2)
+            sizer.Add(delpv,  (ir, 3), (1, 1), LCEN, 2)            
             self.widlist.append((this, desc, pvctrl, usepv, delpv))
 
         for i in range(3):
@@ -73,17 +68,18 @@ class ExtraPVsFrame(wx.Frame) :
             pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
             usepv  = check(panel, default=True)
             ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), rlabstyle, 2)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), labstyle, 2)
-            sizer.Add(usepv,  (ir, 2), (1, 1), labstyle, 2)
+            sizer.Add(desc,   (ir, 0), (1, 1), RCEN, 2)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 2)
+            sizer.Add(usepv,  (ir, 2), (1, 1), LCEN, 2)
             self.widlist.append((None, desc, pvctrl, usepv, None))
 
         ir += 1
         sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), wx.ALIGN_LEFT|wx.EXPAND, 3)
+                  (ir, 0), (1, 4), LCEN, 3)
         #
         ir += 1
-        sizer.Add(self.make_buttons(panel), (ir, 0), (1, 2), wx.ALIGN_LEFT, 3)
+        sizer.Add(okcancel(panel, self.onOK, self.onClose),
+                  (ir, 0), (1, 2), LCEN, 3)
 
         pack(panel, sizer)
 
@@ -95,29 +91,8 @@ class ExtraPVsFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-    def add_subtitle(self, panel, text):
-        p = wx.Panel(panel)
-        s = wx.BoxSizer(wx.HORIZONTAL)
-        s.Add(wx.StaticLine(p, size=(125, 3), style=wx.LI_HORIZONTAL), 0, LEFT, 5)
-        s.Add(SimpleText(p, text,  colour='#333377'),  0, LEFT, 5)
-        s.Add(wx.StaticLine(p, size=(185, 3), style=wx.LI_HORIZONTAL), 1, LEFT, 5)
-        pack(p, s)
-        return p
 
-    def make_buttons(self, panel):
-        btnsizer = wx.StdDialogButtonSizer()
-        btn_ok = wx.Button(panel, wx.ID_OK)
-        btn_no = wx.Button(panel, wx.ID_CANCEL)
-        panel.Bind(wx.EVT_BUTTON, self.onApply, btn_ok)
-        panel.Bind(wx.EVT_BUTTON, self.onClose, btn_no)
-        btn_ok.SetDefault()
-        btnsizer.AddButton(btn_ok)
-        btnsizer.AddButton(btn_no)
-
-        btnsizer.Realize()
-        return btnsizer
-
-    def onApply(self, event=None):
+    def onOK(self, event=None):
         for w in self.widlist:
             obj, name, pvname, usepv, erase = w
             if usepv is not None:

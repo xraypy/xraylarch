@@ -9,15 +9,15 @@ from ..ordereddict import OrderedDict
 from ..detectors import DET_DEFAULT_OPTS, AD_FILE_PLUGINS
 
 from .gui_utils import (GUIColors, set_font_with_children, YesNo, Closure,
-                        add_button, add_choice, pack, check,
-                        SimpleText, FloatCtrl)
+                        add_button, add_choice, pack, check, Font,
+                        SimpleText, FloatCtrl, okcancel, add_subtitle,
+                        LCEN, CEN, RCEN)
 
 from ..utils import strip_quotes
 
-# from .pvconnector import PVNameCtrl
-
-LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-CEN  = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+LCEN  |= wx.ALL
+RCEN  |= wx.ALL
+CEN  |= wx.ALL
 
 DET_CHOICES = ('scaler', 'mca', 'multimca', 'areadetector')
 AD_CHOICES = ['None'] + list(AD_FILE_PLUGINS)
@@ -44,22 +44,19 @@ class DetectorDetailsDialog(wx.Dialog):
 
         sizer = wx.GridBagSizer(10, 3)
 
-        labstyle  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        rlabstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        tstyle    = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
         # title row
         i = 0
         for titleword in (' Setting ', 'Value'):
             txt =SimpleText(panel, titleword,
                             font=titlefont,
                             minsize=(100, -1),
-                            style=tstyle)
-            sizer.Add(txt, (0, i), (1, 1), labstyle, 1)
+                            style=RCEN)
+            sizer.Add(txt, (0, i), (1, 1), LCEN, 1)
             i += 1
 
         sizer.Add(wx.StaticLine(panel, size=(150, -1),
                                 style=wx.LI_HORIZONTAL),
-                  (1, 0), (1, 4), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 0)
+                  (1, 0), (1, 4), CEN, 0)
 
         self.wids = {}
         prefix = self.det.pvname
@@ -94,14 +91,14 @@ class DetectorDetailsDialog(wx.Dialog):
                 wid   = wx.TextCtrl(panel, -1, size=(80, -1),
                                     value=str(val))
             
-            sizer.Add(label, (irow, 0), (1, 1), labstyle,  2)
-            sizer.Add(wid,   (irow, 1), (1, 1), rlabstyle, 2)
+            sizer.Add(label, (irow, 0), (1, 1), LCEN,  2)
+            sizer.Add(wid,   (irow, 1), (1, 1), RCEN, 2)
             self.wids[key] = wid
             irow  += 1
 
         sizer.Add(wx.StaticLine(panel, size=(150, -1),
                                 style=wx.LI_HORIZONTAL),
-                  (irow, 0), (1, 4), wx.ALIGN_CENTER|wx.GROW|wx.ALL, 0)
+                  (irow, 0), (1, 4), CEN, 0)
 
         btnsizer = wx.StdDialogButtonSizer()
         btn = wx.Button(panel, wx.ID_OK)
@@ -126,13 +123,12 @@ class DetectorFrame(wx.Frame) :
         self.detectors = self.scandb.getall('scandetectors', orderby='id')
         self.counters = self.scandb.getall('scancounters', orderby='id')
 
-        style    = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 
-        self.Font10=wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        titlefont = wx.Font(13, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
 
-        wx.Frame.__init__(self, None, -1, 'Epics Scanning: Detector Setup')
-        self.SetFont(self.Font10)
+        wx.Frame.__init__(self, None, -1, 'Epics Scanning: Detector Setup',
+                          style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+
+        self.SetFont(Font(9))
 
         sizer = wx.GridBagSizer(12, 5)
         panel = scrolled.ScrolledPanel(self) # , size=(675, 625))
@@ -141,11 +137,11 @@ class DetectorFrame(wx.Frame) :
         panel.SetBackgroundColour(self.colors.bg)
 
         # title row
-        title = SimpleText(panel, 'Detector Setup',  font=titlefont,
+        title = SimpleText(panel, 'Detector Setup',  font=Font(13),
                            minsize=(130, -1),
-                           colour=self.colors.title, style=LEFT)
+                           colour=self.colors.title, style=LCEN)
 
-        sizer.Add(title,        (0, 0), (1, 1), LEFT|wx.ALL, 2)
+        sizer.Add(title,        (0, 0), (1, 1), LCEN, 2)
 
         desc = wx.StaticText(panel, -1, label='Detector Settling Time (sec): ',
                              size=(180, -1))
@@ -153,25 +149,25 @@ class DetectorFrame(wx.Frame) :
         self.settle_time = wx.TextCtrl(panel, size=(75, -1),
                             value=self.scandb.get_info('det_settle_time', '0.001'))
         sizer.Add(desc,              (1, 0), (1, 2), CEN,  3)
-        sizer.Add(self.settle_time,  (1, 2), (1, 1), LEFT, 3)
+        sizer.Add(self.settle_time,  (1, 2), (1, 2), LCEN, 3)
 
         ir = 2
-        sizer.Add(self.add_subtitle(panel, 'Available Detectors'),
-                  (ir, 0),  (1, 5),  LEFT, 0)
+        sizer.Add(add_subtitle(panel, 'Available Detectors'),
+                  (ir, 0),  (1, 5),  LCEN, 0)
 
         ir +=1
         sizer.Add(SimpleText(panel, label='Label',  size=(125, -1)),
-                  (ir, 0), (1, 1), LEFT, 1)
+                  (ir, 0), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='PV prefix', size=(175, -1)),
-                  (ir, 1), (1, 1), LEFT, 1)  
+                  (ir, 1), (1, 1), LCEN, 1)  
         sizer.Add(SimpleText(panel, label='Use?'),
-                  (ir, 2), (1, 1), LEFT, 1)
+                  (ir, 2), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='Kind',     size=(80, -1)),
-                  (ir, 3), (1, 1), LEFT, 1)
+                  (ir, 3), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='Details',  size=(60, -1)),
-                  (ir, 4), (1, 1), LEFT, 1)
+                  (ir, 4), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='Erase?',  size=(60, -1)),
-                  (ir, 5), (1, 1), LEFT, 1)
+                  (ir, 5), (1, 1), LCEN, 1)
 
         self.widlist = []
         for det in self.detectors:
@@ -187,11 +183,11 @@ class DetectorFrame(wx.Frame) :
             kind.SetStringSelection(dkind)
             erase  = YesNo(panel, defaultyes=False)
             sizer.Add(desc,   (ir, 0), (1, 1),  CEN, 1)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
-            sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
-            sizer.Add(kind,   (ir, 3), (1, 1), LEFT, 1)
-            sizer.Add(detail, (ir, 4), (1, 1), LEFT, 1)
-            sizer.Add(erase,  (ir, 5), (1, 1), LEFT, 1)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 1)
+            sizer.Add(use,    (ir, 2), (1, 1), LCEN, 1)
+            sizer.Add(kind,   (ir, 3), (1, 1), LCEN, 1)
+            sizer.Add(detail, (ir, 4), (1, 1), LCEN, 1)
+            sizer.Add(erase,  (ir, 5), (1, 1), LCEN, 1)
 
             self.widlist.append(('old_det', det, desc, pvctrl, use, kind, erase))
 
@@ -204,25 +200,25 @@ class DetectorFrame(wx.Frame) :
             kind = add_choice(panel, DET_CHOICES, size=(110, -1))
             kind.SetStringSelection(dkind)            
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
-            sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
-            sizer.Add(kind,   (ir, 3), (1, 1), LEFT, 1)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 1)
+            sizer.Add(use,    (ir, 2), (1, 1), LCEN, 1)
+            sizer.Add(kind,   (ir, 3), (1, 1), LCEN, 1)
             self.widlist.append(('new_det', None, desc, pvctrl, use, kind, False))
 
         ir += 1
-        sizer.Add(self.add_subtitle(panel, 'Additional Counters'),
-                  (ir, 0),  (1, 5),  LEFT, 1)
+        sizer.Add(add_subtitle(panel, 'Additional Counters'),
+                  (ir, 0),  (1, 5),  LCEN, 1)
 
         ###
         ir += 1
         sizer.Add(SimpleText(panel, label='Label',  size=(125, -1)),
-                  (ir, 0), (1, 1), LEFT, 1)
+                  (ir, 0), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='PV name', size=(175, -1)),
-                  (ir, 1), (1, 1), LEFT, 1)
+                  (ir, 1), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='Use?'),
-                  (ir, 2), (1, 1), LEFT, 1)
+                  (ir, 2), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='Erase?', size=(80, -1)),
-                  (ir, 3), (1, 2), LEFT, 1)
+                  (ir, 3), (1, 2), LCEN, 1)
 
         for counter in self.counters:
             desc   = wx.TextCtrl(panel, -1, value=counter.name, size=(125, -1))
@@ -231,9 +227,9 @@ class DetectorFrame(wx.Frame) :
             erase  = YesNo(panel, defaultyes=False)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
-            sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
-            sizer.Add(erase,  (ir, 3), (1, 1), LEFT, 1)            
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 1)
+            sizer.Add(use,    (ir, 2), (1, 1), LCEN, 1)
+            sizer.Add(erase,  (ir, 3), (1, 1), LCEN, 1)            
             self.widlist.append(('old_counter', counter, desc,
                                  pvctrl, use, None, erase))
 
@@ -243,16 +239,17 @@ class DetectorFrame(wx.Frame) :
             use    = check(panel, default=True)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), LEFT, 1)
-            sizer.Add(use,    (ir, 2), (1, 1), LEFT, 1)
+            sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 1)
+            sizer.Add(use,    (ir, 2), (1, 1), LCEN, 1)
             self.widlist.append(('new_counter', None, desc,
                                  pvctrl, use, None, False))
         ir += 1
         sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), wx.ALIGN_LEFT|wx.EXPAND, 3)
+                  (ir, 0), (1, 4), LCEN|wx.EXPAND, 3)
         ###
         ir += 1
-        sizer.Add(self.make_buttons(panel), (ir, 0), (1, 3), wx.ALIGN_LEFT, 1)
+        sizer.Add(okcancel(panel, self.onOK, self.onClose),
+                  (ir, 0), (1, 3), LCEN, 1)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -279,87 +276,7 @@ class DetectorFrame(wx.Frame) :
             self.scandb.commit()
         dlg.Destroy()
 
-    def opts_panel(self, parent, opts):
-        pane = wx.Panel(parent)
-        sizer  = wx.BoxSizer(wx.HORIZONTAL)
-        kind = opts.get('kind', '').lower()
-        wids = []
-        if kind == 'scaler':
-            sizer.Add(SimpleText(pane, '#Channels=', size=(100, -1)), 0,  LEFT, 0)
-            nchan = FloatCtrl(pane, value=opts.get('nchan', 8),
-                              size=(25, -1), precision=0, minval=0)
-            sizer.Add(nchan, 0, LEFT, 0)
-            sizer.Add(SimpleText(pane, 'Use Raw/Calc:', size=(120, -1)), 0,  LEFT, 0)
-            val = {True:1, False:0}[opts.get('use_calc', True)]
-            use_calc = YesNo(pane, choices=('Raw', 'Calc'))
-            sizer.Add(use_calc, 0,  LEFT, 0)
-            wids = [nchan, use_calc]
-        elif kind.startswith('area'):
-            sizer.Add(SimpleText(pane, 'Use File Plugin:', size=(120, -1)), 0,  LEFT, 0)
-            plugin = wx.Choice(pane, choices=AD_File_plugins)
-            plugin.SetStringSelection(opts.get('file_plugin', 'None'))
-            sizer.Add(plugin, 0, LEFT, 0)
-            wids = [plugin]
-        elif kind == 'mca':
-            sizer.Add(SimpleText(pane, '#ROIs=', size=(80, -1)), 0,  LEFT, 0)
-            nrois = FloatCtrl(pane, value=opts.get('nrois', 32),
-                              size=(25, -1), precision=0, minval=0)
-            sizer.Add(nrois, 0, LEFT, 0)
-            sizer.Add(SimpleText(pane, 'Use Sum/Net:', size=(120, -1)), 0,  LEFT, 0)
-            val = {True:1, False:0}[opts.get('use_net', False)]
-            use_net = YesNo(pane, choices=('Sum', 'Net'))
-            sizer.Add(use_net, 0,  LEFT, 0)
-            sizer.Add(SimpleText(pane, 'Save Full Spectra:', size=(120, -1)), 0,  LEFT, 0)
-            val = {True:1, False:0}[opts.get('use_full', False)]
-            use_full = YesNo(pane)
-            sizer.Add(use_full, 0,  LEFT, 0)
-            wids = [nrois, use_net, use_full]
-
-        elif kind.startswith('multi'):
-            sizer.Add(SimpleText(pane, '#MCAs=', size=(80, -1)), 0,  LEFT, 0)
-            nchan = FloatCtrl(pane, value=opts.get('nmcas', 4),
-                              size=(25, -1), precision=0, minval=0)
-            sizer.Add(nchan, 0, LEFT, 0)
-            sizer.Add(SimpleText(pane, '#ROIs=', size=(80, -1)), 0,  LEFT, 0)
-            nrois = FloatCtrl(pane, value=opts.get('nrois', 32),
-                              size=(25, -1), precision=0, minval=0)
-            sizer.Add(nrois, 0, LEFT, 0)
-            sizer.Add(SimpleText(pane, 'Use Sum/Net:', size=(120, -1)), 0,  LEFT, 0)
-            val = {True:1, False:0}[opts.get('use_net', False)]
-            use_net = YesNo(pane, choices=('Sum', 'Net'))
-            sizer.Add(use_net, 0,  LEFT, 0)
-            sizer.Add(SimpleText(pane, 'Save Full Spectra:', size=(120, -1)), 0,  LEFT, 0)
-            val = {True:1, False:0}[opts.get('use_full', False)]
-            use_full = YesNo(pane)
-            sizer.Add(use_full, 0,  LEFT, 0)
-            wids = [nchan, nrois, use_net, use_full]
-
-        pack(pane, sizer)
-        return pane, wids
-
-    def add_subtitle(self, panel, text):
-        p = wx.Panel(panel)
-        s = wx.BoxSizer(wx.HORIZONTAL)
-        s.Add(wx.StaticLine(p, size=(125, 3), style=wx.LI_HORIZONTAL), 0, LEFT, 5)
-        s.Add(SimpleText(p, text,  colour='#333377', size=(175, -1)),  0, LEFT, 5)
-        s.Add(wx.StaticLine(p, size=(185, 3), style=wx.LI_HORIZONTAL), 1, LEFT, 5)
-        pack(p, s)
-        return p
-
-    def make_buttons(self, panel):
-        btnsizer = wx.StdDialogButtonSizer()
-        btn_ok = wx.Button(panel, wx.ID_OK)
-        btn_no = wx.Button(panel, wx.ID_CANCEL)
-        panel.Bind(wx.EVT_BUTTON, self.onApply, btn_ok)
-        panel.Bind(wx.EVT_BUTTON, self.onClose, btn_no)
-        btn_ok.SetDefault()
-        btnsizer.AddButton(btn_ok)
-        btnsizer.AddButton(btn_no)
-
-        btnsizer.Realize()
-        return btnsizer
-
-    def onApply(self, event=None):
+    def onOK(self, event=None):
         self.scandb.set_info('det_settle_time', float(self.settle_time.GetValue()))
         for w in self.widlist:
             wtype, obj, name, pvname, use, kind, erase = w
