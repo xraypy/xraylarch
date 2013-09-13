@@ -68,6 +68,43 @@ def run_scan(conf):
             if len(pvs) > 0:
                 scan.add_counter(pvs[1], label="%s(read)" % label)
 
+    elif conf['type'] == 'mesh':
+        scan = StepScan()
+        label1, pvs1, start1, stop1, npts1 = conf['inner']
+        label2, pvs2, start2, stop2, npts2 = conf['outer']
+
+        p1 = Positioner(pvs1[0], label=label1)
+        p2 = Positioner(pvs2[0], label=label2)
+
+        inner = npts2* [np.linspace(start1, stop1, npts1)]
+        outer = [[i]*npts1 for i in np.linspace(start2, stop2, npts2)]
+
+        p1.array = np.array(inner).flatten()
+        p2.array = np.array(outer).flatten()
+
+        scan.add_positioner(p1)
+        scan.add_positioner(p2)
+        if len(pvs1) > 0:
+            scan.add_counter(pvs1[1], label="%s(read)" % label1)
+        if len(pvs2) > 0:
+            scan.add_counter(pvs2[1], label="%s(read)" % label2)
+
+    elif conf['type'] == 'slew':
+        scan = StepScan()
+        label1, pvs1, start1, stop1, npts1 = conf['inner']
+        p1 = Positioner(pvs1[0], label=label1)
+        p1.array = np.linspace(start1, stop1, npts1)
+        scan.add_positioner(p1)
+        if len(pvs1) > 0:
+            scan.add_counter(pvs1[1], label="%s(read)" % label1)
+        if conf['dimension'] >=2:
+            label2, pvs2, start2, stop2, npts2 = conf['outer']
+            p2 = Positioner(pvs2[0], label=label2)
+            p2.array = np.linspace(start2, stop2, npts2)
+            scan.add_positioner(p2)
+            if len(pvs2) > 0:
+                scan.add_counter(pvs2[1], label="%s(read)" % label2)
+
     for dpars in conf['detectors']:
         det = get_detector(**dpars)
         scan.add_detector(det)
