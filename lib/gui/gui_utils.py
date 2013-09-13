@@ -29,6 +29,9 @@ RCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT
 CCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER
 LTEXT = wx.ST_NO_AUTORESIZE|wx.ALIGN_CENTER
 
+def Font(size):
+    return wx.Font(size, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+
 
 def set_font_with_children(widget, font, dsize=None):
     cfont = widget.GetFont()
@@ -40,6 +43,27 @@ def set_font_with_children(widget, font, dsize=None):
     widget.SetFont(font)
     for child in widget.GetChildren():
         set_font_with_children(child, font, dsize=dsize)
+
+
+def add_subtitle(panel, text, colour='#222288'):
+    p = wx.Panel(panel)
+    s = wx.BoxSizer(wx.HORIZONTAL)
+    s.Add(wx.StaticLine(p, size=(50, 5), style=wx.LI_HORIZONTAL), 0, LCEN, 5)
+    s.Add(SimpleText(p, text,  colour=colour),  0, LCEN, 5)
+    pack(p, s)
+    return p
+
+def okcancel(panel, onOK=None, onCancel=None):
+    btnsizer = wx.StdDialogButtonSizer()
+    _ok = wx.Button(panel, wx.ID_OK)
+    _no = wx.Button(panel, wx.ID_CANCEL)
+    panel.Bind(wx.EVT_BUTTON, onOK,     _ok)
+    panel.Bind(wx.EVT_BUTTON, onCancel, _no)
+    _ok.SetDefault()
+    btnsizer.AddButton(_ok)
+    btnsizer.AddButton(_no)
+    btnsizer.Realize()
+    return btnsizer
 
 
 class GUIColors(object):
