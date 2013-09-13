@@ -421,7 +421,7 @@ class XAFSScanPanel(GenericScanPanel):
         kws['size'] = (750, 400)
         GenericScanPanel.__init__(self, parent, **kws)
         self.reg_settings = []
-        self.cur_units = []
+        self.ev_units = []
 
         sizer = self.sizer
         ir = self.top_widgets('XAFS Scan')
@@ -452,11 +452,11 @@ class XAFSScanPanel(GenericScanPanel):
                               action=Closure(self.onVal, index=i, label='dtime'))
 
             if i < 2:
-                units = wx.StaticText(self, -1, size=(30, -1), label='eV')
+                units = wx.StaticText(self, -1, size=(30, -1), label=self.units_list[0])
             else:
                 units = add_choice(self, self.units_list,
                                    action=Closure(self.onVal, label='units', index=i))
-            self.cur_units.append('eV')
+            self.ev_units.append(True)
 
             self.reg_settings.append((start, stop, step, npts, dtime, units))
             if i >= nregs:
@@ -502,6 +502,7 @@ class XAFSScanPanel(GenericScanPanel):
         self.kwtimemax.SetValue(scan['max_time'])
         self.kwtimechoice.SetSelection(scan['time_kw'])
 
+        self.elemchoice.SetStringSelection(scan.get('elem', 'Fe'))
         self.e0.SetValue(scan['e0'])
         self.absrel.SetSelection({True:1, False:0}[scan['is_relative']])   # relative!!
         nregs = len(scan['regions'])
@@ -511,6 +512,7 @@ class XAFSScanPanel(GenericScanPanel):
                 for wid in reg: wid.Enable()
             else:
                 for wid in reg: wid.Disable()
+
 
         for ireg, reg in enumerate(scan['regions']):
             start, stop, step, npts, dtime, units = self.reg_settings[ireg]
@@ -522,6 +524,8 @@ class XAFSScanPanel(GenericScanPanel):
                 else:
                     units.SetSelection(1)
 
+                self.ev_units[ireg] = (reg[4] == self.units_list[0])
+                
             start.SetValue(reg[0])
             stop.SetValue(reg[1])
             npts.SetValue(reg[2])
@@ -609,7 +613,7 @@ class XAFSScanPanel(GenericScanPanel):
         self.elemchoice = add_choice(p, ELEM_LIST,
                                      action=self.onEdgeChoice, size=(70, -1))
         self.elemchoice.SetMaxSize((60, 25))
-        self.elemchoice.SetSelection(27)
+        self.elemchoice.SetStringSelection('Fe')
 
         self.edgechoice = add_choice(p, self.edges_list, size=(50, -1),
                                      action=self.onEdgeChoice)
@@ -652,8 +656,8 @@ class XAFSScanPanel(GenericScanPanel):
             return
         wids = self.reg_settings[index]
         units = self.getUnits(index)
-        old_units = self.cur_units[index]
-
+        ev_units = self.ev_units[index]
+        
         enpos = str(self.scandb.get_info('xafs_energy'))
         pos = self.scandb.get_positioner(enpos)
         en_pvname = str(pos.readpv)
@@ -679,15 +683,15 @@ class XAFSScanPanel(GenericScanPanel):
                     for wid in reg: wid.Disable()
 
         elif label == 'units':
-            if units == 'eV' and old_units != 'eV': # was 1/A, convert to eV
+            if units == self.units_list[0] and not ev_units: # was 1/A, convert to eV
                 wids[0].SetValue(ktoe(wids[0].GetValue()) + e0_off)
                 wids[1].SetValue(ktoe(wids[1].GetValue()) + e0_off)
                 wids[2].SetValue(2.0)
-            elif units != 'eV' and old_units == 'eV': # was eV, convert to 1/A
+            elif units != self.units_list[0] and ev_units: # was eV, convert to 1/A
                 wids[0].SetValue(etok(wids[0].GetValue() - e0_off))
                 wids[1].SetValue(etok(wids[1].GetValue() - e0_off))
                 wids[2].SetValue(0.05)
-            self.cur_units[index] = units
+            self.ev_units[index] = (units == self.units_list[0])
             self.setStepNpts(wids, label)
 
         if label in ('start', 'stop', 'step', 'npts'):
@@ -740,6 +744,7 @@ class XAFSScanPanel(GenericScanPanel):
         enpos = self.scandb.get_positioner(enpos)
         s = {'type': 'xafs',
              'e0': self.e0.GetValue(),
+             'elem':  self.elemchoice.GetStringSelection(),
              'dwelltime':  float(self.dwelltime.GetValue()),
              'is_relative': 1==self.absrel.GetSelection(),
              'max_time': self.kwtimemax.GetValue(),
