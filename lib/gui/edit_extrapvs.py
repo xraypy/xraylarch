@@ -1,12 +1,12 @@
 import sys
 import time
-
 import wx
 import wx.lib.scrolledpanel as scrolled
 
 from .gui_utils import (GUIColors, set_font_with_children, YesNo,
                         add_button, pack, SimpleText, check, okcancel,
-                        add_subtitle, Font, LCEN, CEN, RCEN)
+                        add_subtitle, Font, LCEN, CEN, RCEN,
+                        FRAMESTYLE)
 
 RCEN |= wx.ALL
 LCEN |= wx.ALL
@@ -15,16 +15,11 @@ CEN  |= wx.ALL
 class ExtraPVsFrame(wx.Frame) :
     """Set Extra PVs"""
     def __init__(self, parent, pos=(-1, -1)):
-
         self.parent = parent
         self.scandb = parent.scandb
 
-        LCEN  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        RCEN = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-
-        wx.Frame.__init__(self, None, -1,
-                          'Epics Scanning: Extra PVs Setup',
-                          style  = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+        wx.Frame.__init__(self, None, -1, 'Epics Scanning: Extra PVs Setup',
+                          style=FRAMESTYLE)
 
         self.SetFont(Font(9))
         sizer = wx.GridBagSizer(10, 5)
@@ -44,7 +39,7 @@ class ExtraPVsFrame(wx.Frame) :
                   (ir, 0), (1, 1), RCEN, 2)
         sizer.Add(SimpleText(panel, label='PV Name', size=(175, -1)),
                   (ir, 1), (1, 1), LCEN, 2)
-        sizer.Add(SimpleText(panel, label='Use?'), 
+        sizer.Add(SimpleText(panel, label='Use?'),
                   (ir, 2), (1, 1), LCEN, 2)
         sizer.Add(SimpleText(panel, label='Erase?', size=(60, -1)),
                   (ir, 3), (1, 1), LCEN, 2)
@@ -55,12 +50,12 @@ class ExtraPVsFrame(wx.Frame) :
             pvctrl = wx.TextCtrl(panel, value=this.pvname,  size=(175, -1))
             usepv  = check(panel, default=this.use)
             delpv  = YesNo(panel, defaultyes=False)
-            
+
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), RCEN, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 2)
             sizer.Add(usepv,  (ir, 2), (1, 1), LCEN, 2)
-            sizer.Add(delpv,  (ir, 3), (1, 1), LCEN, 2)            
+            sizer.Add(delpv,  (ir, 3), (1, 1), LCEN, 2)
             self.widlist.append((this, desc, pvctrl, usepv, delpv))
 
         for i in range(3):

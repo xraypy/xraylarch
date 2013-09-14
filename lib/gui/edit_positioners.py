@@ -7,7 +7,8 @@ import wx.lib.scrolledpanel as scrolled
 
 from .gui_utils import (GUIColors, set_font_with_children, YesNo,
                         add_button, add_subtitle, okcancel, Font,
-                        pack, SimpleText, LCEN, CEN, RCEN)
+                        pack, SimpleText, LCEN, CEN, RCEN,
+                        FRAMESTYLE)
 
 LCEN |= wx.ALL
 RCEN |= wx.ALL
@@ -20,13 +21,12 @@ class PositionerFrame(wx.Frame) :
         self.parent = parent
         self.scandb = parent.scandb
 
-        wx.Frame.__init__(self, None, -1,
-                          'Epics Scanning: Positioners Setup',
-                          style=wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+        wx.Frame.__init__(self, None, -1, 'Epics Scanning: Positioners Setup',
+                          style=FRAMESTYLE)
 
         self.SetFont(Font(9))
         sizer = wx.GridBagSizer(10, 5)
-        panel = scrolled.ScrolledPanel(self) 
+        panel = scrolled.ScrolledPanel(self)
         self.SetMinSize((650, 600))
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
@@ -40,13 +40,13 @@ class PositionerFrame(wx.Frame) :
 
         desc = wx.StaticText(panel, -1, label='Positioner Settling Time (sec): ',
                              size=(180, -1))
-        
+
         self.settle_time = wx.TextCtrl(panel, size=(75, -1),
                             value=self.scandb.get_info('pos_settle_time', '0.001'))
         sizer.Add(desc,              (1, 0), (1, 2), CEN,  1)
         sizer.Add(self.settle_time,  (1, 2), (1, 1), LCEN, 1)
 
-        
+
         ir = 2
         sizer.Add(add_subtitle(panel, 'Linear/Mesh Scan Positioners'),
                   (ir, 0),  (1, 4),  LCEN, 1)
