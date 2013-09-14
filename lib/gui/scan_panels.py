@@ -44,7 +44,6 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                  size=(760, 380), style=wx.GROW|wx.TAB_TRAVERSAL):
 
         self.scandb = scandb
-
         self.pvlist = pvlist
         self.larch = larch
         scrolled.ScrolledPanel.__init__(self, parent,
@@ -106,8 +105,8 @@ class GenericScanPanel(scrolled.ScrolledPanel):
     def setScanTime(self):
         "set estimated scan time"
         dtime = (float(self.dwelltime.GetValue()) +
-                 float(self.scandb.get_info('pos_settle_time')) +
-                 float(self.scandb.get_info('det_settle_time')) )
+                 float(self.scandb.get_info('pos_settle_time', default=0)) +
+                 float(self.scandb.get_info('det_settle_time', default=0)))
         for p in self.pos_settings:
             if hasattr(p[6], 'GetValue'):
                 dtime *= float(p[6].GetValue())
@@ -492,6 +491,7 @@ class XAFSScanPanel(GenericScanPanel):
 
         self.layout()
         self.inittimer = wx.Timer(self)
+        self.initcounter = 0
         self.Bind(wx.EVT_TIMER, self.display_energy, self.inittimer)
         self.inittimer.Start(100)
 
@@ -525,7 +525,7 @@ class XAFSScanPanel(GenericScanPanel):
                     units.SetSelection(1)
 
                 self.ev_units[ireg] = (reg[4] == self.units_list[0])
-                
+
             start.SetValue(reg[0])
             stop.SetValue(reg[1])
             npts.SetValue(reg[2])
@@ -538,8 +538,8 @@ class XAFSScanPanel(GenericScanPanel):
 
 
     def setScanTime(self):
-        etime = (float(self.scandb.get_info('pos_settle_time')) +
-                 float(self.scandb.get_info('det_settle_time')) )
+        etime = (float(self.scandb.get_info('pos_settle_time', default=0)) +
+                 float(self.scandb.get_info('det_settle_time', default=0)))
         dtime = 0.0
         kwt_max = float(self.kwtimemax.GetValue())
         kwt_pow = float(self.kwtimechoice.GetStringSelection())
@@ -635,13 +635,17 @@ class XAFSScanPanel(GenericScanPanel):
 
     @EpicsFunction
     def display_energy(self, evt=None):
-        enpos = str(self.scandb.get_info('xafs_energy'))
+        enpos = str(self.scandb.get_info('xafs_energy', 'Energy'))
         pos = self.scandb.get_positioner(enpos)
-        en_pvname = pos.readpv
-        if en_pvname in self.pvlist and self.energy_pv.pv is None:
-            self.energy_pv.SetPV(self.pvlist[en_pvname])
-            self.onEdgeChoice()
+        self.initcounter += 1
+        self.onEdgeChoice()
+        if pos is None and self.initcounter > 10:
             self.inittimer.Stop()
+        if pos is not None:
+            en_pvname = pos.readpv
+            if en_pvname in self.pvlist and self.energy_pv.pv is None:
+                self.energy_pv.SetPV(self.pvlist[en_pvname])
+                self.inittimer.Stop()
 
     def getUnits(self, index):
         un = self.reg_settings[index][5]
@@ -657,12 +661,12 @@ class XAFSScanPanel(GenericScanPanel):
         wids = self.reg_settings[index]
         units = self.getUnits(index)
         ev_units = self.ev_units[index]
-        
-        enpos = str(self.scandb.get_info('xafs_energy'))
-        pos = self.scandb.get_positioner(enpos)
-        en_pvname = str(pos.readpv)
-        if en_pvname in self.pvlist and self.energy_pv.pv is None:
-            self.energy_pv.SetPV(self.pvlist[en_pvname])
+
+        #enpos = str(self.scandb.get_info('xafs_energy'))
+        #pos = self.scandb.get_positioner(enpos)
+        #en_pvname = str(pos.readpv)
+        #if en_pvname in self.pvlist and self.energy_pv.pv is None:
+        #    self.energy_pv.SetPV(self.pvlist[en_pvname])
         e0_off = 0
 
         update_esttime = label in ('dtime', 'dwelltime',
@@ -740,7 +744,7 @@ class XAFSScanPanel(GenericScanPanel):
 
     def generate_scan(self):
         "generate xafs scan"
-        enpos = str(self.scandb.get_info('xafs_energy'))
+        enpos = str(self.scandb.get_info('xafs_energy', 'Energy'))
         enpos = self.scandb.get_positioner(enpos)
         s = {'type': 'xafs',
              'e0': self.e0.GetValue(),
