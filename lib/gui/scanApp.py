@@ -3,7 +3,7 @@
 Main GUI form for setting up and executing Step Scans
 
 Principle features:
-   1. read simple configuration file, tie to database (postgres)
+   1. overall configuration in database (postgres/sqlite for testing)
    2. notebook panels for
          Linear Scans
          Mesh Scans (2d maps)
@@ -26,7 +26,6 @@ To Do:
 
    Sequence Window
    Edit Macros
-   
 
 """
 import os
@@ -47,16 +46,15 @@ import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction, finalize_epics
 from epics.wx.utils import popup
 
-from .gui_utils import SimpleText, FloatCtrl, Closure
-from .gui_utils import pack, add_button, add_menu, add_choice, add_menu
+from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
+                        add_menu, add_choice, add_menu, FRAMESTYLE)
 
+from ..utils import normalize_pvname
 from ..stepscan import StepScan
 from ..xafs_scan import XAFS_Scan
 
 from ..file_utils import new_filename, increment_filename, nativepath
-from ..ordereddict import OrderedDict
 
-from ..station_config import StationConfig
 from ..scandb import ScanDB
 
 from .scan_panels import (LinearScanPanel, MeshScanPanel,
@@ -82,30 +80,21 @@ class ScanFrame(wx.Frame):
     _about = """StepScan GUI
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    _ini_wildcard = "Epics Scan Settings(*.ini)|*.ini|All files (*.*)|*.*"
-    ini_default   = "epicsscans.ini"
-    _cnf_wildcard = "Scan Definition(*.cnf)|*.cnf|All files (*.*)|*.*"
-    _cnf_default  = "scan.cnf"
+    def __init__(self, dbname='Test.db', server='sqlite', host=None,
+                 user=None, password=None, port=None, create=True,  **kws):
 
-    def __init__(self, inifile=None,  **kwds):
-
-        if inifile is None:
-            inifile = self.ini_default
-
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, None, -1, **kwds)
+        wx.Frame.__init__(self, None, -1, style=FRAMESTYLE, **kws)
 
         self.pvlist = {}
-        # list of available detectors and whether to use them
-        self.detectors  =  OrderedDict()
-        # list of extra counters and whether to use them
-        self.extra_counters = OrderedDict()
         self.subframes = {}
-        self.init_scandb(inifile)
         self._larch = None
         self.epics_status = 0
         self.larch_status = 0
         self.last_scanname = ''
+
+        self.scandb = ScanDB(dbname=dbname, server=server, host=host,
+                 user=user, password=password, port=port, create=create)
+
         wx.EVT_CLOSE(self, self.onClose)
 
         self.createMainPanel()
@@ -119,25 +108,9 @@ class ScanFrame(wx.Frame):
         self.scantimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
 
-        # self.connect_epics()
         self.inittimer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onInitTimer, self.inittimer)
         self.inittimer.Start(100)
-
-    def init_scandb(self, inifile):
-        """initialize connection to scan db,
-        make sure values from ini file are in database"""
-        config = StationConfig(inifile)        
-        kwargs = {'create': True}
-        kwargs.update(config.server)
-        dbname = kwargs.pop('dbname')
-        # kwargs.pop('use')
-        if 'port' in kwargs:
-            kwargs['port'] = int(kwargs['port'])
-
-        self.scandb = ScanDB(dbname, **kwargs)
-        self.scandb.read_station_config(config)
-
 
     def createMainPanel(self):
         self.Font16=wx.Font(16, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -177,7 +150,8 @@ class ScanFrame(wx.Frame):
 
         self.nscans = FloatCtrl(bpanel, precision=0, value=1, minval=0, size=(45, -1))
 
-        self.filename = wx.TextCtrl(bpanel, -1, self.scandb.get_info('filename', ''))
+        self.filename = wx.TextCtrl(bpanel, -1,
+                                    self.scandb.get_info('filename', default=''))
         self.filename.SetMinSize((400, 25))
 
         self.user_comms = wx.TextCtrl(bpanel, -1, "", style=wx.TE_MULTILINE)
@@ -251,17 +225,9 @@ class ScanFrame(wx.Frame):
     @EpicsFunction
     def connect_epics(self):
         t0 = time.time()
-        for db_pv in self.scandb.getall('pvs'):
-            name = db_pv.name
-            if len(name) < 1:
-                continue
+        for pv in self.scandb.getall('pvs'):
+            name = normalize_pvname(pv.name)
             self.pvlist[name] = epics.PV(name)
-        for det in self.scandb.get_detectors():
-            opts = json.loads(det.options)
-            opts['label'] = det.name
-            opts['kind'] = det.kind 
-            self.detectors[det.name] = get_detector(det.pvname, **opts)
-        
         self.epics_status = 1
         time.sleep(0.05)
         self.statusbar.SetStatusText('Epics Ready')
@@ -270,7 +236,7 @@ class ScanFrame(wx.Frame):
         """generate scan definition from current values on GUI"""
         if scanname is None:
             scanname = time.strftime("__%b%d%H%M%S_")
-            
+
         scan = self.nb.GetCurrentPage().generate_scan()
         scan['nscans'] = int(self.nscans.GetValue())
 
@@ -279,9 +245,9 @@ class ScanFrame(wx.Frame):
         scan['filename'] = fname
         scan['user_comments'] = self.user_comms.GetValue()
 
-        scan['pos_settle_time'] = float(sdb.get_info('pos_settle_time'))
-        scan['det_settle_time'] = float(sdb.get_info('det_settle_time'))
-        
+        scan['pos_settle_time'] = float(sdb.get_info('pos_settle_time', default=0.))
+        scan['det_settle_time'] = float(sdb.get_info('det_settle_time', default=0.))
+
         scan['detectors'] = []
         scan['counters']  = []
         if 'extra_pvs' not in scan:
@@ -293,13 +259,13 @@ class ScanFrame(wx.Frame):
             opts['kind']   = det.kind
             opts['notes']  = det.notes
             scan['detectors'].append(opts)
-                
+
         for ct in sdb.select('scancounters', use=1):
             scan['counters'].append((ct.name, ct.pvname))
 
         for ep in sdb.select('extrapvs', use=1):
             scan['extra_pvs'].append((ep.name, ep.pvname))
-            
+
         sdb.add_scandef(scanname,  text=json.dumps(scan),
                         type=scan['type'])
         return scanname
@@ -310,79 +276,6 @@ class ScanFrame(wx.Frame):
         self.scandb.add_command('doscan', arguments=scanname,
                                 output_file=fname)
 
-    def run_scan(self, conf):
-        """runs a scan as specified in a scan configuration dictionary"""
-        self.statusbar.SetStatusText('Starting...', 1)
-
-        if conf['type'] == 'xafs':
-            scan  = XAFS_Scan()
-            isrel = conf['is_relative']
-            e0    = conf['e0']
-            t_kw  = conf['time_kw']
-            t_max = conf['max_time']
-            nreg  = len(conf['regions'])
-            kws   = {'relative': isrel, 'e0':e0}
-
-            for i, det in enumerate(conf['regions']):
-                start, stop, npts, dt, units = det
-                kws['dtime'] =  dt
-                kws['use_k'] =  units.lower() !='ev'
-                if i == nreg-1: # final reg
-                    if t_max > 0.01 and t_kw>0 and kws['use_k']:
-                        kws['dtime_final'] = t_max
-                        kws['dtime_wt'] = t_kw
-                scan.add_region(start, stop, npts=npts, **kws)
-
-        elif conf['type'] == 'linear':
-            scan = StepScan()
-            for pos in conf['positioners']:
-                label, pvs, start, stop, npts = pos
-                p = Positioner(pvs[0], label=label)
-                p.array = np.linspace(start, stop, npts)
-                scan.add_positioner(p)
-                if len(pvs) > 0:
-                    scan.add_counter(pvs[1], label="%s(read)" % label)
-
-        for det in conf['detectors']:
-            scan.add_detector(get_detector(**det))
-
-        if 'counters' in conf:
-            for label, pvname  in conf['counters']:
-                scan.add_counter(pvname, label=label)
-
-        scan.add_extra_pvs(conf['extra_pvs'])
-
-        scan.dwelltime = conf['dwelltime']
-        scan.comments  = conf['user_comments']
-        scan.filename  = conf['filename']
-        scan.pos_settle_time = conf['pos_settle_time']
-        scan.det_settle_time = conf['det_settle_time']
-
-        self.scan = scan
-        self.scan_cpt = -1
-
-        self.statusbar.SetStatusText('Scanning ', 1)
-        self.scantimer.Start(100)
-        app = wx.GetApp()
-        for i in range(conf['nscans']):
-            self.scan_thread = Thread(target=scan.run)
-            self.scan_thread.start()
-            while not scan.complete:
-                t0 = time.time()
-                eloop = wx.EventLoop()
-                eact = wx.EventLoopActivator(eloop)
-                while eloop.Pending() and time.time()-t0 < 0.25:
-                    eloop.Dispatch()
-                app.ProcessIdle()
-                del eact
-                if scan.cpt > 2 and scan.cpt == scan.npts:
-                    break
-            self.scantimer.Stop()
-            self.scan_thread.join()
-            print 'done!  wrote %s' % scan.filename
-            self.statusbar.SetStatusText('Wrote %s' %  scan.filename, 0)
-        self.statusbar.SetStatusText('Scan Complete', 1)
-        self.scantimer.Stop()
 
     def onAbortScan(self, evt=None):
         print 'Abort Scan ', evt
@@ -407,7 +300,7 @@ class ScanFrame(wx.Frame):
 
         # options
         pmenu = wx.Menu()
-        
+
         add_menu(self, pmenu, "Positioners\tCtrl+P",
                  "Setup Motors and Positioners", self.onEditPositioners)
         add_menu(self, pmenu, "Detectors\tCtrl+D",
@@ -416,10 +309,10 @@ class ScanFrame(wx.Frame):
 
         add_menu(self, pmenu, "Extra PVs",
                  "Setup Extra PVs to save with scan", self.onEditExtraPVs)
-        
+
         add_menu(self, pmenu, "Scan Definitions",
                  "Manage Saved Scans", self.onEditScans)
-        
+
         pmenu.AppendSeparator()
         add_menu(self, pmenu, "General Settings",
                  "General Setup", self.onEditSettings)
@@ -449,6 +342,7 @@ class ScanFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self, evt=None):
+
         ret = popup(self, "Really Quit?", "Exit Epics Scan?",
                     style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
         if ret == wx.ID_YES:
@@ -470,27 +364,27 @@ class ScanFrame(wx.Frame):
         if not shown:
             self.subframes[name] = frameclass(self)
 
-        
+
     def onEditPositioners(self, evt=None):
-        self.show_subframe('pos', PositionerFrame)        
+        self.show_subframe('pos', PositionerFrame)
 
     def onEditExtraPVs(self, evt=None):
-        self.show_subframe('pvs', ExtraPVsFrame)        
+        self.show_subframe('pvs', ExtraPVsFrame)
 
     def onEditDetectors(self, evt=None):
-        self.show_subframe('det', DetectorFrame)                
+        self.show_subframe('det', DetectorFrame)
 
     def onEditScans(self, evt=None):
         self.show_subframe('scan', ScandefsFrame)
 
     def onEditSettings(self, evt=None):
         self.show_subframe('settings', SettingsFrame)
-        
+
     def onEditSequences(self, evt=None):
-        self.show_subframe('sequences', SequencesFrame)        
+        self.show_subframe('sequences', SequencesFrame)
 
     def onEditMacros(self, evt=None):
-        self.show_subframe('macros', MacrosFrame)        
+        self.show_subframe('macros', MacrosFrame)
 
     def onFolderSelect(self,evt):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
@@ -519,12 +413,12 @@ class ScanFrame(wx.Frame):
             if sname in scannames:
                 _ok = wx.ID_NO
                 if self.scandb.get_info('scandefs_verify_overwrite',
-                                        as_bool=True):
+                                        as_bool=True, default=1):
                     _ok =  popup(self,
                                  "Overwrite Scan Definition '%s'?" % sname,
                                  "Overwrite Scan Definition?",
                                  style=wx.YES_NO|wx.NO_DEFAULT|wx.ICON_QUESTION)
-                
+
                 if (_ok == wx.ID_YES):
                     self.scandb.del_scandef(sname)
                 else:
@@ -537,13 +431,14 @@ class ScanFrame(wx.Frame):
 
         if len(sname) > 0:
             self.last_scanname = sname
-            
-    def onReadScanDef(self, evt=None):
 
-        _auto = self.scandb.get_info('scandefs_load_showauto', as_bool=True)
-        _all  = self.scandb.get_info('scandefs_load_showalltypes', as_bool=True)
+    def onReadScanDef(self, evt=None):
+        _autotypes = self.scandb.get_info('scandefs_load_showauto',
+                                          as_bool=True, default=0)
+        _alltypes  = self.scandb.get_info('scandefs_load_showalltypes',
+                                          as_bool=True, default=0)
         stype = None
-        if not self.scandb.get_info('scandefs_load_showalltypes', as_bool=True):
+        if not _alltypes:
             inb =  self.nb.GetSelection()
             for key, val in self.scanpanels.items():
                 if val[0] == inb:
@@ -551,13 +446,12 @@ class ScanFrame(wx.Frame):
 
         scannames = []
         for sdef in self.scandb.getall('scandefs'):
-            if (not _all) and stype != sdef.type:
+            if (not _alltypes) and stype != sdef.type:
                 continue
-            if (not _auto) and sdef.name.startswith('__'):
+            if (not _autotypes) and sdef.name.startswith('__'):
                 continue
             scannames.append(sdef.name)
-            
-            
+
         dlg = wx.SingleChoiceDialog(self, "Select Saved Scan:",
                                     "", scannames)
         sname = None
@@ -569,8 +463,8 @@ class ScanFrame(wx.Frame):
             self.statusbar.SetStatusText("Read Scan '%s'" % sname)
             thisscan = json.loads(self.scandb.get_scandef(sname).text)
             self.load_scandef( thisscan)
-            self.last_scanname = sname            
-            
+            self.last_scanname = sname
+
     def load_scandef(self, scan):
         """load scan definition from dictionary, as stored
         in scandb scandef.text field
@@ -591,7 +485,7 @@ class ScanFrame(wx.Frame):
                 prefix = detdat.pop('prefix')
                 dkind  = detdat.pop('kind')
                 use    = detdat.pop('use')
-                opts   = json.dumps(detdat) 
+                opts   = json.dumps(detdat)
                 sdb.add_detector(name, prefix,
                                  kind=dkind,
                                  options=opts,
@@ -600,7 +494,7 @@ class ScanFrame(wx.Frame):
                 det.prefix = detdat.pop('prefix')
                 det.dkind  = detdat.pop('kind')
                 det.use    = detdat.pop('use')
-                det.options = json.dumps(detdat) 
+                det.options = json.dumps(detdat)
 
         if 'positioners' in scan:
             for data in scan['positioners']:
@@ -614,7 +508,7 @@ class ScanFrame(wx.Frame):
                 else:
                     pos.drivepv = drivepv
                     pos.readpv = readpv
-                    
+
         # now fill in page
         stype = scan['type'].lower()
         if stype in self.scanpanels:
@@ -624,20 +518,18 @@ class ScanFrame(wx.Frame):
 
 
 class ScanApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, config=None, dbname=None, **kws):
-        self.config  = config
-        self.dbname  = dbname
+    def __init__(self, dbname='TestScan.db', server='sqlite', host=None,
+                 port=None, user=None, password=None, create=True, **kws):
+
+        self.scan_opts = dict(dbname=dbname, server=server, host=host,
+                              port=port, create=create, user=user,
+                              password=password)
+        self.scan_opts.update(kws)
         wx.App.__init__(self)
 
     def OnInit(self):
         self.Init()
-        frame = ScanFrame()
+        frame = ScanFrame(**self.scan_opts)
         frame.Show()
         self.SetTopWindow(frame)
         return True
-
-if __name__ == "__main__":
-    app = wx.App()
-    i = ScanFrame()
-    i.Show()
-    app.MainLoop()
