@@ -28,6 +28,7 @@ LCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_LEFT
 RCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_RIGHT
 CCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER
 LTEXT = wx.ST_NO_AUTORESIZE|wx.ALIGN_CENTER
+FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 
 def Font(size):
     return wx.Font(size, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -172,7 +173,7 @@ def pack(window, sizer, expand=1.1):
     nsize = (10*int(expand*(max(msize[0], tsize[0])/10)),
              10*int(expand*(max(msize[1], tsize[1])/10.)))
     window.SetSize(nsize)
-    
+
 
 def add_button(parent, label, size=(-1, -1), action=None):
     "add simple button with bound action"
