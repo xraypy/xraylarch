@@ -6,7 +6,7 @@ import wx.lib.scrolledpanel as scrolled
 
 from .gui_utils import (GUIColors, set_font_with_children, YesNo,
                         add_button, pack, SimpleText, check, okcancel,
-                        add_subtitle, Font, LCEN, CEN, RCEN)
+                        add_subtitle, Font, LCEN, CEN, RCEN, FRAMESTYLE)
 
 RCEN |= wx.ALL
 LCEN |= wx.ALL
@@ -19,12 +19,9 @@ class ScandefsFrame(wx.Frame) :
         self.parent = parent
         self.scandb = parent.scandb
 
-        LCEN  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-        RCEN = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
-
         wx.Frame.__init__(self, None, -1,
                           'Epics Scanning: Scan Definitions',
-                          style  = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+                          style=FRAMESTYLE)
 
         self.SetFont(Font(9))
         sizer = wx.GridBagSizer(10, 5)
@@ -38,7 +35,7 @@ class ScandefsFrame(wx.Frame) :
                            colour=self.colors.title, style=LCEN)
 
         sizer.Add(title,        (0, 0), (1, 3), LCEN, 5)
-            
+
         ir = 1
         sizer.Add(SimpleText(panel, label=' Scan Name', size=(175, -1)),
                   (ir, 0), (1, 1), RCEN, 2)
@@ -72,7 +69,7 @@ class ScandefsFrame(wx.Frame) :
                     ir = ir + ix
                     self.widlist.append((sname, erase))
                 ir = ir - ix
-                    
+
 
         ir += 1
         sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),

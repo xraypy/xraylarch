@@ -15,11 +15,11 @@
 '''
 Dynamic list updating with a wx.grid.GridCellChoiceEditor.
 
-This example shows how to dynamically update the choices in a 
+This example shows how to dynamically update the choices in a
 GridCellChoiceEditor. This simple example creates a two column
 grid where the top row in each column is a wx.grid.GridCellChoiceEditor.
 The choices listed in the editor are created on the fly, and may change
-with each selection. Text entered into the GridCellChoiceEditor cell 
+with each selection. Text entered into the GridCellChoiceEditor cell
 is appended as an additional choice.
 
 In addition to appending new choices, this example also shows how to get
@@ -27,18 +27,18 @@ the selection index and client data from the choice.
 
 Cell editor interactions are printed for every step.
 
-This example is deliberately simple, lacking sizers and other useful but 
+This example is deliberately simple, lacking sizers and other useful but
 confusing niceties.
 
 Theory:
-    
+
 The GridCellChoiceEditor uses an underlying ComboBox to do the editing.
 This underlying ComboBox is created when the cell editor is created. Normally
-the ComboBox is completely hidden, but in this example we retrieve a reference 
+the ComboBox is completely hidden, but in this example we retrieve a reference
 to the ComboBox and use it to load choices and retrieve index and client data.
 
 The example starts with a GridCellChoiceEditor attached to the two top cells of
-the grid. When the GridCellChoiceEditor is invoked for the first time, two 
+the grid. When the GridCellChoiceEditor is invoked for the first time, two
 choice items are added to the choice list along with their associated user
 data. The items are ('spam', 42) and ('eggs', 69), where spam is the text to
 display and 42 is the associated client data. In this example 'spam' has an
@@ -60,10 +60,10 @@ for client data.
 In this example we bind directly to the ComboBox events, rather than getting
 the events through the frame. This is done to keep the grid from eating the
 events. The difference in binding can be seen in the two binding methods:
-    
+
     self.Bind(wx.EVT_BUTTON, self.OnButton, self.button)
     self.button.Bind(wx.EVT_BUTTON, self.OnButton)
-    
+
 The latter method binds directly to the widget, where the first method
 receives the event up the chain through the parent.
 
@@ -97,8 +97,9 @@ class Frame1(wx.Frame):
         #Create the GridCellChoiceEditor with a blank list. Items will
         #be added later at runtime. "allowOthers" allows the user to
         #create new selection items on the fly.
-        tChoiceEditor = wx.grid.GridCellChoiceEditor([], allowOthers=True)
-
+        xchoices = [('a', 'an A'), ('b', 'b is the choice'), ('c', 'c this one')]
+        tChoiceEditor = wx.grid.GridCellChoiceEditor([])
+        self.grid1.list = xchoices
         #Assign the cell editors for the top row (row 0). Note that on a
         #larger grid you would loop through the cells or set a default.
         self.grid1.SetCellEditor(0, 0, tChoiceEditor)
@@ -110,13 +111,13 @@ class Frame1(wx.Frame):
         #data to associate with this item. A seed list is optional.
         #If this were a real application, you would probably load this list
         #from a file.
-        self.grid1.list = [('spam', 42), ('eggs', 69)]
+        # self.grid1.list = [('spam', 42), ('eggs', 69)]
 
         #Show the first item of the list in each ChoiceEditor cell. The
         #displayed text is optional. You could leave these cells blank, or
         #display 'Select...' or something of that nature.
         self.grid1.SetCellValue(0, 0, self.grid1.list[0][0])
-        self.grid1.SetCellValue(0, 1, self.grid1.list[0][0])
+        self.grid1.SetCellValue(0, 1, self.grid1.list[1][0])
 
         #The counter below will be used to automatically generate a new
         #piece of unique client data for each new item. This isn't very
@@ -129,7 +130,7 @@ class Frame1(wx.Frame):
         #from a choice selection. Client data and selection index are not
         #directly exposed to the grid object. We will get this information by
         #directly accessing the underlying ComboBox object created by the
-        #GridCellChoiceEditor. 
+        #GridCellChoiceEditor.
         self.grid1.data = None
         self.grid1.index = None
 
@@ -171,11 +172,11 @@ class Frame1(wx.Frame):
     def OnGrid1ComboBox(self, event):
         #Save the index and client data for later use.
         self.grid1.index = self.comboBox.GetSelection()
-        self.grid1.data = self.comboBox.GetClientData(self.grid1.index)
+        self.grid1.data  = self.comboBox.GetClientData(self.grid1.index)
 
         print 'ComboBoxChanged: %s' % self.comboBox.GetValue()
-        print 'ComboBox index: %u' % self.grid1.index
-        print 'ComboBox data: %u\n' % self.grid1.data
+        print 'ComboBox index: %u'  % self.grid1.index
+        print 'ComboBox data: %s\n' % self.grid1.data
         event.Skip()
 
 
@@ -187,7 +188,7 @@ class Frame1(wx.Frame):
         #that new text has been entered, as opposed to a simple selection
         #from the drop list. Note that the index will be set for each character,
         #but it will be -1 every time, so the final result of text changes is
-        #always an index of -1. The value is whatever text that has been 
+        #always an index of -1. The value is whatever text that has been
         #entered. At this point there is no client data. We will have to add
         #that later, once all of the text has been entered.
         self.grid1.index = self.comboBox.GetSelection()
@@ -203,7 +204,7 @@ class Frame1(wx.Frame):
         Row = event.GetRow()
         Col = event.GetCol()
 
-        #If the following conditions are true, it means that new text has 
+        #If the following conditions are true, it means that new text has
         #been entered in a GridCellChoiceEditor cell, in which case we want
         #to append the new item to our selection list.
         if Row == 0 and self.grid1.index == -1:

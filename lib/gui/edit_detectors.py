@@ -11,7 +11,7 @@ from ..detectors import DET_DEFAULT_OPTS, AD_FILE_PLUGINS
 from .gui_utils import (GUIColors, set_font_with_children, YesNo, Closure,
                         add_button, add_choice, pack, check, Font,
                         SimpleText, FloatCtrl, okcancel, add_subtitle,
-                        LCEN, CEN, RCEN)
+                        LCEN, CEN, RCEN, FRAMESTYLE)
 
 from ..utils import strip_quotes
 
@@ -107,10 +107,8 @@ class DetectorFrame(wx.Frame) :
         self.detectors = self.scandb.getall('scandetectors', orderby='id')
         self.counters = self.scandb.getall('scancounters', orderby='id')
 
-
-
         wx.Frame.__init__(self, None, -1, 'Epics Scanning: Detector Setup',
-                          style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL)
+                          style=FRAMESTYLE)
 
         self.SetFont(Font(9))
 
