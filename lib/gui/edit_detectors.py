@@ -36,21 +36,14 @@ class DetectorDetailsDialog(wx.Dialog):
         self.colors = GUIColors()
         panel.SetBackgroundColour(self.colors.bg)
 
-
         self.SetFont(parent.GetFont())
-        titlefont  = self.GetFont()
-        titlefont.PointSize += 2
-        titlefont.SetWeight(wx.BOLD)
-
         sizer = wx.GridBagSizer(10, 3)
 
         # title row
         i = 0
         for titleword in (' Setting ', 'Value'):
             txt =SimpleText(panel, titleword,
-                            font=titlefont,
-                            minsize=(100, -1),
-                            style=RCEN)
+                            minsize=(100, -1),   style=RCEN)
             sizer.Add(txt, (0, i), (1, 1), LCEN, 1)
             i += 1
 
@@ -61,7 +54,7 @@ class DetectorDetailsDialog(wx.Dialog):
         self.wids = {}
         prefix = self.det.pvname
         opts   = json.loads(self.det.options)
-        optkeys = opts.keys()        
+        optkeys = opts.keys()
         optkeys.sort()
         irow = 2
         for key in optkeys:
@@ -74,7 +67,7 @@ class DetectorDetailsDialog(wx.Dialog):
                                  ('mcas', 'MCAs'),
                                  ('rois', 'ROIs')):
                 label = label.replace(short, longw)
-                                
+
             if label.startswith('n'):
                 label = '# of %s' % (label[1:])
             label = label.title()
@@ -87,22 +80,19 @@ class DetectorDetailsDialog(wx.Dialog):
             elif key.lower() == 'file_plugin':
                 wid = add_choice(panel, AD_CHOICES, default=1)
             elif isinstance(val, (int, float)):
-                wid   = FloatCtrl(panel, value=val, size=(80, -1))
+                wid = FloatCtrl(panel, value=val, size=(80, -1))
             else:
-                wid   = wx.TextCtrl(panel, value=val, size=(80, -1))
-                                    
-            
+                wid = wx.TextCtrl(panel, value=val, size=(80, -1))
+
             sizer.Add(label, (irow, 0), (1, 1), LCEN,  2)
             sizer.Add(wid,   (irow, 1), (1, 1), RCEN, 2)
             self.wids[key] = wid
             irow  += 1
 
-        sizer.Add(wx.StaticLine(panel, size=(150, -1),
-                                style=wx.LI_HORIZONTAL),
+        sizer.Add(wx.StaticLine(panel, size=(150, -1), style=wx.LI_HORIZONTAL),
                   (irow, 0), (1, 4), CEN, 0)
 
-        sizer.Add(okcancel(panel),
-                  (irow+1, 0), (1, 3), LCEN, 1)
+        sizer.Add(okcancel(panel), (irow+1, 0), (1, 3), LCEN, 1)
         pack(panel, sizer)
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(panel, 0, 0, 0)
@@ -139,7 +129,7 @@ class DetectorFrame(wx.Frame) :
 
         desc = wx.StaticText(panel, -1, label='Detector Settling Time (sec): ',
                              size=(180, -1))
-        
+
         self.settle_time = wx.TextCtrl(panel, size=(75, -1),
                             value=self.scandb.get_info('det_settle_time', '0.001'))
         sizer.Add(desc,              (1, 0), (1, 2), CEN,  3)
@@ -153,7 +143,7 @@ class DetectorFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, label='Label',  size=(125, -1)),
                   (ir, 0), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='PV prefix', size=(175, -1)),
-                  (ir, 1), (1, 1), LCEN, 1)  
+                  (ir, 1), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='Use?'),
                   (ir, 2), (1, 1), LCEN, 1)
         sizer.Add(SimpleText(panel, label='Kind',     size=(80, -1)),
@@ -188,11 +178,11 @@ class DetectorFrame(wx.Frame) :
         # select a new detector
         for i in range(2):
             ir +=1
-            desc   = wx.TextCtrl(panel, value='',   size=(125, -1))            
+            desc   = wx.TextCtrl(panel, value='',   size=(125, -1))
             pvctrl = wx.TextCtrl(panel, value='',   size=(175, -1))
             use    = check(panel, default=True)
             kind = add_choice(panel, DET_CHOICES, size=(110, -1))
-            kind.SetStringSelection(dkind)            
+            kind.SetStringSelection(dkind)
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LCEN, 1)
@@ -223,7 +213,7 @@ class DetectorFrame(wx.Frame) :
             sizer.Add(desc,   (ir, 0), (1, 1), CEN, 1)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 1)
             sizer.Add(use,    (ir, 2), (1, 1), LCEN, 1)
-            sizer.Add(erase,  (ir, 3), (1, 1), LCEN, 1)            
+            sizer.Add(erase,  (ir, 3), (1, 1), LCEN, 1)
             self.widlist.append(('old_counter', counter, desc,
                                  pvctrl, use, None, erase))
 
@@ -267,7 +257,7 @@ class DetectorFrame(wx.Frame) :
                         val = float(val)
                     except:
                         pass
-                    
+
                 elif isinstance(wid, wx.CheckBox):
                     val =  wid.IsChecked()
                 elif isinstance(wid, YesNo):
@@ -313,7 +303,7 @@ class DetectorFrame(wx.Frame) :
 
         self.scandb.commit()
         self.Destroy()
-        
+
     def onClose(self, event=None):
         self.Destroy()
 
