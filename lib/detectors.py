@@ -164,7 +164,7 @@ class ScalerCounter(DeviceCounter):
                 suff = '.S%i' % i
                 if use_calc:
                     suff = '_calc%i.VAL' % i
-                    extra_pvs.append(('scaler calc%i' % i,
+                    extra_pvs.append(('Scaler.Calc%i' % i,
                                       '%s_calc%i.CALC' % (prefix, i)))
                 fields.append((suff, label))
         self.extra_pvs = extra_pvs
@@ -213,13 +213,13 @@ class MultiMcaCounter(DeviceCounter):
         fields = []
         extras = []
         for imca in range(1, nmcas+1):
-            mca = 'mca%i' % imca
-            dxp = 'dxp%i' % imca
+            mca = 'MCA%i' % imca
+            dxp = 'DXP%i' % imca
             extras.extend([
-                ("Calib_Offset (%s)" % mca, "%s%s.CALO" % (prefix, mca)),
-                ("Calib_Slope (%s)" % mca, "%s%s.CALS" % (prefix, mca)),
-                ("Calib_Quad (%s)" % mca, "%s%s.CALQ" % (prefix, mca)),
-                ("Peaking_Time (%s)" % dxp, "%s%s:PeakingTime" % (prefix, dxp))
+                ("%s.Calib_Offset" % mca, "%s%s.CALO" % (prefix, mca)),
+                ("%s.Calib_Slope"  % mca, "%s%s.CALS" % (prefix, mca)),
+                ("%s.Calib_Quad"   % mca, "%s%s.CALQ" % (prefix, mca)),
+                ("%s.Peaking_Time" % dxp, "%s%s:PeakingTime" % (prefix, dxp))
                 ])
 
         pvs = {}
@@ -284,7 +284,7 @@ class DetectorMixin(Saveable):
         self.dwelltime = None
         self.extra_pvs = []
         self._repr_extra = ''
-        
+
     def __repr__(self):
         return "<%s: '%s', prefix='%s'%s>" % (self.__class__.__name__,
                                               self.label, self.prefix,
@@ -292,7 +292,7 @@ class DetectorMixin(Saveable):
 
     def connect_counters(self):
         pass
-    
+
     def pre_scan(self, **kws):
         pass
 
@@ -326,8 +326,8 @@ class ScalerDetector(DetectorMixin):
         self.dwelltime_pv = PV('%s.TP' % prefix)
         self.dwelltime    = None
         self.counters = self._counter.counters
-        self.extra_pvs = [('scaler frequency', '%s.FREQ' % prefix),
-                          ('scaler read_delay', '%s.DLY' % prefix)]
+        self.extra_pvs = [('Scaler.frequency', '%s.FREQ' % prefix),
+                          ('Scaler.read_delay', '%s.DLY' % prefix)]
         self._repr_extra = ', nchans=%i, use_calc=%s' % (nchan,
                                                          repr(use_calc))
 
@@ -423,7 +423,7 @@ class MultiMcaDetector(DetectorMixin):
         self.dwelltime_pv  = PV('%sPresetReal' % prefix)
         self.trigger       = Trigger("%sEraseStart" % prefix)
         self.dwelltime     = None
-        self.extra_pvs     = None 
+        self.extra_pvs     = None
         self._counter      = None
         self._connect_args = dict(nmcas=nmcas, nrois=nrois,
                                   search_all=search_all,
@@ -438,11 +438,11 @@ class MultiMcaDetector(DetectorMixin):
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
 
-        
+
     def pre_scan(self, scan=None, **kws):
         if self._counter is None:
             self.connect_counters()
-            
+
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
