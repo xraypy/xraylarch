@@ -25,18 +25,14 @@ import wx.lib.mixins.inspection
 import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
 
-from .gui_utils import SimpleText, FloatCtrl, Closure
-from .gui_utils import pack, add_button, add_menu, add_choice, add_menu
+from wxmplot import PlotPanel
 
 from ..datafile import StepScanData
+from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
+                        add_menu, add_choice, add_menu,
+                        CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
-from ..ordereddict import OrderedDict
-
-CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
-ALL_CEN =  wx.ALL|CEN
-
+CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*)|*.0*|Data Files(*.dat)|*.dat|All files (*.*)|*.*"
 
 def randname(n=6):
@@ -50,27 +46,21 @@ class PlotterFrame(wx.Frame):
     def __init__(self, conffile=None,  **kwds):
 
 
-        kwds["style"] = wx.DEFAULT_FRAME_STYLE
-        wx.Frame.__init__(self, None, -1, size=(680, 600),  **kwds)
+        kwds["style"] = FRAMESTYLE
+        wx.Frame.__init__(self, None, -1, **kwds)
 
         self.data = None
         self.filemap = {}
         self.larch = None
 
-        self.Font14=wx.Font(14, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font11=wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font10=wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font9 =wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-
         self.SetTitle("Step Scan Data File Viewer")
-        self.SetSize((850, 775))
-        self.SetFont(self.Font9)
+        self.SetSize((650, 525))
+        self.SetFont(Font(9))
 
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
-        self.statusbar.SetStatusWidths([-4, -1])
+        self.statusbar.SetStatusWidths([-3, -1])
         statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
@@ -93,12 +83,14 @@ class PlotterFrame(wx.Frame):
         pack(self, sizer)
 
     def createDetailsPanel(self, parent):
-        panel = wx.Panel(parent)
-        panel.SetMinSize((600, 250))
+        mainpanel = wx.Panel(parent)
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+
+        panel = wx.Panel(mainpanel)
         sizer = wx.GridBagSizer(8, 10)
         self.title = SimpleText(panel, 'initializing...')
         ir = 0
-        sizer.Add(self.title, (ir, 0), (1, 8), ALL_CEN, 2)
+        sizer.Add(self.title, (ir, 0), (1, 8), CEN, 2)
         # x-axis
 
         self.x_choice = add_choice(panel, choices=[], size=(120, -1))
@@ -107,9 +99,9 @@ class PlotterFrame(wx.Frame):
         # self.xchoice.SetStringSelection(default string)
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'X='), (ir, 1), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.x_op,                 (ir, 2), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.x_choice,             (ir, 4), (1, 1), RIGHT, 0)
+        sizer.Add(SimpleText(panel, 'X='), (ir, 1), (1, 1), CEN, 0)
+        sizer.Add(self.x_op,                 (ir, 2), (1, 1), CEN, 0)
+        sizer.Add(self.x_choice,             (ir, 4), (1, 1), RCEN, 0)
 
         self.y_op1     = add_choice(panel, size=(80, -1),
                                     choices=('', 'log', '-log', 'deriv', '-deriv',
@@ -125,37 +117,41 @@ class PlotterFrame(wx.Frame):
         self.y_op3.SetSelection(3)
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'Y='),  (ir,  1), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y_op1,               (ir,  2), (1, 1), ALL_CEN, 0)
-        sizer.Add(SimpleText(panel, '(['),  (ir,  3), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y1_choice,           (ir,  4), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y_op2,               (ir,  5), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y2_choice,           (ir,  6), (1, 1), ALL_CEN, 0)
-        sizer.Add(SimpleText(panel, ']'),   (ir,  7), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y_op3,               (ir,  8), (1, 1), ALL_CEN, 0)
-        sizer.Add(self.y3_choice,           (ir,  9), (1, 1), ALL_CEN, 0)
-        sizer.Add(SimpleText(panel, ')'),   (ir, 10), (1, 1), ALL_CEN, 0)
+        sizer.Add(SimpleText(panel, 'Y='),  (ir,  1), (1, 1), CEN, 0)
+        sizer.Add(self.y_op1,               (ir,  2), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, '(['),  (ir,  3), (1, 1), CEN, 0)
+        sizer.Add(self.y1_choice,           (ir,  4), (1, 1), CEN, 0)
+        sizer.Add(self.y_op2,               (ir,  5), (1, 1), CEN, 0)
+        sizer.Add(self.y2_choice,           (ir,  6), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, ']'),   (ir,  7), (1, 1), CEN, 0)
+        sizer.Add(self.y_op3,               (ir,  8), (1, 1), CEN, 0)
+        sizer.Add(self.y3_choice,           (ir,  9), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, ')'),   (ir, 10), (1, 1), CEN, 0)
 
         self.plot_btn  = add_button(panel, "New Plot", action=self.onPlot)
         self.oplot_btn = add_button(panel, "OverPlot", action=self.onOPlot)
 
         ir += 1
-        sizer.Add(self.plot_btn,   (ir, 1), (1, 3), ALL_CEN, 2)
-        sizer.Add(self.oplot_btn,  (ir, 4), (1, 3), ALL_CEN, 2)
+        sizer.Add(self.plot_btn,   (ir, 1), (1, 3), CEN, 2)
+        sizer.Add(self.oplot_btn,  (ir, 4), (1, 3), CEN, 2)
 
+#         ir += 1
+#         sizer.Add(SimpleText(panel, 'Should add fitting options'),
+#                   (ir, 1), (1, 10), wx.ALIGN_CENTER)
+#
         ir += 1
         sizer.Add(wx.StaticLine(panel, size=(675, 3), style=wx.LI_HORIZONTAL),
                   (ir, 1), (1, 10), wx.ALIGN_CENTER)
-        ir += 1
-        sizer.Add(SimpleText(panel, 'Should add fitting options'),
-                  (ir, 1), (1, 10), wx.ALIGN_CENTER)
-
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(675, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 1), (1, 10), wx.ALIGN_CENTER)
-
         pack(panel, sizer)
-        return panel
+
+        self.plotpanel = PlotPanel(mainpanel, size=(500, 670))
+        self.plotpanel.BuildPanel()
+        self.plotpanel.messenger = self.write_message
+
+        mainsizer.Add(panel, 0, 2)
+        mainsizer.Add(self.plotpanel, 1, wx.GROW|wx.ALL, 2)
+        pack(mainpanel, mainsizer)
+        return mainpanel
 
     def init_larch(self):
         t0 = time.time()
@@ -168,6 +164,9 @@ class PlotterFrame(wx.Frame):
         self.datagroups = self.larch.symtable
         self.title.SetLabel('')
 
+    def write_message(self, s, panel=0):
+        """write a message to the Status Bar"""
+        self.SetStatusText(s, panel)
 
     def onPlot(self, evt):    self.do_plot(newplot=True)
 
@@ -329,8 +328,7 @@ class PlotterFrame(wx.Frame):
         dlg.Destroy()
 
 class ViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, config=None, dbname=None, **kws):
-        self.config  = config
+    def __init__(self, dbname=None, **kws):
         self.dbname  = dbname
         wx.App.__init__(self)
 
