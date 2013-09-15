@@ -47,7 +47,6 @@ class Positioner(Saveable):
 
         if extra_pvs is None: extra_pvs = {}
         self.extra_pvs = extra_pvs
-        print 'Positioner: ', label, pvname, extra_pvs
 
     def __repr__(self):
         out = "<Positioner '%s'" % (self.pv.pvname)

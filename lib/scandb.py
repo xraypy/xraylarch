@@ -160,7 +160,8 @@ class ScanDB(object):
         atexit.register(self.close)
 
     def read_station_config(self, config):
-        """convert station config to db entries"""
+        """convert station config to db entries
+        DEPRECATED - kept for compatibility only"""
 
         for key, val in config.setup.items():
             self.set_info(key, val)
