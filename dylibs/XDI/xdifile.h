@@ -11,6 +11,7 @@ typedef struct {
   long narrays;          /* number of arrays */
   long npts;             /* number of data points for all arrays */
   long narray_labels;    /* number of labeled arrays (may be < narrays) */
+  long  error_lineno;    /* line numberfor any existing error */
   double dspacing;       /* monochromator d spacing */
   char *xdi_libversion;  /* XDI version of library */
   char *xdi_version;     /* XDI version string from file*/
@@ -19,6 +20,7 @@ typedef struct {
   char *element;         /* atomic symbol for element */
   char *edge;            /* name of absorption edge: "K", "L1", ... */
   char *comments;        /* multi-line, user-supplied comment */
+  char *error_line;      /* text of line with any existing error */
   char **array_labels;   /* labels for arrays */
   char **array_units;    /* units for arrays */
   char **meta_families;  /* family for metadata from file header */
@@ -48,6 +50,10 @@ _EXPORT(int) XDI_get_array_name(XDIFile *xdifile, char *name, double *out);
 #define TOK_USERCOM_1 "---"           /* end multi-line user comment */
 #define TOK_COL_ENERGY "energy"       /* name of energy column */
 #define TOK_COL_ANGLE  "angle"        /* name of angle column */
+
+#define FAMILYNAME "^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_][ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789]+$"
+#define KEYNAME    "^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789]+$"
+
 
 /* Notes:
    1. The absorption edge must be one of those listed in ValidEdges below
@@ -83,9 +89,9 @@ static char *ValidElems[] =
 #define ERR_NOTXDI       -10
 #define ERR_NOARR_NAME   -21
 #define ERR_NOARR_INDEX  -22
-#define ERR_NOELEM       -30
-#define ERR_NOEDGE       -31
-#define ERR_NODSPACE     -32
+#define ERR_NOELEM         1
+#define ERR_NOEDGE         2
+#define ERR_NODSPACE       4
 
 #define ERR_META_FAMNAME -41
 #define ERR_META_KEYNAME -42

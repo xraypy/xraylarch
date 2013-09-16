@@ -26,6 +26,7 @@ class XDIFileStruct(ctypes.Structure):
                 ('narrays',       ctypes.c_long),
                 ('npts',          ctypes.c_long),
                 ('narray_labels', ctypes.c_long),
+                ('error_lineno',  ctypes.c_long),
                 ('dspacing',      ctypes.c_double),
                 ('xdi_libversion', ctypes.c_char_p),
                 ('xdi_version',   ctypes.c_char_p),
@@ -34,6 +35,7 @@ class XDIFileStruct(ctypes.Structure):
                 ('element',       ctypes.c_char_p),
                 ('edge',          ctypes.c_char_p),
                 ('comments',      ctypes.c_char_p),
+                ('error_line',    ctypes.c_char_p),
                 ('array_labels',  ctypes.c_void_p),
                 ('array_units',   ctypes.c_void_p),
                 ('meta_families', ctypes.c_void_p),
@@ -104,7 +106,8 @@ class XDIFile(object):
 
         pxdi = ctypes.pointer(XDIFileStruct())
         out = XDILIB.XDI_readfile(filename, pxdi)
-        if out != 0:
+
+        if out < 0:
             msg =  XDILIB.XDI_errorstring(out)
             msg = 'Error reading XDIFile %s\n%s' % (filename, msg)
             raise XDIFileException(msg)
@@ -172,6 +175,7 @@ class XDIFile(object):
         # convert energy to angle, or vice versa
         if ix >= 0 and 'd_spacing' in self.attrs['mono']:
             dspace = float(self.attrs['mono']['d_spacing'])
+            if dspace < 0: dspace = 0.001
             omega = PLANCK_HC/(2*dspace)
             if xname == 'energy' and not hasattr(self, 'angle'):
                 energy_ev = self.energy

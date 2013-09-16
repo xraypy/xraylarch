@@ -105,19 +105,22 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   long  ncol, nrows, nxrows, nheader, nwords, ndict;
   int   is_newline, fnlen, mode, valid, stat;
   int   has_minusline, has_angle, has_energy;
-  int   ignored_headerline;
+  int   ignored_headerline, iret;
   const char *regex_status;
 
   int n_edges = sizeof(ValidEdges)/sizeof(char*);
   int n_elems = sizeof(ValidElems)/sizeof(char*);
 
+  iret = 0;
 
   COPY_STRING(xdifile->xdi_libversion, XDI_VERSION);
   COPY_STRING(xdifile->xdi_version, "");
   COPY_STRING(xdifile->extra_version, "");
-  COPY_STRING(xdifile->element, "");
-  COPY_STRING(xdifile->edge, "");
+  COPY_STRING(xdifile->element, "__");
+  COPY_STRING(xdifile->edge, "K");
   COPY_STRING(xdifile->comments, "");
+  COPY_STRING(xdifile->error_line, "");
+  xdifile->error_lineno = -1;
   xdifile->dspacing = -1.0;
 
   has_minusline = 0;
@@ -174,6 +177,9 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
   mode = 0; /*  metadata (Family.Member: Value) mode */
   for (i = 1; i < nheader; i++) {
+    xdifile->error_lineno = i;
+    COPY_STRING(xdifile->error_line, textlines[i]);
+
     if (strncmp(textlines[i], TOK_COMM, 1) == 0)  {
       COPY_STRING(line, textlines[i]);
       line++;
@@ -191,14 +197,12 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 	    family name cannot start with number
 	    key cannot contain '.'
 	   */
-	  regex_status = slre_match(1, "^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_]+$",
-				      words[0], strlen(words[0]));
+	  regex_status = slre_match(1, FAMILYNAME, words[0], strlen(words[0]));
 	  if (regex_status != NULL) {
 	    return ERR_META_FAMNAME;
 	  }
 
-	  regex_status = slre_match(1, "^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789]+$",
-				      words[1], strlen(words[1]));
+	  regex_status = slre_match(1, KEYNAME,  words[1], strlen(words[1]));
 	  if (regex_status != NULL) {
 	    return ERR_META_KEYNAME;
 	  }
@@ -274,7 +278,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
       break;
     }
   }
-  if (valid == 0) {  return ERR_NOEDGE;   }
+  if (valid == 0) {  iret = ERR_NOEDGE; }
 
   valid = 0;
   for (j = 0; j < n_elems; j++) {
@@ -283,7 +287,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
       break;
     }
   }
-  if (valid == 0) { return ERR_NOELEM;}
+  if (valid == 0) { iret =  ERR_NOELEM;}
 
   ncol = ilen - nheader + 1;
   nrows = make_words(textlines[nheader], words, MAX_WORDS);
@@ -308,7 +312,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
   /* check for mono d-spacing if angle is given but not energy*/
   if ((has_angle == 1)  && (has_energy == 0) && (xdifile->dspacing < 0)) {
-    return ERR_NODSPACE;
+    iret |= ERR_NODSPACE;
   }
 
   xdifile->array = calloc(nrows, sizeof(double *));
@@ -332,7 +336,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   xdifile->narrays = nrows;
   xdifile->narray_labels = min(nrows, maxcol);
   xdifile->nmetadata = ndict+1;
-  return 0;
+  return iret;
 }
 
 _EXPORT(int) XDI_get_array_index(XDIFile *xdifile, long n, double *out) {

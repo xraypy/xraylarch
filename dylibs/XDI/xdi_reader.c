@@ -41,8 +41,12 @@ int main(int argc, char **argv) {
 
   printf("# XDI FILE Read %s VERSIONS: |%s|%s|\n" ,
 	 xdifile->filename, xdifile->xdi_version, xdifile->extra_version);
-
-  printf("# Elem/Edge: %s|%s|\n", xdifile->element, xdifile->edge);
+  if (ret > 0) {
+    printf("# Don't have all of element, edge, dspace\n")
+  }
+  else {
+    printf("# Elem/Edge: %s|%s|\n", xdifile->element, xdifile->edge);
+  }
   printf("# User Comments:\n%s\n", xdifile->comments);
 
   printf("# Metadata(%ld entries):\n", xdifile->nmetadata);
