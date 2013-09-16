@@ -54,7 +54,7 @@ class PlotterFrame(wx.Frame):
         self.larch = None
 
         self.SetTitle("Step Scan Data File Viewer")
-        self.SetSize((650, 525))
+        self.SetSize((775, 525))
         self.SetFont(Font(9))
 
         self.createMainPanel()
@@ -93,25 +93,25 @@ class PlotterFrame(wx.Frame):
         sizer.Add(self.title, (ir, 0), (1, 8), CEN, 2)
         # x-axis
 
-        self.x_choice = add_choice(panel, choices=[], size=(120, -1))
-        self.x_op     = add_choice(panel, choices=('', 'log'), size=(80, -1))
+        self.x_choice = add_choice(panel, choices=[],          size=(100, -1))
+        self.x_op     = add_choice(panel, choices=('', 'log'), size=(60, -1))
         # self.xchoice.SetItems(list of choices)
         # self.xchoice.SetStringSelection(default string)
 
         ir += 1
         sizer.Add(SimpleText(panel, 'X='), (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(self.x_op,                 (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(self.x_choice,             (ir, 4), (1, 1), RCEN, 0)
+        sizer.Add(self.x_op,               (ir, 2), (1, 1), CEN, 0)
+        sizer.Add(self.x_choice,           (ir, 4), (1, 1), RCEN, 0)
 
-        self.y_op1     = add_choice(panel, size=(80, -1),
+        self.y_op1     = add_choice(panel, size=(60, -1),
                                     choices=('', 'log', '-log', 'deriv', '-deriv',
                                              'deriv(log', 'deriv(-log'))
 
-        self.y1_choice = add_choice(panel, choices=[], size=(120, -1))
-        self.y_op2     = add_choice(panel, choices=('+', '-', '*', '/'), size=(60, -1))
-        self.y2_choice = add_choice(panel, choices=[], size=(120, -1))
-        self.y_op3     = add_choice(panel, choices=('+', '-', '*', '/'), size=(60, -1))
-        self.y3_choice = add_choice(panel, choices=[], size=(120, -1))
+        self.y1_choice = add_choice(panel, choices=[], size=(100, -1))
+        self.y_op2     = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
+        self.y2_choice = add_choice(panel, choices=[], size=(100, -1))
+        self.y_op3     = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
+        self.y3_choice = add_choice(panel, choices=[], size=(100, -1))
         self.y_op1.SetSelection(0)
         self.y_op2.SetSelection(2)
         self.y_op3.SetSelection(3)
@@ -126,7 +126,7 @@ class PlotterFrame(wx.Frame):
         sizer.Add(SimpleText(panel, ']'),   (ir,  7), (1, 1), CEN, 0)
         sizer.Add(self.y_op3,               (ir,  8), (1, 1), CEN, 0)
         sizer.Add(self.y3_choice,           (ir,  9), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, ')'),   (ir, 10), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, ')'),   (ir, 10), (1, 1), LCEN, 0)
 
         self.plot_btn  = add_button(panel, "New Plot", action=self.onPlot)
         self.oplot_btn = add_button(panel, "OverPlot", action=self.onOPlot)
@@ -146,10 +146,16 @@ class PlotterFrame(wx.Frame):
 
         self.plotpanel = PlotPanel(mainpanel, size=(500, 670))
         self.plotpanel.BuildPanel()
+
+        # self.plotpanel.SetBackgroundColour(bgcol)
         self.plotpanel.messenger = self.write_message
 
-        mainsizer.Add(panel, 0, 2)
-        mainsizer.Add(self.plotpanel, 1, wx.GROW|wx.ALL, 2)
+        bgcol = panel.GetBackgroundColour()
+        bgcol = (bgcol[0]/255., bgcol[1]/255., bgcol[2]/255.)
+        self.plotpanel.canvas.figure.set_facecolor(bgcol)
+
+        mainsizer.Add(panel, 0, 1)
+        mainsizer.Add(self.plotpanel, 1, wx.GROW|wx.ALL, 1)
         pack(mainpanel, mainsizer)
         return mainpanel
 
