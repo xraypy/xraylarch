@@ -336,8 +336,8 @@ def get_dll(libname):
     _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
     _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so',
                       'darwin': 'lib%s.dylib'}
-
-    thisdir = os.path.join(sys_larchdir, 'dlls', get_dlldir())
+    thisdir = os.path.abspath(os.path.join(sys_larchdir, 'dlls',
+                                           get_dlldir()))
     dirs = [thisdir]
 
     loaddll = ctypes.cdll.LoadLibrary
@@ -353,10 +353,13 @@ def get_dll(libname):
         for d in dirs:
             _paths[key] = add2path(key, d)
 
-    dllpath = ctypes.util.find_library(libname)
+    # normally, we expect the dll to be here in the larch dlls tree
+    # if we find it there, use that one
+    fname = _dylib_formats[sys.platform] % libname
+    dllpath = os.path.join(thisdir, fname)
+    if os.path.exists(dllpath):
+        return loaddll(dllpath)
 
-    if dllpath is None:
-        fname = _dylib_formats[sys.platform] % libname
-        dllpath = os.path.join(thisdir, fname)
+    # if not found in the larch dlls tree, try your best!
+    return loaddll(ctypes.util.find_library(libname))
 
-    return loaddll(dllpath)
