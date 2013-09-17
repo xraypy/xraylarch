@@ -54,7 +54,7 @@ class PlotterFrame(wx.Frame):
         self.larch = None
 
         self.SetTitle("Step Scan Data File Viewer")
-        self.SetSize((775, 525))
+        self.SetSize((775, 600))
         self.SetFont(Font(9))
 
         self.createMainPanel()
@@ -66,7 +66,6 @@ class PlotterFrame(wx.Frame):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
     def createMainPanel(self):
-        sizer = wx.BoxSizer(wx.VERTICAL)
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(175)
 
@@ -77,10 +76,7 @@ class PlotterFrame(wx.Frame):
         self.detailspanel = self.createDetailsPanel(splitter)
 
         splitter.SplitVertically(self.filelist, self.detailspanel, 1)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(splitter, 1, wx.GROW|wx.ALL, 5)
         wx.CallAfter(self.init_larch)
-        pack(self, sizer)
 
     def createDetailsPanel(self, parent):
         mainpanel = wx.Panel(parent)
@@ -93,55 +89,57 @@ class PlotterFrame(wx.Frame):
         sizer.Add(self.title, (ir, 0), (1, 8), CEN, 2)
         # x-axis
 
-        self.x_choice = add_choice(panel, choices=[],          size=(100, -1))
-        self.x_op     = add_choice(panel, choices=('', 'log'), size=(60, -1))
-        # self.xchoice.SetItems(list of choices)
-        # self.xchoice.SetStringSelection(default string)
+        self.x_choice = add_choice(panel, choices=[],          size=(120, -1))
+        self.x_op     = add_choice(panel, choices=('', 'log'), size=(75, -1))
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'X='), (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(self.x_op,               (ir, 2), (1, 1), CEN, 0)
-        sizer.Add(self.x_choice,           (ir, 4), (1, 1), RCEN, 0)
+        sizer.Add(SimpleText(panel, 'X='), (ir, 0), (1, 1), CEN, 0)
+        sizer.Add(self.x_op,               (ir, 1), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, '('),  (ir, 2), (1, 1), CEN, 0)        
+        sizer.Add(self.x_choice,           (ir, 3), (1, 1), RCEN, 0)
+        sizer.Add(SimpleText(panel, ')'),  (ir, 4), (1, 1), CEN, 0)        
 
-        self.y_op1     = add_choice(panel, size=(60, -1),
-                                    choices=('', 'log', '-log', 'deriv', '-deriv',
-                                             'deriv(log', 'deriv(-log'))
+        self.y_op1  = [0,0]
+        self.y_op2  = [0,0]
+        self.y_op3  = [0,0]
+        self.y_arr1 = [0,0]
+        self.y_arr2 = [0,0]
+        self.y_arr3 = [0,0]
+        
+        for i in range(2):
+            label = 'Y%i=' % (i+1)
+            self.y_op1[i] = add_choice(panel, size=(75, -1),
+                                       choices=('', 'log', '-log', 'deriv', '-deriv',
+                                                'deriv(log', 'deriv(-log'))
+            self.y_op2[i] = add_choice(panel, choices=('+', '-', '*', '/'), size=(30, -1))
+            self.y_op3[i] = add_choice(panel, choices=('+', '-', '*', '/'), size=(30, -1))
+            self.y_arr1[i] = add_choice(panel, choices=[], size=(120, -1))
+            self.y_arr2[i] = add_choice(panel, choices=[], size=(120, -1))
+            self.y_arr3[i] = add_choice(panel, choices=[], size=(120, -1))
 
-        self.y1_choice = add_choice(panel, choices=[], size=(100, -1))
-        self.y_op2     = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
-        self.y2_choice = add_choice(panel, choices=[], size=(100, -1))
-        self.y_op3     = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
-        self.y3_choice = add_choice(panel, choices=[], size=(100, -1))
-        self.y_op1.SetSelection(0)
-        self.y_op2.SetSelection(2)
-        self.y_op3.SetSelection(3)
+            self.y_op1[i].SetSelection(0)
+            self.y_op2[i].SetSelection(3)
+            self.y_op3[i].SetSelection(3)
 
-        ir += 1
-        sizer.Add(SimpleText(panel, 'Y='),  (ir,  1), (1, 1), CEN, 0)
-        sizer.Add(self.y_op1,               (ir,  2), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, '(['),  (ir,  3), (1, 1), CEN, 0)
-        sizer.Add(self.y1_choice,           (ir,  4), (1, 1), CEN, 0)
-        sizer.Add(self.y_op2,               (ir,  5), (1, 1), CEN, 0)
-        sizer.Add(self.y2_choice,           (ir,  6), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, ']'),   (ir,  7), (1, 1), CEN, 0)
-        sizer.Add(self.y_op3,               (ir,  8), (1, 1), CEN, 0)
-        sizer.Add(self.y3_choice,           (ir,  9), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, ')'),   (ir, 10), (1, 1), LCEN, 0)
+            ir += 1
+            sizer.Add(SimpleText(panel, label), (ir,  0), (1, 1), CEN, 0)
+            sizer.Add(self.y_op1[i],            (ir,  1), (1, 1), CEN, 0)
+            sizer.Add(SimpleText(panel, '[('),  (ir,  2), (1, 1), CEN, 0)
+            sizer.Add(self.y_arr1[i],           (ir,  3), (1, 1), CEN, 0)
+            sizer.Add(self.y_op2[i],            (ir,  4), (1, 1), CEN, 0)
+            sizer.Add(self.y_arr2[i],           (ir,  5), (1, 1), CEN, 0)
+            sizer.Add(SimpleText(panel, ')'),   (ir,  6), (1, 1), CEN, 0)
+            sizer.Add(self.y_op3[i],            (ir,  7), (1, 1), CEN, 0)
+            sizer.Add(self.y_arr3[i],           (ir,  8), (1, 1), CEN, 0)
+            sizer.Add(SimpleText(panel, ']'),   (ir,  9), (1, 1), LCEN, 0)
 
         self.plot_btn  = add_button(panel, "New Plot", action=self.onPlot)
         self.oplot_btn = add_button(panel, "OverPlot", action=self.onOPlot)
 
         ir += 1
-        sizer.Add(self.plot_btn,   (ir, 1), (1, 3), CEN, 2)
-        sizer.Add(self.oplot_btn,  (ir, 4), (1, 3), CEN, 2)
+        sizer.Add(self.plot_btn,   (ir, 0), (1, 2), CEN, 2)
+        sizer.Add(self.oplot_btn,  (ir, 2), (1, 2), CEN, 2)
 
-#         ir += 1
-#         sizer.Add(SimpleText(panel, 'Should add fitting options'),
-#                   (ir, 1), (1, 10), wx.ALIGN_CENTER)
-#
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(675, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 1), (1, 10), wx.ALIGN_CENTER)
         pack(panel, sizer)
 
         self.plotpanel = PlotPanel(mainpanel, size=(500, 670))
@@ -185,16 +183,6 @@ class PlotterFrame(wx.Frame):
         if self.data is None and ix > -1:
             self.SetStatusText( 'cannot plot - no valid data')
         xop = self.x_op.GetStringSelection()
-        yop1 = self.y_op1.GetStringSelection()
-        yop2 = self.y_op2.GetStringSelection()
-        yop3 = self.y_op3.GetStringSelection()
-
-        y1 = self.y1_choice.GetStringSelection()
-        y2 = self.y2_choice.GetStringSelection()
-        y3 = self.y3_choice.GetStringSelection()
-        if y1 == '': y1 = '1'
-        if y2 == '': y2 = '1'
-        if y3 == '': y3 = '1'
 
         gname = self.groupname
         lgroup = getattr(self.larch.symtable, gname)
@@ -204,12 +192,27 @@ class PlotterFrame(wx.Frame):
         if xunits != '':
             xlabel = '%s (%s)' % (xlabel, xunits)
 
+        for i in range(2):
+            print 'IY SIDE = ', i
+        old = """
+        y1_op1 = self.y_op1[0].GetStringSelection()
+        y1_op2 = self.y_op2[0].GetStringSelection()
+        y1_op3 = self.y_op3[0].GetStringSelection()
+
+        y1_1 = self.y_arr1[0].GetStringSelection()
+        y2_1 = self.y_arr2[0].GetStringSelection()
+        y3_1 = self.y_arr3[0].GetStringSelection()
+        if y1_1 == '': y1_1 = '1'
+        if y2_1 == '': y2_1 = '1'
+        if y3_1 == '': y3_1 = '1'
+
         x = "%s.get_data('%s')" % (gname, x)
 
         if xop == 'log': x = "log(%s)" % x
 
-        ylabel = "[%s%s%s]%s%s" % (y1, yop2, y2, yop3, y3)
-        if y2 == '1' and yop2 in ('*', '/') or y2 == '0' and yop2 in ('+', '-'):
+        ylabel = "[%s%s%s]%s%s" % (y1_1, y1_op2, y2_1, y1_op3, y3_1)
+        
+        if y2_1 == '1' and yop2 in ('*', '/') or y2 == '0' and yop2 in ('+', '-'):
             ylabel = "(%s%s%s" % (y1, yop3, y3)
             if y3 == '1' and yop3 in ('*', '/') or y3 == '0' and yop3 in ('+', '-'):
                 ylabel = "%s" % (y1)
@@ -233,6 +236,7 @@ class PlotterFrame(wx.Frame):
         fmt = "plot(%s, %s, label='%s', xlabel='%s', ylabel='%s', new=%s)"
         cmd = fmt % (x, y, self.data.fname, xlabel, ylabel, repr(newplot))
         self.larch(cmd)
+        """
 
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
