@@ -54,7 +54,7 @@ _EXPORT(char*) XDI_errorstring(int errcode) {
 int xdi_strtod(char* inp, double *dval) {
   /* converts string containing number (double) to double
      returns 0 on success
-     returnds non-zero if string is NaN or not a valid number
+     returns non-zero if string is NaN or not a valid number
    */
   char *end;
   *dval = strtod(inp, &end);
@@ -100,12 +100,14 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   char tlabel[32];
   char comments[1024] = "";
   double dval ;
+  double *outer_arr, outer_arr0;
+  long   *outer_pts;
   FILE *inpFile;
-  long  file_length, ilen, index, i, j, n1, maxcol;
-  long  ncol, nrows, nxrows, nheader, nwords, ndict;
+  long  file_length, ilen, index, i, j, nx, maxcol;
+  long  npts_, ncols, icol, nheader, nwords, ndict;
+  long  ignored_headerline, iret, ipt, nouter, iouter;
   int   is_newline, fnlen, mode, valid, stat;
   int   has_minusline, has_angle, has_energy;
-  int   ignored_headerline, iret;
   const char *regex_status;
 
   int n_edges = sizeof(ValidEdges)/sizeof(char*);
@@ -120,16 +122,16 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   COPY_STRING(xdifile->edge, "K");
   COPY_STRING(xdifile->comments, "");
   COPY_STRING(xdifile->error_line, "");
+  COPY_STRING(xdifile->outer_label, "");
+  xdifile->nouter = 1;
   xdifile->error_lineno = -1;
   xdifile->dspacing = -1.0;
 
   has_minusline = 0;
   ignored_headerline = -1;
   nheader = 0;
-  ndict   =  -1;
+  ndict   = -1;
   maxcol  = 0;
-
-  /* */
 
   for (i = 0; i < MAX_COLUMNS; i++) {
     sprintf(tlabel, "col%ld", i+1);
@@ -137,7 +139,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
     COPY_STRING(col_units[i], "");
   }
 
-  /* read file to text lines */
+  /* read file to text lines: an array of trimmed strings */
   ilen = readlines(filename, textlines);
   if (ilen < 0) {
     if (errno == 0) {
@@ -164,20 +166,24 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
     }
   }
 
+  /* find number of header lines, 
+     nheader= index of first line that does not start with '#'
+  */
   for (i = 1; i < ilen ; i++) {
-    if (strncmp(textlines[i], TOK_COMM, 1) == 0)  {
-      nheader = i;
+    if ((strlen(textlines[i]) > 3) && 
+	(strncmp(textlines[i], TOK_COMM, 1) != 0))  {
+      break;
     }
   }
-  nheader++;
-
+  nheader = i+1;
   xdifile->meta_families = calloc(nheader, sizeof(char *));
   xdifile->meta_keywords = calloc(nheader, sizeof(char *));
   xdifile->meta_values   = calloc(nheader, sizeof(char *));
 
+
   mode = 0; /*  metadata (Family.Member: Value) mode */
   for (i = 1; i < nheader; i++) {
-    xdifile->error_lineno = i;
+    xdifile->error_lineno = i; 
     COPY_STRING(xdifile->error_line, textlines[i]);
 
     if (strncmp(textlines[i], TOK_COMM, 1) == 0)  {
@@ -212,14 +218,14 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 	} else {
 	  return ERR_META_FORMAT;
 	}
-	/*printf(" metadata:  %d %s %s\n", ndict, mkey, mval);  */
+	/* printf(" metadata:  %d %s %s\n", ndict, mkey, mval);  */
 	/* ndict,  words[0], words[1],  xdifile->meta_values[ndict]);*/
 	if (strncasecmp(mkey, TOK_COLUMN, strlen(TOK_COLUMN)) == 0) {
 	  j = atoi(mkey+7)-1;
 	  if ((j > -1) && (j < MAX_COLUMNS)) {
-	    nrows = make_words(mval, cwords, 2);
+	    ncols = make_words(mval, cwords, 2);
 	    col_labels[j] = cwords[0];
-	    if (nrows == 2) {
+	    if (ncols == 2) {
 	      col_units[j] = cwords[1];
 	    }
 	    maxcol =  max(maxcol, j);
@@ -231,6 +237,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 	      break;
 	    }
 	  }
+	/* ELEMENT NAME */
 	} else if (strcasecmp(mkey, TOK_ELEM) == 0) {
 	  for (j = 0; j < n_elems; j++) {
 	    if (strcasecmp(ValidElems[j], mval) == 0) {
@@ -238,9 +245,17 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 	      break;
 	    }
 	  }
+	/* MONO D-SPACING */
 	} else if (strcasecmp(mkey, TOK_DSPACE) == 0) {
 	  if (0 != xdi_strtod(mval, &dval)) {  return ERR_NONNUMERIC;}
 	  xdifile->dspacing = dval;
+	/* OUTER ARRAY NAME */
+	} else if (strcasecmp(mkey, TOK_OUTER_NAME) == 0) {
+	  COPY_STRING(xdifile->outer_label, mval);
+	/* OUTER ARRAY VALUE */
+	} else if (strcasecmp(mkey, TOK_OUTER_VAL) == 0) {
+	  if (0 != xdi_strtod(mval, &dval)) {  return ERR_NONNUMERIC;}	
+	  outer_arr0 = dval ;
 	} else if (strcasecmp(mkey, TOK_TIMESTAMP) == 0) {
 	  j = xdi_is_datestring(mval);
 	  if (0 != j) return j;
@@ -262,13 +277,13 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 	return ERR_META_FORMAT;
       }
     } else {
-      if (ignored_headerline < 0) {
+      if ((ignored_headerline < 0) && (has_minusline == 0)) {
 	ignored_headerline = i;
       }
     }
   }
-  if (has_minusline == 0)     { return ERR_NOMINUSLINE; }
-  if (ignored_headerline > 0) { return ERR_IGNOREDMETA; }
+  if (has_minusline == 0)     { iret = ERR_NOMINUSLINE; }
+  if (ignored_headerline > 0) { iret = ERR_IGNOREDMETA; }
 
   /* check edge, element, return error code if invalid */
   valid = 0;
@@ -289,18 +304,27 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   }
   if (valid == 0) { iret =  ERR_NOELEM;}
 
-  ncol = ilen - nheader + 1;
-  nrows = make_words(textlines[nheader], words, MAX_WORDS);
+  npts_ = ilen - nheader + 1;
+
+  nouter = npts_ - 1;
+  outer_arr = calloc(nouter, sizeof(double));
+  outer_pts = calloc(nouter, sizeof(long));
+  outer_arr[0] = outer_arr0;
+  outer_pts[0] = 1;
+
+  COPY_STRING(line, textlines[i]);
+  ncols = make_words(line, words, MAX_WORDS);
+ 
   COPY_STRING(xdifile->comments, comments);
   COPY_STRING(xdifile->filename, filename);
 
   maxcol++;
 
-  xdifile->array_labels = calloc(nrows, sizeof(char *));
-  xdifile->array_units  = calloc(nrows, sizeof(char *));
+  xdifile->array_labels = calloc(ncols, sizeof(char *));
+  xdifile->array_units  = calloc(ncols, sizeof(char *));
   has_energy = 0;
   has_angle  = 0;
-  for (j = 0; j < nrows; j++) {
+  for (j = 0; j < ncols; j++) {
     COPY_STRING(xdifile->array_labels[j], col_labels[j]);
     COPY_STRING(xdifile->array_units[j], col_units[j]);
     if (strcasecmp(TOK_COL_ENERGY, col_labels[j]) == 0) {
@@ -312,31 +336,69 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
   /* check for mono d-spacing if angle is given but not energy*/
   if ((has_angle == 1)  && (has_energy == 0) && (xdifile->dspacing < 0)) {
-    iret |= ERR_NODSPACE;
+    iret = ERR_NODSPACE;
   }
 
-  xdifile->array = calloc(nrows, sizeof(double *));
-  for (j = 0; j < nrows; j++) {
-    xdifile->array[j] = calloc(ncol, sizeof(double));
+  /* set size of data arrays */
+  xdifile->array = calloc(ncols, sizeof(double *));
+  for (j = 0; j < ncols; j++) {
+    xdifile->array[j] = calloc(npts_, sizeof(double));
     if (0 != xdi_strtod(words[j], &dval)) {  return ERR_NONNUMERIC;}
     xdifile->array[j][0] = dval;
   }
-  for (i = 1; i < ncol; i++) {
-    nxrows = make_words(textlines[nheader+i], words, MAX_WORDS);
-    if (nxrows != nrows) {
-      return ERR_NCOLS_CHANGE;
-    }
-    nxrows = min(nrows, nxrows);
-    for (j = 0; j < nxrows; j++) {
-      if (0 != xdi_strtod(words[j], &dval)) {  return ERR_NONNUMERIC;}
-      xdifile->array[j][i] = dval ;
+
+  /* loop through data table, inserting data into xdifile->array */
+  ipt = 0;
+  iouter = 1;
+  for (i = nheader-2; i < ilen; i++) {
+    /* may find a header line interspersed in array data */
+    COPY_STRING(line, textlines[i]);
+    xdifile->error_lineno = i; 
+    COPY_STRING(xdifile->error_line, line);
+
+    if (strncmp(textlines[i], TOK_COMM, 1) == 0)  {
+      line++;
+      nwords = split_on(line, TOK_DELIM, words);
+      if (nwords < 2) { continue; }
+      COPY_STRING(mkey, words[0]);
+      if (strcasecmp(mkey, TOK_OUTER_VAL) == 0) {
+	if (0 != xdi_strtod(words[1], &dval)) {  return ERR_NONNUMERIC;}	
+	outer_arr[iouter] = dval;
+	outer_pts[iouter] = ipt;
+	++iouter;
+      }
+    } else {
+      COPY_STRING(line, textlines[i]);
+      icol = make_words(line, words, MAX_WORDS);
+      if (icol != ncols) {
+	return ERR_NCOLS_CHANGE;
+      }
+      icol = min(ncols, icol);
+      for (j = 0; j < icol; j++) {
+	if (0 != xdi_strtod(words[j], &dval)) {  return ERR_NONNUMERIC;}
+	xdifile->array[j][ipt] = dval ;
+      }
+      ++ipt;
     }
   }
-  xdifile->npts = ncol;
-  xdifile->narrays = nrows;
-  xdifile->narray_labels = min(nrows, maxcol);
+  /* success */
+  xdifile->error_lineno = 0; 
+  COPY_STRING(xdifile->error_line, "");
+
+  xdifile->npts = ipt;
+  xdifile->nouter = iouter;
+  xdifile->narrays = ncols;
+  xdifile->narray_labels = min(ncols, maxcol);
   xdifile->nmetadata = ndict+1;
+  xdifile->outer_array    = calloc(iouter, sizeof(double));
+  xdifile->outer_breakpts = calloc(iouter, sizeof(long));
+  for (j= 0; j < iouter; j++) {
+    xdifile->outer_array[j] = outer_arr[j];
+    xdifile->outer_breakpts[j] = outer_pts[j];
+  }
+
   return iret;
+
 }
 
 _EXPORT(int) XDI_get_array_index(XDIFile *xdifile, long n, double *out) {

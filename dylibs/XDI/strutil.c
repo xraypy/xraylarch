@@ -6,6 +6,25 @@
 #include <errno.h>
 
 #include "strutil.h"
+
+char *strtrim(char *str) {
+  /* trim leading and ending whitespace from a string */
+  char *end;
+
+  /* removing leading whitespace */
+  while (isspace(*str)) {str++;}
+
+  if (*str == 0)  return str;
+
+  /* find then trim ending whitespace */
+  end = str + strlen(str) - 1;
+  while (end > str && isspace(*end)) {end--;}
+
+  /* put null at new end of string */
+  *(end+1) = 0;
+  return str;
+}
+
 /*-------------------------------------------------------*/
 /* read array of text lines from an open data file  */
 int readlines(char *filename, char **textlines) {
@@ -13,7 +32,7 @@ int readlines(char *filename, char **textlines) {
       as char *text[MAX] */
 
   FILE *finp;
-  char  thisline[MAX_LINE_LENGTH];
+  char *thisline ; 
   char *text, *c;
   long file_length, index, i, ilen;
   int  is_newline;
@@ -29,6 +48,8 @@ int readlines(char *filename, char **textlines) {
   rewind(finp);
 
   text = calloc(file_length + 1, sizeof(char));
+  thisline = calloc(MAX_LINE_LENGTH, sizeof(char)); 
+
   if (text == NULL ) {
     printf("\nnot enough memory to read file.\n");
     return -errno;
@@ -52,6 +73,7 @@ int readlines(char *filename, char **textlines) {
       thisline[index++] = *text++;
     }
     thisline[index] = '\0';
+    thisline = strtrim(thisline); 
     ++ilen;
     textlines[ilen]= calloc(strlen(thisline) + 1, sizeof(char));
     strcpy(textlines[ilen], thisline);
