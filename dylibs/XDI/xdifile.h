@@ -4,14 +4,17 @@
 #define _EXPORT(a) a
 #endif
 
-#define MAX_COLUMNS 64  /* maximum number of supported data columns */
+#define XDI_VERSION  "1.1.0"   /* XDI version marker */
+
+#define MAX_COLUMNS 128  /* maximum number of supported data columns */
 
 typedef struct {
   long nmetadata;        /* number of metadata family/key/val metadata */
   long narrays;          /* number of arrays */
   long npts;             /* number of data points for all arrays */
   long narray_labels;    /* number of labeled arrays (may be < narrays) */
-  long  error_lineno;    /* line numberfor any existing error */
+  long nouter;           /* number of points in outer scan */
+  long error_lineno;    /* line numberfor any existing error */
   double dspacing;       /* monochromator d spacing */
   char *xdi_libversion;  /* XDI version of library */
   char *xdi_version;     /* XDI version string from file*/
@@ -22,18 +25,21 @@ typedef struct {
   char *comments;        /* multi-line, user-supplied comment */
   char *error_line;      /* text of line with any existing error */
   char **array_labels;   /* labels for arrays */
+  char *outer_label;     /* labels for outer array */
   char **array_units;    /* units for arrays */
   char **meta_families;  /* family for metadata from file header */
   char **meta_keywords;  /* keyword for metadata from file header */
   char **meta_values;    /* value for metadata from file header */
   double **array;        /* 2D array of all array data */
+  double *outer_array;   /* array of outer breakpoints for multi-dimensional data */
+  long  *outer_breakpts; /* array of breakpoints for outer array */
+
 } XDIFile;
 
 _EXPORT(int) XDI_readfile(char *filename, XDIFile *xdifile) ;
 _EXPORT(int) XDI_get_array_index(XDIFile *xdifile, long n, double *out);
 _EXPORT(int) XDI_get_array_name(XDIFile *xdifile, char *name, double *out);
 
-#define XDI_VERSION  "1.0.0"   /* XDI version marker */
 
 /* Tokens used in XDI File */
 
@@ -50,6 +56,8 @@ _EXPORT(int) XDI_get_array_name(XDIFile *xdifile, char *name, double *out);
 #define TOK_USERCOM_1 "---"           /* end multi-line user comment */
 #define TOK_COL_ENERGY "energy"       /* name of energy column */
 #define TOK_COL_ANGLE  "angle"        /* name of angle column */
+#define TOK_OUTER_VAL  "outer.value"  /* value for outer scan position */
+#define TOK_OUTER_NAME "outer.name"   /* name for outer scan position */
 
 #define FAMILYNAME "^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_][ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789]+$"
 #define KEYNAME    "^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789]+$"
@@ -85,26 +93,27 @@ static char *ValidElems[] =
    "Uut", "Fl", "Uup", "Lv", "Uus", "Uuo"};
 
 
-/* error codes */
-#define ERR_NOTXDI       -10
-#define ERR_NOARR_NAME   -21
-#define ERR_NOARR_INDEX  -22
-#define ERR_NOELEM         1
-#define ERR_NOEDGE         2
-#define ERR_NODSPACE       4
+/* error codes   
+  < 1  data file is not valid
+  = 0  all OK.
+  > 0  data file is valid but may be incomplete as XAFS data
+*/
+#define ERR_NOELEM            1
+#define ERR_NOEDGE            2
+#define ERR_NODSPACE          4
+#define ERR_NOMINUSLINE       8
+#define ERR_IGNOREDMETA      16
 
-#define ERR_META_FAMNAME -41
-#define ERR_META_KEYNAME -42
-#define ERR_META_FORMAT  -43
-
-#define ERR_DATE_FORMAT  -51
-#define ERR_DATE_RANGE   -52
-
-#define ERR_NOMINUSLINE  -80
-#define ERR_NCOLS_CHANGE -81
-#define ERR_NONNUMERIC   -82
-
-#define ERR_IGNOREDMETA -100
-
+#define ERR_NOTXDI           -1
+#define ERR_NOARR_NAME       -2
+#define ERR_NOARR_INDEX      -4
+#define ERR_META_FAMNAME     -8
+#define ERR_META_KEYNAME    -16
+#define ERR_META_FORMAT     -32
+#define ERR_DATE_FORMAT     -64
+#define ERR_DATE_RANGE     -128
+#define ERR_NCOLS_CHANGE   -256
+#define ERR_NONNUMERIC     -512
+#define ERR_MEMERROR      -1024
 
 _EXPORT(char*) XDI_errorstring(int errcode);
