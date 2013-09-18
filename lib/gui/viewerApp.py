@@ -21,11 +21,12 @@ import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
+from wx._core import PyDeadObjectError
 
 import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
 
-from wxmplot import PlotPanel
+from wxmplot import PlotFrame
 from xdifile import XDIFile
 from ..datafile import StepScanData
 from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
@@ -33,7 +34,7 @@ from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
                         CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 CEN |=  wx.ALL
-FILE_WILDCARDS = "Scan Data Files(*.0*)|*.0*|Data Files(*.dat)|*.dat|All files (*.*)|*.*"
+FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
 
 def randname(n=6):
     "return random string of n (default 6) lowercase letters"
@@ -50,9 +51,10 @@ class PlotterFrame(wx.Frame):
         self.data = None
         self.filemap = {}
         self.larch = None
-
+        self.plotters = []
+        
         self.SetTitle("Step Scan Data File Viewer")
-        self.SetSize((775, 600))
+        self.SetSize((700, 450))
         self.SetFont(Font(9))
 
         self.createMainPanel()
@@ -77,83 +79,65 @@ class PlotterFrame(wx.Frame):
         wx.CallAfter(self.init_larch)
 
     def createDetailsPanel(self, parent):
-        mainpanel = wx.Panel(parent)
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-
-        panel = wx.Panel(mainpanel)
-        sizer = wx.GridBagSizer(8, 10)
+        panel = wx.Panel(parent)
+        sizer = wx.GridBagSizer(8, 6)
+        
         self.title = SimpleText(panel, 'initializing...')
         ir = 0
-        sizer.Add(self.title, (ir, 0), (1, 8), CEN, 2)
+        sizer.Add(self.title, (ir, 0), (1, 6), LCEN, 2)
         # x-axis
 
         self.x_choice = add_choice(panel, choices=[],          size=(120, -1))
         self.x_op     = add_choice(panel, choices=('', 'log'), size=(75, -1))
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'X='), (ir, 0), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, 'X = '), (ir, 0), (1, 1), CEN, 0)
         sizer.Add(self.x_op,               (ir, 1), (1, 1), CEN, 0)
         sizer.Add(SimpleText(panel, '('),  (ir, 2), (1, 1), CEN, 0)
         sizer.Add(self.x_choice,           (ir, 3), (1, 1), RCEN, 0)
         sizer.Add(SimpleText(panel, ')'),  (ir, 4), (1, 1), CEN, 0)
 
-        self.y_op1  = [0,0]
-        self.y_op2  = [0,0]
-        self.y_op3  = [0,0]
-        self.y_arr1 = [0,0]
-        self.y_arr2 = [0,0]
-        self.y_arr3 = [0,0]
+        self.yop1  = add_choice(panel, size=(75, -1),
+                                 choices=('', 'log', '-log', 'deriv', '-deriv',
+                                            'deriv(log', 'deriv(-log'))
+        self.yop2  = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
+        self.yop3  = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
+        self.yarr1 = add_choice(panel, choices=[], size=(120, -1))
+        self.yarr2 = add_choice(panel, choices=[], size=(120, -1))
+        self.yarr3 = add_choice(panel, choices=[], size=(120, -1))
 
-        for i in range(2):
-            label = 'Y%i=' % (i+1)
-            self.y_op1[i] = add_choice(panel, size=(75, -1),
-                                       choices=('', 'log', '-log', 'deriv', '-deriv',
-                                                'deriv(log', 'deriv(-log'))
-            self.y_op2[i] = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
-            self.y_op3[i] = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
-            self.y_arr1[i] = add_choice(panel, choices=[], size=(120, -1))
-            self.y_arr2[i] = add_choice(panel, choices=[], size=(120, -1))
-            self.y_arr3[i] = add_choice(panel, choices=[], size=(120, -1))
-
-            self.y_op1[i].SetSelection(0)
-            self.y_op2[i].SetSelection(3)
-            self.y_op3[i].SetSelection(3)
-
-            ir += 1
-            sizer.Add(SimpleText(panel, label), (ir,  0), (1, 1), CEN, 0)
-            sizer.Add(self.y_op1[i],            (ir,  1), (1, 1), CEN, 0)
-            sizer.Add(SimpleText(panel, '[('),  (ir,  2), (1, 1), CEN, 0)
-            sizer.Add(self.y_arr1[i],           (ir,  3), (1, 1), CEN, 0)
-            sizer.Add(self.y_op2[i],            (ir,  4), (1, 1), CEN, 0)
-            sizer.Add(self.y_arr2[i],           (ir,  5), (1, 1), CEN, 0)
-            sizer.Add(SimpleText(panel, ')'),   (ir,  6), (1, 1), CEN, 0)
-            sizer.Add(self.y_op3[i],            (ir,  7), (1, 1), CEN, 0)
-            sizer.Add(self.y_arr3[i],           (ir,  8), (1, 1), CEN, 0)
-            sizer.Add(SimpleText(panel, ']'),   (ir,  9), (1, 1), LCEN, 0)
-
-        self.plot_btn  = add_button(panel, "New Plot", action=self.onPlot)
-        self.oplot_btn = add_button(panel, "OverPlot", action=self.onOPlot)
-
+        self.yop1.SetSelection(0)
+        self.yop2.SetSelection(3)
+        self.yop3.SetSelection(3)
+            
         ir += 1
-        sizer.Add(self.plot_btn,   (ir, 0), (1, 2), CEN, 2)
-        sizer.Add(self.oplot_btn,  (ir, 2), (1, 2), CEN, 2)
+        sizer.Add(SimpleText(panel, 'Y = '), (ir,  0), (1, 1), CEN, 0)
+        sizer.Add(self.yop1,                 (ir,  1), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, '[('),   (ir,  2), (1, 1), CEN, 0)
+        sizer.Add(self.yarr1,                (ir,  3), (1, 1), CEN, 0)
+        sizer.Add(self.yop2,                 (ir,  4), (1, 1), CEN, 0)
+        sizer.Add(self.yarr2,                (ir,  5), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, ')'),    (ir,  6), (1, 1), LCEN, 0)
+        ir += 1
+        sizer.Add(self.yop3,                 (ir,  4), (1, 1), CEN, 0)
+        sizer.Add(self.yarr3,                (ir,  5), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, ']'),    (ir,  6), (1, 1), LCEN, 0)
+
+        
+        ir += 1
+        sizer.Add(SimpleText(panel, ' New Plot: '),  (ir,  0), (1, 2), LCEN, 0)
+        sizer.Add(SimpleText(panel, ' Over Plot: '), (ir+1,  0), (1, 2), LCEN, 0)
+        
+        for jr, ic, opt, ttl in ((0, 2, 'new', 'New Window'),
+                                     (0, 4, 'new', 'Old Window'),                                     
+                                     (1, 2, 'ovl', 'Left Axis'),
+                                     (1, 4, 'ovr', 'Right Axis')):
+            sizer.Add(add_button(panel, ttl, size=(100, -1),
+                                 action=Closure(self.onPlot, opt=opt)),
+                      (ir+jr, ic), (1, 2), LCEN, 2)
 
         pack(panel, sizer)
-
-        self.plotpanel = PlotPanel(mainpanel, size=(500, 670))
-        self.plotpanel.BuildPanel()
-
-        # self.plotpanel.SetBackgroundColour(bgcol)
-        self.plotpanel.messenger = self.write_message
-
-        bgcol = panel.GetBackgroundColour()
-        bgcol = (bgcol[0]/255., bgcol[1]/255., bgcol[2]/255.)
-        self.plotpanel.canvas.figure.set_facecolor(bgcol)
-
-        mainsizer.Add(panel, 0, 1)
-        mainsizer.Add(self.plotpanel, 1, wx.GROW|wx.ALL, 1)
-        pack(mainpanel, mainsizer)
-        return mainpanel
+        return panel
 
     def init_larch(self):
         t0 = time.time()
@@ -170,12 +154,40 @@ class PlotterFrame(wx.Frame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def onPlot(self, evt):    self.do_plot(newplot=True)
+    def get_plotwindow(self, new=False, **kws):
+        pframe = None
+        if not new:
+            while pframe is None:
+                try:
+                    pframe = self.plotters.pop()
+                    pframe.Show()
+                    pframe.Raise()
+                except IndexError:
+                    pframe = None
+                    break
+                except PyDeadObjectError:
+                    pframe = None
+            
+        if pframe is None:
+            pframe = PlotFrame()
+            pframe.Show()
+            pframe.Raise()
 
-    def onOPlot(self, evt):   self.do_plot(newplot=False)
+        self.plotters.append(pframe)
 
-    def do_plot(self, newplot=False):
+        return pframe
+    
+    def onPlot(self, evt=None, opt='ovr'):
+        isNew = opt == 'new'
+        plotframe = self.get_plotwindow(new=isNew)
 
+        plotcmd = plotframe.oplot
+        popts = {'side': 'left'}
+        if opt == 'ovr':
+            popts['side'] = 'right'
+        elif opt == 'new':
+            plotcmd = plotframe.plot
+        
         ix = self.x_choice.GetSelection()
         x  = self.x_choice.GetStringSelection()
         if self.data is None and ix > -1:
@@ -196,24 +208,29 @@ class PlotterFrame(wx.Frame):
         for i in range(2):
             pass # print 'IY SIDE = ', i
 
-        op1 = self.y_op1[0].GetStringSelection()
-        op2 = self.y_op2[0].GetStringSelection()
-        op3 = self.y_op3[0].GetStringSelection()
+        op1 = self.yop1.GetStringSelection()
+        op2 = self.yop2.GetStringSelection()
+        op3 = self.yop3.GetStringSelection()
 
-        y1 = l1 = self.y_arr1[0].GetStringSelection()
-        y2 = l2 = self.y_arr2[0].GetStringSelection()
-        y3 = l3 = self.y_arr3[0].GetStringSelection()
+        y1 = l1 = self.yarr1.GetStringSelection()
+        y2 = l2 = self.yarr2.GetStringSelection()
+        y3 = l3 = self.yarr3.GetStringSelection()
+        if y2 == '': y2, opt2 = '1', '*'
+        if y3 == '': y3, opt3 = '1', '*'
+
         if y1 not in ('0', '1'):  y1 = "%s.%s" % (gname, y1)
         if y2 not in ('0', '1'):  y2 = "%s.%s" % (gname, y2)
         if y3 not in ('0', '1'):  y3 = "%s.%s" % (gname, y3)
         if x not in ('0', '1'):  x = "%s.%s" % (gname, x)
         self.larch(xfmt % (gname, xop, x))
         self.larch(yfmt % (gname, op1, y1, op2, y2, op3, y3))
-
+        print 'LARCH Group : '
+        print dir(lgroup)
         path, fname = os.path.split(lgroup.filename)
-        label = "%s: %s((%s%s%s)%s%s)" % (lgroup.filename, op1, l1, op2, l2, op3, l3)
+        popts['label'] = "%s: %s((%s%s%s)%s%s)" % (lgroup.filename, op1,
+                                                   l1, op2, l2, op3, l3)
 
-        self.plotpanel.plot(lgroup._x1_, lgroup._y1_, label=label)
+        plotcmd(lgroup._x1_, lgroup._y1_, **popts)
 
         old = """
         if xop == 'log': x = "log(%s)" % x
@@ -260,22 +277,22 @@ class PlotterFrame(wx.Frame):
         self.groupname = key
 
         xcols = data.array_labels[:]
-        ycols = data.array_labels[:] + ['1', '0']
+        ycols = data.array_labels[:] 
+        y2cols = data.array_labels[:] + ['1.0', '0.0', '']
         ncols = len(xcols)
         self.title.SetLabel(data.filename)
         self.x_choice.SetItems(xcols)
         self.x_choice.SetSelection(0)
-        for i in range(2):
-            self.y_arr1[i].SetItems(ycols)
-            self.y_arr2[i].SetItems(ycols)
-            self.y_arr3[i].SetItems(ycols)
-            self.y_arr1[i].SetSelection(ncols)
-            self.y_arr2[i].SetSelection(ncols)
-            self.y_arr3[i].SetSelection(ncols)
-        self.y_arr1[0].SetSelection(1)
+        self.yarr1.SetItems(ycols)
+        self.yarr1.SetSelection(1)
+
+        self.yarr2.SetItems(y2cols)
+        self.yarr3.SetItems(y2cols)
+        self.yarr2.SetSelection(len(y2cols))
+        self.yarr2.SetSelection(len(y2cols))
 
     def createMenus(self):
-        ppnl = self.plotpanel
+        # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
         #
         fmenu = wx.Menu()
@@ -284,35 +301,82 @@ class PlotterFrame(wx.Frame):
                  "Read Scan File",  self.onReadScan)
 
         fmenu.AppendSeparator()
-        add_menu(self, fmenu, "&Copy\tCtrl+C",
-                 "Copy Figure to Clipboard", ppnl.canvas.Copy_to_Clipboard)
-        add_menu(self, fmenu, "&Save\tCtrl+S", "Save Figure", self.save_figure)
-        add_menu(self, fmenu, "&Print\tCtrl+P", "Print Figure", ppnl.Print)
-        add_menu(self, fmenu, "Page Setup", "Print Page Setup", ppnl.PrintSetup)
-        add_menu(self, fmenu, "Preview", "Print Preview", ppnl.PrintPreview)
-
-        fmenu.AppendSeparator()
         add_menu(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
-        add_menu(self, pmenu, "Configure\tCtrl+K",
-                 "Configure Plot", ppnl.configure)
-        add_menu(self, pmenu, "Unzoom\tCtrl+Z", "Unzoom Plot", ppnl.unzoom)
-        pmenu.AppendSeparator()
-        add_menu(self, pmenu, "Toggle Legend\tCtrl+L",
-                 "Toggle Legend on Plot", ppnl.toggle_legend)
-        add_menu(self, pmenu, "Toggle Grid\tCtrl+G",
-                 "Toggle Grid on Plot", ppnl.toggle_grid)
-
-
         self.menubar.Append(fmenu, "&File")
-        self.menubar.Append(pmenu, "Plot Options")
+        
+        # fmenu.AppendSeparator()
+        # add_menu(self, fmenu, "&Copy\tCtrl+C",
+        #          "Copy Figure to Clipboard", self.onClipboard)
+        # add_menu(self, fmenu, "&Save\tCtrl+S", "Save Figure", self.onSaveFig)
+        # add_menu(self, fmenu, "&Print\tCtrl+P", "Print Figure", self.onPrint)
+        # add_menu(self, fmenu, "Page Setup", "Print Page Setup", self.onPrintSetup)
+        # add_menu(self, fmenu, "Preview", "Print Preview", self.onPrintPreview)
+        # 
+
+        # add_menu(self, pmenu, "Configure\tCtrl+K",
+        #         "Configure Plot", self.onConfigurePlot)
+        #add_menu(self, pmenu, "Unzoom\tCtrl+Z", "Unzoom Plot", self.onUnzoom)
+        ##pmenu.AppendSeparator()
+        #add_menu(self, pmenu, "Toggle Legend\tCtrl+L",
+        #         "Toggle Legend on Plot", self.onToggleLegend)
+        #add_menu(self, pmenu, "Toggle Grid\tCtrl+G",
+        #         "Toggle Grid on Plot", self.onToggleGrid)
+        # self.menubar.Append(pmenu, "Plot Options")
         self.SetMenuBar(self.menubar)
 
-    def save_figure(self,event=None, transparent=False, dpi=600):
+    def get_plotpanel(self):
+        
+        pass
+
+    def onConfigurePlot(self, evt=None):
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.configure()    
+
+    def onUnzoom(self, evt=None):
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.unzoom()    
+
+    def onToggleLegend(self, evt=None):
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.toggle_legend()    
+
+    def onToggleGrid(self, evt=None):
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.toggle_grid()    
+
+    def onPrint(self, evt=None):
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.Print()    
+
+    def onPrintSetup(self, evt=None):
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.PrintSetup()
+
+    def onPrintPreview(self, evt=None):
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.PrintPreview()    
+            
+
+        
+    def onClipboard(self, evt=None):
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.canvas.Copy_to_Clipboard()    
+
+    def onSaveFig(self,event=None, transparent=False, dpi=600):
         """ save figure image to file"""
-        if self.plotpanel is not None:
-            self.plotpanel.save_figure(event=event,
-                                   transparent=transparent, dpi=dpi)
+        ppnl = self.get_plotpanel()
+        if ppnl is not None:
+            ppnl.save_figure(event=event,
+                             transparent=transparent, dpi=dpi)
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,"About Epics StepScan",
@@ -321,8 +385,7 @@ class PlotterFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,evt):
-        for nam in dir(self.larch.symtable._plotter):
-            obj = getattr(self.larch.symtable._plotter, nam)
+        for obj in self.plotters:
             try:
                 obj.Destroy()
             except:
