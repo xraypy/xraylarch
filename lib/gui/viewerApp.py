@@ -26,7 +26,7 @@ import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
 
 from wxmplot import PlotPanel
-
+from xdifile import XDIFile
 from ..datafile import StepScanData
 from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
                         add_menu, add_choice, add_menu,
@@ -44,8 +44,6 @@ class PlotterFrame(wx.Frame):
   Matt Newville <newville @ cars.uchicago.edu>
   """
     def __init__(self, conffile=None,  **kwds):
-
-
         kwds["style"] = FRAMESTYLE
         wx.Frame.__init__(self, None, -1, **kwds)
 
@@ -95,9 +93,9 @@ class PlotterFrame(wx.Frame):
         ir += 1
         sizer.Add(SimpleText(panel, 'X='), (ir, 0), (1, 1), CEN, 0)
         sizer.Add(self.x_op,               (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, '('),  (ir, 2), (1, 1), CEN, 0)        
+        sizer.Add(SimpleText(panel, '('),  (ir, 2), (1, 1), CEN, 0)
         sizer.Add(self.x_choice,           (ir, 3), (1, 1), RCEN, 0)
-        sizer.Add(SimpleText(panel, ')'),  (ir, 4), (1, 1), CEN, 0)        
+        sizer.Add(SimpleText(panel, ')'),  (ir, 4), (1, 1), CEN, 0)
 
         self.y_op1  = [0,0]
         self.y_op2  = [0,0]
@@ -105,14 +103,14 @@ class PlotterFrame(wx.Frame):
         self.y_arr1 = [0,0]
         self.y_arr2 = [0,0]
         self.y_arr3 = [0,0]
-        
+
         for i in range(2):
             label = 'Y%i=' % (i+1)
             self.y_op1[i] = add_choice(panel, size=(75, -1),
                                        choices=('', 'log', '-log', 'deriv', '-deriv',
                                                 'deriv(log', 'deriv(-log'))
-            self.y_op2[i] = add_choice(panel, choices=('+', '-', '*', '/'), size=(30, -1))
-            self.y_op3[i] = add_choice(panel, choices=('+', '-', '*', '/'), size=(30, -1))
+            self.y_op2[i] = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
+            self.y_op3[i] = add_choice(panel, choices=('+', '-', '*', '/'), size=(50, -1))
             self.y_arr1[i] = add_choice(panel, choices=[], size=(120, -1))
             self.y_arr2[i] = add_choice(panel, choices=[], size=(120, -1))
             self.y_arr3[i] = add_choice(panel, choices=[], size=(120, -1))
@@ -182,36 +180,44 @@ class PlotterFrame(wx.Frame):
         x  = self.x_choice.GetStringSelection()
         if self.data is None and ix > -1:
             self.SetStatusText( 'cannot plot - no valid data')
-        xop = self.x_op.GetStringSelection()
 
         gname = self.groupname
         lgroup = getattr(self.larch.symtable, gname)
 
-        xlabel_ = xlabel = x
-        xunits = lgroup.column_units[ix]
+        xfmt = "%s._x1_ = %s (%s)"
+        yfmt = "%s._y1_ = %s ((%s %s %s) %s (%s))"
+        xop = self.x_op.GetStringSelection()
+
+        xlabel = x
+        xunits = lgroup.array_units[ix]
         if xunits != '':
             xlabel = '%s (%s)' % (xlabel, xunits)
 
         for i in range(2):
-            print 'IY SIDE = ', i
+            pass # print 'IY SIDE = ', i
+
+        op1 = self.y_op1[0].GetStringSelection()
+        op2 = self.y_op2[0].GetStringSelection()
+        op3 = self.y_op3[0].GetStringSelection()
+
+        y1 = self.y_arr1[0].GetStringSelection()
+        y2 = self.y_arr2[0].GetStringSelection()
+        y3 = self.y_arr3[0].GetStringSelection()
+        if y1 not in ('0', '1'):  y1 = "%s.%s" % (gname, y1)
+        if y2 not in ('0', '1'):  y2 = "%s.%s" % (gname, y2)
+        if y3 not in ('0', '1'):  y3 = "%s.%s" % (gname, y3)
+        if x not in ('0', '1'):  x = "%s.%s" % (gname, x)
+        self.larch(xfmt % (gname, xop, x))
+        self.larch(yfmt % (gname, op1, y1, op2, y2, op3, y3))
+        # print dir(lgroup)
+
+        self.plotpanel.plot(lgroup._x1_, lgroup._y1_)
+
         old = """
-        y1_op1 = self.y_op1[0].GetStringSelection()
-        y1_op2 = self.y_op2[0].GetStringSelection()
-        y1_op3 = self.y_op3[0].GetStringSelection()
-
-        y1_1 = self.y_arr1[0].GetStringSelection()
-        y2_1 = self.y_arr2[0].GetStringSelection()
-        y3_1 = self.y_arr3[0].GetStringSelection()
-        if y1_1 == '': y1_1 = '1'
-        if y2_1 == '': y2_1 = '1'
-        if y3_1 == '': y3_1 = '1'
-
-        x = "%s.get_data('%s')" % (gname, x)
-
         if xop == 'log': x = "log(%s)" % x
 
         ylabel = "[%s%s%s]%s%s" % (y1_1, y1_op2, y2_1, y1_op3, y3_1)
-        
+
         if y2_1 == '1' and yop2 in ('*', '/') or y2 == '0' and yop2 in ('+', '-'):
             ylabel = "(%s%s%s" % (y1, yop3, y3)
             if y3 == '1' and yop3 in ('*', '/') or y3 == '0' and yop3 in ('+', '-'):
@@ -248,26 +254,23 @@ class PlotterFrame(wx.Frame):
         if not hasattr(self.datagroups, key):
             print 'cannot find key ', key
             return
-        self.data = getattr(self.datagroups, key)
+        data = getattr(self.datagroups, key)
         self.groupname = key
 
-        xcols, ycols = [], ['0', '1']
-        for i, k in  enumerate(self.data.column_keys):
-            if k.startswith('p'):
-                xcols.append(self.data.column_names[i])
-            elif k.startswith('d'):
-                ycols.append(self.data.column_names[i])
-        ycols.extend(xcols)
-
-        self.title.SetLabel(self.data.filename)
+        xcols = data.array_labels[:]
+        ycols = data.array_labels[:] + ['1', '0']
+        ncols = len(xcols)
+        self.title.SetLabel(data.filename)
         self.x_choice.SetItems(xcols)
         self.x_choice.SetSelection(0)
-        self.y1_choice.SetItems(ycols)
-        self.y1_choice.SetSelection(3)
-        self.y2_choice.SetItems(ycols)
-        self.y2_choice.SetSelection(1)
-        self.y3_choice.SetItems(ycols)
-        self.y3_choice.SetSelection(1)
+        for i in range(2):
+            self.y_arr1[i].SetItems(ycols)
+            self.y_arr2[i].SetItems(ycols)
+            self.y_arr3[i].SetItems(ycols)
+            self.y_arr1[i].SetSelection(ncols)
+            self.y_arr2[i].SetSelection(ncols)
+            self.y_arr3[i].SetSelection(ncols)
+        self.y_arr1[0].SetSelection(1)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -303,38 +306,29 @@ class PlotterFrame(wx.Frame):
         self.Destroy()
 
     def onReadScan(self, evt=None):
-        dlg = wx.FileDialog(self, message="Load EpicsScan Settings",
+        dlg = wx.FileDialog(self, message="Load Epics Scan Data File",
                             defaultDir=os.getcwd(),
-                            wildcard=FILE_WILDCARDS,
-                            style=wx.OPEN)
+                            wildcard=FILE_WILDCARDS, style=wx.OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             path = path.replace('\\', '/')
             if path in self.filemap:
-                re_read = popup(self, "Re-read file '%s'?" % path, 'Re-read file?')
-                print 'read again ', re_read
-            try:
-                dfile = StepScanData(path)
-            except IOError:
-                print 'should popup ioerror'
-            if dfile._valid and self.larch is not None:
-                p, fname = os.path.split(path)
-                #path = os.path.join(p, fname)
-                #print path
+                if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
+                                      'Re-read file?'):
+                    return
 
-                gname = randname(n=5)
-                if hasattr(self.datagroups, gname):
-                    time.sleep(0.005)
-                    gname = randname(n=6)
-                print 'Larch:: ', gname, path
-                self.larch("%s = read_stepscan('%s')" % (gname, path))
-                self.larch("%s.fname = '%s'" % (gname, fname))
-                self.filelist.Append(fname)
-                self.filemap[fname] = gname
-                self.ShowFile(filename=fname)
-            else:
-                print 'should popup invalid file message'
-            print 'file read success: ', path
+            gname = randname(n=5)
+            if hasattr(self.datagroups, gname):
+                time.sleep(0.005)
+                gname = randname(n=6)
+            print 'Larch:: ', gname, path
+            parent, fname = os.path.split(path)
+            self.larch("%s = read_xdi('%s')" % (gname, path))
+            self.larch("%s.path  = '%s'"     % (gname, path))
+            self.filelist.Append(path)
+            self.filemap[fname] = gname
+            self.ShowFile(filename=fname)
+
         dlg.Destroy()
 
 class ViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
