@@ -478,13 +478,15 @@ class ScanFrame(wx.Frame):
             if pvname not in ep:
                 self.scandb.add_extrapv(name, pvname)
 
-        for detdat  in scan['detectors']:
+        for detdat in scan['detectors']:
             det = sdb.get_detector(detdat['label'])
             if det is None:
                 name   = detdat.pop('label')
                 prefix = detdat.pop('prefix')
                 dkind  = detdat.pop('kind')
-                use    = detdat.pop('use')
+                use = True
+                if 'use' in detdat:
+                    use = detdat.pop('use')
                 opts   = json.dumps(detdat)
                 sdb.add_detector(name, prefix,
                                  kind=dkind,
@@ -493,7 +495,9 @@ class ScanFrame(wx.Frame):
             else:
                 det.prefix = detdat.pop('prefix')
                 det.dkind  = detdat.pop('kind')
-                det.use    = detdat.pop('use')
+                det.use = True
+                if 'use' in detdat:
+                    det.use  = detdat.pop('use')
                 det.options = json.dumps(detdat)
 
         if 'positioners' in scan:
