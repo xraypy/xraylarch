@@ -102,6 +102,9 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
     >>> increment_filename('a_001.002')
     'a_001.003'
 
+    >>> increment_filename('a')
+    'a.001'
+
     >>> increment_filename("path/a.003")
     'path/a.004'
 """
@@ -112,7 +115,9 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
     base = filename.split(delim, 1)
     if len(base) == 2:
         base, ext = base
-
+    elif len(base) == 1:
+        base, ext = base[0], '.000'
+        
     if ext.startswith('.'):
         ext   = ext[1:]
     if ndigits < 3:
