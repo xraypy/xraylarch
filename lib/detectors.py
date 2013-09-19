@@ -158,6 +158,7 @@ class ScalerCounter(DeviceCounter):
         prefix = self.prefix
         fields = [('.T', 'CountTime')]
         extra_pvs = []
+        nchan = int(nchan)
         for i in range(1, nchan+1):
             label = caget('%s.NM%i' % (prefix, i))
             if len(label) > 0 or use_unlabeled:
@@ -185,6 +186,7 @@ class McaCounter(DeviceCounter):
     invalid_device_msg = 'McaCounter must use an Epics MCA'
     def __init__(self, prefix, outpvs=None, nrois=32,
                  use_net=False,  use_unlabeled=False, use_full=False):
+        nrois = int(nrois)        
         DeviceCounter.__init__(self, prefix, rtype='mca', outpvs=outpvs)
         prefix = self.prefix
         fields = []
@@ -208,6 +210,7 @@ class MultiMcaCounter(DeviceCounter):
                  use_unlabeled=False, use_full=False):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
+        nmcas, nrois = int(nmcas), int(nrois)
         DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
         prefix = self.prefix
         fields = []
@@ -302,6 +305,12 @@ class DetectorMixin(Saveable):
     def at_break(self, breakpoint=None, **kws):
         pass
 
+    def set_dwelltime(self, val):
+        "set detector dwelltime"
+        self.dwelltime = val
+        if self.dwelltime_pv is not None:
+            self.dwelltime_pv.put(val)
+
 class SimpleDetector(DetectorMixin):
     "Simple Detector: a single Counter without a trigger"
     trigger_suffix = None
@@ -320,6 +329,7 @@ class ScalerDetector(DetectorMixin):
     trigger_suffix = '.CNT'
     def __init__(self, prefix, nchan=8, use_calc=True, **kws):
         DetectorMixin.__init__(self, prefix, **kws)
+        nchan = int(nchan)        
         self.scaler = Scaler(prefix, nchan=nchan)
         self._counter = ScalerCounter(prefix, nchan=nchan,
                                       use_calc=use_calc)
@@ -391,7 +401,7 @@ class McaDetector(DetectorMixin):
     repr_fmt = ', nrois=%i, use_net=%s, use_full=%s'
     def __init__(self, prefix, save_spectra=True, nrois=32, use_net=False,
                  use_full=False, **kws):
-
+        nrois = int(nrois)        
         DetectorMixin.__init__(self, prefix, **kws)
         self.mca = Mca(prefix)
         self.dwelltime_pv = PV('%s.PRTM' % prefix)
@@ -416,7 +426,7 @@ class MultiMcaDetector(DetectorMixin):
                  search_all=False,  use_net=False, use=True,
                  use_unlabeled=False, use_full=False, **kws):
         DetectorMixin.__init__(self, prefix, label=label)
-
+        nmcas, nrois = int(nmcas), int(nrois)
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         self.prefix        = prefix
