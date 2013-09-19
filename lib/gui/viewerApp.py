@@ -30,11 +30,12 @@ from wxmplot import PlotFrame
 from xdifile import XDIFile
 from ..datafile import StepScanData
 from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
-                        add_menu, add_choice, add_menu,
+                        add_menu, add_choice, add_menu, check,
                         CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 CEN |=  wx.ALL
 FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 def randname(n=6):
     "return random string of n (default 6) lowercase letters"
@@ -52,7 +53,7 @@ class PlotterFrame(wx.Frame):
         self.filemap = {}
         self.larch = None
         self.plotters = []
-        
+
         self.SetTitle("Step Scan Data File Viewer")
         self.SetSize((700, 450))
         self.SetFont(Font(9))
@@ -80,8 +81,8 @@ class PlotterFrame(wx.Frame):
 
     def createDetailsPanel(self, parent):
         panel = wx.Panel(parent)
-        sizer = wx.GridBagSizer(8, 6)
-        
+        sizer = wx.GridBagSizer(8, 7)
+
         self.title = SimpleText(panel, 'initializing...')
         ir = 0
         sizer.Add(self.title, (ir, 0), (1, 6), LCEN, 2)
@@ -109,7 +110,7 @@ class PlotterFrame(wx.Frame):
         self.yop1.SetSelection(0)
         self.yop2.SetSelection(3)
         self.yop3.SetSelection(3)
-            
+
         ir += 1
         sizer.Add(SimpleText(panel, 'Y = '), (ir,  0), (1, 1), CEN, 0)
         sizer.Add(self.yop1,                 (ir,  1), (1, 1), CEN, 0)
@@ -123,18 +124,117 @@ class PlotterFrame(wx.Frame):
         sizer.Add(self.yarr3,                (ir,  5), (1, 1), CEN, 0)
         sizer.Add(SimpleText(panel, ']'),    (ir,  6), (1, 1), LCEN, 0)
 
-        
+
         ir += 1
         sizer.Add(SimpleText(panel, ' New Plot: '),  (ir,  0), (1, 2), LCEN, 0)
         sizer.Add(SimpleText(panel, ' Over Plot: '), (ir+1,  0), (1, 2), LCEN, 0)
-        
-        for jr, ic, opt, ttl in ((0, 2, 'new', 'New Window'),
-                                     (0, 4, 'new', 'Old Window'),                                     
-                                     (1, 2, 'ovl', 'Left Axis'),
-                                     (1, 4, 'ovr', 'Right Axis')):
+
+        for jr, ic, opt, ttl in ((0, 2, 'win new', 'New Window'),
+                                 (0, 4, 'win old',  'Old Window'),
+                                 (1, 2, 'over left', 'Left Axis'),
+                                 (1, 4, 'over right', 'Right Axis')):
             sizer.Add(add_button(panel, ttl, size=(100, -1),
                                  action=Closure(self.onPlot, opt=opt)),
                       (ir+jr, ic), (1, 2), LCEN, 2)
+
+        ir += 2
+
+        self.nb = flat_nb.FlatNotebook(panel, wx.ID_ANY, agwStyle=FNB_STYLE)
+        # self.nb.SetBackgroundColour(self.GetBackgroundColour())
+
+        self.xas_panel = self.CreateXASPanel(panel)
+        self.fit_panel = self.CreateFitPanel(panel)
+
+        self.nb.AddPage(self.fit_panel, 'General Analysis', True)
+        self.nb.AddPage(self.xas_panel, 'XAS Processing', True)
+
+        sizer.Add(self.nb,  (ir,  0), (1, 7), CEN|wx.GROW|wx.ALL, 0)
+
+        pack(panel, sizer)
+        return panel
+
+    def onFit(self, evt=None):
+        print 'fit!'
+
+    def CreateFitPanel(self, parent):
+        p = panel = wx.Panel(parent)
+        self.fit_dtcorr  = check(panel, default=True)
+        self.fit_btn     = add_button(panel, 'Fit Data', size=(100, -1),
+                                 action=self.onFit)
+
+        self.fit_dobkg   = check(panel, default=True)
+        self.fit_model   = add_choice(panel, size=(160, -1),
+                                      choices=('Linear', 'Quadratic',
+                                               'Gaussian', 'Lorentzian',
+                                               'Voigt', 'Step', 'Rectangle',
+                                               'Exponential'))
+        self.fit_bkg = add_choice(panel, size=(160, -1),
+                                  choices=('constant', 'linear', 'quadtratic'))
+        self.fit_step = add_choice(panel, size=(160, -1),
+                                  choices=('linear', 'error function', 'arctan'))
+
+        sizer = wx.GridBagSizer(10, 4)
+
+        sizer.Add(SimpleText(p, 'Correct DeadTime?: '),   (0, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_dtcorr,                        (0, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Fit Model: '),           (1, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_model,                         (1, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Add Background?: '),     (2, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_dobkg,                         (2, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Background Form: '),     (3, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_bkg,                           (3, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Step Function Form: '),  (4, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_step,                          (4, 1), (1, 1), LCEN)
+        sizer.Add(self.fit_btn,  (5, 0), (1, 1), LCEN)
+
+        pack(panel, sizer)
+        return panel
+
+    def CreateXASPanel(self, parent):
+        p = panel = wx.Panel(parent)
+        self.xas_dtcorr   = check(panel, default=True)
+        self.xas_autoe0   = check(panel, default=True)
+        self.xas_autostep = check(panel, default=True)
+        self.xas_autoe0.SetLabel('auto?')
+        self.xas_autostep.SetLabel('auto?')
+        self.xas_op       = add_choice(panel, size=(120, -1),
+                                       choices=('Raw Data', 'Normalized', 'Flattened'))
+        self.xas_e0   = FloatCtrl(panel, value  = 0, precision=3, size=(120, -1))
+        self.xas_step = FloatCtrl(panel, value  = 0, precision=3, size=(120, -1))
+        self.xas_pre1 = FloatCtrl(panel, value=-100, precision=1, size=(120, -1))
+        self.xas_pre2 = FloatCtrl(panel, value= -30, precision=1, size=(120, -1))
+        self.xas_nor1 = FloatCtrl(panel, value= 100, precision=1, size=(120, -1))
+        self.xas_nor2 = FloatCtrl(panel, value= 300, precision=1, size=(120, -1))
+        self.xas_prev = add_choice(panel, size=(90, -1), choices=('0', '1', '2', '3'))
+        self.xas_nnor = add_choice(panel, size=(90, -1), choices=('0', '1', '2', '3'))
+        self.xas_nnor.SetSelection(2)
+        sizer = wx.GridBagSizer(10, 4)
+        ir = 0
+        sizer.Add(SimpleText(p, 'Correct DeadTime?: '),   (0, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Plot XAS as: '),         (1, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'E0 : '),                 (2, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Edge Step: '),           (3, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Pre-edge range: '),      (4, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Normalization range: '), (5, 0), (1, 1), LCEN)
+
+        sizer.Add(self.xas_dtcorr,             (0, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_op,                 (1, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_e0,                 (2, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_step,               (3, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_pre1,               (4, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_pre2,               (4, 3), (1, 1), LCEN)
+        sizer.Add(self.xas_nor1,               (5, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_nor2,               (5, 3), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, ':'),          (4, 2), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, ':'),          (5, 2), (1, 1), LCEN)
+
+        sizer.Add(self.xas_autoe0,             (2, 3), (1, 2), LCEN)
+        sizer.Add(self.xas_autostep,           (3, 3), (1, 2), LCEN)
+
+        sizer.Add(SimpleText(p, 'Pre-edge Victoreen Power: '), (6, 0), (1, 2), LCEN)
+        sizer.Add(self.xas_prev,  (6, 2), (1, 2), LCEN)
+        sizer.Add(SimpleText(p, 'Normalization Polynomial Order: '), (7, 0), (1, 2), LCEN)
+        sizer.Add(self.xas_nnor,   (7, 2), (1, 2), LCEN)
 
         pack(panel, sizer)
         return panel
@@ -167,7 +267,7 @@ class PlotterFrame(wx.Frame):
                     break
                 except PyDeadObjectError:
                     pframe = None
-            
+
         if pframe is None:
             pframe = PlotFrame()
             pframe.Show()
@@ -176,22 +276,27 @@ class PlotterFrame(wx.Frame):
         self.plotters.append(pframe)
 
         return pframe
-    
-    def onPlot(self, evt=None, opt='ovr'):
-        isNew = opt == 'new'
-        plotframe = self.get_plotwindow(new=isNew)
 
-        plotcmd = plotframe.oplot
-        popts = {'side': 'left'}
-        if opt == 'ovr':
-            popts['side'] = 'right'
-        elif opt == 'new':
-            plotcmd = plotframe.plot
-        
+    def onPlot(self, evt=None, opt='over right'):
+        # 'win new', 'New Window'),
+        # 'win old',  'Old Window'),
+        # 'over left', 'Left Axis'),
+        # 'over right', 'Right Axis')):
+        print 'on Plot nb = ', self.nb.GetCurrentPage() == self.xas_panel
+        optwords = opt.split()
+        plotframe = self.get_plotwindow(new=('new' in optwords[1]))
+        plotcmd = plotframe.plot
+
+        optwords = opt.split()
+        side = 'left'
+        if optwords[0] == 'over':
+            side = optwords[1]
+            plotcmd = plotframe.oplot
+
+        popts = {'side': side}
+
         ix = self.x_choice.GetSelection()
         x  = self.x_choice.GetStringSelection()
-        if self.data is None and ix > -1:
-            self.SetStatusText( 'cannot plot - no valid data')
 
         gname = self.groupname
         lgroup = getattr(self.larch.symtable, gname)
@@ -202,66 +307,54 @@ class PlotterFrame(wx.Frame):
 
         xlabel = x
         xunits = lgroup.array_units[ix]
+        if xop != '':
+            xlabel = "%s(%s)" % (xop, xlabel)
         if xunits != '':
             xlabel = '%s (%s)' % (xlabel, xunits)
-
-        for i in range(2):
-            pass # print 'IY SIDE = ', i
+        popts['xlabel'] = xlabel
 
         op1 = self.yop1.GetStringSelection()
         op2 = self.yop2.GetStringSelection()
         op3 = self.yop3.GetStringSelection()
 
-        y1 = l1 = self.yarr1.GetStringSelection()
-        y2 = l2 = self.yarr2.GetStringSelection()
-        y3 = l3 = self.yarr3.GetStringSelection()
-        if y2 == '': y2, opt2 = '1', '*'
-        if y3 == '': y3, opt3 = '1', '*'
+        y1 = self.yarr1.GetStringSelection()
+        y2 = self.yarr2.GetStringSelection()
+        y3 = self.yarr3.GetStringSelection()
+
+        ylabel = y1
+
+        if y2 == '':
+            y2, op2 = '1', '*'
+        else:
+            ylabel = "%s%s%s" % (ylabel, op2, y2)
+        if y3 == '':
+            y3, op3 = '1', '*'
+        else:
+            ylabel = "(%s)%s%s" % (ylabel, op3, y3)
+
+        if op1 != '':
+            ylabel = "%s(%s)" % (op1, ylabel)
 
         if y1 not in ('0', '1'):  y1 = "%s.%s" % (gname, y1)
         if y2 not in ('0', '1'):  y2 = "%s.%s" % (gname, y2)
         if y3 not in ('0', '1'):  y3 = "%s.%s" % (gname, y3)
-        if x not in ('0', '1'):  x = "%s.%s" % (gname, x)
+        if x not in ('0', '1'):    x = "%s.%s" % (gname, x)
+
         self.larch(xfmt % (gname, xop, x))
         self.larch(yfmt % (gname, op1, y1, op2, y2, op3, y3))
-        print 'LARCH Group : '
-        print dir(lgroup)
+
         path, fname = os.path.split(lgroup.filename)
-        popts['label'] = "%s: %s((%s%s%s)%s%s)" % (lgroup.filename, op1,
-                                                   l1, op2, l2, op3, l3)
+        popts['label'] = "%s: %s" % (lgroup.filename, ylabel)
+        if side == 'right':
+            popts['y2label'] = ylabel
+        else:
+            popts['ylabel'] = ylabel
+
+        if plotcmd == plotframe.plot:
+            popts['title'] = fname
 
         plotcmd(lgroup._x1_, lgroup._y1_, **popts)
 
-        old = """
-        if xop == 'log': x = "log(%s)" % x
-
-        ylabel = "[%s%s%s]%s%s" % (y1_1, y1_op2, y2_1, y1_op3, y3_1)
-
-        if y2_1 == '1' and yop2 in ('*', '/') or y2 == '0' and yop2 in ('+', '-'):
-            ylabel = "(%s%s%s" % (y1, yop3, y3)
-            if y3 == '1' and yop3 in ('*', '/') or y3 == '0' and yop3 in ('+', '-'):
-                ylabel = "%s" % (y1)
-        elif y3 == '1' and yop3 in ('*', '/') or y3 == '0' and yop3 in ('+', '-'):
-            ylabel = "%s%s%s" % (y1, yop2, y2)
-        if yop1 != '':
-            yoplab = yop1.replace('deriv', 'd')
-            ylabel = '%s(%s)' % (yoplab, ylabel)
-            if '(' in yop1: ylabel = "%s)" % ylabel
-
-        y1 = y1 if y1 in ('0, 1') else "%s.get_data('%s')" % (gname, y1)
-        y2 = y2 if y2 in ('0, 1') else "%s.get_data('%s')" % (gname, y2)
-        y3 = y3 if y3 in ('0, 1') else "%s.get_data('%s')" % (gname, y3)
-
-        y = "%s((%s %s %s) %s (%s))" % (yop1, y1, yop2, y2, yop3, y3)
-        if '(' in yop1: y = "%s)" % y
-        if 'deriv' in yop1:
-            y = "%s/deriv(%s)" % (y, x)
-            ylabel = '%s/d(%s)' % (ylabel, xlabel_)
-
-        fmt = "plot(%s, %s, label='%s', xlabel='%s', ylabel='%s', new=%s)"
-        cmd = fmt % (x, y, self.data.fname, xlabel, ylabel, repr(newplot))
-        self.larch(cmd)
-        """
 
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
@@ -277,7 +370,7 @@ class PlotterFrame(wx.Frame):
         self.groupname = key
 
         xcols = data.array_labels[:]
-        ycols = data.array_labels[:] 
+        ycols = data.array_labels[:]
         y2cols = data.array_labels[:] + ['1.0', '0.0', '']
         ncols = len(xcols)
         self.title.SetLabel(data.filename)
@@ -289,7 +382,7 @@ class PlotterFrame(wx.Frame):
         self.yarr2.SetItems(y2cols)
         self.yarr3.SetItems(y2cols)
         self.yarr2.SetSelection(len(y2cols))
-        self.yarr2.SetSelection(len(y2cols))
+        self.yarr3.SetSelection(len(y2cols))
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -304,7 +397,7 @@ class PlotterFrame(wx.Frame):
         add_menu(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         self.menubar.Append(fmenu, "&File")
-        
+
         # fmenu.AppendSeparator()
         # add_menu(self, fmenu, "&Copy\tCtrl+C",
         #          "Copy Figure to Clipboard", self.onClipboard)
@@ -312,7 +405,7 @@ class PlotterFrame(wx.Frame):
         # add_menu(self, fmenu, "&Print\tCtrl+P", "Print Figure", self.onPrint)
         # add_menu(self, fmenu, "Page Setup", "Print Page Setup", self.onPrintSetup)
         # add_menu(self, fmenu, "Preview", "Print Preview", self.onPrintPreview)
-        # 
+        #
 
         # add_menu(self, pmenu, "Configure\tCtrl+K",
         #         "Configure Plot", self.onConfigurePlot)
@@ -326,33 +419,33 @@ class PlotterFrame(wx.Frame):
         self.SetMenuBar(self.menubar)
 
     def get_plotpanel(self):
-        
+
         pass
 
     def onConfigurePlot(self, evt=None):
         ppnl = self.get_plotpanel()
         if ppnl is not None:
-            ppnl.configure()    
+            ppnl.configure()
 
     def onUnzoom(self, evt=None):
         ppnl = self.get_plotpanel()
         if ppnl is not None:
-            ppnl.unzoom()    
+            ppnl.unzoom()
 
     def onToggleLegend(self, evt=None):
         ppnl = self.get_plotpanel()
         if ppnl is not None:
-            ppnl.toggle_legend()    
+            ppnl.toggle_legend()
 
     def onToggleGrid(self, evt=None):
         ppnl = self.get_plotpanel()
         if ppnl is not None:
-            ppnl.toggle_grid()    
+            ppnl.toggle_grid()
 
     def onPrint(self, evt=None):
         ppnl = self.get_plotpanel()
         if ppnl is not None:
-            ppnl.Print()    
+            ppnl.Print()
 
     def onPrintSetup(self, evt=None):
         ppnl = self.get_plotpanel()
@@ -362,14 +455,14 @@ class PlotterFrame(wx.Frame):
     def onPrintPreview(self, evt=None):
         ppnl = self.get_plotpanel()
         if ppnl is not None:
-            ppnl.PrintPreview()    
-            
+            ppnl.PrintPreview()
 
-        
+
+
     def onClipboard(self, evt=None):
         ppnl = self.get_plotpanel()
         if ppnl is not None:
-            ppnl.canvas.Copy_to_Clipboard()    
+            ppnl.canvas.Copy_to_Clipboard()
 
     def onSaveFig(self,event=None, transparent=False, dpi=600):
         """ save figure image to file"""
