@@ -30,7 +30,7 @@ from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            Instruments, Instrument_PV,
                            Instrument_Precommands, Instrument_Postcommands)
 
-from .utils import strip_quotes, normalize_pvname
+from .utils import strip_quotes, normalize_pvname, asciikeys
 
 def isScanDB(dbname, server='sqlite',
              user='', password='', host='', port=None):
@@ -432,12 +432,12 @@ class ScanDB(object):
         self.commit()
         return row
 
-    def remove_scandef(self, scan):
-        s = self.get_scandef(scan)
-        if s is None:
-            raise ScanDBException('Remove Scan needs valid scan')
-        tab = self.tables['scandefs']
-        self.conn.execute(tab.delete().where(tab.c.id==s.id))
+    def get_scandict(self, scan):
+        """return dictionary of scan configuration for a named scan"""
+        sobj = self.get_scandef(scan)
+        if sobj is None:
+            raise ScanDBException('get_scandict needs valid scan name')
+        return json.loads(sobj.text, object_hook=asciikeys)
 
     # macros
     def get_macro(self, name):
