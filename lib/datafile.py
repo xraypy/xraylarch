@@ -225,7 +225,7 @@ class ASCIIScanFile(ScanFile):
         if name is None:
             self.filename = 'test.dat'
         self.auto_increment = auto_increment
-        self.comments = commentsxo
+        self.comments = comments
 
     def write_lines(self, buff):
         "write array of text lines"
@@ -237,7 +237,7 @@ class ASCIIScanFile(ScanFile):
 
     def write_extrapvs(self):
         "write extra PVS"
-        out = ['%s ExtraPVs.Start: here' % COM1]
+        out = ['%s ExtraPVs.Start: Family.Member: Value | PV' % COM1]
         for desc, pvname, val in self.scan.read_extra_pvs():
             if not isinstance(val, (str, unicode)):
                 val = repr(val)
@@ -271,7 +271,7 @@ class ASCIIScanFile(ScanFile):
         "write legend"
         cols = []
         icol = 0
-        out = ['%sLegend.Start:   Column.N: Name, units, EpicsPV' % COM1]
+        out = ['%s Legend.Start: Column.N: Name  units || EpicsPV' % COM1]
         for vars  in ((self.scan.positioners, 'positioner', 'unknown'),
                       (self.scan.counters, 'counter', 'counts')):
             objs, objtype, objunits = vars
@@ -288,9 +288,14 @@ class ASCIIScanFile(ScanFile):
                             units = obj.pv.units
                         except:
                             pass
+                else:
+                    units = obj.units
+                if units in (None, 'None', ''):
+                    units = objunits
                 lab = fix_filename(obj.label)
                 pvn = obj.pv.pvname
-                out.append("%s: %s, %s %s %s" (key, lab, units, SEP, pvn))
+                sthis = "%s: %s %s %s %s" %(key, lab, units, SEP, pvn)
+                out.append(sthis)
                 cols.append(lab)
 
         out.append('%s Legend.End: here' % COM1)
