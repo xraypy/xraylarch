@@ -116,8 +116,17 @@ class XDIFile(object):
 
         pchar = ctypes.c_char_p
         self.array_labels = (self.narrays*pchar).from_address(xdi.array_labels)[:]
-        self.array_units  = (self.narrays*pchar).from_address(xdi.array_units)[:]
-        
+        arr_units  = (self.narrays*pchar).from_address(xdi.array_units)[:]
+        self.array_units = []
+        self.array_addrs = []        
+        for unit in arr_units:
+            addr = ''
+            if '||' in unit:
+                unit, addr = [x.strip() for x in unit.split('||', 1)]
+            self.array_units.append(unit)
+            self.array_addrs.append(addr)
+                
+            
         mfams = (self.nmetadata*pchar).from_address(xdi.meta_families)[:]
         mkeys = (self.nmetadata*pchar).from_address(xdi.meta_keywords)[:]
         mvals = (self.nmetadata*pchar).from_address(xdi.meta_values)[:]
