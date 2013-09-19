@@ -3,11 +3,107 @@
 import time
 import threading
 
+import time
+import sys
+import json
+import numpy as np
+
+import epics
+from ..detectors import get_detector
+from ..positioner import Positioner
+from ..stepscan import StepScan
+from ..xafs_scan import XAFS_Scan
+
 from ..scandb import ScanDB
+
+def load_dbscan(scandb, scanname):
+    """load a scan definition from the database
+    return a stepscan object with hooks into database.
+    """
+    try:
+        sdict = scandb.get_scandict(scanname)
+    except ScanDBException:
+        return None
+    scan = StepScan()            
+    if sdict['type'] == 'xafs':
+        scan  = XAFS_Scan(energy_pv=sdict['energy_drive'],
+                          read_pv=sdict['energy_read'],
+                          e0=sdict['e0'])
+        t_kw  = sdict['time_kw']
+        t_max = sdict['max_time']
+        nreg  = len(sdict['regions'])
+        kws  = {'relative': sdict['is_relative']}
+        for i, det in enumerate(sdict['regions']):
+            start, stop, npts, dt, units = det
+            kws['dtime'] =  dt
+            kws['use_k'] =  units.lower() !='ev'
+            if i == nreg-1: # final reg
+                if t_max > dt and t_kw>0 and kws['use_k']:
+                    kws['dtime_final'] = t_max
+                    kws['dtime_wt'] = t_kw
+            scan.add_region(start, stop, npts=npts, **kws)
+
+    elif sdict['type'] == 'linear':
+        for pos in sdict['positioners']:
+            label, pvs, start, stop, npts = pos
+            p = Positioner(pvs[0], label=label)
+            p.array = np.linspace(start, stop, npts)
+            scan.add_positioner(p)
+            if len(pvs) > 0:
+                scan.add_counter(pvs[1], label="%s(read)" % label)
+                    
+    elif sdict['type'] == 'mesh':
+        label1, pvs1, start1, stop1, npts1 = sdict['inner']
+        label2, pvs2, start2, stop2, npts2 = sdict['outer']
+        p1 = Positioner(pvs1[0], label=label1)
+        p2 = Positioner(pvs2[0], label=label2)
+        
+        inner = npts2* [np.linspace(start1, stop1, npts1)]
+        outer = [[i]*npts1 for i in np.linspace(start2, stop2, npts2)]
+        
+        p1.array = np.array(inner).flatten()
+        p2.array = np.array(outer).flatten()
+        scan.add_positioner(p1)
+        scan.add_positioner(p2)
+        if len(pvs1) > 0:
+            scan.add_counter(pvs1[1], label="%s(read)" % label1)
+        if len(pvs2) > 0:
+            scan.add_counter(pvs2[1], label="%s(read)" % label2)
+
+    elif sdict['type'] == 'slew':
+        label1, pvs1, start1, stop1, npts1 = sdict['inner']
+        p1 = Positioner(pvs1[0], label=label1)
+        p1.array = np.linspace(start1, stop1, npts1)
+        scan.add_positioner(p1)
+        if len(pvs1) > 0:
+            scan.add_counter(pvs[1], label="%s(read)" % label1)
+        if sdict['dimension'] >=2:
+            label2, pvs2, start2, stop2, npts2 = sdict['outer']
+            p2 = Positioner(pvs2[0], label=label2)
+            p2.array = np.linspace(start2, stop2, npts2)
+            scan.add_positioner(p2)
+            if len(pvs2) > 0:
+                scan.add_counter(pvs2[1], label="%s(read)" % label2)
+
+    for dpars in sdict['detectors']:
+        scan.add_detector(get_detector(**dpars))
+
+    if 'counters' in sdict:
+        for label, pvname  in sdict['counters']:
+            scan.add_counter(pvname, label=label)
+    
+    scan.add_extra_pvs(sdict['extra_pvs'])
+    scan.dwelltime = sdict.get('dwelltime', 1)
+    scan.comments  = sdict.get('user_comments', '')
+    scan.filename  = sdict.get('filename', 'scan.dat')
+    scan.pos_settle_time = sdict.get('pos_settle_time', 0.01)
+    scan.det_settle_time = sdict.get('det_settle_time', 0.01)
+    return scan
+
 
 class ScanServer():
     def __init__(self, dbname=None, **kws):
-        self.db = None
+        self.scandb = None
         self.abort = False
         self.command_in_progress = False
         if dbname is not None:
@@ -15,8 +111,28 @@ class ScanServer():
 
     def connect(self, dbname, **kws):
         """connect to Scan Database"""
-        self.db = ScanDB(dbname, **kws)
+        self.scandb = ScanDB(dbname, **kws)
 
+    def scan_messenger(self, cpt, **kws):
+        print 'ScanServer.scan_messener  ', cpt, kws
+        print 'Scan Obj: ', self.scan
+        print 'Abort: ', self.scandb.get_info('request_command_abort')
+        print 'Pause: ', self.scandb.get_info('request_command_pause')
+
+    def scan_prescan(self, **kws):
+        print 'ScanServer pre-scan'
+        self.scandb.set_info('filename', scan.filename)
+        
+    def do_scan(self, scanname, filename=None):
+        print 'do scan ', scanname
+        self.scan = load_dbscan(self.scandb, scanname)
+        self.scan.messenger = self.scan_messenger
+        self.scan.run(filename=filename)
+        
+    def do_caput(self, pvname, value, wait=False, timeout=30.0):
+        print 'do caput ', pvname, value, wait
+        epics.caput(pvname, value, wait=wait, timeout=timeout)
+        
     def sleep(self, t=0.05):
         try:
             time.sleep(t)
