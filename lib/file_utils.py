@@ -31,7 +31,7 @@ def fix_filename(s):
     """fix string to be a 'good' filename.
     This may be a more restrictive than the OS, but
     avoids nasty cases."""
-    t = s.translate(BAD_FILETABLE)
+    t = str(s).translate(BAD_FILETABLE)
     if t.count('.') > 1:
         for i in range(t.count('.') - 1):
             idot = t.find('.')
