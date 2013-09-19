@@ -108,7 +108,7 @@ class ExtraPVsFrame(wx.Frame) :
             elif obj is not None:
                 obj.name = name
                 obj.pvname = pvname
-                obj.use  = usepv
+                obj.use  = int(usepv)
             elif obj is None:
                 self.scandb.add_extrapv(name, pvname, use=usepv)
 

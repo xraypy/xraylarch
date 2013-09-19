@@ -287,7 +287,7 @@ class DetectorFrame(wx.Frame) :
                     delete = self.scan.del_counter
                 delete(obj.name)
             elif obj is not None:
-                obj.use    = use
+                obj.use    = int(use)
                 obj.name   = name
                 obj.pvname = pvname
                 if kind is not None:
