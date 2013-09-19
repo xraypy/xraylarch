@@ -302,7 +302,6 @@ class StepScan(object):
         That is, return values must be None or evaluate to False
         to indicate success.
         """
-        print 'check outputs ', msg, out
         if any(out):
             raise Warning('error on output: %s' % msg)
 
@@ -327,7 +326,6 @@ class StepScan(object):
            Loop over points
            run post_scan methods
         """
-        print 'RUN '
         self.complete = False
         if filename is not None:
             self.filename  = filename
@@ -471,7 +469,6 @@ class StepScan(object):
         out = self.post_scan()
         self.check_outputs(out, msg='post scan')
 
-        print 'Setting SCAN Complete!! ', self.runtime
         self.complete = True
 
         # end messenger thread
