@@ -115,9 +115,11 @@ class YesNo(wx.Choice):
             self.SetSelection(self.choices.index(choice))
 
 class check(wx.CheckBox):
-    def __init__(self, parent, default=True, **kws):
+    def __init__(self, parent, default=True, label=None, **kws):
         wx.CheckBox.__init__(self, parent, -1, **kws)
         self.SetValue(default)
+        if label is not None:
+            self.SetLabel(label)
 
 
 def make_steps(prec=3, tmin=0, tmax=10, base=10, steps=(1, 2, 5)):
