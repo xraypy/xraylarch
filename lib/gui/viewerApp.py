@@ -80,7 +80,9 @@ class PlotterFrame(wx.Frame):
         wx.CallAfter(self.init_larch)
 
     def createDetailsPanel(self, parent):
-        panel = wx.Panel(parent)
+        mainpanel = wx.Panel(parent)
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        panel = wx.Panel(mainpanel)
         sizer = wx.GridBagSizer(8, 7)
 
         self.title = SimpleText(panel, 'initializing...')
@@ -129,8 +131,8 @@ class PlotterFrame(wx.Frame):
         sizer.Add(SimpleText(panel, ' New Plot: '),  (ir,  0), (1, 2), LCEN, 0)
         sizer.Add(SimpleText(panel, ' Over Plot: '), (ir+1,  0), (1, 2), LCEN, 0)
 
-        for jr, ic, opt, ttl in ((0, 2, 'win new', 'New Window'),
-                                 (0, 4, 'win old',  'Old Window'),
+        for jr, ic, opt, ttl in ((0, 2, 'win old', 'Old Window'),
+                                 (0, 4, 'win new',  'New Window'),
                                  (1, 2, 'over left', 'Left Axis'),
                                  (1, 4, 'over right', 'Right Axis')):
             sizer.Add(add_button(panel, ttl, size=(100, -1),
@@ -138,106 +140,160 @@ class PlotterFrame(wx.Frame):
                       (ir+jr, ic), (1, 2), LCEN, 2)
 
         ir += 2
-
-        self.nb = flat_nb.FlatNotebook(panel, wx.ID_ANY, agwStyle=FNB_STYLE)
-        # self.nb.SetBackgroundColour(self.GetBackgroundColour())
-
-        self.xas_panel = self.CreateXASPanel(panel)
-        self.fit_panel = self.CreateFitPanel(panel)
-
-        self.nb.AddPage(self.fit_panel, 'General Analysis', True)
-        self.nb.AddPage(self.xas_panel, 'XAS Processing', True)
-
-        sizer.Add(self.nb,  (ir,  0), (1, 7), CEN|wx.GROW|wx.ALL, 0)
-
         pack(panel, sizer)
-        return panel
+        
+        
+        self.nb = flat_nb.FlatNotebook(mainpanel, -1, agwStyle=FNB_STYLE)
+
+        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
+        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
+
+        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
+        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
+        
+        self.xas_panel = self.CreateXASPanel(self.nb) # mainpanel)
+        self.fit_panel = self.CreateFitPanel(self.nb) # mainpanel)
+
+        self.nb.AddPage(self.fit_panel, ' General Analysis ', True)
+        self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
+
+        mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
+        mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)        
+        pack(mainpanel, mainsizer)
+
+        return mainpanel
 
     def onFit(self, evt=None):
         print 'fit!'
 
     def CreateFitPanel(self, parent):
         p = panel = wx.Panel(parent)
-        self.fit_dtcorr  = check(panel, default=True)
+        self.fit_dtcorr  = check(panel, default=True, label='correct deadtime?')
         self.fit_btn     = add_button(panel, 'Fit Data', size=(100, -1),
                                  action=self.onFit)
 
-        self.fit_dobkg   = check(panel, default=True)
-        self.fit_model   = add_choice(panel, size=(160, -1),
+        self.fit_model   = add_choice(panel, size=(100, -1),
                                       choices=('Linear', 'Quadratic',
                                                'Gaussian', 'Lorentzian',
                                                'Voigt', 'Step', 'Rectangle',
                                                'Exponential'))
-        self.fit_bkg = add_choice(panel, size=(160, -1),
-                                  choices=('constant', 'linear', 'quadtratic'))
-        self.fit_step = add_choice(panel, size=(160, -1),
+        self.fit_bkg = add_choice(panel, size=(100, -1),
+                                  choices=('None', 'constant', 'linear', 'quadtratic'))
+        self.fit_step = add_choice(panel, size=(100, -1),
                                   choices=('linear', 'error function', 'arctan'))
 
         sizer = wx.GridBagSizer(10, 4)
+        sizer.Add(SimpleText(p, 'Fit Model: '),           (0, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_model,                         (0, 1), (1, 1), LCEN)
+        sizer.Add(self.fit_dtcorr,                        (0, 2), (1, 1), LCEN)
 
-        sizer.Add(SimpleText(p, 'Correct DeadTime?: '),   (0, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_dtcorr,                        (0, 1), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Fit Model: '),           (1, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_model,                         (1, 1), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Add Background?: '),     (2, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_dobkg,                         (2, 1), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Background Form: '),     (3, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_bkg,                           (3, 1), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Step Function Form: '),  (4, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_step,                          (4, 1), (1, 1), LCEN)
-        sizer.Add(self.fit_btn,  (5, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Background: '),          (1, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_bkg,                           (1, 1), (1, 1), LCEN)
+        
+        sizer.Add(SimpleText(p, 'Step Function Form: '),  (2, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_step,                          (2, 1), (1, 1), LCEN)
+        sizer.Add(self.fit_btn,                           (3, 0), (1, 1), LCEN)
 
         pack(panel, sizer)
         return panel
 
     def CreateXASPanel(self, parent):
         p = panel = wx.Panel(parent)
-        self.xas_dtcorr   = check(panel, default=True)
-        self.xas_autoe0   = check(panel, default=True)
-        self.xas_autostep = check(panel, default=True)
-        self.xas_autoe0.SetLabel('auto?')
-        self.xas_autostep.SetLabel('auto?')
-        self.xas_op       = add_choice(panel, size=(120, -1),
-                                       choices=('Raw Data', 'Normalized', 'Flattened'))
-        self.xas_e0   = FloatCtrl(panel, value  = 0, precision=3, size=(120, -1))
-        self.xas_step = FloatCtrl(panel, value  = 0, precision=3, size=(120, -1))
-        self.xas_pre1 = FloatCtrl(panel, value=-100, precision=1, size=(120, -1))
-        self.xas_pre2 = FloatCtrl(panel, value= -30, precision=1, size=(120, -1))
-        self.xas_nor1 = FloatCtrl(panel, value= 100, precision=1, size=(120, -1))
-        self.xas_nor2 = FloatCtrl(panel, value= 300, precision=1, size=(120, -1))
-        self.xas_prev = add_choice(panel, size=(90, -1), choices=('0', '1', '2', '3'))
-        self.xas_nnor = add_choice(panel, size=(90, -1), choices=('0', '1', '2', '3'))
+        self.xas_dtcorr   = check(panel, default=True, label='correct deadtime?')
+        self.xas_autoe0   = check(panel, default=True, label='auto?')
+        self.xas_autostep = check(panel, default=True, label='auto?')
+        self.xas_op       = add_choice(panel, size=(95, -1),
+                                       choices=('Raw Data', 'Pre-edged',
+                                                'Normalized', 'Flattened'))
+        self.xas_e0   = FloatCtrl(panel, value  = 0, precision=3, size=(95, -1))
+        self.xas_step = FloatCtrl(panel, value  = 0, precision=3, size=(95, -1))
+        self.xas_pre1 = FloatCtrl(panel, value=-200, precision=1, size=(95, -1))
+        self.xas_pre2 = FloatCtrl(panel, value= -30, precision=1, size=(95, -1))
+        self.xas_nor1 = FloatCtrl(panel, value=  30, precision=1, size=(95, -1))
+        self.xas_nor2 = FloatCtrl(panel, value= 300, precision=1, size=(95, -1))
+        self.xas_vict = add_choice(panel, size=(50, -1), choices=('0', '1', '2', '3'))
+        self.xas_nnor = add_choice(panel, size=(50, -1), choices=('0', '1', '2', '3'))
+        self.xas_vict.SetSelection(1)
         self.xas_nnor.SetSelection(2)
         sizer = wx.GridBagSizer(10, 4)
-        ir = 0
-        sizer.Add(SimpleText(p, 'Correct DeadTime?: '),   (0, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Plot XAS as: '),         (1, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'E0 : '),                 (2, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Edge Step: '),           (3, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Pre-edge range: '),      (4, 0), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, 'Normalization range: '), (5, 0), (1, 1), LCEN)
 
-        sizer.Add(self.xas_dtcorr,             (0, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_op,                 (1, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_e0,                 (2, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_step,               (3, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_pre1,               (4, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_pre2,               (4, 3), (1, 1), LCEN)
-        sizer.Add(self.xas_nor1,               (5, 1), (1, 1), LCEN)
-        sizer.Add(self.xas_nor2,               (5, 3), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Plot XAS as: '),         (0, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'E0 : '),                 (1, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Edge Step: '),           (2, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Pre-edge range: '),      (3, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Normalization range: '), (4, 0), (1, 1), LCEN)
+
+        sizer.Add(self.xas_op,                 (0, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_e0,                 (1, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_step,               (2, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_pre1,               (3, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, ':'),          (3, 2), (1, 1), LCEN)
+        sizer.Add(self.xas_pre2,               (3, 3), (1, 1), LCEN)
+        sizer.Add(self.xas_nor1,               (4, 1), (1, 1), LCEN)
         sizer.Add(SimpleText(p, ':'),          (4, 2), (1, 1), LCEN)
-        sizer.Add(SimpleText(p, ':'),          (5, 2), (1, 1), LCEN)
+        sizer.Add(self.xas_nor2,               (4, 3), (1, 1), LCEN)
 
-        sizer.Add(self.xas_autoe0,             (2, 3), (1, 2), LCEN)
-        sizer.Add(self.xas_autostep,           (3, 3), (1, 2), LCEN)
+        sizer.Add(self.xas_dtcorr,             (0, 2), (1, 3), LCEN)
+        sizer.Add(self.xas_autoe0,             (1, 2), (1, 2), LCEN)
+        sizer.Add(self.xas_autostep,           (2, 2), (1, 2), LCEN)
 
-        sizer.Add(SimpleText(p, 'Pre-edge Victoreen Power: '), (6, 0), (1, 2), LCEN)
-        sizer.Add(self.xas_prev,  (6, 2), (1, 2), LCEN)
-        sizer.Add(SimpleText(p, 'Normalization Polynomial Order: '), (7, 0), (1, 2), LCEN)
-        sizer.Add(self.xas_nnor,   (7, 2), (1, 2), LCEN)
+        sizer.Add(SimpleText(p, 'Victoreen:'), (3, 4), (1, 1), LCEN)
+        sizer.Add(self.xas_vict,               (3, 5), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'PolyOrder:'), (4, 4), (1, 1), LCEN)
+        sizer.Add(self.xas_nnor,               (4, 5), (1, 1), LCEN)
 
         pack(panel, sizer)
         return panel
+
+    def xas_process(self, gname, plotopts):
+        """ process (pre-edge/normalize) XAS data from XAS form, overwriting
+        larch group '_y1_' attribute to be plotted
+        """
+        print 'Process XAS ', gname
+        out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
+        if out.startswith('raw'):
+            return plotopts
+
+        preopts = {'group': gname, 'e0': None, 'step': None}
+
+        lgroup = getattr(self.larch.symtable, gname)
+        
+        if self.xas_dtcorr.IsChecked():
+            print 'need to dt correct!'
+
+        if not self.xas_autoe0.IsChecked():
+            xmin, xmax = min(lgroup._x1_),  max(lgroup._x1_)
+            e0 = self.xas_e0.GetValue()
+            if e0 < xmax and e0 > xmin:
+                preopts['e0'] = e0
+            
+        if not self.xas_autostep.IsChecked():                
+            preopts['step'] = self.xas_step.GetValue()
+
+        preopts['pre1']  = self.xas_pre1.GetValue()
+        preopts['pre2']  = self.xas_pre2.GetValue()
+        preopts['norm1'] = self.xas_nor1.GetValue()
+        preopts['norm2'] = self.xas_nor2.GetValue()
+
+        preopts['nvict'] = self.xas_vict.GetSelection()
+        preopts['nnorm'] = self.xas_nnor.GetSelection()
+
+        preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
+        preedge_cmd = "pre_edge(%s._x1_, %s._y1_, %s)" % (gname, gname, preopts)
+        
+        self.larch(preedge_cmd)
+
+        self.xas_e0.SetValue(lgroup.e0)
+        self.xas_step.SetValue(lgroup.edge_step)
+        
+        if out.startswith('pre'):
+            self.larch('%s._y1_ = %s.norm * %s.edge_step' % (gname, gname, gname))
+        elif out.startswith('norm'):
+            self.larch('%s._y1_ = %s.norm' % (gname, gname))            
+        elif out.startswith('flat'):
+            self.larch('%s._y1_ = %s.flat' % (gname, gname))            
+
+        return plotopts
 
     def init_larch(self):
         t0 = time.time()
@@ -282,7 +338,7 @@ class PlotterFrame(wx.Frame):
         # 'win old',  'Old Window'),
         # 'over left', 'Left Axis'),
         # 'over right', 'Right Axis')):
-        print 'on Plot nb = ', self.nb.GetCurrentPage() == self.xas_panel
+
         optwords = opt.split()
         plotframe = self.get_plotwindow(new=('new' in optwords[1]))
         plotcmd = plotframe.plot
@@ -341,10 +397,11 @@ class PlotterFrame(wx.Frame):
         if x not in ('0', '1'):    x = "%s.%s" % (gname, x)
 
         self.larch(xfmt % (gname, xop, x))
+        print '-> LARCH ', yfmt % (gname, op1, y1, op2, y2, op3, y3)
         self.larch(yfmt % (gname, op1, y1, op2, y2, op3, y3))
 
         path, fname = os.path.split(lgroup.filename)
-        popts['label'] = "%s: %s" % (lgroup.filename, ylabel)
+        popts['label'] = "%s: %s" % (fname, ylabel)
         if side == 'right':
             popts['y2label'] = ylabel
         else:
@@ -353,9 +410,13 @@ class PlotterFrame(wx.Frame):
         if plotcmd == plotframe.plot:
             popts['title'] = fname
 
+        # XAFS Processing!
+        if (self.nb.GetCurrentPage() == self.xas_panel):
+            popts = self.xas_process(gname, popts)
+
         plotcmd(lgroup._x1_, lgroup._y1_, **popts)
 
-
+    
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
