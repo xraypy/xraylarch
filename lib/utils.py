@@ -14,3 +14,8 @@ def normalize_pvname(name):
     if  '.' in name:
         return name
     return "%s.VAL" % name
+
+def asciikeys(adict):
+    """ensure a dictionary has ASCII keys (and so can be an **kwargs)"""
+    return dict((k.encode('ascii'), v) for k, v in adict.items())
+
