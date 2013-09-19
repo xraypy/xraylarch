@@ -231,7 +231,6 @@ class StepScan(object):
 
     def add_positioner(self, pos):
         """ add a Positioner """
-        print 'StepScan add positioner: ', pos, pos.extra_pvs
         self.add_extra_pvs(pos.extra_pvs)
         self.at_break_methods.append(pos.at_break)
         self.post_scan_methods.append(pos.post_scan)
@@ -343,7 +342,6 @@ class StepScan(object):
         self.abort = False
         orig_positions = [p.current() for p in self.positioners]
 
-        print 'Run Prescan '
         out = self.pre_scan()        
         self.check_outputs(out, msg='pre scan')
 
@@ -358,7 +356,6 @@ class StepScan(object):
         self.filename =  self.datafile.filename
 
         npts = len(self.positioners[0].array)
-
         self.dwelltime_varys = False
         if self.dwelltime is not None:
             self.min_dwelltime = self.dwelltime
@@ -371,7 +368,7 @@ class StepScan(object):
                 self.dwelltime_varys = True
             else:
                 for d in self.detectors:
-                    d.dwelltime = self.dwelltime                
+                    d.set_dwelltime(self.dwelltime)
                 
         self.message_thread = None
         if hasattr(self.messenger, '__call__'):
@@ -402,7 +399,7 @@ class StepScan(object):
                 [p.move_to_pos(i) for p in self.positioners]
                 if self.dwelltime_varys:
                     for d in self.detectors:
-                        d.dwelltime = self.dwelltime[i]
+                        d.set_dwelltime(self.dwelltime[i])
                 t0 = time.time()
                 mcount = 0
                 while (not all([p.done for p in self.positioners]) and
