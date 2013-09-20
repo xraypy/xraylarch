@@ -24,7 +24,7 @@ def load_dbscan(scandb, scanname):
         sdict = scandb.get_scandict(scanname)
     except ScanDBException:
         return None
-    scan = StepScan()            
+    scan = StepScan()
     if sdict['type'] == 'xafs':
         scan  = XAFS_Scan(energy_pv=sdict['energy_drive'],
                           read_pv=sdict['energy_read'],
@@ -50,7 +50,7 @@ def load_dbscan(scandb, scanname):
             p.array = np.linspace(start, stop, npts)
             scan.add_positioner(p)
             if len(pvs) > 0:
-                scan.add_counter(pvs[1], label="%s(read)" % label)
+                scan.add_counter(pvs[1], label="%s_read" % label)
                     
     elif sdict['type'] == 'mesh':
         label1, pvs1, start1, stop1, npts1 = sdict['inner']
@@ -66,9 +66,9 @@ def load_dbscan(scandb, scanname):
         scan.add_positioner(p1)
         scan.add_positioner(p2)
         if len(pvs1) > 0:
-            scan.add_counter(pvs1[1], label="%s(read)" % label1)
+            scan.add_counter(pvs1[1], label="%s_read" % label1)
         if len(pvs2) > 0:
-            scan.add_counter(pvs2[1], label="%s(read)" % label2)
+            scan.add_counter(pvs2[1], label="%s_read" % label2)
 
     elif sdict['type'] == 'slew':
         label1, pvs1, start1, stop1, npts1 = sdict['inner']
@@ -76,15 +76,16 @@ def load_dbscan(scandb, scanname):
         p1.array = np.linspace(start1, stop1, npts1)
         scan.add_positioner(p1)
         if len(pvs1) > 0:
-            scan.add_counter(pvs[1], label="%s(read)" % label1)
+            scan.add_counter(pvs[1], label="%s_read" % label1)
         if sdict['dimension'] >=2:
             label2, pvs2, start2, stop2, npts2 = sdict['outer']
             p2 = Positioner(pvs2[0], label=label2)
             p2.array = np.linspace(start2, stop2, npts2)
             scan.add_positioner(p2)
             if len(pvs2) > 0:
-                scan.add_counter(pvs2[1], label="%s(read)" % label2)
+                scan.add_counter(pvs2[1], label="%s_read" % label2)
 
+    
     for dpars in sdict['detectors']:
         scan.add_detector(get_detector(**dpars))
 
@@ -100,6 +101,37 @@ def load_dbscan(scandb, scanname):
     scan.det_settle_time = sdict.get('det_settle_time', 0.01)
     return scan
 
+class ScanWatcher(threading.Thread):
+    """ Thread to watch for scandb status requests (Abort, Pause, Resume)
+    and pass them to the current StepScan"""
+    scan_timeout  = 3*86400.0
+    start_timeout =    3600.0
+    def __init__(self, scandb, scan=None, **kws):
+        threading.Thread.__init__(self)
+        self.get_info = scandb.get_info
+        self.scan = scan
+        
+    def run(self):
+        """execute thread, watching for abort/pause/resume"""
+        t0 = time.time()
+        scan = self.scan
+        scan_started = False
+        while True:
+            time.sleep(0.5)
+            if time.time()-t0 > self.scan_timeout or scan is None:
+                return
+            # if scan has not yet started
+            if scan.cpt > 1:
+                scan_started = True
+            if not scan_started:
+                if time.time()-t0 > self.start_timeout:
+                    return
+                continue
+            # saw scan begin, and it is now complete!
+            if scan_started and scan.complete:
+                return
+            scan.abort = self.get_info('request_command_abort', as_bool=True)
+            scan.pause = self.get_info('request_command_pause', as_bool=True)
 
 class ScanServer():
     def __init__(self, dbname=None, **kws):
@@ -113,21 +145,41 @@ class ScanServer():
         """connect to Scan Database"""
         self.scandb = ScanDB(dbname, **kws)
 
-    def scan_messenger(self, cpt, **kws):
-        print 'ScanServer.scan_messener  ', cpt, kws
-        print 'Scan Obj: ', self.scan
-        print 'Abort: ', self.scandb.get_info('request_command_abort')
-        print 'Pause: ', self.scandb.get_info('request_command_pause')
-
-    def scan_prescan(self, **kws):
-        print 'ScanServer pre-scan'
-        self.scandb.set_info('filename', scan.filename)
+    def scan_messenger(self, cpt, npts=0, scan=None, **kws):
+        # print 'ScanServer.scan_messenger  ', cpt, scan, scan.filename
+        if scan is not None and cpt < 2:
+            self.scandb.set_info('filename', scan.filename)
+        for c in scan.counters:
+            self.scandb.append_scandata(c.label, c.buff[cpt-1])
+            
+    def scan_prescan(self, scan=None, **kws):
+        pass
         
+
     def do_scan(self, scanname, filename=None):
-        print 'do scan ', scanname
         self.scan = load_dbscan(self.scandb, scanname)
+        self.scan.complete = False
+        self.scan.pre_scan_methods.append(self.scan_prescan)
+        self.scandb.clear_scandata()
+        for p in self.scan.positioners:
+            self.scandb.add_scandata(p.label,
+                                     p.array.tolist(),
+                                     pvname=p.pv.pvname)
+        for c in self.scan.counters:
+            self.scandb.add_scandata(c.label, [],
+                                     pvname=c.pv.pvname)
+            
+        self.scandb.set_info('request_command_abort', 0)
+        self.scandb.set_info('request_command_pause', 0)        
         self.scan.messenger = self.scan_messenger
+
+        self.scanwatcher = ScanWatcher(self.scandb, scan=self.scan)
+        self.scanwatcher.start()
+
         self.scan.run(filename=filename)
+
+        if self.scanwatcher is not None:
+            self.scanwatcher.join()
         
     def do_caput(self, pvname, value, wait=False, timeout=30.0):
         print 'do caput ', pvname, value, wait
