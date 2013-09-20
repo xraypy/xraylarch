@@ -32,6 +32,14 @@ from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
 
 from .utils import strip_quotes, normalize_pvname, asciikeys
 
+class ScanDBException(Exception):
+    """Scan Exception: General Errors"""
+    def __init__(self, *args):
+        Exception.__init__(self, *args)
+        sys.excepthook(*sys.exc_info())
+
+
+
 def isScanDB(dbname, server='sqlite',
              user='', password='', host='', port=None):
     """test if a file is a valid scan database:
@@ -461,9 +469,6 @@ class ScanDB(object):
     def get_scandata(self, **kws):
         return self.getall('scandata', orderby='id', **kws)
 
-    def set_scandata(self, name, value,  **kws):
-        return self.getall('scandata', orderby='id', **kws)
-
     def add_scandata(self, name, value, notes='', pvname='', **kws):
         cls, table = self._get_table('scandata')
         kws.update({'notes': notes, 'pvname': pvname})
@@ -472,6 +477,12 @@ class ScanDB(object):
         self.session.add(row)
         self.commit()
         return row
+
+    def set_scandata(self, name, value,  **kws):
+        cls, tab = self._get_table('scandata')
+        where = "name='%s'" % name
+        tab.update().where(whereclause=where
+                           ).values({tab.c.data: value}).execute()
 
     def append_scandata(self, name, val):
         cls, tab = self._get_table('scandata')
