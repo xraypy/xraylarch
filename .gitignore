@@ -6,6 +6,7 @@
 doc/_build
 doc/*.pdf
 tests/.coverage*
+data/
 build
 dist
 sandbox
