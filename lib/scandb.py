@@ -457,6 +457,34 @@ class ScanDB(object):
         self.commit()
         return row
 
+    # scan data
+    def get_scandata(self, **kws):
+        return self.getall('scandata', orderby='id', **kws)
+
+    def set_scandata(self, name, value,  **kws):
+        return self.getall('scandata', orderby='id', **kws)
+
+    def add_scandata(self, name, value, notes='', pvname='', **kws):
+        cls, table = self._get_table('scandata')
+        kws.update({'notes': notes, 'pvname': pvname})
+        name = name.strip()
+        row = self.__addRow(cls, ('name', 'data'), (name, value), **kws)
+        self.session.add(row)
+        self.commit()
+        return row
+
+    def append_scandata(self, name, val):
+        cls, tab = self._get_table('scandata')
+        where = "name='%s'" % name
+        n = len(tab.select(whereclause=where
+                           ).execute().fetchone().data)
+        tab.update().where(whereclause=where
+                           ).values({tab.c.data[n]: val}).execute()
+
+    def clear_scandata(self, **kws):
+        cls, table = self._get_table('scandata')
+        self.conn.execute(table.delete().where(table.c.id != 0))
+
     # positioners
     def get_positioners(self, **kws):
         return self.getall('scanpositioners', orderby='id', **kws)
