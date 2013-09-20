@@ -26,7 +26,7 @@ from wx._core import PyDeadObjectError
 import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
 
-from larch import Interpreter, use_plugin_path
+from larch import Interpreter, use_plugin_path, isParameter
 from larch.fitting import fit_report
 
 use_plugin_path('math')
@@ -183,6 +183,7 @@ class PlotterFrame(wx.Frame):
         self.fit_step = add_choice(panel, size=(100, -1),
                                   choices=('linear', 'error function', 'arctan'))
 
+        self.fit_report = wx.StaticText(panel, -1, "", (180, 200))
         sizer = wx.GridBagSizer(10, 4)
         sizer.Add(SimpleText(p, 'Fit Model: '),           (0, 0), (1, 1), LCEN)
         sizer.Add(self.fit_model,                         (0, 1), (1, 1), LCEN)
@@ -195,6 +196,7 @@ class PlotterFrame(wx.Frame):
         sizer.Add(self.fit_step,                          (2, 1), (1, 1), LCEN)
         sizer.Add(add_button(panel, 'Show Fit', size=(100, -1),
                              action=self.onFitPeak),       (3, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_report,                         (1, 2), (4, 2), LCEN)
         pack(panel, sizer)
         return panel
 
@@ -251,20 +253,40 @@ class PlotterFrame(wx.Frame):
         if self.fit_dtcorr.IsChecked():
             print 'fit needs to dt correct!'
 
+        dtext = []
         model = self.fit_model.GetStringSelection().lower()
+        dtext.append('Fit Model: %s' % model)
         bkg =  self.fit_bkg.GetStringSelection()
-        if bkg == 'None': bkg = None
+        if bkg == 'None':
+            bkg = None
+        if bkg is None:
+            dtext.append('No Background')
+        else:
+            dtext.append('Background: %s' % bkg)
+
         step = self.fit_step.GetStringSelection().lower()
-
+        if model in ('step', 'rectangle'):
+            dtext.append('Step form: %s' % step)
         lgroup =  getattr(self.larch.symtable, gname)
-
         x = lgroup._x1_
         y = lgroup._y1_
         pgroup = fit_peak(x, y, model, background=bkg, step=step,
                           _larch=self.larch)
-        # print fit_report(pgroup.params, _larch=self.larch)
+        text = fit_report(pgroup.params, _larch=self.larch)
+        dtext.append('Parameters: ')
+        for pname in dir(pgroup.params):
+            par = getattr(pgroup.params, pname)
+            if isParameter(par):
+                ptxt = "    %s= %.4f" % (par.name, par.value)
+                if (hasattr(par, 'stderr') and par.stderr is not None):
+                    ptxt = "%s(%.4f)" % (ptxt, par.stderr)
+                dtext.append(ptxt)
+
+        dtext = '\n'.join(dtext)
         plotframe = self.get_plotwindow()
-        plotframe.oplot(x, pgroup.fit, label='fit')
+        plotframe.oplot(x, pgroup.fit, label='fit (%s)' % model)
+        text = fit_report(pgroup.params, _larch=self.larch)
+        self.fit_report.SetLabel(dtext)
 
     def xas_process(self, gname, plotopts):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
