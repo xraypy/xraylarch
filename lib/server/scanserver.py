@@ -13,8 +13,9 @@ from ..detectors import get_detector
 from ..positioner import Positioner
 from ..stepscan import StepScan
 from ..xafs_scan import XAFS_Scan
-
-from ..scandb import ScanDB
+from ..scandb import ScanDB, ScanDBException
+from ..utils import get_units
+from ..file_utils import fix_filename
 
 def load_dbscan(scandb, scanname):
     """load a scan definition from the database
@@ -147,11 +148,13 @@ class ScanServer():
 
     def scan_messenger(self, cpt, npts=0, scan=None, **kws):
         # print 'ScanServer.scan_messenger  ', cpt, scan, scan.filename
-        if scan is not None and cpt < 2:
+        if scan is None:
+            return
+        if cpt < 3:
             self.scandb.set_info('filename', scan.filename)
         for c in scan.counters:
-            self.scandb.append_scandata(c.label, c.buff[cpt-1])
-            
+            self.scandb.set_scandata(fix_filename(c.label), c.buff)
+
     def scan_prescan(self, scan=None, **kws):
         pass
         
@@ -162,12 +165,16 @@ class ScanServer():
         self.scan.pre_scan_methods.append(self.scan_prescan)
         self.scandb.clear_scandata()
         for p in self.scan.positioners:
-            self.scandb.add_scandata(p.label,
+            units = get_units(p.pv, 'unknown')
+            self.scandb.add_scandata(fix_filename(p.label),
                                      p.array.tolist(),
-                                     pvname=p.pv.pvname)
+                                     pvname=p.pv.pvname,
+                                     notes=units)
         for c in self.scan.counters:
-            self.scandb.add_scandata(c.label, [],
-                                     pvname=c.pv.pvname)
+            units = get_units(c.pv, 'counts')
+            self.scandb.add_scandata(fix_filename(c.label), [],
+                                     pvname=c.pv.pvname,
+                                     units=units)
             
         self.scandb.set_info('request_command_abort', 0)
         self.scandb.set_info('request_command_pause', 0)        
