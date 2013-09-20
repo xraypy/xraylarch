@@ -124,7 +124,8 @@ expected one of the following:
 class LinearModel(FitModel):
     """Linear Model: slope, offset, no background"""
     def __init__(self, offset=0, slope=0, **kws):
-        FitModel.__init__(self, background=None, **kws)
+        kws['background'] = None
+        FitModel.__init__(self, **kws)
         self.add_param('offset', value=offset)
         self.add_param('slope',  value=slope)
 
@@ -141,7 +142,8 @@ class LinearModel(FitModel):
 class QuadraticModel(FitModel):
     """Quadratic Model: slope, offset, quad, no background"""
     def __init__(self, offset=0, slope=0, quad=0, **kws):
-        FitModel.__init__(self, background=None, **kws)
+        kws['background'] = None
+        FitModel.__init__(self, **kws)
         self.add_param('offset', value=offset)
         self.add_param('slope',  value=slope)
         self.add_param('quad',  value=quad)
