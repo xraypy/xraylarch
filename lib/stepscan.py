@@ -158,6 +158,7 @@ class StepScan(object):
 
         self.verified = False
         self.abort = False
+        self.pause = False        
         self.inittime = 0 # time to initialize scan (pre_scan, move to start, begin i/o)
         self.looptime = 0 # time to run scan loop (even if aborted)
         self.exittime = 0 # time to complete scan (post_scan, return positioners, complete i/o)
@@ -166,7 +167,8 @@ class StepScan(object):
         self.message_thread = None
         self.messenger = messenger
         if filename is not None:
-            self.datafile = self.open_output_file(filename=filename, comments=comments)
+            self.datafile = self.open_output_file(filename=filename,
+                                                  comments=comments)
 
         self.cpt = 0
         self.npts = 0
@@ -200,7 +202,7 @@ class StepScan(object):
 
     def add_counter(self, counter, label=None):
         "add simple counter"
-        if isinstance(counter, str):
+        if isinstance(counter, (str, unicode)):
             counter = Counter(counter, label)
         if (isinstance(counter, (Counter, DeviceCounter)) and
             counter not in self.counters):
@@ -209,7 +211,7 @@ class StepScan(object):
 
     def add_trigger(self, trigger, label=None, value=1):
         "add simple detector trigger"
-        if isinstance(trigger, str):
+        if isinstance(trigger, (str, unicode)):
             trigger = Trigger(trigger, label=label, value=value)
         if (isinstance(trigger, Trigger) and
             trigger not in self.triggers):
@@ -338,10 +340,9 @@ class StepScan(object):
             print self.error_message
             return
         self.abort = False
+        self.pause = False
         orig_positions = [p.current() for p in self.positioners]
 
-        out = self.pre_scan()        
-        self.check_outputs(out, msg='pre scan')
 
         out = [p.move_to_start(wait=False) for p in self.positioners]
         self.check_outputs(out, msg='move to start')
@@ -352,6 +353,9 @@ class StepScan(object):
 
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
+
+        out = self.pre_scan()        
+        self.check_outputs(out, msg='pre scan')
 
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
@@ -392,7 +396,10 @@ class StepScan(object):
             try:
                 point_ok = True
                 self.cpt = i+1
-
+                while self.pause:
+                    time.sleep(0.25)
+                    if self.abort:
+                        break
                 # move to next position, wait for moves to finish
                 [p.move_to_pos(i) for p in self.positioners]
                 if self.dwelltime_varys:
