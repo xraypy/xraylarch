@@ -134,19 +134,23 @@ class PlotterFrame(wx.Frame):
 
 
         ir += 1
-        sizer.Add(SimpleText(panel, ' New Plot: '),  (ir,   0), (1, 3), LCEN, 0)
-        sizer.Add(SimpleText(panel, ' Over Plot: '), (ir+1, 0), (1, 3), LCEN, 0)
+        # sizer.Add(SimpleText(panel, ' New Plot: '),  (ir,   0), (1, 3), LCEN, 0)
+        # sizer.Add(SimpleText(panel, ' Over Plot: '), (ir+1, 0), (1, 3), LCEN, 0)
 
-        for jr, ic, dc, opt, ttl in ((0, 3, 1, 'win old', 'Old Window'),
-                                     (0, 4, 2, 'win new',  'New Window'),
-                                     (1, 3, 1, 'over left', 'Left Axis'),
-                                     (1, 4, 1, 'over right', 'Right Axis')):
-            sizer.Add(add_button(panel, ttl, size=(100, -1),
+        for jr, ic, dc, opt, ttl in ((0, 0, 4, 'win old',    'New Plot, This Window'),
+                                     (0, 4, 2, 'win new',    'New Plot, New Window'),
+                                     (1, 0, 4, 'over left',  'Over Plot, Left Axis'),
+                                     (1, 4, 2, 'over right', 'Over Plot, Right Axis')):
+            sizer.Add(add_button(panel, ttl, size=(165, -1),
                                  action=Closure(self.onPlot, opt=opt)),
                       (ir+jr, ic), (1, dc), LCEN, 2)
 
         ir += 2
-        sizer.Add(SimpleText(panel, ' '),  (ir,   0), (1, 3), LCEN, 0)
+        self.dtcorr   = check(panel, default=True, label='correct deadtime?')
+        sizer.Add(self.dtcorr,  (ir,   0), (1, 3), LCEN, 0)
+        ir += 1
+        sizer.Add(SimpleText(panel, ''), (ir,   0), (1, 3), LCEN, 0)
+        
         pack(panel, sizer)
 
 
@@ -172,7 +176,6 @@ class PlotterFrame(wx.Frame):
 
     def CreateFitPanel(self, parent):
         p = panel = wx.Panel(parent)
-        self.fit_dtcorr  = check(panel, default=True, label='correct deadtime?')
         self.fit_model   = add_choice(panel, size=(100, -1),
                                       choices=('Gaussian', 'Lorentzian',
                                                'Voigt', 'Linear', 'Quadratic',
@@ -187,7 +190,6 @@ class PlotterFrame(wx.Frame):
         sizer = wx.GridBagSizer(10, 4)
         sizer.Add(SimpleText(p, 'Fit Model: '),           (0, 0), (1, 1), LCEN)
         sizer.Add(self.fit_model,                         (0, 1), (1, 1), LCEN)
-        sizer.Add(self.fit_dtcorr,                        (0, 2), (1, 1), LCEN)
 
         sizer.Add(SimpleText(p, 'Background: '),          (1, 0), (1, 1), LCEN)
         sizer.Add(self.fit_bkg,                           (1, 1), (1, 1), LCEN)
@@ -196,13 +198,12 @@ class PlotterFrame(wx.Frame):
         sizer.Add(self.fit_step,                          (2, 1), (1, 1), LCEN)
         sizer.Add(add_button(panel, 'Show Fit', size=(100, -1),
                              action=self.onFitPeak),       (3, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_report,                         (1, 2), (4, 2), LCEN)
+        sizer.Add(self.fit_report,                         (0, 2), (4, 2), LCEN, 3)
         pack(panel, sizer)
         return panel
 
     def CreateXASPanel(self, parent):
         p = panel = wx.Panel(parent)
-        self.xas_dtcorr   = check(panel, default=True, label='correct deadtime?')
         self.xas_autoe0   = check(panel, default=True, label='auto?')
         self.xas_autostep = check(panel, default=True, label='auto?')
         self.xas_op       = add_choice(panel, size=(95, -1),
@@ -236,7 +237,6 @@ class PlotterFrame(wx.Frame):
         sizer.Add(SimpleText(p, ':'),          (4, 2), (1, 1), LCEN)
         sizer.Add(self.xas_nor2,               (4, 3), (1, 1), LCEN)
 
-        sizer.Add(self.xas_dtcorr,             (0, 2), (1, 3), LCEN)
         sizer.Add(self.xas_autoe0,             (1, 2), (1, 2), LCEN)
         sizer.Add(self.xas_autostep,           (2, 2), (1, 2), LCEN)
 
@@ -250,7 +250,7 @@ class PlotterFrame(wx.Frame):
 
     def onFitPeak(self, evt=None):
         gname = self.groupname
-        if self.fit_dtcorr.IsChecked():
+        if self.dtcorr.IsChecked():
             print 'fit needs to dt correct!'
 
         dtext = []
@@ -301,7 +301,7 @@ class PlotterFrame(wx.Frame):
 
         lgroup = getattr(self.larch.symtable, gname)
 
-        if self.xas_dtcorr.IsChecked():
+        if self.dtcorr.IsChecked():
             print 'need to dt correct!'
 
         if not self.xas_autoe0.IsChecked():
@@ -396,8 +396,11 @@ class PlotterFrame(wx.Frame):
         ix = self.x_choice.GetSelection()
         x  = self.x_choice.GetStringSelection()
 
-        gname = self.groupname
-        lgroup = getattr(self.larch.symtable, gname)
+        try:
+            gname = self.groupname
+            lgroup = getattr(self.larch.symtable, gname)
+        except:
+            return
 
         xfmt = "%s._x1_ = %s(%s)"
         yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
