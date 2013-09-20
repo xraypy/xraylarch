@@ -9,6 +9,15 @@ def strip_quotes(t):
             t = t[1:-1]
     return t
 
+def get_units(pv, default):
+    try:
+        units = pv.units
+    except:
+        units = ''
+    if units in (None, ''):
+        units = default
+    return units
+
 def normalize_pvname(name):
     """ make sure Epics PV name either ends with .VAL or .SOMETHING!"""
     if  '.' in name:
