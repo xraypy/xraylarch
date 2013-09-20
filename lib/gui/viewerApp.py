@@ -26,6 +26,12 @@ from wx._core import PyDeadObjectError
 import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
 
+from larch import Interpreter, use_plugin_path
+from larch.fitting import fit_report
+
+use_plugin_path('math')
+from fitpeak import fit_peak
+
 from wxmplot import PlotFrame
 from xdifile import XDIFile
 from ..datafile import StepScanData
@@ -128,21 +134,22 @@ class PlotterFrame(wx.Frame):
 
 
         ir += 1
-        sizer.Add(SimpleText(panel, ' New Plot: '),  (ir,  0), (1, 2), LCEN, 0)
-        sizer.Add(SimpleText(panel, ' Over Plot: '), (ir+1,  0), (1, 2), LCEN, 0)
+        sizer.Add(SimpleText(panel, ' New Plot: '),  (ir,   0), (1, 3), LCEN, 0)
+        sizer.Add(SimpleText(panel, ' Over Plot: '), (ir+1, 0), (1, 3), LCEN, 0)
 
-        for jr, ic, opt, ttl in ((0, 2, 'win old', 'Old Window'),
-                                 (0, 4, 'win new',  'New Window'),
-                                 (1, 2, 'over left', 'Left Axis'),
-                                 (1, 4, 'over right', 'Right Axis')):
+        for jr, ic, dc, opt, ttl in ((0, 3, 1, 'win old', 'Old Window'),
+                                     (0, 4, 2, 'win new',  'New Window'),
+                                     (1, 3, 1, 'over left', 'Left Axis'),
+                                     (1, 4, 1, 'over right', 'Right Axis')):
             sizer.Add(add_button(panel, ttl, size=(100, -1),
                                  action=Closure(self.onPlot, opt=opt)),
-                      (ir+jr, ic), (1, 2), LCEN, 2)
+                      (ir+jr, ic), (1, dc), LCEN, 2)
 
         ir += 2
+        sizer.Add(SimpleText(panel, ' '),  (ir,   0), (1, 3), LCEN, 0)
         pack(panel, sizer)
-        
-        
+
+
         self.nb = flat_nb.FlatNotebook(mainpanel, -1, agwStyle=FNB_STYLE)
 
         self.nb.SetTabAreaColour(wx.Colour(248,248,240))
@@ -150,7 +157,7 @@ class PlotterFrame(wx.Frame):
 
         self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
-        
+
         self.xas_panel = self.CreateXASPanel(self.nb) # mainpanel)
         self.fit_panel = self.CreateFitPanel(self.nb) # mainpanel)
 
@@ -158,24 +165,18 @@ class PlotterFrame(wx.Frame):
         self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
 
         mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
-        mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)        
+        mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         pack(mainpanel, mainsizer)
 
         return mainpanel
 
-    def onFit(self, evt=None):
-        print 'fit!'
-
     def CreateFitPanel(self, parent):
         p = panel = wx.Panel(parent)
         self.fit_dtcorr  = check(panel, default=True, label='correct deadtime?')
-        self.fit_btn     = add_button(panel, 'Fit Data', size=(100, -1),
-                                 action=self.onFit)
-
         self.fit_model   = add_choice(panel, size=(100, -1),
-                                      choices=('Linear', 'Quadratic',
-                                               'Gaussian', 'Lorentzian',
-                                               'Voigt', 'Step', 'Rectangle',
+                                      choices=('Gaussian', 'Lorentzian',
+                                               'Voigt', 'Linear', 'Quadratic',
+                                               'Step', 'Rectangle',
                                                'Exponential'))
         self.fit_bkg = add_choice(panel, size=(100, -1),
                                   choices=('None', 'constant', 'linear', 'quadtratic'))
@@ -189,11 +190,11 @@ class PlotterFrame(wx.Frame):
 
         sizer.Add(SimpleText(p, 'Background: '),          (1, 0), (1, 1), LCEN)
         sizer.Add(self.fit_bkg,                           (1, 1), (1, 1), LCEN)
-        
+
         sizer.Add(SimpleText(p, 'Step Function Form: '),  (2, 0), (1, 1), LCEN)
         sizer.Add(self.fit_step,                          (2, 1), (1, 1), LCEN)
-        sizer.Add(self.fit_btn,                           (3, 0), (1, 1), LCEN)
-
+        sizer.Add(add_button(panel, 'Show Fit', size=(100, -1),
+                             action=self.onFitPeak),       (3, 0), (1, 1), LCEN)
         pack(panel, sizer)
         return panel
 
@@ -245,6 +246,26 @@ class PlotterFrame(wx.Frame):
         pack(panel, sizer)
         return panel
 
+    def onFitPeak(self, evt=None):
+        gname = self.groupname
+        if self.fit_dtcorr.IsChecked():
+            print 'fit needs to dt correct!'
+
+        model = self.fit_model.GetStringSelection().lower()
+        bkg =  self.fit_bkg.GetStringSelection()
+        if bkg == 'None': bkg = None
+        step = self.fit_step.GetStringSelection().lower()
+
+        lgroup =  getattr(self.larch.symtable, gname)
+
+        x = lgroup._x1_
+        y = lgroup._y1_
+        pgroup = fit_peak(x, y, model, background=bkg, step=step,
+                          _larch=self.larch)
+        # print fit_report(pgroup.params, _larch=self.larch)
+        plotframe = self.get_plotwindow()
+        plotframe.oplot(x, pgroup.fit, label='fit')
+
     def xas_process(self, gname, plotopts):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
@@ -257,7 +278,7 @@ class PlotterFrame(wx.Frame):
         preopts = {'group': gname, 'e0': None, 'step': None}
 
         lgroup = getattr(self.larch.symtable, gname)
-        
+
         if self.xas_dtcorr.IsChecked():
             print 'need to dt correct!'
 
@@ -266,8 +287,8 @@ class PlotterFrame(wx.Frame):
             e0 = self.xas_e0.GetValue()
             if e0 < xmax and e0 > xmin:
                 preopts['e0'] = e0
-            
-        if not self.xas_autostep.IsChecked():                
+
+        if not self.xas_autostep.IsChecked():
             preopts['step'] = self.xas_step.GetValue()
 
         preopts['pre1']  = self.xas_pre1.GetValue()
@@ -280,24 +301,23 @@ class PlotterFrame(wx.Frame):
 
         preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
         preedge_cmd = "pre_edge(%s._x1_, %s._y1_, %s)" % (gname, gname, preopts)
-        
+
         self.larch(preedge_cmd)
 
         self.xas_e0.SetValue(lgroup.e0)
         self.xas_step.SetValue(lgroup.edge_step)
-        
+
         if out.startswith('pre'):
             self.larch('%s._y1_ = %s.norm * %s.edge_step' % (gname, gname, gname))
         elif out.startswith('norm'):
-            self.larch('%s._y1_ = %s.norm' % (gname, gname))            
+            self.larch('%s._y1_ = %s.norm' % (gname, gname))
         elif out.startswith('flat'):
-            self.larch('%s._y1_ = %s.flat' % (gname, gname))            
+            self.larch('%s._y1_ = %s.flat' % (gname, gname))
 
         return plotopts
 
     def init_larch(self):
         t0 = time.time()
-        from larch import Interpreter
         from larch.wxlib import inputhook
         self.larch = Interpreter()
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
@@ -391,13 +411,12 @@ class PlotterFrame(wx.Frame):
         if op1 != '':
             ylabel = "%s(%s)" % (op1, ylabel)
 
-        if y1 not in ('0', '1'):  y1 = "%s.%s" % (gname, y1)
-        if y2 not in ('0', '1'):  y2 = "%s.%s" % (gname, y2)
-        if y3 not in ('0', '1'):  y3 = "%s.%s" % (gname, y3)
-        if x not in ('0', '1'):    x = "%s.%s" % (gname, x)
+        if y1 not in ('0', '1'): y1 = "%s.%s" % (gname, y1)
+        if y2 not in ('0', '1'): y2 = "%s.%s" % (gname, y2)
+        if y3 not in ('0', '1'): y3 = "%s.%s" % (gname, y3)
+        if x  not in ('0', '1'):  x = "%s.%s" % (gname,  x)
 
         self.larch(xfmt % (gname, xop, x))
-        print '-> LARCH ', yfmt % (gname, op1, y1, op2, y2, op3, y3)
         self.larch(yfmt % (gname, op1, y1, op2, y2, op3, y3))
 
         path, fname = os.path.split(lgroup.filename)
@@ -416,7 +435,7 @@ class PlotterFrame(wx.Frame):
 
         plotcmd(lgroup._x1_, lgroup._y1_, **popts)
 
-    
+
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
@@ -439,11 +458,16 @@ class PlotterFrame(wx.Frame):
         self.x_choice.SetSelection(0)
         self.yarr1.SetItems(ycols)
         self.yarr1.SetSelection(1)
-
         self.yarr2.SetItems(y2cols)
         self.yarr3.SetItems(y2cols)
         self.yarr2.SetSelection(len(y2cols))
         self.yarr3.SetSelection(len(y2cols))
+
+        inb = 0
+        for colname in xcols:
+            if 'energ' in colname.lower():
+                inb = 1
+        self.nb.SetSelection(inb)
 
     def createMenus(self):
         # ppnl = self.plotpanel
