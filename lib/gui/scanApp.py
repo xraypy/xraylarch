@@ -47,7 +47,7 @@ from epics.wx import DelayedEpicsCallback, EpicsFunction, finalize_epics
 from epics.wx.utils import popup
 
 from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
-                        add_menu, add_choice, add_menu, FRAMESTYLE)
+                        add_menu, add_choice, add_menu, CEN, LCEN, FRAMESTYLE)
 
 from ..utils import normalize_pvname
 from ..stepscan import StepScan
@@ -160,22 +160,28 @@ class ScanFrame(wx.Frame):
         self.msg1  = SimpleText(bpanel, "    ", size=(200, -1))
         self.msg2  = SimpleText(bpanel, "    ", size=(200, -1))
         self.msg3  = SimpleText(bpanel, "    ", size=(200, -1))
-        self.start_btn = add_button(bpanel, "Start", action=self.onStartScan)
-        self.abort_btn = add_button(bpanel, "Abort", action=self.onAbortScan)
-        self.abort_btn.Disable()
 
-        sty = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-        bsizer.Add(SimpleText(bpanel, "Number of Scans:"), (0, 0), (1, 1), sty)
-        bsizer.Add(SimpleText(bpanel, "File Name:"),       (1, 0), (1, 1), sty)
-        bsizer.Add(SimpleText(bpanel, "Comments:"),        (2, 0), (1, 1), sty)
-        bsizer.Add(self.nscans,     (0, 1), (1, 1), sty, 2)
-        bsizer.Add(self.filename,   (1, 1), (1, 2), sty, 2)
-        bsizer.Add(self.user_comms, (2, 1), (1, 2), sty, 2)
-        bsizer.Add(self.msg1,       (0, 4), (1, 1), sty, 2)
-        bsizer.Add(self.msg2,       (1, 4), (1, 1), sty, 2)
-        bsizer.Add(self.msg3,       (2, 4), (1, 1), sty, 2)
-        bsizer.Add(self.start_btn,  (3, 0), (1, 1), sty, 5)
-        bsizer.Add(self.abort_btn,  (3, 1), (1, 1), sty, 5)
+
+        bsizer.Add(SimpleText(bpanel, "Number of Scans:"), (0, 0), (1, 1), LCEN)
+        bsizer.Add(SimpleText(bpanel, "File Name:"),       (1, 0), (1, 1), LCEN)
+        bsizer.Add(SimpleText(bpanel, "Comments:"),        (2, 0), (1, 1), LCEN)
+        bsizer.Add(self.nscans,     (0, 1), (1, 1), LCEN, 2)
+        bsizer.Add(self.filename,   (1, 1), (1, 2), LCEN, 2)
+        bsizer.Add(self.user_comms, (2, 1), (1, 2), LCEN, 2)
+        bsizer.Add(self.msg1,       (0, 4), (1, 1), LCEN, 2)
+        bsizer.Add(self.msg2,       (1, 4), (1, 1), LCEN, 2)
+        bsizer.Add(self.msg3,       (2, 4), (1, 1), LCEN, 2)
+
+        btnsizer = wx.BoxSizer(wx.HORIZONTAL)
+        btnpanel = wx.Panel(bpanel)
+        for ibtn, label in enumerate(("Start", "Abort", "Pause", "Resume")):
+            btn = add_button(btnpanel, label, size=(120, -1),
+                             action=Closure(self.onCtrlScan, cmd=label))
+            btnsizer.Add(btn, 0, CEN, 8)
+        pack(btnpanel, btnsizer)
+        
+        ir = 3
+        bsizer.Add(btnpanel,  (3, 0), (1, 4), LCEN, 5)
 
         bpanel.SetSizer(bsizer)
         bsizer.Fit(bpanel)
@@ -277,8 +283,16 @@ class ScanFrame(wx.Frame):
                                 output_file=fname)
 
 
-    def onAbortScan(self, evt=None):
-        print 'Abort Scan ', evt
+    def onCtrlScan(self, evt=None, cmd=''):
+        cmd = cmd.lower()
+        if cmd == 'start':
+            self.onStartScan()
+        elif cmd == 'abort':
+            self.scandb.set_info('request_command_abort', 1)
+        elif cmd == 'pause':
+            self.scandb.set_info('request_command_pause', 1)            
+        elif cmd == 'resume':
+            self.scandb.set_info('request_command_pause', 0)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
