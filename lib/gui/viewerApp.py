@@ -13,6 +13,7 @@ To Do:
 import os
 import time
 import shutil
+import numpy as np
 from random import randrange
 
 from datetime import timedelta
@@ -35,6 +36,9 @@ from fitpeak import fit_peak
 from wxmplot import PlotFrame
 from xdifile import XDIFile
 from ..datafile import StepScanData
+from ..scandb import ScanDB
+from ..file_utils import fix_filename
+
 from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
                         add_menu, add_choice, add_menu, check,
                         CEN, RCEN, LCEN, FRAMESTYLE, Font)
@@ -47,20 +51,30 @@ def randname(n=6):
     "return random string of n (default 6) lowercase letters"
     return ''.join([chr(randrange(26)+97) for i in range(n)])
 
+CURSCAN, SCANGROUP = '< Current Scan >', '_scan_'
 class PlotterFrame(wx.Frame):
-    _about = """StepScan Plotter
+    _about = """StepScan 2D Plotter
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, conffile=None,  **kwds):
-        kwds["style"] = FRAMESTYLE
-        wx.Frame.__init__(self, None, -1, **kwds)
-
+    def __init__(self, dbname=None, server='sqlite', host=None,
+                 port=None, user=None, password=None, create=True, **kws):
+    
+            
+        wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
         self.data = None
         self.filemap = {}
+        title = "Step Scan Data File Viewer"
+        self.scandb = None
+        if dbname is not None:
+            self.scandb = ScanDB(dbname=dbname, server=server, host=host,
+                                 user=user, password=password, port=port,
+                                 create=create)
+            self.filemap[CURSCAN] = SCANGROUP
+            title = '%s, with Live Scan Viewing' % title
         self.larch = None
         self.plotters = []
 
-        self.SetTitle("Step Scan Data File Viewer")
+        self.SetTitle(title)
         self.SetSize((700, 450))
         self.SetFont(Font(9))
 
@@ -72,6 +86,44 @@ class PlotterFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
+
+        if dbname is not None:
+            self.live_scanfile = None
+            self.live_cpt = -1
+            self.filelist.Append(CURSCAN)
+            self.scantimer = wx.Timer(self)
+            self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
+            self.scantimer.Start(250)
+
+    def onScanTimer(self, evt=None, **kws):
+        if self.larch is None:
+            return
+        group =  getattr(self.larch.symtable, SCANGROUP)
+
+        curfile = fix_filename(self.scandb.get_info('filename'))
+        if curfile != self.live_scanfile:
+            self.live_scanfile = curfile
+            group.filename = self.live_scanfile
+            group.array_units = []
+            self.live_cpt = -1
+        
+        sdata = self.scandb.get_scandata()
+        if len(sdata) <= 1:
+            return
+        npts = len(sdata[-1].data)
+
+        if npts <= self.live_cpt:
+            return
+
+        self.live_cpt = npts
+        if len(group.array_units) < 1:
+            group.array_units = [str(row.notes) for row in sdata]
+
+        for row in sdata:
+            setattr(group, fix_filename(row.name), np.array(row.data))
+        if npts > 2:
+            wx.CallAfter(self.onPlot, evt=None, opt='update left', npts=npts)
+        
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
         splitter.SetMinimumPaneSize(175)
@@ -344,6 +396,7 @@ class PlotterFrame(wx.Frame):
         self.larch = Interpreter()
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
+        self.larch('%s = group(filename="%s")' % (SCANGROUP, CURSCAN))
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
         self.title.SetLabel('')
@@ -375,21 +428,25 @@ class PlotterFrame(wx.Frame):
 
         return pframe
 
-    def onPlot(self, evt=None, opt='over right'):
+    def onPlot(self, evt=None, opt='over right', npts=0):
         # 'win new', 'New Window'),
         # 'win old',  'Old Window'),
         # 'over left', 'Left Axis'),
         # 'over right', 'Right Axis')):
+        # 'update left',  from scan
 
         optwords = opt.split()
         plotframe = self.get_plotwindow(new=('new' in optwords[1]))
         plotcmd = plotframe.plot
+        
 
         optwords = opt.split()
         side = 'left'
         if optwords[0] == 'over':
             side = optwords[1]
             plotcmd = plotframe.oplot
+        elif optwords[0] == 'update'  and npts > 4:
+            plotcmd = plotframe.update_line
 
         popts = {'side': side}
 
@@ -400,6 +457,7 @@ class PlotterFrame(wx.Frame):
             gname = self.groupname
             lgroup = getattr(self.larch.symtable, gname)
         except:
+            print '..no gname .. '
             return
 
         xfmt = "%s._x1_ = %s(%s)"
@@ -407,7 +465,10 @@ class PlotterFrame(wx.Frame):
         xop = self.x_op.GetStringSelection()
 
         xlabel = x
-        xunits = lgroup.array_units[ix]
+        try:
+            xunits = lgroup.array_units[ix]
+        except:
+            xunits = ''
         if xop != '':
             xlabel = "%s(%s)" % (xop, xlabel)
         if xunits != '':
@@ -441,8 +502,21 @@ class PlotterFrame(wx.Frame):
         if y3 not in ('0', '1'): y3 = "%s.%s" % (gname, y3)
         if x  not in ('0', '1'):  x = "%s.%s" % (gname,  x)
 
+        # print 'Group X ... ', xfmt % (gname, xop, x)
+        # print 'Group Y ... ', yfmt % (gname, op1, y1, op2, y2, op3, y3)
+        
         self.larch(xfmt % (gname, xop, x))
         self.larch(yfmt % (gname, op1, y1, op2, y2, op3, y3))
+
+        # print 'Group X ... ', len(lgroup._x1_), lgroup._x1_
+        # print 'Group Y ... ', len(lgroup._y1_), lgroup._y1_
+
+        if len(lgroup._x1_) !=  len(lgroup._y1_):
+            n = min(len(lgroup._x1_), len(lgroup._y1_))        
+            lgroup._x1_ =  lgroup._x1_[:n]
+            lgroup._y1_ =  lgroup._y1_[:n]
+        lgroup._x1_ = np.array(lgroup._x1_)
+        lgroup._y1_ = np.array(lgroup._y1_)
 
         path, fname = os.path.split(lgroup.filename)
         popts['label'] = "%s: %s" % (fname, ylabel)
@@ -457,28 +531,35 @@ class PlotterFrame(wx.Frame):
         # XAFS Processing!
         if (self.nb.GetCurrentPage() == self.xas_panel):
             popts = self.xas_process(gname, popts)
-
-        plotcmd(lgroup._x1_, lgroup._y1_, **popts)
-
+        if plotcmd == plotframe.update_line:
+            # print 'Update line ', len(lgroup._x1_)
+            plotframe.plot(lgroup._x1_, lgroup._y1_, **popts)
+            # update_line(0, lgroup._x1_, lgroup._y1_, update_limits=True)
+        else:
+            plotcmd(lgroup._x1_, lgroup._y1_, **popts)            
 
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
-
         key = filename
         if filename in self.filemap:
             key = self.filemap[filename]
-        if not hasattr(self.datagroups, key):
-            print 'cannot find key ', key
-            return
-        data = getattr(self.datagroups, key)
-        self.groupname = key
 
-        xcols = data.array_labels[:]
-        ycols = data.array_labels[:]
-        y2cols = data.array_labels[:] + ['1.0', '0.0', '']
-        ncols = len(xcols)
-        self.title.SetLabel(data.filename)
+        print 'SHOW FILE ', filename, key, self.scandb
+        if key == SCANGROUP:
+            array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
+            title = filename
+        elif hasattr(self.datagroups, key):
+            data = getattr(self.datagroups, key)
+            title = data.filename
+            array_labels = data.array_labels[:]
+
+        self.groupname = key
+        xcols  = array_labels[:]
+        ycols  = array_labels[:]
+        y2cols = array_labels[:] + ['1.0', '0.0', '']
+        ncols  = len(xcols)
+        self.title.SetLabel(title)
         self.x_choice.SetItems(xcols)
         self.x_choice.SetSelection(0)
         self.yarr1.SetItems(ycols)
@@ -528,58 +609,6 @@ class PlotterFrame(wx.Frame):
         # self.menubar.Append(pmenu, "Plot Options")
         self.SetMenuBar(self.menubar)
 
-    def get_plotpanel(self):
-
-        pass
-
-    def onConfigurePlot(self, evt=None):
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.configure()
-
-    def onUnzoom(self, evt=None):
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.unzoom()
-
-    def onToggleLegend(self, evt=None):
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.toggle_legend()
-
-    def onToggleGrid(self, evt=None):
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.toggle_grid()
-
-    def onPrint(self, evt=None):
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.Print()
-
-    def onPrintSetup(self, evt=None):
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.PrintSetup()
-
-    def onPrintPreview(self, evt=None):
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.PrintPreview()
-
-
-
-    def onClipboard(self, evt=None):
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.canvas.Copy_to_Clipboard()
-
-    def onSaveFig(self,event=None, transparent=False, dpi=600):
-        """ save figure image to file"""
-        ppnl = self.get_plotpanel()
-        if ppnl is not None:
-            ppnl.save_figure(event=event,
-                             transparent=transparent, dpi=dpi)
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,"About Epics StepScan",
@@ -626,13 +655,18 @@ class PlotterFrame(wx.Frame):
         dlg.Destroy()
 
 class ViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, dbname=None, **kws):
-        self.dbname  = dbname
+    def __init__(self, dbname=None, server='sqlite', host=None,
+                 port=None, user=None, password=None, create=True, **kws):
+
+        self.db_opts = dict(dbname=dbname, server=server, host=host,
+                            port=port, create=create, user=user,
+                            password=password)
+        self.db_opts.update(kws)
         wx.App.__init__(self)
 
     def OnInit(self):
         self.Init()
-        frame = PlotterFrame() #
+        frame = PlotterFrame(**self.db_opts)
         frame.Show()
         self.SetTopWindow(frame)
         return True
