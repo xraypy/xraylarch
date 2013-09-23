@@ -248,8 +248,19 @@ class ScanDB(object):
 
     def query(self, *args, **kws):
         "generic query"
-        return self.session.query(*args, **kws)
+        try:
+            return self.session.query(*args, **kws)
+        except sqlalchemy.StatementError():
+            time.sleep(0.01)
+            self.session.rollback()
+            time.sleep(0.01)
+            try:
+                return self.session.query(*args, **kws)
+            except:
+                self.session.rollback()
+                return None
 
+            
     def _get_table(self, tablename):
         "return (self.tables, self.classes) for a table name"
         cls   = self.classes[tablename]
@@ -494,6 +505,9 @@ class ScanDB(object):
 
     def clear_scandata(self, **kws):
         cls, table = self._get_table('scandata')
+        a = self.get_scandata()
+        if len(a) < 0:
+            return
         self.conn.execute(table.delete().where(table.c.id != 0))
 
     # positioners
