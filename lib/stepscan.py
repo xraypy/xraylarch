@@ -431,13 +431,18 @@ class StepScan(object):
                     poll(1.e-3, 0.25)
                 if self.abort:
                     break
-                self.trig_elapsed_times =  [time.time()-t0]
-                self.trig_elapsed_times.extend([t.runtime for t in self.triggers])
-                # print 'Triggers done ', self.trig_elapsed_times
-                for t in self.triggers:
-                    if t.runtime < self.min_dwelltime / 3.0:
+                poll(1.e-3, 0.1)                
+                for trig in self.triggers:
+                    if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
-
+                if not point_ok:
+                    point_ok = True
+                    poll(1.e-2, 0.25)                
+                    for trig in self.triggers:
+                        if trig.runtime < self.min_dwelltime / 2.0:
+                            point_ok = False
+                if not point_ok:
+                    print 'Trigger problem: ', trig, trig.runtime, self.min_dwelltime
                 # wait, then read read counters and actual positions
                 time.sleep(self.det_settle_time)
 
