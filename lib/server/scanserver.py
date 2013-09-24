@@ -13,7 +13,7 @@ from ..detectors import get_detector
 from ..positioner import Positioner
 from ..stepscan import StepScan
 from ..xafs_scan import XAFS_Scan
-from ..scandb import ScanDB, ScanDBException
+from ..scandb import ScanDB, ScanDBException, make_datetime
 from ..utils import get_units
 from ..file_utils import fix_filename
 
@@ -182,7 +182,8 @@ class ScanServer():
 
         self.scanwatcher = ScanWatcher(self.scandb, scan=self.scan)
         self.scanwatcher.start()
-
+        self.scandb.update_where('scandefs', {'name': scanname},
+                                 {'last_used_time': make_datetime()})
         self.scan.run(filename=filename)
 
         if self.scanwatcher is not None:
