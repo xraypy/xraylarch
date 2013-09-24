@@ -298,18 +298,18 @@ class ScanFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         # file
         fmenu = wx.Menu()
-        add_menu(self, fmenu, "&Read Scan Definition\tCtrl+O",
-                 "Read Scan Defintion",  self.onReadScanDef)
-
-        add_menu(self, fmenu,"&Save Scan Definition\tCtrl+S",
-                  "Save Scan Definition", self.onSaveScanDef)
+        add_menu(self, fmenu, "Load Scan Definition\tCtrl+O",
+                 "Load Scan Defintion",  self.onReadScanDef)
+        
+        add_menu(self, fmenu, "Save Scan Definition\tCtrl+S",
+                 "Save Scan Definition", self.onSaveScanDef)
 
         fmenu.AppendSeparator()
 
         add_menu(self, fmenu,'Change &Working Folder\tCtrl+W',
                   "Choose working directory",  self.onFolderSelect)
         fmenu.AppendSeparator()
-        add_menu(self, fmenu, "&Quit\tCtrl+Q",
+        add_menu(self, fmenu, "Quit\tCtrl+Q",
         "Quit program", self.onClose)
 
         # options
@@ -458,16 +458,15 @@ class ScanFrame(wx.Frame):
                 if val[0] == inb:
                     stype = key
 
-        scannames = []
-        for sdef in self.scandb.getall('scandefs'):
-            if (not _alltypes) and stype != sdef.type:
-                continue
-            if (not _autotypes) and sdef.name.startswith('__'):
-                continue
-            scannames.append(sdef.name)
+        snames = []
+        for sdef in self.scandb.getall('scandefs', orderby='last_used_time'):
+            if ((_alltypes or stype == sdef.type) and
+                (_autotypes or not sdef.name.startswith('__'))):
+                snames.append(sdef.name)
 
-        dlg = wx.SingleChoiceDialog(self, "Select Saved Scan:",
-                                    "", scannames)
+        snames.reverse()
+        dlg = wx.SingleChoiceDialog(self, "Select Saved Scan:", "", snames)
+
         sname = None
         if dlg.ShowModal() == wx.ID_OK:
             sname =  dlg.GetStringSelection()
