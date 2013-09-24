@@ -70,9 +70,7 @@ def get_dbengine(dbname, server='sqlite', create=False,
             port = 5432
         hasdb = hasdb_pg(dbname, create=create, user=user, password=password,
                          host=host, port=port)
-        return create_engine(conn_str % (user, password, host, port, dbname),
-                             poolclass=SingletonThreadPool)
-
+        return create_engine(conn_str % (user, password, host, port, dbname))
 
 def IntCol(name, **kws):
     return Column(name, Integer, **kws)
@@ -362,6 +360,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                            ("request_shutdown", "0") ):
         info.insert().execute(keyname=keyname, value=value)
     session.commit()
+    return engine, metadata
 
 def map_scandb(metadata):
     """set up mapping of SQL metadata and classes
@@ -435,7 +434,8 @@ def map_scandb(metadata):
         tables[tname].columns['modify_time'].default =  fnow
 
     for tname, cname in (('info', 'create_time'),
-                         ('commands', 'request_time')):
+                         ('commands', 'request_time'),
+                         ('scandefs', 'last_used_time')):
         tables[tname].columns[cname].default = fnow
 
     return tables, classes, map_props, keyattrs

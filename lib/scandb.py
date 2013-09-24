@@ -40,42 +40,6 @@ class ScanDBException(Exception):
 
 
 
-def isScanDB(dbname, server='sqlite',
-             user='', password='', host='', port=None):
-    """test if a file is a valid scan database:
-    must be a sqlite db file, with tables named
-       'postioners', 'detectors', and 'scans'
-    """
-    if server == 'sqlite':
-        if not os.path.exists(dbname):
-            return False
-    else:
-        if port is None:
-            if server.startswith('my'): port = 3306
-            if server.startswith('p'):  port = 5432
-        conn = "%s://%s:%s@%s:%i/%s"
-
-        try:
-            _db = create_engine(conn % (server, user, password,
-                                        host, port, dbname))
-        except:
-            return False
-
-    _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
-    engine = get_dbengine(dbname, server=server, create=False,
-                          user=user, password=password, host=host, port=port)
-    try:
-        meta = MetaData(engine)
-        meta.reflect()
-    except:
-        return False
-
-    if all([t in meta.tables for t in _tables]):
-        keys = [row.keyname for row in
-                meta.tables['info'].select().execute().fetchall()]
-        return 'version' in keys and 'experiment_id' in keys
-    return False
-
 def json_encode(val):
     "simple wrapper around json.dumps"
     if val is None or isinstance(val, (str, unicode)):
@@ -131,7 +95,7 @@ class ScanDB(object):
         self.restoring_pvs = []
         if dbname is not None:
             self.connect(dbname, server=server, create=create, **kws)
-
+            
     def create_newdb(self, dbname, connect=False, **kws):
         "create a new, empty database"
         create_scandb(dbname,  **kws)
@@ -139,25 +103,66 @@ class ScanDB(object):
             time.sleep(0.5)
             self.connect(dbname, backup=False, **kws)
 
+    def isScanDB(self, dbname, server='sqlite',
+                 user='', password='', host='', port=None):
+        """test if a file is a valid scan database:
+        must be a sqlite db file, with tables named
+        'postioners', 'detectors', and 'scans'
+        """
+        if server == 'sqlite':
+            if not os.path.exists(dbname):
+                return False
+        else:
+            if port is None:
+                if server.startswith('my'): port = 3306
+                if server.startswith('p'):  port = 5432
+            #conn = "%s://%s:%s@%s:%i/%s"
+            #try:
+            #    _db = create_engine(conn % (server, user, password,
+            #                                host, port, dbname))
+            #except:
+            #   return False
+        
+        _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
+        engine = get_dbengine(dbname, server=server, create=False,
+                              user=user, password=password, host=host, port=port)
+        try:
+            meta = MetaData(engine)
+            meta.reflect()
+        except:
+            engine, meta = None, None
+            return False
+        
+        allfound = False
+        if all([t in meta.tables for t in _tables]):
+            keys = [row.keyname for row in
+                    meta.tables['info'].select().execute().fetchall()]
+            allfound = 'version' in keys and 'experiment_id' in keys
+        if allfound:
+            self.engine = engine
+            self.dbname = dbname
+            self.metadata = meta
+        return allfound
+
     def connect(self, dbname, server='sqlite', create=False,
                 user='', password='', host='', port=None, **kws):
         "connect to an existing database"
         creds = dict(user=user, password=password, host=host,
                      port=port, server=server)
 
-        if not isScanDB(dbname,  **creds):
-            if create:
-                en = get_dbengine(dbname, create=True, **creds)
-                create_scandb(dbname, create=True, **creds)
-            else:
-                raise ValueError("'%s' is not a Scan Database!" % dbname)
-
         self.dbname = dbname
-        self.engine = get_dbengine(dbname, create=create, **creds)
+        if not self.isScanDB(dbname,  **creds) and create:
+            engine, meta = create_scandb(dbname, create=True, **creds)
+            self.engine = engine
+            self.metadta = meta
+            self.metadata.reflect()
+
+        if self.engine is None:
+            raise ValueError("Cannot use '%s' as a Scan Database!" % dbname)
+            
         self.conn   = self.engine.connect()
         self.session = sessionmaker(bind=self.engine)()
-        self.metadata =  MetaData(self.engine)
-        self.metadata.reflect()
+
         tabs, classes, mapprops, mapkeys = map_scandb(self.metadata)
         self.tables, self.classes = tabs, classes
         self.mapprops, self.mapkeys = mapprops, mapkeys
@@ -429,6 +434,7 @@ class ScanDB(object):
         if one_or_none:
             return None_or_one(out, 'expected 1 or None from table %s' % table)
         return out
+
 
     # Scan Definitions
     def get_scandef(self, name):
