@@ -1,5 +1,16 @@
 from lib.gui import ViewerApp
-app = ViewerApp(dbname='epics_scan', server='postgresql',
-                host = 'mini',  user = 'epics', 
+import getopt
+try:
+    import psycopg2
+    HAS_PG = True
+except:
+    HAS_PG = False
+
+args = {}
+if HAS_PG:
+    args = dict(dbname='epics_scan', server='postgresql',
+                host = 'mini',  user = 'epics',
                 password = 'epics', create=True)
+
+app = ViewerApp(**args)
 app.MainLoop()

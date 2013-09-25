@@ -52,16 +52,16 @@ def load_dbscan(scandb, scanname):
             scan.add_positioner(p)
             if len(pvs) > 0:
                 scan.add_counter(pvs[1], label="%s_read" % label)
-                    
+
     elif sdict['type'] == 'mesh':
         label1, pvs1, start1, stop1, npts1 = sdict['inner']
         label2, pvs2, start2, stop2, npts2 = sdict['outer']
         p1 = Positioner(pvs1[0], label=label1)
         p2 = Positioner(pvs2[0], label=label2)
-        
+
         inner = npts2* [np.linspace(start1, stop1, npts1)]
         outer = [[i]*npts1 for i in np.linspace(start2, stop2, npts2)]
-        
+
         p1.array = np.array(inner).flatten()
         p2.array = np.array(outer).flatten()
         scan.add_positioner(p1)
@@ -86,20 +86,21 @@ def load_dbscan(scandb, scanname):
             if len(pvs2) > 0:
                 scan.add_counter(pvs2[1], label="%s_read" % label2)
 
-    
     for dpars in sdict['detectors']:
         scan.add_detector(get_detector(**dpars))
 
     if 'counters' in sdict:
         for label, pvname  in sdict['counters']:
             scan.add_counter(pvname, label=label)
-    
+
     scan.add_extra_pvs(sdict['extra_pvs'])
-    scan.dwelltime = sdict.get('dwelltime', 1)
-    scan.comments  = sdict.get('user_comments', '')
+    scan.scantime  = sdict.get('scantime', -1)
     scan.filename  = sdict.get('filename', 'scan.dat')
     scan.pos_settle_time = sdict.get('pos_settle_time', 0.01)
     scan.det_settle_time = sdict.get('det_settle_time', 0.01)
+    if scan.dwelltime is None:
+        scan.set_dwelltime(sdict.get('dwelltime', 1))
+
     return scan
 
 class ScanWatcher(threading.Thread):
@@ -111,7 +112,7 @@ class ScanWatcher(threading.Thread):
         threading.Thread.__init__(self)
         self.get_info = scandb.get_info
         self.scan = scan
-        
+
     def run(self):
         """execute thread, watching for abort/pause/resume"""
         t0 = time.time()
@@ -157,15 +158,17 @@ class ScanServer():
 
     def scan_prescan(self, scan=None, **kws):
         pass
-        
+
 
     def do_scan(self, scanname, filename=None):
         self.scan = load_dbscan(self.scandb, scanname)
         self.scan.complete = False
         self.scan.pre_scan_methods.append(self.scan_prescan)
         self.scandb.clear_scandata()
+        npts = -1
         for p in self.scan.positioners:
             units = get_units(p.pv, 'unknown')
+            npts = max(npts, len(p.array))
             self.scandb.add_scandata(fix_filename(p.label),
                                      p.array.tolist(),
                                      pvname=p.pv.pvname,
@@ -175,9 +178,15 @@ class ScanServer():
             self.scandb.add_scandata(fix_filename(c.label), [],
                                      pvname=c.pv.pvname,
                                      units=units)
-            
+
+        if not hasattr(self.scan, 'scantime') or self.scan.scantime < 0:
+            self.scan.scantime = npts*(self.scan.pos_settle_time +
+                                       self.scan.det_settle_time +
+                                       self.scan.dwelltime)
+        self.scandb.set_info('scan_time_estimate', self.scan.scantime)
+        self.scandb.set_info('scan_total_points', npts)
         self.scandb.set_info('request_command_abort', 0)
-        self.scandb.set_info('request_command_pause', 0)        
+
         self.scan.messenger = self.scan_messenger
 
         self.scanwatcher = ScanWatcher(self.scandb, scan=self.scan)
@@ -188,11 +197,11 @@ class ScanServer():
 
         if self.scanwatcher is not None:
             self.scanwatcher.join()
-        
+
     def do_caput(self, pvname, value, wait=False, timeout=30.0):
         print 'do caput ', pvname, value, wait
         epics.caput(pvname, value, wait=wait, timeout=timeout)
-        
+
     def sleep(self, t=0.05):
         try:
             time.sleep(t)
