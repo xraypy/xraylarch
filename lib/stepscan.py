@@ -158,7 +158,7 @@ class StepScan(object):
 
         self.verified = False
         self.abort = False
-        self.pause = False        
+        self.pause = False
         self.inittime = 0 # time to initialize scan (pre_scan, move to start, begin i/o)
         self.looptime = 0 # time to run scan loop (even if aborted)
         self.exittime = 0 # time to complete scan (post_scan, return positioners, complete i/o)
@@ -258,11 +258,12 @@ class StepScan(object):
             self.detectors.append(det)
         self.verified = False
 
-    def set_dwelltime(self, dtime):
+    def set_dwelltime(self, dtime=None):
         """set scan dwelltime per point to constant value"""
-        self.dwelltime = dtime
+        if dtime is not None:
+            self.dwelltime = dtime
 	for d in self.detectors:
-            d.dwelltime = dtime
+            d.set_dwelltime(self.dwelltime)
 
     def at_break(self, breakpoint=0, clear=False):
         out = [m(breakpoint=breakpoint) for m in self.at_break_methods]
@@ -354,7 +355,7 @@ class StepScan(object):
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
 
-        out = self.pre_scan()        
+        out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
 
         npts = len(self.positioners[0].array)
@@ -371,7 +372,7 @@ class StepScan(object):
             else:
                 for d in self.detectors:
                     d.set_dwelltime(self.dwelltime)
-                
+
         self.message_thread = None
         if hasattr(self.messenger, '__call__'):
             self.message_thread = ScanMessenger(func=self.messenger,
@@ -431,13 +432,13 @@ class StepScan(object):
                     poll(1.e-3, 0.25)
                 if self.abort:
                     break
-                poll(1.e-3, 0.1)                
+                poll(1.e-3, 0.1)
                 for trig in self.triggers:
                     if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
                 if not point_ok:
                     point_ok = True
-                    poll(1.e-2, 0.25)                
+                    poll(1.e-2, 0.25)
                     for trig in self.triggers:
                         if trig.runtime < self.min_dwelltime / 2.0:
                             point_ok = False

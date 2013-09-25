@@ -30,6 +30,12 @@ CCEN  = wx.ALIGN_CENTER_VERTICAL|wx.ALIGN_CENTER
 LTEXT = wx.ST_NO_AUTORESIZE|wx.ALIGN_CENTER
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 
+from datetime import timedelta
+
+def hms(secs):
+    "format time in seconds to H:M:S"
+    return str(timedelta(seconds=int(secs)))
+
 def Font(size):
     return wx.Font(size, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
 

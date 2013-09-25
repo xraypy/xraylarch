@@ -11,12 +11,11 @@ import json
 import wx
 import wx.lib.scrolledpanel as scrolled
 import numpy as np
-from datetime import timedelta
 import epics
 from epics.wx import EpicsFunction, PVText
 
 from .gui_utils import SimpleText, FloatCtrl, Closure
-from .gui_utils import pack, add_choice
+from .gui_utils import pack, add_choice, hms
 
 from .. import etok, ktoe, XAFS_Scan, StepScan, Positioner, Counter
 from ..utils import normalize_pvname
@@ -51,6 +50,7 @@ class GenericScanPanel(scrolled.ScrolledPanel):
                                         name=self.__name__)
         self.Font13=wx.Font(13, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.sizer = wx.GridBagSizer(8, 8)
+        self.scantime = -1.0
         self.get_positioners()
         self._initialized = False # used to shunt events while creating windows
 
@@ -110,7 +110,8 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         for p in self.pos_settings:
             if hasattr(p[6], 'GetValue'):
                 dtime *= float(p[6].GetValue())
-        self.est_time.SetLabel(str(timedelta(seconds=int(dtime))))
+        self.scantime = dtime
+        self.est_time.SetLabel(hms(dtime))
 
     def top_widgets(self, title, dwell_prec=3, dwell_value=1):
         self.absrel = add_choice(self, ('Absolute', 'Relative'),
@@ -387,6 +388,7 @@ class LinearScanPanel(GenericScanPanel):
         "generate linear scan"
         s = {'type': 'linear',
              'dwelltime':  float(self.dwelltime.GetValue()),
+             'scantime': self.scantime,
              'positioners': []}
 
         is_relative =  self.absrel.GetSelection()
@@ -513,7 +515,6 @@ class XAFSScanPanel(GenericScanPanel):
             else:
                 for wid in reg: wid.Disable()
 
-
         for ireg, reg in enumerate(scan['regions']):
             start, stop, step, npts, dtime, units = self.reg_settings[ireg]
             # set units first!
@@ -536,7 +537,6 @@ class XAFSScanPanel(GenericScanPanel):
         self.kwtimemax.SetValue(scan['max_time'])
         self.kwtimechoice.SetSelection(scan['time_kw'])
 
-
     def setScanTime(self):
         etime = (float(self.scandb.get_info('pos_settle_time', default=0)) +
                  float(self.scandb.get_info('det_settle_time', default=0)))
@@ -556,9 +556,8 @@ class XAFSScanPanel(GenericScanPanel):
                 dtime += (dx+etime)+ _vtime*(i**kwt_pow)
         for nx, dx in dtimes:
             dtime += nx*(dx + etime)
-
-        self.est_time.SetLabel(str(timedelta(seconds=int(dtime))))
-
+        self.scantime = dtime
+        self.est_time.SetLabel(hms(dtime))
 
     def top_widgets(self, title, dwell_prec=3, dwell_value=1):
         "XAFS top widgets"
@@ -718,7 +717,6 @@ class XAFSScanPanel(GenericScanPanel):
                         value = ktoe(value) + e0_off
                 self.reg_settings[index-1][1].SetValue(value, act=False)
                 self.setStepNpts(self.reg_settings[index-1], label)
-
         self.setScanTime()
 
     def onAbsRel(self, evt=None):
@@ -756,6 +754,7 @@ class XAFSScanPanel(GenericScanPanel):
              'energy_drive': enpos.drivepv,
              'energy_read': enpos.readpv,
              'extra_pvs': json.loads(enpos.extrapvs).items(),
+             'scantime': self.scantime,
              'regions': []}
         for index, wids in enumerate(self.reg_settings):
             start, stop, step, npts, dtime, units =  wids
@@ -862,6 +861,7 @@ class MeshScanPanel(GenericScanPanel):
         "generate mesh scan"
         s = {'type': 'mesh',
              'dwelltime':  float(self.dwelltime.GetValue()),
+             'scantime': self.scantime,
              'inner': [],
              'outer': []}
 
@@ -1010,6 +1010,7 @@ class SlewScanPanel(GenericScanPanel):
         s = {'type': 'slew',
              'dwelltime':  float(self.dwelltime.GetValue()),
              'dimension': 1+self.dimchoice.GetSelection(),
+             'scantime': self.scantime,
              'inner': [],
              'outer': []}
 
