@@ -855,8 +855,19 @@ class GSEXRM_MapFile(object):
 
         self.master_header = header
         self.rowdata = rows
-        stime = self.master_header[0][6:]
-        self.start_time = stime.replace('started at','').strip()
+        line1 = header[0]
+        if 'Scan.version' in line1:
+            words = line1.split('=')
+            self.scan_version = words[1].strip()
+            for line in header:
+                if 'Scan.starttime' in line:
+                    words = line.split('=')
+                    self.scan_starttime = words[1].strip()
+
+        else:
+            self.scan_version == '1.0'
+            stime = self.master_header[0][6:]
+            self.start_time = stime.replace('started at', '').strip()
 
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
@@ -1137,7 +1148,7 @@ class GSEXRM_MapFile(object):
             else:
                 print("An ROI named '%s' exists, use overwrite=True to overwrite" % name)
                 return
-        # 
+        #
 
     def del_roi(self, name):
         """ delete an ROI"""
@@ -1148,7 +1159,7 @@ class GSEXRM_MapFile(object):
         iroi = roi_name.index(name.lower().strip())
         roi_names = [i in self.xrfmap['config/rois/name']]
         roi_names.pop(iroi)
-        
+
 def read_xrfmap(filename, root=None):
     """read GSE XRM FastMap data from HDF5 file or raw map folder"""
     key = 'filename'
