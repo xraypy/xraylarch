@@ -73,8 +73,8 @@ class GenericScanPanel(scrolled.ScrolledPanel):
         """meant to be overwritten"""
         self.get_positioners()
 
-    def hline(self):
-        return wx.StaticLine(self, size=(700, 3),
+    def hline(self, size=(700, 3)):
+        return wx.StaticLine(self, size=size,
                              style=wx.LI_HORIZONTAL|wx.GROW)
 
     def layout(self):

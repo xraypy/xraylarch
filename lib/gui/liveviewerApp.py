@@ -69,13 +69,12 @@ class ScanViewerFrame(wx.Frame):
             self.scandb = ScanDB(dbname=dbname, server=server, host=host,
                                  user=user, password=password, port=port,
                                  create=create)
-            self.filemap[CURSCAN] = SCANGROUP
             title = '%s, with Live Scan Viewing' % title
         self.larch = None
         self.plotters = []
 
         self.SetTitle(title)
-        self.SetSize((850, 650))
+        self.SetSize((720, 650))
         self.SetFont(Font(9))
 
         self.createMainPanel()
@@ -91,16 +90,14 @@ class ScanViewerFrame(wx.Frame):
             self.live_scanfile = None
             self.live_cpt = -1
             self.total_npts = 1
-            # self.filelist.Append(CURSCAN)
             self.scantimer = wx.Timer(self)
             self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
-            self.scantimer.Start(150)
+            self.scantimer.Start(50)
 
     def onScanTimer(self, evt=None, **kws):
         if self.larch is None:
             return
         group =  getattr(self.larch.symtable, SCANGROUP)
-
         curfile = fix_filename(self.get_info('filename'))
         if curfile != self.live_scanfile:
             self.live_scanfile = curfile
@@ -133,20 +130,9 @@ class ScanViewerFrame(wx.Frame):
 
 
     def createMainPanel(self):
-        splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-        splitter.SetMinimumPaneSize(175)
 
-        self.filelist  = wx.ListBox(splitter)
-        self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
-        self.filelist.Bind(wx.EVT_LISTBOX, self.ShowFile)
-
-        self.detailspanel = self.createDetailsPanel(splitter)
-
-        splitter.SplitVertically(self.filelist, self.detailspanel, 1)
         wx.CallAfter(self.init_larch)
-
-    def createDetailsPanel(self, parent):
-        mainpanel = wx.Panel(parent)
+        mainpanel = wx.Panel(self)
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(mainpanel)
         sizer = wx.GridBagSizer(8, 7)
@@ -202,42 +188,15 @@ class ScanViewerFrame(wx.Frame):
             sizer.Add(self.yarr[i][2],           (ir, 8), (1, 1), CEN, 0)
             sizer.Add(SimpleText(panel, ']'),    (ir, 9), (1, 1), LCEN, 0)
         ir += 1
-        # sizer.Add(SimpleText(panel, ' New Plot: '),  (ir,   0), (1, 3), LCEN, 0)
-        # sizer.Add(SimpleText(panel, ' Over Plot: '), (ir+1, 0), (1, 3), LCEN, 0)
-
-        for jr, ic, dc, opt, ttl in ((0, 0, 4, 'win old',    'New Plot, This Window'),
-                                     (0, 4, 2, 'win new',    'New Plot, New Window'),
-                                     (1, 0, 4, 'over left',  'Over Plot, Left Axis'),
-                                     (1, 4, 2, 'over right', 'Over Plot, Right Axis')):
-            sizer.Add(add_button(panel, ttl, size=(165, -1),
-                                 action=Closure(self.onPlot, opt=opt)),
-                      (ir+jr, ic), (1, dc), LCEN, 2)
-
-        ir += 2
-        self.dtcorr   = check(panel, default=True, label='correct deadtime?')
-        sizer.Add(self.dtcorr,  (ir,   0), (1, 3), LCEN, 0)
-        ir += 1
-        sizer.Add(SimpleText(panel, ''), (ir,   0), (1, 3), LCEN, 0)
+        sizer.Add(wx.StaticLine(panel, size=(600, 3),
+                                style=wx.LI_HORIZONTAL|wx.GROW),
+                  (ir, 0), (1, 12), CEN|wx.GROW|wx.ALL, 0)
 
         pack(panel, sizer)
 
-
-#         self.nb = flat_nb.FlatNotebook(mainpanel, -1, agwStyle=FNB_STYLE)
-#
-#         self.nb.SetTabAreaColour(wx.Colour(248,248,240))
-#         self.nb.SetActiveTabColour(wx.Colour(254,254,195))
-#
-#         self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
-#         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
-#
-#         self.xas_panel = self.CreateXASPanel(self.nb) # mainpanel)
-#         self.fit_panel = self.CreateFitPanel(self.nb) # mainpanel)
-#
-#         self.nb.AddPage(self.fit_panel, ' General Analysis ', True)
-#         self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
-
         mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
-        self.plotpanel = PlotPanel(mainpanel, size=(500, 670))
+
+        self.plotpanel = PlotPanel(mainpanel, size=(300, 670))
         self.plotpanel.messenger = self.write_message
 
         bgcol = panel.GetBackgroundColour()
@@ -246,10 +205,24 @@ class ScanViewerFrame(wx.Frame):
 
         mainsizer.Add(self.plotpanel, 1, wx.GROW|wx.ALL, 1)
 
+        btnsizer = wx.StdDialogButtonSizer()
+        btnpanel = wx.Panel(mainpanel)
+        btn_pause  = add_button(btnpanel, 'Pause', action=self.onPause)
+        btn_resume = add_button(btnpanel, 'Resume', action=self.onResume)
+        btn_abort  = add_button(btnpanel, 'Abort', action=self.onAbort)
+        btnsizer.Add(btn_pause)
+        btnsizer.Add(btn_resume)
+        btnsizer.Add(btn_abort)
+        pack(btnpanel, btnsizer)
+        mainsizer.Add(btnpanel, 0, wx.GROW|wx.ALL, 1)
         # mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         pack(mainpanel, mainsizer)
 
         return mainpanel
+
+    def onPause(self, evt=None): pass
+    def onResume(self, evt=None): pass
+    def onAbort(self, evt=None): pass
 
     def CreateFitPanel(self, parent):
         p = panel = wx.Panel(parent)
@@ -588,23 +561,14 @@ class ScanViewerFrame(wx.Frame):
             plotcmd(lgroup._x1_, lgroup._y1_, **popts)
             self.plotpanel.canvas.draw()
 
-    def ShowFile(self, evt=None, filename=None, **kws):
-        if filename is None and evt is not None:
-            filename = evt.GetString()
-        key = filename
-        if filename in self.filemap:
-            key = self.filemap[filename]
+    def ShowFile(self, evt=None,  **kws):
 
-        print 'SHOW FILE ', filename, key, self.scandb
-        if key == SCANGROUP:
-            array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
-            title = filename
-        elif hasattr(self.datagroups, key):
-            data = getattr(self.datagroups, key)
-            title = data.filename
-            array_labels = data.array_labels[:]
+        print 'SHOW Data from ',  self.scandb
 
-        self.groupname = key
+        array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
+        title = self.live_scanfile
+
+        self.groupname = CURSCAN
         xcols  = array_labels[:]
         ycols  = array_labels[:]
         y2cols = array_labels[:] + ['1.0', '0.0', '']
@@ -700,14 +664,14 @@ class ScanViewerFrame(wx.Frame):
             parent, fname = os.path.split(path)
             self.larch("%s = read_xdi('%s')" % (gname, path))
             self.larch("%s.path  = '%s'"     % (gname, path))
-            self.filelist.Append(fname)
+            # self.filelist.Append(fname)
             self.filemap[fname] = gname
             print 'Larch:: ', gname, path, fname
             self.ShowFile(filename=fname)
 
         dlg.Destroy()
 
-class ViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+class ScanViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, dbname=None, server='sqlite', host=None,
                  port=None, user=None, password=None, create=True, **kws):
 
@@ -719,7 +683,7 @@ class ViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 
     def OnInit(self):
         self.Init()
-        frame = PlotterFrame(**self.db_opts)
+        frame = ScanViewerFrame(**self.db_opts)
         frame.Show()
         self.SetTopWindow(frame)
         return True
