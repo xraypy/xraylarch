@@ -95,7 +95,7 @@ class ScanDB(object):
         self.restoring_pvs = []
         if dbname is not None:
             self.connect(dbname, server=server, create=create, **kws)
-            
+
     def create_newdb(self, dbname, connect=False, **kws):
         "create a new, empty database"
         create_scandb(dbname,  **kws)
@@ -122,7 +122,7 @@ class ScanDB(object):
             #                                host, port, dbname))
             #except:
             #   return False
-        
+
         _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
         engine = get_dbengine(dbname, server=server, create=False,
                               user=user, password=password, host=host, port=port)
@@ -132,7 +132,7 @@ class ScanDB(object):
         except:
             engine, meta = None, None
             return False
-        
+
         allfound = False
         if all([t in meta.tables for t in _tables]):
             keys = [row.keyname for row in
@@ -159,7 +159,7 @@ class ScanDB(object):
 
         if self.engine is None:
             raise ValueError("Cannot use '%s' as a Scan Database!" % dbname)
-            
+
         self.conn   = self.engine.connect()
         self.session = sessionmaker(bind=self.engine)()
 
@@ -265,7 +265,7 @@ class ScanDB(object):
                 self.session.rollback()
                 return None
 
-            
+
     def _get_table(self, tablename):
         "return (self.tables, self.classes) for a table name"
         cls   = self.classes[tablename]

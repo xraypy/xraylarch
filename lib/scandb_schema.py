@@ -184,7 +184,7 @@ class Commands(_BaseTable):
         return "<%s(%s)>" % (name, ', '.join(fields))
 
 class ScanData(_BaseTable):
-    notes, pvname, data, breakpoints, modify_time = [None]*5
+    notes, pvname, data, units, breakpoints, modify_time = [None]*6
 
 class Instruments(_BaseTable):
     "instrument table"
@@ -269,7 +269,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                              Column('last_used_time', DateTime)])
 
     extrapvs = NamedTable('extrapvs', metadata, with_pv=True, with_use=True)
-    
+
     macros = NamedTable('macros', metadata,
                         cols=[StrCol('arguments'),
                               StrCol('text'),
@@ -299,9 +299,10 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                     Column('modify_time', DateTime))
 
 
-    scandata = NamedTable('scandata', metadata, with_pv=True, 
+    scandata = NamedTable('scandata', metadata, with_pv=True,
                          cols = [PointerCol('commands'),
                                  ArrayCol('data', server=server),
+                                 StrCol('units', default=''),
                                  StrCol('breakpoints', default=''),
                                  Column('modify_time', DateTime)])
 
@@ -413,7 +414,7 @@ def map_scandb(metadata):
             props ={'instrument': relationship(Instruments,
                                                backref='postcommands'),
                     'command': relationship(Commands)}
-        
+
         mapper(cls, tables[name], properties=props)
         classes[name] = cls
         map_props[name] = props
@@ -424,7 +425,7 @@ def map_scandb(metadata):
     keyattrs['position_pv'] = 'id'
     keyattrs['instrument_pv'] = 'id'
     keyattrs['monitovalues'] = 'id'
-    
+
     # set onupdate and default constraints for several datetime columns
     # note use of ColumnDefault to wrap onpudate/default func
     fnow = ColumnDefault(datetime.now)
