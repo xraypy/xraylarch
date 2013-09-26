@@ -109,23 +109,25 @@ class ScanViewerFrame(wx.Frame):
         # filename changed -- scan starting, so update
         # list of positioners, detectors, etc
         if curfile != self.live_scanfile:
+            print 'See new file name ', curfile
             self.live_scanfile = curfile
             self.title.SetLabel(curfile)
-            self.lgroup.filename = self.curfile
+            self.lgroup.filename = curfile
             array_labels = [fix_filename(s.name) for s in sdata]
             self.lgroup.array_units = [fix_filename(s.units) for s in sdata]
             self.total_npts = self.get_info('scan_total_points',
                                             as_int=True)
             self.live_cpt = -1
-
             xcols, ycols, y2cols = [], [], []
             for s in sdata:
                 nam = fix_filename(s.name)
                 ycols.append(nam)
                 if s.notes.startswith('pos'):
                     xcols.append(nam)
+            print 'X LABELS ', xcols
+            print 'Y LABELS ', ycols
 
-            y2cols = y2cols[:] + ['1.0', '0.0', '']
+            y2cols = ycols[:] + ['1.0', '0.0', '']
             xarr_old = self.xarr.GetStringSelection()
             self.xarr.SetItems(xcols)
             if xarr_old in xcols:
@@ -150,7 +152,7 @@ class ScanViewerFrame(wx.Frame):
         if npts == self.live_cpt:
             return
         time_est = hms(self.get_info('scan_time_estimate', as_int=True))
-        msg = self.TIME_MSG % (npts, self.total_points, time_est)
+        msg = self.TIME_MSG % (npts, self.total_npts, time_est)
         self.SetStatusText(msg)
         self.live_cpt = npts
         for row in sdata:
@@ -166,17 +168,18 @@ class ScanViewerFrame(wx.Frame):
         panel = wx.Panel(mainpanel)
         sizer = wx.GridBagSizer(8, 7)
 
-        self.title = SimpleText(panel, 'initializing...')
+        self.title = SimpleText(panel, 'initializing...',
+                                font=Font(13), colour='#880000')
         ir = 0
-        sizer.Add(self.title, (ir, 0), (1, 6), LCEN, 2)
+        sizer.Add(self.title, (ir, 1), (1, 6), LCEN, 2)
         # x-axis
 
         self.xarr = add_choice(panel, choices=[],
                                action=self.onYchoice,  size=(120, -1))
 
         ir += 1
-        sizer.Add(SimpleText(panel, 'X = '), (ir, 0), (1, 1), CEN, 0)
-        sizer.Add(self.xarr,                 (ir, 3), (1, 1), RCEN, 0)
+        sizer.Add(SimpleText(panel, '  X = '), (ir, 0), (1, 1), CEN, 0)
+        sizer.Add(self.xarr,                  (ir, 3), (1, 1), RCEN, 0)
 
         self.yops = [[],[]]
         self.yarr = [[],[]]
@@ -200,7 +203,7 @@ class ScanViewerFrame(wx.Frame):
 
         for i in range(2):
             ir += 1
-            label = 'Y%i = ' % (i+1)
+            label = '  Y%i = ' % (i+1)
             sizer.Add(SimpleText(panel, label),  (ir, 0), (1, 1), CEN, 0)
             sizer.Add(self.yops[i][0],           (ir, 1), (1, 1), CEN, 0)
             sizer.Add(SimpleText(panel, '[('),   (ir, 2), (1, 1), CEN, 0)
@@ -218,11 +221,12 @@ class ScanViewerFrame(wx.Frame):
 
         pack(panel, sizer)
 
-        self.plotpanel = PlotPanel(mainpanel, size=(300, 670))
+        self.plotpanel = PlotPanel(mainpanel, size=(400, 500),
+                                   axissize=(0.18, 0.18, 0.70, 0.70),
+                                   fontsize=8)
+
         self.plotpanel.messenger = self.write_message
-        bgcol = panel.GetBackgroundColour()
-        bgcol = (bgcol[0]/255., bgcol[1]/255., bgcol[2]/255.)
-        self.plotpanel.canvas.figure.set_facecolor(bgcol)
+        self.plotpanel.canvas.figure.set_facecolor((0.98,0.98,0.97))
 
 
         btnsizer = wx.StdDialogButtonSizer()
@@ -476,7 +480,7 @@ class ScanViewerFrame(wx.Frame):
             plotcmd = self.plotpanel.update_line
             update = True
 
-        popts = {'side': side}
+        popts = {'side': side, 'labelfontsize': 8}
 
         ix = self.xarr.GetSelection()
         x  = self.xarr.GetStringSelection()
@@ -488,7 +492,7 @@ class ScanViewerFrame(wx.Frame):
             gname = SCANGROUP
             lgroup = getattr(self.larch.symtable, gname)
 
-        xfmt = "%s._x1_ = %s(%s)"
+        xfmt = "%s._x1_ = %s"
         yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
 
         popts['xlabel'] = x
@@ -533,10 +537,7 @@ class ScanViewerFrame(wx.Frame):
         if yl3 not in ('0', '1'): yl3 = "%s.%s" % (gname, yl3)
         if x  not in ('0', '1'):  x = "%s.%s" % (gname,  x)
 
-        # print 'Group X ... ', xfmt % (gname, xop, x)
-        # print 'Group Y ... ', yfmt % (gname, op1, y1, op2, y2, op3, y3)
-
-        self.larch(xfmt % (gname, xop, x))
+        self.larch(xfmt % (gname, x))
         self.larch(yfmt % (gname, opl1, yl1, opl2, yl2, opl3, yl3))
 
         # print 'Group X ... ', len(lgroup._x1_), lgroup._x1_
@@ -580,35 +581,6 @@ class ScanViewerFrame(wx.Frame):
             plotcmd(lgroup._x1_, lgroup._y1_, **popts)
             self.plotpanel.canvas.draw()
 
-    def ShowFile(self, evt=None,  **kws):
-
-        array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
-        title = self.live_scanfile
-
-        self.groupname = CURSCAN
-        xcols  = array_labels[:]
-        ycols  = array_labels[:]
-        y2cols = array_labels[:] + ['1.0', '0.0', '']
-        ncols  = len(xcols)
-        self.title.SetLabel(title)
-        print xcols
-        self.xarr.SetItems(xcols)
-        self.xarr.SetSelection(0)
-        self.xop.SetSelection(0)
-        for i in range(2):
-            for j in range(3):
-                self.yarr[i][j].SetItems(y2cols)
-                self.yarr[i][j].SetSelection(len(y2cols))
-            if i == 0:
-                self.yarr[i][0].SetItems(ycols)
-                self.yarr[i][0].SetSelection(1)
-
-        inb = 0
-        for colname in xcols:
-            if 'energ' in colname.lower():
-                inb = 1
-        #self.nb.SetSelection(inb)
-
     def createMenus(self):
         # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
@@ -620,26 +592,53 @@ class ScanViewerFrame(wx.Frame):
 
         self.menubar.Append(fmenu, "&File")
 
-        # fmenu.AppendSeparator()
-        # add_menu(self, fmenu, "&Copy\tCtrl+C",
-        #          "Copy Figure to Clipboard", self.onClipboard)
-        # add_menu(self, fmenu, "&Save\tCtrl+S", "Save Figure", self.onSaveFig)
-        # add_menu(self, fmenu, "&Print\tCtrl+P", "Print Figure", self.onPrint)
-        # add_menu(self, fmenu, "Page Setup", "Print Page Setup", self.onPrintSetup)
-        # add_menu(self, fmenu, "Preview", "Print Preview", self.onPrintPreview)
+        fmenu.AppendSeparator()
+        add_menu(self, fmenu, "&Copy\tCtrl+C",  "Copy to Clipboard", self.onClipboard)
+        add_menu(self, fmenu, "&Save\tCtrl+S", "Save Figure",   self.onSaveFig)
+        add_menu(self, fmenu, "&Print\tCtrl+P", "Print Figure", self.onPrint)
+        add_menu(self, fmenu, "Page Setup", "Print Page Setup", self.onPrintSetup)
+        add_menu(self, fmenu, "Preview", "Print Preview",       self.onPrintPreview)
         #
+        
+        add_menu(self, pmenu, "Configure\tCtrl+K",
+                 "Configure Plot", self.onConfigurePlot)
+        add_menu(self, pmenu, "Unzoom\tCtrl+Z", "Unzoom Plot", self.onUnzoom)
+        pmenu.AppendSeparator()
+        add_menu(self, pmenu, "Toggle Legend\tCtrl+L",
+                 "Toggle Legend on Plot", self.onToggleLegend)
+        add_menu(self, pmenu, "Toggle Grid\tCtrl+G",
+                 "Toggle Grid on Plot", self.onToggleGrid)
 
-        # add_menu(self, pmenu, "Configure\tCtrl+K",
-        #         "Configure Plot", self.onConfigurePlot)
-        #add_menu(self, pmenu, "Unzoom\tCtrl+Z", "Unzoom Plot", self.onUnzoom)
-        ##pmenu.AppendSeparator()
-        #add_menu(self, pmenu, "Toggle Legend\tCtrl+L",
-        #         "Toggle Legend on Plot", self.onToggleLegend)
-        #add_menu(self, pmenu, "Toggle Grid\tCtrl+G",
-        #         "Toggle Grid on Plot", self.onToggleGrid)
-        # self.menubar.Append(pmenu, "Plot Options")
+        self.menubar.Append(pmenu, "Plot Options")
         self.SetMenuBar(self.menubar)
 
+    def onClipboard(self, evt=None):
+        self.plotpanel.canvas.Copy_to_Clipboard(evt)
+       
+    def onSaveFig(self, evt=None):
+        self.plotpanel.save_figure(event=evt,
+                                   transparent=True, dpi=300)
+        
+    def onPrint(self, evt=None):
+        self.plotpanel.Print(evet)
+
+    def onPrintSetup(self, evt=None):
+        self.plotpanel.PrintSetup(evt)
+
+    def onPrintPreview(self, evt=None):
+        self.plotpanel.PrintPreview(evt)
+
+    def onConfigurePlot(self, evt=None):
+        self.plotpanel.configure(evt)
+
+    def onUnzoom(self, evt=None):
+        self.plotpanel.unzoom(evt)
+
+    def onToggleLegend(self, evt=None):
+        self.plotpanel.toggle_legend(evt)
+
+    def onToggleGrid(self, evt=None):
+        self.plotpanel.toggle_grid(evt)
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,"About Epics StepScan",
