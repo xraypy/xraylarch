@@ -71,6 +71,7 @@ class ScanViewerFrame(wx.Frame):
                                  create=create)
             title = '%s, with Live Scan Viewing' % title
         self.larch = None
+        self.lgroup = None
         self.plotters = []
 
         self.SetTitle(title)
@@ -95,42 +96,70 @@ class ScanViewerFrame(wx.Frame):
             self.scantimer.Start(50)
 
     def onScanTimer(self, evt=None, **kws):
-        if self.larch is None:
+        if self.lgroup is None:
             return
-        group =  getattr(self.larch.symtable, SCANGROUP)
+
         curfile = fix_filename(self.get_info('filename'))
+        sdata = self.scandb.get_scandata()
+        npts = len(sdata[-1].data)
+        if (npts > 2 and npts == self.live_cpt and
+            curfile == self.live_scanfile): # no new data
+            return
+
+        # filename changed -- scan starting, so update
+        # list of positioners, detectors, etc
         if curfile != self.live_scanfile:
             self.live_scanfile = curfile
-            group.filename = self.live_scanfile
-            group.array_units = []
+            self.title.SetLabel(curfile)
+            self.lgroup.filename = self.curfile
+            array_labels = [fix_filename(s.name) for s in sdata]
+            self.lgroup.array_units = [fix_filename(s.units) for s in sdata]
+            self.total_npts = self.get_info('scan_total_points',
+                                            as_int=True)
             self.live_cpt = -1
 
-        sdata = self.scandb.get_scandata()
-        if len(sdata) <= 1:
-            return
-        npts = len(sdata[-1].data)
+            xcols, ycols, y2cols = [], [], []
+            for s in sdata:
+                nam = fix_filename(s.name)
+                ycols.append(nam)
+                if s.notes.startswith('pos'):
+                    xcols.append(nam)
 
-        if npts <= self.live_cpt:
-            return
+            y2cols = y2cols[:] + ['1.0', '0.0', '']
+            xarr_old = self.xarr.GetStringSelection()
+            self.xarr.SetItems(xcols)
+            if xarr_old in xcols:
+                self.xarr.SetStringSelection(xarr_old)
+            else:
+                self.xarr.SetSelection(0)
+            for i in range(2):
+                for j in range(3):
+                    yold = self.yarr[i][j].GetStringSelection()
+                    cols = y2cols
+                    idef  = 0
+                    if i == 0 and j == 0:
+                        cols = ycols
+                        idef = 1
+                    self.yarr[i][j].SetItems(cols)
+                    if yold in cols:
+                        self.yarr[i][j].SetStringSelection(yold)
+                    else:
+                        self.yarr[i][j].SetSelection(idef)
 
+
+        if npts == self.live_cpt:
+            return
         time_est = hms(self.get_info('scan_time_estimate', as_int=True))
         msg = self.TIME_MSG % (npts, self.total_points, time_est)
         self.SetStatusText(msg)
         self.live_cpt = npts
-        if len(group.array_units) < 1:
-            group.array_units = [str(row.notes) for row in sdata]
-            self.total_npts = self.get_info('scan_total_points',
-                                            as_int=True)
-
         for row in sdata:
-            setattr(group, fix_filename(row.name), np.array(row.data))
+            setattr(self.lgroup, fix_filename(row.name), np.array(row.data))
 
         if npts > 1:
             self.onPlot()
 
-
     def createMainPanel(self):
-
         wx.CallAfter(self.init_larch)
         mainpanel = wx.Panel(self)
         mainsizer = wx.BoxSizer(wx.VERTICAL)
@@ -144,15 +173,10 @@ class ScanViewerFrame(wx.Frame):
 
         self.xarr = add_choice(panel, choices=[],
                                action=self.onYchoice,  size=(120, -1))
-        self.xop  = add_choice(panel, choices=('', 'log'),
-                               action=self.onYchoice, size=(75, -1))
 
         ir += 1
         sizer.Add(SimpleText(panel, 'X = '), (ir, 0), (1, 1), CEN, 0)
-        sizer.Add(self.xop,                  (ir, 1), (1, 1), CEN, 0)
-        sizer.Add(SimpleText(panel, '('),    (ir, 2), (1, 1), CEN, 0)
         sizer.Add(self.xarr,                 (ir, 3), (1, 1), RCEN, 0)
-        sizer.Add(SimpleText(panel, ')'),    (ir, 4), (1, 1), CEN, 0)
 
         self.yops = [[],[]]
         self.yarr = [[],[]]
@@ -194,35 +218,35 @@ class ScanViewerFrame(wx.Frame):
 
         pack(panel, sizer)
 
-        mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
-
         self.plotpanel = PlotPanel(mainpanel, size=(300, 670))
         self.plotpanel.messenger = self.write_message
-
         bgcol = panel.GetBackgroundColour()
         bgcol = (bgcol[0]/255., bgcol[1]/255., bgcol[2]/255.)
         self.plotpanel.canvas.figure.set_facecolor(bgcol)
 
-        mainsizer.Add(self.plotpanel, 1, wx.GROW|wx.ALL, 1)
 
         btnsizer = wx.StdDialogButtonSizer()
         btnpanel = wx.Panel(mainpanel)
-        btn_pause  = add_button(btnpanel, 'Pause', action=self.onPause)
-        btn_resume = add_button(btnpanel, 'Resume', action=self.onResume)
-        btn_abort  = add_button(btnpanel, 'Abort', action=self.onAbort)
-        btnsizer.Add(btn_pause)
-        btnsizer.Add(btn_resume)
-        btnsizer.Add(btn_abort)
+        btnsizer.Add(add_button(btnpanel, 'Pause', action=self.onPause))
+        btnsizer.Add(add_button(btnpanel, 'Resume', action=self.onResume))
+        btnsizer.Add(add_button(btnpanel, 'Abort', action=self.onAbort))
         pack(btnpanel, btnsizer)
-        mainsizer.Add(btnpanel, 0, wx.GROW|wx.ALL, 1)
-        # mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
-        pack(mainpanel, mainsizer)
 
+        mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
+        mainsizer.Add(self.plotpanel, 1, wx.GROW|wx.ALL, 1)
+        mainsizer.Add(btnpanel, 0, wx.GROW|wx.ALL, 1)
+
+        pack(mainpanel, mainsizer)
         return mainpanel
 
-    def onPause(self, evt=None): pass
-    def onResume(self, evt=None): pass
-    def onAbort(self, evt=None): pass
+    def onPause(self, evt=None):
+        self.scandb.set_info('request_command_pause', 1)
+
+    def onResume(self, evt=None):
+        self.scandb.set_info('request_command_pause', 0)
+
+    def onAbort(self, evt=None):
+        self.scandb.set_info('request_command_abort', 1)
 
     def CreateFitPanel(self, parent):
         p = panel = wx.Panel(parent)
@@ -395,8 +419,8 @@ class ScanViewerFrame(wx.Frame):
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
         self.larch('%s = group(filename="%s")' % (SCANGROUP, CURSCAN))
+        self.lgroup =  getattr(self.larch.symtable, SCANGROUP)
         self.SetStatusText('ready')
-        self.datagroups = self.larch.symtable
         self.title.SetLabel('')
 
     def write_message(self, s, panel=0):
@@ -466,18 +490,13 @@ class ScanViewerFrame(wx.Frame):
 
         xfmt = "%s._x1_ = %s(%s)"
         yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
-        xop = self.xop.GetStringSelection()
 
-        xlabel = x
+        popts['xlabel'] = x
         try:
             xunits = lgroup.array_units[ix]
+            popts['xlabel'] = '%s (%s)' % (xlabel, xunits)
         except:
-            xunits = ''
-        if xop != '':
-            xlabel = "%s(%s)" % (xop, xlabel)
-        if xunits != '':
-            xlabel = '%s (%s)' % (xlabel, xunits)
-        popts['xlabel'] = xlabel
+            pass
 
         opl1 = self.yops[0][0].GetStringSelection()
         opl2 = self.yops[0][1].GetStringSelection()
@@ -563,8 +582,6 @@ class ScanViewerFrame(wx.Frame):
 
     def ShowFile(self, evt=None,  **kws):
 
-        print 'SHOW Data from ',  self.scandb
-
         array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
         title = self.live_scanfile
 
@@ -598,9 +615,6 @@ class ScanViewerFrame(wx.Frame):
         #
         fmenu = wx.Menu()
         pmenu = wx.Menu()
-        add_menu(self, fmenu, "&Open Scan File\tCtrl+O",
-                 "Read Scan File",  self.onReadScan)
-
         fmenu.AppendSeparator()
         add_menu(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
@@ -644,32 +658,6 @@ class ScanViewerFrame(wx.Frame):
             del obj
 
         self.Destroy()
-
-    def onReadScan(self, evt=None):
-        dlg = wx.FileDialog(self, message="Load Epics Scan Data File",
-                            defaultDir=os.getcwd(),
-                            wildcard=FILE_WILDCARDS, style=wx.OPEN)
-        if dlg.ShowModal() == wx.ID_OK:
-            path = dlg.GetPath()
-            path = path.replace('\\', '/')
-            if path in self.filemap:
-                if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
-                                      'Re-read file?'):
-                    return
-
-            gname = randname(n=5)
-            if hasattr(self.datagroups, gname):
-                time.sleep(0.005)
-                gname = randname(n=6)
-            parent, fname = os.path.split(path)
-            self.larch("%s = read_xdi('%s')" % (gname, path))
-            self.larch("%s.path  = '%s'"     % (gname, path))
-            # self.filelist.Append(fname)
-            self.filemap[fname] = gname
-            print 'Larch:: ', gname, path, fname
-            self.ShowFile(filename=fname)
-
-        dlg.Destroy()
 
 class ScanViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, dbname=None, server='sqlite', host=None,
