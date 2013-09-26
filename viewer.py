@@ -1,4 +1,4 @@
-from lib.gui import ViewerApp
+from lib.gui import ScanViewerApp
 import getopt
 try:
     import psycopg2
@@ -12,5 +12,5 @@ if HAS_PG:
                 host = 'mini',  user = 'epics',
                 password = 'epics', create=True)
 
-app = ViewerApp(**args)
+app = ScanViewerApp(**args)
 app.MainLoop()
