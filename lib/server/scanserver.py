@@ -148,17 +148,13 @@ class ScanServer():
         self.scandb = ScanDB(dbname, **kws)
 
     def scan_messenger(self, cpt, npts=0, scan=None, **kws):
-        # print 'ScanServer.scan_messenger  ', cpt, scan, scan.filename
         if scan is None:
             return
-        if cpt < 3:
-            self.scandb.set_info('filename', scan.filename)
         for c in scan.counters:
             self.scandb.set_scandata(fix_filename(c.label), c.buff)
 
     def scan_prescan(self, scan=None, **kws):
         pass
-
 
     def do_scan(self, scanname, filename=None):
         self.scan = load_dbscan(self.scandb, scanname)
@@ -172,7 +168,8 @@ class ScanServer():
             self.scandb.add_scandata(fix_filename(p.label),
                                      p.array.tolist(),
                                      pvname=p.pv.pvname,
-                                     notes=units)
+                                     units=units,
+                                     notes='positioner')
         for c in self.scan.counters:
             units = get_units(c.pv, 'counts')
             self.scandb.add_scandata(fix_filename(c.label), [],
@@ -193,6 +190,7 @@ class ScanServer():
         self.scanwatcher.start()
         self.scandb.update_where('scandefs', {'name': scanname},
                                  {'last_used_time': make_datetime()})
+        self.scandb.set_info('filename', scan.filename)
         self.scan.run(filename=filename)
 
         if self.scanwatcher is not None:
