@@ -173,7 +173,7 @@ class StepScan(object):
         self.cpt = 0
         self.npts = 0
         self.complete = False
-
+        self.debug = False
         self.extra_pvs = []
         self.positioners = []
         self.triggers = []
@@ -272,11 +272,15 @@ class StepScan(object):
         return out
 
     def pre_scan(self, **kws):
-        [pv.connect() for  (desc, pv) in self.extra_pvs]
+        if self.debug: print 'PRE SCAN '
+        for (desc, pv) in self.extra_pvs:
+            pv.connect() 
         return [m(scan=self) for m in self.pre_scan_methods]
 
     def post_scan(self):
+        if self.debug: print 'POST SCAN '
         return [m() for m in self.post_scan_methods]
+
 
     def verify_scan(self):
         """ this does some simple checks of Scans, checking that
@@ -344,7 +348,7 @@ class StepScan(object):
         self.pause = False
         orig_positions = [p.current() for p in self.positioners]
 
-
+        # print 'StepScan Run 2 (move to start)'
         out = [p.move_to_start(wait=False) for p in self.positioners]
         self.check_outputs(out, msg='move to start')
         self.clear_data()
@@ -354,9 +358,10 @@ class StepScan(object):
 
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
-
+        if self.debug: print 'StepScan Run (data file opened)'
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
+        if self.debug:  print 'StepScan Run (prescan done)'
 
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
@@ -373,6 +378,7 @@ class StepScan(object):
                 for d in self.detectors:
                     d.set_dwelltime(self.dwelltime)
 
+        if self.debug: print 'StepScan Run (dwelltimes set)'
         self.message_thread = None
         if hasattr(self.messenger, '__call__'):
             self.message_thread = ScanMessenger(func=self.messenger,
@@ -389,7 +395,6 @@ class StepScan(object):
         ts_init = time.time()
         self.inittime = ts_init - ts_start
 
-        # print 'BEGIN SCAN '
         while not self.abort:
             i += 1
             if i >= npts:
