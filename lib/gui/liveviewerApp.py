@@ -35,7 +35,7 @@ from ..scandb import ScanDB
 from ..file_utils import fix_filename
 
 from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
-                        add_menu, add_choice, add_menu, check,
+                        add_menu, add_choice, add_menu, check, hline,
                         CEN, RCEN, LCEN, FRAMESTYLE, Font, hms)
 
 CEN |=  wx.ALL
@@ -75,7 +75,7 @@ class ScanViewerFrame(wx.Frame):
         self.plotters = []
 
         self.SetTitle(title)
-        self.SetSize((720, 650))
+        self.SetSize((750, 750))
         self.SetFont(Font(9))
 
         self.createMainPanel()
@@ -124,8 +124,6 @@ class ScanViewerFrame(wx.Frame):
                 ycols.append(nam)
                 if s.notes.startswith('pos'):
                     xcols.append(nam)
-            print 'X LABELS ', xcols
-            print 'Y LABELS ', ycols
 
             y2cols = ycols[:] + ['1.0', '0.0', '']
             xarr_old = self.xarr.GetStringSelection()
@@ -159,51 +157,42 @@ class ScanViewerFrame(wx.Frame):
             setattr(self.lgroup, fix_filename(row.name), np.array(row.data))
 
         if npts > 1:
-            self.onPlot()
+            self.onPlot(npts=npts)
 
     def createMainPanel(self):
         wx.CallAfter(self.init_larch)
         mainpanel = wx.Panel(self)
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(mainpanel)
-        sizer = wx.GridBagSizer(8, 7)
-
-        self.title = SimpleText(panel, 'initializing...',
-                                font=Font(13), colour='#880000')
-        ir = 0
-        sizer.Add(self.title, (ir, 1), (1, 6), LCEN, 2)
-        # x-axis
-
-        self.xarr = add_choice(panel, choices=[],
-                               action=self.onYchoice,  size=(120, -1))
-
-        ir += 1
-        sizer.Add(SimpleText(panel, '  X = '), (ir, 0), (1, 1), CEN, 0)
-        sizer.Add(self.xarr,                  (ir, 3), (1, 1), RCEN, 0)
 
         self.yops = [[],[]]
         self.yarr = [[],[]]
+        arr_kws= {'choices':[], 'size':(120, -1), 'action':self.onPlot}
 
-        for opts, sel, siz in ((PRE_OPS, 0, 75), (ARR_OPS, 3, 50),
-                             (ARR_OPS, 3, 50)):
-            w1 = add_choice(panel, choices=opts, action=self.onYchoice,
-                            size=(siz, -1))
-            w1.SetSelection(sel)
-            self.yops[0].append(w1)
-
-            w2 = add_choice(panel, choices=opts, action=self.onYchoice,
-                            size=(siz, -1))
-            w2.SetSelection(sel)
-            self.yops[1].append(w2)
-
-        opts= {'choices':[], 'size':(120, -1), 'action':self.onYchoice}
+        self.title = SimpleText(panel, 'initializing...',
+                                font=Font(13), colour='#880000')
+        self.xarr = add_choice(panel, **arr_kws)
         for i in range(3):
-            self.yarr[0].append(add_choice(panel, **opts))
-            self.yarr[1].append(add_choice(panel, **opts))
+            self.yarr[0].append(add_choice(panel, **arr_kws))
+            self.yarr[1].append(add_choice(panel, **arr_kws))
 
+        for opts, sel, wid in ((PRE_OPS, 0, 100), (ARR_OPS, 3, 60),
+                               (ARR_OPS, 3, 60)):
+            arr_kws['choices'] = opts
+            arr_kws['size'] = (wid, -1)
+            self.yops[0].append(add_choice(panel, default=sel, **arr_kws))
+            self.yops[1].append(add_choice(panel, default=sel, **arr_kws))
+
+        # place widgets
+        sizer = wx.GridBagSizer(5, 10)
+        sizer.Add(self.title,                  (0, 1), (1, 6), LCEN, 2)
+        sizer.Add(SimpleText(panel, '  X ='), (1, 0), (1, 1), CEN, 0)
+        sizer.Add(self.xarr,                   (1, 3), (1, 1), RCEN, 0)
+
+        ir = 1
         for i in range(2):
             ir += 1
-            label = '  Y%i = ' % (i+1)
+            label = '  Y%i =' % (i+1)
             sizer.Add(SimpleText(panel, label),  (ir, 0), (1, 1), CEN, 0)
             sizer.Add(self.yops[i][0],           (ir, 1), (1, 1), CEN, 0)
             sizer.Add(SimpleText(panel, '[('),   (ir, 2), (1, 1), CEN, 0)
@@ -215,19 +204,16 @@ class ScanViewerFrame(wx.Frame):
             sizer.Add(self.yarr[i][2],           (ir, 8), (1, 1), CEN, 0)
             sizer.Add(SimpleText(panel, ']'),    (ir, 9), (1, 1), LCEN, 0)
         ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(600, 3),
-                                style=wx.LI_HORIZONTAL|wx.GROW),
-                  (ir, 0), (1, 12), CEN|wx.GROW|wx.ALL, 0)
-
+        sizer.Add(hline(panel),   (ir, 0), (1, 12), CEN|wx.GROW|wx.ALL, 0)
         pack(panel, sizer)
 
-        self.plotpanel = PlotPanel(mainpanel, size=(400, 500),
+
+        self.plotpanel = PlotPanel(mainpanel, size=(520, 550),
                                    axissize=(0.18, 0.18, 0.70, 0.70),
                                    fontsize=8)
 
         self.plotpanel.messenger = self.write_message
         self.plotpanel.canvas.figure.set_facecolor((0.98,0.98,0.97))
-
 
         btnsizer = wx.StdDialogButtonSizer()
         btnpanel = wx.Panel(mainpanel)
@@ -423,6 +409,7 @@ class ScanViewerFrame(wx.Frame):
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
         self.larch('%s = group(filename="%s")' % (SCANGROUP, CURSCAN))
+        self.larch('_sys.localGroup = %s)' % (SCANGROUP))
         self.lgroup =  getattr(self.larch.symtable, SCANGROUP)
         self.SetStatusText('ready')
         self.title.SetLabel('')
@@ -454,94 +441,63 @@ class ScanViewerFrame(wx.Frame):
 
         return pframe
 
-    def onYchoice(self, evt=None, side='left'):
-        print 'onYchoice '
-        self.onPlot()
-
-    def onPlot(self, evt=None, opt='new old', npts=None):
+    def onPlot(self, evt=None, npts=None):
         # 'win new', 'New Window'),
         # 'win old',  'Old Window'),
         # 'over left', 'Left Axis'),
         # 'over right', 'Right Axis')):
         # 'update left',  from scan
 
-        optwords = opt.split()
         # plotframe = self.get_plotwindow(new=('new' in optwords[1]))
         # plotcmd = plotframe.plot
-        plotcmd = self.plotpanel.plot
+        plotpanel = self.plotpanel
+        update = npts > 3
 
-        optwords = opt.split()
-        side = 'left'
-        update = False
-        if optwords[0] == 'over':
-            side = optwords[1]
-            plotcmd = self.plotpanel.oplot
-        elif optwords[0] == 'update'  and npts > 4:
-            plotcmd = self.plotpanel.update_line
-            update = True
+        xfmt = "%s._x1_ = %s"
+        yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
+        zfmt = "%s._z1_ = %s((%s %s %s) %s (%s))"
 
-        popts = {'side': side, 'labelfontsize': 8}
+        lgroup = self.lgroup
+        gname = SCANGROUP
 
         ix = self.xarr.GetSelection()
         x  = self.xarr.GetStringSelection()
 
-        try:
-            gname = self.groupname
-            lgroup = getattr(self.larch.symtable, gname)
-        except:
-            gname = SCANGROUP
-            lgroup = getattr(self.larch.symtable, gname)
-
-        xfmt = "%s._x1_ = %s"
-        yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
-
-        popts['xlabel'] = x
+        popts = {'labelfontsize': 8, 'xlabel': x}
         try:
             xunits = lgroup.array_units[ix]
             popts['xlabel'] = '%s (%s)' % (xlabel, xunits)
         except:
             pass
 
-        opl1 = self.yops[0][0].GetStringSelection()
-        opl2 = self.yops[0][1].GetStringSelection()
-        opl3 = self.yops[0][2].GetStringSelection()
+        def make_array(wids, iy):
+            gname = SCANGROUP
+            op1 = self.yops[iy][0].GetStringSelection()
+            op2 = self.yops[iy][1].GetStringSelection()
+            op3 = self.yops[iy][2].GetStringSelection()
+            yy1 = self.yarr[iy][0].GetStringSelection()
+            yy2 = self.yarr[iy][1].GetStringSelection()
+            yy3 = self.yarr[iy][2].GetStringSelection()
 
-        yl1 = self.yarr[0][0].GetStringSelection()
-        yl2 = self.yarr[0][1].GetStringSelection()
-        yl3 = self.yarr[0][2].GetStringSelection()
+            if yy1 in ('0', '1', '', None) or len(yy1) < 0:
+                return ''
 
-        opr1 = self.yops[1][0].GetStringSelection()
-        opr2 = self.yops[1][1].GetStringSelection()
-        opr3 = self.yops[1][2].GetStringSelection()
-
-        yr1 = self.yarr[1][0].GetStringSelection()
-        yr2 = self.yarr[1][1].GetStringSelection()
-        yr3 = self.yarr[1][2].GetStringSelection()
-
-        ylabel = yl1
-
-        if yl2 == '':
-            yl2, opl2 = '1', '*'
-        else:
-            ylabel = "%s%s%s" % (ylabel, opl2, yl2)
-        if yl3 == '':
-            yl3, opl3 = '1', '*'
-        else:
-            ylabel = "(%s)%s%s" % (ylabel, opl3, yl3)
-
-        if opl1 != '':
-            ylabel = "%s(%s)" % (opl1, ylabel)
-
-        if yl1 not in ('0', '1'): yl1 = "%s.%s" % (gname, yl1)
-        if yl2 not in ('0', '1'): yl2 = "%s.%s" % (gname, yl2)
-        if yl3 not in ('0', '1'): yl3 = "%s.%s" % (gname, yl3)
-        if x  not in ('0', '1'):  x = "%s.%s" % (gname,  x)
+            expr = yy1
+            if yy2 != '': expr = "%s%s%s" % (expr, op2, yy2)
+            if yy3 != '': expr = "(%s)%s%s" % (expr, op3, yy3)
+            if op1 != '': expr = "%s(%s)" % (op1, expr)
+            return expr
 
         self.larch(xfmt % (gname, x))
-        self.larch(yfmt % (gname, opl1, yl1, opl2, yl2, opl3, yl3))
+        yexpr = make_array(self.yops, 0)
+        if yexpr == '':
+            return
+        self.larch("%s._x1_ = %s" % (gname, x))
+        self.larch("%s._y1_ = %s" % (gname, yexpr))
 
-        # print 'Group X ... ', len(lgroup._x1_), lgroup._x1_
-        # print 'Group Y ... ', len(lgroup._y1_), lgroup._y1_
+        y2expr = make_array(self.yops, 1)
+        if y2expr != '':
+            self.larch("%s._y2_ = %s" % (gname, y2expr))
 
         try:
             npts = min(len(lgroup._x1_), len(lgroup._y1_))
@@ -551,35 +507,38 @@ class ScanViewerFrame(wx.Frame):
         lgroup._x1_ = np.array( lgroup._x1_[:npts])
         lgroup._y1_ = np.array( lgroup._y1_[:npts])
 
-
         path, fname = os.path.split(lgroup.filename)
-        popts['label'] = "%s: %s" % (fname, ylabel)
-        if side == 'right':
-            popts['y2label'] = ylabel
-        else:
-            popts['ylabel'] = ylabel
+        popts['label'] = "%s: %s" % (fname, yexpr)
+        popts['title'] = fname
+        popts['ylabel'] = yexpr
+        popts['y2label'] = y2expr
 
-        if plotcmd == self.plotpanel.plot:
-            popts['title'] = fname
-
-        # XAFS Processing!
-        #if (self.nb.GetCurrentPage() == self.xas_panel):
-        #    popts = self.xas_process(gname, popts)
+        if y2expr != '':
+            lgroup._y2_ = np.array( lgroup._y2_[:npts])
 
         if update:
-            self.plotpanel.set_xlabel(popts['xlabel'])
-            self.plotpanel.set_ylabel(popts['ylabel'])
+            plotpanel.set_xlabel(xlabel)
+            plotpanel.set_ylabel(yexpr)
+            plotpanel.update_line(0, lgroup._x1_, lgroup._y1_,
+                                  draw=True, update_limits=True)
+            plotpanel.set_xylims((min(lgroup._x1_), max(lgroup._x1_),
+                                  min(lgroup._y1_), max(lgroup._y1_)))
 
-            plotcmd(0, lgroup._x1_, lgroup._y1_, draw=True,
-                        update_limits=True) # ((npts < 5) or (npts % 5 == 0)))
 
-            self.plotpanel.set_xylims((
-                min(lgroup._x1_), max(lgroup._x1_),
-                min(lgroup._y1_), max(lgroup._y1_)))
+            if y2expr != '':
+                plotpanel.set_y2label(y2expr)
+                plotpanel.update_line(1, lgroup._x1_, lgroup._y2_,
+                                      side='right', draw=True,
+                                      update_limits=True)
+                plotpanel.set_xylims((min(lgroup._x1_), max(lgroup._x1_),
+                                      min(lgroup._y2_), max(lgroup._y2_)),
+                                     side='right')
 
         else:
-            plotcmd(lgroup._x1_, lgroup._y1_, **popts)
-            self.plotpanel.canvas.draw()
+            plotpanel.plot(lgroup._x1_, lgroup._y1_, **popts)
+            if y2expr != '':
+                plotpanel.oplot(lgroup._x1_, lgroup._y2_, side='right', **popts)
+            plotpanel.canvas.draw()
 
     def createMenus(self):
         # ppnl = self.plotpanel
@@ -599,7 +558,7 @@ class ScanViewerFrame(wx.Frame):
         add_menu(self, fmenu, "Page Setup", "Print Page Setup", self.onPrintSetup)
         add_menu(self, fmenu, "Preview", "Print Preview",       self.onPrintPreview)
         #
-        
+
         add_menu(self, pmenu, "Configure\tCtrl+K",
                  "Configure Plot", self.onConfigurePlot)
         add_menu(self, pmenu, "Unzoom\tCtrl+Z", "Unzoom Plot", self.onUnzoom)
@@ -614,11 +573,11 @@ class ScanViewerFrame(wx.Frame):
 
     def onClipboard(self, evt=None):
         self.plotpanel.canvas.Copy_to_Clipboard(evt)
-       
+
     def onSaveFig(self, evt=None):
         self.plotpanel.save_figure(event=evt,
                                    transparent=True, dpi=300)
-        
+
     def onPrint(self, evt=None):
         self.plotpanel.Print(evet)
 
