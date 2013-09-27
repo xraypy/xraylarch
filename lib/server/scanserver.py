@@ -15,7 +15,7 @@ from ..stepscan import StepScan
 from ..xafs_scan import XAFS_Scan
 from ..scandb import ScanDB, ScanDBException, make_datetime
 from ..utils import get_units
-from ..file_utils import fix_filename
+from ..file_utils import fix_varname
 
 def load_dbscan(scandb, scanname):
     """load a scan definition from the database
@@ -107,7 +107,7 @@ class ScanWatcher(threading.Thread):
     """ Thread to watch for scandb status requests (Abort, Pause, Resume)
     and pass them to the current StepScan"""
     scan_timeout  = 3*86400.0
-    start_timeout =    3600.0
+    start_timeout =     300.0
     def __init__(self, scandb, scan=None, **kws):
         threading.Thread.__init__(self)
         self.get_info = scandb.get_info
@@ -119,12 +119,18 @@ class ScanWatcher(threading.Thread):
         scan = self.scan
         scan_started = False
         while True:
-            time.sleep(0.5)
+            try:
+                time.sleep(0.5)
+            except KeyboardInterrupt:
+                return
             if time.time()-t0 > self.scan_timeout or scan is None:
                 return
             # if scan has not yet started
             if scan.cpt > 1:
                 scan_started = True
+            if self.get_info('request_command_killall', as_bool=True):
+                return
+            
             if not scan_started:
                 if time.time()-t0 > self.start_timeout:
                     return
@@ -143,6 +149,7 @@ class ScanServer():
         if dbname is not None:
             self.connect(dbname, **kws)
 
+
     def connect(self, dbname, **kws):
         """connect to Scan Database"""
         self.scandb = ScanDB(dbname, **kws)
@@ -150,8 +157,17 @@ class ScanServer():
     def scan_messenger(self, cpt, npts=0, scan=None, **kws):
         if scan is None:
             return
+        # print '  scan  ', cpt, npts, scan.filename
+        time_left = (npts-cpt)* (scan.pos_settle_time + scan.det_settle_time )
+        if scan.dwelltime_varys:
+            time_left += scan.dwelltime[npts:].sum()
+        else:
+            time_left += (npts-cpt)*scan.dwelltime
+        self.scandb.set_info('scan_time_estimate', time_left)
+        if cpt < 4:
+            self.scandb.set_info('filename', scan.filename)
         for c in scan.counters:
-            self.scandb.set_scandata(fix_filename(c.label), c.buff)
+            self.scandb.set_scandata(fix_varname(c.label), c.buff)
 
     def scan_prescan(self, scan=None, **kws):
         pass
@@ -165,14 +181,15 @@ class ScanServer():
         for p in self.scan.positioners:
             units = get_units(p.pv, 'unknown')
             npts = max(npts, len(p.array))
-            self.scandb.add_scandata(fix_filename(p.label),
+            self.scandb.add_scandata(fix_varname(p.label),
                                      p.array.tolist(),
                                      pvname=p.pv.pvname,
                                      units=units,
                                      notes='positioner')
+
         for c in self.scan.counters:
             units = get_units(c.pv, 'counts')
-            self.scandb.add_scandata(fix_filename(c.label), [],
+            self.scandb.add_scandata(fix_varname(c.label), [],
                                      pvname=c.pv.pvname,
                                      units=units)
 
@@ -187,10 +204,12 @@ class ScanServer():
         self.scan.messenger = self.scan_messenger
 
         self.scanwatcher = ScanWatcher(self.scandb, scan=self.scan)
+
         self.scanwatcher.start()
         self.scandb.update_where('scandefs', {'name': scanname},
                                  {'last_used_time': make_datetime()})
-        self.scandb.set_info('filename', scan.filename)
+        self.scandb.set_info('filename', filename)
+        self.scan.filename = filename
         self.scan.run(filename=filename)
 
         if self.scanwatcher is not None:
