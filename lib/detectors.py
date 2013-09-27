@@ -216,8 +216,8 @@ class MultiMcaCounter(DeviceCounter):
         fields = []
         extras = []
         for imca in range(1, nmcas+1):
-            mca = 'MCA%i' % imca
-            dxp = 'DXP%i' % imca
+            mca = 'mca%i' % imca
+            dxp = 'dxp%i' % imca
             extras.extend([
                 ("%s.Calib_Offset" % mca, "%s%s.CALO" % (prefix, mca)),
                 ("%s.Calib_Slope"  % mca, "%s%s.CALS" % (prefix, mca)),
@@ -245,7 +245,7 @@ class MultiMcaCounter(DeviceCounter):
                 rhipv  = '%s%s.R%iHI' % (prefix, mca, i)
                 roi    = pvs[namepv].get()
                 roi_hi = pvs[rhipv].get()
-                label = '%s (%s)'% (roi, mca)
+                label = '%s %s'% (roi, mca)
                 if (roi is not None and (len(roi) > 0 and roi_hi > 0) or
                     use_unlabeled):
                     suff = '%s.R%i' % (mca, i)
@@ -452,7 +452,6 @@ class MultiMcaDetector(DetectorMixin):
     def pre_scan(self, scan=None, **kws):
         if self._counter is None:
             self.connect_counters()
-
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
