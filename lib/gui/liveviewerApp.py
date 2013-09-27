@@ -29,7 +29,6 @@ use_plugin_path('math')
 from fitpeak import fit_peak
 
 from wxmplot import PlotFrame, PlotPanel
-from xdifile import XDIFile
 from ..datafile import StepScanData
 from ..scandb import ScanDB
 from ..file_utils import fix_filename
@@ -51,7 +50,7 @@ def randname(n=6):
     return ''.join([chr(randrange(26)+97) for i in range(n)])
 
 
-CURSCAN, SCANGROUP = '< Current Scan >', '_scan_'
+CURSCAN, SCANGROUP = '< Current Scan >', 'scandat'
 
 class ScanViewerFrame(wx.Frame):
     _about = """Scan Viewer,  Matt Newville <newville @ cars.uchicago.edu>  """
@@ -93,7 +92,7 @@ class ScanViewerFrame(wx.Frame):
             self.total_npts = 1
             self.scantimer = wx.Timer(self)
             self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
-            self.scantimer.Start(50)
+            self.scantimer.Start(250)
 
     def onScanTimer(self, evt=None, **kws):
         if self.lgroup is None:
@@ -102,16 +101,19 @@ class ScanViewerFrame(wx.Frame):
         curfile = fix_filename(self.get_info('filename'))
         sdata = self.scandb.get_scandata()
         npts = len(sdata[-1].data)
+
         if (npts > 2 and npts == self.live_cpt and
             curfile == self.live_scanfile): # no new data
             return
 
         # filename changed -- scan starting, so update
         # list of positioners, detectors, etc
+        force_newplot = False
         if curfile != self.live_scanfile:
-            print 'See new file name ', curfile
+            force_newplot = True
             self.live_scanfile = curfile
             self.title.SetLabel(curfile)
+
             self.lgroup.filename = curfile
             array_labels = [fix_filename(s.name) for s in sdata]
             self.lgroup.array_units = [fix_filename(s.units) for s in sdata]
@@ -149,6 +151,7 @@ class ScanViewerFrame(wx.Frame):
 
         if npts == self.live_cpt:
             return
+
         time_est = hms(self.get_info('scan_time_estimate', as_int=True))
         msg = self.TIME_MSG % (npts, self.total_npts, time_est)
         self.SetStatusText(msg)
@@ -157,7 +160,7 @@ class ScanViewerFrame(wx.Frame):
             setattr(self.lgroup, fix_filename(row.name), np.array(row.data))
 
         if npts > 1:
-            self.onPlot(npts=npts)
+            self.onPlot(npts=npts, force_newplot=force_newplot)
 
     def createMainPanel(self):
         wx.CallAfter(self.init_larch)
@@ -332,8 +335,8 @@ class ScanViewerFrame(wx.Frame):
         if model in ('step', 'rectangle'):
             dtext.append('Step form: %s' % step)
         lgroup =  getattr(self.larch.symtable, gname)
-        x = lgroup._x1_
-        y = lgroup._y1_
+        x = lgroup.arr_x
+        y = lgroup.arr_y1
         pgroup = fit_peak(x, y, model, background=bkg, step=step,
                           _larch=self.larch)
         text = fit_report(pgroup.params, _larch=self.larch)
@@ -369,7 +372,7 @@ class ScanViewerFrame(wx.Frame):
             print 'need to dt correct!'
 
         if not self.xas_autoe0.IsChecked():
-            xmin, xmax = min(lgroup._x1_),  max(lgroup._x1_)
+            xmin, xmax = min(lgroup.arr_x),  max(lgroup.arr_x)
             e0 = self.xas_e0.GetValue()
             if e0 < xmax and e0 > xmin:
                 preopts['e0'] = e0
@@ -441,7 +444,7 @@ class ScanViewerFrame(wx.Frame):
 
         return pframe
 
-    def onPlot(self, evt=None, npts=None):
+    def onPlot(self, evt=None, npts=None, force_newplot=False):
         # 'win new', 'New Window'),
         # 'win old',  'Old Window'),
         # 'over left', 'Left Axis'),
@@ -452,10 +455,8 @@ class ScanViewerFrame(wx.Frame):
         # plotcmd = plotframe.plot
         plotpanel = self.plotpanel
         update = npts > 3
-
-        xfmt = "%s._x1_ = %s"
-        yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
-        zfmt = "%s._z1_ = %s((%s %s %s) %s (%s))"
+        if force_newplot: 
+            update = False
 
         lgroup = self.lgroup
         gname = SCANGROUP
@@ -471,7 +472,7 @@ class ScanViewerFrame(wx.Frame):
             pass
 
         def make_array(wids, iy):
-            gname = SCANGROUP
+            gn  = SCANGROUP
             op1 = self.yops[iy][0].GetStringSelection()
             op2 = self.yops[iy][1].GetStringSelection()
             op3 = self.yops[iy][2].GetStringSelection()
@@ -480,64 +481,72 @@ class ScanViewerFrame(wx.Frame):
             yy3 = self.yarr[iy][2].GetStringSelection()
 
             if yy1 in ('0', '1', '', None) or len(yy1) < 0:
-                return ''
+                return '', ''
 
-            expr = yy1
-            if yy2 != '': expr = "%s%s%s" % (expr, op2, yy2)
-            if yy3 != '': expr = "(%s)%s%s" % (expr, op3, yy3)
-            if op1 != '': expr = "%s(%s)" % (op1, expr)
-            return expr
+            label = yy1
+            expr = "%s.%s"  % (gn, yy1)
 
-        self.larch(xfmt % (gname, x))
-        yexpr = make_array(self.yops, 0)
+            if yy2 != '':  
+                label = "%s%s%s"     % (label, op2, yy2)
+                expr  = "%s%s%s.%s"  % (expr, op2, gn, yy2)
+            if yy3 != '': 
+                label = "(%s)%s%s"    % (label, op3, yy3)
+                expr  = "(%s)%s%s.%s" % (expr, op3, gn, yy3)
+            if op1 != '': 
+                label = "%s(%s)" % (op1, label)
+                expr  = "%s(%s)" % (op1, expr)
+            return label, expr
+
+        ylabel, yexpr = make_array(self.yops, 0)
         if yexpr == '':
             return
-        self.larch("%s._x1_ = %s" % (gname, x))
-        self.larch("%s._y1_ = %s" % (gname, yexpr))
+        self.larch("%s.arr_x = %s.%s" % (gname, gname, x))
+        self.larch("%s.arr_y1 = %s" % (gname, yexpr))
 
-        y2expr = make_array(self.yops, 1)
+        y2label, y2expr = make_array(self.yops, 1)
         if y2expr != '':
-            self.larch("%s._y2_ = %s" % (gname, y2expr))
+            self.larch("%s.arr_y2 = %s" % (gname, y2expr))
 
         try:
-            npts = min(len(lgroup._x1_), len(lgroup._y1_))
+            npts = min(len(lgroup.arr_x), len(lgroup.arr_y1))
         except AttributeError:
+            print 'Cannot determine Npts!'
             return
 
-        lgroup._x1_ = np.array( lgroup._x1_[:npts])
-        lgroup._y1_ = np.array( lgroup._y1_[:npts])
+        lgroup.arr_x  = np.array( lgroup.arr_x[:npts])
+        lgroup.arr_y1 = np.array( lgroup.arr_y1[:npts])
 
         path, fname = os.path.split(lgroup.filename)
-        popts['label'] = "%s: %s" % (fname, yexpr)
-        popts['title'] = fname
-        popts['ylabel'] = yexpr
-        popts['y2label'] = y2expr
+        popts['title']   = fname
+        popts['ylabel']  = ylabel
+        popts['y2label'] = y2label
 
         if y2expr != '':
-            lgroup._y2_ = np.array( lgroup._y2_[:npts])
-
+            lgroup.arr_y2 = np.array( lgroup.arr_y2[:npts])
         if update:
             plotpanel.set_xlabel(xlabel)
-            plotpanel.set_ylabel(yexpr)
-            plotpanel.update_line(0, lgroup._x1_, lgroup._y1_,
+            plotpanel.set_ylabel(ylabel)
+            plotpanel.update_line(0, lgroup.arr_x, lgroup.arr_y1,
                                   draw=True, update_limits=True)
-            plotpanel.set_xylims((min(lgroup._x1_), max(lgroup._x1_),
-                                  min(lgroup._y1_), max(lgroup._y1_)))
+            plotpanel.set_xylims((min(lgroup.arr_x), max(lgroup.arr_x),
+                                  min(lgroup.arr_y1), max(lgroup.arr_y1)))
 
 
             if y2expr != '':
-                plotpanel.set_y2label(y2expr)
-                plotpanel.update_line(1, lgroup._x1_, lgroup._y2_,
+                plotpanel.set_y2label(y2label)
+                plotpanel.update_line(1, lgroup.arr_x, lgroup.arr_y2,
                                       side='right', draw=True,
                                       update_limits=True)
-                plotpanel.set_xylims((min(lgroup._x1_), max(lgroup._x1_),
-                                      min(lgroup._y2_), max(lgroup._y2_)),
+                plotpanel.set_xylims((min(lgroup.arr_x), max(lgroup.arr_x),
+                                      min(lgroup.arr_y2), max(lgroup.arr_y2)),
                                      side='right')
 
         else:
-            plotpanel.plot(lgroup._x1_, lgroup._y1_, **popts)
+            plotpanel.plot(lgroup.arr_x, lgroup.arr_y1, 
+                           label= "%s: %s" % (fname, ylabel), **popts)
             if y2expr != '':
-                plotpanel.oplot(lgroup._x1_, lgroup._y2_, side='right', **popts)
+                plotpanel.oplot(lgroup.arr_x, lgroup.arr_y2, side='right', 
+                           label= "%s: %s" % (fname, y2label), **popts)
             plotpanel.canvas.draw()
 
     def createMenus(self):

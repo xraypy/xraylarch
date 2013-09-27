@@ -34,7 +34,6 @@ use_plugin_path('math')
 from fitpeak import fit_peak
 
 from wxmplot import PlotFrame, PlotPanel
-from xdifile import XDIFile
 from ..datafile import StepScanData
 from ..scandb import ScanDB
 from ..file_utils import fix_filename
