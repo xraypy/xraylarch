@@ -27,6 +27,12 @@ def get_homedir():
     except ImportError: # if win32com is not found
         return '.'
 
+def fix_varname(s):
+    """fix string to be a 'good' variable name."""
+    t = str(s).translate(BAD_FILETABLE)
+    while t.endswith('_'): t = t[:-1]
+    return t
+
 def fix_filename(s):
     """fix string to be a 'good' filename.
     This may be a more restrictive than the OS, but
