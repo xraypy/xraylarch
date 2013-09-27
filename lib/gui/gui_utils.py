@@ -216,6 +216,9 @@ def popup(parent, message, title, style=None):
     dlg.Destroy()
     return ret
 
+def hline(parent, size=(700, 3)):
+    return wx.StaticLine(parent, size=size, style=wx.LI_HORIZONTAL|wx.GROW)
+
 def empty_bitmap(width, height, value=255):
     """return empty wx.BitMap"""
     data = array.array('B', [value]*3*width*height)
