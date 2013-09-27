@@ -130,29 +130,23 @@ class Status(_BaseTable):
 
 class ScanPositioners(_BaseTable):
     "positioners table"
-    name, notes, drivepv, readpv, extrapvs = [None]*5
-    use = 1
+    name, notes, drivepv, readpv, extrapvs, use = [None]*6
 
 class SlewScanPositioners(_BaseTable):
     "positioners table for slew scans"
-    name, notes, drivepv, readpv, extrapvs = [None]*5
-    use = 1
-
+    name, notes, drivepv, readpv, extrapvs, use = [None]*6
 
 class ScanCounters(_BaseTable):
     "counters table"
-    name, notes, pvname = [None]*3
-    use = 1
+    name, notes, pvname, use = [None]*4
 
 class ScanDetectors(_BaseTable):
     "detectors table"
-    name, notes, pvname, kind, options = [None]*5
-    use = 1
+    name, notes, pvname, kind, options, use = [None]*6
 
 class ExtraPVs(_BaseTable):
     "extra pvs in scan table"
-    name, notes, pvname = None, None, None
-    use = 1
+    name, notes, pvname, use = [None]*4
 
 class ScanDefs(_BaseTable):
     "scandefs table"
