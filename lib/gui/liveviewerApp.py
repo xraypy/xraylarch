@@ -92,7 +92,7 @@ class ScanViewerFrame(wx.Frame):
             self.total_npts = 1
             self.scantimer = wx.Timer(self)
             self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
-            self.scantimer.Start(250)
+            self.scantimer.Start(50)
 
     def onScanTimer(self, evt=None, **kws):
         if self.lgroup is None:
@@ -463,11 +463,11 @@ class ScanViewerFrame(wx.Frame):
 
         ix = self.xarr.GetSelection()
         x  = self.xarr.GetStringSelection()
-
+        xlabel = x
         popts = {'labelfontsize': 8, 'xlabel': x}
         try:
             xunits = lgroup.array_units[ix]
-            popts['xlabel'] = '%s (%s)' % (xlabel, xunits)
+            xlabel = '%s (%s)' % (xlabel, xunits)
         except:
             pass
 
@@ -518,11 +518,24 @@ class ScanViewerFrame(wx.Frame):
 
         path, fname = os.path.split(lgroup.filename)
         popts['title']   = fname
+        popts['xlabel'] = xlabel
         popts['ylabel']  = ylabel
         popts['y2label'] = y2label
 
         if y2expr != '':
+            onpts = npts
+            try:
+                npts = min(len(lgroup.arr_x), len(lgroup.arr_y2))
+            except AttributeError:
+                print 'Cannot determine Npts!'
+                return
             lgroup.arr_y2 = np.array( lgroup.arr_y2[:npts])
+            if onpts != npts:
+                lgroup.arr_x  = np.array( lgroup.arr_x[:npts])
+                lgroup.arr_y1 = np.array( lgroup.arr_y1[:npts])
+
+        print 'On Plot ' npts
+
         if update:
             plotpanel.set_xlabel(xlabel)
             plotpanel.set_ylabel(ylabel)
