@@ -153,6 +153,7 @@ class DetectorFrame(wx.Frame) :
 
         self.widlist = []
         for det in self.detectors:
+            if det.use is None: det.use = 0
             ir +=1
             dkind = strip_quotes(det.kind)
             dkind  = det.kind.title().strip()
@@ -203,6 +204,7 @@ class DetectorFrame(wx.Frame) :
                   (ir, 3), (1, 2), LCEN, 1)
 
         for counter in self.counters:
+            if counter.use is None: counter.use = 0
             desc   = wx.TextCtrl(panel, -1, value=counter.name, size=(125, -1))
             pvctrl = wx.TextCtrl(panel, value=counter.pvname,  size=(175, -1))
             use    = check(panel, default=counter.use)
@@ -277,8 +279,11 @@ class DetectorFrame(wx.Frame) :
             use    = use.IsChecked()
             name   = name.GetValue().strip()
             pvname = pvname.GetValue().strip()
+
             if len(name) < 1 or len(pvname) < 1:
                 continue
+            # print wtype, obj, name, pvname, use
+
             if kind is not None:
                 kind = kind.GetStringSelection()
             if erase and obj is not None:
@@ -287,6 +292,7 @@ class DetectorFrame(wx.Frame) :
                     delete = self.scan.del_counter
                 delete(obj.name)
             elif obj is not None:
+                # print ' -> use ', use, int(use), obj, obj.use
                 obj.use    = int(use)
                 obj.name   = name
                 obj.pvname = pvname
@@ -298,8 +304,7 @@ class DetectorFrame(wx.Frame) :
                                          options=opts, use=int(use))
             elif 'counter' in wtype:
                 self.scandb.add_counter(name, pvname, use=int(use))
-
-        self.scandb.commit()
+            self.scandb.commit()
         self.Destroy()
 
     def onClose(self, event=None):
