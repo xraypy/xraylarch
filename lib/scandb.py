@@ -326,7 +326,7 @@ class ScanDB(object):
 
         if as_int:
             if out is None: out = 0
-            out = int(out)
+            out = int(float(out))
         if as_bool:
             if out is None: out = 0
             out = bool(int(out))
