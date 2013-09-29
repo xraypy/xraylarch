@@ -64,6 +64,7 @@ from ..positioner import Positioner
 from ..detectors import (SimpleDetector, ScalerDetector, McaDetector,
                          MultiMcaDetector, AreaDetector, get_detector)
 
+from .liveviewerApp    import ScanViewerFrame
 from .edit_positioners import PositionerFrame
 from .edit_detectors   import DetectorFrame
 from .edit_general     import SettingsFrame
@@ -179,7 +180,7 @@ class ScanFrame(wx.Frame):
                              action=Closure(self.onCtrlScan, cmd=label))
             btnsizer.Add(btn, 0, CEN, 8)
         pack(btnpanel, btnsizer)
-        
+
         ir = 3
         bsizer.Add(btnpanel,  (3, 0), (1, 4), LCEN, 5)
 
@@ -215,6 +216,7 @@ class ScanFrame(wx.Frame):
             for inb, span in self.scanpanels.values():
                 span.initialize_positions()
             self.inittimer.Stop()
+            wx.CallAfter(self.onShowPlot)
             self.statusbar.SetStatusText('', 0)
             self.statusbar.SetStatusText('Ready', 1)
 
@@ -290,7 +292,7 @@ class ScanFrame(wx.Frame):
         elif cmd == 'abort':
             self.scandb.set_info('request_command_abort', 1)
         elif cmd == 'pause':
-            self.scandb.set_info('request_command_pause', 1)            
+            self.scandb.set_info('request_command_pause', 1)
         elif cmd == 'resume':
             self.scandb.set_info('request_command_pause', 0)
 
@@ -300,14 +302,17 @@ class ScanFrame(wx.Frame):
         fmenu = wx.Menu()
         add_menu(self, fmenu, "Load Scan Definition\tCtrl+O",
                  "Load Scan Defintion",  self.onReadScanDef)
-        
+
         add_menu(self, fmenu, "Save Scan Definition\tCtrl+S",
                  "Save Scan Definition", self.onSaveScanDef)
 
         fmenu.AppendSeparator()
 
         add_menu(self, fmenu,'Change &Working Folder\tCtrl+W',
-                  "Choose working directory",  self.onFolderSelect)
+                 "Choose working directory",  self.onFolderSelect)
+        add_menu(self, fmenu,'Show Plot Window'
+                 "Show Window for Plotting Scan", self.onShowPlot)
+
         fmenu.AppendSeparator()
         add_menu(self, fmenu, "Quit\tCtrl+Q",
         "Quit program", self.onClose)
@@ -378,6 +383,8 @@ class ScanFrame(wx.Frame):
         if not shown:
             self.subframes[name] = frameclass(self)
 
+    def onShowPlot(self, evt=None):
+        self.show_subframe('plot', ScanViewerFrame)
 
     def onEditPositioners(self, evt=None):
         self.show_subframe('pos', PositionerFrame)
