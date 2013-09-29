@@ -10,6 +10,7 @@ Principle features:
 import os
 import time
 import shutil
+import json
 import numpy as np
 from random import randrange
 
@@ -83,12 +84,16 @@ class ScanViewerFrame(wx.Frame):
 
         if self.scandb is not None:
             self.get_info  = self.scandb.get_info
+            self.scandb_server = self.scandb.server
             self.live_scanfile = None
             self.live_cpt = -1
             self.total_npts = 1
             self.scantimer = wx.Timer(self)
             self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
             self.scantimer.Start(50)
+
+        self.Show()
+        self.Raise()
 
     def onScanTimer(self, evt=None, **kws):
         if self.lgroup is None:
@@ -119,7 +124,10 @@ class ScanViewerFrame(wx.Frame):
         self.SetStatusText(msg)
         self.live_cpt = npts
         for row in sdata:
-            setattr(self.lgroup, fix_varname(row.name), np.array(row.data))
+            dat = row.data
+            if self.scandb_server == 'sqlite':
+                dat = json.loads(dat.replace('{', '[').replace('}', ']'))
+            setattr(self.lgroup, fix_varname(row.name), np.array(dat))
 
         if npts > 1:
             self.onPlot(npts=npts, force_newplot=force_newplot)
@@ -413,7 +421,7 @@ class ScanViewerFrame(wx.Frame):
     def onPlot(self, evt=None, npts=None, force_newplot=False):
         """drow plot of newest data"""
 
-        new_plot = force_update or npts < 3
+        new_plot = force_newplot or npts < 3
         lgroup, gname = self.lgroup, SCANGROUP
 
         ix = self.xarr.GetSelection()
@@ -457,7 +465,10 @@ class ScanViewerFrame(wx.Frame):
             return
         self.larch("%s.arr_x = %s.%s" % (gname, gname, x))
         self.larch("%s.arr_y1 = %s" % (gname, yexpr))
-
+        # print 'onPlot Show Groups ', lgroup
+        # print ' : ', dir(lgroup)
+        # print '  X -> ', x, lgroup.arr_x
+        # print '  Y -> ', yexpr, lgroup.arr_y1
         try:
             npts = min(len(lgroup.arr_x), len(lgroup.arr_y1))
         except AttributeError:
@@ -466,9 +477,10 @@ class ScanViewerFrame(wx.Frame):
         y2label, y2expr = make_array(self.yops, 1)
         if y2expr != '':
             self.larch("%s.arr_y2 = %s" % (gname, y2expr))
+            n2pts = npts
             try:
-                n2pts = min(len(lgroup.arr_x), len(lgroup.arr_y),
-                           len(lgroup.arr_y2))
+                n2pts = min(len(lgroup.arr_x), len(lgroup.arr_y1),
+                            len(lgroup.arr_y2))
                 lgroup.arr_y2 = np.array( lgroup.arr_y2[:n2pts])
             except:
                 y2expr = ''
