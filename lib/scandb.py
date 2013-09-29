@@ -5,6 +5,7 @@ SQLAlchemy wrapping of scan database
 Main Class for full Database:  ScanDB
 """
 import os
+import sys
 import json
 import time
 import atexit
@@ -37,8 +38,6 @@ class ScanDBException(Exception):
     def __init__(self, *args):
         Exception.__init__(self, *args)
         sys.excepthook(*sys.exc_info())
-
-
 
 def json_encode(val):
     "simple wrapper around json.dumps"
@@ -125,7 +124,8 @@ class ScanDB(object):
 
         _tables = ('info', 'status', 'commands', 'pvs', 'scandefs')
         engine = get_dbengine(dbname, server=server, create=False,
-                              user=user, password=password, host=host, port=port)
+                              user=user, password=password,
+                              host=host, port=port)
         try:
             meta = MetaData(engine)
             meta.reflect()
@@ -154,7 +154,7 @@ class ScanDB(object):
         if not self.isScanDB(dbname,  **creds) and create:
             engine, meta = create_scandb(dbname, create=True, **creds)
             self.engine = engine
-            self.metadta = meta
+            self.metadata = meta
             self.metadata.reflect()
 
         if self.engine is None:

@@ -127,7 +127,6 @@ class Status(_BaseTable):
     "status table"
     name, notes = None, None
 
-
 class ScanPositioners(_BaseTable):
     "positioners table"
     name, notes, drivepv, readpv, extrapvs, use = [None]*6
@@ -154,8 +153,11 @@ class ScanDefs(_BaseTable):
 
 class PVs(_BaseTable):
     "pv table"
+    name, notes, is_monitor = None, None, None
+
+class PVTypes(_BaseTable):
+    "pvtype table"
     name, notes = None, None
-    is_monitor = 0
 
 class MonitorValues(_BaseTable):
     "monitor PV Values table"
@@ -292,7 +294,6 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                     StrCol('value'),
                     Column('modify_time', DateTime))
 
-
     scandata = NamedTable('scandata', metadata, with_pv=True,
                          cols = [PointerCol('commands'),
                                  ArrayCol('data', server=server),
@@ -352,6 +353,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                            ("request_command_abort", "0"),
                            ("request_command_pause", "0"),
                            ("request_command_resume", "0"),
+                           ("request_command_killall", "0"),
                            ("request_shutdown", "0") ):
         info.insert().execute(keyname=keyname, value=value)
     session.commit()
@@ -373,10 +375,11 @@ def map_scandb(metadata):
         clear_mappers()
     except:
         pass
-    for cls in (Info, Status, PVs, MonitorValues, Macros, ExtraPVs,
+
+    for cls in (Info, Status, PVs, PVTypes, MonitorValues, Macros, ExtraPVs,
                 Commands, ScanData, ScanPositioners, ScanCounters,
-                ScanDetectors, ScanDefs, SlewScanPositioners,
-                Positions, Position_PV, Instruments, Instrument_PV,
+                ScanDetectors, ScanDefs, SlewScanPositioners, Positions,
+                Position_PV, Instruments, Instrument_PV,
                 Instrument_Precommands, Instrument_Postcommands):
 
         name = cls.__name__.lower()
@@ -387,27 +390,29 @@ def map_scandb(metadata):
             props = {'commands': relationship(Commands)}
         elif name == 'monitorvalues':
             props = {'pv': relationship(PVs)}
+        elif name == 'pvtypes':
+            props = {'pv': relationship(PVs, backref='pvtypes')}
         elif name == 'instruments':
-            props ={'pvs': relationship(PVs,
-                                        backref='instruments',
-                                        secondary=tables['instrument_pv'])}
+            props = {'pvs': relationship(PVs,
+                                         backref='instruments',
+                                         secondary=tables['instrument_pv'])}
         elif name == 'positions':
-            props ={'instrument': relationship(Instruments,
-                                               backref='positions'),
-                    'pvs': relationship(Position_PV)}
+            props = {'instrument': relationship(Instruments,
+                                                backref='positions'),
+                     'pvs': relationship(Position_PV)}
         elif name == 'instrument_pv':
-            props ={'pv': relationship(PVs),
-                    'instrument': relationship(Instruments)}
+            props = {'pv': relationship(PVs),
+                     'instrument': relationship(Instruments)}
         elif name == 'position_pv':
-            props ={'pv': relationship(PVs)}
+            props = {'pv': relationship(PVs)}
         elif name == 'instrument_precommands':
-            props ={'instrument': relationship(Instruments,
-                                               backref='precommands'),
-                    'command': relationship(Commands)}
+            props = {'instrument': relationship(Instruments,
+                                                backref='precommands'),
+                     'command': relationship(Commands)}
         elif name == 'instrument_postcommands':
-            props ={'instrument': relationship(Instruments,
-                                               backref='postcommands'),
-                    'command': relationship(Commands)}
+            props = {'instrument': relationship(Instruments,
+                                                backref='postcommands'),
+                     'command': relationship(Commands)}
 
         mapper(cls, tables[name], properties=props)
         classes[name] = cls
