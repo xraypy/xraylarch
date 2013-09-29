@@ -310,7 +310,7 @@ class ScanFrame(wx.Frame):
 
         add_menu(self, fmenu,'Change &Working Folder\tCtrl+W',
                  "Choose working directory",  self.onFolderSelect)
-        add_menu(self, fmenu,'Show Plot Window'
+        add_menu(self, fmenu,'Show Plot Window',
                  "Show Window for Plotting Scan", self.onShowPlot)
 
         fmenu.AppendSeparator()
