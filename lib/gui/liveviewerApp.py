@@ -31,7 +31,7 @@ from fitpeak import fit_peak
 from wxmplot import PlotFrame, PlotPanel
 from ..datafile import StepScanData
 from ..scandb import ScanDB
-from ..file_utils import fix_filename
+from ..file_utils import fix_filename, fix_varname
 
 from .gui_utils import (SimpleText, FloatCtrl, Closure, pack, add_button,
                         add_menu, add_choice, add_menu, check, hline,
@@ -56,27 +56,23 @@ class ScanViewerFrame(wx.Frame):
     _about = """Scan Viewer,  Matt Newville <newville @ cars.uchicago.edu>  """
     TIME_MSG = 'Point %i/%i, Time Remaining ~ %s '
 
-    def __init__(self, dbname=None, server='sqlite', host=None,
+    def __init__(self, parent, dbname=None, server='sqlite', host=None,
                  port=None, user=None, password=None, create=True, **kws):
 
         wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
-        self.data = None
-        self.filemap = {}
         title = "Epics Step Scan Viewer"
-        self.scandb = None
-        if dbname is not None:
+        self.parent = parent
+        self.scandb = getattr(parent, 'scandb', None)
+        if self.scandb is None and dbname is not None:
             self.scandb = ScanDB(dbname=dbname, server=server, host=host,
                                  user=user, password=password, port=port,
                                  create=create)
-            title = '%s, with Live Scan Viewing' % title
         self.larch = None
         self.lgroup = None
-        self.plotters = []
 
         self.SetTitle(title)
         self.SetSize((750, 750))
         self.SetFont(Font(9))
-
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -85,7 +81,7 @@ class ScanViewerFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
-        if dbname is not None:
+        if self.scandb is not None:
             self.get_info  = self.scandb.get_info
             self.live_scanfile = None
             self.live_cpt = -1
@@ -113,41 +109,7 @@ class ScanViewerFrame(wx.Frame):
             force_newplot = True
             self.live_scanfile = curfile
             self.title.SetLabel(curfile)
-
-            self.lgroup.filename = curfile
-            array_labels = [fix_filename(s.name) for s in sdata]
-            self.lgroup.array_units = [fix_filename(s.units) for s in sdata]
-            self.total_npts = self.get_info('scan_total_points',
-                                            as_int=True)
-            self.live_cpt = -1
-            xcols, ycols, y2cols = [], [], []
-            for s in sdata:
-                nam = fix_filename(s.name)
-                ycols.append(nam)
-                if s.notes.startswith('pos'):
-                    xcols.append(nam)
-
-            y2cols = ycols[:] + ['1.0', '0.0', '']
-            xarr_old = self.xarr.GetStringSelection()
-            self.xarr.SetItems(xcols)
-            if xarr_old in xcols:
-                self.xarr.SetStringSelection(xarr_old)
-            else:
-                self.xarr.SetSelection(0)
-            for i in range(2):
-                for j in range(3):
-                    yold = self.yarr[i][j].GetStringSelection()
-                    cols = y2cols
-                    idef  = 0
-                    if i == 0 and j == 0:
-                        cols = ycols
-                        idef = 1
-                    self.yarr[i][j].SetItems(cols)
-                    if yold in cols:
-                        self.yarr[i][j].SetStringSelection(yold)
-                    else:
-                        self.yarr[i][j].SetSelection(idef)
-
+            self.set_column_names(sdata)
 
         if npts == self.live_cpt:
             return
@@ -157,10 +119,38 @@ class ScanViewerFrame(wx.Frame):
         self.SetStatusText(msg)
         self.live_cpt = npts
         for row in sdata:
-            setattr(self.lgroup, fix_filename(row.name), np.array(row.data))
+            setattr(self.lgroup, fix_varname(row.name), np.array(row.data))
 
         if npts > 1:
             self.onPlot(npts=npts, force_newplot=force_newplot)
+
+    def set_column_names(self, sdata):
+        """set column names from values read from scandata table"""
+        self.lgroup.array_units = [fix_varname(s.units) for s in sdata]
+        self.total_npts = self.get_info('scan_total_points', as_int=True)
+        self.live_cpt = -1
+        xcols, ycols, y2cols = [], [], []
+        for s in sdata:
+            nam = fix_varname(s.name)
+            ycols.append(nam)
+            if s.notes.lower().startswith('pos'):
+                xcols.append(nam)
+
+        y2cols = ycols[:] + ['1.0', '0.0', '']
+        xarr_old = self.xarr.GetStringSelection()
+        self.xarr.SetItems(xcols)
+
+        ix = xcols.index(xarr_old) if xarr_old in xcols else 0
+        self.xarr.SetSelection(ix)
+        for i in range(2):
+            for j in range(3):
+                yold = self.yarr[i][j].GetStringSelection()
+                idef, cols = 0, y2cols
+                if i == 0 and j == 0:
+                    idef, cols = 1, ycols
+                self.yarr[i][j].SetItems(cols)
+                iy = cols.index(yold) if yold in cols else idef
+                self.yarr[i][j].SetSelection(iy)
 
     def createMainPanel(self):
         wx.CallAfter(self.init_larch)
@@ -350,8 +340,7 @@ class ScanViewerFrame(wx.Frame):
                 dtext.append(ptxt)
 
         dtext = '\n'.join(dtext)
-        # plotframe = self.get_plotwindow()
-        # plotframe.oplot(x, pgroup.fit, label='fit (%s)' % model)
+
         text = fit_report(pgroup.params, _larch=self.larch)
         self.fit_report.SetLabel(dtext)
 
@@ -421,45 +410,11 @@ class ScanViewerFrame(wx.Frame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def get_plotwindow(self, new=False, **kws):
-        pframe = None
-        if not new:
-            while pframe is None:
-                try:
-                    pframe = self.plotters.pop()
-                    pframe.Show()
-                    pframe.Raise()
-                except IndexError:
-                    pframe = None
-                    break
-                except PyDeadObjectError:
-                    pframe = None
-
-        if pframe is None:
-            pframe = PlotFrame()
-            pframe.Show()
-            pframe.Raise()
-
-        self.plotters.append(pframe)
-
-        return pframe
-
     def onPlot(self, evt=None, npts=None, force_newplot=False):
-        # 'win new', 'New Window'),
-        # 'win old',  'Old Window'),
-        # 'over left', 'Left Axis'),
-        # 'over right', 'Right Axis')):
-        # 'update left',  from scan
+        """drow plot of newest data"""
 
-        # plotframe = self.get_plotwindow(new=('new' in optwords[1]))
-        # plotcmd = plotframe.plot
-        plotpanel = self.plotpanel
-        update = npts > 3
-        if force_newplot: 
-            update = False
-
-        lgroup = self.lgroup
-        gname = SCANGROUP
+        new_plot = force_update or npts < 3
+        lgroup, gname = self.lgroup, SCANGROUP
 
         ix = self.xarr.GetSelection()
         x  = self.xarr.GetStringSelection()
@@ -486,13 +441,13 @@ class ScanViewerFrame(wx.Frame):
             label = yy1
             expr = "%s.%s"  % (gn, yy1)
 
-            if yy2 != '':  
+            if yy2 != '':
                 label = "%s%s%s"     % (label, op2, yy2)
                 expr  = "%s%s%s.%s"  % (expr, op2, gn, yy2)
-            if yy3 != '': 
+            if yy3 != '':
                 label = "(%s)%s%s"    % (label, op3, yy3)
                 expr  = "(%s)%s%s.%s" % (expr, op3, gn, yy3)
-            if op1 != '': 
+            if op1 != '':
                 label = "%s(%s)" % (op1, label)
                 expr  = "%s(%s)" % (op1, expr)
             return label, expr
@@ -503,67 +458,54 @@ class ScanViewerFrame(wx.Frame):
         self.larch("%s.arr_x = %s.%s" % (gname, gname, x))
         self.larch("%s.arr_y1 = %s" % (gname, yexpr))
 
-        y2label, y2expr = make_array(self.yops, 1)
-        if y2expr != '':
-            self.larch("%s.arr_y2 = %s" % (gname, y2expr))
-
         try:
             npts = min(len(lgroup.arr_x), len(lgroup.arr_y1))
         except AttributeError:
-            print 'Cannot determine Npts!'
             return
 
-        lgroup.arr_x  = np.array( lgroup.arr_x[:npts])
-        lgroup.arr_y1 = np.array( lgroup.arr_y1[:npts])
-
-        path, fname = os.path.split(lgroup.filename)
-        popts['title']   = fname
-        popts['xlabel'] = xlabel
-        popts['ylabel']  = ylabel
-        popts['y2label'] = y2label
-
+        y2label, y2expr = make_array(self.yops, 1)
         if y2expr != '':
-            onpts = npts
+            self.larch("%s.arr_y2 = %s" % (gname, y2expr))
             try:
-                npts = min(len(lgroup.arr_x), len(lgroup.arr_y2))
-            except AttributeError:
-                print 'Cannot determine Npts!'
-                return
-            lgroup.arr_y2 = np.array( lgroup.arr_y2[:npts])
-            if onpts != npts:
-                lgroup.arr_x  = np.array( lgroup.arr_x[:npts])
-                lgroup.arr_y1 = np.array( lgroup.arr_y1[:npts])
+                n2pts = min(len(lgroup.arr_x), len(lgroup.arr_y),
+                           len(lgroup.arr_y2))
+                lgroup.arr_y2 = np.array( lgroup.arr_y2[:n2pts])
+            except:
+                y2expr = ''
+            npts = n2pts
 
-        print 'On Plot ' npts
+        lgroup.arr_y1 = np.array( lgroup.arr_y1[:npts])
+        lgroup.arr_x  = np.array( lgroup.arr_x[:npts])
 
-        if update:
-            plotpanel.set_xlabel(xlabel)
-            plotpanel.set_ylabel(ylabel)
-            plotpanel.update_line(0, lgroup.arr_x, lgroup.arr_y1,
-                                  draw=True, update_limits=True)
-            plotpanel.set_xylims((min(lgroup.arr_x), max(lgroup.arr_x),
-                                  min(lgroup.arr_y1), max(lgroup.arr_y1)))
+        path, fname = os.path.split(self.live_scanfile)
+        popts.update({'title': fname, 'xlabel': xlabel,
+                      'ylabel': ylabel, 'y2label': y2label})
 
-
+        ppnl = self.plotpanel
+        if new_plot:
+            ppnl.plot(lgroup.arr_x, lgroup.arr_y1,
+                      label= "%s: %s" % (fname, ylabel), **popts)
             if y2expr != '':
-                plotpanel.set_y2label(y2label)
-                plotpanel.update_line(1, lgroup.arr_x, lgroup.arr_y2,
-                                      side='right', draw=True,
-                                      update_limits=True)
-                plotpanel.set_xylims((min(lgroup.arr_x), max(lgroup.arr_x),
-                                      min(lgroup.arr_y2), max(lgroup.arr_y2)),
-                                     side='right')
-
-        else:
-            plotpanel.plot(lgroup.arr_x, lgroup.arr_y1, 
-                           label= "%s: %s" % (fname, ylabel), **popts)
-            if y2expr != '':
-                plotpanel.oplot(lgroup.arr_x, lgroup.arr_y2, side='right', 
+                ppnl.oplot(lgroup.arr_x, lgroup.arr_y2, side='right',
                            label= "%s: %s" % (fname, y2label), **popts)
-            plotpanel.canvas.draw()
+            ppnl.canvas.draw()
+        else:
+            ppnl.set_xlabel(xlabel)
+            ppnl.set_ylabel(ylabel)
+            ppnl.update_line(0, lgroup.arr_x, lgroup.arr_y1,
+                             draw=True, update_limits=True)
+            ppnl.set_xylims((min(lgroup.arr_x), max(lgroup.arr_x),
+                             min(lgroup.arr_y1), max(lgroup.arr_y1)))
+
+            if y2expr != '':
+                ppnl.set_y2label(y2label)
+                ppnl.update_line(1, lgroup.arr_x, lgroup.arr_y2, side='right',
+                                 draw=True, update_limits=True)
+                ppnl.set_xylims((min(lgroup.arr_x), max(lgroup.arr_x),
+                                 min(lgroup.arr_y2), max(lgroup.arr_y2)),
+                                side='right')
 
     def createMenus(self):
-        # ppnl = self.plotpanel
         self.menubar = wx.MenuBar()
         #
         fmenu = wx.Menu()
@@ -651,7 +593,7 @@ class ScanViewerApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 
     def OnInit(self):
         self.Init()
-        frame = ScanViewerFrame(**self.db_opts)
+        frame = ScanViewerFrame(self, **self.db_opts)
         frame.Show()
         self.SetTopWindow(frame)
         return True
