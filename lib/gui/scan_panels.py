@@ -753,7 +753,7 @@ class XAFSScanPanel(GenericScanPanel):
              'time_kw': int(self.kwtimechoice.GetSelection()),
              'energy_drive': enpos.drivepv,
              'energy_read': enpos.readpv,
-             'extra_pvs': json.loads(enpos.extrapvs).items(),
+             'extra_pvs': json.loads(enpos.extrapvs),
              'scantime': self.scantime,
              'regions': []}
         for index, wids in enumerate(self.reg_settings):
