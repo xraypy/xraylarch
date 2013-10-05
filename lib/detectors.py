@@ -79,8 +79,8 @@ class Counter(Saveable):
     def __repr__(self):
         return "<Counter %s (%s)>" % (self.label, self.pv.pvname)
 
-    def read(self):
-        val = self.pv.get(use_monitor=False)
+    def read(self, **kws):
+        val = self.pv.get(**kws)
         self.buff.append(val)
         return val
 
@@ -122,10 +122,10 @@ class DeviceCounter():
             for counter, pv in zip(self.counters, self.outpvs):
                 pv.put(counter.buff)
 
-    def read(self):
+    def read(self, **kws):
         "read counters"
         for c in self.counters:
-            c.read()
+            c.read(**kws)
         self.postvalues()
 
     def clear(self):
@@ -186,7 +186,7 @@ class McaCounter(DeviceCounter):
     invalid_device_msg = 'McaCounter must use an Epics MCA'
     def __init__(self, prefix, outpvs=None, nrois=32,
                  use_net=False,  use_unlabeled=False, use_full=False):
-        nrois = int(nrois)        
+        nrois = int(nrois)
         DeviceCounter.__init__(self, prefix, rtype='mca', outpvs=outpvs)
         prefix = self.prefix
         fields = []
@@ -329,7 +329,7 @@ class ScalerDetector(DetectorMixin):
     trigger_suffix = '.CNT'
     def __init__(self, prefix, nchan=8, use_calc=True, **kws):
         DetectorMixin.__init__(self, prefix, **kws)
-        nchan = int(nchan)        
+        nchan = int(nchan)
         self.scaler = Scaler(prefix, nchan=nchan)
         self._counter = ScalerCounter(prefix, nchan=nchan,
                                       use_calc=use_calc)
@@ -401,7 +401,7 @@ class McaDetector(DetectorMixin):
     repr_fmt = ', nrois=%i, use_net=%s, use_full=%s'
     def __init__(self, prefix, save_spectra=True, nrois=32, use_net=False,
                  use_full=False, **kws):
-        nrois = int(nrois)        
+        nrois = int(nrois)
         DetectorMixin.__init__(self, prefix, **kws)
         self.mca = Mca(prefix)
         self.dwelltime_pv = PV('%s.PRTM' % prefix)
