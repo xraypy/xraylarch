@@ -89,6 +89,8 @@ from epics import PV, poll
 from .detectors import Counter, DeviceCounter, Trigger
 from .datafile import ASCIIScanFile
 
+MIN_POLL_TIME = 1.e-3
+
 class ScanMessenger(threading.Thread):
     """ Provides a way to run user-supplied functions per scan point,
     in a separate thread, so as to not delay scan operation.
@@ -128,7 +130,7 @@ class ScanMessenger(threading.Thread):
         last_point = self.cpt
         t0 = time.time()
         while True:
-            time.sleep(0.001)
+            poll(MIN_POLL_TIME, 0.25)
             if self.cpt != last_point:
                 last_point =  self.cpt
                 t0 = time.time()
@@ -144,8 +146,8 @@ class StepScan(object):
     """
     def __init__(self, filename=None, auto_increment=True,
                  configdb=None, comments=None, messenger=None):
-        self.pos_settle_time = 1.e-3
-        self.det_settle_time = 1.e-3
+        self.pos_settle_time = MIN_POLL_TIME
+        self.det_settle_time = MIN_POLL_TIME
         self.pos_maxmove_time = 3600.0
         self.det_maxcount_time = 86400.0
         self.dwelltime = None
@@ -274,7 +276,7 @@ class StepScan(object):
     def pre_scan(self, **kws):
         if self.debug: print 'PRE SCAN '
         for (desc, pv) in self.extra_pvs:
-            pv.connect() 
+            pv.connect()
         return [m(scan=self) for m in self.pre_scan_methods]
 
     def post_scan(self):
@@ -339,6 +341,9 @@ class StepScan(object):
         if comments is not None:
             self.comments = comments
 
+        self.pos_settle_time = max(MIN_POLL_TIME, self.pos_settle_time)
+        self.det_settle_time = max(MIN_POLL_TIME, self.det_settle_time)
+
         ts_start = time.time()
         if not self.verify_scan():
             print 'Cannot execute scan'
@@ -346,6 +351,7 @@ class StepScan(object):
             return
         self.abort = False
         self.pause = False
+
         orig_positions = [p.current() for p in self.positioners]
 
         # print 'StepScan Run 2 (move to start)'
@@ -417,13 +423,13 @@ class StepScan(object):
                        time.time() - t0 < self.pos_maxmove_time):
                     if self.abort:
                         break
-                    poll(5.e-3, 0.25)
+                    poll(5*MIN_POLL_TIME, 0.25)
                     mcount += 1
                 if self.abort:
                     break
                 # wait for positioners to settle
                 # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
-                time.sleep(self.pos_settle_time)
+                poll(self.pos_settle_time, 0.25)
                 # start triggers, wait for them to finish
                 # print 'Trigger..'
                 [trig.start() for trig in self.triggers]
@@ -434,23 +440,24 @@ class StepScan(object):
                            (time.time() - t0 > self.min_dwelltime/2.0)):
                     if self.abort:
                         break
-                    poll(1.e-3, 0.25)
+                    poll(MIN_POLL_TIME, 0.25)
                 if self.abort:
                     break
-                poll(1.e-3, 0.1)
+                poll(MIN_POLL_TIME, 0.25)
                 for trig in self.triggers:
                     if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
                 if not point_ok:
                     point_ok = True
-                    poll(1.e-2, 0.25)
+                    poll(5*MIN_POLL_TIME, 0.25)
                     for trig in self.triggers:
                         if trig.runtime < self.min_dwelltime / 2.0:
                             point_ok = False
                 if not point_ok:
                     print 'Trigger problem: ', trig, trig.runtime, self.min_dwelltime
+
                 # wait, then read read counters and actual positions
-                time.sleep(self.det_settle_time)
+                poll(self.det_settle_time, 0.25)
 
                 [c.read() for c in self.counters]
                 # print 'Read Counters done'
