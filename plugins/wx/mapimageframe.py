@@ -211,6 +211,11 @@ class MapImageFrame(ImageFrame):
         elif 2 == event.GetInt():
             self.panel.cursor_mode = 'prof'
 
+            
+    def onContrastMode(self, event=None):
+        print 'on Contrast Mode ', event.GetInt()
+
+
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask,
@@ -231,3 +236,12 @@ class MapImageFrame(ImageFrame):
                                 1, wx.RA_SPECIFY_COLS)
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
+
+        cont_mode = wx.RadioBox(panel, -1, "Enhance Contrast:",
+                                wx.DefaultPosition, wx.DefaultSize,
+                                ('No enhancement',
+                                 'Global Equalize',
+                                 'Local Equalize'),
+                                1, wx.RA_SPECIFY_COLS)
+        cont_mode.Bind(wx.EVT_RADIOBOX, self.onContrastMode)
+        sizer.Add(cont_mode,  (irow+1, 0), (1, 4), labstyle, 3)

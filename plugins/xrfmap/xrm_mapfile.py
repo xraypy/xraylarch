@@ -865,7 +865,7 @@ class GSEXRM_MapFile(object):
                     self.scan_starttime = words[1].strip()
 
         else:
-            self.scan_version == '1.0'
+            self.scan_version = '1.0'
             stime = self.master_header[0][6:]
             self.start_time = stime.replace('started at', '').strip()
 
@@ -928,20 +928,66 @@ class GSEXRM_MapFile(object):
         if det in range(1, self.ndet+1):
             dgroup = 'det%i' % det
         map = self.xrfmap[dgroup]
+        nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-
         cell   = map['counts'].regionref[sx, sy, :]
-        nx, ny = (xmax-xmin, ymax-ymin)
         ix, iy, nmca = map['counts'].shape
-        counts = map['counts'][cell].reshape(nx, ny, nmca)
+        print 'Get MCA for Rect; ', sx, sy, nx, ny, nmca
+        try:
+            counts = map['counts'][cell].reshape(nx, ny, nmca)
+            if dtcorrect and det in range(1, self.ndet+1):
+                cell   = map['dtfactor'].regionref[sx, sy]
+                dtfact = map['dtfactor'][cell].reshape(nx, ny)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                counts = counts * dtfact
+            counts = counts.sum(axis=0).sum(axis=0)
 
-        if dtcorrect and det in range(1, self.ndet+1):
-            cell   = map['dtfactor'].regionref[sx, sy]
-            dtfact = map['dtfactor'][cell].reshape(nx, ny)
-            dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-            counts = counts * dtfact
-        counts = counts.sum(axis=0).sum(axis=0)
+        except MemoryError:
+            print 'Memory Error, must read slowly!', nx, ny
+            dtfact = None
+            if dtcorrect and det in range(1, self.ndet+1):
+                cell   = map['dtfactor'].regionref[sx, sy]
+                dtfact = map['dtfactor'][cell].reshape(nx, ny)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+            counts = np.zeros(nmca)
+            print 'DT FACT ', dtfact , det
+            print map['counts'].shape
+            print  xmin, xmax, ymin, ymax
+            if nx < ny:
+                read_ok = False
+                xstep = (xmax-xmin)/2
+                while not read_ok:
+                    try:
+                        m = map['counts'][xmin:xstep, ymin:ymax, :]
+                        read_ok = True
+                    except:
+                        xstep = xstep - 3
+                
+                for ix in range(xmin, xmax+1, xstep):
+                    print ix, xstep
+                    tcounts = map['counts'][ix:ix+xstep, ymin:ymax, :]
+                    if dtfact is not None:
+                        tcounts = tcounts * dtfact[ix:ix+xstep, ymin:ymax, 0]
+                    counts += tcounts.sum(axis=0).sum(axis=0)
+            else:
+                read_ok = False
+                ystep = (ymax-ymin)/2
+                while not read_ok:
+                    try:
+                        m = map['counts'][xmin:xmax, ymin:ystep, :]
+                        read_ok = True
+                    except:
+                        ystep = ystep - 3
+                ystep = int(ystep /2.0)
+                m = None
+                
+                for iy in range(ymin, ymax+1, ystep):
+                    print iy, ystep
+                    tcounts = map['counts'][xmin:xmax, iy:iy+ystep, :]
+                    if dtfact is not None:
+                        tcounts = tcounts * dtfact[xmin:xmax, iy+ystep, 0]
+                    counts += tcounts.sum(axis=0).sum(axis=0)
 
         areaname = 'rect: [%i:%i, %i:%i]' % (xmin, xmax, ymin, ymax)
         return self._getmca(dgroup, counts, areaname)
@@ -969,6 +1015,8 @@ class GSEXRM_MapFile(object):
         cell   = map['counts'].regionref[sx, sy, :]
         nx, ny = mask.shape
         ix, iy, nmca = map['counts'].shape
+        print 'Get MCA for Mask: MASK ', cell.shape, nx, ny, mask.shape
+        
         counts = map['counts'][cell].reshape(nx, ny, nmca)[mask]
 
         if dtcorrect and det in range(1, self.ndet+1):
