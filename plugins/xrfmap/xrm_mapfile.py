@@ -944,14 +944,12 @@ class GSEXRM_MapFile(object):
             counts = counts.sum(axis=0).sum(axis=0)
 
         except MemoryError:
-            print 'Memory Error, must read slowly!', nx, ny
             dtfact = None
             if dtcorrect and det in range(1, self.ndet+1):
                 cell   = map['dtfactor'].regionref[sx, sy]
                 dtfact = map['dtfactor'][cell].reshape(nx, ny)
                 dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
             counts = np.zeros(nmca)
-            print 'DT FACT ', dtfact , det
             print map['counts'].shape
             print  xmin, xmax, ymin, ymax
             if nx < ny:
@@ -1008,23 +1006,56 @@ class GSEXRM_MapFile(object):
 
         map = self.xrfmap[dgroup]
 
+        def get_area_counts(map, xmin, xmax, ymin, ymax,
+                            det=None, area=None, dtcorrect=True):
+            nx, ny = (xmax-xmin, ymax-ymin)
+            sx = slice(xmin, xmax)
+            sy = slice(ymin, ymax)
+            ix, iy, nmca = map['counts'].shape
+            cell   = map['counts'].regionref[sx, sy, :]
+            counts = map['counts'][cell]
+            counts = counts.reshape(nx, ny, nmca)
+            if area is not None:
+                counts = counts[area[sx, sy]]
+                
+            if dtcorrect and det in range(1, self.ndet+1):
+                cell   = map['dtfactor'].regionref[sx, sy]
+                dtfact = map['dtfactor'][cell].reshape(nx, ny)
+                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+                counts = counts * dtfact
+            return  counts.sum(axis=0).sum(axis=0)
+       
         # get slices for a cell and h5py regionref that holds
         # the minimal rectangular box around the drawn area
-        sx, sy = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
-        mask   = area[sx, sy]
-        cell   = map['counts'].regionref[sx, sy, :]
-        nx, ny = mask.shape
         ix, iy, nmca = map['counts'].shape
-        print 'Get MCA for Mask: MASK ', cell.shape, nx, ny, mask.shape
-        
-        counts = map['counts'][cell].reshape(nx, ny, nmca)[mask]
+        sx, sy = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
+        nx, ny = (sx.stop-sx.start), (sy.stop-sy.start)        
+        use_chunks = nx*ny > 32768
+        if not use_chunks:
+            try:
+                counts = get_area_counts(map, sx.start, sx.stop,
+                                         sy.start, sy.stop,
+                                         det=det, dtcorrect=dtcorrect)
+            except MemoryError:
+                use_chunks = True
 
-        if dtcorrect and det in range(1, self.ndet+1):
-            cell   = map['dtfactor'].regionref[sx, sy]
-            dtfact = map['dtfactor'][cell].reshape(nx, ny)[mask]
-            dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-            counts = counts * dtfact
-        counts = counts.sum(axis=0)
+        if use_chunks:
+            dx = int( (nx*ny)/32768)
+            counts = np.zeros(nmca)
+            if nx > ny:
+                for i in range(dx+1):
+                    x1 = sx.start + int(i*nx/dx)
+                    x2 = min(sx.stop, sx.start + int((i+1)*nx/dx))
+                    if x1 == x2: break
+                    counts += get_area_counts(map, x1, x2, sy.start, sy.stop,
+                                              det=det, dtcorrect=dtcorrect)
+            else:
+                for i in range(dx+1):
+                    y1 = sy.start + int(i*ny/dx)
+                    y2 = min(sy.stop, sy.start + int((i+1)*ny/dx))
+                    if y1 == y2: break
+                    counts += get_area_counts(map, sx.start, sx.stop, y1, y2,
+                                              det=det, dtcorrect=dtcorrect)
 
         return self._getmca(dgroup, counts, areaname)
 
