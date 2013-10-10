@@ -905,159 +905,87 @@ class GSEXRM_MapFile(object):
             self.pos_addr.append(yaddr)
             self.pos_desc.append(slow_pos[yaddr])
 
+    def _det_group(self, det=None):
+        "return  XRFMAP group for a detector"
+        dgroup= 'detsum'
+        if self.ndet is None:
+            self.ndet =  self.xrfmap.attrs['N_Detectors']
+        if det in range(1, self.ndet+1):
+            dgroup = 'det%i' % det
+        return self.xrfmap[dgroup]
+
     def get_energy(self, det=None):
         """return energy array for a detector"""
-        dgroup= 'detsum'
-        if self.ndet is None:
-            self.ndet =  self.xrfmap.attrs['N_Detectors']
+        group = self._det_group(det)
+        return group['energy'].value
 
-        if det in range(1, self.ndet+1):
-            dgroup = 'det%i' % det
-
-        return self.xrfmap["%s/energy" % dgroup].value
-
-    def get_mca_rect(self, det=None, dtcorrect=True,
-                         xmin=None, xmax=None, ymin=None, ymax=None):
-        """return XRF spectra as MCA() instance,
-        summed over a given rectangle.
-        xmin/xmax/ymin/ymax given in pixel units of the map
-        """
-        dgroup= 'detsum'
-        if self.ndet is None:
-            self.ndet =  self.xrfmap.attrs['N_Detectors']
-        if det in range(1, self.ndet+1):
-            dgroup = 'det%i' % det
-        map = self.xrfmap[dgroup]
-        nx, ny = (xmax-xmin, ymax-ymin)
-        sx = slice(xmin, xmax)
-        sy = slice(ymin, ymax)
-        cell   = map['counts'].regionref[sx, sy, :]
-        ix, iy, nmca = map['counts'].shape
-        print 'Get MCA for Rect; ', sx, sy, nx, ny, nmca
-        try:
-            counts = map['counts'][cell].reshape(nx, ny, nmca)
-            if dtcorrect and det in range(1, self.ndet+1):
-                cell   = map['dtfactor'].regionref[sx, sy]
-                dtfact = map['dtfactor'][cell].reshape(nx, ny)
-                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                counts = counts * dtfact
-            counts = counts.sum(axis=0).sum(axis=0)
-
-        except MemoryError:
-            dtfact = None
-            if dtcorrect and det in range(1, self.ndet+1):
-                cell   = map['dtfactor'].regionref[sx, sy]
-                dtfact = map['dtfactor'][cell].reshape(nx, ny)
-                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-            counts = np.zeros(nmca)
-            print map['counts'].shape
-            print  xmin, xmax, ymin, ymax
-            if nx < ny:
-                read_ok = False
-                xstep = (xmax-xmin)/2
-                while not read_ok:
-                    try:
-                        m = map['counts'][xmin:xstep, ymin:ymax, :]
-                        read_ok = True
-                    except:
-                        xstep = xstep - 3
-                
-                for ix in range(xmin, xmax+1, xstep):
-                    print ix, xstep
-                    tcounts = map['counts'][ix:ix+xstep, ymin:ymax, :]
-                    if dtfact is not None:
-                        tcounts = tcounts * dtfact[ix:ix+xstep, ymin:ymax, 0]
-                    counts += tcounts.sum(axis=0).sum(axis=0)
-            else:
-                read_ok = False
-                ystep = (ymax-ymin)/2
-                while not read_ok:
-                    try:
-                        m = map['counts'][xmin:xmax, ymin:ystep, :]
-                        read_ok = True
-                    except:
-                        ystep = ystep - 3
-                ystep = int(ystep /2.0)
-                m = None
-                
-                for iy in range(ymin, ymax+1, ystep):
-                    print iy, ystep
-                    tcounts = map['counts'][xmin:xmax, iy:iy+ystep, :]
-                    if dtfact is not None:
-                        tcounts = tcounts * dtfact[xmin:xmax, iy+ystep, 0]
-                    counts += tcounts.sum(axis=0).sum(axis=0)
-
-        areaname = 'rect: [%i:%i, %i:%i]' % (xmin, xmax, ymin, ymax)
-        return self._getmca(dgroup, counts, areaname)
-
-    def get_mca_area(self, areaname, det=None, dtcorrect=True):
+    def get_mca_area(self, det=None, area=None, dtcorrect=True):
         """
         return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
         """
-        area = self.get_area(areaname).value
         if area is None:
-            raise GSEXRM_Exception("Could not find area '%s'" % areaname)
-        dgroup= 'detsum'
-        if self.ndet is None:
-            self.ndet =  self.xrfmap.attrs['N_Detectors']
-        if det in range(1, self.ndet+1):
-            dgroup = 'det%i' % det
-
-        map = self.xrfmap[dgroup]
-
-        def get_area_counts(map, xmin, xmax, ymin, ymax,
-                            det=None, area=None, dtcorrect=True):
-            nx, ny = (xmax-xmin, ymax-ymin)
-            sx = slice(xmin, xmax)
-            sy = slice(ymin, ymax)
-            ix, iy, nmca = map['counts'].shape
-            cell   = map['counts'].regionref[sx, sy, :]
-            counts = map['counts'][cell]
-            counts = counts.reshape(nx, ny, nmca)
-            if area is not None:
-                counts = counts[area[sx, sy]]
-                
-            if dtcorrect and det in range(1, self.ndet+1):
-                cell   = map['dtfactor'].regionref[sx, sy]
-                dtfact = map['dtfactor'][cell].reshape(nx, ny)
-                dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-                counts = counts * dtfact
-            return  counts.sum(axis=0).sum(axis=0)
-       
-        # get slices for a cell and h5py regionref that holds
-        # the minimal rectangular box around the drawn area
+            area = self.get_area(area).value
+        map = self._det_group[det]
         ix, iy, nmca = map['counts'].shape
         sx, sy = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
-        nx, ny = (sx.stop-sx.start), (sy.stop-sy.start)        
+        xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
+        nx, ny = (xmax-xmin), (ymax-ymin)
         use_chunks = nx*ny > 32768
         if not use_chunks:
             try:
-                counts = get_area_counts(map, sx.start, sx.stop,
-                                         sy.start, sy.stop,
-                                         det=det, dtcorrect=dtcorrect)
+                counts = self._area_counts(xmin, xmax, ymin, ymax,
+                                           map=map, det=det, area=area,
+                                           dtcorrect=dtcorrect)
             except MemoryError:
                 use_chunks = True
-
         if use_chunks:
-            dx = int( (nx*ny)/32768)
             counts = np.zeros(nmca)
+            step = int((nx*ny)/32768)
             if nx > ny:
-                for i in range(dx+1):
-                    x1 = sx.start + int(i*nx/dx)
-                    x2 = min(sx.stop, sx.start + int((i+1)*nx/dx))
-                    if x1 == x2: break
-                    counts += get_area_counts(map, x1, x2, sy.start, sy.stop,
-                                              det=det, dtcorrect=dtcorrect)
+                for i in range(step+1):
+                    x1 = xmin + int(i*nx/step)
+                    x2 = min(xmax, xmin + int((i+1)*nx/step))
+                    if x1 >= x2: break
+                    counts += self._area_counts(x1, x2, ymin, ymax, map=map,
+                                                det=det, area=area,
+                                                dtcorrect=dtcorrect)
             else:
-                for i in range(dx+1):
-                    y1 = sy.start + int(i*ny/dx)
-                    y2 = min(sy.stop, sy.start + int((i+1)*ny/dx))
-                    if y1 == y2: break
-                    counts += get_area_counts(map, sx.start, sx.stop, y1, y2,
-                                              det=det, dtcorrect=dtcorrect)
+                for i in range(step+1):
+                    y1 = ymin + int(i*ny/step)
+                    y2 = min(ymax, ymin + int((i+1)*ny/step))
+                    if y1 >= y2: break
+                    counts += self._area_counts(xmin, xmax, y1, y2, map=map,
+                                                det=det, area=area,
+                                                dtcorrect=dtcorrect)
 
         return self._getmca(dgroup, counts, areaname)
+
+    def _area_counts(self, xmin, xmax, ymin, ymax, map=None, det=None,
+                     area=None, dtcorrect=True):
+        """return counts for a map rectangle, optionally
+        applying area mask and deadtime correction
+
+        Does *not* check for errors!"""
+        if map is None:
+            map = self._det_group(det)
+
+        nx, ny = (xmax-xmin, ymax-ymin)
+
+        sx = slice(xmin, xmax)
+        sy = slice(ymin, ymax)
+        ix, iy, nmca = map['counts'].shape
+        cell   = map['counts'].regionref[sx, sy, :]
+        counts = map['counts'][cell]
+        counts = counts.reshape(nx, ny, nmca)
+        if area is not None:
+            counts = counts[area[sx, sy]]
+        if dtcorrect and det in range(1, self.ndet+1):
+            cell   = map['dtfactor'].regionref[sx, sy]
+            dtfact = map['dtfactor'][cell].reshape(nx, ny)
+            dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+            counts = counts * dtfact
+        return  counts.sum(axis=0).sum(axis=0)
 
     def _getmca(self, dgroup, counts, name):
         """return an MCA object for a detector group

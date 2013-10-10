@@ -821,10 +821,9 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask)
-        self.sel_mca = xrmfile.get_mca_area(aname, det=det)
+        self.sel_mca = xrmfile.get_mca_area(area=aname, det=det)
 
     def lassoHandler(self, mask=None, det=None, xrmfile=None, **kws):
-        # print 'LASSO ', xrmfile,  xrmfile.filename, det
         mca_thread = Thread(target=self.get_mca_area,
                             args=(det, mask), kwargs={'xrmfile':xrmfile})
         mca_thread.start()
@@ -844,7 +843,7 @@ class MapViewerFrame(wx.Frame):
 
 
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
-        "make sure plot frame is enabled, and visible" 
+        "make sure plot frame is enabled, and visible"
         if xrmfile is None:
             xrmfile = self.current_file
         if self.xrfdisplay is None:
