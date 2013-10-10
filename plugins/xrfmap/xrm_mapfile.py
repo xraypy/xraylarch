@@ -919,21 +919,32 @@ class GSEXRM_MapFile(object):
         group = self._det_group(det)
         return group['energy'].value
 
-    def get_mca_area(self, det=None, area=None, dtcorrect=True):
+    def get_mca_area(self, areaname, det=None, dtcorrect=True,
+                     callback = None):
         """
         return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
         """
-        if area is None:
-            area = self.get_area(area).value
-        map = self._det_group[det]
+
+        try:
+            area = self.get_area(areaname).value
+        except:
+            raise GSEXRM_Exception("Could not find area '%s'" % areaname)
+
+        map = self._det_group(det)
         ix, iy, nmca = map['counts'].shape
+
         sx, sy = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
-        use_chunks = nx*ny > 32768
+        NCHUNKSIZE = 16384 # 8192
+        use_chunks = nx*ny > NCHUNKSIZE
+        step = int((nx*ny)/NCHUNKSIZE)
+
         if not use_chunks:
             try:
+                if hasattr(callback , '__call__'):
+                    callback(1, 1, nx*ny)
                 counts = self._area_counts(xmin, xmax, ymin, ymax,
                                            map=map, det=det, area=area,
                                            dtcorrect=dtcorrect)
@@ -941,12 +952,13 @@ class GSEXRM_MapFile(object):
                 use_chunks = True
         if use_chunks:
             counts = np.zeros(nmca)
-            step = int((nx*ny)/32768)
             if nx > ny:
                 for i in range(step+1):
                     x1 = xmin + int(i*nx/step)
                     x2 = min(xmax, xmin + int((i+1)*nx/step))
                     if x1 >= x2: break
+                    if hasattr(callback , '__call__'):
+                        callback(i, step, (x2-x1)*ny)
                     counts += self._area_counts(x1, x2, ymin, ymax, map=map,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
@@ -955,11 +967,12 @@ class GSEXRM_MapFile(object):
                     y1 = ymin + int(i*ny/step)
                     y2 = min(ymax, ymin + int((i+1)*ny/step))
                     if y1 >= y2: break
+                    if hasattr(callback , '__call__'):
+                        callback(i, step, nx*(y2-y1))
                     counts += self._area_counts(xmin, xmax, y1, y2, map=map,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
-
-        return self._getmca(dgroup, counts, areaname)
+        return self._getmca(map, counts, areaname)
 
     def _area_counts(self, xmin, xmax, ymin, ymax, map=None, det=None,
                      area=None, dtcorrect=True):
@@ -978,21 +991,25 @@ class GSEXRM_MapFile(object):
         cell   = map['counts'].regionref[sx, sy, :]
         counts = map['counts'][cell]
         counts = counts.reshape(nx, ny, nmca)
-        if area is not None:
-            counts = counts[area[sx, sy]]
+
         if dtcorrect and det in range(1, self.ndet+1):
             cell   = map['dtfactor'].regionref[sx, sy]
             dtfact = map['dtfactor'][cell].reshape(nx, ny)
             dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
             counts = counts * dtfact
-        return  counts.sum(axis=0).sum(axis=0)
 
-    def _getmca(self, dgroup, counts, name):
+        if area is not None:
+            counts = counts[area[sx, sy]]
+        else:
+            counts = counts.sum(axis=0)
+        return counts.sum(axis=0)
+
+    def _getmca(self, map, counts, name):
         """return an MCA object for a detector group
         (dgroup = 'det1', ... 'detsum')
         with specified counts array and a name
         """
-        map  = self.xrfmap[dgroup]
+        # map  = self.xrfmap[dgroup]
         cal  = map['energy'].attrs
         _mca = MCA(counts=counts,
                    offset=cal['cal_offset'],
@@ -1018,7 +1035,8 @@ class GSEXRM_MapFile(object):
         path, fname = os.path.split(self.filename)
         _mca.sourcefile = fname
         fmt = "Data from File '%s', detector '%s', area '%s'"
-        _mca.info  =  fmt % (self.filename, dgroup, name)
+        mapname = map.name.split('/')[-1]
+        _mca.info  =  fmt % (self.filename, mapname, name)
         return _mca
 
 
