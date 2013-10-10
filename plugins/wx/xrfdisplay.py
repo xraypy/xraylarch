@@ -9,6 +9,7 @@ import time
 import copy
 import wx
 import wx.lib.mixins.inspection
+import wx.lib.scrolledpanel as scrolled
 from wx._core import PyDeadObjectError
 import wx.lib.colourselect  as csel
 
@@ -86,6 +87,42 @@ class Menu_IDs:
         self.SELECT_SMOOTH= wx.NewId()
         self.TOGGLE_LEGEND = wx.NewId()
         self.TOGGLE_GRID = wx.NewId()
+
+class CalibrationFrame(wx.Frame):
+    def __init__(self, parent, mca, larch=None, size=(500, 300)):
+        self.mca = mca
+        self.larch = larch
+        wx.Frame.__init__(self, parent, -1, 'Calibrate MCA',
+                          size=size, style=wx.DEFAULT_FRAME_STYLE)
+
+        self.SetFont(wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
+        sizer = wx.GridBagSizer(8, 8)
+        panel = scrolled.ScrolledPanel(self)
+        panel.SetMinSize((450, 300))
+       
+        
+        title  =  SimpleText(panel, "Calibrate MCA Energy", style=LEFT,
+                             colour='#880000')
+        sizer.Add(title,         (0, 0), (1, 8), wx.ALIGN_CENTER)
+        sizer.Add(SimpleText(panel, "ROI Name"), (1, 0), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(SimpleText(panel, "Energy"),   (1, 1), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(SimpleText(panel, "Use?")  ,   (1, 2), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(SimpleText(panel, "Refined Value"), (1, 3), (1, 1), wx.ALIGN_CENTER)
+        # sizer.Add(self.hline(),  (2, 0), (1, 8), wx.ALIGN_CENTER)
+
+        for roi in self.mca.rois:
+            print roi.name, rol.left, roi.right, roi.bgr_width)
+        print self.mca.rois
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        msizer = wx.BoxSizer(wx.VERTICAL)
+        msizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+        pack(self, msizer)
+        self.Show()
+        self.Raise()
+
 
 class SettingsFrame(wx.Frame):
     """settings frame for XRFDisplay"""
@@ -303,6 +340,7 @@ class XRFDisplayFrame(wx.Frame):
                           title=title, size=size,
                           **kws)
         self.conf = XRFDisplayConfig()
+        self.subframes = {}
         self.data = None
         self.gsexrmfile = gsexrmfile
         self.title = title
@@ -575,7 +613,6 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.canvas.draw()
 
     def onNewROI(self, event=None):
-        # print 'OnNew ROI '
         label = self.wids['roiname'].GetValue()
         if (self.last_leftdown is None or
             self.last_rightdown is None or
@@ -592,11 +629,9 @@ class XRFDisplayFrame(wx.Frame):
         self.mca.add_roi(name=label, left=left, right=right, sort=True)
         self.set_roilist(mca=self.mca)
         for roi in self.mca.rois:
-            # print 'ROI ', roi
             if roi.name.lower()==label:
                 selected_roi = roi
         self.plot(self.xdata, self.ydata)
-        # print 'New ROI ', self.mca
         self.onROI(label=label)
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
@@ -762,7 +797,6 @@ class XRFDisplayFrame(wx.Frame):
             self.Destroy()
         except:
             pass
-
 
     def configure(self, event=None):
         """show configuration frame"""
@@ -954,8 +988,12 @@ class XRFDisplayFrame(wx.Frame):
         pass
 
     def onCalibrateEnergy(self, event=None, **kws):
-        print '  onCalibrateEnergy   '
-        pass
+        try:
+            self.win_calib.Raise()
+        except:
+            self.win_calib = CalibrationFrame(self, mca=self.mca,
+                                              larch=self.larch)
+        
 
     def onFitbackground(self, event=None, **kws):
         print '  onFitbackground   '
