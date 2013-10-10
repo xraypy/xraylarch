@@ -70,7 +70,6 @@ def txt(panel, label, size=75, colour=None,  style=None):
 def lin(panel, len=30, wid=2, style=wx.LI_HORIZONTAL):
     return wx.StaticLine(panel, size=(len, wid), style=style)
 
-
 class Menu_IDs:
     def __init__(self):
         self.EXIT   = wx.NewId()
@@ -844,7 +843,7 @@ class XRFDisplayFrame(wx.Frame):
         self.mca = mca
         self.plot(mca.energy, mca.counts, mca=mca, **kws)
 
-    def plot(self, x, y, mca=None,  **kws):
+    def plot(self, x, y=None, mca=None,  **kws):
         if mca is not None:
             self.mca = mca
         mca = self.mca

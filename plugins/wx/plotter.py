@@ -236,6 +236,12 @@ def _xrf_plot(x, y=None, mca=None, win=1, new=True, _larch=None,
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
+    if (isinstance(x, larch.Group) and y is None and
+        hasattr(x, 'energy') and hasattr(x, 'counts') and hasattr(x, 'rois')):
+        mca = x
+        y = x.counts
+        x = x.energy
+
     if new:
         if y is None and mca is None:
             plotter.plotmca(x, **kws)
