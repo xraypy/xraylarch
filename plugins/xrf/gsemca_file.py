@@ -194,12 +194,13 @@ class GSEMCA_File(Group):
         self.rois = []
         for roi in mca0.rois:
             self.add_roi(name=roi.name, left=roi.left,
-                         right=roi.right, sort=False, counts=counts)
+                         right=roi.right, sort=False,
+                         counts=counts, to_mcas=False)
         self.rois.sort()
         return
 
     def add_roi(self, name='', left=0, right=0, bgr_width=3,
-                counts=None, sort=True):
+                counts=None, sort=True, to_mcas=True):
         """add an ROI to the sum spectra"""
         name = name.strip()
         roi = ROI(name=name, left=left, right=right,
@@ -212,7 +213,19 @@ class GSEMCA_File(Group):
             self.rois.append(roi)
         if sort:
             self.rois.sort()
-
+        if to_mcas:
+            mca0 = self.__get_mca0()
+            slo0 = mca0.slope
+            off0 = mca0.offset
+            mca0.add_roi(name=name, left=left, right=right,
+                         bgr_width=bgr_width)
+            for mca in self.mcas:
+                if mca != mca0:
+                    xleft  = ((off0 + left*slo0) - mca.offset)/mca.slope
+                    xright = ((off0 + right*slo0) - mca.offset)/mca.slope
+                    mca.add_roi(name=name, left=xleft, right=xright,
+                                 bgr_width=bgr_width)                    
+                    
     def save_mcafile(self, filename):
         """
         write multi-element MCA file
@@ -309,4 +322,5 @@ def xrf_background(energy, counts, group=None, _larch=None,
 
 def registerLarchPlugin():
     return ('_io', {'read_gsemca': gsemca_group,
+                    'read_gsemca2': gsemca_group_old,
                     'xrf_background': xrf_background})
