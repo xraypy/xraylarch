@@ -42,8 +42,8 @@ class PeriodicTablePanel(wx.Panel):
             'Md', 'No', 'Lr']
 
     REG_FG = ( 20,  20, 120)
-    SEL_FG = (120,  20,  20)
-    SEL_BG = (250, 250, 200)
+    SEL_FG = ( 70,   0,   0)
+    SEL_BG = (255, 255, 135)
 
     def __init__(self, parent, title='Select Element',
                  onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
@@ -55,7 +55,8 @@ class PeriodicTablePanel(wx.Panel):
         self.ctrls = {}
         self.REG_BG = self.GetBackgroundColour()
         self.selected = None
-        self.elemfont  = wx.Font( 8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.elemfont  = wx.Font( 9, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
+        self.elemfont  = wx.Font( 9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.titlefont = wx.Font( 9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.BuildPanel()
 
@@ -137,6 +138,7 @@ class PeriodicTablePanel(wx.Panel):
         for name, coords in self.elems.items():
             wid = wx.NewId()
             tw = wx.StaticText(self, wid, label=name)
+            tw.SetFont(self.elemfont)
             tw.SetForegroundColour(self.REG_FG)
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
