@@ -4,6 +4,7 @@ subclass of wxmplot.ImageFrame specific for Map Viewer -- adds custom menus
 """
 
 import os
+from functools import partial
 import wx
 from wx._core import PyDeadObjectError
 import numpy
@@ -16,13 +17,11 @@ larch.use_plugin_path('std')
 from debugtime import DebugTimer
 
 larch.use_plugin_path('wx')
-from wxutils import Closure, LabelEntry, SimpleText
 
 from wxmplot import ImageFrame, PlotFrame
 from wxmplot.imagepanel import ImagePanel
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex
-
 
 CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to zoom to rectangular box'),
@@ -211,7 +210,7 @@ class MapImageFrame(ImageFrame):
         elif 2 == event.GetInt():
             self.panel.cursor_mode = 'prof'
 
-            
+
     def onContrastMode(self, event=None):
         print 'on Contrast Mode ', event.GetInt()
 

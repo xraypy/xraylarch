@@ -22,6 +22,7 @@ __version__ = '5 (30-July-2013)'
 import os
 import sys
 import time
+from functools import partial
 from threading import Thread
 
 import wx
@@ -35,22 +36,21 @@ import numpy as np
 
 from wxmplot import PlotFrame
 
+from wxutils import (SimpleText, EditableListBox, FloatCtrl,
+                     pack, Popup, Button, MenuItem, Choice)
+
+
 import larch
-from larch.utils.debugtime import debugtime
 
 larch.use_plugin_path('wx')
 larch.use_plugin_path('io')
 larch.use_plugin_path('xrfmap')
 
 larch.use_plugin_path('std')
-from debugtime import DebugTimer
+
 
 from xrfdisplay import XRFDisplayFrame
 from mapimageframe import MapImageFrame
-
-from wxutils import (SimpleText, EditableListBox, FloatCtrl,
-                     Closure, pack, popup,
-                     add_button, add_menu, add_choice)
 
 from fileutils import nativepath
 
@@ -113,12 +113,12 @@ class MapMathPanel(scrolled.ScrolledPanel):
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         self.owner = owner
         sizer = wx.GridBagSizer(8, 9)
-        self.show_new = add_button(self, 'Show New Map',     size=(125, -1),
-                                   action=Closure(self.onShowMap, new=True))
-        self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
-                                   action=Closure(self.onShowMap, new=False))
+        self.show_new = Button(self, 'Show New Map',     size=(125, -1),
+                                   action=partial(self.onShowMap, new=True))
+        self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
+                                   action=partial(self.onShowMap, new=False))
 
-        self.map_mode = add_choice(self, choices= ['Intensity', 'R, G, B'],
+        self.map_mode = Choice(self, choices= ['Intensity', 'R, G, B'],
                                    size=(150, -1), action=self.onMode)
 
         self.expr_i = wx.TextCtrl(self, -1,   '', size=(150, -1))
@@ -164,11 +164,11 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.vardet   = {}
         self.varcor   = {}
         for varname in ('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'):
-            self.varfile[varname]   = vfile  = add_choice(self, choices=[], size=(200, -1),
-                                                          action=Closure(self.onROI, varname=varname))
-            self.varroi[varname]    = vroi   = add_choice(self, choices=[], size=(120, -1),
-                                                          action=Closure(self.onROI, varname=varname))
-            self.vardet[varname]    = vdet   = add_choice(self, choices=['sum', '1', '2', '3', '4'],  size=(70, -1))
+            self.varfile[varname]   = vfile  = Choice(self, choices=[], size=(200, -1),
+                                                          action=partial(self.onROI, varname=varname))
+            self.varroi[varname]    = vroi   = Choice(self, choices=[], size=(120, -1),
+                                                          action=partial(self.onROI, varname=varname))
+            self.vardet[varname]    = vdet   = Choice(self, choices=['sum', '1', '2', '3', '4'],  size=(70, -1))
             self.varcor[varname]    = vcor   = wx.CheckBox(self, -1, ' ')
             self.varshape[varname]  = vshape = SimpleText(self, 'Array Shape = (, )',
                                                           size=(200, -1))
@@ -296,21 +296,21 @@ class SimpleMapPanel(wx.Panel):
         self.owner = owner
         sizer = wx.GridBagSizer(8, 5)
 
-        self.roi1 = add_choice(self, choices=[], size=(120, -1))
-        self.roi2 = add_choice(self, choices=[], size=(120, -1))
-        self.op   = add_choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
-        self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'],
+        self.roi1 = Choice(self, choices=[], size=(120, -1))
+        self.roi2 = Choice(self, choices=[], size=(120, -1))
+        self.op   = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
+        self.det  = Choice(self, choices=['sum', '1', '2', '3', '4'],
                                size=(70, -1))
 
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
         self.cor.SetValue(1)
         self.op.SetSelection(0)
         self.det.SetSelection(0)
-        self.show_new = add_button(self, 'Show New Map',     size=(125, -1),
-                                   action=Closure(self.onShowMap, new=True))
-        self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
-                                   action=Closure(self.onShowMap, new=False))
-        self.show_cor = add_button(self, 'Map1 vs. Map2', size=(125, -1),
+        self.show_new = Button(self, 'Show New Map',     size=(125, -1),
+                                   action=partial(self.onShowMap, new=True))
+        self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
+                                   action=partial(self.onShowMap, new=False))
+        self.show_cor = Button(self, 'Map1 vs. Map2', size=(125, -1),
                                    action=self.onShowCorrel)
 
         ir = 0
@@ -374,7 +374,7 @@ class SimpleMapPanel(wx.Panel):
         pframe.plot(map2, map1, xlabel=roiname2, ylabel=roiname1,
                     marker='o', markersize=4, linewidth=0)
         pframe.panel.cursor_mode = 'lasso'
-        pframe.panel.lasso_callback = Closure(self.onLasso, xrmfile=datafile)
+        pframe.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
 
         pframe.Show()
         pframe.Raise()
@@ -438,22 +438,22 @@ class TriColorMapPanel(wx.Panel):
 
         self.SetMinSize((425, 275))
 
-        self.rchoice = add_choice(self, choices=[], size=(120, -1))
-        # action=Closure(self.onSetRGBScale, color='r'))
-        self.gchoice = add_choice(self, choices=[], size=(120, -1))
-        # action=Closure(self.onSetRGBScale, color='g'))
-        self.bchoice = add_choice(self, choices=[], size=(120, -1))
-        # action=Closure(self.onSetRGBScale, color='b'))
-        self.i0choice = add_choice(self, choices=[], size=(120, -1))
-        # action=Closure(self.onSetRGBScale, color='i0'))
+        self.rchoice = Choice(self, choices=[], size=(120, -1))
+        # action=partial(self.onSetRGBScale, color='r'))
+        self.gchoice = Choice(self, choices=[], size=(120, -1))
+        # action=partial(self.onSetRGBScale, color='g'))
+        self.bchoice = Choice(self, choices=[], size=(120, -1))
+        # action=partial(self.onSetRGBScale, color='b'))
+        self.i0choice = Choice(self, choices=[], size=(120, -1))
+        # action=partial(self.onSetRGBScale, color='i0'))
 
-        self.show_new = add_button(self, 'Show New Map',     size=(125, -1),
-                               action=Closure(self.onShow3ColorMap, new=True))
-        self.show_old = add_button(self, 'Replace Last Map', size=(125, -1),
-                               action=Closure(self.onShow3ColorMap, new=False))
+        self.show_new = Button(self, 'Show New Map',     size=(125, -1),
+                               action=partial(self.onShow3ColorMap, new=True))
+        self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
+                               action=partial(self.onShow3ColorMap, new=False))
 
 
-        self.det  = add_choice(self, choices=['sum', '1', '2', '3', '4'], size=(70, -1))
+        self.det  = Choice(self, choices=['sum', '1', '2', '3', '4'], size=(70, -1))
         self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
         self.cor.SetValue(1)
 
@@ -463,9 +463,9 @@ class TriColorMapPanel(wx.Panel):
         #self.rauto.SetValue(1)
         #self.gauto.SetValue(1)
         #self.bauto.SetValue(1)
-        #self.rauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='r'))
-        #self.gauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='g'))
-        #self.bauto.Bind(wx.EVT_CHECKBOX, Closure(self.onAutoScale, color='b'))
+        #self.rauto.Bind(wx.EVT_CHECKBOX, partial(self.onAutoScale, color='r'))
+        #self.gauto.Bind(wx.EVT_CHECKBOX, partial(self.onAutoScale, color='g'))
+        #self.bauto.Bind(wx.EVT_CHECKBOX, partial(self.onAutoScale, color='b'))
 
         #self.rscale = FloatCtrl(self, precision=0, value=1, minval=0)
         #self.gscale = FloatCtrl(self, precision=0, value=1, minval=0)
@@ -600,20 +600,20 @@ WARNING: This cannot be undone!
         bpanel = wx.Panel(self)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.choices = {}
-        self.choice = add_choice(self, choices=[], size=(150, -1), action=self.onSelect)
+        self.choice = Choice(self, choices=[], size=(150, -1), action=self.onSelect)
         self.desc   = wx.TextCtrl(self, -1,   '', size=(150, -1))
         self.info   = wx.StaticText(self, -1, '', size=(150, -1))
 
-        self.onmap  = add_button(bpanel, 'Show on Map', size=(120, -1),
+        self.onmap  = Button(bpanel, 'Show on Map', size=(120, -1),
                                       action=self.onShow)
-        self.clear  = add_button(bpanel, 'Clear Map', size=(120, -1),
+        self.clear  = Button(bpanel, 'Clear Map', size=(120, -1),
                                       action=self.onClear)
-        self.xrf    = add_button(bpanel, 'Show Spectrum', size=(120, -1),
+        self.xrf    = Button(bpanel, 'Show Spectrum', size=(120, -1),
                                       action=self.onXRF)
 
-        self.delete = add_button(self, 'Delete Area', size=(120, -1),
+        self.delete = Button(self, 'Delete Area', size=(120, -1),
                                       action=self.onDelete)
-        self.update = add_button(self, 'Save Label', size=(120, -1),
+        self.update = Button(self, 'Save Label', size=(120, -1),
                                       action=self.onLabel)
 
         bsizer.Add(self.onmap, 0, ALL_CEN, 2)
@@ -678,7 +678,7 @@ WARNING: This cannot be undone!
 
     def onDelete(self, event=None):
         aname = self._getarea()
-        erase = popup(self.owner, self.delstr % aname,
+        erase = Popup(self.owner, self.delstr % aname,
                       'Delete Area?', style=wx.YES_NO)
         if erase:
             xrfmap = self.owner.current_file.xrfmap
@@ -864,7 +864,7 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.panel.reset_config()
 
     def add_imdisplay(self, title, det=None):
-        on_lasso = Closure(self.lassoHandler, det=det)
+        on_lasso = partial(self.lassoHandler, det=det)
         imframe = MapImageFrame(output_title=title,
                                 lasso_callback=on_lasso,
                                 cursor_labels = self.cursor_menulabels)
@@ -874,7 +874,7 @@ class MapViewerFrame(wx.Frame):
                     det=None, subtitles=None, xrmfile=None):
         """display a map in an available image display"""
         displayed = False
-        lasso_cb = Closure(self.lassoHandler, det=det, xrmfile=xrmfile)
+        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
         while not displayed:
             try:
                 imd = self.im_displays.pop()
@@ -935,19 +935,19 @@ class MapViewerFrame(wx.Frame):
     def createMenus(self):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
-        add_menu(self, fmenu, "&Open Map File\tCtrl+O",
+        MenuItem(self, fmenu, "&Open Map File\tCtrl+O",
                  "Read Map File",  self.onReadFile)
-        add_menu(self, fmenu, "&Open Map Folder\tCtrl+F",
+        MenuItem(self, fmenu, "&Open Map Folder\tCtrl+F",
                  "Read Map Folder",  self.onReadFolder)
-        add_menu(self, fmenu, 'Change &Working Folder',
+        MenuItem(self, fmenu, 'Change &Working Folder',
                   "Choose working directory",
                   self.onFolderSelect)
         fmenu.AppendSeparator()
-        add_menu(self, fmenu, "&Quit\tCtrl+Q",
+        MenuItem(self, fmenu, "&Quit\tCtrl+Q",
                   "Quit program", self.onClose)
 
         hmenu = wx.Menu()
-        add_menu(self, hmenu, 'About', 'About MapViewer', self.onAbout)
+        MenuItem(self, hmenu, 'About', 'About MapViewer', self.onAbout)
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(hmenu, "&Help")
@@ -1024,7 +1024,7 @@ Matt Newville <newville @ cars.uchicago.edu>
             try:
                 xrmfile = GSEXRM_MapFile(folder=str(path))
             except:
-                popup(self, NOT_GSEXRM_FOLDER % str(path),
+                Popup(self, NOT_GSEXRM_FOLDER % str(path),
                      "Not a Map folder")
                 return
             fname = xrmfile.filename
@@ -1050,7 +1050,7 @@ Matt Newville <newville @ cars.uchicago.edu>
             read = True
             path = dlg.GetPath().replace('\\', '/')
             if path in self.filemap:
-                read = popup(self, "Re-read file '%s'?" % path, 'Re-read file?',
+                read = Popup(self, "Re-read file '%s'?" % path, 'Re-read file?',
                              style=wx.YES_NO)
 
         dlg.Destroy()
@@ -1061,7 +1061,7 @@ Matt Newville <newville @ cars.uchicago.edu>
 
             #try:
             #except:
-            #    popup(self, NOT_GSEXRM_FILE % fname,
+            #    Popup(self, NOT_GSEXRM_FILE % fname,
             #          "Not a Map file!")
             #    return
             if fname not in self.filemap:
@@ -1142,7 +1142,7 @@ Matt Newville <newville @ cars.uchicago.edu>
         this is important!! HDF5 files can be corrupted.
         """
         if not self.filemap[fname].check_hostid():
-            if popup(self, NOT_OWNER_MSG % fname,
+            if Popup(self, NOT_OWNER_MSG % fname,
                      'Not Owner of HDF5 File', style=wx.YES_NO):
                 self.filemap[fname].claim_hostid()
         return self.filemap[fname].check_hostid()

@@ -7,6 +7,8 @@ import sys
 import os
 import time
 import copy
+from functools import partial
+
 import wx
 import wx.lib.mixins.inspection
 import wx.lib.scrolledpanel as scrolled
@@ -25,9 +27,9 @@ use_plugin_path('xrf')
 use_plugin_path('wx')
 
 from mathutils import index_of
-from wxutils import (SimpleText, EditableListBox, FloatCtrl,
-                     Closure, pack, popup, add_button, get_icon,
-                     add_checkbox, add_menu, add_choice, add_menu,
+
+from wxutils import (SimpleText, EditableListBox, FloatCtrl,  pack,
+                     Popup, Button, get_icon, Check, MenuItem, Choice,
                      FileOpen, FileSave, fix_filename)
 
 from periodictable import PeriodicTablePanel
@@ -99,8 +101,8 @@ class CalibrationFrame(wx.Frame):
         sizer = wx.GridBagSizer(8, 8)
         panel = scrolled.ScrolledPanel(self)
         panel.SetMinSize((450, 300))
-       
-        
+
+
         title  =  SimpleText(panel, "Calibrate MCA Energy", style=LEFT,
                              colour='#880000')
         sizer.Add(title,         (0, 0), (1, 8), wx.ALIGN_CENTER)
@@ -111,7 +113,7 @@ class CalibrationFrame(wx.Frame):
         # sizer.Add(self.hline(),  (2, 0), (1, 8), wx.ALIGN_CENTER)
 
         for roi in self.mca.rois:
-            print roi.name, rol.left, roi.right, roi.bgr_width)
+            print( roi.name, rol.left, roi.right, roi.bgr_width)
         print self.mca.rois
 
         pack(panel, sizer)
@@ -156,7 +158,7 @@ class SettingsFrame(wx.Frame):
         def add_color(panel, name):
             cval = hexcolor(getattr(self.conf, name))
             c = csel.ColourSelect(panel,  -1, "", cval, size=(40, 25))
-            c.Bind(csel.EVT_COLOURSELECT, Closure(self.onColor, item=name))
+            c.Bind(csel.EVT_COLOURSELECT, partial(self.onColor, item=name))
             return c
 
         ir = 0
@@ -198,9 +200,9 @@ class SettingsFrame(wx.Frame):
             p = wx.Panel(panel)
             s = wx.BoxSizer(wx.HORIZONTAL)
             for i in all_lines:
-                s.Add(add_checkbox(p, '%s ' % i,
-                                   check = i in checked,
-                                   action=Closure(action, label=i)),
+                s.Add(Check(p, '%s ' % i,
+                                   default = i in checked,
+                                   action=partial(action, label=i)),
                       wx.EXPAND|wx.ALL, 0)
             pack(p, s)
             return p
@@ -244,8 +246,8 @@ class SettingsFrame(wx.Frame):
         sizer.Add(lin(panel, 375),   (ir, 0), (1, 4), labstyle)
 
         ir += 1
-        sizer.Add(add_button(panel, 'Done', size=(80, -1),
-                             action=self.onDone),  (ir, 0), (1, 1), leftstyle)
+        sizer.Add(Button(panel, 'Done', size=(80, -1),
+                         action=self.onDone),  (ir, 0), (1, 1), leftstyle)
 
         pack(panel, sizer)
         self.Show()
@@ -453,13 +455,13 @@ class XRFDisplayFrame(wx.Frame):
         rlabstyle = wx.ALIGN_RIGHT|wx.RIGHT|wx.TOP|wx.EXPAND
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
 
-        self.wids['ylog'] = add_choice(ctrlpanel, size=(80, -1),
+        self.wids['ylog'] = Choice(ctrlpanel, size=(80, -1),
                                        choices=['log', 'linear'],
                                        action=self.onLogLinear)
-        self.wids['zoom_in'] = add_button(ctrlpanel, 'Zoom In',
+        self.wids['zoom_in'] = Button(ctrlpanel, 'Zoom In',
                                           size=(80, -1),
                                           action=self.onZoomIn)
-        self.wids['zoom_out'] = add_button(ctrlpanel, 'Zoom out',
+        self.wids['zoom_out'] = Button(ctrlpanel, 'Zoom out',
                                           size=(80, -1),
                                           action=self.onZoomOut)
 
@@ -473,15 +475,15 @@ class XRFDisplayFrame(wx.Frame):
                                                get_icon(wname),
                                                style=wx.NO_BORDER)
             self.wids[wname].Bind(wx.EVT_BUTTON,
-                                 Closure(ptable.onKey, name=dname))
+                                 partial(ptable.onKey, name=dname))
 
             ssizer.Add(self.wids[wname],  0, wx.EXPAND|wx.ALL, 2)
 
-        self.wids['kseries'] = add_checkbox(spanel, ' K ',
+        self.wids['kseries'] = Check(spanel, ' K ',
                                             action=self.onSeriesSelect)
-        self.wids['lseries'] = add_checkbox(spanel, ' L ',
+        self.wids['lseries'] = Check(spanel, ' L ',
                                             action=self.onSeriesSelect)
-        self.wids['mseries'] = add_checkbox(spanel, ' M ',
+        self.wids['mseries'] = Check(spanel, ' M ',
                                             action=self.onSeriesSelect)
 
         ssizer.Add(txt(spanel, '  '),       1, wx.EXPAND|wx.ALL, 0)
@@ -497,12 +499,12 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['roiname'] = wx.TextCtrl(ctrlpanel, -1, '', size=(140, -1))
 
 
-        self.wids['newroi'] = add_button(ctrlpanel, 'Add', size=(75, -1),
+        self.wids['newroi'] = Button(ctrlpanel, 'Add', size=(75, -1),
                                          action=self.onNewROI)
-        self.wids['delroi'] = add_button(ctrlpanel, 'Delete', size=(75, -1),
+        self.wids['delroi'] = Button(ctrlpanel, 'Delete', size=(75, -1),
                                          action=self.onDelROI)
 
-        self.wids['noroi'] = add_button(ctrlpanel, 'Hide ROIs', size=(75, -1),
+        self.wids['noroi'] = Button(ctrlpanel, 'Hide ROIs', size=(75, -1),
                                         action=self.onClearROIDisplay)
 
         self.wids['counts_tot'] = txt(ctrlpanel, ' Total: ', size=140)
@@ -711,48 +713,48 @@ class XRFDisplayFrame(wx.Frame):
     def createMenus(self):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
-        add_menu(self, fmenu, "&Read MCA Spectra File\tCtrl+O",
+        MenuItem(self, fmenu, "&Read MCA Spectra File\tCtrl+O",
                  "Read GSECARS MCA File",  self.onReadMCAFile)
-        # add_menu(self, fmenu, "&Read XRM Map File\tCtrl+F",
+        # MenuItem(self, fmenu, "&Read XRM Map File\tCtrl+F",
         #          "Read GSECARS XRM MAp File",  self.onReadGSEXRMFile)
-        # add_menu(self, fmenu, "&Open Epics MCA\tCtrl+E",
+        # MenuItem(self, fmenu, "&Open Epics MCA\tCtrl+E",
         #         "Read Epics MCA",  self.onOpenEpicsMCA)
 
         fmenu.AppendSeparator()
-        add_menu(self, fmenu, "&Save MCA File\tCtrl+S",
+        MenuItem(self, fmenu, "&Save MCA File\tCtrl+S",
                  "Save GSECARS MCA File",  self.onSaveMCAFile)
-        add_menu(self, fmenu, "&Save ASCII Column File\tCtrl+A",
+        MenuItem(self, fmenu, "&Save ASCII Column File\tCtrl+A",
                  "Save Column File",  self.onSaveColumnFile)
 
         fmenu.AppendSeparator()
-        add_menu(self, fmenu,  "&Save\tCtrl+S",
+        MenuItem(self, fmenu,  "&Save\tCtrl+S",
                  "Save PNG Image of Plot", self.onSavePNG)
-        add_menu(self, fmenu, "&Copy\tCtrl+C",
+        MenuItem(self, fmenu, "&Copy\tCtrl+C",
                  "Copy Plot Image to Clipboard",
                  self.onCopyImage)
-        add_menu(self, fmenu, 'Page Setup...', 'Printer Setup', self.onPageSetup)
-        add_menu(self, fmenu, 'Print Preview...', 'Print Preview', self.onPrintPreview)
-        add_menu(self, fmenu, "&Print\tCtrl+P", "Print Plot", self.onPrint)
+        MenuItem(self, fmenu, 'Page Setup...', 'Printer Setup', self.onPageSetup)
+        MenuItem(self, fmenu, 'Print Preview...', 'Print Preview', self.onPrintPreview)
+        MenuItem(self, fmenu, "&Print\tCtrl+P", "Print Plot", self.onPrint)
 
 
         fmenu.AppendSeparator()
-        add_menu(self, fmenu, "&Quit\tCtrl+Q",
+        MenuItem(self, fmenu, "&Quit\tCtrl+Q",
                   "Quit program", self.onExit)
 
         omenu = wx.Menu()
-        add_menu(self, omenu, "Settings",
+        MenuItem(self, omenu, "Settings",
                  "Configure Colors and Settins", self.configure)
-        add_menu(self, omenu, "Configure Plot\tCtrl+K",
+        MenuItem(self, omenu, "Configure Plot\tCtrl+K",
                  "Configure Plot Colors, etc", self.panel.configure)
-        add_menu(self, omenu, "Zoom Out\tCtrl+Z",
+        MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
                  "Zoom out to full data range", self.unzoom_all)
-        add_menu(self, omenu, "Swap MCAs",
+        MenuItem(self, omenu, "Swap MCAs",
                  "Swap Fore and Back MCAs", self.swap_mcas)
 
         omenu.AppendSeparator()
-        add_menu(self, omenu, "&Calibrate Energy\tCtrl+B",
+        MenuItem(self, omenu, "&Calibrate Energy\tCtrl+B",
                  "Calibrate Energy",  self.onCalibrateEnergy)
-        add_menu(self, omenu, "&Fit background\tCtrl+G",
+        MenuItem(self, omenu, "&Fit background\tCtrl+G",
                  "Fit smooth background",  self.onFitbackground)
 
         self.menubar.Append(fmenu, "&File")
@@ -993,7 +995,7 @@ class XRFDisplayFrame(wx.Frame):
         except:
             self.win_calib = CalibrationFrame(self, mca=self.mca,
                                               larch=self.larch)
-        
+
 
     def onFitbackground(self, event=None, **kws):
         print '  onFitbackground   '
@@ -1022,7 +1024,7 @@ class XRFDisplayFrame(wx.Frame):
             read = True
             path = dlg.GetPath().replace('\\', '/')
             if path in self.filemap:
-                read = popup(self, "Re-read file '%s'?" % path, 'Re-read file?',
+                read = Popup(self, "Re-read file '%s'?" % path, 'Re-read file?',
                              style=wx.YES_NO)
         dlg.Destroy()
 
@@ -1031,7 +1033,7 @@ class XRFDisplayFrame(wx.Frame):
                 parent, fname = os.path.split(path)
                 # xrmfile = GSEXRM_MapFile(fname)
             except:
-                # popup(self, NOT_GSEXRM_FILE % fname,
+                # Popup(self, NOT_GSEXRM_FILE % fname,
                 # "Not a Map file!")
                 return
 
