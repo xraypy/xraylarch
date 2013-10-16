@@ -7,18 +7,24 @@ import sys
 import site
 import glob
 
+DEBUG = False
 
 cmdline_args = sys.argv[1:]
 
-required_modules = ('numpy', 'scipy', 'docutils', 'wx', 'matplotlib', 'wxmplot')
+required_modules = ('numpy', 'scipy', 'docutils', 'wx', 'wxutils',
+                    'matplotlib', 'wxmplot', 'sqlachemy', 'h5py')
 
-recommended_modules = {'basic processing analysis': ('numpy', 'scipy', 'docutils'),
-                       'graphics and plotting': ('wx',),
+recommended_modules = {'basic analysis': ('numpy', 'scipy', 'docutils'),
+                       'graphics and plotting': ('wx', 'wxutils'),
                        'plotting': ('matplotlib', 'wxmplot'),
                        'accessing x-ray databases': ('sqlalchemy', ),
                        'readng hdf5 files': ('h5py', ),
                        'using the EPICS control system': ('epics',)
-                    }
+                       }
+
+# files that may be in share_basedir (from earlier installs)
+# and should be removedn
+historical_cruft = ['plugins/wx/wxutils.py']
 
 modules_imported = {}
 missing = []
@@ -77,15 +83,16 @@ if os.name == 'nt':
     share_basedir = site_configdata.win_installdir
     user_basedir = site_configdata.win_userdir
 
-# print( share_basedir)
-# print( user_basedir)
-# print( sys.prefix)
-# print( sys.exec_prefix)
-# print( site.USER_BASE)
-# print( site.USER_SITE)
-#
-# print( cmdline_args)
-#
+if DEBUG:
+    print("##  Settings  (Debug mode) ## ")    
+    print(" share_basedir: ",  share_basedir)
+    print(" user_basedir: ",  user_basedir)
+    print(" sys.prefix: ",  sys.prefix)
+    print(" sys.exec_prefix: ",  sys.exec_prefix)
+    print(" site.USER_BASE: ",  site.USER_BASE)
+    print(" site.USER_SITE: ",  site.USER_SITE)
+    print(" cmdline_args: ",  cmdline_args)
+    print("##   ")
 
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch modules
@@ -151,6 +158,23 @@ setup(name = 'larch',
 
 site_config.make_larch_userdirs()
 
+def remove_cruft(basedir, filelist):
+    """remove files from base directory"""
+    def remove_file(base, fname):
+        fullname = os.path.join(base, fname)
+        if os.path.exists(fullname):
+            print(" Unlink ", fullname)
+            try:
+                os.unlink(fullname)
+            except:
+                pass
+    for fname in filelist:
+        remove_file(basedir, fname)
+        if fname.endswith('.py'):
+            remove_file(basedir, fname+'c')
+            remove_file(basedir, fname+'o')
+
+
 def fix_permissions(*dirnames):
     """
     set permissions on a list of directories to match
@@ -177,6 +201,8 @@ def fix_permissions(*dirnames):
                 own(os.path.join(top, d), mode=0o640)
 
 fix_permissions('matplotlib', 'larch')
+if cmdline_args[0] == 'install':            
+    remove_cruft(share_basedir, historical_cruft)
 
 if deps_ok and not os.path.exists('.deps'):
     f = open('.deps', 'w')
