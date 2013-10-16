@@ -557,7 +557,10 @@ class XRFDisplayFrame(wx.Frame):
         tx, ty = ptable.GetBestSize()
         cx, cy = ctrlpanel.GetBestSize()
         px, py = plotpanel.GetBestSize()
-        ctrlpanel.SetSize((tx+2, max(cy, py)+2))
+        # print(" BEST SIZES " , tx,ty,cx,cy, px, py)
+        # print(" --> ", max(cx, tx)+px, max(ty+cy, py))
+        # print(" --> ", max(cx, tx)+px, 25+max(cy, py))
+        self.SetSize((max(cx, tx)+px, 25+max(cy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
         msizer = wx.BoxSizer(wx.HORIZONTAL)
