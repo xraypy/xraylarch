@@ -39,15 +39,12 @@ from wxmplot import PlotFrame
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,
                      pack, Popup, Button, MenuItem, Choice)
 
-
 import larch
 
 larch.use_plugin_path('wx')
 larch.use_plugin_path('io')
 larch.use_plugin_path('xrfmap')
-
 larch.use_plugin_path('std')
-
 
 from xrfdisplay import XRFDisplayFrame
 from mapimageframe import MapImageFrame
@@ -92,8 +89,7 @@ FILE_ALREADY_READ = """The File
 has already been read.
 """
 
-
-def set_choices(choicebox, choices):
+def XXset_choices(choicebox, choices):
     index = 0
     try:
         current = choicebox.GetStringSelection()
@@ -220,11 +216,11 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
     def set_roi_choices(self, rois):
         for wid in self.varroi.values():
-            set_choices(wid, ['1'] + rois)
+            wid.SetChoices(['1'] + rois)
 
     def set_file_choices(self, fnames):
         for wid in self.varfile.values():
-            set_choices(wid, fnames)
+            wid.SetChoices(fnames)
 
     def onShowMap(self, evt, new=True):
         mode = self.map_mode.GetStringSelection()
@@ -426,8 +422,8 @@ class SimpleMapPanel(wx.Panel):
                                det=det, xrmfile=datafile)
 
     def set_roi_choices(self, rois):
-        set_choices(self.roi1, rois)
-        set_choices(self.roi2, ['1'] + rois)
+        self.roi1.SetChoices(rois)
+        self.roi2.SetChoices(['1'] + rois)
 
 class TriColorMapPanel(wx.Panel):
     """Panel of Controls for choosing what to display a 3 color ROI map"""
@@ -582,7 +578,7 @@ class TriColorMapPanel(wx.Panel):
         roichoices = ['1']
         roichoices.extend(choices)
         for cbox in (self.rchoice, self.bchoice, self.gchoice, self.i0choice):
-            set_choices(cbox, roichoices)
+            cbox.SetChoices(roichoices)
 
 class AreaSelectionPanel(wx.Panel):
     delstr = """   Delete Area '%s'?
@@ -770,7 +766,7 @@ class MapViewerFrame(wx.Frame):
                                         size=(250, -1))
 
         dpanel = self.detailspanel = wx.Panel(splitter)
-        dpanel.SetMinSize((625, 450))
+        dpanel.SetMinSize((675, 450))
         self.createNBPanels(dpanel)
         splitter.SplitVertically(self.filelist, self.detailspanel, 1)
         sizer = wx.BoxSizer(wx.VERTICAL)
