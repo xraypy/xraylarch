@@ -23,6 +23,13 @@ from wxmplot.imagepanel import ImagePanel
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex
 
+HAS_SKIMAGE = False
+try:
+    import skimage
+    HAS_SKIMAGE = True
+except ImportError:
+    pass
+    
 CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to zoom to rectangular box'),
                      'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -212,9 +219,11 @@ class MapImageFrame(ImageFrame):
 
 
     def onContrastMode(self, event=None):
-        print 'on Contrast Mode ', event.GetInt()
+        contrast =  event.GetInt()
+        print 'on Contrast Mode ', event.GetInt(), HAS_SKIMAGE
 
 
+        
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask,
@@ -236,11 +245,14 @@ class MapImageFrame(ImageFrame):
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
 
-        cont_mode = wx.RadioBox(panel, -1, "Enhance Contrast:",
-                                wx.DefaultPosition, wx.DefaultSize,
-                                ('No enhancement',
-                                 'Global Equalize',
-                                 'Local Equalize'),
-                                1, wx.RA_SPECIFY_COLS)
-        cont_mode.Bind(wx.EVT_RADIOBOX, self.onContrastMode)
-        sizer.Add(cont_mode,  (irow+1, 0), (1, 4), labstyle, 3)
+        if HAS_SKIMAGE:
+            cont_mode = wx.RadioBox(panel, -1, "Enhance Contrast:",
+                                    wx.DefaultPosition, wx.DefaultSize,
+                                    ('No enhancement',
+                                     'Stretch Contrast',
+                                     'Histogram Equalization',
+                                     'Adaptive Equalization'),
+                                    1, wx.RA_SPECIFY_COLS)
+            cont_mode.Bind(wx.EVT_RADIOBOX, self.onContrastMode)
+            sizer.Add(cont_mode,  (irow+1, 0), (1, 4), labstyle, 3)
+        
