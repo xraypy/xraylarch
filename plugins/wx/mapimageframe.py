@@ -4,10 +4,13 @@ subclass of wxmplot.ImageFrame specific for Map Viewer -- adds custom menus
 """
 
 import os
+import time
+from threading import Thread
+
 from functools import partial
 import wx
 from wx._core import PyDeadObjectError
-import numpy
+import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
@@ -26,7 +29,9 @@ from wxmplot.colors import rgb2hex
 HAS_SKIMAGE = False
 try:
     import skimage
+    from skimage import exposure
     HAS_SKIMAGE = True
+    
 except ImportError:
     pass
     
@@ -50,6 +55,7 @@ class MapImageFrame(ImageFrame):
         dbt = DebugTimer()
         self.det = None
         self.xrmfile = None
+        self.map = None
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels, mode=mode,
@@ -57,6 +63,9 @@ class MapImageFrame(ImageFrame):
         self.panel.add_cursor_mode('prof', motion = self.prof_motion,
                                    leftdown = self.prof_leftdown,
                                    leftup   = self.prof_leftup)
+        self.panel.report_leftdown = self.report_leftdown
+        self.panel.report_motion   = self.report_motion
+
         self.prof_plotter = None
         self.zoom_ini =  None
         self.lastpoint = [None, None]
@@ -65,6 +74,7 @@ class MapImageFrame(ImageFrame):
     def display(self, map, det=None, xrmfile=None, **kws):
         self.det = det
         self.xrmfile = xrmfile
+        self.map = map
         ImageFrame.display(self, map, **kws)
 
     def prof_motion(self, event=None):
@@ -99,7 +109,7 @@ class MapImageFrame(ImageFrame):
         zdc.EndDrawing()
 
     def prof_leftdown(self, event=None):
-        self.panel.report_leftdown(event=event)
+        self.report_leftdown(event=event)
         if event.inaxes:
             self.lastpoint = [None, None]
             self.zoom_ini = [event.x, event.y, event.xdata, event.ydata]
@@ -217,12 +227,75 @@ class MapImageFrame(ImageFrame):
         elif 2 == event.GetInt():
             self.panel.cursor_mode = 'prof'
 
+    def enhance_constrast(self, level):
+        map = self.map
+        if level == 1:  # 'Stretch Contrast'
+            # Contrast stretching
+            p02 = np.percentile(map,  2)
+            p98 = np.percentile(map, 98)
+            map = exposure.rescale_intensity(map, in_range=(p02, p98))
+        elif level == 2: #     'Histogram Equalization',
+            map = exposure.equalize_hist(map.astype('int'))
+        self.cmap = map
+
+    def report_leftdown(self, event=None):
+        if event is None:
+            return
+        if event.xdata is None or event.ydata is None:
+            return
+
+        ix, iy = round(event.xdata), round(event.ydata)
+        conf = self.panel.conf
+        if conf.flip_ud:  iy = conf.data.shape[0] - iy
+        if conf.flip_lr:  ix = conf.data.shape[1] - ix
+
+        if (ix >= 0 and ix < conf.data.shape[1] and
+            iy >= 0 and iy < conf.data.shape[0]):
+            pos = ''
+            pan = self.panel
+            labs, vals = [], []
+            if pan.xdata is not None:
+                labs.append(pan.xlab)
+                vals.append(pan.xdata[ix])
+            if pan.ydata is not None:
+                labs.append(pan.ylab)
+                vals.append(pan.ydata[iy])
+            pos = ', '.join(labs)
+            vals =', '.join(['%.4g' % v for v in vals])
+            pos = '%s = [%s]' % (pos, vals)
+            dval = conf.data[iy, ix]
+            if len(pan.data_shape) == 3:
+                dval = "%.4g, %.4g, %.4g" % tuple(dval)
+            else:
+                dval = "%.4g" % dval
+            msg = "Pixel [%i, %i], %s, Intensity=%s " % (ix, iy, pos, dval)
+        self.panel.write_message(msg, panel=0)
+
+    def report_motion(self, event=None):
+        return
 
     def onContrastMode(self, event=None):
         contrast =  event.GetInt()
-        print 'on Contrast Mode ', event.GetInt(), HAS_SKIMAGE
+        if not HAS_SKIMAGE:
+            return 
+        if self.map is None:
+            self.map = self.panel.conf.data
 
-
+        map = self.map 
+        if contrast > 0:
+            self.cmap = None
+            _thread = Thread(target=self.enhance_constrast, args=(contrast,))
+            _thread.start()
+            while self.cmap is None:
+                time.sleep(0.1)
+                try:
+                    wx.Yield()
+                except:
+                    pass
+            _thread.join()
+            map = self.cmap
+        ImageFrame.display(self, map)
+        self.cmap = None
         
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
@@ -250,8 +323,9 @@ class MapImageFrame(ImageFrame):
                                     wx.DefaultPosition, wx.DefaultSize,
                                     ('No enhancement',
                                      'Stretch Contrast',
-                                     'Histogram Equalization',
-                                     'Adaptive Equalization'),
+                                     'Equalize Histogram',
+                                     # 'Adaptive Equalization'
+                                     ),
                                     1, wx.RA_SPECIFY_COLS)
             cont_mode.Bind(wx.EVT_RADIOBOX, self.onContrastMode)
             sizer.Add(cont_mode,  (irow+1, 0), (1, 4), labstyle, 3)
