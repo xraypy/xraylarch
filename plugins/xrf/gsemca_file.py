@@ -51,6 +51,10 @@ class GSEMCA_File(Group):
             for imca, mca in enumerate(self.mcas):
                 if mca.counts[chan_min:].sum() > min_counts:
                     self.__mca0 = mca
+                    self.offset = mca.offset
+                    self.slope  = mca.slope
+                    self.quad   = mca.quad
+                    break
                 elif imca not in self.bad:
                     self.bad.append(imca)
         return self.__mca0
