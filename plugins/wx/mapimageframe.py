@@ -323,10 +323,7 @@ class MapImageFrame(ImageFrame):
                                     wx.DefaultPosition, wx.DefaultSize,
                                     ('No enhancement',
                                      'Stretch Contrast',
-                                     'Equalize Histogram',
-                                     # 'Adaptive Equalization'
-                                     ),
+                                     'Equalize Histogram'),
                                     1, wx.RA_SPECIFY_COLS)
             cont_mode.Bind(wx.EVT_RADIOBOX, self.onContrastMode)
             sizer.Add(cont_mode,  (irow+1, 0), (1, 4), labstyle, 3)
-        
