@@ -793,7 +793,7 @@ class MapViewerFrame(wx.Frame):
         self.SetBackgroundColour('#F0F0E8')
 
         self.nbpanels = {}
-        for name, key, creator in (('Simple ROI Map',  'roimap', SimpleMapPanel),
+        for name, key, creator in (('Simple ROI Map', 'roimap', SimpleMapPanel),
                                    ('3-Color ROI Map', '3color',  TriColorMapPanel),
                                    ('Map Math',  'mapmath',    MapMathPanel)):
             # print 'panel ' , name, parent, creator
@@ -817,7 +817,7 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask)
-        self.sel_mca = xrmfile.get_mca_area(area=aname, det=det)
+        self.sel_mca = xrmfile.get_mca_area(aname, det=det)
 
     def lassoHandler(self, mask=None, det=None, xrmfile=None, **kws):
         mca_thread = Thread(target=self.get_mca_area,
