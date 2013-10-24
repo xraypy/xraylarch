@@ -24,21 +24,25 @@ from larch import Group, Parameter, isParameter, use_plugin_path
 
 use_plugin_path('math')
 use_plugin_path('xrf')
+use_plugin_path('xray')
 use_plugin_path('wx')
 
 from mathutils import index_of
+from fitpeak import fit_peak
+
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,  pack,
                      Popup, Button, get_icon, Check, MenuItem, Choice,
-                     FileOpen, FileSave, fix_filename)
+                     FileOpen, FileSave, fix_filename, HLine,
+                     CEN, LEFT, RIGHT)
 
 from periodictable import PeriodicTablePanel
 
 from gsemca_file import GSEMCA_File, gsemca_group
+from xraydb import xrayDB
+XRAYDB = xrayDB()
 
-CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
-LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
-RIGHT = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
+
 ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
 ALL_RIGHT =  wx.ALL|RIGHT
@@ -61,6 +65,19 @@ AT_SYMS = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
            'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk',
            'Cf')
 
+
+def split_roiname(name):
+    words = name.split()
+    elem = words[0].title()
+    line = 'ka'
+    if len(words) > 1:
+        line = words[1]
+    line = line.title()
+    if line == 'Ka': line = 'Ka1'
+    if line == 'Kb': line = 'Kb1'
+    if line == 'La': line = 'La1'
+    if line == 'Lb': line = 'Lb1'
+    return elem, line
 
 def txt(panel, label, size=75, colour=None,  style=None):
     if style is None:
@@ -98,26 +115,73 @@ class CalibrationFrame(wx.Frame):
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
         self.SetFont(wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
-        sizer = wx.GridBagSizer(8, 8)
-        panel = scrolled.ScrolledPanel(self)
-        panel.SetMinSize((450, 300))
+        sizer = wx.GridBagSizer(8, 5)
+        panel = wx.Panel(self)
+        # panel = scrolled.ScrolledPanel(self)
+        panel.SetMinSize((550, 350))
 
 
-        title  =  SimpleText(panel, "Calibrate MCA Energy", style=LEFT,
-                             colour='#880000')
+        title  =  SimpleText(panel, "Calibrate MCA Energy (energies in ev)",
+                             style=LEFT,  colour='#880000')
         sizer.Add(title,         (0, 0), (1, 8), wx.ALIGN_CENTER)
-        sizer.Add(SimpleText(panel, "ROI Name"), (1, 0), (1, 1), wx.ALIGN_CENTER)
-        sizer.Add(SimpleText(panel, "Energy"),   (1, 1), (1, 1), wx.ALIGN_CENTER)
-        sizer.Add(SimpleText(panel, "Use?")  ,   (1, 2), (1, 1), wx.ALIGN_CENTER)
-        sizer.Add(SimpleText(panel, "Refined Value"), (1, 3), (1, 1), wx.ALIGN_CENTER)
-        # sizer.Add(self.hline(),  (2, 0), (1, 8), wx.ALIGN_CENTER)
+        sizer.Add(SimpleText(panel, "ROI"),         (1, 0), (1, 1), CEN)
+        sizer.Add(SimpleText(panel, "Predicted Energy"), (1, 1), (1, 1), CEN)
+        sizer.Add(SimpleText(panel, "Refined Energy"), (1, 2), (1, 1), CEN)
+        sizer.Add(SimpleText(panel, "Difference"),     (1, 3), (1, 1), CEN)
+        sizer.Add(SimpleText(panel, "Use?")  ,         (1, 4), (1, 1), CEN)
+        sizer.Add(HLine(panel, size=(525, 3)),         (2, 0), (1, 6), CEN)
 
+        ir = 2
+        self.wids = []
+        mca_energy = 1000.0*self.mca.energy
+        mca_counts = self.mca.counts
         for roi in self.mca.rois:
-            print( roi.name, rol.left, roi.right, roi.bgr_width)
-        print self.mca.rois
+            elem, line = split_roiname(roi.name)
+            try:
+                eknown = XRAYDB.xray_lines(elem)[line][0]
+            except:
+                continue            
+            ir += 1
+            llim = max(0, roi.left - roi.bgr_width)
+            hlim = min(len(mca_energy)-1, roi.right + roi.bgr_width)
+            # print '============'
+            # print 'LINE:  ', roi.name, elem, line, eknown
+            # print llim, hlim , mca_energy[llim], mca_energy[hlim]
+            fit = None
+            time.sleep(0.001)
+            fit = fit_peak(mca_energy[llim:hlim], mca_counts[llim:hlim],
+                           'Gaussian', background='constant', _larch=self.larch)
+            # print ' -->  ', fit.params.center, fit.params.amplitude
+            efound    = fit.params.center.value
+            fit.params = None
+            ediff     = efound - eknown
+            w_name    = SimpleText(panel, roi.name,        size=(80, -1))
+            w_eknown  = SimpleText(panel, "%.1f" % eknown, size=(120, -1))
+            w_efound  = SimpleText(panel, "%.1f" % efound, size=(120, -1))
+            w_ediff   = SimpleText(panel, "%.1f" % ediff,  size=(120, -1))
+            w_use     = Check(panel)
 
+            sizer.Add(w_name,   (ir, 0), (1, 1), LEFT, 1)
+            sizer.Add(w_eknown, (ir, 1), (1, 1), RIGHT, 1)
+            sizer.Add(w_efound, (ir, 2), (1, 1), RIGHT, 1)
+            sizer.Add(w_ediff,  (ir, 3), (1, 1), RIGHT, 1)
+            sizer.Add(w_use,    (ir, 4), (1, 1), RIGHT, 1)
+            self.wids.append((roi.name, w_eknown, w_efound, w_ediff, w_use))
+
+        ir += 1
+        sizer.Add(HLine(panel, size=(525, 3)),   (ir, 0), (1, 6), CEN)
+
+        ir += 1
+        sizer.Add(Button(panel, 'Compute Calibration',
+                         size=(160, -1), action=self.onCalibrate),
+                  (ir, 0), (1, 2), RIGHT)
+        
+        sizer.Add(Button(panel, 'Done',
+                         size=(160, -1), action=self.onClose),
+                  (ir, 2), (1, 2), RIGHT)
+                
         pack(panel, sizer)
-        panel.SetupScrolling()
+        # panel.SetupScrolling()
 
         msizer = wx.BoxSizer(wx.VERTICAL)
         msizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
@@ -125,6 +189,60 @@ class CalibrationFrame(wx.Frame):
         self.Show()
         self.Raise()
 
+    def onCalibrate(self, event=None):
+        print 'on Calibrate'
+        x, y = [], []
+        for roiname, w_eknown, w_efound, w_ediff, w_use in self.wids:
+            if w_use.IsChecked():
+                thise = 0.001 * float(w_eknown.GetLabel())
+                print ' E : ',  thise =       x.append(0.001 * float(w_eknown.GetLabel()))
+                ix = index_of(self.mca.energy, x)
+
+                x.append(0.001 * float(w_eknown.GetLabel()))
+                y.append(0.001 * float(w_efound.GetLabel()))
+        print 'Refine to ',x, y
+        fit = fit_peak(np.array(x), np.array(y), 'Linear', _larch=self.larch)
+        pars = fit.params
+        print ':  ', pars.slope, pars.offset
+        print 'Update calibration.... '
+        print fit.x
+        print fit.y
+        print fit.fit
+        print fit.fit - fit.y
+        print self.mca.slope, self.mca.offset
+        slope = self.mca.slope * 
+        new_energy = pars.offset.value + np.arange(len(self.mca.energy)) * self.mca.slope * pars.slope.value 
+        print self.mca.energy[:4]
+        print new_energy[:4]
+        # print new_energy
+        mca_energy = 1000*new_energy
+        # self.mca.energy = new_energy
+        for roi in self.mca.rois:
+            elem, line = split_roiname(roi.name)
+            try:
+                eknown = XRAYDB.xray_lines(elem)[line][0]
+            except:
+                continue
+            llim = max(0, roi.left - roi.bgr_width)
+            hlim = min(len(mca_energy)-1, roi.right + roi.bgr_width)
+            # print llim, hlim, mca_energy[llim], mca_energy[hlim]
+            fit = fit_peak(mca_energy[llim:hlim], self.mca.counts[llim:hlim],
+                           'Gaussian', background='constant', _larch=self.larch)
+            efound = fit.params.center.value
+            ediff  = efound - eknown
+            for roiname, w_eknown, w_efound, w_ediff, w_use in self.wids:
+                if roiname == roi.name:
+                    print ' -> ', roiname, efound, w_ediff.GetLabel(), ediff
+                    w_efound.SetLabel("%.1f" % efound)
+                    w_ediff.SetLabel("%.1f" % ediff)
+                    break
+            
+
+        
+    def onClose(self, event=None):
+        self.Destroy()        
+        
+            
 
 class SettingsFrame(wx.Frame):
     """settings frame for XRFDisplay"""
@@ -150,10 +268,10 @@ class SettingsFrame(wx.Frame):
 
         emin = FloatCtrl(panel, value=self.parent.conf.e_min,
                          minval=0, maxval=1000, precision=2,
-                         action=self.onErange, action_kw={'is_max':False})
+                         action=self.onErange, action_kws={'is_max':False})
         emax = FloatCtrl(panel, value=self.parent.conf.e_max,
                          minval=0, maxval=1000, precision=2,
-                         action=self.onErange, action_kw={'is_max':True})
+                         action=self.onErange, action_kws={'is_max':True})
 
         def add_color(panel, name):
             cval = hexcolor(getattr(self.conf, name))
@@ -411,7 +529,7 @@ class XRFDisplayFrame(wx.Frame):
                                            head_starts_at_zero=True,
                                            color=self.conf.marker_color)
             self.panel.canvas.draw()
-            self.write_message("%s: E=%.3f, Counts=%g" % (title, x, y), panel=1+idx)
+            self.write_message("%s E=%.3f keV, Counts=%g" % (title, x, y), panel=1+idx)
         except:
             pass
     def on_rightdown(self, event=None):
@@ -438,7 +556,7 @@ class XRFDisplayFrame(wx.Frame):
 
         plotpanel = self.panel = PlotPanel(self, fontsize=7,
                                            axisbg='#FDFDFA',
-                                           axissize=[0.02, 0.12, 0.96, 0.86],
+                                           axissize=[0.01, 0.11, 0.98, 0.87],
                                            # axissize=[0.12, 0.12, 0.86, 0.86],
                                            output_title='test.xrf',
                                            messenger=self.write_message)
@@ -448,7 +566,7 @@ class XRFDisplayFrame(wx.Frame):
                                    leftup   = self.ignoreEvent,
                                    leftdown = self.on_leftdown,
                                    rightdown = self.on_rightdown)
-
+        
         sizer = wx.GridBagSizer(11, 5)
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
@@ -891,6 +1009,7 @@ class XRFDisplayFrame(wx.Frame):
         kwargs = {'grid': False, 'xmin': 0,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
+                  'axes_style': 'bottom', 
                   'color': self.conf.spectra_color}
         kwargs.update(kws)
 
@@ -911,7 +1030,6 @@ class XRFDisplayFrame(wx.Frame):
             ydat = np.ma.masked_less(ydat, 0)
 
         panel.plot(x, ydat, label='spectra',  **kwargs)
-
         if yroi is not None:
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='roi', **kwargs)
@@ -930,7 +1048,7 @@ class XRFDisplayFrame(wx.Frame):
     def oplot(self, x, y, **kws):
         ymax = max( max(self.ydata), max(y))*1.25
         kws.update({'zorder': -5, 'label': 'spectra2',
-                    'ymax' : ymax,
+                    'ymax' : ymax, 'axes_style': 'bottom', 
                     'ylog_scale': True, 'color': 'darkgreen'})
 
         self.panel.oplot(x, 1.0*y[:], **kws)
