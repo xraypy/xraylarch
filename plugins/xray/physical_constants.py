@@ -20,5 +20,5 @@ PLANCK_HC    = 1.e10 * consts.Planck * consts.c / consts.e
 PLANCK_HBARC = PLANCK_HC / (2*pi)
 
 # classical electron radius in cm
-R_ELECTRON_CM  = 0.01    * consts.codata.physical_constants['classical electron radius'][0]
-R_ELECTRON_ANG = 1.e-101 * consts.codata.physical_constants['classical electron radius'][0]
+R_ELECTRON_CM  = 100.0 * consts.codata.physical_constants['classical electron radius'][0]
+R_ELECTRON_ANG = 1.e10 * consts.codata.physical_constants['classical electron radius'][0]

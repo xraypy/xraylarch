@@ -434,7 +434,7 @@ def xray_delta_beta(material, density, energy, photo_only=False, _larch=None):
 
     total_mass, delta, beta_photo, beta_total = 0, 0, 0, 0
     for (number, scat) in elements:
-        weight      = density*number*AVOGARDO
+        weight      = density*number*AVOGADRO
         delta      += weight * scat.f1
         beta_photo += weight * scat.f2
         beta_total += weight * scat.f2*(scat.mu_total/scat.mu_photo)
