@@ -113,24 +113,28 @@ class CalibrationFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Calibrate MCA',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
-        self.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
+        self.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
         panel = GridPanel(self)
-        self.calib_update = None
-
-
-        title  =  SimpleText(panel, "Calibrate MCA Energy (energies in keV)",
+        self.calib_updated = False
+        title  =  SimpleText(panel, "Calibrate MCA Energy (all energies in keV)",
                              style=LEFT,  colour='#880000')
         panel.Add(title,   dcol=7)
         panel.Add(SimpleText(panel, "ROI"), newrow=True)
-        panel.Add(SimpleText(panel, "Predicted Energy"))
-        panel.Add(SimpleText(panel, "Current Energy"))
-        panel.Add(SimpleText(panel, "Current Diff"))
-        panel.Add(SimpleText(panel, "Refined Energy"))
-        panel.Add(SimpleText(panel, "Refined Diff"))
+        panel.Add(SimpleText(panel, "Predicted"))
+        panel.Add(SimpleText(panel, "Current Energies"), dcol=3, style=CEN)
+        panel.Add(SimpleText(panel, "Refined Energies"), dcol=3, style=CEN)
         panel.Add(SimpleText(panel, "Use?"))
 
-        panel.Add(HLine(panel, size=(650, 3)),  dcol=7, newrow=True)
+        panel.Add(SimpleText(panel, "Name"), newrow=True)
+        panel.Add(SimpleText(panel, "Energy"))
+        panel.Add(SimpleText(panel, "Center"))
+        panel.Add(SimpleText(panel, "Diff"))
+        panel.Add(SimpleText(panel, "FWHM"))
+        panel.Add(SimpleText(panel, "Center"))
+        panel.Add(SimpleText(panel, "Diff"))
+        panel.Add(SimpleText(panel, "FWHM"))
 
+        panel.Add(HLine(panel, size=(900, 3)),  dcol=9, newrow=True)
         self.wids = []
         mca_energy = 1.0*self.mca.energy
         mca_counts = self.mca.counts
@@ -140,40 +144,49 @@ class CalibrationFrame(wx.Frame):
                 eknown = XRAYDB.xray_lines(elem)[line][0]/1000.0
             except:
                 continue
-
             llim = max(0, roi.left - roi.bgr_width)
             hlim = min(len(mca_energy)-1, roi.right + roi.bgr_width)
             fit = fit_peak(mca_energy[llim:hlim], mca_counts[llim:hlim],
-                           'Gaussian', background='constant', _larch=self.larch)
+                           'Gaussian', background='constant',
+                           _larch=self.larch)
 
-            ecurr  = fit.params.center.value
-            dcurr  = ecurr - eknown
-
-            w_name = SimpleText(panel, roi.name,        size=(80, -1))
-            w_ethe = SimpleText(panel, "%.4f" % eknown, size=(120, -1))
-            w_ecur = SimpleText(panel, "%.4f" % ecurr,  size=(120, -1))
-            w_dcur = SimpleText(panel, "%.4f" % dcurr,  size=(120, -1))
-            w_enew = SimpleText(panel, "-",             size=(120, -1))
-            w_dnew = SimpleText(panel, "-",             size=(120, -1))
+            ecen = fit.params.center.value
+            fwhm = fit.params.fwhm.value
+            diff = ecen - eknown
+            name = ('   ' + roi.name+' '*10)[:10]
+            opts = {'style': CEN, 'size':(100, -1)}
+            w_name = SimpleText(panel, name,   **opts)
+            w_pred = SimpleText(panel, "%.4f" % eknown, **opts)
+            w_ccen = SimpleText(panel, "%.4f" % ecen,   **opts)
+            w_cdif = SimpleText(panel, "%.4f" % diff,   **opts)
+            w_cwid = SimpleText(panel, "%.4f" % fwhm,   **opts)
+            w_ncen = SimpleText(panel, "-----",         **opts)
+            w_ndif = SimpleText(panel, "-----",         **opts)
+            w_nwid = SimpleText(panel, "-----",         **opts)
             w_use  = Check(panel)
 
             panel.Add(w_name, style=LEFT, newrow=True)
-            panel.Add(w_ethe, style=RIGHT)
-            panel.Add(w_ecur, style=RIGHT)
-            panel.Add(w_dcur, style=RIGHT)
-            panel.Add(w_enew, style=RIGHT)
-            panel.Add(w_dnew, style=RIGHT)
-            panel.Add(w_use,  style=RIGHT)
-            self.wids.append((roi.name, w_ethe, w_ecur, w_enew, w_dnew, w_use))
+            panel.AddMany((w_pred, w_ccen, w_cdif, w_cwid,
+                           w_ncen, w_ndif, w_nwid, w_use))
+                          
+            self.wids.append((roi.name, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use))
 
-        panel.Add(HLine(panel, size=(650, 3)),  dcol=6, newrow=True)
-        panel.Add(SimpleText(panel, "Current Calibration:"), dcol=2, newrow=True)
-        calstr =  "offset=%.5f, slope=%.5f" % (self.mca.offset, self.mca.slope)
-        panel.Add(SimpleText(panel, calstr),  dcol=3, style=LEFT)
-        panel.Add(SimpleText(panel, "Refined Calibration:"), dcol=2, newrow=True)
-        calstr =  "offset=-------, slope=-------"
-        self.newcalib = SimpleText(panel, calstr)
-        panel.Add(self.newcalib,  dcol=3, style=LEFT)
+        panel.Add(HLine(panel, size=(900, 3)),  dcol=9, newrow=True)
+        panel.Add(SimpleText(panel, "Current Calibration:"),
+                  dcol=2, newrow=True)
+        panel.Add(SimpleText(panel, "offset(keV):"))
+        panel.Add(SimpleText(panel, "%.5f" % (self.mca.offset)), dcol=2)
+        panel.Add(SimpleText(panel, "slope(keV/chan):"))
+        panel.Add(SimpleText(panel, "%.5f" % (self.mca.slope)),  dcol=2)
+
+        panel.Add(SimpleText(panel, "Refined Calibration:"),
+                  dcol=2, newrow=True)
+        panel.Add(SimpleText(panel, "offset(kev):"),            style=LEFT)
+        self.new_offset = wx.TextCtrl(panel, -1, value="--", size=(80, -1))
+        self.new_slope  = wx.TextCtrl(panel, -1, value="--", size=(80, -1))
+        panel.Add(self.new_offset,    dcol=2)
+        panel.Add(SimpleText(panel, "slope(keV/chan):"))
+        panel.Add(self.new_slope,     dcol=2)
 
         panel.Add(Button(panel, 'Compute Calibration',
                          size=(160, -1), action=self.onCalibrate),
@@ -188,58 +201,56 @@ class CalibrationFrame(wx.Frame):
                   dcol=2, style=RIGHT)
 
         panel.pack()
-        self.SetSize((840, 400))
+        self.SetSize((950, 450))
         self.Show()
         self.Raise()
 
     def onCalibrate(self, event=None):
         x, y = [], []
-        for roiname, w_ethe, w_ecur, w_enew, w_dnew, w_use in self.wids:
+        for roiname, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
             if w_use.IsChecked():
-                thise = float(w_ethe.GetLabel())
-                ix = index_of(self.mca.energy, thise)
-                jx = (thise - self.mca.offset)/self.mca.slope
-                x.append(jx)
-                y.append(float(w_ecur.GetLabel()))
+                x.append((eknown - self.mca.offset)/self.mca.slope)
+                y.append(ecen)
         fit = fit_peak(np.array(x), np.array(y), 'Linear', _larch=self.larch)
         pars = fit.params
-        # print 'Update calibration.... '
-        # print ':  ', pars.slope, pars.offset
-        self.calib_update = (pars.offset.value, pars.slope.value)
-        calstr =  "offset=%.5f, slope=%.5f" % (pars.offset.value, pars.slope.value)
-        self.newcalib.SetLabel(calstr)
+        self.calib_updated = True
+        self.new_offset.SetValue("%.6f" % pars.offset.value)
+        self.new_slope.SetValue("%.6f" % pars.slope.value)
 
         mca_energy = pars.offset.value + np.arange(len(self.mca.energy)) * pars.slope.value
         for roi in self.mca.rois:
             elem, line = split_roiname(roi.name)
             try:
-                eknown = XRAYDB.xray_lines(elem)[line][0]/1000.0
+                eknown = 0.001*XRAYDB.xray_lines(elem)[line][0]
             except:
                 continue
             llim = max(0, roi.left - roi.bgr_width)
             hlim = min(len(mca_energy)-1, roi.right + roi.bgr_width)
             fit = fit_peak(mca_energy[llim:hlim], self.mca.counts[llim:hlim],
                            'Gaussian', background='constant', _larch=self.larch)
-            efound = fit.params.center.value
-            ediff  = efound - eknown
-            for roiname, w_ethe, w_ecur, w_enew, w_dnew, w_use in self.wids:
+            cen  = fit.params.center.value
+            fwhm = fit.params.fwhm.value
+            diff  = cen - eknown
+            for roiname, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
                 if roiname == roi.name:
-                    w_enew.SetLabel("%.4f" % efound)
-                    w_dnew.SetLabel("%.4f" % ediff)
+                    w_ncen.SetLabel("%.4f" % cen)
+                    w_ndif.SetLabel("%.4f" % diff)
+                    w_nwid.SetLabel("%.4f" % fwhm)
                     break
 
+        tsize = self.GetSize()
+        self.SetSize((tsize[0]+1, tsize[1]))
+        self.SetSize((tsize[0], tsize[1]))
+        
     def onUseCalib(self, event=None):
-        # print ' Use this calib: ', self.calib_update
-        offset, slope = self.calib_update
-        self.mca.slope = slope
-        self.mca.offset = offset
-        self.mca.energy = offset+ slope*np.arange(len(self.mca.energy))
-
+        if self.calib_updated:
+            self.mca.offset = b = float(self.new_offset.GetValue())
+            self.mca.slope  = m = float(self.new_slope.GetValue())
+            self.mca.energy = b + m*np.arange(len(self.mca.energy))
         self.Destroy()
 
     def onClose(self, event=None):
         self.Destroy()
-
 
 
 class SettingsFrame(wx.Frame):
@@ -861,14 +872,17 @@ class XRFDisplayFrame(wx.Frame):
                   "Quit program", self.onExit)
 
         omenu = wx.Menu()
-        MenuItem(self, omenu, "Settings",
+        MenuItem(self, omenu, "Colors and Line Selection",
                  "Configure Colors and Settins", self.configure)
         MenuItem(self, omenu, "Configure Plot\tCtrl+K",
                  "Configure Plot Colors, etc", self.panel.configure)
         MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
                  "Zoom out to full data range", self.unzoom_all)
+        omenu.AppendSeparator()
         MenuItem(self, omenu, "Swap MCAs",
                  "Swap Fore and Back MCAs", self.swap_mcas)
+        MenuItem(self, omenu, "Close Background MCA",
+                 "Close Background MCA", self.close_bkg_mca)
 
         omenu.AppendSeparator()
         MenuItem(self, omenu, "&Calibrate Energy\tCtrl+B",
@@ -994,10 +1008,18 @@ class XRFDisplayFrame(wx.Frame):
         if roiname is not None:
             self.onROI(label=roiname)
 
-    def plotmca(self, mca,  **kws):
+    def plotmca(self, mca, show_mca2=True, **kws):
         self.mca = mca
         self.plot(mca.energy, mca.counts, mca=mca, **kws)
+        title = self.GetTitle()
+        # print 'PLOT MCA ', mca
+        title = "%s: %s"% (title, mca.filename)
 
+        if show_mca2 and self.mca2 is not None:
+            self.oplot(self.mca2.energy, self.mca2.counts)
+            title = "%s (fore) %s (back)"% (title, self.mca2.filename)
+        self.SetTitle(title)
+        
     def plot(self, x, y=None, mca=None,  **kws):
         if mca is not None:
             self.mca = mca
@@ -1052,9 +1074,16 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.oplot(x, 1.0*y[:], **kws)
 
     def swap_mcas(self, event=None):
+        if self.mca2 is None:
+            return
+            
         self.mca, self.mca2 = self.mca2, self.mca
-        self.plotmca(self.mca)
-        self.oplot(self.mca2.energy, self.mca2.counts)
+        self.plotmca(self.mca, show_mca2=True)
+
+
+    def close_bkg_mca(self, event=None):
+        self.mca2 = None
+        self.plotmca(self.mca, show_mca2=False)
 
     def onReadMCAFile(self, event=None):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
@@ -1069,12 +1098,12 @@ class XRFDisplayFrame(wx.Frame):
 
         if fnew is None:
             return
-        _mca = gsemca_group(fnew, _larch=self.larch)
+        self.mca2 = None
         if self.mca is not None:
             self.mca2 = copy.deepcopy(self.mca)
-            self.mca = _mca
-        self.plotmca(self.mca)
-        self.oplot(self.mca2.energy, self.mca2.counts)
+
+        self.mca = gsemca_group(fnew, _larch=self.larch)
+        self.plotmca(self.mca, show_mca2=True)
 
     def onReadGSEXRMFile(self, event=None, **kws):
         print '  onReadGSEXRMFile   '
