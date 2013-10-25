@@ -29,7 +29,6 @@ def lorentzian(x, cen=0, sigma=1):
 
 def voigt(x, cen=0, sigma=1, gamma=None):
     """1 dimensional voigt function.
-
     see http://en.wikipedia.org/wiki/Voigt_profile
     """
     if gamma is None:
@@ -69,6 +68,13 @@ def breit_wigner(x, cen=0, sigma=1, q=1):
     """
     gam = sigma/2.0
     return  (q*gam + x - cen)**2 / (gam*gam + (x-cen)**2)
+
+def damped_oscillator(x, cen=1., sigma=0.1):
+    """amplitude for a damped harmonic oscillator
+    1 /sqrt( (1.0 - (x/cen)**2)**2 + (2*sigma*x/cen)**2))
+    """
+    cen = max(1.e-9, abs(cen))
+    return (1./sqrt( (1.0 - (x / cen)**2)**2 + (2*sigma*x/cen)**2))
 
 def logistic(x, cen=0, sigma=1.):
     """Logistic lineshape (yet another sigmoidal curve)
@@ -125,6 +131,7 @@ def registerLarchPlugin():
                       'lognormal': lognormal,
                       'gammaln': _gammaln,
                       'breit_wigner': breit_wigner,
+                      'damped_oscillator': damped_oscillator,
                       'students_t': students_t,
                       'logistic': logistic,
                       'erf': _erf,
