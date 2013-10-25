@@ -207,6 +207,7 @@ class GSEMCA_File(Group):
                 counts=None, sort=True, to_mcas=True):
         """add an ROI to the sum spectra"""
         name = name.strip()
+        # print 'GSEMCA: Add ROI ', name, left, right
         roi = ROI(name=name, left=left, right=right,
                   bgr_width=bgr_width, counts=counts)
         rnames = [r.name.lower() for r in self.rois]
@@ -225,11 +226,12 @@ class GSEMCA_File(Group):
                          bgr_width=bgr_width)
             for mca in self.mcas:
                 if mca != mca0:
-                    xleft  = ((off0 + left*slo0) - mca.offset)/mca.slope
-                    xright = ((off0 + right*slo0) - mca.offset)/mca.slope
+                    xleft  = int(0.5 + ((off0 + left*slo0) - mca.offset)/mca.slope)
+                    xright = int(0.5 + ((off0 + right*slo0) - mca.offset)/mca.slope)
+                    # print ' mca ', off0, slo0, mca.offset, mca.slope, left, xleft, right, xright
                     mca.add_roi(name=name, left=xleft, right=xright,
-                                 bgr_width=bgr_width)                    
-                    
+                                 bgr_width=bgr_width)
+
     def save_mcafile(self, filename):
         """
         write multi-element MCA file
