@@ -60,7 +60,7 @@ def pathOf(dir, base, ext, delim='.'):
     p = os.path
     return p.normpath(p.join(dir,"%s%s%s" % (base, delim, ext)))
 
-def increment_filename(inpfile,ndigits=3, delim='.'):
+def increment_filename(inpfile, ndigits=3, delim='.'):
     """
     increment a data filename, returning a new (non-existing) filename
 
@@ -87,6 +87,10 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
 
     >>> increment_filename('a_001.dat')
     'a_002.dat'
+
+    >>> increment_filename('a.001.dat')
+    'a.002.dat'
+
     >>> increment_filename('a_6.dat')
     'a_007.dat'
 
@@ -97,7 +101,7 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
     'path/a.004'
 """
 
-    dirname,  filename = os.path.split(inpfile)
+    dirname, filename = os.path.split(inpfile)
     base, ext = os.path.splitext(filename)
     if ext == '':
         ext = '.000'
@@ -109,29 +113,42 @@ def increment_filename(inpfile,ndigits=3, delim='.'):
     form  = "%%.%ii" % (ndigits)
 
     def _incr(base, ext):
-        try: # first, try incrementing the file extension
-            ext = form % (int(ext)+1)
-        except ValueError:
-            try: #  try incrementing the part of the base after the last '_'
-                bparts = base.split('_')
-                bparts[-1] = form % (int(bparts[-1])+1)
-                base = '_'.join(bparts)
-            except:  # last, add a '_001' appendix
+        if ext.isdigit():
+            ext = form % (int(ext)+1)           
+        else:
+            found = False
+            if '_' in base:
+                parts = base.split('_')
+                for iw, word in enumerate(parts[::-1]):
+                    if word.isdigit():
+                        parts[len(parts)-iw-1] = form % (int(word)+1)
+                        found = True
+                        break
+                base = '_'.join(parts)                        
+            if not found and '.' in base:
+                parts = base.split('.')
+                for iw, word in enumerate(parts[::-1]):
+                    if word.isdigit():
+                        parts[len(parts)-iw-1] = form % (int(word)+1)
+                        found = True
+                        break
+                base = '.'.join(parts)                        
+            if not found:
                 base = "%s_001" % base
-        return (base,ext)
+        return (base, ext)
 
     # increment once
-    base,ext = _incr(base, ext)
-    fout     = pathOf(dirname, base, ext, delim=delim)
+    base, ext = _incr(base, ext)
+    fout = pathOf(dirname, base, ext, delim=delim)
 
     # then gaurantee that file does not exist,
     # continuing to increment if necessary
-    while(os.path.exists(fout)):
-        base,ext = _incr(base, ext)
-        fout     = pathOf(dirname, base, ext, delim=delim)
+    while (os.path.exists(fout)):
+        base, ext = _incr(base, ext)
+        fout = pathOf(dirname, base, ext, delim=delim)
     return fout
 
-def new_filename(fname=None,ndigits=3):
+def new_filename(fname=None, ndigits=3):
     """ generate a new file name, either based on
     filename or generating a random one
 
@@ -144,7 +161,7 @@ def new_filename(fname=None,ndigits=3):
         fname = "%s.%s" % (random_string(6), ext)
 
     if os.path.exists(fname):
-        fname = increment_filename(fname,ndigits=ndigits)
+        fname = increment_filename(fname, ndigits=ndigits)
 
     return fname
 
