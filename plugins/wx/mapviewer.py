@@ -1068,9 +1068,6 @@ Matt Newville <newville @ cars.uchicago.edu>
                 self.process_file(fname)
             self.ShowFile(filename=fname)
 
-    def onGSEXRM_Data(self,  **kws):
-        print 'Saw GSEXRM_Data ', kws
-
     def process_file(self, filename):
         """Request processing of map file.
         This can take awhile, so is done in a separate thread,
