@@ -27,7 +27,7 @@ use_plugin_path('xrf')
 use_plugin_path('xray')
 use_plugin_path('wx')
 
-from mathutils import index_of
+from mathutils import index_of, linregress
 from fitpeak import fit_peak
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl,  pack,
@@ -116,23 +116,22 @@ class CalibrationFrame(wx.Frame):
         self.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
         panel = GridPanel(self)
         self.calib_updated = False
-        title  =  SimpleText(panel, "Calibrate MCA Energy (all energies in keV)",
-                             style=LEFT,  colour='#880000')
-        panel.Add(title,   dcol=7)
-        panel.Add(SimpleText(panel, "ROI"), newrow=True)
-        panel.Add(SimpleText(panel, "Predicted"))
-        panel.Add(SimpleText(panel, "Current Energies"), dcol=3, style=CEN)
-        panel.Add(SimpleText(panel, "Refined Energies"), dcol=3, style=CEN)
-        panel.Add(SimpleText(panel, "Use?"))
+        panel.AddText("Calibrate MCA Energy (Energies in eV)",  
+                      colour='#880000', dcol=7)
+        panel.AddText("ROI", newrow=True)
+        panel.AddText("Predicted")
+        panel.AddText("Current Energies", dcol=3, style=CEN)
+        panel.AddText("Refined Energies", dcol=3, style=CEN)
+        panel.AddText("Use?")
 
-        panel.Add(SimpleText(panel, "Name"), newrow=True)
-        panel.Add(SimpleText(panel, "Energy"))
-        panel.Add(SimpleText(panel, "Center"))
-        panel.Add(SimpleText(panel, "Diff"))
-        panel.Add(SimpleText(panel, "FWHM"))
-        panel.Add(SimpleText(panel, "Center"))
-        panel.Add(SimpleText(panel, "Diff"))
-        panel.Add(SimpleText(panel, "FWHM"))
+        panel.AddText("Name", newrow=True)
+        panel.AddText("Energy")
+        panel.AddText("Center")
+        panel.AddText("Difference")
+        panel.AddText("FWHM")
+        panel.AddText("Center")
+        panel.AddText("Difference")
+        panel.AddText("FWHM")
 
         panel.Add(HLine(panel, size=(900, 3)),  dcol=9, newrow=True)
         self.wids = []
@@ -156,10 +155,10 @@ class CalibrationFrame(wx.Frame):
             name = ('   ' + roi.name+' '*10)[:10]
             opts = {'style': CEN, 'size':(100, -1)}
             w_name = SimpleText(panel, name,   **opts)
-            w_pred = SimpleText(panel, "%.4f" % eknown, **opts)
-            w_ccen = SimpleText(panel, "%.4f" % ecen,   **opts)
-            w_cdif = SimpleText(panel, "%.4f" % diff,   **opts)
-            w_cwid = SimpleText(panel, "%.4f" % fwhm,   **opts)
+            w_pred = SimpleText(panel, "%.1f" % (1000*eknown), **opts)
+            w_ccen = SimpleText(panel, "%.1f" % (1000*ecen),   **opts)
+            w_cdif = SimpleText(panel, "% .1f" % (1000*diff),   **opts)
+            w_cwid = SimpleText(panel, "%.1f" % (1000*fwhm),   **opts)
             w_ncen = SimpleText(panel, "-----",         **opts)
             w_ndif = SimpleText(panel, "-----",         **opts)
             w_nwid = SimpleText(panel, "-----",         **opts)
@@ -172,20 +171,18 @@ class CalibrationFrame(wx.Frame):
             self.wids.append((roi.name, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use))
 
         panel.Add(HLine(panel, size=(900, 3)),  dcol=9, newrow=True)
-        panel.Add(SimpleText(panel, "Current Calibration:"),
-                  dcol=2, newrow=True)
-        panel.Add(SimpleText(panel, "offset(keV):"))
-        panel.Add(SimpleText(panel, "%.5f" % (self.mca.offset)), dcol=2)
-        panel.Add(SimpleText(panel, "slope(keV/chan):"))
-        panel.Add(SimpleText(panel, "%.5f" % (self.mca.slope)),  dcol=2)
+        panel.AddText("Current Calibration:",   dcol=2, newrow=True)
+        panel.AddText("offset(eV):")
+        panel.AddText("%.2f" % (1000*self.mca.offset), dcol=2)
+        panel.AddText("slope(eV/chan):")
+        panel.AddText("%.2f" % (1000*self.mca.slope),  dcol=2)
 
-        panel.Add(SimpleText(panel, "Refined Calibration:"),
-                  dcol=2, newrow=True)
-        panel.Add(SimpleText(panel, "offset(kev):"),            style=LEFT)
+        panel.AddText("Refined Calibration:", dcol=2, newrow=True)
         self.new_offset = wx.TextCtrl(panel, -1, value="--", size=(80, -1))
         self.new_slope  = wx.TextCtrl(panel, -1, value="--", size=(80, -1))
+        panel.AddText("offset(eV):")
         panel.Add(self.new_offset,    dcol=2)
-        panel.Add(SimpleText(panel, "slope(keV/chan):"))
+        panel.AddText("slope(eV/chan):")
         panel.Add(self.new_slope,     dcol=2)
 
         panel.Add(Button(panel, 'Compute Calibration',
@@ -211,13 +208,12 @@ class CalibrationFrame(wx.Frame):
             if w_use.IsChecked():
                 x.append((eknown - self.mca.offset)/self.mca.slope)
                 y.append(ecen)
-        fit = fit_peak(np.array(x), np.array(y), 'Linear', _larch=self.larch)
-        pars = fit.params
+        slope, offset, r, p, std = linregress(np.array(x), np.array(y))
         self.calib_updated = True
-        self.new_offset.SetValue("%.6f" % pars.offset.value)
-        self.new_slope.SetValue("%.6f" % pars.slope.value)
+        self.new_offset.SetValue("% .2f" % (1000*offset))
+        self.new_slope.SetValue("% .2f" % (1000*slope))
 
-        mca_energy = pars.offset.value + np.arange(len(self.mca.energy)) * pars.slope.value
+        mca_energy = offset + np.arange(len(self.mca.energy)) * slope
         for roi in self.mca.rois:
             elem, line = split_roiname(roi.name)
             try:
@@ -233,9 +229,9 @@ class CalibrationFrame(wx.Frame):
             diff  = cen - eknown
             for roiname, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
                 if roiname == roi.name:
-                    w_ncen.SetLabel("%.4f" % cen)
-                    w_ndif.SetLabel("%.4f" % diff)
-                    w_nwid.SetLabel("%.4f" % fwhm)
+                    w_ncen.SetLabel("%.1f" % (1000*cen))
+                    w_ndif.SetLabel("% .1f" % (1000*diff))
+                    w_nwid.SetLabel("%.1f" % (1000*fwhm))
                     break
 
         tsize = self.GetSize()
@@ -244,8 +240,8 @@ class CalibrationFrame(wx.Frame):
         
     def onUseCalib(self, event=None):
         if self.calib_updated:
-            self.mca.offset = b = float(self.new_offset.GetValue())
-            self.mca.slope  = m = float(self.new_slope.GetValue())
+            self.mca.offset = b = 0.001*float(self.new_offset.GetValue())
+            self.mca.slope  = m = 0.001*float(self.new_slope.GetValue())
             self.mca.energy = b + m*np.arange(len(self.mca.energy))
         self.Destroy()
 
@@ -636,6 +632,7 @@ class XRFDisplayFrame(wx.Frame):
 
         self.wids['counts_tot'] = txt(ctrlpanel, ' Total: ', size=140)
         self.wids['counts_net'] = txt(ctrlpanel, ' Net:  ', size=140)
+        self.wids['roi_message'] = txt(ctrlpanel, '  ', size=280)
 
         ir = 0
         sizer.Add(ptable,  (ir, 1), (1, 4), wx.ALIGN_RIGHT|wx.EXPAND)
@@ -661,7 +658,8 @@ class XRFDisplayFrame(wx.Frame):
         ir += 4
         sizer.Add(self.wids['counts_tot'],         (ir, 1), (1, 2), ctrlstyle)
         sizer.Add(self.wids['counts_net'],         (ir, 3), (1, 2), ctrlstyle)
-
+        ir += 1
+        sizer.Add(self.wids['roi_message'],        (ir, 1), (1, 5), ctrlstyle)
         ir += 1
         sizer.Add(lin(ctrlpanel, 195),         (ir, 1), (1, 4), labstyle)
 
@@ -684,9 +682,7 @@ class XRFDisplayFrame(wx.Frame):
         tx, ty = ptable.GetBestSize()
         cx, cy = ctrlpanel.GetBestSize()
         px, py = plotpanel.GetBestSize()
-        # print(" BEST SIZES " , tx,ty,cx,cy, px, py)
-        # print(" --> ", max(cx, tx)+px, max(ty+cy, py))
-        # print(" --> ", max(cx, tx)+px, 25+max(cy, py))
+
         self.SetSize((max(cx, tx)+px, 25+max(cy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
@@ -828,12 +824,15 @@ class XRFDisplayFrame(wx.Frame):
         r[1:-1] = self.mca.counts[left:right]
         e[0]    = e[1]
         e[-1]   = e[-2]
+        roi_message = ' Energy Center=%.3f, Width=%.3f keV' % (
+                               (e[0]+e[-1])/2., e[-1] - e[0])
         fill = self.panel.axes.fill_between
         self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-10)
         self.energy_for_zoom = self.mca.energy[(left+right)/2]
 
         self.wids['counts_tot'].SetLabel(counts_tot)
         self.wids['counts_net'].SetLabel(counts_net)
+        self.wids['roi_message'].SetLabel(roi_message)
         self.write_message(msg, panel=0)
         self.panel.canvas.draw()
         self.panel.Refresh()
@@ -873,7 +872,7 @@ class XRFDisplayFrame(wx.Frame):
 
         omenu = wx.Menu()
         MenuItem(self, omenu, "Colors and Line Selection",
-                 "Configure Colors and Settins", self.configure)
+                 "Configure Colors and Settings", self.configure)
         MenuItem(self, omenu, "Configure Plot\tCtrl+K",
                  "Configure Plot Colors, etc", self.panel.configure)
         MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
