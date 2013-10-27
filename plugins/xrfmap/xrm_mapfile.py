@@ -12,7 +12,7 @@ use_plugin_path('io')
 use_plugin_path('xrf')
 use_plugin_path('xrfmap')
 
-from fileutils import nativepath
+from fileutils import nativepath, new_filename
 from mca import MCA
 
 from configfile import FastMapConfig
@@ -28,15 +28,17 @@ class GSEXRM_FileStatus:
     no_xrfmap    = 'hdf5 does not have top-level XRF map'
     created      = 'hdf5 has empty schema'  # xrfmap exists, no data
     hasdata      = 'hdf5 has map data'      # array sizes known
+    wrongfolder  = 'hdf5 exists, but does not match folder name'
     err_notfound = 'file not found'
     err_nothdf5  = 'file is not hdf5 (or cannot be read)'
 
-def getFileStatus(filename, root=None):
+def getFileStatus(filename, root=None, folder=None):
     """return status, top-level group, and version"""
-    # see if file exists:
+    # set defaults for file does not exist
     status, top, vers = GSEXRM_FileStatus.err_notfound, '', ''
     if root not in ('', None):
         top = root
+    # see if file exists:
     if (not os.path.exists(filename) or
         not os.path.isfile(filename) ):
         return status, top, vers
@@ -49,21 +51,31 @@ def getFileStatus(filename, root=None):
         return status, top, vers
 
     status =  GSEXRM_FileStatus.no_xrfmap
+    ##
+    def test_h5group(group, folder=None):
+        valid = ('det1' in group and 'roimap' in group)
+        for attr in  ('Type', 'Version', 'Map_Folder',
+                      'Dimension', 'Start_Time'):
+            valid = valid and attr in group.attrs
+        if not valid:
+            return None, None
+        status = GSEXRM_FileStatus.hasdata
+        vers = group.attrs['Version']
+        # print 'Folder Check: ', folder, ' : ', group.attrs['Map_Folder'], ' :'
+        if folder is not None and folder != group.attrs['Map_Folder']:
+            status = GSEXRM_FileStatus.wrongfolder
+        return status, vers
+
     if root is not None and root in fh:
-        group = fh[root]
-        if ('det1' in group and 'roimap' in group and
-            'Version' in group.attrs):
-            vers = group.attrs['Version']
-            top = root
-            status = GSEXRM_FileStatus.hasdata
+        s, v = test_h5group(fh[root], folder=folder)
+        if s is not None:
+            status, top, vers = s, root, v
     else:
         for name, group in fh.items():
-            if ('det1' in group and 'roimap' in group and
-                'Version' in group.attrs):
-                vers = group.attrs['Version']
-                top = name
-                status = GSEXRM_FileStatus.hasdata
-
+            s, v = test_h5group(group, folder=folder)
+            if s is not None:
+                status, top, vers = s, name, v
+                break
     fh.close()
     return status, top, vers
 
@@ -84,6 +96,7 @@ H5ATTRS = {'Type': 'XRF 2D Map',
            'Beamline': 'GSECARS, 13-IDE / APS',
            'Start_Time':'',
            'Stop_Time':'',
+           'Map_Folder': '',
            'Dimension': 2,
            'Process_Machine':'',
            'Process_ID': 0}
@@ -104,8 +117,7 @@ def create_xrfmap(h5root, root=None, dimension=2,
     if start_time is None:
         start_time = time.ctime()
     attrs.update({'Dimension':dimension, 'Start_Time':start_time,
-                  'Map_Folder': folder, 'Last_Row': -1,
-                  'Type': 'XRF 2D Map'})
+                  'Map_Folder': folder, 'Last_Row': -1})
     if root in ('', None):
         root = DEFAULT_ROOTNAME
     xrfmap = h5root.create_group(root)
@@ -316,7 +328,9 @@ class GSEXRM_MapFile(object):
                 raise GSEXRM_Exception(
                     "'%s' is not a valid GSEXRM Map folder" % self.folder)
             self.status, self.root, self.version = \
-                         getFileStatus(self.filename, root=root)
+                         getFileStatus(self.filename, root=root,
+                                       folder=self.folder)
+
 
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
@@ -330,9 +344,17 @@ class GSEXRM_MapFile(object):
                 "'%s' is not a readlable HDF5 file" % self.filename)
 
         # create empty HDF5 if needed
-        if (self.status == GSEXRM_FileStatus.err_notfound and
+        if (self.status in (GSEXRM_FileStatus.err_notfound,
+                            GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
             self.read_master()
+            if self.status == GSEXRM_FileStatus.wrongfolder:
+                self.filename = new_filename(self.filename)
+                cfile = FastMapConfig()
+                cfile.Read(os.path.join(self.folder, self.ScanFile))
+                cfile.config['scan']['filename'] = self.filename
+                cfile.Save(os.path.join(self.folder, self.ScanFile))
+
             self.h5root = h5py.File(self.filename)
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 self.read_master()
@@ -371,7 +393,8 @@ class GSEXRM_MapFile(object):
         except:
             pass
 
-        if self.dimension is None and isGSEXRM_MapFolder(self.folder):
+        if (len(self.rowdata) < 1 or
+            (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
 
     def close(self):
@@ -462,7 +485,8 @@ class GSEXRM_MapFile(object):
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
-        if self.dimension is None and isGSEXRM_MapFolder(self.folder):
+        if (len(self.rowdata) < 1 or
+            (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
         self.npts = None
         if len(self.rowdata) < 1:
@@ -476,18 +500,18 @@ class GSEXRM_MapFile(object):
 
     def process(self, maxrow=None, force=False, callback=None, verbose=True):
         "look for more data from raw folder, process if needed"
-
+        print 'PROCESS  ', maxrow, force, self.filename, self.dimension, len(self.rowdata)
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
         if self.status == GSEXRM_FileStatus.created:
             self.initialize_xrfmap()
-        if force or (self.dimension is None and isGSEXRM_MapFolder(self.folder)):
+        if (force or len(self.rowdata) < 1 or
+            (self.dimension is None and isGSEXRM_MapFolder(self.folder))):
             self.read_master()
         nrows = len(self.rowdata)
         if maxrow is not None:
             nrows = min(nrows, maxrow)
-
         if force or self.folder_has_newdata():
             irow = self.last_row + 1
             while irow < nrows:
