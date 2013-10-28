@@ -36,8 +36,9 @@ import numpy as np
 
 from wxmplot import PlotFrame
 
-from wxutils import (SimpleText, EditableListBox, FloatCtrl,
-                     pack, Popup, Button, MenuItem, Choice)
+from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
+                     pack, Popup, Button, MenuItem, Choice, Check,
+                     GridPanel)
 
 import larch
 
@@ -89,18 +90,7 @@ FILE_ALREADY_READ = """The File
 has already been read.
 """
 
-def XXset_choices(choicebox, choices):
-    index = 0
-    try:
-        current = choicebox.GetStringSelection()
-        if current in choices:
-            index = choices.index(current)
-    except:
-        pass
-    choicebox.Clear()
-    choicebox.AppendItems(choices)
-    choicebox.SetStringSelection(choices[index])
-
+DETCHOICES = ['sum', '1', '2', '3', '4']
 
 class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
@@ -164,7 +154,8 @@ class MapMathPanel(scrolled.ScrolledPanel):
                                                           action=partial(self.onROI, varname=varname))
             self.varroi[varname]    = vroi   = Choice(self, choices=[], size=(120, -1),
                                                           action=partial(self.onROI, varname=varname))
-            self.vardet[varname]    = vdet   = Choice(self, choices=['sum', '1', '2', '3', '4'],  size=(70, -1))
+            self.vardet[varname]    = vdet   = Choice(self, choices=DETCHOICES,
+                                                      size=(90, -1))
             self.varcor[varname]    = vcor   = wx.CheckBox(self, -1, ' ')
             self.varshape[varname]  = vshape = SimpleText(self, 'Array Shape = (, )',
                                                           size=(200, -1))
@@ -280,53 +271,40 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=None)
+
         self.owner.display_map(map, title=title, subtitles=subtitles,
                                info=info, x=x, y=y,
                                det=None, xrmfile=None)
 
-class SimpleMapPanel(wx.Panel):
+class SimpleMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a simple ROI map"""
 
     def __init__(self, parent, owner, **kws):
-        wx.Panel.__init__(self, parent, -1, **kws)
         self.owner = owner
-        sizer = wx.GridBagSizer(8, 5)
+        
+        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)        
 
         self.roi1 = Choice(self, choices=[], size=(120, -1))
         self.roi2 = Choice(self, choices=[], size=(120, -1))
         self.op   = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
-        self.det  = Choice(self, choices=['sum', '1', '2', '3', '4'],
-                               size=(70, -1))
+        self.det  = Choice(self, choices=DETCHOICES, size=(90, -1))
+        self.cor  = Check(self, label='Correct Deadtime?')
 
-        self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
-        self.cor.SetValue(1)
-        self.op.SetSelection(0)
-        self.det.SetSelection(0)
         self.show_new = Button(self, 'Show New Map',     size=(125, -1),
-                                   action=partial(self.onShowMap, new=True))
+                               action=partial(self.onShowMap, new=True))
         self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
-                                   action=partial(self.onShowMap, new=False))
+                               action=partial(self.onShowMap, new=False))
         self.show_cor = Button(self, 'Map1 vs. Map2', size=(125, -1),
-                                   action=self.onShowCorrel)
+                               action=self.onShowCorrel)
 
-        ir = 0
-        sizer.Add(SimpleText(self, 'Detector'),          (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Map 1'),             (ir, 1), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Operator'),          (ir, 2), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Map 2'),             (ir, 3), (1, 1), ALL_CEN, 2)
+        self.AddManyText(('Detector', 'Map 1', 'Operator', 'Map 2'))
+        self.AddMany((self.det, self.roi1, self.op, self.roi2), newrow=True)
 
-        ir += 1
-        sizer.Add(self.det,           (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.roi1,          (ir, 1), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.op,            (ir, 2), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.roi2,          (ir, 3), (1, 1), ALL_CEN, 2)
-
-        ir += 1
-        sizer.Add(self.cor,       (ir,   0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.show_new,  (ir+1, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.show_old,  (ir+1, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.show_cor,  (ir+2, 0), (1, 2), ALL_LEFT, 2)
-        pack(self, sizer)
+        self.Add(self.cor,       dcol=2, newrow=True, style=LEFT)
+        self.Add(self.show_new,  dcol=2, newrow=True, style=LEFT)
+        self.Add(self.show_old,  dcol=2,              style=LEFT)
+        self.Add(self.show_cor,  dcol=2, newrow=True, style=LEFT)
+        self.pack()
 
     def onClose(self):
         for p in self.plotframes:
@@ -425,83 +403,38 @@ class SimpleMapPanel(wx.Panel):
         self.roi1.SetChoices(rois)
         self.roi2.SetChoices(['1'] + rois)
 
-class TriColorMapPanel(wx.Panel):
+class TriColorMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a 3 color ROI map"""
     def __init__(self, parent, owner, **kws):
-        wx.Panel.__init__(self, parent, -1, **kws)
+        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
         self.owner = owner
-        sizer = wx.GridBagSizer(8, 8)
+        self.SetMinSize((650, 275))
 
-        self.SetMinSize((425, 275))
-
-        self.rchoice = Choice(self, choices=[], size=(120, -1))
-        # action=partial(self.onSetRGBScale, color='r'))
-        self.gchoice = Choice(self, choices=[], size=(120, -1))
-        # action=partial(self.onSetRGBScale, color='g'))
-        self.bchoice = Choice(self, choices=[], size=(120, -1))
-        # action=partial(self.onSetRGBScale, color='b'))
-        self.i0choice = Choice(self, choices=[], size=(120, -1))
-        # action=partial(self.onSetRGBScale, color='i0'))
+        self.rcol  = Choice(self, choices=[], size=(120, -1))
+        self.gcol  = Choice(self, choices=[], size=(120, -1))
+        self.bcol  = Choice(self, choices=[], size=(120, -1))
+        self.i0col = Choice(self, choices=[], size=(120, -1))
+        self.det   = Choice(self, choices=DETCHOICES, size=(90, -1))
+        self.cor   = Check(self, label='Correct Deadtime?')
 
         self.show_new = Button(self, 'Show New Map',     size=(125, -1),
-                               action=partial(self.onShow3ColorMap, new=True))
+                               action=partial(self.onShowMap, new=True))
         self.show_old = Button(self, 'Replace Last Map', size=(125, -1),
-                               action=partial(self.onShow3ColorMap, new=False))
+                               action=partial(self.onShowMap, new=False))
 
+        self.AddManyText(('Detector', 'Red', 'Green', 'Blue'))
+        self.AddMany((self.det, self.rcol, self.gcol, self.bcol), newrow=True)
 
-        self.det  = Choice(self, choices=['sum', '1', '2', '3', '4'], size=(70, -1))
-        self.cor  = wx.CheckBox(self, -1, 'Correct Deadtime?')
-        self.cor.SetValue(1)
+        self.AddText('Normalization:',  newrow=True, style=LEFT)
+        self.Add(self.i0col,    dcol=2,              style=LEFT)
+        self.Add(self.cor,      dcol=2, newrow=True, style=LEFT)
+        self.Add(self.show_new, dcol=2, newrow=True, style=LEFT)
+        self.Add(self.show_old, dcol=2,              style=LEFT)
 
-        #self.rauto = wx.CheckBox(self, -1, 'Autoscale?')
-        #self.gauto = wx.CheckBox(self, -1, 'Autoscale?')
-        #self.bauto = wx.CheckBox(self, -1, 'Autoscale?')
-        #self.rauto.SetValue(1)
-        #self.gauto.SetValue(1)
-        #self.bauto.SetValue(1)
-        #self.rauto.Bind(wx.EVT_CHECKBOX, partial(self.onAutoScale, color='r'))
-        #self.gauto.Bind(wx.EVT_CHECKBOX, partial(self.onAutoScale, color='g'))
-        #self.bauto.Bind(wx.EVT_CHECKBOX, partial(self.onAutoScale, color='b'))
+        self.pack()
 
-        #self.rscale = FloatCtrl(self, precision=0, value=1, minval=0)
-        #self.gscale = FloatCtrl(self, precision=0, value=1, minval=0)
-        #self.bscale = FloatCtrl(self, precision=0, value=1, minval=0)
-
-        ir = 0
-        sizer.Add(SimpleText(self, 'Detector'),  (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Red'),       (ir, 1), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Green'),     (ir, 2), (1, 1), ALL_CEN, 2)
-        sizer.Add(SimpleText(self, 'Blue'),      (ir, 3), (1, 1), ALL_CEN, 2)
-
-        ir += 1
-        sizer.Add(self.det,                  (ir, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.rchoice,              (ir, 1), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.gchoice,              (ir, 2), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.bchoice,              (ir, 3), (1, 1), ALL_CEN, 2)
-
-        #ir += 1
-        #sizer.Add(self.rauto,            (ir, 1), (1, 1), ALL_CEN, 2)
-        #sizer.Add(self.gauto,            (ir, 2), (1, 1), ALL_CEN, 2)
-        #sizer.Add(self.bauto,            (ir, 3), (1, 1), ALL_CEN, 2)
-        #ir += 1
-        #sizer.Add(self.rscale,            (ir, 1), (1, 1), ALL_CEN, 2)
-        #sizer.Add(self.gscale,            (ir, 2), (1, 1), ALL_CEN, 2)
-        #sizer.Add(self.bscale,            (ir, 3), (1, 1), ALL_CEN, 2)
-        #sizer.Add(SimpleText(self, 'Max Intensity:'),     (ir, 0), (1, 1), ALL_LEFT, 2)
-
-        ir += 1
-        sizer.Add(SimpleText(self, 'Normalization'), (ir, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.i0choice,             (ir, 1), (1, 2), ALL_LEFT, 2)
-
-        sizer.Add(self.cor,   (ir, 3), (1, 2), ALL_LEFT, 2)
-
-        ir += 1
-        sizer.Add(self.show_new,  (ir, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.show_old,  (ir, 2), (1, 2), ALL_LEFT, 2)
-
-        pack(self, sizer)
-
-    def XXonSetRGBScale(self, event=None, color=None, **kws):
+    def onShowMap(self, event=None, new=True):
+        """show 3 color map"""
         datafile = self.owner.current_file
         det =self.det.GetStringSelection()
         if det == 'sum':
@@ -510,29 +443,10 @@ class TriColorMapPanel(wx.Panel):
             det = int(det)
         dtcorrect = self.cor.IsChecked()
 
-        if color=='r':
-            roi = self.rchoice.GetStringSelection()
-            map = datafile.get_roimap(roi, det=det, dtcorrect=dtcorrect)
-        elif color=='g':
-            roi = self.gchoice.GetStringSelection()
-            map = datafile.get_roimap(roi, det=det, dtcorrect=dtcorrect)
-        elif color=='b':
-            roi = self.bchoice.GetStringSelection()
-            map = datafile.get_roimap(roi, det=det, dtcorrect=dtcorrect)
-
-    def onShow3ColorMap(self, event=None, new=True):
-        datafile = self.owner.current_file
-        det =self.det.GetStringSelection()
-        if det == 'sum':
-            det =  None
-        else:
-            det = int(det)
-        dtcorrect = self.cor.IsChecked()
-
-        r = self.rchoice.GetStringSelection()
-        g = self.gchoice.GetStringSelection()
-        b = self.bchoice.GetStringSelection()
-        i0 = self.i0choice.GetStringSelection()
+        r = self.rcol.GetStringSelection()
+        g = self.gcol.GetStringSelection()
+        b = self.bcol.GetStringSelection()
+        i0 = self.i0col.GetStringSelection()
         mapshape= datafile.xrfmap['roimap/sum_cor'][:, :, 0].shape
 
         rmap = np.ones(mapshape, dtype='float')
@@ -554,7 +468,9 @@ class TriColorMapPanel(wx.Panel):
 
         pref, fname = os.path.split(datafile.filename)
         title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
-        subtitles = {'red': r, 'green': g, 'blue': b}
+        subtitles = {'red': 'Red: %s' % r,
+                     'green': 'Green: %s' % g,
+                     'blue': 'Blue: %s' % b}
 
         try:
             x = datafile.get_pos(0, mean=True)
@@ -572,12 +488,10 @@ class TriColorMapPanel(wx.Panel):
         self.owner.display_map(map, title=title, subtitles=subtitles,
                                x=x, y=y, det=det, xrmfile=datafile)
 
-
-
     def set_roi_choices(self, choices):
         roichoices = ['1']
         roichoices.extend(choices)
-        for cbox in (self.rchoice, self.bchoice, self.gchoice, self.i0choice):
+        for cbox in (self.rcol, self.gcol, self.bcol, self.i0col):
             cbox.SetChoices(roichoices)
 
 class AreaSelectionPanel(wx.Panel):
@@ -729,13 +643,8 @@ class MapViewerFrame(wx.Frame):
         self.larch = None
         self.xrfdisplay = None
 
-        self.Font12=wx.Font(12, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font11=wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font10=wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.Font9 =wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-
         self.SetTitle("GSE XRM MapViewer")
-        self.SetFont(self.Font9)
+        self.SetFont(Font(9))
 
         self.createMainPanel()
         self.createMenus()
@@ -750,6 +659,31 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_done = True
         self.h5convert_irow = 0
         self.h5convert_nrow = 0
+        self.ReadWorkDir()
+        self.onFolderSelect(evt=None)
+        
+
+    def ReadWorkDir(self):
+        try:
+            workdir_file = os.path.join(larch.site_config.folder,
+                                        'gsemap.dat')
+            if os.path.exists(workdir_file):
+                line = open(workdir_file, 'r').readlines()
+                workdir = line[0][:-1]
+                os.chdir(workdir)
+        except:
+            pass
+
+    def SaveWorkDir(self):
+        try:
+            workdir_file = os.path.join(larch.site_config.folder,
+                                        'gsemap.dat')
+            fh = open(workdir_file, 'w')
+            fh.write("%s\n" % nativepath(os.getcwd()))
+            fh.close()
+        except:
+            pass
+        
 
     def CloseFile(self, filename, event=None):
         if filename in self.filemap:
@@ -766,7 +700,7 @@ class MapViewerFrame(wx.Frame):
                                         size=(250, -1))
 
         dpanel = self.detailspanel = wx.Panel(splitter)
-        dpanel.SetMinSize((675, 450))
+        dpanel.SetMinSize((700, 450))
         self.createNBPanels(dpanel)
         splitter.SplitVertically(self.filelist, self.detailspanel, 1)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -949,7 +883,7 @@ class MapViewerFrame(wx.Frame):
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
 
-    def onFolderSelect(self,evt):
+    def onFolderSelect(self, evt=None):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
         dlg = wx.DirDialog(self, "Select Working Directory:", os.getcwd(),
                            style=style)
@@ -976,7 +910,7 @@ Matt Newville <newville @ cars.uchicago.edu>
         dlg.Destroy()
 
     def onClose(self, evt):
-
+        self.SaveWorkDir()
         for xrmfile in self.filemap.values():
             xrmfile.close()
 
