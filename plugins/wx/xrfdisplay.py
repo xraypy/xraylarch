@@ -1011,12 +1011,14 @@ class XRFDisplayFrame(wx.Frame):
         self.mca = mca
         self.plot(mca.energy, mca.counts, mca=mca, **kws)
         title = self.GetTitle()
-        # print 'PLOT MCA ', mca
-        title = "%s: %s"% (title, mca.filename)
-
+        if hasattr(mca, 'filename'):
+            title = "%s: %s"% (title, mca.filename)
         if show_mca2 and self.mca2 is not None:
             self.oplot(self.mca2.energy, self.mca2.counts)
-            title = "%s (fore) %s (back)"% (title, self.mca2.filename)
+            mca2name = 'MCA2'
+            if hasattr(self.mca2, 'filename'):
+                mca2name = self.mca2.filename
+            title = "%s (fore), %s (back)"% (title, mca2name)
         self.SetTitle(title)
         
     def plot(self, x, y=None, mca=None,  **kws):
