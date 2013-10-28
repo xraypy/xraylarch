@@ -134,6 +134,39 @@ Todo:
 
 import numpy as np
 
+def compress_array(array, compress):
+   """Compresses an 1-D array by the integer factor "compress".
+   near equivalent of IDL's 'rebin'....
+   """
+   if len(array) % compress != 0:
+      print 'Warning compress must be integer divisor of array length'
+      return None
+
+   temp = np.resize(array, (len(array)/compress, compress))
+   return np.sum(temp, 1)/compress
+
+def expand_array(array, expand, sample=0):
+   """Expands an 1-D array by the integer factor "expand".
+
+   if 'sample' is 1 the new array is created with sampling,
+   if 0 then the new array is created via interpolation (default)
+   Temporary fix until the equivalent of IDL's 'rebin' is found.
+   """
+   if expand == 1:
+       return array
+   if sample == 1:
+       return np.repeat(array, expand)
+
+   kernel = np.ones(expand)/expand
+   # The following mimic the behavior of IDL's rebin when expanding
+   temp = np.convolve(np.repeat(array, expand), kernel, mode=2)
+   # Discard the first "expand-1" entries
+   temp = temp[expand-1:]
+   # Replace the last "expand" entries with the last entry of original
+   for i in range(1,expand):
+       temp[-i]=array[-1]
+   return temp
+
 class XRFBackground:
     """
     Class defining a spectrum background
@@ -142,49 +175,32 @@ class XRFBackground:
     -----------
     These may be set by kw argument upon initialization.
     * bottom_width      = 4.0   # Bottom width
-    * fix_bottom_width  = True
     * top_width         = 0.0   # Top width
-    * fix_width_flag    = True
     * exponent          = 2     # Exponent
     * tangent           = False # Tangent flag
     * compress          = 4     # Compress
     """
 
-    def __init__(self, bottom_width=4, fix_bottom_width=True,
-                 top_width=0, fix_top_width=True,
+    def __init__(self, data=None, bottom_width=4, top_width=0, slope=1.0,
                  exponent=2, compress=4, tangent=False):
-        self.bgr               = []      # Background
-        self.bottom_width      = bottom_width
-        self.fix_bottom_width  = fix_bottom_width
+        self.bgr          = [] 
+        self.bottom_width = bottom_width
+        self.top_width    = top_width
+        self.compress     = compress
+        self.exponent     = exponent
+        self.tangent      = tangent
 
-        self.top_width         = top_width
-        self.fix_top_width     = fix_top_width
-        self.compress          = compress
-        self.exponent          = exponent
-        self.tangent           = tangent
+        self.parinfo = {'bottom_width': bottom_width,
+                        'top_width': top_width,
+                        'compress':  compress,
+                        'exponent': exponent,
+                        'tangent': tangent}
 
-        self.parinfo = [{'parname':'bottom_width',
-                         'value':self.bottom_width,
-                         'fixed':self.fix_bottom_width,
-                         'limited':[0,0], 'limits':[0., 0.], 'step':0.},
-                        {'parname':'top_width',
-                         'value':self.top_width,
-                         'fixed':self.fix_top_width,
-                         'limited':[0,0], 'limits':[0., 0.], 'step':0.}]
-
-    def get_params(self,):
-        """
-        Return a dictionary of parameters
-        """
-        return {'bottom_width':self.bottom_width,
-                'fix_bottom_width':self.fix_bottom_width,
-                'top_width':self.top_width,
-                'fix_top_width':self.fix_top_width,
-                'exponent':self.exponent,
-                'tangent':self.tangent,
-                'compress':self.compress}
-
-    def calc(self, data, slope=1.0):
+        self.data = data
+        if data is not None:
+            self.calc(data, slope=slope)
+            
+    def calc(self, data=None, slope=1.0):
         """compute background
 
         Parameters:
@@ -192,6 +208,9 @@ class XRFBackground:
         * data is the spectrum
         * slope is the slope of conversion channels to energy
         """
+
+        if data is None:
+            data = self.data
         REFERENCE_AMPL=100.
         TINY = 1.E-20
         HUGE = 1.E20
@@ -287,7 +306,6 @@ class XRFBackground:
 
             # Find the maximum height of a function centered on this channel
             # such that it is never higher than the counts in any channel
-
             f      = chan0 - chan + max_index
             l      = chan1 - chan + max_index
             test   = scratch[chan0:chan1+1] - lin_offset + power_funct[f:l+1]
@@ -300,7 +318,6 @@ class XRFBackground:
             sub  = bckgnd[chan0:chan1+1]
             bckgnd[chan0:chan1+1] = np.maximum(sub, test)
 
-        ####################################################
         # Expand spectrum
         if compress > 1:
             bckgnd = expand_array(bckgnd, compress)
@@ -311,76 +328,11 @@ class XRFBackground:
         bgr[idx] = 0
         self.bgr = bgr
 
-    ##################################################################################
-    def _update(self,parameters):
-        """
-        update for fitting
-        """
+    def _update(self, parameters):
+        """update for fitting"""
         if len(parameters) != 2:
-            raise "Wrong number of parameters in background"
+            raise ValueError("Wrong number of parameters in background")
         self.bottom_width = parameters[0]
         self.top_width    = parameters[1]
 
-############################################################
-def compress_array(array, compress):
-   """
-   Compresses an 1-D array by the integer factor "compress".
-
-   near equivalent of IDL's 'rebin'....
-   """
-   if len(array) % compress != 0:
-      print 'Warning compress must be integer divisor of array length'
-      return None
-
-   temp = np.resize(array, (len(array)/compress, compress))
-   return np.sum(temp, 1)/compress
-
-############################################################
-def expand_array(array, expand, sample=0):
-   """
-   Expands an 1-D array by the integer factor "expand".
-
-   if 'sample' is 1 the new array is created with sampling,
-   if 0 then the new array is created via interpolation (default)
-   Temporary fix until the equivalent of IDL's 'rebin' is found.
-   """
-
-   if expand == 1:
-       return array
-   if sample == 1:
-       return np.repeat(array, expand)
-
-   kernel = np.ones(expand)/expand
-   # The following mimic the behavior of IDL's rebin when expanding
-   temp = np.convolve(np.repeat(array, expand), kernel, mode=2)
-   # Discard the first "expand-1" entries
-   temp = temp[expand-1:]
-   # Replace the last "expand" entries with the last entry of original
-   for i in range(1,expand):
-       temp[-i]=array[-1]
-   return temp
-
-########################################################################
-########################################################################
-########################################################################
-def test():
-    from matplotlib import pyplot
-    # make some dat
-    import _test_dat as test_dat
-    chans = np.arange(2048)
-    offset = 1.0
-    slope = .01
-    en = offset + slope*chans
-    data = test_dat.data1(en)
-    pyplot.plot(en,data,'ko')
-    #
-    bgr = XRFBackground(bottom_width=4.,compress=4)
-    bgr.calc(data,slope=slope)
-    pyplot.plot(en,bgr.bgr,'r')
-    #
-    pyplot.show()
-
-########################################################################
-if __name__ == "__main__":
-    test()
 
