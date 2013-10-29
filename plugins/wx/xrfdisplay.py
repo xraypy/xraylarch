@@ -27,8 +27,7 @@ use_plugin_path('xrf')
 use_plugin_path('xray')
 use_plugin_path('wx')
 
-from mathutils import index_of, linregress
-from fitpeak import fit_peak
+from mathutils import index_of
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
                      pack, Popup, Button, get_icon, Check, MenuItem,
@@ -39,9 +38,7 @@ from periodictable import PeriodicTablePanel
 
 from gsemca_file import GSEMCA_File, gsemca_group
 from xrf_bgr import xrf_background
-
-from xraydb import xrayDB
-XRAYDB = xrayDB()
+from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
 
 ALL_CEN =  wx.ALL|CEN
 ALL_LEFT =  wx.ALL|LEFT
@@ -64,20 +61,6 @@ AT_SYMS = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
            'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
            'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk',
            'Cf')
-
-
-def split_roiname(name):
-    words = name.split()
-    elem = words[0].title()
-    line = 'ka'
-    if len(words) > 1:
-        line = words[1]
-    line = line.title()
-    if line == 'Ka': line = 'Ka1'
-    if line == 'Kb': line = 'Kb1'
-    if line == 'La': line = 'La1'
-    if line == 'Lb': line = 'Lb1'
-    return elem, line
 
 def txt(panel, label, size=75, colour=None,  style=None):
     if style is None:
@@ -136,30 +119,21 @@ class CalibrationFrame(wx.Frame):
 
         panel.Add(HLine(panel, size=(900, 3)),  dcol=9, newrow=True)
         self.wids = []
-        mca_energy = 1.0*self.mca.energy
-        mca_counts = self.mca.counts
-        for roi in self.mca.rois:
-            elem, line = split_roiname(roi.name)
-            try:
-                eknown = XRAYDB.xray_lines(elem)[line][0]/1000.0
-            except:
-                continue
-            llim = max(0, roi.left - roi.bgr_width)
-            hlim = min(len(mca_energy)-1, roi.right + roi.bgr_width)
-            fit = fit_peak(mca_energy[llim:hlim], mca_counts[llim:hlim],
-                           'Gaussian', background='constant',
-                           _larch=self.larch)
 
-            ecen = fit.params.center.value
-            fwhm = fit.params.fwhm.value
+        # find ROI peak positions
+        xrf_calib_fitrois(mca, _larch=self.larch)
+        
+        for roi in self.mca.rois:
+            eknown, ecen, fwhm, amp = mca.init_calib[roi.name]
+
             diff = ecen - eknown
             name = ('   ' + roi.name+' '*10)[:10]
             opts = {'style': CEN, 'size':(100, -1)}
             w_name = SimpleText(panel, name,   **opts)
-            w_pred = SimpleText(panel, "%.1f" % (1000*eknown), **opts)
-            w_ccen = SimpleText(panel, "%.1f" % (1000*ecen),   **opts)
+            w_pred = SimpleText(panel, "% .1f" % (1000*eknown), **opts)
+            w_ccen = SimpleText(panel, "% .1f" % (1000*ecen),   **opts)
             w_cdif = SimpleText(panel, "% .1f" % (1000*diff),   **opts)
-            w_cwid = SimpleText(panel, "%.1f" % (1000*fwhm),   **opts)
+            w_cwid = SimpleText(panel, "% .1f" % (1000*fwhm),   **opts)
             w_ncen = SimpleText(panel, "-----",         **opts)
             w_ndif = SimpleText(panel, "-----",         **opts)
             w_nwid = SimpleText(panel, "-----",         **opts)
@@ -205,45 +179,45 @@ class CalibrationFrame(wx.Frame):
 
     def onCalibrate(self, event=None):
         x, y = [], []
+        mca = self.mca
+        # save old calib
+        old_calib  =  mca.offset, mca.slope
+        init_calib =  copy.deepcopy(mca.init_calib)
         for roiname, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
-            if w_use.IsChecked():
-                x.append((eknown - self.mca.offset)/self.mca.slope)
-                y.append(ecen)
-        slope, offset, r, p, std = linregress(np.array(x), np.array(y))
+            if not w_use.IsChecked():
+                mca.init_calib.pop(roiname)
+
+        xrf_calib_compute(mca, apply=True, _larch=self.larch)
+        offset, slope = mca.new_calib
         self.calib_updated = True
         self.new_offset.SetValue("% .2f" % (1000*offset))
         self.new_slope.SetValue("% .2f" % (1000*slope))
 
-        mca_energy = offset + np.arange(len(self.mca.energy)) * slope
+        # find ROI peak positions using this new calibration
+        xrf_calib_fitrois(mca, _larch=self.larch)
         for roi in self.mca.rois:
-            elem, line = split_roiname(roi.name)
-            try:
-                eknown = 0.001*XRAYDB.xray_lines(elem)[line][0]
-            except:
-                continue
-            llim = max(0, roi.left - roi.bgr_width)
-            hlim = min(len(mca_energy)-1, roi.right + roi.bgr_width)
-            fit = fit_peak(mca_energy[llim:hlim], self.mca.counts[llim:hlim],
-                           'Gaussian', background='constant', _larch=self.larch)
-            cen  = fit.params.center.value
-            fwhm = fit.params.fwhm.value
-            diff  = cen - eknown
+            eknown, ecen, fwhm, amp = mca.init_calib[roi.name]
+            diff  = ecen - eknown
             for roiname, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
                 if roiname == roi.name:
-                    w_ncen.SetLabel("%.1f" % (1000*cen))
+                    w_ncen.SetLabel("%.1f" % (1000*ecen))
                     w_ndif.SetLabel("% .1f" % (1000*diff))
                     w_nwid.SetLabel("%.1f" % (1000*fwhm))
                     break
+
+        # restore calibration to old values until new values are accepted
+        xrf_calib_apply(mca, offset=old_calib[0], slope=old_calib[1],
+                        _larch=self.larch)
+        mca.init_calib = init_calib
 
         tsize = self.GetSize()
         self.SetSize((tsize[0]+1, tsize[1]))
         self.SetSize((tsize[0], tsize[1]))
         
     def onUseCalib(self, event=None):
-        if self.calib_updated:
-            self.mca.offset = b = 0.001*float(self.new_offset.GetValue())
-            self.mca.slope  = m = 0.001*float(self.new_slope.GetValue())
-            self.mca.energy = b + m*np.arange(len(self.mca.energy))
+        mca = self.mca
+        if hasattr(mca, 'new_calib'):
+            xrf_calib_apply(mca, _larch=self.larch)
         self.Destroy()
 
     def onClose(self, event=None):
