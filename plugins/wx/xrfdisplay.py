@@ -250,7 +250,7 @@ class CalibrationFrame(wx.Frame):
         self.Destroy()
 
 class XRFBackgroundFrame(wx.Frame):
-    def __init__(self, parent, mca, larch=None, size=(300, -1)):
+    def __init__(self, parent, mca, larch=None, size=(350, -1)):
         self.mca = mca
         self.larch = larch
         self.parent = parent
@@ -271,19 +271,24 @@ class XRFBackgroundFrame(wx.Frame):
         self.wid_exponent = FloatCtrl(panel, value=expon, minval=1, maxval=8, 
                                    precision=0)
         
-        panel.AddText("Energy Width: ", newrow=True)
-        panel.Add(self.wid_width)
+        panel.AddText("Energy Width: ", newrow=True, style=LEFT)
+        panel.Add(self.wid_width, style=LEFT)
         panel.AddText(" (keV) ", style=LEFT)
-        panel.AddText("Exponent: ", newrow=True)
-        panel.Add(self.wid_exponent)
-        panel.AddText("Compression: ", newrow=True)
-        panel.Add(self.wid_compress)
+        panel.AddText("Exponent: ", newrow=True, style=LEFT)
+        panel.Add(self.wid_exponent, style=LEFT)
+        panel.AddText(" (even numbers) ", style=LEFT)
+        panel.AddText("Compression: ", newrow=True, style=LEFT)
+        panel.Add(self.wid_compress, style=LEFT)
+        panel.AddText(" (even numbers) ", style=LEFT)
 
         panel.Add(HLine(panel, size=(300, 3)),  dcol=4, newrow=True)
 
         panel.Add(Button(panel, 'Update Background',
                          size=(150, -1), action=self.onCalc),
                          dcol=3, newrow=True, style=LEFT)
+        panel.Add(Button(panel, 'Done',
+                         size=(80, -1), action=self.onClose),
+                         dcol=1, newrow=True, style=LEFT)
         panel.pack()
         self.Show()
         self.Raise()
@@ -940,9 +945,9 @@ class XRFDisplayFrame(wx.Frame):
                  "Close Background MCA", self.close_bkg_mca)
 
         amenu = wx.Menu()
-        MenuItem(self, amenu, "&Calibrate Energy\tCtrl+B",
+        MenuItem(self, amenu, "&Calibrate Energy\tCtrl+E",
                  "Calibrate Energy",  self.onCalibrateEnergy)
-        MenuItem(self, amenu, "Fit background",
+        MenuItem(self, amenu, "Fit background\tCtrl+B",
                  "Fit smooth background",  self.onFitBgr)
         MenuItem(self, amenu, "Fit Peaks",
                  "Fit Peaks in spectra",  self.onFitPeaks)        
