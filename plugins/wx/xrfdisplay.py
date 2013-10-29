@@ -261,12 +261,14 @@ class XRFBackgroundFrame(wx.Frame):
         panel = GridPanel(self)
 
         panel.AddText("Background Parameters", colour='#880000', dcol=3)
-
-        self.wid_width = FloatCtrl(panel, value=3, minval=0, maxval=10, 
+        width = getattr(self.mca, 'bgr_width', 2.5)
+        compr = getattr(self.mca, 'bgr_compress', 2)
+        expon = getattr(self.mca, 'bgr_exponent', 2.5)        
+        self.wid_width = FloatCtrl(panel, value=width, minval=0, maxval=10, 
                                    precision=1)
-        self.wid_compress = FloatCtrl(panel, value=2, minval=0, maxval=8, 
+        self.wid_compress = FloatCtrl(panel, value=compr, minval=0, maxval=8, 
                                    precision=0)
-        self.wid_exponent = FloatCtrl(panel, value=2, minval=1, maxval=8, 
+        self.wid_exponent = FloatCtrl(panel, value=expon, minval=1, maxval=8, 
                                    precision=0)
         
         panel.AddText("Energy Width: ", newrow=True)
@@ -293,7 +295,9 @@ class XRFBackgroundFrame(wx.Frame):
         xrf_background(energy=self.mca.energy, counts=self.mca.counts,
                        group=self.mca, width=width, compress=compress, 
                        exponent=exponent, _larch=self.larch)
-
+        self.mca.bgr_width = width
+        self.mca.bgr_compress = compress
+        self.mca.bgr_exponent = exponent
         self.parent.plotmca(self.mca)
         self.parent.oplot(self.mca.energy, self.mca.bgr, color='black')
         
