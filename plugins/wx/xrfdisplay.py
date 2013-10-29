@@ -214,9 +214,7 @@ class CalibrationFrame(wx.Frame):
         self.Destroy()
 
 class XRFBackgroundFrame(wx.Frame):
-    def __init__(self, parent, mca, larch=None, size=(350, -1)):
-        self.mca = mca
-        self.larch = larch
+    def __init__(self, parent, size=(350, -1)):
         self.parent = parent
         wx.Frame.__init__(self, parent, -1, 'Fit Background',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
@@ -225,9 +223,9 @@ class XRFBackgroundFrame(wx.Frame):
         panel = GridPanel(self)
 
         panel.AddText("Background Parameters", colour='#880000', dcol=3)
-        width = getattr(self.mca, 'bgr_width', 2.5)
-        compr = getattr(self.mca, 'bgr_compress', 2)
-        expon = getattr(self.mca, 'bgr_exponent', 2.5)        
+        width = getattr(parent.mca, 'bgr_width', 2.5)
+        compr = getattr(parent.mca, 'bgr_compress', 2)
+        expon = getattr(parent.mca, 'bgr_exponent', 2.5)        
         self.wid_width = FloatCtrl(panel, value=width, minval=0, maxval=10, 
                                    precision=1)
         self.wid_compress = FloatCtrl(panel, value=compr, minval=0, maxval=8, 
@@ -261,21 +259,22 @@ class XRFBackgroundFrame(wx.Frame):
         width = self.wid_width.GetValue()
         compress = self.wid_compress.GetValue()
         exponent = self.wid_exponent.GetValue()
-        xrf_background(energy=self.mca.energy, counts=self.mca.counts,
-                       group=self.mca, width=width, compress=compress, 
-                       exponent=exponent, _larch=self.larch)
-        self.mca.bgr_width = width
-        self.mca.bgr_compress = compress
-        self.mca.bgr_exponent = exponent
-        self.parent.plotmca(self.mca)
-        self.parent.oplot(self.mca.energy, self.mca.bgr, color='black',
-                          label='background')
+        mca = self.parent.mca
+        xrf_background(energy=mca.energy, counts=mca.counts,
+                       group=mca, width=width, compress=compress, 
+                       exponent=exponent, _larch=self.parent.larch)
+        mca.bgr_width = width
+        mca.bgr_compress = compress
+        mca.bgr_exponent = exponent
+        self.parent.plotmca(mca)
+        self.parent.oplot(mca.energy, mca.bgr, label='background',
+                          color=self.parent.conf.bgr_color)
         
     def onClose(self, event=None):
         self.Destroy()
 
 
-class SettingsFrame(wx.Frame):
+class ColorsFrame(wx.Frame):
     """settings frame for XRFDisplay"""
     k1lines = ['Ka1', 'Ka2', 'Kb1']
     k2lines = ['Kb2', 'Kb3']
@@ -287,15 +286,14 @@ class SettingsFrame(wx.Frame):
         self.parent = parent
         kws['style'] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, parent, -1, size=size,
-                          title='XRF Display Settings', **kws)
+                          title='XRF Color Settings', **kws)
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         leftstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
         rlabstyle = wx.ALIGN_RIGHT|wx.RIGHT|wx.TOP|wx.EXPAND
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
 
         self.conf  = conf
-        panel = wx.Panel(self)
-        sizer = wx.GridBagSizer(10, 10)
+        panel = GridPanel(self)
 
         emin = FloatCtrl(panel, value=self.parent.conf.e_min,
                          minval=0, maxval=1000, precision=2,
@@ -310,97 +308,93 @@ class SettingsFrame(wx.Frame):
             c.Bind(csel.EVT_COLOURSELECT, partial(self.onColor, item=name))
             return c
 
-        ir = 0
-        sizer.Add(txt(panel, '  XRF Display Settings ', size=275),
-                  (ir, 0), (1, 5), labstyle|wx.ALIGN_CENTER)
-        ir += 1
-        sizer.Add(lin(panel, 575),   (ir, 0), (1, 4), labstyle)
+        
+        panel.AddText(' XRF Display Colors', dcol=4, colour='#880000')
 
-        ir += 1
-        sizer.Add(txt(panel, 'Spectra Color:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(add_color(panel, 'spectra_color'),  (ir, 1), (1, 1), labstyle)
+        panel.Add(HLine(panel, size=(400, 3)),  dcol=4, newrow=True)
+        panel.AddText('Spectra Color:', size=(140, -1), style=labstyle, newrow=True)
+        panel.Add(add_color(panel, 'spectra_color'),  style=labstyle)
+        panel.AddText('ROI Spectra Color:', size=(140, -1), style=labstyle)
+        panel.Add(add_color(panel, 'roi_color'),  style=leftstyle)
 
-        sizer.Add(txt(panel, 'ROI Spectra Color:', size=140),
-                  (ir, 2), (1, 1), labstyle)
-        sizer.Add(add_color(panel, 'roi_color'),  (ir, 3), (1, 1), leftstyle)
+        panel.AddText('Cursor Color:', size=(140, -1), style=labstyle, newrow=True)
+        panel.Add(add_color(panel, 'marker_color'),  style=labstyle)
+        panel.AddText('ROI Fill Color:', size=(140, -1), style=labstyle)
+        panel.Add(add_color(panel, 'roi_fillcolor'),  style=leftstyle)
 
-        ir += 1
-        sizer.Add(txt(panel, 'ROI Fill Color:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(add_color(panel, 'roi_fillcolor'), (ir, 1), (1, 1), labstyle)
+        panel.AddText('Major Line Color:', size=(140, -1), style=labstyle, newrow=True)
+        panel.Add(add_color(panel, 'major_elinecolor'),  style=labstyle)
+        panel.AddText('Minor Line Color:', size=(140, -1), style=labstyle)
+        panel.Add(add_color(panel, 'minor_elinecolor'),  style=leftstyle)
 
-        sizer.Add(txt(panel, 'Marker Color:', size=140),
-                  (ir, 2), (1, 1), labstyle)
-        sizer.Add(add_color(panel, 'marker_color'),  (ir, 3), (1, 1), leftstyle)
+        panel.AddText('Spectra 2 Color:', size=(140, -1), style=labstyle, newrow=True)
+        panel.Add(add_color(panel, 'spectra2_color'),  style=labstyle)
+        panel.AddText('XRF Background Color:', size=(140, -1), style=labstyle)
+        panel.Add(add_color(panel, 'bgr_color'),  style=leftstyle)
 
-        ir += 1
-        sizer.Add(txt(panel, 'Major Line Color:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(add_color(panel, 'major_elinecolor'),  (ir, 1), (1, 1), labstyle)
-        sizer.Add(txt(panel, 'Minor Line Color:', size=140),
-                  (ir, 2), (1, 1), labstyle)
-        sizer.Add(add_color(panel, 'minor_elinecolor'), (ir, 3), (1, 1), leftstyle)
-
-        ir += 1
-        sizer.Add(lin(panel, 375),   (ir, 0), (1, 4), labstyle)
-
-        def eline_panel(all_lines, checked, action):
-            p = wx.Panel(panel)
-            s = wx.BoxSizer(wx.HORIZONTAL)
-            for i in all_lines:
-                s.Add(Check(p, '%s ' % i,
-                                   default = i in checked,
-                                   action=partial(action, label=i)),
-                      wx.EXPAND|wx.ALL, 0)
-            pack(p, s)
-            return p
-        k1panel = eline_panel(self.k1lines, conf.K_major, self.onKMajor)
-        k2panel = eline_panel(self.k2lines, conf.K_minor, self.onKMinor)
-        l1panel = eline_panel(self.l1lines, conf.L_major, self.onLMajor)
-        l2panel = eline_panel(self.l2lines, conf.L_minor, self.onLMinor)
-        m1panel = eline_panel(self.mlines, conf.M_major, self.onMMajor)
-
-        ir += 1
-        sizer.Add(txt(panel, 'Major K Lines:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(k1panel, (ir, 1), (1, 2), leftstyle, 1)
-
-        ir += 1
-        sizer.Add(txt(panel, 'Minor K Lines:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(k2panel, (ir, 1), (1, 2), leftstyle)
-
-        ir += 1
-        sizer.Add(txt(panel, 'Major L Lines:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(l1panel, (ir, 1), (1, 2), leftstyle)
-        ir += 1
-        sizer.Add(txt(panel, 'Minor L Lines:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(l2panel, (ir, 1), (1, 3), leftstyle)
-
-        ir += 1
-        sizer.Add(txt(panel, 'Major M Lines:', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(m1panel, (ir, 1), (1, 2), leftstyle)
-
-        ir += 1
-        sizer.Add(txt(panel, 'Energy Min/Max (keV): ', size=140),
-                  (ir, 0), (1, 1), labstyle)
-        sizer.Add(emin, (ir, 1), (1, 2), leftstyle)
-        sizer.Add(emax, (ir, 3), (1, 2), leftstyle)
-
-        ir += 1
-        sizer.Add(lin(panel, 375),   (ir, 0), (1, 4), labstyle)
-
-        ir += 1
-        sizer.Add(Button(panel, 'Done', size=(80, -1),
-                         action=self.onDone),  (ir, 0), (1, 1), leftstyle)
-
-        pack(panel, sizer)
-        self.Show()
-        self.Raise()
+        panel.Add(HLine(panel, size=(400, 3)),  dcol=4, newrow=True)
+        panel.Add(Button(panel, 'Done', size=(80, -1), action=self.onDone),
+                  dcol=2, newrow=True)
+# 
+# 
+#         def eline_panel(all_lines, checked, action):
+#             p = wx.Panel(panel)
+#             s = wx.BoxSizer(wx.HORIZONTAL)
+#             for i in all_lines:
+#                 s.Add(Check(p, '%s ' % i,
+#                                    default = i in checked,
+#                                    action=partial(action, label=i)),
+#                       wx.EXPAND|wx.ALL, 0)
+#             pack(p, s)
+#             return p
+#         k1panel = eline_panel(self.k1lines, conf.K_major, self.onKMajor)
+#         k2panel = eline_panel(self.k2lines, conf.K_minor, self.onKMinor)
+#         l1panel = eline_panel(self.l1lines, conf.L_major, self.onLMajor)
+#         l2panel = eline_panel(self.l2lines, conf.L_minor, self.onLMinor)
+#         m1panel = eline_panel(self.mlines, conf.M_major, self.onMMajor)
+# 
+#         ir += 1
+#         sizer.Add(txt(panel, 'Major K Lines:', size=140),
+#                   (ir, 0), (1, 1), labstyle)
+#         sizer.Add(k1panel, (ir, 1), (1, 2), leftstyle, 1)
+# 
+#         ir += 1
+#         sizer.Add(txt(panel, 'Minor K Lines:', size=140),
+#                   (ir, 0), (1, 1), labstyle)
+#         sizer.Add(k2panel, (ir, 1), (1, 2), leftstyle)
+# 
+#         ir += 1
+#         sizer.Add(txt(panel, 'Major L Lines:', size=140),
+#                   (ir, 0), (1, 1), labstyle)
+#         sizer.Add(l1panel, (ir, 1), (1, 2), leftstyle)
+#         ir += 1
+#         sizer.Add(txt(panel, 'Minor L Lines:', size=140),
+#                   (ir, 0), (1, 1), labstyle)
+#         sizer.Add(l2panel, (ir, 1), (1, 3), leftstyle)
+# 
+#         ir += 1
+#         sizer.Add(txt(panel, 'Major M Lines:', size=140),
+#                   (ir, 0), (1, 1), labstyle)
+#         sizer.Add(m1panel, (ir, 1), (1, 2), leftstyle)
+# 
+#         ir += 1
+#         sizer.Add(txt(panel, 'Energy Min/Max (keV): ', size=140),
+#                   (ir, 0), (1, 1), labstyle)
+#         sizer.Add(emin, (ir, 1), (1, 2), leftstyle)
+#         sizer.Add(emax, (ir, 3), (1, 2), leftstyle)
+# 
+#         ir += 1
+#         sizer.Add(lin(panel, 375),   (ir, 0), (1, 4), labstyle)
+# 
+#         ir += 1
+# ;        sizer.Add(Button(panel, 'Done', size=(80, -1),
+#                         action=self.onDone),  (ir, 0), (1, 1), leftstyle)
+# ;        sizer.Add(Button(panel, 'Done', size=(80, -1),
+# #                         action=self.onDone),  (ir, 0), (1, 1), leftstyle)
+# 
+#         pack(panel, sizer)
+#         self.Show()
+#         self.Raise()
 
     def onColor(self, event=None, item=None):
         color = hexcolor(event.GetValue())
@@ -464,6 +458,8 @@ class XRFDisplayConfig:
     roi_fillcolor    = '#F8F0BA'
     roi_color        = '#AA0000'
     spectra_color    = '#0000AA'
+    spectra2_color   = '#00DD00'
+    bgr_color        = '#000000'
 
     K_major = ['Ka1', 'Ka2', 'Kb1']
     K_minor = ['Kb3', 'Kb2']
@@ -704,7 +700,7 @@ class XRFDisplayFrame(wx.Frame):
         ir += 1
         sizer.Add(lin(ctrlpanel, 195),         (ir, 1), (1, 4), labstyle)
 
-        ir += 2
+        ir += 1
         sizer.Add(txt(ctrlpanel, ' Energy Scale:'),  (ir, 1), (1, 2), labstyle)
         sizer.Add(self.wids['zoom_in'],              (ir, 3), (1, 1), ctrlstyle)
         sizer.Add(self.wids['zoom_out'],             (ir, 4), (1, 1), ctrlstyle)
@@ -885,10 +881,6 @@ class XRFDisplayFrame(wx.Frame):
         fmenu = wx.Menu()
         MenuItem(self, fmenu, "&Read MCA Spectra File\tCtrl+O",
                  "Read GSECARS MCA File",  self.onReadMCAFile)
-        # MenuItem(self, fmenu, "&Read XRM Map File\tCtrl+F",
-        #          "Read GSECARS XRM MAp File",  self.onReadGSEXRMFile)
-        # MenuItem(self, fmenu, "&Open Epics MCA\tCtrl+E",
-        #         "Read Epics MCA",  self.onOpenEpicsMCA)
 
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "&Save MCA File\tCtrl+S",
@@ -912,8 +904,10 @@ class XRFDisplayFrame(wx.Frame):
                   "Quit program", self.onExit)
 
         omenu = wx.Menu()
-        MenuItem(self, omenu, "Colors and Line Selection",
-                 "Configure Colors and Settings", self.configure)
+        MenuItem(self, omenu, "Set Colors and Displays",
+                 "Configure Colors and Settings", self.config_colors)
+        MenuItem(self, omenu, "X-ray Line Selection",
+                 "Configure which X-ray Lines are shown", self.config_xraylines)
         MenuItem(self, omenu, "Hide X-ray Lines",
                  "Hide all X-ray Lines", self.clear_lines)
         MenuItem(self, omenu, "Hide selected ROI ",
@@ -984,12 +978,20 @@ class XRFDisplayFrame(wx.Frame):
         except:
             pass
 
-    def configure(self, event=None):
+    def config_colors(self, event=None):
         """show configuration frame"""
         try:
             self.win_config.Raise()
         except:
-            self.win_config = SettingsFrame(parent=self, conf=self.conf)
+            self.win_config = ColorsFrame(parent=self, conf=self.conf)
+
+
+    def config_xraylines(self, event=None):
+        """show configuration frame"""
+        try:
+            self.win_config.Raise()
+        except:
+            self.win_config = ColorsFrame(parent=self, conf=self.conf)
 
 
     def onSeriesSelect(self, event=None):
@@ -1061,7 +1063,9 @@ class XRFDisplayFrame(wx.Frame):
         if hasattr(mca, 'filename'):
             title = "%s: %s"% (title, mca.filename)
         if show_mca2 and self.mca2 is not None:
-            self.oplot(self.mca2.energy, self.mca2.counts)
+            self.oplot(self.mca2.energy, self.mca2.counts,
+                       label='specrta2',
+                       color=self.conf.spectra2_color)
             mca2name = 'MCA2'
             if hasattr(self.mca2, 'filename'):
                 mca2name = self.mca2.filename
@@ -1196,8 +1200,7 @@ class XRFDisplayFrame(wx.Frame):
         try:
             self.win_bgr.Raise()
         except:
-            self.win_bgr = XRFBackgroundFrame(self, mca=self.mca,
-                                              larch=self.larch)
+            self.win_bgr = XRFBackgroundFrame(self)
 
         
     def onFitPeaks(self, event=None, **kws):
