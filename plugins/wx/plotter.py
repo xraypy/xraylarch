@@ -32,6 +32,9 @@ larch.use_plugin_path('wx')
 from gui_utils import ensuremod
 from xrfdisplay import XRFDisplayFrame
 
+larch.use_plugin_path('xrf')
+from mca import isLarchMCAGroup
+
 mpl_dir = os.path.join(larch.site_config.usr_larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir
 if not os.path.exists(mpl_dir):
@@ -236,22 +239,18 @@ def _xrf_plot(x, y=None, mca=None, win=1, new=True, _larch=None,
     if plotter is None:
         _larch.raise_exception(msg='No Plotter defined')
     plotter.Raise()
-    if (isinstance(x, larch.Group) and y is None and
-        hasattr(x, 'energy') and hasattr(x, 'counts') and hasattr(x, 'rois')):
+    if isLarchMCAGroup(x):
         mca = x
         y = x.counts
         x = x.energy
-
+    
     if new:
-        if y is None and mca is None:
-            plotter.plotmca(x, **kws)
-        else:
+        if isLarchMCAGroup(mca):
+            plotter.plotmca(mca, **kws)
+        elif y is not None:
             plotter.plot(x, y, mca=mca, **kws)
     else:
-        if y is None and mca is None:
-            plotter.plotmca(x, background=True, **kws)
-        else:
-            plotter.oplot(x, y, mca=mca, **kws)
+        plotter.oplot(x, y, mca=mca, **kws)
 
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
