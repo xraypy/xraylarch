@@ -10,9 +10,15 @@ Authors/Modifications:
 import numpy as np
 from deadtime import calc_icr, correction_factor
 from roi import ROI
-from xrf_bgr import XRFBackground
 
 from larch import Group
+
+def isLarchMCAGroup(grp):
+    """tests whether variable holds a valid Larch MCAGroup"""
+    return (isinstance(grp, Group) and 
+            hasattr(grp, 'energy') and
+            hasattr(grp, 'counts') and
+            hasattr(grp, 'rois'))
 
 class Environment:
     """
@@ -226,13 +232,6 @@ class MCA(Group):
             return  (self.dt_factor * self.counts).astype(np.int)
         else:
             return self.counts
-
-    def fit_background(self, bottom_width=4, compress=4, exponent=2):
-        xrfbgr = XRFBackground(bottom_width=bottom_width,
-                            compress=compress,
-                            exponent=exponent)
-        xrfbgr.calc(self.counts, slope=self.slope)
-        self.bgr = xrfbgr.bgr
 
     def get_energy(self):
         """
