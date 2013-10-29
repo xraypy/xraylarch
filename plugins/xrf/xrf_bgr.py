@@ -109,6 +109,11 @@ Todo:
 import numpy as np
 import larch
 
+REFERENCE_AMPL=100.
+TINY = 1.E-20
+HUGE = 1.E20
+MAX_TANGENT=2
+
 def compress_array(array, compress):
    """Compresses an 1-D array by the integer factor "compress".
    near equivalent of IDL's 'rebin'....
@@ -181,10 +186,6 @@ class XRFBackground:
 
         if data is None:
             data = self.data
-        REFERENCE_AMPL=100.
-        TINY = 1.E-20
-        HUGE = 1.E20
-        MAX_TANGENT=2
 
         width    = self.width
         exponent = self.exponent
@@ -215,18 +216,13 @@ class XRFBackground:
         # Fit functions which come up from below
         bckgnd = np.arange(nchans, dtype=np.float) - HUGE
 
-        # First make a lookup table of this function
-        chan_width = width / (2. * slope)
-        if chan_width == 0:
-            denom = TINY
-        else:
-            denom = chan_width**exponent
+        denom = max(TINY, (width / (2. * slope)**exponent))
 
         indices     = np.arange(nchans*2+1, dtype=np.float) - nchans
         power_funct = indices**exponent  * (REFERENCE_AMPL / denom)
         power_funct = np.compress((power_funct <= max_counts), power_funct)
         max_index   = len(power_funct)/2 - 1
-
+        # print "NCHANS: ", nchans, denom, min(indices), max(indices), max_index
         for chan in range(nchans-1):
             tan_slope = 0.
             if tangent:
@@ -268,7 +264,6 @@ class XRFBackground:
         idx = np.where(bgr <= 0)
         bgr[idx] = 0
         self.bgr = bgr
-
 
 def xrf_background(energy, counts=None, group=None, width=4, 
                    compress=2, exponent=2, slope=None, 
