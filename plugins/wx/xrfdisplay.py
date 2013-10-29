@@ -51,16 +51,6 @@ FILE_ALREADY_READ = """The File
 has already been read.
 """
 
-AT_SYMS = ('H', 'He', 'Li', 'Be', 'B', 'C', 'N', 'O', 'F', 'Ne', 'Na',
-           'Mg', 'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
-           'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge', 'As',
-           'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo', 'Tc', 'Ru',
-           'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te', 'I', 'Xe', 'Cs',
-           'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm', 'Eu', 'Gd', 'Tb',
-           'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf', 'Ta', 'W', 'Re', 'Os',
-           'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb', 'Bi', 'Po', 'At', 'Rn',
-           'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk',
-           'Cf')
 
 def txt(panel, label, size=75, colour=None,  style=None):
     if style is None:
@@ -278,7 +268,8 @@ class XRFBackgroundFrame(wx.Frame):
         self.mca.bgr_compress = compress
         self.mca.bgr_exponent = exponent
         self.parent.plotmca(self.mca)
-        self.parent.oplot(self.mca.energy, self.mca.bgr, color='black')
+        self.parent.oplot(self.mca.energy, self.mca.bgr, color='black',
+                          label='background')
         
     def onClose(self, event=None):
         self.Destroy()
@@ -419,7 +410,7 @@ class SettingsFrame(wx.Frame):
         elif item == 'roi_color':
             self.parent.panel.conf.set_trace_color(color, trace=1)
         elif item == 'marker_color':
-            for lmark in self.parent.last_markers:
+            for lmark in self.parent.cursor_markers:
                 if lmark is not None:
                     lmark.set_color(color)
 
@@ -519,9 +510,9 @@ class XRFDisplayFrame(wx.Frame):
         self.zoom_lims = []
         self.last_rightdown = None
         self.last_leftdown = None
-        self.last_markers = [None, None]
+        self.cursor_markers = [None, None]
         self.ylog_scale = True
-
+        self.win_title = title
         self.SetTitle(title)
 
         self.createMainPanel()
@@ -551,23 +542,42 @@ class XRFDisplayFrame(wx.Frame):
             y = self.mca.counts[ix]
         self.last_leftdown = x
         self.energy_for_zoom = x
-        self.draw_arrow(x, y, 0, 'Left:')
+        self.draw_marker(x, y, 0, 'Left:')
 
-    def draw_arrow(self, x, y, idx, title):
-        arrow = self.panel.axes.arrow
-        if self.last_markers[idx] is not None:
+    def clear_lines(self, evt=None):
+        "remove all Line Markers"
+        for m in self.major_markers + self.minor_markers:
             try:
-                self.last_markers[idx].remove()
+                m.remove()
+            except:
+                pass
+        self.major_markers = []
+        self.minor_markers = []
+        self.panel.canvas.draw()
+        
+    def clear_markers(self, evt=None):
+        "remove all Cursor Markers"        
+        for m in self.cursor_markers:
+            if m is not None:
+                m.remove()
+        self.cursor_markers = [None, None]
+        self.panel.canvas.draw()
+        
+    def draw_marker(self, x, y, idx, title):
+        arrow = self.panel.axes.arrow
+        if self.cursor_markers[idx] is not None:
+            try:
+                self.cursor_markers[idx].remove()
             except:
                 pass
         ymin, ymax = self.panel.axes.get_ylim()
         dy = int(max((ymax-ymin)*0.10,  min(ymax*0.99, 3*y)) - y)
         try:
-            self.last_markers[idx] = arrow(x, y, 0, dy, shape='full',
-                                           width=0.015, head_width=0.0,
-                                           length_includes_head=True,
-                                           head_starts_at_zero=True,
-                                           color=self.conf.marker_color)
+            self.cursor_markers[idx] = arrow(x, y, 0, dy, shape='full',
+                                             width=0.015, head_width=0.0,
+                                             length_includes_head=True,
+                                             head_starts_at_zero=True,
+                                             color=self.conf.marker_color)
             self.panel.canvas.draw()
             self.write_message("%s E=%.3f keV, Counts=%g" % (title, x, y), panel=1+idx)
         except:
@@ -586,7 +596,7 @@ class XRFDisplayFrame(wx.Frame):
             x = self.mca.energy[ix]
             y = self.mca.counts[ix]
         self.last_rightdown = x
-        self.draw_arrow(x, y, 1, 'Right:')
+        self.draw_marker(x, y, 1, 'Right:')
 
     def createMainPanel(self):
         self.wids = {}
@@ -662,9 +672,6 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['delroi'] = Button(ctrlpanel, 'Delete', size=(75, -1),
                                          action=self.onDelROI)
 
-        self.wids['noroi'] = Button(ctrlpanel, 'Hide ROIs', size=(75, -1),
-                                        action=self.onClearROIDisplay)
-
         self.wids['counts_tot'] = txt(ctrlpanel, ' Total: ', size=140)
         self.wids['counts_net'] = txt(ctrlpanel, ' Net:  ', size=140)
         self.wids['roi_message'] = txt(ctrlpanel, '  ', size=280)
@@ -682,18 +689,17 @@ class XRFDisplayFrame(wx.Frame):
         ir += 1
         sizer.Add(txt(ctrlpanel, ' Regions of Interest:', size=140),
                   (ir, 1), (1, 2), labstyle)
-        sizer.Add(self.wids['roilist'],                     (ir, 3), (4, 2), labstyle)
+        sizer.Add(self.wids['roilist'],     (ir, 3), (5, 2), labstyle)
 
         sizer.Add(self.wids['roiname'],  (ir+1, 1), (1, 2), labstyle)
 
         sizer.Add(self.wids['newroi'],   (ir+2, 1), (1, 1), wx.ALIGN_CENTER)
         sizer.Add(self.wids['delroi'],   (ir+2, 2), (1, 1), wx.ALIGN_CENTER)
-        sizer.Add(self.wids['noroi'],    (ir+3, 1), (1, 2), wx.ALIGN_CENTER)
 
-        ir += 4
-        sizer.Add(self.wids['counts_tot'],         (ir, 1), (1, 2), ctrlstyle)
-        sizer.Add(self.wids['counts_net'],         (ir, 3), (1, 2), ctrlstyle)
-        ir += 1
+        sizer.Add(self.wids['counts_tot'], (ir+3, 1), (1, 2), LEFT)
+        sizer.Add(self.wids['counts_net'], (ir+4, 1), (1, 2), LEFT)
+
+        ir += 5
         sizer.Add(self.wids['roi_message'],        (ir, 1), (1, 5), ctrlstyle)
         ir += 1
         sizer.Add(lin(ctrlpanel, 195),         (ir, 1), (1, 4), labstyle)
@@ -765,7 +771,7 @@ class XRFDisplayFrame(wx.Frame):
             for roi in mca.rois:
                 self.wids['roilist'].Append(roi.name)
 
-    def onClearROIDisplay(self, event=None):
+    def clear_roihighlight(self, event=None):
         self.selected_roi = None
         try:
             self.roi_patch.remove()
@@ -908,6 +914,14 @@ class XRFDisplayFrame(wx.Frame):
         omenu = wx.Menu()
         MenuItem(self, omenu, "Colors and Line Selection",
                  "Configure Colors and Settings", self.configure)
+        MenuItem(self, omenu, "Hide X-ray Lines",
+                 "Hide all X-ray Lines", self.clear_lines)
+        MenuItem(self, omenu, "Hide selected ROI ",
+                 "Hide selected ROI", self.clear_roihighlight)
+        MenuItem(self, omenu, "Hide Markers ",
+                 "Hide cursor markers", self.clear_markers)
+
+        omenu.AppendSeparator()
         MenuItem(self, omenu, "Configure Plot\tCtrl+K",
                  "Configure Plot Colors, etc", self.panel.configure)
         MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
@@ -991,13 +1005,8 @@ class XRFDisplayFrame(wx.Frame):
         except:
             return
         self.selected_elem = elem
-        for marker in self.minor_markers+self.major_markers:
-            try:
-                marker.remove()
-            except:
-                pass
-        self.major_markers = []
-        self.minor_markers = []
+        self.clear_lines()
+
         self.energy_for_zoom = None
         miss = [-1, '']
         minors, majors = [], []
@@ -1048,7 +1057,7 @@ class XRFDisplayFrame(wx.Frame):
     def plotmca(self, mca, show_mca2=True, **kws):
         self.mca = mca
         self.plot(mca.energy, mca.counts, mca=mca, **kws)
-        title = self.GetTitle()
+        title = self.win_title
         if hasattr(mca, 'filename'):
             title = "%s: %s"% (title, mca.filename)
         if show_mca2 and self.mca2 is not None:
