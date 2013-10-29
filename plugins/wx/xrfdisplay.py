@@ -30,14 +30,15 @@ use_plugin_path('wx')
 from mathutils import index_of, linregress
 from fitpeak import fit_peak
 
-from wxutils import (SimpleText, EditableListBox, FloatCtrl,  pack,
-                     Popup, Button, get_icon, Check, MenuItem, Choice,
-                     FileOpen, FileSave, fix_filename, HLine, GridPanel,
-                     CEN, LEFT, RIGHT)
+from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
+                     pack, Popup, Button, get_icon, Check, MenuItem,
+                     Choice, FileOpen, FileSave, fix_filename, HLine,
+                     GridPanel, CEN, LEFT, RIGHT)
 
 from periodictable import PeriodicTablePanel
 
 from gsemca_file import GSEMCA_File, gsemca_group
+from xrf_bgr import xrf_background
 
 from xraydb import xrayDB
 XRAYDB = xrayDB()
@@ -113,7 +114,7 @@ class CalibrationFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, 'Calibrate MCA',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
-        self.SetFont(wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
+        self.SetFont(Font(8))
         panel = GridPanel(self)
         self.calib_updated = False
         panel.AddText("Calibrate MCA Energy (Energies in eV)",  
@@ -245,6 +246,57 @@ class CalibrationFrame(wx.Frame):
             self.mca.energy = b + m*np.arange(len(self.mca.energy))
         self.Destroy()
 
+    def onClose(self, event=None):
+        self.Destroy()
+
+class XRFBackgroundFrame(wx.Frame):
+    def __init__(self, parent, mca, larch=None, size=(300, -1)):
+        self.mca = mca
+        self.larch = larch
+        self.parent = parent
+        wx.Frame.__init__(self, parent, -1, 'Fit Background',
+                          size=size, style=wx.DEFAULT_FRAME_STYLE)
+
+        self.SetFont(Font(8))
+        panel = GridPanel(self)
+
+        panel.AddText("Background Parameters", colour='#880000', dcol=3)
+
+        self.wid_width = FloatCtrl(panel, value=3, minval=0, maxval=10, 
+                                   precision=1)
+        self.wid_compress = FloatCtrl(panel, value=2, minval=0, maxval=8, 
+                                   precision=0)
+        self.wid_exponent = FloatCtrl(panel, value=2, minval=1, maxval=8, 
+                                   precision=0)
+        
+        panel.AddText("Energy Width: ", newrow=True)
+        panel.Add(self.wid_width)
+        panel.AddText(" (keV) ", style=LEFT)
+        panel.AddText("Exponent: ", newrow=True)
+        panel.Add(self.wid_exponent)
+        panel.AddText("Compression: ", newrow=True)
+        panel.Add(self.wid_compress)
+
+        panel.Add(HLine(panel, size=(300, 3)),  dcol=4, newrow=True)
+
+        panel.Add(Button(panel, 'Update Background',
+                         size=(150, -1), action=self.onCalc),
+                         dcol=3, newrow=True, style=LEFT)
+        panel.pack()
+        self.Show()
+        self.Raise()
+
+    def onCalc(self, event=None):
+        width = self.wid_width.GetValue()
+        compress = self.wid_compress.GetValue()
+        exponent = self.wid_exponent.GetValue()
+        xrf_background(energy=self.mca.energy, counts=self.mca.counts,
+                       group=self.mca, width=width, compress=compress, 
+                       exponent=exponent, _larch=self.larch)
+
+        self.parent.plotmca(self.mca)
+        self.parent.oplot(self.mca.energy, self.mca.bgr, color='black')
+        
     def onClose(self, event=None):
         self.Destroy()
 
@@ -491,7 +543,7 @@ class XRFDisplayFrame(wx.Frame):
 
         self.createMainPanel()
         self.createMenus()
-        self.SetFont(wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, ""))
+        self.SetFont(Font(9))
         self.statusbar = self.CreateStatusBar(3)
         self.statusbar.SetStatusWidths([-3, -1, -1])
         statusbar_fields = ["XRF Display", " "]
@@ -883,14 +935,17 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, omenu, "Close Background MCA",
                  "Close Background MCA", self.close_bkg_mca)
 
-        omenu.AppendSeparator()
-        MenuItem(self, omenu, "&Calibrate Energy\tCtrl+B",
+        amenu = wx.Menu()
+        MenuItem(self, amenu, "&Calibrate Energy\tCtrl+B",
                  "Calibrate Energy",  self.onCalibrateEnergy)
-        MenuItem(self, omenu, "&Fit background\tCtrl+G",
-                 "Fit smooth background",  self.onFitbackground)
+        MenuItem(self, amenu, "Fit background",
+                 "Fit smooth background",  self.onFitBgr)
+        MenuItem(self, amenu, "Fit Peaks",
+                 "Fit Peaks in spectra",  self.onFitPeaks)        
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(omenu, "&Options")
+        self.menubar.Append(amenu, "&Analysis")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE, self.onExit)
 
@@ -1066,13 +1121,13 @@ class XRFDisplayFrame(wx.Frame):
         panel.canvas.Thaw()
         panel.canvas.Refresh()
 
-    def oplot(self, x, y, **kws):
+    def oplot(self, x, y, color='darkgreen', **kws):
         ymax = max( max(self.ydata), max(y))*1.25
         kws.update({'zorder': -5, 'label': 'spectra2',
                     'ymax' : ymax, 'axes_style': 'bottom',
-                    'ylog_scale': True, 'color': 'darkgreen'})
+                    'ylog_scale': True})
 
-        self.panel.oplot(x, 1.0*y[:], **kws)
+        self.panel.oplot(x, 1.0*y[:], color=color, **kws)
 
     def swap_mcas(self, event=None):
         if self.mca2 is None:
@@ -1145,11 +1200,18 @@ class XRFDisplayFrame(wx.Frame):
             self.win_calib = CalibrationFrame(self, mca=self.mca,
                                               larch=self.larch)
 
+    def onFitBgr(self, event=None, **kws):
+        try:
+            self.win_bgr.Raise()
+        except:
+            self.win_bgr = XRFBackgroundFrame(self, mca=self.mca,
+                                              larch=self.larch)
 
-    def onFitbackground(self, event=None, **kws):
-        print '  onFitbackground   '
+        
+    def onFitPeaks(self, event=None, **kws):
+        print '  onFit Peaks   '
         pass
-
+    
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
