@@ -12,6 +12,19 @@ Authors/Modifications:
 import numpy as np
 from larch import Group
 
+def split_roiname(name):
+    words = name.split()
+    elem = words[0].title()
+    line = 'ka'
+    if len(words) > 1:
+        line = words[1]
+    line = line.title()
+    if line == 'Ka': line = 'Ka1'
+    if line == 'Kb': line = 'Kb1'
+    if line == 'La': line = 'La1'
+    if line == 'Lb': line = 'Lb1'
+    return elem, line
+
 class ROI(Group):
     """
     Class that defines a Region-Of-Interest (ROI)
