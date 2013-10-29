@@ -108,6 +108,8 @@ Todo:
 
 import numpy as np
 import larch
+larch.use_plugin_path('xrf')
+from mca import isLarchMCAGroup
 
 REFERENCE_AMPL=100.
 TINY = 1.E-20
@@ -297,9 +299,7 @@ def xrf_background(energy, counts=None, group=None, width=4,
     if _larch is None:
         raise Warning("cannot calculate xrf background -- larch broken?")
 
-    if (isinstance(energy, larch.Group) and counts is None and
-        hasattr(energy, 'energy') and hasattr(energy, 'counts') and
-        hasattr(energy, 'rois')):
+    if isLarchMCAGroup(energy):
         group  = energy
         counts = group.counts
         energy = group.energy
