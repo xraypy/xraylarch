@@ -10,7 +10,6 @@ use_plugin_path('xrf')
 
 from mca import MCA
 from roi import ROI
-from xrf_bgr import XRFBackground
 
 def str2floats(s):
     return [float(i) for i in s.split()]
@@ -284,59 +283,10 @@ class GSEMCA_File(Group):
             fp.write(" %s\n" % d)
         fp.close()
 
-def gsemca_group_old(fname, _larch=None, **kws):
-    """read GSECARS MCA file to larch group"""
-    if _larch is None:
-        raise Warning("cannot read GSE XRF group -- larch broken?")
-
-    xfile = GSEMCA_File(fname)
-    group = _larch.symtable.create_group()
-    group.__name__ ='GSE XRF Data file %s' % fname
-    group.filename = xfile.filename
-    group.save_columnfile = xfile.save_columnfile
-    group.save_mcafile = xfile.save_mcafile
-    group.mcas     = xfile.mcas
-    group.calib    = {'offset': xfile.sum.offset,
-                      'slope': xfile.sum.slope,
-                      'quad': xfile.sum.quad}
-    group.rois     = xfile.sum.rois
-    group.get_roi_counts = xfile.sum.get_roi_counts
-    group.add_roi  = xfile.add_roi
-    for attr in ('rois', 'environ', 'energy', 'counts', 'dt_factor',
-                 'icr_calc', 'input_counts', 'live_time', 'nchans',
-                 'real_time', 'start_time', 'tau', 'raw'):
-        setattr(group, attr, getattr(xfile.sum, attr))
-    return group
 
 def gsemca_group(fname, _larch=None, **kws):
     """read GSECARS MCA file to larch group"""
     return GSEMCA_File(fname)
-
-def xrf_background(energy, counts=None, group=None, _larch=None,
-                   bottom_width=4, top_width=0, compress=4,
-                   exponent=2, slope=1.0, tangent=False):
-    """fit background for XRF spectra"""
-    if _larch is None:
-        raise Warning("cannot calculate xrf background -- larch broken?")
-
-    if (isinstance(energy, Group) and counts is None and
-        hasattr(energy, 'energy') and hasattr(energy, 'counts') and
-        hasattr(energy, 'rois')):
-        group  = energy
-        counts = group.counts
-        energy = group.energy
-
-    slope = (energy[-1] - energy[0])/len(energy)
-
-    xbgr = XRFBackground(counts, bottom_width=bottom_width,
-                         top_width=top_width, compress=compress,
-                         exponent=exponent, slope=slope, tangent=tangent)
-
-    if group is not None:
-        group.bgr = xbgr.bgr
-        group.bgr_info = xbgr.parinfo
         
 def registerLarchPlugin():
-    return ('_io', {'read_gsemca': gsemca_group,
-                    'read_gsemca2': gsemca_group_old,
-                    'xrf_background': xrf_background})
+    return ('_io', {'read_gsemca': gsemca_group})

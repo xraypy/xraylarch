@@ -16,39 +16,19 @@ background in x-ray spectra.' Nucl. Instrum. Methods B22, 78-81.
 
 Procedure:
 
-1) At each channel "i" in a spectrum (y[i]) an n'th degree polynomial which
-is concave up is fitted. Its equation is
-
-
-                    (e(i) - e(j))**n
-    f(j,i) = y(i) + --------------
-                     top_width**n
-
-where f(j,i) is the fitted counts in channel j for the polynomial
-centered in channel i. y(i) is the input counts in channel "i", e(i) is
-the energy of channel i, e(j) is the energy of channel j, and
-"top_width" and "n" are user-specified parameters. The background count
-in channel "j", b(j) is defined as
-
-    b(j) = min ((f(j,i), y(j))
-            i
-
-b(j) is thus the smallest fitted polynomial in channel j, or the raw
-data, whichever is smaller.
-
-2) After the concave up polynomials have been fitted, a series of
-concave down polynomials are constructed. At each channel "i" an n'th
-degree polynomial which is concave up is fitted. The polynomial is slid
-up from below until it "just touches" some channel of the spectrum. Call
-this channel "i". The maximum height of the polynomial is thus
+1) A series of concave down polynomials are constructed. At each
+channel "i" an n'th degree polynomial which is concave up is
+fitted. The polynomial is slid up from below until it "just touches"
+some channel of the spectrum. Call this channel "i". The maximum
+height of the polynomial is thus
 
 
                             (e(i) - e(j))**n
     height(j) = max ( b(j) +  --------------  )
-                 i            bottom_width**n
+                 i               width**n
 
 
-where bottom_width is a user_specified parameter.
+where width is a user_specified parameter.
 
 3) Once the value of height(i) is known the polynomial is fitted. The
 background counts in each channel are then determined from:
@@ -56,7 +36,7 @@ background counts in each channel are then determined from:
 
                                (e(i) - e(j))**n
     bgr(j) = max ( height(i) + --------------  )
-              i                 bottom_width**n
+              i                     width**n
 
 
 bgr(j) is thus the maximum counts for any of the concave down
@@ -72,23 +52,10 @@ is much improved on spectra with steep slopes.
 
 Input Parameter Fields:
 
-    bottom_width (double, variable):
+    width (double, variable):
         Specifies the width of the polynomials which are concave downward.
         The bottom_width is the full width in energy units at which the
         magnitude of the polynomial is 100 counts. The default is 4.
-
-    top_width (double, variable):
-        Specifies the width of the polynomials which are concave upward.
-        The top_width is the full width in energy units at which the
-        magnitude of the polynomial is 100 counts. The default is 0, which
-        means that concave upward polynomials are not used.
-
-    tangent (True/False):
-        Specifies that the polynomials are to be tangent to the slope of the
-        spectrum. The default is vertical polynomials. This option works
-        best on steeply sloping spectra. It has trouble in spectra with
-        big peaks because the polynomials are very tilted up inside the
-        peaks. Default is False
 
     exponent (int):
         Specifies the power of polynomial which is used. The power must be
@@ -116,6 +83,13 @@ Input Parameter Fields:
 
         Note - compress needs a data array that integer divisible.
 
+    tangent (True/False):
+        Specifies that the polynomials are to be tangent to the slope of the
+        spectrum. The default is vertical polynomials. This option works
+        best on steeply sloping spectra. It has trouble in spectra with
+        big peaks because the polynomials are very tilted up inside the
+        peaks. Default is False
+
 Inputs to calc
     data:
        The raw data to fit the background
@@ -133,6 +107,7 @@ Todo:
 """
 
 import numpy as np
+import larch
 
 def compress_array(array, compress):
    """Compresses an 1-D array by the integer factor "compress".
@@ -174,27 +149,22 @@ class XRFBackground:
     Attributes:
     -----------
     These may be set by kw argument upon initialization.
-    * bottom_width      = 4.0   # Bottom width
-    * top_width         = 0.0   # Top width
-    * exponent          = 2     # Exponent
-    * tangent           = False # Tangent flag
-    * compress          = 4     # Compress
+    * width      = 4.0   # Bottom width
+    * exponent   = 2     # Exponent
+    * compress   = 2     # Compress
+    * tangent    = False # Tangent flag
     """
 
-    def __init__(self, data=None, bottom_width=4, top_width=0, slope=1.0,
-                 exponent=2, compress=4, tangent=False):
+    def __init__(self, data=None, width=4, slope=1.0,
+                 exponent=2, compress=2, tangent=False):
         self.bgr          = [] 
-        self.bottom_width = bottom_width
-        self.top_width    = top_width
+        self.width = width
         self.compress     = compress
         self.exponent     = exponent
         self.tangent      = tangent
 
-        self.parinfo = {'bottom_width': bottom_width,
-                        'top_width': top_width,
-                        'compress':  compress,
-                        'exponent': exponent,
-                        'tangent': tangent}
+        self.parinfo = {'width': width, 'compress': compress,
+                        'exponent': exponent, 'tangent': tangent}
 
         self.data = data
         if data is not None:
@@ -216,15 +186,14 @@ class XRFBackground:
         HUGE = 1.E20
         MAX_TANGENT=2
 
-        bottom_width = self.bottom_width
-        top_width    = self.top_width
-        exponent     = self.exponent
-        tangent      = self.tangent
-        compress     = self.compress
+        width    = self.width
+        exponent = self.exponent
+        tangent  = self.tangent
+        compress = self.compress
 
-        nchans      = len(data)
-        self.bgr    = np.zeros(nchans, dtype=np.int)
-        scratch     = data[:]
+        nchans   = len(data)
+        self.bgr = np.zeros(nchans, dtype=np.int)
+        scratch  = data[:]
 
         # Compress scratch spectrum
         if compress > 1:
@@ -243,39 +212,11 @@ class XRFBackground:
         # limit the size of the function lookup table
         max_counts = max(scratch)
 
-        ####################################################
-        #  Fit functions which come down from top
-        if top_width > 0:
-            #   First make a lookup table of this function
-            chan_width  = top_width / (2. * slope)
-            denom       = chan_width**exponent
-            indices     = np.arange(nchans*2+1, dtype=np.float) - nchans
-            power_funct = indices**exponent * (REFERENCE_AMPL / denom)
-            power_funct = np.compress((power_funct <= max_counts), power_funct)
-            max_index   = len(power_funct)/2 - 1
-
-            for chan in range(nchans):
-                chan0  = max((chan - max_index), 0)
-                chan1   = min((chan + max_index), (nchans-1))
-                f       = chan0 - chan + max_index
-                l       = chan1 - chan + max_index
-                test    = scratch[chan] + power_funct[f:l+1]
-                sub     = bckgnd[chan0:chan1+1]
-                bckgnd[chan0:chan1+1] = np.maximum(sub, test)
-
-        # Copy this approximation of background to scratch
-        scratch = bckgnd[:]
-
-        # Find maximum counts in scratch spectrum. This information is used to
-        #   limit the size of the function lookup table
-        max_counts = max(scratch)
-
-        ####################################################
         # Fit functions which come up from below
         bckgnd = np.arange(nchans, dtype=np.float) - HUGE
 
         # First make a lookup table of this function
-        chan_width = bottom_width / (2. * slope)
+        chan_width = width / (2. * slope)
         if chan_width == 0:
             denom = TINY
         else:
@@ -328,11 +269,55 @@ class XRFBackground:
         bgr[idx] = 0
         self.bgr = bgr
 
-    def _update(self, parameters):
-        """update for fitting"""
-        if len(parameters) != 2:
-            raise ValueError("Wrong number of parameters in background")
-        self.bottom_width = parameters[0]
-        self.top_width    = parameters[1]
 
+def xrf_background(energy, counts=None, group=None, width=4, 
+                   compress=2, exponent=2, slope=None, 
+                   _larch=None):
+    """fit background for XRF spectra.  Arguments:
 
+    xrf_background(energy, counts=None, group=None, width=4, 
+                   compress=2, exponent=2, slope=None)
+  
+    Arguments
+    ---------
+    energy     array of energies OR an MCA group.  If an MCA group,
+               it will be used to give ``counts`` and ``mca`` arguments
+    counts     array of XRF counts (or MCA.counts)
+    group      group for outputs
+                     
+    width      full width (in keV) of the concave down polynomials 
+               for when its full width is 100 counts. default = 4
+
+    compress   compression factor to apply to spectra. Default is 2.
+    
+    exponent   power of polynomial used.  Default is 2, should be even.
+    slope      channel to energy conversion, from energy calibration 
+               (default == None --> found from input energy array)
+
+    outputs (written to group)
+    -------
+    bgr       background array
+    bgr_info  dictionary of parameters used to calculate background
+    """
+    if _larch is None:
+        raise Warning("cannot calculate xrf background -- larch broken?")
+
+    if (isinstance(energy, larch.Group) and counts is None and
+        hasattr(energy, 'energy') and hasattr(energy, 'counts') and
+        hasattr(energy, 'rois')):
+        group  = energy
+        counts = group.counts
+        energy = group.energy
+    if slope is None:
+        slope = (energy[-1] - energy[0])/len(energy)
+
+    xbgr = XRFBackground(counts, width=width, compress=compress,
+                         exponent=exponent, slope=slope)
+
+    if group is not None:
+        group.bgr = xbgr.bgr
+        group.bgr_info = xbgr.parinfo
+        
+def registerLarchPlugin():
+    return ('_xrf', {'xrf_background': xrf_background})
+        
