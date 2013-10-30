@@ -19,6 +19,20 @@ from fitpeak import fit_peak
 larch.use_plugin_path('xray')
 from xraydb_plugin import xray_lines
 
+def xray_line_mean(elem, family, _larch=None):
+    """return mean X-ray line energy (weighted by sub-line strengths
+    for a family 'ka', 'lb', ...
+    """
+    scale = 1.e-99
+    value = 0.0
+    lines = xray_lines(elem, _larch=_larch)    
+    if family in ('ka', 'kb', 'la', 'lb', 'lg'):
+        for key, val in lines.items():
+            if key.lower().startswith(family):
+                value += val[0]*val[1]
+                scale += val[1]
+    return value/scale
+
 def xrf_calib_fitrois(mca, _larch=None):
     """initial calibration step for MCA:
     find energy locations for all ROIs
@@ -30,6 +44,8 @@ def xrf_calib_fitrois(mca, _larch=None):
     
     energy = 1.0*mca.energy
     counts = mca.counts
+    if hasattr(mca, 'bgr'):
+        counts = counts - mca.bgr
     calib = OrderedDict()
     for roi in mca.rois:
         elem, line = split_roiname(roi.name)
@@ -37,10 +53,11 @@ def xrf_calib_fitrois(mca, _larch=None):
             eknown = xray_lines(elem, _larch=_larch)[line][0]/1000.0
         except:
             continue
+
         llim = max(0, roi.left - roi.bgr_width)
         hlim = min(len(energy)-1, roi.right + roi.bgr_width)
         fit = fit_peak(energy[llim:hlim], counts[llim:hlim],
-                       'Gaussian', background='constant',
+                       'Gaussian', background=None,
                        _larch=_larch)
         
         ecen = fit.params.center.value
@@ -99,4 +116,5 @@ def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
 def registerLarchPlugin():
     return ('_xrf', {'xrf_calib_fitrois': xrf_calib_fitrois,
                      'xrf_calib_compute': xrf_calib_compute,
-                     'xrf_calib_apply': xrf_calib_apply})
+                     'xrf_calib_apply': xrf_calib_apply,
+                     'xray_line_mean': xray_line_mean})
