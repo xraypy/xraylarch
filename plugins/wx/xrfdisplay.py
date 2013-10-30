@@ -19,14 +19,15 @@ import numpy as np
 import matplotlib
 from wxmplot import PlotPanel
 
-from larch import Group, Parameter, isParameter, use_plugin_path
+import larch
 
-use_plugin_path('math')
-use_plugin_path('xrf')
-use_plugin_path('xray')
-use_plugin_path('wx')
-
+larch.use_plugin_path('math')
 from mathutils import index_of
+
+larch.use_plugin_path('xrf')
+larch.use_plugin_path('xray')
+larch.use_plugin_path('wx')
+
 
 from wxutils import (SimpleText, EditableListBox, Font,
                      pack, Popup, Button, get_icon, Check, MenuItem,
@@ -38,8 +39,6 @@ from xrfdisplay_utils import (CalibrationFrame, XRFBackgroundFrame,
                               ColorsFrame, XrayLinesFrame, XRFDisplayConfig)
 
 from gsemca_file import GSEMCA_File, gsemca_group
-from xrf_bgr import xrf_background
-from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
 
 FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"
 FILE_ALREADY_READ = """The File

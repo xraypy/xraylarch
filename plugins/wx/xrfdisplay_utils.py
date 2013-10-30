@@ -13,6 +13,13 @@ from wxutils import (SimpleText, FloatCtrl, Font, pack, Button, Check,
 
 from wxmplot.colors import hexcolor
 
+import larch
+
+larch.use_plugin_path('xrf')
+
+from xrf_bgr import xrf_background
+from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
+
 class CalibrationFrame(wx.Frame):
     def __init__(self, parent, mca, larch=None, size=(500, 300)):
         self.mca = mca
