@@ -279,7 +279,7 @@ def xray_lines(element, initial_level=None, excitation_energy=None,
     return xdb.xray_lines(element, initial_level=initial_level,
                           excitation_energy=excitation_energy)
 
-def xray_line(element, line='Ka1', _larch=None):
+def xray_line(element, line='Ka', _larch=None):
     """returns data for an  x-ray emission lines of an element, given
     the siegbahn notation for the like (Ka1, Lb1, etc).  Returns:
          energy (in eV), intensity, initial_level, final_level
@@ -289,13 +289,32 @@ def xray_line(element, line='Ka1', _larch=None):
     element:   atomic number, atomic symbol for element
     line:      siegbahn notation for emission line
 
+    if line is 'Ka', 'Kb', 'La', 'Lb', 'Lg', without number,
+    the weighted average for this family of lines is returned.
+
     Data from Elam, Ravel, and Sieber.
     """
     if _larch is None:
         return
     xdb = get_xraydb(_larch)
     lines = xdb.xray_lines(element)
-    return lines.get(line.title(), None)
+
+    family = line.lower()
+    if family in ('ka', 'kb', 'la', 'lb', 'lg'):
+        scale = 1.e-99
+        value = 0.0
+        linit, lfinal =  None, None
+        for key, val in lines.items():
+            if key.lower().startswith(family):
+                value += val[0]*val[1]
+                scale += val[1]
+                if linit is None:
+                    linit = val[2]
+                if lfinal is None:
+                    lfinal = val[3][0]
+        return (value/scale, scale, linit, lfinal)
+    else:
+        return lines.get(line.title(), None)
 
 
 
