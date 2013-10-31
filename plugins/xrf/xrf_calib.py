@@ -17,21 +17,7 @@ from mathutils import index_of, linregress
 from fitpeak import fit_peak
 
 larch.use_plugin_path('xray')
-from xraydb_plugin import xray_lines
-
-def xray_line_mean(elem, family, _larch=None):
-    """return mean X-ray line energy (weighted by sub-line strengths
-    for a family 'ka', 'lb', ...
-    """
-    scale = 1.e-99
-    value = 0.0
-    lines = xray_lines(elem, _larch=_larch)    
-    if family in ('ka', 'kb', 'la', 'lb', 'lg'):
-        for key, val in lines.items():
-            if key.lower().startswith(family):
-                value += val[0]*val[1]
-                scale += val[1]
-    return value/scale
+from xraydb_plugin import xray_line, xray_lines
 
 def xrf_calib_fitrois(mca, _larch=None):
     """initial calibration step for MCA:
@@ -41,29 +27,32 @@ def xrf_calib_fitrois(mca, _larch=None):
     if not isLarchMCAGroup(mca):
         print 'Not a valid MCA'
         return
-    
+
     energy = 1.0*mca.energy
     counts = mca.counts
     if hasattr(mca, 'bgr'):
         counts = counts - mca.bgr
     calib = OrderedDict()
     for roi in mca.rois:
-        elem, line = split_roiname(roi.name)
+        words = roi.name.split()
+        elem = words[0].title()
+        family = 'ka'
+        if len(words) > 1:
+            family = words[1]
         try:
-            eknown = xray_lines(elem, _larch=_larch)[line][0]/1000.0
+            eknown = xray_line(elem, family, _larch=_larch)[0]/1000.0
         except:
             continue
-
         llim = max(0, roi.left - roi.bgr_width)
         hlim = min(len(energy)-1, roi.right + roi.bgr_width)
         fit = fit_peak(energy[llim:hlim], counts[llim:hlim],
                        'Gaussian', background=None,
                        _larch=_larch)
-        
+
         ecen = fit.params.center.value
-        fwhm = fit.params.fwhm.value
+        fwhm = 2.354820 * fit.params.sigma.value
         amp  = fit.params.amplitude.value
-        calib[roi.name] = (eknown, ecen, fwhm, amp)
+        calib[roi.name] = (eknown, ecen, fwhm, amp, fit)
     mca.init_calib = calib
 
 def xrf_calib_compute(mca, apply=False, _larch=None):
@@ -73,7 +62,7 @@ def xrf_calib_compute(mca, apply=False, _larch=None):
     To exclude lines from the calibration, first run
      >>> xrf_calib_fitrois(mca)
     then remove items (by ROI name) from the mca.init_calib dictionay
-    
+
     """
     if not isLarchMCAGroup(mca):
         print 'Not a valid MCA'
@@ -82,12 +71,12 @@ def xrf_calib_compute(mca, apply=False, _larch=None):
         xrf_calib_fitrois(mca, _larch=_larch)
 
     # current calib
-    offset, slope = mca.offset, mca.slope 
+    offset, slope = mca.offset, mca.slope
     x, y = [], []
     for cal in mca.init_calib.values():
-        x.append((cal[0] - offset)/slope) 
+        x.append((cal[0] - offset)/slope)
         y.append(cal[1])
-        
+
     _s, _o, r, p, std = linregress(np.array(x), np.array(y))
     mca.new_calib = (_o, _s)
     if apply:
@@ -95,7 +84,7 @@ def xrf_calib_compute(mca, apply=False, _larch=None):
 
 def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
     """apply calibration to MCA
-    
+
     either supply offset and slope arguments (in keV and keV/chan)
     or run xrf_calib_compute(mca) to estimate these from ROI peaks
     """
@@ -112,9 +101,8 @@ def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
     mca.slope = slope
     npts = len(mca.energy)
     mca.energy = offset + slope*np.arange(npts)
-    
+
 def registerLarchPlugin():
     return ('_xrf', {'xrf_calib_fitrois': xrf_calib_fitrois,
                      'xrf_calib_compute': xrf_calib_compute,
-                     'xrf_calib_apply': xrf_calib_apply,
-                     'xray_line_mean': xray_line_mean})
+                     'xrf_calib_apply': xrf_calib_apply})
