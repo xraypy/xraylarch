@@ -8,8 +8,8 @@ from functools import partial
 import wx
 import wx.lib.colourselect  as csel
 
-from wxutils import (SimpleText, FloatCtrl, Font, pack, Button, Check,
-                     HLine, GridPanel, CEN, LEFT, RIGHT)
+from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
+                     Check, HLine, GridPanel, CEN, LEFT, RIGHT)
 
 from wxmplot.colors import hexcolor
 
@@ -75,19 +75,23 @@ class CalibrationFrame(wx.Frame):
             self.wids.append((roi.name, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use))
 
         panel.Add(HLine(panel, size=(900, 3)),  dcol=9, newrow=True)
+        offset = 1000.0*self.mca.offset
+        slope  = 1000.0*self.mca.slope
         panel.AddText("Current Calibration:",   dcol=2, newrow=True)
         panel.AddText("offset(eV):")
-        panel.AddText("%.2f" % (1000*self.mca.offset), dcol=2)
+        panel.AddText("%.3f" % (offset), dcol=1, style=RIGHT)
         panel.AddText("slope(eV/chan):")
-        panel.AddText("%.2f" % (1000*self.mca.slope),  dcol=2)
+        panel.AddText("%.3f" % (slope),  dcol=1, style=RIGHT)
 
         panel.AddText("Refined Calibration:", dcol=2, newrow=True)
-        self.new_offset = wx.TextCtrl(panel, -1, value="--", size=(80, -1))
-        self.new_slope  = wx.TextCtrl(panel, -1, value="--", size=(80, -1))
+        self.new_offset = FloatCtrl(panel, value=offset, precision=3,
+                                   size=(80, -1))
+        self.new_slope = FloatCtrl(panel, value=slope,  precision=3,
+                                   size=(80, -1))
         panel.AddText("offset(eV):")
-        panel.Add(self.new_offset,    dcol=2)
+        panel.Add(self.new_offset,    dcol=1, style=RIGHT)
         panel.AddText("slope(eV/chan):")
-        panel.Add(self.new_slope,     dcol=2)
+        panel.Add(self.new_slope,     dcol=1, style=RIGHT)
 
         panel.Add(Button(panel, 'Compute Calibration',
                          size=(160, -1), action=self.onCalibrate),
@@ -119,15 +123,15 @@ class CalibrationFrame(wx.Frame):
         xrf_calib_compute(mca, apply=True, _larch=self.larch)
         offset, slope = mca.new_calib
         self.calib_updated = True
-        self.new_offset.SetValue("% .2f" % (1000*offset))
-        self.new_slope.SetValue("% .2f" % (1000*slope))
+        self.new_offset.SetValue("% .3f" % (1000*offset))
+        self.new_slope.SetValue("% .3f" % (1000*slope))
 
         # find ROI peak positions using this new calibration
         xrf_calib_fitrois(mca, _larch=self.larch)
         for roi in self.mca.rois:
             eknown, ecen, fwhm, amp, fit = mca.init_calib[roi.name]
             diff  = ecen - eknown
-            for roiname, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
+            for roiname, eknown, ocen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
                 if roiname == roi.name:
                     w_ncen.SetLabel("%.1f" % (1000*ecen))
                     w_ndif.SetLabel("% .1f" % (1000*diff))
@@ -166,21 +170,20 @@ class XRFBackgroundFrame(wx.Frame):
         compr = getattr(parent.mca, 'bgr_compress', 2)
         expon = getattr(parent.mca, 'bgr_exponent', 2.5)
         self.wid_width = FloatCtrl(panel, value=width, minval=0, maxval=10,
-                                   precision=1)
-        self.wid_compress = FloatCtrl(panel, value=compr, minval=0, maxval=8,
-                                   precision=0)
-        self.wid_exponent = FloatCtrl(panel, value=expon, minval=1, maxval=8,
-                                   precision=0)
+                                   precision=1, size=(80, -1))
 
-        panel.AddText("Energy Width: ", newrow=True, style=LEFT)
+        self.wid_compress = Choice(panel, choices=['1', '2', '4', '8', '16'],
+                                   default=1)
+
+        self.wid_exponent = Choice(panel, choices=['2', '4', '6'], default=0)
+
+        panel.AddText(" Energy Width: ", newrow=True, style=LEFT)
         panel.Add(self.wid_width, style=LEFT)
-        panel.AddText(" (keV) ", style=LEFT)
-        panel.AddText("Exponent: ", newrow=True, style=LEFT)
+        panel.AddText(" (keV) ",   style=LEFT)
+        panel.AddText(" Exponent: ", newrow=True, style=LEFT)
         panel.Add(self.wid_exponent, style=LEFT)
-        panel.AddText(" (even numbers) ", style=LEFT)
-        panel.AddText("Compression: ", newrow=True, style=LEFT)
+        panel.AddText(" Compression: ", style=LEFT)
         panel.Add(self.wid_compress, style=LEFT)
-        panel.AddText(" (even numbers) ", style=LEFT)
 
         panel.Add(HLine(panel, size=(300, 3)),  dcol=4, newrow=True)
 
@@ -196,8 +199,8 @@ class XRFBackgroundFrame(wx.Frame):
 
     def onCalc(self, event=None):
         width = self.wid_width.GetValue()
-        compress = self.wid_compress.GetValue()
-        exponent = self.wid_exponent.GetValue()
+        compress = int(self.wid_compress.GetStringSelection())
+        exponent = int(self.wid_exponent.GetStringSelection())
         mca = self.parent.mca
         xrf_background(energy=mca.energy, counts=mca.counts,
                        group=mca, width=width, compress=compress,

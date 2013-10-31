@@ -67,7 +67,6 @@ class XRFPeak(Group):
                                            expr=expr,
                                            _larch=self._larch)
 
-
     def __repr__(self):
         if self.name is not None:
             return '<XRFPeak Group: %s>' % self.name
@@ -101,10 +100,10 @@ class XRFPeak(Group):
             out.append(param_value(val))
         return out
 
-    def _calc_peak(self, x, amplitude=None, center=None, sigma=None,
+    def calc_peak(self, x, amplitude=None, center=None, sigma=None,
                    shape=None, **kws):
         """
-        calculate peak function for x values
+        calculate peak function for x values, write to 'counts' attribute
         """
         (amp, sigma, center) = self._peakparams(amplitude=amplitude,
                                                 center=center,
@@ -119,8 +118,7 @@ class XRFPeak(Group):
         elif shape.lower().startswith('pvoig'):
             fcn = pvoigt
 
-        return amp*fcn(x, cen=center, sigma=sigma)
-
+        self.counts =  amp*fcn(x, cen=center, sigma=sigma)
 
 def xrf_peak(name=None, amplitude=1, sigma=0.1,
              center=None, shape='gaussian',

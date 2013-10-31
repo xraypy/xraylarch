@@ -4,9 +4,13 @@ XRF Calibration routines
 """
 
 import numpy as np
-from collections import OrderedDict
-
 import larch
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    from larch.utils import OrderedDict
+    
 larch.use_plugin_path('xrf')
 from mca import isLarchMCAGroup
 from roi import split_roiname
@@ -29,6 +33,7 @@ def xrf_calib_fitrois(mca, _larch=None):
         return
 
     energy = 1.0*mca.energy
+    chans = 1.0*np.arange(len(energy))
     counts = mca.counts
     if hasattr(mca, 'bgr'):
         counts = counts - mca.bgr
@@ -44,15 +49,15 @@ def xrf_calib_fitrois(mca, _larch=None):
         except:
             continue
         llim = max(0, roi.left - roi.bgr_width)
-        hlim = min(len(energy)-1, roi.right + roi.bgr_width)
-        fit = fit_peak(energy[llim:hlim], counts[llim:hlim],
-                       'Gaussian', background=None,
+        hlim = min(len(chans)-1, roi.right + roi.bgr_width)
+        fit = fit_peak(chans[llim:hlim], counts[llim:hlim],
+                       'Gaussian', background='constant', 
                        _larch=_larch)
 
-        ecen = fit.params.center.value
-        fwhm = 2.354820 * fit.params.sigma.value
-        amp  = fit.params.amplitude.value
-        calib[roi.name] = (eknown, ecen, fwhm, amp, fit)
+        ccen = fit.params.center.value 
+        ecen = ccen * mca.slope + mca.offset
+        fwhm = 2.354820 * fit.params.sigma.value * mca.slope 
+        calib[roi.name] = (eknown, ecen, fwhm, ccen, fit)
     mca.init_calib = calib
 
 def xrf_calib_compute(mca, apply=False, _larch=None):
@@ -72,13 +77,14 @@ def xrf_calib_compute(mca, apply=False, _larch=None):
 
     # current calib
     offset, slope = mca.offset, mca.slope
-    x, y = [], []
-    for cal in mca.init_calib.values():
-        x.append((cal[0] - offset)/slope)
-        y.append(cal[1])
+    x = np.array([c[3] for c in mca.init_calib.values()])
+    y = np.array([c[0] for c in mca.init_calib.values()])
+    _s, _o, r, p, std = linregress(x, y)
 
-    _s, _o, r, p, std = linregress(np.array(x), np.array(y))
     mca.new_calib = (_o, _s)
+    mca.cal_x = x
+    mca.cal_y = y
+
     if apply:
         xrf_calib_apply(mca, offset=_o, slope=_s)
 
