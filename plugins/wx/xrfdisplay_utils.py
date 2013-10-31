@@ -54,8 +54,7 @@ class CalibrationFrame(wx.Frame):
         xrf_calib_fitrois(mca, _larch=self.larch)
 
         for roi in self.mca.rois:
-            eknown, ecen, fwhm, amp = mca.init_calib[roi.name]
-
+            eknown, ecen, fwhm, amp, fit = mca.init_calib[roi.name]
             diff = ecen - eknown
             name = ('   ' + roi.name+' '*10)[:10]
             opts = {'style': CEN, 'size':(100, -1)}
@@ -126,7 +125,7 @@ class CalibrationFrame(wx.Frame):
         # find ROI peak positions using this new calibration
         xrf_calib_fitrois(mca, _larch=self.larch)
         for roi in self.mca.rois:
-            eknown, ecen, fwhm, amp = mca.init_calib[roi.name]
+            eknown, ecen, fwhm, amp, fit = mca.init_calib[roi.name]
             diff  = ecen - eknown
             for roiname, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use in self.wids:
                 if roiname == roi.name:
