@@ -147,7 +147,7 @@ def mu_chantler(element, energy, incoh=False, photo=False, _larch=None):
     if incoh: col = 'mu_incoh'
     return xdb._getChantler(element, energy, column=col)
 
-def mu_elam(element, energy, _larch=None):
+def mu_elam(element, energy, kind='total', _larch=None):
     """returns x-ray mass attenuation coefficient, mu/rho, for a
     selected element and input energy (or array of energies) in eV.
     Data is from the Elam tables.
@@ -158,11 +158,16 @@ def mu_elam(element, energy, _larch=None):
     ---------
     element:  atomic number, atomic symbol for element
     energy:   energy or array of energies in eV
+    kind:     one of 'photo', 'coh', and 'incoh' for photo-absorption,
+              coherent scattering, and incoherent scattering
+              cross sections, respectively.
+
+    Data from Elam, Ravel, and Sieber.    
     """
     if _larch is None:
         return
     xdb = get_xraydb(_larch)
-    return xdb.mu_elam(element, energy)
+    return xdb.mu_elam(element, energy, kind=kind)
 
 def coherent_cross_section_elam(element, energy, _larch=None):
     """returns coherent scattering cross section

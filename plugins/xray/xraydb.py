@@ -512,8 +512,8 @@ class xrayDB(object):
             return out[0]
         return out
 
-    def mu_elam(self, element, energies):
-        """returns photo-absorption cross section for an element
+    def mu_elam(self, element, energies, kind='total'):
+        """returns X-ray attenuation cross section for an element
         at energies (in eV)
 
         returns values in units of cm^2 / gr
@@ -522,11 +522,19 @@ class xrayDB(object):
         ---------
         element:  atomic number, atomic symbol for element
         energies: energies in eV to calculate cross-sections
+        kind:     'photo' or 'total' (default) for whether to
+                  return photo-absorption or total cross-section.
 
         Data from Elam, Ravel, and Sieber.
         """
-        return self.Elam_CrossSection(element, energies, kind='photo')
+        calc = self.Elam_CrossSection
+        xsec = calc(element, energies, kind='photo')
+        if kind.lower().startswith('tot'):
+            xsec += calc(element, energies, kind='coh')
+            xsec += calc(element, energies, kind='incoh')
 
+        return xsec
+    
     def coherent_cross_section_elam(self, element, energies):
         """returns coherenet scattering cross section for an element
         at energies (in eV)
