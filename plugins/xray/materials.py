@@ -2,8 +2,11 @@ import os
 import numpy as np
 import larch
 larch.use_plugin_path('xray')
-from chemparser import chemparse
+from xraydb_plugin import mu_elam, atomic_mass
 
+from chemparser import chemparse
+from physical_constants import AMU, BARN
+AMUBARN = AMU*BARN
 MODNAME = '_xray'
 
 def get_materials(_larch):
@@ -32,13 +35,41 @@ def get_materials(_larch):
     _larch.symtable.set_symbol(symname, mat)
     return mat
 
-def lookup_material(name, _larch=None):
+def material_mu(name, energy, kind='total', _larch=None):
+    """
+    return X-ray attenuation (in 1/cm) for a material by name
+    
+    arguments
+    ---------
+     name:    name of material, known from materials list
+     energy:  energy or array of energies in eV
+     kind:    'photo' or 'total' (default) for whether to
+              return photo-absorption or total cross-section.
+
+     Data from Elam, Ravel, and Sieber.
+    """
+    if _larch is None:
+        return
+    mater = get_materials(_larch).get(name.lower(), None)
+    if mater is None:
+        _larch.writer.write('Material %s is not known' % name)
+    density = mater[1]
+    formula = chemparse(mater[0])
+    wt_tot, mu_tot = 0.0, 0.0
+    for elem, weight in formula.items():
+        mu = mu_elam(elem, energy, kind=kind, _larch=_larch)
+        wt = AMUBARN * weight * atomic_mass(elem, _larch=_larch)
+        mu_tot += mu * wt
+        wt_tot += wt
+    return density*mu_tot/wt_tot
+
+def material_lookup(name, _larch=None):
     """lookup material """
     if _larch is None:
         return
     return get_materials(_larch).get(name.lower(), None)
 
-def save_material(name, formula, density, _larch=None):
+def material_save(name, formula, density, _larch=None):
     """ save material in personal db"""
     if _larch is None:
         return
@@ -66,6 +97,7 @@ def initializeLarchPlugin(_larch=None):
          get_materials(_larch)
 
 def registerLarchPlugin():
-    return ('_xray', {'lookup_material': lookup_material,
-                      'save_material': save_material,
+    return ('_xray', {'material_lookup': material_lookup,
+                      'material_save': material_save,
+                      'material_mu': material_mu,                      
                       })
