@@ -1,3 +1,4 @@
 xraydb_plugin.py
 cromer_liberman.py
 chemparser.py
+materials.py
