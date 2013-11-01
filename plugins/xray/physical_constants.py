@@ -13,6 +13,9 @@ BARN     = 1.e-24   # cm^2
 # atoms/mol =  6.0221413e23  atoms/mol
 AVOGADRO = consts.Avogadro
 
+# ATOMIC MASS in grams
+AMU = consts.atomic_mass * 1000.0
+
 # Planck's Constant
 #   h*c    ~= 12398.42 eV*Ang
 #   hbar*c ~=  1973.27 eV*Ang
