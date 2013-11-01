@@ -156,64 +156,6 @@ class CalibrationFrame(wx.Frame):
     def onClose(self, event=None):
         self.Destroy()
 
-class XRFBackgroundFrame(wx.Frame):
-    def __init__(self, parent, size=(350, -1)):
-        self.parent = parent
-        wx.Frame.__init__(self, parent, -1, 'Fit Background',
-                          size=size, style=wx.DEFAULT_FRAME_STYLE)
-
-        self.SetFont(Font(8))
-        panel = GridPanel(self)
-
-        panel.AddText("Background Parameters", colour='#880000', dcol=3)
-        width = getattr(parent.mca, 'bgr_width', 2.5)
-        compr = getattr(parent.mca, 'bgr_compress', 2)
-        expon = getattr(parent.mca, 'bgr_exponent', 2.5)
-        self.wid_width = FloatCtrl(panel, value=width, minval=0, maxval=10,
-                                   precision=1, size=(80, -1))
-
-        self.wid_compress = Choice(panel, choices=['1', '2', '4', '8', '16'],
-                                   default=1)
-
-        self.wid_exponent = Choice(panel, choices=['2', '4', '6'], default=0)
-
-        panel.AddText(" Energy Width: ", newrow=True, style=LEFT)
-        panel.Add(self.wid_width, style=LEFT)
-        panel.AddText(" (keV) ",   style=LEFT)
-        panel.AddText(" Exponent: ", newrow=True, style=LEFT)
-        panel.Add(self.wid_exponent, style=LEFT)
-        panel.AddText(" Compression: ", style=LEFT)
-        panel.Add(self.wid_compress, style=LEFT)
-
-        panel.Add(HLine(panel, size=(300, 3)),  dcol=4, newrow=True)
-
-        panel.Add(Button(panel, 'Update Background',
-                         size=(150, -1), action=self.onCalc),
-                         dcol=3, newrow=True, style=LEFT)
-        panel.Add(Button(panel, 'Done',
-                         size=(80, -1), action=self.onClose),
-                         dcol=1, newrow=True, style=LEFT)
-        panel.pack()
-        self.Show()
-        self.Raise()
-
-    def onCalc(self, event=None):
-        width = self.wid_width.GetValue()
-        compress = int(self.wid_compress.GetStringSelection())
-        exponent = int(self.wid_exponent.GetStringSelection())
-        mca = self.parent.mca
-        xrf_background(energy=mca.energy, counts=mca.counts,
-                       group=mca, width=width, compress=compress,
-                       exponent=exponent, _larch=self.parent.larch)
-        mca.bgr_width = width
-        mca.bgr_compress = compress
-        mca.bgr_exponent = exponent
-        self.parent.plotmca(mca)
-        self.parent.oplot(mca.energy, mca.bgr, label='background',
-                          color=self.parent.conf.bgr_color)
-
-    def onClose(self, event=None):
-        self.Destroy()
 
 class ColorsFrame(wx.Frame):
     """settings frame for XRFDisplay"""

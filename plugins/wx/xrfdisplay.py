@@ -35,8 +35,11 @@ from wxutils import (SimpleText, EditableListBox, Font,
                      GridPanel, CEN, LEFT, RIGHT)
 
 from periodictable import PeriodicTablePanel
-from xrfdisplay_utils import (CalibrationFrame, XRFBackgroundFrame,
-                              ColorsFrame, XrayLinesFrame, XRFDisplayConfig)
+
+from xrfdisplay_utils import (CalibrationFrame, ColorsFrame,
+                              XrayLinesFrame, XRFDisplayConfig)
+
+from xrfdisplay_fitpeaks import FitSpectraFrame
 
 from gsemca_file import GSEMCA_File, gsemca_group
 
@@ -534,9 +537,7 @@ class XRFDisplayFrame(wx.Frame):
         amenu = wx.Menu()
         MenuItem(self, amenu, "&Calibrate Energy\tCtrl+E",
                  "Calibrate Energy",  self.onCalibrateEnergy)
-        MenuItem(self, amenu, "Fit background\tCtrl+B",
-                 "Fit smooth background",  self.onFitBgr)
-        MenuItem(self, amenu, "Fit Peaks",
+        MenuItem(self, amenu, "Fit Peaks\tCtrl+F",
                  "Fit Peaks in spectra",  self.onFitPeaks)
 
         self.menubar.Append(fmenu, "&File")
@@ -806,16 +807,11 @@ class XRFDisplayFrame(wx.Frame):
             self.win_calib = CalibrationFrame(self, mca=self.mca,
                                               larch=self.larch)
 
-    def onFitBgr(self, event=None, **kws):
-        try:
-            self.win_bgr.Raise()
-        except:
-            self.win_bgr = XRFBackgroundFrame(self)
-
-
     def onFitPeaks(self, event=None, **kws):
-        print '  onFit Peaks   '
-        pass
+        try:
+            self.win_fit.Raise()
+        except:
+            self.win_fit = FitSpectraFrame(self)
 
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
