@@ -60,6 +60,11 @@ def save_material(name, formula, density, _larch=None):
     fh.write(''.join(text))
     fh.close()
 
+def initializeLarchPlugin(_larch=None):
+    """initialize xraydb"""
+    if _larch is not None:
+         get_materials(_larch)
+
 def registerLarchPlugin():
     return ('_xray', {'lookup_material': lookup_material,
                       'save_material': save_material,
