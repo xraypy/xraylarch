@@ -545,7 +545,7 @@ class GSEXRM_MapFile(object):
 
         yval, xmapf, sisf, xpsf, etime = self.rowdata[irow]
         reverse = (irow % 2 != 0)
-        # print 'Read Row ', irow
+        # print 'Read Row ', irow, self.ixaddr
         return GSEXRM_MapRow(yval, xmapf, xpsf, sisf, irow=irow,
                              ixaddr=self.ixaddr,
                              dimension=self.dimension, npts=self.npts,
@@ -920,10 +920,15 @@ class GSEXRM_MapFile(object):
         pos1 = scanconf['pos1']
         self.pos_addr = [pos1]
         self.pos_desc = [slow_pos[pos1]]
-        self.ixaddr = -1
-        for i, posname in enumerate(fast_pos):
-            if posname == pos1:
-                self.ixaddr = i
+        # note: XPS gathering file now saving ONLY data for the fast axis
+        self.ixaddr = 0
+        # self.ixaddr = -1
+        # print 'POS1 ', pos1
+        # print 'Fast Pos: ', fast_pos
+        # for i, posname in enumerate(fast_pos):
+        #     if posname == pos1:
+        #         self.ixaddr = i
+        # print 'ixaddr = ', self.ixaddr
         if self.dimension > 1:
             yaddr = scanconf['pos2']
             self.pos_addr.append(yaddr)
