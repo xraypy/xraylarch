@@ -164,8 +164,7 @@ class ImageDisplay(ImageFrame):
             IMG_DISPLAYS.pop(self.window)
         self.Destroy()
 
-    def onCursor(self,x=None, y=None, ix=None, iy=None,
-                 val=None, **kw):
+    def onCursor(self,x=None, y=None, ix=None, iy=None, val=None, **kw):
         symtable = ensuremod(self._larch, MODNAME)
         if symtable is None:
             return
@@ -243,7 +242,7 @@ def _xrf_plot(x, y=None, mca=None, win=1, new=True, _larch=None,
         mca = x
         y = x.counts
         x = x.energy
-    
+
     if new:
         if isLarchMCAGroup(mca):
             plotter.plotmca(mca, **kws)
