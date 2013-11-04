@@ -11,17 +11,17 @@ import wx.lib.agw.pycollapsiblepane as CP
 from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
                      Check, HLine, GridPanel, RowPanel, CEN, LEFT, RIGHT)
 
-import larch
+from larch import use_plugin_path, Group, Parameter
 from larch.larchlib import Empty
-larch.use_plugin_path('xrf')
+use_plugin_path('xrf')
 
 from xrf_bgr import xrf_background
 from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
-
+from parameter import ParameterPanel
 try:
     from collections import OrderedDict
 except ImportError:
-    from larch.utils import OrderedDict    
+    from larch.utils import OrderedDict
 
 def read_filterdata(flist, _larch):
     """ read filters data"""
@@ -33,48 +33,30 @@ def read_filterdata(flist, _larch):
             out[name]  = materials[name]
     return out
 
-class FitVariable(wx.Panel):
-    def __init__(self, parent, value=None, minval=None, maxval=None,
-                 size=(90, -1), precision=4, allow_expr=False,
-                 allow_global=False):
-        wx.Panel.__init__(self, parent, -1)
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        vary_choices = ['vary', 'fix']
-        if allow_global:
-            vary_choices.append('global')
-        if allow_expr:
-            vary_choices.append('constrain')
-        self.val = FloatCtrl(self, value=value, size=size,
-                             precision=precision,
-                             minval=minval, maxval=maxval)
-        self.vary = Choice(self, choices=vary_choices, size=(90, -1))
-
-        sizer.Add(self.val, 1, LEFT|wx.GROW|wx.ALL)
-        sizer.Add(self.vary, 0, LEFT|wx.GROW|wx.ALL)
-        pack(self, sizer)
-            
 
 class FitSpectraFrame(wx.Frame):
     """Frame for Spectral Analysis"""
 
-    Filter_Lengths = ['microns', 'mm', 'cm']                  
+    Filter_Lengths = ['microns', 'mm', 'cm']
     Filter_Materials = ['None', 'air', 'nitrogen', 'helium', 'argon', 'kapton',
                         'mylar', 'pmma', 'water', 'aluminum', 'silicon nitride',
                         'silicon', 'quartz', 'sapphire', 'diamond', 'graphite',
                         'boron nitride']
 
     Detector_Materials = ['Si', 'Ge']
-    
-    def __init__(self, parent, size=(750, 700)):
+
+    def __init__(self, parent, size=(800, 700)):
         self.parent = parent
         self.mca = parent.mca
         conf = parent.conf
+        self.paramgroup = Group()
+
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
         if not hasattr(self.parent, 'filters_data'):
             self.parent.filters_data = read_filterdata(self.Filter_Materials,
                                                        _larch=parent._larch)
-            
+
         self.wids = Empty()
         self.SetFont(Font(9))
         panel = self.panel = wx.Panel(self)
@@ -92,13 +74,13 @@ class FitSpectraFrame(wx.Frame):
 
         sizer.Add(self.createpanel_settings(panel),  0, LEFT, 5)
 
-        sizer.Add((5,5))        
+        sizer.Add((5,5))
         sizer.Add(HLine(panel, size=(675, 2)),  0, CEN|LEFT|wx.TOP|wx.GROW)
         sizer.Add((5,5))
-        
+
         sizer.Add(self.createpanel_peaks(panel),  0, LEFT, 5)
 
-        sizer.Add((5,5))        
+        sizer.Add((5,5))
         sizer.Add(HLine(panel, size=(675, 2)),  0, CEN|LEFT|wx.TOP|wx.GROW)
         sizer.Add((5,5))
 
@@ -107,7 +89,7 @@ class FitSpectraFrame(wx.Frame):
         pack(panel, sizer)
         self.Show()
         self.Raise()
-       
+
 
     def createpanel_peaks(self, panel):
         "create row for filters parameters"
@@ -115,44 +97,47 @@ class FitSpectraFrame(wx.Frame):
         self.wids.peaks = []
 
         p = GridPanel(panel)
-        
+
         p.AddText(" Peaks to Analyze: ",
                   colour='#880000', style=LEFT, dcol=3)
-        
-        p.AddManyText((' ROI Name', 'Fit?', 'Center', 'FWHM',
-                       'Amplitude', 'Amplitude Expression'),   newrow=True)
-        
+
+        p.AddManyText((' ROI Name', 'Fit?', 'Center', 'Sigma',
+                       'Amplitude'),   newrow=True)
+
         offset, slope = self.mca.offset, self.mca.slope
         for iroi, roi in enumerate(self.mca.rois):
             cenval = offset + slope*(roi.left + roi.right)/2.0
-            fwhm   = slope*(roi.right - roi.left) / 2.0
-            amp   = self.mca.counts[(roi.left + roi.right)/2.0]*4.0
-            
-            minval = offset + slope*(roi.left  - 4 * roi.bgr_width)
-            maxval = offset + slope*(roi.right + 4 * roi.bgr_width)
-            # print roi.left, roi.right, (roi.left + roi.right)/2.0, cenval
-            # print roi,  cenval, fwhm , minval, maxval
+            sigval = slope*(roi.right - roi.left) / 3.0
+            ampval  = self.mca.counts[(roi.left + roi.right)/2.0]*4.0
+
+            mincen = offset + slope*(roi.left  - 4 * roi.bgr_width)
+            maxcen = offset + slope*(roi.right + 4 * roi.bgr_width)
+
+            pname = roi.name.replace(' ', '').lower()
+            ampnam = '%s_amp' % pname
+            cennam = '%s_cen' % pname
+            signam = '%s_sig' % pname
+            p_amp = Parameter(value=ampval, vary=True, min=0, name=ampnam)
+            p_sig = Parameter(value=sigval, vary=True, min=0, name=signam)
+            p_cen = Parameter(value=cenval, vary=True, name=cennam,
+                              min=mincen, max=maxcen)
+
+            setattr(self.paramgroup, ampnam, p_amp)
+            setattr(self.paramgroup, cennam, p_cen)
+            setattr(self.paramgroup, signam, p_sig)
 
             _use   = Check(p, default=True)
-            _cen   = FitVariable(p, value=cenval, minval=minval,
-                                 maxval=maxval, size=(65, -1))
-            
-            _fwhm   = FitVariable(p, value=fwhm, minval=0, 
-                                  allow_global=True,  size=(65, -1))
-            
-            _amp    = FitVariable(p, value=amp, minval=0, precision=2, 
-                                  allow_expr=True, size=(90, -1))
+            _cen   = ParameterPanel(p, p_cen, precision=3)
+            _sig   = ParameterPanel(p, p_sig, precision=3)
+            _amp   = ParameterPanel(p, p_amp, precision=2)
 
-            _ampexpr = wx.TextCtrl(p, value='', size=(180, -1))
-            
-            self.wids.peaks.append((_use, _cen, _fwhm, _amp, _ampexpr))
+            self.wids.peaks.append((_use, _cen, _sig, _amp))
 
             p.AddText(' %s' % roi.name,  newrow=True, style=LEFT)
             p.Add(_use, style=wx.ALIGN_CENTER)
             p.Add(_cen)
-            p.Add(_fwhm)
+            p.Add(_sig)
             p.Add(_amp)
-            p.Add(_ampexpr)
         p.pack()
         return p
 
@@ -162,14 +147,18 @@ class FitSpectraFrame(wx.Frame):
         conf = self.parent.conf
         wids = self.wids
 
-        wids.fwhm_off   = FitVariable(p, value=0.100, size=(70, -1),
-                                      precision=3, allow_expr=False)
-        wids.fwhm_slope = FitVariable(p, value=0.000, size=(70, -1),
-                                      precision=3, allow_expr=False)
-        
-       
+        onam, snam = 'global_sigma_offset', 'global_sigma_slope'
+        p_sig_offset = Parameter(value=0.1, vary=True, minval=0, name=onam)
+        p_sig_slope  = Parameter(value=0.001, vary=True, name=snam)
+
+        setattr(self.paramgroup, onam, p_sig_offset)
+        setattr(self.paramgroup, snam, p_sig_slope)
+
+        wids.gsig_offset = ParameterPanel(p, p_sig_offset, precision=3)
+        wids.gsig_slope = ParameterPanel(p, p_sig_slope, precision=3)
+
         p.AddText(" Fit Settings: ", colour='#880000', style=LEFT, dcol=3)
-        
+
         row1 = RowPanel(p)
 
         wids.fit_emin = FloatCtrl(row1, value=conf.e_min, size=(70, -1),
@@ -178,7 +167,7 @@ class FitSpectraFrame(wx.Frame):
                                   minval=0, maxval=1000, precision=2)
 
         wids.det_mat = Choice(row1, choices=self.Detector_Materials,
-                              size=(50, -1), default=0)
+                              size=(55, -1), default=0)
         wids.det_thk = FloatCtrl(row1, value=0.40, size=(70, -1),
                                  minval=0, maxval=100, precision=3)
 
@@ -195,15 +184,16 @@ class FitSpectraFrame(wx.Frame):
 
         p.Add(row1, dcol=8, newrow=True, style=LEFT)
 
-        p.AddText('  Global FWHM Energy Dependence: ', newrow=True, dcol=3, style=LEFT)
-        p.AddText('   FWHM = ', style=LEFT, newrow=True)
+        p.AddText('  Global Peak Width Energy Dependence: ',
+                  newrow=True, dcol=3, style=LEFT)
+        p.AddText('   sigma = ', style=LEFT, newrow=True)
 
-        p.Add(wids.fwhm_off)
+        p.Add(wids.gsig_offset)
         p.AddText( ' + ')
-        p.Add(wids.fwhm_slope)
+        p.Add(wids.gsig_slope)
         p.AddText( ' * Energy (keV)')
-
         p.pack()
+
         return p
 
     def createpanel_bgr(self, panel):
@@ -263,15 +253,13 @@ class FitSpectraFrame(wx.Frame):
     def onFilterMaterial(self, evt=None, index=0):
         name = evt.GetString()
         form, den = self.parent.filters_data.get(name, ('', 0))
-        print 'onFilterMat ', name, index, form, den
         self.wids.filters[index][1].SetValue(den)
         thick = self.wids.filters[index][2]
-        if thick.GetValue()  < 1.e-5:
-            thick.SetValue(1)
-            
+        if thick.wids.val.GetValue()  < 1.e-5:
+            thick.wids.val.SetValue(0.0010)
+
     def onEditFilters(self, evt=None):
         print 'on Edit Filters ',  evt
-
 
 
     def createpanel_filters(self, panel):
@@ -280,44 +268,47 @@ class FitSpectraFrame(wx.Frame):
         self.wids.filters = []
 
         p = GridPanel(panel)
-        
+
         p.AddText(" Filters and Attenuation Paths: ",
                   colour='#880000', style=LEFT, dcol=3)
-        
+
         bx = Button(p, 'Customize Filter List', size=(150, -1),
                     action = self.onEditFilters)
         bx.Disable()
         p.Add(bx, dcol=3)
-       
+
         p.AddManyText((' filter', 'material', 'density (gr/cm^3)',
-                       'thickness', 'units', 'refine thickness?'),
+                       'thickness', 'units'),
                       newrow=True)
-        
+
         for i in range(4):
             _mat = Choice(p, choices=self.Filter_Materials, default=0, size=(125, -1),
                           action=partial(self.onFilterMaterial, index=i))
             _den = FloatCtrl(p, value=0, minval=0, maxval=30,
-                             precision=4, size=(60, -1))
-            _len = FloatCtrl(p, value=0, minval=0,
-                             precision=4, size=(60, -1))
-            _units  = Choice(p, choices=self.Filter_Lengths,
-                             default=1, size=(100, -1))
-            _fit = Check(p, default=False)
-            
-            self.wids.filters.append((_mat, _den, _len, _units, _fit))
+                             precision=4, size=(75, -1))
+
+            pnam = 'filter%i_thickness' % (i+1)
+            param = Parameter(value=0.0, vary=False, min=0, name=pnam)
+            setattr(self.paramgroup, pnam, param)
+            _len  = ParameterPanel(p, param, precision=4)
+            _units  = SimpleText(p, 'mm')
+            # _bunits = Choice(p, choices=self.Filter_Lengths, default=1, size=(100, -1))
+            # _fit = Check(p, default=False)
+
+            self.wids.filters.append((_mat, _den, _len))
             p.AddText('  %i ' % (i+1), newrow=True, style=LEFT)
             p.Add(_mat)
             p.Add(_den, style=wx.ALIGN_CENTER)
             p.Add(_len)
             p.Add(_units)
-            p.Add(_fit, style=wx.ALIGN_CENTER)
+            # p.Add(_fit, style=wx.ALIGN_CENTER)
         p.pack()
         return p
 
 
     def onClose(self, event=None):
         self.Destroy()
-        
+
 
 
     def createpanel_bgr_withcollapse(self, panel):
@@ -330,7 +321,7 @@ class FitSpectraFrame(wx.Frame):
         label = 'Background Parameters  '
         cpane = wx.CollapsiblePane(panel,
                                    style=wx.CP_DEFAULT_STYLE|wx.CP_NO_TLW_RESIZE)
-        
+
         cpane.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED,
                    partial(self.onCollapse, panel=cpane, label=label))
         cpane.Collapse(True)
