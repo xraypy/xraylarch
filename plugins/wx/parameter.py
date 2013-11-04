@@ -35,9 +35,9 @@ infoicon = PyEmbeddedImage(
 def SetTip(wid, msg):
     wid.SetToolTip(wx.ToolTip(msg))
 
-PAR_FIX = 'fixed'
-PAR_VAR = 'variable'
-PAR_CON = 'constrained'
+PAR_FIX = 'fix'
+PAR_VAR = 'vary'
+PAR_CON = 'constrain'
 VARY_CHOICES = (PAR_FIX, PAR_VAR, PAR_CON)
 
 class ParameterDialog(wx.Dialog):
@@ -67,7 +67,7 @@ class ParameterDialog(wx.Dialog):
 
         self.wids = Empty()
         self.wids.vary = Choice(self, choices=VARY_CHOICES,
-                                action=self.onVaryChoice, size=(120, -1))
+                                action=self.onVaryChoice, size=(110, -1))
         self.wids.vary.SetSelection(vary)
 
         self.wids.val  = FloatCtrl(panel, value=param.value, size=(100, -1),
@@ -131,7 +131,7 @@ class ParameterPanel(wx.Panel):
     param = Parameter(value=11.22, vary=True, min=0, name='x1')
     wid   = ParameterPanel(parent_wid, param)
     """
-    def __init__(self, parent, param, size=(90, -1), precision=4):
+    def __init__(self, parent, param, size=(80, -1), precision=4):
         self.param = param
         self.precision = precision
         wx.Panel.__init__(self, parent, -1)
@@ -147,7 +147,7 @@ class ParameterPanel(wx.Panel):
                                   precision=precision, size=size)
 
         self.wids.vary = Choice(self, choices=VARY_CHOICES,
-                                action=self.onVaryChoice, size=(120, -1))
+                                action=self.onVaryChoice, size=(95, -1))
 
         vary_choice = 0
         if param.vary:
