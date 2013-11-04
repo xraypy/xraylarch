@@ -66,7 +66,7 @@ class ParameterDialog(wx.Dialog):
         if expr is None:   expr = ''
 
         self.wids = Empty()
-        self.wids.vary = Choice(self, choices=VARY_CHOICES,
+        self.wids.vary = Choice(panel, choices=VARY_CHOICES,
                                 action=self.onVaryChoice, size=(110, -1))
         self.wids.vary.SetSelection(vary)
 
