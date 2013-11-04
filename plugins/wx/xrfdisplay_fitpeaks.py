@@ -7,6 +7,8 @@ from functools import partial
 
 import wx
 import wx.lib.agw.pycollapsiblepane as CP
+import wx.lib.agw.flatnotebook as flat_nb
+import wx.lib.scrolledpanel as scrolled
 
 from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
                      Check, HLine, GridPanel, RowPanel, CEN, LEFT, RIGHT)
@@ -22,6 +24,8 @@ try:
     from collections import OrderedDict
 except ImportError:
     from larch.utils import OrderedDict
+
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 def read_filterdata(flist, _larch):
     """ read filters data"""
@@ -48,7 +52,7 @@ class FitSpectraFrame(wx.Frame):
     gsig_offset = 'global_sigma_offset'
     gsig_slope  = 'global_sigma_slope'
 
-    def __init__(self, parent, size=(800, 700)):
+    def __init__(self, parent, size=(700, 400)):
         self.parent = parent
         self.larch = parent._larch
         self.mca = parent.mca
@@ -66,50 +70,39 @@ class FitSpectraFrame(wx.Frame):
 
         self.wids = Empty()
         self.SetFont(Font(9))
-        panel = self.panel = wx.Panel(self)
+        self.panels = {}
+        self.nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
+        # self.nb.SetBackgroundColour('#F0F0DA')
+        self.SetBackgroundColour('#F0F0DA')
+
+        self.nb.AddPage(self.settings_page(),  'Fit & Background Settings')
+        self.nb.AddPage(self.filters_page(),  'Filters and Attenuation')
+        self.nb.AddPage(self.fitpeaks_page(), 'Filters and Attenuation')
+
+        self.nb.SetSelection(0)
+
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.createpanel_bgr(panel),  0, LEFT, 5)
-        sizer.Add(HLine(panel, size=(675, 2)),  0, CEN|LEFT|wx.TOP|wx.GROW)
-
-        sizer.Add(self.createpanel_filters(panel), 0, LEFT, 5)
-        sizer.Add((5,5))
-        sizer.Add(HLine(panel, size=(675, 2)),  0, CEN|LEFT|wx.TOP|wx.GROW)
-        sizer.Add((5,5))
-
-        # sizer.Add(self.createpanel_bgr_withcollapse(panel),  0, wx.ALL|wx.EXPAND|LEFT)
-        # sizer.Add((10,10))
-
-        sizer.Add(self.createpanel_settings(panel),  0, LEFT, 5)
+        sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
 
         sizer.Add((5,5))
-        sizer.Add(HLine(panel, size=(675, 2)),  0, CEN|LEFT|wx.TOP|wx.GROW)
+        sizer.Add(HLine(self, size=(675, 2)),  0, CEN|LEFT|wx.TOP|wx.GROW)
         sizer.Add((5,5))
 
-        sizer.Add(self.createpanel_peaks(panel),  0, LEFT, 5)
-
-        sizer.Add((5,5))
-        sizer.Add(HLine(panel, size=(675, 2)),  0, CEN|LEFT|wx.TOP|wx.GROW)
-        sizer.Add((5,5))
-
-        sizer.Add(Button(panel, 'Done',
+        sizer.Add(Button(self, 'Done',
                          size=(80, -1), action=self.onClose), 0, CEN)
-        pack(panel, sizer)
+        pack(self, sizer)
         self.Show()
         self.Raise()
 
 
-    def createpanel_peaks(self, panel):
+    def fitpeaks_page(self):
         "create row for filters parameters"
         mca = self.parent.mca
         self.wids.peaks = []
 
-        p = GridPanel(panel)
+        p = GridPanel(self)
 
-        p.AddText(" Peaks to Analyze: ",
-                  colour='#880000', style=LEFT, dcol=3)
-
-        p.AddManyText((' ROI Name', 'Fit?', 'Center', 'Sigma',
-                       'Amplitude'),   newrow=True)
+        p.AddManyText((' ROI Name', 'Fit?', 'Center', 'Sigma', 'Amplitude'))
 
         offset, slope = self.mca.offset, self.mca.slope
         for iroi, roi in enumerate(self.mca.rois):
@@ -125,7 +118,7 @@ class FitSpectraFrame(wx.Frame):
             sigexpr = "%s + %s * %s" % (self.gsig_offset, self.gsig_slope, cennam)
 
             p_amp = Parameter(value=ampval, vary=True,    min=0, name=ampnam)
-            p_sig = Parameter(value=sigval, expr=sigexpr, name=signam)
+            p_sig = Parameter(value=sigval, expr=sigexpr, min=0, name=signam)
             p_cen = Parameter(value=cenval, vary=False, name=cennam,
                               min=mincen, max=maxcen)
 
@@ -148,10 +141,24 @@ class FitSpectraFrame(wx.Frame):
         p.pack()
         return p
 
-    def createpanel_settings(self, panel):
-        p = GridPanel(panel)
+    def settings_page(self):
+        "create fit and background settings"
+        mca = self.parent.mca
         conf = self.parent.conf
         wids = self.wids
+
+        width = getattr(mca, 'bgr_width', 2.5)
+        compr = getattr(mca, 'bgr_compress', 2)
+        expon = getattr(mca, 'bgr_exponent', 2.5)
+
+        p = GridPanel(self)
+        wids.bgr_use = Check(p, label='Include Background', default=True)
+        wids.bgr_width = FloatCtrl(p, value=width, minval=0, maxval=10,
+                                   precision=1, size=(70, -1))
+        wids.bgr_compress = Choice(p, choices=['1', '2', '4', '8', '16'],
+                                   size=(70, -1), default=1)
+        wids.bgr_exponent = Choice(p, choices=['2', '4', '6'],
+                                   size=(70, -1), default=0)
 
         sig_offset = Parameter(value=0.050, vary=True, name=self.gsig_offset,
                                min=0)
@@ -163,77 +170,51 @@ class FitSpectraFrame(wx.Frame):
         wids.sig_offset = ParameterPanel(p, sig_offset, precision=3)
         wids.sig_slope = ParameterPanel(p, sig_slope, precision=3)
 
-        p.AddText(" Fit Settings: ", colour='#880000', style=LEFT, dcol=3)
+        # row1 = RowPanel(p)
 
-        row1 = RowPanel(p)
-
-        wids.fit_emin = FloatCtrl(row1, value=conf.e_min, size=(70, -1),
+        wids.fit_emin = FloatCtrl(p, value=conf.e_min, size=(70, -1),
                                   minval=0, maxval=1000, precision=2)
-        wids.fit_emax = FloatCtrl(row1, value=conf.e_max, size=(70, -1),
+        wids.fit_emax = FloatCtrl(p, value=conf.e_max, size=(70, -1),
                                   minval=0, maxval=1000, precision=2)
+        p.AddText(' Fit Energy Range ', style=LEFT)
+        p.AddText(' Min Energy (keV): ', style=LEFT, newrow=True)
+        p.Add(wids.fit_emin, style=LEFT)
+        p.AddText(' Max Energy (keV): ', style=LEFT, newrow=False)
+        p.Add(wids.fit_emax, style=LEFT)
 
-        wids.det_mat = Choice(row1, choices=self.Detector_Materials,
+        wids.det_mat = Choice(p, choices=self.Detector_Materials,
                               size=(55, -1), default=0)
-        wids.det_thk = FloatCtrl(row1, value=0.40, size=(70, -1),
+        wids.det_thk = FloatCtrl(p, value=0.40, size=(70, -1),
                                  minval=0, maxval=100, precision=3)
 
-        row1.AddText(' Energy Range = [ ')
-        row1.Add(wids.fit_emin)
-        row1.AddText(' : ')
-        row1.Add(wids.fit_emax)
-        row1.AddText(' ] (keV)     Detector Material:  ')
-        row1.Add(wids.det_mat)
-        row1.AddText(' thickness =')
-        row1.Add(wids.det_thk)
-        row1.AddText(' mm')
-        row1.pack()
 
-        p.Add(row1, dcol=8, newrow=True, style=LEFT)
+        p.AddText(' Detector Material:  ', style=LEFT, newrow=True)
+        p.Add(wids.det_mat, style=LEFT)
+        p.AddText(' Thickness (mm): ', style=LEFT, newrow=False)
+        p.Add(wids.det_thk, style=LEFT)
 
-        p.AddText('  Global Peak Width Energy Dependence: ',
-                  newrow=True, dcol=3, style=LEFT)
-        p.AddText('   sigma = ', style=LEFT, newrow=True)
+        p.Add(HLine(p, size=(550, 2)), dcol=5, newrow=True)
 
-        p.Add(wids.sig_offset)
-        p.AddText( ' + ')
-        p.Add(wids.sig_slope)
-        p.AddText( ' * Energy (keV)')
-        p.pack()
+        p.AddText('Global Peak Width Energy Dependence: sigma = offset + slope * Energy (keV)',
+                  newrow=True, dcol=5, style=LEFT)
+        p.AddText(' Offset: ', style=LEFT, newrow=True)
+        p.Add(wids.sig_offset, dcol=3, style=LEFT)
+        p.AddText(' Slope: ', style=LEFT, newrow=True)
+        p.Add(wids.sig_slope, dcol=3, style=LEFT)
+        p.Add(HLine(p, size=(550, 2)), dcol=5,  newrow=True)
 
-        return p
+        p.AddText(" Background Params: ", colour='#880000', style=LEFT, newrow=True)
+        p.Add(wids.bgr_use, style=LEFT)
+        p.Add(Button(p, 'Show Background', size=(130, -1),
+                     action=self.onShowBgr), dcol=3, style=LEFT)
 
-    def createpanel_bgr(self, panel):
-        "create row for background settings"
-        mca = self.parent.mca
-        width = getattr(mca, 'bgr_width', 2.5)
-        compr = getattr(mca, 'bgr_compress', 2)
-        expon = getattr(mca, 'bgr_exponent', 2.5)
-
-        p = GridPanel(panel)
-        self.wids.bgr_use = Check(p, label='Include Background',
-                                  default=True)
-        self.wids.bgr_width = FloatCtrl(p, value=width, minval=0,
-                                        maxval=10,
-                                        precision=1, size=(50, -1))
-
-        self.wids.bgr_compress = Choice(p, choices=['1', '2', '4', '8', '16'],
-                                        size=(50, -1), default=1)
-
-        self.wids.bgr_exponent = Choice(p, choices=['2', '4', '6'],
-                                        size=(50, -1), default=0)
-
-        p.AddText(" Background Params: ", colour='#880000', style=LEFT)
-        p.Add(self.wids.bgr_use, dcol=3)
-        p.Add(Button(p, 'Show Background',
-                     size=(130, -1), action=self.onShowBgr), dcol=2)
-
-        p.AddText(" Compression: ", newrow=True)
-        p.Add(self.wids.bgr_compress)
-        p.AddText(" Exponent:")
-        p.Add(self.wids.bgr_exponent)
-        p.AddText(" Energy Width: ")
-        p.Add(self.wids.bgr_width)
-        p.AddText(" (keV)")
+        p.AddText(" Compression: ", style=LEFT, newrow=True)
+        p.Add(wids.bgr_compress, style=LEFT)
+        p.AddText(" Exponent:", style=LEFT, newrow=False)
+        p.Add(wids.bgr_exponent, style=LEFT)
+        p.AddText(" Energy Width (keV): ", style=LEFT, newrow=True)
+        p.Add(wids.bgr_width, style=LEFT)
+        p.Add(HLine(p, size=(550, 2)), dcol=5,  newrow=True)
 
         p.pack()
         return p
@@ -268,23 +249,17 @@ class FitSpectraFrame(wx.Frame):
         print 'on Edit Filters ',  evt
 
 
-    def createpanel_filters(self, panel):
+    def filters_page(self):
         "create row for filters parameters"
         mca = self.parent.mca
         self.wids.filters = []
 
-        p = GridPanel(panel)
-
-        p.AddText(" Filters and Attenuation Paths: ",
-                  colour='#880000', style=LEFT, dcol=3)
+        p = GridPanel(self)
 
         bx = Button(p, 'Customize Filter List', size=(150, -1),
                     action = self.onEditFilters)
         bx.Disable()
-        p.Add(bx, dcol=3)
-
-        p.AddManyText((' filter', 'material', 'density (gr/cm^3)',
-                       'thickness (mm)'),  newrow=True)
+        p.AddManyText((' filter', 'material', 'density (gr/cm^3)', 'thickness (mm)'))
 
         for i in range(4):
             _mat = Choice(p, choices=self.Filter_Materials, default=0, size=(125, -1),
@@ -302,6 +277,8 @@ class FitSpectraFrame(wx.Frame):
             p.Add(_mat)
             p.Add(_den, style=wx.ALIGN_CENTER)
             p.Add(_len)
+        p.Add(bx, dcol=3, newrow=True)
+
         p.pack()
         return p
 
