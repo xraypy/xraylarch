@@ -50,6 +50,9 @@ def param(*args, **kws):
         expr = args[0]
         args = args[1:]
         kws.update({'expr': expr})
+    if 'val' in kws:
+        val = kws.pop('val')
+        kws.update({'value': val})
     out = Parameter(*args, **kws)
     if 'name' not in kws:
         return out

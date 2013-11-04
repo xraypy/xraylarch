@@ -50,10 +50,9 @@ class XRFPeak(Group):
             ecenter = dat[0]
             if self.center is None:
                 self.center = Parameter(name='center',
-                                        val=ecenter,
+                                        value=ecenter,
                                         vary=False,
                                         _larch=self._larch)
-
 
             if sigma_params is not None:
                 if len(sigma_params) == 2 and self.sigma is None:

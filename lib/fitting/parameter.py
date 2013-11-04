@@ -20,11 +20,10 @@ class Parameter(object):
     """
     __invalid = "Invalid expression for parameter: '%s'"
 
-    def __init__(self, val=0, min=None, max=None, vary=False,
-                expr=None, stderr=None, correl=None, name=None,
+    def __init__(self, value=0, min=None, max=None, vary=False,
+                 name=None, expr=None, stderr=None, correl=None,
                  _larch=None, **kws):
-        self._val = val
-        self._initval = val
+        self._val = self._initval = value
         self._uval = None
         self.vary = vary
         self.min = min
@@ -44,13 +43,13 @@ class Parameter(object):
         #    self._larch.symtable.set_symbol(name, self)
 
     def __copy__(self):
-        return Parameter(val=self._val, min=self.min, max=self.max,
+        return Parameter(value=self._val, min=self.min, max=self.max,
                          vary=self.vary, expr=self.expr,
                          stderr=self.stderr, correl=self.correl,
                          name=self.name,  _larch=self._larch)
 
     def __deepcopy__(self, memo):
-        return Parameter(val=self._val, min=self.min, max=self.max,
+        return Parameter(value=self._val, min=self.min, max=self.max,
                          vary=self.vary, expr=self.expr,
                          stderr=self.stderr, correl=self.correl,
                          name=self.name,  _larch=self._larch)
@@ -169,7 +168,7 @@ class Parameter(object):
         w = []
         if self.name is not None:
             w.append("name=%s" % self.name)
-        w.append("val=%s" % repr(val))
+        w.append("value=%s" % repr(val))
         if self._expr is not None:
             w.append("expr='%s'" % self._expr)
         else:
@@ -180,7 +179,7 @@ class Parameter(object):
             w.append('max=%s' % repr(self.max))
         return 'param(%s)' % ', '.join(w)
 
-    #def __new__(self, val=0, **kws): return float.__new__(self, val)
+    #def __new__(self, value=0, **kws): return float.__new__(self, val)
 
     # these are more or less straight emulation of float,
     # but using _getval() to get current value

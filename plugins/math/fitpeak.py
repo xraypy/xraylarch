@@ -54,7 +54,7 @@ expected one of the following:
         self.initialize_background(background=background, **kws)
 
     def add_param(self, name, value=0, vary=True, **kws):
-        p = Parameter(val=value, name=name, vary=vary,
+        p = Parameter(value=value, name=name, vary=vary,
                       _larch=self._larch,  **kws)
         setattr(self.params, name, p)
 
