@@ -45,17 +45,24 @@ class FitSpectraFrame(wx.Frame):
 
     Detector_Materials = ['Si', 'Ge']
 
+    gsig_offset = 'global_sigma_offset'
+    gsig_slope  = 'global_sigma_slope'
+
     def __init__(self, parent, size=(800, 700)):
         self.parent = parent
+        self.larch = parent._larch
         self.mca = parent.mca
         conf = parent.conf
         self.paramgroup = Group()
+
+        if not hasattr(self.mca, 'init_calib'):
+            xrf_calib_fitrois(self.mca, _larch=self.larch)
 
         wx.Frame.__init__(self, parent, -1, 'Fit XRF Spectra',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
         if not hasattr(self.parent, 'filters_data'):
             self.parent.filters_data = read_filterdata(self.Filter_Materials,
-                                                       _larch=parent._larch)
+                                                       _larch=self.larch)
 
         self.wids = Empty()
         self.SetFont(Font(9))
@@ -106,10 +113,8 @@ class FitSpectraFrame(wx.Frame):
 
         offset, slope = self.mca.offset, self.mca.slope
         for iroi, roi in enumerate(self.mca.rois):
-            cenval = offset + slope*(roi.left + roi.right)/2.0
-            sigval = slope*(roi.right - roi.left) / 3.0
-            ampval  = self.mca.counts[(roi.left + roi.right)/2.0]*4.0
-
+            cenval, ecen, fwhm, ampval, xfit = self.mca.init_calib[roi.name]
+            sigval = 0.4*fwhm
             mincen = offset + slope*(roi.left  - 4 * roi.bgr_width)
             maxcen = offset + slope*(roi.right + 4 * roi.bgr_width)
 
@@ -117,9 +122,11 @@ class FitSpectraFrame(wx.Frame):
             ampnam = '%s_amp' % pname
             cennam = '%s_cen' % pname
             signam = '%s_sig' % pname
-            p_amp = Parameter(value=ampval, vary=True, min=0, name=ampnam)
-            p_sig = Parameter(value=sigval, vary=True, min=0, name=signam)
-            p_cen = Parameter(value=cenval, vary=True, name=cennam,
+            sigexpr = "%s + %s * %s" % (self.gsig_offset, self.gsig_slope, cennam)
+
+            p_amp = Parameter(value=ampval, vary=True,    min=0, name=ampnam)
+            p_sig = Parameter(value=sigval, expr=sigexpr, name=signam)
+            p_cen = Parameter(value=cenval, vary=False, name=cennam,
                               min=mincen, max=maxcen)
 
             setattr(self.paramgroup, ampnam, p_amp)
@@ -141,21 +148,20 @@ class FitSpectraFrame(wx.Frame):
         p.pack()
         return p
 
-
     def createpanel_settings(self, panel):
         p = GridPanel(panel)
         conf = self.parent.conf
         wids = self.wids
 
-        onam, snam = 'global_sigma_offset', 'global_sigma_slope'
-        p_sig_offset = Parameter(value=0.1, vary=True, minval=0, name=onam)
-        p_sig_slope  = Parameter(value=0.001, vary=True, name=snam)
+        sig_offset = Parameter(value=0.050, vary=True, name=self.gsig_offset,
+                               min=0)
+        sig_slope  = Parameter(value=0.005, vary=True, name=self.gsig_slope)
 
-        setattr(self.paramgroup, onam, p_sig_offset)
-        setattr(self.paramgroup, snam, p_sig_slope)
+        setattr(self.paramgroup, self.gsig_offset, sig_offset)
+        setattr(self.paramgroup, self.gsig_slope, sig_slope)
 
-        wids.gsig_offset = ParameterPanel(p, p_sig_offset, precision=3)
-        wids.gsig_slope = ParameterPanel(p, p_sig_slope, precision=3)
+        wids.sig_offset = ParameterPanel(p, sig_offset, precision=3)
+        wids.sig_slope = ParameterPanel(p, sig_slope, precision=3)
 
         p.AddText(" Fit Settings: ", colour='#880000', style=LEFT, dcol=3)
 
@@ -188,9 +194,9 @@ class FitSpectraFrame(wx.Frame):
                   newrow=True, dcol=3, style=LEFT)
         p.AddText('   sigma = ', style=LEFT, newrow=True)
 
-        p.Add(wids.gsig_offset)
+        p.Add(wids.sig_offset)
         p.AddText( ' + ')
-        p.Add(wids.gsig_slope)
+        p.Add(wids.sig_slope)
         p.AddText( ' * Energy (keV)')
         p.pack()
 
@@ -278,8 +284,7 @@ class FitSpectraFrame(wx.Frame):
         p.Add(bx, dcol=3)
 
         p.AddManyText((' filter', 'material', 'density (gr/cm^3)',
-                       'thickness', 'units'),
-                      newrow=True)
+                       'thickness (mm)'),  newrow=True)
 
         for i in range(4):
             _mat = Choice(p, choices=self.Filter_Materials, default=0, size=(125, -1),
@@ -291,17 +296,12 @@ class FitSpectraFrame(wx.Frame):
             param = Parameter(value=0.0, vary=False, min=0, name=pnam)
             setattr(self.paramgroup, pnam, param)
             _len  = ParameterPanel(p, param, precision=4)
-            _units  = SimpleText(p, 'mm')
-            # _bunits = Choice(p, choices=self.Filter_Lengths, default=1, size=(100, -1))
-            # _fit = Check(p, default=False)
 
             self.wids.filters.append((_mat, _den, _len))
             p.AddText('  %i ' % (i+1), newrow=True, style=LEFT)
             p.Add(_mat)
             p.Add(_den, style=wx.ALIGN_CENTER)
             p.Add(_len)
-            p.Add(_units)
-            # p.Add(_fit, style=wx.ALIGN_CENTER)
         p.pack()
         return p
 
