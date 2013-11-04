@@ -131,7 +131,7 @@ class ParameterPanel(wx.Panel):
     param = Parameter(value=11.22, vary=True, min=0, name='x1')
     wid   = ParameterPanel(parent_wid, param)
     """
-    def __init__(self, parent, param, size=(80, -1), precision=4):
+    def __init__(self, parent, param, size=(80, -1), precision=4, **kws):
         self.param = param
         self.precision = precision
         wx.Panel.__init__(self, parent, -1)
@@ -147,7 +147,7 @@ class ParameterPanel(wx.Panel):
                                   precision=precision, size=size)
 
         self.wids.vary = Choice(self, choices=VARY_CHOICES,
-                                action=self.onVaryChoice, size=(95, -1))
+                                action=self.onVaryChoice, size=(80, -1))
 
         vary_choice = 0
         if param.vary:
