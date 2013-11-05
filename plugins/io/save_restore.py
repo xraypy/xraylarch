@@ -213,7 +213,7 @@ def restore(fname,  group=None, _larch=None):
         group = create_group()
     for  key, val in fh.items():
         setattr(group, key, get_component(val))
-
+    fh.close()
     return group
 
 def registerLarchPlugin():
