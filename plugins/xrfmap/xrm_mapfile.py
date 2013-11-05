@@ -1095,7 +1095,7 @@ class GSEXRM_MapFile(object):
             pos = pos.sum(axis=index)/pos.shape[index]
         return pos
 
-    def get_roimap(self, name, det=None, dtcorrect=True):
+    def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
         """extract roi map for a pre-defined roi by name
         """
         imap = -1
@@ -1120,8 +1120,10 @@ class GSEXRM_MapFile(object):
                 break
         if imap == -1:
             raise GSEXRM_Exception("Could not find ROI '%s'" % name)
-
-        return self.xrfmap[dat][:, :, imap]
+        if no_hotcols:
+            return self.xrfmap[dat][:, 1:-1, imap]
+        else:
+            return self.xrfmap[dat][:, :, imap]
 
     def get_map_erange(self, det=None, dtcorrect=True,
                        emin=None, emax=None, by_energy=True):
@@ -1132,7 +1134,7 @@ class GSEXRM_MapFile(object):
         """
         pass
 
-    def get_rgbmap(self, rroi, groi, broi, det=None,
+    def get_rgbmap(self, rroi, groi, broi, det=None, no_hotcols=True,
                    dtcorrect=True, scale_each=True, scales=None):
         """return a (NxMx3) array for Red, Green, Blue from named
         ROIs (using get_roimap).
@@ -1151,9 +1153,12 @@ class GSEXRM_MapFile(object):
         (1/max intensity of all maps)
 
         """
-        rmap = self.get_roimap(rroi, det=det, dtcorrect=dtcorrect)
-        gmap = self.get_roimap(groi, det=det, dtcorrect=dtcorrect)
-        bmap = self.get_roimap(broi, det=det, dtcorrect=dtcorrect)
+        rmap = self.get_roimap(rroi, det=det, no_hotcols=no_hotcols,
+                               dtcorrect=dtcorrect)
+        gmap = self.get_roimap(groi, det=det, no_hotcols=no_hotcols,
+                               dtcorrect=dtcorrect)
+        bmap = self.get_roimap(broi, det=det, no_hotcols=no_hotcols,
+                               dtcorrect=dtcorrect)
 
         if scales is None or len(scales) != 3:
             scales = (1./rmap.max(), 1./gmap.max(), 1./bmap.max())
