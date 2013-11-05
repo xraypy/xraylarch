@@ -55,7 +55,7 @@ class FitSpectraFrame(wx.Frame):
 
     def __init__(self, parent, size=(675, 525)):
         self.parent = parent
-        self.larch = parent._larch
+        self.larch = parent.larch
         self.mca = parent.mca
         conf = parent.conf
         self.paramgroup = Group()
@@ -104,7 +104,7 @@ class FitSpectraFrame(wx.Frame):
 
         p.AddManyText((' ROI Name', 'Fit?', 'Center', 'Sigma', 'Amplitude'),
                       style=CEN)
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)        
+        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
         offset, slope = self.mca.offset, self.mca.slope
         for iroi, roi in enumerate(self.mca.rois):
             cenval, ecen, fwhm, ampval, xfit = self.mca.init_calib[roi.name]
@@ -141,7 +141,7 @@ class FitSpectraFrame(wx.Frame):
             p.Add(_cen)
             p.Add(_sig)
             p.Add(_amp)
-        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)        
+        p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
         p.pack()
         return p
 
@@ -213,7 +213,7 @@ class FitSpectraFrame(wx.Frame):
                   colour='#880000', newrow=True, dcol=2)
         # p.AddText(' ', newrow=True)
         p.AddText(' sigma = offset + slope * Energy + quad * Energy^2 (keV)',
-                  dcol=3)        
+                  dcol=3)
         p.AddText(' Offset: ', newrow=True)
         p.Add(wids.sig_offset, dcol=3)
         p.AddText(' Slope: ', newrow=True)
