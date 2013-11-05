@@ -459,6 +459,9 @@ class TriColorMapPanel(GridPanel):
         b = self.bcol.GetStringSelection()
         i0 = self.i0col.GetStringSelection()
         mapshape= datafile.xrfmap['roimap/sum_cor'][:, :, 0].shape
+        # print mapshape
+        if no_hotcols:
+            mapshape = mapshape[0], mapshape[1]-2
 
         rmap = np.ones(mapshape, dtype='float')
         gmap = np.ones(mapshape, dtype='float')
