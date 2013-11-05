@@ -1,4 +1,4 @@
-##
+#
 """
 Important note:
 seeing errors in build with python setup.py py2exe?
@@ -22,6 +22,7 @@ import sqlalchemy
 import wx
 import ctypes
 import ctypes.util
+from numpy import sort
 
 import scipy.io.netcdf
 from scipy.io.netcdf import netcdf_file
@@ -60,46 +61,59 @@ for n in os.listdir(dlldir):
 for n in scipy_dlls:
     extra_files.append(os.path.join(sys.prefix, n))
 
-
 style_xml = """
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!-- Copyright (c) Microsoft Corporation.  All rights reserved. -->
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-    <noInheritable/>
-    <assemblyIdentity
-        type="win32"
-        name="Microsoft.VC90.CRT"
-        version="9.0.21022.8"
-        processorArchitecture="x86"
-        publicKeyToken="1fc8b3b9a1e18e3b"
-    />
-    <file name="msvcr100.dll" /> <file name="msvcp100.dll" /> <file
-name="msvcm90.dll" />
-</assembly>"""
-m1 = """
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<assembly xmlns="urn:schemas-microsoft-com:asm.v1"
-manifestVersion="1.0">
-<assemblyIdentity  version="5.0.0.0"
+  <assemblyIdentity
+    version="5.0.0.0"
     processorArchitecture="x86"
-    name="XrayLarch"    type="win32"/>
-<description>X-ray Larch</description>
-<dependency> <dependentAssembly>
-  <assemblyIdentity  type="win32"
-  name="Microsoft.Windows.Common-Controls"
-  version="6.0.0.0" processorArchitecture="X86"
-  publicKeyToken="6595b64144ccf1df"
-  language="*" /> </dependentAssembly>
-</dependency></assembly>
+    name="XrayLarch"
+    type="win32"
+  />
+  <description>XrayLarch</description>
+  <trustInfo xmlns="urn:schemas-microsoft-com:asm.v3">
+    <security>
+      <requestedPrivileges>
+        <requestedExecutionLevel
+            level="asInvoker"
+            uiAccess="false">
+        </requestedExecutionLevel>
+      </requestedPrivileges>
+    </security>
+  </trustInfo>
+  <dependency>
+    <dependentAssembly>
+      <assemblyIdentity
+            type="win32"
+            name="Microsoft.VC90.CRT"
+            version="9.0.21022.8"
+            processorArchitecture="x86"
+            publicKeyToken="1fc8b3b9a1e18e3b">
+      </assemblyIdentity>
+    </dependentAssembly>
+  </dependency>
+  <dependency>
+    <dependentAssembly>
+        <assemblyIdentity
+            type="win32"
+            name="Microsoft.Windows.Common-Controls"
+            version="6.0.0.0"
+            processorArchitecture="X86"
+            publicKeyToken="6595b64144ccf1df"
+            language="*"
+        />
+    </dependentAssembly>
+  </dependency>
+</assembly>
 """
 
 windows_apps = [{'script': '../bin/larch_gui',
                  'icon_resources': [(0, 'larch.ico')],
-                 #'other_resources': [(24, 1, style_xml)],
+                 # 'other_resources': [(24, 1, style_xml)],
                  },
                 {'script': '../bin/GSE_MapViewer',
                  'icon_resources': [(0, 'GSEMap.ico')],
-                 #'other_resources': [(24, 1, style_xml)],
+                 'other_resources': [(24, 1, style_xml)],
                  },
                 ]
 console_apps = [{'script': '../bin/larch',         'icon_resources': [(0, 'larch.ico')]}]
@@ -107,27 +121,34 @@ console_apps = [{'script': '../bin/larch',         'icon_resources': [(0, 'larch
 
 py2exe_opts = {'optimize':1,
                'bundle_files':2,
-               'includes': ['Image', 'ctypes', 'numpy', 
-                            'scipy', 'scipy.optimize', 'scipy.constants', 
-                            'wx', 'wx._core', 'wx.py', 'wxversion',
-                            'wx.lib', 'wx.lib.*', 'wx.lib.masked', 'wx.lib.mixins',
-                            'wx.lib.colourselect', 'wx.lib.newevent',
-                            'wx.lib.agw', 'wx.lib.agw.flatnotebook',
-                            'h5py', 'h5py._objects', 'h5py.defs', 'h5py.utils', 'h5py._proxy',
-                            'matplotlib', 'wxmplot',
-                            'ConfigParser', 'fpformat',
-                            'sqlalchemy', 'sqlalchemy.orm', 'sqlalchemy.pool',
-                            'sqlite3', 'sqlalchemy.dialects.sqlite',
-                            'xdrlib',  'epics', 'epics.devices'],
-              
+               'includes': ['ConfigParser', 'Image', 'ctypes', 'epics',
+                            'epics.devices', 'fpformat', 'h5py',
+                            'h5py._objects', 'h5py._proxy', 'h5py.defs',
+                            'h5py.utils', 'matplotlib', 'numpy', 'scipy',
+                            'scipy.constants', 'scipy.fftpack',
+                            'scipy.io.matlab.mio5_utils',
+                            'scipy.io.matlab.streams', 'scipy.io.netcdf',
+                            'scipy.optimize', 'scipy.signal', 'skimage',
+                            'skimage.exposure', 'wxutils', 'sqlalchemy',
+                            'sqlalchemy.dialects.sqlite', 'sqlalchemy.orm',
+                            'sqlalchemy.pool', 'sqlite3', 'wx', 'wx._core',
+                            'wx.lib', 'wx.lib.agw',
+                            'wx.lib.agw.flatnotebook',
+                            'wx.lib.colourselect', 'wx.lib.masked',
+                            'wx.lib.mixins', 'wx.lib.mixins.inspection',
+                            'wx.lib.agw.pycollapsiblepane',
+                            'wx.lib.newevent', 'wx.py', 'wxmplot',
+                            'wxversion', 'xdrlib', 'xml.etree',
+                            'xml.etree.cElementTree'],
                'packages': ['h5py', 'scipy.optimize', 'scipy.signal', 'scipy.io',
                             'numpy.random', 'xml.etree', 'xml.etree.cElementTree'], 
                'excludes': ['Tkinter', '_tkinter', 'Tkconstants', 'tcl',
                             '_imagingtk', 'PIL._imagingtk', 'ImageTk',
                             'PIL.ImageTk', 'FixTk''_gtkagg', '_tkagg',
-                            'matplotlib.tests', 'qt', 'PyQt4Gui', 'IPython'],
-
-               'dll_excludes': ['libgdk-win32-2.0-0.dll',
+                            'matplotlib.tests', 'qt', 'PyQt4Gui', 'IPython',
+                            'pywin', 'pywin.dialogs', 'pywin.dialogs.list'],
+               'dll_excludes': ['w9xpopen.exe',
+                                'libgdk-win32-2.0-0.dll',
                                 'libgobject-2.0-0.dll', 'libzmq.dll']
                }
 
