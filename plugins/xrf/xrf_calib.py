@@ -10,7 +10,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     from larch.utils import OrderedDict
-    
+
 larch.use_plugin_path('xrf')
 from mca import isLarchMCAGroup
 from roi import split_roiname
@@ -35,8 +35,9 @@ def xrf_calib_fitrois(mca, _larch=None):
     energy = 1.0*mca.energy
     chans = 1.0*np.arange(len(energy))
     counts = mca.counts
-    if hasattr(mca, 'bgr'):
-        counts = counts - mca.bgr
+    bgr = getattr(mca, 'bgr', None)
+    if bgr is not None:
+        counts = counts - bgr
     calib = OrderedDict()
     for roi in mca.rois:
         words = roi.name.split()
@@ -51,12 +52,12 @@ def xrf_calib_fitrois(mca, _larch=None):
         llim = max(0, roi.left - roi.bgr_width)
         hlim = min(len(chans)-1, roi.right + roi.bgr_width)
         fit = fit_peak(chans[llim:hlim], counts[llim:hlim],
-                       'Gaussian', background='constant', 
+                       'Gaussian', background='constant',
                        _larch=_larch)
 
-        ccen = fit.params.center.value 
+        ccen = fit.params.center.value
         ecen = ccen * mca.slope + mca.offset
-        fwhm = 2.354820 * fit.params.sigma.value * mca.slope 
+        fwhm = 2.354820 * fit.params.sigma.value * mca.slope
         calib[roi.name] = (eknown, ecen, fwhm, ccen, fit)
     mca.init_calib = calib
 
