@@ -281,14 +281,15 @@ class SimpleMapPanel(GridPanel):
 
     def __init__(self, parent, owner, **kws):
         self.owner = owner
-        
-        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)        
+
+        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
 
         self.roi1 = Choice(self, choices=[], size=(120, -1))
         self.roi2 = Choice(self, choices=[], size=(120, -1))
         self.op   = Choice(self, choices=['/', '*', '-', '+'], size=(80, -1))
         self.det  = Choice(self, choices=DETCHOICES, size=(90, -1))
         self.cor  = Check(self, label='Correct Deadtime?')
+        self.hotcols  = Check(self, label='Ignore First/Last Columns?')
 
         self.show_new = Button(self, 'Show New Map',     size=(125, -1),
                                action=partial(self.onShowMap, new=True))
@@ -301,6 +302,7 @@ class SimpleMapPanel(GridPanel):
         self.AddMany((self.det, self.roi1, self.op, self.roi2), newrow=True)
 
         self.Add(self.cor,       dcol=2, newrow=True, style=LEFT)
+        self.Add(self.hotcols, dcol=2, style=LEFT)
         self.Add(self.show_new,  dcol=2, newrow=True, style=LEFT)
         self.Add(self.show_old,  dcol=2,              style=LEFT)
         self.Add(self.show_cor,  dcol=2, newrow=True, style=LEFT)
@@ -338,9 +340,12 @@ class SimpleMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
+        no_hotcols = self.hotcols.IsChecked()
 
-        map1 = datafile.get_roimap(roiname1, det=det, dtcorrect=dtcorrect).flatten()
-        map2 = datafile.get_roimap(roiname2, det=det, dtcorrect=dtcorrect).flatten()
+        map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+                                   dtcorrect=dtcorrect).flatten()
+        map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+                                   dtcorrect=dtcorrect).flatten()
 
         path, fname = os.path.split(datafile.filename)
         title ='%s: %s vs %s' %(fname, roiname2, roiname1)
@@ -365,14 +370,16 @@ class SimpleMapPanel(GridPanel):
             det = int(det)
 
         dtcorrect = self.cor.IsChecked()
+        no_hotcols  = self.hotcols.IsChecked()
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
-
-        map      = datafile.get_roimap(roiname1, det=det, dtcorrect=dtcorrect)
+        map      = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
+                                       dtcorrect=dtcorrect)
         title    = roiname1
 
         if roiname2 != '1':
-            mapx = datafile.get_roimap(roiname2, det=det, dtcorrect=dtcorrect)
+            mapx = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+                                       dtcorrect=dtcorrect)
             op = self.op.GetStringSelection()
             if   op == '+': map +=  mapx
             elif op == '-': map -=  mapx
@@ -416,6 +423,7 @@ class TriColorMapPanel(GridPanel):
         self.i0col = Choice(self, choices=[], size=(120, -1))
         self.det   = Choice(self, choices=DETCHOICES, size=(90, -1))
         self.cor   = Check(self, label='Correct Deadtime?')
+        self.hotcols  = Check(self, label='Ignore First/Last Columns?')
 
         self.show_new = Button(self, 'Show New Map',     size=(125, -1),
                                action=partial(self.onShowMap, new=True))
@@ -428,6 +436,8 @@ class TriColorMapPanel(GridPanel):
         self.AddText('Normalization:',  newrow=True, style=LEFT)
         self.Add(self.i0col,    dcol=2,              style=LEFT)
         self.Add(self.cor,      dcol=2, newrow=True, style=LEFT)
+        self.Add(self.hotcols, dcol=2, style=LEFT)
+
         self.Add(self.show_new, dcol=2, newrow=True, style=LEFT)
         self.Add(self.show_old, dcol=2,              style=LEFT)
 
@@ -442,6 +452,7 @@ class TriColorMapPanel(GridPanel):
         else:
             det = int(det)
         dtcorrect = self.cor.IsChecked()
+        no_hotcols  = self.hotcols.IsChecked()
 
         r = self.rcol.GetStringSelection()
         g = self.gcol.GetStringSelection()
@@ -454,13 +465,17 @@ class TriColorMapPanel(GridPanel):
         bmap = np.ones(mapshape, dtype='float')
         i0map = np.ones(mapshape, dtype='float')
         if r != '1':
-            rmap  = datafile.get_roimap(r, det=det, dtcorrect=dtcorrect)
+            rmap  = datafile.get_roimap(r, det=det, no_hotcols=no_hotcols,
+                                        dtcorrect=dtcorrect)
         if g != '1':
-            gmap  = datafile.get_roimap(g, det=det, dtcorrect=dtcorrect)
+            gmap  = datafile.get_roimap(g, det=det, no_hotcols=no_hotcols,
+                                        dtcorrect=dtcorrect)
         if b != '1':
-            bmap  = datafile.get_roimap(b, det=det, dtcorrect=dtcorrect)
+            bmap  = datafile.get_roimap(b, det=det, no_hotcols=no_hotcols,
+                                        dtcorrect=dtcorrect)
         if i0 != '1':
-            i0map = datafile.get_roimap(i0, det=det, dtcorrect=dtcorrect)
+            i0map = datafile.get_roimap(i0, det=det, no_hotcols=no_hotcols,
+                                        dtcorrect=dtcorrect)
 
         i0min = min(i0map[np.where(i0map>0)])
         i0map[np.where(i0map<=0)] = i0min
@@ -661,7 +676,7 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_nrow = 0
         self.ReadWorkDir()
         self.onFolderSelect(evt=None)
-        
+
 
     def ReadWorkDir(self):
         try:
@@ -683,7 +698,7 @@ class MapViewerFrame(wx.Frame):
             fh.close()
         except:
             pass
-        
+
 
     def CloseFile(self, filename, event=None):
         if filename in self.filemap:
@@ -713,11 +728,9 @@ class MapViewerFrame(wx.Frame):
 
         # title area:
         tpanel = wx.Panel(parent)
-        self.title    = SimpleText(tpanel, 'initializing...', size=(400, -1))
-        self.subtitle = SimpleText(tpanel, ' no map data   ', size=(200, -1))
+        self.title    = SimpleText(tpanel, 'initializing...', size=(600, -1))
         tsizer = wx.BoxSizer(wx.HORIZONTAL)
-        tsizer.Add(self.title,     0, ALL_CEN)
-        tsizer.Add(self.subtitle,  0, ALL_RIGHT)
+        tsizer.Add(self.title,     0, ALL_LEFT)
         pack(tpanel, tsizer)
 
         sizer.Add(tpanel, 0, ALL_CEN)
@@ -847,11 +860,8 @@ class MapViewerFrame(wx.Frame):
             self.process_file(filename)
 
         self.current_file = self.filemap[filename]
-        self.title.SetLabel("%s" % filename)
-
         ny, nx, npos = self.filemap[filename].xrfmap['positions/pos'].shape
-
-        self.subtitle.SetLabel(" Map Size=%i x %i" % (nx, ny))
+        self.title.SetLabel("%s: (%i x %i)" % (filename, nx, ny))
 
         rois = list(self.filemap[filename].xrfmap['roimap/sum_name'])
         for p in self.nbpanels.values():
