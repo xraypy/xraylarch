@@ -31,10 +31,10 @@ try:
     import skimage
     from skimage import exposure
     HAS_SKIMAGE = True
-    
+
 except ImportError:
     pass
-    
+
 CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to zoom to rectangular box'),
                      'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -277,11 +277,11 @@ class MapImageFrame(ImageFrame):
     def onContrastMode(self, event=None):
         contrast =  event.GetInt()
         if not HAS_SKIMAGE:
-            return 
+            return
         if self.map is None:
             self.map = self.panel.conf.data
 
-        map = self.map 
+        map = self.map
         if contrast > 0:
             self.cmap = None
             _thread = Thread(target=self.enhance_constrast, args=(contrast,))
@@ -296,7 +296,7 @@ class MapImageFrame(ImageFrame):
             map = self.cmap
         ImageFrame.display(self, map)
         self.cmap = None
-        
+
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask,
@@ -318,12 +318,3 @@ class MapImageFrame(ImageFrame):
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
 
-        if HAS_SKIMAGE:
-            cont_mode = wx.RadioBox(panel, -1, "Enhance Contrast:",
-                                    wx.DefaultPosition, wx.DefaultSize,
-                                    ('No enhancement',
-                                     'Stretch Contrast',
-                                     'Equalize Histogram'),
-                                    1, wx.RA_SPECIFY_COLS)
-            cont_mode.Bind(wx.EVT_RADIOBOX, self.onContrastMode)
-            sizer.Add(cont_mode,  (irow+1, 0), (1, 4), labstyle, 3)
