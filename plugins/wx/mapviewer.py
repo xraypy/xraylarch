@@ -274,7 +274,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
         self.owner.display_map(map, title=title, subtitles=subtitles,
                                info=info, x=x, y=y,
-                               det=None, xrmfile=None)
+                               det=None, xrmfile=main_file)
 
 class SimpleMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a simple ROI map"""
