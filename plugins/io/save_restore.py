@@ -1,4 +1,3 @@
-
 import json
 import numpy as np
 import h5py
@@ -17,33 +16,39 @@ class H5PySaveFile(object):
         self.isgroup =  _larch.symtable.isgroup
         self._searched = []
         self._subgroups = []
-        self._ids = []
+        self._ids  = []
+        self._objs = []
         self.out = {}
 
     def search(self, group):
         """search for objects to save,
         populating self.out
         """
+        if len(self._ids) == 0:
+            return
+
         for nam in dir(group):
+            self._searched.append(group)
             obj = getattr(group, nam)
             if (id(obj) in self._ids and
                 obj not in self.out.values()):
                 self.out[nam] = obj
-            if len(self.out) == len(self._ids):
-                return
+                self._ids.remove(id(obj))
+                self._objs.remove(obj)
             if (self.isgroup(obj) and
                 obj not in self._searched and
                 obj not in self._subgroups):
                 self._subgroups.append(obj)
         if group in self._subgroups:
-            self._subgroups.pop(group)
+            self._subgroups.remove(group)
         for group in self._subgroups:
-            self.searchgroup(group)
+            self.search(group)
 
 
     def add_h5group(self, group, name, dat=None, attrs=None):
         """add an hdf5 group to group"""
         g = group.create_group(name)
+
         if isinstance(dat, dict):
             for key, val in dat.items():
                 g[key] = val
@@ -92,15 +97,30 @@ class H5PySaveFile(object):
             d = self.add_h5dataset(group, name, data)
 
     def save(self, *args):
-        self._ids = [id(a) for a in args]
+        self._ids  = [id(a) for a in args]
+        self._objs = list(args)
         self.search(self.symtable)
         self.fh = h5py.File(self.fname, 'a')
-        self.fh.attrs['datatype'] = 'LarchSaveFile'
-        self.fh.attrs['version'] = '1.0.0'
-        for t in self._ids:
-            for nam, obj in self.out.items():
-                if t == id(obj):
-                    self.add_data(self.fh, nam, obj)
+        try:
+            self.fh.attrs['datatype'] = 'LarchSaveFile'
+            self.fh.attrs['version'] = '1.0.0'
+        except:
+            pass
+        for nam, obj in self.out.items():
+            try:
+                self.add_data(self.fh, nam, obj)
+            except:
+                print 'Could not save ', nam
+
+        for obj in self._objs:
+            nam = getattr(obj, '__name__', hex(id(obj)))
+            if nam.startswith('0x'):
+                nam = 'obj_%s' % nam[2:]
+            try:
+                self.add_data(self.fh, nam, obj)
+            except:
+                print 'Could not save ', nam
+
         self.fh.close()
 
 def save(fname,  *args, **kws):
@@ -117,8 +137,8 @@ def save(fname,  *args, **kws):
     """
     _larch = kws.get('_larch', None)
     if _larch is None:
-        return
-    symtable = _larch.symtable
+        raise Warning("save_restore.save: needs _larch instance")
+    
     saver = H5PySaveFile(fname, _larch=_larch)
     saver.save(*args)
 
@@ -141,7 +161,7 @@ def restore(fname,  group=None, _larch=None):
    See Also:  save()
    """
     if _larch is None:
-        return
+        raise Warning("save_restore.restore: needs _larch instance")
     symtable = _larch.symtable
     msg  = _larch.writer.write
     fh = h5py.File(fname, 'r')
