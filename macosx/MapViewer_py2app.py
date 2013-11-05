@@ -26,8 +26,8 @@ import Carbon
 libca = epics.ca.initialize_libca()
 mpl_data_files = matplotlib.get_py2exe_datafiles()
 
-APP = '../bin/larch_gui'
-ICONFILE = 'larch.icns'
+APP = '../bin/GSE_MapViewer'
+ICONFILE = 'GSEMap.icns'
 
 libca = epics.ca.initialize_libca()
 mpl_data_files = matplotlib.get_py2exe_datafiles()
