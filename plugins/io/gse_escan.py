@@ -970,6 +970,7 @@ def gsescan_group(fname, _larch=None, **kws):
         if not key.startswith('_'):
             setattr(group, key, val)
 
+    group.array_labels = group.pos_desc + group.sums_names
     group.get_data = escan.get_data
     return group
 
