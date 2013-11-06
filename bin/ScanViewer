@@ -1,0 +1,13 @@
+#!/usr/bin/env python
+"""
+Viewer App for ASCII Column Data
+"""
+import os
+import sys
+import larch
+larch.use_plugin_path('wx')
+
+from scanviewer import ScanViewer
+
+os.chdir(larch.site_config.home_dir)
+ScanViewer().run()
