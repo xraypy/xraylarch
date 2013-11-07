@@ -389,17 +389,25 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         del self.vars
 
         _best, cov, infodict, errmsg, ier = lsout
-        resid = infodict['fvec']
+        resid  = infodict['fvec']
+        ndata  = len(resid)
+        chisqr = (resid**2).sum()
+        nfree  = ndata - self.nvarys
+        redchi = chisqr / nfree
+
         group = self.paramgroup
         # need to map _best values to params, then calculate the
         # grad for the variable parameters
-        grad = ones_like(_best)   # holds scaled gradient for variables
+        grad  = ones_like(_best)  # holds scaled gradient for variables
         vbest = ones_like(_best)  # holds best values for variables
         named_params = {}         # var names : parameter object
         for ivar, name in enumerate(self.var_names):
             named_params[name] = par = getattr(group, name)
-            grad[ivar] = par.scale_gradient(_best[ivar])
-            vbest[ivar] =  par.value
+            grad[ivar]  = par.scale_gradient(_best[ivar])
+            vbest[ivar] = par.value
+            par.stderr  = 0
+            par.correl  = {}
+            par._uval   = None
 
         # modified from JJ Helmus' leastsqbound.py
         # compute covariance matrix here explicitly...
@@ -413,6 +421,51 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         except (LinAlgError, ValueError):
             cov = None
 
+        # map covariance matrix to parameter uncertainties
+        # and correlations
+        if cov is not None:
+            if self.scale_covar:
+                cov = cov * chisqr / nfree
+
+            # uncertainties for constrained parameters:
+            #   get values with uncertainties (including correlations),
+            #   temporarily set Parameter values to these,
+            #   re-evaluate contrained parameters to extract stderr
+            #   and then set Parameters back to best-fit value
+            try:
+                uvars = uncertainties.correlated_values(vbest, cov)
+            except (LinAlgError, ValueError):
+                cov, uvars = None, None
+
+            group.covar_vars = self.var_names
+            group.covar = cov
+
+            if uvars is not None:
+                # set stderr and correlations for variable, named parameters:
+                for iv, name in enumerate(self.var_names):
+                    p = named_params[name]
+                    p.stderr = uvars[iv].std_dev()
+                    p._uval  = uvars[iv]
+                    p.correl = {}
+                    for jv, name2 in enumerate(self.var_names):
+                        if jv != iv:
+                            p.correl[name2] = (cov[iv, jv]/
+                                               (p.stderr * sqrt(cov[jv, jv])))
+                for nam in dir(self.paramgroup):
+                    obj = getattr(self.paramgroup, nam)
+                    eval_stderr(obj, uvars, self.var_names,
+                                named_params, self._larch)
+
+                # restore nominal values that may have been tweaked to 
+                # calculate other stderrs
+                for uval, nam in zip(uvars, self.var_names):
+                    named_params[nam]._val  = uval.nominal_value
+                
+            # clear any errors evaluting uncertainties
+            if self._larch.error:
+                self._larch.error = []
+
+        # collect results for output group
         message = 'Fit succeeded.'
         if ier == 0:
             message = 'Invalid Input Parameters.'
@@ -423,73 +476,28 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         if cov is None:
             message = '%s Could not estimate error-bars' % message
 
-        ndata = len(resid)
-
-        chisqr = (resid**2).sum()
-        nfree  = (ndata - self.nvarys)
-        redchi = chisqr / nfree
-
         ofit = group
         if Group is not None:
             ofit = group.fit_details = Group()
 
         ofit.method = 'leastsq'
-        ofit.fjac = infodict['fjac']
-        ofit.fvec = infodict['fvec']
-        ofit.qtf  = infodict['qtf']
-        ofit.ipvt = infodict['ipvt']
-        ofit.status =  ier
-        ofit.message =  errmsg
-        ofit.success =  ier in [1, 2, 3, 4]
-        ofit.nfev =   infodict['nfev']
-        ofit.toler =   self.toler
+        ofit.fjac  = infodict['fjac']
+        ofit.fvec  = infodict['fvec']
+        ofit.qtf   = infodict['qtf']
+        ofit.ipvt  = infodict['ipvt']
+        ofit.nfev  = infodict['nfev']
+        ofit.status  = ier
+        ofit.message = errmsg
+        ofit.success = ier in [1, 2, 3, 4]
+        ofit.toler   = self.toler
 
-        group.residual =    resid
-        group.message =     message
-        group.chi_square =  chisqr
-        group.chi_reduced =  redchi
-        group.nvarys =  self.nvarys
-        group.nfree =  nfree
-        group.errorbars =  cov is not None
-
-        for par in named_params.values():
-            par.stderr, par.correl = 0, None
-
-        if cov is not None:
-            if self.scale_covar:
-                cov = cov * chisqr / nfree
-            group.covar_vars = self.var_names
-            group.covar = cov
-
-            # uncertainties for constrained parameters:
-            #   get values with uncertainties (including correlations),
-            #   temporarily set Parameter values to these,
-            #   re-evaluate contrained parameters to extract stderr
-            #   and then set Parameters back to best-fit value
-            uvars = uncertainties.correlated_values(vbest, cov)
-
-            # set stderr and correlations for variable, named parameters:
-            for iv, name in enumerate(self.var_names):
-                p = named_params[name]
-                p.stderr = uvars[iv].std_dev()
-                p._uval  = uvars[iv]
-                p.correl = {}
-                for jv, name2 in enumerate(self.var_names):
-                    if jv != iv:
-                        p.correl[name2] = (cov[iv, jv]/
-                                           (p.stderr * sqrt(cov[jv, jv])))
-            for nam in dir(self.paramgroup):
-                obj = getattr(self.paramgroup, nam)
-                eval_stderr(obj, uvars, self.var_names,
-                            named_params, self._larch)
-
-            # restore nominal values that may have been tweaked to calc
-            # other stderrs
-            for uval, nam in zip(uvars, self.var_names):
-                named_params[nam]._val  = uval.nominal_value
-            # clear any errors evaluting uncertainties
-            if self._larch.error:
-                self._larch.error = []
+        group.residual   = resid
+        group.message    = message
+        group.chi_square = chisqr
+        group.chi_reduced = redchi
+        group.nvarys     = self.nvarys
+        group.nfree      = nfree
+        group.errorbars  = cov is not None
         return ier
 
     def scalar_minimize(self, method='Nelder-Mead', **kws):
