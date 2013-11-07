@@ -15,7 +15,7 @@ def mymodel(x, _off, _amp, _cen, _wid):
     return _off + _amp*(s2pi / _wid) * exp(-xlog2 * (x-_cen)**2 / _wid**2)
 enddef
 
-def resid(pars, data, verbose=False, plot=False, update_rate=5):
+def resid(pars, data, verbose=False, doplot=False, update_rate=5):
     model = mymodel(data.x, pars.off1, pars.amp1, pars.cen1, pars.wid1) + \
             mymodel(data.x, pars.off2, pars.amp2, pars.cen2, pars.wid2)
     if verbose:
@@ -27,7 +27,7 @@ def resid(pars, data, verbose=False, plot=False, update_rate=5):
                                pars.amp1.value, pars.cen1.value,
                                pars.wid1.value, pars.amp2.value,
                                pars.cen2.value, pars.wid2.value)
-            if plot: update_trace(data.x, model, trace=2)
+	    if doplot: update_trace(data.x, model, trace=2)
         endif
     endif
     pars.fit_iter += 1
@@ -65,8 +65,8 @@ endif
 
 minout = minimize(resid, fitpars, args=(xdat,),
                   kws={'verbose':show_plots,
-                       'update_rate': 5,
-                       'plot': show_plots})
+                       'update_rate': 10,
+                       'doplot': show_plots})
 
 if show_plots:
     final = mymodel(xdat.x, fitpars.off1, fitpars.amp1, fitpars.cen1, fitpars.wid1) + \
@@ -76,16 +76,16 @@ endif
 print fit_report(fitpars)
 print 'Total time for fit = %.3f sec' % (time.time() - t0)
 
-print 'Calculating Chi-Square map for amp2 and off1:'
-
-# important!!! supress plots, reset counter
-minout.userkws['plot'] = False
-minout.userkws['update_rate'] = 500
-fitpars.fit_iter = 0
-
-conf_int = confidence_intervals(minout)
-print confidence_report(conf_int)
-
-xvals, yvals, c2map = chi2_map(minout, 'amp1', 'off1', nx=21, ny=11, xrange=[13,17], yrange=[-0.4, -0.0])
-contour(c2map, x=xvals, y=yvals, title='Chi2 map for Amp1 and Off1')
+# print 'Calculating Chi-Square map for amp2 and off1:'
+# 
+# # important!!! supress plots, reset counter
+# minout.userkws['plot'] = False
+# minout.userkws['update_rate'] = 1000
+# fitpars.fit_iter = 0
+# 
+# conf_int = confidence_intervals(minout)
+# print confidence_report(conf_int)
+# 
+# xvals, yvals, c2map = chi2_map(minout, 'amp1', 'off1', nx=21, ny=11, xrange=[13,17], yrange=[-0.4, -0.0])
+# contour(c2map, x=xvals, y=yvals, title='Chi2 map for Amp1 and Off1')
 

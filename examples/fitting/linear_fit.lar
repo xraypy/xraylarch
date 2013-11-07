@@ -2,22 +2,22 @@
 
 def resid(pars, data):
     model = pars.slope.value * data.x + pars.offset.value
-    print 'resid: ', pars.iter, pars.slope.value, pars.offset.value
     pars.iter = pars.iter+1
-    #if pars.iter <= 10:
-    #    plot(data.x, model) # force_draw=True
-
-    # update_line(data.x, model, trace=1) # , autoscale=True)
     return  model - data.y
 enddef
 
+print 'Fits to line'
 mdat = group()
 mdat.x = arange(100)
-mdat.y = -20 + 0.122*mdat.x + 6.e-7*(mdat.x-40)**2 + random.normal(size=100, scale=0.5)
+mdat.y = 21.3556 - 0.122*mdat.x + 6.e-4*(mdat.x-40)**2
+mdat.y = mdat.y + random.normal(size=len(mdat.x), scale=2.5)
 
+
+######
+print '# Version 1: use minimize() -- most general, overkill for linear fit'
 params = group()
-params.slope = guess(5)
-params.offset= guess(.001)
+params.slope = guess(-1)
+params.offset= guess(0)
 params.iter = 0
 model = mdat.y + resid(params, mdat)
 newplot(mdat.x, mdat.y)
@@ -30,5 +30,22 @@ out = minimize(resid, params, args=(mdat,))
 model = resid(params, mdat) + mdat.y
 newplot(mdat.x, mdat.y)
 plot(mdat.x, model)
-
 print fit_report(params)
+
+######
+print '# Version 2: use fitpeak() -- simple wrapper for minimize(), still overkill'
+myfit = fit_peak(mdat.x, mdat.y, 'linear')
+
+plot(myfit.x, myfit.y, marker='+', label='data',
+     xlabel='x', ylabel='y', show_legend=True, new=True)
+plot(myfit.x, myfit.fit_init, label='init')
+plot(myfit.x, myfit.fit, label='best fit')
+
+print fit_report(myfit.params, min_correl=0.3)
+
+######
+print '# Version 3: use linregress() for linear regression!'
+slope, intercept, r_val, p_val, err = linregress(mdat.x, mdat.y)
+print 'Slope=%.6f, Intercept=%.6f' % ( slope, intercept)
+plot(mdat.x, intercept + slope*mdat.x, label='regression',
+     style='dashed', color='red')
