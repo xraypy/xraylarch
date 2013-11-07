@@ -88,9 +88,12 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add((5,5))
         sizer.Add(HLine(self, size=(675, 3)),  0, CEN|LEFT|wx.TOP|wx.GROW)
         sizer.Add((5,5))
-
-        sizer.Add(Button(self, 'Done',
-                         size=(80, -1), action=self.onClose), 0, CEN)
+        
+        bpanel = RowPanel(self)
+        bpanel.Add(Button(bpanel, 'Fit Peaks', action=self.onFitPeaks), 0, LEFT)
+        bpanel.Add(Button(bpanel, 'Done', action=self.onClose), 0, LEFT)
+        bpanel.pack()
+        sizer.Add(bpanel, 0, CEN)
         pack(self, sizer)
         self.Show()
         self.Raise()
@@ -178,8 +181,6 @@ class FitSpectraFrame(wx.Frame):
         wids.sig_slope  = ParameterPanel(p, sig_slope, **sopts)
         wids.sig_quad   = ParameterPanel(p, sig_quad, **sopts)
 
-        # row1 = RowPanel(p)
-
         wids.xray_en = FloatCtrl(p, value=20.0, size=(70, -1),
                                  minval=0, maxval=1000, precision=3)
 
@@ -187,10 +188,13 @@ class FitSpectraFrame(wx.Frame):
                                   minval=0, maxval=1000, precision=3)
         wids.fit_emax = FloatCtrl(p, value=conf.e_max, size=(70, -1),
                                   minval=0, maxval=1000, precision=3)
+        wids.fit_use_en = Check(p,
+                                label='Account for Absorption/Efficiency')
         p.AddText(' General Settings ', colour='#880000', dcol=3)
 
         p.AddText(' X-ray Energy (keV): ', newrow=True)
         p.Add(wids.xray_en)
+        p.Add(wids.fit_use_en, dcol=2)        
         p.AddText(' Min Energy (keV): ', newrow=True)
         p.Add(wids.fit_emin)
         p.AddText(' Max Energy (keV): ', newrow=False)
@@ -200,12 +204,14 @@ class FitSpectraFrame(wx.Frame):
                               size=(55, -1), default=0)
         wids.det_thk = FloatCtrl(p, value=0.40, size=(70, -1),
                                  minval=0, maxval=100, precision=3)
+        wids.det_use = Check(p, label='Account for Detector Thickness')       
 
 
         p.AddText(' Detector Material:  ', newrow=True)
         p.Add(wids.det_mat)
         p.AddText(' Thickness (mm): ', newrow=False)
         p.Add(wids.det_thk)
+        p.Add(wids.det_use)
 
         p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
 
@@ -307,9 +313,43 @@ class FitSpectraFrame(wx.Frame):
         p.pack()
         return p
 
+    def onFitPeaks(self, event=None):
+        print 'Fit Peaks'
+        opts = {}
+        filters, peaks = [], []
+        
+        for ctrl in ('bgr_width', 'xray_en', 'det_thk',
+                     'fit_emax', 'fit_emin'):
+            opts[ctrl] = getattr(self.wids, ctrl).GetValue()
+            
+        for ctrl in ('bgr_compress', 'bgr_exponent', 'det_mat'):
+            opts[ctrl] = getattr(self.wids, ctrl).GetStringSelection()
+
+        for ctrl in ('bgr_use', 'det_use', 'fit_use_en'):
+            opts[ctrl] = getattr(self.wids, ctrl).IsChecked()
+
+        for ctrl in ('sig_offset', 'sig_quad', 'sig_slope'):
+            opts[ctrl] = getattr(self.wids, ctrl).param
+
+
+        for k in self.wids.filters:
+            f = (k[0].GetStringSelection(), k[1].GetValue(), k[2].param)
+            filters.append(f)
+            
+        for k in self.wids.peaks:
+            p = (k[0].IsChecked(), k[1].param, k[2].param, k[3].param)
+            peaks.append(p)
+            
+
+        opts['filters'] = filters
+        opts['peaks'] = peaks
+
+        for key, val in opts.items():
+            print key, val
+        
+        
     def onClose(self, event=None):
         self.Destroy()
-
 
 
     def createpanel_bgr_withcollapse(self, panel):
@@ -330,10 +370,8 @@ class FitSpectraFrame(wx.Frame):
 
         container = cpane.GetPane()
         p = GridPanel(container)
-        self.wids.bgr_use = Check(p, label='Include Background',
-                                  default=True)
-        self.wids.bgr_width = FloatCtrl(p, value=width, minval=0,
-                                        maxval=10,
+        self.wids.bgr_use = Check(p, label='Include Background', default=True)
+        self.wids.bgr_width = FloatCtrl(p, value=width, minval=0, maxval=10,
                                         precision=1, size=(50, -1))
 
         self.wids.bgr_compress = Choice(p, choices=['1', '2', '4', '8', '16'],
