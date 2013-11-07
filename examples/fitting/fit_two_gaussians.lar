@@ -87,5 +87,5 @@ conf_int = confidence_intervals(minout)
 print confidence_report(conf_int)
 
 xvals, yvals, c2map = chi2_map(minout, 'amp1', 'off1', nx=21, ny=11, xrange=[13,17], yrange=[-0.4, -0.0])
-contoru(c2map, x=xvals, y=yvals, title='Chi2 map for Amp1 and Off1')
+contour(c2map, x=xvals, y=yvals, title='Chi2 map for Amp1 and Off1')
 
