@@ -53,9 +53,7 @@ def param(*args, **kws):
     if 'val' in kws:
         val = kws.pop('val')
         kws.update({'value': val})
-    out = Parameter(*args, **kws)
-    if 'name' not in kws:
-        return out
+    return Parameter(*args, **kws)
 
 def guess(value,  **kws):
     """create a fitting Parameter as a Variable.

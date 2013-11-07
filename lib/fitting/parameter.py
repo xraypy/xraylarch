@@ -167,7 +167,7 @@ class Parameter(object):
             val = val._getval()
         w = []
         if self.name is not None:
-            w.append("name=%s" % self.name)
+            w.append("name='%s'" % self.name)
         w.append("value=%s" % repr(val))
         if self._expr is not None:
             w.append("expr='%s'" % self._expr)
