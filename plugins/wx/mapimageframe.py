@@ -72,10 +72,13 @@ class MapImageFrame(ImageFrame):
         self.rbbox = None
 
     def display(self, map, det=None, xrmfile=None, **kws):
+        # print 'DISPLAY ', kws.keys()
         self.det = det
         self.xrmfile = xrmfile
         self.map = map
         ImageFrame.display(self, map, **kws)
+        if 'x' in kws:
+            self.panel.xdata = kws['x']
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
@@ -248,11 +251,12 @@ class MapImageFrame(ImageFrame):
         conf = self.panel.conf
         if conf.flip_ud:  iy = conf.data.shape[0] - iy
         if conf.flip_lr:  ix = conf.data.shape[1] - ix
-
+        # print 'LeftDown ', conf.data.shape
         if (ix >= 0 and ix < conf.data.shape[1] and
             iy >= 0 and iy < conf.data.shape[0]):
             pos = ''
             pan = self.panel
+
             labs, vals = [], []
             if pan.xdata is not None:
                 labs.append(pan.xlab)
