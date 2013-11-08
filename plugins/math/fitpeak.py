@@ -193,7 +193,7 @@ class PeakModel(FitModel):
         FitModel.__init__(self, background=background, **kws)
         self.add_param('amplitude', value=amplitude)
         self.add_param('center',  value=center)
-        self.add_param('sigma',  value=sigma, min=0)
+        self.add_param('sigma',  value=sigma, min=1.e-10)
         self.negative = negative
 
     def guess_starting_values(self, y, x):
@@ -295,7 +295,7 @@ class StepModel(FitModel):
         FitModel.__init__(self, background=background, **kws)
         self.add_param('height', value=height)
         self.add_param('center',  value=center)
-        self.add_param('width',  value=width, min=0)
+        self.add_param('width',  value=width, min=1.e-10)
         self.step = step
         self.negative=negative
 
@@ -343,9 +343,9 @@ class RectangularModel(FitModel):
         FitModel.__init__(self, background=background, **kws)
         self.add_param('height',   value=height)
         self.add_param('center1',  value=center1)
-        self.add_param('width1',   value=width1, min=0)
+        self.add_param('width1',   value=width1, min=1.e-10)
         self.add_param('center2',  value=center2)
-        self.add_param('width2',   value=width2, min=0)
+        self.add_param('width2',   value=width2, min=1.e-10)
         self.add_param('midpoint',
                        expr='(center1+center2)/2.0', vary=False)
         self.step = step
