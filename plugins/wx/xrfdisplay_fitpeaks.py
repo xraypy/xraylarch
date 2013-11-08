@@ -16,9 +16,10 @@ from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
 from larch import use_plugin_path, Group, Parameter
 from larch.larchlib import Empty
 use_plugin_path('xrf')
-
 from xrf_bgr import xrf_background
 from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
+from materials import material_mu, material_get
+
 from parameter import ParameterPanel
 try:
     from collections import OrderedDict
@@ -88,7 +89,7 @@ class FitSpectraFrame(wx.Frame):
         sizer.Add((5,5))
         sizer.Add(HLine(self, size=(675, 3)),  0, CEN|LEFT|wx.TOP|wx.GROW)
         sizer.Add((5,5))
-        
+
         bpanel = RowPanel(self)
         bpanel.Add(Button(bpanel, 'Fit Peaks', action=self.onFitPeaks), 0, LEFT)
         bpanel.Add(Button(bpanel, 'Done', action=self.onClose), 0, LEFT)
@@ -188,13 +189,13 @@ class FitSpectraFrame(wx.Frame):
                                   minval=0, maxval=1000, precision=3)
         wids.fit_emax = FloatCtrl(p, value=conf.e_max, size=(70, -1),
                                   minval=0, maxval=1000, precision=3)
-        wids.fit_use_en = Check(p,
-                                label='Account for Absorption/Efficiency')
+        wids.flyield_use = Check(p,
+            label='Account for Absorption, Fluorescence Efficiency')
+
         p.AddText(' General Settings ', colour='#880000', dcol=3)
 
         p.AddText(' X-ray Energy (keV): ', newrow=True)
         p.Add(wids.xray_en)
-        p.Add(wids.fit_use_en, dcol=2)        
         p.AddText(' Min Energy (keV): ', newrow=True)
         p.Add(wids.fit_emin)
         p.AddText(' Max Energy (keV): ', newrow=False)
@@ -204,14 +205,14 @@ class FitSpectraFrame(wx.Frame):
                               size=(55, -1), default=0)
         wids.det_thk = FloatCtrl(p, value=0.40, size=(70, -1),
                                  minval=0, maxval=100, precision=3)
-        wids.det_use = Check(p, label='Account for Detector Thickness')       
-
+        wids.det_use = Check(p, label='Account for Detector Thickness')
 
         p.AddText(' Detector Material:  ', newrow=True)
         p.Add(wids.det_mat)
         p.AddText(' Thickness (mm): ', newrow=False)
         p.Add(wids.det_thk)
-        p.Add(wids.det_use)
+        p.Add(wids.det_use,     dcol=4, newrow=True)
+        p.Add(wids.flyield_use, dcol=4, newrow=True)
 
         p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
 
@@ -317,92 +318,67 @@ class FitSpectraFrame(wx.Frame):
         print 'Fit Peaks'
         opts = {}
         filters, peaks = [], []
-        
-        for ctrl in ('bgr_width', 'xray_en', 'det_thk',
-                     'fit_emax', 'fit_emin'):
-            opts[ctrl] = getattr(self.wids, ctrl).GetValue()
-            
-        for ctrl in ('bgr_compress', 'bgr_exponent', 'det_mat'):
-            opts[ctrl] = getattr(self.wids, ctrl).GetStringSelection()
+        sig, det, bgr = {}, {}, {}
 
-        for ctrl in ('bgr_use', 'det_use', 'fit_use_en'):
-            opts[ctrl] = getattr(self.wids, ctrl).IsChecked()
+        opts['flyield']  = self.wids.flyield_use.IsChecked()
+        opts['xray_en']  = self.wids.xray_en.GetValue()
+        opts['emin']     = self.wids.fit_emin.GetValue()
+        opts['emax']     = self.wids.fit_emax.GetValue()
 
-        for ctrl in ('sig_offset', 'sig_quad', 'sig_slope'):
-            opts[ctrl] = getattr(self.wids, ctrl).param
+        det['use']       = self.wids.det_use.IsChecked()
+        det['thickness'] = self.wids.det_thk.GetValue()
+        det['material']  = self.wids.det_mat.GetStringSelection()
 
+        bgr['use']       = self.wids.bgr_use.IsChecked()
+        bgr['width']     = self.wids.bgr_width.GetValue()
+        bgr['compress']  = int(self.wids.bgr_compress.GetStringSelection())
+        bgr['exponent']  = int(self.wids.bgr_exponent.GetStringSelection())
+
+        sig['offset']    = self.wids.sig_offset.param
+        sig['slope']     = self.wids.sig_slope.param
+        sig['quad']      = self.wids.sig_quad.param
 
         for k in self.wids.filters:
             f = (k[0].GetStringSelection(), k[1].GetValue(), k[2].param)
             filters.append(f)
-            
+
         for k in self.wids.peaks:
             p = (k[0].IsChecked(), k[1].param, k[2].param, k[3].param)
             peaks.append(p)
-            
 
-        opts['filters'] = filters
-        opts['peaks'] = peaks
-
+        opts  = {'det': det, 'bgr': bgr, 'sig': sig,
+                 'filters': filters, 'peaks': peaks}
         for key, val in opts.items():
             print key, val
-        
-        
+
+        print '==== fit '
+        mca    = self.mca
+        mca.data = mca.counts*1.0
+        energy = mca.energy
+        _larch = self.parent.larch
+        if bgr.pop('use'):
+            print ' -> bgr '
+            xrf_background(energy=mca.energy, counts=mca.counts,
+                           group=mca, _larch=_larch, **bgr)
+            mca.data = mca.data - mca.bgr
+
+        if det.pop('use'):
+            print 'Detector ',
+            # mu in 1/mm, note energy is needed in eV
+            mu = material_mu(det['material'], energy*1000.0, _larch=_larch)/10.0
+            t = det['thickness']
+            mca.det_atten = np.exp(-t*mu)
+            mca.data = mca.data / (1.0 - np.exp(-t*mu))
+        # filters:
+        #  75 microns kapton, etc
+        #
+        # form, nominal_density = material_get(material)
+        # mu = material_mu(material, energy*1000.0, _larch=_larch)/10.0
+        # mu = mu * nominal_density/user_density
+        # scale = exp(-thickness*mu)
+
+
     def onClose(self, event=None):
         self.Destroy()
 
 
-    def createpanel_bgr_withcollapse(self, panel):
-        "create row for background settings"
-        mca = self.parent.mca
-        width = getattr(mca, 'bgr_width', 2.5)
-        compr = getattr(mca, 'bgr_compress', 2)
-        expon = getattr(mca, 'bgr_exponent', 2.5)
-
-        label = 'Background Parameters  '
-        cpane = wx.CollapsiblePane(panel,
-                                   style=wx.CP_DEFAULT_STYLE|wx.CP_NO_TLW_RESIZE)
-
-        cpane.Bind(wx.EVT_COLLAPSIBLEPANE_CHANGED,
-                   partial(self.onCollapse, panel=cpane, label=label))
-        cpane.Collapse(True)
-        cpane.SetLabel('Hide %s' % label)
-
-        container = cpane.GetPane()
-        p = GridPanel(container)
-        self.wids.bgr_use = Check(p, label='Include Background', default=True)
-        self.wids.bgr_width = FloatCtrl(p, value=width, minval=0, maxval=10,
-                                        precision=1, size=(50, -1))
-
-        self.wids.bgr_compress = Choice(p, choices=['1', '2', '4', '8', '16'],
-                                        size=(50, -1), default=1)
-
-        self.wids.bgr_exponent = Choice(p, choices=['2', '4', '6'],
-                                        size=(50, -1), default=0)
-
-        p.AddText(" Compression: ", newrow=True)
-        p.Add(self.wids.bgr_compress)
-        p.AddText(" Exponent:")
-        p.Add(self.wids.bgr_exponent)
-        p.AddText(" Energy Width: ")
-        p.Add(self.wids.bgr_width)
-        p.AddText(" (keV)")
-        p.Add(Button(p, 'Show Background',
-                     size=(130, -1), action=self.onShowBgr), dcol=2, newrow=True)
-        p.Add(self.wids.bgr_use, dcol=4)
-
-        p.pack()
-        s = wx.BoxSizer(wx.HORIZONTAL)
-        s.Add(p, 1, wx.EXPAND|wx.ALL|CEN, 3)
-        pack(container, s)
-        return cpane
-
-    def onCollapse(self, evt=None, panel=None, label=''):
-        if panel is None:
-            return
-        txt = 'Show'
-        if panel.IsExpanded():
-            txt = 'Hide'
-        panel.SetLabel('%s %s' % (txt, label))
-        self.Layout()
-        self.Refresh()
