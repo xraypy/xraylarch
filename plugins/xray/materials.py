@@ -10,6 +10,7 @@ AMUBARN = AMU*BARN
 MODNAME = '_xray'
 
 def get_materials(_larch):
+    """return _materials dictionary, creating it if needed"""
     symname = '%s._materials' % MODNAME
     if _larch.symtable.has_symbol(symname):
         return _larch.symtable.get_symbol(symname)
@@ -38,7 +39,7 @@ def get_materials(_larch):
 def material_mu(name, energy, kind='total', _larch=None):
     """
     return X-ray attenuation (in 1/cm) for a material by name
-    
+
     arguments
     ---------
      name:    name of material, known from materials list
@@ -50,9 +51,16 @@ def material_mu(name, energy, kind='total', _larch=None):
     """
     if _larch is None:
         return
-    mater = get_materials(_larch).get(name.lower(), None)
+
+    _materials = get_materials(_larch)
+    mater = _materials.get(name.lower(), None)
     if mater is None:
-        _larch.writer.write('Material %s is not known' % name)
+        for key, val in _materials.items():
+            if val[0].lower() == name.lower():
+                mater = _materials[key]
+                break
+    if mater is None:
+        _larch.writer.write("Material '%s' is not known\n" % name)
     density = mater[1]
     formula = chemparse(mater[0])
     wt_tot, mu_tot = 0.0, 0.0
@@ -63,7 +71,7 @@ def material_mu(name, energy, kind='total', _larch=None):
         wt_tot += wt
     return density*mu_tot/wt_tot
 
-def material_lookup(name, _larch=None):
+def material_get(name, _larch=None):
     """lookup material """
     if _larch is None:
         return
@@ -97,7 +105,7 @@ def initializeLarchPlugin(_larch=None):
          get_materials(_larch)
 
 def registerLarchPlugin():
-    return ('_xray', {'material_lookup': material_lookup,
+    return ('_xray', {'material_get': material_get,
                       'material_save': material_save,
-                      'material_mu': material_mu,                      
+                      'material_mu': material_mu,
                       })
