@@ -454,17 +454,40 @@ def _exists(sym, _larch=None):
     "return True if a named symbol exists and can be found, False otherwise"
     return which(sym, _larch=_larch, **kws) is not None
 
-def _isgroup(sym, _larch=None, **kws):
-    "return True if a named symbol exists and is a group, False otherwise"
+def _isgroup(obj, *args, **kws):
+    """return whether argument is a group or the name of a group
+
+    With additional arguments (all must be strings), it also tests
+    that the group has an an attribute named for each argument. This
+    can be used to test not only if a object is a Group, but whether
+    it a group with expected arguments.
+
+        > x = 10
+        > g = group(x=x, y=2)
+        > isgroup(g), isgroup(x)
+        True, False
+        > isgroup('g'), isgroup('x')
+        True, False
+        > isgroup(g, 'x', 'y')
+        True
+        > isgroup(g, 'x', 'y', 'z')
+        False
+
+    """
+    _larch = kws.get('_larch', None)
     if _larch is None:
         raise Warning("cannot run isgroup() -- larch broken?")
     stable = _larch.symtable
-    if hasattr(sym, '__name__'):
-        sym = sym.__name__
-    if isinstance(sym, (str, unicode)) and stable.has_symbol(sym):
-        obj = stable.get_symbol(sym)
-        return isgroup(obj)
-    return False
+    if isinstance(obj, (str, unicode)) and stable.has_symbol(obj):
+        obj = stable.get_symbol(obj)
+    result = isgroup(obj)
+    if result and len(args) > 0:
+        try:
+            result = all([hasattr(obj, a) for a in args])
+        except TypeError:
+            return False
+    return result
+
 
 def _pause(msg='Hit return to continue', _larch=None):
     if _larch is None:
