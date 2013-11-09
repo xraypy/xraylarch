@@ -86,9 +86,22 @@ class Group(object):
                 r[key] = self.__dict__[key]
         return r
 
-def isgroup(grp):
-    "tests if input is a Group"
-    return isinstance(grp, Group)
+def isgroup(grp, *args):
+    """tests if input is a Group
+
+    With additional arguments (all must be strings), it also tests
+    that the group has an an attribute named for each argument. This
+    can be used to test not only if a object is a Group, but whether
+    it a group with expected arguments.
+    """
+    ret = isinstance(grp, Group)
+    if ret and len(args) > 0:
+        try:
+            ret = all([hasattr(grp, a) for a in args])
+        except TypeError:
+            return False
+    return ret
+
 
 class InvalidName:
     """ used to create a value that will NEVER be a useful symbol.

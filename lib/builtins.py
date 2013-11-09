@@ -480,14 +480,7 @@ def _isgroup(obj, *args, **kws):
     stable = _larch.symtable
     if isinstance(obj, (str, unicode)) and stable.has_symbol(obj):
         obj = stable.get_symbol(obj)
-    result = isgroup(obj)
-    if result and len(args) > 0:
-        try:
-            result = all([hasattr(obj, a) for a in args])
-        except TypeError:
-            return False
-    return result
-
+    return isgroup(obj, *args)
 
 def _pause(msg='Hit return to continue', _larch=None):
     if _larch is None:
