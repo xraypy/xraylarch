@@ -28,13 +28,15 @@ class Closure(object):
         self.__name__ = _name
         if _name is None:
             self.__name__ = self.func.__name__
+        argspec = inspect.getargspec(self.func)
+        self._argvars    = argspec.args
+        self._haskwargs  = argspec.keywords is not None
+        self._hasvarargs = argspec.varargs is not None
         self._nkws  = 0
-        if  inspect.getargspec(self.func).defaults is not None:
-            self._nkws  = len(inspect.getargspec(self.func).defaults)
-        self._nargs   = len(inspect.getargspec(self.func).args) - self._nkws
-        self._argvars = self.func.func_code.co_varnames[:]
-        self._haskwargs  = inspect.getargspec(self.func).keywords is not None
-        self._hasvarargs = inspect.getargspec(self.func).varargs is not None
+        if argspec.defaults is not None:
+            self._nkws   = len(argspec.defaults)
+        self._nargs      = len(self._argvars) - self._nkws
+
 
     def __repr__(self):
         return "<function %s, file=%s>" % (self.__name__, self.__file__)
@@ -58,7 +60,7 @@ class Closure(object):
         if ('_larch' in kwds and not self._haskwargs and
             '_larch' not in self._argvars):
             kwds.pop('_larch')
-            
+
         ngot = len(args) + len(kwds)
         nexp = self._nargs + self._nkws
         if not self._haskwargs and (ngot > nexp):
