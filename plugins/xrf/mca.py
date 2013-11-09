@@ -11,14 +11,11 @@ import numpy as np
 from deadtime import calc_icr, correction_factor
 from roi import ROI
 
-from larch import Group
+from larch import Group, isgroup
 
 def isLarchMCAGroup(grp):
     """tests whether variable holds a valid Larch MCAGroup"""
-    return (isinstance(grp, Group) and 
-            hasattr(grp, 'energy') and
-            hasattr(grp, 'counts') and
-            hasattr(grp, 'rois'))
+    return isgroup(grp, 'energy',  'counts', 'rois')
 
 class Environment:
     """
