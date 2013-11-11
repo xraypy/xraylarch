@@ -112,6 +112,7 @@ class XRFDisplayFrame(wx.Frame):
         self.zoom_lims = []
         self.last_rightdown = None
         self.last_leftdown = None
+        self.highlight_xrayline = None
         self.cursor_markers = [None, None]
         self.ylog_scale = True
         self.win_title = title
@@ -153,6 +154,10 @@ class XRFDisplayFrame(wx.Frame):
                 m.remove()
             except:
                 pass
+        if self.highlight_xrayline is not None:
+            self.highlight_xrayline.remove()
+            
+        self.highlight_xrayline = None
         self.major_markers = []
         self.minor_markers = []
         self.panel.canvas.draw()
@@ -318,21 +323,25 @@ class XRFDisplayFrame(wx.Frame):
         ir += 1
         sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
 
-        linelist = self.wids['xray_lines'] = dataview.DataViewListCtrl(self)
-        linelist.AppendTextColumn('Line',         width=75)
-        linelist.AppendTextColumn('energy (keV)', width=100)
-        linelist.AppendTextColumn('stength',      width=100)
-        for col in (0, 1, 2):
-            linelist.Columns[col].Alignment = RIGHT
-            linelist.Columns[col].Renderer.Alignment = RIGHT
-            linelist.Columns[col].Sortable = False
+        xlines = self.wids['xray_lines'] = dataview.DataViewListCtrl(ctrlpanel,
+           style=dataview.DV_SINGLE|dataview.DV_VERT_RULES|dataview.DV_ROW_LINES)
+        xlines.AppendTextColumn('Line ',        width=45)
+        xlines.AppendTextColumn('Energy (keV)', width=85)
+        xlines.AppendTextColumn('Strength',     width=85)
+        xlines.AppendTextColumn('Init Level',   width=75)
+        for col in (0, 1, 2, 3):
+            xlines.Columns[col].Sortable = True
+            align = RIGHT
+            if col in (0, 3): align = wx.ALIGN_CENTER            
+            xlines.Columns[col].Renderer.Alignment = align
+            xlines.Columns[col].Alignment = RIGHT
 
-        linelist.Columns[0].Alignment = LEFT
-        linelist.Columns[0].Renderer.Alignment = LEFT        
-        linelist.SetMinSize((200, 130))
-        
+        xlines.SetMinSize((300, 200))
+        xlines.Bind(dataview.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
+
         ir += 1
-        sizer.Add(linelist,   (ir, 1), (3, 4), labstyle)
+        sizer.Add(xlines,   (ir, 1), (4, 4), wx.GROW|wx.ALL|labstyle)
+
 
         sizer.SetHGap(1)
         sizer.SetVGap(1)
@@ -348,9 +357,11 @@ class XRFDisplayFrame(wx.Frame):
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
         msizer = wx.BoxSizer(wx.HORIZONTAL)
         msizer.Add(ctrlpanel, 0, style, 1)
+
         msizer.Add(self.panel,     1, style, 1)
         pack(self, msizer)
         self.set_roilist(mca=None)
+
 
     def onZoomIn(self, event=None):
         emin, emax = self.panel.axes.get_xlim()
@@ -620,6 +631,22 @@ class XRFDisplayFrame(wx.Frame):
         if self.selected_elem is not None:
             self.onShowLines(elem = self.selected_elem)
 
+    def onSelectXrayLine(self, evt=None):
+        self.highligh_xrayline = None
+        if not self.wids['xray_lines'].HasSelection():
+            return
+        item = self.wids['xray_lines'].GetSelection().GetID()
+        label, en, frac, ilevel = self.wids['xray_linesdata'][item]
+
+        if self.highlight_xrayline is not None:
+            self.highlight_xrayline.remove()
+        
+        self.highlight_xrayline = self.panel.axes.axvline(en,
+                             color=self.conf.highlight_elinecolor,
+                             linewidth=2.75, zorder=-6)
+        self.panel.canvas.draw()
+            
+            
     def onShowLines(self, event=None, elem=None):
         if elem is None:
             elem  = event.GetString()
@@ -633,16 +660,17 @@ class XRFDisplayFrame(wx.Frame):
 
         self.energy_for_zoom = None
         xlines = self.wids['xray_lines']
-        xlines.DeleteAllItems()
-        
+        xlines.DeleteAllItems()        
+        self.wids['xray_linesdata'] = [('legend' , '0', '1', 'K')]
         minors, majors = [], []
         conf = self.conf
         line_data = {}
         for line in (conf.K_major+conf.K_minor+conf.L_major+
                      conf.L_minor+conf.M_major):
-            line_data[line] = line, -1, 0
+            line_data[line] = line, -1, 0, ''
             if line in elines:
-                line_data[line] = line, elines[line][0], elines[line][1]
+                dat = elines[line]
+                line_data[line] = line, dat[0], dat[1], dat[2]
         
         if self.wids['kseries'].IsChecked():
             majors.extend([line_data[l] for l in conf.K_major])
@@ -655,29 +683,33 @@ class XRFDisplayFrame(wx.Frame):
 
         erange = [max(conf.e_min, self.xdata.min()),
                   min(conf.e_max, self.xdata.max())]
-        for label, eev, frac in majors:
+        for label, eev, frac, ilevel in majors:
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.75, zorder=-4)
                 l.set_label(label)
-                xlines.AppendItem((label, "%.4f" % e, "%.4f" % frac))
+                dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
+                self.wids['xray_linesdata'].append(dat)
+                xlines.AppendItem(dat)
+
                 self.major_markers.append(l)
                 if self.energy_for_zoom is None:
                     self.energy_for_zoom = e
                 
-        for label, eev, frac in minors:
+        for label, eev, frac, ilevel in minors:
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.minor_elinecolor,
                           linewidth=0.75, zorder=-6)
                 l.set_label(label)
-                xlines.AppendItem((label, "%.4f" % e, "%.4f" % frac))
+                dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
+                self.wids['xray_linesdata'].append(dat)
+                xlines.AppendItem(dat)
                 self.minor_markers.append(l)
 
-        # print ' elines: ', elines
-        # print 'major lines ', majors
-        # print '   minors: ', minors
+        
+
         self.panel.canvas.draw()
 
     def onLogLinear(self, event=None):

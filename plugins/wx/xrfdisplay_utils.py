@@ -328,7 +328,8 @@ class XrayLinesFrame(wx.Frame):
         self.Destroy()
 
 class XRFDisplayConfig:
-    major_elinecolor = '#DAD8CA'
+    highlight_elinecolor = '#880000'
+    major_elinecolor = '#DAD8CA'    
     minor_elinecolor = '#F4DAC0'
     marker_color     = '#77BB99'
     roi_fillcolor    = '#F8F0BA'
