@@ -14,7 +14,7 @@ import wx.lib.mixins.inspection
 import wx.lib.scrolledpanel as scrolled
 from wx._core import PyDeadObjectError
 import wx.lib.colourselect  as csel
-
+import wx.dataview as dataview
 import numpy as np
 import matplotlib
 from wxmplot import PlotPanel
@@ -239,13 +239,13 @@ class XRFDisplayFrame(wx.Frame):
                                           size=(80, -1),
                                           action=self.onZoomOut)
 
-        spanel = wx.Panel(ctrlpanel)
+        arrowpanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
         for wname, dname in (('uparrow', 'up'),
                              ('leftarrow', 'left'),
                              ('rightarrow', 'right'),
                              ('downarrow', 'down')):
-            self.wids[wname] = wx.BitmapButton(spanel, -1,
+            self.wids[wname] = wx.BitmapButton(arrowpanel, -1,
                                                get_icon(wname),
                                                style=wx.NO_BORDER)
             self.wids[wname].Bind(wx.EVT_BUTTON,
@@ -253,15 +253,15 @@ class XRFDisplayFrame(wx.Frame):
 
             ssizer.Add(self.wids[wname],  0, wx.EXPAND|wx.ALL, 2)
 
-        self.wids['kseries'] = Check(spanel, ' K ', action=self.onSeriesSelect)
-        self.wids['lseries'] = Check(spanel, ' L ', action=self.onSeriesSelect)
-        self.wids['mseries'] = Check(spanel, ' M ', action=self.onSeriesSelect)
+        self.wids['kseries'] = Check(arrowpanel, ' K ', action=self.onKLM)
+        self.wids['lseries'] = Check(arrowpanel, ' L ', action=self.onKLM)
+        self.wids['mseries'] = Check(arrowpanel, ' M ', action=self.onKLM)
 
-        ssizer.Add(txt(spanel, '  '),       1, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(txt(arrowpanel, '  '),   1, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['kseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['lseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['mseries'],    0, wx.EXPAND|wx.ALL, 0)
-        pack(spanel, ssizer)
+        pack(arrowpanel, ssizer)
 
         self.wids['roilist'] = EditableListBox(ctrlpanel, self.onROI,
                                                right_click=False,
@@ -283,7 +283,7 @@ class XRFDisplayFrame(wx.Frame):
         sizer.Add(ptable,  (ir, 1), (1, 4), wx.ALIGN_RIGHT|wx.EXPAND)
 
         ir += 1
-        sizer.Add(spanel, (ir, 1), (1, 4), labstyle)
+        sizer.Add(arrowpanel, (ir, 1), (1, 4), labstyle)
 
         ir += 1
         sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
@@ -317,6 +317,22 @@ class XRFDisplayFrame(wx.Frame):
 
         ir += 1
         sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
+
+        linelist = self.wids['xray_lines'] = dataview.DataViewListCtrl(self)
+        linelist.AppendTextColumn('Line',         width=75)
+        linelist.AppendTextColumn('energy (keV)', width=100)
+        linelist.AppendTextColumn('stength',      width=100)
+        for col in (0, 1, 2):
+            linelist.Columns[col].Alignment = RIGHT
+            linelist.Columns[col].Renderer.Alignment = RIGHT
+            linelist.Columns[col].Sortable = False
+
+        linelist.Columns[0].Alignment = LEFT
+        linelist.Columns[0].Renderer.Alignment = LEFT        
+        linelist.SetMinSize((200, 130))
+        
+        ir += 1
+        sizer.Add(linelist,   (ir, 1), (3, 4), labstyle)
 
         sizer.SetHGap(1)
         sizer.SetVGap(1)
@@ -599,7 +615,8 @@ class XRFDisplayFrame(wx.Frame):
         except:
             self.win_config = XrayLinesFrame(parent=self)
 
-    def onSeriesSelect(self, event=None):
+    def onKLM(self, event=None):
+        """selected K, L, or M Markers"""
         if self.selected_elem is not None:
             self.onShowLines(elem = self.selected_elem)
 
@@ -615,6 +632,9 @@ class XRFDisplayFrame(wx.Frame):
         self.clear_lines()
 
         self.energy_for_zoom = None
+        xlines = self.wids['xray_lines']
+        xlines.DeleteAllItems()
+        
         minors, majors = [], []
         conf = self.conf
         line_data = {}
@@ -623,7 +643,7 @@ class XRFDisplayFrame(wx.Frame):
             line_data[line] = line, -1, 0
             if line in elines:
                 line_data[line] = line, elines[line][0], elines[line][1]
-
+        
         if self.wids['kseries'].IsChecked():
             majors.extend([line_data[l] for l in conf.K_major])
             minors.extend([line_data[l] for l in conf.K_minor])
@@ -641,16 +661,18 @@ class XRFDisplayFrame(wx.Frame):
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.75, zorder=-4)
                 l.set_label(label)
+                xlines.AppendItem((label, "%.4f" % e, "%.4f" % frac))
                 self.major_markers.append(l)
                 if self.energy_for_zoom is None:
                     self.energy_for_zoom = e
-
+                
         for label, eev, frac in minors:
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.minor_elinecolor,
                           linewidth=0.75, zorder=-6)
                 l.set_label(label)
+                xlines.AppendItem((label, "%.4f" % e, "%.4f" % frac))
                 self.minor_markers.append(l)
 
         # print ' elines: ', elines
