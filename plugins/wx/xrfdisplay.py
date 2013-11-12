@@ -635,7 +635,7 @@ class XRFDisplayFrame(wx.Frame):
         if not self.wids['xray_lines'].HasSelection():
             return
         item = self.wids['xray_lines'].GetSelection().GetID()
-        label, en, frac, ilevel = self.wids['xray_linesdata'][item]
+        en = self.wids['xray_linesdata'][item]
 
         if self.highlight_xrayline is not None:
             self.highlight_xrayline.remove()
@@ -661,7 +661,7 @@ class XRFDisplayFrame(wx.Frame):
         self.energy_for_zoom = None
         xlines = self.wids['xray_lines']
         xlines.DeleteAllItems()        
-        self.wids['xray_linesdata'] = [('legend' , '0', '1', 'K')]
+        self.wids['xray_linesdata'] = [0]
         minors, majors = [], []
         conf = self.conf
         line_data = {}
@@ -690,7 +690,7 @@ class XRFDisplayFrame(wx.Frame):
                           linewidth=1.50, zorder=-4)
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
-                self.wids['xray_linesdata'].append(dat)
+                self.wids['xray_linesdata'].append(e)
                 xlines.AppendItem(dat)
 
                 self.major_markers.append(l)
@@ -704,7 +704,7 @@ class XRFDisplayFrame(wx.Frame):
                           linewidth=1.25, zorder=-6)
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
-                self.wids['xray_linesdata'].append(dat)
+                self.wids['xray_linesdata'].append(e)
                 xlines.AppendItem(dat)
                 self.minor_markers.append(l)
 
