@@ -336,7 +336,7 @@ class XRFDisplayFrame(wx.Frame):
             xlines.Columns[col].Renderer.Alignment = align
             xlines.Columns[col].Alignment = RIGHT
 
-        xlines.SetMinSize((300, 200))
+        xlines.SetMinSize((300, 150))
         xlines.Bind(dataview.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
 
         ir += 1
@@ -535,9 +535,9 @@ class XRFDisplayFrame(wx.Frame):
                   "Quit program", self.onExit)
 
         omenu = wx.Menu()
-        MenuItem(self, omenu, "Set Colors",
+        MenuItem(self, omenu, "Configure Colors",
                  "Configure Colors", self.config_colors)
-        MenuItem(self, omenu, "X-ray Line Selection",
+        MenuItem(self, omenu, "Configure X-ray Lines",
                  "Configure which X-ray Lines are shown", self.config_xraylines)
 
         omenu.AppendSeparator()
@@ -632,7 +632,6 @@ class XRFDisplayFrame(wx.Frame):
             self.onShowLines(elem = self.selected_elem)
 
     def onSelectXrayLine(self, evt=None):
-        self.highligh_xrayline = None
         if not self.wids['xray_lines'].HasSelection():
             return
         item = self.wids['xray_lines'].GetSelection().GetID()
@@ -641,9 +640,10 @@ class XRFDisplayFrame(wx.Frame):
         if self.highlight_xrayline is not None:
             self.highlight_xrayline.remove()
         
+        self.energy_for_zoom = en
         self.highlight_xrayline = self.panel.axes.axvline(en,
-                             color=self.conf.highlight_elinecolor,
-                             linewidth=2.75, zorder=-6)
+                             color=self.conf.emph_elinecolor,
+                             linewidth=2.5, zorder=-20)
         self.panel.canvas.draw()
             
             
@@ -687,7 +687,7 @@ class XRFDisplayFrame(wx.Frame):
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.major_elinecolor,
-                          linewidth=1.75, zorder=-4)
+                          linewidth=1.50, zorder=-4)
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
                 self.wids['xray_linesdata'].append(dat)
@@ -701,7 +701,7 @@ class XRFDisplayFrame(wx.Frame):
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.minor_elinecolor,
-                          linewidth=0.75, zorder=-6)
+                          linewidth=1.25, zorder=-6)
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
                 self.wids['xray_linesdata'].append(dat)

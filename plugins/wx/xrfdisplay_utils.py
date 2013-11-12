@@ -159,7 +159,7 @@ class CalibrationFrame(wx.Frame):
 
 class ColorsFrame(wx.Frame):
     """settings frame for XRFDisplay"""
-    def __init__(self, parent, size=(500, 250), **kws):
+    def __init__(self, parent, size=(400, 300), **kws):
         self.parent = parent
         conf = parent.conf
         kws['style'] = wx.DEFAULT_FRAME_STYLE
@@ -173,34 +173,30 @@ class ColorsFrame(wx.Frame):
             c.Bind(csel.EVT_COLOURSELECT, partial(self.onColor, item=name))
             return c
 
-        SX = 180
-        panel.AddText(' XRF Display Colors', dcol=4, colour='#880000')
+        SX = 120
+        def scolor(txt, attr, **kws):
+            panel.AddText(txt, size=(SX, -1), style=LEFT, **kws)
+            panel.Add(add_color(panel, attr),  style=LEFT)
+            
+        panel.AddText('    XRF Display Colors', dcol=4, colour='#880000')
 
         panel.Add(HLine(panel, size=(400, 3)),  dcol=4, newrow=True)
-        panel.AddText('Spectra Color:', size=(SX, -1), style=LEFT, newrow=True)
-        panel.Add(add_color(panel, 'spectra_color'),  style=LEFT)
-        panel.AddText('ROI Spectra Color:', size=(SX, -1), style=LEFT)
-        panel.Add(add_color(panel, 'roi_color'),  style=LEFT)
-
-        panel.AddText('Cursor Color:', size=(SX, -1), style=LEFT, newrow=True)
-        panel.Add(add_color(panel, 'marker_color'),  style=LEFT)
-        panel.AddText('ROI Fill Color:', size=(SX, -1), style=LEFT)
-        panel.Add(add_color(panel, 'roi_fillcolor'),  style=LEFT)
-
-        panel.AddText('Major Line Color:', size=(SX, -1), style=LEFT, newrow=True)
-        panel.Add(add_color(panel, 'major_elinecolor'),   style=LEFT)
-        panel.AddText('Minor Line Color:', size=(SX, -1), style=LEFT)
-        panel.Add(add_color(panel, 'minor_elinecolor'),   style=LEFT)
-
-        panel.AddText('Spectra 2 Color:', size=(SX, -1), style=LEFT, newrow=True)
-        panel.Add(add_color(panel, 'spectra2_color'),    style=LEFT)
-        panel.AddText('XRF Background Color:', size=(SX, -1), style=LEFT)
-        panel.Add(add_color(panel, 'bgr_color'),          style=LEFT)
+        scolor(' Main Spectra:',        'spectra_color', newrow=True)
+        scolor(' Second Spectra:',      'spectra2_color')
+        scolor(' ROIs:',                'roi_color',     newrow=True)
+        scolor(' ROI Fill:',            'roi_fillcolor')
+        scolor(' Cursor:',              'marker_color',  newrow=True)
+        scolor(' XRF Background:',      'bgr_color')
+        scolor(' Major X-ray Lines:',   'major_elinecolor', newrow=True)
+        scolor(' Minor X-ray Lines:',   'minor_elinecolor')
+        scolor(' Selected X-ray Line:', 'emph_elinecolor', newrow=True)
 
         panel.Add(HLine(panel, size=(400, 3)),  dcol=4, newrow=True)
         panel.Add(Button(panel, 'Done', size=(80, -1), action=self.onDone),
                   dcol=2, newrow=True)
+
         panel.pack()
+        self.SetMinSize(panel.GetBestSize())
         self.Show()
         self.Raise()
 
@@ -328,7 +324,7 @@ class XrayLinesFrame(wx.Frame):
         self.Destroy()
 
 class XRFDisplayConfig:
-    highlight_elinecolor = '#880000'
+    emph_elinecolor  = '#444444'
     major_elinecolor = '#DAD8CA'    
     minor_elinecolor = '#F4DAC0'
     marker_color     = '#77BB99'
