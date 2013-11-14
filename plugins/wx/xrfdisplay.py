@@ -14,10 +14,16 @@ import wx.lib.mixins.inspection
 import wx.lib.scrolledpanel as scrolled
 from wx._core import PyDeadObjectError
 import wx.lib.colourselect  as csel
-import wx.dataview as dataview
 import numpy as np
 import matplotlib
 from wxmplot import PlotPanel
+
+HAS_DV = False
+try:
+    import wx.dataview as dv
+    HAS_DV = True
+except:
+    pass
 
 import larch
 
@@ -323,25 +329,27 @@ class XRFDisplayFrame(wx.Frame):
         ir += 1
         sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
 
-        xlines = self.wids['xray_lines'] = dataview.DataViewListCtrl(ctrlpanel,
-           style=dataview.DV_SINGLE|dataview.DV_VERT_RULES|dataview.DV_ROW_LINES)
-        xlines.AppendTextColumn('Line ',        width=45)
-        xlines.AppendTextColumn('Energy (keV)', width=85)
-        xlines.AppendTextColumn('Strength',     width=85)
-        xlines.AppendTextColumn('Init Level',   width=75)
-        for col in (0, 1, 2, 3):
-            xlines.Columns[col].Sortable = True
-            align = RIGHT
-            if col in (0, 3): align = wx.ALIGN_CENTER            
-            xlines.Columns[col].Renderer.Alignment = align
-            xlines.Columns[col].Alignment = RIGHT
+        self.wids['xray_lines'] = None
+        if HAS_DV:
+            dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
+            xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
+            self.wids['xray_lines'] = xlines
+            xlines.AppendTextColumn('Line ',        width=45)
+            xlines.AppendTextColumn('Energy (keV)', width=85)
+            xlines.AppendTextColumn('Strength',     width=85)
+            xlines.AppendTextColumn('Init Level',   width=75)
+            for col in (0, 1, 2, 3):
+                xlines.Columns[col].Sortable = True
+                align = RIGHT
+                if col in (0, 3): align = wx.ALIGN_CENTER            
+                xlines.Columns[col].Renderer.Alignment = align
+                xlines.Columns[col].Alignment = RIGHT
 
-        xlines.SetMinSize((300, 150))
-        xlines.Bind(dataview.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
+            xlines.SetMinSize((300, 150))
+            xlines.Bind(dataview.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
 
-        ir += 1
-        sizer.Add(xlines,   (ir, 1), (4, 4), wx.GROW|wx.ALL|labstyle)
-
+            ir += 1
+            sizer.Add(xlines,   (ir, 1), (4, 4), wx.GROW|wx.ALL|labstyle)
 
         sizer.SetHGap(1)
         sizer.SetVGap(1)
@@ -632,6 +640,8 @@ class XRFDisplayFrame(wx.Frame):
             self.onShowLines(elem = self.selected_elem)
 
     def onSelectXrayLine(self, evt=None):
+        if self.wids['xray_lines'] is None:
+            return
         if not self.wids['xray_lines'].HasSelection():
             return
         item = self.wids['xray_lines'].GetSelection().GetID()
@@ -660,7 +670,8 @@ class XRFDisplayFrame(wx.Frame):
 
         self.energy_for_zoom = None
         xlines = self.wids['xray_lines']
-        xlines.DeleteAllItems()        
+        if xlines is not None:
+            xlines.DeleteAllItems()        
         self.wids['xray_linesdata'] = [0]
         minors, majors = [], []
         conf = self.conf
@@ -691,7 +702,8 @@ class XRFDisplayFrame(wx.Frame):
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
                 self.wids['xray_linesdata'].append(e)
-                xlines.AppendItem(dat)
+                if xlines is not None:
+                    xlines.AppendItem(dat)
 
                 self.major_markers.append(l)
                 if self.energy_for_zoom is None:
@@ -705,7 +717,8 @@ class XRFDisplayFrame(wx.Frame):
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
                 self.wids['xray_linesdata'].append(e)
-                xlines.AppendItem(dat)
+                if xlines is not None:
+                    xlines.AppendItem(dat)
                 self.minor_markers.append(l)
 
         
