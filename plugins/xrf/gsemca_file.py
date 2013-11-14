@@ -82,7 +82,7 @@ class GSEMCA_File(Group):
                 _en  = mca.get_energy()
                 mdat = UnivariateSpline(_en, mdat, s=0)(en)
             if dt_correct:
-                mdat *= mca.dt_factor
+                mdat = mdat * mca.dt_factor
             dat = dat + mdat
         return dat.astype(np.int)
 
