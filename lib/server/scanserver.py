@@ -167,7 +167,7 @@ class ScanServer():
         # print '  scan  ', cpt, npts, scan.filename
         time_left = (npts-cpt)* (scan.pos_settle_time + scan.det_settle_time )
         if scan.dwelltime_varys:
-            time_left += scan.dwelltime[npts:].sum()
+            time_left += scan.dwelltime[cpt:].sum()
         else:
             time_left += (npts-cpt)*scan.dwelltime
         self.scandb.set_info('scan_time_estimate', time_left)
