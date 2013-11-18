@@ -108,16 +108,19 @@ class ScanWatcher(threading.Thread):
     and pass them to the current StepScan"""
     scan_timeout  = 3*86400.0
     start_timeout =     300.0
-    def __init__(self, scandb, scan=None, **kws):
+    def __init__(self, scandb, scan=None, imsg=None, **kws):
         threading.Thread.__init__(self)
         self.get_info = scandb.get_info
         self.scan = scan
-
+        self.imsg = imsg
+        
     def run(self):
         """execute thread, watching for abort/pause/resume"""
         t0 = time.time()
         scan = self.scan
         scan_started = False
+        last_imsg = -10
+        npts = int(self.get_info('scan_total_points') )
         while True:
             try:
                 time.sleep(0.5)
@@ -130,7 +133,11 @@ class ScanWatcher(threading.Thread):
                 scan_started = True
             if self.get_info('request_command_killall', as_bool=True):
                 return
-            
+            if self.imsg is not None:
+                if scan.cpt % self.imsg == 0 and scan.cpt > last_imsg:
+                    print '%i / %i ' % (scan.cpt, npts)
+                    last_imsg = scan.cpt
+                    
             if not scan_started:
                 if time.time()-t0 > self.start_timeout:
                     return
@@ -203,7 +210,7 @@ class ScanServer():
 
         self.scan.messenger = self.scan_messenger
 
-        self.scanwatcher = ScanWatcher(self.scandb, scan=self.scan)
+        self.scanwatcher = ScanWatcher(self.scandb, scan=self.scan, imsg=25)
 
         self.scanwatcher.start()
         self.scandb.update_where('scandefs', {'name': scanname},
