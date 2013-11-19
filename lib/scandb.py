@@ -720,17 +720,18 @@ class ScanDB(object):
         return query.execute().fetchall()
 
     # commands -- a more complex interface
-    def get_commands(self, status=None):
+    def get_commands(self, status=None, **kws):
         """return command by status"""
         cls, table = self._get_table('commands')
+        columns = table.c.keys()
+        q = self.query(cls)
+        q = q.order_by(cls.id)
         if status is None:
-            return self.query(table).all()
-
+            return q.all()
         if status not in self.status_codes:
             status = 'unknown'
-
         statid = self.status_codes[status]
-        return self.query(table).filter(cls.status_id==statid).all()
+        return q.filter(cls.status_id==statid).all()
 
 
     def add_command(self, command, arguments='',output_value='',
