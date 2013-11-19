@@ -236,32 +236,38 @@ class ScanServer():
         print 'shutting down!'
 
     def execute_command(self, req):
-        print 'EXECUTE Command ', req
-        print 'req.command = ', req.command
-        print 'req.arguments = ', req.arguments
-        print 'req.status_id, req.status = ', req.status_id, req.status
-        print 'req.scandefs = ', req.scandefs
-        print 'req.request_time = ', req.request_time
-        print 'req.start_time = ', req.start_time
-        print 'req.modify_time = ', req.modify_time
-        print 'req.output_value = ', req.output_value
-        print 'req.output_file = ', req.output_file
+        print 'Execute: ', req.id, req.command, req.arguments, req.output_file
+        # print 'req.id      = ', req.id
+        # print 'req.arguments = ', req.arguments
+        #print 'req.status_id, req.status = ', req.status_id
+        #print 'req.request_time = ', req.request_time
+        #print 'req.start_time = ', req.start_time
+        #print 'req.modify_time = ', req.modify_time
+        #print 'req.output_value = ', req.output_value
+        #print 'req.output_file = ', req.output_file
 
-        cmd_thread = Thread(target=self.do_command,
-                            kwargs=dict(req=req),
-                            name='cmd_thread')
+        
+        cmd_thread = threading.Thread(target=self.do_command,
+                                      kwargs=dict(req=req),
+                                      name='cmd_thread')
 
-        self.db.set_command_status(req.id, 'starting')
+        self.scandb.set_command_status(req.id, 'starting')
         self.command_in_progress = True
         cmd_thread.start()
         cmd_thread.join()
-        self.db.set_command_status(req.id, 'finished')
+        self.scandb.set_command_status(req.id, 'finished')
         self.command_in_progress = False
 
-    def do_command(self, req):
+    def do_command(self, req=None, **kws):
         print 'IN do_command ', req
+        self.scandb.set_command_status(req.id, 'running')
+        if req.command == 'doscan':
+            print 'DO SCAN ', req.arguments, req.output_file
+            self.do_scan(req.arguments, filename=req.output_file)
+        else: 
+            print 'unknown command ', req.command
         time.sleep(3.0)
-        print 'command done!'
+        self.scandb.set_command_status(req.id, 'stopping')
 
     def look_for_interrupt_requests(self):
         """set interrupt requests:
@@ -278,18 +284,16 @@ class ScanServer():
 
         while True:
             self.sleep()
-            print 'tick'
             if self.abort:   break
-            reqs = self.db.get_commands('requested')
+            reqs = self.scandb.get_commands('requested')
+            print 'tick  ', len(reqs)
             if self.command_in_progress:
                 self.look_for_interrupt_requests()
-                self.sleep(t=0.10)
+                self.sleep(t=0.150)
             if len(reqs) == 0 or self.command_in_progress:
                 self.sleep(t=0.10)
             else:
-                nextreq = reqs.pop()
-                print 'Will do next request: ', nextreq
-                self.execute_command(nextreq)
+                self.execute_command(reqs.pop(0))
 
         # mainloop end
         self.finish()
