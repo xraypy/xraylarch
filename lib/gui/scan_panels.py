@@ -439,10 +439,11 @@ class XAFSScanPanel(GenericScanPanel):
                                     "Npts", "Time (s)", "Units")):
             sizer.Add(SimpleText(self, lab),  (ir, ic), (1, 1), LEFT, 2)
 
-        for i, reg in enumerate((('Pre-Edge', (-50, -10, 5, 9)),
-                                 ('XANES',   (-10, 10, 1, 21)),
-                                 ('EXAFS1',  (10, 200, 2, 96)),
-                                 ('EXAFS2',  (200, 800, 4, 151)))):
+        for i, reg in enumerate((('Pre-Edge', (-100, -10, 5,  19)),
+                                 ('XANES',    (-10,   10, 0.25,  81)),
+                                 ('XAFS1',    ( 10,  200, 2,  96)),
+                                 ('XAFS2',    (200,  500, 3, 101)),
+                                 ('XAFS3',    (500,  900, 4, 101)))):
 
             label, initvals = reg
             ir += 1
@@ -575,7 +576,7 @@ class XAFSScanPanel(GenericScanPanel):
 
         self.est_time  = SimpleText(self, '  00:00:00  ')
         self.nregs_wid = FloatCtrl(self, precision=0, value=3,
-                                   minval=1, maxval=4,
+                                   minval=1, maxval=5,
                                    size=(25, -1),  act_on_losefocus=True,
                                    action=Closure(self.onVal, label='nreg'))
         nregs = self.nregs_wid.GetValue()
