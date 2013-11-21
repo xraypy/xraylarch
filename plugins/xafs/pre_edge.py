@@ -11,14 +11,15 @@ from larch import Group, Parameter, Minimizer, isgroup, use_plugin_path
 use_plugin_path('math')
 use_plugin_path('xafs')
 
+
 # now we can reliably import other std and xafs modules...
 from mathutils import index_of, index_nearest, remove_dups
-from xafsutils import set_xafsGroup
+from xafsutils import set_xafsGroup, group_arg_parse
 
 MODNAME = '_xafs'
 MAX_NNORM = 5
 
-def find_e0(energy, mu, group=None, _larch=None):
+def find_e0(energy, mu=None, group=None, _larch=None):
     """calculate E0 given mu(energy)
 
     This finds the point with maximum derivative with some
@@ -26,7 +27,7 @@ def find_e0(energy, mu, group=None, _larch=None):
 
     Arguments
     ----------
-    energy:  array of x-ray energies, in eV
+    energy:  array of x-ray energies, in eV or first argument group
     mu:      array of mu(E)
     group:   output group
 
@@ -37,10 +38,18 @@ def find_e0(energy, mu, group=None, _larch=None):
 
     In addition, group.e0 will be set to value for e0
 
-
+    Notes
+    -----
+       If the first argument is a Group, it must contain 'energy' and 'mu'.
+       See First Argrument Group in Documentation.
     """
     if _larch is None:
         raise Warning("cannot find e0 -- larch broken?")
+
+    energy, mu, group = group_arg_parse(energy, args=(mu,), 
+                                        group=group,                                        
+                                        names=('energy', 'mu'),
+                                        fcn_name='find_e0')
 
     energy = remove_dups(energy)
     dmu = np.diff(mu)/np.diff(energy)
@@ -62,7 +71,7 @@ def flat_resid(pars):
     c0, c1, c2 =  pars.c0.value,  pars.c1.value,  pars.c2.value
     return  (pars.mu - (c0 + pars.en * (c1 + pars.en * c2)))
     
-def pre_edge(energy, mu, group=None, e0=None, step=None,
+def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, _larch=None):
     """pre edge subtraction, normalization for XAFS
@@ -75,7 +84,7 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
 
     Arguments
     ----------
-    energy:  array of x-ray energies, in eV
+    energy:  array of x-ray energies, in eV, or first argument group (see note)
     mu:      array of mu(E)
     group:   output group
     e0:      edge energy, in eV.  If None, it will be determined here.
@@ -104,13 +113,26 @@ def pre_edge(energy, mu, group=None, e0=None, step=None,
 
     Notes
     -----
-       nvict gives an exponent to the energy term for the pre-edge fit.
+     1 nvict gives an exponent to the energy term for the pre-edge fit.
        That is, a line (m * energy + b) is fit to mu(energy)*energy**nvict
        over the pr-edge regin, energy=[e0+pre1, e0+pre2].
+
+     2 If the first argument is a Group, it must contain 'energy' and 'mu'.
+       If it exists, group.e0 will be used as e0.
+       See First Argrument Group in Documentation
     """
 
     if _larch is None:
         raise Warning("cannot remove pre_edge -- larch broken?")
+
+    energy, mu, group = group_arg_parse(energy, args=(mu,), 
+                                        names=('energy', 'mu'),
+                                        group=group,                                        
+                                        fcn_name='pre_edge')
+
+    if e0 is None and group is not None and hasattr(group, 'e0'):
+        e0 = group.e0
+    
     if e0 is None or e0 < energy[0] or e0 > energy[-1]:
         e0 = find_e0(energy, mu, group=group, _larch=_larch)
 
