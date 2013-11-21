@@ -346,7 +346,7 @@ class XRFDisplayFrame(wx.Frame):
                 xlines.Columns[col].Alignment = RIGHT
 
             xlines.SetMinSize((300, 150))
-            xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
+            xlines.Bind(dataview.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
 
             ir += 1
             sizer.Add(xlines,   (ir, 1), (4, 4), wx.GROW|wx.ALL|labstyle)
