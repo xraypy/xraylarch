@@ -11,10 +11,10 @@ i1, i2 = index_of(d1.energy, 11870), index_of(d1.energy, 12030)
 
 data = group(energy=d1.energy[i1:i2+1], mu=d1.munorm[i1:i2+1])
 
-data.s1 = interp(data.energy, s1.energy, s1.munorm)
-data.s2 = interp(data.energy, s2.energy, s2.munorm)
-data.s3 = interp(data.energy, s3.energy, s3.munorm)
-data.s4 = interp(data.energy, s4.energy, s4.munorm)
-data.s5 = interp(data.energy, s5.energy, s5.munorm)
-data.s6 = interp(data.energy, s6.energy, s6.munorm)
+data.s1 = interp(s1.energy, s1.munorm, data.energy)
+data.s2 = interp(s2.energy, s2.munorm, data.energy)
+data.s3 = interp(s3.energy, s3.munorm, data.energy)
+data.s4 = interp(s4.energy, s4.munorm, data.energy)
+data.s5 = interp(s5.energy, s5.munorm, data.energy)
+data.s6 = interp(s6.energy, s6.munorm, data.energy)
 ## end of examples/fitting/doc_example3/ReadData.lar
