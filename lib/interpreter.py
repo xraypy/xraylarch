@@ -661,7 +661,7 @@ class Interpreter:
         args = [self.run(targ) for targ in node.args]
 
         if node.starargs is not None:
-            args = args + self.run(node.starargs)
+            args = args + list(self.run(node.starargs))
 
         keywords = {}
         for key in node.keywords:

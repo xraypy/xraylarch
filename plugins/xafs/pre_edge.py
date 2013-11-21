@@ -6,7 +6,7 @@
 import numpy as np
 from scipy import polyfit
 
-from larch import Group, Parameter, Minimizer, use_plugin_path
+from larch import Group, Parameter, Minimizer, isgroup, use_plugin_path
 
 use_plugin_path('math')
 use_plugin_path('xafs')
