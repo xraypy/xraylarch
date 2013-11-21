@@ -1,0 +1,18 @@
+a = read_gsemca('sandbox/srm1832.mca')
+xrf_plot(a)
+
+# # add_plugin('x')
+# xrf_calib_fitrois(a)
+# for elem, dat in a.init_calib.items():
+#   print "%4s  % .4f % .4f %.4f %.3f" % ( (elem+' '*4)[:6], dat[1], dat[1]-dat[0], dat[2], dat[3])
+# endfor
+# 
+# cal_save = copy(a.init_calib)
+# 
+# xrf_calib_compute(a)
+# print "% .5f, % .5f" % (a.offset, a.slope)
+# print a.new_calib
+# off, slope = a.new_calib
+# plot(a.cal_x, a.cal_y, new=True, xlabel = 'chan', label='peak center', marker='o', markersize=4)
+# plot(a.cal_x, (a.offset + a.cal_x*a.slope - a.cal_y), label='old', win=2)
+# plot(a.cal_x, (off   + a.cal_x*  slope    - a.cal_y), label='new', win=2)

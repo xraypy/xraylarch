@@ -1,0 +1,12 @@
+#
+# run all scripts in this folder
+this_script = 'all.lar'
+for script in ls('*.lar'):
+    if script == this_script:
+        continue
+    #endif
+        
+    print '>>> Running script ', script
+    wx_update()
+    run(script)
+#endfor
