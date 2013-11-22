@@ -11,12 +11,10 @@ DEBUG = False
 
 cmdline_args = sys.argv[1:]
 
-required_modules = ('numpy', 'scipy', 'docutils',
-                    'matplotlib', 'wxmplot',
-                    'sqlachemy', 'h5py')
+required_modules = ('numpy', 'scipy', 'docutils')
 
-recommended_modules = {'basic analysis': ('numpy', 'scipy', 'docutils'),
-                       'graphics and plotting': ('wx', 'wxutils'),
+recommended_modules = {'basic analysis': required_modules,
+                       'graphical interface and plotting': ('wx', 'wxutils'),
                        'plotting': ('matplotlib', 'wxmplot'),
                        'accessing x-ray databases': ('sqlalchemy', ),
                        'readng hdf5 files': ('h5py', ),
@@ -70,7 +68,6 @@ if not deps_ok:
 
         sys.exit()
     deps_ok = len(missing) == 0
-print('==============================')
 
 from lib import site_configdata, site_config, version
 
@@ -85,7 +82,7 @@ if os.name == 'nt':
     user_basedir = site_configdata.win_userdir
 
 if DEBUG:
-    print("##  Settings  (Debug mode) ## ")    
+    print("##  Settings  (Debug mode) ## ")
     print(" share_basedir: ",  share_basedir)
     print(" user_basedir: ",  user_basedir)
     print(" sys.prefix: ",  sys.prefix)
@@ -202,7 +199,7 @@ def fix_permissions(*dirnames):
                 own(os.path.join(top, d), mode=0o640)
 
 fix_permissions('matplotlib', 'larch')
-if cmdline_args[0] == 'install':            
+if cmdline_args[0] == 'install':
     remove_cruft(share_basedir, historical_cruft)
 
 if deps_ok and not os.path.exists('.deps'):
@@ -211,12 +208,12 @@ if deps_ok and not os.path.exists('.deps'):
     f.close()
 
 if len(missing) > 0:
-    print( '=' * 65)
-    print( '== Warning: Some recommended Python Packages are missing ==')
-    print( '\n'.join(missing))
-    print( ' ')
-    print( 'Some functionality will not work until these are installed.')
-    print( 'Please read INSTALL for further information.')
-    print( '=' * 65)
+    msg = """
+#==============================================================#
+#=== Warning: Some recommended Python Packages are missing:
+%s
 
-
+Some functionality will not work until these are installed.
+See INSTALL for further information.
+#==============================================================#"""
+    print(msg %  '\n'.join(missing))
