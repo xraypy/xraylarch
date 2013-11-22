@@ -4,28 +4,28 @@
 #%xtal: Cu.inp
 #%prep: metal foil
 #%ref:  none
-#%misc: 
-#%det:  
+#%misc:
+#%det:
 #%temp: 10K
 #%beam: NSLS X11-A, vert slitsize unknown
 #%mono: Si(111) unfocussed, detuned
 #%date: Sep 1992
 #%cols: 612 E XMU
-# data taken at NSLS beamline X-11A Sept 1992 
+# data taken at NSLS beamline X-11A Sept 1992
 #      by M Newville, B Ravel, and Y Zhang
 # foil of 99.999% Cu rolled and annealled to ~12 microns
-#      sample prepared by M Newville  
-# From X-11A : 
-# 2-SI111 HC/2D= 1977.260 STPDEG=6400. STPMMZ= 40. 
+#      sample prepared by M Newville
+# From X-11A :
+# 2-SI111 HC/2D= 1977.260 STPDEG=6400. STPMMZ= 40.
 # FOCUS=F TRANSLT=F  E0= 8980.0 NREG= 3 NPTS= 611 NSCLRS= 3 EF= .0
-# SRB=     -193.7    -43.5     30.0   2381.3      
-# DEL=         10.020     .483     .050K      
+# SRB=     -193.7    -43.5     30.0   2381.3
+# DEL=         10.020     .483     .050K
 # SEC=             1.000    1.000    1.000
 # DETECTORSI0      I       If
 # GAINS           8       7      10
 # OFFSETS     51284   50016   48319
 #---------------------------------------------------------------------
-#     energy          xmu        
+#     energy          mu
    .8786204E+04    .1013661E+01
    .8796258E+04    .9949864E+00
    .8806253E+04    .9900679E+00
