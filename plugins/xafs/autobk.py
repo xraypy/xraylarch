@@ -2,7 +2,7 @@
 import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 
-from larch import Group, Parameter, Minimizer, use_plugin_path
+from larch import Group, Parameter, Minimizer, use_plugin_path, isgroup
 
 # use larch plugins
 use_plugin_path('math')
@@ -14,6 +14,9 @@ from mathutils import index_of, index_nearest, realimag, remove_dups
 from xafsutils import ETOK, set_xafsGroup
 from xafsft import ftwindow, xftf_fast
 from pre_edge import find_e0, pre_edge
+
+use_plugin_path('std')
+from grouputils import parse_group_args
 
 # check for uncertainties package
 HAS_UNCERTAIN = False
@@ -49,7 +52,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
          abs(clamp_lo)*chi[:nclamp]/csum,
          abs(clamp_hi)*chi[-nclamp:]*(kout[-nclamp:]**kweight)/csum))
 
-def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
+def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
            pre_edge_kws=None, nclamp=4, clamp_lo=1, clamp_hi=1,
@@ -58,9 +61,9 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
 
     Parameters:
     -----------
-      energy:    1-d array of x-ray energies, in eV
+      energy:    1-d array of x-ray energies, in eV, or group
       mu:        1-d array of mu(E)
-      group:     output group (and input group for e0 and edge_step.
+      group:     output group (and input group for e0 and edge_step).
       rbkg:      distance (in Ang) for chi(R) above
                  which the signal is ignored. Default = 1.
       e0:        edge energy, in eV.  If None, it will be determined.
@@ -83,6 +86,8 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
                             mu_0(E) and chi(k) [False]
 
     Output arrays are written to the provided group.
+
+    Follows the 'First Argument Group' convention.
     """
     if _larch is None:
         raise Warning("cannot calculate autobk spline -- larch broken?")
@@ -90,21 +95,23 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
     if 'kw' in kws:
         kweight = kws.pop('kw')
     if len(kws) > 0:
-        msg('Unrecognized arguments for autobk():\n')
+        msg('Unrecognized a:rguments for autobk():\n')
         msg('    %s\n' % (', '.join(kws.keys())))
         return
+
+    energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
+                                         defaults=(mu,), group=group,
+                                         fcn_name='autobk')
 
     energy = remove_dups(energy)
     # if e0 or edge_step are not specified, get them, either from the
     # passed-in group or from running pre_edge()
     group = set_xafsGroup(group, _larch=_larch)
 
-    if edge_step is None:
-        if _larch.symtable.isgroup(group) and hasattr(group, 'edge_step'):
-            edge_step = group.edge_step
-    if e0 is None:
-        if _larch.symtable.isgroup(group) and hasattr(group, 'e0'):
-            e0 = group.e0
+    if edge_step is None and isgroup(group, 'edge_step'):
+        edge_step = group.edge_step
+    if e0 is None and isgroup(group, 'e0'):
+        e0 = group.e0
     if e0 is None or edge_step is None:
         # need to run pre_edge:
         pre_kws = dict(nnorm=3, nvict=0, pre1=None,
@@ -112,7 +119,6 @@ def autobk(energy, mu, group=None, rbkg=1, nknots=None, e0=None,
         if pre_edge_kws is not None:
             pre_kws.update(pre_edge_kws)
         pre_edge(energy, mu, group=group, _larch=_larch, **pre_kws)
-
         if e0 is None:
             e0 = group.e0
         if edge_step is None:

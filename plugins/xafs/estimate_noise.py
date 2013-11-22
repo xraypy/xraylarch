@@ -3,7 +3,7 @@
   Estimate Noise in an EXAFS spectrum
 """
 from numpy import pi, sqrt, where
-from larch import Group
+from larch import Group, isgroup
 from larch.larchlib import use_plugin_path
 
 use_plugin_path('math')
@@ -13,17 +13,20 @@ from mathutils import index_of, realimag
 from xafsutils import set_xafsGroup
 from xafsft import xftf, xftr
 
-def estimate_noise(k, chi, rmin=15.0, rmax=30.0, kmin=0, kmax=20,
-                   kweight=1, dk=4, dk2=None, kwindow='kaiser',
-                   nfft=2048, kstep=0.05, group=None, _larch=None, **kws):
+use_plugin_path('std')
+from grouputils import parse_group_args
+
+def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
+                   kweight=1, kmin=0, kmax=20, dk=4, dk2=None, kstep=0.05,
+                   kwindow='kaiser', nfft=2048, _larch=None, **kws):
     """
     estimate noise levels in EXAFS spectrum and estimate highest k
     where data is above the noise level
-        Parameters:
+    Parameters:
     -----------
-      k:        1-d array of photo-electron wavenumber in Ang^-1
+      k:        1-d array of photo-electron wavenumber in Ang^-1 (or group)
       chi:      1-d array of chi
-      group:    output Group
+      group:    output Group  [see Note below]
       rmin:     minimum R value for high-R region of chi(R)
       rmax:     maximum R value for high-R region of chi(R)
       kweight:  exponent for weighting spectra by k**kweight [1]
@@ -31,9 +34,9 @@ def estimate_noise(k, chi, rmin=15.0, rmax=30.0, kmin=0, kmax=20,
       kmax:     ending k for FT Window  [20]
       dk:       tapering parameter for FT Window [4]
       dk2:      second tapering parameter for FT Window [None]
+      kstep:    value to use for delta_k ( Ang^-1) [0.05]
       window:   name of window type ['kaiser']
       nfft:     value to use for N_fft [2048].
-      kstep:    value to use for delta_k ( Ang^-1) [0.05]
 
     Returns:
     ---------
@@ -54,9 +57,18 @@ def estimate_noise(k, chi, rmin=15.0, rmax=30.0, kmin=0, kmax=20,
         questioned.
      2. The estimate for 'kmax_suggest' has a tendency to be fair but pessimistic
         in how far out the chi(k) data goes before being dominated by noise.
+     3. Follows the 'First Argument Group' convention, so that you can either
+        specifiy all of (an array for 'k', an array for 'chi', option output Group)
+        OR pass a group with 'k' and 'chi' as the first argument
     """
     if _larch is None:
         raise Warning("cannot estimate noise -- larch broken?")
+
+    k, chi, group = parse_group_args(k, members=('k', 'chi'),
+                                     defaults=(chi,), group=group,
+                                     fcn_name='esitmate_noise')
+
+
 
     # save _sys.xafsGroup -- we want to NOT write to it here!
     savgroup = set_xafsGroup(None, _larch=_larch)

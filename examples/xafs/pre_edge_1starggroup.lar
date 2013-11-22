@@ -1,0 +1,18 @@
+
+fname = '../xafsdata/fe2o3_rt1.xmu'
+dat = read_ascii(fname, labels='energy mu i0')
+
+pre_edge(dat,nnorm=2, norm1=50, norm2=550)
+
+newplot(dat.energy, dat.mu,
+        label=' $ \mu(E) $ ',
+        show_legend=True,
+        xlabel='Energy (eV)',
+        title='%s Pre-Edge ' % fname )
+
+plot(dat.energy, dat.pre_edge, label='pre-edge line',
+     color='black', style='dashed' )
+
+plot(dat.energy, dat.post_edge, label='normalization line',
+     color='black', style='dotted' )
+

@@ -4,7 +4,7 @@ utilities for XRF display
 """
 import copy
 from functools import partial
-
+import numpy as np
 import wx
 import wx.lib.agw.pycollapsiblepane as CP
 import wx.lib.agw.flatnotebook as flat_nb
@@ -351,7 +351,6 @@ class FitSpectraFrame(wx.Frame):
         for key, val in opts.items():
             print key, val
 
-        print '==== fit '
         mca    = self.mca
         mca.data = mca.counts*1.0
         energy = mca.energy
@@ -368,7 +367,7 @@ class FitSpectraFrame(wx.Frame):
             mu = material_mu(det['material'], energy*1000.0, _larch=_larch)/10.0
             t = det['thickness']
             mca.det_atten = np.exp(-t*mu)
-            mca.data = mca.data / (1.0 - np.exp(-t*mu))
+            mca.data = mca.data / np.maximum(1.e-49, (1.0 - mca.det_atten))
         # filters:
         #  75 microns kapton, etc
         #

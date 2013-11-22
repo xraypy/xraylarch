@@ -1,9 +1,21 @@
 
 fname = '../xafsdata/cu_rt01.xmu'
-cu = read_ascii(fname)
+cu = read_ascii(fname, labels='energy mu i0')
 
-pre_edge(cu.energy, cu.xmu, group=cu)
+pre_edge(cu)
 
-autobk(cu.energy, cu.xmu, rbkg=1.0, kweight=1, group=cu)
-xafsft(cu.k, cu.chi, kmin=2, kmax=14.5, dk=2,
+autobk(cu, rbkg=1.0, kweight=1)
+xftf(cu.k, cu.chi, kmin=2, kmax=14.5, dk=2,
        kweight=2, window='han', group=cu)
+
+newplot(cu.k, cu.chi*cu.k,
+        xlabel='$k \, (\AA^{-1})$',
+        ylabel='$k\chi(k) \, (\AA^{-1})$',
+        title='%s EXAFS ' % fname )
+
+newplot(cu.r, cu.chir_mag,
+        xlabel='$R \,  (\AA)$',
+        ylabel='$|\chi(R)| \, (\AA^{-2})$',
+        title='%s EXAFS ' % fname , win=2)
+
+

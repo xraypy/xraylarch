@@ -18,6 +18,9 @@ use_plugin_path('xafs')
 from mathutils import complex_phase
 from xafsutils import set_xafsGroup
 
+use_plugin_path('std')
+from grouputils import parse_group_args
+
 MODNAME = '_xafs'
 VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par', 'wel', 'sin', 'bes']
 
@@ -119,7 +122,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         fwin =  exp(-(((x - cen)**2)/(2*dx1*dx1)))
     return fwin
 
-def xftr(r, chir, group=None, rmin=0, rmax=20, with_phase=False,
+def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
             dr=1, dr2=None, rw=0, window='kaiser', qmax_out=None,
             nfft=2048, kstep=0.05, _larch=None, **kws):
     """
@@ -131,7 +134,7 @@ def xftr(r, chir, group=None, rmin=0, rmax=20, with_phase=False,
 
     Parameters:
     ------------
-      r:        1-d array of distance.
+      r:        1-d array of distance, or group.
       chir:     1-d array of chi(R)
       group:    output Group
       qmax_out: highest *k* for output data (30 Ang^-1)
@@ -161,13 +164,16 @@ def xftr(r, chir, group=None, rmin=0, rmax=20, with_phase=False,
 	chiq_pha           phase of chi(k) if with_phase=True
                            (a noticable performance hit)
 
-
+    Supports First Argument Group convention (with group member names 'r' and 'chir')
     """
     if _larch is None:
         raise Warning("cannot do xftr -- larch broken?")
     if 'rweight' in kws:
         rw = kws['rweight']
 
+    r, chir, group = parse_group_args(r, members=('r', 'chir'),
+                                     defaults=(chir,), group=group,
+                                     fcn_name='xftr')
     rstep = r[1] - r[0]
     kstep = pi/(rstep*nfft)
     scale = 1.0
@@ -196,9 +202,8 @@ def xftr(r, chir, group=None, rmin=0, rmax=20, with_phase=False,
     if with_phase:
         group.chiq_pha =  complex_phase(out[:nkpts])
 
-
-def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
-         with_phase=False, window='kaiser', rmax_out=10,
+def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
+         dk=1, dk2=None, with_phase=False, window='kaiser', rmax_out=10,
          nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     forward XAFS Fourier transform, from chi(k) to chi(R), using
@@ -206,7 +211,7 @@ def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
 
     Parameters:
     -----------
-      k:        1-d array of photo-electron wavenumber in Ang^-1
+      k:        1-d array of photo-electron wavenumber in Ang^-1 or group
       chi:      1-d array of chi
       group:    output Group
       rmax_out: highest R for output data (10 Ang)
@@ -236,12 +241,17 @@ def xftf(k, chi, group=None, kmin=0, kmax=20, kweight=0, dk=1, dk2=None,
 	chir_pha           phase of chi(R) if with_phase=True
                            (a noticable performance hit)
 
+    Supports First Argument Group convention (with group member names 'k' and 'chi')
     """
     if _larch is None:
         raise Warning("cannot do xftf -- larch broken?")
     # allow kweight keyword == kw
     if 'kw' in kws:
         kweight = kws['kw']
+
+    k, chi, group = parse_group_args(k, members=('k', 'chi'),
+                                     defaults=(chi,), group=group,
+                                     fcn_name='xftf')
 
     cchi, win  = xftf_prep(k, chi, kmin=kmin, kmax=kmax, kweight=kweight,
                                dk=dk, dk2=dk2, nfft=nfft, kstep=kstep,
