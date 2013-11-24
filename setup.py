@@ -11,7 +11,7 @@ DEBUG = False
 
 cmdline_args = sys.argv[1:]
 
-required_modules = ('numpy', 'scipy', 'docutils')
+required_modules = ('numpy', 'scipy') # , 'docutils')
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphical interface and plotting': ('wx', 'wxutils'),
