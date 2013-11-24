@@ -470,14 +470,13 @@ class SymbolTable(Group):
         for key, val in syms.items():
             if hasattr(val, '__call__'):
                 # test whether plugin func has a '_larch' kw arg
-                #    func_code.co_flags & 8 == 'uses **kws'
+                #    __code__.co_flags & 8 == 'uses **kws'
                 kws.update({'func': val, '_name':key})
-                nvars = val.func_code.co_argcount
-                if ((val.func_code.co_flags &8 != 0) or
-                    '_larch' in val.func_code.co_varnames[:nvars]):
+                nvars = val.__code__.co_argcount
+                if ((val.__code__.co_flags &8 != 0) or
+                    '_larch' in val.__code__.co_varnames[:nvars]):
                     kws.update({'_larch':  self._larch})
                 val = Closure(**kws)
-
             self.set_symbol("%s.%s" % (groupname, key), val)
 
         plugin_init = getattr(plugin, 'initializeLarchPlugin', None)

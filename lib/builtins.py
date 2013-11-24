@@ -17,33 +17,8 @@ PLUGINSTXT = 'plugins.txt'
 
 helper = Helper()
 
-# inherit these from python's __builtins__
-from_builtin = ('ArithmeticError', 'AssertionError', 'AttributeError',
-                'BaseException', 'BufferError', 'BytesWarning',
-                'DeprecationWarning', 'EOFError', 'EnvironmentError',
-                'Exception', 'False', 'FloatingPointError',
-                'GeneratorExit', 'IOError', 'ImportError', 'ImportWarning',
-                'IndentationError', 'IndexError', 'KeyError',
-                'KeyboardInterrupt', 'LookupError', 'MemoryError',
-                'NameError', 'None', 'NotImplemented',
-                'NotImplementedError', 'OSError', 'OverflowError',
-                'ReferenceError', 'RuntimeError', 'RuntimeWarning',
-                'StandardError', 'StopIteration', 'SyntaxError',
-                'SyntaxWarning', 'SystemError', 'SystemExit', 'True',
-                'TypeError', 'UnboundLocalError', 'UnicodeDecodeError',
-                'UnicodeEncodeError', 'UnicodeError',
-                'UnicodeTranslateError', 'UnicodeWarning', 'ValueError',
-                'Warning', 'ZeroDivisionError', 'abs', 'all', 'any',
-                'apply', 'basestring', 'bin', 'bool', 'buffer',
-                'bytearray', 'bytes', 'callable', 'chr', 'cmp', 'coerce',
-                'complex', 'delattr', 'dict', 'divmod', 'enumerate',
-                'file', 'filter', 'float', 'format', 'frozenset',
-                'getattr', 'hasattr', 'hash', 'hex', 'id', 'int',
-                'isinstance', 'len', 'list', 'map', 'max', 'min',
-                'oct', 'open', 'ord', 'pow', 'property', 'range',
-                'raw_input', 'reduce', 'repr', 'reversed', 'round', 'set',
-                'setattr', 'slice', 'sorted', 'str', 'sum', 'tuple',
-                'type', 'unichr', 'unicode', 'zip')
+# inherit most available symbols from python's __builtins__
+from_builtin = [sym for sym in __builtins__ if not sym.startswith('__')]
 
 # inherit these from math (many will be overridden by numpy
 
@@ -55,7 +30,6 @@ from_math = ('acos', 'acosh', 'asin', 'asinh', 'atan', 'atan2', 'atanh',
             'radians', 'sin',  'sinh', 'sqrt', 'tan', 'tanh', 'trunc')
 
 # inherit these from numpy
-
 from_numpy = ('ComplexWarning', 'Inf', 'NAN', 'abs', 'absolute', 'add',
               'alen', 'all', 'allclose', 'alltrue', 'alterdot', 'amax',
               'amin', 'angle', 'any', 'append', 'apply_along_axis',

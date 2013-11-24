@@ -107,7 +107,7 @@ class Interpreter:
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
 
-        for sym in builtins.from_builtin:
+        for sym in builtins.from_builtin: 
             setattr(builtingroup, sym, __builtins__[sym])
 
         for sym in builtins.from_numpy:
