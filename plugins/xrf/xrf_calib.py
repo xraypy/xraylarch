@@ -29,7 +29,7 @@ def xrf_calib_fitrois(mca, _larch=None):
 
     """
     if not isLarchMCAGroup(mca):
-        print 'Not a valid MCA'
+        print( 'Not a valid MCA')
         return
 
     energy = 1.0*mca.energy
@@ -71,7 +71,7 @@ def xrf_calib_compute(mca, apply=False, _larch=None):
 
     """
     if not isLarchMCAGroup(mca):
-        print 'Not a valid MCA'
+        print( 'Not a valid MCA')
         return
     if not hasattr(mca, 'init_calib'):
         xrf_calib_fitrois(mca, _larch=_larch)
@@ -96,10 +96,10 @@ def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
     or run xrf_calib_compute(mca) to estimate these from ROI peaks
     """
     if not isLarchMCAGroup(mca):
-        print 'Not a valid MCA'
+        print( 'Not a valid MCA')
         return
     if (offset is None or slope is None) and not hasattr(mca, 'new_calib'):
-        print 'must supply offset and slope or run xrf_calib_compute()!'
+        print( 'must supply offset and slope or run xrf_calib_compute()!')
         return
 
     if (offset is None or slope is None):

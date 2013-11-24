@@ -211,7 +211,7 @@ def calc_icr(ocr, tau):
     max_icr = 1/tau
     max_ocr = max_icr*E_INV
     if ocr > max_ocr:
-        print 'ocr exceeds maximum correctible value of %g cps' % max_ocr
+        print( 'ocr exceeds maximum correctible value of %g cps' % max_ocr)
         return None
 
     # Newton loop
@@ -231,7 +231,7 @@ def calc_icr(ocr, tau):
                 icr0 = 1.1 * ocr
 
     if cnt >= 100:
-        print 'Warning: icr calculation failed to converge'
+        print( 'Warning: icr calculation failed to converge')
         icr = None
     return icr
 
@@ -318,23 +318,23 @@ if __name__ == '__main__':
     mon  = 10000. * np.arange(500.0)
     a   = 0.1
     tau = 0.00001
-    print 'a= ', a, ' tau= ', tau
+    print( 'a= ', a, ' tau= ', tau)
     ocr = a*mon*np.exp(-a*mon*tau)
     ocr_meas = ocr + 2*np.random.normal(size=len(ocr), scale=30.0)
     (params,msg) = fit_deadtime(mon,ocr_meas)
     tau = params[0]
     a   = params[1]
     #print msg
-    print 'a_fit= ',a,' tau_fit=', tau
+    print( 'a_fit= ',a,' tau_fit=', tau)
 
     ocr = 0.3 * 1/tau
     icr = calc_icr(ocr,tau)
-    print 'max icr = ', 1/tau
-    print 'max ocr = ', np.exp(-1)/tau
-    print 'ocr= ', ocr, ' icr_calc= ',icr
+    print( 'max icr = ', 1/tau)
+    print( 'max ocr = ', np.exp(-1)/tau)
+    print( 'ocr= ', ocr, ' icr_calc= ',icr)
 
     rt = 1.
     lt = 1.
     cor = correction_factor(rt,lt,icr,ocr)
-    print 'cor= ', cor
+    print( 'cor= ', cor)
 

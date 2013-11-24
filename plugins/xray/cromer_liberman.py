@@ -45,7 +45,7 @@ def f1f2(z, energies, width=None, edge=None, _larch=None):
             return None
 
     if z > 92:
-        print 'Cromer-Liberman data not available for Z>92'
+        print( 'Cromer-Liberman data not available for Z>92')
         return
 
     if edge is not None or width is not None and _larch is not None:
@@ -94,6 +94,5 @@ def registerLarchPlugin():
 if __name__ == '__main__':
     en = np.linspace(8000, 9200, 51)
     f1, f2 = f1f2(29, en)
-    print en
-    print f1
-    print f2
+    print( en, f1, f2)
+    

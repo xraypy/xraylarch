@@ -66,7 +66,7 @@ def read_xmap_netcdf(fname, verbose=False):
     # Reads a netCDF file created with the DXP xMAP driver
     # with the netCDF plugin buffers
 
-    if verbose: print ' reading ', fname
+    if verbose: print( ' reading ', fname)
 
     t0 = time.time()
     # read data from array_data variable of netcdf file
@@ -98,9 +98,6 @@ def read_xmap_netcdf(fname, verbose=False):
             d   = array_data[array,module,:]
             bh  = xMAPBufferHeader(d)
             #if verbose and array==0:
-            #print  ' nc data shape: ', d.shape, d.size
-            # print modpixs, (d.size-256), (d.size-256)/modpixs
-            # print modpixs*(d.size-256)/(1.0*modpixs)
             dat = d[256:].reshape(modpixs, (d.size-256)/modpixs )
 
             npix = bh.numPixels
@@ -145,16 +142,16 @@ def read_xmap_netcdf(fname, verbose=False):
     xmapdat.inputCounts  = xmapdat.inputCounts[:npix_total]
     xmapdat.outputCounts = xmapdat.outputCounts[:npix_total]
     if verbose:
-        print '   time to read file    = %5.1f ms' % ((t1-t0)*1000)
-        print '   time to extract data = %5.1f ms' % ((t2-t1)*1000)
-        print '   read %i pixels ' %  npix_total
-        print '   data shape:    ' ,  xmapdat.counts.shape
+        print('   time to read file    = %5.1f ms' % ((t1-t0)*1000))
+        print('   time to extract data = %5.1f ms' % ((t2-t1)*1000))
+        print('   read %i pixels ' %  npix_total)
+        print('   data shape:    ' ,  xmapdat.counts.shape)
     return xmapdat
 
 def test_read(fname):
-    print fname,  os.stat(fname)
+    print( fname,  os.stat(fname))
     fd = read_xmap_netcdf(fname, verbose=True)
-    print fd.counts.shape
+    print(fd.counts.shape)
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xmap_netcdf': read_xmap_netcdf})

@@ -150,7 +150,7 @@ class TransformGroup(Group):
                                  dx=self.dr, dx2=self.dr2, window=self.rwindow)
 
         cx = chir * self.rwin[:len(chir)]
-        # print 'FFTR"   ', chir[:30], self.rwin[:30]
+        # print( 'FFTR"   ', chir[:30], self.rwin[:30])
         return xftr_fast(cx, kstep=self.kstep, nfft=self.nfft)
 
 class FeffitDataSet(Group):
@@ -191,7 +191,7 @@ class FeffitDataSet(Group):
         # ikmax = index_of(trans.k_, max(self.data.k))
         self.model.k = trans.k_[:ikmax]
         self.__chi = interp(self.model.k, self.data.k, self.data.chi)
-        # print 'feffit dataset prepare_fit ', dir(self.data)
+        # print( 'feffit dataset prepare_fit ', dir(self.data))
         if hasattr(self.data, 'epsilon_k'):
             eps_k = self.data.epsilon_k
             if isinstance(self.eps_k, numpy.ndarray):
@@ -395,7 +395,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         datasets = [datasets]
     for ds in datasets:
         if not isNamedClass(ds, FeffitDataSet):
-            print "feffit needs a list of FeffitDataSets"
+            print( "feffit needs a list of FeffitDataSets")
             return
     fitkws = dict(datasets=datasets)
     fit = Minimizer(_resid, params, fcn_kws=fitkws,
@@ -498,7 +498,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
     except:
         pass
     if not input_ok:
-        print 'must pass output of feffit()!'
+        print( 'must pass output of feffit()!')
         return
     topline = '=================== FEFFIT RESULTS ===================='
     header = '[[%s]]'

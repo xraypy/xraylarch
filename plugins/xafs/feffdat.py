@@ -76,7 +76,7 @@ class FeffDatFile(Group):
         try:
             lines = open(filename, 'r').readlines()
         except:
-            print 'Error reading file %s ' % filename
+            print( 'Error reading file %s ' % filename)
             return
         self.filename = filename
         mode = 'header'
@@ -278,7 +278,6 @@ class FeffPathGroup(Group):
                       'deltar', 'sigma2', 'third', 'fourth'):
             val = getattr(self, param)
             std = 0
-            # print '== param ', param, val, isParameter(val)
             if isParameter(val):
                 std = val.stderr
                 val = val.value

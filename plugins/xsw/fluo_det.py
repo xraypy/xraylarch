@@ -152,7 +152,7 @@ class SampleMatrix2:  # sample matrix for self-absorption correction, 6/3: two l
         #print text1
         text2='substrate2:%6.3e %s/cm^3' % (AtNumDen2, composition2)
         self.txt=text1+'  '+text2
-        print self.txt
+        print( self.txt)
         # atom.conc is normalized to the number density of substrate1 molecule
         for (ii, item) in enumerate(self.ElemList1):
             # MN replace:
@@ -300,7 +300,7 @@ def Assemble_QuadVortex(eV1):
     SiVortex.getLa(eV1, 1)  # Si detection layer, what's absorbed is counted.
     net=net*BeVortex.trans*SiO2Vortex.trans*SiVortex.absrp
     if (print2screen):
-        print '%.3f eV : BeVortex.trans=%.3e , SiO2Vortex.trans=%.3e, SiVortex.absrp=%.3e, Det_efficiency=%.3e' % (eV1, BeVortex.trans,  SiO2Vortex.trans, SiVortex.absrp, net)
+        print( '%.3f eV : BeVortex.trans=%.3e , SiO2Vortex.trans=%.3e, SiVortex.absrp=%.3e, Det_efficiency=%.3e' % (eV1, BeVortex.trans,  SiO2Vortex.trans, SiVortex.absrp, net))
     return net
 
 
@@ -344,8 +344,8 @@ def Assemble_Collimator(eV1, xHe=1, xAl=0,xKapton=0, WD=6.0, xsw=0):
     net=air.trans*HeGas.trans
     net=net*kapton.trans*AlFoil.trans*kaptonCollimator.trans
     if print2screen:
-            print '%.3f eV: air.trans=%.3e, HeGas.trans=%.3e, kapton.trans=%.3e, AlFoil.trans=%.3e, kaptonCollimator.trans=%.3e, net=%.3e' %  \
-            (eV1, air.trans, HeGas.trans, kapton.trans, AlFoil.trans,kaptonCollimator.trans, net)
+            print( '%.3f eV: air.trans=%.3e, HeGas.trans=%.3e, kapton.trans=%.3e, AlFoil.trans=%.3e, kaptonCollimator.trans=%.3e, net=%.3e' %  \
+            (eV1, air.trans, HeGas.trans, kapton.trans, AlFoil.trans,kaptonCollimator.trans, net))
     #print '%.3f eV: air.la=%.3e, HeGas.la=%.3e, kapton.la=%.3e' % (eV1, air.la, HeGas.la, kapton.la)
     return net
 
@@ -368,7 +368,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
     #   incident energy, list of elements, experimental conditions
     #   this one tries Ka, Kb, Lg, Lb, La, Lb
     angle0=45.; textOut=''
-    if xsw!=0 and WriteFile=='Y':  print 'XSW measurements'
+    if xsw!=0 and WriteFile=='Y':  print( 'XSW measurements')
     if sample=='':
         Include_SelfAbsorption='No'
     else:
@@ -392,7 +392,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
             out1='# 13IDC XRM/XSW using QuadVortex + collimator,  incident x-ray energy at '+str(eV0)+' eV at '+str(angle0)+' degrees \n'
             out1+='# Helium path'+desc+'used, '+str(xAl)+' Al attenuators, '+str(xKapton)+' Kapton attenuators, '\
               +str(WD)+' cm working distance. \n'
-        print out1
+        print( out1)
         fo.write(out1)
         if sample!='':
             for stuff in Atoms:
@@ -401,11 +401,11 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
         textOut=textOut+' '+text0       # substrate concentration + other concentrations
         out1='# '+text0+'\n'
         if print2screen:
-            print out1
+            print( out1)
         fo.write(out1)
         out1='%s\t%s\t%s   \t%s   \t%s   \t%s   \t%s\n' % ('atom', 'emit', 'emit_energy', 'yield', 'transmission', 'net_sensitivity', 'sensitivity*concentration')
         if print2screen:
-            print out1
+            print( out1)
         fo.write(out1)
     for (ii, atom) in enumerate(Atoms):
         # MN replace:
@@ -417,7 +417,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
         for (nn, edge) in enumerate(edges):
             emit=Fluo_lines[nn]
             fy, emit_eV, emit_prob = fluo_yield(atom.AtSym, edge, emit, eV0)
-            print emit
+            print(emit)
             if fy==0.0 or emit_prob==0:
                 continue                        # try next item if FY=0
             else:
@@ -448,7 +448,7 @@ def cal_NetYield2(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, WriteFile=
                 out1='%s\t%s\t%6.1f   \t%.3e   \t%.3e   \t%.3e   \t%.3e\n' % (atom.AtSym+'_'+edge, emit, emit_eV, net_yield, net_trans, net, inten)
                 fo.write(out1)
             if print2screen:
-                print '%s %s %6.1f net_yield=%.3e net_trans=%.3e net=%.3e\t' % (atom.AtSym+'_'+edge, emit, emit_eV, net_yield, net_trans, net)
+                print('%s %s %6.1f net_yield=%.3e net_trans=%.3e net=%.3e\t' % (atom.AtSym+'_'+edge, emit, emit_eV, net_yield, net_trans, net))
             #print out1+'  %s, depth-dependent factor= %6.4f' % (atom.tag, trans_SelfAbsorp)
             if emit=='Kb' and fy!=0:        # if above K edge, don't bother trying L edges
                 break
@@ -463,7 +463,7 @@ def sim_spectra(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, sample=''):
     Include_SelfAbsorption='Yes'
     Print2Screen='No'
     if sample=='': Include_SelfAbsorption='No'
-    if xsw!=0:  print 'XSW measurements'
+    if xsw!=0:  print('XSW measurements')
     xx=[]; yy=[]; tag=[];   intensity_max=-10.0; LoLimit=1e-10
     angle0=''; text1=''
     if sample!='':      # sample matrix option is used
@@ -474,10 +474,10 @@ def sim_spectra(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, sample=''):
     outputfile='simSpectrum_table.txt'
     fo=open(outputfile, 'w')
     out1='#incident x-ray at '+str(eV0)+' eV and '+angle0+' Deg.\n'
-    if Print2Screen=='Yes': print out1
+    if Print2Screen=='Yes': print(out1)
     fo.write(out1)
     out1='#Emission\tenergy(eV)\tintensity \n'
-    if Print2Screen=='Yes': print out1
+    if Print2Screen=='Yes': print(out1)
     fo.write(out1)
     out2='#'
     for (ix,atom) in enumerate(Atoms):
@@ -526,16 +526,16 @@ def sim_spectra(eV0, Atoms, xHe=0, xAl=0, xKapton=0, WD=6.0, xsw=0, sample=''):
     for ix in range(len(yy)):
         yy[ix]=yy[ix]/intensity_max*100.00          # makes the strongest line to 100.0
         out1='%s\t%f\t%f \n' % (tag[ix], xx[ix], yy[ix])
-        if Print2Screen=='Yes': print out1
+        if Print2Screen=='Yes': print(out1)
         fo.write(out1)
-    if Print2Screen=='Yes': print out2
+    if Print2Screen=='Yes': print(out2)
     fo.write(out2)
     fo.close()
     out1=sim_GaussPeaks(xx, yy, det_res, eV0)        # det_res: detector resoultion for Gaussian width (global variable)
     if Include_SelfAbsorption=='Yes':
         sample.txt=sample.txt+text1                 # sample.txt is combined to output of cal_NetYield
     text=cal_NetYield2(eV0, Atoms, xHe, xAl, xKapton, WD, xsw, sample=sample)  # calculate net yield with weight-averaged emission
-    print out2
+    print(out2)
     return text  # cal_NetYield2 output is str with number densities of elements
 
 
@@ -663,7 +663,7 @@ if __name__=='__main__':
             ]
         for eV1 in emitE:
             air.getLa(eV1, 1)   # 1 means number of layers here.
-            print eV1, air.la, exp(-1./air.la)
+            print( eV1, air.la, exp(-1./air.la))
 
 
 '''

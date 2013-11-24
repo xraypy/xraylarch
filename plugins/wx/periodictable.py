@@ -174,7 +174,7 @@ class PTableFrame(wx.Frame):
         self.Raise()
 
     def onElement(self, elem=None, event=None):
-        print  'Element Selected:  ', elem
+        print( 'Element Selected:  ', elem)
 
 class PTableApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):

@@ -61,7 +61,6 @@ def getFileStatus(filename, root=None, folder=None):
             return None, None
         status = GSEXRM_FileStatus.hasdata
         vers = group.attrs['Version']
-        # print 'Folder Check: ', folder, ' : ', group.attrs['Map_Folder'], ' :'
         if folder is not None and folder != group.attrs['Map_Folder']:
             status = GSEXRM_FileStatus.wrongfolder
         return status, vers
@@ -188,7 +187,7 @@ class GSEXRM_MapRow:
                 time.sleep(0.010)
 
         if atime < 0 or xmapdat is None:
-            print 'Failed to read xmap data from %s' % self.xmapfile
+            print( 'Failed to read xmap data from %s' % self.xmapfile)
             return
         if dtime is not None:  dtime.add('maprow: read xmap files')
         #
@@ -206,7 +205,7 @@ class GSEXRM_MapRow:
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
-        # print 'Row Data ', gnpts, snpts, xnpts, self.realtime.shape
+        # print( 'Row Data ', gnpts, snpts, xnpts, self.realtime.shape)
         npts = min(gnpts, xnpts)
         if self.npts is None:
             self.npts = npts
@@ -479,7 +478,7 @@ class GSEXRM_MapFile(object):
         if self.status == GSEXRM_FileStatus.hasdata:
             return
         if self.status != GSEXRM_FileStatus.created:
-            print 'Warning, cannot initialize xrfmap yet.'
+            print( 'Warning, cannot initialize xrfmap yet.')
             return
 
         if not self.check_hostid():
@@ -500,7 +499,7 @@ class GSEXRM_MapFile(object):
 
     def process(self, maxrow=None, force=False, callback=None, verbose=True):
         "look for more data from raw folder, process if needed"
-        print 'PROCESS  ', maxrow, force, self.filename, self.dimension, len(self.rowdata)
+        print('PROCESS  ', maxrow, force, self.filename, self.dimension, len(self.rowdata))
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
@@ -598,9 +597,7 @@ class GSEXRM_MapFile(object):
 
         if verbose:
             pform ="Add row=%4i, yval=%s, npts=%i, xmapfile=%s"
-            print pform % (thisrow+1, row.yvalue, npts, row.xmapfile)
-            # print row.yvalue, row.inpcounts.sum()
-            # print '  sis : ', row.sisdata[2:5,:]
+            print( pform % (thisrow+1, row.yvalue, npts, row.xmapfile))
 
         detcor = detraw[:]
         sumraw = detraw[:]
@@ -922,13 +919,7 @@ class GSEXRM_MapFile(object):
         self.pos_desc = [slow_pos[pos1]]
         # note: XPS gathering file now saving ONLY data for the fast axis
         self.ixaddr = 0
-        # self.ixaddr = -1
-        # print 'POS1 ', pos1
-        # print 'Fast Pos: ', fast_pos
-        # for i, posname in enumerate(fast_pos):
-        #     if posname == pos1:
-        #         self.ixaddr = i
-        # print 'ixaddr = ', self.ixaddr
+
         if self.dimension > 1:
             yaddr = scanconf['pos2']
             self.pos_addr.append(yaddr)

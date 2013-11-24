@@ -221,7 +221,7 @@ if __name__=='__main__':
     import time
     a=time.clock()
     reflectivity()
-    print time.clock()-a, 'seconds'
+    print(time.clock()-a, 'seconds')
 
 
 

@@ -53,7 +53,7 @@ class EpicsScanData(object):
             icol = self.__arraymap.get(key.lower(), None)
 
         if icol is None:
-            print 'cannot find column %s' % repr(key)
+            print( 'cannot find column %s' % repr(key))
             return None
         return self.data[icol]
 
@@ -63,12 +63,12 @@ class EpicsScanData(object):
         try:
             fh = open(self.filename, 'r')
         except IOError:
-            print 'cannot open file %s for read' % self.filename
+            print( 'cannot open file %s for read' % self.filename)
             return
         lines = fh.readlines()
         line0 = lines.pop(0)
         if not line0.startswith(FILETOP):
-            print '%s is not a valid Epics Scan file' % self.filename
+            print( '%s is not a valid Epics Scan file' % self.filename)
             return
 
         def split_header(line):

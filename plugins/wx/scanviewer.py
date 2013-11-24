@@ -271,7 +271,7 @@ class ScanViewerFrame(wx.Frame):
     def onFitPeak(self, evt=None):
         gname = self.groupname
         if self.dtcorr.IsChecked():
-            print 'fit needs to dt correct!'
+            print( 'fit needs to dt correct!')
 
         dtext = []
         model = self.fit_model.GetStringSelection().lower()
@@ -312,7 +312,7 @@ class ScanViewerFrame(wx.Frame):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
         """
-        print 'Process XAS ', gname
+        print( 'Process XAS ', gname)
         out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
         if out.startswith('raw'):
             return plotopts
@@ -396,7 +396,7 @@ class ScanViewerFrame(wx.Frame):
         return pframe
 
     def onYchoice(self, evt=None, side='left'):
-        print 'onYchoice '
+        print( 'onYchoice ')
         # self.onPlot()
 
     def onPlot(self, evt=None, opt='new old', npts=None):
@@ -428,7 +428,7 @@ class ScanViewerFrame(wx.Frame):
         ix = self.xarr.GetSelection()
         x  = self.xarr.GetStringSelection()
 
-        print ix, x
+        print( ix, x)
         try:
             gname = self.groupname
             lgroup = getattr(self.larch.symtable, gname)
@@ -436,12 +436,12 @@ class ScanViewerFrame(wx.Frame):
             gname = SCANGROUP
             lgroup = getattr(self.larch.symtable, gname)
 
-        print ix, x, gname
+        print( ix, x, gname)
         xfmt = "%s._x1_ = %s(%s)"
         yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
         xop = self.xop.GetStringSelection()
         
-        print ' L Group ', lgroup
+        print( ' L Group ', lgroup)
 
         xlabel = x
         try:
@@ -503,8 +503,6 @@ class ScanViewerFrame(wx.Frame):
         setattr(lgroup, '_yl1', yl1)
         setattr(lgroup, '_yl2', yl2)
         setattr(lgroup, '_yl3', yl3)
-
-        # print 'Group Y ... ', yfmt % (gname, opl1, yl1, opl2, yl2, opl3, yl3)
         
         print ("%s._y1_ = %s((%s._yl1 %s %s._yl2) %s %s._yl3)"  %
                (gname, opl1, gname, opl2, gname, opl3, gname))
@@ -513,15 +511,11 @@ class ScanViewerFrame(wx.Frame):
         self.larch("%s._y1_ = %s((%s._yl1 %s %s._yl2) %s %s._yl3)"  %
                    (gname, opl1, gname, opl2, gname, opl3, gname))
 
-        # print dir(lgroup)
-
-        # print 'Group X ... ', len(lgroup._x1_) #, lgroup._x1_
-        # print 'Group Y ... ', len(lgroup._y1_) # , lgroup._y1_
 
         try:
             npts = min(len(lgroup._x1_), len(lgroup._y1_))
         except AttributeError:
-            print 'npts borked '
+            print( 'npts borked ')
             return
                 
         lgroup._x1_ = np.array( lgroup._x1_[:npts])
@@ -582,7 +576,7 @@ class ScanViewerFrame(wx.Frame):
         _yarr = [[[], [], []], [[], [], []], [[], [], []]]
         for i in range(2):
             for j in range(3):
-                print i, j, _yarr[i][j], self.yarr[i][j]
+                print( i, j, _yarr[i][j], self.yarr[i][j])
                 _yarr[i][j] = self.yarr[i][j].GetStringSelection()
 
         self.xarr.SetItems(xcols)
@@ -671,7 +665,6 @@ class ScanViewerFrame(wx.Frame):
             fh = open(path, 'r')
             line1 = fh.readline().lower()
             fh.close()
-            print line1[:-1]
             if 'epics scan' in line1:
                 self.larch("%s = read_gsescan('%s')" % (gname, path))
             elif 'xdi' in line1:

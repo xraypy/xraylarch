@@ -29,7 +29,7 @@ class scanDim:
         self.t = []                # list of scanTrigger instances
 
     def __str__(self):
-        if self.name <> '':
+        if self.name != '':
             s = "%dD data from \"%s\": %d/%d pts; %d positioners, %d detectors" % (
                 self.dim, self.name, self.curr_pt, self.npts, self.np, self.nd)
         else:
@@ -127,79 +127,79 @@ def readScan(file, v):
     buf = file.read(10000) # enough to read scan header
     u = xdrlib.Unpacker(buf)
     scan.rank = u.unpack_int()
-    if v: print "scan.rank = ", `scan.rank`
+    if v: print("scan.rank = ", repr(scan.rank))
     scan.npts = u.unpack_int()
-    if v: print "scan.npts = ", `scan.npts`
+    if v: print("scan.npts = ", repr(scan.npts))
     scan.curr_pt = u.unpack_int()
-    if v: print "scan.curr_pt = ", `scan.curr_pt`
+    if v: print("scan.curr_pt = ", repr(scan.curr_pt))
     if (scan.rank > 1):
         # if curr_pt < npts, plower_scans will have garbage for pointers to
         # scans that were planned for but not written
         scan.plower_scans = u.unpack_farray(scan.npts, u.unpack_int)
-        if v: print "scan.plower_scans = ", `scan.plower_scans`
+        if v: print("scan.plower_scans = ", repr(scan.plower_scans))
     namelength = u.unpack_int()
     scan.name = u.unpack_string()
-    if v: print "scan.name = ", `scan.name`
+    if v: print("scan.name = ", repr(scan.name))
     timelength = u.unpack_int()
     scan.time = u.unpack_string()
-    if v: print "scan.time = ", `scan.time`
+    if v: print("scan.time = ", repr(scan.time))
     scan.np = u.unpack_int()
-    if v: print "scan.np = ", `scan.np`
+    if v: print("scan.np = ", repr(scan.np))
     scan.nd = u.unpack_int()
-    if v: print "scan.nd = ", `scan.nd`
+    if v: print("scan.nd = ", repr(scan.nd))
     scan.nt = u.unpack_int()
-    if v: print "scan.nt = ", `scan.nt`
+    if v: print("scan.nt = ", repr(scan.nt))
     for j in range(scan.np):
         scan.p.append(scanPositioner())
         scan.p[j].number = u.unpack_int()
         scan.p[j].fieldName = posName(scan.p[j].number)
-        if v: print "positioner ", j
+        if v: print("positioner ", j)
         length = u.unpack_int() # length of name string
         if length: scan.p[j].name = u.unpack_string()
-        if v: print "scan.p[%d].name = %s" % (j, `scan.p[j].name`)
+        if v: print("scan.p[%d].name = %s" % (j, repr(scan.p[j].name)))
         length = u.unpack_int() # length of desc string
         if length: scan.p[j].desc = u.unpack_string()
-        if v: print "scan.p[%d].desc = %s" % (j, `scan.p[j].desc`)
+        if v: print("scan.p[%d].desc = %s" % (j, repr(scan.p[j].desc)))
         length = u.unpack_int() # length of step_mode string
         if length: scan.p[j].step_mode = u.unpack_string()
-        if v: print "scan.p[%d].step_mode = %s" % (j, `scan.p[j].step_mode`)
+        if v: print("scan.p[%d].step_mode = %s" % (j, repr(scan.p[j].step_mode)))
         length = u.unpack_int() # length of unit string
         if length: scan.p[j].unit = u.unpack_string()
-        if v: print "scan.p[%d].unit = %s" % (j, `scan.p[j].unit`)
+        if v: print("scan.p[%d].unit = %s" % (j, repr(scan.p[j].unit)))
         length = u.unpack_int() # length of readback_name string
         if length: scan.p[j].readback_name = u.unpack_string()
-        if v: print "scan.p[%d].readback_name = %s" % (j, `scan.p[j].readback_name`)
+        if v: print("scan.p[%d].readback_name = %s" % (j, repr(scan.p[j].readback_name)))
         length = u.unpack_int() # length of readback_desc string
         if length: scan.p[j].readback_desc = u.unpack_string()
-        if v: print "scan.p[%d].readback_desc = %s" % (j, `scan.p[j].readback_desc`)
+        if v: print("scan.p[%d].readback_desc = %s" % (j, repr(scan.p[j].readback_desc)))
         length = u.unpack_int() # length of readback_unit string
         if length: scan.p[j].readback_unit = u.unpack_string()
-        if v: print "scan.p[%d].readback_unit = %s" % (j, `scan.p[j].readback_unit`)
+        if v: print("scan.p[%d].readback_unit = %s" % (j, repr(scan.p[j].readback_unit)))
 
     for j in range(scan.nd):
         scan.d.append(scanDetector())
         scan.d[j].number = u.unpack_int()
         scan.d[j].fieldName = detName(scan.d[j].number)
-        if v: print "detector ", j
+        if v: print("detector ", j)
         length = u.unpack_int() # length of name string
         if length: scan.d[j].name = u.unpack_string()
-        if v: print "scan.d[%d].name = %s" % (j, `scan.d[j].name`)
+        if v: print("scan.d[%d].name = %s" % (j, repr(scan.d[j].name)))
         length = u.unpack_int() # length of desc string
         if length: scan.d[j].desc = u.unpack_string()
-        if v: print "scan.d[%d].desc = %s" % (j, `scan.d[j].desc`)
+        if v: print("scan.d[%d].desc = %s" % (j, repr(scan.d[j].desc)))
         length = u.unpack_int() # length of unit string
         if length: scan.d[j].unit = u.unpack_string()
-        if v: print "scan.d[%d].unit = %s" % (j, `scan.d[j].unit`)
+        if v: print("scan.d[%d].unit = %s" % (j, repr(scan.d[j].unit)))
 
     for j in range(scan.nt):
         scan.t.append(scanTrigger())
         scan.t[j].number = u.unpack_int()
-        if v: print "trigger ", j
+        if v: print("trigger ", j)
         length = u.unpack_int() # length of name string
         if length: scan.t[j].name = u.unpack_string()
-        if v: print "scan.t[%d].name = %s" % (j, `scan.t[j].name`)
+        if v: print("scan.t[%d].name = %s" % (j, repr(scan.t[j].name)))
         scan.t[j].command = u.unpack_float()
-        if v: print "scan.t[%d].command = %s" % (j, `scan.t[j].command`)
+        if v: print("scan.t[%d].command = %s" % (j, repr(scan.t[j].command)))
 
     ### read data
     # positioners
@@ -208,10 +208,10 @@ def readScan(file, v):
     buf = file.read(scan.np * scan.npts * 8)
     u = xdrlib.Unpacker(buf)
     for j in range(scan.np):
-        if v: print "read %d pts for pos. %d at file loc %x" % (scan.npts,
-            j, file_loc)
+        if v: print("read %d pts for pos. %d at file loc %x" % (scan.npts,
+            j, file_loc))
         scan.p[j].data = np.array(u.unpack_farray(scan.npts, u.unpack_double))
-        if v: print "scan.p[%d].data = %s" % (j, `scan.p[j].data`)
+        if v: print("scan.p[%d].data = %s" % (j, repr(scan.p[j].data)))
 
     # detectors
     file.seek(file.tell() - (len(buf) - u.get_position()))
@@ -219,7 +219,7 @@ def readScan(file, v):
     u = xdrlib.Unpacker(buf)
     for j in range(scan.nd):
         scan.d[j].data = np.array(u.unpack_farray(scan.npts, u.unpack_float))
-        if v: print "scan.d[%d].data = %s" % (j, `scan.d[j].data`)
+        if v: print("scan.d[%d].data = %s" % (j, repr(scan.d[j].data)))
 
     return scan
 
@@ -229,7 +229,7 @@ def readMDA(fname, maxdim=4, verbose=0, help=0):
     if (not os.path.isfile(fname)):
         fname = fname + '.mda'
     if (not os.path.isfile(fname)):
-        print fname," is not a file"
+        print(fname," is not a file")
         return dim
 
     file = open(fname, 'rb')
@@ -406,49 +406,49 @@ def readMDA(fname, maxdim=4, verbose=0, help=0):
     dim.append(dict)
     dim.reverse()
     if verbose:
-        print "%s is a %d-D file; %d dimensions read in." % (fname, dim[0]['rank'], len(dim)-1)
-        print "dim[0] = dictionary of %d scan-environment PVs" % (len(dim[0]))
-        print "   usage: dim[0]['sampleEntry'] ->", dim[0]['sampleEntry']
+        print("%s is a %d-D file; %d dimensions read in." % (fname, dim[0]['rank'], len(dim)-1))
+        print("dim[0] = dictionary of %d scan-environment PVs" % (len(dim[0])))
+        print("   usage: dim[0]['sampleEntry'] ->", dim[0]['sampleEntry'])
         for i in range(1,len(dim)):
-            print "dim[%d] = %s" % (i, str(dim[i]))
-        print "   usage: dim[1].p[2].data -> 1D array of positioner 2 data"
-        print "   usage: dim[2].d[7].data -> 2D array of detector 7 data"
+            print("dim[%d] = %s" % (i, str(dim[i])))
+        print("   usage: dim[1].p[2].data -> 1D array of positioner 2 data")
+        print("   usage: dim[2].d[7].data -> 2D array of detector 7 data")
 
     if help:
-        print " "
-        print "   each dimension (e.g., dim[1]) has the following fields: "
-        print "      time      - date & time at which scan was started: %s" % (dim[1].time)
-        print "      name - name of scan record that acquired this dimension: '%s'" % (dim[1].name)
-        print "      curr_pt   - number of data points actually acquired: %d" % (dim[1].curr_pt)
-        print "      npts      - number of data points requested: %d" % (dim[1].npts)
-        print "      nd        - number of detectors for this scan dimension: %d" % (dim[1].nd)
-        print "      d[]       - list of detector-data structures"
-        print "      np        - number of positioners for this scan dimension: %d" % (dim[1].np)
-        print "      p[]       - list of positioner-data structures"
-        print "      nt        - number of detector triggers for this scan dimension: %d" % (dim[1].nt)
-        print "      t[]       - list of trigger-info structures"
+        print(" ")
+        print("   each dimension (e.g., dim[1]) has the following fields: ")
+        print("      time      - date & time at which scan was started: %s" % (dim[1].time))
+        print("      name - name of scan record that acquired this dimension: '%s'" % (dim[1].name))
+        print("      curr_pt   - number of data points actually acquired: %d" % (dim[1].curr_pt))
+        print("      npts      - number of data points requested: %d" % (dim[1].npts))
+        print("      nd        - number of detectors for this scan dimension: %d" % (dim[1].nd))
+        print("      d[]       - list of detector-data structures")
+        print("      np        - number of positioners for this scan dimension: %d" % (dim[1].np))
+        print("      p[]       - list of positioner-data structures")
+        print("      nt        - number of detector triggers for this scan dimension: %d" % (dim[1].nt))
+        print("      t[]       - list of trigger-info structures")
 
     if help:
-        print " "
-        print "   each detector-data structure (e.g., dim[1].d[0]) has the following fields: "
-        print "      desc      - description of this detector"
-        print "      data      - data list"
-        print "      unit      - engineering units associated with this detector"
-        print "      fieldName - scan-record field (e.g., 'D01')"
+        print(" ")
+        print("   each detector-data structure (e.g., dim[1].d[0]) has the following fields: ")
+        print("      desc      - description of this detector")
+        print("      data      - data list")
+        print("      unit      - engineering units associated with this detector")
+        print("      fieldName - scan-record field (e.g., 'D01')")
 
 
     if help:
-        print " "
-        print "   each positioner-data structure (e.g., dim[1].p[0]) has the following fields: "
-        print "      desc          - description of this positioner"
-        print "      data          - data list"
-        print "      step_mode     - scan mode (e.g., Linear, Table, On-The-Fly)"
-        print "      unit          - engineering units associated with this positioner"
-        print "      fieldName     - scan-record field (e.g., 'P1')"
-        print "      name          - name of EPICS PV (e.g., 'xxx:m1.VAL')"
-        print "      readback_desc - description of this positioner"
-        print "      readback_unit - engineering units associated with this positioner"
-        print "      readback_name - name of EPICS PV (e.g., 'xxx:m1.VAL')"
+        print(" ")
+        print("   each positioner-data structure (e.g., dim[1].p[0]) has the following fields: ")
+        print("      desc          - description of this positioner")
+        print("      data          - data list")
+        print("      step_mode     - scan mode (e.g., Linear, Table, On-The-Fly)")
+        print("      unit          - engineering units associated with this positioner")
+        print("      fieldName     - scan-record field (e.g., 'P1')")
+        print("      name          - name of EPICS PV (e.g., 'xxx:m1.VAL')")
+        print("      readback_desc - description of this positioner")
+        print("      readback_unit - engineering units associated with this positioner")
+        print("      readback_name - name of EPICS PV (e.g., 'xxx:m1.VAL')")
 
     return dim
 
@@ -556,7 +556,7 @@ def writeMDA(dim, fname):
 
     p.reset()
     if (type(dim) != type([])):
-	    print "writeMDA: first arg must be a scan"
+	    print("writeMDA: first arg must be a scan")
     rank = dim[0]['rank']    # rank of scan as a whole
     # write file header
     p.pack_float(dim[0]['version'])
@@ -617,12 +617,12 @@ def writeMDA(dim, fname):
     p.reset()
 
     numKeys = 0
-    for name in dim[0].keys():
+    for name in list(dim[0].keys()):
         if not (name in dim[0]['ourKeys']):
             numKeys = numKeys + 1
     p.pack_int(numKeys)
 
-    for name in dim[0].keys():
+    for name in list(dim[0].keys()):
         # Note we don't want to write the dict entries we made for our own
         # use in the scanDim object.
         if not (name in dim[0]['ourKeys']):
@@ -662,7 +662,7 @@ def writeMDA(dim, fname):
 
     # Now we have to repack all the scan offsets
     if (rank > 1): # 2D scan
-        print "m.scan.pLowerScans", m.scan.pLowerScans
+        print("m.scan.pLowerScans", m.scan.pLowerScans)
         p.reset()
         p.pack_farray(m.scan.npts, m.scan.pLowerScans, p.pack_int)
         m.scan.pLowerScansBuf = p.get_buffer()
@@ -713,7 +713,7 @@ def writeMDA(dim, fname):
 def isScan(d):
     if type(d) != type([]): return(0)
     if type(d[0]) != type({}): return(0)
-    if 'rank' not in d[0].keys(): return(0)
+    if 'rank' not in list(d[0].keys()): return(0)
     if len(d) < 2: return(0)
     if type(d[1]) != type(scanDim()): return(0)
     return(1)
@@ -734,22 +734,22 @@ def setOp(op):
     if (op == '/') or (op == 'div'): return(div)
     if (op == '>') or (op == 'max'): return(max)
     if (op == '<') or (op == 'min'): return(min)
-    print "opMDA: unrecognized op = ", op
+    print("opMDA: unrecognized op = ", op)
     return None
 
 def opMDA_usage():
-    print "opMDA() usage:"
-    print "   result = opMDA(op, scan1, scan2)"
-    print "        OR"
-    print "   result = opMDA(op, scan1, scalar_value)"
-    print "\nwhere:"
-    print "   op is one of '+', '-', '*', '/', '>', '<'"
-    print "   scan1, scan2 are scans, i.e., structures returned by mda.readMDA()"
-    print "   result is a copy of scan1, modified by the operation\n"
-    print "\n examples:"
-    print "   r = opMDA('+', scan1, scan2) -- adds all detector data from scan1 and scan2"
-    print "   r = opMDA('-', scan1, 2.0)   -- subtracts 2 from all detector data from scan1"
-    print "   r = opMDA('>', r, 0)         -- 'r' data or 0, whichever is greater"
+    print("opMDA() usage:")
+    print("   result = opMDA(op, scan1, scan2)")
+    print("        OR")
+    print("   result = opMDA(op, scan1, scalar_value)")
+    print("\nwhere:")
+    print("   op is one of '+', '-', '*', '/', '>', '<'")
+    print("   scan1, scan2 are scans, i.e., structures returned by mda.readMDA()")
+    print("   result is a copy of scan1, modified by the operation\n")
+    print("\n examples:")
+    print("   r = opMDA('+', scan1, scan2) -- adds all detector data from scan1 and scan2")
+    print("   r = opMDA('-', scan1, 2.0)   -- subtracts 2 from all detector data from scan1")
+    print("   r = opMDA('>', r, 0)         -- 'r' data or 0, whichever is greater")
 
 def opMDA_scalar(op, d1, scalar):
     op = setOp(op)
@@ -789,7 +789,7 @@ def opMDA_scalar(op, d1, scalar):
                         s[4].d[i].data[j][k][l][m] = op(s[4].d[i].data[j][k][l][m], scalar)
 
     if (len(s) > 4):
-        print "opMDA supports up to 4D scans"
+        print("opMDA supports up to 4D scans")
     return s
 
 def opMDA(op, d1, d2):
@@ -799,17 +799,17 @@ def opMDA(op, d1, d2):
     """
     if isScan(d1) and isScalar(d2): return(opMDA_scalar(op,d1,d2))
     if (not isScan(d1)) :
-        print "opMDA: first operand is not a scan"
+        print("opMDA: first operand is not a scan")
         opMDA_usage()
         return None
 
     if (not isScan(d2)):
-        print "opMDA: second operand is neither a scan nor a scalar"
+        print("opMDA: second operand is neither a scan nor a scalar")
         opMDA_usage()
         return None
 
     if len(d1) != len(d2):
-        print "scans do not have same dimension"
+        print("scans do not have same dimension")
         return None
 
     op = setOp(op)
@@ -821,55 +821,55 @@ def opMDA(op, d1, d2):
 
     # 1D op
     if s[1].nd != d2[1].nd:
-        print "scans do not have same number of 1D detectors"
+        print("scans do not have same number of 1D detectors")
         return None
     if s[1].npts != d2[1].npts:
-        print "scans do not have same number of data points"
+        print("scans do not have same number of data points")
         return None
     for i in range(s[1].nd):
-        s[1].d[i].data = map(op, s[1].d[i].data, d2[1].d[i].data)
+        s[1].d[i].data = list(map(op, s[1].d[i].data, d2[1].d[i].data))
 
     if (len(s) == 2): return s
     # 2D op
     if s[2].nd != d2[2].nd:
-        print "scans do not have same number of 2D detectors"
+        print("scans do not have same number of 2D detectors")
         return None
     if s[2].npts != d2[2].npts:
-        print "scans do not have same number of data points"
+        print("scans do not have same number of data points")
         return None
     for i in range(s[2].nd):
         for j in range(s[1].npts):
-            s[2].d[i].data[j] = map(op, s[2].d[i].data[j], d2[2].d[i].data[j])
+            s[2].d[i].data[j] = list(map(op, s[2].d[i].data[j], d2[2].d[i].data[j]))
 
     if (len(s) == 3): return s
     # 3D op
     if s[3].nd != d2[3].nd:
-        print "scans do not have same number of 3D detectors"
+        print("scans do not have same number of 3D detectors")
         return None
     if s[3].npts != d2[3].npts:
-        print "scans do not have same number of data points"
+        print("scans do not have same number of data points")
         return None
     for i in range(s[3].nd):
         for j in range(s[1].npts):
             for k in range(s[2].npts):
-                s[3].d[i].data[j][k] = map(op, s[3].d[i].data[j][k], d2[3].d[i].data[j][k])
+                s[3].d[i].data[j][k] = list(map(op, s[3].d[i].data[j][k], d2[3].d[i].data[j][k]))
 
     if (len(s) == 4): return s
     # 3D op
     if s[4].nd != d2[4].nd:
-        print "scans do not have same number of 4D detectors"
+        print("scans do not have same number of 4D detectors")
         return None
     if s[4].npts != d2[4].npts:
-        print "scans do not have same number of data points"
+        print("scans do not have same number of data points")
         return None
     for i in range(s[4].nd):
         for j in range(s[1].npts):
             for k in range(s[2].npts):
                 for l in range(s[3].npts):
-                    s[4].d[i].data[j][k][l] = map(op, s[4].d[i].data[j][k][l], d2[4].d[i].data[j][k][l])
+                    s[4].d[i].data[j][k][l] = list(map(op, s[4].d[i].data[j][k][l], d2[4].d[i].data[j][k][l]))
 
     if (len(s) > 5):
-        print "opMDA supports up to 4D scans"
+        print("opMDA supports up to 4D scans")
     return s
 
 def _readmda(fname, maxdim=4, verbose=False, _larch=None, **kws):

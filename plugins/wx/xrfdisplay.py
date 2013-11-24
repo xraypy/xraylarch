@@ -836,11 +836,11 @@ class XRFDisplayFrame(wx.Frame):
         self.plotmca(self.mca, show_mca2=True)
 
     def onReadGSEXRMFile(self, event=None, **kws):
-        print '  onReadGSEXRMFile   '
+        print( '  onReadGSEXRMFile   ')
         pass
 
     def onOpenEpicsMCA(self, event=None, **kws):
-        print '  onOpenEpicsMCA   '
+        print( '  onOpenEpicsMCA   ')
         pass
 
     def onSaveMCAFile(self, event=None, **kws):
@@ -864,7 +864,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca.save_mcafile(outfile)
 
     def onSaveColumnFile(self, event=None, **kws):
-        print '  onSaveColumnFile   '
+        print( '  onSaveColumnFile   ')
         pass
 
     def onCalibrateEnergy(self, event=None, **kws):

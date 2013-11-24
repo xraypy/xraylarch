@@ -95,7 +95,7 @@ class XDIFile(object):
 
     def write(self, filename):
         "write out an XDI File"
-        print 'Writing XDI file not currently supported'
+        print( 'Writing XDI file not currently supported')
 
     def read(self, filename=None):
         """read validate and parse an XDI datafile into python structures

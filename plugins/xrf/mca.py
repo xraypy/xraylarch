@@ -212,7 +212,7 @@ class MCA(Group):
         self.dt_factor  = correction_factor(self.real_time, self.live_time,
                                              icr=icr,  ocr=ocr)
         if self.dt_factor <= 0:
-            print "Error computing counts correction factor --> setting to 1"
+            print( "Error computing counts correction factor --> setting to 1")
             self.dt_factor = 1.0
 
     ########################################################################

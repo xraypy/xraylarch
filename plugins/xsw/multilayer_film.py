@@ -88,10 +88,10 @@ class Film:
 def test(structure):
     film=Film(structure)
     film.get_structure()
-    print '--> ', film.film_structure
+    print( '--> ', film.film_structure)
     for item in film.layers:
-        print item.composition, item.thickness, item.density,\
-              item.roughness, item.tag
+        print( item.composition, item.thickness, item.density,\
+              item.roughness, item.tag)
 
 def testall():
     test('Si/Ta(10)/[Pt(20)/Cr(30)]x3/Au(40)')

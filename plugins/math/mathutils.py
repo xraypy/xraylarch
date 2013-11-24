@@ -108,7 +108,7 @@ def remove_dups(arr, tiny=1.e-8, frac=0.02):
         try:
             arr = np.array(arr)
         except:
-            print 'remove_dups: argument is not an array'
+            print( 'remove_dups: argument is not an array')
     if isinstance(arr, np.ndarray):
         shape = arr.shape
         arr   = arr.flatten()

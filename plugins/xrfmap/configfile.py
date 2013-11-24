@@ -1,10 +1,18 @@
 #!/usr/bin/python
 
-from ConfigParser import  ConfigParser
-from cStringIO import StringIO
-from larch.utils import OrderedDict
 import os
+import sys
 import time
+
+if sys.version[0] == '2':
+    from ConfigParser import  ConfigParser
+    from cStringIO import StringIO
+elif sys.version[0] == '3':
+    from configparser import  ConfigParser
+    from io import StringIO
+    
+from larch.utils import OrderedDict
+
 
 conf_sects = {'general': {},
               'xps':{'bools':('use_ftp',)},
@@ -102,10 +110,8 @@ class FastMapConfig(object):
 
     def _process_data(self):
         for sect,opts in conf_sects.items():
-            # print 'conf process ', sect
             # if sect == 'scan': print opts
             if not self.cp.has_section(sect):
-                # print 'skipping section ' ,sect
                 continue
             bools = opts.get('bools',[])
             floats= opts.get('floats',[])
@@ -187,8 +193,8 @@ if __name__ == "__main__":
     a = FastMapConfig()
     a.Read('default.ini')
     for k,v in a.config.items():
-           print k,v, type(v)
+           print( k,v, type(v))
     a.Read('xmap.001.ini')
-    print a.config['scan']
+    print( a.config['scan'])
     a.SaveScanParams('xmap.002.ini')
 

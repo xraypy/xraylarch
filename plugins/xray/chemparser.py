@@ -163,5 +163,5 @@ if __name__ == '__main__':
                 'Mg0.5Fe0.5', 'Ti0.01Fe0.99(OH)2', 'Mg(FeO2)(H2O)3')
     parser = ChemFormulaParser()
     for formula in examples:
-        print '=== %s ' % formula
-        print  parser.parse(formula)
+        print( '=== %s ' % formula)
+        print(  parser.parse(formula))

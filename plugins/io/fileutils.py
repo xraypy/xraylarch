@@ -5,26 +5,41 @@ general purpose file utilities
 
 import time
 import os
-from string import printable, maketrans
+import sys
 from random import seed, randrange
-
+from string import printable
 WIN_BASE = 'T:\\'
 UNIX_BASE = '/cars5/Data/'
 
 BAD_FILECHARS = ';~,`!%$@?*#:"/|\'\\\t\r\n (){}[]<>'
-BAD_FILETABLE = maketrans(BAD_FILECHARS, '_'*len(BAD_FILECHARS))
+GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
 
-def fix_filename(s):
-    """fix string to be a 'good' filename.
-    This may be a more restrictive than the OS, but
-    avoids nasty cases."""
-    t = s.translate(BAD_FILETABLE)
-    if t.count('.') > 1:
-        for i in range(t.count('.') - 1):
-            idot = t.find('.')
-            t = "%s_%s" % (t[:idot], t[idot+1:])
-    return t
+if sys.version[0] == '2':
+    from string import maketrans
+    BAD_FILETABLE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
+    def fix_filename(s):
+        """fix string to be a 'good' filename.
+        This may be a more restrictive than the OS, but
+        avoids nasty cases."""
+        t = s.translate(BAD_FILETABLE)
+        if t.count('.') > 1:
+            for i in range(t.count('.') - 1):
+                idot = t.find('.')
+                t = "%s_%s" % (t[:idot], t[idot+1:])
+        return t
+elif sys.version[0] == '3':
+    def fix_filename(s):
+        """fix string to be a 'good' filename.
+        This may be a more restrictive than the OS, but
+        avoids nasty cases."""
+        t = s.translate(s.maketrans(BAD_FILECHARS, GOOD_FILECHARS))
+        if t.count('.') > 1:
+            for i in range(t.count('.') - 1):
+                idot = t.find('.')
+                t = "%s_%s" % (t[:idot], t[idot+1:])
+        return t
 
+    
 def unixpath(d):
     if d.startswith(WIN_BASE):
         d = d.replace(WIN_BASE, UNIX_BASE)
@@ -198,12 +213,12 @@ def test_incrementfilename():
     for inp,out in tests:
         tval = increment_filename(inp)
         if tval != out:
-            print "Error converting " , inp
-            print "Got '%s'  expected '%s'" % (tval, out)
+            print( "Error converting " , inp)
+            print( "Got '%s'  expected '%s'" % (tval, out))
             nfail = nfail + 1
         else:
             npass = npass + 1
-    print 'Passed %i of %i tests' % (npass, npass+nfail)
+    print('Passed %i of %i tests' % (npass, npass+nfail))
 
 def registerLarchPlugin():
     return ('_io', {'increment_filename': increment_filename,

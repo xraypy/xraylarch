@@ -72,8 +72,8 @@ expected one of the following:
         if background is None:
             return
         if background not in VALID_BKGS:
-            print self.invalid_bkg_msg % (repr(background),
-                                          ', '.join(VALID_BKGS))
+            print(self.invalid_bkg_msg % (repr(background),
+                                          ', '.join(VALID_BKGS)))
 
         self.add_param('bkg_offset', value=offset, vary=True)
         if background.startswith('line'):

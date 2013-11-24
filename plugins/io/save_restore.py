@@ -110,7 +110,7 @@ class H5PySaveFile(object):
             try:
                 self.add_data(self.fh, nam, obj)
             except:
-                print 'Could not save ', nam
+                print( 'Could not save ', nam)
 
         for obj in self._objs:
             nam = getattr(obj, '__name__', hex(id(obj)))
@@ -119,7 +119,7 @@ class H5PySaveFile(object):
             try:
                 self.add_data(self.fh, nam, obj)
             except:
-                print 'Could not save ', nam
+                print( 'Could not save ', nam)
 
         self.fh.close()
 

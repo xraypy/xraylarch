@@ -121,7 +121,7 @@ def compress_array(array, compress):
    near equivalent of IDL's 'rebin'....
    """
    if len(array) % compress != 0:
-      print 'Warning compress must be integer divisor of array length'
+      print( 'Warning compress must be integer divisor of array length')
       return None
 
    temp = np.resize(array, (len(array)/compress, compress))
@@ -224,7 +224,7 @@ class XRFBackground:
         power_funct = indices**exponent  * (REFERENCE_AMPL / denom)
         power_funct = np.compress((power_funct <= max_counts), power_funct)
         max_index   = len(power_funct)/2 - 1
-        # print "NCHANS: ", nchans, denom, min(indices), max(indices), max_index
+        # print( "NCHANS: ", nchans, denom, min(indices), max(indices), max_index)
         for chan in range(nchans-1):
             tan_slope = 0.
             if tangent:

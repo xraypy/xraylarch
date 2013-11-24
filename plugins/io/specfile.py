@@ -86,7 +86,7 @@ def _div_check(num, dnum):
     try:
         return num/dnum
     except ZeroDivisionError:
-        print "ERROR: found a division by zero"
+        print( "ERROR: found a division by zero")
 
 def _pymca_average(xdats, zdats):
     """this is a call to SimpleMath.average() method from PyMca/SimpleMath.py
@@ -101,7 +101,7 @@ def _pymca_average(xdats, zdats):
     """
     if HAS_SIMPLEMATH:
         sm = SimpleMath.SimpleMath()
-        print "Merging data..."
+        print( "Merging data...")
         return sm.average(xdats, zdats)
     else:
         raise NameError("SimpleMath is not available -- this operation cannot be performed!")
@@ -121,7 +121,7 @@ class SpecfileData(object):
                 pass
             else:
                 self.sf = specfile.Specfile(fname) #sf = specfile file
-                print "Loaded SPEC file: {0}".format(fname)
+                print( "Loaded SPEC file: {0}".format(fname))
                 #print "The total number of scans is: {0}".format(self.sf.scanno())
         #set common attributes
         self.cntx = cntx
@@ -278,7 +278,7 @@ class SpecfileData(object):
         for scan in _str2rng(scans):
             x, z, moty = self.get_scan(scan=scan, cntx=cntx, cnty=cnty, csig=csig, cmon=cmon, csec=csec, scnt=None, norm=norm)
             y = _mot2array(moty, x)
-            print "Loading scan {0} into the map...".format(scan)
+            print( "Loading scan {0} into the map...".format(scan))
             if _counter == 0:
                 xcol = x
                 ycol = y
@@ -311,12 +311,12 @@ class SpecfileData(object):
         try:
             from matplotlib.mlab import griddata
         except ImportError:
-            print "Error: cannot load griddata -- Matplotlib broken?"
+            print( "Error: cannot load griddata -- Matplotlib broken?")
         if xystep is None:
             xystep = 0.05
             warnings.warn("'xystep' not given: using a default value of {0}".format(xystep))
         #create the XY meshgrid and interpolate the Z on the grid
-        print "Gridding data..."
+        print( "Gridding data...")
         xgrid = np.linspace(xcol.min(), xcol.max(), (xcol.max()-xcol.min())/xystep)
         ygrid = np.linspace(ycol.min(), ycol.max(), (ycol.max()-ycol.min())/xystep)
         xx, yy = np.meshgrid(xgrid, ygrid)
@@ -359,7 +359,7 @@ class SpecfileData(object):
             zdats.append(_z)
             #mdats.append(_m)
             #idats.append(_i)
-            print "Loading scan {0}...".format(scan)
+            print( "Loading scan {0}...".format(scan))
             _ct += 1
 
         return _pymca_average(xdats, zdats)
@@ -440,7 +440,7 @@ def test01():
     t = SpecfileData(fname)
     for norm in [None, "area", "max", "max-min", "sum"]:
         x, y, motors, infos = t.get_scan(scan, cntx=counter, csig=signal, cmon=monitor, csec=seconds, norm=norm)
-        print "Read scan {0} with normalization {1}".format(scan, norm)
+        print( "Read scan {0} with normalization {1}".format(scan, norm))
         import matplotlib.pyplot as plt
         plt.ion()
         plt.figure(num=test01.__doc__)
@@ -495,7 +495,7 @@ def test03():
     t = SpecfileData(fname)
     for norm in [None, "area", "max-min", "sum"]:
         x, y = t.get_mrg(scans, cntx=counter, csig=signal, cmon=monitor, csec=seconds, norm=norm)
-        print "Merged scans '{0}' with normalization {1}".format(scans, norm)
+        print( "Merged scans '{0}' with normalization {1}".format(scans, norm))
         import matplotlib.pyplot as plt
         plt.ion()
         plt.figure(num=test03.__doc__)

@@ -9,7 +9,7 @@ import gc
 try:
     import numpy
 except ImportError:
-    print "Error: Escan_data can't load numpy"
+    print( "Error: Escan_data can't load numpy")
     sys.exit(1)
 
 # has_h5 = False
@@ -17,7 +17,7 @@ try:
     import h5py
     has_h5 = True
 except ImportError:
-    print "Warning HDF5 not available"
+    print( "Warning HDF5 not available")
     has_h5 = False
 has_h5 = False
 
@@ -159,8 +159,8 @@ class EscanData:
         if (self.progress != None):
             self.progress(val)
         elif (row>-1):
-            print " %3i " % (row),
-            if (row %10 == 0): print ""
+            print( " %3i " % (row),)
+            if (row %10 == 0): print("")
 
     def ShowMessage(self,val,state='state'):
         if (self.message != None):
@@ -178,7 +178,7 @@ class EscanData:
             self.filename = fname = fname[:-3]
         h5name = "%s.h5" % fname
         read_ascii = True
-        # print 'read_Data_file: ', has_h5, use_h5, os.path.exists(h5name)
+        # print( 'read_Data_file: ', has_h5, use_h5, os.path.exists(h5name))
         if has_h5 and use_h5 and os.path.exists(h5name):
             try:
                 mtime_ascii = os.stat(fname)[8]
@@ -192,7 +192,7 @@ class EscanData:
                     # self.ShowMessage(msg)
                     read_ascii = False
             else:
-                print 'h5 exists, ascii is newer!'
+                print( 'h5 exists, ascii is newer!')
 
         if read_ascii:
             retval = self.read_ascii(fname=fname)
@@ -206,7 +206,7 @@ class EscanData:
                     x = h5name
                 else: # except:
                     if os.path.exists(h5name):
-                        print 'should removing %s due to error.' % h5name
+                        print( 'should removing %s due to error.' % h5name)
                         # os.unlink(h5name)
             gc.collect()
         return retval
@@ -214,9 +214,9 @@ class EscanData:
     def write_h5file(self,h5name):
         try:
             fh = h5py.File(h5name, 'w')
-            print 'saving hdf5 file %s' %h5name
+            print( 'saving hdf5 file %s' %h5name)
         except:
-            print 'write_h5file error??? ', h5name
+            print( 'write_h5file error??? ', h5name)
 
         def add_group(group,name,dat=None,attrs=None):
             g = group.create_group(name)
@@ -229,10 +229,10 @@ class EscanData:
             return g
 
         def add_data(group,name,data, attrs=None, **kws):
-            # print 'create group in HDF file ', name
+            # print( 'create group in HDF file ', name)
             kwargs = {'compression':4}
             kwargs.update(kws)
-            # print '   add data ', name, group
+            # print( '   add data ', name, group)
             d = group.create_dataset(name,data=data,**kwargs)
             if isinstance(attrs,dict):
                 for key,val in attrs.items():
@@ -505,8 +505,7 @@ class EscanData:
 
         self.sums = numpy.array(self.sums)
 
-        # print '_make arrays: ICR OCR ', len(icr), len(icr[0])
-        # print ' dim = ', self.dimension
+        # print( '_make arrays: ICR OCR ', len(icr), len(icr[0]))
         # if icr/ocr data is included, pop them from
         # the detector lists.
 
@@ -523,7 +522,7 @@ class EscanData:
             self.correct_deadtime = True
 
         if self.dimension == 2:
-            print '2D ', len(self.y), len(tmp_dat)
+            print( '2D ', len(self.y), len(tmp_dat))
             ny = len(self.y)
             nx = len(tmp_dat)/ny
 
@@ -606,7 +605,7 @@ class EscanData:
                 if len(tmp_dat)>0:
                     ntotal_at_2d.append(len(tmp_dat))
             elif mode == 'epics scan':             # real numeric column data
-                print 'Warning: file appears to have a second scan appended!'
+                print( 'Warning: file appears to have a second scan appended!')
                 break
 
             elif mode == 'data':             # real numeric column data
@@ -663,7 +662,7 @@ class EscanData:
                         self.dimension = int(float(sx[1]))
 
             else:
-                print 'UNKOWN MODE = ',mode, raw[:20]
+                print( 'UNKOWN MODE = ',mode, raw[:20])
 
         del lines
 
@@ -671,7 +670,7 @@ class EscanData:
             col_details.pop(0)
 
         except IndexError:
-            print 'Empty Scan File'
+            print( 'Empty Scan File')
             return -2
 
         if len(self.user_titles) > 1: self.user_titles.pop(0)
@@ -689,7 +688,7 @@ class EscanData:
                         nrows,npts_total = i+1,n
 
                 if len(tmp_y) > nrows or len(tmp_dat)> npts_total:
-                    print 'Warning: Some trailing data may be lost!'
+                    print( 'Warning: Some trailing data may be lost!')
                     tmp_y   = tmp_y[:nrows]
                     tmp_dat = tmp_dat[:npts_total]
             #
@@ -704,9 +703,6 @@ class EscanData:
             if self.xaddr == addr: self.xdesc = desc
             if self.yaddr == addr: self.ydesc = desc
 
-        # print self.xaddr, self.xdesc
-        # print self.yaddr, self.ydesc
-
         self.has_fullxrf = False
         if os.path.exists("%s.fullxrf" %fname):
             self.read_fullxrf("%s.fullxrf" %fname, len(self.x), len(self.y))
@@ -717,11 +713,11 @@ class EscanData:
         atime = os.stat(xrfname)[8]
 
         prefix = os.path.splitext(xrfname)[0]
-        print 'Reading Full XRF spectra from %s'  % xrfname
+        print('Reading Full XRF spectra from %s'  % xrfname)
 
         first_line = inpf.readline()
         if not first_line.startswith('; MCA Spectra'):
-            print 'Warning: %s is not a QuadXRF File' % xrffile
+            print('Warning: %s is not a QuadXRF File' % xrffile)
             inpf.close()
             return
 
@@ -749,7 +745,7 @@ class EscanData:
         nelem = self.nelem = len(header['CAL_OFFSET'])
 
         nheader = nheader + 1
-        # print '==rois==' , len(rois), len(rois)/nelem, nelem
+        # print('==rois==' , len(rois), len(rois)/nelem, nelem)
 
         allrois = []
         nrois =  len(rois)/nelem
@@ -840,7 +836,7 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
         xrf_shape =  (n_xin, nelem, n_energies)
         if self.dimension == 2:
             xrf_shape =  (n_yin, n_xin, nelem, n_energies)
-        # print 'xrf_shape ', xrf_shape
+        # print( 'xrf_shape ', xrf_shape)
         self.xrf_data = -1*numpy.ones(xrf_shape)
         xrf_dt_factor = self.dt_factor * 1.0
 

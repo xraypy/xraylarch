@@ -151,7 +151,7 @@ def savitzky_golay(y, window_size, order, deriv=0):
     try:
         window_size = abs(int(window_size))
         order = abs(int(order))
-    except ValueError, msg:
+    except ValueError(msg):
         raise ValueError("window_size and order have to be of type int")
     if window_size % 2 != 1 or window_size < 1:
         raise TypeError("window_size size must be a positive odd number")

@@ -70,7 +70,7 @@ def elam_spline(xin, yin, yspl_in, x):
 
     diff = xin[hi] - xin[lo]
     if any(diff <= 0):
-        raise ValueError, 'x must be strictly increasing'
+        raise ValueError('x must be strictly increasing')
     a = (xin[hi] - x) / diff
     b = (x - xin[lo]) / diff
     return (a * yin[lo] + b * yin[hi] +

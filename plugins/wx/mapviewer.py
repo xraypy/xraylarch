@@ -319,13 +319,10 @@ class SimpleMapPanel(GridPanel):
         if xrmfile is None:
             xrmfile = self.owner.current_file
         ny, nx, npos = xrmfile.xrfmap['positions/pos'].shape
-        # print 'on Lasso Shape = ', xrmfile, ny, nx
-        # print selected
         indices = []
         for idx in selected:
             iy, ix = divmod(idx, ny)
             indices.append((ix, iy))
-        # print indices
 
     def onShowCorrel(self, event=None):
         roiname1 = self.roi1.GetStringSelection()
@@ -459,7 +456,6 @@ class TriColorMapPanel(GridPanel):
         b = self.bcol.GetStringSelection()
         i0 = self.i0col.GetStringSelection()
         mapshape= datafile.xrfmap['roimap/sum_cor'][:, :, 0].shape
-        # print mapshape
         if no_hotcols:
             mapshape = mapshape[0], mapshape[1]-2
 
@@ -746,7 +742,7 @@ class MapViewerFrame(wx.Frame):
         for name, key, creator in (('Simple ROI Map', 'roimap', SimpleMapPanel),
                                    ('3-Color ROI Map', '3color',  TriColorMapPanel),
                                    ('Map Math',  'mapmath',    MapMathPanel)):
-            # print 'panel ' , name, parent, creator
+
             self.nbpanels[key] = p = creator(parent, owner=self)
             self.nb.AddPage(p, name, True)
             bgcol = p.GetBackgroundColour()
@@ -906,7 +902,7 @@ class MapViewerFrame(wx.Frame):
             try:
                 os.chdir(nativepath(basedir))
             except OSError:
-                print 'Changed folder failed'
+                print( 'Changed folder failed')
                 pass
         dlg.Destroy()
 
@@ -951,7 +947,7 @@ Matt Newville <newville @ cars.uchicago.edu>
 
     def onReadFolder(self, evt=None):
         if not self.h5convert_done:
-            print 'cannot open file while processing a map folder'
+            print( 'cannot open file while processing a map folder')
             return
 
         dlg = wx.DirDialog(self, message="Read Map Folder",
@@ -981,7 +977,7 @@ Matt Newville <newville @ cars.uchicago.edu>
 
     def onReadFile(self, evt=None):
         if not self.h5convert_done:
-            print 'cannot open file while processing a map folder'
+            print('cannot open file while processing a map folder')
             return
 
         dlg = wx.FileDialog(self, message="Read Map File",

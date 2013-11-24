@@ -180,7 +180,6 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
     if _larch is None:
-        #print("Could not find larch?")
         return
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
@@ -550,7 +549,7 @@ def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
         canvas.print_figure(fname, dpi=dpi, format=format,
                             facecolor=facecolor, edgecolor=edgecolor, **kws)
     else:
-        print 'unsupported image format: ', format
+        print('unsupported image format: ', format)
     os.chdir(thisdir)
 
 def _saveimg(fname, _larch=None, **kws):

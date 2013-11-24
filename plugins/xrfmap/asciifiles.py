@@ -2,8 +2,13 @@
 utilities for reading files from raw scan folder
 """
 import os
+import sys
 import numpy
-from ConfigParser import  ConfigParser
+
+if sys.version[0] == '2':
+    from ConfigParser import  ConfigParser
+elif sys.version[0] == '3':
+    from configparser import  ConfigParser
 
 def readASCII(fname, nskip=0, isnumeric=True):
     dat, header = [], []

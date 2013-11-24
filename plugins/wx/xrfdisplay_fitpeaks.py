@@ -274,7 +274,7 @@ class FitSpectraFrame(wx.Frame):
             thick.wids.val.SetValue(0.0250)
 
     def onEditFilters(self, evt=None):
-        print 'on Edit Filters ',  evt
+        print( 'on Edit Filters ',  evt)
 
 
     def filters_page(self):
@@ -315,7 +315,7 @@ class FitSpectraFrame(wx.Frame):
         return p
 
     def onFitPeaks(self, event=None):
-        print 'Fit Peaks'
+        print( 'Fit Peaks')
         opts = {}
         filters, peaks = [], []
         sig, det, bgr = {}, {}, {}
@@ -349,20 +349,18 @@ class FitSpectraFrame(wx.Frame):
         opts  = {'det': det, 'bgr': bgr, 'sig': sig,
                  'filters': filters, 'peaks': peaks}
         for key, val in opts.items():
-            print key, val
+            print( key, val)
 
         mca    = self.mca
         mca.data = mca.counts*1.0
         energy = mca.energy
         _larch = self.parent.larch
         if bgr.pop('use'):
-            print ' -> bgr '
             xrf_background(energy=mca.energy, counts=mca.counts,
                            group=mca, _larch=_larch, **bgr)
             mca.data = mca.data - mca.bgr
 
         if det.pop('use'):
-            print 'Detector ',
             # mu in 1/mm, note energy is needed in eV
             mu = material_mu(det['material'], energy*1000.0, _larch=_larch)/10.0
             t = det['thickness']
