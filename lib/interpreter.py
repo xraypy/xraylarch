@@ -166,7 +166,8 @@ class Interpreter:
         if len(self.error) > 0 and not isinstance(node, ast.Module):
             msg = '%s' % msg
         err = LarchExceptionHolder(node, exc=exc, msg=msg, expr=expr,
-                                   fname=fname, lineno=lineno, func=func)
+                                   fname=fname, lineno=lineno, func=func,
+                                   symtable=self.symtable)
         self._interrupt = ast.Break()
         self.error.append(err)
         self.symtable._sys.last_error = err

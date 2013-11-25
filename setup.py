@@ -11,14 +11,15 @@ DEBUG = False
 
 cmdline_args = sys.argv[1:]
 
-required_modules = ('numpy', 'scipy') # , 'docutils')
+required_modules = ('numpy', 'scipy')
 
 recommended_modules = {'basic analysis': required_modules,
                        'graphical interface and plotting': ('wx', 'wxutils'),
+                       'color-enhanced error messages': ('termcolor', ),
                        'plotting': ('matplotlib', 'wxmplot'),
                        'accessing x-ray databases': ('sqlalchemy', ),
                        'readng hdf5 files': ('h5py', ),
-                       'using the EPICS control system': ('epics',)
+                       'using the EPICS control system': ('epics', ),
                        }
 
 # files that may be in share_basedir (from earlier installs)

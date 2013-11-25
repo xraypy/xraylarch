@@ -13,6 +13,14 @@ from .utils import Closure
 from .symboltable import Group
 from .site_config import sys_larchdir
 
+VALID_ERRORCOLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
+HAS_COLORTERM = False
+try:
+    from termcolor import colored
+    HAS_COLORTERM = True
+except:
+    pass
+        
 class Empty:
     def __nonzero__(self): return False
 
@@ -22,13 +30,14 @@ ReturnedNone = Empty()
 class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node, msg='', fname='<stdin>',
-                 func=None, expr=None, exc=None, lineno=0):
+                 func=None, expr=None, exc=None, symtable=None, lineno=0):
         self.node = node
         self.fname  = fname
         self.func = func
         self.expr = expr
         self.msg  = msg
         self.exc  = exc
+        self.symtable = symtable
         self.lineno = lineno
         self.exc_info = sys.exc_info()
         # extract traceback, suppressing interpreter / symboltable
@@ -154,7 +163,26 @@ class LarchExceptionHolder:
                 out.append("    %s^^^" % ((col_offset)*' '))
         if call_expr is not None:
             out.append('  %s' % call_expr)
-        return (exc_name, '\n'.join(out))
+        if HAS_COLORTERM:
+            color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
+            if color not in VALID_ERRORCOLORS: 
+                color = 'red'
+            attrs = []
+            if getattr(self.symtable._sys, 'errortext_bold', True):
+                attrs.append('bold')
+                
+            if getattr(self.symtable._sys, 'errortext_dark', False):
+                attrs.append('dark')
+                
+            if getattr(self.symtable._sys, 'errortext_underline', False):
+                attrs.append('underline')
+            if getattr(self.symtable._sys, 'errortext_blink', False):
+                attrs.append('blink')
+            if getattr(self.symtable._sys, 'errortext_reverse', False):
+                attrs.append('reverse')
+            return (exc_name, colored('\n'.join(out), color, attrs=attrs))
+        else:
+            return (exc_name, '\n'.join(out))
 
 
 class Procedure(object):
