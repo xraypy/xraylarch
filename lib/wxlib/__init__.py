@@ -2,7 +2,7 @@
 """
 wx widgets for Larch
 """
-import larchframe
-import larchfilling
-import readlinetextctrl
+from . import larchframe
+from . import larchfilling
+from . import readlinetextctrl
 

@@ -15,9 +15,9 @@ import wx
 import numpy
 import larch
 
-from readlinetextctrl import ReadlineTextCtrl
-from larchfilling import Filling
-import inputhook
+from .readlinetextctrl import ReadlineTextCtrl
+from .larchfilling import Filling
+from . import inputhook
 
 header = ('=' * 60)
 BANNER = """%s

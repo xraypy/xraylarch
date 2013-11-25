@@ -24,7 +24,7 @@ import wx
 import numpy
 import wx.html as html
 import types
-from  cStringIO import StringIO
+
 from wx.py import dispatcher
 from wx.py import editwindow
 
@@ -36,8 +36,11 @@ from larch.utils import Closure
 
 VERSION = '0.9.5(Larch)'
 
-COMMONTYPES = (int, float, complex, bool, str, unicode, dict, list, tuple, numpy.ndarray)
-
+COMMONTYPES = [int, float, complex, bool, str, dict, list, tuple, numpy.ndarray]
+if sys.version[0] == '2':
+    COMMONTYPES.append(unicode)
+COMMONTYPES =  tuple(COMMONTYPES)
+    
 TYPE_HELPS = {}
 for t in COMMONTYPES:
     TYPE_HELPS[t] = 'help on %s' % t
@@ -47,28 +50,9 @@ DOCTYPES = ('BuiltinFunctionType', 'BuiltinMethodType', 'ClassType',
             'LambdaType', 'MethodType', 'ModuleType',
             'UnboundMethodType', 'method-wrapper')
 
-from docutils.core import publish_string
-from docutils.writers.html4css1 import Writer,HTMLTranslator
-
-class HTMLFragmentTranslator( HTMLTranslator ):
-    def __init__( self, document ):
-        HTMLTranslator.__init__( self, document )
-        self.head_prefix = ['','','','','']
-        self.body_prefix = []
-        self.body_suffix = []
-        self.stylesheet = []
-    def astext(self):
-        return ''.join(self.body)
-
-html_fragment_writer = Writer()
-html_fragment_writer.translator_class = HTMLFragmentTranslator
-
 def rst2html(text):
-    try:
-        return publish_string(text, writer = html_fragment_writer )
-    except:
-        return "<br>".join(text.split('\n'))
-
+    return "<br>".join(text.split('\n'))
+    
 
 class FillingTree(wx.TreeCtrl):
     """FillingTree based on TreeCtrl."""
