@@ -13,7 +13,6 @@ Exposed functions here are
 import time
 import os
 import sys
-import thread
 
 if not hasattr(sys, 'frozen'):
     try:
