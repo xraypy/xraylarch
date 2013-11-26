@@ -17,7 +17,7 @@ VALID_ERRORCOLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan'
 HAS_COLORTERM = False
 try:
     from termcolor import colored
-    HAS_COLORTERM = True
+    HAS_COLORTERM = (os.name != 'nt')    
 except:
     pass
         
