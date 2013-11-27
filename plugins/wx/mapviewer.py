@@ -628,18 +628,15 @@ WARNING: This cannot be undone!
         area  = xrmfile.xrfmap['areas/%s' % aname]
         label = area.attrs['description']
         self._mca  = None
-
         mca_thread = Thread(target=self._getmca_area, args=(aname,))
         mca_thread.start()
         self.owner.show_XRFDisplay(xrmfile=xrmfile)
         mca_thread.join()
 
         pref, fname = os.path.split(self.owner.current_file.filename)
-        title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, label)
-
-        self.owner.xrfdisplay.SetTitle(title)
-        self.owner.xrfdisplay.plotmca(self._mca)
-
+        npix = len(area.value[np.where(area.value)])
+        title = "XRF Spectra:  %s, Area=%s,  %i Pixels" % (fname, label, npix)
+        self.owner.xrfdisplay.plotmca(self._mca, title=title)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
@@ -776,10 +773,11 @@ class MapViewerFrame(wx.Frame):
         if hasattr(self, 'sel_mca'):
             path, fname = os.path.split(xrmfile.filename)
             aname = self.sel_mca.areaname
-            title = "XRF Spectra:  %s, Area=%s:  %s" % (fname, aname, aname)
-            self.xrfdisplay.SetTitle(title)
+            area  = xrmfile.xrfmap['areas/%s' % aname]
+            npix  = len(area.value[np.where(area.value)])
+            title = "XRF Spectra:  %s, Area=%s,  %i Pixels" % (fname, aname, npix)
 
-            self.xrfdisplay.plotmca(self.sel_mca)
+            self.xrfdisplay.plotmca(self.sel_mca, title=title)
             self.area_sel.set_choices(self.current_file.xrfmap['areas'],
                                       show_last=True)
 

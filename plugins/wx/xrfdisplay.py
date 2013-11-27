@@ -736,10 +736,11 @@ class XRFDisplayFrame(wx.Frame):
         if roiname is not None:
             self.onROI(label=roiname)
 
-    def plotmca(self, mca, show_mca2=True, **kws):
+    def plotmca(self, mca, show_mca2=True, title=None, **kws):
         self.mca = mca
         self.plot(mca.energy, mca.counts, mca=mca, **kws)
-        title = self.win_title
+        if title is None:
+            title = self.win_title
         if hasattr(mca, 'filename'):
             title = "%s: %s"% (title, mca.filename)
         if show_mca2 and self.mca2 is not None:
