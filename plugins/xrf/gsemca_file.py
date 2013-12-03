@@ -56,6 +56,11 @@ class GSEMCA_File(Group):
                     break
                 elif imca not in self.bad:
                     self.bad.append(imca)
+            if self.__mca0 is None:
+                self.__mca0 = mca = self.mcas[0]
+                self.offset = mca.offset
+                self.slope  = mca.slope
+                self.quad   = mca.quad
         return self.__mca0
 
     def get_energy(self, imca=None):
@@ -287,6 +292,6 @@ class GSEMCA_File(Group):
 def gsemca_group(fname, _larch=None, **kws):
     """read GSECARS MCA file to larch group"""
     return GSEMCA_File(fname)
-        
+
 def registerLarchPlugin():
     return ('_io', {'read_gsemca': gsemca_group})
