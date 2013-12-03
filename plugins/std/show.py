@@ -62,7 +62,7 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
         title = title[6:]
 
     if group == symtable:
-        title = 'SymbolTable _main'
+        title = 'Group _main'
 
     members = dir(group)
     out = ['== %s: %i symbols ==' % (title, len(members))]
