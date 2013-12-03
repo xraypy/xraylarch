@@ -41,7 +41,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
                      GridPanel)
 
 import larch
-
+from larch.larchlib import read_workdir, save_workdir
 larch.use_plugin_path('wx')
 larch.use_plugin_path('io')
 larch.use_plugin_path('xrfmap')
@@ -670,32 +670,9 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_done = True
         self.h5convert_irow = 0
         self.h5convert_nrow = 0
-        self.ReadWorkDir()
-        self.onFolderSelect(evt=None)
-
-
-    def ReadWorkDir(self):
-        try:
-            workdir_file = os.path.join(larch.site_config.folder,
-                                        'gsemap.dat')
-            if os.path.exists(workdir_file):
-                line = open(workdir_file, 'r').readlines()
-                workdir = line[0][:-1]
-                os.chdir(workdir)
-        except:
-            pass
-
-    def SaveWorkDir(self):
-        try:
-            workdir_file = os.path.join(larch.site_config.folder,
-                                        'gsemap.dat')
-            fh = open(workdir_file, 'w')
-            fh.write("%s\n" % nativepath(os.getcwd()))
-            fh.close()
-        except:
-            pass
-
-
+        read_workdir('gsemap.dat')
+        # self.onFolderSelect(evt=None)
+        
     def CloseFile(self, filename, event=None):
         if filename in self.filemap:
             self.filemap[filename].close()
@@ -917,7 +894,7 @@ Matt Newville <newville @ cars.uchicago.edu>
         dlg.Destroy()
 
     def onClose(self, evt):
-        self.SaveWorkDir()
+        save_workdir('gsemap.dat')
         for xrmfile in self.filemap.values():
             xrmfile.close()
 

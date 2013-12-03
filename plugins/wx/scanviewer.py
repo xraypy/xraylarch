@@ -20,6 +20,7 @@ import epics
 from epics.wx import DelayedEpicsCallback, EpicsFunction
 
 from larch import Interpreter, use_plugin_path, isParameter
+from larch.larchlib import read_workdir, save_workdir
 from larch.fitting import fit_report
 
 use_plugin_path('math')
@@ -74,6 +75,7 @@ class ScanViewerFrame(wx.Frame):
         statusbar_fields = ["Initializing....", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
+        read_workdir('scanviewer.dat')
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -605,6 +607,7 @@ class ScanViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,evt):
+        save_workdir('scanviewer.dat')
         try:
             self.plotframe.Destroy()
         except:
