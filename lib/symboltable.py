@@ -143,7 +143,6 @@ class SymbolTable(Group):
             self._sys.searchGroups.append(g)
         self._sys.core_groups = tuple(self._sys.searchGroups[:])
 
-        self._sys.historyfile = site_config.history_file
         self.__callbacks = {}
         orig_sys_path = sys.path[:]
 
@@ -163,6 +162,13 @@ class SymbolTable(Group):
         for gname in self.core_groups:
             self._sys.modules[gname] = getattr(self, gname)
         self._fix_searchGroups()
+
+        self._sys.config = Group(home_dir    = site_config.home_dir,
+                                 history_file= site_config.history_file,
+                                 init_files  = site_config.init_files,
+                                 modules_path= site_config.modules_path,
+                                 usr_larchdir= site_config.usr_larchdir,
+                                 sys_larchdir= site_config.sys_larchdir)
 
     def save_frame(self):
         " save current local/module group"
