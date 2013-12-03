@@ -162,7 +162,7 @@ class XRFDisplayFrame(wx.Frame):
                 pass
         if self.highlight_xrayline is not None:
             self.highlight_xrayline.remove()
-            
+
         self.highlight_xrayline = None
         self.major_markers = []
         self.minor_markers = []
@@ -341,7 +341,7 @@ class XRFDisplayFrame(wx.Frame):
             for col in (0, 1, 2, 3):
                 xlines.Columns[col].Sortable = True
                 align = RIGHT
-                if col in (0, 3): align = wx.ALIGN_CENTER            
+                if col in (0, 3): align = wx.ALIGN_CENTER
                 xlines.Columns[col].Renderer.Alignment = align
                 xlines.Columns[col].Alignment = RIGHT
 
@@ -649,14 +649,14 @@ class XRFDisplayFrame(wx.Frame):
 
         if self.highlight_xrayline is not None:
             self.highlight_xrayline.remove()
-        
+
         self.energy_for_zoom = en
         self.highlight_xrayline = self.panel.axes.axvline(en,
                              color=self.conf.emph_elinecolor,
                              linewidth=2.5, zorder=-20)
         self.panel.canvas.draw()
-            
-            
+
+
     def onShowLines(self, event=None, elem=None):
         if elem is None:
             elem  = event.GetString()
@@ -671,7 +671,7 @@ class XRFDisplayFrame(wx.Frame):
         self.energy_for_zoom = None
         xlines = self.wids['xray_lines']
         if xlines is not None:
-            xlines.DeleteAllItems()        
+            xlines.DeleteAllItems()
         self.wids['xray_linesdata'] = [0]
         minors, majors = [], []
         conf = self.conf
@@ -682,7 +682,7 @@ class XRFDisplayFrame(wx.Frame):
             if line in elines:
                 dat = elines[line]
                 line_data[line] = line, dat[0], dat[1], dat[2]
-        
+
         if self.wids['kseries'].IsChecked():
             majors.extend([line_data[l] for l in conf.K_major])
             minors.extend([line_data[l] for l in conf.K_minor])
@@ -708,7 +708,7 @@ class XRFDisplayFrame(wx.Frame):
                 self.major_markers.append(l)
                 if self.energy_for_zoom is None:
                     self.energy_for_zoom = e
-                
+
         for label, eev, frac, ilevel in minors:
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
@@ -721,7 +721,7 @@ class XRFDisplayFrame(wx.Frame):
                     xlines.AppendItem(dat)
                 self.minor_markers.append(l)
 
-        
+
 
         self.panel.canvas.draw()
 
@@ -765,13 +765,13 @@ class XRFDisplayFrame(wx.Frame):
                   'axes_style': 'bottom',
                   'color': self.conf.spectra_color}
         kwargs.update(kws)
-
         self.xdata = 1.0*x[:]
         self.ydata = 1.0*y[:]
         yroi = None
         ydat = 1.0*y[:]
         kwargs['ymax'] = max(ydat)*1.25
         kwargs['ymin'] = 1
+
         if mca is not None:
             if not self.rois_shown:
                 self.set_roilist(mca=mca)
@@ -782,8 +782,9 @@ class XRFDisplayFrame(wx.Frame):
             yroi = np.ma.masked_less(yroi, 0)
             ydat = np.ma.masked_less(ydat, 0)
 
-        panel.plot(x, ydat, label='spectra',  **kwargs)
-        if yroi is not None:
+        if ydat.max() > 0:
+            panel.plot(x, ydat, label='spectra',  **kwargs)
+        if yroi is not None and yroi.max() > 0:
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='roi', **kwargs)
 
