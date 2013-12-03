@@ -11,7 +11,7 @@ import ctypes
 import ctypes.util
 from .utils import Closure
 from .symboltable import Group
-from .site_config import sys_larchdir
+from .site_config import sys_larchdir, usr_larchdir
 
 VALID_ERRORCOLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
 HAS_COLORTERM = False
@@ -391,3 +391,36 @@ def get_dll(libname):
     # if not found in the larch dlls tree, try your best!
     return loaddll(ctypes.util.find_library(libname))
 
+
+def read_workdir(conffile):
+    """read working dir from a config file in the users larch dir
+    compare save_workdir(conffile) which will save this value
+
+    can be used to ensure that application startup starts in
+    last working directory
+    """
+    
+    try:
+        w_file = os.path.join(usr_larchdir, conffile)
+        if os.path.exists(w_file):
+            line = open(w_file, 'r').readlines()
+            workdir = line[0][:-1]
+            os.chdir(workdir)
+    except:
+        pass
+
+def save_workdir(conffile):
+    """write working dir to a config file in the users larch dir
+    compare read_workdir(conffile) which will read this value
+    
+    can be used to ensure that application startup starts in
+    last working directory
+    """
+               
+    try:
+        w_file = os.path.join(usr_larchdir, conffile)
+        fh = open(w_file, 'w')
+        fh.write("%s\n" % os.getcwd())
+        fh.close()
+    except:
+        pass
