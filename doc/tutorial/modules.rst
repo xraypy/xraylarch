@@ -88,6 +88,7 @@ Second, it has a search path.
   * from myscript import name
   * from myscript import name as othername
 
+
 ...
 
 Namespaces, again

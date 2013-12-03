@@ -281,7 +281,7 @@ will print a table of sine and cosine values.
 A final utility of note for loops is :func:`enumerate` which will return a
 tuple of (index, value) for a sequence.   That is::
 
-   larch> for i, a in ('a', b', 'c'):
+   larch> for i, a in enumerate('a', b', 'c'):
    .....>     print i, a
    .....> endfor
 
@@ -338,7 +338,7 @@ while loop increases a counter at each iteration::
    counter = 0
    while counter < 10:
       do_something(counter)
-      counter =+ 1
+      counter = counter + 1
    endwhile
 
 A while loop is easily turned into an infinite loop, simply by not
