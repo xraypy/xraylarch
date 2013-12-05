@@ -102,9 +102,9 @@ class ScanViewerFrame(wx.Frame):
         # x-axis
 
         self.xarr = Choice(panel, choices=[],
-                               action=self.onYchoice,  size=(120, -1))
+                               action=self.onColumnChoices,  size=(120, -1))
         self.xop  = Choice(panel, choices=('', 'log'),
-                               action=self.onYchoice, size=(75, -1))
+                               action=self.onColumnChoices, size=(75, -1))
 
         ir += 1
         sizer.Add(SimpleText(panel, 'X = '), (ir, 0), (1, 1), CEN, 0)
@@ -116,14 +116,14 @@ class ScanViewerFrame(wx.Frame):
         self.yops = []
         self.yarr = []
 
-        opts= {'choices':[], 'size':(120, -1), 'action':self.onYchoice}
+        opts= {'choices':[], 'size':(120, -1), 'action':self.onColumnChoices}
         for i in range(3):
             self.yarr.append(Choice(panel, **opts))
 
 
         for opts, sel, siz in ((PRE_OPS, 0, 75),
                                (ARR_OPS, 3, 50), (ARR_OPS, 3, 50)):
-            w1 = Choice(panel, choices=opts, action=self.onYchoice,
+            w1 = Choice(panel, choices=opts, action=self.onColumnChoices,
                             size=(siz, -1))
             w1.SetSelection(sel)
             self.yops.append(w1)
@@ -143,7 +143,8 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(SimpleText(panel, ']'),   (ir, 6), (1, 1), LCEN, 0)
 
         ir += 1
-        self.dtcorr   = Check(panel, default=True, label='correct deadtime?')
+        self.dtcorr   = Check(panel, default=True, label='correct deadtime?',
+                              action=self.onColumnChoices)
         sizer.Add(self.dtcorr,  (ir,   0), (1, 3), LCEN, 0)
 
         pack(panel, sizer)
@@ -367,46 +368,22 @@ class ScanViewerFrame(wx.Frame):
             return group.get_data(arrayname, correct=correct)
         return getattr(group, arrayname, None)
 
-    def onYchoice(self, evt=None, side='left'):
-        self.onPlot()
-        if (self.nb.GetCurrentPage() == self.xas_panel):
-            popts = self.xas_process(self.groupname, {})
-
-    def onPlot(self, evt=None, opt='new', npts=None):
-        # 'new', 'New Window'),
-        # 'left', 'Left Axis'),
-        # 'right', 'Right Axis')):
-        # 'update',  from scan
-
-        optwords = opt.split()
-        # print 'onPlot ', opt, npts
-
-        try:
-            self.plotframe.Show()
-        except: #  wx.PyDeadObjectError
-            self.plotframe = PlotFrame(None, size=(650, 400))
-            self.plotframe.Show()
-            self.plotpanel = self.plotframe.panel
-
+    def onColumnChoices(self, evt=None):
+        """column selections changed ..
+        recalculate _xplot_ and _yplot_
+        arrays for this larch group"""
 
         dtcorr = self.dtcorr.IsChecked()
+        ix  = self.xarr.GetSelection()
+        x   = self.xarr.GetStringSelection()
+        xop = self.xop.GetStringSelection()
+        op1 = self.yops[0].GetStringSelection()
+        op2 = self.yops[1].GetStringSelection()
+        op3 = self.yops[2].GetStringSelection()
+        y1  = self.yarr[0].GetStringSelection()
+        y2  = self.yarr[1].GetStringSelection()
+        y3  = self.yarr[2].GetStringSelection()
 
-        side = 'left'
-        update = False
-        plotcmd = self.plotpanel.plot
-        if opt in ('left', 'right'):
-            side = opt
-            plotcmd = self.plotpanel.oplot
-        elif optwords[0] == 'update'  and npts > 4:
-            plotcmd = self.plotpanel.update_line
-            update = True
-
-        popts = {'side': side}
-
-        ix = self.xarr.GetSelection()
-        x  = self.xarr.GetStringSelection()
-
-        # print( ' X -> ' ,  ix, x)
         try:
             gname = self.groupname
             lgroup = getattr(self.larch.symtable, gname)
@@ -414,12 +391,8 @@ class ScanViewerFrame(wx.Frame):
             gname = SCANGROUP
             lgroup = getattr(self.larch.symtable, gname)
 
-        # print( ' ==> ', ix, x, gname)
         xfmt = "%s._x1_ = %s(%s)"
         yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
-        xop = self.xop.GetStringSelection()
-
-        # print( ' L Group ', lgroup)
 
         xlabel = x
         try:
@@ -430,18 +403,8 @@ class ScanViewerFrame(wx.Frame):
             xlabel = "%s(%s)" % (xop, xlabel)
         if xunits != '':
             xlabel = '%s (%s)' % (xlabel, xunits)
-        popts['xlabel'] = xlabel
-
-        op1 = self.yops[0].GetStringSelection()
-        op2 = self.yops[1].GetStringSelection()
-        op3 = self.yops[2].GetStringSelection()
-
-        y1 = self.yarr[0].GetStringSelection()
-        y2 = self.yarr[1].GetStringSelection()
-        y3 = self.yarr[2].GetStringSelection()
 
         ylabel = y1
-
         if y2 == '':
             y2, op2 = '1', '*'
         else:
@@ -468,15 +431,10 @@ class ScanViewerFrame(wx.Frame):
             y3 = self.get_data(lgroup, y3, correct=dtcorr)
         if x not in ('0', '1'):
             x = self.get_data(lgroup, x)
-
-        setattr(lgroup, '_x',   x)
-        setattr(lgroup, '_y1', y1)
-        setattr(lgroup, '_y2', y2)
-        setattr(lgroup, '_y3', y3)
-
-        # print ("%s._y1_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
-        #       (gname, op1, gname, op2, gname, op3, gname))
-
+        lgroup._x  = x
+        lgroup._y1 = y1
+        lgroup._y2 = y2
+        lgroup._y3 = y3
         self.larch("%s._xplot_ = %s(%s._x)" % (gname, xop, gname))
         self.larch("%s._yplot_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
                    (gname, op1, gname, op2, gname, op3, gname))
@@ -487,25 +445,65 @@ class ScanViewerFrame(wx.Frame):
             print( 'npts borked ')
             return
 
+        lgroup.plot_xlabel = xlabel
+        lgroup.plot_ylabel = ylabel
         lgroup._xplot_ = np.array( lgroup._xplot_[:npts])
         lgroup._yplot_ = np.array( lgroup._yplot_[:npts])
 
+        # if (self.nb.GetCurrentPage() == self.xas_panel):
+        #    popts = self.xas_process(self.groupname, {})
+        self.onPlot()
+
+    def onPlot(self, evt=None, opt='new', npts=None):
+        # 'new', 'New Window'),
+        # 'left', 'Left Axis'),
+        # 'right', 'Right Axis')):
+        # 'update',  from scan
+
+        try:
+            self.plotframe.Show()
+        except: #  wx.PyDeadObjectError
+            self.plotframe = PlotFrame(None, size=(650, 400))
+            self.plotframe.Show()
+            self.plotpanel = self.plotframe.panel
+
+
+        side = 'left'
+        update = False
+        plotcmd = self.plotpanel.plot
+        if opt in ('left', 'right'):
+            side = opt
+            plotcmd = self.plotpanel.oplot
+        elif opt == 'update'  and npts > 4:
+            plotcmd = self.plotpanel.update_line
+            update = True
+
+        popts = {'side': side}
+
+        try:
+            gname = self.groupname
+            lgroup = getattr(self.larch.symtable, gname)
+        except:
+            gname = SCANGROUP
+            lgroup = getattr(self.larch.symtable, gname)
+            return
+
+        lgroup._xplot_ = np.array( lgroup._xplot_[:npts])
+        lgroup._yplot_ = np.array( lgroup._yplot_[:npts])
 
         path, fname = os.path.split(lgroup.filename)
-        popts['label'] = "%s: %s" % (fname, ylabel)
+        popts['label'] = "%s: %s" % (fname, lgroup.plot_ylabel)
         if side == 'right':
-            popts['y2label'] = ylabel
+            popts['y2label'] = lgroup.plot_ylabel
         else:
-            popts['ylabel'] = ylabel
+            popts['ylabel'] = lgroup.plot_ylabel
 
         if plotcmd == self.plotpanel.plot:
             popts['title'] = fname
 
-        # XAFS Processing
-
         if update:
-            self.plotpanel.set_xlabel(popts['xlabel'])
-            self.plotpanel.set_ylabel(popts['ylabel'])
+            self.plotpanel.set_xlabel(lgroup.plot_xlabel)
+            self.plotpanel.set_ylabel(lgroup.plot_ylabel)
 
             plotcmd(0, lgroup._xplot_, lgroup._yplot_, draw=True,
                         update_limits=True) # ((npts < 5) or (npts % 5 == 0)))
