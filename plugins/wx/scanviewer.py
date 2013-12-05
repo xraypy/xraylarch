@@ -57,7 +57,7 @@ class ScanViewerFrame(wx.Frame):
   Matt Newville <newville @ cars.uchicago.edu>
   """
     def __init__(self, _larch=None, **kws):
-            
+
         wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
         self.filemap = {}
         title = "ASCII Column Data File Viewer"
@@ -115,7 +115,7 @@ class ScanViewerFrame(wx.Frame):
 
         self.yops = []
         self.yarr = []
-        
+
         opts= {'choices':[], 'size':(120, -1), 'action':self.onYchoice}
         for i in range(3):
             self.yarr.append(Choice(panel, **opts))
@@ -128,8 +128,8 @@ class ScanViewerFrame(wx.Frame):
             w1.SetSelection(sel)
             self.yops.append(w1)
 
-        ir += 1            
-        label = 'Y = ' 
+        ir += 1
+        label = 'Y = '
         sizer.Add(SimpleText(panel, label), (ir, 0), (1, 1), CEN, 0)
         sizer.Add(self.yops[0],             (ir, 1), (1, 1), CEN, 0)
         sizer.Add(SimpleText(panel, '[('),  (ir, 2), (1, 1), CEN, 0)
@@ -155,7 +155,7 @@ class ScanViewerFrame(wx.Frame):
 
         self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
         self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
- 
+
         self.xas_panel = self.CreateXASPanel(self.nb) # mainpanel)
         self.fit_panel = self.CreateFitPanel(self.nb) # mainpanel)
 
@@ -170,7 +170,7 @@ class ScanViewerFrame(wx.Frame):
         for ttl, opt in (('New Plot',   'new'),
                          ('Plot (left axis)',  'left'),
                          ('Plot (right axis)', 'right')):
-            
+
             btnsizer.Add(Button(btnbox, ttl, size=(130, -1),
                                 action=partial(self.onPlot, opt=opt)), LCEN, 1)
 
@@ -213,9 +213,10 @@ class ScanViewerFrame(wx.Frame):
         p = panel = wx.Panel(parent)
         self.xas_autoe0   = Check(panel, default=True, label='auto?')
         self.xas_autostep = Check(panel, default=True, label='auto?')
-        self.xas_op       = Choice(panel, size=(95, -1),
+        self.xas_op       = Choice(panel, size=(225, -1),
                                        choices=('Raw Data', 'Pre-edged',
-                                                'Normalized', 'Flattened'))
+                                                'Normalized', 'Flattened',
+                                                'Raw Data with Pre-edge Curve'))
         self.xas_e0   = FloatCtrl(panel, value  = 0, precision=3, size=(95, -1))
         self.xas_step = FloatCtrl(panel, value  = 0, precision=3, size=(95, -1))
         self.xas_pre1 = FloatCtrl(panel, value=-200, precision=1, size=(95, -1))
@@ -234,7 +235,7 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(SimpleText(p, 'Pre-edge range: '),      (3, 0), (1, 1), LCEN)
         sizer.Add(SimpleText(p, 'Normalization range: '), (4, 0), (1, 1), LCEN)
 
-        sizer.Add(self.xas_op,                 (0, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_op,                 (0, 1), (1, 3), LCEN)
         sizer.Add(self.xas_e0,                 (1, 1), (1, 1), LCEN)
         sizer.Add(self.xas_step,               (2, 1), (1, 1), LCEN)
         sizer.Add(self.xas_pre1,               (3, 1), (1, 1), LCEN)
@@ -299,23 +300,25 @@ class ScanViewerFrame(wx.Frame):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
         """
-        print( 'Process XAS ', gname)
+        print( 'In Process XAS ', gname)
         out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
-        if out.startswith('raw'):
-            return plotopts
 
         preopts = {'group': gname, 'e0': None, 'step': None}
 
         lgroup = getattr(self.larch.symtable, gname)
+        print 'Group ', gname
+        # print dir(lgroup)
 
         dtcorr = self.dtcorr.IsChecked()
-
+        preopts['step']  = self.xas_step.GetValue()
+        preopts['e0']    = self.xas_e0.GetValue()
         if not self.xas_autoe0.IsChecked():
             xmin, xmax = min(lgroup._x1_),  max(lgroup._x1_)
             e0 = self.xas_e0.GetValue()
             if e0 < xmax and e0 > xmin:
                 preopts['e0'] = e0
 
+        # print 'E0 OUT ', preopts['e0']
         if not self.xas_autostep.IsChecked():
             preopts['step'] = self.xas_step.GetValue()
 
@@ -328,9 +331,9 @@ class ScanViewerFrame(wx.Frame):
         preopts['nnorm'] = self.xas_nnor.GetSelection()
 
         preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
-        preedge_cmd = "pre_edge(%s._x1_, %s._y1_, %s)" % (gname, gname, preopts)
-
+        preedge_cmd = "pre_edge(%s, %s)" % (gname, preopts)
         self.larch(preedge_cmd)
+        # print dir(lgroup)
 
         self.xas_e0.SetValue(lgroup.e0)
         self.xas_step.SetValue(lgroup.edge_step)
@@ -359,8 +362,15 @@ class ScanViewerFrame(wx.Frame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
+    def get_data(self, group, arrayname, correct=False):
+        if hasattr(group, 'get_data'):
+            return group.get_data(arrayname, correct=correct)
+        return getattr(group, arrayname, None)
+
     def onYchoice(self, evt=None, side='left'):
         self.onPlot()
+        if (self.nb.GetCurrentPage() == self.xas_panel):
+            popts = self.xas_process(self.groupname, {})
 
     def onPlot(self, evt=None, opt='new', npts=None):
         # 'new', 'New Window'),
@@ -369,15 +379,15 @@ class ScanViewerFrame(wx.Frame):
         # 'update',  from scan
 
         optwords = opt.split()
-        print 'onPlot ', opt, npts
+        # print 'onPlot ', opt, npts
 
         try:
             self.plotframe.Show()
         except: #  wx.PyDeadObjectError
-            self.plotframe = PlotFrame(self, size=(650, 400))
+            self.plotframe = PlotFrame(None, size=(650, 400))
             self.plotframe.Show()
-            self.plotpanel = self.plotframe.panel            
-        
+            self.plotpanel = self.plotframe.panel
+
 
         dtcorr = self.dtcorr.IsChecked()
 
@@ -396,7 +406,7 @@ class ScanViewerFrame(wx.Frame):
         ix = self.xarr.GetSelection()
         x  = self.xarr.GetStringSelection()
 
-        print( ' X -> ' ,  ix, x)
+        # print( ' X -> ' ,  ix, x)
         try:
             gname = self.groupname
             lgroup = getattr(self.larch.symtable, gname)
@@ -404,12 +414,12 @@ class ScanViewerFrame(wx.Frame):
             gname = SCANGROUP
             lgroup = getattr(self.larch.symtable, gname)
 
-        print( ' ==> ', ix, x, gname)
+        # print( ' ==> ', ix, x, gname)
         xfmt = "%s._x1_ = %s(%s)"
         yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
         xop = self.xop.GetStringSelection()
-        
-        print( ' L Group ', lgroup)
+
+        # print( ' L Group ', lgroup)
 
         xlabel = x
         try:
@@ -444,28 +454,28 @@ class ScanViewerFrame(wx.Frame):
         if op1 != '':
             ylabel = "%s(%s)" % (op1, ylabel)
 
-        if y1 in ('0', '1'):  
+        if y1 in ('0', '1'):
             y1 = int(yl1)
         else:
-            y1 = lgroup.get_data(y1, correct=dtcorr)
-        if y2 in ('0', '1'):  
+            y1 = self.get_data(lgroup, y1, correct=dtcorr)
+        if y2 in ('0', '1'):
             y2 = int(y2)
         else:
-            y2 = lgroup.get_data(y2, correct=dtcorr)
-        if y3 in ('0', '1'):  
+            y2 = self.get_data(lgroup, y2, correct=dtcorr)
+        if y3 in ('0', '1'):
             y3 = int(y3)
         else:
-            y3 = lgroup.get_data(y3, correct=dtcorr)
-        if x not in ('0', '1'): 
-            x = lgroup.get_data(x)
+            y3 = self.get_data(lgroup, y3, correct=dtcorr)
+        if x not in ('0', '1'):
+            x = self.get_data(lgroup, x)
 
         setattr(lgroup, '_x',   x)
         setattr(lgroup, '_y1', y1)
         setattr(lgroup, '_y2', y2)
         setattr(lgroup, '_y3', y3)
-        
-        print ("%s._y1_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
-               (gname, op1, gname, op2, gname, op3, gname))
+
+        # print ("%s._y1_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
+        #       (gname, op1, gname, op2, gname, op3, gname))
 
         self.larch("%s._xplot_ = %s(%s._x)" % (gname, xop, gname))
         self.larch("%s._yplot_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
@@ -476,10 +486,10 @@ class ScanViewerFrame(wx.Frame):
         except AttributeError:
             print( 'npts borked ')
             return
-                
+
         lgroup._xplot_ = np.array( lgroup._xplot_[:npts])
         lgroup._yplot_ = np.array( lgroup._yplot_[:npts])
-       
+
 
         path, fname = os.path.split(lgroup.filename)
         popts['label'] = "%s: %s" % (fname, ylabel)
@@ -491,33 +501,30 @@ class ScanViewerFrame(wx.Frame):
         if plotcmd == self.plotpanel.plot:
             popts['title'] = fname
 
-        # XAFS Processing!
-        # if (self.nb.GetCurrentPage() == self.xas_panel):
-        #     popts = self.xas_process(gname, popts)
+        # XAFS Processing
 
         if update:
             self.plotpanel.set_xlabel(popts['xlabel'])
             self.plotpanel.set_ylabel(popts['ylabel'])
-            
+
             plotcmd(0, lgroup._xplot_, lgroup._yplot_, draw=True,
                         update_limits=True) # ((npts < 5) or (npts % 5 == 0)))
-            
+
             self.plotpanel.set_xylims((
                 min(lgroup._xplot_), max(lgroup._xplot_),
                 min(lgroup._yplot_), max(lgroup._yplot_)))
-                                      
+
         else:
             plotcmd(lgroup._xplot_, lgroup._yplot_, **popts)
             self.plotpanel.canvas.draw()
-            
+
     def ShowFile(self, evt=None, filename=None, **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
         key = filename
         if filename in self.filemap:
             key = self.filemap[filename]
-        print ' KEY ', filename, key
-        print hasattr(self.datagroups, key)
+
         if key == SCANGROUP:
             #array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
             title = filename
@@ -533,7 +540,7 @@ class ScanViewerFrame(wx.Frame):
                 for attr in dir(data):
                     if isinstance(getattr(data, attr), np.ndarray):
                         array_labels.append(attr)
-                        
+
 
         self.groupname = key
         xcols  = array_labels[:]
@@ -549,12 +556,12 @@ class ScanViewerFrame(wx.Frame):
         _yarr = [[], [], []]
         for j in range(3):
             _yarr[j] = self.yarr[j].GetStringSelection()
-            
+
         self.xarr.SetItems(xcols)
         self.xarr.SetStringSelection(_xarr)
         for j in range(3):
             if j == 0:
-                self.yarr[j].SetItems(ycols)                
+                self.yarr[j].SetItems(ycols)
             else:
                 self.yarr[j].SetItems(y2cols)
             self.yarr[j].SetStringSelection(_yarr[j])
@@ -635,10 +642,10 @@ class ScanViewerFrame(wx.Frame):
             while hasattr(self.datagroups, gname) and count < maxcount:
                 count += 1
                 gname = 's%3.3i' % count
-            
+
             if hasattr(self.datagroups, gname):
                 gname = randname()
-                
+
             parent, fname = os.path.split(path)
             fh = open(path, 'r')
             line1 = fh.readline().lower()
@@ -649,7 +656,7 @@ class ScanViewerFrame(wx.Frame):
                 self.larch("%s = read_xdi('%s')" % (gname, path))
             else:
                 self.larch("%s = read_ascii('%s')" % (gname, path))
-                
+
             self.larch("%s.path  = '%s'"     % (gname, path))
             self.filelist.Append(fname)
             self.filemap[fname] = gname
