@@ -879,6 +879,7 @@ class MapViewerFrame(wx.Frame):
             except OSError:
                 print( 'Changed folder failed')
                 pass
+        save_workdir('gsemap.dat')
         dlg.Destroy()
 
     def onAbout(self, evt):
