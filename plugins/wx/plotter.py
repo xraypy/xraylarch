@@ -226,7 +226,7 @@ def _xrf_plot(x, y=None, mca=None, win=1, new=True, _larch=None,
         color: color for trace (name such as 'red', or '#RRGGBB' hex string)
         style: trace linestyle (one of 'solid', 'dashed', 'dotted', 'dot-dash')
         linewidth:  integer width of line
-        marker:  symbol to draw at eac point ('+', 'o', 'x', 'square', etc)
+        marker:  symbol to draw at each point ('+', 'o', 'x', 'square', etc)
         markersize: integer size of marker
 
     See Also: oplot, plot
@@ -277,7 +277,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
         color: color for trace (name such as 'red', or '#RRGGBB' hex string)
         style: trace linestyle (one of 'solid', 'dashed', 'dotted', 'dot-dash')
         linewidth:  integer width of line
-        marker:  symbol to draw at eac point ('+', 'o', 'x', 'square', etc)
+        marker:  symbol to draw at each point ('+', 'o', 'x', 'square', etc)
         markersize: integer size of marker
 
         drawstyle: style for joining line segments
@@ -393,6 +393,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
         width:  width of arrow line (in points. default=0.02)
         head_width:  width of arrow head (in points. default=0.20)
         overhang:    amount the arrow is swept back (in points. default=0)
+        win:  window to draw too
 
     See Also: plot, oplot, plot_text
     """
@@ -403,6 +404,33 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     kwargs = {'length_includes_head': True}
     plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
                       color=color, width=width, head_width=head_width, **kws)
+
+
+def _plot_marker(x, y, marker='o', size=4, color='black',
+               _larch=None, wxparent=None,  win=1, **kws):
+
+    """plot_marker(x, y, marker='o', size=4, color='black')
+
+    draw a marker at x, y
+
+    Parameters:
+    --------------
+        x:      x coordinate
+        y:      y coordinate
+        marker: symbol to draw at each point ('+', 'o', 'x', 'square', etc)
+        size:   symbol size
+        color:  color ('black')
+
+    See Also: plot, oplot, plot_text
+    """
+    plotter = _getDisplay(wxparent=wxparent, win=win, size=None, _larch=_larch)
+    if plotter is None:
+        _larch.raise_exception(msg='No Plotter defined')
+    plotter.Raise()
+    kwds = {'label': 'marker'}
+    kwds.update(kws)
+    plotter.oplot([x], [y], marker=marker, markersize=size,
+                 color=color, _larch=_larch, wxparent=wxparent,  **kwds)
 
 def _plot_axhline(y, xmin=0, xmax=1, win=1, size=None,
                   wxparent=None, _larch=None, **kws):
@@ -578,6 +606,7 @@ def registerLarchPlugin():
                       'oplot':_oplot,
                       'newplot':_newplot,
                       'plot_text': _plot_text,
+                      'plot_marker': _plot_marker,
                       'plot_arrow': _plot_arrow,
                       'plot_axvline':  _plot_axvline,
                       'plot_axhline':  _plot_axhline,
