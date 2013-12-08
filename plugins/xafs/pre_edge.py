@@ -139,6 +139,9 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
 
     if pre1 is None:  pre1  = min(energy) - e0
     if norm2 is None: norm2 = max(energy) - e0
+    if norm2 < 0:     norm2 = max(energy) - e0 - norm2
+    pre1  = max(pre1,  (min(energy) - e0))
+    norm2 = min(norm2, (max(energy) - e0))
 
     p1 = index_of(energy, pre1+e0)
     p2 = index_nearest(energy, pre2+e0)
@@ -187,6 +190,10 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.flat = flat
     group.nvict = nvict
     group.nnorm = nnorm
+    group.norm1 = norm1
+    group.norm2 = norm2
+    group.pre1 = pre1
+    group.pre2 = pre2
     group.edge_step  = edge_step
     group.pre_edge   = pre_edge
     group.post_edge  = post_edge
