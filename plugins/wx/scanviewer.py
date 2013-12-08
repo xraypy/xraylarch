@@ -25,6 +25,7 @@ from larch.fitting import fit_report
 
 use_plugin_path('math')
 from fitpeak import fit_peak
+from mathutils import index_of
 
 use_plugin_path('io')
 from gse_escan import gsescan_group
@@ -63,7 +64,7 @@ class ScanViewerFrame(wx.Frame):
         title = "ASCII Column Data File Viewer"
         self.larch = None
         self.plotframe = None
-
+        self.groupname = None
         self.SetTitle(title)
         self.SetSize((850, 650))
         self.SetFont(Font(9))
@@ -210,22 +211,42 @@ class ScanViewerFrame(wx.Frame):
         pack(panel, sizer)
         return panel
 
+    def InitializeXASPanel(self):
+        if self.groupname is None:
+            lgroup = None
+        lgroup = getattr(self.larch.symtable, self.groupname)
+        self.xas_e0.SetValue(getattr(lgroup, 'e0', 0))
+        self.xas_step.SetValue(getattr(lgroup, 'edge_step', 0))
+        self.xas_pre1.SetValue(getattr(lgroup, 'pre1',   -200))
+        self.xas_pre2.SetValue(getattr(lgroup, 'pre1',   -30))
+        self.xas_nor1.SetValue(getattr(lgroup, 'norm1',  50))
+        self.xas_nor2.SetValue(getattr(lgroup, 'norm2', -50))
+
+        self.xas_vict.SetSelection(getattr(lgroup, 'nvict', 1))
+        self.xas_nnor.SetSelection(getattr(lgroup, 'nnorm', 2))
+
     def CreateXASPanel(self, parent):
         p = panel = wx.Panel(parent)
         self.xas_autoe0   = Check(panel, default=True, label='auto?')
+        self.xas_showe0   = Check(panel, default=True, label='show?')
         self.xas_autostep = Check(panel, default=True, label='auto?')
         self.xas_op       = Choice(panel, size=(225, -1),
-                                       choices=('Raw Data', 'Pre-edged',
-                                                'Normalized', 'Flattened',
-                                                'Raw Data with Pre-edge Curve'))
-        self.xas_e0   = FloatCtrl(panel, value  = 0, precision=3, size=(95, -1))
-        self.xas_step = FloatCtrl(panel, value  = 0, precision=3, size=(95, -1))
-        self.xas_pre1 = FloatCtrl(panel, value=-200, precision=1, size=(95, -1))
-        self.xas_pre2 = FloatCtrl(panel, value= -30, precision=1, size=(95, -1))
-        self.xas_nor1 = FloatCtrl(panel, value=  30, precision=1, size=(95, -1))
-        self.xas_nor2 = FloatCtrl(panel, value= 300, precision=1, size=(95, -1))
-        self.xas_vict = Choice(panel, size=(50, -1), choices=('0', '1', '2', '3'))
-        self.xas_nnor = Choice(panel, size=(50, -1), choices=('0', '1', '2', '3'))
+                                       choices=('Raw Data', 'Normalized',
+                                                'Pre-edge subtracted',
+                                   'Raw Data With Pre-edge/Post-edge Curves'),
+                                   action=self.onXASChoice)
+        opts = {'size': (95, -1), 'precision': 3} # , 'action': self.onXASChoice}
+        self.xas_e0   = FloatCtrl(panel, value  = 0, **opts)
+        self.xas_step = FloatCtrl(panel, value  = 0, **opts)
+        opts['precision'] = 1
+        self.xas_pre1 = FloatCtrl(panel, value=-200, **opts)
+        self.xas_pre2 = FloatCtrl(panel, value= -30, **opts)
+        self.xas_nor1 = FloatCtrl(panel, value=  50, **opts)
+        self.xas_nor2 = FloatCtrl(panel, value= -50, **opts)
+        opts = {'size': (50, -1), 'choices': ('0', '1', '2', '3'),
+               'action': self.onXASChoice}
+        self.xas_vict = Choice(panel, **opts)
+        self.xas_nnor = Choice(panel, **opts)
         self.xas_vict.SetSelection(1)
         self.xas_nnor.SetSelection(2)
         sizer = wx.GridBagSizer(10, 4)
@@ -247,6 +268,7 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(self.xas_nor2,               (4, 3), (1, 1), LCEN)
 
         sizer.Add(self.xas_autoe0,             (1, 2), (1, 2), LCEN)
+        sizer.Add(self.xas_showe0,             (1, 4), (1, 2), LCEN)
         sizer.Add(self.xas_autostep,           (2, 2), (1, 2), LCEN)
 
         sizer.Add(SimpleText(p, 'Victoreen:'), (3, 4), (1, 1), LCEN)
@@ -297,30 +319,32 @@ class ScanViewerFrame(wx.Frame):
         text = fit_report(pgroup.params, _larch=self.larch)
         self.fit_report.SetLabel(dtext)
 
-    def xas_process(self, gname, plotopts):
+    def xas_process(self, gname, new_mu=False, **kws):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
         """
-        print( 'In Process XAS ', gname)
         out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
 
-        preopts = {'group': gname, 'e0': None, 'step': None}
+        preopts = {'group': gname, 'e0': None}
 
         lgroup = getattr(self.larch.symtable, gname)
-        print 'Group ', gname
-        # print dir(lgroup)
-
         dtcorr = self.dtcorr.IsChecked()
-        preopts['step']  = self.xas_step.GetValue()
-        preopts['e0']    = self.xas_e0.GetValue()
-        if not self.xas_autoe0.IsChecked():
-            xmin, xmax = min(lgroup._x1_),  max(lgroup._x1_)
+        if new_mu:
+            try:
+                del lgroup.e0, lgroup.edge_step
+            except:
+                pass
+
+        if not hasattr(lgroup, 'e0'):
+            preopts['e0'] = None
+        else:
             e0 = self.xas_e0.GetValue()
-            if e0 < xmax and e0 > xmin:
+            if e0 < max(lgroup._xdat_) and e0 > min(lgroup._xdat_):
                 preopts['e0'] = e0
 
-        # print 'E0 OUT ', preopts['e0']
-        if not self.xas_autostep.IsChecked():
+        if not hasattr(lgroup, 'edge_step'):
+            preopts['step'] = None
+        else:
             preopts['step'] = self.xas_step.GetValue()
 
         preopts['pre1']  = self.xas_pre1.GetValue()
@@ -330,23 +354,41 @@ class ScanViewerFrame(wx.Frame):
 
         preopts['nvict'] = self.xas_vict.GetSelection()
         preopts['nnorm'] = self.xas_nnor.GetSelection()
-
+        preopts['group'] = gname
         preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
-        preedge_cmd = "pre_edge(%s, %s)" % (gname, preopts)
-        self.larch(preedge_cmd)
-        # print dir(lgroup)
+        preedge_cmd = "pre_edge(%s._xdat_, %s._ydat_, %s)"
+        self.larch(preedge_cmd % (gname, gname, preopts))
 
         self.xas_e0.SetValue(lgroup.e0)
         self.xas_step.SetValue(lgroup.edge_step)
+        self.xas_pre1.SetValue(lgroup.pre1)
+        self.xas_nor2.SetValue(lgroup.norm2)
 
-        if out.startswith('pre'):
-            self.larch('%s._y1_ = %s.norm * %s.edge_step' % (gname, gname, gname))
+        popts1 = dict(color='blue', style='solid', linewidth=3,
+                      marker='None', markersize=4)
+        popts2 = dict(color='red', style='short dashed', linewidth=2,
+                      marker='None', markersize=4)
+
+        lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
+        if out.startswith('raw data with'):
+            lgroup.plot_yarrays = [(lgroup.pre_edge,  popts2, 'pre edge'),
+                                   (lgroup.post_edge, popts2, 'post edge'),
+                                   (lgroup._ydat_,    popts1, lgroup.plot_ylabel)]
+        elif out.startswith('pre'):
+            self.larch('%s.pre_edge_sub = %s.norm * %s.edge_step' %
+                       (gname, gname, gname))
+            lgroup.plot_yarrays = [(lgroup.pre_edge_sub, popts1,
+                                    'pre edge subtracted XAFS')]
         elif out.startswith('norm'):
-            self.larch('%s._y1_ = %s.norm' % (gname, gname))
-        elif out.startswith('flat'):
-            self.larch('%s._y1_ = %s.flat' % (gname, gname))
+            lgroup.plot_yarrays = [(lgroup.norm, popts1, 'normalized XAFS')]
+            lgroup.plot_ylabel = "%s (normalized) " % lgroup.plot_ylabel
 
-        return plotopts
+        lgroup.plot_ymarkers = []
+        if self.xas_showe0.IsChecked():
+            y4e0 = lgroup.plot_yarrays[-1][0]
+            ie0 = index_of(lgroup._xdat_, lgroup.e0)
+            lgroup.plot_ymarkers = [(lgroup.e0, y4e0[ie0], {'label': 'e0'})]
+        return
 
     def init_larch(self):
         t0 = time.time()
@@ -368,9 +410,15 @@ class ScanViewerFrame(wx.Frame):
             return group.get_data(arrayname, correct=correct)
         return getattr(group, arrayname, None)
 
+    def onXASChoice(self, evt=None, **kws):
+        if self.groupname is None:
+            return
+        self.xas_process(self.groupname, **kws)
+        self.onPlot(opt='new')
+
     def onColumnChoices(self, evt=None):
         """column selections changed ..
-        recalculate _xplot_ and _yplot_
+        recalculate _xdat_ and _ydat_
         arrays for this larch group"""
 
         dtcorr = self.dtcorr.IsChecked()
@@ -435,23 +483,25 @@ class ScanViewerFrame(wx.Frame):
         lgroup._y1 = y1
         lgroup._y2 = y2
         lgroup._y3 = y3
-        self.larch("%s._xplot_ = %s(%s._x)" % (gname, xop, gname))
-        self.larch("%s._yplot_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
+        self.larch("%s._xdat_ = %s(%s._x)" % (gname, xop, gname))
+        self.larch("%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
                    (gname, op1, gname, op2, gname, op3, gname))
 
         try:
-            npts = min(len(lgroup._xplot_), len(lgroup._yplot_))
+            npts = min(len(lgroup._xdat_), len(lgroup._ydat_))
         except AttributeError:
-            print( 'npts borked ')
+            print( 'Erro calculating arrays (npts not correct)')
             return
+
+        del lgroup._x, lgroup._y1, lgroup._y2, lgroup._y3
 
         lgroup.plot_xlabel = xlabel
         lgroup.plot_ylabel = ylabel
-        lgroup._xplot_ = np.array( lgroup._xplot_[:npts])
-        lgroup._yplot_ = np.array( lgroup._yplot_[:npts])
+        lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
+        lgroup._ydat_ = np.array( lgroup._ydat_[:npts])
+        if (self.nb.GetCurrentPage() == self.xas_panel):
+            self.xas_process(self.groupname, new_mu=True)
 
-        # if (self.nb.GetCurrentPage() == self.xas_panel):
-        #    popts = self.xas_process(self.groupname, {})
         self.onPlot()
 
     def onPlot(self, evt=None, opt='new', npts=None):
@@ -488,8 +538,12 @@ class ScanViewerFrame(wx.Frame):
             lgroup = getattr(self.larch.symtable, gname)
             return
 
-        lgroup._xplot_ = np.array( lgroup._xplot_[:npts])
-        lgroup._yplot_ = np.array( lgroup._yplot_[:npts])
+        lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
+        plot_yarrays = [(lgroup._ydat_, {}, None)]
+        if hasattr(lgroup, 'plot_yarrays'):
+            plot_yarrays = lgroup.plot_yarrays
+        #for yarr in plot_yarrays:
+        #    yarr = np.array(yarr[:npts])
 
         path, fname = os.path.split(lgroup.filename)
         popts['label'] = "%s: %s" % (fname, lgroup.plot_ylabel)
@@ -504,16 +558,27 @@ class ScanViewerFrame(wx.Frame):
         if update:
             self.plotpanel.set_xlabel(lgroup.plot_xlabel)
             self.plotpanel.set_ylabel(lgroup.plot_ylabel)
-
-            plotcmd(0, lgroup._xplot_, lgroup._yplot_, draw=True,
-                        update_limits=True) # ((npts < 5) or (npts % 5 == 0)))
-
-            self.plotpanel.set_xylims((
-                min(lgroup._xplot_), max(lgroup._xplot_),
-                min(lgroup._yplot_), max(lgroup._yplot_)))
+            for itrace, yarr, label in enumerate(plot_yarrays):
+                plotcmd(itrace, lgroup._xdat_, yarr[0], draw=True,
+                        update_limits=((npts < 5) or (npts % 5 == 0)),
+                        **yarr[1])
+                self.plotpanel.set_xylims((
+                    min(lgroup._xdat_), max(lgroup._xdat_),
+                    min(yarr), max(yarr)))
 
         else:
-            plotcmd(lgroup._xplot_, lgroup._yplot_, **popts)
+            for yarr in plot_yarrays:
+                popts.update(yarr[1])
+                if yarr[2] is not None:
+                    popts['label'] = yarr[2]
+                print 'PLOT ', popts
+                plotcmd(lgroup._xdat_, yarr[0], **popts)
+                plotcmd = self.plotpanel.oplot
+            if hasattr(lgroup, 'plot_ymarkers'):
+                for x, y, opts in lgroup.plot_ymarkers:
+                    popts = {'marker': 'o', 'markersize': 4, 'color': 'black'}
+                    popts.update(opts)
+                    self.plotpanel.oplot([x], [y], **popts)
             self.plotpanel.canvas.draw()
 
     def ShowFile(self, evt=None, filename=None, **kws):
@@ -569,6 +634,8 @@ class ScanViewerFrame(wx.Frame):
             if 'energ' in colname.lower():
                 inb = 1
         self.nb.SetSelection(inb)
+        if inb == 1:
+            self.InitializeXASPanel()
 
     def createMenus(self):
         # ppnl = self.plotpanel
