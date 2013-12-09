@@ -218,7 +218,7 @@ class ScanViewerFrame(wx.Frame):
         self.xas_e0.SetValue(getattr(lgroup, 'e0', 0))
         self.xas_step.SetValue(getattr(lgroup, 'edge_step', 0))
         self.xas_pre1.SetValue(getattr(lgroup, 'pre1',   -200))
-        self.xas_pre2.SetValue(getattr(lgroup, 'pre1',   -30))
+        self.xas_pre2.SetValue(getattr(lgroup, 'pre2',   -30))
         self.xas_nor1.SetValue(getattr(lgroup, 'norm1',  50))
         self.xas_nor2.SetValue(getattr(lgroup, 'norm2', -50))
 
@@ -299,8 +299,8 @@ class ScanViewerFrame(wx.Frame):
         if model in ('step', 'rectangle'):
             dtext.append('Step form: %s' % step)
         lgroup =  getattr(self.larch.symtable, gname)
-        x = lgroup._x1_
-        y = lgroup._y1_
+        x = lgroup._xdat_
+        y = lgroup._ydat_
         pgroup = fit_peak(x, y, model, background=bkg, step=step,
                           _larch=self.larch)
         text = fit_report(pgroup.params, _larch=self.larch)
@@ -318,6 +318,22 @@ class ScanViewerFrame(wx.Frame):
         # plotframe.oplot(x, pgroup.fit, label='fit (%s)' % model)
         text = fit_report(pgroup.params, _larch=self.larch)
         self.fit_report.SetLabel(dtext)
+
+        popts1 = dict(style='solid', linewidth=3,
+                      marker='None', markersize=4)
+        popts2 = dict(style='short dashed', linewidth=2,
+                      marker='None', markersize=4)
+
+        lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
+        if bkg is None:
+            lgroup._fit = pgroup.fit[:]
+            lgroup.plot_yarrays.append((lgroup._fit, popts2, 'fit'))
+        else:
+            lgroup._fit = pgroup.fit[:] - pgroup.bkg[:]
+            lgroup._fit_bgr = pgroup.bkg[:]
+            lgroup.plot_yarrays.append((lgroup._fit, popts2, 'fit'))
+            lgroup.plot_yarrays.append((lgroup._fit_bgr, popts2, 'background'))
+        self.onPlot(opt='new')
 
     def xas_process(self, gname, new_mu=False, **kws):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
@@ -364,9 +380,9 @@ class ScanViewerFrame(wx.Frame):
         self.xas_pre1.SetValue(lgroup.pre1)
         self.xas_nor2.SetValue(lgroup.norm2)
 
-        popts1 = dict(color='blue', style='solid', linewidth=3,
+        popts1 = dict(style='solid', linewidth=3,
                       marker='None', markersize=4)
-        popts2 = dict(color='red', style='short dashed', linewidth=2,
+        popts2 = dict(style='short dashed', linewidth=2,
                       marker='None', markersize=4)
 
         lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
@@ -381,7 +397,6 @@ class ScanViewerFrame(wx.Frame):
                                     'pre edge subtracted XAFS')]
         elif out.startswith('norm'):
             lgroup.plot_yarrays = [(lgroup.norm, popts1, 'normalized XAFS')]
-            lgroup.plot_ylabel = "%s (normalized) " % lgroup.plot_ylabel
 
         lgroup.plot_ymarkers = []
         if self.xas_showe0.IsChecked():
@@ -439,9 +454,6 @@ class ScanViewerFrame(wx.Frame):
             gname = SCANGROUP
             lgroup = getattr(self.larch.symtable, gname)
 
-        xfmt = "%s._x1_ = %s(%s)"
-        yfmt = "%s._y1_ = %s((%s %s %s) %s (%s))"
-
         xlabel = x
         try:
             xunits = lgroup.array_units[ix]
@@ -454,27 +466,27 @@ class ScanViewerFrame(wx.Frame):
 
         ylabel = y1
         if y2 == '':
-            y2, op2 = '1', '*'
+            y2, op2 = '1.0', '*'
         else:
             ylabel = "%s%s%s" % (ylabel, op2, y2)
         if y3 == '':
-            y3, op3 = '1', '*'
+            y3, op3 = '1.0', '*'
         else:
             ylabel = "(%s)%s%s" % (ylabel, op3, y3)
 
         if op1 != '':
             ylabel = "%s(%s)" % (op1, ylabel)
 
-        if y1 in ('0', '1'):
-            y1 = int(yl1)
+        if y1 in ('0.0', '1.0'):
+            y1 = float(yl1)
         else:
             y1 = self.get_data(lgroup, y1, correct=dtcorr)
-        if y2 in ('0', '1'):
-            y2 = int(y2)
+        if y2 in ('0.0', '1.0'):
+            y2 = float(y2)
         else:
             y2 = self.get_data(lgroup, y2, correct=dtcorr)
-        if y3 in ('0', '1'):
-            y3 = int(y3)
+        if y3 in ('0.0', '1.0'):
+            y3 = float(y3)
         else:
             y3 = self.get_data(lgroup, y3, correct=dtcorr)
         if x not in ('0', '1'):
@@ -571,12 +583,11 @@ class ScanViewerFrame(wx.Frame):
                 popts.update(yarr[1])
                 if yarr[2] is not None:
                     popts['label'] = yarr[2]
-                print 'PLOT ', popts
                 plotcmd(lgroup._xdat_, yarr[0], **popts)
                 plotcmd = self.plotpanel.oplot
             if hasattr(lgroup, 'plot_ymarkers'):
                 for x, y, opts in lgroup.plot_ymarkers:
-                    popts = {'marker': 'o', 'markersize': 4, 'color': 'black'}
+                    popts = {'marker': 'o', 'markersize': 4}
                     popts.update(opts)
                     self.plotpanel.oplot([x], [y], **popts)
             self.plotpanel.canvas.draw()
@@ -625,9 +636,11 @@ class ScanViewerFrame(wx.Frame):
         for j in range(3):
             if j == 0:
                 self.yarr[j].SetItems(ycols)
+                if ycols[0] == _xarr and len(ycols)> 1:
+                    self.yarr[j].SetStringSelection(ycols[1])
             else:
                 self.yarr[j].SetItems(y2cols)
-            self.yarr[j].SetStringSelection(_yarr[j])
+                self.yarr[j].SetStringSelection(_yarr[j])
 
         inb = 0
         for colname in xcols:
