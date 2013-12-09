@@ -191,7 +191,7 @@ class ScanViewerFrame(wx.Frame):
                                                'Step', 'Rectangle',
                                                'Exponential'))
         self.fit_bkg = Choice(panel, size=(100, -1),
-                                  choices=('None', 'constant', 'linear', 'quadtratic'))
+                                  choices=('None', 'constant', 'linear', 'quadratic'))
         self.fit_step = Choice(panel, size=(100, -1),
                                   choices=('linear', 'error function', 'arctan'))
 
@@ -329,11 +329,11 @@ class ScanViewerFrame(wx.Frame):
             lgroup._fit = pgroup.fit[:]
             lgroup.plot_yarrays.append((lgroup._fit, popts2, 'fit'))
         else:
-            lgroup._fit = pgroup.fit[:] - pgroup.bkg[:]
+            lgroup._fit     = pgroup.fit[:]
             lgroup._fit_bgr = pgroup.bkg[:]
-            lgroup.plot_yarrays.append((lgroup._fit, popts2, 'fit'))
+            lgroup.plot_yarrays.append((lgroup._fit,     popts2, 'fit'))
             lgroup.plot_yarrays.append((lgroup._fit_bgr, popts2, 'background'))
-        self.onPlot(opt='new')
+        self.onPlot(opt='new', use_plot_yarrays=True)
 
     def xas_process(self, gname, new_mu=False, **kws):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
@@ -429,7 +429,7 @@ class ScanViewerFrame(wx.Frame):
         if self.groupname is None:
             return
         self.xas_process(self.groupname, **kws)
-        self.onPlot(opt='new')
+        self.onPlot(opt='new', use_plot_yarrays=True)
 
     def onColumnChoices(self, evt=None):
         """column selections changed ..
@@ -516,12 +516,14 @@ class ScanViewerFrame(wx.Frame):
 
         self.onPlot()
 
-    def onPlot(self, evt=None, opt='new', npts=None):
+    def onPlot(self, evt=None, opt='new', npts=None,
+               use_plot_yarrays=False):
         # 'new', 'New Window'),
         # 'left', 'Left Axis'),
         # 'right', 'Right Axis')):
         # 'update',  from scan
 
+           
         try:
             self.plotframe.Show()
         except: #  wx.PyDeadObjectError
@@ -550,9 +552,13 @@ class ScanViewerFrame(wx.Frame):
             lgroup = getattr(self.larch.symtable, gname)
             return
 
+        if not hasattr(lgroup, '_xdat_'):
+            self.onColumnChoices()
+
         lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
         plot_yarrays = [(lgroup._ydat_, {}, None)]
-        if hasattr(lgroup, 'plot_yarrays'):
+
+        if use_plot_yarrays and hasattr(lgroup, 'plot_yarrays'):
             plot_yarrays = lgroup.plot_yarrays
         #for yarr in plot_yarrays:
         #    yarr = np.array(yarr[:npts])
