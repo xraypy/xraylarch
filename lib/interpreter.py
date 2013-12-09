@@ -21,6 +21,11 @@ from .larchlib import LarchExceptionHolder, Procedure, ReturnedNone
 from .fitting  import isParameter
 from .utils import Closure
 
+UNSAFE_ATTRS = ('__subclasses__', '__bases__', '__code__',
+                '__closure__', '__globals__', 'func_code',
+                'func_closure', 'func_globals',
+                'im_class', 'im_func', '__func__')
+
 OPERATORS = {
     ast.Add:    lambda a, b: b.__radd__(a) if isParameter(b) else a + b,
     ast.Sub:    lambda a, b: b.__rsub__(a) if isParameter(b) else a - b,
@@ -107,7 +112,7 @@ class Interpreter:
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
 
-        for sym in builtins.from_builtin: 
+        for sym in builtins.from_builtin:
             setattr(builtingroup, sym, __builtins__[sym])
 
         for sym in builtins.from_numpy:
@@ -423,7 +428,7 @@ class Interpreter:
             return delattr(sym, node.attr)
 
         sym = self.run(node.value)
-        if hasattr(sym, node.attr):
+        if hasattr(sym, node.attr) and node.attr not in UNSAFE_ATTRS:
             return getattr(sym, node.attr)
         else:
             obj = self.run(node.value)
