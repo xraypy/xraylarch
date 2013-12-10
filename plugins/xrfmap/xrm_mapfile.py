@@ -54,7 +54,7 @@ def getFileStatus(filename, root=None, folder=None):
     ##
     def test_h5group(group, folder=None):
         valid = ('det1' in group and 'roimap' in group)
-        for attr in  ('Type', 'Version', 'Map_Folder',
+        for attr in  ('Version', 'Map_Folder',
                       'Dimension', 'Start_Time'):
             valid = valid and attr in group.attrs
         if not valid:
@@ -321,6 +321,7 @@ class GSEXRM_MapFile(object):
         if self.filename is not None:
             self.status, self.root, self.version = \
                          getFileStatus(self.filename, root=root)
+            
         elif isGSEXRM_MapFolder(self.folder):
             self.read_master()
             if self.filename is None:
