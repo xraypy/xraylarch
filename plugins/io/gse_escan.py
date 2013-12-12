@@ -512,6 +512,8 @@ class EscanData:
         self.dt_factor = None
         if len(icr)>0 and len(ocr)==len(icr):
             self.dt_factor  = numpy.array(icr)/numpy.array(ocr)
+            self.dt_factor[numpy.where(numpy.isnan(self.dt_factor))] = 1.0
+
             n_icr     = self.dt_factor.shape[0]
             self.det  = self.det[0:-2*n_icr]
             self.sums = self.sums[0:-2*n_icr]
