@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.20 documentation</title>
+    <title>Tutorial: Conditional Execution and Flow Control &mdash; larch 0.9.21 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.20',
+        VERSION:     '0.9.21',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.20 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
     <link rel="up" title="Larch Tutorial" href="index.html" />
     <link rel="next" title="Tutorial: Dealing With Errors" href="errors.html" />
     <link rel="prev" title="Tutorial: Basic Array Manipulation" href="arrays.html" /> 
@@ -394,7 +394,7 @@ larch&gt; for a, sval, cval in zip(a, sin(a), cos(a)):
 <p>will print a table of sine and cosine values.</p>
 <p>A final utility of note for loops is <a class="reference internal" href="builtins.html#enumerate" title="enumerate"><tt class="xref py py-func docutils literal"><span class="pre">enumerate()</span></tt></a> which will return a
 tuple of (index, value) for a sequence.   That is:</p>
-<div class="highlight-python"><pre>larch&gt; for i, a in ('a', b', 'c'):
+<div class="highlight-python"><pre>larch&gt; for i, a in enumerate('a', b', 'c'):
 .....&gt;     print i, a
 .....&gt; endfor</pre>
 </div>
@@ -445,7 +445,7 @@ while loop increases a counter at each iteration:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">counter</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="k">while</span> <span class="n">counter</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
    <span class="n">do_something</span><span class="p">(</span><span class="n">counter</span><span class="p">)</span>
-   <span class="n">counter</span> <span class="o">=+</span> <span class="mi">1</span>
+   <span class="n">counter</span> <span class="o">=</span> <span class="n">counter</span> <span class="o">+</span> <span class="mi">1</span>
 <span class="n">endwhile</span>
 </pre></div>
 </div>

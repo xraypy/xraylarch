@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Basic and Complex Data Types &mdash; larch 0.9.20 documentation</title>
+    <title>Tutorial: Basic and Complex Data Types &mdash; larch 0.9.21 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.20',
+        VERSION:     '0.9.21',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.20 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
     <link rel="up" title="Larch Tutorial" href="index.html" />
     <link rel="next" title="Tutorial: Basic Array Manipulation" href="arrays.html" />
     <link rel="prev" title="Tutorial: Getting Started" href="start.html" /> 
@@ -314,12 +314,15 @@ interesting data types, or you can look into Python documentation.</p>
 </div>
 <div class="section" id="groups">
 <h3>Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h3>
-<p>In addition to using basic Python objects, Larch organizes data into
-Groups.  A Group is simply a named container for variables of any kind,
-including other Groups.  In this way, Groups have a heirarchical structure,
+<p>While all values in Larch are Python objects, Larch organizes data into
+Groups, which are a key concept to Larch.  A Group is simply a named
+container for variables of any kind, including other Groups.  As Larch
+doesn&#8217;t directly provide a way to definie your own objects, a Group is the
+way to organize your data in Larch.  The organization of data with nested
+Groups provides a heirarchical structure to all data in a Larch session,
 much like a directory of files.  Each Larch variable belongs to a Group,
-and can be accessed by its full Group name.  The top-level Group is called
-&#8216;_main&#8217;.  You&#8217;ll rarely need to use that, but it&#8217;s there:</p>
+and can always be accessed by its full Group name.  The top-level Group is
+called &#8216;_main&#8217;.  You&#8217;ll rarely need to use that fact, but it&#8217;s there:</p>
 <div class="highlight-python"><pre>larch&gt; myvar = 22.13
 larch&gt; print _main.myvar
 22.13
@@ -330,24 +333,25 @@ larch&gt; print myvar
 <a class="reference internal" href="builtins.html#group" title="group"><tt class="xref py py-meth docutils literal"><span class="pre">group()</span></tt></a> function:</p>
 <div class="highlight-python"><pre>larch&gt; g = group()
 larch&gt; g
-&lt;Group&gt;</pre>
+&lt;Group 0x17ee50f0&gt;</pre>
 </div>
 <p>You can add variables to your Group &#8216;g&#8217;, using the &#8216;.&#8217; (dot) to separate
 the parent group from the child object:</p>
 <div class="highlight-python"><pre>larch&gt; g.x = 1002.8
-larch&gt; g.name = 'here is a string'
+larch&gt; g.label = 'here is a string'
 larch&gt; g.data = arange(100)
 larch&gt; print g.x/5
 200.56</pre>
 </div>
 <p>(<tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt> is a builtin function to create an array of numbers).  As
 from the above discussion of objects, the &#8216;.&#8217; (dot) notation implies that
-&#8216;x&#8217;, &#8216;name&#8217;, and &#8216;data&#8217; are attributes of &#8216;g&#8217; &#8211; that&#8217;s entirely correct.
-Groups have no other properties than the data attributes (and functions)
-you add to them.  Since they&#8217;re objects, you can use the <a class="reference internal" href="builtins.html#dir" title="dir"><tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt></a>
-function as above:</p>
+&#8216;x&#8217;, &#8216;label&#8217;, and &#8216;data&#8217; are attributes of &#8216;g&#8217; &#8211; that&#8217;s entirely correct.</p>
+<p>Groups have 1 builtin property &#8211; <tt class="docutils literal"><span class="pre">__name__</span></tt> which holds a name for the
+Group. If not specified, it will be set to a hexidecimal value.  Groups
+have no other builtin properties or methods.  Since they&#8217;re objects, you
+can use the <a class="reference internal" href="builtins.html#dir" title="dir"><tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt></a> function as above:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
-<span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>(Note that the order shown may vary).  You can also use the builtin
@@ -359,7 +363,7 @@ contents:</p>
   name: 'here is a string'
   x: 1002.8</pre>
 </div>
-<p>(The <strong>&#8216;0x1b8cbfb0&#8217;</strong> is discussed in more detail below in
+<p>(The &#8216;0x1b8cbfb0&#8217; is the default name, discussed in more detail below in
 <a class="reference internal" href="#tutor-objectids-sec"><em>Object identities, copying, and equality vs. identity</em></a>).  The <a class="reference internal" href="builtins.html#group" title="group"><tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt></a> function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call:</p>

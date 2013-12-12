@@ -208,12 +208,15 @@ interesting data types, or you can look into Python documentation.
 Groups
 ~~~~~~~~~~
 
-In addition to using basic Python objects, Larch organizes data into
-Groups.  A Group is simply a named container for variables of any kind,
-including other Groups.  In this way, Groups have a heirarchical structure,
+While all values in Larch are Python objects, Larch organizes data into
+Groups, which are a key concept to Larch.  A Group is simply a named
+container for variables of any kind, including other Groups.  As Larch
+doesn't directly provide a way to definie your own objects, a Group is the
+way to organize your data in Larch.  The organization of data with nested
+Groups provides a heirarchical structure to all data in a Larch session,
 much like a directory of files.  Each Larch variable belongs to a Group,
-and can be accessed by its full Group name.  The top-level Group is called
-'_main'.  You'll rarely need to use that, but it's there::
+and can always be accessed by its full Group name.  The top-level Group is
+called '_main'.  You'll rarely need to use that fact, but it's there::
 
    larch> myvar = 22.13
    larch> print _main.myvar
@@ -226,26 +229,28 @@ You can create your own groups and add data to it with the builtin
 
     larch> g = group()
     larch> g
-    <Group>
+    <Group 0x17ee50f0>
 
 You can add variables to your Group 'g', using the '.' (dot) to separate
 the parent group from the child object::
 
     larch> g.x = 1002.8
-    larch> g.name = 'here is a string'
+    larch> g.label = 'here is a string'
     larch> g.data = arange(100)
     larch> print g.x/5
     200.56
 
 (:func:`arange` is a builtin function to create an array of numbers).  As
 from the above discussion of objects, the '.' (dot) notation implies that
-'x', 'name', and 'data' are attributes of 'g' -- that's entirely correct.
-Groups have no other properties than the data attributes (and functions)
-you add to them.  Since they're objects, you can use the :func:`dir`
-function as above::
+'x', 'label', and 'data' are attributes of 'g' -- that's entirely correct.
+
+Groups have 1 builtin property -- ``__name__`` which holds a name for the
+Group. If not specified, it will be set to a hexidecimal value.  Groups
+have no other builtin properties or methods.  Since they're objects, you
+can use the :func:`dir` function as above::
 
     larch> dir(g)
-    ['data', 'name', 'x']
+    ['data', 'label', 'x']
 
 (Note that the order shown may vary).  You can also use the builtin
 :func:`show` function to get a slightly more complete view of the group's
@@ -257,7 +262,7 @@ contents::
       name: 'here is a string'
       x: 1002.8
 
-(The **'0x1b8cbfb0'** is discussed in more detail below in
+(The '0x1b8cbfb0' is the default name, discussed in more detail below in
 :ref:`tutor-objectids_sec`).  The :func:`group` function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call::

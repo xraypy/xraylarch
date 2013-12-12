@@ -1,0 +1,449 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Simplified Peak Fitting with fit_peak() &mdash; larch 0.9.21 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.21',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
+    <link rel="up" title="Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
+    <link rel="prev" title="Fit Examples" href="examples.html" /> 
+  </head>
+  <body>
+<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
+<table><tr><td width=0></td>
+  <td width=25% padding=0>
+    <a href="../index.html">
+       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
+    </a>
+  </td><td width=75% padding=0>
+      <font size=+4><a href="../index.html" style="color: #772211">
+          Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="confidence.html" title="Advanced Confidence Intervals and Chi-square maps"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="Fit Examples"
+             accesskey="P">previous</a> |</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
+   <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="index.html">fit</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
+   <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
+
+          <li><a href="index.html" accesskey="U">Fitting and Modeling Data</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a><ul>
+<li><a class="reference internal" href="#example-fitting-a-gaussian-background-with-fit-peak">Example: Fitting a Gaussian + background with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></li>
+<li><a class="reference internal" href="#example-fitting-a-rectangular-function-with-fit-peak">Example: Fitting a Rectangular function with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="previous chapter">Fit Examples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="confidence.html"
+                        title="next chapter">Advanced Confidence Intervals and Chi-square maps</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/fitting/fitpeaks.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-_math">
+<span id="simplified-peak-fitting-with-fit-peak"></span><h1>Simplified Peak Fitting with <tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt><a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
+<p>As shown in the previous sections, it is pretty simple to use Larch&#8217;s
+fitting mechanism to set up and perform fits to data.  In fact, it is
+pretty commom to need to fit data to simple line-shapes, as when setting up
+an experiment.  In an effort to make life easier, in addition to providing
+a fairly easy general-purpose fitting function, Larch provides a
+<a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a> function to fit one dimensional data to one of several
+lineshapes.</p>
+<dl class="function">
+<dt id="_math.fit_peak">
+<tt class="descclassname">_math.</tt><tt class="descname">fit_peak</tt><big>(</big><em>x</em>, <em>y</em>, <em>model</em>, <em>dy=None</em>, <em>background=None</em>, <em>step=None</em>, <em>negative=False</em>, <em>use_gamma=False</em><big>)</big><a class="headerlink" href="#_math.fit_peak" title="Permalink to this definition">¶</a></dt>
+<dd><p>fit the data y at points x with a function described by model,
+optionally including uncertainties in y, a background polynomial, and a
+choice of step functions.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>x</strong> &#8211; array of values at which to calculate model</li>
+<li><strong>y</strong> &#8211; array of values for model to try to match</li>
+<li><strong>model</strong> &#8211; name of model for functional form to use.  See
+<a class="reference internal" href="#fit-peak-models-table"><em>Table of fit_peak models</em></a>.</li>
+<li><strong>dy</strong> &#8211; optional array of values for uncertainty in y data to be matched.</li>
+<li><strong>background</strong> &#8211; name of background model to use. One of (case insensitive)
+None (no background), &#8216;constant&#8217;, &#8216;linear&#8217;, or &#8216;quadratic&#8217;.
+This is ignored when model is &#8216;linear&#8217; or &#8216;quadratic&#8217;</li>
+<li><strong>step</strong> &#8211; name of step model to use for &#8216;step&#8217; and &#8216;rectangle&#8217; models.
+One of (case insensitive): &#8216;linear&#8217;, &#8216;erf&#8217;, or &#8216;atan&#8217;</li>
+<li><strong>negative</strong> &#8211; boolean for whether peak or steps are expected to
+go down (default <tt class="docutils literal"><span class="pre">False</span></tt>)</li>
+<li><strong>use_gamma</strong> &#8211; boolean for whether to use separate gamma parameter for
+&#8216;voigt&#8217; model (default <tt class="docutils literal"><span class="pre">False</span></tt>).</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a Group containing fit parameters, best-fit and
+background functions, as detailed in
+<a class="reference internal" href="#fit-peak-output-table"><em>Table of fit_peak group members</em></a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<blockquote id="fit-peak-models-table">
+<div><p>Table of <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a> models.</p>
+<blockquote>
+<div><p>The following functional models are supported for fitting with
+<a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="16%" />
+<col width="33%" />
+<col width="51%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">model</th>
+<th class="head">Description</th>
+<th class="head">parameter names</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>linear</td>
+<td><img class="math" src="../_images/math/536a3bcee68d746371a8631e091ea01c6dc19835.png" alt="y = mx + b"/></td>
+<td>offset, slope</td>
+</tr>
+<tr class="row-odd"><td>quadratic</td>
+<td><img class="math" src="../_images/math/2d56ecc86cc759be0119acdfd9ba5c14e2022155.png" alt="y = a + bx + cx^2"/></td>
+<td>offset, slope, quad</td>
+</tr>
+<tr class="row-even"><td>step</td>
+<td>step function</td>
+<td>height, center, width</td>
+</tr>
+<tr class="row-odd"><td>rectangle</td>
+<td>step up, step down</td>
+<td>height, center1, width1, center2, width2</td>
+</tr>
+<tr class="row-even"><td>exponential</td>
+<td><img class="math" src="../_images/math/a10a0d1d120c7346898134bfe1a3a29eb3dd1b69.png" alt="y = Ae^{-x/b}"/></td>
+<td>amplitude, decay</td>
+</tr>
+<tr class="row-odd"><td>gaussian</td>
+<td>Gaussian</td>
+<td>amplitude, center, sigma</td>
+</tr>
+<tr class="row-even"><td>lorentzian</td>
+<td>Lorenztian</td>
+<td>amplitude, center, sigma</td>
+</tr>
+<tr class="row-odd"><td>voigt</td>
+<td>Voigt (with gamma=sigma)</td>
+<td>amplitude, center, sigma</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<p>The <em>sigma</em> and <em>width</em> parameters will have a minimum value of 0.</p>
+<p>For all models except <em>linear</em> and <em>quadratic</em>, an optional background can
+be included, which (depending on the form chosen) will add parameters named
+<em>bkg_offset</em>, <em>bkg_slope</em>, and <em>bkg_quad</em>.</p>
+<blockquote id="fit-peak-output-table">
+<div><p>Table of members of group returned by <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a>.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="17%" />
+<col width="83%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">member</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>x</td>
+<td>copied from input x data</td>
+</tr>
+<tr class="row-odd"><td>y</td>
+<td>copied from input y data</td>
+</tr>
+<tr class="row-even"><td>model</td>
+<td>name of model used</td>
+</tr>
+<tr class="row-odd"><td>background</td>
+<td>name of background models used</td>
+</tr>
+<tr class="row-even"><td>step</td>
+<td>name of step model used</td>
+</tr>
+<tr class="row-odd"><td>params</td>
+<td>Group of fit parameters, as sent to and from <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a></td>
+</tr>
+<tr class="row-even"><td>fit</td>
+<td>final best fit to y data, including background if used.</td>
+</tr>
+<tr class="row-odd"><td>fit_init</td>
+<td>initial guess of fit to y data,  including background if used.</td>
+</tr>
+<tr class="row-even"><td>bkg</td>
+<td>final background function, if used.</td>
+</tr>
+<tr class="row-odd"><td>bkg_init</td>
+<td>initial background function, if used.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<div class="section" id="example-fitting-a-gaussian-background-with-fit-peak">
+<h2>Example: Fitting a Gaussian + background with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a><a class="headerlink" href="#example-fitting-a-gaussian-background-with-fit-peak" title="Permalink to this headline">¶</a></h2>
+<p>As in the <a class="reference internal" href="examples.html#fit-example1-sec"><em>Example in the previous section</em></a>, we
+make a simple mock data set and fit a Gaussian function to it. Here we also
+add a linear background, and do the whole fit with a single function,
+instead of a dozen or so lines of code used before:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example_fitpeak1.lar</span>
+<span class="c"># create mock data</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">51</span><span class="p">)</span>
+<span class="n">noise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="mf">8.0</span> <span class="o">-</span> <span class="n">x</span><span class="o">*</span><span class="mf">0.025</span> <span class="o">+</span> <span class="n">noise</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">89</span><span class="o">*</span><span class="n">voigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="mf">44.25</span><span class="p">,</span> <span class="mf">4.75</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">)</span>
+
+<span class="c"># fit to Gaussian with linear background</span>
+<span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s">&#39;gaussian&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit_init</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;init&#39;</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;best fit&#39;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+<span class="c">## end examples/fitting/doc_example_fitpeak1.lar</span>
+</pre></div>
+</div>
+<p>Here we first create mock data that&#8217;s fairly noisy, and ask it to be fit
+to Gaussian, including a linear background, with a single command.  We then
+plot the results and print the report of parameters.  Note that the fit is
+pretty good at finding the peak center and shape, even though the model is
+not strictly correct.</p>
+<p>The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt> will look like this:</p>
+<div class="highlight-python"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 51, 5, 46
+   nfev (func calls)   = 160
+   chi_square          =  0.741381
+   reduced chi_square  =  0.016117
+
+[[Variables]]
+   amplitude      =  110.316958 +/- 1.724332 (init=  35.002462)
+   bkg_offset     =  8.128759 +/- 0.038694 (init=  5.450067)
+   bkg_slope      = -0.026001 +/- 0.000614 (init=  0.000000)
+   center         =  44.303784 +/- 0.088638 (init=  44.000000)
+   sigma          =  4.173981 +/- 0.066834 (init=  15.000000)
+[[Constraint Expressions]]
+   fwhm           =  9.828974 +/- 0.157382 = '2.354820*sigma'
+
+[[Correlations]]     (unreported correlations are &lt;  0.300)
+   bkg_offset, bkg_slope = -0.834
+   amplitude, sigma     =  0.651
+   amplitude, bkg_offset = -0.412
+=======================================================</pre>
+</div>
+<p>And the plot of data and fit will look like this:</p>
+<blockquote id="fitting-fig9">
+<div><a class="reference external image-reference" href="../_images/fit_peakfit1.png"><img alt="../_images/fit_peakfit1.png" src="../_images/fit_peakfit1.png" style="width: 65%;" /></a>
+<p>Figure 9.  Simple fit to mock data using a Gaussian model and a linear
+background with the <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a> function.</p>
+</div></blockquote>
+<p>Although the fit is quite good, the model is probably imperfect, and using
+a Voigt function to fit to this data would give better results.  The main
+point here is not just that the fit is good, but that it was accomplished
+with a single line of code.</p>
+</div>
+<div class="section" id="example-fitting-a-rectangular-function-with-fit-peak">
+<h2>Example: Fitting a Rectangular function with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a><a class="headerlink" href="#example-fitting-a-rectangular-function-with-fit-peak" title="Permalink to this headline">¶</a></h2>
+<p>Here, we simulate data that might represent a line-up scan at a beamline.
+The fit is to a function that takes a step up and a step down.</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example_fitpeak2.lar</span>
+<span class="c"># create mock rectangular data</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">160</span><span class="p">,</span> <span class="mi">81</span><span class="p">)</span>
+<span class="n">noise</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">scale</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="mf">6.0</span> <span class="o">-</span> <span class="n">x</span><span class="o">*</span><span class="mf">0.001</span> <span class="o">+</span> <span class="n">noise</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="n">dx</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">sig</span> <span class="o">=</span> <span class="n">dx</span><span class="o">*</span><span class="mf">0.6</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">68</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">0</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="mf">1.2</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">60</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">1</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="mf">1.1</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">71</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">2</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">75</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">70</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">4</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">73</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">5</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">72</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">6</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="n">sig</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">71</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x0</span><span class="o">+</span><span class="mi">7</span><span class="o">*</span><span class="n">dx</span><span class="p">,</span>  <span class="mf">0.7</span><span class="o">*</span><span class="n">sig</span><span class="p">)</span>
+
+<span class="c"># fit to rectangle shape</span>
+<span class="n">myfit</span> <span class="o">=</span> <span class="n">fit_peak</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s">&#39;rectangle&#39;</span><span class="p">,</span> <span class="n">background</span><span class="o">=</span><span class="s">&#39;linear&#39;</span><span class="p">,</span> <span class="n">step</span><span class="o">=</span><span class="s">&#39;erf&#39;</span><span class="p">)</span>
+
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span>
+     <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plot</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">myfit</span><span class="o">.</span><span class="n">fit</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;best fit&#39;</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="n">fit_report</span><span class="p">(</span><span class="n">myfit</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">min_correl</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+
+<span class="c">## end examples/fitting/doc_example_fitpeak2.lar</span>
+</pre></div>
+</div>
+<p>Again, we first create mock data that&#8217;s fairly noisy.  The data is clearly
+not exactly rectangular, but we ask it to be fit to a rectangular function
+plus a linear background.  The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt>
+will look like this:</p>
+<div class="highlight-python"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+   Message from fit    = Fit succeeded.
+   npts, nvarys, nfree = 81, 7, 74
+   nfev (func calls)   = 99
+   chi_square          =  11.867568
+   reduced chi_square  =  0.160373
+
+[[Variables]]
+   bkg_offset     =  5.923729 +/- 0.152985 (init=  5.072026)
+   bkg_slope      = -0.000659 +/- 0.001301 (init=  0.000000)
+   center1        =  27.751278 +/- 0.392722 (init=  40.000000)
+   center2        =  83.203400 +/- 0.190616 (init=  120.000000)
+   height         =  10.224378 +/- 0.137845 (init=  12.021120)
+   width1         =  11.596238 +/- 0.698650 (init=  19.200000)
+   width2         =  4.262621 +/- 0.378333 (init=  19.200000)
+[[Constraint Expressions]]
+   midpoint       =  55.477339 +/- 0.207626 = '(center1+center2)/2.0'
+
+[[Correlations]]     (unreported correlations are &lt;  0.300)
+   bkg_offset, bkg_slope = -0.915
+   bkg_offset, height   = -0.654
+   bkg_offset, center1  =  0.542
+   height, width1       =  0.508
+   bkg_slope, center1   = -0.502
+   bkg_slope, height    =  0.500
+   bkg_offset, width1   = -0.403
+   bkg_slope, width1    =  0.345
+=======================================================</pre>
+</div>
+<blockquote id="fitting-fig10">
+<div><a class="reference external image-reference" href="../_images/fit_peakfit2.png"><img alt="../_images/fit_peakfit2.png" src="../_images/fit_peakfit2.png" style="width: 65%;" /></a>
+<p>Figure 10.  Simple fit to mock data to a rectangular function and a
+linear background using the <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a> function.</p>
+</div></blockquote>
+<p>Again, the principle point here is not how well the rectangular model
+matches the actual data here, but how simply one can model data to a
+selection of simple shapes.  Such fits can be very useful for preliminary
+data visualization and analysis. Of course, one should be cautious about
+treating the results of such an automated approach as a final and best
+analysis of any data.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="confidence.html" title="Advanced Confidence Intervals and Chi-square maps"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="Fit Examples"
+             >previous</a> |</li>
+   <li><a href="../contents.html">contents</a>|&nbsp;</li>
+   <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
+   <li><a href="../data/index.html">data</a>|&nbsp;</li>
+   <li><a href="../plotting/index.html">plot</a>|&nbsp;</li>
+   <li><a href="index.html">fit</a>|&nbsp;</li>
+   <li><a href="../xafs/index.html">XAFS</a>|&nbsp;</li>
+   <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
+   <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
+
+          <li><a href="index.html" >Fitting and Modeling Data</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright Matthew Newville, The University of Chicago, 2012.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+    </div>
+  </body>
+</html>

@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fit Examples &mdash; larch 0.9.20 documentation</title>
+    <title>Fit Examples &mdash; larch 0.9.21 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.20',
+        VERSION:     '0.9.21',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.20 documentation" href="../index.html" />
+    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
     <link rel="up" title="Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
     <link rel="prev" title="Some Builtin Line-shape Functions" href="lineshapes.html" /> 
@@ -85,7 +85,7 @@
                         title="previous chapter">Some Builtin Line-shape Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="fitpeaks.html"
-                        title="next chapter">Simplified Peak Fitting with <tt class="docutils literal docutils literal"><span class="pre">fit_peak()</span></tt></a></p>
+                        title="next chapter">Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/examples.txt"
@@ -520,12 +520,12 @@ these spectra into a single group:</p>
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">energy</span><span class="o">=</span><span class="n">d1</span><span class="o">.</span><span class="n">energy</span><span class="p">[</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">],</span> <span class="n">mu</span><span class="o">=</span><span class="n">d1</span><span class="o">.</span><span class="n">munorm</span><span class="p">[</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
 
-<span class="n">data</span><span class="o">.</span><span class="n">s1</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s1</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">s2</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s2</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s2</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">s3</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s3</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s3</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">s4</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s4</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s4</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">s5</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s5</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s5</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
-<span class="n">data</span><span class="o">.</span><span class="n">s6</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s6</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s6</span><span class="o">.</span><span class="n">munorm</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s1</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">s1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s1</span><span class="o">.</span><span class="n">munorm</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s2</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s2</span><span class="o">.</span><span class="n">munorm</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s3</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">s3</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s3</span><span class="o">.</span><span class="n">munorm</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s4</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">s4</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s4</span><span class="o">.</span><span class="n">munorm</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s5</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">s5</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s5</span><span class="o">.</span><span class="n">munorm</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
+<span class="n">data</span><span class="o">.</span><span class="n">s6</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">s6</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">s6</span><span class="o">.</span><span class="n">munorm</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">energy</span><span class="p">)</span>
 <span class="c">## end of examples/fitting/doc_example3/ReadData.lar</span>
 </pre></div>
 </div>
