@@ -60,6 +60,7 @@ class MapImageFrame(ImageFrame):
                             lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels, mode=mode,
                             output_title=output_title, **kws)
+
         self.panel.add_cursor_mode('prof', motion = self.prof_motion,
                                    leftdown = self.prof_leftdown,
                                    leftup   = self.prof_leftup)
@@ -113,11 +114,13 @@ class MapImageFrame(ImageFrame):
 
     def prof_leftdown(self, event=None):
         self.report_leftdown(event=event)
-        if event.inaxes:
+        if event.inaxes and len(self.map.shape) == 2:
             self.lastpoint = [None, None]
             self.zoom_ini = [event.x, event.y, event.xdata, event.ydata]
 
     def prof_leftup(self, event=None):
+        if len(self.map.shape) != 2:
+            return
         if self.rbbox is not None:
             zdc = wx.ClientDC(self.panel.canvas)
             zdc.SetLogicalFunction(wx.XOR)
@@ -140,6 +143,7 @@ class MapImageFrame(ImageFrame):
 
         self.lastpoint, self.zoom_ini = [None, None], None
         if dx < 2 and dy < 2:
+            self.zoom_ini = None
             return
 
         outdat = []
