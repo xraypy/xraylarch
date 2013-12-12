@@ -974,6 +974,8 @@ Matt Newville <newville @ cars.uchicago.edu>
             parent, fname = os.path.split(path)
             xrmfile = GSEXRM_MapFile(filename=str(path))
 
+            os.chdir(nativepath(parent))
+            save_workdir(nativepath(parent))
             #try:
             #except:
             #    Popup(self, NOT_GSEXRM_FILE % fname,
