@@ -207,7 +207,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display.SetTitle(title)
     return display
 
-def _xrf_plot(x, y=None, mca=None, win=1, new=True, _larch=None,
+def _xrf_plot(x, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None, 
               wxparent=None, size=None, side='left', force_draw=True, **kws):
     """xrf_plot(energy, data[, win=1], options])
 
@@ -218,11 +218,10 @@ def _xrf_plot(x, y=None, mca=None, win=1, new=True, _larch=None,
         energy :  array of energies
         counts :  array of counts
         mca:      Group counting MCA data (rois, etc)
-
+        as_mca2:  use mca as background MCA
+        
         win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
         new: flag (True/False, default False) for whether to start a new plot.
-        ylog_scale: whether to show y-axis as log-scale (True or False)
-
         color: color for trace (name such as 'red', or '#RRGGBB' hex string)
         style: trace linestyle (one of 'solid', 'dashed', 'dotted', 'dot-dash')
         linewidth:  integer width of line
@@ -243,7 +242,7 @@ def _xrf_plot(x, y=None, mca=None, win=1, new=True, _larch=None,
 
     if new:
         if isLarchMCAGroup(mca):
-            plotter.plotmca(mca, **kws)
+            plotter.plotmca(mca, as_mca2=as_mca2, **kws)
         elif y is not None:
             plotter.plot(x, y, mca=mca, **kws)
     else:

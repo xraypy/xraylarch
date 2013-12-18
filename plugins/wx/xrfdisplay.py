@@ -741,12 +741,19 @@ class XRFDisplayFrame(wx.Frame):
             self.oplot(self.x2data, self.y2data)
 
 
-    def plotmca(self, mca, title=None, **kws):
+    def plotmca(self, mca, title=None, as_mca2=False, **kws):
+        plot = self.plot
+        if as_mca2:
+            plot = self.oplot
+
         if title is None:
             title = self.win_title
         if hasattr(mca, 'filename'):
             title = "%s: %s"% (title, mca.filename)
-        self.plot(mca.energy, mca.counts, mca=mca, **kws)
+        if as_mca2 and hasattr(mca, 'filename'):
+                title = "%s: %s (bg)"% (title, mca.filename)
+
+        plot(mca.energy, mca.counts, mca=mca, **kws)
 
         self.SetTitle(title)
 
@@ -796,11 +803,14 @@ class XRFDisplayFrame(wx.Frame):
         panel.canvas.Thaw()
         panel.canvas.Refresh()
 
-    def oplot(self, x, y, color='darkgreen', **kws):
+    def oplot(self, x, y, color='darkgreen', mca=None, zorder=-5, **kws):
+        if mca is not None:
+            self.mca2 = mca
+
         ymax = max( max(self.ydata), max(y))*1.25
         self.x2data = 1.0*x[:]
         self.y2data = 1.0*y[:]
-        kws.update({'zorder': -5, 'label': 'spectra2',
+        kws.update({'zorder': zorder, 'label': 'spectra2',
                     'ymax' : ymax,
                     'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale,
@@ -811,7 +821,8 @@ class XRFDisplayFrame(wx.Frame):
         if self.mca2 is None:
             return
         self.mca, self.mca2 = self.mca2, self.mca
-        self.plotmca(self.mca, show_mca2=True)
+        self.plotmca(self.mca)
+        self.plotmca(self.mca2, as_mca2=True)
 
     def close_bkg_mca(self, event=None):
         self.mca2 = None
