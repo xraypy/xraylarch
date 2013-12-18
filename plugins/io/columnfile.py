@@ -132,6 +132,7 @@ def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
             pass
 
     attrs['column_labels'] = _labels
+    attrs['array_labels'] = _labels
     if sort and sort_column >= 0 and sort_column < nrow:
          data = data[:,np.argsort(data[sort_column])]
 

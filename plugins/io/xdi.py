@@ -182,8 +182,14 @@ class XDIFile(object):
                     xunits = units
 
         # convert energy to angle, or vice versa
-        if ix >= 0 and 'd_spacing' in self.attrs['mono']:
-            dspace = float(self.attrs['mono']['d_spacing'])
+        monodat = {}
+        if 'mono' in  self.attrs:
+            monodat = self.attrs['mono']
+        elif 'monochromator' in  self.attrs:
+            monodat = self.attrs['monochromator']
+
+        if ix >= 0 and 'd_spacing' in monodat:
+            dspace = float(monodat['d_spacing'])
             if dspace < 0: dspace = 0.001
             omega = PLANCK_HC/(2*dspace)
             if xname == 'energy' and not hasattr(self, 'angle'):
