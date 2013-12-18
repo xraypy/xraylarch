@@ -174,7 +174,8 @@ class ScanViewerFrame(wx.Frame):
                          ('Plot (right axis)', 'right')):
 
             btnsizer.Add(Button(btnbox, ttl, size=(130, -1),
-                                action=partial(self.onPlot, opt=opt)), LCEN, 1)
+                                action=partial(self.onPlot, opt=opt, reprocess=True)),
+                         LCEN, 1)
 
         pack(btnbox, btnsizer)
         mainsizer.Add(btnbox, 1, LCEN, 2)
@@ -386,6 +387,8 @@ class ScanViewerFrame(wx.Frame):
                       marker='None', markersize=4)
 
         lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
+        y4e0 = lgroup._ydat_
+        # print 'xas_process ', out
         if out.startswith('raw data with'):
             lgroup.plot_yarrays = [(lgroup.pre_edge,  popts2, 'pre edge'),
                                    (lgroup.post_edge, popts2, 'post edge'),
@@ -395,14 +398,15 @@ class ScanViewerFrame(wx.Frame):
                        (gname, gname, gname))
             lgroup.plot_yarrays = [(lgroup.pre_edge_sub, popts1,
                                     'pre edge subtracted XAFS')]
+            y4e0 = lgroup.pre_edge_sub
         elif out.startswith('norm'):
             lgroup.plot_yarrays = [(lgroup.norm, popts1, 'normalized XAFS')]
-
+            y4e0 = lgroup.norm
         lgroup.plot_ymarkers = []
         if self.xas_showe0.IsChecked():
-            y4e0 = lgroup.plot_yarrays[-1][0]
             ie0 = index_of(lgroup._xdat_, lgroup.e0)
             lgroup.plot_ymarkers = [(lgroup.e0, y4e0[ie0], {'label': 'e0'})]
+            # print 'marker at ', lgroup.e0, y4e0[ie0]
         return
 
     def init_larch(self):
@@ -502,7 +506,7 @@ class ScanViewerFrame(wx.Frame):
         try:
             npts = min(len(lgroup._xdat_), len(lgroup._ydat_))
         except AttributeError:
-            print( 'Erro calculating arrays (npts not correct)')
+            print( 'Error calculating arrays (npts not correct)')
             return
 
         del lgroup._x, lgroup._y1, lgroup._y2, lgroup._y3
@@ -511,13 +515,13 @@ class ScanViewerFrame(wx.Frame):
         lgroup.plot_ylabel = ylabel
         lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
         lgroup._ydat_ = np.array( lgroup._ydat_[:npts])
+        # print 'COLUMN Choice -> ', max(lgroup._ydat_)
         if (self.nb.GetCurrentPage() == self.xas_panel):
+            # print 'COLUMN 2 xas_ process '
             self.xas_process(self.groupname, new_mu=True)
 
-        self.onPlot()
-
-    def onPlot(self, evt=None, opt='new', npts=None,
-               use_plot_yarrays=False):
+    def onPlot(self, evt=None, opt='new', npts=None, 
+               reprocess=False, use_plot_yarrays=False):
         # 'new', 'New Window'),
         # 'left', 'Left Axis'),
         # 'right', 'Right Axis')):
@@ -531,6 +535,9 @@ class ScanViewerFrame(wx.Frame):
             self.plotframe.Show()
             self.plotpanel = self.plotframe.panel
 
+        if reprocess:
+            if (self.nb.GetCurrentPage() == self.xas_panel):
+                self.xas_process(self.groupname, new_mu=True)
 
         side = 'left'
         update = False
@@ -604,7 +611,9 @@ class ScanViewerFrame(wx.Frame):
         key = filename
         if filename in self.filemap:
             key = self.filemap[filename]
-
+        if not hasattr(self.datagroups, key):
+            print 'Error reading file ', key
+            return
         if key == SCANGROUP:
             #array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
             title = filename
@@ -740,7 +749,7 @@ class ScanViewerFrame(wx.Frame):
                 self.larch("%s = read_xdi('%s')" % (gname, path))
             else:
                 self.larch("%s = read_ascii('%s')" % (gname, path))
-
+                
             self.larch("%s.path  = '%s'"     % (gname, path))
             self.filelist.Append(fname)
             self.filemap[fname] = gname
