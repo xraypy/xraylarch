@@ -109,8 +109,10 @@ class XRFDisplayFrame(wx.Frame):
         self.roi_patch = None
         self.selected_roi = None
         self.selected_elem = None
-        self.mca  = None
+        self.mca = None
         self.mca2 = None
+        self.x2data = None
+        self.y2data = None
         self.rois_shown = False
         self.major_markers = []
         self.minor_markers = []
@@ -735,25 +737,20 @@ class XRFDisplayFrame(wx.Frame):
             self.onShowLines(elem=self.selected_elem)
         if roiname is not None:
             self.onROI(label=roiname)
+        if self.y2data is not None:
+            self.oplot(self.x2data, self.y2data)
 
-    def plotmca(self, mca, show_mca2=True, title=None, **kws):
-        self.mca = mca
-        self.plot(mca.energy, mca.counts, mca=mca, **kws)
+
+    def plotmca(self, mca, title=None, **kws):
         if title is None:
             title = self.win_title
         if hasattr(mca, 'filename'):
             title = "%s: %s"% (title, mca.filename)
-        if show_mca2 and self.mca2 is not None:
-            self.oplot(self.mca2.energy, self.mca2.counts,
-                       label='specrta2',
-                       color=self.conf.spectra2_color)
-            mca2name = 'MCA2'
-            if hasattr(self.mca2, 'filename'):
-                mca2name = self.mca2.filename
-            title = "%s (fore), %s (back)"% (title, mca2name)
+        self.plot(mca.energy, mca.counts, mca=mca, **kws)
+
         self.SetTitle(title)
 
-    def plot(self, x, y=None, mca=None,  **kws):
+    def plot(self, x, y=None, mca=None, mca2=None, **kws):
         if mca is not None:
             self.mca = mca
         mca = self.mca
@@ -801,11 +798,14 @@ class XRFDisplayFrame(wx.Frame):
 
     def oplot(self, x, y, color='darkgreen', **kws):
         ymax = max( max(self.ydata), max(y))*1.25
+        self.x2data = 1.0*x[:]
+        self.y2data = 1.0*y[:]
         kws.update({'zorder': -5, 'label': 'spectra2',
-                    'ymax' : ymax, 'axes_style': 'bottom',
-                    'ylog_scale': True})
-
-        self.panel.oplot(x, 1.0*y[:], color=color, **kws)
+                    'ymax' : ymax,
+                    'axes_style': 'bottom',
+                    'ylog_scale': self.ylog_scale,
+                    'grid': False})
+        self.panel.oplot(self.x2data, self.y2data, color=color, **kws)
 
     def swap_mcas(self, event=None):
         if self.mca2 is None:

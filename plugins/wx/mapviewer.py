@@ -521,40 +521,39 @@ WARNING: This cannot be undone!
 
         sizer = wx.GridBagSizer(8, 5)
 
-        bpanel = wx.Panel(self)
-        bsizer = wx.BoxSizer(wx.HORIZONTAL)
         self.choices = {}
-        self.choice = Choice(self, choices=[], size=(150, -1), action=self.onSelect)
-        self.desc   = wx.TextCtrl(self, -1,   '', size=(150, -1))
-        self.info   = wx.StaticText(self, -1, '', size=(150, -1))
+        self.choice = Choice(self, choices=[], size=(160, -1), action=self.onSelect)
+        self.desc  = wx.TextCtrl(self, -1,   '', size=(160, -1))
+        self.info  = wx.StaticText(self, -1, '', size=(160, -1))
 
-        self.onmap  = Button(bpanel, 'Show on Map', size=(120, -1),
-                                      action=self.onShow)
-        self.clear  = Button(bpanel, 'Clear Map', size=(120, -1),
-                                      action=self.onClear)
-        self.xrf    = Button(bpanel, 'Show Spectrum', size=(120, -1),
-                                      action=self.onXRF)
+        self.onmap = Button(self, 'Show Area on Map', size=(160, -1),
+                            action=self.onShow)
+        self.clear = Button(self, 'Clear Areas on Map', size=(160, -1),
+                            action=self.onClear)
+        self.xrf   = Button(self, 'Show Spectrum (FG)', size=(160, -1),
+                            action=self.onXRF)
+        self.xrf2  = Button(self, 'Show Spectrum (BG)', size=(160, -1),
+                            action=partial(self.onXRF, mca2=True))
 
         self.delete = Button(self, 'Delete Area', size=(120, -1),
                                       action=self.onDelete)
         self.update = Button(self, 'Save Label', size=(120, -1),
                                       action=self.onLabel)
 
-        bsizer.Add(self.onmap, 0, ALL_CEN, 2)
-        bsizer.Add(self.clear, 0, ALL_CEN, 2)
-        bsizer.Add(self.xrf, 0, ALL_CEN, 2)
-        pack(bpanel, bsizer)
         def txt(s):
             return SimpleText(self, s)
-        sizer.Add(txt('Defined Map Areas'), (0, 0), (1, 2), ALL_CEN, 2)
-        sizer.Add(self.info,                (0, 2), (1, 1), ALL_RIGHT, 2)
+        sizer.Add(txt('Defined Map Areas'), (0, 0), (1, 3), ALL_CEN, 2)
+        sizer.Add(self.info,                (0, 3), (1, 2), ALL_RIGHT, 2)
         sizer.Add(txt('Area: '),            (1, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.choice,              (1, 1), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.delete,              (1, 2), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.choice,              (1, 1), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.delete,              (1, 3), (1, 1), ALL_LEFT, 2)
         sizer.Add(txt('New Label: '),       (2, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.desc,                (2, 1), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.update,              (2, 2), (1, 1), ALL_LEFT, 2)
-        sizer.Add(bpanel,                   (3, 0), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.desc,                (2, 1), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.update,              (2, 3), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onmap,               (3, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.clear,               (3, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf,                 (4, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf2,                (4, 2), (1, 2), ALL_LEFT, 2)
         pack(self, sizer)
 
     def set_choices(self, areas, show_last=False):
@@ -622,7 +621,7 @@ WARNING: This cannot be undone!
     def _getmca_area(self, areaname):
         self._mca = self.owner.current_file.get_mca_area(areaname)
 
-    def onXRF(self, event=None):
+    def onXRF(self, event=None, mca2=False):
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrfmap['areas/%s' % aname]
@@ -636,7 +635,7 @@ WARNING: This cannot be undone!
         pref, fname = os.path.split(self.owner.current_file.filename)
         npix = len(area.value[np.where(area.value)])
         title = "XRF Spectra:  %s, Area=%s,  %i Pixels" % (fname, label, npix)
-        self.owner.xrfdisplay.plotmca(self._mca, title=title)
+        self.owner.xrfdisplay.plotmca(self._mca, as_mca2=mca2, title=title)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
