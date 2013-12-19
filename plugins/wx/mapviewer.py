@@ -533,7 +533,7 @@ WARNING: This cannot be undone!
         self.xrf   = Button(self, 'Show Spectrum (FG)', size=(160, -1),
                             action=self.onXRF)
         self.xrf2  = Button(self, 'Show Spectrum (BG)', size=(160, -1),
-                            action=partial(self.onXRF, mca2=True))
+                            action=partial(self.onXRF, as_mca2=True))
 
         self.delete = Button(self, 'Delete Area', size=(120, -1),
                                       action=self.onDelete)
@@ -621,7 +621,7 @@ WARNING: This cannot be undone!
     def _getmca_area(self, areaname):
         self._mca = self.owner.current_file.get_mca_area(areaname)
 
-    def onXRF(self, event=None, mca2=False):
+    def onXRF(self, event=None, as_mca2=False):
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrfmap['areas/%s' % aname]
@@ -634,8 +634,9 @@ WARNING: This cannot be undone!
 
         pref, fname = os.path.split(self.owner.current_file.filename)
         npix = len(area.value[np.where(area.value)])
-        title = "XRF Spectra:  %s, Area=%s,  %i Pixels" % (fname, label, npix)
-        self.owner.xrfdisplay.plotmca(self._mca, as_mca2=mca2, title=title)
+        self._mca.title = "%s, Area=%s (%i Pixels)" % (fname,
+                                                      label, npix)
+        self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
 
 class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',

@@ -566,8 +566,8 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
                  "Zoom out to full data range", self.unzoom_all)
         omenu.AppendSeparator()
-        MenuItem(self, omenu, "Swap MCAs",
-                 "Swap Fore and Back MCAs", self.swap_mcas)
+        MenuItem(self, omenu, "Swap MCA and Background MCA",
+                 "Swap Foreground and Background MCAs", self.swap_mcas)
         MenuItem(self, omenu, "Close Background MCA",
                  "Close Background MCA", self.close_bkg_mca)
 
@@ -742,22 +742,36 @@ class XRFDisplayFrame(wx.Frame):
 
 
     def plotmca(self, mca, title=None, as_mca2=False, **kws):
-        plot = self.plot
         if as_mca2:
-            plot = self.oplot
+            self.mca2 = mca
+        else:
+            self.mca = mca
+        user_title = title
+        
+        # print 'PLOT MCA ', self.mca, self.mca2
+        if self.mca is not None:
+            if hasattr(self.mca, 'title'):
+                title = self.mca.title
+            elif hasattr(self.mca, 'filename'):
+                title = "%s: %s"% (title, self.mca.filename)
+            self.plot(self.mca.energy, self.mca.counts,
+                      mca=self.mca, **kws)
 
+        if as_mca2:
+            if hasattr(self.mca2, 'title'):
+                title = "%s / bg=%s" % (title, self.mca2.title)
+            elif  hasattr(self.mca2, 'filename'):
+                title = "%s / bg=%s"% (title, self.mca2.filename)
+
+            self.oplot(self.mca2.energy, self.mca2.counts,
+                       mca=self.mca2, **kws)
+        if user_title is not None:
+            title = user_title
         if title is None:
             title = self.win_title
-        if hasattr(mca, 'filename'):
-            title = "%s: %s"% (title, mca.filename)
-        if as_mca2 and hasattr(mca, 'filename'):
-                title = "%s: %s (bg)"% (title, mca.filename)
-
-        plot(mca.energy, mca.counts, mca=mca, **kws)
-
         self.SetTitle(title)
 
-    def plot(self, x, y=None, mca=None, mca2=None, **kws):
+    def plot(self, x, y=None, mca=None, **kws):
         if mca is not None:
             self.mca = mca
         mca = self.mca
@@ -826,7 +840,7 @@ class XRFDisplayFrame(wx.Frame):
 
     def close_bkg_mca(self, event=None):
         self.mca2 = None
-        self.plotmca(self.mca, show_mca2=False)
+        self.plotmca(self.mca)
 
     def onReadMCAFile(self, event=None):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
