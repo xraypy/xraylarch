@@ -635,7 +635,7 @@ WARNING: This cannot be undone!
         pref, fname = os.path.split(self.owner.current_file.filename)
         npix = len(area.value[np.where(area.value)])
         self._mca.title = "%s, Area=%s (%i Pixels)" % (fname,
-                                                      label, npix)
+                                                       label, npix)
         self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
 
 class MapViewerFrame(wx.Frame):
