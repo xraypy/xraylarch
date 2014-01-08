@@ -243,7 +243,7 @@ class ScanFrame(wx.Frame):
     def generate_scan(self, scanname=None):
         """generate scan definition from current values on GUI"""
         if scanname is None:
-            scanname = time.strftime("__%b%d%H%M%S_")
+            scanname = time.strftime("__%b%d_%H:%M:%S__")
 
         scan = self.nb.GetCurrentPage().generate_scan()
         scan['nscans'] = int(self.nscans.GetValue())
