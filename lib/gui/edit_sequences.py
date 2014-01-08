@@ -8,10 +8,28 @@ import wx.lib.scrolledpanel as scrolled
 from ..ordereddict import OrderedDict
 from .gui_utils import GUIColors, set_font_with_children, YesNo
 from .gui_utils import add_button, pack, SimpleText
-
+import  wx.grid as gridlib
 
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL|wx.ALL
 CEN  = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL|wx.ALL
+
+builtin_macros = """ (text = '<builtin>')
+  name              arguments                         
+  ca_put            'PVName:str, Value:str'
+  ca_get            'PVName:str, OutputValue:str'
+  do_scan           'ScanName:enum, OutputFile:str, Nrepeat:int'
+  move_instrument   'InstName:enum, PosName:enum'
+  move_sample       'SampleName:enum'
+  scan_at           'ScanName:enum, SampleName:enum'
+"""
+
+colLabels = [' Status ', ' Update Time ', ' Action ', ' Output File ', ' Command ', '', '', '']
+ACTIONS = ('Enable', 'Skip')
+
+Buttons = ['Run', 'Pause', 'Cancel All', 'Abort Current Command', 
+           'Insert Commands Here', 'Add Commands to End']
+
+
 
 class SequencesFrame(wx.Frame) :
     """Edit/Manage/Run/View Sequences"""
