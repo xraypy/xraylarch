@@ -1,8 +1,12 @@
 import sys
 import time
 
+import json
 import wx
+import wx.lib.agw.flatnotebook as flat_nb
+
 import wx.lib.scrolledpanel as scrolled
+import  wx.grid as gridlib
 
 from .gui_utils import (GUIColors, set_font_with_children, YesNo,
                         add_button, pack, SimpleText, check, okcancel,
@@ -12,75 +16,259 @@ RCEN |= wx.ALL
 LCEN |= wx.ALL
 CEN  |= wx.ALL
 
+ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+
+class GenericDataTable(gridlib.PyGridTableBase):
+    def __init__(self):
+        gridlib.PyGridTableBase.__init__(self)
+        self.data = []
+        self.scans = []
+        self.colLabels = []
+        self.dataTypes = []
+        self.widths = []        
+        self.colReadOnly = []
+
+    def onOK(self):
+        del_ids = []
+        for iscan, dat in enumerate(self.data):
+            if self.scans[iscan].name != dat[0]:
+                self.scans[iscan].name = dat[0]
+            if dat[-1] == 1:
+                del_ids.append(self.scans[iscan].id)
+        return del_ids
+        
+        
+    def GetNumberRows(self):     return len(self.data) + 1
+    def GetNumberCols(self):     return len(self.data[0])
+    def GetColLabelValue(self, col):    return self.colLabels[col]
+    def GetTypeName(self, row, col):     return self.dataTypes[col]
+
+    def IsEmptyCell(self, row, col):
+        try:
+            return not self.data[row][col]
+        except IndexError:
+            return True
+
+    def GetValue(self, row, col):
+        try:
+            return self.data[row][col]
+        except IndexError:
+            return ''
+
+    def SetValue(self, row, col, value):
+        def innerSetValue(row, col, value):
+            try:
+                self.data[row][col] = value
+            except IndexError:
+                pass # cannot add row
+                #self.data.append([''] * self.GetNumberCols())
+                #innerSetValue(row, col, value)
+
+                # tell the grid we've added a row
+                #msg = gridlib.GridTableMessage(self,            # The table
+                #        gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, # what we did to it
+                #        1                                       # how many
+                #        )
+
+                #self.GetView().ProcessTableMessage(msg)
+        innerSetValue(row, col, value) 
+
+    def CanGetValueAs(self, row, col, typeName):
+        colType = self.dataTypes[col].split(':')[0]
+        if typeName == colType:
+            return True
+        else:
+            return False
+
+    def CanSetValueAs(self, row, col, typeName):
+        return self.CanGetValueAs(row, col, typeName)
+
+class LinearScanDataTable(GenericDataTable):
+    def __init__(self, scans):
+        GenericDataTable.__init__(self)
+
+        self.colLabels = [' Scan Name ', ' Lead Axis ', ' # Points ',
+                          ' Time Defined ', ' Time Last Used ', ' Erase? ']
+        self.dataTypes = [gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_NUMBER,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_BOOL]
+
+        self.scans = scans[::-1]
+        self.data = []
+        self.widths = [150, 100, 80, 125, 125, 60]
+        self.colReadOnly = [False, True, True, True, True, False]
+        for scan in self.scans:
+            sdat = json.loads(scan.text)
+            axis = sdat['positioners'][0][0]
+            npts = sdat['positioners'][0][4]
+            mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
+            utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
+            self.data.append([scan.name, axis, npts, mtime, utime, 0])
+                        
+class MeshScanDataTable(GenericDataTable):
+    def __init__(self, scans):
+        GenericDataTable.__init__(self)
+
+        self.colLabels = [' Scan Name ', ' Inner Axis ', ' Outer Axis ',
+                          ' # Points ', ' Time Defined ', ' Time Last Used ',
+                          ' Erase? ']
+
+        self.dataTypes = [gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_NUMBER,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_BOOL]
+        
+        self.scans = scans[::-1]
+        self.data = []
+        self.widths = [150, 100, 100, 80, 125, 125, 60]
+        self.colReadOnly = [False, True, True, True, True, True, False]
+        for scan in self.scans:
+            sdat  = json.loads(scan.text)
+            axis0 = sdat['inner'][0]
+            axis1 = sdat['outer'][0]
+            npts  = int(sdat['outer'][4]) * int(sdat['inner'][4])
+            mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
+            utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
+            self.data.append([scan.name, axis0, axis1, npts, mtime, utime, 0])
+
+
+class SlewScanDataTable(GenericDataTable):
+    def __init__(self, scans):
+        GenericDataTable.__init__(self)
+
+        self.colLabels = [' Scan Name ', ' Inner Axis ', ' Outer Axis ',
+                          ' # Points ',
+                          ' Time Defined ', ' Time Last Used ', ' Erase? ']
+        self.dataTypes = [gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_NUMBER,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_BOOL]
+        
+        self.scans = scans[::-1]
+        self.data = []
+        self.widths = [150, 100, 100, 80, 125, 125, 60]
+        self.colReadOnly = [False, True, True, True, True, True, False]
+        for scan in self.scans:
+            sdat  = json.loads(scan.text)
+            axis0 = sdat['inner'][0]
+            axis1 = 'None'
+            npts  = int(sdat['inner'][4])
+            if sdat['dimension'] > 1:
+                axis1 = sdat['outer'][0]
+                npts *= int(sdat['outer'][4])
+            mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
+            utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
+            self.data.append([scan.name, axis0, axis1, npts, mtime, utime, 0])
+
+
+class XAFSScanDataTable(GenericDataTable):
+    def __init__(self, scans):
+        GenericDataTable.__init__(self)
+
+        self.colLabels = [' Scan Name ', ' E0 ', ' # Regions', ' # Points ',
+                          ' Time Defined ', ' Time Last Used ', ' Erase? ']
+        self.dataTypes = [gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_FLOAT + ':9,2',
+                          gridlib.GRID_VALUE_NUMBER,
+                          gridlib.GRID_VALUE_NUMBER,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_STRING,
+                          gridlib.GRID_VALUE_BOOL]
+        
+        self.scans = scans[::-1]
+        self.data = []
+        self.widths = [150, 80, 80, 80, 125, 125, 60]
+        self.colReadOnly = [False, True, True, True, True, True, False]
+        for scan in self.scans:
+            sdat  = json.loads(scan.text)
+            e0   = sdat['e0']
+            nreg = len(sdat['regions'])
+            npts = 1 - nreg
+            for ireg in range(nreg):
+                npts += sdat['regions'][ireg][2]
+            mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
+            utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
+            self.data.append([scan.name, e0, nreg, npts, mtime, utime, 0])
+
+
+#         self.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
+#         
+#     def OnLeftDClick(self, evt=None):
+#         if self.CanEnableCellControl():
+#             self.EnableCellEditControl()
+# 
+       
 class ScandefsFrame(wx.Frame) :
     """Edit Scan Definitions"""
     def __init__(self, parent, pos=(-1, -1)):
 
         self.parent = parent
         self.scandb = parent.scandb
-
         wx.Frame.__init__(self, None, -1,
                           'Epics Scanning: Scan Definitions',
                           style=FRAMESTYLE)
 
-        self.SetFont(Font(9))
-        sizer = wx.GridBagSizer(10, 5)
-        panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((550, 500))
+        self.SetFont(Font(10))
+        sizer = wx.BoxSizer(wx.VERTICAL)
+
+        self.SetMinSize((740, 450))
         self.colors = GUIColors()
+        panel = scrolled.ScrolledPanel(self)
         panel.SetBackgroundColour(self.colors.bg)
+        self.nb = flat_nb.FlatNotebook(panel, wx.ID_ANY, agwStyle=FNB_STYLE)
+        self.nb.SetBackgroundColour('#FCFCFA')
+        self.SetBackgroundColour('#F0F0E8')
 
-        # title row
-        title = SimpleText(panel, 'Scan Definitions',  font=Font(13),
-                           colour=self.colors.title, style=LCEN)
+        sizer.Add(SimpleText(panel, 'Scan Definitions',
+                             font=Font(13),
+                             colour=self.colors.title, style=LCEN),
+                  0, LCEN, 5)
 
-        sizer.Add(title,        (0, 0), (1, 3), LCEN, 5)
+        allscans = {'linear': [], 'mesh': [], 'xafs': [], 'slew':[]}
 
-        ir = 1
-        sizer.Add(SimpleText(panel, label=' Scan Name', size=(175, -1)),
-                  (ir, 0), (1, 1), RCEN, 2)
-        sizer.Add(SimpleText(panel, label='Erase?'),
-                  (ir, 1), (1, 1), LCEN, 2)
-        sizer.Add(SimpleText(panel, label=' Scan Name', size=(175, -1)),
-                  (ir, 2), (1, 1), RCEN, 2)
-        sizer.Add(SimpleText(panel, label='Erase?'),
-                  (ir, 3), (1, 1), LCEN, 2)
+        for this in self.scandb.getall('scandefs',
+                                       orderby='last_used_time'):
+            allscans[this.type].append(this)
+            utime = this.last_used_time.strftime("%Y-%b-%d %H:%M")
+            
+        self.tables = []
 
-        sdefs = {}
-        scantypes = ('linear', 'mesh', 'xafs', 'slew')
-        for sname in scantypes:
-            sdefs[sname] = []
-        for this in self.scandb.getall('scandefs'):
-            sdefs[this.type].append( this.name )
+        for pname, creator in (('Linear', LinearScanDataTable),
+                               ('Mesh', MeshScanDataTable),
+                               ('Slew', SlewScanDataTable),
+                               ('XAFS', XAFSScanDataTable)):
+            tgrid = gridlib.Grid(panel)
+            table = creator(allscans[pname.lower()])
+            tgrid.SetTable(table, True)
+            self.tables.append(table)
+            self.nb.AddPage(tgrid, "%s Scan" % pname)
 
-        self.widlist = []
-        for typename in scantypes:
-            if len(sdefs[typename]) > 0:
-                ir += 1
-                sizer.Add(add_subtitle(panel, ' %s Scans' % typename.title()),
-                          (ir, 0),  (1, 5),  LCEN, 1)
-                ir += 1
-                for ix, sname in enumerate(sdefs[typename]):
-                    ix = ix % 2
-                    desc  = SimpleText(panel,  label=sname, size=(175, -1))
-                    erase = YesNo(panel, defaultyes=False)
-                    sizer.Add(desc,  (ir, 0 + ix*2), (1, 1), LCEN, 1)
-                    sizer.Add(erase, (ir, 1 + ix*2), (1, 1), LCEN, 1)
-                    ir = ir + ix
-                    self.widlist.append((sname, erase))
-                ir = ir - ix
+            nrows = tgrid.GetNumberRows()
+            for icol, wid in enumerate(table.widths):
+                tgrid.SetColMinimalWidth(icol, wid)
+                tgrid.SetColSize(icol, wid)
+                for irow in range(nrows-1):
+                    tgrid.SetReadOnly(irow, icol, table.colReadOnly[icol])
+            tgrid.SetRowLabelSize(1)
+            tgrid.SetMargins(1,1)
+            tgrid.HideRow(nrows-1)
+            
+        self.nb.SetSelection(0)
+        sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND, 5)
 
-
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), LCEN, 3)
-        #
-        ir += 1
-        sizer.Add(okcancel(panel, self.onOK, self.onClose),
-                  (ir, 0), (1, 2), LCEN, 3)
-
+        sizer.Add(okcancel(panel, self.onOK, self.onClose), 0, LCEN, 5)
+        
         pack(panel, sizer)
-
         panel.SetupScrolling()
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
@@ -90,13 +278,13 @@ class ScandefsFrame(wx.Frame) :
         self.Raise()
 
     def onOK(self, event=None):
-        for name, erase in self.widlist:
-            if erase.GetSelection():
-                self.scandb.del_scandef(name)
-
+        for table in self.tables:
+            del_ids = table.onOK()
+            for scanid in del_ids:
+                self.scandb.del_scandef(scanid=scanid)
         self.scandb.commit()
         self.Destroy()
-
+            
     def onClose(self, event=None):
         self.Destroy()
 
