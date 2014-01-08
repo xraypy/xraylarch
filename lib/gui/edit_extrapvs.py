@@ -35,10 +35,10 @@ class ExtraPVsFrame(wx.Frame) :
         sizer.Add(title,        (0, 0), (1, 3), LCEN, 5)
 
         ir = 1
-        sizer.Add(SimpleText(panel, label='Description', size=(175, -1)),
-                  (ir, 0), (1, 1), RCEN, 2)
-        sizer.Add(SimpleText(panel, label='PV Name', size=(175, -1)),
-                  (ir, 1), (1, 1), LCEN, 2)
+        sizer.Add(SimpleText(panel, label='PV Name', size=(200, -1)),
+                  (ir, 0), (1, 1), LCEN, 2)
+        sizer.Add(SimpleText(panel, label='Description', size=(200, -1)),
+                  (ir, 1), (1, 1), RCEN, 2)
         sizer.Add(SimpleText(panel, label='Use?'),
                   (ir, 2), (1, 1), LCEN, 2)
         sizer.Add(SimpleText(panel, label='Erase?', size=(60, -1)),
@@ -46,14 +46,14 @@ class ExtraPVsFrame(wx.Frame) :
 
         self.widlist = []
         for this in self.scandb.getall('extrapvs'):
-            desc   = wx.TextCtrl(panel, -1, value=this.name, size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value=this.pvname,  size=(175, -1))
+            pvctrl = wx.TextCtrl(panel, value=this.pvname,  size=(200, -1))
+            desc   = wx.TextCtrl(panel, -1, value=this.name, size=(200, -1))
             usepv  = check(panel, default=this.use)
             delpv  = YesNo(panel, defaultyes=False)
 
             ir +=1
-            sizer.Add(desc,   (ir, 0), (1, 1), RCEN, 2)
-            sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 2)
+            sizer.Add(pvctrl, (ir, 0), (1, 1), RCEN, 2)
+            sizer.Add(desc,   (ir, 1), (1, 1), LCEN, 2)
             sizer.Add(usepv,  (ir, 2), (1, 1), LCEN, 2)
             sizer.Add(delpv,  (ir, 3), (1, 1), LCEN, 2)
             self.widlist.append((this, desc, pvctrl, usepv, delpv))
