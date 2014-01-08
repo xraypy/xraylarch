@@ -441,11 +441,14 @@ class ScanDB(object):
         """return scandef by name"""
         return self.getrow('scandefs', name, one_or_none=True)
 
-    def del_scandef(self, name):
+    def del_scandef(self, name=None, scanid=None):
         """delete scan defn by name"""
         cls, table = self._get_table('scandefs')
-        self.conn.execute(table.delete().where(table.c.name==name))
-
+        if name is not None:
+            self.conn.execute(table.delete().where(table.c.name==name))
+        elif scanid is not None:
+            self.conn.execute(table.delete().where(table.c.id==scanid))
+            
     def add_scandef(self, name, text='', notes='', type='', **kws):
         """add scan"""
         cls, table = self._get_table('scandefs')
