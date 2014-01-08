@@ -19,6 +19,19 @@ CEN  |= wx.ALL
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
+def buttonrow(panel, onOK=None, onCancel=None):
+    btnsizer = wx.StdDialogButtonSizer()
+    _ok = wx.Button(panel, wx.ID_OK)
+    _no = wx.Button(panel, wx.ID_CANCEL)
+    panel.Bind(wx.EVT_BUTTON, onOK,     _ok)
+    panel.Bind(wx.EVT_BUTTON, onCancel, _no)
+    _ok.SetDefault()
+    btnsizer.AddButton(_ok)
+    btnsizer.AddButton(_no)
+    btnsizer.Realize()
+    return btnsizer
+
+
 class GenericDataTable(gridlib.PyGridTableBase):
     def __init__(self):
         gridlib.PyGridTableBase.__init__(self)
@@ -37,7 +50,6 @@ class GenericDataTable(gridlib.PyGridTableBase):
             if dat[-1] == 1:
                 del_ids.append(self.scans[iscan].id)
         return del_ids
-        
         
     def GetNumberRows(self):     return len(self.data) + 1
     def GetNumberCols(self):     return len(self.data[0])
@@ -88,8 +100,8 @@ class LinearScanDataTable(GenericDataTable):
     def __init__(self, scans):
         GenericDataTable.__init__(self)
 
-        self.colLabels = [' Scan Name ', ' Lead Axis ', ' # Points ',
-                          ' Time Defined ', ' Time Last Used ', ' Erase? ']
+        self.colLabels = [' Scan Name ', ' Positioner ', ' # Points ',
+                          ' Created ', ' Last Used ', ' Erase? ']
         self.dataTypes = [gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_NUMBER,
@@ -113,9 +125,9 @@ class MeshScanDataTable(GenericDataTable):
     def __init__(self, scans):
         GenericDataTable.__init__(self)
 
-        self.colLabels = [' Scan Name ', ' Inner Axis ', ' Outer Axis ',
-                          ' # Points ', ' Time Defined ', ' Time Last Used ',
-                          ' Erase? ']
+        self.colLabels = [' Scan Name ', ' Inner Positioner ',
+                          ' Outer Positioner ', ' # Points ',
+                          ' Created ', ' Last Used ', ' Erase? ']
 
         self.dataTypes = [gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_STRING,
@@ -143,9 +155,9 @@ class SlewScanDataTable(GenericDataTable):
     def __init__(self, scans):
         GenericDataTable.__init__(self)
 
-        self.colLabels = [' Scan Name ', ' Inner Axis ', ' Outer Axis ',
-                          ' # Points ',
-                          ' Time Defined ', ' Time Last Used ', ' Erase? ']
+        self.colLabels = [' Scan Name ', ' Inner Positiner ',
+                          ' Outer Positioner ', ' # Points ',
+                          ' Created ', ' Last Used ', ' Erase? ']
         self.dataTypes = [gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_STRING,
@@ -176,7 +188,7 @@ class XAFSScanDataTable(GenericDataTable):
         GenericDataTable.__init__(self)
 
         self.colLabels = [' Scan Name ', ' E0 ', ' # Regions', ' # Points ',
-                          ' Time Defined ', ' Time Last Used ', ' Erase? ']
+                          ' Created ', ' Last Used ', ' Erase? ']
         self.dataTypes = [gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_FLOAT + ':9,2',
                           gridlib.GRID_VALUE_NUMBER,
@@ -213,6 +225,7 @@ class ScandefsFrame(wx.Frame) :
     def __init__(self, parent, pos=(-1, -1)):
 
         self.parent = parent
+        print 'self parent ' , self.parent.nb
         self.scandb = parent.scandb
         wx.Frame.__init__(self, None, -1,
                           'Epics Scanning: Scan Definitions',
@@ -226,9 +239,9 @@ class ScandefsFrame(wx.Frame) :
         panel = scrolled.ScrolledPanel(self)
         panel.SetBackgroundColour(self.colors.bg)
         self.nb = flat_nb.FlatNotebook(panel, wx.ID_ANY, agwStyle=FNB_STYLE)
-        self.nb.SetBackgroundColour('#FCFCFA')
-        self.SetBackgroundColour('#F0F0E8')
-
+        self.nb.SetBackgroundColour('#FAFCFA')
+        self.SetBackgroundColour('#FAFCFA')
+        
         sizer.Add(SimpleText(panel, 'Scan Definitions',
                              font=Font(13),
                              colour=self.colors.title, style=LCEN),
@@ -242,17 +255,19 @@ class ScandefsFrame(wx.Frame) :
             utime = this.last_used_time.strftime("%Y-%b-%d %H:%M")
             
         self.tables = []
-
+        self.nblabels = []
         for pname, creator in (('Linear', LinearScanDataTable),
                                ('Mesh', MeshScanDataTable),
                                ('Slew', SlewScanDataTable),
                                ('XAFS', XAFSScanDataTable)):
             tgrid = gridlib.Grid(panel)
+            tgrid.SetBackgroundColour('#FAFAF8')            
             table = creator(allscans[pname.lower()])
             tgrid.SetTable(table, True)
             self.tables.append(table)
             self.nb.AddPage(tgrid, "%s Scan" % pname)
-
+            self.nblabels.append((pname.lower(), tgrid))
+            
             nrows = tgrid.GetNumberRows()
             for icol, wid in enumerate(table.widths):
                 tgrid.SetColMinimalWidth(icol, wid)
@@ -266,7 +281,13 @@ class ScandefsFrame(wx.Frame) :
         self.nb.SetSelection(0)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND, 5)
 
-        sizer.Add(okcancel(panel, self.onOK, self.onClose), 0, LCEN, 5)
+        bpanel = wx.Panel(panel)
+        bsizer = wx.BoxSizer(wx.HORIZONTAL)
+        bsizer.Add(add_button(bpanel, label='Load Current Scan', action=self.onView))
+        bsizer.Add(add_button(bpanel, label='Done', action=self.onDone))
+
+        pack(bpanel, bsizer)
+        sizer.Add(bpanel, 0, LCEN, 5)
         
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -277,7 +298,7 @@ class ScandefsFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-    def onOK(self, event=None):
+    def onDone(self, event=None):
         for table in self.tables:
             del_ids = table.onOK()
             for scanid in del_ids:
@@ -285,6 +306,15 @@ class ScandefsFrame(wx.Frame) :
         self.scandb.commit()
         self.Destroy()
             
-    def onClose(self, event=None):
-        self.Destroy()
+    def onView(self, event=None):
+        inb =  self.nb.GetSelection()
+        print 'View ', inb
+        label, thisgrid = self.nblabels[inb]
+        irow = thisgrid.GetGridCursorRow()
+        print irow
+        print  self.tables[inb].scans
+        print  self.tables[inb].scans[irow]
+        # print self.parent.nb
+        
+        # self.Destroy()
 
