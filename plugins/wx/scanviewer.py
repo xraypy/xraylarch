@@ -62,7 +62,7 @@ class ScanViewerFrame(wx.Frame):
         wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
         self.filemap = {}
         title = "ASCII Column Data File Viewer"
-        self.larch = None
+        self.larch = _larch
         self.plotframe = None
         self.groupname = None
         self.SetTitle(title)
@@ -374,6 +374,7 @@ class ScanViewerFrame(wx.Frame):
         preopts['group'] = gname
         preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
         preedge_cmd = "pre_edge(%s._xdat_, %s._ydat_, %s)"
+
         self.larch(preedge_cmd % (gname, gname, preopts))
 
         self.xas_e0.SetValue(lgroup.e0)
@@ -388,7 +389,7 @@ class ScanViewerFrame(wx.Frame):
 
         lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
         y4e0 = lgroup._ydat_
-        # print 'xas_process ', out
+        #  print 'xas_process ', out
         if out.startswith('raw data with'):
             lgroup.plot_yarrays = [(lgroup.pre_edge,  popts2, 'pre edge'),
                                    (lgroup.post_edge, popts2, 'post edge'),
@@ -411,8 +412,9 @@ class ScanViewerFrame(wx.Frame):
 
     def init_larch(self):
         t0 = time.time()
-        from larch.wxlib import inputhook
-        self.larch = Interpreter()
+        # print 'INIT LARCH ', self.larch
+        if self.larch is not None:
+            self.larch = Interpreter()
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
 
@@ -439,7 +441,7 @@ class ScanViewerFrame(wx.Frame):
         """column selections changed ..
         recalculate _xdat_ and _ydat_
         arrays for this larch group"""
-
+        # print 'on Column Choice -- clear '
         dtcorr = self.dtcorr.IsChecked()
         ix  = self.xarr.GetSelection()
         x   = self.xarr.GetStringSelection()
@@ -515,13 +517,11 @@ class ScanViewerFrame(wx.Frame):
         lgroup.plot_ylabel = ylabel
         lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
         lgroup._ydat_ = np.array( lgroup._ydat_[:npts])
-        # print 'COLUMN Choice -> ', max(lgroup._ydat_)
         if (self.nb.GetCurrentPage() == self.xas_panel):
-            # print 'COLUMN 2 xas_ process '
             self.xas_process(self.groupname, new_mu=True)
 
     def onPlot(self, evt=None, opt='new', npts=None, 
-               reprocess=False, use_plot_yarrays=False):
+               reprocess=False, use_plot_yarrays=True):
         # 'new', 'New Window'),
         # 'left', 'Left Axis'),
         # 'right', 'Right Axis')):
@@ -759,14 +759,15 @@ class ScanViewerFrame(wx.Frame):
         dlg.Destroy()
 
 class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, **kws):
+    def __init__(self, _larch=None, **kws):
+        self._larch = _larch
         wx.App.__init__(self, **kws)
 
     def run(self):
         self.MainLoop()
 
     def createApp(self):
-        frame = ScanViewerFrame()
+        frame = ScanViewerFrame(_larch=self._larch)
         frame.Show()
         self.SetTopWindow(frame)
 
@@ -774,6 +775,9 @@ class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         return True
 
-if __name__ == "__main__":
-    ScanViewer().MainLoop()
+def _scanview(_larch=None):
+    ScanViewer(_larch=_larch).run()
+
+def registerLarchPlugin():
+    return ('_plotter', {'scanview':_scanview})
 
