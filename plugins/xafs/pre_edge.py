@@ -91,8 +91,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     nvict:   energy exponent to use for pre-edg fit.  See Note
     norm1:   low E range (relative to E0) for post-edge fit
     norm2:   high E range (relative to E0) for post-edge fit
-    nnorm:   number of terms in polynomial (that is, 1+degree) for
-             post-edge, normalization curve. Default=3 (quadratic), max=5
+    nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
+             post-edge normalization curve. Default=3 (quadratic), max=5
 
     Returns
     -------
@@ -110,9 +110,12 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
 
     Notes
     -----
-     1 nvict gives an exponent to the energy term for the pre-edge fit.
-       That is, a line (m * energy + b) is fit to mu(energy)*energy**nvict
-       over the pr-edge regin, energy=[e0+pre1, e0+pre2].
+     1 nvict gives an exponent to the energy term for the fits to the pre-edge
+       and the post-edge region.  For the pre-edge, a line (m * energy + b) is
+       fit to mu(energy)*energy**nvict over the pre-edge region,
+       energy=[e0+pre1, e0+pre2].  For the post-edge, a polynomial of order
+       nnorm will be fit to mu(energy)*energy**nvict of the post-edge region
+       energy=[e0+norm1, e0+norm2].
 
      2 If the first argument is a Group, it must contain 'energy' and 'mu'.
        If it exists, group.e0 will be used as e0.
