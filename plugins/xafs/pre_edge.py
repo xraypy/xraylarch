@@ -162,7 +162,10 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     for n, c in enumerate(reversed(list(coefs))):
         post_edge += c * energy**(n-nvict)
         norm_coefs.append(c)
-    edge_step = post_edge[ie0] - pre_edge[ie0]
+    edge_step = step
+    if edge_step is None:
+        edge_step = post_edge[ie0] - pre_edge[ie0]
+        
     norm  = (mu - pre_edge)/edge_step
 
     # generate flattened spectra, by fitting a quadratic to .norm
