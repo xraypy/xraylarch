@@ -37,7 +37,7 @@ from pre_edge import find_e0, pre_edge
 from wxmplot import PlotFrame, PlotPanel
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button,
-                     Choice,  Check, MenuItem,
+                     Choice,  Check, MenuItem, GUIColors,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 CEN |=  wx.ALL
@@ -53,6 +53,108 @@ def randname(n=6):
     "return random string of n (default 6) lowercase letters"
     return ''.join([chr(randrange(26)+97) for i in range(n)])
 
+ 
+class EditColumnFrame(wx.Frame) :
+    """Set Column Labels for a file"""
+    def __init__(self, parent, larchgroup, filename, pos=(-1, -1)):
+
+        self.larchgroup = larchgroup
+        self.filename = filename
+        self.parent = parent
+        wx.Frame.__init__(self, None, -1, 'Edit Column Labels',
+                          style=FRAMESTYLE)
+
+        self.SetFont(Font(9))
+        sizer = wx.GridBagSizer(10, 5)
+        panel = scrolled.ScrolledPanel(self)
+        self.SetMinSize((525, 550))
+
+        self.colors = GUIColors()
+        panel.SetBackgroundColour(self.colors.bg)
+
+        # title row
+        title = SimpleText(panel, 'Column labels for %s' % filename,
+                           font=Font(13),  colour=self.colors.title,
+                           style=LCEN)
+
+        sizer.Add(title,        (0, 0), (1, 3), LCEN, 5)
+
+        ir = 1
+        sizer.Add(SimpleText(panel, label='Column #', size=(40, -1)),
+                  (ir, 0), (1, 1), LCEN, 2)
+        sizer.Add(SimpleText(panel, label='Current Label', size=(200, -1)),
+                  (ir, 1), (1, 1), RCEN, 2)
+        sizer.Add(SimpleText(panel, label='New Label'),
+                  (ir, 2), (1, 1), LCEN, 2)
+
+
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 4), LCEN, 3)
+
+        self.col_labels = []
+        for icol, clab in enumerate(larchgroup.array_labels):
+            ix   = SimpleText(panel, label='%i' % icol, size=(50, -1))
+            old  = SimpleText(panel, label=clab,        size=(200, -1))
+            new  =  wx.TextCtrl(panel, -1, value=clabe, size=(200, -1))
+
+            ir +=1
+            sizer.Add(ix,  (ir, 0), (1, 1), RCEN, 2)
+            sizer.Add(old, (ir, 1), (1, 1), LCEN, 2)
+            sizer.Add(new, (ir, 2), (1, 1), LCEN, 2)
+
+
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 4), LCEN, 3)
+        #
+        ir += 1
+        sizer.Add(okcancel(panel, self.onOK, self.onClose),
+                  (ir, 0), (1, 2), LCEN, 3)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+        pack(self, mainsizer)
+        self.Show()
+        self.Raise()
+
+
+    def onOK(self, event=None):
+        for w in self.widlist:
+            obj, name, pvname, usepv, erase = w
+            if usepv is not None:
+                usepv = usepv.IsChecked()
+            else:
+                usepv = True
+
+            if erase is not None:
+                erase = erase.GetSelection()
+            else:
+                erase = False
+            name   = name.GetValue().strip()
+            pvname = pvname.GetValue().strip()
+            if len(name) < 1 or len(pvname) < 1:
+                continue
+            if erase and obj is not None:
+                self.scandb.del_extrapv(obj.name)
+            elif obj is not None:
+                obj.name = name
+                obj.pvname = pvname
+                obj.use  = int(usepv)
+            elif obj is None:
+                self.scandb.add_extrapv(name, pvname, use=usepv)
+
+        self.scandb.commit()
+        self.Destroy()
+
+
+    def onClose(self, event=None):
+        self.Destroy()
+
+
 class ScanViewerFrame(wx.Frame):
     _about = """Scan 2D Plotter
   Matt Newville <newville @ cars.uchicago.edu>
@@ -61,7 +163,7 @@ class ScanViewerFrame(wx.Frame):
 
         wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
         self.filemap = {}
-        title = "ASCII Column Data File Viewer"
+        title = "Column Data File Viewer"
         self.larch = _larch
         self.plotframe = None
         self.groupname = None
@@ -69,6 +171,8 @@ class ScanViewerFrame(wx.Frame):
         self.SetSize((850, 650))
         self.SetFont(Font(9))
 
+        self.config = {'chdir_on_fileopen': True}
+        
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -174,7 +278,7 @@ class ScanViewerFrame(wx.Frame):
                          ('Plot (right axis)', 'right')):
 
             btnsizer.Add(Button(btnbox, ttl, size=(130, -1),
-                                action=partial(self.onPlot, opt=opt, reprocess=True)),
+                                action=partial(self.onPlot, opt=opt)),
                          LCEN, 1)
 
         pack(btnbox, btnsizer)
@@ -334,7 +438,7 @@ class ScanViewerFrame(wx.Frame):
             lgroup._fit_bgr = pgroup.bkg[:]
             lgroup.plot_yarrays.append((lgroup._fit,     popts2, 'fit'))
             lgroup.plot_yarrays.append((lgroup._fit_bgr, popts2, 'background'))
-        self.onPlot(opt='new', use_plot_yarrays=True)
+        self.onPlot()
 
     def xas_process(self, gname, new_mu=False, **kws):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
@@ -352,16 +456,12 @@ class ScanViewerFrame(wx.Frame):
             except:
                 pass
 
-        if not hasattr(lgroup, 'e0'):
-            preopts['e0'] = None
-        else:
+        if not self.xas_autoe0.IsChecked():
             e0 = self.xas_e0.GetValue()
             if e0 < max(lgroup._xdat_) and e0 > min(lgroup._xdat_):
                 preopts['e0'] = e0
 
-        if not hasattr(lgroup, 'edge_step'):
-            preopts['step'] = None
-        else:
+        if not self.xas_autostep.IsChecked():
             preopts['step'] = self.xas_step.GetValue()
 
         preopts['pre1']  = self.xas_pre1.GetValue()
@@ -370,15 +470,20 @@ class ScanViewerFrame(wx.Frame):
         preopts['norm2'] = self.xas_nor2.GetValue()
 
         preopts['nvict'] = self.xas_vict.GetSelection()
+        preopts['nvict'] = self.xas_vict.GetSelection()
         preopts['nnorm'] = self.xas_nnor.GetSelection()
         preopts['group'] = gname
         preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
+
         preedge_cmd = "pre_edge(%s._xdat_, %s._ydat_, %s)"
 
         self.larch(preedge_cmd % (gname, gname, preopts))
+        
+        if self.xas_autoe0.IsChecked():
+            self.xas_e0.SetValue(lgroup.e0)
+        if self.xas_autostep.IsChecked():
+            self.xas_step.SetValue(lgroup.edge_step)
 
-        self.xas_e0.SetValue(lgroup.e0)
-        self.xas_step.SetValue(lgroup.edge_step)
         self.xas_pre1.SetValue(lgroup.pre1)
         self.xas_nor2.SetValue(lgroup.norm2)
 
@@ -435,7 +540,7 @@ class ScanViewerFrame(wx.Frame):
         if self.groupname is None:
             return
         self.xas_process(self.groupname, **kws)
-        self.onPlot(opt='new', use_plot_yarrays=True)
+        self.onPlot()
 
     def onColumnChoices(self, evt=None):
         """column selections changed ..
@@ -520,8 +625,7 @@ class ScanViewerFrame(wx.Frame):
         if (self.nb.GetCurrentPage() == self.xas_panel):
             self.xas_process(self.groupname, new_mu=True)
 
-    def onPlot(self, evt=None, opt='new', npts=None, 
-               reprocess=False, use_plot_yarrays=True):
+    def onPlot(self, evt=None, opt='new', npts=None, reprocess=False):
         # 'new', 'New Window'),
         # 'left', 'Left Axis'),
         # 'right', 'Right Axis')):
@@ -548,7 +652,7 @@ class ScanViewerFrame(wx.Frame):
         elif opt == 'update'  and npts > 4:
             plotcmd = self.plotpanel.update_line
             update = True
-
+            
         popts = {'side': side}
 
         try:
@@ -564,8 +668,7 @@ class ScanViewerFrame(wx.Frame):
 
         lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
         plot_yarrays = [(lgroup._ydat_, {}, None)]
-
-        if use_plot_yarrays and hasattr(lgroup, 'plot_yarrays'):
+        if hasattr(lgroup, 'plot_yarrays'):
             plot_yarrays = lgroup.plot_yarrays
         #for yarr in plot_yarrays:
         #    yarr = np.array(yarr[:npts])
@@ -614,22 +717,24 @@ class ScanViewerFrame(wx.Frame):
         if not hasattr(self.datagroups, key):
             print 'Error reading file ', key
             return
+        self.filename = filename
+        self.lgroup = getattr(self.datagroups, key, None)
         if key == SCANGROUP:
             #array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
             title = filename
-        elif hasattr(self.datagroups, key):
-            data = getattr(self.datagroups, key)
-            title = data.filename
-            if hasattr(data, 'array_labels'):
-                array_labels = data.array_labels[:]
-            elif hasattr(data, 'column_labels'):
-                array_labels = data.column_labels[:]
+        elif self.lgroup is not None:
+            title = self.lgroup.filename
+            if hasattr(self.lgroup, 'array_labels'):
+                array_labels = self.lgroup.array_labels[:]
+            elif hasattr(self.lgroup, 'column_labels'):
+                array_labels = self.lgroup.column_labels[:]
             else:
                 array_labels = []
-                for attr in dir(data):
-                    if isinstance(getattr(data, attr), np.ndarray):
+                for attr in dir(self.lgroup):
+                    if isinstance(getattr(self.lgroup, attr), np.ndarray):
                         array_labels.append(attr)
 
+                self.lgroup.array_labels = array_labels
 
         self.groupname = key
         xcols  = array_labels[:]
@@ -670,7 +775,6 @@ class ScanViewerFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         #
         fmenu = wx.Menu()
-        pmenu = wx.Menu()
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                  "Read Scan File",  self.onReadScan)
 
@@ -678,6 +782,12 @@ class ScanViewerFrame(wx.Frame):
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         self.menubar.Append(fmenu, "&File")
+
+        omenu = wx.Menu()
+        MenuItem(self, omenu, "Edit Column Labels\tCtrl+E",
+                 "Edit Column Labels", self.onEditColumnLabels)
+
+        self.menubar.Append(omenu, "Options")        
 
         # fmenu.AppendSeparator()
         # MenuItem(self, fmenu, "&Copy\tCtrl+C",
@@ -688,8 +798,6 @@ class ScanViewerFrame(wx.Frame):
         # MenuItem(self, fmenu, "Preview", "Print Preview", self.onPrintPreview)
         #
 
-        # MenuItem(self, pmenu, "Configure\tCtrl+K",
-        #         "Configure Plot", self.onConfigurePlot)
         #MenuItem(self, pmenu, "Unzoom\tCtrl+Z", "Unzoom Plot", self.onUnzoom)
         ##pmenu.AppendSeparator()
         #MenuItem(self, pmenu, "Toggle Legend\tCtrl+L",
@@ -718,6 +826,12 @@ class ScanViewerFrame(wx.Frame):
 
         self.Destroy()
 
+    def onEditColumnLabels(self, evt=None):
+        message = "Edit Column Labels for "
+        print 'HELLO Edit Column Labels: '
+        print self.filename, self.lgroup
+        print self.lgroup.array_labels
+        
     def onReadScan(self, evt=None):
         dlg = wx.FileDialog(self, message="Load Column Data File",
                             defaultDir=os.getcwd(),
@@ -740,6 +854,9 @@ class ScanViewerFrame(wx.Frame):
                 gname = randname()
 
             parent, fname = os.path.split(path)
+            if self.config['chdir_on_fileopen']:
+                os.chdir(parent)
+            
             fh = open(path, 'r')
             line1 = fh.readline().lower()
             fh.close()
