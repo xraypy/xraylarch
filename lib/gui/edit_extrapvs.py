@@ -2,7 +2,7 @@ import sys
 import time
 import wx
 import wx.lib.scrolledpanel as scrolled
-
+ 
 from .gui_utils import (GUIColors, set_font_with_children, YesNo,
                         add_button, pack, SimpleText, check, okcancel,
                         add_subtitle, Font, LCEN, CEN, RCEN,
@@ -59,9 +59,9 @@ class ExtraPVsFrame(wx.Frame) :
             self.widlist.append((this, desc, pvctrl, usepv, delpv))
 
         for i in range(3):
-            desc   = wx.TextCtrl(panel, -1, value='', size=(175, -1))
-            pvctrl = wx.TextCtrl(panel, value='', size=(175, -1))
-            usepv  = check(panel, default=True)
+            desc   = wx.TextCtrl(panel, -1, value='', size=(200, -1))
+            pvctrl = wx.TextCtrl(panel, value='', size=(200, -1))
+            usepv  = check(panel, default=False)
             ir +=1
             sizer.Add(desc,   (ir, 0), (1, 1), RCEN, 2)
             sizer.Add(pvctrl, (ir, 1), (1, 1), LCEN, 2)
