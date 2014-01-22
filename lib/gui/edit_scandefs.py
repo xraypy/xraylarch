@@ -212,20 +212,11 @@ class XAFSScanDataTable(GenericDataTable):
             utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
             self.data.append([scan.name, e0, nreg, npts, mtime, utime, 0])
 
-
-#         self.Bind(gridlib.EVT_GRID_CELL_LEFT_DCLICK, self.OnLeftDClick)
-#         
-#     def OnLeftDClick(self, evt=None):
-#         if self.CanEnableCellControl():
-#             self.EnableCellEditControl()
-# 
-       
 class ScandefsFrame(wx.Frame) :
     """Edit Scan Definitions"""
     def __init__(self, parent, pos=(-1, -1)):
 
         self.parent = parent
-        print 'self parent ' , self.parent.nb
         self.scandb = parent.scandb
         wx.Frame.__init__(self, None, -1,
                           'Epics Scanning: Scan Definitions',
@@ -308,13 +299,10 @@ class ScandefsFrame(wx.Frame) :
             
     def onView(self, event=None):
         inb =  self.nb.GetSelection()
-        print 'View ', inb
         label, thisgrid = self.nblabels[inb]
         irow = thisgrid.GetGridCursorRow()
-        print irow
-        print  self.tables[inb].scans
-        print  self.tables[inb].scans[irow]
-        # print self.parent.nb
-        
-        # self.Destroy()
+        scandef = json.loads(self.tables[inb].scans[irow].text)
+        scanpanel = self.parent.scanpanels[label.lower()][1]
+        scanpanel.load_scandict(scandef)
+
 
