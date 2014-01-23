@@ -19,6 +19,8 @@ CEN  |= wx.ALL
 ALL_CEN =  wx.ALL|wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_CENTER_VERTICAL
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
+SCANTYPES = ('linear', 'mesh', 'slew', 'xafs')
+
 def buttonrow(panel, onOK=None, onCancel=None):
     btnsizer = wx.StdDialogButtonSizer()
     _ok = wx.Button(panel, wx.ID_OK)
@@ -73,17 +75,7 @@ class GenericDataTable(gridlib.PyGridTableBase):
             try:
                 self.data[row][col] = value
             except IndexError:
-                pass # cannot add row
-                #self.data.append([''] * self.GetNumberCols())
-                #innerSetValue(row, col, value)
-
-                # tell the grid we've added a row
-                #msg = gridlib.GridTableMessage(self,            # The table
-                #        gridlib.GRIDTABLE_NOTIFY_ROWS_APPENDED, # what we did to it
-                #        1                                       # how many
-                #        )
-
-                #self.GetView().ProcessTableMessage(msg)
+                pass 
         innerSetValue(row, col, value) 
 
     def CanGetValueAs(self, row, col, typeName):
@@ -108,7 +100,9 @@ class LinearScanDataTable(GenericDataTable):
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_BOOL]
+        self.set_data(scans)
 
+    def set_data(self, scans):
         self.scans = scans[::-1]
         self.data = []
         self.widths = [150, 100, 80, 125, 125, 60]
@@ -136,7 +130,9 @@ class MeshScanDataTable(GenericDataTable):
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_BOOL]
-        
+        self.set_data(scans)
+
+    def set_data(self, scans):
         self.scans = scans[::-1]
         self.data = []
         self.widths = [150, 100, 100, 80, 125, 125, 60]
@@ -149,7 +145,6 @@ class MeshScanDataTable(GenericDataTable):
             mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
             utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
             self.data.append([scan.name, axis0, axis1, npts, mtime, utime, 0])
-
 
 class SlewScanDataTable(GenericDataTable):
     def __init__(self, scans):
@@ -165,7 +160,9 @@ class SlewScanDataTable(GenericDataTable):
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_BOOL]
-        
+        self.set_data(scans)
+
+    def set_data(self, scans):
         self.scans = scans[::-1]
         self.data = []
         self.widths = [150, 100, 100, 80, 125, 125, 60]
@@ -182,7 +179,6 @@ class SlewScanDataTable(GenericDataTable):
             utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
             self.data.append([scan.name, axis0, axis1, npts, mtime, utime, 0])
 
-
 class XAFSScanDataTable(GenericDataTable):
     def __init__(self, scans):
         GenericDataTable.__init__(self)
@@ -196,7 +192,9 @@ class XAFSScanDataTable(GenericDataTable):
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_BOOL]
-        
+        self.set_data(scans)
+
+    def set_data(self, scans):
         self.scans = scans[::-1]
         self.data = []
         self.widths = [150, 80, 80, 80, 125, 125, 60]
@@ -238,7 +236,9 @@ class ScandefsFrame(wx.Frame) :
                              colour=self.colors.title, style=LCEN),
                   0, LCEN, 5)
 
-        allscans = {'linear': [], 'mesh': [], 'xafs': [], 'slew':[]}
+        allscans = {}
+        for t in SCANTYPES:
+            allscans[t] = []
 
         for this in self.scandb.getall('scandefs',
                                        orderby='last_used_time'):
@@ -256,7 +256,7 @@ class ScandefsFrame(wx.Frame) :
             table = creator(allscans[pname.lower()])
             tgrid.SetTable(table, True)
             self.tables.append(table)
-            self.nb.AddPage(tgrid, "%s Scan" % pname)
+            self.nb.AddPage(tgrid, "%s Scans" % pname)
             self.nblabels.append((pname.lower(), tgrid))
             
             nrows = tgrid.GetNumberRows()
@@ -275,6 +275,8 @@ class ScandefsFrame(wx.Frame) :
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         bsizer.Add(add_button(bpanel, label='Load Current Scan', action=self.onView))
+        bsizer.Add(add_button(bpanel, label='Apply Changes', action=self.onApply))
+        bsizer.Add(add_button(bpanel, label='Refresh List',  action=self.onRefresh))
         bsizer.Add(add_button(bpanel, label='Done', action=self.onDone))
 
         pack(bpanel, bsizer)
@@ -289,12 +291,32 @@ class ScandefsFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-    def onDone(self, event=None):
+    def onRefresh(self, evt=None):
+        allscans = {}
+        for t in SCANTYPES:
+            allscans[t] = []
+
+        for this in self.scandb.getall('scandefs',
+                                       orderby='last_used_time'):
+            allscans[this.type].append(this)
+            utime = this.last_used_time.strftime("%Y-%b-%d %H:%M")
+            
+        for i, pname in enumerate(SCANTYPES):
+            self.tables[i].set_data(allscans[pname.lower()])
+
+        inb  = self.nb.GetSelection()
+        self.nb.SetSelection(inb)
+        self.Refresh()
+
+    def onApply(self, event=None):
         for table in self.tables:
             del_ids = table.onOK()
             for scanid in del_ids:
                 self.scandb.del_scandef(scanid=scanid)
         self.scandb.commit()
+        self.onRefresh()
+
+    def onDone(self, event=None):
         self.Destroy()
             
     def onView(self, event=None):
@@ -304,5 +326,5 @@ class ScandefsFrame(wx.Frame) :
         scandef = json.loads(self.tables[inb].scans[irow].text)
         scanpanel = self.parent.scanpanels[label.lower()][1]
         scanpanel.load_scandict(scandef)
-
+        self.parent.nb.SetSelection(inb)
 
