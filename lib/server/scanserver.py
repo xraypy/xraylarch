@@ -181,10 +181,12 @@ class ScanServer():
 
     def do_scan(self, scanname, filename=None):
         self.scan = load_dbscan(self.scandb, scanname)
+        print 'Load Scan' , self.scan
         self.scan.complete = False
         self.scan.pre_scan_methods.append(self.scan_prescan)
         self.scandb.clear_scandata()
         npts = -1
+        print 'Do_Scan 1 ' , self.scan.positioners
         for p in self.scan.positioners:
             units = get_units(p.pv, 'unknown')
             npts = max(npts, len(p.array))
@@ -193,12 +195,15 @@ class ScanServer():
                                      pvname=p.pv.pvname,
                                      units=units,
                                      notes='positioner')
-
+        print 'Do_Scan 2 ' , self.scan.counters
         for c in self.scan.counters:
             units = get_units(c.pv, 'counts')
+            print 'Count ', c, fix_varname(c.label), c.pv.pvname
             self.scandb.add_scandata(fix_varname(c.label), [],
                                      pvname=c.pv.pvname,
                                      units=units)
+
+        print 'Do_Scan 3 ' , self.scan.counters
 
         if not hasattr(self.scan, 'scantime') or self.scan.scantime < 0:
             self.scan.scantime = npts*(self.scan.pos_settle_time +
@@ -223,7 +228,6 @@ class ScanServer():
             self.scanwatcher.join()
 
     def do_caput(self, pvname, value, wait=False, timeout=30.0):
-        print 'do caput ', pvname, value, wait
         epics.caput(pvname, value, wait=wait, timeout=timeout)
 
     def sleep(self, t=0.05):
@@ -234,9 +238,11 @@ class ScanServer():
 
     def finish(self):
         print 'shutting down!'
+        
 
     def execute_command(self, req):
         print 'Execute: ', req.id, req.command, req.arguments, req.output_file
+        print 'Execute: ', type(req.arguments)
         # print 'req.id      = ', req.id
         # print 'req.arguments = ', req.arguments
         #print 'req.status_id, req.status = ', req.status_id
@@ -263,7 +269,7 @@ class ScanServer():
         self.scandb.set_command_status(req.id, 'running')
         if req.command == 'doscan':
             print 'DO SCAN ', req.arguments, req.output_file
-            self.do_scan(req.arguments, filename=req.output_file)
+            self.do_scan(str(req.arguments), filename=req.output_file)
         else: 
             print 'unknown command ', req.command
         time.sleep(3.0)
@@ -283,7 +289,7 @@ class ScanServer():
         print "starting server"
 
         while True:
-            self.sleep()
+            self.sleep(1.0)
             if self.abort:   break
             reqs = self.scandb.get_commands('requested')
             print 'tick  ', len(reqs)
@@ -297,6 +303,7 @@ class ScanServer():
 
         # mainloop end
         self.finish()
+        sys.exit()
 
 
 
