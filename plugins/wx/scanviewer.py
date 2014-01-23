@@ -53,18 +53,33 @@ def randname(n=6):
     "return random string of n (default 6) lowercase letters"
     return ''.join([chr(randrange(26)+97) for i in range(n)])
 
+def okcancel(panel, onOK=None, onCancel=None):
+    btnsizer = wx.StdDialogButtonSizer()
+    _ok = wx.Button(panel, wx.ID_OK)
+    _no = wx.Button(panel, wx.ID_CANCEL)
+    panel.Bind(wx.EVT_BUTTON, onOK,     _ok)
+    panel.Bind(wx.EVT_BUTTON, onCancel, _no)
+    _ok.SetDefault()
+    btnsizer.AddButton(_ok)
+    btnsizer.AddButton(_no)
+    btnsizer.Realize()
+    return btnsizer
+
  
 class EditColumnFrame(wx.Frame) :
     """Set Column Labels for a file"""
-    def __init__(self, parent, larchgroup, filename, pos=(-1, -1)):
+    def __init__(self, parent, pos=(-1, -1)):
 
-        self.larchgroup = larchgroup
-        self.filename = filename
         self.parent = parent
+        self.larch = parent.larch
+        self.lgroup = parent.lgroup
+
+        message = "Edit Column Labels for %s" % parent.filename
+
         wx.Frame.__init__(self, None, -1, 'Edit Column Labels',
                           style=FRAMESTYLE)
 
-        self.SetFont(Font(9))
+        self.SetFont(Font(10))
         sizer = wx.GridBagSizer(10, 5)
         panel = scrolled.ScrolledPanel(self)
         self.SetMinSize((525, 550))
@@ -73,9 +88,8 @@ class EditColumnFrame(wx.Frame) :
         panel.SetBackgroundColour(self.colors.bg)
 
         # title row
-        title = SimpleText(panel, 'Column labels for %s' % filename,
-                           font=Font(13),  colour=self.colors.title,
-                           style=LCEN)
+        title = SimpleText(panel, message, font=Font(13),
+                           colour=self.colors.title, style=LCEN)
 
         sizer.Add(title,        (0, 0), (1, 3), LCEN, 5)
 
@@ -87,16 +101,16 @@ class EditColumnFrame(wx.Frame) :
         sizer.Add(SimpleText(panel, label='New Label'),
                   (ir, 2), (1, 1), LCEN, 2)
 
-
         ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
+        sizer.Add(wx.StaticLine(panel, size=(510, 3), style=wx.LI_HORIZONTAL),
                   (ir, 0), (1, 4), LCEN, 3)
 
-        self.col_labels = []
-        for icol, clab in enumerate(larchgroup.array_labels):
+        self.twids = []
+        for icol, clab in enumerate(self.lgroup.array_labels):
             ix   = SimpleText(panel, label='%i' % icol, size=(50, -1))
             old  = SimpleText(panel, label=clab,        size=(200, -1))
-            new  =  wx.TextCtrl(panel, -1, value=clabe, size=(200, -1))
+            new  = wx.TextCtrl(panel, -1, value=clab,  size=(200, -1))
+            self.twids.append((clab, new))
 
             ir +=1
             sizer.Add(ix,  (ir, 0), (1, 1), RCEN, 2)
@@ -105,12 +119,38 @@ class EditColumnFrame(wx.Frame) :
 
 
         ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(350, 3), style=wx.LI_HORIZONTAL),
+        sizer.Add(wx.StaticLine(panel, size=(510, 3), style=wx.LI_HORIZONTAL),
                   (ir, 0), (1, 4), LCEN, 3)
         #
         ir += 1
         sizer.Add(okcancel(panel, self.onOK, self.onClose),
                   (ir, 0), (1, 2), LCEN, 3)
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(510, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 4), LCEN, 3)
+
+        fpanel = scrolled.ScrolledPanel(panel, size=(510, 250),
+                                        style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER)
+        fsizer = wx.BoxSizer(wx.VERTICAL)
+        
+        self.filecontents = wx.StaticText(fpanel)
+        try:
+            text = open(self.lgroup.filename, 'r').read()
+        except:
+            text = "The file '%s'\n was not found" % self.lgroup.filename
+        self.filecontents.SetLabel(text)
+
+        fsizer.Add(self.filecontents, 1, LCEN|wx.GROW, 3)
+
+        pack(fpanel, fsizer)
+                
+        fpanel.SetAutoLayout(1)
+        fpanel.SetupScrolling()
+
+
+
+        ir += 1
+        sizer.Add(fpanel, (ir, 0), (1, 4), LCEN|wx.GROW, 3)
 
         pack(panel, sizer)
         panel.SetupScrolling()
@@ -123,33 +163,22 @@ class EditColumnFrame(wx.Frame) :
 
 
     def onOK(self, event=None):
-        for w in self.widlist:
-            obj, name, pvname, usepv, erase = w
-            if usepv is not None:
-                usepv = usepv.IsChecked()
-            else:
-                usepv = True
-
-            if erase is not None:
-                erase = erase.GetSelection()
-            else:
-                erase = False
-            name   = name.GetValue().strip()
-            pvname = pvname.GetValue().strip()
-            if len(name) < 1 or len(pvname) < 1:
-                continue
-            if erase and obj is not None:
-                self.scandb.del_extrapv(obj.name)
-            elif obj is not None:
-                obj.name = name
-                obj.pvname = pvname
-                obj.use  = int(usepv)
-            elif obj is None:
-                self.scandb.add_extrapv(name, pvname, use=usepv)
-
-        self.scandb.commit()
+        """ rename labels -- note that values for new names are first gathered, 
+        and then set, so that renaming 'a' and 'b' works."""
+        labels = []
+        tmp = {}
+        for oldname, twid in self.twids():
+            newname = twid.GetValue()
+            print oldname, newname, oldname == newname
+            labels.append(newname)
+            if oldname != newname:
+                tmp[newname] = getattr(self.lgroup, oldname)
+        for name, val in tmp.items():
+            setattr(self.lgroup, name, val)
+        self.lgroup.array_lables = labels
+        print 'Set labels to ', labels
+        print 'need to update col choices!'
         self.Destroy()
-
 
     def onClose(self, event=None):
         self.Destroy()
@@ -165,11 +194,12 @@ class ScanViewerFrame(wx.Frame):
         self.filemap = {}
         title = "Column Data File Viewer"
         self.larch = _larch
+        self.subframes = {}
         self.plotframe = None
         self.groupname = None
         self.SetTitle(title)
         self.SetSize((850, 650))
-        self.SetFont(Font(9))
+        self.SetFont(Font(10))
 
         self.config = {'chdir_on_fileopen': True}
         
@@ -826,12 +856,22 @@ class ScanViewerFrame(wx.Frame):
 
         self.Destroy()
 
-    def onEditColumnLabels(self, evt=None):
-        message = "Edit Column Labels for "
-        print 'HELLO Edit Column Labels: '
-        print self.filename, self.lgroup
-        print self.lgroup.array_labels
+    def show_subframe(self, name, frameclass):
+        shown = False
+        if name in self.subframes:
+            try:
+                self.subframes[name].Raise()
+                shown = True
+            except:
+                del self.subframes[name]
+        if not shown:
+            self.subframes[name] = frameclass(self)
+
         
+    def onEditColumnLabels(self, evt=None):
+        self.show_subframe('coledit', EditColumnFrame)
+
+       
     def onReadScan(self, evt=None):
         dlg = wx.FileDialog(self, message="Load Column Data File",
                             defaultDir=os.getcwd(),
