@@ -282,6 +282,8 @@ class ASCIIScanFile(ScanFile):
                 if obj.units in (None, 'None', ''):
                     try:
                         units = obj.pv.units
+                    except KeyboardInterrupt:
+                        return
                     except TypeError:
                         time.sleep(0.02)
                         try:
