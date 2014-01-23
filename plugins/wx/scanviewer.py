@@ -79,13 +79,13 @@ class EditColumnFrame(wx.Frame) :
         wx.Frame.__init__(self, None, -1, 'Edit Column Labels',
                           style=FRAMESTYLE)
 
+        FWID = 600 
         self.SetFont(Font(10))
         sizer = wx.GridBagSizer(10, 5)
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((525, 550))
+        self.SetMinSize((FWID, 550))
 
         self.colors = GUIColors()
-        panel.SetBackgroundColour(self.colors.bg)
 
         # title row
         title = SimpleText(panel, message, font=Font(13),
@@ -94,7 +94,7 @@ class EditColumnFrame(wx.Frame) :
         sizer.Add(title,        (0, 0), (1, 3), LCEN, 5)
 
         ir = 1
-        sizer.Add(SimpleText(panel, label='Column #', size=(40, -1)),
+        sizer.Add(SimpleText(panel, label='Column #', size=(55, -1)),
                   (ir, 0), (1, 1), LCEN, 2)
         sizer.Add(SimpleText(panel, label='Current Label', size=(200, -1)),
                   (ir, 1), (1, 1), RCEN, 2)
@@ -102,14 +102,14 @@ class EditColumnFrame(wx.Frame) :
                   (ir, 2), (1, 1), LCEN, 2)
 
         ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(510, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), LCEN, 3)
+        sizer.Add(wx.StaticLine(panel, size=(FWID, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 4), LCEN|wx.GROW|wx.ALL, 3)
 
         self.twids = []
         for icol, clab in enumerate(self.lgroup.array_labels):
-            ix   = SimpleText(panel, label='%i' % icol, size=(50, -1))
+            ix   = SimpleText(panel, label='%i' % icol, size=(55, -1))
             old  = SimpleText(panel, label=clab,        size=(200, -1))
-            new  = wx.TextCtrl(panel, -1, value=clab,  size=(200, -1))
+            new  = wx.TextCtrl(panel, -1, value=clab,   size=(200, -1))
             self.twids.append((clab, new))
 
             ir +=1
@@ -119,20 +119,17 @@ class EditColumnFrame(wx.Frame) :
 
 
         ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(510, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), LCEN, 3)
+        sizer.Add(wx.StaticLine(panel, size=(FWID, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 4), LCEN|wx.GROW|wx.ALL, 3)
         #
         ir += 1
         sizer.Add(okcancel(panel, self.onOK, self.onClose),
                   (ir, 0), (1, 2), LCEN, 3)
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(510, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), LCEN, 3)
 
-        fpanel = scrolled.ScrolledPanel(panel, size=(510, 250),
+        fpanel = scrolled.ScrolledPanel(panel, size=(FWID, 275),
                                         style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER)
+        fpanel.SetFont(Font(9))
         fsizer = wx.BoxSizer(wx.VERTICAL)
-        
         self.filecontents = wx.StaticText(fpanel)
         try:
             text = open(self.lgroup.filename, 'r').read()
@@ -140,7 +137,7 @@ class EditColumnFrame(wx.Frame) :
             text = "The file '%s'\n was not found" % self.lgroup.filename
         self.filecontents.SetLabel(text)
 
-        fsizer.Add(self.filecontents, 1, LCEN|wx.GROW, 3)
+        fsizer.Add(self.filecontents, 1, LCEN|wx.GROW|wx.ALL, 3)
 
         pack(fpanel, fsizer)
                 
@@ -167,17 +164,15 @@ class EditColumnFrame(wx.Frame) :
         and then set, so that renaming 'a' and 'b' works."""
         labels = []
         tmp = {}
-        for oldname, twid in self.twids():
+        for oldname, twid in self.twids:
             newname = twid.GetValue()
-            print oldname, newname, oldname == newname
             labels.append(newname)
             if oldname != newname:
                 tmp[newname] = getattr(self.lgroup, oldname)
         for name, val in tmp.items():
             setattr(self.lgroup, name, val)
-        self.lgroup.array_lables = labels
-        print 'Set labels to ', labels
-        print 'need to update col choices!'
+        self.lgroup.array_labels = labels
+        self.parent.set_array_labels(labels=labels)
         self.Destroy()
 
     def onClose(self, event=None):
@@ -211,6 +206,7 @@ class ScanViewerFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         read_workdir('scanviewer.dat')
+
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
@@ -330,7 +326,11 @@ class ScanViewerFrame(wx.Frame):
         self.fit_step = Choice(panel, size=(100, -1),
                                   choices=('linear', 'error function', 'arctan'))
 
-        self.fit_report = wx.StaticText(panel, -1, "", (180, 200))
+        self.fit_report = wx.TextCtrl(panel, -1, "", size=(400, 200),
+                                      style=wx.TE_MULTILINE|wx.TE_READONLY)
+
+        self.fit_report.SetFont(Font(9))
+        
         sizer = wx.GridBagSizer(10, 4)
         sizer.Add(SimpleText(p, 'Fit Model: '),           (0, 0), (1, 1), LCEN)
         sizer.Add(self.fit_model,                         (0, 1), (1, 1), LCEN)
@@ -342,7 +342,7 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(self.fit_step,                          (2, 1), (1, 1), LCEN)
         sizer.Add(Button(panel, 'Show Fit', size=(100, -1),
                              action=self.onFitPeak),       (3, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_report,                         (0, 2), (4, 2), LCEN, 3)
+        sizer.Add(self.fit_report,                         (0, 2), (5, 2), LCEN, 3)
         pack(panel, sizer)
         return panel
 
@@ -417,7 +417,7 @@ class ScanViewerFrame(wx.Frame):
     def onFitPeak(self, evt=None):
         gname = self.groupname
         if self.dtcorr.IsChecked():
-            print( 'fit needs to dt correct!')
+            print( 'fit not doing dt correct!')
 
         dtext = []
         model = self.fit_model.GetStringSelection().lower()
@@ -436,23 +436,21 @@ class ScanViewerFrame(wx.Frame):
         lgroup =  getattr(self.larch.symtable, gname)
         x = lgroup._xdat_
         y = lgroup._ydat_
+        if step.startswith('error'):
+            step = 'erf'
+        elif step.startswith('arctan'):
+            step = 'atan'
+
         pgroup = fit_peak(x, y, model, background=bkg, step=step,
                           _larch=self.larch)
-        text = fit_report(pgroup.params, _larch=self.larch)
-        dtext.append('Parameters: ')
-        for pname in dir(pgroup.params):
-            par = getattr(pgroup.params, pname)
-            if isParameter(par):
-                ptxt = "    %s= %.4f" % (par.name, par.value)
-                if (hasattr(par, 'stderr') and par.stderr is not None):
-                    ptxt = "%s(%.4f)" % (ptxt, par.stderr)
-                dtext.append(ptxt)
+        
 
         dtext = '\n'.join(dtext)
-        # plotframe = self.get_plotwindow()
-        # plotframe.oplot(x, pgroup.fit, label='fit (%s)' % model)
-        text = fit_report(pgroup.params, _larch=self.larch)
-        self.fit_report.SetLabel(dtext)
+        dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params,
+                                                _larch=self.larch))
+        self.fit_report.SetValue(dtext)
+        # self.report_panel.SetAutoLayout(1)
+        # self.report_panel.SetupScrolling()
 
         popts1 = dict(style='solid', linewidth=3,
                       marker='None', markersize=4)
@@ -515,6 +513,8 @@ class ScanViewerFrame(wx.Frame):
             self.xas_step.SetValue(lgroup.edge_step)
 
         self.xas_pre1.SetValue(lgroup.pre1)
+        self.xas_pre2.SetValue(lgroup.pre2)
+        self.xas_nor1.SetValue(lgroup.norm1)
         self.xas_nor2.SetValue(lgroup.norm2)
 
         popts1 = dict(style='solid', linewidth=3,
@@ -524,7 +524,6 @@ class ScanViewerFrame(wx.Frame):
 
         lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
         y4e0 = lgroup._ydat_
-        #  print 'xas_process ', out
         if out.startswith('raw data with'):
             lgroup.plot_yarrays = [(lgroup.pre_edge,  popts2, 'pre edge'),
                                    (lgroup.post_edge, popts2, 'post edge'),
@@ -542,13 +541,11 @@ class ScanViewerFrame(wx.Frame):
         if self.xas_showe0.IsChecked():
             ie0 = index_of(lgroup._xdat_, lgroup.e0)
             lgroup.plot_ymarkers = [(lgroup.e0, y4e0[ie0], {'label': 'e0'})]
-            # print 'marker at ', lgroup.e0, y4e0[ie0]
         return
 
     def init_larch(self):
         t0 = time.time()
-        # print 'INIT LARCH ', self.larch
-        if self.larch is not None:
+        if self.larch is None:
             self.larch = Interpreter()
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
@@ -576,7 +573,6 @@ class ScanViewerFrame(wx.Frame):
         """column selections changed ..
         recalculate _xdat_ and _ydat_
         arrays for this larch group"""
-        # print 'on Column Choice -- clear '
         dtcorr = self.dtcorr.IsChecked()
         ix  = self.xarr.GetSelection()
         x   = self.xarr.GetStringSelection()
@@ -622,12 +618,15 @@ class ScanViewerFrame(wx.Frame):
             y1 = float(yl1)
         else:
             y1 = self.get_data(lgroup, y1, correct=dtcorr)
+
         if y2 in ('0.0', '1.0'):
             y2 = float(y2)
+            if op2 == '/': y2 = 1.0
         else:
             y2 = self.get_data(lgroup, y2, correct=dtcorr)
         if y3 in ('0.0', '1.0'):
             y3 = float(y3)
+            if op3 == '/': y3 = 1.0
         else:
             y3 = self.get_data(lgroup, y3, correct=dtcorr)
         if x not in ('0', '1'):
@@ -637,9 +636,12 @@ class ScanViewerFrame(wx.Frame):
         lgroup._y2 = y2
         lgroup._y3 = y3
         self.larch("%s._xdat_ = %s(%s._x)" % (gname, xop, gname))
-        self.larch("%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
-                   (gname, op1, gname, op2, gname, op3, gname))
-
+        try:
+            self.larch("%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
+                       (gname, op1, gname, op2, gname, op3, gname))
+        except RuntimeWarning:
+            self.larch("%s._ydat_ = %s._y1")
+            
         try:
             npts = min(len(lgroup._xdat_), len(lgroup._ydat_))
         except AttributeError:
@@ -654,13 +656,10 @@ class ScanViewerFrame(wx.Frame):
         lgroup._ydat_ = np.array( lgroup._ydat_[:npts])
         if (self.nb.GetCurrentPage() == self.xas_panel):
             self.xas_process(self.groupname, new_mu=True)
+        else:
+            lgroup.plot_yarrays = [(lgroup._ydat_, {}, None)]
 
     def onPlot(self, evt=None, opt='new', npts=None, reprocess=False):
-        # 'new', 'New Window'),
-        # 'left', 'Left Axis'),
-        # 'right', 'Right Axis')):
-        # 'update',  from scan
-
            
         try:
             self.plotframe.Show()
@@ -747,13 +746,14 @@ class ScanViewerFrame(wx.Frame):
         if not hasattr(self.datagroups, key):
             print 'Error reading file ', key
             return
+
+        self.groupname = key
         self.filename = filename
         self.lgroup = getattr(self.datagroups, key, None)
+
         if key == SCANGROUP:
-            #array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
-            title = filename
+            self.lgroup.filename = filename
         elif self.lgroup is not None:
-            title = self.lgroup.filename
             if hasattr(self.lgroup, 'array_labels'):
                 array_labels = self.lgroup.array_labels[:]
             elif hasattr(self.lgroup, 'column_labels'):
@@ -763,23 +763,28 @@ class ScanViewerFrame(wx.Frame):
                 for attr in dir(self.lgroup):
                     if isinstance(getattr(self.lgroup, attr), np.ndarray):
                         array_labels.append(attr)
-
                 self.lgroup.array_labels = array_labels
 
-        self.groupname = key
+        self.set_array_labels()
+
+    def set_array_labels(self, labels=None):
+        """set choices for array dropdowns from array labels"""
+        array_labels = self.lgroup.array_labels
         xcols  = array_labels[:]
         ycols  = array_labels[:]
         y2cols = array_labels[:] + ['1.0', '0.0', '']
         ncols  = len(xcols)
-        self.title.SetLabel(title)
+        self.title.SetLabel(self.lgroup.filename)
 
         _xarr = self.xarr.GetStringSelection()
-        if len(_xarr) < 1:
+        if len(_xarr) < 1 or _xarr not in xcols:
             _xarr = xcols[0]
 
         _yarr = [[], [], []]
         for j in range(3):
             _yarr[j] = self.yarr[j].GetStringSelection()
+            if _yarr[j] not in ycols:
+                _yarr[j] = ''
 
         self.xarr.SetItems(xcols)
         self.xarr.SetStringSelection(_xarr)
@@ -936,5 +941,6 @@ def _scanview(_larch=None):
     ScanViewer(_larch=_larch).run()
 
 def registerLarchPlugin():
+    print 'working register scanviewer'
     return ('_plotter', {'scanview':_scanview})
 
