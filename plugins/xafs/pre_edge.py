@@ -146,6 +146,11 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     pre1  = max(pre1,  (min(energy) - e0))
     norm2 = min(norm2, (max(energy) - e0))
 
+    if pre1 > pre2:
+        pre1, pre2 = pre2, pre1
+    if norm1 > norm2:
+        norm1, norm2 = norm2, norm1
+        
     p1 = index_of(energy, pre1+e0)
     p2 = index_nearest(energy, pre2+e0)
     if p2-p1 < 2:
