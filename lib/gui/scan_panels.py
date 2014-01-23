@@ -334,7 +334,8 @@ class LinearScanPanel(GenericScanPanel):
             pos.SetStringSelection(posdat[0])
             start.SetValue(posdat[2])
             stop.SetValue(posdat[3])
-            npts.SetValue(posdat[4])
+            if hasattr(npts, 'SetValue'):
+                npts.SetValue(posdat[4])
             self.update_position_from_pv(i)
 
     def update_positioners(self):
