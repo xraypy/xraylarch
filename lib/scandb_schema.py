@@ -43,6 +43,7 @@ def hasdb_pg(dbname, create=False,
     engine = create_engine(conn_str % (user, password,
                                        host, port, 'postgres'))
     conn = engine.connect()
+    conn.execution_options(autocommit=True)
     conn.execute("commit")
     dbs = [i[0] for i in conn.execute(query).fetchall()]
     if create and dbname not in dbs:
