@@ -736,6 +736,14 @@ class ScanDB(object):
         statid = self.status_codes[status]
         return q.filter(cls.status_id==statid).all()
 
+    # commands -- a more complex interface
+    def get_mostrecent_command(self):
+        """return command by status"""
+        cls, table = self._get_table('commands')
+        columns = table.c.keys()
+        q = self.query(cls)
+        q = q.order_by(cls.request_time)
+        return q.all()[-1]
 
     def add_command(self, command, arguments='',output_value='',
                     output_file='', **kws):
@@ -761,6 +769,7 @@ class ScanDB(object):
             status = 'unknown'
         statid = self.status_codes[status]
         table.update(whereclause="id='%i'" % id).execute(status_id=statid)
+        self.commit()
 
     def cancel_command(self, id):
         """cancel command"""
