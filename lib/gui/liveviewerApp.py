@@ -55,7 +55,7 @@ CURSCAN, SCANGROUP = '< Current Scan >', 'scandat'
 
 class ScanViewerFrame(wx.Frame):
     _about = """Scan Viewer,  Matt Newville <newville @ cars.uchicago.edu>  """
-    TIME_MSG = 'Point %i/%i, Time Remaining ~ %s '
+    TIME_MSG = 'Point %i/%i, Time Remaining ~ %s, Status=%s'
 
     def __init__(self, parent, dbname=None, server='sqlite', host=None,
                  port=None, user=None, password=None, create=True, **kws):
@@ -90,7 +90,7 @@ class ScanViewerFrame(wx.Frame):
             self.total_npts = 1
             self.scantimer = wx.Timer(self)
             self.Bind(wx.EVT_TIMER, self.onScanTimer, self.scantimer)
-            self.scantimer.Start(50)
+            self.scantimer.Start(250)
 
         self.Show()
         self.Raise()
@@ -102,6 +102,18 @@ class ScanViewerFrame(wx.Frame):
         curfile = fix_filename(self.get_info('filename'))
         sdata = self.scandb.get_scandata()
         npts = len(sdata[-1].data)
+        cmd = self.scandb.get_mostrecent_command()
+        try:
+            cmd_stat = cmd.status.name.lower()
+        except AttributeError:
+            cmd_stat = 'unknown'
+
+        time_est = hms(self.get_info('scan_time_estimate', as_int=True))
+        msg = self.get_info('scan_message')
+        # print 'MSG ', msg, time_est
+        if cmd_stat.startswith('run'):
+            msg = '%s, %s' % (msg, time_est)        
+        self.SetStatusText(msg)
 
         if (npts > 2 and npts == self.live_cpt and
             curfile == self.live_scanfile): # no new data
@@ -120,7 +132,10 @@ class ScanViewerFrame(wx.Frame):
             return
 
         time_est = hms(self.get_info('scan_time_estimate', as_int=True))
-        msg = self.TIME_MSG % (npts, self.total_npts, time_est)
+        msg = self.get_info('scan_message')
+        if cmd_stat.startswith('run'):
+            msg = '%s, %s' % (msg, time_est)        
+
         self.SetStatusText(msg)
         self.live_cpt = npts
         for row in sdata:

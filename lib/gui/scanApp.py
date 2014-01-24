@@ -53,7 +53,7 @@ from ..utils import normalize_pvname
 from ..stepscan import StepScan
 from ..xafs_scan import XAFS_Scan
 
-from ..file_utils import new_filename, increment_filename, nativepath
+from ..file_utils import new_filename, nativepath, fix_filename
 
 from ..scandb import ScanDB
 
@@ -87,11 +87,13 @@ class ScanFrame(wx.Frame):
         wx.Frame.__init__(self, None, -1, style=FRAMESTYLE, **kws)
 
         self.pvlist = {}
+
         self.subframes = {}
         self._larch = None
         self.epics_status = 0
         self.larch_status = 0
         self.last_scanname = ''
+        self.scan_started = False
 
         self.scandb = ScanDB(dbname=dbname, server=server, host=host,
                  user=user, password=password, port=port, create=create)
@@ -190,15 +192,6 @@ class ScanFrame(wx.Frame):
         self.SetSizer(sizer)
         sizer.Fit(self)
 
-    def onScanTimer(self, evt=None):
-        if self.scan_cpt == self.scan.cpt:
-            return
-        self.scan_cpt = self.scan.cpt
-        msg = "Point %i / %i" % (self.scan.cpt, self.scan.npts)
-        self.statusbar.SetStatusText(msg, 0)
-        if self.scan.complete:
-            self.scantimer.Stop()
-
     def onInitTimer(self, evt=None):
         # print 'on init ', self.larch_status, self.epics_status, time.ctime()
         if self.larch_status == 0:
@@ -283,6 +276,23 @@ class ScanFrame(wx.Frame):
         fname = self.filename.GetValue()
         self.scandb.add_command('doscan', arguments=scanname,
                                 output_file=fname)
+
+        self.statusbar.SetStatusText('Waiting....', 0)
+        self.scan_started = False
+        self.scantimer.Start(100)
+
+    def onScanTimer(self, evt=None):
+        self.statusbar.SetStatusText(self.scandb.get_info('scan_message'), 0)
+
+        status = self.scandb.get_info('scan_status')
+        if status == 'running' and not self.scan_started:
+            self.scan_started = True
+
+        if status == 'idle' and self.scan_started:
+            self.scan_started = False
+            fname = self.scandb.get_info('filename')
+            self.filename.SetValue(new_filename(fname))
+            self.scantimer.Stop()
 
 
     def onCtrlScan(self, evt=None, cmd=''):

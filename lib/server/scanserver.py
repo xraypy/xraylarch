@@ -77,7 +77,7 @@ def load_dbscan(scandb, scanname):
         p1.array = np.linspace(start1, stop1, npts1)
         scan.add_positioner(p1)
         if len(pvs1) > 0:
-            scan.add_counter(pvs[1], label="%s_read" % label1)
+            scan.add_counter(pvs1[1], label="%s_read" % label1)
         if sdict['dimension'] >=2:
             label2, pvs2, start2, stop2, npts2 = sdict['outer']
             p2 = Positioner(pvs2[0], label=label2)
@@ -110,10 +110,17 @@ class ScanWatcher(threading.Thread):
     start_timeout =     300.0
     def __init__(self, scandb, scan=None, imsg=None, **kws):
         threading.Thread.__init__(self)
+        self.scandb = scandb
         self.get_info = scandb.get_info
         self.scan = scan
         self.imsg = imsg
         
+    def set_scan_message(self, msg, verbose=False):
+        self.scandb.set_info('scan_message', msg)
+        if verbose:
+            print 'ScanWatcher: ', msg
+        self.scandb.commit()
+
     def run(self):
         """execute thread, watching for abort/pause/resume"""
         t0 = time.time()
@@ -134,8 +141,9 @@ class ScanWatcher(threading.Thread):
             if self.get_info('request_command_killall', as_bool=True):
                 return
             if self.imsg is not None:
+                self.set_scan_message('Point %i / %i' % (scan.cpt, npts))
                 if scan.cpt % self.imsg == 0 and scan.cpt > last_imsg:
-                    print '%i / %i ' % (scan.cpt, npts)
+                    # print '%i / %i ' % (scan.cpt, npts)
                     last_imsg = scan.cpt
                     
             if not scan_started:
@@ -144,6 +152,7 @@ class ScanWatcher(threading.Thread):
                 continue
             # saw scan begin, and it is now complete!
             if scan_started and scan.complete:
+                self.set_scan_message('Scan Complete.', verbose=True)
                 return
             scan.abort = self.get_info('request_command_abort', as_bool=True)
             scan.pause = self.get_info('request_command_pause', as_bool=True)
@@ -179,14 +188,23 @@ class ScanServer():
     def scan_prescan(self, scan=None, **kws):
         pass
 
+    def set_scan_message(self, msg, verbose=True):
+        self.scandb.set_info('scan_message', msg)
+        if verbose:
+            print 'ScanServer: ', msg
+        self.scandb.commit()
+
     def do_scan(self, scanname, filename=None):
+        self.set_scan_message('Preparing Scan (loading def)')
         self.scan = load_dbscan(self.scandb, scanname)
-        print 'Load Scan' , self.scan
+
         self.scan.complete = False
         self.scan.pre_scan_methods.append(self.scan_prescan)
         self.scandb.clear_scandata()
         npts = -1
         names = []
+        self.set_scan_message('Preparing Scan (positioners)')
+
         for p in self.scan.positioners:
             units = get_units(p.pv, 'unknown')
             npts = max(npts, len(p.array))
@@ -199,6 +217,7 @@ class ScanServer():
                                          units=units, notes='positioner')
                 names.append(name)
         names = []                
+        self.set_scan_message('Preparing Scan (counters)')
         for c in self.scan.counters:
             units = get_units(c.pv, 'counts')
             name = fix_varname(c.label)
@@ -217,19 +236,27 @@ class ScanServer():
         self.scandb.set_info('scan_time_estimate', self.scan.scantime)
         self.scandb.set_info('scan_total_points', npts)
         self.scandb.set_info('request_command_abort', 0)
-
         self.scan.messenger = self.scan_messenger
+        self.set_scan_message('Preparing Scan (watcher)')
+
         self.scanwatcher = ScanWatcher(self.scandb, scan=self.scan, imsg=25)
 
         self.scanwatcher.start()
         self.scandb.update_where('scandefs', {'name': scanname},
                                  {'last_used_time': make_datetime()})
-        self.scandb.set_info('filename', filename)
+
         self.scan.filename = filename
+        self.scandb.set_info('filename', filename)
+        self.set_scan_message('Starting Scan')
+
         self.scan.run(filename=filename)
+        self.set_scan_message('Finishing')
+        self.scandb.commit()
 
         if self.scanwatcher is not None:
             self.scanwatcher.join()
+        self.set_scan_message('Scan Complete. Wrote %s' % self.scan.filename)
+        # print 'scan complete (do_scan), Wrote %s' % self.scan.filename
 
     def do_caput(self, pvname, value, wait=False, timeout=30.0):
         epics.caput(pvname, value, wait=wait, timeout=timeout)
@@ -242,13 +269,11 @@ class ScanServer():
 
     def finish(self):
         print 'shutting down!'
-        
 
     def execute_command(self, req):
         print 'Execute: ', req.id, req.command, req.arguments, req.output_file
-        print 'Execute: ', type(req.arguments)
-        # print 'req.id      = ', req.id
-        # print 'req.arguments = ', req.arguments
+        #print 'req.id      = ', req.id
+        #print 'req.arguments = ', req.arguments
         #print 'req.status_id, req.status = ', req.status_id
         #print 'req.request_time = ', req.request_time
         #print 'req.start_time = ', req.start_time
@@ -256,23 +281,24 @@ class ScanServer():
         #print 'req.output_value = ', req.output_value
         #print 'req.output_file = ', req.output_file
 
-        
         cmd_thread = threading.Thread(target=self.do_command,
                                       kwargs=dict(req=req),
                                       name='cmd_thread')
-
+        self.scandb.set_info('scan_status', 'starting')
         self.scandb.set_command_status(req.id, 'starting')
+        req_id = req.id
         self.command_in_progress = True
         cmd_thread.start()
         cmd_thread.join()
         self.scandb.set_command_status(req.id, 'finished')
+        self.scandb.set_info('scan_status', 'idle')
+        self.scandb.commit()
         self.command_in_progress = False
 
     def do_command(self, req=None, **kws):
-        print 'IN do_command ', req
+        self.scandb.set_info('scan_status', 'running')
         self.scandb.set_command_status(req.id, 'running')
         if req.command == 'doscan':
-            print 'DO SCAN ', req.arguments, req.output_file
             self.do_scan(str(req.arguments), filename=req.output_file)
         else: 
             print 'unknown command ', req.command
@@ -284,25 +310,35 @@ class ScanServer():
         abort / pause / resume
         it is expected that
         """
-        get = self.db.get_info
-        self.abort_request = get('request_command_abort') == '1'
-        self.pause_request = get('request_command_pause') == '1'
-        self.resume_request = get('request_command_resume') == '1'
+        def isset(infostr):
+            return self.db.get_info(infostr, as_bool=True)
+        self.abort_request = isset('request_command_abort')
+        self.pause_request = isset('request_command_pause')
+        self.resume_request = isset('request_command_resume')
 
     def mainloop(self):
-        print "starting server"
-
+        self.set_scan_message('Server Starting')
+        self.scandb.set_info('scan_status', 'idle')
+        msgtime = time.time()
+        self.set_scan_message('Server Ready')
         while True:
-            self.sleep(1.0)
-            if self.abort:   break
+            self.sleep(0.25)
+            if self.abort:   
+                break
             reqs = self.scandb.get_commands('requested')
-            print 'tick  ', len(reqs)
+            if (time.time() - msgtime )> 300:
+                print '#Server Alive, nrequests = ', len(reqs)
+                msgtime = time.time()
             if self.command_in_progress:
                 self.look_for_interrupt_requests()
-                self.sleep(t=0.150)
-            if len(reqs) == 0 or self.command_in_progress:
-                self.sleep(t=0.10)
-            else:
+                if self.abort_request:
+                    print '#Abort request'
+                elif self.pause_request:
+                    print '#Pause Request'
+                elif self.resume_request:
+                    print '#Resume Request'
+            elif len(reqs) > 0: # and not self.command_in_progress:
+                print '#Execute Next Command: '
                 self.execute_command(reqs.pop(0))
 
         # mainloop end
