@@ -186,25 +186,30 @@ class ScanServer():
         self.scan.pre_scan_methods.append(self.scan_prescan)
         self.scandb.clear_scandata()
         npts = -1
-        print 'Do_Scan 1 ' , self.scan.positioners
+        names = []
         for p in self.scan.positioners:
             units = get_units(p.pv, 'unknown')
             npts = max(npts, len(p.array))
-            self.scandb.add_scandata(fix_varname(p.label),
-                                     p.array.tolist(),
-                                     pvname=p.pv.pvname,
-                                     units=units,
-                                     notes='positioner')
-        print 'Do_Scan 2 ' , self.scan.counters
+            name = fix_varname(p.label)
+            if name in names:
+                name += '_2'
+            if name not in names:
+                self.scandb.add_scandata(name, p.array.tolist(),
+                                         pvname=p.pv.pvname,
+                                         units=units, notes='positioner')
+                names.append(name)
+        names = []                
         for c in self.scan.counters:
             units = get_units(c.pv, 'counts')
-            print 'Count ', c, fix_varname(c.label), c.pv.pvname
-            self.scandb.add_scandata(fix_varname(c.label), [],
-                                     pvname=c.pv.pvname,
-                                     units=units)
-
-        print 'Do_Scan 3 ' , self.scan.counters
-
+            name = fix_varname(c.label)
+            if name in names:
+                name += '_2'
+            if name not in names:
+                self.scandb.add_scandata(name, [],
+                                         pvname=c.pv.pvname,
+                                         units=units, notes='counter')
+                names.append(name)
+                
         if not hasattr(self.scan, 'scantime') or self.scan.scantime < 0:
             self.scan.scantime = npts*(self.scan.pos_settle_time +
                                        self.scan.det_settle_time +
@@ -214,7 +219,6 @@ class ScanServer():
         self.scandb.set_info('request_command_abort', 0)
 
         self.scan.messenger = self.scan_messenger
-
         self.scanwatcher = ScanWatcher(self.scandb, scan=self.scan, imsg=25)
 
         self.scanwatcher.start()
