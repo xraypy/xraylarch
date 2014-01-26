@@ -1,0 +1,51 @@
+##
+##  here, we test / demonstrate interpolation, including
+##  data that is outside the original x-range of the data.
+## 
+##  note that the quality of the extrapolation from the
+##  different interpolation 'kind' arguments depends greatly
+##  on the data -- here, on the value of tau.
+##
+##  For slowly varying data, all methods can extrapolate 
+##  one or two steps outside the range of the original data
+##  acceptably well.  Beyond that, or for quickly varying
+##  data, no easy generalizations can be made about one
+##  extrapolation being generally better than another. 
+##
+
+offset = 0.127890
+
+# tau   = 28.00
+# tau   =  8.00
+tau   =  2.00
+# tau   =  0.75
+# tau   =  0.333
+
+x = linspace(40., 50., 21)
+
+
+y = offset + sin(x/tau)
+
+newplot(x, y, linewidth=1, marker='o', color='blue', 
+	label='orig', show_legend=True)
+
+# extends below data range:
+xnew  = linspace(38.0, 42.5, 23) + 0.3333
+
+# extends above data range:
+# xnew  = linspace(48.0, 52.5, 23) + 0.3333
+
+y0  = offset + sin(xnew/tau)    # predicted
+
+y1 = interp(x, y, xnew, kind='linear')
+y2 = interp(x, y, xnew, kind='quadratic')
+y3 = interp(x, y, xnew, kind='cubic')
+
+
+plot(xnew, y0, style='solid',  color='goldenrod', marker='square', 
+           markersize=2, linewidth=2, label='predicted')
+
+plot(xnew, y1, style='short dashed', color='red',   marker='+', label='linear')
+plot(xnew, y2, style='solid',        color='dark green',        label='quadratic')
+plot(xnew, y3, style='short dashed', color='black', marker='+', label='cubic')
+
