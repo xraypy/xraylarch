@@ -36,9 +36,12 @@ def makeColorPanel(parent, color):
 class LarchWxShell(object):
     ps1 = 'Larch>'
     ps2 = ' ... >'
-    def __init__(self, wxparent=None,   writer=None,
+    def __init__(self, wxparent=None,   writer=None, _larch=None,
                  prompt=None, output=None, input=None):
-        self.larch  = larch.Interpreter()
+        self.larch = _larch
+        if _larch is None:
+            self.larch  = larch.Interpreter()
+            
         self.inptext  = larch.InputText(prompt=self.ps1,
                                         interactive=False)
         self.symtable = self.larch.symtable
@@ -139,9 +142,10 @@ class LarchWxShell(object):
                     pass
 
 class LarchFrame(wx.Frame):
-    def __init__(self,  parent=None, **kwds):
+    def __init__(self,  parent=None, _larch=None, **kwds):
         self.BuildFrame(parent=parent, **kwds)
         self.larchshell = LarchWxShell(wxparent=self,
+                                       _larch = _larch,
                                        prompt = self.prompt,
                                        output = self.output,
                                        input  = self.input)
