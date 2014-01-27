@@ -21,7 +21,9 @@ from epics.wx import DelayedEpicsCallback, EpicsFunction
 
 from larch import Interpreter, use_plugin_path, isParameter
 from larch.larchlib import read_workdir, save_workdir
+from larch.wxlib import larchframe
 from larch.fitting import fit_report
+        
 
 use_plugin_path('math')
 from fitpeak import fit_peak
@@ -889,11 +891,11 @@ class ScanViewerFrame(wx.Frame):
                                       'Re-read file?'):
                     return
 
-            gname = 's001'
-            count, maxcount = 1, 999
+            gname = '_sview0001'
+            count, maxcount = 1, 9999
             while hasattr(self.datagroups, gname) and count < maxcount:
                 count += 1
-                gname = 's%3.3i' % count
+                gname = '_sview%4.4i' % count
 
             if hasattr(self.datagroups, gname):
                 gname = randname()
@@ -937,10 +939,18 @@ class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         return True
 
-def _scanview(_larch=None):
-    ScanViewer(_larch=_larch).run()
+def _scanviewer(_larch=None):
+    s = ScanViewerFrame(_larch=_larch)
+    s.Show()
+    s.Raise()
+
+def _larchgui(_larch=None):
+    lg =larchframe.LarchFrame(_larch=_larch)
+    lg.Show()
+    lg.Raise()
 
 def registerLarchPlugin():
-    print 'working register scanviewer'
-    return ('_plotter', {'scanview':_scanview})
+    return ('_plotter', {'scanviewer':_scanviewer,
+                         'larchgui':_larchgui,
+                         })
 
