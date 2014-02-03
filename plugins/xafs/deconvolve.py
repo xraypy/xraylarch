@@ -52,7 +52,7 @@ def xas_deconvolve(energy, norm=None, group=None, form='gaussian',
         raise Warning("cannot deconvolve -- larch broken?")
 
     energy, mu, group = parse_group_args(energy, members=('energy', 'norm'),
-                                         defaults=(mu,), group=group,
+                                         defaults=(norm,), group=group,
                                          fcn_name='xas_deconv')
     eshift = eshift + 0.5 * esigma 
     
@@ -78,6 +78,6 @@ def xas_deconvolve(energy, norm=None, group=None, form='gaussian',
     group = set_xafsGroup(group, _larch=_larch)
     group.deconv = out
     
-
 def registerLarchPlugin():
     return (MODNAME, {'xas_deconvolve': xas_deconvolve})
+
