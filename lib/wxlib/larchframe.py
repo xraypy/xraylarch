@@ -89,7 +89,7 @@ class LarchWxShell(object):
             self.output.WriteText(text)
             self.output.SetForegroundColour(prev_color)
             self.output.SetInsertionPoint(self.output.GetLastPosition())
-            self.output.ProcessPendingEvents()
+            # self.output.ProcessPendingEvents()
             self.output.Refresh()
             self.output.Update()
 
@@ -116,7 +116,6 @@ class LarchWxShell(object):
         while len(self.inptext) > 0:
             block, fname, lineno = self.inptext.get()
             ret = self.larch.eval(block, fname=fname, lineno=lineno)
-            print( ' -> set focus ')
             self.input.SetFocus()
             self.symtable.set_symbol('_sys.wx.force_wxupdate', True)
             if hasattr(ret, '__call__') and not isinstance(ret,type):
@@ -175,7 +174,7 @@ class LarchFrame(wx.Frame):
         return panel
 
     def BuildFrame(self, parent=None, **kwds):
-        wx.Frame.__init__(self, parent, -1, size=(650, 525),
+        wx.Frame.__init__(self, parent, -1, size=(725, 525),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
         self.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, False))
