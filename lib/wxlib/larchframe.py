@@ -61,7 +61,6 @@ class LarchWxShell(object):
         for fname in larch.site_config.init_files:
             self.execute("run('%s')" % fname)
 
-
     def onUpdate(self, event=None):
         symtable = self.symtable
         if symtable.get_symbol('_builtin.force_wxupdate', create=True):
@@ -89,9 +88,8 @@ class LarchWxShell(object):
                 self.output.SetForegroundColour(color)
             self.output.WriteText(text)
             self.output.SetForegroundColour(prev_color)
-            self.output.SetInsertionPointEnd()
-            self.output.ShowPosition(self.output.GetLastPosition()-10)
-            # self.output.ProcessPendingEvents()
+            self.output.SetInsertionPoint(self.output.GetLastPosition())
+            self.output.ProcessPendingEvents()
             self.output.Refresh()
             self.output.Update()
 
@@ -117,8 +115,8 @@ class LarchWxShell(object):
 
         while len(self.inptext) > 0:
             block, fname, lineno = self.inptext.get()
-            ret = self.larch.eval(block,
-                                  fname=fname, lineno=lineno)
+            ret = self.larch.eval(block, fname=fname, lineno=lineno)
+            print( ' -> set focus ')
             self.input.SetFocus()
             self.symtable.set_symbol('_sys.wx.force_wxupdate', True)
             if hasattr(ret, '__call__') and not isinstance(ret,type):
@@ -142,7 +140,9 @@ class LarchWxShell(object):
                     pass
 
 class LarchFrame(wx.Frame):
-    def __init__(self,  parent=None, _larch=None, **kwds):
+    def __init__(self,  parent=None, _larch=None,
+                 histfile='larchgui_history.lar', **kwds):
+        self.histfile = histfile
         self.BuildFrame(parent=parent, **kwds)
         self.larchshell = LarchWxShell(wxparent=self,
                                        _larch = _larch,
@@ -158,7 +158,7 @@ class LarchFrame(wx.Frame):
         self.prompt = wx.StaticText(panel, -1, 'Larch>',
                                     size = (65,-1),
                                     style = pstyle)
-        histFile= larch.site_config.history_file
+        histFile= os.path.join(larch.site_config.home_dir, self.histfile)
         self.input = ReadlineTextCtrl(panel, -1,  '', size=(525,-1),
                                  historyfile=histFile, mode='emacs',
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
