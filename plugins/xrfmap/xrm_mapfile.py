@@ -30,6 +30,7 @@ class GSEXRM_FileStatus:
     hasdata      = 'hdf5 has map data'      # array sizes known
     wrongfolder  = 'hdf5 exists, but does not match folder name'
     err_notfound = 'file not found'
+    empty        = 'file is empty (read from folder)'
     err_nothdf5  = 'file is not hdf5 (or cannot be read)'
 
 def getFileStatus(filename, root=None, folder=None):
@@ -43,17 +44,20 @@ def getFileStatus(filename, root=None, folder=None):
         not os.path.isfile(filename) ):
         return status, top, vers
 
+    # see if file is empty/too small(signifies "read from folder")
+    if os.stat(filename).st_size < 512:
+        return GSEXRM_FileStatus.empty, top, vers
+    
     # see if file is an H5 file
     try:
         fh = h5py.File(filename)
     except IOError:
-        status = GSEXRM_FileStatus.err_nothdf5
-        return status, top, vers
+        return GSEXRM_FileStatus.err_nothdf5, top, vers
 
     status =  GSEXRM_FileStatus.no_xrfmap
     ##
     def test_h5group(group, folder=None):
-        valid = ('det1' in group and 'roimap' in group)
+        valid = ('config' in group and 'roimap' in group)
         for attr in  ('Version', 'Map_Folder',
                       'Dimension', 'Start_Time'):
             valid = valid and attr in group.attrs
@@ -70,6 +74,7 @@ def getFileStatus(filename, root=None, folder=None):
         if s is not None:
             status, top, vers = s, root, v
     else:
+        # print 'Root was None ', fh.items()
         for name, group in fh.items():
             s, v = test_h5group(group, folder=folder)
             if s is not None:
@@ -321,8 +326,15 @@ class GSEXRM_MapFile(object):
         if self.filename is not None:
             self.status, self.root, self.version = \
                          getFileStatus(self.filename, root=root)
-            
-        elif isGSEXRM_MapFolder(self.folder):
+            # print 'Filename ', self.filename, self.status, self.root, self.version
+            # see if file is too small (signifies "read from folder")
+            if self.status == GSEXRM_FileStatus.empty:
+                ftmp = open(self.filename, 'r')
+                self.folder = ftmp.readlines()[0][:-1].strip()
+                ftmp.close()
+                os.unlink(self.filename)
+                
+        if isGSEXRM_MapFolder(self.folder):
             self.read_master()
             if self.filename is None:
                 raise GSEXRM_Exception(
@@ -344,6 +356,7 @@ class GSEXRM_MapFile(object):
                 "'%s' is not a readlable HDF5 file" % self.filename)
 
         # create empty HDF5 if needed
+        # print '-> filename ', self.filename, self.status
         if (self.status in (GSEXRM_FileStatus.err_notfound,
                             GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
@@ -365,7 +378,7 @@ class GSEXRM_MapFile(object):
         else:
             raise GSEXRM_Exception(
                 "'GSEXMAP Error: could not locate map file or folder")
-
+        
     def open(self, filename, root=None, check_status=True):
         """open GSEXRM HDF5 File :
         with check_status=False, this **must** be called
@@ -386,7 +399,7 @@ class GSEXRM_MapFile(object):
         self.xrfmap = self.h5root[root]
         if self.folder is None:
             self.folder = self.xrfmap.attrs['Map_Folder']
-        self.last_row = self.xrfmap.attrs['Last_Row']
+        self.last_row = int(self.xrfmap.attrs['Last_Row'])
 
         try:
             self.dimension = self.xrfmap['config/scan/dimension'].value
@@ -500,7 +513,7 @@ class GSEXRM_MapFile(object):
 
     def process(self, maxrow=None, force=False, callback=None, verbose=True):
         "look for more data from raw folder, process if needed"
-        print('PROCESS  ', maxrow, force, self.filename, self.dimension, len(self.rowdata))
+        # print('PROCESS  ', maxrow, force, self.filename, self.dimension, len(self.rowdata))
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
@@ -529,7 +542,6 @@ class GSEXRM_MapFile(object):
                              filename=self.filename, status='complete')
                 irow  = irow + 1
             # self.dt.show()
-
         self.resize_arrays(self.last_row+1)
         self.h5root.flush()
 
@@ -558,6 +570,7 @@ class GSEXRM_MapFile(object):
         thisrow = self.last_row + 1
         nmca, xnpts, nchan = row.counts.shape
         mcas = []
+        nrows = 0
         map_items = sorted(self.xrfmap.keys())
         for gname in map_items:
             g = self.xrfmap[gname]
@@ -598,7 +611,7 @@ class GSEXRM_MapFile(object):
 
         if verbose:
             pform ="Add row=%4i, yval=%s, npts=%i, xmapfile=%s"
-            print( pform % (thisrow+1, row.yvalue, npts, row.xmapfile))
+            print(pform % (thisrow+1, row.yvalue, npts, row.xmapfile))
 
         detcor = detraw[:]
         sumraw = detraw[:]
