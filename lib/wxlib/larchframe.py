@@ -82,16 +82,23 @@ class LarchWxShell(object):
             self.prompt.Refresh()
 
     def write(self, text, color=None):
-        if self.output is not None:
-            prev_color = self.output.GetForegroundColour()
-            if color is not None:
-                self.output.SetForegroundColour(color)
-            self.output.WriteText(text)
-            self.output.SetForegroundColour(prev_color)
-            self.output.SetInsertionPoint(self.output.GetLastPosition())
-            # self.output.ProcessPendingEvents()
-            self.output.Refresh()
-            self.output.Update()
+        if self.output is None:
+            sys.stdout.write(text)
+            sys.stdout.flush()
+            return
+        
+        pos0 = self.output.GetLastPosition()
+        self.output.WriteText(text)
+        if color is not None:
+            style = self.output.GetDefaultStyle()
+            bgcol = style.GetBackgroundColour()
+            sfont = style.GetFont()
+            pos1  = self.output.GetLastPosition()
+            self.output.SetStyle(pos0, pos1, wx.TextAttr(color, bgcol, sfont))
+            
+        self.output.SetInsertionPoint(self.output.GetLastPosition())
+        self.output.Refresh()
+        self.output.Update()
 
     def execute(self, text=None):
         if text is not None:
@@ -127,11 +134,11 @@ class LarchWxShell(object):
             if self.larch.error:
                 err = self.larch.error.pop(0)
                 fname, lineno = err.fname, err.lineno
-                self.write("%s\n" % err.get_error()[1], color='red')
+                self.write("%s\n" % err.get_error()[1], color='#BB0000')
                 for err in self.larch.error:
                     if ((err.fname != fname or err.lineno != lineno)
                         and err.lineno > 0 and lineno > 0):
-                        self.write("%s\n" % (err.get_error()[1]), color='red')
+                        self.write("%s\n" % (err.get_error()[1]), color='#BB0000')
             elif ret is not None:
                 try:
                     self.write("%s\n" % repr(ret))
@@ -140,7 +147,7 @@ class LarchWxShell(object):
 
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
-                 histfile='larchgui_history.lar', **kwds):
+                 histfile='history_larchgui.lar', **kwds):
         self.histfile = histfile
         self.BuildFrame(parent=parent, **kwds)
         self.larchshell = LarchWxShell(wxparent=self,
@@ -157,7 +164,7 @@ class LarchFrame(wx.Frame):
         self.prompt = wx.StaticText(panel, -1, 'Larch>',
                                     size = (65,-1),
                                     style = pstyle)
-        histFile= os.path.join(larch.site_config.home_dir, self.histfile)
+        histFile= os.path.join(larch.site_config.usr_larchdir, self.histfile)
         self.input = ReadlineTextCtrl(panel, -1,  '', size=(525,-1),
                                  historyfile=histFile, mode='emacs',
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
@@ -177,8 +184,10 @@ class LarchFrame(wx.Frame):
         wx.Frame.__init__(self, parent, -1, size=(725, 525),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
-        self.SetFont(wx.Font(10, wx.SWISS, wx.NORMAL, wx.BOLD, False))
-        sfont = wx.Font(11,  wx.MODERN, wx.NORMAL, wx.NORMAL, False)
+        ofont = self.GetFont()
+
+        sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
+        self.SetFont(sfont)
         sbar = self.CreateStatusBar(2, wx.CAPTION|wx.THICK_FRAME)
 
         self.SetStatusWidths([-2,-1])
@@ -196,7 +205,7 @@ class LarchFrame(wx.Frame):
 
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
-        self.output.SetFont(sfont)
+        self.output.SetDefaultStyle(wx.TextAttr('black', 'white', sfont))
 
         self.datapanel = Filling(nbook,  rootLabel='_main')
         nbook.AddPage(self.output,      'Output Buffer', select=1)
@@ -233,7 +242,8 @@ class LarchFrame(wx.Frame):
 
         fmenu = wx.Menu()
         #fmenu.Append(ID_FREAD, "&Read", "Read Configuration File")
-        #fmenu.Append(ID_FSAVE, "&Save", "Save Configuration File")
+        fmenu.Append(ID_FSAVE, "&Save Session History\tCtrl+S",
+                     "Save Session History to File")
         fmenu.Append(ID_CHDIR, 'Change Working Directory\tCtrl+W',
                      'Change Directory')
         #fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
@@ -250,10 +260,26 @@ class LarchFrame(wx.Frame):
         menuBar.Append(hmenu, "&Help");
         self.SetMenuBar(menuBar)
 
+        self.Bind(wx.EVT_MENU,  self.onSaveHistory, id=ID_FSAVE)
         self.Bind(wx.EVT_MENU,  self.onAbout, id=ID_ABOUT)
         self.Bind(wx.EVT_MENU,  self.onClose, id=ID_CLOSE)
         self.Bind(wx.EVT_MENU,  self.onChangeDir, id=ID_CHDIR)
 
+    def onSaveHistory(self, event=None):
+        wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
+        deffile = 'history.lar'
+        dlg = wx.FileDialog(self, message='Save Session History File',
+                            wildcard=wildcard,
+                            defaultFile=deffile,
+                            style=wx.SAVE|wx.CHANGE_DIR)
+        if dlg.ShowModal() == wx.ID_OK:
+            fout = os.path.abspath(dlg.GetPath())
+            self.input.SaveHistory(filename=fout, session_only=True)
+            self.SetStatusText("Wrote %s" % fout, 0)
+        dlg.Destroy()
+
+        
+        
     def onText(self, event=None):
         text =  event.GetString()
         self.larchshell.write(">%s\n" % text)
