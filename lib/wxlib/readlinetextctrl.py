@@ -34,6 +34,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
                                          DEFAULT_HISTORYFILE)
         self.LoadHistory()
         self.hist_mark = len(self.hist_buff)
+        self.hist_sessionstart = self.hist_mark
 
         self.Bind(wx.EVT_CHAR, self.onChar)
         self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
@@ -160,14 +161,19 @@ class ReadlineTextCtrl(wx.TextCtrl):
             self.hist_buff.append(text)
             self.hist_mark = len(self.hist_buff)
 
-    def SaveHistory(self):
+    def SaveHistory(self, filename=None, session_only=False):
+        if filename is None:
+            filename = self.hist_file
         try:
-            fout = open(self.hist_file,'w')
+            fout = open(filename,'w')
         except IOError:
-            print( 'Cannot save history ', self.hist_file)
+            print( 'Cannot save history ', filename)
 
         fout.write("# wxlarch history saved %s\n\n" % time.ctime())
-        fout.write('\n'.join(self.hist_buff[-MAX_HISTORY:]))
+        start_entry = -MAX_HISTORY
+        if session_only:
+            start_entry = self.hist_sessionstart
+        fout.write('\n'.join(self.hist_buff[start_entry:]))
         fout.write("\n")
         fout.close()
 
