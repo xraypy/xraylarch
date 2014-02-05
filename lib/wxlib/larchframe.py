@@ -241,7 +241,8 @@ class LarchFrame(wx.Frame):
         ID_PRINT = wx.NewId()
 
         fmenu = wx.Menu()
-        #fmenu.Append(ID_FREAD, "&Read", "Read Configuration File")
+        fmenu.Append(ID_FREAD, "&Read and Run Larch Script\tCtrl+R",
+                     "Read and Execute a Larch Script")
         fmenu.Append(ID_FSAVE, "&Save Session History\tCtrl+S",
                      "Save Session History to File")
         fmenu.Append(ID_CHDIR, 'Change Working Directory\tCtrl+W',
@@ -260,10 +261,26 @@ class LarchFrame(wx.Frame):
         menuBar.Append(hmenu, "&Help");
         self.SetMenuBar(menuBar)
 
+        self.Bind(wx.EVT_MENU,  self.onRunScript,   id=ID_FREAD)
         self.Bind(wx.EVT_MENU,  self.onSaveHistory, id=ID_FSAVE)
         self.Bind(wx.EVT_MENU,  self.onAbout, id=ID_ABOUT)
         self.Bind(wx.EVT_MENU,  self.onClose, id=ID_CLOSE)
         self.Bind(wx.EVT_MENU,  self.onChangeDir, id=ID_CHDIR)
+
+    def onRunScript(self, event=None):
+        wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Open and Run Larch Script',
+                            wildcard=wildcard,
+                            style=wx.OPEN|wx.CHANGE_DIR)
+        if dlg.ShowModal() == wx.ID_OK:
+            fout = os.path.abspath(dlg.GetPath())
+            path, fname = os.path.split(fout)
+            os.chdir(path)
+            text = "run('%s')" % fname
+            self.larchshell.write(">%s\n" % text)            
+            self.input.AddToHistory(text)
+            wx.CallAfter(self.larchshell.execute, text)
+        dlg.Destroy()
 
     def onSaveHistory(self, event=None):
         wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
@@ -277,8 +294,6 @@ class LarchFrame(wx.Frame):
             self.input.SaveHistory(filename=fout, session_only=True)
             self.SetStatusText("Wrote %s" % fout, 0)
         dlg.Destroy()
-
-        
         
     def onText(self, event=None):
         text =  event.GetString()
