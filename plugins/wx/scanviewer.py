@@ -188,7 +188,8 @@ class ScanViewerFrame(wx.Frame):
     def __init__(self, _larch=None, **kws):
 
         wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
-        self.filemap = {}
+        self.file_groups = {}
+        self.file_paths  = []
         title = "Column Data File Viewer"
         self.larch = _larch
         self.subframes = {}
@@ -696,7 +697,7 @@ class ScanViewerFrame(wx.Frame):
 
         if not hasattr(lgroup, '_xdat_'):
             self.onColumnChoices()
-
+            
         lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
         plot_yarrays = [(lgroup._ydat_, {}, None)]
         if hasattr(lgroup, 'plot_yarrays'):
@@ -739,21 +740,19 @@ class ScanViewerFrame(wx.Frame):
                     self.plotpanel.oplot([x], [y], **popts)
             self.plotpanel.canvas.draw()
 
-    def ShowFile(self, evt=None, filename=None, **kws):
-        if filename is None and evt is not None:
-            filename = evt.GetString()
-        key = filename
-        if filename in self.filemap:
-            key = self.filemap[filename]
-        if not hasattr(self.datagroups, key):
-            print 'Error reading file ', key
+    def ShowFile(self, evt=None, groupname=None, **kws):
+        if groupname is None and evt is not None:
+            fpath = self.file_paths[evt.GetInt()]
+            groupname = self.file_groups[fpath]
+            
+        if not hasattr(self.datagroups, groupname):
+            print 'Error reading file ', groupname
             return
 
-        self.groupname = key
-        self.filename = filename
-        self.lgroup = getattr(self.datagroups, key, None)
+        self.groupname = groupname
+        self.lgroup = getattr(self.datagroups, groupname, None)
 
-        if key == SCANGROUP:
+        if groupname == SCANGROUP:
             self.lgroup.filename = filename
         elif self.lgroup is not None:
             if hasattr(self.lgroup, 'array_labels'):
@@ -793,7 +792,9 @@ class ScanViewerFrame(wx.Frame):
         for j in range(3):
             if j == 0:
                 self.yarr[j].SetItems(ycols)
-                if ycols[0] == _xarr and len(ycols)> 1:
+                if _yarr[j] in ycols and len(_yarr[j]) > 0:
+                    self.yarr[j].SetStringSelection(_yarr[j])                    
+                elif ycols[0] == _xarr and len(ycols)> 1:
                     self.yarr[j].SetStringSelection(ycols[1])
             else:
                 self.yarr[j].SetItems(y2cols)
@@ -886,7 +887,7 @@ class ScanViewerFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             path = path.replace('\\', '/')
-            if path in self.filemap:
+            if path in self.file_groups:
                 if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
                                       'Re-read file?'):
                     return
@@ -916,9 +917,10 @@ class ScanViewerFrame(wx.Frame):
                 
             self.larch("%s.path  = '%s'"     % (gname, path))
             self.filelist.Append(fname)
-            self.filemap[fname] = gname
+            self.file_paths.append(path)
+            self.file_groups[path] = gname
 
-            self.ShowFile(filename=fname)
+            self.ShowFile(groupname=gname)
 
         dlg.Destroy()
 
