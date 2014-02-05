@@ -93,10 +93,8 @@ def _gcd(wxparent=None, _larch=None, **kws):
 
 
 # @SafeWxCall
-def _fileprompt(wxparent=None, _larch=None,
-                mode='open', multi=True,
-                message = None,
-                fname=None, choices=None, **kws):
+def _fileprompt(mode='open', multi=True, message = None,
+                fname=None, choices=None, _larch=None, **kws):
     """Bring up File Browser for opening or saving file.
     Returns name of selected file.
 
@@ -112,8 +110,6 @@ def _fileprompt(wxparent=None, _larch=None,
     """
     symtable = ensuremod(_larch)
 
-    gparent = _larch.symtable.get_symbol('_sys.wx.wxapp').GetTopWindow()
-    parent = wxLarchTimer(gparent, _larch)
     _def_choices =  [('All Files', '*.*')]
     if fname is None:
         try:
@@ -131,7 +127,7 @@ def _fileprompt(wxparent=None, _larch=None,
     if choices is None or len(choices) < 1:
         choices = _def_choices
    
-    for title, fglob  in choices:
+    for title, fglob in choices:
         wildcard.append('%s (%s)|%s' % (title, fglob, fglob))
     wildcard = '|'.join(wildcard)
 
@@ -147,7 +143,11 @@ def _fileprompt(wxparent=None, _larch=None,
             message = 'Save As '
 
     #parent.Start()
-    dlg = wx.FileDialog(parent=parent, message=message,
+    parent = _larch.symtable.get_symbol('_sys.wx.wxapp')
+    if hasattr(parent, 'GetTopWindow'):
+        parent = parent.GetTopWindow()
+    timer = wxLarchTimer(parent, _larch)
+    dlg = wx.FileDialog(parent=timer, message=message,
                         defaultDir=os.getcwd(),
                         defaultFile=fname,
                         wildcard =wildcard,
@@ -159,7 +159,7 @@ def _fileprompt(wxparent=None, _larch=None,
             path = path[0]
 
     dlg.Destroy()
-    parent.Destroy()
+    timer.Destroy()
     return path
 
 def registerLarchPlugin():
