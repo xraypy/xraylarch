@@ -979,7 +979,7 @@ class GSEXRM_MapFile(object):
             try:
                 if hasattr(callback , '__call__'):
                     callback(1, 1, nx*ny)
-                counts = self._area_counts(xmin, xmax, ymin, ymax,
+                counts = self.get_counts_rect(xmin, xmax, ymin, ymax,
                                            map=map, det=det, area=area,
                                            dtcorrect=dtcorrect)
             except MemoryError:
@@ -993,7 +993,7 @@ class GSEXRM_MapFile(object):
                     if x1 >= x2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, (x2-x1)*ny)
-                    counts += self._area_counts(x1, x2, ymin, ymax, map=map,
+                    counts += self.get_counts_rect(x1, x2, ymin, ymax, map=map,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
             else:
@@ -1003,12 +1003,21 @@ class GSEXRM_MapFile(object):
                     if y1 >= y2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, nx*(y2-y1))
-                    counts += self._area_counts(xmin, xmax, y1, y2, map=map,
+                    counts += self.get_counts_rect(xmin, xmax, y1, y2, map=map,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
         return self._getmca(map, counts, areaname)
 
-    def _area_counts(self, xmin, xmax, ymin, ymax, map=None, det=None,
+    def get_mca_rect(self, xmin, xmax, ymin, ymax, det=None, dtcorrect=True):
+        """return mca counts for a map rectangle, optionally
+        """
+        map = self._det_group(det)
+        counts = self.get_counts_rect(xmin, xmax, ymin, ymax, map=map,
+                                      det=det, dtcorrect=dtcorrect)
+        name = 'rect(x=[%i:%i], y==[%i:%i])' % (xmin, xmax, ymin, ymax)
+        return self._getmca(map, counts, name)
+    
+    def get_counts_rect(self, xmin, xmax, ymin, ymax, map=None, det=None,
                      area=None, dtcorrect=True):
         """return counts for a map rectangle, optionally
         applying area mask and deadtime correction
@@ -1040,7 +1049,7 @@ class GSEXRM_MapFile(object):
 
     def _getmca(self, map, counts, name):
         """return an MCA object for a detector group
-        (dgroup = 'det1', ... 'detsum')
+        (map is one of the  'det1', ... 'detsum')
         with specified counts array and a name
         """
         # map  = self.xrfmap[dgroup]
