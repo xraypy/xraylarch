@@ -36,6 +36,9 @@ from xdi import read_xdi
 use_plugin_path('xafs')
 from pre_edge import find_e0, pre_edge
 
+use_plugin_path('wx')
+from mapviewer import MapViewerFrame
+
 from wxmplot import PlotFrame, PlotPanel
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button,
@@ -941,18 +944,24 @@ class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         self.createApp()
         return True
 
-def _scanviewer(_larch=None):
-    s = ScanViewerFrame(_larch=_larch)
+def _scanviewer(wxparent=None, _larch=None,  **kws):
+    s = ScanViewerFrame(_larch=_larch, **kws)
     s.Show()
     s.Raise()
 
-def _larchgui(_larch=None):
+def _mapviewer(wxparent=None, _larch=None,  **kws):
+    s = MapViewerFrame(_larch=_larch, **kws)
+    s.Show()
+    s.Raise()
+
+def _larchgui(wxparent=None, _larch=None, **kws):
     lg =larchframe.LarchFrame(_larch=_larch)
     lg.Show()
     lg.Raise()
 
 def registerLarchPlugin():
     return ('_plotter', {'scanviewer':_scanviewer,
-                         'larchgui':_larchgui,
-                         })
+                         'mapviewer':_scanviewer,
+                         'larchgui':_larchgui})
+
 
