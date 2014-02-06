@@ -232,7 +232,9 @@ class LarchFrame(wx.Frame):
     def BuildMenus(self):
         ID_ABOUT = wx.NewId()
         ID_CLOSE = wx.NewId()
+        ID_EXIT  = wx.NewId()
         ID_FREAD = wx.NewId()
+        ID_PREAD = wx.NewId()
         ID_FSAVE = wx.NewId()
         ID_CHDIR = wx.NewId()
 
@@ -241,7 +243,9 @@ class LarchFrame(wx.Frame):
         ID_PRINT = wx.NewId()
 
         fmenu = wx.Menu()
-        fmenu.Append(ID_FREAD, "&Read and Run Larch Script\tCtrl+R",
+        fmenu.Append(ID_FREAD, "&Read ASCII Data File\tCtrl+O",
+                     "Read Data File")
+        fmenu.Append(ID_PREAD, "&Read and Run Larch Script\tCtrl+R",
                      "Read and Execute a Larch Script")
         fmenu.Append(ID_FSAVE, "&Save Session History\tCtrl+S",
                      "Save Session History to File")
@@ -250,22 +254,40 @@ class LarchFrame(wx.Frame):
         #fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
         #fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
         # fmenu.Append(ID_PRINT, "&Print\tCtrl+P", "Print Plot")
+
         fmenu.AppendSeparator()
-        fmenu.Append(ID_CLOSE, "E&xit", "Terminate the program")
+        fmenu.Append(ID_CLOSE, "Close Display", "Close display")
+        fmenu.Append(ID_EXIT,  "E&xit", "Terminate the program")
 
         hmenu = wx.Menu()
         hmenu.Append(ID_ABOUT, "&About",
                      "More information about this program")
         menuBar = wx.MenuBar()
         menuBar.Append(fmenu, "&File");
+        # menuBar.Append(vmenu, "&Viewers");
         menuBar.Append(hmenu, "&Help");
         self.SetMenuBar(menuBar)
 
-        self.Bind(wx.EVT_MENU,  self.onRunScript,   id=ID_FREAD)
+        self.Bind(wx.EVT_MENU,  self.onReadData,   id=ID_FREAD)
+        self.Bind(wx.EVT_MENU,  self.onRunScript,   id=ID_PREAD)
         self.Bind(wx.EVT_MENU,  self.onSaveHistory, id=ID_FSAVE)
         self.Bind(wx.EVT_MENU,  self.onAbout, id=ID_ABOUT)
         self.Bind(wx.EVT_MENU,  self.onClose, id=ID_CLOSE)
+        self.Bind(wx.EVT_MENU,  self.onExit, id=ID_EXIT)
         self.Bind(wx.EVT_MENU,  self.onChangeDir, id=ID_CHDIR)
+
+    def onReadData(self, event=None):
+        wildcard = 'Data file (*.dat)|*.dat|All files (*.*)|*.*'
+        dlg = wx.FileDialog(self, message='Open Data File', 
+                            wildcard=wildcard,
+                            style=wx.OPEN|wx.CHANGE_DIR)
+        if dlg.ShowModal() == wx.ID_OK:
+            fout = os.path.abspath(dlg.GetPath())
+            path, fname = os.path.split(fout)
+            os.chdir(path)
+            print( 'Open ASCII data file? ', fname)
+
+        dlg.Destroy()
 
     def onRunScript(self, event=None):
         wildcard = 'Larch file (*.lar)|*.lar|All files (*.*)|*.*'
@@ -346,6 +368,12 @@ class LarchFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,event=None):
+        try:
+            self.Destroy()
+        except:
+            pass
+
+    def onExit(self,event=None):
         dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         ret = dlg.ShowModal()
