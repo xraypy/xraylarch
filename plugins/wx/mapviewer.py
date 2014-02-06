@@ -42,6 +42,7 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
+from larch.wxlib import larchframe
 larch.use_plugin_path('wx')
 larch.use_plugin_path('io')
 larch.use_plugin_path('xrfmap')
@@ -853,20 +854,32 @@ class MapViewerFrame(wx.Frame):
                  "Read Map File",  self.onReadFile)
         MenuItem(self, fmenu, "&Open Map Folder\tCtrl+F",
                  "Read Map Folder",  self.onReadFolder)
+
         MenuItem(self, fmenu, 'Change &Working Folder',
                   "Choose working directory",
                   self.onFolderSelect)
         fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "Show Larch Buffer",
+                  "Show Larch Programming Buffer",
+                  self.onShowLarchBuffer)
+
         MenuItem(self, fmenu, "&Quit\tCtrl+Q",
                   "Quit program", self.onClose)
 
         hmenu = wx.Menu()
         MenuItem(self, hmenu, 'About', 'About MapViewer', self.onAbout)
 
+
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
 
+    def onShowLarchBuffer(self, evt=None):
+        lg =larchframe.LarchFrame(_larch=self.larch)
+        lg.Show()
+        lg.Raise()
+       
+        
     def onFolderSelect(self, evt=None):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
         dlg = wx.DirDialog(self, "Select Working Directory:", os.getcwd(),
@@ -973,7 +986,12 @@ Matt Newville <newville @ cars.uchicago.edu>
         if read:
             parent, fname = os.path.split(path)
             xrmfile = GSEXRM_MapFile(filename=str(path))
-
+            gname = 'map001'
+            count, maxcount = 1, 999
+            while hasattr(self.datagroups, gname) and count < maxcount:
+                count += 1
+                gname = 'map%3.3i' % count
+            setattr(self.datagroups, gname, xrmfile)
             os.chdir(nativepath(parent))
             save_workdir(nativepath(parent))
             #try:
