@@ -105,6 +105,7 @@ class XRFDisplayFrame(wx.Frame):
         self.title = title
         self.plotframe = None
         self.larch = _larch
+        self._mcagroup = self.larch.symtable.new_group('_mcas')
         self.exit_callback = exit_callback
         self.roi_patch = None
         self.selected_roi = None
@@ -860,6 +861,9 @@ class XRFDisplayFrame(wx.Frame):
             self.mca2 = copy.deepcopy(self.mca)
 
         self.mca = gsemca_group(fnew, _larch=self.larch)
+
+        setattr(self._mcagroup, 'mca1', self.mca)
+        setattr(self._mcagroup, 'mca2', self.mca2)
         self.plotmca(self.mca, show_mca2=True)
 
     def onReadGSEXRMFile(self, event=None, **kws):
