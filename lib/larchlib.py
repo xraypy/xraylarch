@@ -74,17 +74,18 @@ class LarchExceptionHolder:
         if exc_name in (None, 'None'):
             exc_name = 'UnknownError'
 
-        # print("GET ERROR ", exc_name, e_type, e_val)
-        # print(" TB :" , e_tb)
-        # print(traceback.print_tb(e_tb))
-
+        #print("E>>GET ERROR ", exc_name, e_type, e_val)
+        #print("E>> TB :" , e_tb, len(self.tback))
         out = []
-        if len(self.tback) > 0:
-            out.append(self.tback)
+        #if len(self.tback) > 0:
+        #    out.append(self.tback)
+
         call_expr = None
         fname = self.fname
         fline = None
         if fname != '<stdin>' or self.lineno > 0:
+            if fname != '<stdin>': 
+                self.lineno = self.lineno + 1
             fline = 'file %s, line %i' % (fname, self.lineno)
 
         if self.func is not None:
@@ -135,12 +136,12 @@ class LarchExceptionHolder:
         if call_expr is None and (self.expr == '<>' or
                                   fname not in (None, '', '<stdin>')):
             # denotes non-saved expression -- go fetch from file!
-            # print 'Trying to get non-saved expr ', self.fname
+            # print( 'Trying to get non-saved expr ', self.fname, self.lineno)
             try:
                 if fname is not None and os.path.exists(fname):
                     ftmp = open(fname, 'r')
                     lines = ftmp.readlines()
-                    lineno = min(self.lineno, len(lines))
+                    lineno = min(self.lineno, len(lines)) - 1
                     try:
                         _expr = lines[lineno][:-1]
                     except IndexError:
@@ -291,7 +292,7 @@ class Procedure(object):
         self._larch.debug = True
         for node in self.body:
             self._larch.run(node, fname=self.__file__, func=self,
-                            lineno=node.lineno+self.lineno, with_raise=False)
+                            lineno=node.lineno+self.lineno-1, with_raise=False)
             if len(self._larch.error) > 0:
                 break
             if self._larch.retval is not None:
