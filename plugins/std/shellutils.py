@@ -58,6 +58,15 @@ def _cd(name, **kws):
         ret = ret.replace('\\','/')
     return ret
 
+def _mkdir(name, mode=0777, **kws):
+    """create directory (and any intermediate subdirectories
+
+    Options:
+    --------   
+      mode   permission mask to use for creating directory (default=0777)
+    """
+    return os.makedirs(name, mode=mode)
+
 def show_more(text, filename=None, writer=None,
               pagelength=30, prefix='', _larch=None, **kws):
     """show lines of text in the style of more """
@@ -126,6 +135,6 @@ def initializeLarchPlugin(_larch=None):
 
 def registerLarchPlugin():
     return ('_builtin', {'copy': _copy, 'deepcopy': _deepcopy,
-                         'more': _more,
-                         'parent': _parent,  'ls': _ls,
+                         'more': _more, 'parent': _parent,  
+                         'ls': _ls,  'mkdir': _mkdir,
                          'cd': _cd,  'cwd': _cwd })
