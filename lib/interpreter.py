@@ -188,15 +188,18 @@ class Interpreter:
         try:
             return ast.parse(text)
         except:
-            rwords = []
-            for word in PYTHON_RESERVED_WORDS:
-                if (text.startswith('%s ' % word) or
-                    text.endswith(' %s' % word) or
-                    ' %s ' % word in text):
-                    rwords.append(word)
-            if len(rwords) > 0:
-                rwords = ", ".join(rwords)
-                text = """May contain one of Python's reserved words:
+            etype, exc, tb = sys.exc_info()
+            if (isinstance(exc, SyntaxError) and
+                exc.msg == 'invalid syntax'):
+                rwords = []
+                for word in PYTHON_RESERVED_WORDS:
+                    if (text.startswith('%s ' % word) or
+                        text.endswith(' %s' % word) or
+                        ' %s ' % word in text):
+                        rwords.append(word)
+                if len(rwords) > 0:
+                    rwords = ", ".join(rwords)
+                    text = """May contain one of Python's reserved words:
    %s"""  %  (rwords)
             self.raise_exception(None, exc=SyntaxError, msg='Syntax Error',
                                  expr=text, fname=fname, lineno=lineno)
