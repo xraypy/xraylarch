@@ -41,7 +41,6 @@ class LarchWxShell(object):
         self.larch = _larch
         if _larch is None:
             self.larch  = larch.Interpreter()
-            
         self.inptext  = larch.InputText(prompt=self.ps1,
                                         interactive=False)
         self.symtable = self.larch.symtable
@@ -147,7 +146,9 @@ class LarchWxShell(object):
 
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
-                 histfile='history_larchgui.lar', **kwds):
+                 histfile='history_larchgui.lar', 
+                 exit_on_close=False, **kwds):
+        
         self.histfile = histfile
         self.BuildFrame(parent=parent, **kwds)
         self.larchshell = LarchWxShell(wxparent=self,
@@ -156,6 +157,10 @@ class LarchFrame(wx.Frame):
                                        output = self.output,
                                        input  = self.input)
         self.datapanel.SetRootObject(self.larchshell.symtable)
+        if exit_on_close:
+            self.Bind(wx.EVT_CLOSE,  self.onExit)
+        else:
+            self.Bind(wx.EVT_CLOSE,  self.onClose)            
         #self.timer.Start(200)
 
     def InputPanel(self, parent):
@@ -193,7 +198,6 @@ class LarchFrame(wx.Frame):
         self.SetStatusWidths([-2,-1])
         self.SetStatusText("Larch initializing...", 0)
 
-        self.Bind(wx.EVT_CLOSE,  self.onClose)
         self.BuildMenus()
 
         self.nbook = nbook = wx.Notebook(self, -1, style=wx.BK_DEFAULT)
@@ -322,7 +326,7 @@ class LarchFrame(wx.Frame):
         self.larchshell.write(">%s\n" % text)
         self.input.Clear()
         if text.lower() in ('quit', 'exit'):
-            self.onClose()
+            self.onExit()
         else:
             self.input.AddToHistory(text)
             wx.CallAfter(self.larchshell.execute, text)
@@ -368,8 +372,11 @@ class LarchFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,event=None):
+        print( 'Close ')
         try:
-            self.Destroy()
+            self.Hide()
+            self.input.SaveHistory()
+            self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
         except:
             pass
 

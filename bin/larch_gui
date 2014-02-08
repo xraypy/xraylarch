@@ -18,7 +18,7 @@ except ImportError:
 from larch.wxlib import larchframe
 
 app = wx.App()
-frame = larchframe.LarchFrame(None)
+frame = larchframe.LarchFrame(None, exit_on_close=True)
 frame.Show()
 app.MainLoop()
 
