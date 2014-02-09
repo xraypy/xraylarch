@@ -959,9 +959,10 @@ def _larchgui(wxparent=None, _larch=None, **kws):
     lg.Show()
     lg.Raise()
 
+
 def registerLarchPlugin():
     return ('_plotter', {'scanviewer':_scanviewer,
-                         'mapviewer':_scanviewer,
+                         'mapviewer':_mapviewer,
                          'larchgui':_larchgui})
 
 

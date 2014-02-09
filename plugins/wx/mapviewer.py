@@ -643,7 +643,7 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, conffile=None,  **kwds):
+    def __init__(self, conffile=None,  _larch=None, **kwds):
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, size=(700, 450),  **kwds)
@@ -652,7 +652,7 @@ class MapViewerFrame(wx.Frame):
         self.filemap = {}
         self.im_displays = []
         self.plot_displays = []
-        self.larch = None
+        self.larch = _larch
         self.xrfdisplay = None
 
         self.SetTitle("GSE XRM MapViewer")
@@ -817,9 +817,10 @@ class MapViewerFrame(wx.Frame):
         imd.Raise()
 
     def init_larch(self):
-        self.larch = larch.Interpreter()
-        #self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
-        self.larch.symtable.set_symbol('_sys.wx.parent', self)
+        if self.larch is None:
+            self.larch = larch.Interpreter()
+            #self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+            self.larch.symtable.set_symbol('_sys.wx.parent', self)
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
         self.title.SetLabel('')
