@@ -266,6 +266,84 @@ class GSEXRM_MapRow:
         self.realtime = self.realtime.transpose()
         self.counts   = self.counts.swapaxes(0, 1)
 
+
+class GSEXRM_Detector(object):
+    """mapping of detector data to class"""
+    def __init__(self, xrfmap, index=None):
+        self.xrfmap = xrfmp
+        self.__ndet =  xrfmap.attrs['N_Detectors']        
+        self.det = None
+        if index is not None: 
+            self.det = self.xrfmap['det%i' % index]
+        
+    def __getval(self, param):
+        if self.det is None:
+            out = self.xrfmap['det1/%s' % (param)].value
+            for i in range(2, self.__ndet):
+                out += self.xrfmap['det%i/%s' % (i, param)].value
+            return out
+        return self.det[param].value
+    
+    @property
+    def energy(self):
+        "detector energy array"
+        if self.det is None:
+            return self.xrfmap['det1/energy'].value
+        return self.det['energy'].value
+
+    @property
+    def roi_name(self):
+        "roi names"
+        if self.det is None:
+            return list(self.xrfmap['det1/roi_name'].value)
+        return list(self.det['roi_name'].value)
+
+    @property
+    def roi_address(self):
+        "roi addresses"
+        if self.det is None:
+            return list(self.xrfmap['det1/roi_address'].value)
+        return list(self.det['roi_address'].value)
+
+    @property
+    def roi_limits(self):
+        "roi limits"
+        if self.det is None:
+            return list(self.xrfmap['det1/roi_limits'].value)
+        return list(self.det['roi_limits'].value)
+    
+    @property
+    def counts(self):
+        "detector counts array"
+        return self.__getval('counts')
+
+    @property
+    def dtfactor(self):
+        """deadtime factor"""
+        return self.__getval('dtfactor')
+
+    @property
+    def realtime(self):
+        """real time"""
+        return self.__getval('realtime')
+
+    @property
+    def livetime(self):
+        """live time"""
+        return self.__getval('livetime')
+
+    @property
+    def inputcounts(self):
+        """inputcounts"""
+        return self.__getval('inputcounts')
+
+    @property
+    def outputcount(self):
+        """output counts"""
+        return self.__getval('outputcounts')
+
+    
+
 class GSEXRM_MapFile(object):
     """
     Access to GSECARS X-ray Microprobe Map File:
@@ -1016,13 +1094,42 @@ class GSEXRM_MapFile(object):
                                       det=det, dtcorrect=dtcorrect)
         name = 'rect(x=[%i:%i], y==[%i:%i])' % (xmin, xmax, ymin, ymax)
         return self._getmca(map, counts, name)
-    
+
     def get_counts_rect(self, xmin, xmax, ymin, ymax, map=None, det=None,
                      area=None, dtcorrect=True):
         """return counts for a map rectangle, optionally
         applying area mask and deadtime correction
 
         Does *not* check for errors!"""
+        if map is None:
+            map = self._det_group(det)
+
+        nx, ny = (xmax-xmin, ymax-ymin)
+
+        sx = slice(xmin, xmax)
+        sy = slice(ymin, ymax)
+        ix, iy, nmca = map['counts'].shape
+        cell   = map['counts'].regionref[sx, sy, :]
+        counts = map['counts'][cell]
+        counts = counts.reshape(nx, ny, nmca)
+
+        if dtcorrect and det in range(1, self.ndet+1):
+            cell   = map['dtfactor'].regionref[sx, sy]
+            dtfact = map['dtfactor'][cell].reshape(nx, ny)
+            dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
+            counts = counts * dtfact
+
+        if area is not None:
+            counts = counts[area[sx, sy]]
+        else:
+            counts = counts.sum(axis=0)
+        return counts.sum(axis=0)
+        
+    def get_livereal_rect(self, xmin, xmax, ymin, ymax, map=None, det=None,
+                          area=None, dtcorrect=True):
+        """return realtime/livetime for a map rectangle, optionally
+        applying area mask and deadtime correction
+        """
         if map is None:
             map = self._det_group(det)
 
