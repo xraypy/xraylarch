@@ -431,16 +431,19 @@ class Interpreter:
             return delattr(sym, node.attr)
 
         sym = self.run(node.value)
-        if hasattr(sym, node.attr) and node.attr not in UNSAFE_ATTRS:
-            return getattr(sym, node.attr)
-        else:
-            obj = self.run(node.value)
-            fmt = "%s does not have member '%s'"
-            if not isgroup(obj):
-                obj = obj.__class__
-                fmt = "%s does not have attribute '%s'"
-            msg = fmt % (obj, node.attr)
-            self.raise_exception(node, exc=AttributeError, msg=msg)
+        if node.attr not in UNSAFE_ATTRS:
+            try:
+                return getattr(sym, node.attr)
+            except AttributeError:
+                pass
+
+        obj = self.run(node.value)
+        fmt = "%s does not have member '%s'"
+        if not isgroup(obj):
+            obj = obj.__class__
+            fmt = "%s does not have attribute '%s'"
+        msg = fmt % (obj, node.attr)
+        self.raise_exception(node, exc=AttributeError, msg=msg)
 
     def on_assign(self, node):    # ('targets', 'value')
         "simple assignment"
