@@ -4,11 +4,11 @@ timer = debugtimer()
 t0 = time.time()
 n = 100
 for i in range(n):
-    print ' --- ', i
     cu = read_ascii('../xafsdata/cu_metal_rt.xdi')
-    # cu = read_ascii('tests/data/cu_%3.3i.dat' % i)
+
     timer.add('read data file')
-    autobk(cu.energy, cu.mutrans, group=cu, rbkg=0.80) #  debug=True)
+    cu.mu = cu.mutrans
+    autobk(cu, rbkg=0.80)
     timer.add('autobk done')
 
     xftf(cu.k, cu.chi, kmin=1, kmax=21, dk=2, window='hanning',
@@ -40,9 +40,9 @@ for i in range(n):
         ##- timer.add('plot r-space done')
     endif
 
-    #if i % 8  == 0:
-    #    ##- timer.show_report()
-    #endif
+    # if i % 8  == 0:
+    #     ##- timer.show_report()
+    # endif
 endfor
 
 timer.show_report()

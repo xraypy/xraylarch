@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-
 import Ifeffit
 import time
 
 iff = Ifeffit.Ifeffit()
 
 script = """
-read_data(file = tests/data/cu_metal_rt.xdi, label = 'energy i0 i1 xmu', group = cu)
+read_data(file = ../xafsdata/cu_metal_rt.xdi, label = 'energy i0 i1 xmu', group = cu)
 spline(energy= cu.energy, xmu= cu.xmu, kweight=1,rbkg=0.8)
 fftf(cu.chi, kmin=1, kmax=21, dk=2, kwindow='hanning', kweight=2, group=cu, rmax_out=20)
 fftr(real=cu.chir_re, imag=cu.chir_im, rmin=0.1, rmax=15, dr=0)
@@ -15,16 +14,17 @@ fftr(real=cu.chir_re, imag=cu.chir_im, rmin=0.1, rmax=15, dr=0)
 
 iff.ifeffit('show $&build')
 
+n = 100
 
 t0 = time.time()
-for i in range(10):
+
+for i in range(n:
     iff.ifeffit(script)
 
-print time.time() - t0
+print 'Ran %i processing steps in % .4f seconds' % (n, time.time() - t0)
 
 iff.ifeffit("plot(cu.k, cu.chi*cu.k**2)")
-# 
-# 
+
 # doplot = False
 # ##- timer = debug##- timer()
 # t0 = time.time()
