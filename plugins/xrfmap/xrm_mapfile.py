@@ -270,7 +270,7 @@ class GSEXRM_MapRow:
 class GSEXRM_Detector(object):
     """mapping of detector data to class"""
     def __init__(self, xrfmap, index=None):
-        self.xrfmap = xrfmp
+        self.xrfmap = xrfmap
         self.__ndet =  xrfmap.attrs['N_Detectors']        
         self.det = None
         if index is not None: 
@@ -456,6 +456,11 @@ class GSEXRM_MapFile(object):
         else:
             raise GSEXRM_Exception(
                 "'GSEXMAP Error: could not locate map file or folder")
+
+    def get_det(self, index=None):
+        return GSEXRM_Detector(self.xrfmap, index=index)
+
+        
         
     def open(self, filename, root=None, check_status=True):
         """open GSEXRM HDF5 File :
@@ -840,9 +845,8 @@ class GSEXRM_MapFile(object):
                                 ('sum_cor', nsum, np.float32)):
             scan.create_dataset(name, (NINIT, npts, nx), dtype,
                                 compression=COMPRESSION_LEVEL,
-                                chunks=(2, npts, nxx),
+                                chunks=(2, npts, nx),
                                 maxshape=(None, npts, nx))
-
         # positions
         pos = xrfmap['positions']
         for pname in ('mca realtime', 'mca livetime'):
@@ -931,6 +935,22 @@ class GSEXRM_MapFile(object):
         self.xrfmap.attrs['Process_ID'] = os.getpid()
         self.h5root.flush()
 
+    def take_ownership(self):
+        "claim ownershipf of file"
+        if self.xrfmap is None:
+            return
+        self.xrfmap.attrs['Process_Machine'] = socket.gethostname()
+        self.xrfmap.attrs['Process_ID'] = os.getpid()
+        self.h5root.flush()
+
+    def release_ownership(self):
+        self.xrfmap.attrs['Process_Machine'] = ''
+        self.xrfmap.attrs['Process_ID'] = 0
+        self.xrfmap.attrs['Last_Row'] = self.last_row
+
+    def check_ownership(self):
+        return self.check_hostid()
+    
     def check_hostid(self):
         """checks host and id of file:
         returns True if this process the owner of the file
