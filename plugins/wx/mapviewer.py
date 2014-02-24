@@ -875,6 +875,9 @@ class MapViewerFrame(wx.Frame):
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
 
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
+        
+
     def onShowLarchBuffer(self, evt=None):
         lg =larchframe.LarchFrame(_larch=self.larch)
         lg.Show()
