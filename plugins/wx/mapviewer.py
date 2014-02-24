@@ -654,7 +654,8 @@ class MapViewerFrame(wx.Frame):
         self.plot_displays = []
         self.larch = _larch
         self.xrfdisplay = None
-
+        self.larch_buffer = None
+        
         self.SetTitle("GSE XRM MapViewer")
         self.SetFont(Font(9))
 
@@ -874,16 +875,16 @@ class MapViewerFrame(wx.Frame):
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
-
         self.Bind(wx.EVT_CLOSE,  self.onClose)
         
 
     def onShowLarchBuffer(self, evt=None):
-        lg =larchframe.LarchFrame(_larch=self.larch)
-        lg.Show()
-        lg.Raise()
-       
+        if self.larch_buffer is None:
+            self.larch_buffer = larchframe.LarchFrame(_larch=self.larch)
         
+        self.larch_buffer.Show()
+        self.larch_buffer.Raise()
+         
     def onFolderSelect(self, evt=None):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
         dlg = wx.DirDialog(self, "Select Working Directory:", os.getcwd(),
@@ -926,6 +927,11 @@ Matt Newville <newville @ cars.uchicago.edu>
             self.xrfdisplay.Destroy()
         except:
             pass
+        if self.larch_buffer is not None:
+            try:
+                self.larch_buffer.Destroy()
+            except:
+                pass
 
         for nam in dir(self.larch.symtable._plotter):
             obj = getattr(self.larch.symtable._plotter, nam)
