@@ -16,9 +16,14 @@ import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 from wx._core import PyDeadObjectError
 
-import epics
-from epics.wx import DelayedEpicsCallback, EpicsFunction
-
+HAS_EPICS = False
+try:
+    import epics
+    from epics.wx import DelayedEpicsCallback, EpicsFunction
+    HAS_EPICS = True
+except ImportError:
+    pass
+    
 from larch import Interpreter, use_plugin_path, isParameter
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import larchframe

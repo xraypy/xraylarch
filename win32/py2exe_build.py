@@ -122,7 +122,7 @@ console_apps = [{'script': '../bin/larch',         'icon_resources': [(0, 'larch
 py2exe_opts = {'optimize':1,
                'bundle_files':2,
                'includes': ['ConfigParser', 'Image', 'ctypes', 'epics',
-                            'epics.devices', 'fpformat', 'h5py',
+                            'epics.devices', 'epics.wx', 'fpformat', 'h5py',
                             'h5py._objects', 'h5py._proxy', 'h5py.defs',
                             'h5py.utils', 'matplotlib', 'numpy', 'scipy',
                             'scipy.constants', 'scipy.fftpack',
