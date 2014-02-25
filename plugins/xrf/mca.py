@@ -128,7 +128,7 @@ class MCA(Group):
         Group.__init__(self)
 
     def __repr__(self):
-        form = "<MCA %s, nchans=%d, counts=%d, realtime=%d>"
+        form = "<MCA %s, nchans=%d, counts=%d, realtime=%.1f>"
         return form % (self.name, self.nchans, self.total_counts, self.real_time)
 
     def add_roi(self, name='', left=0, right=0, bgr_width=3,
