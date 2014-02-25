@@ -41,10 +41,18 @@ if sys.version[0] == '2':
     COMMONTYPES.append(unicode)
 COMMONTYPES =  tuple(COMMONTYPES)
     
+H5TYPES = ()
+try:
+    import h5py
+    H5TYPES = (h5py.File, h5py.Group, h5py.Dataset)
+except ImportError:
+    pass
+
 TYPE_HELPS = {}
 for t in COMMONTYPES:
     TYPE_HELPS[t] = 'help on %s' % t
 
+IGNORE_TYPE = []
 DOCTYPES = ('BuiltinFunctionType', 'BuiltinMethodType', 'ClassType',
             'FunctionType', 'GeneratorType', 'InstanceType',
             'LambdaType', 'MethodType', 'ModuleType',
@@ -137,7 +145,6 @@ class FillingTree(wx.TreeCtrl):
     def objGetChildren(self, obj):
         """Return dictionary with attributes or contents of object."""
         # print 'objGetChildren ', obj
-        busy = wx.BusyCursor()
         otype = type(obj)
         d = {}
         if (obj is None or obj is False or obj is True):
@@ -147,6 +154,17 @@ class FillingTree(wx.TreeCtrl):
             d = obj._members()
         if isinstance(obj, COMMONTYPES):
             d = obj
+        elif isinstance(obj, h5py.Group):
+            try:
+                for key, val in obj.items():
+                    d[key] = val
+            except AttributeError:
+                pass
+        elif isinstance(obj, h5py.Dataset):
+            try:
+                d[key] = val
+            except AttributeError:
+                pass
         elif isinstance(obj, (list, tuple)):
             for n in range(len(obj)):
                 key = '[' + str(n) + ']'
