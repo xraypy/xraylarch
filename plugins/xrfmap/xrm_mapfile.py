@@ -1053,9 +1053,19 @@ class GSEXRM_MapFile(object):
 
     def get_mca_area(self, areaname, det=None, dtcorrect=True,
                      callback = None):
-        """
-        return XRF spectra as MCA() instance for
+        """return XRF spectra as MCA() instance for
         spectra summed over a pre-defined area
+
+        Parameters
+        ---------
+        areaname :   str       name of area
+        det :        optional, None or int         index of detector
+        dtcorrect :  optional, bool [True]         dead-time correct data
+
+        Returns
+        -------
+        MCA object for XRF counts in area
+
         """
 
         try:
@@ -1072,7 +1082,7 @@ class GSEXRM_MapFile(object):
         NCHUNKSIZE = 16384 # 8192
         use_chunks = nx*ny > NCHUNKSIZE
         step = int((nx*ny)/NCHUNKSIZE)
-
+        
         if not use_chunks:
             try:
                 if hasattr(callback , '__call__'):
@@ -1104,23 +1114,67 @@ class GSEXRM_MapFile(object):
                     counts += self.get_counts_rect(xmin, xmax, y1, y2, map=map,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
-        return self._getmca(map, counts, areaname)
+
+
+        ltime, rtime = self.get_livereal_rect(xmin, xmax, ymin, ymax, det=det,
+                                              dtcorrect=dtcorrect, area=area)
+
+        return self._getmca(map, counts, areaname,
+                            real_time=rtime, live_time=ltime)
 
     def get_mca_rect(self, xmin, xmax, ymin, ymax, det=None, dtcorrect=True):
         """return mca counts for a map rectangle, optionally
+
+        Parameters
+        ---------
+        xmin :       int       low x index
+        xmax :       int       high x index
+        ymin :       int       low y index
+        ymax :       int       high y index
+        det :        optional, None or int         index of detector
+        dtcorrect :  optional, bool [True]         dead-time correct data
+
+        Returns
+        -------
+        MCA object for XRF counts in rectangle
+
         """
         map = self._det_group(det)
         counts = self.get_counts_rect(xmin, xmax, ymin, ymax, map=map,
                                       det=det, dtcorrect=dtcorrect)
         name = 'rect(x=[%i:%i], y==[%i:%i])' % (xmin, xmax, ymin, ymax)
-        return self._getmca(map, counts, name)
+
+        ltime, rtime = self.get_livereal_rect(xmin, xmax, ymin, ymax, det=det,
+                                              dtcorrect=dtcorrect, area=None)
+
+        return self._getmca(map, counts, name,
+                            real_time=rtime, live_time=ltime)
+
 
     def get_counts_rect(self, xmin, xmax, ymin, ymax, map=None, det=None,
                      area=None, dtcorrect=True):
         """return counts for a map rectangle, optionally
         applying area mask and deadtime correction
 
-        Does *not* check for errors!"""
+        Parameters
+        ---------
+        xmin :       int       low x index
+        xmax :       int       high x index
+        ymin :       int       low y index
+        ymax :       int       high y index
+        map  :       optional, None or map data   
+        det :        optional, None or int         index of detector
+        dtcorrect :  optional, bool [True]         dead-time correct data
+        area :       optional, None or area object  area for mask
+
+        Returns
+        -------
+        ndarray for XRF counts in rectangle
+
+        Does *not* check for errors!
+
+        Note:  if map is None, the map data is taken frmo the 'det' parameter
+        """
         if map is None:
             map = self._det_group(det)
 
@@ -1145,45 +1199,77 @@ class GSEXRM_MapFile(object):
             counts = counts.sum(axis=0)
         return counts.sum(axis=0)
         
-    def get_livereal_rect(self, xmin, xmax, ymin, ymax, map=None, det=None,
+    def get_livereal_rect(self, xmin, xmax, ymin, ymax, det=None,
                           area=None, dtcorrect=True):
-        """return realtime/livetime for a map rectangle, optionally
+        """return livetime, realtime for a map rectangle, optionally
         applying area mask and deadtime correction
+
+        Parameters
+        ---------
+        xmin :       int       low x index
+        xmax :       int       high x index
+        ymin :       int       low y index
+        ymax :       int       high y index
+        det :        optional, None or int         index of detector
+        dtcorrect :  optional, bool [True]         dead-time correct data
+        area :       optional, None or area object  area for mask
+
+        Returns
+        -------
+        realtime, livetime in seconds
+
+        Does *not* check for errors!
+
         """
-        if map is None:
-            map = self._det_group(det)
 
         nx, ny = (xmax-xmin, ymax-ymin)
 
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-        ix, iy, nmca = map['counts'].shape
-        cell   = map['counts'].regionref[sx, sy, :]
-        counts = map['counts'][cell]
-        counts = counts.reshape(nx, ny, nmca)
+        region = self._det_group(1)['livetime'].regionref[sx, sy]
 
-        if dtcorrect and det in range(1, self.ndet+1):
-            cell   = map['dtfactor'].regionref[sx, sy]
-            dtfact = map['dtfactor'][cell].reshape(nx, ny)
-            dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
-            counts = counts * dtfact
+        if det is None:
+            livetime = np.zeros((nx, ny))
+            realtime = np.zeros((nx, ny))
+            for d in range(1, self.ndet+1):
+                map = self._det_group(d)
+                livetime += map['livetime'][region].reshape(nx, ny)
+                realtime += map['realtime'][region].reshape(nx, ny)
+        else:
+            map = self._det_group(d)
+            livetime = map['livetime'][region].reshape(nx, ny)
+            realtime = map['realtime'][region].reshape(nx, ny)
 
         if area is not None:
-            counts = counts[area[sx, sy]]
-        else:
-            counts = counts.sum(axis=0)
-        return counts.sum(axis=0)
+            livetime = livetime[area[sx, sy]]
+            realtime = realtime[area[sx, sy]]
 
-    def _getmca(self, map, counts, name):
+        livetime = 1.e-6*livetime.sum()
+        realtime = 1.e-6*realtime.sum()
+        return livetime, realtime
+    
+
+    def _getmca(self, map, counts, name, **kws):
         """return an MCA object for a detector group
         (map is one of the  'det1', ... 'detsum')
         with specified counts array and a name
+
+
+        Parameters
+        ---------
+        det :        detector object (one of det1, det2, ..., detsum)
+        counts :     ndarray array of counts 
+        name  :      name for MCA
+
+        Returns
+        -------
+        MCA object
+
         """
         # map  = self.xrfmap[dgroup]
         cal  = map['energy'].attrs
-        _mca = MCA(counts=counts,
-                   offset=cal['cal_offset'],
-                   slope=cal['cal_slope'])
+        _mca = MCA(counts=counts, offset=cal['cal_offset'],
+                   slope=cal['cal_slope'], **kws)
 
         _mca.energy =  map['energy'].value
         env_names = list(self.xrfmap['config/environ/name'])
@@ -1214,6 +1300,11 @@ class GSEXRM_MapFile(object):
         """return  position by name (matching 'roimap/pos_name' if
         name is a string, or using name as an index if it is an integer
 
+        Parameters
+        ---------
+        name :       str    ROI name
+        mean :       optional, bool [True]        return mean x-value
+        
         with mean=True, and a positioner in the first two position,
         returns a 1-d array of mean x-values
 
@@ -1238,6 +1329,17 @@ class GSEXRM_MapFile(object):
 
     def get_roimap(self, name, det=None, no_hotcols=True, dtcorrect=True):
         """extract roi map for a pre-defined roi by name
+
+        Parameters
+        ---------
+        name :       str    ROI name
+        det  :       optional, None or int [None]  index for detector
+        dtcorrect :  optional, bool [True]         dead-time correct data
+        no_hotcols   optional, bool [True]         suprress hot columns
+
+        Returns
+        -------
+        ndarray for ROI data
         """
         imap = -1
         if self.ndet is None:
@@ -1270,8 +1372,7 @@ class GSEXRM_MapFile(object):
                        emin=None, emax=None, by_energy=True):
         """extract map for an ROI set here, by energy range:
 
-        if by_energy is True, emin/emax are taken to be in keV (Energy units)
-        otherwise, they are taken to be integer energy channel numbers
+        not implemented
         """
         pass
 
@@ -1280,12 +1381,18 @@ class GSEXRM_MapFile(object):
         """return a (NxMx3) array for Red, Green, Blue from named
         ROIs (using get_roimap).
 
-        Arguments
-        -----------
-
-        scale_each  scale each map separately to span the full color range. [True]
-        scales      if not None and a 3 element tuple, used
-                    as the multiplicative scale for each map.               [None]
+        Parameters
+        ----------
+        rroi :       str    name of ROI for red channel
+        groi :       str    name of ROI for green channel
+        broi :       str    name of ROI for blue channel
+        det  :       optional, None or int [None]  index for detector
+        dtcorrect :  optional, bool [True]         dead-time correct data
+        no_hotcols   optional, bool [True]         suprress hot columns
+        scale_each : optional, bool [True]
+                     scale each map separately to span the full color range.
+        scales :     optional, None or 3 element tuple [None]
+                     multiplicative scale for each map. 
 
         By default (scales_each=True, scales=None), each map is scaled by
         1.0/map.max() -- that is 1 of the max value for that map.
