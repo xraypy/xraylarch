@@ -13,6 +13,7 @@ import time
 import os
 
 MODNAME = '_sys.wx'
+DEF_CHOICES = [('All Files', '*.*')]
 
 def SafeWxCall(fcn):
     """decorator to wrap function in a wx.CallAfter() so that
@@ -110,23 +111,23 @@ def _fileprompt(mode='open', multi=True, message = None,
     """
     symtable = ensuremod(_larch)
 
-    _def_choices =  [('All Files', '*.*')]
     if fname is None:
+        fname = ''
         try:
             fname = symtable.get_symbol("%s.default_filename" % MODNAME)
         except:
-            fname = ''
-    if choices is None:
+            pass
+    symtable.set_symbol("%s.default_filename" % MODNAME, fname)
+    
+    if choices is None or len(choices) < 1:
+        choices = DEF_CHOICES
         try:
             choices = symtable.get_symbol("%s.ext_choices" % MODNAME)
         except:
-            symtable.set_symbol("%s.ext_choices" % MODNAME, _def_choices)
+            pass
+    symtable.set_symbol("%s.ext_choices" % MODNAME, choices)
 
-        choices = symtable.get_symbol("%s.ext_choices" % MODNAME)
     wildcard = []
-    if choices is None or len(choices) < 1:
-        choices = _def_choices
-   
     for title, fglob in choices:
         wildcard.append('%s (%s)|%s' % (title, fglob, fglob))
     wildcard = '|'.join(wildcard)
