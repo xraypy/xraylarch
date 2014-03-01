@@ -1073,8 +1073,8 @@ class GSEXRM_MapFile(object):
         except:
             raise GSEXRM_Exception("Could not find area '%s'" % areaname)
 
-        map = self._det_group(det)
-        ix, iy, nmca = map['counts'].shape
+        mapdat = self._det_group(det)
+        ix, iy, nmca = mapdat['counts'].shape
 
         sx, sy = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
@@ -1088,7 +1088,7 @@ class GSEXRM_MapFile(object):
                 if hasattr(callback , '__call__'):
                     callback(1, 1, nx*ny)
                 counts = self.get_counts_rect(xmin, xmax, ymin, ymax,
-                                           map=map, det=det, area=area,
+                                           mapdat=mapdat, det=det, area=area,
                                            dtcorrect=dtcorrect)
             except MemoryError:
                 use_chunks = True
@@ -1101,7 +1101,7 @@ class GSEXRM_MapFile(object):
                     if x1 >= x2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, (x2-x1)*ny)
-                    counts += self.get_counts_rect(x1, x2, ymin, ymax, map=map,
+                    counts += self.get_counts_rect(x1, x2, ymin, ymax, mapdat=mapdat,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
             else:
@@ -1111,15 +1111,13 @@ class GSEXRM_MapFile(object):
                     if y1 >= y2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, nx*(y2-y1))
-                    counts += self.get_counts_rect(xmin, xmax, y1, y2, map=map,
+                    counts += self.get_counts_rect(xmin, xmax, y1, y2, mapdat=mapdat,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
 
-
         ltime, rtime = self.get_livereal_rect(xmin, xmax, ymin, ymax, det=det,
                                               dtcorrect=dtcorrect, area=area)
-
-        return self._getmca(map, counts, areaname,
+        return self._getmca(mapdat, counts, areaname,
                             real_time=rtime, live_time=ltime)
 
     def get_mca_rect(self, xmin, xmax, ymin, ymax, det=None, dtcorrect=True):
@@ -1139,19 +1137,18 @@ class GSEXRM_MapFile(object):
         MCA object for XRF counts in rectangle
 
         """
-        map = self._det_group(det)
-        counts = self.get_counts_rect(xmin, xmax, ymin, ymax, map=map,
+        mapdat = self._det_group(det)
+        counts = self.get_counts_rect(xmin, xmax, ymin, ymax, mapdat=mapdat,
                                       det=det, dtcorrect=dtcorrect)
         name = 'rect(x=[%i:%i], y==[%i:%i])' % (xmin, xmax, ymin, ymax)
 
         ltime, rtime = self.get_livereal_rect(xmin, xmax, ymin, ymax, det=det,
                                               dtcorrect=dtcorrect, area=None)
-
-        return self._getmca(map, counts, name,
+        return self._getmca(mapdat, counts, name,
                             real_time=rtime, live_time=ltime)
 
 
-    def get_counts_rect(self, xmin, xmax, ymin, ymax, map=None, det=None,
+    def get_counts_rect(self, xmin, xmax, ymin, ymax, mapdat=None, det=None,
                      area=None, dtcorrect=True):
         """return counts for a map rectangle, optionally
         applying area mask and deadtime correction
@@ -1162,7 +1159,7 @@ class GSEXRM_MapFile(object):
         xmax :       int       high x index
         ymin :       int       low y index
         ymax :       int       high y index
-        map  :       optional, None or map data   
+        mapdat :     optional, None or map data
         det :        optional, None or int         index of detector
         dtcorrect :  optional, bool [True]         dead-time correct data
         area :       optional, None or area object  area for mask
@@ -1173,23 +1170,22 @@ class GSEXRM_MapFile(object):
 
         Does *not* check for errors!
 
-        Note:  if map is None, the map data is taken frmo the 'det' parameter
+        Note:  if mapdat is None, the map data is taken from the 'det' parameter
         """
-        if map is None:
-            map = self._det_group(det)
+        if mapdat is None:
+            mapdat = self._det_group(det)
 
         nx, ny = (xmax-xmin, ymax-ymin)
-
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-        ix, iy, nmca = map['counts'].shape
-        cell   = map['counts'].regionref[sx, sy, :]
-        counts = map['counts'][cell]
+        ix, iy, nmca = mapdat['counts'].shape
+        cell   = mapdat['counts'].regionref[sx, sy, :]
+        counts = mapdat['counts'][cell]
         counts = counts.reshape(nx, ny, nmca)
 
         if dtcorrect and det in range(1, self.ndet+1):
-            cell   = map['dtfactor'].regionref[sx, sy]
-            dtfact = map['dtfactor'][cell].reshape(nx, ny)
+            cell   = mapdat['dtfactor'].regionref[sx, sy]
+            dtfact = mapdat['dtfactor'][cell].reshape(nx, ny)
             dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
             counts = counts * dtfact
 
@@ -1221,25 +1217,26 @@ class GSEXRM_MapFile(object):
         Does *not* check for errors!
 
         """
-
+        # need real size, not just slice values, for np.zeros()
+        shape = self._det_group(1)['livetime'].shape
+        if xmax < 0: xmax += shape[0]
+        if ymax < 0: ymax += shape[1]
         nx, ny = (xmax-xmin, ymax-ymin)
+        # print (" GET LIVE/REAL ", xmin, xmax, ymin, ymax, nx, ny)
 
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
-        region = self._det_group(1)['livetime'].regionref[sx, sy]
-
         if det is None:
             livetime = np.zeros((nx, ny))
             realtime = np.zeros((nx, ny))
             for d in range(1, self.ndet+1):
-                map = self._det_group(d)
-                livetime += map['livetime'][region].reshape(nx, ny)
-                realtime += map['realtime'][region].reshape(nx, ny)
+                dmap = self._det_group(d)
+                livetime += dmap['livetime'][sx, sy]
+                realtime += dmap['realtime'][sx, sy]
         else:
-            map = self._det_group(d)
-            livetime = map['livetime'][region].reshape(nx, ny)
-            realtime = map['realtime'][region].reshape(nx, ny)
-
+            dmap = self._det_group(d)
+            livetime = dmap['livetime'][sx, sy]
+            realtime = dmap['realtime'][sx, sy]
         if area is not None:
             livetime = livetime[area[sx, sy]]
             realtime = realtime[area[sx, sy]]
