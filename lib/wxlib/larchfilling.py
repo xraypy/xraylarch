@@ -105,7 +105,7 @@ class FillingTree(wx.TreeCtrl):
 
     def OnItemExpanding(self, event):
         """Add children to the item."""
-        busy = wx.BusyCursor()
+        # busy = wx.BusyCursor()
         item = event.GetItem()
         if self.IsExpanded(item):
             return
@@ -114,12 +114,12 @@ class FillingTree(wx.TreeCtrl):
 
     def OnItemCollapsed(self, event):
         """Remove all children from the item."""
-        busy = wx.BusyCursor()
+        # busy = wx.BusyCursor()
         item = event.GetItem()
 
     def OnSelChanged(self, event):
         """Display information about the item."""
-        busy = wx.BusyCursor()
+		# busy = wx.BusyCursor()
         if hasattr(event, 'GetItem'):
             self.item = event.GetItem()
         self.display()
@@ -161,10 +161,7 @@ class FillingTree(wx.TreeCtrl):
             except AttributeError:
                 pass
         elif isinstance(obj, h5py.Dataset):
-            try:
-                d[key] = val
-            except AttributeError:
-                pass
+            d = obj
         elif isinstance(obj, (list, tuple)):
             for n in range(len(obj)):
                 key = '[' + str(n) + ']'
