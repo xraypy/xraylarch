@@ -6,9 +6,10 @@ matrix:
         - python: 2.7
           env:
             - PYTHON=python
-        - python: 3.2
-          env:
-            - PYTHON=python3
+
+# python: 3.2
+# env:
+# PYTHON=python3
 
 git:
     submodules: false
