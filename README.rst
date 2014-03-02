@@ -72,7 +72,7 @@ Python:
   
 The Larch macro language differs from Python in a few significant ways:
 
-   1. Larch does not use indentation level to define blocks of  code. Rather,  a block is ended with one of::
+1. Larch does not use indentation level to define blocks of  code. Rather,  a block is ended with one of::
 
             if X:        
                do_something()
@@ -81,10 +81,10 @@ The Larch macro language differs from Python in a few significant ways:
                do_another_thing()
            #endif
 
-   and similarly   for/endfor, while/endwhile, def/enddef, and   try/endtry.
+and similarly   for/endfor, while/endwhile, def/enddef, and   try/endtry.
 
-   Properly indenting and using the '#end' version allows code to be both  
-   valid larch and python, and is strongly encouraged.
+Properly indenting and using the '#end' version allows code to be both  
+valid larch and python, and is strongly encouraged.
 
 2.  "Command" syntax -- not requiring parentheses for function calls --   is 
 supported in many cases.  If the first word of an expression typed at the
@@ -124,13 +124,13 @@ representation is then interpreted directly, using a custom symbol table
 for name lookup and resolution.  This implementation gives several
 benefits:
 
-1.  the intermediate python code can be saved so that code validation and
+  *  the intermediate python code can be saved so that code validation and
 translation of larch to python are now trivial
 
-2. the parsed AST tree is guaranteed (at least as far as python itself is)
+  * the parsed AST tree is guaranteed (at least as far as python itself is)
 to be correct.
 
-3. Interpreting the AST tree is very simple, including all loop and
+ *  Interpreting the AST tree is very simple, including all loop and
 control-flow code, and the resulting compiler is very simpler and powerful.
 
 In addition, the symbol table is simplified so that a symbolTable contains
