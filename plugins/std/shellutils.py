@@ -58,7 +58,7 @@ def _cd(name, **kws):
         ret = ret.replace('\\','/')
     return ret
 
-def _mkdir(name, mode=0777, **kws):
+def _mkdir(name, mode=0o777, **kws):
     """create directory (and any intermediate subdirectories
 
     Options:
