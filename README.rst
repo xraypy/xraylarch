@@ -65,16 +65,14 @@ Python:
 
 2.  Existing Python libraries can be imported and used from Larch.
 
-3.  Syntax for lists, dictionaries, array slicing, and so on are identical
-to python.
+3.  Syntax for lists, dictionaries, array slicing, and so on are identical to python.
 
-4. Control flow syntax (if, while, for, try) are nearly identical to Python
-(see below).
+4. Control flow syntax (if, while, for, try) are nearly identical to Python (see below).
     
   
 The Larch macro language differs from Python in a few significant ways:
 
-1. Larch does not use indentation level to define blocks of  code. Rather,  a block is ended with one of::
+   1. Larch does not use indentation level to define blocks of  code. Rather,  a block is ended with one of::
 
             if X:        
                do_something()
@@ -83,12 +81,12 @@ The Larch macro language differs from Python in a few significant ways:
                do_another_thing()
            #endif
 
-and similarly   for/endfor, while/endwhile, def/enddef, and   try/endtry.
+   and similarly   for/endfor, while/endwhile, def/enddef, and   try/endtry.
 
-Properly indenting and using the '#end' version allows code to be both
-valid larch and python, and is strongly encouraged.
+   Properly indenting and using the '#end' version allows code to be both  
+   valid larch and python, and is strongly encouraged.
 
-2.  "Command" syntax -- not requiring parentheses for function calls -- is
+2.  "Command" syntax -- not requiring parentheses for function calls --   is 
 supported in many cases.  If the first word of an expression typed at the
 command prompt is a word that is a valid symbol name (and not a reserved
 word) and the second word that is either a valid name or a number, and if
@@ -105,11 +103,11 @@ more functionality and data to be readily available at an interactive
 prompt.
 
 4.  While the Larch macro language is a com a Larch does not support many
-important Python constructs.  These include::
+important Python constructs.  These include
 
        *  ``class``     -- creating a new object class
        *  ``lambda``  -- anonymous functions.
-       *    generators, ``yield`` -- deferred generation of sequences.
+       *   generators, ``yield`` -- deferred generation of sequences.
        *   decorators   --  function modifiers
             
 For the sensitive Python-lovers, please note that I am not saying that I
