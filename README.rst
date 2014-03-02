@@ -4,6 +4,10 @@ Larch:  Data Analysis for X-ray Spectroscopies and More
 .. image:: https://travis-ci.org/xraypy/xraylarch.png
    :target: https://travis-ci.org/xraypy/xraylarch
 
+.. _scipy: http://scipy.org/
+.. _numpy: http://numpy.scipy.org/
+.. _matplotlib: http://matplotlib.org/
+.. _h5py: http://code.google.com/p/h5py/
 
 * Documentation: http://xraypy.github.io/xraylarch
 * Code: http://github.com/xraypy/xraylarch
@@ -18,7 +22,7 @@ data.
 
 Larch is written in Python, making heavy use of the wonderful `numpy`_,
 `scipy`_, `h5py`_, and `matplotlib`_ libraries.  For interactive and batch
-procssing, Larch provides a Python-like and Python-derived language (a
+processing, Larch provides a Python-like and Python-derived language (a
 *macro language*, or *domain specific language*) that is intended to be
 very easy to use for novices while also being complete enough for advanced
 data processing and analysis.  In addition, Larch can be used as a Python
@@ -54,24 +58,24 @@ Larch: A macro language for scientific programming
 
 Larch provides a dialect of Python for interactive use.  The intention is
 to provide a very easy and complete macro language for data processing.
-By builing Larch with Python, Larch has many important similarities to
+By building Larch with Python, Larch has many important similarities to
 Python:
 
-    1.  All variables in Larch are real Python objects.
+1.  All variables in Larch are real Python objects.
 
-    2.  Existing Python libraries can be imported and used from Larch.
+2.  Existing Python libraries can be imported and used from Larch.
 
-    3.  Syntax for lists, dictionsries, array slicing, and so on are
-        identical to python.
+3.  Syntax for lists, dictionaries, array slicing, and so on are
+      identical to python.
 
-    4. Control flow syntax (if, while, for, try) are nearly identical to
-        Python (see below).
+ 4. Control flow syntax (if, while, for, try) are nearly identical to
+      Python (see below).
     
    
 The Larch macro language differs from Python in a few significant ways:
 
-   1. Larch does not use indentation level to define blocks of
-       code. Rather,  a block is ended with one of 
+1. Larch does not use indentation level to define blocks of  code. Rather,  a block is ended with one of::
+
             if X:        
                do_something()
             endif
@@ -79,30 +83,29 @@ The Larch macro language differs from Python in a few significant ways:
                do_another_thing()
            #endif
 
-      and similarly   for/endfor, while/endwhile, def/enddef, and
-      try/endtry.
+and similarly   for/endfor, while/endwhile, def/enddef, and   try/endtry.
 
-       Properly indenting and using the  '#end' version allows code to be
-       both valid larch and python, and is strongly encouraged.
+Properly indenting and using the '#end' version allows code to be both
+valid larch and python, and is strongly encouraged.
 
-  2.  "Command" syntax -- not requiring parentheses for function calls -- 
-       is supported in many cases.    If the first word of an expression
-       typed at the command prompt is a word that is a valid symbol name
-       (and not a reserved word) and the second  word that is either a
-       valid name or a number, and if the line  does not end with a ')',
-       the first word is taken as a function name and parentheses are
-       added, so that  
+2.  "Command" syntax -- not requiring parentheses for function calls -- is
+     supported in many cases.  If the first word of an expression typed at
+     the command prompt is a word that is a valid symbol name (and not a
+     reserved word) and the second word that is either a valid name or a
+     number, and if the line does not end with a ')', the first word is
+     taken as a function name and parentheses are added, so that::
 
            command arg1, arg2   => command(arg1, arg2)
-       and so on.
+     and so on.
 
-   3. Larch has a nested namespace and a deeper level of name resolution.
-       This is more complex than Python's simple and elegant model,  but
-       allows more functionality and data to be readily available at an 
-       interactive prompt.  
+3.  Larch has a nested namespace and a deeper level of name resolution.
+     This is more complex than Python's simple and elegant model, but
+     allows more functionality and data to be readily available at an
+     interactive prompt.
 
-   4. While the Larch macro language is a com a Larch does not support 
-       many important Python constructs.  These  include:
+4.  While the Larch macro language is a com a Larch does not support many
+     important Python constructs.  These include:
+
              class     -- creating a new object class
              lambda  -- anonymous functions.
              generators, yield -- deferred generation of sequences.
@@ -115,7 +118,6 @@ Larch a simple scientific macro language.  The fact that the macro language
 is close to Python is a strong benefit, but it is still a domain-specific
 language. 
 
-
 The implementation of the Larch macro language turns out to be rather
 simple.  The input Larch program text is converted to valid python code,
 and then parsed into Python's own Abstract Syntax Tree (AST).  This AST
@@ -123,21 +125,19 @@ representation is then interpreted directly, using a custom symbol table
 for name lookup and resolution.  This implementation gives several
 benefits:
 
-   1. the intermediate python code can be saved so that code
-      validation and translation of larch to python are now trivial
+1.  the intermediate python code can be saved so that code validation and
+     translation of larch to python are now trivial
 
-   2. the parsed AST tree is guaranteed (at least as far as python
-      itself is) to be correct.
+2. the parsed AST tree is guaranteed (at least as far as python itself is)
+    to be correct.
 
-   3. Interpreting the AST tree is very simple, including all loop
-      and control-flow code, and the resulting compiler.py is very
-      much simpler than the earlier version.
+3. Interpreting the AST tree is very simple, including all loop and
+    control-flow code, and the resulting compiler is very simpler and powerful.
  
-In addition, the symbol table is simplified so that a symbolTable
-contains python objects and Groups (simple containers for other
-objects and Groups). Namespaces are built simply usin attributes
-of the Group class.  That is, attribute lookup is heavily used,
-and symbols just python objects.
+In addition, the symbol table is simplified so that a symbolTable contains
+python objects and Groups (simple containers for other objects and
+Groups). Namespaces are built simply using attributes of the Group class.
+That is, attribute lookup is heavily used, and symbols just python objects.
 
 
 
