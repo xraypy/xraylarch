@@ -10,6 +10,9 @@ matrix:
           env:
             - PYTHON=python3
 
+git:
+    submodules: false
+
 virtualenv:
     system_site_packages: true
 
