@@ -124,14 +124,11 @@ representation is then interpreted directly, using a custom symbol table
 for name lookup and resolution.  This implementation gives several
 benefits:
 
-  *  the intermediate python code can be saved so that code validation and
-     translation of larch to python are now trivial
+1.  the intermediate python code can be saved so that code validation and  translation of larch to python are now trivial
 
-  * the parsed AST tree is guaranteed (at least as far as python itself is)
-     to be correct.
+2.  the parsed AST tree is guaranteed (at least as far as python itself is) to be correct.
 
- *  Interpreting the AST tree is very simple, including all loop and
-     control-flow code, and the resulting compiler is very simpler and powerful.
+3.  Interpreting the AST tree is very simple, including all loop and control-flow code, and the resulting compiler is very simpler and powerful.
 
 In addition, the symbol table is simplified so that a symbolTable contains
 python objects and Groups (simple containers for other objects and
