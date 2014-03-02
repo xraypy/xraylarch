@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """
-Base TestCase for larch unit tests
+
+Basic unit testing utilities for larch
+
 """
 import unittest
 import time

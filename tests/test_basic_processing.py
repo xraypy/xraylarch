@@ -6,7 +6,7 @@ import ast
 import numpy as np
 from sys import version_info
 
-from ut_base import TestCase
+from utils import TestCase
 from larch import Interpreter
 
 class TestEval(TestCase):
@@ -55,7 +55,7 @@ class TestEval(TestCase):
         self.isTrue("y[1,:] == array([5, 2, 7, 8, 9])")
         # print(self.session.symtable["y"])
 
-    def ftest_while(self):
+    def test_while(self):
         '''while loops'''
         self.trytext("""n=0
 while n < 8:
@@ -70,6 +70,7 @@ while n < 8:
     n += 1
     if n > 3:
         break
+    endif
 else:
     n = -1
 endwhile
@@ -93,6 +94,7 @@ while n < 10:
     n += 1
     if n < 3:
         continue
+    endif
     n += 1
     print( ' n = ', n)
     if n > 5:

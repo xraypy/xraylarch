@@ -6,7 +6,7 @@ import ast
 import numpy as np
 from sys import version_info
 
-from ut_base import TestCase
+from utils import TestCase
 from larch import Interpreter
 
 class TestEval(TestCase):
