@@ -74,20 +74,20 @@ class LarchExceptionHolder:
         if exc_name in (None, 'None'):
             exc_name = 'UnknownError'
 
-        #print("E>>GET ERROR ", exc_name, e_type, e_val)
-        #print("E>> TB :" , e_tb, len(self.tback))
+        # print("E>>GET ERROR ", exc_name, e_type, e_val)
+        # print("E>> FNAME :" , self.fname, self.lineno)
+        # print("E>> TB :" , e_tb, len(self.tback))
         out = []
         #if len(self.tback) > 0:
         #    out.append(self.tback)
 
         call_expr = None
         fname = self.fname
-        fline = None
+
         if fname != '<stdin>' or self.lineno > 0:
             if fname != '<stdin>': 
                 self.lineno = self.lineno + 1
-            fline = 'file %s, line %i' % (fname, self.lineno)
-
+        fline = 'file %s, line %i' % (fname, self.lineno)
         if self.func is not None:
             func = self.func
             fname = self.fname
@@ -96,7 +96,6 @@ class LarchExceptionHolder:
                 if isinstance(func, Closure):
                     func = func.func
                     fname = inspect.getmodule(func).__file__
-
                 try:
                     fname = inspect.getmodule(func).__file__
                 except AttributeError:
@@ -126,6 +125,7 @@ class LarchExceptionHolder:
             if ex_msg is '':
                 ex_msg = str(self.msg)
             tline = "%s: %s" % (exc_name, ex_msg)
+
         if tline is not None:
             out.append(tline)
 
@@ -136,7 +136,7 @@ class LarchExceptionHolder:
         if call_expr is None and (self.expr == '<>' or
                                   fname not in (None, '', '<stdin>')):
             # denotes non-saved expression -- go fetch from file!
-            # print( 'Trying to get non-saved expr ', self.fname, self.lineno)
+            #  print( 'Trying to get non-saved expr ', self.fname, self.lineno)
             try:
                 if fname is not None and os.path.exists(fname):
                     ftmp = open(fname, 'r')
@@ -147,10 +147,16 @@ class LarchExceptionHolder:
                     except IndexError:
                         _expr = 'unknown'
                     call_expr = self.expr
+                    call_lineno = lineno
+                    for ilx, line in enumerate(lines):
+                        if line[:-1] == call_expr:
+                            call_lineno = ilx + 1
+                    call_fname = fname
                     self.expr = _expr
                     ftmp.close()
             except (IOError, TypeError):
                 pass
+
         if self.expr is None:
             out.append('unknown error\n')
         elif '\n' in self.expr:
@@ -162,8 +168,10 @@ class LarchExceptionHolder:
                 out.append("%s^^^" % ((col_offset)*' '))
             else:
                 out.append("    %s^^^" % ((col_offset)*' '))
+
         if call_expr is not None:
             out.append('  %s' % call_expr)
+            out.append('file %s, line %i' % (call_fname, call_lineno))
         if HAS_COLORTERM:
             color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
             if color not in VALID_ERRORCOLORS: 
@@ -233,36 +241,57 @@ class Procedure(object):
         lgroup  = Group()
         lgroup.__name__ = hex(id(lgroup))
         args    = list(args)
-        n_args  = len(args)
-        n_names = len(self.argnames)
-        n_kws   = len(kwargs)
-        # may need to move kwargs to args if names align!
-        if (n_args < n_names) and n_kws > 0:
-            for name in self.argnames[n_args:]:
+        nargs  = len(args)
+        nkws   = len(kwargs)
+        nargs_expected = len(self.argnames)
+        # print("LARCHPROCCALL ", self.name)
+        # print(" defn: args, kwargs ", self.argnames, self.kwargs)
+        # print(" defn: vararg, varkws ", self.vararg, self.varkws)
+        # print(" passed args, kws: ", args, kwargs)
+
+        # case 1: too few arguments, but the correct keyword given
+        if (nargs < nargs_expected) and nkws > 0:
+            for name in self.argnames[nargs:]:
                 if name in kwargs:
                     args.append(kwargs.pop(name))
-            n_args = len(args)
-            n_names = len(self.argnames)
-            n_kws = len(kwargs)
+            nargs = len(args)
+            nargs_expected = len(self.argnames)
+            nkws = len(kwargs)
 
+        # case 2: multiple values for named argument
         if len(self.argnames) > 0 and kwargs is not None:
             msg = "%s() got multiple values for keyword argument '%s'"
             for targ in self.argnames:
                 if targ in kwargs:
                     self.raise_exc(exc=TypeError,
                                    msg=msg % (targ, self.name))
+                    return
 
+        # case 3: too few args given
+        if nargs < nargs_expected:
+            mod = 'at least'
+            if len(self.kwargs) == 0:
+                mod = 'exactly'
+            msg = '%s() expected %s %i arguments (got %i)'
+            self.raise_exc(exc=TypeError, 
+                           msg=msg%(self.name, mod, nargs_expected, nargs))
+            return
 
-        if n_args != n_names:
-            msg = None
-            if n_args < n_names:
-                msg = 'not enough arguments for %s() expected %i, got %i'
-                msg = msg % (self.name, n_names, n_args)
-                # print '\n >>> raise exc ', msg
+        # case 4: more args given than expected, varargs not given
+        if nargs > nargs_expected and self.vararg is None:
+            if nargs - nargs_expected > len(self.kwargs):
+                msg = 'too many arguments for %s() expected at most %i, got %i'
+                msg = msg % (self.name, len(self.kwargs)+nargs_expected, nargs)
                 self.raise_exc(exc=TypeError, msg=msg)
+                return 
+            for i, xarg in enumerate(args[nargs_expected:]):
+                kw_name = self.kwargs[i][0]
+                if kw_name not in kwargs:
+                    kwargs[kw_name] = xarg
 
         for argname in self.argnames:
-            setattr(lgroup, argname, args.pop(0))
+            if len(args) > 0:
+                setattr(lgroup, argname, args.pop(0))
         try:
             if self.vararg is not None:
                 setattr(lgroup, self.vararg, tuple(args))
@@ -278,11 +307,13 @@ class Procedure(object):
                 msg = 'extra keyword arguments for procedure %s (%s)'
                 msg = msg % (self.name, ','.join(list(kwargs.keys())))
                 self.raise_exc(exc=TypeError, msg=msg)
+                return 
 
         except (ValueError, LookupError, TypeError,
                 NameError, AttributeError):
             msg = 'incorrect arguments for procedure %s' % self.name
             self.raise_exc(msg=msg)
+            return
 
         stable  = self._larch.symtable
         stable.save_frame()
