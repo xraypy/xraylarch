@@ -65,13 +65,13 @@ Python:
 
 2.  Existing Python libraries can be imported and used from Larch.
 
-3.  Syntax for lists, dictionaries, array slicing, and so on are
-      identical to python.
+3.  Syntax for lists, dictionaries, array slicing, and so on are identical
+to python.
 
- 4. Control flow syntax (if, while, for, try) are nearly identical to
-      Python (see below).
+4. Control flow syntax (if, while, for, try) are nearly identical to Python
+(see below).
     
-   
+  
 The Larch macro language differs from Python in a few significant ways:
 
 1. Larch does not use indentation level to define blocks of  code. Rather,  a block is ended with one of::
@@ -89,27 +89,28 @@ Properly indenting and using the '#end' version allows code to be both
 valid larch and python, and is strongly encouraged.
 
 2.  "Command" syntax -- not requiring parentheses for function calls -- is
-     supported in many cases.  If the first word of an expression typed at
-     the command prompt is a word that is a valid symbol name (and not a
-     reserved word) and the second word that is either a valid name or a
-     number, and if the line does not end with a ')', the first word is
-     taken as a function name and parentheses are added, so that::
+supported in many cases.  If the first word of an expression typed at the
+command prompt is a word that is a valid symbol name (and not a reserved
+word) and the second word that is either a valid name or a number, and if
+the line does not end with a ')', the first word is taken as a function
+name and parentheses are added, so that::
 
-           command arg1, arg2   => command(arg1, arg2)
-     and so on.
+           command arg1, arg2   
+
+is converted to ``command(arg1, arg2)`` and so on.
 
 3.  Larch has a nested namespace and a deeper level of name resolution.
-     This is more complex than Python's simple and elegant model, but
-     allows more functionality and data to be readily available at an
-     interactive prompt.
+This is more complex than Python's simple and elegant model, but allows
+more functionality and data to be readily available at an interactive
+prompt.
 
 4.  While the Larch macro language is a com a Larch does not support many
-     important Python constructs.  These include:
+important Python constructs.  These include::
 
-             class     -- creating a new object class
-             lambda  -- anonymous functions.
-             generators, yield -- deferred generation of sequences.
-             decorators   --  function modifiers
+       *  ``class``     -- creating a new object class
+       *  ``lambda``  -- anonymous functions.
+       *    generators, ``yield`` -- deferred generation of sequences.
+       *   decorators   --  function modifiers
             
 For the sensitive Python-lovers, please note that I am not saying that I
 think these changes from Python are in anyway shortcomings of Python that
@@ -126,14 +127,14 @@ for name lookup and resolution.  This implementation gives several
 benefits:
 
 1.  the intermediate python code can be saved so that code validation and
-     translation of larch to python are now trivial
+translation of larch to python are now trivial
 
 2. the parsed AST tree is guaranteed (at least as far as python itself is)
-    to be correct.
+to be correct.
 
 3. Interpreting the AST tree is very simple, including all loop and
-    control-flow code, and the resulting compiler is very simpler and powerful.
- 
+control-flow code, and the resulting compiler is very simpler and powerful.
+
 In addition, the symbol table is simplified so that a symbolTable contains
 python objects and Groups (simple containers for other objects and
 Groups). Namespaces are built simply using attributes of the Group class.
