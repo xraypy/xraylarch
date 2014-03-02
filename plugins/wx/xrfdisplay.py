@@ -12,7 +12,11 @@ from functools import partial
 import wx
 import wx.lib.mixins.inspection
 import wx.lib.scrolledpanel as scrolled
-from wx._core import PyDeadObjectError
+try:
+    from wx._core import PyDeadObjectError
+except:
+    PyDeadObjectError = Exception
+    
 import wx.lib.colourselect  as csel
 import numpy as np
 import matplotlib

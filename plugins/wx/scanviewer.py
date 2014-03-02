@@ -14,7 +14,6 @@ import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
-from wx._core import PyDeadObjectError
 
 HAS_EPICS = False
 try:
@@ -754,7 +753,7 @@ class ScanViewerFrame(wx.Frame):
             groupname = self.file_groups[fpath]
             
         if not hasattr(self.datagroups, groupname):
-            print 'Error reading file ', groupname
+            print( 'Error reading file ', groupname)
             return
 
         self.groupname = groupname

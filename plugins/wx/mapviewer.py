@@ -29,7 +29,10 @@ import wx
 import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
-from wx._core import PyDeadObjectError
+try:
+    from wx._core import PyDeadObjectError
+except:
+    PyDeadObjectError = Exception
 
 import h5py
 import numpy as np
@@ -771,7 +774,7 @@ class MapViewerFrame(wx.Frame):
         try:
             self.xrfdisplay.Show()
 
-        except wx.PyDeadObjectError:
+        except PyDeadObjectError:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
                                               gsexrmfile=xrmfile)
             self.xrfdisplay.Show()

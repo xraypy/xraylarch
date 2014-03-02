@@ -9,7 +9,10 @@ from threading import Thread
 
 from functools import partial
 import wx
-from wx._core import PyDeadObjectError
+try:
+    from wx._core import PyDeadObjectError
+except:
+    PyDeadObjectError = Exception
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
@@ -173,7 +176,7 @@ class MapImageFrame(ImageFrame):
                 self.prof_plotter.Raise()
                 self.prof_plotter.clear()
 
-            except AttributeError, PyDeadObjectError:
+            except (AttributeError, PyDeadObjectError):
                 self.prof_plotter = None
 
         if self.prof_plotter is None:
