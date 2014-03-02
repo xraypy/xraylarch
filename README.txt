@@ -1,4 +1,6 @@
-==== Larch: a simple macro language for scientific programming ====
+
+Larch: a simple macro language for scientific programming 
+======================================
 
 Larch is a macro language intended to be embedded in scientific
 applications.
@@ -34,7 +36,8 @@ just constructed as classes, and so no special Symbol class is
 needed.
 
 
-=== Syntax differences between LARCH and Python ====
+Syntax differences between LARCH and Python
+================================
 
 1. larch does not use indentation level. Rather a block
    is ended with one of
