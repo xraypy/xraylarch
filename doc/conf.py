@@ -16,7 +16,12 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
-sys.path.append(os.path.abspath('sphinx/ext'))
+
+sys.path.insert(0, os.path.abspath(os.path.join('sphinx', 'ext')))
+
+# from sphinxtr 
+import html_mods
+import latex_mods
 
 # -- General configuration -----------------------------------------------------
 
@@ -24,10 +29,39 @@ sys.path.append(os.path.abspath('sphinx/ext'))
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo',
               'sphinx.ext.coverage', 'sphinx.ext.extlinks',
-              'sphinx.ext.pngmath', 'numpydoc', 'numfig']
+              'sphinx.ext.pngmath', 'numpydoc']
+
+# from sphinxtr
+extensions.extend([
+              'fix_equation_ref',
+              'sphinx.ext.mathjax',
+              'sphinx.ext.ifconfig',
+              'subfig',
+              'numfig',
+              'numsec',
+              'natbib',
+              'figtable',
+              'singlehtml_toc',
+              'singletext',
+              ])
+
 
 numfig_number_figures = True
 
+# Turns on numbered figures for HTML output
+number_figures = True
+
+# configures bibliography
+# see http://wnielson.bitbucket.org/projects/sphinx-natbib/
+natbib = {
+    'file': 'larch.bib',
+    'brackets': '[]',
+    'separator': ',',
+    'style': 'numbers',
+    'sort': True,
+}
+
+# List of patterns, relative to source directory, that match files and
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
