@@ -57,8 +57,8 @@ natbib = {
     'file': 'larch.bib',
     'brackets': '[]',
     'separator': ',',
-    'style': 'numbers',
-    'sort': True,
+    'style': 'authors',
+    'sort': False,
 }
 
 # List of patterns, relative to source directory, that match files and
