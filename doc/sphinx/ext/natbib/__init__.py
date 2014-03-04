@@ -155,6 +155,8 @@ class CitationTransform(object):
   def get_author(self, authors, all_authors=False):
     if len(authors) == 0:
       author = ''
+    elif len(authors) == 1:
+      author = authors[0].last()[0]
     elif len(authors) > 2 and not all_authors:
       author = u'%s et al.' % authors[0].last()[0]
     else:
@@ -417,7 +419,8 @@ class CitationReferencesDirective(Directive):
     vol = ref.fields.get('volume')
     pages = ref.fields.get('pages')
     year = ref.fields.get('year')
-
+    url = ref.fields.get('url')
+    
     if pub is None:
       howpub = ref.fields.get('howpublished')
       if howpub is not None and howpub.startswith('\url{'):
@@ -441,8 +444,17 @@ class CitationReferencesDirective(Directive):
     if year:
       year = year.decode('latex')
       node += nodes.inline(year, year, classes=['year'])
-      node += nodes.inline('.', '.')
       
+    if pub is not None and url:
+      if url.startswith('{') and url.endswith('}'):
+          url = url[1:-1]
+      refnode = nodes.reference('', '', internal=False, refuri=url)
+      refnode += nodes.Text(url, url)
+      node += nodes.inline(' [', ' [')          
+      node += refnode
+      node += nodes.inline(']', ']')          
+      
+    node += nodes.inline('.', '.')
     return node
   
   def run(self):
