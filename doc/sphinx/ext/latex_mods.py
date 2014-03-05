@@ -14,7 +14,7 @@ from sphinx.util.texescape import tex_escape_map
 import sphinx.writers.latex
 
 # remove usepackage for sphinx here, we add it later in the preamble in conf.py
-# sphinx.writers.latex.HEADER = sphinx.writers.latex.HEADER.replace('\usepackage{sphinx}', '')
+sphinx.writers.latex.HEADER = sphinx.writers.latex.HEADER.replace('\usepackage{sphinx}', '')
 
 BaseTranslator = sphinx.writers.latex.LaTeXTranslator
 
