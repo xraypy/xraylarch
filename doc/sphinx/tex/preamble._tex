@@ -1,0 +1,147 @@
+\submitted{November 2012}
+\copyrightyear{2012}
+\adviser{Professor John P. Smith}
+\department{Computer Science}
+
+\newcommand{\proquestmode}{}
+
+\abstract{
+\input{abstract.inc}
+}
+
+\acknowledgements{
+\input{acknowledgements.inc}
+}
+
+\dedication{
+\input{dedication.inc}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
+%%%% Tweak float placements
+% From: http://mintaka.sdsu.edu/GF/bibliog/latex/floats.html "Controlling LaTeX Floats"
+% and based on: http://www.tex.ac.uk/cgi-bin/texfaq2html?label=floats
+% LaTeX defaults listed at: http://people.cs.uu.nl/piet/floats/node1.html
+
+% Alter some LaTeX defaults for better treatment of figures:
+    % See p.105 of "TeX Unbound" for suggested values.
+    % See pp. 199-200 of Lamport's "LaTeX" book for details.
+    %   General parameters, for ALL pages:
+    \renewcommand{\topfraction}{0.85}   % max fraction of floats at top
+    \renewcommand{\bottomfraction}{0.6} % max fraction of floats at bottom
+    %   Parameters for TEXT pages (not float pages):
+    \setcounter{topnumber}{2}
+    \setcounter{bottomnumber}{2}
+    \setcounter{totalnumber}{4}     % 2 may work better
+    \setcounter{dbltopnumber}{2}    % for 2-column pages
+    \renewcommand{\dbltopfraction}{0.66}    % fit big float above 2-col. text
+    \renewcommand{\textfraction}{0.15}  % allow minimal text w. figs
+    %   Parameters for FLOAT pages (not text pages):
+    \renewcommand{\floatpagefraction}{0.66} % require fuller float pages
+    % N.B.: floatpagefraction MUST be less than topfraction !!
+    \renewcommand{\dblfloatpagefraction}{0.66}  % require fuller float pages
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
+%%%% Use packages
+
+%\usepackage{amsfonts}
+
+%%% For figures
+\usepackage{graphicx}
+%\usepackage{subfig,rotate}
+
+%%% for comments
+\usepackage{verbatim}
+
+% nice references
+\usepackage[sort,numbers]{natbib}
+
+% nice description style
+\usepackage{enumitem}
+\setlist[description]{style=nextline,
+                      leftmargin=1.5em,
+                      labelindent=1em,
+                      topsep=1em,
+                      itemsep=0em}
+
+% for subfigure
+\usepackage[margin=8pt]{subcaption}
+\captionsetup{labelfont=bf}
+
+% for code listings
+\usepackage{listings}
+\IfFileExists{inconsolata.sty}{\usepackage{inconsolata}}{\usepackage{zi4}}
+\usepackage{color}
+\definecolor{codebg}{RGB}{248,248,248} % mimics html code style
+\definecolor{codeborder}{RGB}{204,204,204}
+\lstset{breaklines=true,
+        breakatwhitespace=false,
+        basicstyle=\singlespacing\footnotesize\ttfamily,
+        columns=fixed,
+        frame=single,
+        rulecolor=\color{codeborder},
+        backgroundcolor=\color{codebg}
+        }
+
+%%% For tables
+\usepackage{multirow}
+% Longtable lets you have tables that span multiple pages.
+\usepackage{longtable}
+
+% Booktabs produces far nicer tables than the standard LaTeX tables.
+%   see: http://en.wikibooks.org/wiki/LaTeX/Tables
+\usepackage{booktabs}
+
+% adds more formatting options to tables
+\usepackage{array}
+
+%set parameters for longtable:
+% default caption width is 4in for longtable, but wider for normal tables
+\setlength{\LTcapwidth}{\textwidth}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Printed vs. online formatting
+\ifdefined\printmode
+
+% Printed copy
+% url package understands urls (with proper line-breaks) without hyperlinking them
+\usepackage{url}
+
+
+\else
+
+\ifdefined\proquestmode
+%ProQuest copy -- http://www.princeton.edu/~mudd/thesis/Submissionguide.pdf
+
+% ProQuest requires a double spaced version (set previously). They will take an electronic copy, so we want links in the pdf, but also copies may be printed or made into microfilm in black and white, so we want outlined links instead of colored links.
+\usepackage{hyperref}
+\hypersetup{bookmarksnumbered}
+
+% copy the already-set title and author to use in the pdf properties
+\makeatletter
+\hypersetup{pdftitle=\@title,pdfauthor=\@author}
+\makeatother
+
+\else
+% Online copy
+
+% adds internal linked references, pdf bookmarks, etc
+
+% turn all references and citations into hyperlinks:
+%  -- not for printed copies
+% -- automatically includes url package
+% options:
+%   colorlinks makes links by coloring the text instead of putting a rectangle around the text.
+\usepackage{hyperref}
+\hypersetup{colorlinks,bookmarksnumbered}
+
+% copy the already-set title and author to use in the pdf properties
+\makeatletter
+\hypersetup{pdftitle=\@title,pdfauthor=\@author}
+\makeatother
+
+% make the page number rather than the text be the link for ToC entries
+%\hypersetup{linktocpage}
+\fi % proquest or online formatting
+\fi % printed or online formatting

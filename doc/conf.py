@@ -16,6 +16,7 @@ import sys, os
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
+CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 sys.path.insert(0, os.path.abspath(os.path.join('sphinx', 'ext')))
 
@@ -76,6 +77,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'larch'
+author = u'Matthew Newville'
 copyright = u'Matthew Newville, The University of Chicago, 2012'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -106,7 +108,23 @@ except ImportError:
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
 exclude_trees = ['_build']
+exclude_patterns = ['_build', 'sphinx']
 
+#sphinxtr
+# Ideally, we wouldn't have to do this, but sphinx seems to have trouble with
+# directives inside only directives
+if tags.has('latex'):
+    master_doc = 'index_tex'
+    exclude_patterns.append('index.rst')
+else:
+    master_doc = 'index'
+    exclude_patterns.append('index_tex.rst')
+
+#sphinxtr
+# A string of reStructuredText that will be included at the end of
+# every source file that is read.
+rst_epilog = open(os.path.join(CURDIR, 'epilog.rst'),'r').read().decode('utf8')
+    
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
 
@@ -205,6 +223,7 @@ html_use_modindex = False
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = 'larchdoc'
+html_domain_indices = False
 
 # -- Options for LaTeX output --------------------------------------------------
 
@@ -241,4 +260,87 @@ latex_preamble = '''
 
 # If false, no module index is generated.
 latex_use_modindex = False
-html_domain_indices = False
+
+
+ADDITIONAL_PREAMBLE = """
+\input{preamble._tex}
+\usepackage{sphinx}
+"""
+
+ADDITIONAL_FOOTER = """
+\input{footer._tex}
+"""
+
+latex_elements = {
+    # The paper size ('letterpaper' or 'a4paper').
+    'papersize': 'letterpaper',
+    
+    # * gets passed to \documentclass
+    # * default options are single sided, double spaced
+    #   you can change them with these options:
+    #   * twoside
+    #   * singlespace
+    # * you might want to omit the list of tables (lot)
+    #   if you use figtable without the :nofig: option
+    'classoptions': ',english,lof,lot',
+    
+    # The font size ('10pt', '11pt' or '12pt').
+    'pointsize': '12pt',
+    
+    # Additional stuff for the LaTeX preamble.
+    'preamble': ADDITIONAL_PREAMBLE,
+    
+    # Additional footer
+    'footer': ADDITIONAL_FOOTER,
+    
+    # disable font inclusion
+    'fontpkg': '',
+    'fontenc': '',
+    
+    # disable fancychp
+    'fncychap': '',
+    
+    # get rid of the sphinx wrapper class file
+    'wrapperclass': 'puthesis',
+    
+    # override maketitle
+    'maketitle': '\makefrontmatter',
+    'tableofcontents': '',
+    
+    # disable index printing
+    'printindex': '',
+}
+
+
+
+latex_additional_files = [
+    'sphinx/tex/puthesis.cls',
+    'sphinx/tex/preamble._tex',
+    'sphinx/tex/footer._tex',
+    'sphinx/tex/sphinx.sty',
+    'sphinx/tex/Makefile',
+    'sphinx/tex/refstyle.bst',
+    'larch.bib',
+    'sphinx/tex/ccicons.sty',
+]
+
+# The name of an image file (relative to this directory) to place at the top of
+# the title page.
+#latex_logo = None
+
+# For "manual" documents, if this is true, then toplevel headings are parts,
+# not chapters.
+latex_use_parts = False
+
+# If true, show page references after internal links.
+#latex_show_pagerefs = False
+
+# If true, show URL addresses after external links.
+#latex_show_urls = False
+
+# Documents to append as an appendix to all manuals.
+#latex_appendices = []
+
+# If false, no module index is generated.
+latex_domain_indices = False
+
