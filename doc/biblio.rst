@@ -2,9 +2,7 @@
 
 .. only:: html or text
 
-Bibliography
-===================
+    Bibliography
+    ============
 
 .. cite:refs::
-
-
