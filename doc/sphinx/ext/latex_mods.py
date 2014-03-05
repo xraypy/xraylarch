@@ -207,13 +207,15 @@ class CustomLaTeXBuilder(sphinx.builders.latex.LaTeXBuilder):
                     encoding='utf-8')
 
             docwriter = LaTeXWriter(self)
-            doctree = self.env.get_doctree(docname)
-
-            docsettings = OptionParser(
-                defaults=self.env.settings,
-                components=(docwriter,)).get_default_values()
-            doctree.settings = docsettings
-            docwriter.write(doctree, destination)
+            try:
+                doctree = self.env.get_doctree(docname)
+                docsettings = OptionParser(
+                    defaults=self.env.settings,
+                    components=(docwriter,)).get_default_values()
+                doctree.settings = docsettings
+                docwriter.write(doctree, destination)
+            except IOError:
+                pass
 
         sphinx.writers.latex.LaTeXTranslator = backup_translator
         sphinx.writers.latex.BEGIN_DOC = backup_doc
