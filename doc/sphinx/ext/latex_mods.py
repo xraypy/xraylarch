@@ -201,10 +201,11 @@ class CustomLaTeXBuilder(sphinx.builders.latex.LaTeXBuilder):
         sphinx.writers.latex.BEGIN_DOC = ''
 
         # output these as include files
+        tmp = '''
         for docname in ['abstract', 'dedication', 'acknowledgements']:
             destination = FileOutput(
-                    destination_path=os.path.join(self.outdir, '%s.inc' % docname),
-                    encoding='utf-8')
+                destination_path=os.path.join(self.outdir, '%s.inc' % docname),
+                encoding='utf-8')
 
             docwriter = LaTeXWriter(self)
             try:
@@ -216,7 +217,7 @@ class CustomLaTeXBuilder(sphinx.builders.latex.LaTeXBuilder):
                 docwriter.write(doctree, destination)
             except IOError:
                 pass
-
+        '''
         sphinx.writers.latex.LaTeXTranslator = backup_translator
         sphinx.writers.latex.BEGIN_DOC = backup_doc
 

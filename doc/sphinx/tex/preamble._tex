@@ -1,21 +1,10 @@
-\submitted{November 2012}
-\copyrightyear{2012}
-\adviser{Professor John P. Smith}
-\department{Computer Science}
+\submitted{}
+\copyrightyear{}
+\adviser{}
+\department{}
 
 \newcommand{\proquestmode}{}
 
-\abstract{
-\input{abstract.inc}
-}
-
-\acknowledgements{
-\input{acknowledgements.inc}
-}
-
-\dedication{
-\input{dedication.inc}
-}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\
 %%%% Tweak float placements

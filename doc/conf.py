@@ -21,8 +21,8 @@ CURDIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join('sphinx', 'ext')))
 
 # from sphinxtr 
-# import html_mods
-import latex_mods
+import html_mods
+# import latex_mods
 
 # -- General configuration -----------------------------------------------------
 
@@ -247,12 +247,6 @@ latex_logo = '_static/larchcones.png'
 # not chapters.
 #latex_use_parts = False
 
-# Additional stuff for the LaTeX preamble.
-latex_preamble = '''
-\usepackage{amsmath}
-\setcounter{secnumdepth}{2}
-\setcounter{tocdepth}{2}
-'''
 
 # Documents to append as an appendix to all manuals.
 #latex_appendices = []
@@ -260,68 +254,23 @@ latex_preamble = '''
 # If false, no module index is generated.
 latex_use_modindex = False
 
-
-ADDITIONAL_PREAMBLE = """
-\input{preamble._tex}
-\usepackage{sphinx}
-"""
-
-ADDITIONAL_FOOTER = """
-\input{footer._tex}
-"""
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    'papersize': 'letterpaper',
-    
-    # * gets passed to \documentclass
-    # * default options are single sided, double spaced
-    #   you can change them with these options:
-    #   * twoside
-    #   * singlespace
-    # * you might want to omit the list of tables (lot)
-    #   if you use figtable without the :nofig: option
-    'classoptions': ',english,lof,lot',
-    
-    # The font size ('10pt', '11pt' or '12pt').
-    'pointsize': '12pt',
-    
-    # Additional stuff for the LaTeX preamble.
-    'preamble': ADDITIONAL_PREAMBLE,
-    
-    # Additional footer
-    'footer': ADDITIONAL_FOOTER,
-    
-    # disable font inclusion
-    'fontpkg': '',
-    'fontenc': '',
-    
-    # disable fancychp
-    'fncychap': '',
-    
-    # get rid of the sphinx wrapper class file
-    'wrapperclass': 'puthesis',
-    
-    # override maketitle
-    'maketitle': '\makefrontmatter',
-    'tableofcontents': '',
-    
-    # disable index printing
-    'printindex': '',
-}
-
-
-
 latex_additional_files = [
-    'sphinx/tex/puthesis.cls',
-    'sphinx/tex/preamble._tex',
-    'sphinx/tex/footer._tex',
-    'sphinx/tex/sphinx.sty',
-    'sphinx/tex/Makefile',
+    #    'sphinx/tex/puthesis.cls',
     'sphinx/tex/refstyle.bst',
+    'sphinx/tex/biblio.tex',
     'larch.bib',
-    'sphinx/tex/ccicons.sty',
 ]
+
+latex_elements = {'pointsizee': '11pt',
+                  'preamble': """
+\usepackage{amsmath}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+""",
+                 'footer':"""
+input{biblio.tex}
+"""
+}
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.
@@ -329,7 +278,7 @@ latex_additional_files = [
 
 # For "manual" documents, if this is true, then toplevel headings are parts,
 # not chapters.
-latex_use_parts = False
+# latex_use_parts = False
 
 # If true, show page references after internal links.
 #latex_show_pagerefs = False
@@ -343,3 +292,4 @@ latex_use_parts = False
 # If false, no module index is generated.
 latex_domain_indices = False
 
+latex_use_modindex = False

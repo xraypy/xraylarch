@@ -53,6 +53,5 @@ data handling, and general-purpose data modeling.
    xray/index.rst
    xrf/index.rst
    devel/index.rst
-
    biblio
 
