@@ -324,9 +324,6 @@ table.docutils tr {
     font-weight: bold;
 }
 
-.reference  {
-  white-space: pre;
-}
 
 .bib_title {
     color: #880000;
@@ -439,6 +436,10 @@ div#bibliography + table span.title {
 div#bibliography + table a.external {
 	word-wrap: break-word;
 	word-break: break-all;
+}
+
+div#bibliography + reference  {
+  white-space: pre;
 }
 
 /* make popup svg images take up the whole window */
