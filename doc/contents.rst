@@ -1,3 +1,5 @@
+:orphan:
+
 =========================
 Table of Contents
 =========================
@@ -15,3 +17,4 @@ Table of Contents
    xray/index.rst
    xrf/index.rst
    devel/index.rst
+   biblio

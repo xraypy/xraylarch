@@ -1,6 +1,6 @@
 :orphan:
 
-.. only:: html or text
+.. only:: html
 
     Bibliography
     ============
