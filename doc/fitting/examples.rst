@@ -91,6 +91,7 @@ And the plot of data and fit will look like this:
 .. _fig_fit1:
 
 .. figure:: ../images/fit_example1.png
+    :target: ../_images/fit_example1.png
     :width: 65%
     :align: center
 
@@ -158,6 +159,7 @@ and the plots of the resulting best-fit and components look like these:
 .. _fig-fit2a:
 
 .. figure:: ../images/fit_example2a1.png
+    :target: ../_images/fit_example2a1.png
     :width: 100%
     :align: center
   
@@ -166,6 +168,7 @@ and the plots of the resulting best-fit and components look like these:
 .. _fig-fit2b:
 
 .. figure:: ../images/fit_example2a2.png
+    :target: ../_images/fit_example2a2.png
     :width: 100%
     :align: center
 
@@ -250,6 +253,7 @@ moved significantly, as can be seen in the plots for this fit:
 .. _fig-fit3a:
 
 .. figure:: ../images/fit_example2b1.png
+    :target: ../_images/fit_example2b1.png
     :width: 100%
     :align: center
   
@@ -258,6 +262,7 @@ moved significantly, as can be seen in the plots for this fit:
 .. _fig-fit3b:
 
 .. figure:: ../images/fit_example2b2.png
+    :target: ../_images/fit_example2b2.png
     :width: 100%
     :align: center
 
@@ -316,6 +321,7 @@ For completeness,  the plots from this fit look like this:
 .. _fig-fit4a:
 
 .. figure:: ../images/fit_example2c1.png
+    :target: ../_images/fit_example2c1.png
     :width: 100%
     :align: center
   
@@ -324,6 +330,7 @@ For completeness,  the plots from this fit look like this:
 .. _fig-fit4b:
 
 .. figure:: ../images/fit_example2c2.png
+    :target: ../_images/fit_example2c2.png
     :width: 100%
     :align: center
 
@@ -383,6 +390,7 @@ important component.
 .. _fig-fit5a:
 
 .. figure:: ../images/fit_example3a.png
+    :target: ../_images/fit_example3a.png
     :width: 100%
     :align: center
   
@@ -391,6 +399,7 @@ important component.
 .. _fig-fit5b:
 
 .. figure:: ../images/fit_example3b.png
+    :target: ../_images/fit_example3b.png
     :width: 100%
     :align: center
 
@@ -519,6 +528,7 @@ and the output plots for the best model look like this:
 .. _fig-fit6a:
 
 .. figure:: ../images/fit_example3c1.png
+    :target: ../_images/fit_example3c1.png
     :width: 100%
     :align: center
   
@@ -527,6 +537,7 @@ and the output plots for the best model look like this:
 .. _fig-fit6b:
 
 .. figure:: ../images/fit_example3c2.png
+    :target: ../_images/fit_example3c2.png
     :width: 100%
     :align: center
 
@@ -621,6 +632,7 @@ The plots resulting from both sets of Parameters are shown:
 .. _fig-fit7a:
 
 .. figure:: ../images/fit_example3d1.png
+    :target: ../_images/fit_example3d1.png
     :width: 100%
     :align: center
   
@@ -629,6 +641,7 @@ The plots resulting from both sets of Parameters are shown:
 .. _fig-fit7b:
 
 .. figure:: ../images/fit_example3d2.png
+    :target: ../_images/fit_example3d2.png
     :width: 100%
     :align: center
 
@@ -647,6 +660,7 @@ The plots resulting from both sets of Parameters are shown:
 .. _fig-fit8a:
 
 .. figure:: ../images/fit_example3e1.png
+    :target: ../_images/fit_example3e1.png
     :width: 100%
     :align: center
   
@@ -655,6 +669,7 @@ The plots resulting from both sets of Parameters are shown:
 .. _fig-fit8b:
 
 .. figure:: ../images/fit_example3e2.png
+    :target: ../_images/fit_example3e2.png
     :width: 100%
     :align: center
 

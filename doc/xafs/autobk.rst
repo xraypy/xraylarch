@@ -303,16 +303,34 @@ using all the default inputs would be:
 
 with the resulting outputs looking like this:
 
-.. _xafs_fig2:
 
-  .. image::  ../images/xafs_autobk1a.png
-     :target: ../_images/xafs_autobk1a.png
-     :width: 48 %
-  .. image::  ../images/xafs_autobk1b.png
-     :target: ../_images/xafs_autobk1b.png
-     :width: 48 %
+.. subfigstart::
 
-  Figure 2.  Example of simple usage of :func:`autobk`.
+.. _xafs_fig2a:
+
+.. figure:: ../images/xafs_autobk1a.png
+    :target: ../_images/xafs_autobk1a.png
+    :width: 100%
+    :align: center
+  
+    Cu metal: :math:`\mu(E)` and background :math:`\mu_0(E)`
+
+.. _xafs_fig2b:
+
+.. figure:: ../images/xafs_autobk1b.png
+    :target: ../_images/xafs_autobk1b.png
+    :width: 100%
+    :align: center
+
+    resulting :math:`k\chi(k)`
+
+.. subfigend::
+    :width: 0.45
+    :alt: a fig
+    :label: xafs_fig2
+    
+    Example of simple usage of :func:`autobk` for Cu metal.
+
 
 Thus demonstrating that we can process data on Cu metal.
 
