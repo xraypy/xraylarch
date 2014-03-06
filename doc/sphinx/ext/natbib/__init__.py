@@ -362,9 +362,10 @@ class CitationReferencesDirective(Directive):
   }
   
   def get_reference_node(self, ref):
-    node = nodes.inline('', '', classes=[ref.type, 'reference'])
+    node = nodes.inline(' ', ' ', classes=[ref.type, 'bibcite'])
     
     namestyler = pybtex.style.names.plain.NameStyle()
+    namestyler = pybtex.style.names.lastfirst.NameStyle()
     plaintext = pybtex.backends.plaintext.Backend()
     
     # Authors
@@ -414,8 +415,10 @@ class CitationReferencesDirective(Directive):
       pub = pub.replace('{', '')
       pub = pub.replace('}', '')
       node += nodes.emphasis(pub, pub, classes=['publication'])
-      node += nodes.inline(', ', ', ')
+      node += nodes.inline(' ', ' ')
 
+      
+      
     vol = ref.fields.get('volume')
     pages = ref.fields.get('pages')
     year = ref.fields.get('year')
@@ -433,26 +436,26 @@ class CitationReferencesDirective(Directive):
     
     if vol:
       vol = vol.decode('latex')
-      node += nodes.inline(vol, vol, classes=['volume'])
+      node += nodes.inline(vol, vol, classes=['bib_vol'])
       node += nodes.inline(':', ':')
     
     if pages:
       pages = pages.decode('latex')
       node += nodes.inline(pages, pages, classes=['pages'])
-      node += nodes.inline(', ', ', ')
     
     if year:
       year = year.decode('latex')
+      node += nodes.inline(' (', ' (')
       node += nodes.inline(year, year, classes=['year'])
-      
+      node += nodes.inline(')', ')')
+            
     if pub is not None and url:
       if url.startswith('{') and url.endswith('}'):
           url = url[1:-1]
-      refnode = nodes.reference('', '', internal=False, refuri=url)
+      refnode = nodes.reference('','', internal=False, refuri=url)
+      node += nodes.inline(' ', ' ')      
       refnode += nodes.Text(url, url)
-      node += nodes.inline(' [', ' [')          
       node += refnode
-      node += nodes.inline(']', ']')          
       
     node += nodes.inline('.', '.')
     return node
@@ -478,9 +481,12 @@ class CitationReferencesDirective(Directive):
         row['ids'].append(nid)
         row['names'].append(nid)
         
-        numcol = nodes.entry('', nodes.paragraph('', '[%d]' % (i + 1)))
+        # numcol = nodes.entry('', nodes.paragraph('', '[%d]' % (i + 1)))
+        numcol = nodes.entry('', nodes.paragraph('', ' '))
+
         definition = self.get_reference_node(citations.get(key))
         refcol = nodes.entry('', nodes.paragraph('', '', definition))
+        # row.extend([numcol, refcol])
         row.extend([numcol, refcol])
         
         tbody.append(row)
@@ -491,8 +497,8 @@ class CitationReferencesDirective(Directive):
     node = nodes.table('',
                        table_spec_node,
                        nodes.tgroup('',
-                                    nodes.colspec(colwidth=10, classes=['label']),
-                                    nodes.colspec(colwidth=90),
+                                    nodes.colspec(colwidth=5, classes=['label']),
+                                    nodes.colspec(colwidth=95),
                                     tbody))
     
     return [node]

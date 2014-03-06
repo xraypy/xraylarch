@@ -54,7 +54,5 @@ data handling, and general-purpose data modeling.
    xrf/index.rst
    devel/index.rst
 
-..toctree::
-
    biblio
 

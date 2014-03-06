@@ -310,6 +310,19 @@ table.docutils tr {
     border-color: #F4F4F4;
 }
 
+
+/* for bibliography */
+.bibcite {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    text-indent: 16em;
+    margin-left: -2em;
+}
+
+.bib_vol {
+    font-weight: bold;
+}
+
 div.admonition, div.warning {
     font-size: 0.9em;
     margin: 1em 0 1em 0;

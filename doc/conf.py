@@ -108,7 +108,7 @@ except ImportError:
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
 exclude_trees = ['_build']
-exclude_patterns = ['_build', 'sphinx']
+exclude_patterns = ['_build', 'sphinx', '_junk']
 
 #sphinxtr
 # Ideally, we wouldn't have to do this, but sphinx seems to have trouble with
@@ -134,7 +134,6 @@ add_function_parentheses = True
 # If true, the current module name will be prepended to all description
 # unit titles (such as .. function::).
 add_module_names = True
-
 
 # If true, sectionauthor and moduleauthor directives will be shown in the
 # output. They are ignored by default.
