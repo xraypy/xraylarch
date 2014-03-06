@@ -396,7 +396,7 @@ class CitationReferencesDirective(Directive):
       title = title.decode('latex')
       title = title.replace('{', '')
       title = title.replace('}', '')
-      node += nodes.inline(title, title, classes=['title'])
+      node += nodes.inline(title, title, classes=['bib_title'])
       node += nodes.inline('.  ', '.  ')
     
     # @phdthesis
