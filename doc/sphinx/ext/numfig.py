@@ -147,10 +147,14 @@ def doctree_resolved(app, doctree, docname):
                 if app.builder.name == 'singlehtml':
                     link = "#%s" % target
                 else:
-                    link = "%s#%s" % (app.builder.get_relative_uri(docname, target_doc),
-                                      target)
-                
-                linktext = labelfmt % figids[target]
+                    link = "%s#%s"%(app.builder.get_relative_uri(docname,
+                                                                 target_doc),
+                                    target)
+                if target in figids:
+                    linktext = labelfmt % figids[target]
+                else:
+                    linktext = target
+                          
             
             html = '<a href="%s">%s</a>' % (link, linktext)
             ref_info.replace_self(nodes.raw(html, html, format='html'))
