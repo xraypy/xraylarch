@@ -28,9 +28,8 @@ import html_mods
 
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
-extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo',
-              'sphinx.ext.coverage', 'sphinx.ext.extlinks',
-              'sphinx.ext.pngmath', 'numpydoc']
+extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks',
+              'sphinx.ext.pngmath']
 
 # from sphinxtr
 extensions.extend([
@@ -46,8 +45,6 @@ extensions.extend([
               'singletext',
               ])
 
-
-numfig_number_figures = True
 
 # Turns on numbered figures for HTML output
 number_figures = True
@@ -108,7 +105,7 @@ except ImportError:
 # List of directories, relative to source directory, that shouldn't be searched
 # for source files.
 exclude_trees = ['_build']
-exclude_patterns = ['_build', 'sphinx', '_junk']
+exclude_patterns = ['_build', 'sphinx', '_junk', 'epilog.rst']
 
 #sphinxtr
 # Ideally, we wouldn't have to do this, but sphinx seems to have trouble with
@@ -151,10 +148,9 @@ pygments_style = 'sphinx'
 # Add any paths that contain custom themes here, relative to this directory.
 html_theme_path = ['sphinx/theme']
 
-
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
-html_theme = 'default'
+# html_theme = 'default'
 html_theme = 'larchdoc'
 # html_theme = 'cloud'
 # html_theme_path.append(csp.get_theme_dir())
