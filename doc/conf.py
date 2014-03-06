@@ -21,7 +21,7 @@ CURDIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join('sphinx', 'ext')))
 
 # from sphinxtr 
-import html_mods
+# import html_mods
 import latex_mods
 
 # -- General configuration -----------------------------------------------------
@@ -35,7 +35,7 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.todo',
 # from sphinxtr
 extensions.extend([
               'fix_equation_ref',
-              'sphinx.ext.mathjax',
+               # 'sphinx.ext.mathjax',
               'sphinx.ext.ifconfig',
               'subfig',
               'numfig',
