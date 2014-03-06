@@ -98,9 +98,9 @@ The :func:`autobk` function
 The AUTOBK Algorithm
 ======================
 
-The background subtraction method used is the **AUTOBK** algorithm, in
-which a spline function is matched to the low-*R* components of the
-resulting :math:`\chi(k)`.
+The background subtraction method used is the **AUTOBK** algorithm
+(see :cite:ts:`autobk`), in which a spline function is matched to the
+low-*R* components of the resulting :math:`\chi(k)`.
 
 For reference, :math:`k = \sqrt{2m_e (E-E_0)/\hbar^2}` is the wavenumber of
 the ejected photo-electron, where :math:`E_0` is the absorption threshold
@@ -117,7 +117,7 @@ scattering of the outgoing photo-electron that gives rise to the EXAFS, and
 :math:`\Delta\mu` is the edge step in :math:`\mu(E)`.
 
 The quantity :math:`\mu_0(E)` cannot be independently measured.  Instead,
-we empirically determine it here given the data for :math:`\mu(E)` by
+we empirically determine it here given the dxta for :math:`\mu(E)` by
 fitting a spline (a piece-polynomial function that is easily adjusted even
 while its smoothness is controlled) to :math:`\mu(E)`.  An advantage to
 what could easily be described as an *ad hoc* approach is that the data for

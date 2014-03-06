@@ -9,8 +9,9 @@ XAFS: Reading and using Feff Paths
 For modeling EXAFS data, Larch relies heavily on calculations of
 theoretical XAFS spectra using FEFF.  Being able to run FEFF and use its
 results is of fundamental importance for using Larch for fitting EXAFS
-spectra.  While a complete description of FEFF is beyond the scope of this
-documentation, here we describe how to read the results from FEFF into
+spectra.  While a complete description of FEFF (:cite:ts:`feff6_Rehr`,
+:cite:ts:`feff6_siz`, :cite:ts:`RehrAlbers_RMP`) is beyond the scope of
+this documentation, here we describe how to read the results from FEFF into
 Larch.  The main interface for this is the :func:`feffpath` function that
 reads FEFF *feffNNNN.dat* file and creates a FeffPath Group.
 
@@ -315,10 +316,11 @@ Models for Calculating :math:`\sigma^2`
 The value for :math:`\sigma^2` in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
 account for thermal and static disorder in an ensemble of Paths that makes
-up a full EXAFS spectra.  Borrowing from Feff, Larch provides two functions
-that use simple models to calculate :math:`\sigma^2` for a Path.  Both
-functions, :func:`sigma2_eins` and :func:`sigma2_debye` take arguments of
-sample temperature, a characteristic temperature, and a FeffPath, and
+up a full EXAFS spectra.  Borrowing from Feff (see :cite:ts:`feff6_Rehr`,
+:cite:ts:`Sevillano` and :cite:ts:`RehrAlbers_RMP`) Larch provides two
+functions that use simple models to calculate :math:`\sigma^2` for a Path.
+Both functions, :func:`sigma2_eins` and :func:`sigma2_debye` take arguments
+of sample temperature, a characteristic temperature, and a FeffPath, and
 return a value of :math:`\sigma^2`.  These are known to appy reasonably
 well to very simple systems (such as metals and solids with few atomic
 components), and less well to complex systems, including anything with

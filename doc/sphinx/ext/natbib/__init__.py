@@ -481,24 +481,20 @@ class CitationReferencesDirective(Directive):
         row['ids'].append(nid)
         row['names'].append(nid)
         
-        # numcol = nodes.entry('', nodes.paragraph('', '[%d]' % (i + 1)))
-        numcol = nodes.entry('', nodes.paragraph('', ' '))
+        numcol = nodes.entry('', nodes.paragraph('', '[%d]' % (i + 1)))
 
         definition = self.get_reference_node(citations.get(key))
         refcol = nodes.entry('', nodes.paragraph('', '', definition))
-        # row.extend([numcol, refcol])
         row.extend([numcol, refcol])
-        
         tbody.append(row)
     
     table_spec_node = addnodes.tabular_col_spec()
-    table_spec_node['spec'] = 'cl'
+    table_spec_node['spec'] = 'rl'
     
-    node = nodes.table('',
-                       table_spec_node,
+    node = nodes.table('', table_spec_node,
                        nodes.tgroup('',
-                                    nodes.colspec(colwidth=5, classes=['label']),
-                                    nodes.colspec(colwidth=95),
+                                    nodes.colspec(colwidth=8, classes=['label']),
+                                    nodes.colspec(colwidth=91),
                                     tbody))
     
     return [node]

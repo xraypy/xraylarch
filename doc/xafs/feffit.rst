@@ -15,18 +15,18 @@ process, and those sections will be referenced here.
 The Feffit Strategy for Modeling EXAFS Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The basic approach to modeling EXAFS data in Larch [Newville2001]_ is to
-create a model EXAFS :math:`\chi(k)` as a sum of scattering paths that will
-be compared to experimentally derived :math:`\chi(k)`. The model will
-consist of a set of FEFF Scattering Paths representing the photo-electron
-scattering from different sets of atoms.  As discussed in
-ref:`xafs-feffpaths_sec`, these FEFF Paths have a fixed set of physically
-meaningful parameters than can be modified to alter the predicted
-contribution to :math:`\chi(k)`.  Any of these values can be defined as
-algebraic expressions of Larch Parameters defined by :func:`_math.param`.
-The actual fit uses the same fitting infrastructure as to
-:func:`_math.minimize` to refine the values of the variable parameters in
-the model so as to best match the experimental data.  Because
+The basic approach to modeling EXAFS data in Larch (see
+:cite:ts:`feffit`) is to create a model EXAFS :math:`\chi(k)` as a
+sum of scattering paths that will be compared to experimentally derived
+:math:`\chi(k)`. The model will consist of a set of FEFF Scattering Paths
+representing the photo-electron scattering from different sets of atoms.
+As discussed in :ref:`xafs-feffpaths_sec`, these FEFF Paths have a fixed
+set of physically meaningful parameters than can be modified to alter the
+predicted contribution to :math:`\chi(k)`.  Any of these values can be
+defined as algebraic expressions of Larch Parameters defined by
+:func:`_math.param`.  The actual fit uses the same fitting infrastructure
+as to :func:`_math.minimize` to refine the values of the variable
+parameters in the model so as to best match the experimental data.  Because
 :math:`\chi(k)` has known properties and :math:`k` dependencies, it is
 common to weight and Fourier transform (as described in :ref:`xafs-ft_sec`)
 for the analysis.  In general term, the the refinement process will compare
@@ -63,7 +63,7 @@ Nyquist as
     N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1
 
 where :math:`\Delta k` and :math:`\Delta R` are the :math:`k` and :math:`R`
-range of the usable data under consideration.  E. A. Stern [Stern1993]_
+range of the usable data under consideration.  :cite:authors:`Stern93` 
 argues convincingly that the '+1' here should be '+2', but we'll remain
 conservative and keep the '+1', and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -143,7 +143,7 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 :math:`R`: white noise.  The function :func:`estimate_noise` does this
-[NewvilleBoyanovSayers1999]_, and the estimate derived from this method is
+:cite:authors:`NewvilleBoyanov`, and the estimate derived from this method is
 used unless you specify a value for ``epsilon_k`` the noise level in
 :math:`\chi(k)`.  Though usually :math:`\epsilon` is taken to be a scalar
 value, it can be specfied as an array (of the same length as
@@ -770,21 +770,3 @@ dataset, making modifications and re-doing fits can also include changing
 what parametres are varied, and what constraints are placed between
 parameters.
 
-
-
-.. rubric:: References
-
-.. [Newville2001] M. Newville *EXAFS analysis using FEFF and FEFFIT*,
-   J. Synchrotron Radiation,  **8**, pp 96-100, (2001). 
-   [http://dx.doi.org/10.1107/S0909049500016290]
-
-.. [Stern1993]   E. A. Stern, *Number of relevant independent points in 
-   X-ray-absorption fine-structure spectra*, 
-   Physical Review **B48**, pp 9825-9827 (1993).
-   [http://dx.doi.org/10.1103/PhysRevB.48.9825]
-
-
-.. [NewvilleBoyanovSayers1999] M. Newville, B. Boyanov, and D. E. Sayers,  
-   *Estimation of uncertainties in XAFS data*, 
-   J. Synchrotron Radiation, **6**, pp 264-265 (1999).
-   [http://dx.doi.org/10.1107/S0909049598018147]
