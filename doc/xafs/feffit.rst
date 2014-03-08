@@ -433,17 +433,26 @@ running this example prints out the following report:
 
 and generates the plots shown below
 
-.. _xafs_fig16:
+.. subfigstart::
 
-  .. image:: ../images/feffit_example1.png
-     :target: ../_images/feffit_example1.png
-     :width: 48 %
-  .. image:: ../images/feffit_example2.png
-     :target: ../_images/feffit_example2.png
-     :width: 48 %
+.. _fig-feffit1a:
 
-  Figure 16. Results for Feffit for a simple 1-shell fit to a
-  spectrum from Cu metal.
+.. figure::  ../_images/feffit_example1.png
+    :target: ../_images/feffit_example1.png
+    :width: 100%
+
+.. _fig-feffit1b:
+
+.. figure::  ../_images/feffit_example2.png
+    :target: ../_images/feffit_example2.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-feffit1
+
+    Results for Feffit for a simple 1-shell fit to a spectrum from Cu
+    metal.
 
 This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
@@ -516,17 +525,26 @@ The output for this fit is a bit longer, being:
 
 With plots of data and fits as shown below.
 
-.. _xafs_fig17:
+.. subfigstart::
 
-  .. image:: ../images/feffit_example3.png
-     :target: ../_images/feffit_example3.png
-     :width: 48 %
-  .. image:: ../images/feffit_example4.png
-     :target: ../_images/feffit_example4.png
-     :width: 48 %
+.. _fig-feffit2a:
 
-  Figure 17. Results for Feffit for a 3-shell fit to a spectrum from Cu
-  metal, constraining all path distances to expand with a single variable.
+.. figure::  ../_images/feffit_example3.png
+    :target: ../_images/feffit_example3.png
+    :width: 100%
+
+.. _fig-feffit2b:
+
+.. figure::  ../_images/feffit_example4.png
+    :target: ../_images/feffit_example4.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-feffit2
+
+    Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
+    constraining all path distances to expand with a single variable.
 
 Here, we show both the magnitude and real part of :math:`\chi(R)`.  The fit
 to the real part shows excellent agreement over the fit :math:`R` range of
@@ -539,17 +557,25 @@ straightforward, as we can just do::
 
 to generate the following plots of the contributions of the different paths:
 
-.. _xafs_fig18:
+.. subfigstart::
 
-  .. image:: ../images/feffit_example5.png
-     :target: ../_images/feffit_example5.png
-     :width: 48 %
-  .. image:: ../images/feffit_example6.png
-     :target: ../_images/feffit_example6.png
-     :width: 48 %
+.. _fig-feffit3a:
 
-  Figure 18. Path contributions to full mode for the 3-shell fit to Cu
-  spectrum.
+.. figure::  ../_images/feffit_example5.png
+    :target: ../_images/feffit_example5.png
+    :width: 100%
+
+.. _fig-feffit3b:
+
+.. figure::  ../_images/feffit_example6.png
+    :target: ../_images/feffit_example6.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-feffit3
+
+    Path contributions to full mode for the 3-shell fit to Cu spectrum.
 
 Example 3: Fit 3 datasets with 1 Path each
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -617,37 +643,62 @@ correlation significantly reduces the estimated uncertainty.
 
 The output plots for the fits to the three datasets are given below.
 
-.. _xafs_fig19:
+.. subfigstart::
 
-  .. image:: ../images/feffit_3temp1.png
-     :target: ../_images/feffit_3temp1.png
-     :width: 48 %
-  .. image:: ../images/feffit_3temp2.png
-     :target: ../_images/feffit_3temp2.png
-     :width: 48 %
+.. _fig-feffit3temp10k:
 
-  **a**
+.. figure::  ../_images/feffit_3temp1.png
+    :target: ../_images/feffit_3temp1.png
+    :width: 100%
 
-  .. image:: ../images/feffit_3temp3.png
-     :target: ../_images/feffit_3temp3.png
-     :width: 48 %
-  .. image:: ../images/feffit_3temp4.png
-     :target: ../_images/feffit_3temp4.png
-     :width: 48 %
+    Fit to Cu :math:`\chi(k)` at 10 K 
 
-  **b**
+.. _fig-feffit3temp50k:
 
-  .. image:: ../images/feffit_3temp5.png
-     :target: ../_images/feffit_3temp5.png
-     :width: 48 %
-  .. image:: ../images/feffit_3temp6.png
-     :target: ../_images/feffit_3temp6.png
-     :width: 48 %
+.. figure::  ../_images/feffit_3temp3.png
+    :target: ../_images/feffit_3temp3.png
+    :width: 100%
 
-  **c**
+    Fit to Cu :math:`\chi(k)` at 50 K 
 
-  Figure 19. Fit to Cu metal at (a) 10 K, (b) 50 K, and (c) 150 K, from a
-  simultaneous fit to all 3 datasets with 5 variables used.
+.. _fig-feffit3temp150k:
+
+.. figure::  ../_images/feffit_3temp5.png
+    :target: ../_images/feffit_3temp5.png
+    :width: 100%
+
+    Fit to Cu :math:`\chi(k)` at 150 K 
+
+.. _fig-feffit3temp10r:
+
+.. figure::  ../_images/feffit_3temp2.png
+    :target: ../_images/feffit_3temp2.png
+    :width: 100%
+
+    Fit to Cu :math:`\chi(R)` at 10 K 
+
+.. _fig-feffit3temp50r:
+
+.. figure::  ../_images/feffit_3temp4.png
+    :target: ../_images/feffit_3temp4.png
+    :width: 100%
+
+    Fit to Cu :math:`\chi(R)` at 50 K 
+
+.. _fig-feffit3temp150r:
+
+.. figure::  ../_images/feffit_3temp6.png
+    :target: ../_images/feffit_3temp6.png
+    :width: 100%
+
+    Fit to Cu :math:`\chi(R)` at 150 K 
+
+.. subfigend::
+    :width: 0.32
+    :label: fig-feffit3temps
+
+    Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
+    3 datasets with 5 variables used.
 
 Again, in the interest of brevity and consistency through this chapter,
 these example are deliberately simple and meant to be illustrative of the
@@ -692,16 +743,29 @@ The resulting output is
 
 with plots:
 
-.. _xafs_fig20:
+.. subfigstart::
 
-  .. image:: ../images/feffit_feo_k.png
-     :target: ../_images/feffit_feo_k.png
-     :width: 48 %
-  .. image:: ../images/feffit_feo_r.png
-     :target: ../_images/feffit_feo_r.png
-     :width: 48 %
+.. _fig-feffit-feo-a:
 
-  Figure 20. Fits to 2-path fit to FeO EXAFS.
+.. figure::  ../_images/feffit_feo_k.png
+    :target: ../_images/feffit_feo_k.png
+    :width: 100%
+
+    Fit to FeO spectra, :math:`k` space
+
+.. _fig-feffit-feo-b:
+
+.. figure::  ../_images/feffit_feo_r.png
+    :target: ../_images/feffit_feo_r.png
+    :width: 100%
+
+    Fit to FeO spectra, :math:`R` space
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-feffit-feo
+
+    Fits to 2-path fit to FeO EXAFS.
 
 Example 5: Comparing Fits in different Fit Spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

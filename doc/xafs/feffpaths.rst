@@ -384,13 +384,12 @@ After the initial read, the values of ``k``, ``p``, ``chi``, and
 
 .. _xafs_fig12:
 
-  .. figure:: ../images/feffdat_example1.png
-     :target: ../_images/feffdat_example1.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/feffdat_example1.png
+    :target: ../_images/feffdat_example1.png
+    :width: 65%
+    :align: center
 
-  Figure 12. Calculations of :math:`\chi(k)` for a Feff Path.
+    Calculations of :math:`\chi(k)` for a Feff Path.
 
 We can also use the data from the ``_feffdat`` group to look at the
 individual scattering components.  Thus to look at the scattering amplitude
@@ -403,13 +402,12 @@ which will produce a plot like this:
 
 .. _xafs_fig13:
 
-  .. figure:: ../images/feffdat_example2.png
-     :target: ../_images/feffdat_example2.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/feffdat_example2.png
+    :target: ../_images/feffdat_example2.png
+    :width: 65%
+    :align: center
 
-  Figure 13. Components of ``_feffdat`` group for a Feff Path.
+    Components of ``_feffdat`` group for a Feff Path.
 
 You can see here that the arrays in the ``_feffdat`` group are sampled at
 varying :math:`k` spacing, and that this spacing becomes fairly large at
@@ -433,13 +431,12 @@ group is up to date.
 
 .. _xafs_fig14:
 
-  .. figure:: ../images/feffdat_example3.png
-     :target: ../_images/feffdat_example3.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/feffdat_example3.png
+    :target: ../_images/feffdat_example3.png
+    :width: 65%
+    :align: center
 
-  Figure 14. Results for sum of :math:`\chi(k)` for list of paths.
+    Results for sum of :math:`\chi(k)` for list of paths.
 
 
 Example: Using Path Parameters when adding FEFF files
@@ -483,14 +480,13 @@ overridden by resetting ``_sys.paramGroup``, which can be done by passing a
 
 .. _xafs_fig15:
 
-  .. figure:: ../images/feffdat_example4.png
-     :target: ../_images/feffdat_example4.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/feffdat_example4.png
+    :target: ../_images/feffdat_example4.png
+    :width: 65%
+    :align: center
 
-  Figure 15. Results for making 2 different sums of paths using
-  parameterized Path Parameters
+    Results for making 2 different sums of paths using parameterized Path
+    Parameters
 
 
 The resulting plot shows the effect of changing :math:`E_0` and

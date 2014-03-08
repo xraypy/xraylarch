@@ -338,35 +338,57 @@ window types and the effect of the various parameters.  The meanings of
 ``xmin``, ``xmax``, ``dx`` and ``dx2`` are identical for the Hanning, Parzen and
 Welch windows, and illustrated in the two following figures.
 
-.. _xafs_fig5:
+.. subfigstart::
 
-  .. image::  ../images/ftwin_example1.png
-     :target: ../_images/ftwin_example1.png
-     :width: 48 %
-  .. image:: ../images/ftwin_example2.png
-     :target: ../_images/ftwin_example2.png
-     :width: 48 %
+.. _fig-xafsft1a:
 
-  Figure 5. Fourier Transform window examples and illustration of
-  parameter meaning for the Hanning, Parzen, and Welch windows.  Note that
-  :math:`\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5`, and that
-  the meaning of ``dx`` is to control the taper over which the window
-  changes from 0 to 1.  Here, ``xmin=5`` and ``xmax=15``.
+.. figure::  ../_images/ftwin_example1.png
+    :target: ../_images/ftwin_example1.png
+    :width: 100%
 
-.. _xafs_fig6:
+.. _fig-xafsft1b:
 
-  .. image::  ../images/ftwin_example3.png
-     :target: ../_images/ftwin_example3.png
-     :width: 48 %
-  .. image:: ../images/ftwin_example4.png
-     :target: ../_images/ftwin_example4.png
-     :width: 48 %
+.. figure::  ../_images/ftwin_example2.png
+    :target: ../_images/ftwin_example2.png
+    :width: 100%
 
-  Figure 6. Fourier Transform window examples and illustration of
-  parameter meaning.  On the left, a comparison of Welch, Parzen, and
-  Hanning with the same parameters is shown.  On the right, the effect of
-  ``dx2`` is shown as a different amount of taper on the high- and
-  low-``x`` end of the window.  As before, ``xmin=5`` and ``xmax=15``.
+.. subfigend::
+    :width: 0.45
+    :label: fig-xafsft1
+
+    Fourier Transform window examples and illustration of parameter meaning
+    for the Hanning, Parzen, and Welch windows.  Note that
+    :math:`\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5`, and that
+    the meaning of ``dx`` is to control the taper over which the window
+    changes from 0 to 1.  Here, ``xmin=5`` and ``xmax=15``.
+
+
+
+Some more window functions:
+
+.. subfigstart::
+
+.. _fig-xafsft2a:
+
+.. figure::  ../_images/ftwin_example3.png
+    :target: ../_images/ftwin_example3.png
+    :width: 100%
+
+.. _fig-xafsft2b:
+
+.. figure::  ../_images/ftwin_example4.png
+    :target: ../_images/ftwin_example4.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-xafsft2
+
+    Fourier Transform window examples and illustration of parameter
+    meaning.  On the left, a comparison of Welch, Parzen, and Hanning with
+    the same parameters is shown.  On the right, the effect of ``dx2`` is
+    shown as a different amount of taper on the high- and low-``x`` end of
+    the window.  As before, ``xmin=5`` and ``xmax=15``.
 
 The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
 go to 1 at the average of ``xmin`` and ``xmax``, but do not stay at 1 over
@@ -377,19 +399,28 @@ and Kaiser-Bessel windows both go to zero at  ``xmin-dx/2`` and ``xmax +
 dx/2``.  For very large values of ``dx``, the Kaiser-Bessel window
 approaches a nearly Gaussian lineshape.
 
-.. _xafs_fig7:
+.. subfigstart::
 
-  .. image::  ../images/ftwin_example5.png
-     :target: ../_images/ftwin_example5.png
-     :width: 48 %
-  .. image:: ../images/ftwin_example6.png
-     :target: ../_images/ftwin_example6.png
-     :width: 48 %
+.. _fig-xafsft3a:
 
-  Figure 7. Fourier Transform windows. On the left, a comparison of
-  Kaiser-Bessel, Sine, and Gaussian windows with the same parameters is
-  shown.  On the right, the effect of ``dx`` is shown for the Kaiser-Bessel
-  window, and a closer comparison to a Gaussian window is made.
+.. figure::  ../_images/ftwin_example5.png
+    :target: ../_images/ftwin_example5.png
+    :width: 100%
+
+.. _fig-xafsft3b:
+
+.. figure::  ../_images/ftwin_example6.png
+    :target: ../_images/ftwin_example6.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-xafsft3
+
+    Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
+    Sine, and Gaussian windows with the same parameters is shown.  On the
+    right, the effect of ``dx`` is shown for the Kaiser-Bessel window, and
+    a closer comparison to a Gaussian window is made.
 
 
 Examples: Forward XAFS Fourier transforms
@@ -415,18 +446,27 @@ A script that runs :func:`xftf`, changing on ``dk`` would look like::
 
 would result in the following results:
 
-.. _xafs_fig8:
+.. subfigstart::
 
-  .. image::  ../images/xft_example1.png
-     :target: ../_images/xft_example1.png
-     :width: 48 %
-  .. image:: ../images/xft_example2.png
-     :target: ../_images/xft_example2.png
-     :width: 48 %
+.. _fig-xafsft4a:
 
-  Figure 8.  Comparison of the effect of different values of ``dk`` on real
-  XAFS Fourier transforms.  Increasing ``dk`` reduces peak heights and
-  tends to broaden peaks, but the effects are rather small.
+.. figure::  ../_images/xft_example1.png
+    :target: ../_images/xft_example1.png
+    :width: 100%
+
+.. _fig-xafsft4b:
+
+.. figure::  ../_images/xft_example2.png
+    :target: ../_images/xft_example2.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-xafsft4
+
+    Comparison of the effect of different values of ``dk`` on real XAFS
+    Fourier transforms.  Increasing ``dk`` reduces peak heights and tends
+    to broaden peaks, but the effects are rather small.
 
 
 A script that runs :func:`xftf` with consistent parameters, but different
@@ -453,17 +493,26 @@ window types::
 
 would result in the following results:
 
-.. _xafs_fig9:
+.. subfigstart::
 
-  .. image::  ../images/xft_example3.png
-     :target: ../_images/xft_example3.png
-     :width: 48 %
-  .. image:: ../images/xft_example4.png
-     :target: ../_images/xft_example4.psng
-     :width: 48 %
+.. _fig-xafsft_winsa:
 
-  Figure 9.  Comparison of the effect of different window types
-  on real XAFS Fourier transforms.
+.. figure::  ../_images/xft_example3.png
+    :target: ../_images/xft_example3.png
+    :width: 100%
+
+.. _fig-xafsft_winsb:
+
+.. figure::  ../_images/xft_example4.png
+    :target: ../_images/xft_example4.psng
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-xafsft_wins
+
+    Comparison of the effect of different window types on real XAFS Fourier
+    transforms.
 
 We now turn our attention to the different components of the Fourier
 transform.  As above, it is most common to plot the magnitude of the
@@ -480,15 +529,14 @@ below::
 
 which results in
 
-.. _xafs_fig10:
+.. _fig-xafsft_ri:
 
-.. figure::  ../images/xft_example5.png
+.. figure:: ../_images/xft_example5.png
    :target: ../_images/xft_example5.png
-   :width: 65 %
+   :width: 65%
    :align: center
-   :figwidth: 100 %
 
-   Figure 10. The real and imaginary components of the XAFS Fourier transform.
+   The real and imaginary components of the XAFS Fourier transform.
 
 In fact, in the analysis discussed with :func:`feffit`, the real and
 imaginary components are used, not simply the magnitude.
@@ -504,19 +552,29 @@ the spectra, or the first two shells, and compare the resulting filtered
 :math:`\chi(q)`.
 
 
-.. _xafs_fig11:
+.. subfigstart::
 
-  .. image::  ../images/xft_example6.png
-     :target: ../_images/xft_example6.png
-     :width: 48 %
-  .. image:: ../images/xft_example7.png
-     :target: ../_images/xft_example7.png
-     :width: 48 %
+.. _fig-xafsft_filtera:
 
-  Figure 11.  Reverse XAFS Fourier transform, or Fourier filtering.  Here,
-  one can see the effect of different window sizes on the Fourier filtered
-  spectrum.  Including the first two peaks or shells reproduces most of the
-  original spectrum, with only high-frequency components removed.
+.. figure::  ../_images/xft_example6.png
+    :target: ../_images/xft_example6.png
+    :width: 100%
+
+.. _fig-xafsft_filterb:
+
+.. figure::  ../_images/xft_example7.png
+    :target: ../_images/xft_example7.png
+    :width: 100%
+
+
+.. subfigend::
+    :width: 0.45
+    :label: fig_xafsft_filter
+
+    Reverse XAFS Fourier transform, or Fourier filtering.  Here, one can
+    see the effect of different window sizes on the Fourier filtered
+    spectrum.  Including the first two peaks or shells reproduces most of
+    the original spectrum, with only high-frequency components removed.
 
 Note that it is ``chiq_re`` that is compared to the k-weighted ``chi``
 array.
