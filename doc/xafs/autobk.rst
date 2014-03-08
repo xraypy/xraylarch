@@ -306,18 +306,18 @@ with the resulting outputs looking like this:
 
 .. subfigstart::
 
-.. _xafs_fig2a:
+.. _fig_xafs2a:
 
-.. figure:: ../images/xafs_autobk1a.png
+.. figure::  ../_images/xafs_autobk1a.png
     :target: ../_images/xafs_autobk1a.png
     :width: 100%
     :align: center
   
     Cu metal: :math:`\mu(E)` and background :math:`\mu_0(E)`
 
-.. _xafs_fig2b:
+.. _fig_xafs2b:
 
-.. figure:: ../images/xafs_autobk1b.png
+.. figure::  ../_images/xafs_autobk1b.png
     :target: ../_images/xafs_autobk1b.png
     :width: 100%
     :align: center
@@ -327,7 +327,7 @@ with the resulting outputs looking like this:
 .. subfigend::
     :width: 0.45
     :alt: a fig
-    :label: xafs_fig2
+    :label: fig_xafs2
     
     Example of simple usage of :func:`autobk` for Cu metal.
 
@@ -346,16 +346,25 @@ here to demonstrate the method for passing arguments to :func:`pre_edge`.
 
 The resulting outputs looks OK:
 
-.. _xafs_fig3:
+.. subfigstart::
 
-  .. image::  ../images/xafs_autobk2a.png
-     :target: ../_images/xafs_autobk2a.png
-     :width: 48 %
-  .. image::  ../images/xafs_autobk2b.png
-     :target: ../_images/xafs_autobk2b.png
-     :width: 48 %
+.. _fig-xafs3a:
 
-  Figure 3.  Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
+.. figure::  ../_images/xafs_autobk2a.png
+    :target: ../_images/xafs_autobk2a.png
+    :width: 100%
+
+.. _fig-xafs3b:
+
+.. figure::  ../_images/xafs_autobk2b.png
+    :target: ../_images/xafs_autobk2b.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-xafs3
+
+    Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
 
 A close examimation of :math:`k^2\chi(k)` suggests we might be able to do
 better, which brings us to the next section.
@@ -374,13 +383,29 @@ results in the following comparison:
 
 .. _xafs_fig4:
 
-  .. image::  ../images/xafs_autobk3.png
-     :target: ../_images/xafs_autobk3.png
-     :width: 65 %
+.. figure::  ../_images/xafs_autobk3.png
+    :target: ../_images/xafs_autobk3.png
+    :width: 65%
 
-  Figure 4.  Influence of spline clamps of :math:`\chi(k)`
+    Influence of spline clamps of :math:`\chi(k)`
 
 
 Using a Standard :math:`\chi(k)`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since the EXAFS contribution from the first shell is not perfectly isolated
+in :math:`R`, it can leak into portion of :math:`\chi(R)` below
+:math:`R_{\rm bkg}`.  It may be desirable to not simply reduce the portion
+of :math:`\chi(R)` below :math:`R_{\rm bkg}`, but to account for the
+expected leakage from the first shell.  To do this, you can provide a
+*standard* :math:`\chi(k)` spectrum that will simulate the first shell by
+specify arrays for `k_std` and `chi_std` arrays to the :func:`autobk`
+function.
+
+As an example:
+
+
+.. literalinclude:: ../../examples/xafs/doc_autobk4.lar
+
+
 
