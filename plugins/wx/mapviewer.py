@@ -873,7 +873,7 @@ class MapViewerFrame(wx.Frame):
                   self.onShowLarchBuffer)
 
         mid = wx.NewId()
-        fmenu.Append(mid,  'Watch HDF5 Files',  'Watch HDF5 Files', kind=wx.ITEM_CHECK)
+        fmenu.Append(mid,  '&Watch HDF5 Files\tCtrl+W',  'Watch HDF5 Files', kind=wx.ITEM_CHECK)
         fmenu.Check(mid, False)
         self.Bind(wx.EVT_MENU, self.onWatchFiles, id=mid)
 
@@ -1034,8 +1034,11 @@ Matt Newville <newville @ cars.uchicago.edu>
         self.watch_files = event.IsChecked()
         if not self.watch_files:
             self.file_timer.Stop()
+            self.message('Watching Files/Folders for Changes: Off')
         else:
             self.file_timer.Start(10000)
+            self.message('Watching Files/Folders for Changes: On')
+
 
     def onFileWatchTimer(self, event=None):
         for filename in self.filemap:
