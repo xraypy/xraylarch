@@ -1,9 +1,13 @@
+:orphan:
+
 =========================
 Table of Contents
 =========================
 
 .. toctree::
    :maxdepth: 3
+   :numbered:
+
 
    downloads/index.rst
    overview/index.rst
@@ -15,3 +19,4 @@ Table of Contents
    xray/index.rst
    xrf/index.rst
    devel/index.rst
+   biblio

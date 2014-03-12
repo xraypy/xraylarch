@@ -47,11 +47,10 @@ An example plot is shown below
 
 .. _xrf_fig1:
 
-  .. image:: ../images/xrf_display1.png
-     :target: ../_images/xrf_display1.png
-     :width: 75 %
+.. figure::  ../_images/xrf_display1.png
+    :target: ../_images/xrf_display1.png
+    :width: 75%
 
-  Figure 1: Example XRF Display, showing X-ray Fluorescence spectra,
-  defined ROIs (in red), and Periodic Table for showing predicted emission
-  lines.
+    Example XRF Display, showing X-ray Fluorescence spectra, defined ROIs
+    (in red), and Periodic Table for showing predicted emission lines.
 

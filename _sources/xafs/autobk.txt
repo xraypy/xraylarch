@@ -98,9 +98,9 @@ The :func:`autobk` function
 The AUTOBK Algorithm
 ======================
 
-The background subtraction method used is the **AUTOBK** algorithm, in
-which a spline function is matched to the low-*R* components of the
-resulting :math:`\chi(k)`.
+The background subtraction method used is the **AUTOBK** algorithm
+(see :cite:ts:`autobk`), in which a spline function is matched to the
+low-*R* components of the resulting :math:`\chi(k)`.
 
 For reference, :math:`k = \sqrt{2m_e (E-E_0)/\hbar^2}` is the wavenumber of
 the ejected photo-electron, where :math:`E_0` is the absorption threshold
@@ -117,7 +117,7 @@ scattering of the outgoing photo-electron that gives rise to the EXAFS, and
 :math:`\Delta\mu` is the edge step in :math:`\mu(E)`.
 
 The quantity :math:`\mu_0(E)` cannot be independently measured.  Instead,
-we empirically determine it here given the data for :math:`\mu(E)` by
+we empirically determine it here given the dxta for :math:`\mu(E)` by
 fitting a spline (a piece-polynomial function that is easily adjusted even
 while its smoothness is controlled) to :math:`\mu(E)`.  An advantage to
 what could easily be described as an *ad hoc* approach is that the data for
@@ -303,16 +303,34 @@ using all the default inputs would be:
 
 with the resulting outputs looking like this:
 
-.. _xafs_fig2:
 
-  .. image::  ../images/xafs_autobk1a.png
-     :target: ../_images/xafs_autobk1a.png
-     :width: 48 %
-  .. image::  ../images/xafs_autobk1b.png
-     :target: ../_images/xafs_autobk1b.png
-     :width: 48 %
+.. subfigstart::
 
-  Figure 2.  Example of simple usage of :func:`autobk`.
+.. _fig_xafs2a:
+
+.. figure::  ../_images/xafs_autobk1a.png
+    :target: ../_images/xafs_autobk1a.png
+    :width: 100%
+    :align: center
+  
+    Cu metal: :math:`\mu(E)` and background :math:`\mu_0(E)`
+
+.. _fig_xafs2b:
+
+.. figure::  ../_images/xafs_autobk1b.png
+    :target: ../_images/xafs_autobk1b.png
+    :width: 100%
+    :align: center
+
+    resulting :math:`k\chi(k)`
+
+.. subfigend::
+    :width: 0.45
+    :alt: a fig
+    :label: fig_xafs2
+    
+    Example of simple usage of :func:`autobk` for Cu metal.
+
 
 Thus demonstrating that we can process data on Cu metal.
 
@@ -328,16 +346,25 @@ here to demonstrate the method for passing arguments to :func:`pre_edge`.
 
 The resulting outputs looks OK:
 
-.. _xafs_fig3:
+.. subfigstart::
 
-  .. image::  ../images/xafs_autobk2a.png
-     :target: ../_images/xafs_autobk2a.png
-     :width: 48 %
-  .. image::  ../images/xafs_autobk2b.png
-     :target: ../_images/xafs_autobk2b.png
-     :width: 48 %
+.. _fig-xafs3a:
 
-  Figure 3.  Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
+.. figure::  ../_images/xafs_autobk2a.png
+    :target: ../_images/xafs_autobk2a.png
+    :width: 100%
+
+.. _fig-xafs3b:
+
+.. figure::  ../_images/xafs_autobk2b.png
+    :target: ../_images/xafs_autobk2b.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-xafs3
+
+    Example usage of :func:`autobk` for :math:`\rm FeAsO4 \cdot (nH_2O)`.
 
 A close examimation of :math:`k^2\chi(k)` suggests we might be able to do
 better, which brings us to the next section.
@@ -356,13 +383,29 @@ results in the following comparison:
 
 .. _xafs_fig4:
 
-  .. image::  ../images/xafs_autobk3.png
-     :target: ../_images/xafs_autobk3.png
-     :width: 65 %
+.. figure::  ../_images/xafs_autobk3.png
+    :target: ../_images/xafs_autobk3.png
+    :width: 65%
 
-  Figure 4.  Influence of spline clamps of :math:`\chi(k)`
+    Influence of spline clamps of :math:`\chi(k)`
 
 
 Using a Standard :math:`\chi(k)`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since the EXAFS contribution from the first shell is not perfectly isolated
+in :math:`R`, it can leak into portion of :math:`\chi(R)` below
+:math:`R_{\rm bkg}`.  It may be desirable to not simply reduce the portion
+of :math:`\chi(R)` below :math:`R_{\rm bkg}`, but to account for the
+expected leakage from the first shell.  To do this, you can provide a
+*standard* :math:`\chi(k)` spectrum that will simulate the first shell by
+specify arrays for `k_std` and `chi_std` arrays to the :func:`autobk`
+function.
+
+As an example:
+
+
+.. literalinclude:: ../../examples/xafs/doc_autobk4.lar
+
+
 

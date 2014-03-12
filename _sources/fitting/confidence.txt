@@ -147,22 +147,23 @@ The resulting statistics report with the automated uncertainties is::
 You can see that the correlations between **all 6 pairs of variables** is
 above 90%.  The resulting plot of the best-fit looks fairly reasonable:
 
-.. _fit_conf_fig1:
+.. _fit_conf1:
 
-   Figure 1.  Fit to double exponential function.
+.. figure::  ../_images/fit_example_conf2.png
+    :target: ../_images/fit_example_conf2.png
+    :width: 65%
+    :align: center
 
-  .. image:: ../images/fit_example_conf2.png
-     :target: ../_images/fit_example_conf2.png
-     :width: 65 %
+    Fit to double exponential function.
 
 
-But now we ask for the more thorough investigation of the confidence
+But if we we ask for the more thorough investigation of the confidence
 intervals in these parameters with::
 
     conf_int = confidence_intervals(minout)
     print confidence_report(conf_int)
 
-and the resulting report is::
+the resulting report is::
 
     # Confidence Interval Report
     # Sigmas:          -3         -2         -1          0          1          2          3
@@ -240,20 +241,31 @@ and a pair with high correlation::
 
 with the resulting Chi-square maps looking like this:
 
-.. _fitting_fig9:
+.. subfigstart::
 
-  .. image:: ../images/fit_example_conf3a.png
-     :target: ../_images/fit_example_conf3a.png
-     :width: 48 %
-  .. image:: ../images/fit_example_conf3b.png
-     :target: ../_images/fit_example_conf3b.png
-     :width: 48 %
+.. _fig-chi2map1a:
 
-  Figure 9.  Chi-square maps for two pairs of variables for the fit to
-  Gaussian data.  With the best-fit chi-square value of 0.5134, the
-  contour map for relatively uncorrelated parameters *amp* and *cen* is
-  shown on the left, while that for the more highlycorrelated parameters
-  *amp* and *wid* is shown on the right.
+.. figure::  ../_images/fit_example_conf3a.png
+    :target: ../_images/fit_example_conf3a.png
+    :width: 100%
+    :align: center
+
+.. _fig-chi2map1b:
+
+.. figure::  ../_images/fit_example_conf3b.png
+    :target: ../_images/fit_example_conf3b.png
+    :width: 100%
+    :align: center
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-chi2map1
+
+    Chi-square maps for two pairs of variables for the fit to Gaussian
+    data.  With the best-fit chi-square value of 0.5134, the contour map
+    for relatively uncorrelated parameters *amp* and *cen* is shown on the
+    left, while that for the more highlycorrelated parameters *amp* and
+    *wid* is shown on the right.
 
 
 The circular map for the uncorrelated parameters *amp* and *cen*
@@ -272,19 +284,33 @@ exponential, we calculate the chi-square maps as::
 
 with the resulting contour plots:
 
-.. _fitting_fig10:
 
-  .. image:: ../images/fit_example_conf4a.png
-     :target: ../_images/fit_example_conf4a.png
-     :width: 48 %
-  .. image:: ../images/fit_example_conf4b.png
-     :target: ../_images/fit_example_conf4b.png
-     :width: 48 %
 
-  Figure 10.  Chi-square maps for two pairs of variables for the fit to
-  Double Exponential.  With the best-fit chi-square value of 0.1913, the
-  contour map for *a1 and *a2* is shown on the left, while that for *a1*
-  and *t2* is shown on the right.
+.. subfigstart::
+
+.. _fig-chi2map2a:
+
+.. figure::  ../_images/fit_example_conf4a.png
+    :target: ../_images/fit_example_conf4a.png
+    :width: 100%
+    :align: center
+
+.. _fig-chi2map2b:
+
+.. figure::  ../_images/fit_example_conf4b.png
+    :target: ../_images/fit_example_conf4b.png
+    :width: 100%
+    :align: center
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-chi2map2
+
+    Chi-square maps for two pairs of variables for the fit to Double
+    Exponential.  With the best-fit chi-square value of 0.1913, the contour
+    map for *a1 and *a2* is shown on the left, while that for *a1* and *t2*
+    is shown on the right.
+
 
 
 Here, the values of chi-square quickly grow very large away from the ideal

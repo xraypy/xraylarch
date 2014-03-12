@@ -15,20 +15,21 @@ mass, tabulated values of characteristic energies and transition
 probabilites for core electron levels, absorption cross-sections, elastic
 scattering terms, and anomalous scattering corrections.
 
-Much of the speectroscopic data comes from the compilation of Elam, Ravel
-and Sieber [ElamRavelSieber]_.  The core-hole widths for excited electronic
-levels comes from Keski-Rahkonen and Krause [KeskiRahkonenKrause]_, while elastic
-x-ray scattering data, f0(q), is derived from Waasmaier and Kirfel
-[WaasmaierKirfel]_.  Anomalous cross-sections from Cromer and Liberman
-[CromerLiberman]_ (as implemented by Brennan and Cowan [BrennanCowan]_ )
-are provided.  In addition, Chantler's [Chantler]_ values for absorption
-cross-sections and anomalous x-ray scattering factors are available.
-Except for the anomalous cross-section data from Cromer and Liberman (which
-is implemented using the Fortran routine by Brennan and Cowan with slight
-modifications), the data is accessed through a portable SQLite3 database
-file.  This implementation was originally done by Darren Dale from CHESS
-(see https://github.com/praxes/elam_physical_reference), with some
-additions and alterations made for Larch.
+Much of the X-ray spectroscopic data comes from the compilation of
+:cite:ts:`elamtables`.  The core-hole widths for excited electronic levels
+comes from :cite:ts:`Keski_Krause`, while elastic x-ray scattering data,
+f0(q), is derived from :cite:ts:`Waasmaier_Kirfel`.  Anomalous
+cross-sections are available as based on the work of
+:cite:ts:`Cromer_Liberman`, using the implementation of
+:cite:ts:`Brennan_Cowan`.  In addition, values for absorption
+cross-sections and anomalous x-ray scattering factors from
+:cite:ts:`Chantler` (as from http://www.nist.gov/pml/data/ffast/index.cfm)
+are available.  Except for the anomalous cross-section data from Cromer and
+Liberman (which is implemented using the Fortran routine by Brennan and
+Cowan with slight modifications), the data is accessed through a portable
+SQLite3 database file.  This implementation was originally done by Darren
+Dale from CHESS (see https://github.com/praxes/elam_physical_reference),
+with some additions and alterations made for Larch.
 
 The :ref:`Table of X-ray data functions <xraydb-funcs_table>` gives a brief
 description to the available functions for accessing these data.  More
@@ -319,33 +320,4 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
 
 .. math::
     n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}
-
-
-.. rubric:: References
-
-.. [BrennanCowan] S. Brennan and P. L. Cowen, *A suite of programs for
-    calculating x-ray absorption, reflection, and diffraction performance
-    for a variety of materials at arbitrary wavelengths*, Review of
-    Scientific Instruments **63**, pp850--853 (1992) [http://dx.doi.org/10.1063/1.1142625].
-
-.. [Chantler]   C. T. Chantler, Journal of Physical and Chemical Reference
-    Data **24**, p71 (1995) [http://www.nist.gov/pml/data/ffast/index.cfm].
-
-.. [CromerLiberman] D. T. Cromer and D. A. Liberman *Anomalous dispersion
-    calculations near to and on the long-wavelength side of an
-    absorption-edge*, Acta Crystallographica **A37**, pp267-268 (1981)
-    [http://dx.doi.org/10.1107/S0567739481000600].
-
-.. [ElamRavelSieber]   W. T. Elam, B. D. Ravel and J. R. Sieber, Radiation
-    Physics and Chemistry **63** (2), pp121--128 (2002)
-    [http://dx.doi.org/10.1016/S0969-806X(01)00227-4].
-
-.. [KeskiRahkonenKrause]  O. Keski-Rahkonen and M. O. Krause, *Total and Partial
-    Atomic-Level Widths*, Atomic Data and Nuclear Data Tables **14**,
-    pp139-146 (1974)
-
-.. [WaasmaierKirfel]  D. Waasmaier and A. Kirfel, *New Analytical
-    Scattering Factor Functions for Free Atoms and Ions*,
-    Acta Crystallographica **A51**, pp416-431 (1995)
-    [http://dx.doi.org/10.1107/S0108767394013292].
 

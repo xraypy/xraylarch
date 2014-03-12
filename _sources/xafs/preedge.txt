@@ -100,13 +100,12 @@ gives the following results:
 
 .. _xafs_fig1:
 
-  .. figure:: ../images/xafs_preedge.png
-     :target: ../_images/xafs_preedge.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/xafs_preedge.png
+    :target: ../_images/xafs_preedge.png
+    :width: 65%
+    :align: center
 
-  Figure 1. XAFS Pre-edge subtraction.
+    XAFS Pre-edge subtraction.
 
 
 

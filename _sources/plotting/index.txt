@@ -277,7 +277,7 @@ same meaning, as indicated by the right-most column.
 Plot Examples
 ~~~~~~~~~~~~~~
 
-Here are a few example plots, to whet your appetite::
+Here are a few example line plots, to whet your appetite::
 
     x = linspace(0, 10, 101)
     y1 = sin(x)
@@ -288,11 +288,11 @@ will make this plot:
 
 .. _plotting_fig1:
 
-  .. image:: ../images/plot_basic1.png
-     :target: ../_images/plot_basic1.png
-     :width: 60 %
+.. figure::  ../_images/plot_basic1.png
+    :target: ../_images/plot_basic1.png
+    :width: 60%
 
-  Figure 1:  A Basic x, y plot.
+    A basic line plot.
 
 Adding a second curve, and setting some labels::
 
@@ -302,11 +302,11 @@ will make this plot:
 
 .. _plotting_fig2:
 
-  .. image:: ../images/plot_basic2.png
-     :target: ../_images/plot_basic2.png
-     :width: 60 %
+.. figure:: ../_images/plot_basic2.png
+    :target: ../_images/plot_basic2.png
+    :width: 60%
 
-  Figure 2:  A line plot with two curves.
+    A line plot with two curves.
 
 
 Interactive Use of the Plot Windows
@@ -370,12 +370,11 @@ like this:
 
 .. _plotting_fig3:
 
-  .. image:: ../images/plot_config.png
-     :target: ../_images/plot_config.png
-     :width: 60 %
+.. figure::  ../_images/plot_config.png
+    :target: ../_images/plot_config.png
+    :width: 60%
 
-  Figure 3:  Screenshot of the Configuration window for Plots.
-
+    Screenshot of the Configuration window for Plots.
 
 From here you can set the titles, axis labels, and styles, colors, symbols,
 labels, and so on for each of the line traces drawn.
@@ -462,22 +461,21 @@ is shown below:
 
 .. _plotting_fig4:
 
-  .. image:: ../images/plot_image1.png
-     :target: ../_images/plot_image1.png
-     :width: 60 %
+.. figure::  ../_images/plot_image1.png
+    :target: ../_images/plot_image1.png
+    :width: 60%
 
-  Figure 4: A false-color display of 2 dimensional image data.
+    A false-color display of 2 dimensional image data.
 
 and as a contour plot, with a different color table:
 
 .. _plotting_fig5:
 
-  .. image:: ../images/plot_contour1.png
-     :target: ../_images/plot_contour1.png
-     :width: 60 %
+.. figure::  ../_images/plot_contour1.png
+    :target: ../_images/plot_contour1.png
+    :width: 60%
 
-  Figure 5: A contour plot of 2 dimensional image data.
-
+    A contour plot of 2 dimensional image data.
 
 .. _plot_mpl_sec:
 
@@ -515,9 +513,9 @@ which generates a plot that looks like
 
 .. _plotting_fig6:
 
-  .. image:: ../images/plot_histogram.png
-     :target: ../_images/plot_histogram.png
-     :width: 60 %
+.. figure::  ../_images/plot_histogram.png
+    :target: ../_images/plot_histogram.png
+    :width: 60%
 
-  Figure 6: A histogram plot made using matplotlib's :func:`hist` function.
+    A histogram plot made using matplotlib's :func:`hist` function.
 

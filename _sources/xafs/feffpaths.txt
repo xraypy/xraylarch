@@ -9,8 +9,9 @@ XAFS: Reading and using Feff Paths
 For modeling EXAFS data, Larch relies heavily on calculations of
 theoretical XAFS spectra using FEFF.  Being able to run FEFF and use its
 results is of fundamental importance for using Larch for fitting EXAFS
-spectra.  While a complete description of FEFF is beyond the scope of this
-documentation, here we describe how to read the results from FEFF into
+spectra.  While a complete description of FEFF (:cite:ts:`feff6_Rehr`,
+:cite:ts:`feff6_siz`, :cite:ts:`RehrAlbers_RMP`) is beyond the scope of
+this documentation, here we describe how to read the results from FEFF into
 Larch.  The main interface for this is the :func:`feffpath` function that
 reads FEFF *feffNNNN.dat* file and creates a FeffPath Group.
 
@@ -315,10 +316,11 @@ Models for Calculating :math:`\sigma^2`
 The value for :math:`\sigma^2` in the EXAFS equation gets a lot of
 attention in the EXAFS literature, as it is often the only term used to
 account for thermal and static disorder in an ensemble of Paths that makes
-up a full EXAFS spectra.  Borrowing from Feff, Larch provides two functions
-that use simple models to calculate :math:`\sigma^2` for a Path.  Both
-functions, :func:`sigma2_eins` and :func:`sigma2_debye` take arguments of
-sample temperature, a characteristic temperature, and a FeffPath, and
+up a full EXAFS spectra.  Borrowing from Feff (see :cite:ts:`feff6_Rehr`,
+:cite:ts:`Sevillano` and :cite:ts:`RehrAlbers_RMP`) Larch provides two
+functions that use simple models to calculate :math:`\sigma^2` for a Path.
+Both functions, :func:`sigma2_eins` and :func:`sigma2_debye` take arguments
+of sample temperature, a characteristic temperature, and a FeffPath, and
 return a value of :math:`\sigma^2`.  These are known to appy reasonably
 well to very simple systems (such as metals and solids with few atomic
 components), and less well to complex systems, including anything with
@@ -382,13 +384,12 @@ After the initial read, the values of ``k``, ``p``, ``chi``, and
 
 .. _xafs_fig12:
 
-  .. figure:: ../images/feffdat_example1.png
-     :target: ../_images/feffdat_example1.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/feffdat_example1.png
+    :target: ../_images/feffdat_example1.png
+    :width: 65%
+    :align: center
 
-  Figure 12. Calculations of :math:`\chi(k)` for a Feff Path.
+    Calculations of :math:`\chi(k)` for a Feff Path.
 
 We can also use the data from the ``_feffdat`` group to look at the
 individual scattering components.  Thus to look at the scattering amplitude
@@ -401,13 +402,12 @@ which will produce a plot like this:
 
 .. _xafs_fig13:
 
-  .. figure:: ../images/feffdat_example2.png
-     :target: ../_images/feffdat_example2.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/feffdat_example2.png
+    :target: ../_images/feffdat_example2.png
+    :width: 65%
+    :align: center
 
-  Figure 13. Components of ``_feffdat`` group for a Feff Path.
+    Components of ``_feffdat`` group for a Feff Path.
 
 You can see here that the arrays in the ``_feffdat`` group are sampled at
 varying :math:`k` spacing, and that this spacing becomes fairly large at
@@ -431,13 +431,12 @@ group is up to date.
 
 .. _xafs_fig14:
 
-  .. figure:: ../images/feffdat_example3.png
-     :target: ../_images/feffdat_example3.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/feffdat_example3.png
+    :target: ../_images/feffdat_example3.png
+    :width: 65%
+    :align: center
 
-  Figure 14. Results for sum of :math:`\chi(k)` for list of paths.
+    Results for sum of :math:`\chi(k)` for list of paths.
 
 
 Example: Using Path Parameters when adding FEFF files
@@ -481,14 +480,13 @@ overridden by resetting ``_sys.paramGroup``, which can be done by passing a
 
 .. _xafs_fig15:
 
-  .. figure:: ../images/feffdat_example4.png
-     :target: ../_images/feffdat_example4.png
-     :width: 65 %
-     :align: center
-     :figwidth: 100 %
+.. figure::  ../_images/feffdat_example4.png
+    :target: ../_images/feffdat_example4.png
+    :width: 65%
+    :align: center
 
-  Figure 15. Results for making 2 different sums of paths using
-  parameterized Path Parameters
+    Results for making 2 different sums of paths using parameterized Path
+    Parameters
 
 
 The resulting plot shows the effect of changing :math:`E_0` and

@@ -88,13 +88,14 @@ The printed output from ``fit_report(params)`` will look like this::
 
 And the plot of data and fit will look like this:
 
-.. _fitting_fig1:
+.. _fig_fit1:
 
-  .. image:: ../images/fit_example1.png
-     :target: ../_images/fit_example1.png
-     :width: 65 %
+.. figure::  ../_images/fit_example1.png
+    :target: ../_images/fit_example1.png
+    :width: 65%
+    :align: center
 
-  Figure 1.  Simple fit to mock data
+    Simple fit to mock data
 
 
 Example 2: Fitting XANES Pre-edge Peaks
@@ -153,21 +154,35 @@ The fit gives a report (ignoring correlations) like this::
 
 and the plots of the resulting best-fit and components look like these:
 
-.. _fitting_fig2:
+.. subfigstart::
 
-  .. image::  ../images/fit_example2a1.png
-     :target: ../_images/fit_example2a1.png
-     :width: 48 %
-  .. image:: ../images/fit_example2a2.png
-     :target: ../_images/fit_example2a2.png
-     :width: 48 %
+.. _fig-fit2a:
 
-  Figure 2.  Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions and
-  an Error function
+.. figure::  ../_images/fit_example2a1.png
+    :target: ../_images/fit_example2a1.png
+    :width: 100%
+    :align: center
+  
+    fit with residual.
 
+.. _fig-fit2b:
 
+.. figure::  ../_images/fit_example2a2.png
+    :target: ../_images/fit_example2a2.png
+    :width: 100%
+    :align: center
 
-and we see the fit is pretty good.
+    fit with individual components.
+
+.. subfigend::
+    :width: 0.45
+    :alt: a fig
+    :label: fig-fit2
+    
+    Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions 
+    and an Error function.
+
+and we see the fit is pretty good.  
 
 Looking more closely, however, there is a hint in the data and the residual
 that we may have missed a third peak at around E = 7122 eV.  We can add
@@ -233,17 +248,33 @@ Adding the third peak here reduced :math:`\chi^2` by a factor of 10, from
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:
 
-.. _fitting_fig3:
+.. subfigstart::
 
-  .. image::  ../images/fit_example2b1.png
-     :target: ../_images/fit_example2b1.png
-     :width: 48 %
-  .. image::  ../images/fit_example2b2.png
-     :target: ../_images/fit_example2b2.png
-     :width: 48 %
+.. _fig-fit3a:
 
-  Figure 3.  Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions and
-  an Error function
+.. figure::  ../_images/fit_example2b1.png
+    :target: ../_images/fit_example2b1.png
+    :width: 100%
+    :align: center
+  
+    fit with residual.
+
+.. _fig-fit3b:
+
+.. figure::  ../_images/fit_example2b2.png
+    :target: ../_images/fit_example2b2.png
+    :width: 100%
+    :align: center
+
+    fit with individual components.
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-fit3
+    
+    Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions 
+    and an Error function.
+
 
 Finally for this example, we can replace the Gaussian peak shapes with
 other functional forms.   To use the Voigt function shown in the previous
@@ -284,17 +315,33 @@ and we see that the already very low
 :math:`\chi^2` reduces by another 10%, which suggests a real improvement.
 For completeness,  the plots from this fit look like this:
 
-.. _fitting_fig4:
 
-  .. image:: ../images/fit_example2c1.png
-     :target: ../_images/fit_example2c1.png
-     :width: 48 %
-  .. image:: ../images/fit_example2c2.png
-     :target: ../_images/fit_example2c2.png
-     :width: 48 %
+.. subfigstart::
 
-  Figure 4.  Fit to Fe K-edge pre-edge and edge with 3 Voigt functions and
-  an Error function
+.. _fig-fit4a:
+
+.. figure::  ../_images/fit_example2c1.png
+    :target: ../_images/fit_example2c1.png
+    :width: 100%
+    :align: center
+  
+    fit with residual.
+
+.. _fig-fit4b:
+
+.. figure::  ../_images/fit_example2c2.png
+    :target: ../_images/fit_example2c2.png
+    :width: 100%
+    :align: center
+
+    fit with individual components.
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-fit4
+    
+    Fit to Fe K-edge pre-edge and edge with 3 Voigt functions 
+    and an Error function.
 
 
 It's difficult to see a dramatic difference in fit quality for this data,
@@ -315,16 +362,16 @@ simple approach to XANES analysis.
 
 
 The example here is borrowed from Bruce Ravel's data and tutorials, and
-based on the work published by M. Lengke, *et al*, *Environmental Science
-and Technology* **40** (20), p6304 (2006).  The goal here is not to repeat
-the whole of that analysis, but to present the mechanics of the fitting
-approach.  Essentially, we're asserting that a particular measured spectrum
-is made of a linear combination of 2 or more other spectra.  We have a set
-of candidate model spectra, and we're going to try to determine both which
-of those model spectra combine to match the measured one.  Here we will
-simply assert that all the spectra are aligned in the ordinate and that
-they are normalized in some reproducible way so that there are essentially
-no artefacts or systematic problems in the 'x' or 'y' values of the data.
+based on the work published by :cite:ts:`Lengke2006`, The goal here is not
+to repeat the whole of that analysis, but to present the mechanics of the
+fitting approach.  Essentially, we're asserting that a particular measured
+spectrum is made of a linear combination of 2 or more other spectra.  We
+have a set of candidate model spectra, and we're going to try to determine
+both which of those model spectra combine to match the measured one.  Here
+we will simply assert that all the spectra are aligned in the ordinate and
+that they are normalized in some reproducible way so that there are
+essentially no artefacts or systematic problems in the 'x' or 'y' values of
+the data.
 
 For the example here, the spectra are held in individual ASCII data files,
 which we'll call *unknown.dat* for the unknown spectrum and *s1.dat*,
@@ -332,22 +379,38 @@ which we'll call *unknown.dat* for the unknown spectrum and *s1.dat*,
 not important for the discussion here what these spectra represent, but
 they are XANES data taken at the Au L3 edge on various Au compounds.
 
-A visual inspection of the spectra (see :ref:`Figure 5 <fitting_fig5>`)
+A visual inspection of the spectra (see Figure :num:`fig-fit5`)
 suggests that *s2* is probably a major component of the unknown, though the
 peak around 11950 eV is a feature that only *s1* has, so it too may be an
 important component.
 
-.. _fitting_fig5:
 
-  .. image:: ../images/fit_example3a.png
-     :target: ../_images/fit_example3a.png
-     :width: 48 %
-  .. image:: ../images/fit_example3b.png
-     :target: ../_images/fit_example3b.png
-     :width: 48 %
+.. subfigstart::
 
-  Figure 5.  Components used for Linear Combination Fits (left) and Fit
-  with components *s1* and *s2* (right).
+.. _fig-fit5a:
+
+.. figure::  ../_images/fit_example3a.png
+    :target: ../_images/fit_example3a.png
+    :width: 100%
+    :align: center
+  
+    components used for linear combinations.
+
+.. _fig-fit5b:
+
+.. figure::  ../_images/fit_example3b.png
+    :target: ../_images/fit_example3b.png
+    :width: 100%
+    :align: center
+
+    fit and residual with components *s1* and *s2*.
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-fit5
+    
+    Linear Combination Fit of gold XANES in cyanobacteria, after
+    :cite:ts:`Lengke2006`.
 
 
 To quantitatively fit these spectra, we read in all the data, and then
@@ -391,7 +454,7 @@ results of this fit are::
     =======================================================
 
 
-and the result for this fit is shown in :ref:`Figure 5 <fitting_fig5>`.
+and the result for this fit is shown in Figure :num:`fig-fit5`.
 This demonstrates the use of simple constraints for Parameters in fits:
 we've used an algebraic expression to ensure that the weights for the two
 components in the fit add to 1.
@@ -460,16 +523,33 @@ The output of running this gives::
 
 and the output plots for the best model look like this:
 
-.. _fitting_fig6:
+.. subfigstart::
 
-  .. image:: ../images/fit_example3c1.png
-     :target: ../_images/fit_example3c1.png
-     :width: 48 %
-  .. image:: ../images/fit_example3c2.png
-     :target: ../_images/fit_example3c2.png
-     :width: 48 %
+.. _fig-fit6a:
 
-  Figure 6.  Fit with components *s1*, *s2*, and *s3*
+.. figure::  ../_images/fit_example3c1.png
+    :target: ../_images/fit_example3c1.png
+    :width: 100%
+    :align: center
+  
+    linear combination fit and residual.
+
+.. _fig-fit6b:
+
+.. figure::  ../_images/fit_example3c2.png
+    :target: ../_images/fit_example3c2.png
+    :width: 100%
+    :align: center
+
+    weighted contribution from individual components.
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-fit6
+    
+    Linear Combination XANES Fit of gold components in cyanobacteria with
+    species *s1*, *s2*, and *s5*.
+
 
 
 Of course, we aren't necessarily done here as we haven't exhausted all
@@ -546,35 +626,70 @@ that are::
 
 The plots resulting from both sets of Parameters are shown:
 
-.. _fitting_fig7:
 
-  .. image:: ../images/fit_example3d1.png
-     :target: ../_images/fit_example3d1.png
-     :width: 48 %
-  .. image:: ../images/fit_example3d2.png
-     :target: ../_images/fit_example3d2.png
-     :width: 48 %
+.. subfigstart::
 
-  Figure 7: Fit with components *s1*, *s2*, *s3*, and *s6*
+.. _fig-fit7a:
 
-.. _fitting_fig8:
+.. figure::  ../_images/fit_example3d1.png
+    :target: ../_images/fit_example3d1.png
+    :width: 100%
+    :align: center
+  
+    linear combination fit and residual.
 
-  .. image:: ../images/fit_example3e1.png
-     :target: ../_images/fit_example3e1.png
-     :width: 48 %
-  .. image:: ../images/fit_example3e2.png
-     :target: ../_images/fit_example3e2.png
-     :width: 48 %
+.. _fig-fit7b:
 
-  Figure 8:  Fit with components *s1*, *s2*, *s3*, and *s5*
+.. figure::  ../_images/fit_example3d2.png
+    :target: ../_images/fit_example3d2.png
+    :width: 100%
+    :align: center
+
+    weighted contribution from individual components.
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-fit7
+    
+    Linear Combination XANES Fit of gold components in cyanobacteria
+    with species *s1*, *s2*, *s3*, and *s6*.
+
+
+.. subfigstart::
+
+.. _fig-fit8a:
+
+.. figure::  ../_images/fit_example3e1.png
+    :target: ../_images/fit_example3e1.png
+    :width: 100%
+    :align: center
+  
+    linear combination fit and residual.
+
+.. _fig-fit8b:
+
+.. figure::  ../_images/fit_example3e2.png
+    :target: ../_images/fit_example3e2.png
+    :width: 100%
+    :align: center
+
+    weighted contribution from individual components.
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-fit8
+    
+    Linear Combination XANES Fit of gold components in cyanobacteria
+    with species *s1*, *s2*, *s3*, and *s5*.
+
 
 From the plots alone, it is difficult to tell which of these fits is
 better, and it is probably best to say that these are both good fits.  This
 implies that component *s3* is important even if at a very small fraction,
 and that either component *s5* or *s6* (which aren't that different
-spectroscopically or chemically, see :ref:`Figure 5 <fitting_fig5>`) is
-present.  Of course, the analysis here is not meant to be definitive, and
-there are many more checks that could be done.  To be clear, Lengke *et al*
+spectroscopically or chemically (see Figure :num:`fig-fit5`) is present.
+Of course, the analysis here is not meant to be definitive, and there are
+many more checks that could be done.  To be clear, :cite:ts:`Lengke2006`
 looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that *s1*, *s2*, *s3*, and *s5* were the best
 components, with concentrations of the components very similar to the ones

@@ -15,18 +15,18 @@ process, and those sections will be referenced here.
 The Feffit Strategy for Modeling EXAFS Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The basic approach to modeling EXAFS data in Larch [Newville2001]_ is to
-create a model EXAFS :math:`\chi(k)` as a sum of scattering paths that will
-be compared to experimentally derived :math:`\chi(k)`. The model will
-consist of a set of FEFF Scattering Paths representing the photo-electron
-scattering from different sets of atoms.  As discussed in
-ref:`xafs-feffpaths_sec`, these FEFF Paths have a fixed set of physically
-meaningful parameters than can be modified to alter the predicted
-contribution to :math:`\chi(k)`.  Any of these values can be defined as
-algebraic expressions of Larch Parameters defined by :func:`_math.param`.
-The actual fit uses the same fitting infrastructure as to
-:func:`_math.minimize` to refine the values of the variable parameters in
-the model so as to best match the experimental data.  Because
+The basic approach to modeling EXAFS data in Larch (see
+:cite:ts:`feffit`) is to create a model EXAFS :math:`\chi(k)` as a
+sum of scattering paths that will be compared to experimentally derived
+:math:`\chi(k)`. The model will consist of a set of FEFF Scattering Paths
+representing the photo-electron scattering from different sets of atoms.
+As discussed in :ref:`xafs-feffpaths_sec`, these FEFF Paths have a fixed
+set of physically meaningful parameters than can be modified to alter the
+predicted contribution to :math:`\chi(k)`.  Any of these values can be
+defined as algebraic expressions of Larch Parameters defined by
+:func:`_math.param`.  The actual fit uses the same fitting infrastructure
+as to :func:`_math.minimize` to refine the values of the variable
+parameters in the model so as to best match the experimental data.  Because
 :math:`\chi(k)` has known properties and :math:`k` dependencies, it is
 common to weight and Fourier transform (as described in :ref:`xafs-ft_sec`)
 for the analysis.  In general term, the the refinement process will compare
@@ -63,7 +63,7 @@ Nyquist as
     N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1
 
 where :math:`\Delta k` and :math:`\Delta R` are the :math:`k` and :math:`R`
-range of the usable data under consideration.  E. A. Stern [Stern1993]_
+range of the usable data under consideration.  :cite:authors:`Stern93` 
 argues convincingly that the '+1' here should be '+2', but we'll remain
 conservative and keep the '+1', and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -143,7 +143,7 @@ proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
 :math:`R`: white noise.  The function :func:`estimate_noise` does this
-[NewvilleBoyanovSayers1999]_, and the estimate derived from this method is
+:cite:authors:`NewvilleBoyanov`, and the estimate derived from this method is
 used unless you specify a value for ``epsilon_k`` the noise level in
 :math:`\chi(k)`.  Though usually :math:`\epsilon` is taken to be a scalar
 value, it can be specfied as an array (of the same length as
@@ -433,17 +433,26 @@ running this example prints out the following report:
 
 and generates the plots shown below
 
-.. _xafs_fig16:
+.. subfigstart::
 
-  .. image:: ../images/feffit_example1.png
-     :target: ../_images/feffit_example1.png
-     :width: 48 %
-  .. image:: ../images/feffit_example2.png
-     :target: ../_images/feffit_example2.png
-     :width: 48 %
+.. _fig-feffit1a:
 
-  Figure 16. Results for Feffit for a simple 1-shell fit to a
-  spectrum from Cu metal.
+.. figure::  ../_images/feffit_example1.png
+    :target: ../_images/feffit_example1.png
+    :width: 100%
+
+.. _fig-feffit1b:
+
+.. figure::  ../_images/feffit_example2.png
+    :target: ../_images/feffit_example2.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-feffit1
+
+    Results for Feffit for a simple 1-shell fit to a spectrum from Cu
+    metal.
 
 This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
@@ -516,17 +525,26 @@ The output for this fit is a bit longer, being:
 
 With plots of data and fits as shown below.
 
-.. _xafs_fig17:
+.. subfigstart::
 
-  .. image:: ../images/feffit_example3.png
-     :target: ../_images/feffit_example3.png
-     :width: 48 %
-  .. image:: ../images/feffit_example4.png
-     :target: ../_images/feffit_example4.png
-     :width: 48 %
+.. _fig-feffit2a:
 
-  Figure 17. Results for Feffit for a 3-shell fit to a spectrum from Cu
-  metal, constraining all path distances to expand with a single variable.
+.. figure::  ../_images/feffit_example3.png
+    :target: ../_images/feffit_example3.png
+    :width: 100%
+
+.. _fig-feffit2b:
+
+.. figure::  ../_images/feffit_example4.png
+    :target: ../_images/feffit_example4.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-feffit2
+
+    Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
+    constraining all path distances to expand with a single variable.
 
 Here, we show both the magnitude and real part of :math:`\chi(R)`.  The fit
 to the real part shows excellent agreement over the fit :math:`R` range of
@@ -539,17 +557,25 @@ straightforward, as we can just do::
 
 to generate the following plots of the contributions of the different paths:
 
-.. _xafs_fig18:
+.. subfigstart::
 
-  .. image:: ../images/feffit_example5.png
-     :target: ../_images/feffit_example5.png
-     :width: 48 %
-  .. image:: ../images/feffit_example6.png
-     :target: ../_images/feffit_example6.png
-     :width: 48 %
+.. _fig-feffit3a:
 
-  Figure 18. Path contributions to full mode for the 3-shell fit to Cu
-  spectrum.
+.. figure::  ../_images/feffit_example5.png
+    :target: ../_images/feffit_example5.png
+    :width: 100%
+
+.. _fig-feffit3b:
+
+.. figure::  ../_images/feffit_example6.png
+    :target: ../_images/feffit_example6.png
+    :width: 100%
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-feffit3
+
+    Path contributions to full mode for the 3-shell fit to Cu spectrum.
 
 Example 3: Fit 3 datasets with 1 Path each
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -617,37 +643,62 @@ correlation significantly reduces the estimated uncertainty.
 
 The output plots for the fits to the three datasets are given below.
 
-.. _xafs_fig19:
+.. subfigstart::
 
-  .. image:: ../images/feffit_3temp1.png
-     :target: ../_images/feffit_3temp1.png
-     :width: 48 %
-  .. image:: ../images/feffit_3temp2.png
-     :target: ../_images/feffit_3temp2.png
-     :width: 48 %
+.. _fig-feffit3temp10k:
 
-  **a**
+.. figure::  ../_images/feffit_3temp1.png
+    :target: ../_images/feffit_3temp1.png
+    :width: 100%
 
-  .. image:: ../images/feffit_3temp3.png
-     :target: ../_images/feffit_3temp3.png
-     :width: 48 %
-  .. image:: ../images/feffit_3temp4.png
-     :target: ../_images/feffit_3temp4.png
-     :width: 48 %
+    Fit to Cu :math:`\chi(k)` at 10 K 
 
-  **b**
+.. _fig-feffit3temp50k:
 
-  .. image:: ../images/feffit_3temp5.png
-     :target: ../_images/feffit_3temp5.png
-     :width: 48 %
-  .. image:: ../images/feffit_3temp6.png
-     :target: ../_images/feffit_3temp6.png
-     :width: 48 %
+.. figure::  ../_images/feffit_3temp3.png
+    :target: ../_images/feffit_3temp3.png
+    :width: 100%
 
-  **c**
+    Fit to Cu :math:`\chi(k)` at 50 K 
 
-  Figure 19. Fit to Cu metal at (a) 10 K, (b) 50 K, and (c) 150 K, from a
-  simultaneous fit to all 3 datasets with 5 variables used.
+.. _fig-feffit3temp150k:
+
+.. figure::  ../_images/feffit_3temp5.png
+    :target: ../_images/feffit_3temp5.png
+    :width: 100%
+
+    Fit to Cu :math:`\chi(k)` at 150 K 
+
+.. _fig-feffit3temp10r:
+
+.. figure::  ../_images/feffit_3temp2.png
+    :target: ../_images/feffit_3temp2.png
+    :width: 100%
+
+    Fit to Cu :math:`\chi(R)` at 10 K 
+
+.. _fig-feffit3temp50r:
+
+.. figure::  ../_images/feffit_3temp4.png
+    :target: ../_images/feffit_3temp4.png
+    :width: 100%
+
+    Fit to Cu :math:`\chi(R)` at 50 K 
+
+.. _fig-feffit3temp150r:
+
+.. figure::  ../_images/feffit_3temp6.png
+    :target: ../_images/feffit_3temp6.png
+    :width: 100%
+
+    Fit to Cu :math:`\chi(R)` at 150 K 
+
+.. subfigend::
+    :width: 0.32
+    :label: fig-feffit3temps
+
+    Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
+    3 datasets with 5 variables used.
 
 Again, in the interest of brevity and consistency through this chapter,
 these example are deliberately simple and meant to be illustrative of the
@@ -692,16 +743,29 @@ The resulting output is
 
 with plots:
 
-.. _xafs_fig20:
+.. subfigstart::
 
-  .. image:: ../images/feffit_feo_k.png
-     :target: ../_images/feffit_feo_k.png
-     :width: 48 %
-  .. image:: ../images/feffit_feo_r.png
-     :target: ../_images/feffit_feo_r.png
-     :width: 48 %
+.. _fig-feffit-feo-a:
 
-  Figure 20. Fits to 2-path fit to FeO EXAFS.
+.. figure::  ../_images/feffit_feo_k.png
+    :target: ../_images/feffit_feo_k.png
+    :width: 100%
+
+    Fit to FeO spectra, :math:`k` space
+
+.. _fig-feffit-feo-b:
+
+.. figure::  ../_images/feffit_feo_r.png
+    :target: ../_images/feffit_feo_r.png
+    :width: 100%
+
+    Fit to FeO spectra, :math:`R` space
+
+.. subfigend::
+    :width: 0.45
+    :label: fig-feffit-feo
+
+    Fits to 2-path fit to FeO EXAFS.
 
 Example 5: Comparing Fits in different Fit Spaces
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -770,21 +834,3 @@ dataset, making modifications and re-doing fits can also include changing
 what parametres are varied, and what constraints are placed between
 parameters.
 
-
-
-.. rubric:: References
-
-.. [Newville2001] M. Newville *EXAFS analysis using FEFF and FEFFIT*,
-   J. Synchrotron Radiation,  **8**, pp 96-100, (2001). 
-   [http://dx.doi.org/10.1107/S0909049500016290]
-
-.. [Stern1993]   E. A. Stern, *Number of relevant independent points in 
-   X-ray-absorption fine-structure spectra*, 
-   Physical Review **B48**, pp 9825-9827 (1993).
-   [http://dx.doi.org/10.1103/PhysRevB.48.9825]
-
-
-.. [NewvilleBoyanovSayers1999] M. Newville, B. Boyanov, and D. E. Sayers,  
-   *Estimation of uncertainties in XAFS data*, 
-   J. Synchrotron Radiation, **6**, pp 264-265 (1999).
-   [http://dx.doi.org/10.1107/S0909049598018147]

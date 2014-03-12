@@ -130,14 +130,14 @@ The printed output from ``fit_report(params)`` will look like this::
 
 And the plot of data and fit will look like this:
 
-.. _fitting_fig9:
+.. _fig-fitpeak1:
 
-  .. image:: ../images/fit_peakfit1.png
-     :target: ../_images/fit_peakfit1.png
-     :width: 65 %
+.. figure::  ../_images/fit_peakfit1.png
+    :target: ../_images/fit_peakfit1.png
+    :width: 65%
 
-  Figure 9.  Simple fit to mock data using a Gaussian model and a linear
-  background with the :func:`fit_peak` function.
+    Simple fit to mock data using a Gaussian model and a linear background
+    with the :func:`fit_peak` function.
 
 Although the fit is quite good, the model is probably imperfect, and using
 a Voigt function to fit to this data would give better results.  The main
@@ -187,14 +187,14 @@ will look like this::
        bkg_slope, width1    =  0.345
     =======================================================
 
-.. _fitting_fig10:
+.. _fig-fitpeak2:
 
-  .. image:: ../images/fit_peakfit2.png
-     :target: ../_images/fit_peakfit2.png
-     :width: 65 %
+.. figure::  ../_images/fit_peakfit2.png
+    :target: ../_images/fit_peakfit2.png
+    :width: 65%
 
-  Figure 10.  Simple fit to mock data to a rectangular function and a
-  linear background using the :func:`fit_peak` function.
+    Simple fit to mock data to a rectangular function and a linear
+    background using the :func:`fit_peak` function.
 
 Again, the principle point here is not how well the rectangular model
 matches the actual data here, but how simply one can model data to a
