@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fitting Overview &mdash; larch 0.9.21 documentation</title>
+    <title>6.1. Fitting Overview &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="Fitting and Modeling Data" href="index.html" />
-    <link rel="next" title="Parameters" href="parameters.html" />
-    <link rel="prev" title="Fitting and Modeling Data" href="index.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="6.2. Parameters" href="parameters.html" />
+    <link rel="prev" title="6. Fitting and Modeling Data" href="index.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="parameters.html" title="Parameters"
+          <a href="parameters.html" title="6.2. Parameters"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Fitting and Modeling Data"
+          <a href="index.html" title="6. Fitting and Modeling Data"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,10 +74,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">Fitting and Modeling Data</a></p>
+                        title="previous chapter">6. Fitting and Modeling Data</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="parameters.html"
-                        title="next chapter">Parameters</a></p>
+                        title="next chapter">6.2. Parameters</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/overview.txt"
@@ -103,7 +105,7 @@
           <div class="body">
             
   <div class="section" id="fitting-overview">
-<span id="fitting-overview-sec"></span><h1>Fitting Overview<a class="headerlink" href="#fitting-overview" title="Permalink to this headline">¶</a></h1>
+<span id="fitting-overview-sec"></span><h1>6.1. Fitting Overview<a class="headerlink" href="#fitting-overview" title="Permalink to this headline">¶</a></h1>
 <p>Modeling and fitting of experimental data is a key need for the analysis of
 most scientific data.  There is an extensive literature on these topics,
 with a wealth written on both the theoretical and practical aspects of
@@ -122,7 +124,7 @@ model.  As a simple example, a linear model of data would be written as
 complex.  There is good statistical justification for using the
 least-squares approach, and many existing tools for helping to find the
 minimal values of <img class="math" src="../_images/math/ad28c83c99a8fd0dd2e2e594c9d02ee532765a0a.png" alt="S"/>.  These justifcations are not without criticism
-or caveats, but we&#8217;ll leave that aside for now.</p>
+or caveats, but we'll leave that aside for now.</p>
 <p>It is common to include a multiplicative factor to each component in the
 least-squares equation above, so that the different samples (or data
 points) might be given more or less weight.  Again, there are several
@@ -136,11 +138,11 @@ It is common to
 As mentioned, the model describing <img class="math" src="../_images/math/0fc7328cefa0b4a249e3f58730e07fa338c056d5.png" alt="f(x, \vec{\beta})"/> can be fairly complex.</p>
 <p>There is an extensive literature for case where the model function
 <img class="math" src="../_images/math/0fc7328cefa0b4a249e3f58730e07fa338c056d5.png" alt="f(x, \vec{\beta})"/> depends linearly on its parameters
-<img class="math" src="../_images/math/f2290e78b38053c14816a9df98eb725d20a4684c.png" alt="\vec{\beta}"/> (but not necessarily linearly on a dependent variable &#8211;
+<img class="math" src="../_images/math/f2290e78b38053c14816a9df98eb725d20a4684c.png" alt="\vec{\beta}"/> (but not necessarily linearly on a dependent variable --
 a quadratic function <img class="math" src="../_images/math/bd5917141d61f135b7494d35cc74f9b94cd1bae7.png" alt="\beta_0 + \beta_1 x + \beta_2 x^2"/> is linear in
 this sense).  Of course, model function need not be linear in its
-parameters, and the minimization is generally referred to a &#8216;&#8217;non-linear
-least-squares optimization&#8217;&#8217; in the literature.  All the discussion here
+parameters, and the minimization is generally referred to a ''non-linear
+least-squares optimization'' in the literature.  All the discussion here
 will assume that the models can be non-linear.</p>
 <p>It is convenient to define the <strong>residual array</strong> <img class="math" src="../_images/math/b55ca7a0aa88ab7d58f4fc035317fdac39b17861.png" alt="r"/> with <img class="math" src="../_images/math/fc97ef67268cd4e91bacdf12b8901d7036c9a056.png" alt="N"/>
 elements:</p>
@@ -176,7 +178,7 @@ Specifically, the first argument to the function <strong>must</strong> be a Larc
 containing all the Parameters in the model.  Furthermore, the return value
 of the objective function must be the fit residual array to be minimized in
 the least-squares sense.</p>
-<p>We&#8217;ll jump in with a simple example fit to a line, with this script:</p>
+<p>We'll jump in with a simple example fit to a line, with this script:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># create mock data for a line</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">51</span><span class="p">))</span>
 <span class="n">dat</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">+</span> <span class="mf">2.5</span> <span class="o">*</span> <span class="n">dat</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="mi">51</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
@@ -223,10 +225,10 @@ of data.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="parameters.html" title="Parameters"
+          <a href="parameters.html" title="6.2. Parameters"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="Fitting and Modeling Data"
+          <a href="index.html" title="6. Fitting and Modeling Data"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -238,12 +240,12 @@ of data.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

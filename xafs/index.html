@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS Analysis &mdash; larch 0.9.21 documentation</title>
+    <title>7. XAFS Analysis &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +26,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="next" title="XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
-    <link rel="prev" title="Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="next" title="7.1. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
+    <link rel="prev" title="6.8. Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -48,10 +50,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="preedge.html" title="XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="7.1. XAFS: Pre-edge Subtraction and Normalization"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../fitting/confidence.html" title="Advanced Confidence Intervals and Chi-square maps"
+          <a href="../fitting/confidence.html" title="6.8. Advanced Confidence Intervals and Chi-square maps"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -70,10 +72,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="../fitting/confidence.html"
-                        title="previous chapter">Advanced Confidence Intervals and Chi-square maps</a></p>
+                        title="previous chapter">6.8. Advanced Confidence Intervals and Chi-square maps</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="preedge.html"
-                        title="next chapter">XAFS: Pre-edge Subtraction and Normalization</a></p>
+                        title="next chapter">7.1. XAFS: Pre-edge Subtraction and Normalization</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/index.txt"
@@ -101,17 +103,18 @@
           <div class="body">
             
   <div class="section" id="xafs-analysis">
-<span id="xafs-chapter"></span><h1>XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-chapter"></span><h1>7. XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
-was originally conceived to be version 2 of Ifeffit, replacing and
-expanding all the XAFS analysis capabilities of that package.</p>
-<p>As of this writing (April, 2013), this replacement is essentially complete,
-with all the main functionality of Ifeffit available in Larch.  There may
-still be a few minor features of Ifeffit that are not yet available.  There
-are some slight differences in implementation details, such that slightly
-different numerical results are obtained.  Importantly, some new features
-are already available with Larch that were not available with Ifeffit 1.2
-and some small errors in Ifeffit 1.2 have been fixed.</p>
+was originally conceived to be version 2 of Ifeffit (<span class="citation"><a class="reference internal" href="../biblio.html#citation-ifeffit">Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-ifeffit">8</a><span>]</span></span>),
+replacing and expanding all the XAFS analysis capabilities of that package.</p>
+<p>This replacement is essentially complete, with all the main functionality
+of Ifeffit available in Larch.  There may still be a few minor features of
+Ifeffit that are not yet available, and some features to port from Athena
+(<span class="citation"><a class="reference internal" href="../biblio.html#citation-athena">Ravel and Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-athena">11</a><span>]</span></span>) back to the core library.   There are some slight
+differences in implementation details, such that slightly different
+numerical results are obtained.  Importantly, some new features are already
+available with Larch that were not available with Ifeffit 1.2 and some
+small errors in Ifeffit 1.2 have been fixed.</p>
 <p>XAFS Analysis can generally be broken into a few separate steps:</p>
 <blockquote>
 <div><ol class="arabic simple">
@@ -148,55 +151,55 @@ For anything more complicated than a basic script, explicitly specifying
 listed below.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="preedge.html">XAFS: Pre-edge Subtraction and Normalization</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="preedge.html#example">Example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="preedge.html">7.1. XAFS: Pre-edge Subtraction and Normalization</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="preedge.html#example">7.1.1. Example</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="autobk.html">XAFS: Post-edge Background Subtraction</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-function">The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-algorithm">The AUTOBK Algorithm</a></li>
-<li class="toctree-l2"><a class="reference internal" href="autobk.html#examples">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autobk.html">7.2. XAFS: Post-edge Background Subtraction</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-function">7.2.1. The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autobk.html#the-autobk-algorithm">7.2.2. The AUTOBK Algorithm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="autobk.html#examples">7.2.3. Examples</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="utilities.html">XAFS: Utility functions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#the-ktoe-and-etok-functions">The <tt class="docutils literal"><span class="pre">ktoe()</span></tt> and <tt class="docutils literal"><span class="pre">etok()</span></tt> functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utilities.html#the-estimate-noise-function">The <tt class="docutils literal"><span class="pre">estimate_noise()</span></tt> function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">7.3. XAFS: Utility functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#the-ktoe-and-etok-functions">7.3.1. The <tt class="docutils literal"><span class="pre">ktoe()</span></tt> and <tt class="docutils literal"><span class="pre">etok()</span></tt> functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utilities.html#the-estimate-noise-function">7.3.2. The <tt class="docutils literal"><span class="pre">estimate_noise()</span></tt> function</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="xafsft.html">XAFS: Fourier Transforms for XAFS</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">Overview of XAFS Fourier transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows"><tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#catalog-of-fourier-transform-window">Catalog of Fourier transform window</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-forward-xafs-fourier-transforms">Examples: Forward XAFS Fourier transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-reverse-xafs-fourier-transforms-fourier-filtering">Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xafsft.html">7.4. XAFS: Fourier Transforms for XAFS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">7.4.1. Overview of XAFS Fourier transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows">7.4.4. <tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#catalog-of-fourier-transform-window">7.4.5. Catalog of Fourier transform window</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-forward-xafs-fourier-transforms">7.4.6. Examples: Forward XAFS Fourier transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-reverse-xafs-fourier-transforms-fourier-filtering">7.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="feffpaths.html">XAFS: Reading and using Feff Paths</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups"><tt class="docutils literal"><span class="pre">feffpath()</span></tt> and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath"><tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a FeffPath</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">The _feffdat Group: Full Details of the Feff.Dat File</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">The EXAFS Equation using Feff and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating">Models for Calculating <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">Example:  Reading a FEFF file</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-adding-feff-files">Example:  Adding FEFF files</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-using-path-parameters-when-adding-feff-files">Example: Using Path Parameters when adding FEFF files</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feffpaths.html">7.5. XAFS: Reading and using Feff Paths</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups">7.5.1. <tt class="docutils literal"><span class="pre">feffpath()</span></tt> and FeffPath Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath">7.5.2. <tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a FeffPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">7.5.3. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">7.5.4. The EXAFS Equation using Feff and FeffPath Groups</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating">7.5.5. Models for Calculating <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">7.5.6. Example:  Reading a FEFF file</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-adding-feff-files">7.5.7. Example:  Adding FEFF files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-using-path-parameters-when-adding-feff-files">7.5.8. Example: Using Path Parameters when adding FEFF files</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="feffit.html">XAFS: Fitting XAFS to Feff Paths</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-strategy-for-modeling-exafs-data">The Feffit Strategy for Modeling EXAFS Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#fit-statistics-and-goodness-of-fit-meassures-for-feffit">Fit statistics and goodness-of-fit meassures for <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-functions-in-larch">The Feffit functions in Larch</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-transform"><tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-dataset"><tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit"><tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-report"><tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-1-simple-fit-with-1-path">Example 1: Simple fit with 1 Path</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-2-fit-1-dataset-with-3-paths">Example 2: Fit 1 dataset with 3 Paths</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-3-fit-3-datasets-with-1-path-each">Example 3: Fit 3 datasets with 1 Path each</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-4-measuring-coordination-number">Example 4: Measuring Coordination number</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-5-comparing-fits-in-different-fit-spaces">Example 5: Comparing Fits in different Fit Spaces</a></li>
+<li class="toctree-l1"><a class="reference internal" href="feffit.html">7.6. XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-strategy-for-modeling-exafs-data">7.6.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#fit-statistics-and-goodness-of-fit-meassures-for-feffit">7.6.2. Fit statistics and goodness-of-fit meassures for <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#the-feffit-functions-in-larch">7.6.3. The Feffit functions in Larch</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-transform">7.6.4. <tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-dataset">7.6.5. <tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit">7.6.6. <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#feffit-report">7.6.7. <tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-1-simple-fit-with-1-path">7.6.8. Example 1: Simple fit with 1 Path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-2-fit-1-dataset-with-3-paths">7.6.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-3-fit-3-datasets-with-1-path-each">7.6.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-4-measuring-coordination-number">7.6.11. Example 4: Measuring Coordination number</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-5-comparing-fits-in-different-fit-spaces">7.6.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
 </ul>
 </li>
 </ul>
@@ -216,10 +219,10 @@ listed below.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="preedge.html" title="XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="7.1. XAFS: Pre-edge Subtraction and Normalization"
              >next</a> |</li>
         <li class="right" >
-          <a href="../fitting/confidence.html" title="Advanced Confidence Intervals and Chi-square maps"
+          <a href="../fitting/confidence.html" title="6.8. Advanced Confidence Intervals and Chi-square maps"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -235,7 +238,7 @@ listed below.</p>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

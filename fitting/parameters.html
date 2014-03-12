@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Parameters &mdash; larch 0.9.21 documentation</title>
+    <title>6.2. Parameters &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="Fitting and Modeling Data" href="index.html" />
-    <link rel="next" title="minimize() and Objective Functions" href="minimize.html" />
-    <link rel="prev" title="Fitting Overview" href="overview.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="6.3. minimize() and Objective Functions" href="minimize.html" />
+    <link rel="prev" title="6.1. Fitting Overview" href="overview.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="minimize.html" title="minimize() and Objective Functions"
+          <a href="minimize.html" title="6.3. minimize() and Objective Functions"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="overview.html" title="Fitting Overview"
+          <a href="overview.html" title="6.1. Fitting Overview"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,20 +74,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Parameters</a><ul>
-<li><a class="reference internal" href="#setting-bounds">setting bounds</a></li>
-<li><a class="reference internal" href="#algebraic-constraints">algebraic constraints</a></li>
-<li><a class="reference internal" href="#working-with-uncertainties">working with uncertainties</a></li>
+<li><a class="reference internal" href="#">6.2. Parameters</a><ul>
+<li><a class="reference internal" href="#setting-bounds">6.2.1. setting bounds</a></li>
+<li><a class="reference internal" href="#algebraic-constraints">6.2.2. algebraic constraints</a></li>
+<li><a class="reference internal" href="#working-with-uncertainties">6.2.3. working with uncertainties</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="overview.html"
-                        title="previous chapter">Fitting Overview</a></p>
+                        title="previous chapter">6.1. Fitting Overview</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="minimize.html"
-                        title="next chapter"><tt class="docutils literal docutils literal docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions</a></p>
+                        title="next chapter">6.3. <tt class="docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/parameters.txt"
@@ -113,20 +115,20 @@
           <div class="body">
             
   <div class="section" id="module-_math">
-<span id="parameters"></span><span id="fitting-parameters-sec"></span><h1>Parameters<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
+<span id="parameters"></span><span id="fitting-parameters-sec"></span><h1>6.2. Parameters<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
 <p>The parameters used in the fitting model are all meant to be continuous
-variables &#8211; floating point numbers.  In general, the fitting procedure may
+variables -- floating point numbers.  In general, the fitting procedure may
 assign any value to any parameter.  In many cases, however, you may want to
 place some restrictions on the value a parameter can take.  For example, if
-you&#8217;re fitting data to a line, you may want to ensure that the slope of the
+you're fitting data to a line, you may want to ensure that the slope of the
 line is positive.  For more complex cases, you might want to write a a
 general model describing the data, but keep some of the parameters in the
 model fixed.</p>
 <p>In Larch, a <strong>Parameter</strong> is a fundamental data type designed to hold
 variables for fits that can be restricted in the values it can take.  A
 Parameter has several attributes, the most important of which is a
-<tt class="docutils literal"><span class="pre">value</span></tt> &#8211; the current value.  A Parameter&#8217;s value can be changed of
-course &#8211; this is what will happen during a fit &#8211; but other attributes can
+<tt class="docutils literal"><span class="pre">value</span></tt> -- the current value.  A Parameter's value can be changed of
+course -- this is what will happen during a fit -- but other attributes can
 be set to help determine its value too.  In most cases, a Parameter can be
 used as a floating point number, and its value attribute will be used.
 Thus:</p>
@@ -150,11 +152,11 @@ expression to use to evaluate its value as a <strong>constrained Parameter</stro
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>value</strong> &#8211; floating point value.  This value may be adjusted during a fit.</li>
-<li><strong>vary</strong> &#8211; flag telling whether Parameter is to be varied during a  fit (<tt class="docutils literal"><span class="pre">True</span></tt>, <tt class="docutils literal"><span class="pre">False</span></tt>) [<tt class="docutils literal"><span class="pre">False</span></tt>]</li>
-<li><strong>min</strong> &#8211; minimum value the Parameter can take.</li>
-<li><strong>max</strong> &#8211; maximum value the Parameter can take.</li>
-<li><strong>expr</strong> &#8211; algebraic expression for a constrained Parameter.  See <a class="reference internal" href="#param-constraints-label"><em>algebraic constraints</em></a>  for details.</li>
+<li><strong>value</strong> -- floating point value.  This value may be adjusted during a fit.</li>
+<li><strong>vary</strong> -- flag telling whether Parameter is to be varied during a  fit (<tt class="docutils literal"><span class="pre">True</span></tt>, <tt class="docutils literal"><span class="pre">False</span></tt>) [<tt class="docutils literal"><span class="pre">False</span></tt>]</li>
+<li><strong>min</strong> -- minimum value the Parameter can take.</li>
+<li><strong>max</strong> -- maximum value the Parameter can take.</li>
+<li><strong>expr</strong> -- algebraic expression for a constrained Parameter.  See <a class="reference internal" href="#param-constraints-label">6.2.2</a>  for details.</li>
 </ul>
 </td>
 </tr>
@@ -258,12 +260,12 @@ The arguments here are identical to <a class="reference internal" href="#_math.p
 </pre></div>
 </div>
 <div class="section" id="setting-bounds">
-<h2>setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h2>
+<h2>6.2.1. setting bounds<a class="headerlink" href="#setting-bounds" title="Permalink to this headline">¶</a></h2>
 <p>Upper and lower bounds can be set on a Parameters value using the <em>min</em> and
 <em>max</em> arguments to <a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> or by setting the <em>min</em> and <em>max</em>
 attribute of an existing Parameter.  To remove a bound, set the
 corresponding attribute to <tt class="docutils literal"><span class="pre">None</span></tt>.</p>
-<p>During a fit, a Parameter&#8217;s value may approach or even equal one of the
+<p>During a fit, a Parameter's value may approach or even equal one of the
 bounds, but will never violate the boundary.  It should be kept in mind that a
 Parameter with a best-fit value at or very close to a boundary may not have
 an accurate estimate of its uncertainty.  In some cases, it may even be
@@ -271,7 +273,7 @@ that a best-fit value at a boundary will prevent a reasonable estimate of
 the uncertainty in any of the other Parameters in the fit.</p>
 </div>
 <div class="section" id="algebraic-constraints">
-<span id="param-constraints-label"></span><h2>algebraic constraints<a class="headerlink" href="#algebraic-constraints" title="Permalink to this headline">¶</a></h2>
+<span id="param-constraints-label"></span><h2>6.2.2. algebraic constraints<a class="headerlink" href="#algebraic-constraints" title="Permalink to this headline">¶</a></h2>
 <p>It is often useful to be able to build a fitting model in which Parameters
 in the model are related to one another.  As a simple example, it might be
 useful to fit a spectrum with a sum of two lineshapes that have different
@@ -283,7 +285,7 @@ a model function that implemented such constraints.</p>
 a more general approach, allowing Parameters to get their value from an
 algebraic expression.  Thus, one might define an objective function for a
 sum of two Gaussian functions (discussed in more detail in
-<a class="reference internal" href="lineshapes.html#lineshape-functions-label"><em>Some Builtin Line-shape Functions</em></a>), as:</p>
+<a class="reference internal" href="lineshapes.html#lineshape-functions-label">6.5</a>), as:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">fit_2gauss</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
     <span class="n">model</span> <span class="o">=</span> <span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span> <span class="o">+</span> \
             <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">gaussian</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">params</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
@@ -301,19 +303,19 @@ value with:</p>
 </pre></div>
 </div>
 <p>and the value of <cite>params.wid2</cite> will have the same value as <cite>params.wid1</cite>
-every time the objective is called, but won&#8217;t be an independent variable in
+every time the objective is called, but won't be an independent variable in
 the fit.  As a second  example, one could constrain the two amplitude
 parameters to add to 1 and each be between 0 and 1 as:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">params</span><span class="o">.</span><span class="n">amp1</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">params</span><span class="o">.</span><span class="n">amp2</span> <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="n">expr</span><span class="o">=</span><span class="s">&#39;1 - amp1&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>of course, one can use more complex expressions &#8211; any valid Larch
+<p>of course, one can use more complex expressions -- any valid Larch
 expression is allowed.</p>
 <p class="rubric" id="fitting-namespace-sec"><span id="index-0"></span>Namespaces for algebraic expressions</p>
-<p>It&#8217;s worth asking what variables and functions are available for writing
-algebraic constraints.  The discussion on <a class="reference internal" href="../tutorial/procedures.html#tut-namespaces-label"><em>Namespace and &#8220;Scope&#8221; inside a Procedure</em></a>
-gives a partial explanation, but we&#8217;ll be a bit more explicit here.
+<p>It's worth asking what variables and functions are available for writing
+algebraic constraints.  The discussion on <a class="reference internal" href="../tutorial/procedures.html#tut-namespaces-label">3.6.2</a>
+gives a partial explanation, but we'll be a bit more explicit here.
 During a fit, the <em>paramgroup</em> given to <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a> will be assigned
 to <cite>_sys.paramGroup</cite> and will be the first place variables are looked for.
 The variables defined inside the objective function will be in
@@ -328,7 +330,7 @@ passed in via the argument list.</p>
 <p>3. All the normal functions and variable names available in Larch,
 including all the mathematical functions.</p>
 <p>As we said, <cite>_sys.paramGroup</cite> is set during a fit, by <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a>.  It
-is left set at the end of the fit &#8211; it is not cleared or reset.  However,
+is left set at the end of the fit -- it is not cleared or reset.  However,
 note that <cite>_sys.paramGroup</cite> may be unset or set to the wrong group (say,
 from a previous fit) when setting up a new fit (before you call
 <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt></a>).  Of course, you can explicitly assign a group to
@@ -337,15 +339,15 @@ sensibly call the objective function yourself, prior to doing a
 minimization.</p>
 </div>
 <div class="section" id="working-with-uncertainties">
-<h2>working with uncertainties<a class="headerlink" href="#working-with-uncertainties" title="Permalink to this headline">¶</a></h2>
+<h2>6.2.3. working with uncertainties<a class="headerlink" href="#working-with-uncertainties" title="Permalink to this headline">¶</a></h2>
 <p>After a fit, each Parameter that was actually varied in the fit should be
 assigned information about the uncertainty in the fitted value as well as
 its best fit value.  On rare occasions (such as when a best-fit value is
 very close to a bound) the setting of uncertainties is not possible.  The
 primary way the uncertainty for a Parameter is expressed is with the
 <tt class="docutils literal"><span class="pre">stderr</span></tt> attribute, which holds the estimated standard error for the
-Parameter&#8217;s value.  The correlation with all other Parameters is held in
-the <tt class="docutils literal"><span class="pre">correl</span></tt> attribute &#8211; a dictionary with keys of variable names and
+Parameter's value.  The correlation with all other Parameters is held in
+the <tt class="docutils literal"><span class="pre">correl</span></tt> attribute -- a dictionary with keys of variable names and
 values of correlation with that variable.  In addition, the two-dimensional
 covariance matrix will be held in the <tt class="docutils literal"><span class="pre">covar</span></tt> attribute of the parameter
 group for each fit.</p>
@@ -374,10 +376,10 @@ propagating errors.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="minimize.html" title="minimize() and Objective Functions"
+          <a href="minimize.html" title="6.3. minimize() and Objective Functions"
              >next</a> |</li>
         <li class="right" >
-          <a href="overview.html" title="Fitting Overview"
+          <a href="overview.html" title="6.1. Fitting Overview"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -389,12 +391,12 @@ propagating errors.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

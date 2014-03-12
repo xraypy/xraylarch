@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>minimize() and Objective Functions &mdash; larch 0.9.21 documentation</title>
+    <title>6.3. minimize() and Objective Functions &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="Fitting and Modeling Data" href="index.html" />
-    <link rel="next" title="Fit Results and Outputs" href="results.html" />
-    <link rel="prev" title="Parameters" href="parameters.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="6.4. Fit Results and Outputs" href="results.html" />
+    <link rel="prev" title="6.2. Parameters" href="parameters.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="results.html" title="Fit Results and Outputs"
+          <a href="results.html" title="6.4. Fit Results and Outputs"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="parameters.html" title="Parameters"
+          <a href="parameters.html" title="6.2. Parameters"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,10 +74,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="parameters.html"
-                        title="previous chapter">Parameters</a></p>
+                        title="previous chapter">6.2. Parameters</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="results.html"
-                        title="next chapter">Fit Results and Outputs</a></p>
+                        title="next chapter">6.4. Fit Results and Outputs</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/minimize.txt"
@@ -103,18 +105,18 @@
           <div class="body">
             
   <div class="section" id="module-_math">
-<span id="minimize-and-objective-functions"></span><span id="fitting-minimize-sec"></span><h1><tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
+<span id="minimize-and-objective-functions"></span><span id="fitting-minimize-sec"></span><h1>6.3. <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions<a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
 <p>As mentioned above, the objective function returns an array calculated from
 given a group of parameters.  This array will be minimized in the
 least-squares sense in the fitting process.  For most fits, the objective
 function should return the residual array (data - model), given a group of
-parameters and optional inputs.  You&#8217;ll note that we didn&#8217;t explicitly
+parameters and optional inputs.  You'll note that we didn't explicitly
 mention any <em>data</em> in describing the objective function.  This is because,
 formally, the minimization process may be looking for a solution to a
 purely mathematical problem, not just fitting to data.  Even when the
 objective function does return the difference of data and model, the data
 to be modeled may be quite complex.  It might, for example, be contained in
-two or more arrays &#8211; perhaps what you want to model is the difference of
+two or more arrays -- perhaps what you want to model is the difference of
 two image arrays, or the fourier filtered average of ten spectra.  Because
 of such complexities, the reliance of optional arguments appears to be the
 best approach.</p>
@@ -155,19 +157,19 @@ output array from the objective function <tt class="xref py py-func docutils lit
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>fcn</strong> &#8211; objective function, which must have signature and output as described below.</li>
-<li><strong>paramgroup</strong> &#8211; a Group containing the Parameters used by the
+<li><strong>fcn</strong> -- objective function, which must have signature and output as described below.</li>
+<li><strong>paramgroup</strong> -- a Group containing the Parameters used by the
 objective function. This will be passed as the first argument to the
 objective function.  The Group can contain other components in
 addition to the set of Parameters for the model.</li>
-<li><strong>args</strong> &#8211; a tuple of positional arguments to pass to the
+<li><strong>args</strong> -- a tuple of positional arguments to pass to the
 objective function.  Note that a single argument tuple
 is constructed by following a value with a comma (it
 is not sufficient to enclose a single value in
 parentheses)</li>
-<li><strong>kws</strong> &#8211; a dictionary of keyword/value arguments to pass to the objective function.</li>
-<li><strong>method</strong> &#8211; name (case insensitive) of minimization method to use (default=&#8217;leastsq&#8217;)</li>
-<li><strong>extra_kws</strong> &#8211; additional keywords to pass to fitting method.</li>
+<li><strong>kws</strong> -- a dictionary of keyword/value arguments to pass to the objective function.</li>
+<li><strong>method</strong> -- name (case insensitive) of minimization method to use (default='leastsq')</li>
+<li><strong>extra_kws</strong> -- additional keywords to pass to fitting method.</li>
 </ul>
 </td>
 </tr>
@@ -208,7 +210,7 @@ calculated.</p>
 <td>Nelder-Mead downhill simplex.</td>
 </tr>
 <tr class="row-even"><td>Powell</td>
-<td>Powell&#8217;s method.</td>
+<td>Powell's method.</td>
 </tr>
 <tr class="row-odd"><td>BFGS</td>
 <td>quasi-Newton method of Broyden, Fletcher, Goldfarb, and Shanno.</td>
@@ -239,7 +241,7 @@ the fastest of the methods listed (often by 10x), and is generally fairly
 robust.  It is sometimes criticized as being sensitive to initial guesses
 and prone to finding local minima.  The other fitting methods use very
 different algorithms, and so can be used to explore these effects. Many of
-them are much slower &#8211; using more than ten times as many evaluations of
+them are much slower -- using more than ten times as many evaluations of
 the objective function is not unusual. This does not guarantee a more
 robust answer, but it does allow one to try out and compare the results of
 the different methods.</p>
@@ -301,10 +303,10 @@ used.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="results.html" title="Fit Results and Outputs"
+          <a href="results.html" title="6.4. Fit Results and Outputs"
              >next</a> |</li>
         <li class="right" >
-          <a href="parameters.html" title="Parameters"
+          <a href="parameters.html" title="6.2. Parameters"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -316,12 +318,12 @@ used.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

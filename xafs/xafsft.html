@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS: Fourier Transforms for XAFS &mdash; larch 0.9.21 documentation</title>
+    <title>7.4. XAFS: Fourier Transforms for XAFS &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="XAFS Analysis" href="index.html" />
-    <link rel="next" title="XAFS: Reading and using Feff Paths" href="feffpaths.html" />
-    <link rel="prev" title="XAFS: Utility functions" href="utilities.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="7. XAFS Analysis" href="index.html" />
+    <link rel="next" title="7.5. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
+    <link rel="prev" title="7.3. XAFS: Utility functions" href="utilities.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="feffpaths.html" title="XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="7.5. XAFS: Reading and using Feff Paths"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="utilities.html" title="XAFS: Utility functions"
+          <a href="utilities.html" title="7.3. XAFS: Utility functions"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,24 +74,24 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">XAFS: Fourier Transforms for XAFS</a><ul>
-<li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">Overview of XAFS Fourier transforms</a></li>
-<li><a class="reference internal" href="#forward-xafs-fourier-transforms">Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
-<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
-<li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows"><tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
-<li><a class="reference internal" href="#catalog-of-fourier-transform-window">Catalog of Fourier transform window</a></li>
-<li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">Examples: Forward XAFS Fourier transforms</a></li>
-<li><a class="reference internal" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering">Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
+<li><a class="reference internal" href="#">7.4. XAFS: Fourier Transforms for XAFS</a><ul>
+<li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">7.4.1. Overview of XAFS Fourier transforms</a></li>
+<li><a class="reference internal" href="#forward-xafs-fourier-transforms">7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
+<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
+<li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">7.4.4. <tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
+<li><a class="reference internal" href="#catalog-of-fourier-transform-window">7.4.5. Catalog of Fourier transform window</a></li>
+<li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">7.4.6. Examples: Forward XAFS Fourier transforms</a></li>
+<li><a class="reference internal" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering">7.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="utilities.html"
-                        title="previous chapter">XAFS: Utility functions</a></p>
+                        title="previous chapter">7.3. XAFS: Utility functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="feffpaths.html"
-                        title="next chapter">XAFS: Reading and using Feff Paths</a></p>
+                        title="next chapter">7.5. XAFS: Reading and using Feff Paths</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/xafsft.txt"
@@ -117,7 +119,7 @@
           <div class="body">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-fourier-transforms-for-xafs"></span><span id="xafs-ft-sec"></span><h1>XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-fourier-transforms-for-xafs"></span><span id="xafs-ft-sec"></span><h1>7.4. XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>Fourier transforms are central to understanding and using
 XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
 transforms as part of their processing, and many of the functions
@@ -126,7 +128,7 @@ throughout the XAFS functionality of Larch.  For example, both
 <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> and <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> rely on XAFS Fourier transforms, and use
 the XAFS Fourier transform function described here.</p>
 <div class="section" id="overview-of-xafs-fourier-transforms">
-<h2>Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<h2>7.4.1. Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>The standard Fourier transform of a signal <img class="math" src="../_images/math/1411b4cdb90fcfd2f55c9c77320893b4b4d6d911.png" alt="f(t)"/> can be written as</p>
 <div class="math">
 <p><img src="../_images/math/1cfed1a7439bb0126593f6fc3852b91ad3b4a7ff.png" alt="\begin{eqnarray*}
@@ -165,7 +167,7 @@ is <img class="math" src="../_images/math/e013ddc448485ecd4281810511cd2a986b0685
 <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> used in the Fourier transform should be a power of 2. The
 default used in Larch is <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> = 2048.   Together, these
 allow <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> data to 102.4 <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/>.  Of course, real
-data doesn&#8217;t extend that far, so the array to be transformed is
+data doesn't extend that far, so the array to be transformed is
 <em>zero-padded</em> to the end of the range.  Since the spacing <img class="math" src="../_images/math/54a4250f367ce0b8542a9368e68ef0d4a575db8c.png" alt="\delta R"/>
 of the resulting discrete <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> is given as
 <img class="math" src="../_images/math/6aaa36141c92d3e6925d150ed77e7f22599b017e.png" alt="\pi/{(N_{\rm fft} \delta k )}"/>, the extended range and zero-padding
@@ -199,14 +201,14 @@ XAFS is written as the imaginary part of a complex function.  This might
 lead one to assume that constructing <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/> as <img class="math" src="../_images/math/f06449aa2e275ef24092dc27b917a9699a774d69.png" alt="0 +
 i\chi(k)"/> would be the natural choice.  For historical reasons, Larch uses
 the opposite convention, constructing <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/> as
-<img class="math" src="../_images/math/e2e79cd3f834c12d0f4b981ab5d9ad42dc051cd9.png" alt="\chi(k) + 0i"/>.   As we&#8217;ll see below, you can easily change this
+<img class="math" src="../_images/math/e2e79cd3f834c12d0f4b981ab5d9ad42dc051cd9.png" alt="\chi(k) + 0i"/>.   As we'll see below, you can easily change this
 convention.  The effect of this choice is minor unless one is
 concerned about the differences of the real and imaginary parts of
 <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> or one is intending to filter and back-transform the
 <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> and compare the filtered and unfiltered data.</p>
 </div>
 <div class="section" id="forward-xafs-fourier-transforms">
-<h2>Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<h2>7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>The forward Fourier transform converts <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>
 and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a> function.</p>
@@ -220,22 +222,22 @@ encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xaf
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>k</strong> &#8211; 1-d array of photo-electron wavenumber in <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/></li>
-<li><strong>chi</strong> &#8211; 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/></li>
-<li><strong>group</strong> &#8211; output Group</li>
-<li><strong>rmax_out</strong> &#8211; highest <em>R</em> for output data (10 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>)</li>
-<li><strong>kweight</strong> &#8211; exponent for weighting spectra by <img class="math" src="../_images/math/351cfe295a9c1727c0af7a2d3e2cb31984cd439b.png" alt="k^{\rm kweight}"/></li>
-<li><strong>kmin</strong> &#8211; starting <em>k</em> for FT Window</li>
-<li><strong>kmax</strong> &#8211; ending <em>k</em> for FT Window</li>
-<li><strong>dk</strong> &#8211; tapering parameter for FT Window</li>
-<li><strong>dk2</strong> &#8211; second tapering parameter for FT Window</li>
-<li><strong>window</strong> &#8211; name of window type</li>
-<li><strong>nfft</strong> &#8211; value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> &#8211; value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>k</strong> -- 1-d array of photo-electron wavenumber in <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/></li>
+<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/></li>
+<li><strong>group</strong> -- output Group</li>
+<li><strong>rmax_out</strong> -- highest <em>R</em> for output data (10 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>)</li>
+<li><strong>kweight</strong> -- exponent for weighting spectra by <img class="math" src="../_images/math/351cfe295a9c1727c0af7a2d3e2cb31984cd439b.png" alt="k^{\rm kweight}"/></li>
+<li><strong>kmin</strong> -- starting <em>k</em> for FT Window</li>
+<li><strong>kmax</strong> -- ending <em>k</em> for FT Window</li>
+<li><strong>dk</strong> -- tapering parameter for FT Window</li>
+<li><strong>dk2</strong> -- second tapering parameter for FT Window</li>
+<li><strong>window</strong> -- name of window type</li>
+<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">None</span></tt> &#8211; outputs are written to supplied group.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">None</span></tt> -- outputs are written to supplied group.</p>
 </td>
 </tr>
 </tbody>
@@ -297,9 +299,9 @@ the complex array of <img class="math" src="../_images/math/ed15c000bb99f0b4faba
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chi</strong> &#8211; 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> to be transformed</li>
-<li><strong>nfft</strong> &#8211; value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> &#8211; value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> to be transformed</li>
+<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
 </ul>
 </td>
 </tr>
@@ -312,7 +314,7 @@ the complex array of <img class="math" src="../_images/math/ed15c000bb99f0b4faba
 
 </div>
 <div class="section" id="reverse-xafs-fourier-transforms">
-<h2>Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<h2>7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>Reverse Fourier transforms convert <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> back to filtered
 <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  We refer to the filtered <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> space as <img class="math" src="../_images/math/0615acc3725de21025457e7d6f7694dab8e2f758.png" alt="q"/> to
 emphasize the distinction between the two.  The filtered <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/> is
@@ -328,22 +330,22 @@ the explicitly real <img class="math" src="../_images/math/bb12e6fe6361a7e793c32
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>r</strong> &#8211; 1-d array of distance.</li>
-<li><strong>chir</strong> &#8211; 1-d array of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/></li>
-<li><strong>group</strong> &#8211; output Group</li>
-<li><strong>qmax_out</strong> &#8211; highest <em>k</em> for output data (30 <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/>)</li>
-<li><strong>rweight</strong> &#8211; exponent for weighting spectra by <img class="math" src="../_images/math/7f7dde7e8077bca2262381d70233bdc21c0c05f7.png" alt="r^{\rm rweight}"/> (0)</li>
-<li><strong>rmin</strong> &#8211; starting <em>R</em> for FT Window</li>
-<li><strong>rmax</strong> &#8211; ending <em>R</em> for FT Window</li>
-<li><strong>dr</strong> &#8211; tapering parameter for FT Window</li>
-<li><strong>dr2</strong> &#8211; second tapering parameter for FT Window</li>
-<li><strong>window</strong> &#8211; name of window type</li>
-<li><strong>nfft</strong> &#8211; value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> &#8211; value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>r</strong> -- 1-d array of distance.</li>
+<li><strong>chir</strong> -- 1-d array of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/></li>
+<li><strong>group</strong> -- output Group</li>
+<li><strong>qmax_out</strong> -- highest <em>k</em> for output data (30 <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/>)</li>
+<li><strong>rweight</strong> -- exponent for weighting spectra by <img class="math" src="../_images/math/7f7dde7e8077bca2262381d70233bdc21c0c05f7.png" alt="r^{\rm rweight}"/> (0)</li>
+<li><strong>rmin</strong> -- starting <em>R</em> for FT Window</li>
+<li><strong>rmax</strong> -- ending <em>R</em> for FT Window</li>
+<li><strong>dr</strong> -- tapering parameter for FT Window</li>
+<li><strong>dr2</strong> -- second tapering parameter for FT Window</li>
+<li><strong>window</strong> -- name of window type</li>
+<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">None</span></tt> &#8211; outputs are written to supplied group.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">None</span></tt> -- outputs are written to supplied group.</p>
 </td>
 </tr>
 </tbody>
@@ -408,9 +410,9 @@ values into a group.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chir</strong> &#8211; 1-d array of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to be transformed</li>
-<li><strong>nfft</strong> &#8211; value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> &#8211; value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>chir</strong> -- 1-d array of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to be transformed</li>
+<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
 </ul>
 </td>
 </tr>
@@ -423,7 +425,7 @@ values into a group.</p>
 
 </div>
 <div class="section" id="ftwindow-generating-fourier-transform-windows">
-<h2><a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><tt class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></tt></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
+<h2>7.4.4. <a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><tt class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></tt></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
 <p>As mentioned above, a Fourier transform window will smooth the resulting
 Fourier transformed spectrum, removing ripple and ringing in it that would
 result from a sudden truncation data at the end of it range.  There is an
@@ -438,12 +440,12 @@ available for constructing windows.  A sampling of windows is shown below.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>x</strong> &#8211; 1-d array array to build window on.</li>
-<li><strong>xmin</strong> &#8211; starting <em>x</em> for FT Window</li>
-<li><strong>xmax</strong> &#8211; ending <em>x</em> for FT Window</li>
-<li><strong>dx</strong> &#8211; tapering parameter for FT Window</li>
-<li><strong>dx2</strong> &#8211; second tapering parameter for FT Window (=dx)</li>
-<li><strong>window</strong> &#8211; name of window type</li>
+<li><strong>x</strong> -- 1-d array array to build window on.</li>
+<li><strong>xmin</strong> -- starting <em>x</em> for FT Window</li>
+<li><strong>xmax</strong> -- ending <em>x</em> for FT Window</li>
+<li><strong>dx</strong> -- tapering parameter for FT Window</li>
+<li><strong>dx2</strong> -- second tapering parameter for FT Window (=dx)</li>
+<li><strong>window</strong> -- name of window type</li>
 </ul>
 </td>
 </tr>
@@ -523,48 +525,58 @@ The Kaiser-Bessel window is slightly more complicated:</p>
 </div><p>where <img class="math" src="../_images/math/1b5590d608ffe24233396eb2e4f8ca142ae42963.png" alt="i_0"/> is the modified Bessel function of order 0.</p>
 </div>
 <div class="section" id="catalog-of-fourier-transform-window">
-<h2>Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
+<h2>7.4.5. Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
 <p>Here, we give a series of example windows, to illustrate the different
 window types and the effect of the various parameters.  The meanings of
 <tt class="docutils literal"><span class="pre">xmin</span></tt>, <tt class="docutils literal"><span class="pre">xmax</span></tt>, <tt class="docutils literal"><span class="pre">dx</span></tt> and <tt class="docutils literal"><span class="pre">dx2</span></tt> are identical for the Hanning, Parzen and
 Welch windows, and illustrated in the two following figures.</p>
-<blockquote id="xafs-fig5">
-<div><a class="reference external image-reference" href="../_images/ftwin_example1.png"><img alt="../_images/ftwin_example1.png" src="../_images/ftwin_example1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/ftwin_example2.png"><img alt="../_images/ftwin_example2.png" src="../_images/ftwin_example2.png" style="width: 48%;" /></a>
-<p>Figure 5. Fourier Transform window examples and illustration of
-parameter meaning for the Hanning, Parzen, and Welch windows.  Note that
+<div class="figure compound align-center" id="fig-xafsft1">
+<div style="width: 45%" class="subfigure" id="fig-xafsft1a">
+<a class="reference external image-reference" href="../_images/ftwin_example1.png"><img alt="../_images/ftwin_example1.png" src="../_images/ftwin_example1.png" style="width: 100%;" /></a>
+</div>
+<div style="width: 45%" class="subfigure" id="fig-xafsft1b">
+<a class="reference external image-reference" href="../_images/ftwin_example2.png"><img alt="../_images/ftwin_example2.png" src="../_images/ftwin_example2.png" style="width: 100%;" /></a>
+</div>
+<p class="caption"><strong>Figure 7.5:</strong> Fourier Transform window examples and illustration of parameter meaning
+for the Hanning, Parzen, and Welch windows.  Note that
 <img class="math" src="../_images/math/2ae1ad42e768145863b64ec04691fd7ba83f3c31.png" alt="\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5"/>, and that
 the meaning of <tt class="docutils literal"><span class="pre">dx</span></tt> is to control the taper over which the window
 changes from 0 to 1.  Here, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</p>
-</div></blockquote>
-<blockquote id="xafs-fig6">
-<div><a class="reference external image-reference" href="../_images/ftwin_example3.png"><img alt="../_images/ftwin_example3.png" src="../_images/ftwin_example3.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/ftwin_example4.png"><img alt="../_images/ftwin_example4.png" src="../_images/ftwin_example4.png" style="width: 48%;" /></a>
-<p>Figure 6. Fourier Transform window examples and illustration of
-parameter meaning.  On the left, a comparison of Welch, Parzen, and
-Hanning with the same parameters is shown.  On the right, the effect of
-<tt class="docutils literal"><span class="pre">dx2</span></tt> is shown as a different amount of taper on the high- and
-low-<tt class="docutils literal"><span class="pre">x</span></tt> end of the window.  As before, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</p>
-</div></blockquote>
-<p>The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
+</div><p id="fig-xafsft1">Some more window functions:</p>
+<div class="figure compound align-center" id="fig-xafsft2">
+<div style="width: 45%" class="subfigure" id="fig-xafsft2a">
+<a class="reference external image-reference" href="../_images/ftwin_example3.png"><img alt="../_images/ftwin_example3.png" src="../_images/ftwin_example3.png" style="width: 100%;" /></a>
+</div>
+<div style="width: 45%" class="subfigure" id="fig-xafsft2b">
+<a class="reference external image-reference" href="../_images/ftwin_example4.png"><img alt="../_images/ftwin_example4.png" src="../_images/ftwin_example4.png" style="width: 100%;" /></a>
+</div>
+<p class="caption"><strong>Figure 7.6:</strong> Fourier Transform window examples and illustration of parameter
+meaning.  On the left, a comparison of Welch, Parzen, and Hanning with
+the same parameters is shown.  On the right, the effect of <tt class="docutils literal"><span class="pre">dx2</span></tt> is
+shown as a different amount of taper on the high- and low-<tt class="docutils literal"><span class="pre">x</span></tt> end of
+the window.  As before, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</p>
+</div><p id="fig-xafsft2">The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
 go to 1 at the average of <tt class="docutils literal"><span class="pre">xmin</span></tt> and <tt class="docutils literal"><span class="pre">xmax</span></tt>, but do not stay at 1 over
-a central portion of the window &#8211; they taper continuously.  The Gaussian
+a central portion of the window -- they taper continuously.  The Gaussian
 window is a simple Gaussian function, and is not truncated according to
 <tt class="docutils literal"><span class="pre">xmin</span></tt> and <tt class="docutils literal"><span class="pre">xmax</span></tt>, and the <tt class="docutils literal"><span class="pre">dx</span></tt> parameter sets the width.  The Sine
 and Kaiser-Bessel windows both go to zero at  <tt class="docutils literal"><span class="pre">xmin-dx/2</span></tt> and <tt class="docutils literal"><span class="pre">xmax</span> <span class="pre">+</span>
 <span class="pre">dx/2</span></tt>.  For very large values of <tt class="docutils literal"><span class="pre">dx</span></tt>, the Kaiser-Bessel window
 approaches a nearly Gaussian lineshape.</p>
-<blockquote id="xafs-fig7">
-<div><a class="reference external image-reference" href="../_images/ftwin_example5.png"><img alt="../_images/ftwin_example5.png" src="../_images/ftwin_example5.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/ftwin_example6.png"><img alt="../_images/ftwin_example6.png" src="../_images/ftwin_example6.png" style="width: 48%;" /></a>
-<p>Figure 7. Fourier Transform windows. On the left, a comparison of
-Kaiser-Bessel, Sine, and Gaussian windows with the same parameters is
-shown.  On the right, the effect of <tt class="docutils literal"><span class="pre">dx</span></tt> is shown for the Kaiser-Bessel
-window, and a closer comparison to a Gaussian window is made.</p>
-</div></blockquote>
+<div class="figure compound align-center" id="fig-xafsft3">
+<div style="width: 45%" class="subfigure" id="fig-xafsft3a">
+<a class="reference external image-reference" href="../_images/ftwin_example5.png"><img alt="../_images/ftwin_example5.png" src="../_images/ftwin_example5.png" style="width: 100%;" /></a>
 </div>
+<div style="width: 45%" class="subfigure" id="fig-xafsft3b">
+<a class="reference external image-reference" href="../_images/ftwin_example6.png"><img alt="../_images/ftwin_example6.png" src="../_images/ftwin_example6.png" style="width: 100%;" /></a>
+</div>
+<p class="caption"><strong>Figure 7.7:</strong> Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
+Sine, and Gaussian windows with the same parameters is shown.  On the
+right, the effect of <tt class="docutils literal"><span class="pre">dx</span></tt> is shown for the Kaiser-Bessel window, and
+a closer comparison to a Gaussian window is made.</p>
+</div></div>
 <div class="section" id="examples-forward-xafs-fourier-transforms">
-<h2>Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<span id="fig-xafsft3"></span><h2>7.4.6. Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>Now we show some example Fourier transforms, illustrating the real and
 imaginary parts of the <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> as well as the magnitude, the effect
 of different windows types, and Fourier filtering to <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.  We
@@ -582,14 +594,17 @@ A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs
 </pre></div>
 </div>
 <p>would result in the following results:</p>
-<blockquote id="xafs-fig8">
-<div><a class="reference external image-reference" href="../_images/xft_example1.png"><img alt="../_images/xft_example1.png" src="../_images/xft_example1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/xft_example2.png"><img alt="../_images/xft_example2.png" src="../_images/xft_example2.png" style="width: 48%;" /></a>
-<p>Figure 8.  Comparison of the effect of different values of <tt class="docutils literal"><span class="pre">dk</span></tt> on real
-XAFS Fourier transforms.  Increasing <tt class="docutils literal"><span class="pre">dk</span></tt> reduces peak heights and
-tends to broaden peaks, but the effects are rather small.</p>
-</div></blockquote>
-<p>A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a> with consistent parameters, but different
+<div class="figure compound align-center" id="fig-xafsft4">
+<div style="width: 45%" class="subfigure" id="fig-xafsft4a">
+<a class="reference external image-reference" href="../_images/xft_example1.png"><img alt="../_images/xft_example1.png" src="../_images/xft_example1.png" style="width: 100%;" /></a>
+</div>
+<div style="width: 45%" class="subfigure" id="fig-xafsft4b">
+<a class="reference external image-reference" href="../_images/xft_example2.png"><img alt="../_images/xft_example2.png" src="../_images/xft_example2.png" style="width: 100%;" /></a>
+</div>
+<p class="caption"><strong>Figure 7.8:</strong> Comparison of the effect of different values of <tt class="docutils literal"><span class="pre">dk</span></tt> on real XAFS
+Fourier transforms.  Increasing <tt class="docutils literal"><span class="pre">dk</span></tt> reduces peak heights and tends
+to broaden peaks, but the effects are rather small.</p>
+</div><p id="fig-xafsft4">A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a> with consistent parameters, but different
 window types:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
@@ -612,13 +627,16 @@ window types:</p>
 </pre></div>
 </div>
 <p>would result in the following results:</p>
-<blockquote id="xafs-fig9">
-<div><a class="reference external image-reference" href="../_images/xft_example3.png"><img alt="../_images/xft_example3.png" src="../_images/xft_example3.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/xft_example4.psng"><img alt="../_images/xft_example4.png" src="../_images/xft_example4.png" style="width: 48%;" /></a>
-<p>Figure 9.  Comparison of the effect of different window types
-on real XAFS Fourier transforms.</p>
-</div></blockquote>
-<p>We now turn our attention to the different components of the Fourier
+<div class="figure compound align-center" id="fig-xafsft_wins">
+<div style="width: 45%" class="subfigure" id="fig-xafsft-winsa">
+<a class="reference external image-reference" href="../_images/xft_example3.png"><img alt="../_images/xft_example3.png" src="../_images/xft_example3.png" style="width: 100%;" /></a>
+</div>
+<div style="width: 45%" class="subfigure" id="fig-xafsft-winsb">
+<a class="reference external image-reference" href="../_images/xft_example4.psng"><img alt="../_images/xft_example4.png" src="../_images/xft_example4.png" style="width: 100%;" /></a>
+</div>
+<p class="caption"><strong>Figure 7.9:</strong> Comparison of the effect of different window types on real XAFS Fourier
+transforms.</p>
+</div><p id="fig-xafsft_wins">We now turn our attention to the different components of the Fourier
 transform.  As above, it is most common to plot the magnitude of the
 Fourier transform.  But, as the transformed <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> is complex, it
 can be instructive to plot the real and imaginary components, as shown
@@ -632,30 +650,33 @@ below:</p>
 </pre></div>
 </div>
 <p>which results in</p>
-<div class="figure align-center" id="xafs-fig10" style="width: 100%">
+<div class="figure align-center" id="fig-xafsft-ri">
 <a class="reference external image-reference" href="../_images/xft_example5.png"><img alt="../_images/xft_example5.png" src="../_images/xft_example5.png" style="width: 65%;" /></a>
-<p class="caption">Figure 1: Figure 10. The real and imaginary components of the XAFS Fourier transform.</p>
+<p class="caption"><strong>Figure 7.10:</strong> The real and imaginary components of the XAFS Fourier transform.</p>
 </div>
 <p>In fact, in the analysis discussed with <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>, the real and
 imaginary components are used, not simply the magnitude.</p>
 </div>
 <div class="section" id="examples-reverse-xafs-fourier-transforms-fourier-filtering">
-<h2>Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this headline">¶</a></h2>
+<h2>7.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this headline">¶</a></h2>
 <p>A reverse Fourier transform will convert data from <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to
 <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.  This allows a limited range of frequencies (distances) to
 be isolated and turned back into a <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> spectrum.  Here, we show
 two different <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> windows to filter either just the first shell of
 the spectra, or the first two shells, and compare the resulting filtered
 <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.</p>
-<blockquote id="xafs-fig11">
-<div><a class="reference external image-reference" href="../_images/xft_example6.png"><img alt="../_images/xft_example6.png" src="../_images/xft_example6.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/xft_example7.png"><img alt="../_images/xft_example7.png" src="../_images/xft_example7.png" style="width: 48%;" /></a>
-<p>Figure 11.  Reverse XAFS Fourier transform, or Fourier filtering.  Here,
-one can see the effect of different window sizes on the Fourier filtered
-spectrum.  Including the first two peaks or shells reproduces most of the
-original spectrum, with only high-frequency components removed.</p>
-</div></blockquote>
-<p>Note that it is <tt class="docutils literal"><span class="pre">chiq_re</span></tt> that is compared to the k-weighted <tt class="docutils literal"><span class="pre">chi</span></tt>
+<div class="figure compound align-center" id="fig_xafsft_filter">
+<div style="width: 45%" class="subfigure" id="fig-xafsft-filtera">
+<a class="reference external image-reference" href="../_images/xft_example6.png"><img alt="../_images/xft_example6.png" src="../_images/xft_example6.png" style="width: 100%;" /></a>
+</div>
+<div style="width: 45%" class="subfigure" id="fig-xafsft-filterb">
+<a class="reference external image-reference" href="../_images/xft_example7.png"><img alt="../_images/xft_example7.png" src="../_images/xft_example7.png" style="width: 100%;" /></a>
+</div>
+<p class="caption"><strong>Figure 7.11:</strong> Reverse XAFS Fourier transform, or Fourier filtering.  Here, one can
+see the effect of different window sizes on the Fourier filtered
+spectrum.  Including the first two peaks or shells reproduces most of
+the original spectrum, with only high-frequency components removed.</p>
+</div><p id="fig_xafsft_filter">Note that it is <tt class="docutils literal"><span class="pre">chiq_re</span></tt> that is compared to the k-weighted <tt class="docutils literal"><span class="pre">chi</span></tt>
 array.</p>
 </div>
 </div>
@@ -673,10 +694,10 @@ array.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="feffpaths.html" title="XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="7.5. XAFS: Reading and using Feff Paths"
              >next</a> |</li>
         <li class="right" >
-          <a href="utilities.html" title="XAFS: Utility functions"
+          <a href="utilities.html" title="7.3. XAFS: Utility functions"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -688,12 +709,12 @@ array.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

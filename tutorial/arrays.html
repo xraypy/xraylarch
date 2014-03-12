@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Basic Array Manipulation &mdash; larch 0.9.21 documentation</title>
+    <title>3.3. Tutorial: Basic Array Manipulation &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="Larch Tutorial" href="index.html" />
-    <link rel="next" title="Tutorial: Conditional Execution and Flow Control" href="flow.html" />
-    <link rel="prev" title="Tutorial: Basic and Complex Data Types" href="datatypes.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="3. Larch Tutorial" href="index.html" />
+    <link rel="next" title="3.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="prev" title="3.2. Tutorial: Basic and Complex Data Types" href="datatypes.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="flow.html" title="Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="3.4. Tutorial: Conditional Execution and Flow Control"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="datatypes.html" title="Tutorial: Basic and Complex Data Types"
+          <a href="datatypes.html" title="3.2. Tutorial: Basic and Complex Data Types"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,23 +74,23 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Tutorial: Basic Array Manipulation</a><ul>
-<li><a class="reference internal" href="#functions-for-creating-arrays">Functions for creating arrays</a></li>
-<li><a class="reference internal" href="#the-array-dtype-datatype">The array <em>dtype</em> &#8211; datatype</a></li>
-<li><a class="reference internal" href="#basic-array-manipulation">Basic array manipulation</a></li>
-<li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">Slicing and extracting sub-arrays</a></li>
-<li><a class="reference internal" href="#array-attributes-and-methods">Array attributes and methods</a></li>
-<li><a class="reference internal" href="#mathematical-functions-for-arrays">Mathematical functions for arrays</a></li>
+<li><a class="reference internal" href="#">3.3. Tutorial: Basic Array Manipulation</a><ul>
+<li><a class="reference internal" href="#functions-for-creating-arrays">3.3.1. Functions for creating arrays</a></li>
+<li><a class="reference internal" href="#the-array-dtype-datatype">3.3.2. The array <em>dtype</em> -- datatype</a></li>
+<li><a class="reference internal" href="#basic-array-manipulation">3.3.3. Basic array manipulation</a></li>
+<li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">3.3.4. Slicing and extracting sub-arrays</a></li>
+<li><a class="reference internal" href="#array-attributes-and-methods">3.3.5. Array attributes and methods</a></li>
+<li><a class="reference internal" href="#mathematical-functions-for-arrays">3.3.6. Mathematical functions for arrays</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="datatypes.html"
-                        title="previous chapter">Tutorial: Basic and Complex Data Types</a></p>
+                        title="previous chapter">3.2. Tutorial: Basic and Complex Data Types</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="flow.html"
-                        title="next chapter">Tutorial: Conditional Execution and Flow Control</a></p>
+                        title="next chapter">3.4. Tutorial: Conditional Execution and Flow Control</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/arrays.txt"
@@ -116,9 +118,9 @@
           <div class="body">
             
   <div class="section" id="tutorial-basic-array-manipulation">
-<span id="tutor-array-sec"></span><h1>Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
+<span id="tutor-array-sec"></span><h1>3.3. Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
 <p>Arrays are sequences of numerical data, with each element having the same
-underlying data type &#8211; integers, real (floating point) numbers, or complex
+underlying data type -- integers, real (floating point) numbers, or complex
 numbers.  Of course, arrays are very important for scientific data, and the
 majority of data you will be manipulating with Larch will be in the form of
 arrays.  Larch depends on the <a class="reference external" href="http://numpy.scipy.org/">numpy</a> library for providing basic array
@@ -126,17 +128,17 @@ data types and the methods for fast manipulation of array data.  These
 arrays can be multi-dimensional, have their dimensionality change
 dynamically, an can be sliced (subsets of elements taken).  Many built-in
 functions will act on the whole array, generally element-by-element, in a
-highly efficient way, greatly reducing the need to &#8220;loop over&#8221; elements.</p>
+highly efficient way, greatly reducing the need to &quot;loop over&quot; elements.</p>
 <p>This section introduces the creation, basic manipulation, and key
 properties of arrays.  The discussion here is not exhaustive, but is
 intended to get you far enough along to be able to manipulate arrays
 sufficiently for most needs.  The <a class="reference external" href="http://docs.scipy.org/doc">numpy documentation</a> is quite extensive
 and well-written, and should be consulted for more details.</p>
 <div class="section" id="functions-for-creating-arrays">
-<h2>Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
+<h2>3.3.1. Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
 <p>There are a handful of builtin functions for creating arrays from scratch.
 These are listed in <a class="reference internal" href="#tutor-arraycreate-table"><em>Table of Array Creation Functions</em></a> In addition, when dealing with data stored in
-files, reading the files (see <a class="reference internal" href="../data/index.html#data-io-chapter"><em>Reading and Writing Data</em></a>) with Larch will create
+files, reading the files (see <a class="reference internal" href="../data/index.html#data-io-chapter">4</a>) with Larch will create
 arrys for you.  Like lists, arrays are <em>mutable</em>.  That is, elements of
 arrays can be changed without changing the rest of the array.</p>
 <blockquote id="tutor-arraycreate-table">
@@ -279,7 +281,7 @@ array([[-1. , -1. , -1. , -1. , -1. ],
 two-dimensional mesh or map of the input <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> values.</p>
 </div>
 <div class="section" id="the-array-dtype-datatype">
-<h2>The array <em>dtype</em> &#8211; datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
+<h2>3.3.2. The array <em>dtype</em> -- datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
 <p>Arrays are sequences of numbers stored in memory to make access to the
 elements of the arrays fast and memory use efficient.  As mentioned above,
 each array will use one of several storage conventions depending on what
@@ -349,7 +351,7 @@ functions using the <tt class="docutils literal"><span class="pre">dtype</span><
 </div></blockquote>
 </div>
 <div class="section" id="basic-array-manipulation">
-<h2>Basic array manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h2>
+<h2>3.3.3. Basic array manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h2>
 <p>Arrays can either be used as a single object, or individual or ranges of elements can be extracted
 from them.   Usually, mathematical operations and functions done to arrays are applied
 element-by-element.  For example:</p>
@@ -382,11 +384,11 @@ larch&gt; print (y-3*x)[2]
 <p>which leads us to the next section.</p>
 </div>
 <div class="section" id="slicing-and-extracting-sub-arrays">
-<h2>Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
+<h2>3.3.4. Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
 <p>An important aspect of arrays is that they can be treated as a single entity.  That is, <tt class="docutils literal"><span class="pre">sin(x)</span></tt>
 operates on each element of <tt class="docutils literal"><span class="pre">x</span></tt>.  But sometimes it is necessary to get a particular element from
 an array or work on only a selected part of an array.  To do these, one takes a sub-set of the array
-&#8211; a <strong>slice</strong>.  For extracting contiguous portions of 1-dimension arrays, this is pretty
+-- a <strong>slice</strong>.  For extracting contiguous portions of 1-dimension arrays, this is pretty
 straightforward, using the range of indices needed for the slice between square brackets <tt class="docutils literal"><span class="pre">[</span></tt> and
 <tt class="docutils literal"><span class="pre">]</span></tt>.  For example:</p>
 <div class="highlight-python"><pre>larch&gt; arr = linspace(0, 2, 21)
@@ -402,7 +404,7 @@ larch&gt; print arr[10:15]
 </div>
 <p>The general syntax for a slice is pretty complicated, but the simplest cases are straightforward.
 As with lists, <tt class="docutils literal"><span class="pre">arr[i]</span></tt> selects value at index <tt class="docutils literal"><span class="pre">i</span></tt> (counting from 0).  Similarly, <tt class="docutils literal"><span class="pre">arr[i:j]</span></tt>
-selects elements starting at <tt class="docutils literal"><span class="pre">i</span></tt> and ending at (but not including &#8211; see the example above)
+selects elements starting at <tt class="docutils literal"><span class="pre">i</span></tt> and ending at (but not including -- see the example above)
 <tt class="docutils literal"><span class="pre">j</span></tt>.  If <tt class="docutils literal"><span class="pre">i</span></tt> is omitted,
 it is taken as 0 (the first element), and if <tt class="docutils literal"><span class="pre">j</span></tt> is omitted, it defaults to the last element of
 the array.  In addition, if <tt class="docutils literal"><span class="pre">i</span></tt> and/or <tt class="docutils literal"><span class="pre">j</span></tt> are negative, they count from the end of the array:</p>
@@ -411,7 +413,7 @@ the array.  In addition, if <tt class="docutils literal"><span class="pre">i</sp
 larch&gt; print arr[-2:]
 [ 1.9  2.]</pre>
 </div>
-<p>A slice can take a third argument <tt class="docutils literal"><span class="pre">k</span></tt> &#8211; the stride &#8211; which allows selection of every <tt class="docutils literal"><span class="pre">k</span></tt>
+<p>A slice can take a third argument <tt class="docutils literal"><span class="pre">k</span></tt> -- the stride -- which allows selection of every <tt class="docutils literal"><span class="pre">k</span></tt>
 elements.  That is:</p>
 <div class="highlight-python"><pre>larch&gt; print arr[1:6:2]
 [ 0.1  0.3  0.5]
@@ -453,7 +455,7 @@ larch&gt; print x[1,:4]   # same
 of 0, for <tt class="docutils literal"><span class="pre">j</span></tt> of the length of the array, and for <tt class="docutils literal"><span class="pre">k</span></tt> of 1.</p>
 </div>
 <div class="section" id="array-attributes-and-methods">
-<h2>Array attributes and methods<a class="headerlink" href="#array-attributes-and-methods" title="Permalink to this headline">¶</a></h2>
+<h2>3.3.5. Array attributes and methods<a class="headerlink" href="#array-attributes-and-methods" title="Permalink to this headline">¶</a></h2>
 <p>Arrays have several useful attributes and methods.  As mentioned above, each array has a
 <tt class="xref py py-data docutils literal"><span class="pre">dtype</span></tt> attribute describing how its data is mapped in memory.  In addition, each
 has a <tt class="xref py py-data docutils literal"><span class="pre">size</span></tt> attribute giving the number of elements, a <tt class="xref py py-data docutils literal"><span class="pre">ndim</span></tt> giving the
@@ -593,7 +595,7 @@ attributes and methods marked <tt class="docutils literal"><span class="pre">rea
 <td>&nbsp;</td>
 </tr>
 <tr class="row-even"><td>flatten()</td>
-<td>array &#8220;flattened&#8221; to 1-dimension</td>
+<td>array &quot;flattened&quot; to 1-dimension</td>
 <td>&nbsp;</td>
 </tr>
 <tr class="row-odd"><td>tolist()</td>
@@ -609,7 +611,7 @@ attributes and methods marked <tt class="docutils literal"><span class="pre">rea
 </div></blockquote>
 </div>
 <div class="section" id="mathematical-functions-for-arrays">
-<h2>Mathematical functions for arrays<a class="headerlink" href="#mathematical-functions-for-arrays" title="Permalink to this headline">¶</a></h2>
+<h2>3.3.6. Mathematical functions for arrays<a class="headerlink" href="#mathematical-functions-for-arrays" title="Permalink to this headline">¶</a></h2>
 <p>Many of the basic mathemetical functions in larch automatically work on arrays
 element-by-element.  For example, <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> returns the square-root of a single
 value or for each element in an array:</p>
@@ -636,10 +638,10 @@ looping over elements of the array:</p>
 8 2.82842712475
 9 3.0</pre>
 </div>
-<p>There are a large number of general purpose mathematical functions available in larch &#8211;
+<p>There are a large number of general purpose mathematical functions available in larch --
 the <tt class="docutils literal"><span class="pre">_math</span></tt> group contains over 500 items on startup.  A partial list is given in the
 The <a class="reference internal" href="#tutor-arrayfuncs-table"><em>Table of Array-aware Mathematical functions</em></a> below.
-What&#8217;s more, many more are available by importing them from the scipy library.</p>
+What's more, many more are available by importing them from the scipy library.</p>
 <blockquote id="tutor-arrayfuncs-table">
 <span id="index-3"></span><div><blockquote>
 <div>Table of Array-aware Mathematical functions.  More info on each of these can be found with the
@@ -876,10 +878,10 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><tt
 <td>returns the given  percentile of array elements</td>
 </tr>
 <tr class="row-even"><td>ceil</td>
-<td>ceiling values (round &#8220;up&#8221;) of input</td>
+<td>ceiling values (round &quot;up&quot;) of input</td>
 </tr>
 <tr class="row-odd"><td>floor</td>
-<td>floor values (round &#8220;down&#8221;) of input</td>
+<td>floor values (round &quot;down&quot;) of input</td>
 </tr>
 <tr class="row-even"><td>round</td>
 <td>round values (away from 0) of input</td>
@@ -1065,10 +1067,10 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><tt
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="flow.html" title="Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="3.4. Tutorial: Conditional Execution and Flow Control"
              >next</a> |</li>
         <li class="right" >
-          <a href="datatypes.html" title="Tutorial: Basic and Complex Data Types"
+          <a href="datatypes.html" title="3.2. Tutorial: Basic and Complex Data Types"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -1080,12 +1082,12 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><tt
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

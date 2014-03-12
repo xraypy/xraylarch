@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Fit Examples &mdash; larch 0.9.21 documentation</title>
+    <title>6.6. Fit Examples &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="Fitting and Modeling Data" href="index.html" />
-    <link rel="next" title="Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
-    <link rel="prev" title="Some Builtin Line-shape Functions" href="lineshapes.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="6.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
+    <link rel="prev" title="6.5. Some Builtin Line-shape Functions" href="lineshapes.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="fitpeaks.html" title="Simplified Peak Fitting with fit_peak()"
+          <a href="fitpeaks.html" title="6.7. Simplified Peak Fitting with fit_peak()"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="lineshapes.html" title="Some Builtin Line-shape Functions"
+          <a href="lineshapes.html" title="6.5. Some Builtin Line-shape Functions"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,20 +74,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Fit Examples</a><ul>
-<li><a class="reference internal" href="#example-1-fitting-a-simple-gaussian">Example 1: Fitting a Simple Gaussian</a></li>
-<li><a class="reference internal" href="#example-2-fitting-xanes-pre-edge-peaks">Example 2: Fitting XANES Pre-edge Peaks</a></li>
-<li><a class="reference internal" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
+<li><a class="reference internal" href="#">6.6. Fit Examples</a><ul>
+<li><a class="reference internal" href="#example-1-fitting-a-simple-gaussian">6.6.1. Example 1: Fitting a Simple Gaussian</a></li>
+<li><a class="reference internal" href="#example-2-fitting-xanes-pre-edge-peaks">6.6.2. Example 2: Fitting XANES Pre-edge Peaks</a></li>
+<li><a class="reference internal" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">6.6.3. Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="lineshapes.html"
-                        title="previous chapter">Some Builtin Line-shape Functions</a></p>
+                        title="previous chapter">6.5. Some Builtin Line-shape Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="fitpeaks.html"
-                        title="next chapter">Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></p>
+                        title="next chapter">6.7. Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/examples.txt"
@@ -113,7 +115,7 @@
           <div class="body">
             
   <div class="section" id="fit-examples">
-<h1>Fit Examples<a class="headerlink" href="#fit-examples" title="Permalink to this headline">¶</a></h1>
+<h1>6.6. Fit Examples<a class="headerlink" href="#fit-examples" title="Permalink to this headline">¶</a></h1>
 <p>This section contains a few illustrative fitting examples.  As mentioned
 earlier, the important pieces to have for a fit are:</p>
 <p>1. a <em>Parameter Group</em>: a group that contains all the parameters (both
@@ -124,7 +126,7 @@ argument, and returns an array to be minimized in the least-squares sense.</p>
 <p>The files for the examples shown here are all can be found in the
 <em>examples/fitting</em> folder of the main Larch distribution.</p>
 <div class="section" id="example-1-fitting-a-simple-gaussian">
-<span id="fit-example1-sec"></span><h2>Example 1: Fitting a Simple Gaussian<a class="headerlink" href="#example-1-fitting-a-simple-gaussian" title="Permalink to this headline">¶</a></h2>
+<span id="fit-example1-sec"></span><h2>6.6.1. Example 1: Fitting a Simple Gaussian<a class="headerlink" href="#example-1-fitting-a-simple-gaussian" title="Permalink to this headline">¶</a></h2>
 <p>Here we make a simple mock data set and fit a Gaussian function to it.
 Though a fairly simple example, and one that is guaranteed to work well, it
 touches on all the concepts discussed above, and is a reasonable
@@ -170,7 +172,7 @@ kinds of data.  The script to do the fit looks like this:</p>
 <span class="c">## end of examples/fitting/doc_example1.lar</span>
 </pre></div>
 </div>
-<p>This fitting script consists  of several components, which we&#8217;ll go over in
+<p>This fitting script consists  of several components, which we'll go over in
 some detail.</p>
 <blockquote>
 <div><p>1 <strong>create mock data</strong>:  Here we use the builtin <tt class="xref py py-func docutils literal"><span class="pre">_math.gaussian()</span></tt>
@@ -219,13 +221,13 @@ correlations between variables.</p>
 =======================================================</pre>
 </div>
 <p>And the plot of data and fit will look like this:</p>
-<blockquote id="fitting-fig1">
-<div><a class="reference external image-reference" href="../_images/fit_example1.png"><img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 65%;" /></a>
-<p>Figure 1.  Simple fit to mock data</p>
-</div></blockquote>
+<div class="figure align-center" id="fig-fit1">
+<a class="reference external image-reference" href="../_images/fit_example1.png"><img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 65%;" /></a>
+<p class="caption"><strong>Figure 6.1:</strong> Simple fit to mock data</p>
+</div>
 </div>
 <div class="section" id="example-2-fitting-xanes-pre-edge-peaks">
-<h2>Example 2: Fitting XANES Pre-edge Peaks<a class="headerlink" href="#example-2-fitting-xanes-pre-edge-peaks" title="Permalink to this headline">¶</a></h2>
+<h2>6.6.2. Example 2: Fitting XANES Pre-edge Peaks<a class="headerlink" href="#example-2-fitting-xanes-pre-edge-peaks" title="Permalink to this headline">¶</a></h2>
 <p>This example extends on the previous one of fitting peaks.  Though
 following the same basic approach (write an objective function, define
 parameters, perform fit), we add several steps that you might use when
@@ -321,12 +323,12 @@ Also note that we limit the range of the data from the full data set using
 the <tt class="docutils literal"><span class="pre">index_of</span></tt> function.  The objective function <tt class="docutils literal"><span class="pre">resid()</span></tt> is very
 simple, calling <tt class="docutils literal"><span class="pre">make_models()</span></tt> which creates the model of two Gaussian
 peaks, an error function, and an offset.  There are 10 parameters for the
-fit.  We&#8217;re fitting the spectra with two Gaussian functions and an error
+fit.  We're fitting the spectra with two Gaussian functions and an error
 function.  It is often observed that if the centroids of peak functions such
 as Gaussians are left to vary completely freely they tend to wander around
 and give lousy fits, so here we place fairly tight controls on the
 centroids.  We also place bounds on the amplitudes and widths of the peaks,
-so they can&#8217;t go too far astray.</p>
+so they can't go too far astray.</p>
 <p>The fit gives a report (ignoring correlations) like this:</p>
 <div class="highlight-python"><pre>===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = 'leastsq'.
@@ -350,13 +352,18 @@ so they can&#8217;t go too far astray.</p>
 =======================================================</pre>
 </div>
 <p>and the plots of the resulting best-fit and components look like these:</p>
-<blockquote id="fitting-fig2">
-<div><a class="reference external image-reference" href="../_images/fit_example2a1.png"><img alt="../_images/fit_example2a1.png" src="../_images/fit_example2a1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/fit_example2a2.png"><img alt="../_images/fit_example2a2.png" src="../_images/fit_example2a2.png" style="width: 48%;" /></a>
-<p>Figure 2.  Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions and
-an Error function</p>
-</div></blockquote>
-<p>and we see the fit is pretty good.</p>
+<div class="figure compound align-center" id="fig-fit2">
+<div style="width: 45%" class="subfigure align-center" id="fig-fit2a">
+<a class="reference external image-reference" href="../_images/fit_example2a1.png"><img alt="../_images/fit_example2a1.png" src="../_images/fit_example2a1.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(a)</strong> fit with residual.</p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="fig-fit2b">
+<a class="reference external image-reference" href="../_images/fit_example2a2.png"><img alt="../_images/fit_example2a2.png" src="../_images/fit_example2a2.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(b)</strong> fit with individual components.</p>
+</div>
+<p class="caption"><strong>Figure 6.2:</strong> Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions
+and an Error function.</p>
+</div><p id="fig-fit2">and we see the fit is pretty good.</p>
 <p>Looking more closely, however, there is a hint in the data and the residual
 that we may have missed a third peak at around E = 7122 eV.  We can add
 this by simply adding another peak function to the <tt class="docutils literal"><span class="pre">make_models()</span></tt>
@@ -414,13 +421,18 @@ function:</p>
 0.0001194 to 0.0000103, and so seems to be a significant improvement.  The
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:</p>
-<blockquote id="fitting-fig3">
-<div><a class="reference external image-reference" href="../_images/fit_example2b1.png"><img alt="../_images/fit_example2b1.png" src="../_images/fit_example2b1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/fit_example2b2.png"><img alt="../_images/fit_example2b2.png" src="../_images/fit_example2b2.png" style="width: 48%;" /></a>
-<p>Figure 3.  Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions and
-an Error function</p>
-</div></blockquote>
-<p>Finally for this example, we can replace the Gaussian peak shapes with
+<div class="figure compound align-center" id="fig-fit3">
+<div style="width: 45%" class="subfigure align-center" id="fig-fit3a">
+<a class="reference external image-reference" href="../_images/fit_example2b1.png"><img alt="../_images/fit_example2b1.png" src="../_images/fit_example2b1.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(a)</strong> fit with residual.</p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="fig-fit3b">
+<a class="reference external image-reference" href="../_images/fit_example2b2.png"><img alt="../_images/fit_example2b2.png" src="../_images/fit_example2b2.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(b)</strong> fit with individual components.</p>
+</div>
+<p class="caption"><strong>Figure 6.3:</strong> Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions
+and an Error function.</p>
+</div><p id="fig-fit3">Finally for this example, we can replace the Gaussian peak shapes with
 other functional forms.   To use the Voigt function shown in the previous
 section, we simply change <tt class="docutils literal"><span class="pre">make_models()</span></tt> to use:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
@@ -456,18 +468,23 @@ section, we simply change <tt class="docutils literal"><span class="pre">make_mo
 <p>and we see that the already very low
 <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> reduces by another 10%, which suggests a real improvement.
 For completeness,  the plots from this fit look like this:</p>
-<blockquote id="fitting-fig4">
-<div><a class="reference external image-reference" href="../_images/fit_example2c1.png"><img alt="../_images/fit_example2c1.png" src="../_images/fit_example2c1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/fit_example2c2.png"><img alt="../_images/fit_example2c2.png" src="../_images/fit_example2c2.png" style="width: 48%;" /></a>
-<p>Figure 4.  Fit to Fe K-edge pre-edge and edge with 3 Voigt functions and
-an Error function</p>
-</div></blockquote>
-<p>It&#8217;s difficult to see a dramatic difference in fit quality for this data,
+<div class="figure compound align-center" id="fig-fit4">
+<div style="width: 45%" class="subfigure align-center" id="fig-fit4a">
+<a class="reference external image-reference" href="../_images/fit_example2c1.png"><img alt="../_images/fit_example2c1.png" src="../_images/fit_example2c1.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(a)</strong> fit with residual.</p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="fig-fit4b">
+<a class="reference external image-reference" href="../_images/fit_example2c2.png"><img alt="../_images/fit_example2c2.png" src="../_images/fit_example2c2.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(b)</strong> fit with individual components.</p>
+</div>
+<p class="caption"><strong>Figure 6.4:</strong> Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
+and an Error function.</p>
+</div><p id="fig-fit4">It's difficult to see a dramatic difference in fit quality for this data,
 but the ability to explore fitting with different lineshapes like this is
 still a useful test of the robustness of the fit.</p>
 </div>
 <div class="section" id="example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra">
-<h2>Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra<a class="headerlink" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra" title="Permalink to this headline">¶</a></h2>
+<h2>6.6.3. Example 3: Fitting XANES Spectra as a Linear Combination of Other Spectra<a class="headerlink" href="#example-3-fitting-xanes-spectra-as-a-linear-combination-of-other-spectra" title="Permalink to this headline">¶</a></h2>
 <p>This example is quite a bit simpler than the previous one, though worth an
 explicit example.  Here, we fit a XANES spectra as a linear combination of
 two other spectra.  This approach is often used to compare an unknown
@@ -475,33 +492,38 @@ spectra with a large selection of candidate model spectra, taking the
 result with lowest misfit statistics as the most likely results.  Though
 this method should be used with some caution, it is a standard and very
 simple approach to XANES analysis.</p>
-<p>The example here is borrowed from Bruce Ravel&#8217;s data and tutorials, and
-based on the work published by M. Lengke, <em>et al</em>, <em>Environmental Science
-and Technology</em> <strong>40</strong> (20), p6304 (2006).  The goal here is not to repeat
-the whole of that analysis, but to present the mechanics of the fitting
-approach.  Essentially, we&#8217;re asserting that a particular measured spectrum
-is made of a linear combination of 2 or more other spectra.  We have a set
-of candidate model spectra, and we&#8217;re going to try to determine both which
-of those model spectra combine to match the measured one.  Here we will
-simply assert that all the spectra are aligned in the ordinate and that
-they are normalized in some reproducible way so that there are essentially
-no artefacts or systematic problems in the &#8216;x&#8217; or &#8216;y&#8217; values of the data.</p>
+<p>The example here is borrowed from Bruce Ravel's data and tutorials, and
+based on the work published by <span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">6</a><span>]</span></span>, The goal here is not
+to repeat the whole of that analysis, but to present the mechanics of the
+fitting approach.  Essentially, we're asserting that a particular measured
+spectrum is made of a linear combination of 2 or more other spectra.  We
+have a set of candidate model spectra, and we're going to try to determine
+both which of those model spectra combine to match the measured one.  Here
+we will simply assert that all the spectra are aligned in the ordinate and
+that they are normalized in some reproducible way so that there are
+essentially no artefacts or systematic problems in the 'x' or 'y' values of
+the data.</p>
 <p>For the example here, the spectra are held in individual ASCII data files,
-which we&#8217;ll call <em>unknown.dat</em> for the unknown spectrum and <em>s1.dat</em>,
+which we'll call <em>unknown.dat</em> for the unknown spectrum and <em>s1.dat</em>,
 <em>s2.dat</em>, ..., <em>s6.dat</em> for the spectra on 6 different standards. It is
 not important for the discussion here what these spectra represent, but
 they are XANES data taken at the Au L3 edge on various Au compounds.</p>
-<p>A visual inspection of the spectra (see <a class="reference internal" href="#fitting-fig5"><em>Figure 5</em></a>)
+<p>A visual inspection of the spectra (see Figure <a href="#fig-fit5">6.5</a>)
 suggests that <em>s2</em> is probably a major component of the unknown, though the
 peak around 11950 eV is a feature that only <em>s1</em> has, so it too may be an
 important component.</p>
-<blockquote id="fitting-fig5">
-<div><a class="reference external image-reference" href="../_images/fit_example3a.png"><img alt="../_images/fit_example3a.png" src="../_images/fit_example3a.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/fit_example3b.png"><img alt="../_images/fit_example3b.png" src="../_images/fit_example3b.png" style="width: 48%;" /></a>
-<p>Figure 5.  Components used for Linear Combination Fits (left) and Fit
-with components <em>s1</em> and <em>s2</em> (right).</p>
-</div></blockquote>
-<p>To quantitatively fit these spectra, we read in all the data, and then
+<div class="figure compound align-center" id="fig-fit5">
+<div style="width: 45%" class="subfigure align-center" id="fig-fit5a">
+<a class="reference external image-reference" href="../_images/fit_example3a.png"><img alt="../_images/fit_example3a.png" src="../_images/fit_example3a.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(a)</strong> components used for linear combinations.</p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="fig-fit5b">
+<a class="reference external image-reference" href="../_images/fit_example3b.png"><img alt="../_images/fit_example3b.png" src="../_images/fit_example3b.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(b)</strong> fit and residual with components <em>s1</em> and <em>s2</em>.</p>
+</div>
+<p class="caption"><strong>Figure 6.5:</strong> Linear Combination Fit of gold XANES in cyanobacteria, after
+<span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">6</a><span>]</span></span>.</p>
+</div><p id="fig-fit5">To quantitatively fit these spectra, we read in all the data, and then
 create a single group <em>dat</em> that will contain all the data we need.  It
 turns out (and a common issue for XAFS data), the scans here do not have
 identical energy values, so we both select a limited energy range, and
@@ -579,7 +601,7 @@ like this:</p>
 </pre></div>
 </div>
 <p>Here, we actually define a weight for all 6 spectra, but force 4 of them to
-be 0.  For a two component fit, this would not be necessary, but we&#8217;ll be
+be 0.  For a two component fit, this would not be necessary, but we'll be
 expanding this shortly.  We place bounds of [0, 1] on all the parameters,
 and we use a constraint to ensure that the parameters add to 1.0.   Also
 note that we define an uncertainty in the data that we use to scale the
@@ -601,9 +623,9 @@ results of this fit are:</p>
 
 =======================================================</pre>
 </div>
-<p>and the result for this fit is shown in <a class="reference internal" href="#fitting-fig5"><em>Figure 5</em></a>.
+<p>and the result for this fit is shown in Figure <a href="#fig-fit5">6.5</a>.
 This demonstrates the use of simple constraints for Parameters in fits:
-we&#8217;ve used an algebraic expression to ensure that the weights for the two
+we've used an algebraic expression to ensure that the weights for the two
 components in the fit add to 1.</p>
 <p>The fit here is not perfect, and we suspect there may be another standard
 as a component to the fit.  But at this point, we have several candidate
@@ -614,9 +636,9 @@ spectra, and a pretty good starting fit, so the main questions are</p>
 <li>Which combination gives the best results?</li>
 </ol>
 </div></blockquote>
-<p>To answer the first question, we&#8217;ll assert that &#8220;improved reduced
-chi-square&#8221; is the best way to decide which of a series of fits is best.
-To answer the second question, we&#8217;ll work through all the possibilities.
+<p>To answer the first question, we'll assert that &quot;improved reduced
+chi-square&quot; is the best way to decide which of a series of fits is best.
+To answer the second question, we'll work through all the possibilities.
 Now, we set up a more complicated script to do 5 separate fits so that we
 can compare the results.   This makes use of some of the more advanced
 scripting features of larch:</p>
@@ -728,13 +750,13 @@ scripting features of larch:</p>
 <p>There are several points worth noting here:</p>
 <blockquote>
 <div><ol class="loweralpha simple">
-<li>We make a new copy of the Parameter Group for each fit &#8211; this way we
+<li>We make a new copy of the Parameter Group for each fit -- this way we
 can (with some care) switch back and forth between fitting models.  Note
 that we add the non-Parameter <tt class="docutils literal"><span class="pre">note</span></tt> member to this group that give a
 brief description of the fit.  Of course, we could add anything else we
 wanted.</li>
 <li>We set <tt class="docutils literal"><span class="pre">amp1.vary</span></tt> and <tt class="docutils literal"><span class="pre">amp2.vary</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> and set one of the
-other amplitude parameter&#8217;s expression to <tt class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">amp1</span> <span class="pre">-</span> <span class="pre">amp2</span></tt> to impose
+other amplitude parameter's expression to <tt class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">amp1</span> <span class="pre">-</span> <span class="pre">amp2</span></tt> to impose
 the desired constraint.</li>
 <li>The loop over Parameter groups runs the fit for each set of
 Parameters, and checks for the lowest value of <tt class="docutils literal"><span class="pre">chi_reduced</span></tt>.</li>
@@ -768,12 +790,18 @@ Best Fit:   3 component fit:  s1, s2, s5
 =======================================================</pre>
 </div>
 <p>and the output plots for the best model look like this:</p>
-<blockquote id="fitting-fig6">
-<div><a class="reference external image-reference" href="../_images/fit_example3c1.png"><img alt="../_images/fit_example3c1.png" src="../_images/fit_example3c1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/fit_example3c2.png"><img alt="../_images/fit_example3c2.png" src="../_images/fit_example3c2.png" style="width: 48%;" /></a>
-<p>Figure 6.  Fit with components <em>s1</em>, <em>s2</em>, and <em>s3</em></p>
-</div></blockquote>
-<p>Of course, we aren&#8217;t necessarily done here as we haven&#8217;t exhausted all
+<div class="figure compound align-center" id="fig-fit6">
+<div style="width: 45%" class="subfigure align-center" id="fig-fit6a">
+<a class="reference external image-reference" href="../_images/fit_example3c1.png"><img alt="../_images/fit_example3c1.png" src="../_images/fit_example3c1.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(a)</strong> linear combination fit and residual.</p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="fig-fit6b">
+<a class="reference external image-reference" href="../_images/fit_example3c2.png"><img alt="../_images/fit_example3c2.png" src="../_images/fit_example3c2.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(b)</strong> weighted contribution from individual components.</p>
+</div>
+<p class="caption"><strong>Figure 6.6:</strong> Linear Combination XANES Fit of gold components in cyanobacteria with
+species <em>s1</em>, <em>s2</em>, and <em>s5</em>.</p>
+</div><p id="fig-fit6">Of course, we aren't necessarily done here as we haven't exhausted all
 possible combinations of components.  Included in the examples
 (<em>examples/fitting/doc_examples3/fit3.lar</em>), but not reprinted here, is a
 script that runs through all possible combinations of 3 and 4 components,
@@ -841,23 +869,35 @@ that are:</p>
 =======================================================</pre>
 </div>
 <p>The plots resulting from both sets of Parameters are shown:</p>
-<blockquote id="fitting-fig7">
-<div><a class="reference external image-reference" href="../_images/fit_example3d1.png"><img alt="../_images/fit_example3d1.png" src="../_images/fit_example3d1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/fit_example3d2.png"><img alt="../_images/fit_example3d2.png" src="../_images/fit_example3d2.png" style="width: 48%;" /></a>
-<p>Figure 7: Fit with components <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s6</em></p>
-</div></blockquote>
-<blockquote id="fitting-fig8">
-<div><a class="reference external image-reference" href="../_images/fit_example3e1.png"><img alt="../_images/fit_example3e1.png" src="../_images/fit_example3e1.png" style="width: 48%;" /></a>
-<a class="reference external image-reference" href="../_images/fit_example3e2.png"><img alt="../_images/fit_example3e2.png" src="../_images/fit_example3e2.png" style="width: 48%;" /></a>
-<p>Figure 8:  Fit with components <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em></p>
-</div></blockquote>
-<p>From the plots alone, it is difficult to tell which of these fits is
+<div class="figure compound align-center" id="fig-fit7">
+<div style="width: 45%" class="subfigure align-center" id="fig-fit7a">
+<a class="reference external image-reference" href="../_images/fit_example3d1.png"><img alt="../_images/fit_example3d1.png" src="../_images/fit_example3d1.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(a)</strong> linear combination fit and residual.</p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="fig-fit7b">
+<a class="reference external image-reference" href="../_images/fit_example3d2.png"><img alt="../_images/fit_example3d2.png" src="../_images/fit_example3d2.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(b)</strong> weighted contribution from individual components.</p>
+</div>
+<p class="caption"><strong>Figure 6.7:</strong> Linear Combination XANES Fit of gold components in cyanobacteria
+with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s6</em>.</p>
+</div><div class="figure compound align-center" id="fig-fit8">
+<div style="width: 45%" class="subfigure align-center" id="fig-fit8a">
+<a class="reference external image-reference" href="../_images/fit_example3e1.png"><img alt="../_images/fit_example3e1.png" src="../_images/fit_example3e1.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(a)</strong> linear combination fit and residual.</p>
+</div>
+<div style="width: 45%" class="subfigure align-center" id="fig-fit8b">
+<a class="reference external image-reference" href="../_images/fit_example3e2.png"><img alt="../_images/fit_example3e2.png" src="../_images/fit_example3e2.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(b)</strong> weighted contribution from individual components.</p>
+</div>
+<p class="caption"><strong>Figure 6.8:</strong> Linear Combination XANES Fit of gold components in cyanobacteria
+with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em>.</p>
+</div><p id="fig-fit8">From the plots alone, it is difficult to tell which of these fits is
 better, and it is probably best to say that these are both good fits.  This
 implies that component <em>s3</em> is important even if at a very small fraction,
-and that either component <em>s5</em> or <em>s6</em> (which aren&#8217;t that different
-spectroscopically or chemically, see <a class="reference internal" href="#fitting-fig5"><em>Figure 5</em></a>) is
-present.  Of course, the analysis here is not meant to be definitive, and
-there are many more checks that could be done.  To be clear, Lengke <em>et al</em>
+and that either component <em>s5</em> or <em>s6</em> (which aren't that different
+spectroscopically or chemically (see Figure <a href="#fig-fit5">6.5</a>) is present.
+Of course, the analysis here is not meant to be definitive, and there are
+many more checks that could be done.  To be clear, <span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">6</a><span>]</span></span>
 looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em> were the best
 components, with concentrations of the components very similar to the ones
@@ -878,10 +918,10 @@ found here.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="fitpeaks.html" title="Simplified Peak Fitting with fit_peak()"
+          <a href="fitpeaks.html" title="6.7. Simplified Peak Fitting with fit_peak()"
              >next</a> |</li>
         <li class="right" >
-          <a href="lineshapes.html" title="Some Builtin Line-shape Functions"
+          <a href="lineshapes.html" title="6.5. Some Builtin Line-shape Functions"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -893,12 +933,12 @@ found here.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

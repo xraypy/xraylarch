@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Tutorial: Basic and Complex Data Types &mdash; larch 0.9.21 documentation</title>
+    <title>3.2. Tutorial: Basic and Complex Data Types &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="Larch Tutorial" href="index.html" />
-    <link rel="next" title="Tutorial: Basic Array Manipulation" href="arrays.html" />
-    <link rel="prev" title="Tutorial: Getting Started" href="start.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="3. Larch Tutorial" href="index.html" />
+    <link rel="next" title="3.3. Tutorial: Basic Array Manipulation" href="arrays.html" />
+    <link rel="prev" title="3.1. Tutorial: Getting Started" href="start.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="arrays.html" title="Tutorial: Basic Array Manipulation"
+          <a href="arrays.html" title="3.3. Tutorial: Basic Array Manipulation"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="start.html" title="Tutorial: Getting Started"
+          <a href="start.html" title="3.1. Tutorial: Getting Started"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,34 +74,34 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Tutorial: Basic and Complex Data Types</a><ul>
-<li><a class="reference internal" href="#basic-data-types">Basic Data Types</a></li>
-<li><a class="reference internal" href="#objects-and-groups">Objects and Groups</a><ul>
-<li><a class="reference internal" href="#objects">Objects</a></li>
-<li><a class="reference internal" href="#groups">Groups</a></li>
-<li><a class="reference internal" href="#builtin-larch-groups">Builtin Larch Groups</a></li>
-<li><a class="reference internal" href="#how-larch-finds-variable-names">How Larch finds variable names</a></li>
+<li><a class="reference internal" href="#">3.2. Tutorial: Basic and Complex Data Types</a><ul>
+<li><a class="reference internal" href="#basic-data-types">3.2.1. Basic Data Types</a></li>
+<li><a class="reference internal" href="#objects-and-groups">3.2.2. Objects and Groups</a><ul>
+<li><a class="reference internal" href="#objects">3.2.2.1. Objects</a></li>
+<li><a class="reference internal" href="#groups">3.2.2.2. Groups</a></li>
+<li><a class="reference internal" href="#builtin-larch-groups">3.2.2.3. Builtin Larch Groups</a></li>
+<li><a class="reference internal" href="#how-larch-finds-variable-names">3.2.2.4. How Larch finds variable names</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#more-complex-data-structures-lists-arrays-dictionaries">More Complex Data Structures:  Lists, Arrays, Dictionaries</a><ul>
-<li><a class="reference internal" href="#lists">Lists</a></li>
-<li><a class="reference internal" href="#tuples">Tuples</a></li>
-<li><a class="reference internal" href="#a-second-look-at-strings">A second look at Strings</a></li>
-<li><a class="reference internal" href="#arrays">Arrays</a></li>
-<li><a class="reference internal" href="#dictionaries">Dictionaries</a></li>
+<li><a class="reference internal" href="#more-complex-data-structures-lists-arrays-dictionaries">3.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries</a><ul>
+<li><a class="reference internal" href="#lists">3.2.3.1. Lists</a></li>
+<li><a class="reference internal" href="#tuples">3.2.3.2. Tuples</a></li>
+<li><a class="reference internal" href="#a-second-look-at-strings">3.2.3.3. A second look at Strings</a></li>
+<li><a class="reference internal" href="#arrays">3.2.3.4. Arrays</a></li>
+<li><a class="reference internal" href="#dictionaries">3.2.3.5. Dictionaries</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#object-identities-copying-and-equality-vs-identity">Object identities, copying, and equality vs. identity</a></li>
+<li><a class="reference internal" href="#object-identities-copying-and-equality-vs-identity">3.2.4. Object identities, copying, and equality vs. identity</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="start.html"
-                        title="previous chapter">Tutorial: Getting Started</a></p>
+                        title="previous chapter">3.1. Tutorial: Getting Started</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="arrays.html"
-                        title="next chapter">Tutorial: Basic Array Manipulation</a></p>
+                        title="next chapter">3.3. Tutorial: Basic Array Manipulation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/datatypes.txt"
@@ -127,27 +129,27 @@
           <div class="body">
             
   <div class="section" id="tutorial-basic-and-complex-data-types">
-<span id="tutor-datatypes-sec"></span><h1>Tutorial: Basic and Complex Data Types<a class="headerlink" href="#tutorial-basic-and-complex-data-types" title="Permalink to this headline">¶</a></h1>
+<span id="tutor-datatypes-sec"></span><h1>3.2. Tutorial: Basic and Complex Data Types<a class="headerlink" href="#tutorial-basic-and-complex-data-types" title="Permalink to this headline">¶</a></h1>
 <p>This section of the Larch tutorial describes the types of data that Larch
 has, and how to use them.</p>
 <div class="section" id="basic-data-types">
-<h2>Basic Data Types<a class="headerlink" href="#basic-data-types" title="Permalink to this headline">¶</a></h2>
+<h2>3.2.1. Basic Data Types<a class="headerlink" href="#basic-data-types" title="Permalink to this headline">¶</a></h2>
 <p>As with most programming languages, Larch has several built-in data types
 to express different kinds of data.  These include the usual integers,
 floating point numbers, and strings common to many programming languages.
 A variable name can hold any of these types (or any of the other more
-complex types we&#8217;ll get to later), and does not need to be declared
+complex types we'll get to later), and does not need to be declared
 beforehand or to change its value or type.  Some examples:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="mf">2.50</span>
 </pre></div>
 </div>
-<p>The normal &#8216;+&#8217;, &#8216;-&#8216;, &#8216;*&#8217;, and &#8216;/&#8217; operations work on numerical values for
+<p>The normal '+', '-', '*', and '/' operations work on numerical values for
 addition, subtraction, multiplication, and division.  Exponentiation is
-signified by &#8216;**&#8217;, and modulus by &#8216;%&#8217;.  Larch uses the &#8216;/&#8217; symbol for
-division or &#8216;true division&#8217;, giving a floating point value if needed, even
-if the numerator and denominator are integers, and &#8216;//&#8217; for integer or
-&#8216;floor&#8217; division.  Thus:</p>
+signified by '**', and modulus by '%'.  Larch uses the '/' symbol for
+division or 'true division', giving a floating point value if needed, even
+if the numerator and denominator are integers, and '//' for integer or
+'floor' division.  Thus:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">a</span>
 <span class="mi">5</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">b</span><span class="o">*</span><span class="mi">2</span>
@@ -167,12 +169,12 @@ quotes:</p>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">s2</span> <span class="o">=</span> <span class="s">&quot;a different string&quot;</span>
 </pre></div>
 </div>
-<p>A string can include a &#8216;\n&#8217; character (for newline) or &#8216;\t&#8217; (for tab) and
+<p>A string can include a '\n' character (for newline) or '\t' (for tab) and
 several other control characters, as in many languages.  The backslash
-character &#8216;\&#8217; indicates these <em>escape sequences</em>, which includes newline as
+character '\' indicates these <em>escape sequences</em>, which includes newline as
 tab as well as several other standard escape sequence.  The quote character
 and the backslash character themselves can be backslashed.  Thus, to get an
-actual backslash character in the string, you would have to use &#8216;\\&#8217;, and
+actual backslash character in the string, you would have to use '\\', and
 to get a single quote, one might say:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">s3</span> <span class="o">=</span> <span class="s">&#39;A string with a backslash-&gt; </span><span class="se">\\</span><span class="s"> &#39;</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">s4</span> <span class="o">=</span> <span class="s">&#39;Bob</span><span class="se">\&#39;</span><span class="s">s string&#39;</span>
@@ -182,7 +184,7 @@ to get a single quote, one might say:</p>
 is <strong>not</strong> used for escape sequences:</p>
 <div class="highlight-python"><pre>larch s5 = r'A string with backslash \n but not a newline!'</pre>
 </div>
-<p>For strings that may span over more than 1 line, a special &#8220;triple quoted&#8221;
+<p>For strings that may span over more than 1 line, a special &quot;triple quoted&quot;
 syntax is supported, so that:</p>
 <div class="highlight-python"><pre>larch&gt; long_string = """Now is the time for all good men
 .....&gt; to come to the aid of their party"""
@@ -211,10 +213,10 @@ cannot concatenate 'str' and 'int' objects
 </div>
 <p>Larch has special variables for boolean or logical operations: <tt class="docutils literal"><span class="pre">True</span></tt> and
 <tt class="docutils literal"><span class="pre">False</span></tt>.  These are equal to 1 and 0, respectively, but are mostly used
-in logical operations, which include operators &#8216;and&#8217;, &#8216;or&#8217;, and &#8216;not&#8217;, as
-well as comparison operators &#8216;&gt;&#8217;, &#8216;&gt;=&#8217;, &#8216;&lt;&#8217;, &#8216;&lt;=&#8217;, &#8216;==&#8217;, &#8216;!=&#8217;, and &#8216;is&#8217;.
-Note that &#8216;is&#8217; expresses identity, which is a slightly stricter test than
-&#8216;==&#8217; (equality), and is most useful for complex objects.:</p>
+in logical operations, which include operators 'and', 'or', and 'not', as
+well as comparison operators '&gt;', '&gt;=', '&lt;', '&lt;=', '==', '!=', and 'is'.
+Note that 'is' expresses identity, which is a slightly stricter test than
+'==' (equality), and is most useful for complex objects.:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">b</span> <span class="o">=</span> <span class="mi">5</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="mi">2</span> <span class="o">&gt;</span> <span class="mi">3</span>
 <span class="bp">False</span>
@@ -224,7 +226,7 @@ Note that &#8216;is&#8217; expresses identity, which is a slightly stricter test
 </div>
 <p>The special value <tt class="docutils literal"><span class="pre">None</span></tt> is used as a null value throughout Larch and
 Python.</p>
-<p>Finally, Larch knows about complex numbers, using a &#8216;j&#8217; to indicate the
+<p>Finally, Larch knows about complex numbers, using a 'j' to indicate the
 imaginary part of the number:</p>
 <div class="highlight-python"><pre>larch&gt; sqrt(-1)
 Warning: invalid value encountered in sqrt
@@ -244,7 +246,7 @@ corresponding Python objects, so you can consult python documentation for
 further details and notes.</p>
 </div>
 <div class="section" id="objects-and-groups">
-<h2>Objects and Groups<a class="headerlink" href="#objects-and-groups" title="Permalink to this headline">¶</a></h2>
+<h2>3.2.2. Objects and Groups<a class="headerlink" href="#objects-and-groups" title="Permalink to this headline">¶</a></h2>
 <p>Since Larch is built upon Python, an object-oriented programming language,
 all named quantities or <strong>variables</strong> in Larch are python objects.  Because
 of this, most Larch variables come with built-in functionality derived from
@@ -253,7 +255,7 @@ define their own new objects, objects created in Python this can be used by
 Larch, so that extensions and plugins for Larch can define new classes of
 object types.</p>
 <div class="section" id="objects">
-<h3>Objects<a class="headerlink" href="#objects" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.2.1. Objects<a class="headerlink" href="#objects" title="Permalink to this headline">¶</a></h3>
 <p>All Larch variables are Python objects, and so have a well-defined <strong>type</strong>
 and a set of <strong>attributes</strong> and <strong>methods</strong> that go with it.   To see the
 Python type of any variable, use the builtin <a class="reference internal" href="builtins.html#type" title="type"><tt class="xref py py-func docutils literal"><span class="pre">type()</span></tt></a> function:</p>
@@ -269,7 +271,7 @@ larch&gt; type(sin)
 &lt;type 'numpy.ufunc'&gt;</pre>
 </div>
 <p>The attributes and methods differ for each type of object, but are all
-accessed the same way &#8211; with a &#8216;.&#8217; (dot) separating the variable name or
+accessed the same way -- with a '.' (dot) separating the variable name or
 value from the name of the attribute or method.  As above, complex data
 have <tt class="xref py py-attr docutils literal"><span class="pre">real</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">imag</span></tt> attributes for the real and imaginary
 parts, which can be accessed:</p>
@@ -282,7 +284,7 @@ larch&gt; print x.imag
 <p>Methods are attributes of an object that happen to be callable as a
 function.  Since they belong to to an object, they know about the data and
 other attributes in that object.  To call a method or function, simply add
-parentheses &#8216;()&#8217; after its name, possibly with arguments inside the
+parentheses '()' after its name, possibly with arguments inside the
 parentheses to change the methods behavior.  For example, a complex number
 has a <tt class="xref py py-meth docutils literal"><span class="pre">conjugate()</span></tt> method:</p>
 <div class="highlight-python"><pre>larch&gt; x.conjugate
@@ -291,16 +293,16 @@ larch&gt; x.conjugate()
 (1.2984575814159773-0.63496391478473613j)</pre>
 </div>
 <p>Note that just using <tt class="docutils literal"><span class="pre">x.conjugate</span></tt> returns the method itself, while using
-<tt class="docutils literal"><span class="pre">x.conjugate()</span></tt> actually runs the method.  It&#8217;s fair to ask why <tt class="docutils literal"><span class="pre">real</span></tt>
+<tt class="docutils literal"><span class="pre">x.conjugate()</span></tt> actually runs the method.  It's fair to ask why <tt class="docutils literal"><span class="pre">real</span></tt>
 and <tt class="docutils literal"><span class="pre">imag</span></tt> are simple attributes of complex number object while
 <tt class="docutils literal"><span class="pre">conjugate</span></tt> is a method that must be called.  In general, the idea is
 that simple attributes are static data belonging to the object, while a
 method is something that has to be computed.  These rules are not fixed,
 however, and it is sometimes a matter of knowing which attributes are
 callable methods.</p>
-<p>Many data types have their own attribues and methods.  As we&#8217;ll see below,
+<p>Many data types have their own attribues and methods.  As we'll see below,
 strings have many attributes and methods, as do the container objects
-(list, array, tuple, dictionary) we&#8217;ll see shortly.</p>
+(list, array, tuple, dictionary) we'll see shortly.</p>
 <p>To get a listing of all the attributes and methods of a object, use the
 builtin <a class="reference internal" href="builtins.html#dir" title="dir"><tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -309,20 +311,20 @@ builtin <a class="reference internal" href="builtins.html#dir" title="dir"><tt c
 <span class="p">[</span><span class="s">&#39;__add__&#39;</span><span class="p">,</span> <span class="s">&#39;__class__&#39;</span><span class="p">,</span> <span class="s">&#39;__contains__&#39;</span><span class="p">,</span> <span class="s">&#39;__delattr__&#39;</span><span class="p">,</span> <span class="s">&#39;__doc__&#39;</span><span class="p">,</span> <span class="s">&#39;__eq__&#39;</span><span class="p">,</span> <span class="s">&#39;__format__&#39;</span><span class="p">,</span> <span class="s">&#39;__ge__&#39;</span><span class="p">,</span> <span class="s">&#39;__getattribute__&#39;</span><span class="p">,</span> <span class="s">&#39;__getitem__&#39;</span><span class="p">,</span> <span class="s">&#39;__getnewargs__&#39;</span><span class="p">,</span> <span class="s">&#39;__getslice__&#39;</span><span class="p">,</span> <span class="s">&#39;__gt__&#39;</span><span class="p">,</span> <span class="s">&#39;__hash__&#39;</span><span class="p">,</span> <span class="s">&#39;__init__&#39;</span><span class="p">,</span> <span class="s">&#39;__le__&#39;</span><span class="p">,</span> <span class="s">&#39;__len__&#39;</span><span class="p">,</span> <span class="s">&#39;__lt__&#39;</span><span class="p">,</span> <span class="s">&#39;__mod__&#39;</span><span class="p">,</span> <span class="s">&#39;__mul__&#39;</span><span class="p">,</span> <span class="s">&#39;__ne__&#39;</span><span class="p">,</span> <span class="s">&#39;__new__&#39;</span><span class="p">,</span> <span class="s">&#39;__reduce__&#39;</span><span class="p">,</span> <span class="s">&#39;__reduce_ex__&#39;</span><span class="p">,</span> <span class="s">&#39;__repr__&#39;</span><span class="p">,</span> <span class="s">&#39;__rmod__&#39;</span><span class="p">,</span> <span class="s">&#39;__rmul__&#39;</span><span class="p">,</span> <span class="s">&#39;__setattr__&#39;</span><span class="p">,</span> <span class="s">&#39;__sizeof__&#39;</span><span class="p">,</span> <span class="s">&#39;__str__&#39;</span><span class="p">,</span> <span class="s">&#39;__subclasshook__&#39;</span><span class="p">,</span> <span class="s">&#39;_formatter_field_name_split&#39;</span><span class="p">,</span> <span class="s">&#39;_formatter_parser&#39;</span><span class="p">,</span> <span class="s">&#39;capitalize&#39;</span><span class="p">,</span> <span class="s">&#39;center&#39;</span><span class="p">,</span> <span class="s">&#39;count&#39;</span><span class="p">,</span> <span class="s">&#39;decode&#39;</span><span class="p">,</span> <span class="s">&#39;encode&#39;</span><span class="p">,</span> <span class="s">&#39;endswith&#39;</span><span class="p">,</span> <span class="s">&#39;expandtabs&#39;</span><span class="p">,</span> <span class="s">&#39;find&#39;</span><span class="p">,</span> <span class="s">&#39;format&#39;</span><span class="p">,</span> <span class="s">&#39;index&#39;</span><span class="p">,</span> <span class="s">&#39;isalnum&#39;</span><span class="p">,</span> <span class="s">&#39;isalpha&#39;</span><span class="p">,</span> <span class="s">&#39;isdigit&#39;</span><span class="p">,</span> <span class="s">&#39;islower&#39;</span><span class="p">,</span> <span class="s">&#39;isspace&#39;</span><span class="p">,</span> <span class="s">&#39;istitle&#39;</span><span class="p">,</span> <span class="s">&#39;isupper&#39;</span><span class="p">,</span> <span class="s">&#39;join&#39;</span><span class="p">,</span> <span class="s">&#39;ljust&#39;</span><span class="p">,</span> <span class="s">&#39;lower&#39;</span><span class="p">,</span> <span class="s">&#39;lstrip&#39;</span><span class="p">,</span> <span class="s">&#39;partition&#39;</span><span class="p">,</span> <span class="s">&#39;replace&#39;</span><span class="p">,</span> <span class="s">&#39;rfind&#39;</span><span class="p">,</span> <span class="s">&#39;rindex&#39;</span><span class="p">,</span> <span class="s">&#39;rjust&#39;</span><span class="p">,</span> <span class="s">&#39;rpartition&#39;</span><span class="p">,</span> <span class="s">&#39;rsplit&#39;</span><span class="p">,</span> <span class="s">&#39;rstrip&#39;</span><span class="p">,</span> <span class="s">&#39;split&#39;</span><span class="p">,</span> <span class="s">&#39;splitlines&#39;</span><span class="p">,</span> <span class="s">&#39;startswith&#39;</span><span class="p">,</span> <span class="s">&#39;strip&#39;</span><span class="p">,</span> <span class="s">&#39;swapcase&#39;</span><span class="p">,</span> <span class="s">&#39;title&#39;</span><span class="p">,</span> <span class="s">&#39;translate&#39;</span><span class="p">,</span> <span class="s">&#39;upper&#39;</span><span class="p">,</span> <span class="s">&#39;zfill&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Again, we&#8217;ll see properties of objects below, as we look into more
+<p>Again, we'll see properties of objects below, as we look into more
 interesting data types, or you can look into Python documentation.</p>
 </div>
 <div class="section" id="groups">
-<h3>Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.2.2. Groups<a class="headerlink" href="#groups" title="Permalink to this headline">¶</a></h3>
 <p>While all values in Larch are Python objects, Larch organizes data into
 Groups, which are a key concept to Larch.  A Group is simply a named
 container for variables of any kind, including other Groups.  As Larch
-doesn&#8217;t directly provide a way to definie your own objects, a Group is the
+doesn't directly provide a way to definie your own objects, a Group is the
 way to organize your data in Larch.  The organization of data with nested
 Groups provides a heirarchical structure to all data in a Larch session,
 much like a directory of files.  Each Larch variable belongs to a Group,
 and can always be accessed by its full Group name.  The top-level Group is
-called &#8216;_main&#8217;.  You&#8217;ll rarely need to use that fact, but it&#8217;s there:</p>
+called '_main'.  You'll rarely need to use that fact, but it's there:</p>
 <div class="highlight-python"><pre>larch&gt; myvar = 22.13
 larch&gt; print _main.myvar
 22.13
@@ -335,7 +337,7 @@ larch&gt; print myvar
 larch&gt; g
 &lt;Group 0x17ee50f0&gt;</pre>
 </div>
-<p>You can add variables to your Group &#8216;g&#8217;, using the &#8216;.&#8217; (dot) to separate
+<p>You can add variables to your Group 'g', using the '.' (dot) to separate
 the parent group from the child object:</p>
 <div class="highlight-python"><pre>larch&gt; g.x = 1002.8
 larch&gt; g.label = 'here is a string'
@@ -344,18 +346,18 @@ larch&gt; print g.x/5
 200.56</pre>
 </div>
 <p>(<tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt> is a builtin function to create an array of numbers).  As
-from the above discussion of objects, the &#8216;.&#8217; (dot) notation implies that
-&#8216;x&#8217;, &#8216;label&#8217;, and &#8216;data&#8217; are attributes of &#8216;g&#8217; &#8211; that&#8217;s entirely correct.</p>
-<p>Groups have 1 builtin property &#8211; <tt class="docutils literal"><span class="pre">__name__</span></tt> which holds a name for the
+from the above discussion of objects, the '.' (dot) notation implies that
+'x', 'label', and 'data' are attributes of 'g' -- that's entirely correct.</p>
+<p>Groups have 1 builtin property -- <tt class="docutils literal"><span class="pre">__name__</span></tt> which holds a name for the
 Group. If not specified, it will be set to a hexidecimal value.  Groups
-have no other builtin properties or methods.  Since they&#8217;re objects, you
+have no other builtin properties or methods.  Since they're objects, you
 can use the <a class="reference internal" href="builtins.html#dir" title="dir"><tt class="xref py py-func docutils literal"><span class="pre">dir()</span></tt></a> function as above:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
 <span class="p">[</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="s">&#39;label&#39;</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>(Note that the order shown may vary).  You can also use the builtin
-<a class="reference internal" href="builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function to get a slightly more complete view of the group&#8217;s
+<a class="reference internal" href="builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function to get a slightly more complete view of the group's
 contents:</p>
 <div class="highlight-python"><pre>larch&gt; show(g)
 == Group 0x1b8cbfb0: 3 symbols ==
@@ -363,15 +365,15 @@ contents:</p>
   name: 'here is a string'
   x: 1002.8</pre>
 </div>
-<p>(The &#8216;0x1b8cbfb0&#8217; is the default name, discussed in more detail below in
-<a class="reference internal" href="#tutor-objectids-sec"><em>Object identities, copying, and equality vs. identity</em></a>).  The <a class="reference internal" href="builtins.html#group" title="group"><tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt></a> function can take arguments
+<p>(The '0x1b8cbfb0' is the default name, discussed in more detail below in
+<a class="reference internal" href="#tutor-objectids-sec">3.2.4</a>).  The <a class="reference internal" href="builtins.html#group" title="group"><tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt></a> function can take arguments
 of attribute names and values, so that this group could have been created
 with a single call:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">g</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">1002.8</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;here is a string&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arange</span><span class="p">(</span><span class="mi">100</span><span class="p">))</span>
 </pre></div>
 </div>
 <p>Many Larch functions act on groups, either returning groups, expecting
-groups as certain arguments, or taking a &#8216;group&#8217; argument to write data
+groups as certain arguments, or taking a 'group' argument to write data
 into.  For example, the built-in functions that read data from an external
 files will likely organize that data into a group and that group perhaps
 something like:</p>
@@ -380,10 +382,10 @@ something like:</p>
 </div>
 </div>
 <div class="section" id="builtin-larch-groups">
-<h3>Builtin Larch Groups<a class="headerlink" href="#builtin-larch-groups" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.2.3. Builtin Larch Groups<a class="headerlink" href="#builtin-larch-groups" title="Permalink to this headline">¶</a></h3>
 <p>Larch starts up with several groups, organizing builtin functionality into
-different groups.  The top-level &#8216;_main&#8217; group begins with 3 principle
-subgroups, &#8216;_builtin&#8217;, &#8216;_sys&#8217;, and &#8216;_math&#8217; for basic functionality.  For
+different groups.  The top-level '_main' group begins with 3 principle
+subgroups, '_builtin', '_sys', and '_math' for basic functionality.  For
 almost all uses of Larch, several additional groups are created for more
 specific functionality are created on startup by Larch plugins.  The
 principle starting groups are describe in
@@ -424,12 +426,12 @@ they will be searched for functions and data.</div></blockquote>
 </tbody>
 </table>
 </div></blockquote>
-<p>The functions in &#8216;_builtin&#8217;  are mostly inherited from Python&#8217;s own
-built-in functions.  The functions in &#8216;_math&#8217; are mostly inherited from
+<p>The functions in '_builtin'  are mostly inherited from Python's own
+built-in functions.  The functions in '_math' are mostly inherited from
 Numpy, and contain basic array handling and math.</p>
 </div>
 <div class="section" id="how-larch-finds-variable-names">
-<h3>How Larch finds variable names<a class="headerlink" href="#how-larch-finds-variable-names" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.2.4. How Larch finds variable names<a class="headerlink" href="#how-larch-finds-variable-names" title="Permalink to this headline">¶</a></h3>
 <p>With several builtin groups, and even more groups created to store your own
 data to be processed, Larch ends up with a complex heirarchy of data.  This
 gives a good way of organizing data, but it also leads to a question of how
@@ -438,7 +440,7 @@ data object by its full name:</p>
 <div class="highlight-python"><pre>larch&gt; print _math.sin(_math.pi/2)
 1.0</pre>
 </div>
-<p>but that&#8217;s too painful to use, and of course, one needs to be able to do:</p>
+<p>but that's too painful to use, and of course, one needs to be able to do:</p>
 <div class="highlight-python"><pre>larch&gt; print sin(pi/2)
 1.0</pre>
 </div>
@@ -449,7 +451,7 @@ in the variable <tt class="xref py py-data docutils literal"><span class="pre">_
 during a Lach session.  On startup, this list has the groups listed in
 <a class="reference internal" href="#tutor-topgroups-table"><em>Table of Basic Larch Groups</em></a>, in the order
 shown.  To be clear, if there was a variable named <tt class="xref py py-data docutils literal"><span class="pre">_sys.something</span></tt>
-and a <tt class="xref py py-data docutils literal"><span class="pre">_math.something</span></tt>, typing &#8216;something&#8217; would resolve to
+and a <tt class="xref py py-data docutils literal"><span class="pre">_math.something</span></tt>, typing 'something' would resolve to
 <tt class="xref py py-data docutils literal"><span class="pre">_sys.something</span></tt>, and to access <tt class="xref py py-data docutils literal"><span class="pre">_math.something</span></tt> you would
 have to give the full name.   For the builtin functions and variables, such
 clashes are not so likely, but they are likely if you read in many data
@@ -457,16 +459,16 @@ sets as groups, and want to access the contents of the different groups.</p>
 </div>
 </div>
 <div class="section" id="more-complex-data-structures-lists-arrays-dictionaries">
-<h2>More Complex Data Structures:  Lists, Arrays, Dictionaries<a class="headerlink" href="#more-complex-data-structures-lists-arrays-dictionaries" title="Permalink to this headline">¶</a></h2>
+<h2>3.2.3. More Complex Data Structures:  Lists, Arrays, Dictionaries<a class="headerlink" href="#more-complex-data-structures-lists-arrays-dictionaries" title="Permalink to this headline">¶</a></h2>
 <p>Larch has many more data types built on top of the primitive types above.
 These are generally useful for storing collections of data, and can be
 built up to construct very complex structures.  These are all described in
 some detail here.  But as these are all closely related to Python objects,
 further details can be found in the standard Python documentation.</p>
 <div class="section" id="lists">
-<h3>Lists<a class="headerlink" href="#lists" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.3.1. Lists<a class="headerlink" href="#lists" title="Permalink to this headline">¶</a></h3>
 <p>A list is an ordered sequence of other data types.  They are
-<strong>heterogeneous</strong> &#8211; they can be made up of data with different types.  A
+<strong>heterogeneous</strong> -- they can be made up of data with different types.  A
 list is constructed using brackets, with commas to separate the
 individual:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
@@ -486,7 +488,7 @@ larch&gt; print nested_list[2]
 larch&gt; print nested_list[2][0]
 'c'</pre>
 </div>
-<p>Lists are <strong>mutable</strong> &#8211; they can be changed, in place.   To do this, you
+<p>Lists are <strong>mutable</strong> -- they can be changed, in place.   To do this, you
 can replace an element in a list:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;hello&#39;</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span>
@@ -495,24 +497,24 @@ can replace an element in a list:</p>
 </div>
 <p>As above, lists are python <strong>objects</strong>, and so come with methods for
 interacting with them.  For example, you can also change a list by
-appending to it with the &#8216;append&#8217; method:</p>
+appending to it with the 'append' method:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&#39;number 4, the larch&#39;</span><span class="p">)</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list1</span>
 <span class="p">[</span><span class="s">&#39;hello&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;number 4, the larch&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>All lists will have an &#8216;append&#8217; method, as well as several others:</p>
+<p>All lists will have an 'append' method, as well as several others:</p>
 <blockquote>
 <div><ul class="simple">
-<li>append &#8211; add an element to the end of the list</li>
-<li>count &#8211; to return the number of times a particular element occurs in the list</li>
-<li>extend &#8211; to extend a list with another list</li>
-<li>index &#8211; to find the first occurance of an element</li>
-<li>insert &#8211; to insert an element in a particular place.</li>
-<li>pop &#8211; to remove and return the last element (or other specified index).</li>
-<li>remove &#8211; remove a particular element</li>
-<li>reverse &#8211; reverse the order of elements</li>
-<li>sort &#8211; sort the elements.</li>
+<li>append -- add an element to the end of the list</li>
+<li>count -- to return the number of times a particular element occurs in the list</li>
+<li>extend -- to extend a list with another list</li>
+<li>index -- to find the first occurance of an element</li>
+<li>insert -- to insert an element in a particular place.</li>
+<li>pop -- to remove and return the last element (or other specified index).</li>
+<li>remove -- remove a particular element</li>
+<li>reverse -- reverse the order of elements</li>
+<li>sort -- sort the elements.</li>
 </ul>
 </div></blockquote>
 <p>Note that the methods that change the list do so <em>IN PLACE</em> and return
@@ -525,7 +527,7 @@ optional custom comparison function passed in), do this:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="n">my_list</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>  <span class="c"># WRONG!!</span>
 </pre></div>
 </div>
-<p>as that will sort the list, then happily set &#8216;my_list&#8217; to None.</p>
+<p>as that will sort the list, then happily set 'my_list' to None.</p>
 <p>You can get the length of a list with the built-in <a class="reference internal" href="builtins.html#len" title="len"><tt class="xref py py-func docutils literal"><span class="pre">len()</span></tt></a> function,
 and test whether a particular element is in a list with the <cite>in</cite> operator:</p>
 <div class="highlight-python"><pre>larch&gt; my_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
@@ -543,7 +545,7 @@ for a slice starts at 0. It also excludesthe final index:</p>
 <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>You can count backwards, and using &#8216;-1&#8217; is a convenient way to get the last
+<p>You can count backwards, and using '-1' is a convenient way to get the last
 element of a list.  You can also add an optional third value to the slice for a step:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="s">&#39;j&#39;</span>
@@ -557,20 +559,20 @@ element of a list.  You can also add an optional third value to the slice for a 
 </div>
 <p>A final important property of lists, and of basic variable creation in
 Larch (and Python) is related to the discussion above about variable
-creation and assignment.  There we said that &#8216;creating a variable&#8217;:</p>
+creation and assignment.  There we said that 'creating a variable':</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="s">&#39;f&#39;</span><span class="p">,</span> <span class="s">&#39;g&#39;</span><span class="p">,</span> <span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="s">&#39;i&#39;</span><span class="p">,</span> <span class="s">&#39;j&#39;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>was best thought of as creating a value (here, the
-literal list &#8220;[&#8216;a&#8217;, &#8216;b&#8217;, ..., &#8216;j&#8217;]&#8221;) and then assigning the name &#8216;my_list&#8217;
-to point to that value.  Here&#8217;s why we make that distinction.   If you
+literal list &quot;['a', 'b', ..., 'j']&quot;) and then assigning the name 'my_list'
+to point to that value.  Here's why we make that distinction.   If you
 now say:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">your_list</span> <span class="o">=</span> <span class="n">my_list</span>
 </pre></div>
 </div>
-<p>the variable &#8216;your_list&#8217; now points to the same value &#8211; the same list.
+<p>the variable 'your_list' now points to the same value -- the same list.
 That is, it does not make a copy of the list. Since the list is mutable,
-changing &#8216;your_list&#8217; will also change &#8216;my_list&#8217;:</p>
+changing 'your_list' will also change 'my_list':</p>
 <div class="highlight-python"><pre>larch&gt; your_list[0] = 500
 larch&gt; print my_list[:3]
 [500, 'b', 'c']                # changed!!</pre>
@@ -584,16 +586,16 @@ larch&gt; print my_list[:3]
 larch&gt; your_list[0] == my_list[0]
 False</pre>
 </div>
-<p>Note that this behavior doesn&#8217;t happen for immutable data types, including
+<p>Note that this behavior doesn't happen for immutable data types, including
 the more primitive data types such as integers, floats and strings.  This
 is essentially because you cannot assign to parts of those data types, only
 set its entire value.</p>
 <p>As always, consult the Python documentation for more details.</p>
 </div>
 <div class="section" id="tuples">
-<h3>Tuples<a class="headerlink" href="#tuples" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.3.2. Tuples<a class="headerlink" href="#tuples" title="Permalink to this headline">¶</a></h3>
 <p>Like lists, tuples are sequences of heterogenous objects.  The principle
-difference is that tuples are <strong>immutable</strong> &#8211; they cannot be changed once
+difference is that tuples are <strong>immutable</strong> -- they cannot be changed once
 they are created.  Instead, tuples are a simple ordered container of data.
 The syntax for tuples uses comma separated values inside (optional!)
 parentheses in place of brackets:</p>
@@ -607,15 +609,15 @@ parentheses in place of brackets:</p>
 <span class="s">&#39;hydrogen&#39;</span>
 </pre></div>
 </div>
-<p>Due to their immutability, tuples have only a few methods (&#8216;count&#8217; and
-&#8216;index&#8217; with similar functionality as for list).</p>
+<p>Due to their immutability, tuples have only a few methods ('count' and
+'index' with similar functionality as for list).</p>
 <p>Though tuples they may seem less powerful than lists, and they are actually
 used widely with Larch and Python.  In addition to the example above using
 a tuple for a short, fixed data structure, many functions will return a
 tuple of values.  For this case, the simplicity an immutability of tuples
 is a strength becaues, once created, a tuple has a predictable size and
 order to its elements, which is not true for lists.  That is, if a larch
-procedure (which we&#8217;ll see more of below) returns two values as a tuple:</p>
+procedure (which we'll see more of below) returns two values as a tuple:</p>
 <div class="highlight-python"><pre>larch&gt; def sumdiff(x, y):
 .....&gt;     return x+y, x-y
 .....&gt; enddef
@@ -631,9 +633,9 @@ larch&gt; print plus, minus
 </div>
 </div>
 <div class="section" id="a-second-look-at-strings">
-<h3>A second look at Strings<a class="headerlink" href="#a-second-look-at-strings" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.3.3. A second look at Strings<a class="headerlink" href="#a-second-look-at-strings" title="Permalink to this headline">¶</a></h3>
 <p>Though discussed earlier in the basic data types, strings are closely
-related to lists as well &#8211; they are best thought of as a sequence of
+related to lists as well -- they are best thought of as a sequence of
 characters.  Like tuples, strings are actually immutable, in that you
 cannot change part of a string, instead you must create a new string.
 Strings can be indexed and sliced as with lists and tuples:</p>
@@ -642,7 +644,7 @@ Strings can be indexed and sliced as with lists and tuples:</p>
 <span class="s">&#39;Mont&#39;</span>
 </pre></div>
 </div>
-<p>Strings have many methods &#8211; over 30 of them, in fact.  To convert a string
+<p>Strings have many methods -- over 30 of them, in fact.  To convert a string
 to lower case, use its <tt class="xref py py-meth docutils literal"><span class="pre">lower()</span></tt> method, and so on:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="s">&#39;Here is a String&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
 <span class="s">&#39;here is a string&#39;</span>
@@ -652,7 +654,7 @@ to lower case, use its <tt class="xref py py-meth docutils literal"><span class=
 <span class="s">&#39;Here Is A String&#39;</span>
 </pre></div>
 </div>
-<p>This aslo shows that the methods are associated with strings themselves &#8211;
+<p>This aslo shows that the methods are associated with strings themselves --
 even literal strings, and simply with variable names.</p>
 <p>Strings can be split into words with the <tt class="xref py py-meth docutils literal"><span class="pre">split()</span></tt> method, which splits
 a string on whitespace by default, but can take an argument to change the
@@ -669,7 +671,7 @@ functionality, and consulting standard Python documentation is recommended
 for more information.</p>
 </div>
 <div class="section" id="arrays">
-<h3>Arrays<a class="headerlink" href="#arrays" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.3.4. Arrays<a class="headerlink" href="#arrays" title="Permalink to this headline">¶</a></h3>
 <p>Whereas lists are sequences of heterogeneous objects that can grow and
 shrink, and included deeply nested structures, they are not well suited for
 holding numerical data.  Arrays are sequences of the same primitive data
@@ -684,7 +686,7 @@ of several other methods to create arrays.</p>
 is devoted to them.</p>
 </div>
 <div class="section" id="dictionaries">
-<h3>Dictionaries<a class="headerlink" href="#dictionaries" title="Permalink to this headline">¶</a></h3>
+<h3>3.2.3.5. Dictionaries<a class="headerlink" href="#dictionaries" title="Permalink to this headline">¶</a></h3>
 <p>Our final basic data-structure is the dictionary, which is a container that
 maps values to keys.  This is sometimes called a hash or associative array.
 Like a list, a dictionary holds many heterogeneous values, and can be
@@ -693,8 +695,8 @@ guaranteed order, and are not selected by integer index, and multiple
 values cannot be selected by a slice.  Instead, the elements of a
 dictionary are accessed by key, which is normally a string, but can also be
 an integer or floating point number, or even a tuple or some other objects
-&#8211; any <strong>immutable</strong> object can be used.   Dictionaries are delimited by
-curly braces, with colons (&#8216;:&#8217;) separating key and value, and commas
+-- any <strong>immutable</strong> object can be used.   Dictionaries are delimited by
+curly braces, with colons (':') separating key and value, and commas
 separating different elements:</p>
 <div class="highlight-python"><pre>larch&gt; atomic_weight = {'H': 1.008, 'He': 4.0026, 'Li': 6.9, 'Be': 9.012}
 larch&gt; print atomic_weight['He']
@@ -708,22 +710,22 @@ larch&gt; print atomic_weight['He']
 <p>Dictionaries have several methods.  These include</p>
 <blockquote>
 <div><ul class="simple">
-<li>clear &#8211; remove all elements from a dictionary.</li>
-<li>copy &#8211; make a copy of a dictionary.</li>
-<li>get &#8211; get an element by name.</li>
-<li>has_key &#8211; return whether a dictionary has a key.</li>
-<li>items &#8211; return a list of (key, value) tuples</li>
-<li>keys  &#8211; return a list of keys.</li>
-<li>values &#8211; return a list of values.</li>
-<li>pop &#8211; remove an element by key, return the value.</li>
-<li>popitem &#8211; remove the &#8220;next&#8221; item, return (key, value)</li>
-<li>update &#8211; add or overwrite items from another dictionary.</li>
+<li>clear -- remove all elements from a dictionary.</li>
+<li>copy -- make a copy of a dictionary.</li>
+<li>get -- get an element by name.</li>
+<li>has_key -- return whether a dictionary has a key.</li>
+<li>items -- return a list of (key, value) tuples</li>
+<li>keys  -- return a list of keys.</li>
+<li>values -- return a list of values.</li>
+<li>pop -- remove an element by key, return the value.</li>
+<li>popitem -- remove the &quot;next&quot; item, return (key, value)</li>
+<li>update -- add or overwrite items from another dictionary.</li>
 </ul>
 </div></blockquote>
 <p>For example:</p>
 <blockquote>
 <div>larch&gt; atomic_weight.keys()
-[&#8216;Be&#8217;, &#8216;C&#8217;, &#8216;B&#8217;, &#8216;H&#8217;, &#8216;Li&#8217;, &#8216;He&#8217;]
+['Be', 'C', 'B', 'H', 'Li', 'He']
 larch&gt; atomic_weight.values()
 [9.0120000000000005, 12.01, 10.811, 1.008, 6.9000000000000004, 4.0026000000000002]</div></blockquote>
 <p>Note that the keys and values are not in the order they were entered.  If
@@ -737,14 +739,14 @@ and are in fact used throughout python.</p>
 </div>
 </div>
 <div class="section" id="object-identities-copying-and-equality-vs-identity">
-<span id="tutor-objectids-sec"></span><h2>Object identities, copying, and equality vs. identity<a class="headerlink" href="#object-identities-copying-and-equality-vs-identity" title="Permalink to this headline">¶</a></h2>
+<span id="tutor-objectids-sec"></span><h2>3.2.4. Object identities, copying, and equality vs. identity<a class="headerlink" href="#object-identities-copying-and-equality-vs-identity" title="Permalink to this headline">¶</a></h2>
 <p>OK, this may be a bit advanced for a section in a <em>tutorial</em>, but there are
 a few important topics we need to make about objects, groups, and the idea
 of <em>mutability</em> discussed above.  Though it may at first pass seem
 surprising, these points are all related, and will come up several times in
 this document and in your use of Larch.  Those familiar with Fortran, C, or
 Java programming may need to read this more carefully, as Larch and Python
-actually work quite differently from those languages.  What we&#8217;re aiming to
+actually work quite differently from those languages.  What we're aiming to
 cover here includes:</p>
 <blockquote>
 <div><ul class="simple">
@@ -764,10 +766,10 @@ pointer).  Assignment to a Larch variable as with:</p>
 </pre></div>
 </div>
 <p>first determines the <em>value</em> from the right-hand-side of the expression
-(1+2, &#8216;a string&#8217;, a list, and the return value of some_function()) then
+(1+2, 'a string', a list, and the return value of some_function()) then
 assigns the variable <em>name</em> (w, x, y, z) to point to the corresponding
-value.  Larch doesn&#8217;t pre-assign variable names so that &#8216;w&#8217; there can only
-ever hold an integer &#8211; you can change not only its value but the <em>type</em> of
+value.  Larch doesn't pre-assign variable names so that 'w' there can only
+ever hold an integer -- you can change not only its value but the <em>type</em> of
 data its pointing to:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">3.25</span>  <span class="c"># now a floating point number</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>  <span class="c"># now a list</span>
@@ -778,32 +780,32 @@ different from the value it points to.  Of course, it is obvious when two
 different variable names are different, because the names are different.
 It is less clear whether the value the variables hold are different.</p>
 <p>Values of simple types (integer, float, string, tuple, and a few other
-builtin types) are said to be <strong>immutable</strong> &#8211;  the value itself cannot
+builtin types) are said to be <strong>immutable</strong> --  the value itself cannot
 change.   You can reassign a name to a different value, but:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">3.25</span>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">w</span> <span class="o">=</span> <span class="mf">4.68</span>
 </pre></div>
 </div>
-<p>doesn&#8217;t change the value of 3.25.  Assignment to simple types then can be
+<p>doesn't change the value of 3.25.  Assignment to simple types then can be
 thought of as essentially making a fresh value for the name to point each
-time an assignment is made.  This isn&#8217;t exactly true because Python sets
+time an assignment is made.  This isn't exactly true because Python sets
 pre-allocates small integers so that it is not making a new integer object
-every time you assign a number to 1, but it&#8217;s a reasonable approximation
+every time you assign a number to 1, but it's a reasonable approximation
 for now.</p>
 <p>Several object types such as lists, dictionaries, arrays, and groups, all
 are meant to changeable after they are created: they are <strong>mutable</strong>.  That
 is, even after creating a list, you can append an element to it or you can
 remove an item from it, and so on.  These actions changes the <em>value</em> that
-the object points to.  The object just points to a place in memory &#8211; this
+the object points to.  The object just points to a place in memory -- this
 does not have to change just because the value changes.</p>
 <p>This is somewhat different than the model for variable in languages such as
 C or Fortran where variables have fixed memory locations and specific types
 of data they can hold.   In Python and Larch, all objects point to some
 value.  For mutable data types, the value is allowed to change.  In
 addition, what the object points to can also change.</p>
-<p>Each object value has a unique memory location &#8211; its identity.  The
+<p>Each object value has a unique memory location -- its identity.  The
 builtin <a class="reference internal" href="builtins.html#id" title="id"><tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt></a> function returns this identity.  Two variables are said
-to be <em>identical</em> if their values have the same identity &#8211; the variables
+to be <em>identical</em> if their values have the same identity -- the variables
 point to the same quantitiy.  Two variabales are <em>equal</em> if their values
 are the same, even if these values are held in different memory locations.
 And, of course, two different variables can point to the same object.</p>
@@ -891,7 +893,7 @@ larch&gt; show(g)
 </div>
 <p>In practice, this issue is not as confusing as it sounds, and the model for
 data, variables, and values is generally very easy to deal with.  The most
-important thing to be aware of &#8211; the thing most likely to cause trouble &#8211;
+important thing to be aware of -- the thing most likely to cause trouble --
 is that assigning a variable to be a mutable object like a list,
 dictionary, or array does not make a copy of the object, but simply creates
 another variable that points to the same value.</p>
@@ -911,10 +913,10 @@ another variable that points to the same value.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="arrays.html" title="Tutorial: Basic Array Manipulation"
+          <a href="arrays.html" title="3.3. Tutorial: Basic Array Manipulation"
              >next</a> |</li>
         <li class="right" >
-          <a href="start.html" title="Tutorial: Getting Started"
+          <a href="start.html" title="3.1. Tutorial: Getting Started"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -926,12 +928,12 @@ another variable that points to the same value.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

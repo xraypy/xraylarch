@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Programming with Larch &mdash; larch 0.9.21 documentation</title>
+    <title>10. Programming with Larch &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +26,8 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="prev" title="X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="prev" title="9. X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,7 +49,7 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../xrf/index.html" title="X-ray Fluorescence Analysis with Larch"
+          <a href="../xrf/index.html" title="9. X-ray Fluorescence Analysis with Larch"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -66,23 +68,23 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Programming with Larch</a><ul>
-<li><a class="reference internal" href="#differences-between-larch-and-python">Differences between Larch and Python</a><ul>
-<li><a class="reference internal" href="#code-block-ends">Code Block Ends</a></li>
-<li><a class="reference internal" href="#groups-vs-modules">Groups vs Modules</a></li>
-<li><a class="reference internal" href="#symbol-lookup-rules">Symbol Lookup Rules</a></li>
-<li><a class="reference internal" href="#unimplemented-features">Unimplemented features</a></li>
+<li><a class="reference internal" href="#">10. Programming with Larch</a><ul>
+<li><a class="reference internal" href="#differences-between-larch-and-python">10.1. Differences between Larch and Python</a><ul>
+<li><a class="reference internal" href="#code-block-ends">10.1.1. Code Block Ends</a></li>
+<li><a class="reference internal" href="#groups-vs-modules">10.1.2. Groups vs Modules</a></li>
+<li><a class="reference internal" href="#symbol-lookup-rules">10.1.3. Symbol Lookup Rules</a></li>
+<li><a class="reference internal" href="#unimplemented-features">10.1.4. Unimplemented features</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#modules">Modules</a></li>
-<li><a class="reference internal" href="#plugins">Plugins</a></li>
+<li><a class="reference internal" href="#modules">10.2. Modules</a></li>
+<li><a class="reference internal" href="#plugins">10.3. Plugins</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="../xrf/index.html"
-                        title="previous chapter">X-ray Fluorescence Analysis with Larch</a></p>
+                        title="previous chapter">9. X-ray Fluorescence Analysis with Larch</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/devel/index.txt"
@@ -110,7 +112,7 @@
           <div class="body">
             
   <div class="section" id="programming-with-larch">
-<h1>Programming with Larch<a class="headerlink" href="#programming-with-larch" title="Permalink to this headline">¶</a></h1>
+<h1>10. Programming with Larch<a class="headerlink" href="#programming-with-larch" title="Permalink to this headline">¶</a></h1>
 <p>This chapter describes some of the key concepts for programming with Larch.
 Larch is a fairly complete programming language for data analysis, but it
 is sometimes desirable to extend Larch with new functionality.  There are
@@ -125,19 +127,19 @@ at developers and advanced users, Larch (and Python) makes such
 developments easy enough that neither extensive effort no extensive
 training are required.</p>
 <div class="section" id="differences-between-larch-and-python">
-<span id="python-diffs-section"></span><h2>Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h2>
+<span id="python-diffs-section"></span><h2>10.1. Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h2>
 <p>Larch is based on and very similar to Python, but there are some very
 important differences that need to be noted, especially for those familiar
 with Python.  These differences are not here because we feel Python is
 somehow inadequate or imperfect, but because Larch is intended as a
-domain-specific-language.  The fact that Larch&#8217;s syntax is so close to
+domain-specific-language.  The fact that Larch's syntax is so close to
 Python is really something of an implementation detail, so straying from
-the &#8220;purity&#8221; of Python shouldn&#8217;t be seen as an allegation of imperfection
-on either Larch&#8217;s or Python&#8217;s parts &#8211; they have different goals.  The
+the &quot;purity&quot; of Python shouldn't be seen as an allegation of imperfection
+on either Larch's or Python's parts -- they have different goals.  The
 principle differences with Python are:</p>
 <blockquote>
 <div><ol class="arabic simple">
-<li>Using &#8216;end*&#8217; instead of significant white-space for code blocks.</li>
+<li>Using 'end*' instead of significant white-space for code blocks.</li>
 <li>Groups versus Modules</li>
 <li>Changing the lookup rules for finding symbol names</li>
 <li>Not implementing several python concepts, notably Class, and lambda.</li>
@@ -147,13 +149,13 @@ principle differences with Python are:</p>
 <p>Some background and discussion of Larch implementation may help inform the
 discussion below, and help describe many of the design decisions made in
 Larch.  First and foremost, Larch is designed to be a domain-specific macro
-language that makes heavy use of Python&#8217;s wonderful tools for processing
+language that makes heavy use of Python's wonderful tools for processing
 scientific data.  Having a macro language that was similar to Python was
 not the primary goal.  The first version of Larch actually had much weaker
 correspondance to Python.  It turned out that the implementation was much
 easier and more robust when using syntax close to Python.</p>
 <p>When larch code is run, the text is first <em>translated into Python code</em> and
-then parsed by Python&#8217;s own  <em>ast</em> module which parses Python code into an
+then parsed by Python's own  <em>ast</em> module which parses Python code into an
 <em>abstract syntax tree</em> that is much more convenient for a machine to
 execute.   As a brief description of what this module does, the statement:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">a</span><span class="o">*</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">b</span><span class="p">)</span><span class="o">+</span><span class="n">c</span>
@@ -164,10 +166,10 @@ execute.   As a brief description of what this module does, the statement:</p>
 </pre></div>
 </div>
 <p>Larch then walks through this tree, executing each Add, Mult, etc on its
-arguments.  If you&#8217;ve ever done any text processing or thought about how a
-compiler works, you&#8217;ll see that having this translation step done by proven
-tools is a huge benefit.  For one thing, using Python&#8217;s own interpreter
-means that Larch simply does not having parsing errors &#8211; any problem would
+arguments.  If you've ever done any text processing or thought about how a
+compiler works, you'll see that having this translation step done by proven
+tools is a huge benefit.  For one thing, using Python's own interpreter
+means that Larch simply does not having parsing errors -- any problem would
 be translation of Larch code into Python, or in executing the compiled code
 above.  This also makes the core code implementing Larch much easier (the
 core functionality is fewer than 3000 lines of code).</p>
@@ -175,31 +177,31 @@ core functionality is fewer than 3000 lines of code).</p>
 and how the differences with Python arise:</p>
 <blockquote>
 <div><ul class="simple">
-<li>The Larch-to-Python translation step converts the &#8216;end*&#8217; keywords into
-significant whitespace (&#8216;commenting out &#8216;endif&#8217; etc if needed).</li>
-<li>The lookup for symbols in <strong>Name(&#8216;c&#8217;)</strong> is done at run-time, allowing
+<li>The Larch-to-Python translation step converts the 'end*' keywords into
+significant whitespace ('commenting out 'endif' etc if needed).</li>
+<li>The lookup for symbols in <strong>Name('c')</strong> is done at run-time, allowing
 changes from the standard Python name lookup rules.</li>
 <li>Unimplemented Python constructs (class, lambda, etc) are parsed, but</li>
 </ul>
 </div></blockquote>
-<p>You can also see that Python&#8217;s syntax is followed very closely, so that the
+<p>You can also see that Python's syntax is followed very closely, so that the
 translation from Larch-to-Python is minimal.</p>
 <div class="section" id="code-block-ends">
-<span id="id1"></span><h3>Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h3>
+<span id="id1"></span><h3>10.1.1. Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h3>
 <p>Unlike Python, Larch does not use significant whitespace to define blocks.
-There, that was easy.  Instead, Larch uses &#8220;end blocks&#8221;, of the form:</p>
+There, that was easy.  Instead, Larch uses &quot;end blocks&quot;, of the form:</p>
 <div class="highlight-python"><pre>if test:
    &lt;block of statements&gt;
 endif</pre>
 </div>
 <p>Each of the Keywords <em>if</em>, <em>while</em>, <em>for</em>, <em>def</em>, and <em>try</em> must be matched
-with a corresponding &#8216;end&#8217; keyword: <em>endif</em>, <em>endwhile</em>, <em>endfor</em>,
+with a corresponding 'end' keyword: <em>endif</em>, <em>endwhile</em>, <em>endfor</em>,
 <em>enddef</em>, and <em>endtry</em>.  You do not need an <em>endelse</em>, <em>endelif</em>,
 <em>endexcept</em>, etc, as this is not ambiguous.</p>
-<p>As a special note, you can place a &#8216;#&#8217; in front of &#8216;end&#8217;. Note that this
-means exactly 1 &#8216;#&#8217; and exactly in front of &#8216;end&#8217;, so that &#8216;#endif&#8217; is
-allowed but not &#8216;####endif&#8217; or &#8216;# endfor&#8217;.  This allows you to follow
-Python&#8217;s indenting rules and write code that is valid Larch and valid
+<p>As a special note, you can place a '#' in front of 'end'. Note that this
+means exactly 1 '#' and exactly in front of 'end', so that '#endif' is
+allowed but not '####endif' or '# endfor'.  This allows you to follow
+Python's indenting rules and write code that is valid Larch and valid
 Python, which can be useful in translating code:</p>
 <div class="highlight-python"><pre>for i in range(5)
     print(i, i/2.0)
@@ -208,17 +210,17 @@ Python, which can be useful in translating code:</p>
 <p>This code is both valid Larch and valid Python.</p>
 </div>
 <div class="section" id="groups-vs-modules">
-<h3>Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this headline">¶</a></h3>
+<h3>10.1.2. Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this headline">¶</a></h3>
 <p>This is at least partly a semantic distinction.  Larch organizes data and
-code into Groups &#8211; simple containers that hold data, functions, and other
+code into Groups -- simple containers that hold data, functions, and other
 groups.  These are implemented as a simple, empty class that is part of the
 symbol table.</p>
 </div>
 <div class="section" id="symbol-lookup-rules">
-<h3>Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this headline">¶</a></h3>
+<h3>10.1.3. Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this headline">¶</a></h3>
 <p>Looking up symbol names is a key feature of any language.  Python and Larch
 both allow <em>namespaces</em> in which symbols can be nested into a heirarchy,
-using a syntax of <strong>parent.child</strong>, with a dot (&#8216;.&#8217;) separating the
+using a syntax of <strong>parent.child</strong>, with a dot ('.') separating the
 components of the name.   Such parent/child relationships for symbol names
 are used for modules (files of code), and object attributes.   Thus, one
 could have data objects named:</p>
@@ -230,13 +232,13 @@ could have data objects named:</p>
 <p>Where the name <em>chi</em> is used repeatedly, but with different (and multiple)
 parents.  The issue of name lookups is how to know what (if any) to use if
 <em>chi</em> is specified without its parents names.</p>
-<p>In Python, name lookups are quite straightforward and strict: &#8220;<em>local,
-module</em>&#8221;. Here, <em>local</em> means &#8220;inside the current function or method&#8221; and
-<em>module</em> means &#8220;inside the current module (file of code text)&#8221;.  More
+<p>In Python, name lookups are quite straightforward and strict: &quot;<em>local,
+module</em>&quot;. Here, <em>local</em> means &quot;inside the current function or method&quot; and
+<em>module</em> means &quot;inside the current module (file of code text)&quot;.  More
 specifically, each function or method and each module is given its own
 namespace, and symbols are looked for first in the local namespace, and
 then in the module namespace.  These rules are focused on <em>code</em> rather
-than <em>data</em>, and leads to having a lot of &#8220;import&#8221; statements at the top of
+than <em>data</em>, and leads to having a lot of &quot;import&quot; statements at the top of
 python modules.  For example, to access the <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> function from the
 numpy module, one typically does one of these:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span>
@@ -255,13 +257,13 @@ numpy module, one typically does one of these:</p>
 </pre></div>
 </div>
 <p>In both of these examples the numpy module is brought into the <em>module</em>
-level namespace, either named as &#8216;numpy&#8217; or renamed to &#8216;np&#8217; (a common
+level namespace, either named as 'numpy' or renamed to 'np' (a common
 convention in scientific python code).  Inside the function
-<tt class="xref py py-func docutils literal"><span class="pre">sqrt_array()</span></tt>, the names &#8216;npts&#8217; and &#8216;x&#8217; are in the local namespace &#8211;
+<tt class="xref py py-func docutils literal"><span class="pre">sqrt_array()</span></tt>, the names 'npts' and 'x' are in the local namespace --
 they are not available outside the function.  The functions <tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt>
 and <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> are taken from the module-level namespace, using the name
 as defined in the import statement.  A third alternative would be to
-import only the names &#8216;sqrt&#8217; and &#8216;arange&#8217; into the modules namespace:</p>
+import only the names 'sqrt' and 'arange' into the modules namespace:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">sqrt</span><span class="p">,</span> <span class="n">arange</span>
 
 <span class="k">def</span> <span class="nf">sqrt_array</span><span class="p">(</span><span class="n">npts</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
@@ -282,12 +284,12 @@ experienced developers will tell you to avoid this like the plague.</p>
 remains, but the rules are changed slightly.  Since Group objects are used
 extensively throughout Larch exactly to provide namespaces as a way to
 organize data, we might as well use them.  Instead of using <cite>import *</cite>,
-Larch has a top-level group &#8216;_math&#8217; in which it stores several hundred
+Larch has a top-level group '_math' in which it stores several hundred
 names of functions, mostly from the numpy module.  It also uses top-level
-groups &#8216;_sys&#8217; and &#8216;_builtin&#8217;, which hold non-mathematical builtin functions
-and data, and many plugins will add top-level groups (such as &#8216;_plotter&#8217;,
-&#8216;_xafs&#8217;, and &#8216;_xray&#8217;).  So, to access <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> and <tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt> in
-Larch, you could write <cite>_math.sqrt()</cite> and <cite>_math.arange()</cite>.  But you don&#8217;t
+groups '_sys' and '_builtin', which hold non-mathematical builtin functions
+and data, and many plugins will add top-level groups (such as '_plotter',
+'_xafs', and '_xray').  So, to access <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> and <tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt> in
+Larch, you could write <cite>_math.sqrt()</cite> and <cite>_math.arange()</cite>.  But you don't
 have to.</p>
 <p>Symbol lookup in Larch uses a list of Groups which is searched for names.
 This list of groups is held in _sys.searchGroups (which holds the group
@@ -297,20 +299,20 @@ changed dynamically, this is not encouraged (and can lead to Larch not
 being able to work well).</p>
 <p>Larch also has 3 special variables that it uses to hold references to
 groups that are <em>always</em> included in the search of names.  These are
-&#8216;_sys.localGroup&#8217;, which holds the group for a currently running function
-while it is running; &#8216;_sys.moduleGroup&#8217;, which holds the namespace for a
-module associated with a currently running function; and &#8216;_sys.paramGroup&#8217;,
+'_sys.localGroup', which holds the group for a currently running function
+while it is running; '_sys.moduleGroup', which holds the namespace for a
+module associated with a currently running function; and '_sys.paramGroup',
 which holds a group of Parameters used during fits (more on this, and why
 it is needed here in the section on Parameters).</p>
 </div>
 <div class="section" id="unimplemented-features">
-<h3>Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this headline">¶</a></h3>
+<h3>10.1.4. Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this headline">¶</a></h3>
 <p>A domain-specific-language like Larch does not need to be as full-featured
 as Python, so we left a few things out.  These include (this may not be an
 exhaustive list):</p>
 <blockquote>
 <div><ul class="simple">
-<li>eval &#8211; Larch <em>is</em> sort of a Python eval</li>
+<li>eval -- Larch <em>is</em> sort of a Python eval</li>
 <li>lambda</li>
 <li>class</li>
 <li>global</li>
@@ -321,21 +323,21 @@ exhaustive list):</p>
 </div>
 </div>
 <div class="section" id="modules">
-<h2>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
-<p>Larch can import modules either written in Larch (with a &#8216;.lar&#8217; extension) or
-Python (with a &#8216;.py&#8217; extension).  When importing a Python module, the full
+<h2>10.2. Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h2>
+<p>Larch can import modules either written in Larch (with a '.lar' extension) or
+Python (with a '.py' extension).  When importing a Python module, the full
 set of Python objects is imported as a module, which looks and acts exactly
 like a Group.</p>
 </div>
 <div class="section" id="plugins">
-<h2>Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
+<h2>10.3. Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h2>
 <p>Plugins are a powerful feature of Larch that allow it to be easily extended
-without the requiring detailed knowledge of all of Larch&#8217;s internals.  A
+without the requiring detailed knowledge of all of Larch's internals.  A
 plugin is a specially written Python module that is meant to add
 functionality to Larch at run-time.  Generally speaking, plugins will be
 python modules which define new or customized versions of functions to
 create or manipulate Groups.</p>
-<p>Plugins need access to Larch&#8217;s symbol table and need to tell Larch how to
+<p>Plugins need access to Larch's symbol table and need to tell Larch how to
 use them.  To do this, each function to be added to Larch in a plugin
 module needs a <cite>_larch</cite> keyword argument, which will be used to pass in the
 instance of the current larch interpreter.  Normally, you will only need
@@ -362,14 +364,14 @@ would look like:</p>
 <p>This is a fairly trivial example, simply putting data into a Group.  Of
 course, the main point of a plugin is that you can do much more complicated
 work inside the function.</p>
-<p>If this is placed in a file called &#8216;myplugin.py&#8217; in the larch plugins
+<p>If this is placed in a file called 'myplugin.py' in the larch plugins
 folder (either $HOME/.larch/plugins/ or /usr/local/share/larch/plugins on
 Unix, or C:\Users\ME\larch\plugins or C:\Program Files\larch\plugins on
 Windows), then:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s">&#39;myplugin&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>will add a top-level group &#8216;mymod&#8217; with an &#8216;f1&#8217; function, so that:</p>
+<p>will add a top-level group 'mymod' with an 'f1' function, so that:</p>
 <div class="highlight-python"><pre>larch&gt; g1 = mymod.f1(10, 'yes')
 larch&gt; print g1
 &lt;Group created by f1!&gt;
@@ -394,7 +396,7 @@ startup script.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../xrf/index.html" title="X-ray Fluorescence Analysis with Larch"
+          <a href="../xrf/index.html" title="9. X-ray Fluorescence Analysis with Larch"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -410,7 +412,7 @@ startup script.</p>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

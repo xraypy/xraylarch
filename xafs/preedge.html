@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS: Pre-edge Subtraction and Normalization &mdash; larch 0.9.21 documentation</title>
+    <title>7.1. XAFS: Pre-edge Subtraction and Normalization &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="XAFS Analysis" href="index.html" />
-    <link rel="next" title="XAFS: Post-edge Background Subtraction" href="autobk.html" />
-    <link rel="prev" title="XAFS Analysis" href="index.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="7. XAFS Analysis" href="index.html" />
+    <link rel="next" title="7.2. XAFS: Post-edge Background Subtraction" href="autobk.html" />
+    <link rel="prev" title="7. XAFS Analysis" href="index.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="XAFS Analysis"
+          <a href="index.html" title="7. XAFS Analysis"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,18 +74,18 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">XAFS: Pre-edge Subtraction and Normalization</a><ul>
-<li><a class="reference internal" href="#example">Example</a></li>
+<li><a class="reference internal" href="#">7.1. XAFS: Pre-edge Subtraction and Normalization</a><ul>
+<li><a class="reference internal" href="#example">7.1.1. Example</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">XAFS Analysis</a></p>
+                        title="previous chapter">7. XAFS Analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="autobk.html"
-                        title="next chapter">XAFS: Post-edge Background Subtraction</a></p>
+                        title="next chapter">7.2. XAFS: Post-edge Background Subtraction</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/preedge.txt"
@@ -111,7 +113,7 @@
           <div class="body">
             
   <div class="section" id="xafs-pre-edge-subtraction-and-normalization">
-<h1>XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#xafs-pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
+<h1>7.1. XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#xafs-pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
 <p>After reading in data and constructing <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>, the principle
 pre-processing steps for XAFS analysis.  are pre-edge subtraction and
 normalization.  Reading data and constructing <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> are handled by
@@ -136,17 +138,17 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>energy</strong> &#8211; 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> &#8211; 1-d array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
-<li><strong>group</strong> &#8211; output group</li>
-<li><strong>e0</strong> &#8211; edge energy, <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> in eV.  If None, it will be determined here.</li>
-<li><strong>step</strong> &#8211; edge jump.  If None, it will be determined here.</li>
-<li><strong>pre1</strong> &#8211; low E range (relative to E0) for pre-edge fit</li>
-<li><strong>pre2</strong> &#8211; high E range (relative to E0) for pre-edge fit</li>
-<li><strong>nvict</strong> &#8211; energy exponent to use for pre-edg fit.  See Note below.</li>
-<li><strong>norm1</strong> &#8211; low E range (relative to E0) for post-edge fit</li>
-<li><strong>norm2</strong> &#8211; high E range (relative to E0) for post-edge fit</li>
-<li><strong>nnorm</strong> &#8211; number of terms in polynomial (that is, 1+degree) for
+<li><strong>energy</strong> -- 1-d array of x-ray energies, in eV</li>
+<li><strong>mu</strong> -- 1-d array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
+<li><strong>group</strong> -- output group</li>
+<li><strong>e0</strong> -- edge energy, <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> in eV.  If None, it will be determined here.</li>
+<li><strong>step</strong> -- edge jump.  If None, it will be determined here.</li>
+<li><strong>pre1</strong> -- low E range (relative to E0) for pre-edge fit</li>
+<li><strong>pre2</strong> -- high E range (relative to E0) for pre-edge fit</li>
+<li><strong>nvict</strong> -- energy exponent to use for pre-edg fit.  See Note below.</li>
+<li><strong>norm1</strong> -- low E range (relative to E0) for post-edge fit</li>
+<li><strong>norm2</strong> -- high E range (relative to E0) for post-edge fit</li>
+<li><strong>nnorm</strong> -- number of terms in polynomial (that is, 1+degree) for
 post-edge, normalization curve. Default=3 (quadratic)</li>
 </ul>
 </td>
@@ -231,9 +233,9 @@ checks to avoid spurious glitches.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy</strong> &#8211; array of x-ray energies, in eV</li>
-<li><strong>mu</strong> &#8211; array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
-<li><strong>group</strong> &#8211; output group</li>
+<li><strong>energy</strong> -- array of x-ray energies, in eV</li>
+<li><strong>mu</strong> -- array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
+<li><strong>group</strong> -- output group</li>
 </ul>
 </td>
 </tr>
@@ -243,7 +245,7 @@ checks to avoid spurious glitches.</p>
 </dd></dl>
 
 <div class="section" id="example">
-<h2>Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<h2>7.1.1. Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;fe2o3_rt1.xmu&#39;</span>
 <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy xmu i0&#39;</span><span class="p">)</span>
@@ -265,12 +267,10 @@ checks to avoid spurious glitches.</p>
 </pre></div>
 </div>
 <p>gives the following results:</p>
-<blockquote id="xafs-fig1">
-<div><div class="figure align-center" style="width: 100%">
+<div class="figure align-center" id="xafs-fig1">
 <a class="reference external image-reference" href="../_images/xafs_preedge.png"><img alt="../_images/xafs_preedge.png" src="../_images/xafs_preedge.png" style="width: 65%;" /></a>
+<p class="caption"><strong>Figure 7.1:</strong> XAFS Pre-edge subtraction.</p>
 </div>
-<p>Figure 1. XAFS Pre-edge subtraction.</p>
-</div></blockquote>
 </div>
 </div>
 
@@ -287,10 +287,10 @@ checks to avoid spurious glitches.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="XAFS Analysis"
+          <a href="index.html" title="7. XAFS Analysis"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -302,12 +302,12 @@ checks to avoid spurious glitches.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

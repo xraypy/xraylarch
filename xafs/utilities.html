@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +8,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>XAFS: Utility functions &mdash; larch 0.9.21 documentation</title>
+    <title>7.3. XAFS: Utility functions &mdash; larch 0.9.22 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.21',
+        VERSION:     '0.9.22',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,10 +26,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.21 documentation" href="../index.html" />
-    <link rel="up" title="XAFS Analysis" href="index.html" />
-    <link rel="next" title="XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
-    <link rel="prev" title="XAFS: Post-edge Background Subtraction" href="autobk.html" /> 
+    <link rel="top" title="larch 0.9.22 documentation" href="../index.html" />
+    <link rel="up" title="7. XAFS Analysis" href="index.html" />
+    <link rel="next" title="7.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
+    <link rel="prev" title="7.2. XAFS: Post-edge Background Subtraction" href="autobk.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +51,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xafsft.html" title="XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="autobk.html" title="XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
              accesskey="P">previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -64,7 +66,7 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" accesskey="U">XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,19 +74,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">XAFS: Utility functions</a><ul>
-<li><a class="reference internal" href="#the-ktoe-and-etok-functions">The <tt class="docutils literal"><span class="pre">ktoe()</span></tt> and <tt class="docutils literal"><span class="pre">etok()</span></tt> functions</a></li>
-<li><a class="reference internal" href="#the-estimate-noise-function">The <tt class="docutils literal"><span class="pre">estimate_noise()</span></tt> function</a></li>
+<li><a class="reference internal" href="#">7.3. XAFS: Utility functions</a><ul>
+<li><a class="reference internal" href="#the-ktoe-and-etok-functions">7.3.1. The <tt class="docutils literal"><span class="pre">ktoe()</span></tt> and <tt class="docutils literal"><span class="pre">etok()</span></tt> functions</a></li>
+<li><a class="reference internal" href="#the-estimate-noise-function">7.3.2. The <tt class="docutils literal"><span class="pre">estimate_noise()</span></tt> function</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="autobk.html"
-                        title="previous chapter">XAFS: Post-edge Background Subtraction</a></p>
+                        title="previous chapter">7.2. XAFS: Post-edge Background Subtraction</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="xafsft.html"
-                        title="next chapter">XAFS: Fourier Transforms for XAFS</a></p>
+                        title="next chapter">7.4. XAFS: Fourier Transforms for XAFS</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/utilities.txt"
@@ -112,11 +114,11 @@
           <div class="body">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-utility-functions"></span><h1>XAFS: Utility functions<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-utility-functions"></span><h1>7.3. XAFS: Utility functions<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>There are a few functions for XAFS analysis that do not fall neatly into
 the previous sections.  We will list them here.</p>
 <div class="section" id="the-ktoe-and-etok-functions">
-<h2>The <a class="reference internal" href="#_xafs.ktoe" title="_xafs.ktoe"><tt class="xref py py-func docutils literal"><span class="pre">ktoe()</span></tt></a> and <a class="reference internal" href="#_xafs.etok" title="_xafs.etok"><tt class="xref py py-func docutils literal"><span class="pre">etok()</span></tt></a> functions<a class="headerlink" href="#the-ktoe-and-etok-functions" title="Permalink to this headline">¶</a></h2>
+<h2>7.3.1. The <a class="reference internal" href="#_xafs.ktoe" title="_xafs.ktoe"><tt class="xref py py-func docutils literal"><span class="pre">ktoe()</span></tt></a> and <a class="reference internal" href="#_xafs.etok" title="_xafs.etok"><tt class="xref py py-func docutils literal"><span class="pre">etok()</span></tt></a> functions<a class="headerlink" href="#the-ktoe-and-etok-functions" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.etok">
 <tt class="descclassname">_xafs.</tt><tt class="descname">etok</tt><big>(</big><em>energies</em><big>)</big><a class="headerlink" href="#_xafs.etok" title="Permalink to this definition">¶</a></dt>
@@ -166,7 +168,7 @@ larch&gt; endfor
 </div>
 </div>
 <div class="section" id="the-estimate-noise-function">
-<h2>The <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> function<a class="headerlink" href="#the-estimate-noise-function" title="Permalink to this headline">¶</a></h2>
+<h2>7.3.2. The <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> function<a class="headerlink" href="#the-estimate-noise-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.estimate_noise">
 <tt class="descclassname">_xafs.</tt><tt class="descname">estimate_noise</tt><big>(</big><em>k</em>, <em>chi</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><big>)</big><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
@@ -176,19 +178,19 @@ larch&gt; endfor
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>k</strong> &#8211; 1-d array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/></li>
-<li><strong>chi</strong> &#8211; 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/></li>
-<li><strong>group</strong> &#8211; output group.</li>
-<li><strong>rmin</strong> &#8211; minimum <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> value for noise estimate.</li>
-<li><strong>rmax</strong> &#8211; maximum <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> value for noise estimate.</li>
-<li><strong>kweight</strong> &#8211; exponent for weighting spectra by k**kweight [1]</li>
-<li><strong>kmin</strong> &#8211; starting k for FT Window [0]</li>
-<li><strong>kmax</strong> &#8211; ending k for FT Window  [20]</li>
-<li><strong>dk</strong> &#8211; tapering parameter for FT Window [4]</li>
-<li><strong>dk2</strong> &#8211; second tapering parameter for FT Window [None]</li>
-<li><strong>window</strong> &#8211; name of window type [&#8216;kaiser&#8217;]</li>
-<li><strong>nfft</strong> &#8211; value to use for N_fft [2048].</li>
-<li><strong>kstep</strong> &#8211; value to use for delta_k ( Ang^-1) [0.05]</li>
+<li><strong>k</strong> -- 1-d array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/></li>
+<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/></li>
+<li><strong>group</strong> -- output group.</li>
+<li><strong>rmin</strong> -- minimum <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> value for noise estimate.</li>
+<li><strong>rmax</strong> -- maximum <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> value for noise estimate.</li>
+<li><strong>kweight</strong> -- exponent for weighting spectra by k**kweight [1]</li>
+<li><strong>kmin</strong> -- starting k for FT Window [0]</li>
+<li><strong>kmax</strong> -- ending k for FT Window  [20]</li>
+<li><strong>dk</strong> -- tapering parameter for FT Window [4]</li>
+<li><strong>dk2</strong> -- second tapering parameter for FT Window [None]</li>
+<li><strong>window</strong> -- name of window type ['kaiser']</li>
+<li><strong>nfft</strong> -- value to use for N_fft [2048].</li>
+<li><strong>kstep</strong> -- value to use for delta_k ( Ang^-1) [0.05]</li>
 </ul>
 </td>
 </tr>
@@ -226,10 +228,10 @@ larch&gt; endfor
 
 <p>This method uses the high-R portion of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> (between <strong>rmin</strong>
 and <strong>rmax</strong>) as a measure of the noise level in the <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> data
-and uses Parseval&#8217;s theorem to convert this noise level to that in
+and uses Parseval's theorem to convert this noise level to that in
 <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  This method implicitly assumes that there is no signal in
 the high-R portion of the spectrum, and that the noise in the spectrum is
-&#8220;white&#8221; (independent of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>) .  Each of these assumptions can be
+&quot;white&quot; (independent of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>) .  Each of these assumptions can be
 legitimately questioned.  Then again, making the assertion that these
 assumptions are invalid and disregarding the estimated noise level here
 would require knowledge of the noise in an XAFS spectrum that most users do
@@ -257,10 +259,10 @@ small, the estimate may not be that bad.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xafsft.html" title="XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
              >next</a> |</li>
         <li class="right" >
-          <a href="autobk.html" title="XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
              >previous</a> |</li>
    <li><a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
@@ -272,12 +274,12 @@ small, the estimate may not be that bad.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
 
-          <li><a href="index.html" >XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2b1.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
