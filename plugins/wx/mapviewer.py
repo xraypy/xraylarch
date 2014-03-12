@@ -17,7 +17,7 @@ Needed Visualizations:
          lasso in correlations:  show XRF spectra, enhance map points
 """
 
-__version__ = '5 (30-July-2013)'
+__version__ = '6 (12-March-2014)'
 
 import os
 import sys
@@ -658,6 +658,10 @@ class MapViewerFrame(wx.Frame):
         self.larch = _larch
         self.xrfdisplay = None
         self.larch_buffer = None
+        self.watch_files = False
+        self.file_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
+        self.files_in_progress = []
         
         self.SetTitle("GSE XRM MapViewer")
         self.SetFont(Font(9))
@@ -829,7 +833,7 @@ class MapViewerFrame(wx.Frame):
         self.datagroups = self.larch.symtable
         self.title.SetLabel('')
 
-    def ShowFile(self, evt=None, filename=None, **kws):
+    def ShowFile(self, evt=None, filename=None,  **kws):
         if filename is None and evt is not None:
             filename = evt.GetString()
 
@@ -868,12 +872,18 @@ class MapViewerFrame(wx.Frame):
                   "Show Larch Programming Buffer",
                   self.onShowLarchBuffer)
 
+        mid = wx.NewId()
+        fmenu.Append(mid,  'Watch HDF5 Files',  'Watch HDF5 Files', kind=wx.ITEM_CHECK)
+        fmenu.Check(mid, False)
+        self.Bind(wx.EVT_MENU, self.onWatchFiles, id=mid)
+
         MenuItem(self, fmenu, "&Quit\tCtrl+Q",
                   "Quit program", self.onClose)
 
         hmenu = wx.Menu()
         MenuItem(self, hmenu, 'About', 'About MapViewer', self.onAbout)
 
+        
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(hmenu, "&Help")
@@ -1020,6 +1030,19 @@ Matt Newville <newville @ cars.uchicago.edu>
                 self.process_file(fname)
             self.ShowFile(filename=fname)
 
+    def onWatchFiles(self, event=None):
+        self.watch_files = event.IsChecked()
+        if not self.watch_files:
+            self.file_timer.Stop()
+        else:
+            self.file_timer.Start(10000)
+
+    def onFileWatchTimer(self, event=None):
+        for filename in self.filemap:
+            if (filename not in self.files_in_progress and
+                self.filemap[filename].folder_has_newdata()):
+                self.process_file(filename)
+
     def process_file(self, filename):
         """Request processing of map file.
         This can take awhile, so is done in a separate thread,
@@ -1033,6 +1056,7 @@ Matt Newville <newville @ cars.uchicago.edu>
             xrm_map.read_master()
 
         if self.filemap[filename].folder_has_newdata():
+            self.files_in_progress.append(filename)
             self.h5convert_fname = filename
             self.h5convert_done = False
             self.h5convert_irow, self.h5convert_nrow = 0, 0
@@ -1049,6 +1073,8 @@ Matt Newville <newville @ cars.uchicago.edu>
         if self.h5convert_done:
             self.htimer.Stop()
             self.h5convert_thread.join()
+            if fname in self.files_in_progress:
+                self.files_in_progress.remove(fname)
             self.message('MapViewerTimer Processing %s: complete!' % fname)
             self.ShowFile(filename=self.h5convert_fname)
 
