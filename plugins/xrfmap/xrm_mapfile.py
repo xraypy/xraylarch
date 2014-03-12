@@ -367,7 +367,6 @@ class GSEXRM_MapFile(object):
     >>> as  = map.get_roimap('As Ka', det=1, dtcorrect=True)
     >>> rgb = map.get_rgbmap('Fe', 'Ca', 'Zn', det=None, dtcorrect=True, scale_each=False)
     >>> en  = map.get_energy(det=1)
-    >>> xrf = map.get_spectra(xmin=10, xmax=20, ymin=40, ymax=50, dtcorrect=True)
 
     All these take the following options:
 
@@ -459,7 +458,6 @@ class GSEXRM_MapFile(object):
 
     def get_det(self, index=None):
         return GSEXRM_Detector(self.xrfmap, index=index)
-
         
         
     def open(self, filename, root=None, check_status=True):
@@ -1051,6 +1049,11 @@ class GSEXRM_MapFile(object):
         group = self._det_group(det)
         return group['energy'].value
 
+    def get_shape(self):
+        """returns NY, NX shape of array data"""
+        ny, nx, npos = self.xrfmap['positions/pos'].shape
+        return ny, nx
+    
     def get_mca_area(self, areaname, det=None, dtcorrect=True,
                      callback = None):
         """return XRF spectra as MCA() instance for
@@ -1076,7 +1079,7 @@ class GSEXRM_MapFile(object):
         mapdat = self._det_group(det)
         ix, iy, nmca = mapdat['counts'].shape
 
-        sx, sy = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
+        sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
         NCHUNKSIZE = 16384 # 8192
@@ -1087,7 +1090,7 @@ class GSEXRM_MapFile(object):
             try:
                 if hasattr(callback , '__call__'):
                     callback(1, 1, nx*ny)
-                counts = self.get_counts_rect(xmin, xmax, ymin, ymax,
+                counts = self.get_counts_rect(ymin, ymax, xmin, xmax,
                                            mapdat=mapdat, det=det, area=area,
                                            dtcorrect=dtcorrect)
             except MemoryError:
@@ -1101,7 +1104,7 @@ class GSEXRM_MapFile(object):
                     if x1 >= x2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, (x2-x1)*ny)
-                    counts += self.get_counts_rect(x1, x2, ymin, ymax, mapdat=mapdat,
+                    counts += self.get_counts_rect(ymin, ymax, x1, x2, mapdat=mapdat,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
             else:
@@ -1111,24 +1114,24 @@ class GSEXRM_MapFile(object):
                     if y1 >= y2: break
                     if hasattr(callback , '__call__'):
                         callback(i, step, nx*(y2-y1))
-                    counts += self.get_counts_rect(xmin, xmax, y1, y2, mapdat=mapdat,
+                    counts += self.get_counts_rect(y1, y2, xmin, xmax, mapdat=mapdat,
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
 
-        ltime, rtime = self.get_livereal_rect(xmin, xmax, ymin, ymax, det=det,
+        ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=area)
         return self._getmca(mapdat, counts, areaname,
                             real_time=rtime, live_time=ltime)
 
-    def get_mca_rect(self, xmin, xmax, ymin, ymax, det=None, dtcorrect=True):
+    def get_mca_rect(self, ymin, ymax, xmin, xmax, det=None, dtcorrect=True):
         """return mca counts for a map rectangle, optionally
 
         Parameters
         ---------
-        xmin :       int       low x index
-        xmax :       int       high x index
         ymin :       int       low y index
         ymax :       int       high y index
+        xmin :       int       low x index
+        xmax :       int       high x index
         det :        optional, None or int         index of detector
         dtcorrect :  optional, bool [True]         dead-time correct data
 
@@ -1137,28 +1140,30 @@ class GSEXRM_MapFile(object):
         MCA object for XRF counts in rectangle
 
         """
-        mapdat = self._det_group(det)
-        counts = self.get_counts_rect(xmin, xmax, ymin, ymax, mapdat=mapdat,
-                                      det=det, dtcorrect=dtcorrect)
-        name = 'rect(x=[%i:%i], y==[%i:%i])' % (xmin, xmax, ymin, ymax)
 
-        ltime, rtime = self.get_livereal_rect(xmin, xmax, ymin, ymax, det=det,
+        # print 'GET MCA RECT ', ymin, ymax, xmin, xmax
+        mapdat = self._det_group(det)
+        counts = self.get_counts_rect(ymin, ymax, xmin, xmax, mapdat=mapdat,
+                                      det=det, dtcorrect=dtcorrect)
+        name = 'rect(y=[%i:%i], x==[%i:%i])' % (ymin, ymax, xmin, xmax)
+
+        ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=None)
         return self._getmca(mapdat, counts, name,
                             real_time=rtime, live_time=ltime)
 
 
-    def get_counts_rect(self, xmin, xmax, ymin, ymax, mapdat=None, det=None,
+    def get_counts_rect(self, ymin, ymax, xmin, xmax, mapdat=None, det=None,
                      area=None, dtcorrect=True):
         """return counts for a map rectangle, optionally
         applying area mask and deadtime correction
 
         Parameters
         ---------
-        xmin :       int       low x index
-        xmax :       int       high x index
         ymin :       int       low y index
         ymax :       int       high y index
+        xmin :       int       low x index
+        xmax :       int       high x index
         mapdat :     optional, None or map data
         det :        optional, None or int         index of detector
         dtcorrect :  optional, bool [True]         dead-time correct data
@@ -1175,37 +1180,40 @@ class GSEXRM_MapFile(object):
         if mapdat is None:
             mapdat = self._det_group(det)
 
+
         nx, ny = (xmax-xmin, ymax-ymin)
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
+
         ix, iy, nmca = mapdat['counts'].shape
-        cell   = mapdat['counts'].regionref[sx, sy, :]
+        cell   = mapdat['counts'].regionref[sy, sx, :]
+
         counts = mapdat['counts'][cell]
-        counts = counts.reshape(nx, ny, nmca)
+        counts = counts.reshape(ny, nx, nmca)
 
         if dtcorrect and det in range(1, self.ndet+1):
-            cell   = mapdat['dtfactor'].regionref[sx, sy]
-            dtfact = mapdat['dtfactor'][cell].reshape(nx, ny)
+            cell   = mapdat['dtfactor'].regionref[sy, sx]
+            dtfact = mapdat['dtfactor'][cell].reshape(ny, nx)
             dtfact = dtfact.reshape(dtfact.shape[0], dtfact.shape[1], 1)
             counts = counts * dtfact
 
         if area is not None:
-            counts = counts[area[sx, sy]]
+            counts = counts[area[sy, sx]]
         else:
             counts = counts.sum(axis=0)
         return counts.sum(axis=0)
         
-    def get_livereal_rect(self, xmin, xmax, ymin, ymax, det=None,
+    def get_livereal_rect(self, ymin, ymax, xmin, xmax, det=None,
                           area=None, dtcorrect=True):
         """return livetime, realtime for a map rectangle, optionally
         applying area mask and deadtime correction
 
         Parameters
-        ---------
-        xmin :       int       low x index
-        xmax :       int       high x index
+        --------- 
         ymin :       int       low y index
         ymax :       int       high y index
+        xmin :       int       low x index
+        xmax :       int       high x index
         det :        optional, None or int         index of detector
         dtcorrect :  optional, bool [True]         dead-time correct data
         area :       optional, None or area object  area for mask
@@ -1219,27 +1227,27 @@ class GSEXRM_MapFile(object):
         """
         # need real size, not just slice values, for np.zeros()
         shape = self._det_group(1)['livetime'].shape
-        if xmax < 0: xmax += shape[0]
-        if ymax < 0: ymax += shape[1]
+        if ymax < 0: ymax += shape[0]
+        if xmax < 0: xmax += shape[1]
         nx, ny = (xmax-xmin, ymax-ymin)
-        # print (" GET LIVE/REAL ", xmin, xmax, ymin, ymax, nx, ny)
+        #print (" GET LIVE/REAL ", xmin, xmax, ymin, ymax, nx, ny)
 
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
         if det is None:
-            livetime = np.zeros((nx, ny))
-            realtime = np.zeros((nx, ny))
+            livetime = np.zeros((ny, nx))
+            realtime = np.zeros((ny, nx))
             for d in range(1, self.ndet+1):
                 dmap = self._det_group(d)
-                livetime += dmap['livetime'][sx, sy]
-                realtime += dmap['realtime'][sx, sy]
+                livetime += dmap['livetime'][sy, sx]
+                realtime += dmap['realtime'][sy, sx]
         else:
             dmap = self._det_group(d)
-            livetime = dmap['livetime'][sx, sy]
-            realtime = dmap['realtime'][sx, sy]
+            livetime = dmap['livetime'][sy, sx]
+            realtime = dmap['realtime'][sy, sx]
         if area is not None:
-            livetime = livetime[area[sx, sy]]
-            realtime = realtime[area[sx, sy]]
+            livetime = livetime[area[sy, sx]]
+            realtime = realtime[area[sy, sx]]
 
         livetime = 1.e-6*livetime.sum()
         realtime = 1.e-6*realtime.sum()
