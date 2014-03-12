@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath(os.path.join('sphinx', 'ext')))
 
 # from sphinxtr 
 import html_mods
-# import latex_mods
+import latex_mods
 
 # -- General configuration -----------------------------------------------------
 
@@ -186,7 +186,7 @@ html_static_path = ['_static']
 #html_last_updated_fmt = '%b %d, %Y'
 
 # If true, SmartyPants will be used to convert quotes and dashes to
-# typographically correct entities.
+# typograpbhically correct entities.
 html_use_smartypants = True
 
 # Custom sidebar templates, maps document names to template names.
@@ -252,16 +252,20 @@ latex_use_modindex = False
 
 latex_additional_files = [
     #    'sphinx/tex/puthesis.cls',
+    'sphinx/tex/preamble._tex',
     'sphinx/tex/refstyle.bst',
     'sphinx/tex/biblio.tex',
+    'sphinx/tex/sphinx.sty',
     'larch.bib',
 ]
 
+## \setcounter{secnumdepth}{2}
+## \setcounter{tocdepth}{2}
+
 latex_elements = {'pointsizee': '11pt',
                   'preamble': """
-\usepackage{amsmath}
-\setcounter{secnumdepth}{2}
-\setcounter{tocdepth}{2}
+\input{preamble._tex}
+\usepackage{sphinx}
 """,
                  'footer':"""
 input{biblio.tex}

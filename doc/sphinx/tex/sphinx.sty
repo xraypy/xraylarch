@@ -47,17 +47,17 @@
 % \definecolor{VerbatimBorderColor}{rgb}{1,1,1}
 
 % for PDF output, use colors and maximal compression
-%\newif\ifsphinxpdfoutput\sphinxpdfoutputfalse
-%\ifx\pdfoutput\undefined\else\ifcase\pdfoutput
-%  \let\py@NormalColor\relax
-%  \let\py@TitleColor\relax
-%\else
-%   \sphinxpdfoutputtrue
-%   \input{pdfcolor}
-%   \def\py@NormalColor{\color[rgb]{0.0,0.0,0.0}}
-%   \def\py@TitleColor{\color{TitleColor}}
-%   \pdfcompresslevel=9
-% \fi\fi
+\newif\ifsphinxpdfoutput\sphinxpdfoutputfalse
+\ifx\pdfoutput\undefined\else\ifcase\pdfoutput
+  \let\py@NormalColor\relax
+  \let\py@TitleColor\relax
+\else
+   \sphinxpdfoutputtrue
+   \input{pdfcolor}
+   \def\py@NormalColor{\color[rgb]{0.0,0.0,0.0}}
+   \def\py@TitleColor{\color{TitleColor}}
+   \pdfcompresslevel=9
+ \fi\fi
 
 % XeLaTeX can do colors, too
 % \ifx\XeTeXrevision\undefined\else
@@ -92,30 +92,30 @@
 % \pagenumbering{roman}           % ToC & chapters
 
 % Use this to set the font family for headers and other decor:
-% \newcommand{\py@HeaderFamily}{\sffamily\bfseries}
+ \newcommand{\py@HeaderFamily}{\sffamily\bfseries}
 % 
 % % Redefine the 'normal' header/footer style when using "fancyhdr" package:
-% \@ifundefined{fancyhf}{}{
-%   % Use \pagestyle{normal} as the primary pagestyle for text.
-%   \fancypagestyle{normal}{
-%     \fancyhf{}
-%     \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
-%     \fancyfoot[LO]{{\py@HeaderFamily\nouppercase{\rightmark}}}
-%     \fancyfoot[RE]{{\py@HeaderFamily\nouppercase{\leftmark}}}
-%     \fancyhead[LE,RO]{{\py@HeaderFamily \@title, \py@release}}
-%     \renewcommand{\headrulewidth}{0.4pt}
-%     \renewcommand{\footrulewidth}{0.4pt}
-%   }
+ \@ifundefined{fancyhf}{}{
+   % Use \pagestyle{normal} as the primary pagestyle for text.
+   \fancypagestyle{normal}{
+     \fancyhf{}
+     \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
+     \fancyfoot[LO]{{\py@HeaderFamily\nouppercase{\rightmark}}}
+     \fancyfoot[RE]{{\py@HeaderFamily\nouppercase{\leftmark}}}
+     \fancyhead[LE,RO]{{\py@HeaderFamily \@title, \py@release}}
+     \renewcommand{\headrulewidth}{0.4pt}
+     \renewcommand{\footrulewidth}{0.4pt}
+   }
 %   % Update the plain style so we get the page number & footer line,
 %   % but not a chapter or section title.  This is to keep the first
 %   % page of a chapter and the blank page between chapters `clean.'
-%   \fancypagestyle{plain}{
-%     \fancyhf{}
-%     \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
-%     \renewcommand{\headrulewidth}{0pt}
-%     \renewcommand{\footrulewidth}{0.4pt}
-%   }
-% }
+   \fancypagestyle{plain}{
+     \fancyhf{}
+     \fancyfoot[LE,RO]{{\py@HeaderFamily\thepage}}
+     \renewcommand{\headrulewidth}{0pt}
+     \renewcommand{\footrulewidth}{0.4pt}
+   }
+ }
 
 % Some custom font markup commands.
 %
