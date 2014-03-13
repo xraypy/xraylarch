@@ -33,7 +33,8 @@ class ROI(Group):
     -----------
     * left      # Left channel
     * right     # Right channel
-    * name     # Name of the ROI
+    * name      # Name of the ROI
+    * address   # Address of the ROI (PV name, for example)
     * bgr_width # Number of channels to use for background subtraction
 
     # Computed
@@ -42,7 +43,8 @@ class ROI(Group):
     * center    # Centroid
     * width     # Width
     """
-    def __init__(self, left=0, right=0, name='', bgr_width=3, counts=None):
+    def __init__(self, left=0, right=0, name='', bgr_width=3, counts=None,
+                 address=''):
         """
         Parameters:
         -----------
@@ -52,6 +54,7 @@ class ROI(Group):
         * bgr_width Number of channels to use for background subtraction
         """
         self.name     = name
+        self.address  = address
         self.bgr_width = int(bgr_width)
         self.total  = 0
         self.net    = 0
@@ -107,7 +110,7 @@ class ROI(Group):
             out = self.net
         return out
 
-def create_roi(name, left, right, bgr_width=3, _larch=None):
+def create_roi(name, left, right, bgr_width=3, address='', _larch=None):
     """create an ROI, a named portion of an MCA spectra defined by index
 
      Parameters:
@@ -115,6 +118,8 @@ def create_roi(name, left, right, bgr_width=3, _larch=None):
       name:     roi name
       left:     left index
       right:    right index
+      bgr_width (optional)  background width (default=3)
+      address   (optional)  address (PV name) for ROI
 
      Returns:
      ----------
@@ -124,7 +129,8 @@ def create_roi(name, left, right, bgr_width=3, _larch=None):
           set_bounds(left, right)
           get_counts(data, net=False)
     """
-    return ROI(name=name, left=left, right=right, bgr_width=bgr_width)
+    return ROI(name=name, left=left, right=right,
+               bgr_width=bgr_width, address=address)
 
 def registerLarchPlugin():
     return ('_xrf', {'create_roi': create_roi})
