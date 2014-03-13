@@ -14,6 +14,7 @@ use_plugin_path('xrfmap')
 
 from fileutils import nativepath, new_filename
 from mca import MCA
+from roi import ROI
 
 from configfile import FastMapConfig
 from xmap_netcdf import read_xmap_netcdf
@@ -267,15 +268,48 @@ class GSEXRM_MapRow:
         self.counts   = self.counts.swapaxes(0, 1)
 
 
+
 class GSEXRM_Detector(object):
-    """mapping of detector data to class"""
+    """Detector class, representing 1 detector element (real or virtual)
+    has the following properties (many of these as runtime-calculated properties)
+
+    rois           list of ROI objects
+    rois[i].name        names
+    rois[i].address     address
+    rois[i].left        index of lower limit
+    rois[i].right       index of upper limit
+    energy         array of energy values
+    counts         array of count values
+    dtfactor       array of deadtime factor
+    realtime       array of real time
+    livetime       array of live time
+    inputcounts    array of input counts
+    outputcount    array of output count 
+
+    """
     def __init__(self, xrfmap, index=None):
         self.xrfmap = xrfmap
         self.__ndet =  xrfmap.attrs['N_Detectors']        
         self.det = None
+        self.rois = []
+        detname = 'det1'
         if index is not None: 
             self.det = self.xrfmap['det%i' % index]
-        
+            detname = 'det%i' % index
+
+        self.shape =  self.xrfmap['%s/livetime' % detname].shape
+
+        # energy
+        self.energy = self.xrfmap['%s/energy' % detname].value
+
+        # set up rois
+        rnames = self.xrfmap['%s/roi_names' % detname].value
+        raddrs = self.xrfmap['%s/roi_addrs' % detname].value
+        rlims  = self.xrfmap['%s/roi_limits' % detname].value
+        for name, addr, lims in zip(rnames, raddrs, rlims):
+            self.rois.append(ROI(name=name, address=addr,
+                                 left=lims[0], right=lims[1]))
+            
     def __getval(self, param):
         if self.det is None:
             out = self.xrfmap['det1/%s' % (param)].value
@@ -283,34 +317,6 @@ class GSEXRM_Detector(object):
                 out += self.xrfmap['det%i/%s' % (i, param)].value
             return out
         return self.det[param].value
-    
-    @property
-    def energy(self):
-        "detector energy array"
-        if self.det is None:
-            return self.xrfmap['det1/energy'].value
-        return self.det['energy'].value
-
-    @property
-    def roi_name(self):
-        "roi names"
-        if self.det is None:
-            return list(self.xrfmap['det1/roi_name'].value)
-        return list(self.det['roi_name'].value)
-
-    @property
-    def roi_address(self):
-        "roi addresses"
-        if self.det is None:
-            return list(self.xrfmap['det1/roi_address'].value)
-        return list(self.det['roi_address'].value)
-
-    @property
-    def roi_limits(self):
-        "roi limits"
-        if self.det is None:
-            return list(self.xrfmap['det1/roi_limits'].value)
-        return list(self.det['roi_limits'].value)
     
     @property
     def counts(self):
@@ -342,7 +348,35 @@ class GSEXRM_Detector(object):
         """output counts"""
         return self.__getval('outputcounts')
 
-    
+
+class GSEXRM_Area(object):
+    """Map Area class, representing a map area for a detector
+    """
+    def __init__(self, xrfmap, index, det=None):
+        self.xrfmap = xrfmap
+        self.det = GSEXRM_Detector(xrfmap, index=det)
+        if isinstance(index, int):            
+            index = 'area_%3.3i' % index
+        self._area = self.xrfmap['areas/%s' % index]
+        self.npts = self._area.value.sum()
+
+        sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(self._area)]
+        self.yslice, self.xslice = sy, sx
+
+    def roicounts(self, roiname):
+        iroi = -1
+        for ir, roi in enumerate(self.det.rois):
+            if roiname.lower() == roi.name.lower():
+                iroi = ir
+                break
+        if iroi < 0:
+            raise ValueError('ROI name %s not found' % roiname)
+        elo, ehi = self.det.rois[iroi].left, self.det.rois[iroi].right
+        print 'roi counts: ', elo, ehi, self.det.rois[iroi].name
+        counts = self.det.counts[self.yslice, self.xslice, elo:ehi]
+        print 'Counts : ', counts.shape
+        
+
 
 class GSEXRM_MapFile(object):
     """
@@ -456,9 +490,12 @@ class GSEXRM_MapFile(object):
             raise GSEXRM_Exception(
                 "'GSEXMAP Error: could not locate map file or folder")
 
-    def get_det(self, index=None):
+    def get_det(self, index):
         return GSEXRM_Detector(self.xrfmap, index=index)
-        
+
+    def area_obj(self, index, det=None):
+        print '--> Area ', index, det
+        return GSEXRM_Area(self.xrfmap, index, det=det)
         
     def open(self, filename, root=None, check_status=True):
         """open GSEXRM HDF5 File :
