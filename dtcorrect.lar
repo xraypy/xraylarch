@@ -1,0 +1,121 @@
+import os
+import time
+
+def iso8601_time(ts):
+    tzone = '-%2.2i:00' % (time.timezone/3600)
+    s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
+    return "%s%s" % (s, tzone)
+enddef
+
+header = ['# XDI/1.0  GSE/1.0',
+          '# Column.1: energy eV',
+          '# Column.2: mufluor',
+          '# Column.3: i0',
+          '# Column.4: ifluor   (corrected for deadtime)',
+          '# Column.5: ifluor_raw (not corrected) ',
+          '# Beamline.name:  13-ID-E, GSECARS',
+          '# Monochromator.name:  Si 111, water cooled ',
+          '# Monochromator.dspacing:  3.13477',
+          '# Facility.name: APS',
+          '# Facility.xray_source: 3.6 cm undulator',
+          '# Detectors.i0:  20cm ion chamber, He',
+          '# Detectors.ifluor:  Si SDD Vortex ME-4, XIA xMAP, 4 elements']
+
+
+def dt_correct(fname, channelname, subdir='.'):
+    sg     = read_gsescan(fname)
+    energy =  sg.x
+    i0 = sg.get_data('i0')
+    i1 = sg.get_data('i1')
+
+    ix = -1
+    channelname = channelname.lower()
+    for ich, ch in enumerate(sg.sums_names):
+        if ch.lower().startswith(channelname):
+           ix = ich
+           break
+        endif
+    endfor
+    if ix < 0:
+        print 'Index not found for Channel %s , file %s  ' % (channelname, fname)
+        return
+    endif
+    chans = list(sg.sums_list[ix])
+    chans.pop()
+    chans = array(chans)
+    dchans = chans - chans[0]
+
+
+    fl_raw  = sg.det[chans].sum(axis=0)
+    fl_corr = (sg.dt_factor[dchans] * sg.det[chans]).sum(axis=0)
+
+    mufluor = fl_corr / i0
+    sg.i0  = i0
+    sg.fl_raw = fl_raw
+    sg.fl_corr = fl_corr
+    sg.mufluor = mufluor
+    sg.energy = energy
+
+    npts = len(energy)
+
+    buff = [l.strip() for l in header]
+    buff.append("# Scan.start_time: %s" %  
+                iso8601_time(os.stat(fname).st_ctime))
+
+    thead = ["# ///",
+             "# summed %s fluorescence data from %s" % (channelname, fname),
+             "# Dead-time correction applied",
+             "#---------------------------------", 
+             "# energy     mufluor    i0    fluor_corr   fluor_raw"]
+    
+    buff.extend(thead)
+
+    fmt = "   %.3f   %.5f   %.5f   %.5f   %i"
+    for i in range(npts):
+        buff.append(fmt % (energy[i],  mufluor[i], 
+                           i0[i], fl_corr[i], fl_raw[i]))
+
+    endfor
+    ofile = fname[:]
+    if ofile.startswith('..'):
+        ofile = ofile[3:]
+    #endif
+    ofile = ofile.replace('.', '_') + '.dat'
+    fout = open(os.path.join(subdir, ofile), 'w')
+    fout.write("\n".join(buff))
+    fout.close()
+    print 'wrote %s  (%i)' % (ofile, npts)
+    return sg
+
+enddef
+
+
+def correct_all(channel, filefilt=None, subdir='DT_Corrected'):
+    if not os.path.exists(subdir):
+        os.mkdir(subdir)
+    endif
+    if filefilt is None: filefilt = ''
+    filefilt = filefilt.lower()
+    print 'Correct all ', filefilt, channel, subdir
+    for fname in ls('.'):
+        if len(filefilt) > 0 and filefilt not in fname.lower():
+           continue
+        endif
+	#    print 'dt correct ' , filefilt, fname
+        line1 = ''
+        try:
+            fh = open(fname, 'r')
+            line1 = fh.readline().lower()
+        except:
+            line1 = ''
+        endtry
+ 	if 'epics scan' in line1:
+            try:
+                dt_correct(fname, channel, subdir=subdir)
+            except:
+                print 'could not convert ', fname
+            endtry
+        endif        
+    endfor
+enddef
+
