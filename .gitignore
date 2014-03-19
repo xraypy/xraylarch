@@ -1,6 +1,7 @@
 *.pyc
 *~
 *#
+*.bak
 .deps
 doc/_build
 doc/*.pdf
