@@ -15,18 +15,21 @@ import wxmplot
 from wxmplot.plotframe import PlotFrame
 import larch
 
+import h5py 
+f = h5py.File('tmp.h5')
+
 from scipy.sparse.csgraph import _validation
 from  scipy.io import netcdf
 netcdf_open = netcdf.netcdf_file
 
-import Image
+import PIL as Image
 import epics
 import Carbon
 
 libca = epics.ca.initialize_libca()
 mpl_data_files = matplotlib.get_py2exe_datafiles()
 
-APP = '../bin/larch_gui'
+APP = 'larch_gui.py'
 ICONFILE = 'larch.icns'
 
 libca = epics.ca.initialize_libca()
@@ -56,6 +59,7 @@ DATA_FILES = []
 
 OPTIONS = {'includes': ['ConfigParser', 'Image', 'ctypes', 'epics',
                         'epics.devices', 'fpformat', 'h5py',
+                        'h5py.h5ac',  'h5py.h5f',                         
                         'h5py._objects', 'h5py._proxy', 'h5py.defs',
                         'h5py.utils', 'matplotlib', 'numpy', 'scipy',
                         'scipy.constants', 'scipy.fftpack',
@@ -71,10 +75,11 @@ OPTIONS = {'includes': ['ConfigParser', 'Image', 'ctypes', 'epics',
                         'wx.lib.agw.pycollapsiblepane',
                         'wx.lib.colourselect', 'wx.lib.masked',
                         'wx.lib.mixins', 'wx.lib.mixins.inspection',
-                        'wx.lib.newevent', 'wx.py' 'wxmplot' 'wxutils'
-                        'wxversion' 'xdrlib' 'xml.etree'
+                        'wx.lib.newevent', 'wx.py', 'wxmplot', 'wxutils',
+                        'wxversion', 'xdrlib', 'xml.etree',
                         'xml.etree.cElementTree'],
            'excludes': ['Tkinter', '_tkinter', 'Tkconstants', 'tcl',
+                        'h5py.ipy_completer', 'IPython', 
                         '_imagingtk', 'PIL._imagingtk', 'ImageTk',
                         'PIL.ImageTk', 'FixTk''_gtkagg', '_tkagg',
                         'matplotlib.tests',
