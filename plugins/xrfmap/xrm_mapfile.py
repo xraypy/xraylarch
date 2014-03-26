@@ -494,8 +494,30 @@ class GSEXRM_MapFile(object):
         return GSEXRM_Detector(self.xrfmap, index=index)
 
     def area_obj(self, index, det=None):
-        print '--> Area ', index, det
         return GSEXRM_Area(self.xrfmap, index, det=det)
+        
+    def get_scanconfig(self):
+        """return scan configuration from file"""
+        conftext = self.xrfmap['config/scan/text'].value
+        return FastMapConfig(conftext=conftext)
+
+    def get_coarse_stages(self):
+        """return coarse stage positions for map"""
+        stages = []
+        env_addrs = list(self.xrfmap['config/environ/address'])
+        env_vals  = list(self.xrfmap['config/environ/value'])
+        for addr, pname in self.xrfmap['config/positioners'].items():
+            name = str(pname.value)
+            addr = str(addr)
+            val = ''
+            if not addr.endswith('.VAL'):
+                addr = '%s.VAL' % addr
+            if addr in env_addrs:
+                val = env_vals[env_addrs.index(addr)]
+
+            stages.append((addr, val, name))
+            
+        return stages
         
     def open(self, filename, root=None, check_status=True):
         """open GSEXRM HDF5 File :

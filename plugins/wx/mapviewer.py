@@ -512,6 +512,42 @@ class TriColorMapPanel(GridPanel):
         for cbox in (self.rcol, self.gcol, self.bcol, self.i0col):
             cbox.SetChoices(roichoices)
 
+
+class MapInfoPanel(GridPanel):
+    """Panel of Controls for choosing what to display a simple ROI map"""
+
+    def __init__(self, parent, owner, **kws):
+        self.owner = owner
+
+        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
+
+        self.title = SimpleText(self, 'Map info for ', size=(120, -1))
+
+
+        self.Add(self.title,    dcol=2, newrow=True, style=LEFT)
+        self.pack()
+
+    def onClose(self):
+        for p in self.plotframes:
+            try:
+                p.Destroy()
+            except:
+                pass
+
+
+    def onShowMap(self, event=None, new=True):
+
+        datafile  = self.owner.current_file
+        det =self.det.GetStringSelection()
+        if det == 'sum':
+            det =  None
+        else:
+            det = int(det)
+
+    def set_roi_choices(self, rois):
+        pass
+
+
 class AreaSelectionPanel(wx.Panel):
     delstr = """   Delete Area '%s'?
 
@@ -724,7 +760,8 @@ class MapViewerFrame(wx.Frame):
         self.nbpanels = {}
         for name, key, creator in (('Simple ROI Map', 'roimap', SimpleMapPanel),
                                    ('3-Color ROI Map', '3color',  TriColorMapPanel),
-                                   ('Map Math',  'mapmath',    MapMathPanel)):
+                                   ('Map Math',  'mapmath',    MapMathPanel),
+                                   ('Map Info',  'info',    MapInfoPanel)):
 
             self.nbpanels[key] = p = creator(parent, owner=self)
             self.nb.AddPage(p, name, True)
@@ -884,7 +921,6 @@ class MapViewerFrame(wx.Frame):
         MenuItem(self, hmenu, 'About', 'About MapViewer', self.onAbout)
 
         
-
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
