@@ -432,6 +432,8 @@ class GSEXRM_MapFile(object):
         self.npts = None
         self.roi_slices = None
         self.dt = debugtime()
+        self.masterfile = None
+        self.masterfile_mtime = -1
 
         # initialize from filename or folder
         if self.filename is not None:
@@ -1037,6 +1039,10 @@ class GSEXRM_MapFile(object):
             return
         self.masterfile = os.path.join(nativepath(self.folder),
                                        self.MasterFile)
+        mtime = int(os.stat(self.masterfile).st_mtime)
+        if mtime <= self.masterfile_mtime:
+            return
+        self.masterfile_mtime = mtime
         try:
             header, rows = readMasterFile(self.masterfile)
         except IOError:
@@ -1045,19 +1051,14 @@ class GSEXRM_MapFile(object):
 
         self.master_header = header
         self.rowdata = rows
-        line1 = header[0]
-        if 'Scan.version' in line1:
-            words = line1.split('=')
-            self.scan_version = words[1].strip()
-            for line in header:
-                if 'Scan.starttime' in line:
-                    words = line.split('=')
-                    self.scan_starttime = words[1].strip()
-
-        else:
-            self.scan_version = '1.0'
-            stime = self.master_header[0][6:]
-            self.start_time = stime.replace('started at', '').strip()
+        self.scan_version = '1.0'
+        self.start_time = time.ctime()
+        for line in header:
+            words = line.split('=')
+            if 'scan.starttime' in words[0].lower():
+                self.start_time = words[1].strip()
+            elif 'scan.version' in words[0].lower():
+                self.scan_version = words[1].strip()
 
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
