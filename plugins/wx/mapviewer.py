@@ -515,30 +515,19 @@ class TriColorMapPanel(GridPanel):
             cbox.SetChoices(roichoices)
 
 
-class MapInfoPanel(wx.Panel):
+
+class MapInfoPanel(scrolled.ScrolledPanel):
     """Info Panel """
-    label  = 'Map Info'    
+    label  = 'Map Info'
     def __init__(self, parent, owner, **kws):
+        scrolled.ScrolledPanel.__init__(self, parent, -1,
+                                        style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         self.owner = owner
-
-        wx.Panel.__init__(self, parent, **kws)
-
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        
-        self.title = SimpleText(self, 'Map Info', size=(120, -1))
-        self.nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
-        #self.nb.SetBackgroundColour('#FAFCFA')
-        self.subpanels = {}
+        sizer = wx.GridBagSizer(22, 4)
         self.wids = {}
-        for label, method in (('Scan Definition',  self.create_scanpanel),
-                              ('Extra Values',     self.create_envpanel)):
-            subpanel = method(label)
-            self.subpanels[label] = subpanel
-            self.nb.AddPage(subpanel, label)
 
-        sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
         pack(self, sizer)
-        self.nb.SetSelection(0)        
+        self.SetupScrolling()
 
     def create_envpanel(self, label):
         psizer = wx.GridBagSizer(10, 3)        
@@ -1059,15 +1048,28 @@ Matt Newville <newville @ cars.uchicago.edu>
                 Popup(self, NOT_GSEXRM_FOLDER % str(path),
                      "Not a Map folder")
                 return
-            fname = xrmfile.filename
-            if fname not in self.filemap:
-                self.filemap[fname] = xrmfile
-            if fname not in self.filelist.GetItems():
-                self.filelist.Append(fname)
-            if self.check_ownership(fname):
-                self.process_file(fname)
-            self.ShowFile(filename=fname)
+            parent, fx = os.path.split(str(path))
+            self.add_xrmfile(xrmfile, parent)
 
+    def add_xrmfile(self, xrmfile, parent):
+        fname = xrmfile.filename
+        gname = 'map001'
+        count, maxcount = 1, 999
+        while hasattr(self.datagroups, gname) and count < maxcount:
+            count += 1
+            gname = 'map%3.3i' % count
+        setattr(self.datagroups, gname, xrmfile)
+
+        if fname not in self.filemap:
+            self.filemap[fname] = xrmfile
+        if fname not in self.filelist.GetItems():
+            self.filelist.Append(fname)
+        if self.check_ownership(fname):
+            self.process_file(fname)
+        self.ShowFile(filename=fname)
+        os.chdir(nativepath(parent))
+        save_workdir(nativepath(parent))
+        
     def onReadFile(self, evt=None):
         if not self.h5convert_done:
             print('cannot open file while processing a map folder')
@@ -1089,27 +1091,13 @@ Matt Newville <newville @ cars.uchicago.edu>
 
         if read:
             parent, fname = os.path.split(path)
-            xrmfile = GSEXRM_MapFile(filename=str(path))
-            gname = 'map001'
-            count, maxcount = 1, 999
-            while hasattr(self.datagroups, gname) and count < maxcount:
-                count += 1
-                gname = 'map%3.3i' % count
-            setattr(self.datagroups, gname, xrmfile)
-            os.chdir(nativepath(parent))
-            save_workdir(nativepath(parent))
-            #try:
-            #except:
-            #    Popup(self, NOT_GSEXRM_FILE % fname,
-            #          "Not a Map file!")
-            #    return
-            if fname not in self.filemap:
-                self.filemap[fname] = xrmfile
-            if fname not in self.filelist.GetItems():
-                self.filelist.Append(fname)
-            if self.check_ownership(fname):
-                self.process_file(fname)
-            self.ShowFile(filename=fname)
+            try:
+                xrmfile = GSEXRM_MapFile(filename=str(path))
+            except:
+                Popup(self, NOT_GSEXRM_FILE % str(path),
+                     "Not a Map folder")
+                return
+            self.add_xrmfile(xrmfile, parent)
 
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
