@@ -98,6 +98,7 @@ DETCHOICES = ['sum', '1', '2', '3', '4']
 
 class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
+    label  = 'Map Math'
     def __init__(self, parent, owner, **kws):
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
@@ -282,7 +283,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
 
 class SimpleMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a simple ROI map"""
-
+    label  = 'Simple ROI Map'
     def __init__(self, parent, owner, **kws):
         self.owner = owner
 
@@ -413,6 +414,7 @@ class SimpleMapPanel(GridPanel):
 
 class TriColorMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a 3 color ROI map"""
+    label  = '3-Color ROI Map'    
     def __init__(self, parent, owner, **kws):
         GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
         self.owner = owner
@@ -515,7 +517,7 @@ class TriColorMapPanel(GridPanel):
 
 class MapInfoPanel(GridPanel):
     """Panel of Controls for choosing what to display a simple ROI map"""
-
+    label  = 'Map Info'    
     def __init__(self, parent, owner, **kws):
         self.owner = owner
 
@@ -548,7 +550,8 @@ class MapInfoPanel(GridPanel):
         pass
 
 
-class AreaSelectionPanel(wx.Panel):
+class MapAreaPanel(wx.Panel):
+    label  = 'Map Areas'    
     delstr = """   Delete Area '%s'?
 
 WARNING: This cannot be undone!
@@ -596,7 +599,7 @@ WARNING: This cannot be undone!
         sizer.Add(self.xrf2,                (4, 2), (1, 2), ALL_LEFT, 2)
         pack(self, sizer)
 
-    def set_choices(self, areas, show_last=False):
+    def set_area_choices(self, areas, show_last=False):
         c = self.choice
         c.Clear()
         self.choices =  dict([(areas[a].attrs['description'], a) for a in areas])
@@ -627,7 +630,7 @@ WARNING: This cannot be undone!
         new_label = str(self.desc.GetValue())
         area.attrs['description'] = new_label
         self.owner.current_file.h5root.flush()
-        self.set_choices(self.owner.current_file.xrfmap['areas'])
+        self.set_area_choices(self.owner.current_file.xrfmap['areas'])
         self.choice.SetStringSelection(new_label)
         self.desc.SetValue(new_label)
 
@@ -646,7 +649,7 @@ WARNING: This cannot be undone!
         if erase:
             xrfmap = self.owner.current_file.xrfmap
             del xrfmap['areas/%s' % aname]
-            self.set_choices(xrfmap['areas'])
+            self.set_area_choices(xrfmap['areas'])
 
     def onClear(self, event=None):
         if len(self.owner.im_displays) > 0:
@@ -757,26 +760,26 @@ class MapViewerFrame(wx.Frame):
         self.nb.SetBackgroundColour('#FCFCFA')
         self.SetBackgroundColour('#F0F0E8')
 
-        self.nbpanels = {}
-        for name, key, creator in (('Simple ROI Map', 'roimap', SimpleMapPanel),
-                                   ('3-Color ROI Map', '3color',  TriColorMapPanel),
-                                   ('Map Math',  'mapmath',    MapMathPanel),
-                                   ('Map Info',  'info',    MapInfoPanel)):
+        self.nbpanels = []
 
-            self.nbpanels[key] = p = creator(parent, owner=self)
-            self.nb.AddPage(p, name, True)
+        for creator in (SimpleMapPanel, TriColorMapPanel, MapInfoPanel,
+                        MapAreaPanel, MapMathPanel):
+
+            p = creator(parent, owner=self)
+            self.nb.AddPage(p, p.label.title(), True)
             bgcol = p.GetBackgroundColour()
+            self.nbpanels.append(p)
 
-        self.nb.SetSelection(0)
+            self.nb.SetSelection(0)
         sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
 
-        self.area_sel = AreaSelectionPanel(parent, owner=self)
-        self.area_sel.SetBackgroundColour('#F0F0E8')
+        # self.area_sel = AreaSelectionPanel(parent, owner=self)
+        # self.area_sel.SetBackgroundColour('#F0F0E8')
 
-        sizer.Add(wx.StaticLine(parent, size=(250, 2),
-                                style=wx.LI_HORIZONTAL),
-                  0,  wx.ALL|wx.EXPAND)
-        sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
+        # sizer.Add(wx.StaticLine(parent, size=(250, 2),
+        #                         style=wx.LI_HORIZONTAL),
+        #          0,  wx.ALL|wx.EXPAND)
+        # sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
         pack(parent, sizer)
 
     def get_mca_area(self, det, mask, xrmfile=None):
@@ -801,8 +804,11 @@ class MapViewerFrame(wx.Frame):
             title = "XRF Spectra:  %s, Area=%s,  %i Pixels" % (fname, aname, npix)
 
             self.xrfdisplay.plotmca(self.sel_mca, title=title)
-            self.area_sel.set_choices(self.current_file.xrfmap['areas'],
-                                      show_last=True)
+            # SET AREA CHOICE
+            for p in self.nbpanels:
+                if hasattr(p, 'set_area_choices'):
+                    p.set_area_choices(self.current_file.xrfmap['areas'],
+                                       show_last=True)
 
 
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
@@ -864,7 +870,6 @@ class MapViewerFrame(wx.Frame):
     def init_larch(self):
         if self.larch is None:
             self.larch = larch.Interpreter()
-            #self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
             self.larch.symtable.set_symbol('_sys.wx.parent', self)
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
@@ -885,13 +890,13 @@ class MapViewerFrame(wx.Frame):
         self.title.SetLabel("%s: (%i x %i)" % (filename, nx, ny))
 
         rois = list(self.filemap[filename].xrfmap['roimap/sum_name'])
-        for p in self.nbpanels.values():
+        for p in self.nbpanels:
             if hasattr(p, 'set_roi_choices'):
                 p.set_roi_choices(rois)
             if hasattr(p, 'set_file_choices'):
                 p.set_file_choices(self.filemap.keys())
-
-        self.area_sel.set_choices(self.current_file.xrfmap['areas'])
+            if hasattr(p, 'set_area_choices'):
+                p.set_area_choices(self.current_file.xrfmap['areas'])
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
