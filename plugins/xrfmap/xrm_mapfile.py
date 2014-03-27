@@ -4,6 +4,7 @@ import socket
 import time
 import h5py
 import numpy as np
+import scipy.stats as stats
 import larch
 from larch import use_plugin_path
 from larch.utils.debugtime import debugtime
@@ -986,6 +987,53 @@ class GSEXRM_MapFile(object):
                     return group[name]
         return None
 
+    def get_area_stats(self, name=None, desc=None):
+        """return statistics for all raw detector counts/sec values
+
+        for each raw detector returns
+           name, length, mean, standard_deviation,
+           median, mode, minimum, maximum,
+           gmean, hmean, skew, kurtosis
+        
+        """
+        area = self.get_area(name=name, desc=desc)
+        if area is None:
+            return None
+        area = area.value
+        roidata = []
+        d_addrs = [d.lower() for d in self.xrfmap['roimap/det_address']]
+        d_names = [d for d in self.xrfmap['roimap/det_name']]
+        # count times
+        ctime = [1.e-6*self.xrfmap['roimap/det_raw'][:,:,0][area]]
+        for i in range(self.xrfmap.attrs['N_Detectors']):
+            tname = 'det%i/realtime' % (i+1)
+            ctime.append(1.e-6*self.xrfmap[tname].value[area])
+        
+        for idet, dname in enumerate(d_names):
+            daddr = d_addrs[idet]
+            det = 0
+            if 'mca' in daddr:
+                det = 1
+                words = daddr.split('mca')
+                if len(words) > 1:
+                    det = int(words[1].split('.')[0])
+            if idet == 0:
+                d = ctime[0]
+            else:
+                d = self.xrfmap['roimap/det_raw'][:,:,idet][area]/ctime[det]
+
+            try:
+                hmean, gmean = stats.gmean(d), stats.hmean(d)
+                skew, kurtosis = stats.skew(d), stats.kurtosis(d)
+            except ValueError:
+                hmean, gmean, skew, kurtosis = 0, 0, 0, 0
+            mode = stats.mode(d)
+            roidata.append((dname, len(d), d.mean(), d.std(), np.median(d),
+                            stats.mode(d), d.min(), d.max(), 
+                            gmean, hmean, skew, kurtosis))
+
+        return roidata
+
     def claim_hostid(self):
         "claim ownershipf of file"
         if self.xrfmap is None:
@@ -1313,6 +1361,7 @@ class GSEXRM_MapFile(object):
         realtime = 1.e-6*realtime.sum()
         return livetime, realtime
     
+
 
     def _getmca(self, map, counts, name, **kws):
         """return an MCA object for a detector group
