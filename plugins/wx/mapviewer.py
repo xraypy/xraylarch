@@ -539,7 +539,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         
         ir = 0
 
-        sizer.Add(wx.StaticLine(self, size=(420, 3),
+        sizer.Add(wx.StaticLine(self, size=(400, 3),
                                 style=wx.LI_HORIZONTAL),
                   (0, 0), (1, 2), 1)
 
@@ -552,14 +552,14 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label,
-                                          style=wx.LEFT, size=(150, -1))
+                                          style=wx.LEFT, size=(125, -1))
             self.wids[label] = SimpleText(self, ' ' ,
                                           style=wx.LEFT, size=(300, -1)) 
             
             sizer.Add(thislabel,        (ir, 0), (1, 1), 1)
             sizer.Add(self.wids[label], (ir, 1), (1, 1), 1)
  
-        sizer.Add(wx.StaticLine(self, size=(420, 3),
+        sizer.Add(wx.StaticLine(self, size=(400, 3),
                                 style=wx.LI_HORIZONTAL),
                   (ir+1, 0), (1, 2), 1)
 
@@ -616,7 +616,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
             if 'ring current' in name:
                 self.wids['Ring Current'].SetLabel("%s mA" % val)
             elif 'mono energy' in name and cur_energy=='':
-                self.wids['X-ray Energy'].SetLabel("%s (eV)" % val)
+                self.wids['X-ray Energy'].SetLabel("%s eV" % val)
                 cur_energy = val
             elif 'i0 trans' in name:
                 i0vals['flux'] = val                
@@ -642,9 +642,9 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                     elif 'y' in plab:
                         fines['Y'] = val
 
-        i0val = 'Flux=%(flux)s Hz, IonChamber Current=%(current)s uA' % i0vals
+        i0val = 'Flux=%(flux)s Hz, I0 Current=%(current)s uA' % i0vals
         self.wids['X-ray Intensity (I0)'].SetLabel(i0val) 
-        self.wids['Sample Fine Stages'].SetLabel('X=%(X)s mm, Y=%(Y)s mm' % (fines)) 
+        self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines)) 
                 
     def onClose(self):
         pass
@@ -664,24 +664,29 @@ WARNING: This cannot be undone!
         self.owner = owner
 
         sizer = wx.GridBagSizer(8, 5)
-
         self.choices = {}
-        self.choice = Choice(self, choices=[], size=(160, -1), action=self.onSelect)
-        self.desc  = wx.TextCtrl(self, -1,   '', size=(160, -1))
-        self.info  = wx.StaticText(self, -1, '', size=(160, -1))
+        self.choice = Choice(self, choices=[], size=(180, -1),
+                             action=self.onSelect)
+        self.desc  = wx.TextCtrl(self, -1,   '', size=(180, -1))
+        self.info  = wx.StaticText(self, -1, '', size=(180, -1))
 
-        self.onmap = Button(self, 'Show Area on Map', size=(160, -1),
+        self.report = Button(self, 'Show Report', size=(120, -1),
+                             action=self.onReport)
+
+        self.onmap = Button(self, 'Show on Map', size=(120, -1),
                             action=self.onShow)
-        self.clear = Button(self, 'Clear Areas on Map', size=(160, -1),
+        self.clear = Button(self, 'Clear on Map', size=(120, -1),
                             action=self.onClear)
-        self.xrf   = Button(self, 'Show Spectrum (FG)', size=(160, -1),
+        self.xrf   = Button(self, 'Show Spectrum (Foreground)',
+                            size=(200, -1),
                             action=self.onXRF)
-        self.xrf2  = Button(self, 'Show Spectrum (BG)', size=(160, -1),
+        self.xrf2  = Button(self, 'Show Spectrum (Background)',
+                            size=(200, -1),
                             action=partial(self.onXRF, as_mca2=True))
 
-        self.delete = Button(self, 'Delete Area', size=(120, -1),
+        self.delete = Button(self, 'Delete Area', size=(100, -1),
                                       action=self.onDelete)
-        self.update = Button(self, 'Save Label', size=(120, -1),
+        self.update = Button(self, 'Save Label', size=(100, -1),
                                       action=self.onLabel)
 
         def txt(s):
@@ -694,11 +699,23 @@ WARNING: This cannot be undone!
         sizer.Add(txt('New Label: '),       (2, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.desc,                (2, 1), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.update,              (2, 3), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.onmap,               (3, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.report,              (3, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onmap,               (3, 1), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.clear,               (3, 2), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf,                 (4, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrf2,                (4, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf2,                (5, 0), (1, 2), ALL_LEFT, 2)
+
+
+        sizer.Add(wx.StaticLine(self, size=(350, 3),
+                                style=wx.LI_HORIZONTAL),
+                  (6, 0), (1, 4), ALL_LEFT, 2)
+
         pack(self, sizer)
+
+    def onReport(self, event=None):
+        aname = self._getarea()
+        area  = self.owner.current_file.xrfmap['areas/%s' % aname]
+        print 'Need to raise ROI Report Frame: ', aname, area
 
     def update_xrfmap(self, xrfmap):
         self.set_area_choices(xrfmap, show_last=True)
