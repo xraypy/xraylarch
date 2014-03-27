@@ -210,9 +210,13 @@ class MapMathPanel(scrolled.ScrolledPanel):
         self.varshape[varname].SetLabel('Array Shape = %s' % repr(map.shape))
         self.varrange[varname].SetLabel("Range = [%g: %g]" % (map.min(), map.max()))
 
-    def set_roi_choices(self, rois):
+    def update_xrfmap(self, xrfmap):
+        self.set_roi_choices(xrfmap)
+
+    def set_roi_choices(self, xrfmap):
+        rois = ['1'] + list(xrfmap['roimap/sum_name'])
         for wid in self.varroi.values():
-            wid.SetChoices(['1'] + rois)
+            wid.SetChoices(rois)
 
     def set_file_choices(self, fnames):
         for wid in self.varfile.values():
@@ -408,9 +412,13 @@ class SimpleMapPanel(GridPanel):
         self.owner.display_map(map, title=title, info=info, x=x, y=y,
                                det=det, xrmfile=datafile)
 
-    def set_roi_choices(self, rois):
-        self.roi1.SetChoices(rois)
-        self.roi2.SetChoices(['1'] + rois)
+    def update_xrfmap(self, xrfmap):
+        self.set_roi_choices(xrfmap)
+
+    def set_roi_choices(self, xrfmap):
+        rois = ['1'] + list(xrfmap['roimap/sum_name'])
+        self.roi1.SetChoices(rois[1:])
+        self.roi2.SetChoices(rois)
 
 class TriColorMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a 3 color ROI map"""
@@ -508,11 +516,13 @@ class TriColorMapPanel(GridPanel):
         self.owner.display_map(map, title=title, subtitles=subtitles,
                                x=x, y=y, det=det, xrmfile=datafile)
 
-    def set_roi_choices(self, choices):
-        roichoices = ['1']
-        roichoices.extend(choices)
+    def update_xrfmap(self, xrfmap):
+        self.set_roi_choices(xrfmap)
+
+    def set_roi_choices(self, xrfmap):
+        rois = ['1'] + list(xrfmap['roimap/sum_name'])
         for cbox in (self.rcol, self.gcol, self.bcol, self.i0col):
-            cbox.SetChoices(roichoices)
+            cbox.SetChoices(rois)
 
 
 
@@ -523,61 +533,123 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
         self.owner = owner
-        sizer = wx.GridBagSizer(22, 4)
+
+        sizer = wx.GridBagSizer(8, 2)
         self.wids = {}
+        
+        ir = 0
+
+        sizer.Add(wx.StaticLine(self, size=(420, 3),
+                                style=wx.LI_HORIZONTAL),
+                  (0, 0), (1, 2), 1)
+
+        for label in ('Scan Started', 'User Comments 1', 'User Comments 2',
+                      'Scan Fast Motor', 'Scan Slow Motor', 'Dwell Time',
+                      'Sample Fine Stages',
+                      'Sample Stage X',     'Sample Stage Y',
+                      'Sample Stage Z',     'Sample Stage Theta',
+                      'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)'):
+            
+            ir += 1
+            thislabel        = SimpleText(self, '%s:' % label,
+                                          style=wx.LEFT, size=(150, -1))
+            self.wids[label] = SimpleText(self, ' ' ,
+                                          style=wx.LEFT, size=(300, -1)) 
+            
+            sizer.Add(thislabel,        (ir, 0), (1, 1), 1)
+            sizer.Add(self.wids[label], (ir, 1), (1, 1), 1)
+ 
+        sizer.Add(wx.StaticLine(self, size=(420, 3),
+                                style=wx.LI_HORIZONTAL),
+                  (ir+1, 0), (1, 2), 1)
 
         pack(self, sizer)
         self.SetupScrolling()
 
-    def create_envpanel(self, label):
-        psizer = wx.GridBagSizer(10, 3)        
-        panel = wx.Panel(self)
-        irow = 0
-        self.wids['env'] = {}
-        pack(panel, psizer)
-        return panel
 
-    def fill_envpanel(self):
-        for wid in self.wids['env'].values():
-            wid.Destroy()
-            del wid
-        wids = self.wids['env'] = {}
-        enames = list(self.owner.current_file.xrfmap['config/environ/name'])
-        eaddrs = list(self.owner.current_file.xrfmap['config/environ/address'])
-        evals = list(self.owner.current_file.xrfmap['config/environ/value'])
-        psizer.Add(SimpleText(panel, '   %s: ' % label,
-                              style=wx.LEFT, size=(100, -1)), 
-                              (irow, 0), (1, 1), 1)
+    def update_xrfmap(self, xrfmap):
+        self.wids['Scan Started'].SetLabel( xrfmap.attrs['Start_Time'])
 
-        psizer.Add(wx.StaticLine(panel, size=(400, 3), style=wx.LI_HORIZONTAL),
-                   (irow+1, 0), (1, 3), 1)
+        comments = xrfmap['config/scan/comments'].value.split('\n', 2)
+        for i, comm in enumerate(comments):
+            self.wids['User Comments %i' %(i+1)].SetLabel(comm)
 
-        psizer.Add(wx.StaticLine(panel, size=(400, 3), style=wx.LI_HORIZONTAL),
-                   (irow+2, 0), (1, 3), 1)
+        pos_addrs = [str(x) for x in xrfmap['config/positioners'].keys()]
+        pos_label = [str(x.value) for x in xrfmap['config/positioners'].values()]
 
+        scan_pos1 = str(xrfmap['config/scan/pos1'].value)
+        scan_pos2 = str(xrfmap['config/scan/pos2'].value)
+        i1 = pos_addrs.index(scan_pos1)
+        i2 = pos_addrs.index(scan_pos2)
 
-    def create_scanpanel(self, label):
-        psizer = wx.GridBagSizer(10, 4)
-        panel = wx.Panel(self)
-        irow = 0
-        self.wids[label] = {}
+        start1 = float(xrfmap['config/scan/start1'].value)
+        start2 = float(xrfmap['config/scan/start2'].value)
+        stop1 = float(xrfmap['config/scan/stop1'].value)
+        stop2 = float(xrfmap['config/scan/stop2'].value)
+        
+        step1 = float(xrfmap['config/scan/step1'].value)
+        step2 = float(xrfmap['config/scan/step2'].value)
 
-        psizer.Add(SimpleText(panel, '   %s: ' % label,
-                              style=wx.LEFT, size=(100, -1)), 
-                              (irow, 0), (1, 1), 1)
+        npts1 = int((abs(stop1 - start1) + 1.1*step1)/step1)
+        npts2 = int((abs(stop2 - start2) + 1.1*step2)/step2)
+
+        sfmt = "%s: [%.4f:%.4f], step=%.4f, %i pixels" 
+        scan1 = sfmt % (pos_label[i1], start1, stop1, step1, npts1)
+        scan2 = sfmt % (pos_label[i2], start2, stop2, step2, npts2)
+
+        rowtime = float(xrfmap['config/scan/time1'].value)
+
+        self.wids['Scan Fast Motor'].SetLabel(scan1)
+        self.wids['Scan Slow Motor'].SetLabel(scan2)
+        self.wids['Dwell Time'].SetLabel("%.3f sec per pixel" % (rowtime/(1+npts1)))
+
+        env_names = list(xrfmap['config/environ/name'])
+        env_vals  = list(xrfmap['config/environ/value'])
+        env_addrs = list(xrfmap['config/environ/address'])
+        
+        fines = {'X': '?', 'Y': '?'}
+        i0vals = {'flux':'?', 'current':'?'}
+        cur_energy = ''
+        
+        for name, addr, val in zip(env_names, env_addrs, env_vals):
+            name = str(name).lower()
+            if 'ring current' in name:
+                self.wids['Ring Current'].SetLabel("%s mA" % val)
+            elif 'mono energy' in name and cur_energy=='':
+                self.wids['X-ray Energy'].SetLabel("%s (eV)" % val)
+                cur_energy = val
+            elif 'i0 trans' in name:
+                i0vals['flux'] = val                
+            elif 'i0 current' in name:
+                i0vals['current'] = val
+            else:
+                addr = str(addr)
+                if addr.endswith('.VAL'):
+                    addr = addr[:-4]
+                if addr in pos_addrs:
+                    plab = pos_label[pos_addrs.index(addr)].lower()
+                    
+                    if 'stage x' in plab:
+                        self.wids['Sample Stage X'].SetLabel("%s mm" % val)
+                    elif 'stage y' in plab:
+                        self.wids['Sample Stage Y'].SetLabel("%s mm" % val)
+                    elif 'stage z' in plab:
+                        self.wids['Sample Stage Z'].SetLabel("%s mm" % val)
+                    elif 'theta' in plab:
+                        self.wids['Sample Stage Theta'].SetLabel("%s deg" % val)
+                    elif 'x' in plab:
+                        fines['X'] = val
+                    elif 'y' in plab:
+                        fines['Y'] = val
+
+        i0val = 'Flux=%(flux)s Hz, IonChamber Current=%(current)s uA' % i0vals
+        self.wids['X-ray Intensity (I0)'].SetLabel(i0val) 
+        self.wids['Sample Fine Stages'].SetLabel('X=%(X)s mm, Y=%(Y)s mm' % (fines)) 
                 
-        pack(panel, psizer)
-        return panel
-
-
     def onClose(self):
         pass
 
 
-    def onShowMap(self, event=None, new=True):
-        datafile  = self.owner.current_file
-        print 'Info data file ', datafile
-        
 
 class MapAreaPanel(wx.Panel):
     label  = 'Map Areas'    
@@ -628,7 +700,11 @@ WARNING: This cannot be undone!
         sizer.Add(self.xrf2,                (4, 2), (1, 2), ALL_LEFT, 2)
         pack(self, sizer)
 
-    def set_area_choices(self, areas, show_last=False):
+    def update_xrfmap(self, xrfmap):
+        self.set_area_choices(xrfmap, show_last=True)
+        
+    def set_area_choices(self, xrfmap, show_last=False):
+        areas = xrfmap['areas']
         c = self.choice
         c.Clear()
         self.choices =  dict([(areas[a].attrs['description'], a) for a in areas])
@@ -659,7 +735,7 @@ WARNING: This cannot be undone!
         new_label = str(self.desc.GetValue())
         area.attrs['description'] = new_label
         self.owner.current_file.h5root.flush()
-        self.set_area_choices(self.owner.current_file.xrfmap['areas'])
+        self.set_area_choices(self.owner.current_file.xrfmap)
         self.choice.SetStringSelection(new_label)
         self.desc.SetValue(new_label)
 
@@ -678,7 +754,7 @@ WARNING: This cannot be undone!
         if erase:
             xrfmap = self.owner.current_file.xrfmap
             del xrfmap['areas/%s' % aname]
-            self.set_area_choices(xrfmap['areas'])
+            self.set_area_choices(xrfmap)
 
     def onClear(self, event=None):
         if len(self.owner.im_displays) > 0:
@@ -835,9 +911,8 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.plotmca(self.sel_mca, title=title)
             # SET AREA CHOICE
             for p in self.nbpanels:
-                if hasattr(p, 'set_area_choices'):
-                    p.set_area_choices(self.current_file.xrfmap['areas'],
-                                       show_last=True)
+                if hasattr(p, 'update_xrfmap'):
+                    p.update_xrfmap(self.current_file.xrfmap)
 
 
     def show_XRFDisplay(self, do_raise=True, clear=True, xrmfile=None):
@@ -918,14 +993,13 @@ class MapViewerFrame(wx.Frame):
         ny, nx, npos = self.filemap[filename].xrfmap['positions/pos'].shape
         self.title.SetLabel("%s: (%i x %i)" % (filename, nx, ny))
 
-        rois = list(self.filemap[filename].xrfmap['roimap/sum_name'])
+        fnames = self.filelist.GetItems()
+
         for p in self.nbpanels:
-            if hasattr(p, 'set_roi_choices'):
-                p.set_roi_choices(rois)
+            if hasattr(p, 'update_xrfmap'):
+                p.update_xrfmap(self.current_file.xrfmap)            
             if hasattr(p, 'set_file_choices'):
-                p.set_file_choices(self.filemap.keys())
-            if hasattr(p, 'set_area_choices'):
-                p.set_area_choices(self.current_file.xrfmap['areas'])
+                p.set_file_choices(fnames)
 
     def createMenus(self):
         self.menubar = wx.MenuBar()
@@ -1051,8 +1125,7 @@ Matt Newville <newville @ cars.uchicago.edu>
             parent, fx = os.path.split(str(path))
             self.add_xrmfile(xrmfile, parent)
 
-    def add_xrmfile(self, xrmfile, parent):
-        fname = xrmfile.filename
+    def add_xrmfile(self, xrmfile):
         gname = 'map001'
         count, maxcount = 1, 999
         while hasattr(self.datagroups, gname) and count < maxcount:
@@ -1060,6 +1133,8 @@ Matt Newville <newville @ cars.uchicago.edu>
             gname = 'map%3.3i' % count
         setattr(self.datagroups, gname, xrmfile)
 
+        parent, fname = os.path.split(xrmfile.filename)
+        
         if fname not in self.filemap:
             self.filemap[fname] = xrmfile
         if fname not in self.filelist.GetItems():
@@ -1097,7 +1172,7 @@ Matt Newville <newville @ cars.uchicago.edu>
                 Popup(self, NOT_GSEXRM_FILE % str(path),
                      "Not a Map folder")
                 return
-            self.add_xrmfile(xrmfile, parent)
+            self.add_xrmfile(xrmfile)
 
     def onWatchFiles(self, event=None):
         self.watch_files = event.IsChecked()
