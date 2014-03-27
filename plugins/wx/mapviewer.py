@@ -515,40 +515,80 @@ class TriColorMapPanel(GridPanel):
             cbox.SetChoices(roichoices)
 
 
-class MapInfoPanel(GridPanel):
-    """Panel of Controls for choosing what to display a simple ROI map"""
+class MapInfoPanel(wx.Panel):
+    """Info Panel """
     label  = 'Map Info'    
     def __init__(self, parent, owner, **kws):
         self.owner = owner
 
-        GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
+        wx.Panel.__init__(self, parent, **kws)
 
-        self.title = SimpleText(self, 'Map info for ', size=(120, -1))
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        
+        self.title = SimpleText(self, 'Map Info', size=(120, -1))
+        self.nb = flat_nb.FlatNotebook(self, wx.ID_ANY, agwStyle=FNB_STYLE)
+        #self.nb.SetBackgroundColour('#FAFCFA')
+        self.subpanels = {}
+        self.wids = {}
+        for label, method in (('Scan Definition',  self.create_scanpanel),
+                              ('Extra Values',     self.create_envpanel)):
+            subpanel = method(label)
+            self.subpanels[label] = subpanel
+            self.nb.AddPage(subpanel, label)
+
+        sizer.Add(self.nb, 1, wx.ALL|wx.EXPAND)
+        pack(self, sizer)
+        self.nb.SetSelection(0)        
+
+    def create_envpanel(self, label):
+        psizer = wx.GridBagSizer(10, 3)        
+        panel = wx.Panel(self)
+        irow = 0
+        self.wids['env'] = {}
+        pack(panel, psizer)
+        return panel
+
+    def fill_envpanel(self):
+        for wid in self.wids['env'].values():
+            wid.Destroy()
+            del wid
+        wids = self.wids['env'] = {}
+        enames = list(self.owner.current_file.xrfmap['config/environ/name'])
+        eaddrs = list(self.owner.current_file.xrfmap['config/environ/address'])
+        evals = list(self.owner.current_file.xrfmap['config/environ/value'])
+        psizer.Add(SimpleText(panel, '   %s: ' % label,
+                              style=wx.LEFT, size=(100, -1)), 
+                              (irow, 0), (1, 1), 1)
+
+        psizer.Add(wx.StaticLine(panel, size=(400, 3), style=wx.LI_HORIZONTAL),
+                   (irow+1, 0), (1, 3), 1)
+
+        psizer.Add(wx.StaticLine(panel, size=(400, 3), style=wx.LI_HORIZONTAL),
+                   (irow+2, 0), (1, 3), 1)
 
 
-        self.Add(self.title,    dcol=2, newrow=True, style=LEFT)
-        self.pack()
+    def create_scanpanel(self, label):
+        psizer = wx.GridBagSizer(10, 4)
+        panel = wx.Panel(self)
+        irow = 0
+        self.wids[label] = {}
+
+        psizer.Add(SimpleText(panel, '   %s: ' % label,
+                              style=wx.LEFT, size=(100, -1)), 
+                              (irow, 0), (1, 1), 1)
+                
+        pack(panel, psizer)
+        return panel
+
 
     def onClose(self):
-        for p in self.plotframes:
-            try:
-                p.Destroy()
-            except:
-                pass
+        pass
 
 
     def onShowMap(self, event=None, new=True):
-
         datafile  = self.owner.current_file
-        det =self.det.GetStringSelection()
-        if det == 'sum':
-            det =  None
-        else:
-            det = int(det)
-
-    def set_roi_choices(self, rois):
-        pass
-
+        print 'Info data file ', datafile
+        
 
 class MapAreaPanel(wx.Panel):
     label  = 'Map Areas'    
