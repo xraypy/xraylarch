@@ -158,7 +158,7 @@ class XRFDisplayFrame(wx.Frame):
             y = self.mca.counts[ix]
         self.last_leftdown = x
         self.energy_for_zoom = x
-        self.draw_marker(x, y, 0, 'Left:')
+        self.draw_marker('Left:', ix, x, y, 0)
 
     def clear_lines(self, evt=None):
         "remove all Line Markers"
@@ -187,7 +187,7 @@ class XRFDisplayFrame(wx.Frame):
         "remove XRF background"
         self.plotmca(self.mca)
 
-    def draw_marker(self, x, y, idx, title):
+    def draw_marker(self, title, ix, x, y, idx):
         arrow = self.panel.axes.arrow
         if self.cursor_markers[idx] is not None:
             try:
@@ -203,7 +203,9 @@ class XRFDisplayFrame(wx.Frame):
                                              head_starts_at_zero=True,
                                              color=self.conf.marker_color)
             self.panel.canvas.draw()
-            self.write_message("%s E=%.3f keV, Counts=%g" % (title, x, y), panel=1+idx)
+            self.write_message("%s Chan=%i, E=%.3f keV, Counts=%g" % (title, 
+                                                                      ix,  x, y), 
+                                                                      panel=1+idx)
         except:
             pass
     def on_rightdown(self, event=None):
@@ -220,7 +222,7 @@ class XRFDisplayFrame(wx.Frame):
             x = self.mca.energy[ix]
             y = self.mca.counts[ix]
         self.last_rightdown = x
-        self.draw_marker(x, y, 1, 'Right:')
+        self.draw_marker('Right:', ix, x, y, 1)
 
     def createMainPanel(self):
         self.wids = {}
@@ -493,7 +495,8 @@ class XRFDisplayFrame(wx.Frame):
                     cnet = roi.get_counts(self.mca.counts, net=True)
                     counts_tot = " Total: %i" % ctot
                     counts_net = " Net: %i" % cnet
-                    msg = "%s  Total: %i, Net: %i" % (msg, ctot, cnet)
+                    msg = "%s  Total: %i, Net: %i, chans=[%i:%i]" % (msg, 
+                                                                     ctot, cnet, left, right)
                     self.selected_roi = roi
                     break
         if name is None or right == -1:
