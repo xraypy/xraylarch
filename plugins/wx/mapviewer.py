@@ -17,7 +17,7 @@ Needed Visualizations:
          lasso in correlations:  show XRF spectra, enhance map points
 """
 
-__version__ = '6 (12-March-2014)'
+__version__ = '7 (28-March-2014)'
 
 import os
 import sys
@@ -36,6 +36,7 @@ except:
 
 import h5py
 import numpy as np
+import scipy.stats as stats
 
 from wxmplot import PlotFrame
 
@@ -95,6 +96,133 @@ has already been read.
 """
 
 DETCHOICES = ['sum', '1', '2', '3', '4']
+FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
+
+
+class AreaStatsFrame(wx.Frame) :
+    """Shows Table of Statistics for a Map Area"""
+    def __init__(self, parent, xrmfile, areaname):
+        self.parent = parent
+        self.xrmfile = xrmfile
+        path, fname = os.path.split(xrmfile.filename)
+        self.areaname = areaname
+        self.area = xrmfile.get_area(name=areaname).value
+        self.title = "Statistics for area '%s', map '%s'" % (areaname,
+                                                             fname)
+        
+        wx.Frame.__init__(self, None, -1, self.title,
+                          size=(450, 450), style=FRAMESTYLE)
+
+        stats_thread = Thread(target=self.get_stats)
+        self.draw_frame()
+        self.Show()
+        self.Raise()
+        stats_thread.start()
+        
+    def draw_frame(self):
+        d_names = [str(d) for d in self.xrmfile.xrfmap['roimap/det_name']]
+        self.wids = {}
+        sizer = wx.GridBagSizer(len(d_names), 7)
+        panel = scrolled.ScrolledPanel(self)
+        
+        ir = 0
+        sizer.Add(SimpleText(panel, self.title, colour='#880000'),
+                  (0, 0), (1, 6), ALL_CEN)
+
+        ir = 1
+        sizer.Add(SimpleText(panel, '%i points' % self.area.sum()),
+                  (ir, 0), (1, 2), ALL_CEN)
+        sizer.Add(SimpleText(panel, 'values in counts/sec'),
+                  (ir, 2), (1, 2), ALL_CEN)
+                
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(600, 3),
+                                style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 6), ALL_CEN)
+
+        ir += 1
+        for j, txt in enumerate(('ROI', 'Mean', 'Sigma', 'Median',
+                            'Mode', 'Min', 'Max')):
+            sizer.Add(SimpleText(panel, txt), (ir, j), (1, 1), ALL_CEN)
+
+        opts = {}   ## {'size': (120, -1)}
+        for idet, name in enumerate(d_names):
+            ir += 1
+            roi = SimpleText(panel, name, **opts)
+            wave, wsig = SimpleText(panel, '', **opts), SimpleText(panel, '', **opts)
+            wmed, wmod = SimpleText(panel, '', **opts), SimpleText(panel, '', **opts)
+            wmin, wmax = SimpleText(panel, '', **opts), SimpleText(panel, '', **opts)
+
+            sizer.Add(roi,  (ir, 0), (1, 1), ALL_CEN)
+            sizer.Add(wave, (ir, 1), (1, 1), ALL_CEN)
+            sizer.Add(wsig, (ir, 2), (1, 1), ALL_CEN)
+            sizer.Add(wmed, (ir, 3), (1, 1), ALL_CEN)
+            sizer.Add(wmod, (ir, 4), (1, 1), ALL_CEN)
+            sizer.Add(wmin, (ir, 5), (1, 1), ALL_CEN)
+            sizer.Add(wmax, (ir, 6), (1, 1), ALL_CEN)
+            self.wids[idet] = roi, wave, wsig, wmed, wmod, wmin, wmax
+            
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(600, 3),
+                                style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 6), ALL_CEN)
+
+        pack(panel, sizer)
+        panel.SetupScrolling()
+
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+        pack(self, mainsizer)
+        
+    
+    def get_stats(self):
+        # self.stats = self.xrmfile.get_area_stats(self.areaname)
+        area   = self.area
+        xrfmap = self.xrmfile.xrfmap
+        d_addrs = [d.lower() for d in xrfmap['roimap/det_address']]
+        d_names = [d for d in xrfmap['roimap/det_name']]
+        # count times
+        ctime = [1.e-6*xrfmap['roimap/det_raw'][:,:,0][area]]
+        for i in range(xrfmap.attrs['N_Detectors']):
+            tname = 'det%i/realtime' % (i+1)
+            ctime.append(1.e-6*xrfmap[tname].value[area])
+        
+        for idet, dname in enumerate(d_names):
+            daddr = d_addrs[idet]
+            det = 0
+            if 'mca' in daddr:
+                det = 1
+                words = daddr.split('mca')
+                if len(words) > 1:
+                    det = int(words[1].split('.')[0])
+            if idet == 0:
+                d = ctime[0]
+            else:
+                d = xrfmap['roimap/det_raw'][:,:,idet][area]/ctime[det]
+
+            try:
+                hmean, gmean = stats.gmean(d), stats.hmean(d)
+                skew, kurtosis = stats.skew(d), stats.kurtosis(d)
+            except ValueError:
+                hmean, gmean, skew, kurtosis = 0, 0, 0, 0
+            mode = stats.mode(d)
+
+            wx.CallAfter(self.wids[idet][1].SetLabel, "%.1f" % d.mean())
+            wx.CallAfter(self.wids[idet][2].SetLabel, "%.1f" % d.std())
+            wx.CallAfter(self.wids[idet][3].SetLabel, "%.1f" % np.median(d))
+            wx.CallAfter(self.wids[idet][5].SetLabel, "%.1f" % d.min())
+            wx.CallAfter(self.wids[idet][6].SetLabel, "%.1f" % d.max())
+            # print d.mean(), d.std(), np.median(d), d.min(), d.max()
+
+
+            #roi, wave, wsig, wmed, wmod, wmin, wmax
+            #roidata.append((dname, len(d), d.mean(), d.std(), np.median(d),
+            #                stats.mode(d), d.min(), d.max(), 
+            #                gmean, hmean, skew, kurtosis))
+
+        
+
+        
 
 class MapMathPanel(scrolled.ScrolledPanel):
     """Panel of Controls for doing math on arrays from Map data"""
@@ -712,15 +840,26 @@ WARNING: This cannot be undone!
 
         pack(self, sizer)
 
+    # def get_stats(self, aname):
+    #     self.stats = self.owner.current_file.get_area_stats(aname)
+        
     def onReport(self, event=None):
         aname = self._getarea()
-        stats = self.owner.current_file.get_area_stats(name=aname)
-        print 'Need to raise ROI Report Frame: ', aname
-        print 'name, length, mean, std, median, mode, minimum, maximum, gmean, hmean, skew, kurtosis'
-        for (name, length, mean, std, median, mode, xmin, 
-             xmax, gmean, hmean, skew, kurtosis) in stats:
-            print "%s: %i %.1f %.1f %.1f" % (name, length, mean, std, median)
-            
+        f = AreaStatsFrame(self, self.owner.current_file, aname)
+#         
+# 
+#         self.stats = None
+#         stats_thread = Thread(target=self.get_stats, args=(aname,))
+#         self.owner.message("Gathering Statistics for area '%s'..." % aname)
+#         stats_thread.start()
+#         stats_thread.join()
+#         self.owner.message("Got Statistics for area '%s'" % aname)        
+#         print 'Need to raise ROI Report Frame: ', aname
+#         print 'name, length, mean, std, median, mode, minimum, maximum, gmean, hmean, skew, kurtosis'
+#         for (name, length, mean, std, median, mode, xmin, 
+#              xmax, gmean, hmean, skew, kurtosis) in self.stats:
+#             print "%s: %i %.1f %.1f %.1f" % (name, length, mean, std, median)
+# ;            
 
     def update_xrfmap(self, xrfmap):
         self.set_area_choices(xrfmap, show_last=True)
