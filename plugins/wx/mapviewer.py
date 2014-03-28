@@ -714,8 +714,13 @@ WARNING: This cannot be undone!
 
     def onReport(self, event=None):
         aname = self._getarea()
-        area  = self.owner.current_file.xrfmap['areas/%s' % aname]
-        print 'Need to raise ROI Report Frame: ', aname, area
+        stats = self.owner.current_file.get_area_stats(name=aname)
+        print 'Need to raise ROI Report Frame: ', aname
+        print 'name, length, mean, std, median, mode, minimum, maximum, gmean, hmean, skew, kurtosis'
+        for (name, length, mean, std, median, mode, xmin, 
+             xmax, gmean, hmean, skew, kurtosis) in stats:
+            print "%s: %i %.1f %.1f %.1f" % (name, length, mean, std, median)
+            
 
     def update_xrfmap(self, xrfmap):
         self.set_area_choices(xrfmap, show_last=True)
