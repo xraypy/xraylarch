@@ -1284,7 +1284,7 @@ Matt Newville <newville @ cars.uchicago.edu>
                      "Not a Map folder")
                 return
             parent, fx = os.path.split(str(path))
-            self.add_xrmfile(xrmfile, parent)
+            self.add_xrmfile(xrmfile) 
 
     def add_xrmfile(self, xrmfile):
         gname = 'map001'
