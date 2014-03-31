@@ -432,6 +432,7 @@ class GSEXRM_MapFile(object):
         self.rowdata = []
         self.npts = None
         self.roi_slices = None
+        self.pixeltime = None
         self.dt = debugtime()
         self.masterfile = None
         self.masterfile_mtime = -1
@@ -687,7 +688,19 @@ class GSEXRM_MapFile(object):
             # self.dt.show()
         self.resize_arrays(self.last_row+1)
         self.h5root.flush()
+        if self.pixeltime is None:
+            self.calc_pixeltime()
 
+    def calc_pixeltime(self):
+        scanconf = self.xrfmap['config/scan']
+        rowtime = float(scanconf['time1'].value)
+        start = float(scanconf['start1'].value)
+        stop = float(scanconf['stop1'].value)
+        step = float(scanconf['step1'].value)
+        npts = 1 + int((abs(stop - start) + 1.1*step)/step)
+        self.pixeltime = rowtime/npts
+        return self.pixeltime
+    
     def read_rowdata(self, irow):
         """read a row's worth of raw data from the Map Folder
         returns arrays of data
