@@ -134,7 +134,7 @@ class PeriodicTablePanel(wx.Panel):
         self.Refresh()
 
     def BuildPanel(self):
-        sizer = wx.GridBagSizer(9, 18)
+        sizer = wx.GridBagSizer(9, 20)
         for name, coords in self.elems.items():
             wid = wx.NewId()
             tw = wx.StaticText(self, wid, label=name)

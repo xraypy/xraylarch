@@ -135,7 +135,7 @@ class XRFDisplayFrame(wx.Frame):
         self.createMenus()
         self.SetFont(Font(9))
         self.statusbar = self.CreateStatusBar(3)
-        self.statusbar.SetStatusWidths([-3, -1, -1])
+        self.statusbar.SetStatusWidths([-2, -1, -1])
         statusbar_fields = ["XRF Display", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
@@ -312,20 +312,18 @@ class XRFDisplayFrame(wx.Frame):
         ir += 1
         sizer.Add(txt(ctrlpanel, ' Regions of Interest:', size=140),
                   (ir, 1), (1, 2), labstyle)
-        sizer.Add(self.wids['roilist'],     (ir, 3), (5, 2), labstyle)
+        sizer.Add(self.wids['roilist'],    (ir, 3), (5, 2), labstyle)
 
-        sizer.Add(self.wids['roiname'],  (ir+1, 1), (1, 2), labstyle)
-
-        sizer.Add(self.wids['newroi'],   (ir+2, 1), (1, 1), wx.ALIGN_CENTER)
-        sizer.Add(self.wids['delroi'],   (ir+2, 2), (1, 1), wx.ALIGN_CENTER)
-
+        sizer.Add(self.wids['roiname'],    (ir+1, 1), (1, 2), labstyle)
+        sizer.Add(self.wids['newroi'],     (ir+2, 1), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(self.wids['delroi'],     (ir+2, 2), (1, 1), wx.ALIGN_CENTER)
         sizer.Add(self.wids['counts_tot'], (ir+3, 1), (1, 2), LEFT)
         sizer.Add(self.wids['counts_net'], (ir+4, 1), (1, 2), LEFT)
 
         ir += 5
-        sizer.Add(self.wids['roi_message'],        (ir, 1), (1, 5), ctrlstyle)
+        sizer.Add(self.wids['roi_message'],  (ir, 1), (1, 5), ctrlstyle)
         ir += 1
-        sizer.Add(lin(ctrlpanel, 195),         (ir, 1), (1, 4), labstyle)
+        sizer.Add(lin(ctrlpanel, 195),       (ir, 1), (1, 4), labstyle)
 
         ir += 1
         sizer.Add(txt(ctrlpanel, ' Energy Scale:'),  (ir, 1), (1, 2), labstyle)
@@ -354,11 +352,11 @@ class XRFDisplayFrame(wx.Frame):
                 xlines.Columns[col].Renderer.Alignment = align
                 xlines.Columns[col].Alignment = RIGHT
 
-            xlines.SetMinSize((300, 150))
+            xlines.SetMinSize((300, 180))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
 
             ir += 1
-            sizer.Add(xlines,   (ir, 1), (4, 4), wx.GROW|wx.ALL|labstyle)
+            sizer.Add(xlines,   (ir, 1), (5, 5), wx.GROW|wx.ALL)
 
         sizer.SetHGap(1)
         sizer.SetVGap(1)
@@ -375,7 +373,7 @@ class XRFDisplayFrame(wx.Frame):
         msizer = wx.BoxSizer(wx.HORIZONTAL)
         msizer.Add(ctrlpanel, 0, style, 1)
 
-        msizer.Add(self.panel,     1, style, 1)
+        msizer.Add(self.panel, 1, style, 1)
         pack(self, msizer)
         self.set_roilist(mca=None)
 
