@@ -607,7 +607,11 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         self.wids['Scan Fast Motor'].SetLabel(scan1)
         self.wids['Scan Slow Motor'].SetLabel(scan2)
-        self.wids['Dwell Time'].SetLabel("%.3f sec per pixel" % (rowtime/(1+npts1)))
+        pixtime = self.owner.current_file.pixeltime
+        if pixtime is None:
+            pixtime = self.owner.current_file.calc_pixeltime()
+        pixtime =int(round(1000.0*pixtime))
+        self.wids['Dwell Time'].SetLabel("%.1f milliseconds per pixel" % pixtime)
 
         env_names = list(xrfmap['config/environ/name'])
         env_vals  = list(xrfmap['config/environ/value'])
@@ -681,25 +685,25 @@ WARNING: This cannot be undone!
         self.desc  = wx.TextCtrl(pane, -1,   '', size=(200, -1))
         self.info  = wx.StaticText(pane, -1, '', size=(250, -1))
 
-        self.report = Button(pane, 'Save Report',
-                             size=(135, -1),
-                             action=self.onReport)
-
         self.onmap = Button(pane, 'Show on Map', size=(135, -1),
                             action=self.onShow)
         self.clear = Button(pane, 'Clear Map', size=(135, -1),
                             action=self.onClear)
-        self.xrf   = Button(pane, 'Show XRF Spectrum ',  size=(135, -1),
+        self.xrf   = Button(pane, 'Show XRF (Fore)',  size=(135, -1),
                             action=self.onXRF)
-        self.xrf2  = Button(pane, 'Show XRF Spectrum(BG)', size=(135, -1),
+        self.xrf2  = Button(pane, 'Show XRF (Back)', size=(135, -1),
                             action=partial(self.onXRF, as_mca2=True))
+
+        self.report = Button(pane, 'Save Report', size=(135, -1),
+                             action=self.onReport)
 
         self.delete = Button(pane, 'Delete Area', size=(90, -1),
                                       action=self.onDelete)
         self.update = Button(pane, 'Save Label', size=(90, -1),
                                       action=self.onLabel)
 
-        legend  = wx.StaticText(pane, -1, 'Values in CPS, Time in ms', size=(200, -1))
+        legend  = wx.StaticText(pane, -1, 'Values in CPS, Time in ms',
+                                size=(200, -1))
 
         def txt(s):
             return SimpleText(pane, s)
@@ -730,7 +734,6 @@ WARNING: This cannot be undone!
         self.report = None
         if HAS_DV:
             rep = self.report = dv.DataViewListCtrl(self, style=DVSTY)
-            print dir(rep)
             rep.AppendTextColumn('ROI ',     width=100)
             rep.AppendTextColumn('Min',      width=75)
             rep.AppendTextColumn('Max',      width=75)
@@ -821,8 +824,6 @@ WARNING: This cannot be undone!
         this_label = choice_labels[idx]
         c.SetStringSelection(this_label)
         self.desc.SetValue(this_label)
-        self.onSelect()
-
 
         
     def onReport(self, event=None):
@@ -862,8 +863,7 @@ WARNING: This cannot be undone!
             fout.write("\n".join(buff))
             fout.close()
         except IOError:
-            print "could not write %s" % outfile
-                
+            print "could not write %s" % outfile               
             
         
     def _getarea(self):
