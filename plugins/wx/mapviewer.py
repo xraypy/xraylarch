@@ -674,31 +674,29 @@ WARNING: This cannot be undone!
         pane = wx.Panel(self)
         sizer = wx.GridBagSizer(8, 5)
         self.choices = {}
-        self.choice = Choice(pane, choices=[], size=(180, -1),
+        self.choice = Choice(pane, choices=[], size=(200, -1),
                              action=self.onSelect)
 
         
-        self.desc  = wx.TextCtrl(pane, -1,   '', size=(180, -1))
-        self.info  = wx.StaticText(pane, -1, '', size=(180, -1))
+        self.desc  = wx.TextCtrl(pane, -1,   '', size=(200, -1))
+        self.info  = wx.StaticText(pane, -1, '', size=(250, -1))
 
         self.report = Button(pane, 'Save Report',
-                             size=(150, -1),
+                             size=(135, -1),
                              action=self.onReport)
 
-        self.onmap = Button(pane, 'Show on Map', size=(130, -1),
+        self.onmap = Button(pane, 'Show on Map', size=(135, -1),
                             action=self.onShow)
-        self.clear = Button(pane, 'Clear on Map', size=(130, -1),
+        self.clear = Button(pane, 'Clear Map', size=(135, -1),
                             action=self.onClear)
-        self.xrf   = Button(pane, 'Show Spectrum ',
-                            size=(130, -1),
+        self.xrf   = Button(pane, 'Show XRF Spectrum ',  size=(135, -1),
                             action=self.onXRF)
-        self.xrf2  = Button(pane, 'Show Spectrum(BG)',
-                            size=(130, -1),
+        self.xrf2  = Button(pane, 'Show XRF Spectrum(BG)', size=(135, -1),
                             action=partial(self.onXRF, as_mca2=True))
 
-        self.delete = Button(pane, 'Delete Area', size=(100, -1),
+        self.delete = Button(pane, 'Delete Area', size=(90, -1),
                                       action=self.onDelete)
-        self.update = Button(pane, 'Save Label', size=(100, -1),
+        self.update = Button(pane, 'Save Label', size=(90, -1),
                                       action=self.onLabel)
 
         legend  = wx.StaticText(pane, -1, 'Values in CPS, Time in ms', size=(200, -1))
@@ -706,19 +704,19 @@ WARNING: This cannot be undone!
         def txt(s):
             return SimpleText(pane, s)
         sizer.Add(txt('Map Areas'),         (0, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.info,                (0, 1), (1, 3), ALL_RIGHT, 2)
+        sizer.Add(self.info,                (0, 1), (1, 4), ALL_LEFT, 2)
         sizer.Add(txt('Area: '),            (1, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.choice,              (1, 1), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.delete,              (1, 3), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.choice,              (1, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.delete,              (1, 4), (1, 1), ALL_LEFT, 2)
         sizer.Add(txt('New Label: '),       (2, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.desc,                (2, 1), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.update,              (2, 3), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.desc,                (2, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.update,              (2, 4), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.onmap,               (3, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.clear,               (3, 2), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf,                 (4, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf2,                (4, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.report,              (5, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(legend,                   (5, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.report,              (4, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(legend,                   (5, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
 
         # main sizer
@@ -733,7 +731,7 @@ WARNING: This cannot be undone!
         if HAS_DV:
             rep = self.report = dv.DataViewListCtrl(self, style=DVSTY)
             print dir(rep)
-            rep.AppendTextColumn('ROI ',     width=95)
+            rep.AppendTextColumn('ROI ',     width=100)
             rep.AppendTextColumn('Min',      width=75)
             rep.AppendTextColumn('Max',      width=75)
             rep.AppendTextColumn('Mean ',    width=75)
@@ -743,11 +741,11 @@ WARNING: This cannot be undone!
             for col in range(7):
                 align = wx.ALIGN_RIGHT
                 if col == 0: align = wx.ALIGN_LEFT
-                rep.Columns[col].Sortable = False # True
+                rep.Columns[col].Sortable = False 
                 rep.Columns[col].Renderer.Alignment = align
                 rep.Columns[col].Alignment = align
 
-            rep.SetMinSize((600, 300))
+            rep.SetMinSize((590, 300))
             msizer.Add(rep, 1, wx.ALIGN_LEFT|wx.ALL, 1)
 
         pack(self, msizer)
