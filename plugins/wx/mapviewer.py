@@ -52,7 +52,7 @@ from wxmplot import PlotFrame
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
                      pack, Popup, Button, MenuItem, Choice, Check,
-                     GridPanel)
+                     GridPanel, FileSave)
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
@@ -108,127 +108,6 @@ has already been read.
 DETCHOICES = ['sum', '1', '2', '3', '4']
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
 
-
-class AreaStatsFrame(wx.Frame) :
-    """Shows Table of Statistics for a Map Area"""
-    def __init__(self, parent, xrmfile, areaname):
-        self.parent = parent
-        self.xrmfile = xrmfile
-        path, fname = os.path.split(xrmfile.filename)
-        self.areaname = areaname
-        self.area = xrmfile.get_area(name=areaname).value
-        self.title = "Statistics for area '%s', map '%s'" % (areaname,
-                                                             fname)
-        
-        wx.Frame.__init__(self, None, -1, self.title,
-                          size=(450, 450), style=FRAMESTYLE)
-
-        stats_thread = Thread(target=self.get_stats)
-        self.draw_frame()
-        self.Show()
-        self.Raise()
-        stats_thread.start()
-        
-    def draw_frame(self):
-        d_names = [str(d) for d in self.xrmfile.xrfmap['roimap/det_name']]
-        self.wids = {}
-        sizer = wx.GridBagSizer(len(d_names), 7)
-        panel = scrolled.ScrolledPanel(self)
-        
-        ir = 0
-        sizer.Add(SimpleText(panel, self.title, colour='#880000'),
-                  (0, 0), (1, 6), ALL_CEN)
-
-        ir = 1
-        sizer.Add(SimpleText(panel, '%i points' % self.area.sum()),
-                  (ir, 0), (1, 2), ALL_CEN)
-        sizer.Add(SimpleText(panel, 'values in counts/sec'),
-                  (ir, 2), (1, 2), ALL_CEN)
-                
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(600, 3),
-                                style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 6), ALL_CEN)
-
-        ir += 1
-        for j, txt in enumerate(('ROI', 'Mean', 'Sigma', 'Median',
-                            'Mode', 'Min', 'Max')):
-            sizer.Add(SimpleText(panel, txt), (ir, j), (1, 1), ALL_CEN)
-
-        opts = {}   ## {'size': (120, -1)}
-        for idet, name in enumerate(d_names):
-            ir += 1
-            roi = SimpleText(panel, name, **opts)
-            wave, wsig = SimpleText(panel, '', **opts), SimpleText(panel, '', **opts)
-            wmed, wmod = SimpleText(panel, '', **opts), SimpleText(panel, '', **opts)
-            wmin, wmax = SimpleText(panel, '', **opts), SimpleText(panel, '', **opts)
-
-            sizer.Add(roi,  (ir, 0), (1, 1), ALL_CEN)
-            sizer.Add(wave, (ir, 1), (1, 1), ALL_CEN)
-            sizer.Add(wsig, (ir, 2), (1, 1), ALL_CEN)
-            sizer.Add(wmed, (ir, 3), (1, 1), ALL_CEN)
-            sizer.Add(wmod, (ir, 4), (1, 1), ALL_CEN)
-            sizer.Add(wmin, (ir, 5), (1, 1), ALL_CEN)
-            sizer.Add(wmax, (ir, 6), (1, 1), ALL_CEN)
-            self.wids[idet] = roi, wave, wsig, wmed, wmod, wmin, wmax
-            
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(600, 3),
-                                style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 6), ALL_CEN)
-
-        pack(panel, sizer)
-        panel.SetupScrolling()
-
-        mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
-        pack(self, mainsizer)
-        
-    
-    def get_stats(self):
-        # self.stats = self.xrmfile.get_area_stats(self.areaname)
-        area   = self.area
-        xrfmap = self.xrmfile.xrfmap
-        d_addrs = [d.lower() for d in xrfmap['roimap/det_address']]
-        d_names = [d for d in xrfmap['roimap/det_name']]
-        # count times
-        ctime = [1.e-6*xrfmap['roimap/det_raw'][:,:,0][area]]
-        for i in range(xrfmap.attrs['N_Detectors']):
-            tname = 'det%i/realtime' % (i+1)
-            ctime.append(1.e-6*xrfmap[tname].value[area])
-        
-        for idet, dname in enumerate(d_names):
-            daddr = d_addrs[idet]
-            det = 0
-            if 'mca' in daddr:
-                det = 1
-                words = daddr.split('mca')
-                if len(words) > 1:
-                    det = int(words[1].split('.')[0])
-            if idet == 0:
-                d = ctime[0]
-            else:
-                d = xrfmap['roimap/det_raw'][:,:,idet][area]/ctime[det]
-
-            try:
-                hmean, gmean = stats.gmean(d), stats.hmean(d)
-                skew, kurtosis = stats.skew(d), stats.kurtosis(d)
-            except ValueError:
-                hmean, gmean, skew, kurtosis = 0, 0, 0, 0
-            mode = stats.mode(d)
-
-            wx.CallAfter(self.wids[idet][1].SetLabel, "%.1f" % d.mean())
-            wx.CallAfter(self.wids[idet][2].SetLabel, "%.1f" % d.std())
-            wx.CallAfter(self.wids[idet][3].SetLabel, "%.1f" % np.median(d))
-            wx.CallAfter(self.wids[idet][5].SetLabel, "%.1f" % d.min())
-            wx.CallAfter(self.wids[idet][6].SetLabel, "%.1f" % d.max())
-            # print d.mean(), d.std(), np.median(d), d.min(), d.max()
-
-
-            #roi, wave, wsig, wmed, wmod, wmin, wmax
-            #roidata.append((dname, len(d), d.mean(), d.std(), np.median(d),
-            #                stats.mode(d), d.min(), d.max(), 
-            #                gmean, hmean, skew, kurtosis))
 
 
 class MapMathPanel(scrolled.ScrolledPanel):
@@ -802,7 +681,8 @@ WARNING: This cannot be undone!
         self.desc  = wx.TextCtrl(pane, -1,   '', size=(180, -1))
         self.info  = wx.StaticText(pane, -1, '', size=(180, -1))
 
-        self.report = Button(pane, 'Report', size=(100, -1),
+        self.report = Button(pane, 'Save Report',
+                             size=(150, -1),
                              action=self.onReport)
 
         self.onmap = Button(pane, 'Show on Map', size=(130, -1),
@@ -821,10 +701,12 @@ WARNING: This cannot be undone!
         self.update = Button(pane, 'Save Label', size=(100, -1),
                                       action=self.onLabel)
 
+        legend  = wx.StaticText(pane, -1, 'Values in CPS, Time in ms', size=(200, -1))
+
         def txt(s):
             return SimpleText(pane, s)
-        sizer.Add(txt('Defined Map Areas'), (0, 0), (1, 3), ALL_CEN, 2)
-        sizer.Add(self.info,                (0, 3), (1, 2), ALL_RIGHT, 2)
+        sizer.Add(txt('Map Areas'),         (0, 0), (1, 1), ALL_CEN, 2)
+        sizer.Add(self.info,                (0, 1), (1, 3), ALL_RIGHT, 2)
         sizer.Add(txt('Area: '),            (1, 0), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.choice,              (1, 1), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.delete,              (1, 3), (1, 1), ALL_LEFT, 2)
@@ -833,10 +715,10 @@ WARNING: This cannot be undone!
         sizer.Add(self.update,              (2, 3), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.onmap,               (3, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.clear,               (3, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.report,              (3, 4), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.xrf,                 (4, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf2,                (4, 2), (1, 2), ALL_LEFT, 2)
-
+        sizer.Add(self.report,              (5, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(legend,                   (5, 2), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
 
         # main sizer
@@ -850,6 +732,7 @@ WARNING: This cannot be undone!
         self.report = None
         if HAS_DV:
             rep = self.report = dv.DataViewListCtrl(self, style=DVSTY)
+            print dir(rep)
             rep.AppendTextColumn('ROI ',     width=95)
             rep.AppendTextColumn('Min',      width=75)
             rep.AppendTextColumn('Max',      width=75)
@@ -869,11 +752,6 @@ WARNING: This cannot be undone!
 
         pack(self, msizer)
         self.SetupScrolling()
-        
-    def onReport(self, event=None):
-        aname = self._getarea()
-        stats_thread = Thread(target=self.show_stats)
-        stats_thread.start()
 
     def show_stats(self):
         # self.stats = self.xrmfile.get_area_stats(self.areaname)
@@ -905,7 +783,7 @@ WARNING: This cannot be undone!
                 if len(words) > 1:
                     det = int(words[1].split('.')[0])
             if idet == 0:
-                d = 1.e6*ctime[0]
+                d = 1.e3*ctime[0]
             else:
                 d = xrfmap['roimap/det_raw'][:,:,idet][area]/ctime[det]
 
@@ -914,12 +792,16 @@ WARNING: This cannot be undone!
                 skew, kurtosis = stats.skew(d), stats.kurtosis(d)
             except ValueError:
                 hmean, gmean, skew, kurtosis = 0, 0, 0, 0
+
+            smode = '--'
             mode = stats.mode(d)
-
+            if len(mode) > 0:
+                mode = mode[0]
+                if len(mode) > 0: 
+                    smode = "%.1f" % mode[0]
             dat = (dname, "%.1f" % d.min(), "%.1f" % d.max(), "%.1f" %
-                   d.mean(), "%.1f" % d.std(), "%.1f" % np.median(d), '--')
+                   d.mean(), "%.1f" % d.std(), "%.1f" % np.median(d), smode)
             self.report_data.append(dat)
-
             wx.CallAfter(self.report.AppendItem, dat)
         self.choice.Enable()
 
@@ -942,9 +824,51 @@ WARNING: This cannot be undone!
         c.SetStringSelection(this_label)
         self.desc.SetValue(this_label)
         self.onSelect()
+
+
+        
+    def onReport(self, event=None):
+        aname = self._getarea()
+        path, fname = os.path.split(self.owner.current_file.filename)
+        deffile = "%s_%s" % (fname, aname)
+        deffile = deffile.replace('.', '_') + '.dat'
+        outfile = FileSave(self, "Save Area Statistics File",
+                           default_file=deffile,
+                           wildcard=FILE_WILDCARDS)
+        
+        if outfile is None:
+            return
+
+        aname = self._getarea()
+        area  = self.owner.current_file.xrfmap['areas/%s' % aname]        
+        npix = len(area.value[np.where(area.value)])
+        pixtime = self.owner.current_file.pixeltime
+        if pixtime is None:
+            pixtime = self.owner.current_file.calc_pixeltime()
+
+        dtime = npix*pixtime
+        info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds" 
+        buff = ["# Map %s, Area %s" % (self.owner.current_file.filename, aname),
+                "# %i Pixels" % npix,
+                "# %i milliseconds per pixel" % int(round(1000.0*pixtime)),
+                "# %.3f total seconds"  % dtime,
+                "# Time (TSCALER) in milliseconds",
+                "# All other values in counts per second",
+                "#----------------------------------",
+                "#  ROI    Min   Max    Mean     Sigma    Median     Mode"]
+        for dat in self.report_data:
+            buff.append("  ".join(dat))
+        buff.append('')
+        try:
+            fout = open(outfile, 'w')
+            fout.write("\n".join(buff))
+            fout.close()
+        except IOError:
+            print "could not write %s" % outfile
+                
             
+        
     def _getarea(self):
-        dfile = self.owner.current_file
         return self.choices[self.choice.GetStringSelection()]
 
     def onSelect(self, event=None):
@@ -954,9 +878,10 @@ WARNING: This cannot be undone!
         pixtime = self.owner.current_file.pixeltime
         if pixtime is None:
             pixtime = self.owner.current_file.calc_pixeltime()
-            
+
         dtime = npix*pixtime
-        self.info.SetLabel("%i Pixels, %.3f seconds" % (npix, dtime))
+        info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds" 
+        self.info.SetLabel(info_fmt%(npix, int(round(1000.0*pixtime)), dtime))
 
         self.desc.SetValue(area.attrs['description'])
         if self.report is not None:
