@@ -821,7 +821,10 @@ WARNING: This cannot be undone!
             idx = 0
         if show_last:
             idx = len(self.choices)-1
-        this_label = choice_labels[idx]
+        try:
+            this_label = choice_labels[idx]
+        except IndexError:
+            return
         c.SetStringSelection(this_label)
         self.desc.SetValue(this_label)
 
