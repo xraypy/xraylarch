@@ -18,3 +18,5 @@ sandbox/
 play/
 AMAP/
 *.h5
+
+*.mca
