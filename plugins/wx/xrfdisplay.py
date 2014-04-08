@@ -827,9 +827,13 @@ class XRFDisplayFrame(wx.Frame):
         if mca is not None:
             self.mca2 = mca
 
-        ymax = max( max(self.ydata), max(y))*1.25
         self.x2data = 1.0*x[:]
         self.y2data = 1.0*y[:]
+        if hasattr(self, 'ydata'):
+            ymax = max(max(self.ydata), max(y))*1.25
+        else:
+            ymax = max(y)*1.25
+
         kws.update({'zorder': zorder, 'label': 'spectra2',
                     'ymax' : ymax,
                     'axes_style': 'bottom',
