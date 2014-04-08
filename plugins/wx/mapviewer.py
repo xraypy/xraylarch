@@ -689,12 +689,16 @@ WARNING: This cannot be undone!
                             action=self.onShow)
         self.clear = Button(pane, 'Clear Map', size=(135, -1),
                             action=self.onClear)
+
+        self.onstats = Button(pane, 'Show Stats', size=(135, -1),
+                            action=self.onShowStats)
+
         self.xrf   = Button(pane, 'Show XRF (Fore)',  size=(135, -1),
                             action=self.onXRF)
         self.xrf2  = Button(pane, 'Show XRF (Back)', size=(135, -1),
                             action=partial(self.onXRF, as_mca2=True))
 
-        self.report = Button(pane, 'Save Report', size=(135, -1),
+        self.onreport = Button(pane, 'Save Report', size=(135, -1),
                              action=self.onReport)
 
         self.delete = Button(pane, 'Delete Area', size=(90, -1),
@@ -717,9 +721,10 @@ WARNING: This cannot be undone!
         sizer.Add(self.update,              (2, 4), (1, 1), ALL_LEFT, 2)
         sizer.Add(self.onmap,               (3, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.clear,               (3, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.onstats,             (3, 4), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf,                 (4, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf2,                (4, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.report,              (4, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onreport,            (4, 4), (1, 1), ALL_LEFT, 2)
         sizer.Add(legend,                   (5, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
 
@@ -885,9 +890,14 @@ WARNING: This cannot be undone!
         self.info.SetLabel(info_fmt%(npix, int(round(1000.0*pixtime)), dtime))
 
         self.desc.SetValue(area.attrs['description'])
-        if self.report is not None:
-            self.stats_thread = Thread(target=self.show_stats)
-            self.stats_thread.start()
+        self.report.DeleteAllItems()
+        self.report_data = []
+
+    def onShowStats(self, event=None):
+        if self.report is None:
+            return
+        self.stats_thread = Thread(target=self.show_stats)
+        self.stats_thread.start()
 
     def onLabel(self, event=None):
         aname = self._getarea()
