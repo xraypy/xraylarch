@@ -5,6 +5,10 @@ seeing errors in build with python setup.py py2exe?
 
 move whole directory to a non-networked drive!
 
+Seeing errors about vcvarsall.bat?
+
+  SET VS90COMNTOOLS=%VS100COMNTOOLS%
+
 """
 ##
 from distutils.core import setup
