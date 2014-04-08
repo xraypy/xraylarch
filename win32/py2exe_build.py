@@ -30,11 +30,16 @@ from numpy import sort
 
 import scipy.io.netcdf
 from scipy.io.netcdf import netcdf_file
+
+from scipy.sparse.csgraph import _validation
+from scipy.special import _ufuncs, _ufuncs_cxx
+
 import scipy.constants
 
 loadlib =  ctypes.windll.LoadLibrary
 
 # larch library bits...
+import larch
 from larch.larchlib import get_dll
 cllib = get_dll('cldata')
 
@@ -125,11 +130,17 @@ console_apps = [{'script': '../bin/larch',         'icon_resources': [(0, 'larch
 
 py2exe_opts = {'optimize':1,
                'bundle_files':2,
-               'includes': ['ConfigParser', 'Image', 'ctypes', 'epics',
-                            'epics.devices', 'epics.wx', 'fpformat', 'h5py',
+               'includes': ['ConfigParser', 'Image', 'ctypes',
+                            'larch', 'larch.builtins', 
+                            'epics', 'epics.devices', 'epics.wx', 
+                            'fpformat', 'h5py',
                             'h5py._objects', 'h5py._proxy', 'h5py.defs',
                             'h5py.utils', 'matplotlib', 'numpy', 'scipy',
                             'scipy.constants', 'scipy.fftpack',
+                            'scipy.sparse',
+                            'scipy.sparse.csgraph',
+                            'scipy.sparse.csgraph._validation',
+                            'scipy.special._ufuncs_cxx',
                             'scipy.io.matlab.mio5_utils',
                             'scipy.io.matlab.streams', 'scipy.io.netcdf',
                             'scipy.optimize', 'scipy.signal', 'skimage',
