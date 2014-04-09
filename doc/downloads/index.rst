@@ -15,9 +15,12 @@ not been rigorously or extensively tested, and probably contain some bugs
 and unintended features.
 
 Downloads are available from the
-`xraylarch project <http://sourceforge.net/projects/xraylarch>`_
-at sourceforge.net or from
-`cars.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_
+`larch pages at sourceforge.net <http://sourceforge.net/projects/xraylarch>`_
+at sourceforge.net, from the
+`larch pages at cars.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_,
+or from  the
+`larch pages at github.com <http://github.com/xraypy/xraylarch>`_. 
+
 Recommended download options are:
 
   +---------+-----------------+-----------+-------------------------------------------------------+
