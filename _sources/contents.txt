@@ -1,13 +1,12 @@
 :orphan:
 
-=========================
-Table of Contents
-=========================
+=================================================
+Table of Contents 
+=================================================
 
 .. toctree::
    :maxdepth: 3
    :numbered:
-
 
    downloads/index.rst
    overview/index.rst
