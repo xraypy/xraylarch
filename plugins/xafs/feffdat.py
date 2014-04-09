@@ -22,7 +22,7 @@ use_plugin_path('xray')
 use_plugin_path('xafs')
 
 from xafsutils import ETOK, set_xafsGroup
-from xraydb_plugin import atomic_mass
+from xraydb_plugin import atomic_mass, atomic_symbol
 
 SMALL = 1.e-6
 
@@ -132,7 +132,10 @@ class FeffDatFile(Group):
                     xyz = [float(x) for x in words[:3]]
                     ipot = int(words[3])
                     iz   = int(words[4])
-                    lab = words[5]
+                    if len(words) > 5:
+                        lab = words[5]
+                    else: 
+                        lab = atomic_symbol(iz, _larch=self._larch)
                     geom = [lab, iz, ipot] + xyz
                     self.geom.append(tuple(geom))
             elif mode == 'arrays':
