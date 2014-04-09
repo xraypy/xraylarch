@@ -43,7 +43,13 @@ try:
 except:
     pass
 
-
+HAS_EPICS = False
+try:
+    from epics import caput
+    HAS_EPICS = True
+except:
+    pass
+    
 import h5py
 import numpy as np
 import scipy.stats as stats
@@ -361,7 +367,7 @@ class SimpleMapPanel(GridPanel):
             det = int(det)
         dtcorrect = self.cor.IsChecked()
         no_hotcols = self.hotcols.IsChecked()
-
+        self.owner.no_hotcols = no_hotcols
         map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
                                    dtcorrect=dtcorrect).flatten()
         map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
@@ -391,6 +397,7 @@ class SimpleMapPanel(GridPanel):
 
         dtcorrect = self.cor.IsChecked()
         no_hotcols  = self.hotcols.IsChecked()
+        self.owner.no_hotcols = no_hotcols
         roiname1 = self.roi1.GetStringSelection()
         roiname2 = self.roi2.GetStringSelection()
         map      = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
@@ -478,7 +485,7 @@ class TriColorMapPanel(GridPanel):
             det = int(det)
         dtcorrect = self.cor.IsChecked()
         no_hotcols  = self.hotcols.IsChecked()
-
+        self.owner.no_hotcols = no_hotcols
         r = self.rcol.GetStringSelection()
         g = self.gcol.GetStringSelection()
         b = self.bcol.GetStringSelection()
@@ -978,7 +985,7 @@ class MapViewerFrame(wx.Frame):
         self.file_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
         self.files_in_progress = []
-        
+        self.no_hotcols = True        
         self.SetTitle("GSE XRM MapViewer")
         self.SetFont(Font(9))
 
@@ -1108,18 +1115,41 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.panel.clear()
             self.xrfdisplay.panel.reset_config()
 
+    def onMoveToPixel(self, pos1, val1, pos2, val2):
+        if not HAS_EPICS: 
+            return
+        
+        xrfmap = self.current_file.xrfmap    
+        pos_addrs = [str(x) for x in xrfmap['config/positioners'].keys()]
+        pos_label = [str(x.value) for x in xrfmap['config/positioners'].values()]
+
+        i1 = pos_label.index(pos1)
+        i2 = pos_label.index(pos2)
+        msg = "%s = %.4f, %s = %.4f?" % (pos_label[i1], val1,
+                                         pos_label[i2], val2)
+        move = Popup(self, "Really move stages to\n   %s?" % msg, 
+                     'move stages to pixel?', style=wx.YES_NO)
+        if move:
+            caput(pos_addrs[i1], val1)
+            caput(pos_addrs[i2], val2)
+        
     def add_imdisplay(self, title, det=None):
         on_lasso = partial(self.lassoHandler, det=det)
         imframe = MapImageFrame(output_title=title,
                                 lasso_callback=on_lasso,
-                                cursor_labels = self.cursor_menulabels)
+                                cursor_labels = self.cursor_menulabels,
+                                move_callback=self.onMoveToPixel)
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None,
                     det=None, subtitles=None, xrmfile=None):
         """display a map in an available image display"""
         displayed = False
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
+        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)   
+        if x is not None: 
+            if self.no_hotcols and map.shape[1] != x.shape[0]:
+                x = x[1:-1]
+                
         while not displayed:
             try:
                 imd = self.im_displays.pop()
@@ -1132,7 +1162,8 @@ class MapViewerFrame(wx.Frame):
             except IndexError:
                 imd = MapImageFrame(output_title=title,
                                     lasso_callback=lasso_cb,
-                                    cursor_labels = self.cursor_menulabels)
+                                    cursor_labels = self.cursor_menulabels,
+                                    move_callback=self.onMoveToPixel)
                 imd.display(map, title=title, x=x, y=y, subtitles=subtitles,
                             det=det, xrmfile=xrmfile)
                 displayed = True
