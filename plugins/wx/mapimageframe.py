@@ -6,6 +6,7 @@ subclass of wxmplot.ImageFrame specific for Map Viewer -- adds custom menus
 import os
 import time
 from threading import Thread
+import socket
 
 from functools import partial
 import wx
@@ -29,6 +30,8 @@ from wxmplot.imagepanel import ImagePanel
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex
 
+from wxutils import (SimpleText, Button, Popup)
+
 HAS_SKIMAGE = False
 try:
     import skimage
@@ -45,13 +48,18 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
 
+
+def isGSECARS_Domain():
+    return 'cars.aps.anl.gov' in socket.getfqdn().lower()
+    
 class MapImageFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
     """
 
     def __init__(self, parent=None, size=None,
-                 lasso_callback=None, mode='intensity',
+                 lasso_callback=None, move_callback=None,
+                 mode='intensity',
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
 
@@ -59,6 +67,7 @@ class MapImageFrame(ImageFrame):
         self.det = None
         self.xrmfile = None
         self.map = None
+
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
                             cursor_labels=cursor_labels, mode=mode,
@@ -70,20 +79,24 @@ class MapImageFrame(ImageFrame):
         self.panel.report_leftdown = self.report_leftdown
         self.panel.report_motion   = self.report_motion
 
+        self.move_callback = move_callback
         self.prof_plotter = None
         self.zoom_ini =  None
         self.lastpoint = [None, None]
+        self.this_point = None
         self.rbbox = None
 
     def display(self, map, det=None, xrmfile=None, **kws):
-        # print 'DISPLAY ', kws.keys()
+
         self.det = det
         self.xrmfile = xrmfile
         self.map = map
         ImageFrame.display(self, map, **kws)
         if 'x' in kws:
             self.panel.xdata = kws['x']
-
+        if 'y' in kws:
+            self.panel.ydata = kws['y']
+            
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
             return
@@ -258,12 +271,14 @@ class MapImageFrame(ImageFrame):
         conf = self.panel.conf
         if conf.flip_ud:  iy = conf.data.shape[0] - iy
         if conf.flip_lr:  ix = conf.data.shape[1] - ix
-        # print 'LeftDown ', conf.data.shape
+      
+        self.this_point = None
+        msg = ''
         if (ix >= 0 and ix < conf.data.shape[1] and
             iy >= 0 and iy < conf.data.shape[0]):
             pos = ''
             pan = self.panel
-
+            # print 'has xdata? ', pan.xdata is not None, pan.ydata is not None
             labs, vals = [], []
             if pan.xdata is not None:
                 labs.append(pan.xlab)
@@ -279,6 +294,10 @@ class MapImageFrame(ImageFrame):
                 dval = "%.4g, %.4g, %.4g" % tuple(dval)
             else:
                 dval = "%.4g" % dval
+            if pan.xdata is not None and pan.ydata is not None:
+                self.this_point = (pan.xlab, pan.xdata[ix], 
+                                   pan.ylab, pan.ydata[iy])
+            
             msg = "Pixel [%i, %i], %s, Intensity=%s " % (ix, iy, pos, dval)
         self.panel.write_message(msg, panel=0)
 
@@ -328,4 +347,13 @@ class MapImageFrame(ImageFrame):
                                 1, wx.RA_SPECIFY_COLS)
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
+        if isGSECARS_Domain():
+        
+            s = Button(panel, 'Move to Pixel', size=(140, -1),
+                       action=self.onMoveToPixel)
+            sizer.Add(s, (irow+1, 1), (1, 2), labstyle, 3)
+    
+    def onMoveToPixel(self, event=None):
+        if self.this_point is not None and self.move_callback is not None:
+            self.move_callback(*self.this_point)
 
