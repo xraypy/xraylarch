@@ -972,6 +972,113 @@ def gsescan_group(fname, _larch=None, **kws):
     group.get_data = escan.get_data
     return group
 
+
+
+GSE_header_IDE= ['# XDI/1.0  GSE/1.0',
+             '# Column.1: energy eV',
+             '# Column.2: mufluor',
+             '# Column.3: i0',
+             '# Column.4: ifluor   (corrected for deadtime)',
+             '# Column.5: ifluor_raw (not corrected) ',
+             '# Beamline.name:  13-ID-E, GSECARS',
+             '# Monochromator.name:  Si 111, LN2 Cooled',
+             '# Monochromator.dspacing:  3.13477',
+             '# Facility.name: APS',
+             '# Facility.xray_source: 3.6 cm undulator',
+             '# Detectors.i0:  20cm ion chamber, He',
+             '# Detectors.ifluor:  Si SDD Vortex ME-4, XIA xMAP, 4 elements']
+
+GSE_header_BMD = ['# XDI/1.0  GSE/1.0',
+             '# Column.1: energy eV',
+             '# Column.2: mufluor',
+             '# Column.3: i0',
+             '# Column.4: ifluor   (corrected for deadtime)',
+             '# Column.5: ifluor_raw (not corrected) ',
+             '# Beamline.name:  13-BM-D, GSECARS',
+             '# Monochromator.name:  Si 111, water cooled ',
+             '# Monochromator.dspacing:  3.13477',
+             '# Facility.name: APS',
+             '# Facility.xray_source: bending magnet',
+             '# Detectors.i0:  10cm ion chamber, N2',
+             '# Detectors.ifluor:  Ge SSD detector, XIA xMAP, 12 elements']
+
+             
+def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected'):
+    """convert GSE ESCAN fluorescence XAFS scans to dead time corrected files"""
+    try:
+       sg = read_gsescan(fname)
+    except:
+      print('%s is not a valid ESCAN file' % fname)
+      return
+    energy =  sg.x
+    i0 = sg.get_data('i0')
+    i1 = sg.get_data('i1')
+
+    ix = -1
+    channelname = channelname.lower()
+    for ich, ch in enumerate(sg.sums_names):
+        if ch.lower().startswith(channelname):
+           ix = ich
+           break
+       
+    if ix < 0:
+        print('Cannot find Channel %s in file %s  ' % (channelname, fname))
+        return
+  
+    chans = list(sg.sums_list[ix])
+    chans.pop()
+    chans = numpy.array(chans)
+    dchans = chans - chans[0]
+
+    fl_raw  = sg.det[chans].sum(axis=0)
+    fl_corr = (sg.dt_factor[dchans] * sg.det[chans]).sum(axis=0)
+
+    mufluor = fl_corr / i0
+    sg.i0  = i0
+    sg.fl_raw = fl_raw
+    sg.fl_corr = fl_corr
+    sg.mufluor = mufluor
+    sg.energy = energy
+
+    npts = len(energy)
+    header = GSE_header_IDE
+    if 'BM' in sg.scan_prefix: header = GSE_header_BMD
+
+    buff = [l.strip() for l in header]
+    buff.append("# Scan.start_time: %s" %  
+                iso8601_time(os.stat(fname).st_ctime))
+
+    thead = ["# ///",
+             "# summed %s fluorescence data from %s" % (channelname, fname),
+             "# Dead-time correction applied",
+             "#---------------------------------", 
+             "# energy     mufluor    i0    fluor_corr   fluor_raw"]
+    
+    buff.extend(thead)
+
+    fmt = "   %.3f   %.5f   %.5f   %.5f   %i"
+    for i in range(npts):
+        buff.append(fmt % (energy[i],  mufluor[i], 
+                           i0[i], fl_corr[i], fl_raw[i]))
+
+    ofile = fname[:]
+    if ofile.startswith('..'):
+        ofile = ofile[3:]
+    ofile = ofile.replace('.', '_') + '.dat'
+    ofile = os.path.join(subdir, ofile)
+    try: 
+       fout = open(ofile, 'w')
+       fout.write("\n".join(buff))
+       fout.close()
+       print("wrote  %s  (npts=%i, channel='%s')" % (ofile, npts, channelname))
+    except: 
+       print("could not open / write to output file %s" % ofile)
+
+    return sg
+
+
 def registerLarchPlugin():
-    return ('_io', {'read_gsescan': gsescan_group})
+    return ('_io', {'read_gsescan': gsescan_group,
+                    'gsescan_dtcorrect': gsescan_deadtime_correct,
+    })
 

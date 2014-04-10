@@ -26,9 +26,7 @@ from larch import Interpreter, use_plugin_path
 from larch.larchlib import read_workdir, save_workdir
         
 use_plugin_path('io')
-from gse_escan import gsescan_group
-from xdi import read_xdi
-
+from gse_escan import gsescan_deadtime_correct
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
@@ -107,10 +105,9 @@ class DTCorrectFrame(wx.Frame):
                     return
             for fname in dlg.GetFilenames():
                 print 'dt correct ', roiname, fname
-
+                gsescan_deadtime_correct(fname, roiname, subdir=dirname)
 
     def createMainPanel(self):
-
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(5, 4)
  
