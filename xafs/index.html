@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="next" title="7.1. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
+    <link rel="prev" title="6.8. Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +47,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="preedge.html" title="7.1. XAFS: Pre-edge Subtraction and Normalization"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../fitting/confidence.html" title="6.8. Advanced Confidence Intervals and Chi-square maps"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -63,6 +69,12 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../fitting/confidence.html"
+                        title="previous chapter">6.8. Advanced Confidence Intervals and Chi-square maps</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="preedge.html"
+                        title="next chapter">7.1. XAFS: Pre-edge Subtraction and Normalization</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/index.txt"
@@ -106,13 +118,13 @@ small errors in Ifeffit 1.2 have been fixed.</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>Reading in raw data.</li>
-<li>Making corrections to the data, and converting to  <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
+<li>Making corrections to the data, and converting to  <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/></li>
 <li>Pre-edge background removal and normalization.</li>
 <li>Interpreting normalized mu(E) as XANES spectra</li>
-<li>Post-edge background removal, conversion to <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></li>
-<li>XAFS Fourier Transform to <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/></li>
+<li>Post-edge background removal, conversion to <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></li>
+<li>XAFS Fourier Transform to <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/></li>
 <li>Reading and processing FEFF Paths from external files.</li>
-<li>Fitting XAFS <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to a sum of FEFF paths.</li>
+<li>Fitting XAFS <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to a sum of FEFF paths.</li>
 </ol>
 </div></blockquote>
 <p>Broadly speaking, Larch can do all of these steps.</p>
@@ -155,8 +167,8 @@ listed below.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="xafsft.html">7.4. XAFS: Fourier Transforms for XAFS</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">7.4.1. Overview of XAFS Fourier transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/657c5d69378805fef7d84d28a0d975683ffbe6b3.png" alt="k{\rightarrow}R"/>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/50b2940168e58da9cd70ed1a4a1c3d7e6a0821d0.png" alt="R{\rightarrow}q"/>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows">7.4.4. <tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#catalog-of-fourier-transform-window">7.4.5. Catalog of Fourier transform window</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-forward-xafs-fourier-transforms">7.4.6. Examples: Forward XAFS Fourier transforms</a></li>
@@ -165,10 +177,10 @@ listed below.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="feffpaths.html">7.5. XAFS: Reading and using Feff Paths</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups">7.5.1. <tt class="docutils literal"><span class="pre">feffpath()</span></tt> and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath">7.5.2. <tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a FeffPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath">7.5.2. <tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> for a FeffPath</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">7.5.3. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">7.5.4. The EXAFS Equation using Feff and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating">7.5.5. Models for Calculating <img class="math" src="../_images/math/741fb9098efcb98055f467f87630a5d0ca599b6b.png" alt="\sigma^2"/></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating">7.5.5. Models for Calculating <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/></a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">7.5.6. Example:  Reading a FEFF file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-adding-feff-files">7.5.7. Example:  Adding FEFF files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-using-path-parameters-when-adding-feff-files">7.5.8. Example: Using Path Parameters when adding FEFF files</a></li>
@@ -205,6 +217,12 @@ listed below.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="preedge.html" title="7.1. XAFS: Pre-edge Subtraction and Normalization"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../fitting/confidence.html" title="6.8. Advanced Confidence Intervals and Chi-square maps"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -220,7 +238,7 @@ listed below.</p>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

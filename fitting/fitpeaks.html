@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="6.8. Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
+    <link rel="prev" title="6.6. Fit Examples" href="examples.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="confidence.html" title="6.8. Advanced Confidence Intervals and Chi-square maps"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="6.6. Fit Examples"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,6 +80,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="examples.html"
+                        title="previous chapter">6.6. Fit Examples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="confidence.html"
+                        title="next chapter">6.8. Advanced Confidence Intervals and Chi-square maps</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/fitpeaks.txt"
@@ -163,11 +177,11 @@ background functions, as detailed in
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>linear</td>
-<td><img class="math" src="../_images/math/536a3bcee68d746371a8631e091ea01c6dc19835.png" alt="y = mx + b"/></td>
+<td><img class="math" src="../_images/math/7641c4996537f98c8c832e2d085f48057b661cb7.png" alt="y = mx + b"/></td>
 <td>offset, slope</td>
 </tr>
 <tr class="row-odd"><td>quadratic</td>
-<td><img class="math" src="../_images/math/2d56ecc86cc759be0119acdfd9ba5c14e2022155.png" alt="y = a + bx + cx^2"/></td>
+<td><img class="math" src="../_images/math/e011a03b211c8690c24aa47e70eb8286d7e8eacf.png" alt="y = a + bx + cx^2"/></td>
 <td>offset, slope, quad</td>
 </tr>
 <tr class="row-even"><td>step</td>
@@ -179,7 +193,7 @@ background functions, as detailed in
 <td>height, center1, width1, center2, width2</td>
 </tr>
 <tr class="row-even"><td>exponential</td>
-<td><img class="math" src="../_images/math/a10a0d1d120c7346898134bfe1a3a29eb3dd1b69.png" alt="y = Ae^{-x/b}"/></td>
+<td><img class="math" src="../_images/math/3e92d013bbfd259bb9136fee7dc0d480f33ea126.png" alt="y = Ae^{-x/b}"/></td>
 <td>amplitude, decay</td>
 </tr>
 <tr class="row-odd"><td>gaussian</td>
@@ -282,8 +296,8 @@ plot the results and print the report of parameters.  Note that the fit is
 pretty good at finding the peak center and shape, even though the model is
 not strictly correct.</p>
 <p>The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt> will look like this:</p>
-<div class="highlight-python"><pre>===================== FIT RESULTS =====================
-[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 51, 5, 46
    nfev (func calls)   = 160
@@ -297,13 +311,14 @@ not strictly correct.</p>
    center         =  44.303784 +/- 0.088638 (init=  44.000000)
    sigma          =  4.173981 +/- 0.066834 (init=  15.000000)
 [[Constraint Expressions]]
-   fwhm           =  9.828974 +/- 0.157382 = '2.354820*sigma'
+   fwhm           =  9.828974 +/- 0.157382 = &#39;2.354820*sigma&#39;
 
 [[Correlations]]     (unreported correlations are &lt;  0.300)
    bkg_offset, bkg_slope = -0.834
    amplitude, sigma     =  0.651
    amplitude, bkg_offset = -0.412
-=======================================================</pre>
+=======================================================
+</pre></div>
 </div>
 <p>And the plot of data and fit will look like this:</p>
 <div class="figure" id="fig-fitpeak1">
@@ -353,8 +368,8 @@ The fit is to a function that takes a step up and a step down.</p>
 not exactly rectangular, but we ask it to be fit to a rectangular function
 plus a linear background.  The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt>
 will look like this:</p>
-<div class="highlight-python"><pre>===================== FIT RESULTS =====================
-[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 81, 7, 74
    nfev (func calls)   = 99
@@ -370,7 +385,7 @@ will look like this:</p>
    width1         =  11.596238 +/- 0.698650 (init=  19.200000)
    width2         =  4.262621 +/- 0.378333 (init=  19.200000)
 [[Constraint Expressions]]
-   midpoint       =  55.477339 +/- 0.207626 = '(center1+center2)/2.0'
+   midpoint       =  55.477339 +/- 0.207626 = &#39;(center1+center2)/2.0&#39;
 
 [[Correlations]]     (unreported correlations are &lt;  0.300)
    bkg_offset, bkg_slope = -0.915
@@ -381,7 +396,8 @@ will look like this:</p>
    bkg_slope, height    =  0.500
    bkg_offset, width1   = -0.403
    bkg_slope, width1    =  0.345
-=======================================================</pre>
+=======================================================
+</pre></div>
 </div>
 <div class="figure" id="fig-fitpeak2">
 <a class="reference external image-reference" href="../_images/fit_peakfit2.png"><img alt="../_images/fit_peakfit2.png" src="../_images/fit_peakfit2.png" style="width: 65%;" /></a>
@@ -409,6 +425,12 @@ analysis of any data.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="confidence.html" title="6.8. Advanced Confidence Intervals and Chi-square maps"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="examples.html" title="6.6. Fit Examples"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -419,12 +441,13 @@ analysis of any data.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

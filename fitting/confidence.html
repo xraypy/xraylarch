@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="7. XAFS Analysis" href="../xafs/index.html" />
+    <link rel="prev" title="6.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../xafs/index.html" title="7. XAFS Analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="fitpeaks.html" title="6.7. Simplified Peak Fitting with fit_peak()"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -73,6 +81,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="fitpeaks.html"
+                        title="previous chapter">6.7. Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../xafs/index.html"
+                        title="next chapter">7. XAFS Analysis</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/confidence.txt"
@@ -203,7 +217,7 @@ section.</p>
 </pre></div>
 </div>
 <p>The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt> will include this:</p>
-<div class="highlight-python"><pre>[[Variables]]
+<div class="highlight-python"><div class="highlight"><pre>[[Variables]]
    amp            =  12.129867 +/- 0.124722 (init=  5.000000)
    cen            =  1.476822 +/- 0.017266 (init=  2.000000)
    off            =  0.998814 +/- 0.007131 (init=  0.000000)
@@ -213,11 +227,12 @@ section.</p>
    amp, off             = -0.861
    amp, wid             =  0.808
    off, wid             = -0.692
-=======================================================</pre>
+=======================================================
+</pre></div>
 </div>
 <p>while the output from the much more explicit search done in
 <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><tt class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></tt></a> and reported by <a class="reference internal" href="#confidence_report" title="confidence_report"><tt class="xref py py-func docutils literal"><span class="pre">confidence_report()</span></tt></a> will be:</p>
-<div class="highlight-python"><pre># Confidence Interval Report
+<div class="highlight-python"><div class="highlight"><pre># Confidence Interval Report
 # Sigmas:          -3         -2         -1          0          1          2          3
 # Percentiles:  -99.730    -95.450    -68.269      0.000     68.269     95.450     99.730
 #==========================================================================================
@@ -228,10 +243,11 @@ section.</p>
  off             0.9766    0.98468     0.9912    0.99881     1.0064     1.0128     1.0209
     -best     -0.022212  -0.014138  -0.0076156          0  0.0075667   0.013987   0.022049
  cen             1.4248     1.4423     1.4596     1.4768     1.4941     1.5113     1.5289
-    -best     -0.052057   -0.03452  -0.017248          0   0.017249   0.034524   0.052068</pre>
+    -best     -0.052057   -0.03452  -0.017248          0   0.017249   0.034524   0.052068
+</pre></div>
 </div>
 <p>The automatic error estimates given from <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt> are meant to be
-1-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> uncertainties.   Comparing the two methods we find:</p>
+1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> uncertainties.   Comparing the two methods we find:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -243,8 +259,8 @@ section.</p>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
 <th class="head">Best Value</th>
-<th class="head">Automatic 1-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> value</th>
-<th class="head">Explicit 1-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> value</th>
+<th class="head">Automatic 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> value</th>
+<th class="head">Explicit 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> value</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -273,18 +289,18 @@ section.</p>
 </div></blockquote>
 <p>which seems to justify the use of the automated method.  The uncertainties
 found from the more thorough exploration shows symmetric uncertainties,
-even out to the 3-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> level, and of the 4 1-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>
+even out to the 3-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> level, and of the 4 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>
 uncertainties, 3 are within 2%, and the worst agreement, for the smallest
 uncertainty is within 7%.    It also shows that the scaling of
-uncertainties is fairly linear with <img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>:  the 3-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/>
-values are approximately 3 times the 1-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> values.</p>
+uncertainties is fairly linear with <img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>:  the 3-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>
+values are approximately 3 times the 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> values.</p>
 </div>
 <div class="section" id="confidence-interval-example-2">
 <h2>6.8.2. Confidence interval, Example 2<a class="headerlink" href="#confidence-interval-example-2" title="Permalink to this headline">¶</a></h2>
 <p>Of course, there are more challenging cases than the one above.  A double
 exponential function is one such example, so we start with a fit to mock
 data</p>
-<div class="highlight-python"><pre>## examples/fitting/doc_example_conf2.lar
+<div class="highlight-python"><div class="highlight"><pre>## examples/fitting/doc_example_conf2.lar
 #  Shows usage of fitting with non-normal correlation of variables,
 #  and confidence intervals.
 
@@ -306,15 +322,15 @@ minout = minimize(fit_exp, fitparams, args=(dat,))
 print fit_report(fitparams, min_correl=0)
 
 final = fit_exp(fitparams, dat) + dat.y
-newplot (dat.x, dat.y, label='data', marker='o', linewidth=0)
-   plot (dat.x, final, label='fit')
+newplot (dat.x, dat.y, label=&#39;data&#39;, marker=&#39;o&#39;, linewidth=0)
+   plot (dat.x, final, label=&#39;fit&#39;)
 
 ## end of examples/fitting/doc_example_conf2.lar
-</pre>
+</pre></div>
 </div>
 <p>The resulting statistics report with the automated uncertainties is:</p>
-<div class="highlight-python"><pre>===================== FIT RESULTS =====================
-[[Statistics]]    Fit succeeded,  method = 'leastsq'.
+<div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
+[[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
    npts, nvarys, nfree = 101, 4, 97
    nfev (func calls)   = 36
@@ -334,7 +350,8 @@ newplot (dat.x, dat.y, label='data', marker='o', linewidth=0)
    a2, t1               = -0.968
    t1, t2               = -0.937
    a1, t1               =  0.935
-=======================================================</pre>
+=======================================================
+</pre></div>
 </div>
 <p>You can see that the correlations between <strong>all 6 pairs of variables</strong> is
 above 90%.  The resulting plot of the best-fit looks fairly reasonable:</p>
@@ -349,7 +366,7 @@ intervals in these parameters with:</p>
 </pre></div>
 </div>
 <p>the resulting report is:</p>
-<div class="highlight-python"><pre># Confidence Interval Report
+<div class="highlight-python"><div class="highlight"><pre># Confidence Interval Report
 # Sigmas:          -3         -2         -1          0          1          2          3
 # Percentiles:  -99.730    -95.450    -68.269      0.000     68.269     95.450     99.730
 #==========================================================================================
@@ -360,11 +377,12 @@ intervals in these parameters with:</p>
  t2              8.2604     8.6221     8.9556     9.2709     9.5761     9.8776     10.182
     -best       -1.0105   -0.64882   -0.31531          0    0.30526    0.60676    0.91132
  t1              1.6107     1.6942     1.7827     1.8785     1.9841     2.1049     2.2456
-    -best      -0.26785   -0.18436   -0.09583          0    0.10553    0.22637    0.36709</pre>
+    -best      -0.26785   -0.18436   -0.09583          0    0.10553    0.22637    0.36709
+</pre></div>
 </div>
 <p>Now can see more asymmetric uncertainty values, specifically that the
--n-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> and +n-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> are different, and don't seem to be
-linear in n.  Comparing the 1-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> levels between the automated
+-n-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> and +n-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> are different, and don't seem to be
+linear in n.  Comparing the 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> levels between the automated
 and explicit methods as we did above, we now have</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -377,8 +395,8 @@ and explicit methods as we did above, we now have</p>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
 <th class="head">Best Value</th>
-<th class="head">Automatic 1-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> value</th>
-<th class="head">Explicit 1-<img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/> value</th>
+<th class="head">Automatic 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> value</th>
+<th class="head">Explicit 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> value</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -412,10 +430,10 @@ correlations, the full report above hints at a less than ideal case.</p>
 <div class="section" id="chi-square-maps">
 <h2>6.8.3. Chi-square Maps<a class="headerlink" href="#chi-square-maps" title="Permalink to this headline">¶</a></h2>
 <p>We can further explore the correlation between pairs of variables by making
-and visualizing a map of the chi-square (<img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/>) statistic.  This
+and visualizing a map of the chi-square (<img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/>) statistic.  This
 can be helpful to determine if the automatically calculated uncertainties
 and correlation are reasonable, and to look for pathological cases.  The
-<a class="reference internal" href="#chi2_map" title="chi2_map"><tt class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></tt></a> function will calculate a map of <img class="math" src="../_images/math/a61c1e51680e27d35d05bebed87d474972fc70bd.png" alt="\chi^2"/> for a pair
+<a class="reference internal" href="#chi2_map" title="chi2_map"><tt class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></tt></a> function will calculate a map of <img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/> for a pair
 of variable parameters by brute force.</p>
 <dl class="function">
 <dt id="chi2_map">
@@ -431,7 +449,7 @@ of variable parameters by brute force.</p>
 <li><strong>yname</strong> -- name of variable for y-axis</li>
 <li><strong>nx</strong> -- number of steps in x [11]</li>
 <li><strong>ny</strong> -- number of steps in y [11]</li>
-<li><strong>sigmas</strong> -- extent of x, y values to calculate, in <img class="math" src="../_images/math/fa35d9fc104207e09a712110ac81612c5b279a6c.png" alt="\sigma"/></li>
+<li><strong>sigmas</strong> -- extent of x, y values to calculate, in <img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/></li>
 <li><strong>xrange</strong> -- explicit x range of calculations [x.best +/- <tt class="docutils literal"><span class="pre">sigmas</span></tt> * x.stderr]</li>
 <li><strong>yrange</strong> -- explicit y range of calculations [y.best +/- <tt class="docutils literal"><span class="pre">sigmas</span></tt> * y.stderr]</li>
 </ul>
@@ -516,6 +534,12 @@ correlation, or when nearing a final analysis.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../xafs/index.html" title="7. XAFS Analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="fitpeaks.html" title="6.7. Simplified Peak Fitting with fit_peak()"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -526,12 +550,13 @@ correlation, or when nearing a final analysis.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

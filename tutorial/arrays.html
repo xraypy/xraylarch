@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="3. Larch Tutorial" href="index.html" />
+    <link rel="next" title="3.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="prev" title="3.2. Tutorial: Basic and Complex Data Types" href="datatypes.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="flow.html" title="3.4. Tutorial: Conditional Execution and Flow Control"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="3.2. Tutorial: Basic and Complex Data Types"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -76,6 +84,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="datatypes.html"
+                        title="previous chapter">3.2. Tutorial: Basic and Complex Data Types</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="flow.html"
+                        title="next chapter">3.4. Tutorial: Conditional Execution and Flow Control</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/arrays.txt"
@@ -210,7 +224,7 @@ these:</p>
 <p>Several variants are possible.  For more information, consult the numpy
 tutorials, or use the online help system within Larch (which will print out
 the documentation string from the underlying numpy function):</p>
-<div class="highlight-python"><pre>larch&gt; help(linspace)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; help(linspace)
 
     Return evenly spaced numbers over a specified interval.
 
@@ -238,7 +252,8 @@ the documentation string from the underlying numpy function):</p>
         If True, return (`samples`, `step`), where `step` is the spacing
         between samples.
 
-    ....</pre>
+    ....
+</pre></div>
 </div>
 <p>The <tt class="xref py py-func docutils literal"><span class="pre">eye()</span></tt> function creates a 2 dimensional square array (or, possibly
 <tt class="docutils literal"><span class="pre">matrix</span></tt>, though that term can connote additional meaning that a square
@@ -246,7 +261,7 @@ array does not necessarily have) with values of 1 for the diagonal
 elements, and 0 elsewhere.</p>
 <p>The function <tt class="xref py py-func docutils literal"><span class="pre">meshgrid()</span></tt> can be used to build a mesh of values from two one dimensional
 arrays.  That is:</p>
-<div class="highlight-python"><pre>larch&gt; x = array([0, 1, 2, 3, 4])
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; x = array([0, 1, 2, 3, 4])
 larch&gt; y = array([-1, 0.5, 0, 0.5, 1])
 larch&gt; mx, my = meshgrid(x, y)
 larch&gt; print mx
@@ -260,7 +275,8 @@ array([[-1. , -1. , -1. , -1. , -1. ],
        [-0.5, -0.5, -0.5, -0.5, -0.5],
        [ 0. ,  0. ,  0. ,  0. ,  0. ],
        [ 0.5,  0.5,  0.5,  0.5,  0.5],
-       [ 1. ,  1. ,  1. ,  1. ,  1. ]])</pre>
+       [ 1. ,  1. ,  1. ,  1. ,  1. ]])
+</pre></div>
 </div>
 <p>That is, the values of each <tt class="docutils literal"><span class="pre">mx</span></tt> and <tt class="docutils literal"><span class="pre">my</span></tt> contain the coordinates of a
 two-dimensional mesh or map of the input <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> values.</p>
@@ -340,31 +356,35 @@ functions using the <tt class="docutils literal"><span class="pre">dtype</span><
 <p>Arrays can either be used as a single object, or individual or ranges of elements can be extracted
 from them.   Usually, mathematical operations and functions done to arrays are applied
 element-by-element.  For example:</p>
-<div class="highlight-python"><pre>larch&gt;  x = arange(5)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt;  x = arange(5)
 larch&gt; print x
 [0 1 2 3 4]
 larch&gt; print 2*x+1
-[1 3 5 7 9]</pre>
+[1 3 5 7 9]
+</pre></div>
 </div>
 <p>and so on for all of the basic mathematical operators.   To add to arrays of equal lengths
 together is also easy:</p>
-<div class="highlight-python"><pre>larch&gt;  y = array([10, 12, 14, 16, 18])
+<div class="highlight-python"><div class="highlight"><pre>larch&gt;  y = array([10, 12, 14, 16, 18])
 larch&gt; print y - 3*x
-[10  9  8  7  6]</pre>
+[10  9  8  7  6]
+</pre></div>
 </div>
 <p>If the arrays are not of equal length, an exception is raised. In that case, you can take a sub-set
 of the larger array to match the size of the smaller one.</p>
 <p>Boolean operators also apply to each element, so that:</p>
-<div class="highlight-python"><pre>larch&gt; print y &gt; 13
-[False False  True  True  True]</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print y &gt; 13
+[False False  True  True  True]
+</pre></div>
 </div>
 <p>The <a class="reference internal" href="builtins.html#any" title="any"><tt class="xref py py-func docutils literal"><span class="pre">any()</span></tt></a> and <a class="reference internal" href="builtins.html#all" title="all"><tt class="xref py py-func docutils literal"><span class="pre">all()</span></tt></a> functions (in the tables below) can be used to determine if any or
 all of the Boolean values are <tt class="docutils literal"><span class="pre">True</span></tt>.</p>
 <p>You can extract single elements from arrays with brackets, just as for lists:</p>
-<div class="highlight-python"><pre>larch&gt; print y[2]
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print y[2]
 14
 larch&gt; print (y-3*x)[2]
-7</pre>
+7
+</pre></div>
 </div>
 <p>which leads us to the next section.</p>
 </div>
@@ -376,7 +396,7 @@ an array or work on only a selected part of an array.  To do these, one takes a 
 -- a <strong>slice</strong>.  For extracting contiguous portions of 1-dimension arrays, this is pretty
 straightforward, using the range of indices needed for the slice between square brackets <tt class="docutils literal"><span class="pre">[</span></tt> and
 <tt class="docutils literal"><span class="pre">]</span></tt>.  For example:</p>
-<div class="highlight-python"><pre>larch&gt; arr = linspace(0, 2, 21)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; arr = linspace(0, 2, 21)
 larch&gt; print arr
 [ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2  1.3  1.4
   1.5  1.6  1.7  1.8  1.9  2. ]
@@ -385,7 +405,8 @@ larch&gt; print arr[20]
 larch&gt; print arr[15]
 1.5
 larch&gt; print arr[10:15]
-[ 1.   1.1  1.2  1.3  1.4]</pre>
+[ 1.   1.1  1.2  1.3  1.4]
+</pre></div>
 </div>
 <p>The general syntax for a slice is pretty complicated, but the simplest cases are straightforward.
 As with lists, <tt class="docutils literal"><span class="pre">arr[i]</span></tt> selects value at index <tt class="docutils literal"><span class="pre">i</span></tt> (counting from 0).  Similarly, <tt class="docutils literal"><span class="pre">arr[i:j]</span></tt>
@@ -393,25 +414,28 @@ selects elements starting at <tt class="docutils literal"><span class="pre">i</s
 <tt class="docutils literal"><span class="pre">j</span></tt>.  If <tt class="docutils literal"><span class="pre">i</span></tt> is omitted,
 it is taken as 0 (the first element), and if <tt class="docutils literal"><span class="pre">j</span></tt> is omitted, it defaults to the last element of
 the array.  In addition, if <tt class="docutils literal"><span class="pre">i</span></tt> and/or <tt class="docutils literal"><span class="pre">j</span></tt> are negative, they count from the end of the array:</p>
-<div class="highlight-python"><pre>larch&gt; print arr[:-8]
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[:-8]
 [ 0.   0.1  0.2  0.3  0.4  0.5  0.6  0.7  0.8  0.9  1.   1.1  1.2]
 larch&gt; print arr[-2:]
-[ 1.9  2.]</pre>
+[ 1.9  2.]
+</pre></div>
 </div>
 <p>A slice can take a third argument <tt class="docutils literal"><span class="pre">k</span></tt> -- the stride -- which allows selection of every <tt class="docutils literal"><span class="pre">k</span></tt>
 elements.  That is:</p>
-<div class="highlight-python"><pre>larch&gt; print arr[1:6:2]
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[1:6:2]
 [ 0.1  0.3  0.5]
 larch&gt; print arr[::2]
-[ 0.   0.2  0.4  0.6  0.8  1.   1.2  1.4  1.6  1.8  2. ]</pre>
+[ 0.   0.2  0.4  0.6  0.8  1.   1.2  1.4  1.6  1.8  2. ]
+</pre></div>
 </div>
 <p>If <tt class="docutils literal"><span class="pre">k</span></tt> is negative, it starts from the end of the array:</p>
-<div class="highlight-python"><pre>larch&gt; print arr[::-3]
-[2.   1.7  1.4  1.1  0.8  0.5  0.2]</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print arr[::-3]
+[2.   1.7  1.4  1.1  0.8  0.5  0.2]
+</pre></div>
 </div>
 <p>For mult-dimensional arrays, slices can be made for each dimension, with slices separated by
 commas.  If no slice is given, the whole array along that dimension is used.  Thus:</p>
-<div class="highlight-python"><pre>larch&gt; x = arange(30).reshape((6, 5)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; x = arange(30).reshape((6, 5)
 larch&gt; print x
 [[ 0  1  2  3  4]
  [ 5  6  7  8  9]
@@ -426,15 +450,17 @@ larch&gt; print x[:,1]  # second column
 larch&gt; print x[:3,2:5]
 [[ 2  3  4]
  [ 7  8  9]
- [12 13 14]]</pre>
+ [12 13 14]]
+</pre></div>
 </div>
 <p>Note that multi-dimensional arrays use a layout like C and unlike Fortran by default.  In addition
 to the comma-based syntax shown above to extract different dimensions or use brackets around each
 dimension:</p>
-<div class="highlight-python"><pre>larch&gt; print x[1][:4]  # second row, first 4 columns
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print x[1][:4]  # second row, first 4 columns
 [5 6 7 8]
 larch&gt; print x[1,:4]   # same
-[5 6 7 8]</pre>
+[5 6 7 8]
+</pre></div>
 </div>
 <p>In general, the syntax for a slice is then <tt class="docutils literal"><span class="pre">arr[i1:j1,:k1,</span> <span class="pre">i2:j2:k2,</span> <span class="pre">...]</span></tt> with default values for <tt class="docutils literal"><span class="pre">i</span></tt>
 of 0, for <tt class="docutils literal"><span class="pre">j</span></tt> of the length of the array, and for <tt class="docutils literal"><span class="pre">k</span></tt> of 1.</p>
@@ -600,16 +626,17 @@ attributes and methods marked <tt class="docutils literal"><span class="pre">rea
 <p>Many of the basic mathemetical functions in larch automatically work on arrays
 element-by-element.  For example, <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> returns the square-root of a single
 value or for each element in an array:</p>
-<div class="highlight-python"><pre>larch&gt; print sqrt(3)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print sqrt(3)
 1.73205080757
 larch&gt; x = arange(10)
 larch&gt; print sqrt(x)
 [ 0.          1.          1.41421356  1.73205081  2.          2.23606798
-  2.44948974  2.64575131  2.82842712  3.        ]</pre>
+  2.44948974  2.64575131  2.82842712  3.        ]
+</pre></div>
 </div>
 <p>The numpy library provides the underlying functions, and they are much faster than
 looping over elements of the array:</p>
-<div class="highlight-python"><pre>larch&gt; for el in x:  # this is much slower than sqrt(x)!!
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; for el in x:  # this is much slower than sqrt(x)!!
 .....&gt;     print el, sqrt(el)
 .....&gt; endfor
 0 0.0
@@ -621,7 +648,8 @@ looping over elements of the array:</p>
 6 2.44948974278
 7 2.64575131106
 8 2.82842712475
-9 3.0</pre>
+9 3.0
+</pre></div>
 </div>
 <p>There are a large number of general purpose mathematical functions available in larch --
 the <tt class="docutils literal"><span class="pre">_math</span></tt> group contains over 500 items on startup.  A partial list is given in the
@@ -1051,6 +1079,12 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><tt
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="flow.html" title="3.4. Tutorial: Conditional Execution and Flow Control"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="datatypes.html" title="3.2. Tutorial: Basic and Complex Data Types"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -1061,12 +1095,13 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><tt
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

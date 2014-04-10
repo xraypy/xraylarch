@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,9 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="next" title="3. Larch Tutorial" href="../tutorial/index.html" />
+    <link rel="prev" title="1. Downloading and Installation" href="../downloads/index.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +47,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../tutorial/index.html" title="3. Larch Tutorial"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../downloads/index.html" title="1. Downloading and Installation"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -72,6 +78,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../downloads/index.html"
+                        title="previous chapter">1. Downloading and Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../tutorial/index.html"
+                        title="next chapter">3. Larch Tutorial</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/overview/index.txt"
@@ -184,20 +196,22 @@ as with:</p>
 the <tt class="docutils literal"><span class="pre">range()</span></tt> function gives an array of 11 elements ([0, 1, 2, ..., 10])
 that will be held by <tt class="docutils literal"><span class="pre">my_group.x</span></tt>.  You can see the contents of a group
 with the <a class="reference internal" href="../tutorial/builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function:</p>
-<div class="highlight-python"><pre>larch&gt; show(my_group)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; show(my_group)
 == Group 0x6e15970: 4 symbols ==
   scale: 10.2
-  t: 'group 1'
-  x: array&lt;shape=(11,), type=dtype('int32')&gt;
-  y: array&lt;shape=(11,), type=dtype('float64')&gt;</pre>
+  t: &#39;group 1&#39;
+  x: array&lt;shape=(11,), type=dtype(&#39;int32&#39;)&gt;
+  y: array&lt;shape=(11,), type=dtype(&#39;float64&#39;)&gt;
+</pre></div>
 </div>
 <p>which shows that this group has 4 components, and lists the components.
 As the <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> members hold array, the size and datatype of the
 array is shown.  Doing:</p>
-<div class="highlight-python"><pre>larch&gt; print my_group.y
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print my_group.y
 [  0.           8.58300405   9.27483375   1.43942408  -7.71938545
   -9.7810276   -2.85003808   6.70126331  10.09145412   4.20360855
-  -5.54901533]</pre>
+  -5.54901533]
+</pre></div>
 </div>
 <p>will show the array elements.  The <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function will show a graph
 of y(x).</p>
@@ -250,6 +264,12 @@ and analysis steps that Ifeffit can do, including:</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="../tutorial/index.html" title="3. Larch Tutorial"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../downloads/index.html" title="1. Downloading and Installation"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -265,7 +285,7 @@ and analysis steps that Ifeffit can do, including:</p>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

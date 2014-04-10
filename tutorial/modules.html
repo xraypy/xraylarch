@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="3. Larch Tutorial" href="index.html" />
+    <link rel="next" title="3.8. Tutorial: Builtin Functions" href="builtins.html" />
+    <link rel="prev" title="3.6. Tutorial: Writing Functions or Procedures" href="procedures.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="builtins.html" title="3.8. Tutorial: Builtin Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="procedures.html" title="3.6. Tutorial: Writing Functions or Procedures"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -73,6 +81,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="procedures.html"
+                        title="previous chapter">3.6. Tutorial: Writing Functions or Procedures</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="builtins.html"
+                        title="next chapter">3.8. Tutorial: Builtin Functions</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/modules.txt"
@@ -128,13 +142,14 @@ function:</p>
 </pre></div>
 </div>
 <p>To run this, you simply type:</p>
-<div class="highlight-python"><pre>larch&gt; run('myscript.lar')
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; run(&#39;myscript.lar&#39;)
 hello from myscript.lar!
 0 0.0
 1 1.0
 2 1.41421356237
 3 1.73205080757
-4 2.0</pre>
+4 2.0
+</pre></div>
 </div>
 <p>Again, the script can contain any Larch code, including procedure
 definitions.  After running the script, any variables assigned in the
@@ -150,12 +165,13 @@ we'll see more below.</p>
 <div class="section" id="importing-a-larch-script-as-a-module">
 <h2>3.7.2. Importing a Larch Script as a Module<a class="headerlink" href="#importing-a-larch-script-as-a-module" title="Permalink to this headline">¶</a></h2>
 <p>The alternative method for using the script above is to <strong>import</strong> it, using the <tt class="docutils literal"><span class="pre">import</span></tt> statement:</p>
-<div class="highlight-python"><pre>larch&gt; import myscript
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; import myscript
 0 0.0
 1 1.0
 2 1.41421356237
 3 1.73205080757
-4 2.0</pre>
+4 2.0
+</pre></div>
 </div>
 <p>Notice a few differences: First, the '.lar' suffix was removed.  Second,
 the name is not in quotes.  The content of the file is still run, and the
@@ -195,6 +211,12 @@ python code) or larch scripts.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="builtins.html" title="3.8. Tutorial: Builtin Functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="procedures.html" title="3.6. Tutorial: Writing Functions or Procedures"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -205,12 +227,13 @@ python code) or larch scripts.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

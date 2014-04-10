@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="3. Larch Tutorial" href="index.html" />
+    <link rel="next" title="3.3. Tutorial: Basic Array Manipulation" href="arrays.html" />
+    <link rel="prev" title="3.1. Tutorial: Getting Started" href="start.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="arrays.html" title="3.3. Tutorial: Basic Array Manipulation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="start.html" title="3.1. Tutorial: Getting Started"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -87,6 +95,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="start.html"
+                        title="previous chapter">3.1. Tutorial: Getting Started</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="arrays.html"
+                        title="next chapter">3.3. Tutorial: Basic Array Manipulation</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/datatypes.txt"
@@ -167,24 +181,27 @@ to get a single quote, one might say:</p>
 </div>
 <p>One can also use so-called a <em>raw string</em>, in which the backslash character
 is <strong>not</strong> used for escape sequences:</p>
-<div class="highlight-python"><pre>larch s5 = r'A string with backslash \n but not a newline!'</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch s5 = r&#39;A string with backslash \n but not a newline!&#39;
+</pre></div>
 </div>
 <p>For strings that may span over more than 1 line, a special &quot;triple quoted&quot;
 syntax is supported, so that:</p>
-<div class="highlight-python"><pre>larch&gt; long_string = """Now is the time for all good men
-.....&gt; to come to the aid of their party"""
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; long_string = &quot;&quot;&quot;Now is the time for all good men
+.....&gt; to come to the aid of their party&quot;&quot;&quot;
 larch&gt; print long_string
 Now is the time for all good men
-to come to the aid of their party</pre>
+to come to the aid of their party
+</pre></div>
 </div>
 <p>It is important to keep in mind that mixing data types in a calculation may
 or may not make sense to Larch.  For example, a string cannot be added to a
 integer:</p>
-<div class="highlight-python"><pre>larch&gt; '1' + 1
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; &#39;1&#39; + 1
 Runtime Error:
-cannot concatenate 'str' and 'int' objects
+cannot concatenate &#39;str&#39; and &#39;int&#39; objects
 &lt;StdInput&gt;
-     '1' + 1</pre>
+     &#39;1&#39; + 1
+</pre></div>
 </div>
 <p>but you can add an integer and a float:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="mi">1</span> <span class="o">+</span> <span class="mf">2.5</span>
@@ -213,7 +230,7 @@ Note that 'is' expresses identity, which is a slightly stricter test than
 Python.</p>
 <p>Finally, Larch knows about complex numbers, using a 'j' to indicate the
 imaginary part of the number:</p>
-<div class="highlight-python"><pre>larch&gt; sqrt(-1)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; sqrt(-1)
 Warning: invalid value encountered in sqrt
 nan
 larch&gt; sqrt(-1+0j)
@@ -224,7 +241,8 @@ larch&gt; x = sin(1+1j)
 larch&gt; print x
 (1.2984575814159773+0.63496391478473613j)
 larch&gt; print x.imag
-0.63496391478473613</pre>
+0.63496391478473613
+</pre></div>
 </div>
 <p>To be clear, all these primitive data types in Larch are derived from the
 corresponding Python objects, so you can consult python documentation for
@@ -244,27 +262,29 @@ object types.</p>
 <p>All Larch variables are Python objects, and so have a well-defined <strong>type</strong>
 and a set of <strong>attributes</strong> and <strong>methods</strong> that go with it.   To see the
 Python type of any variable, use the builtin <a class="reference internal" href="builtins.html#type" title="type"><tt class="xref py py-func docutils literal"><span class="pre">type()</span></tt></a> function:</p>
-<div class="highlight-python"><pre>larch&gt; type(1)
-&lt;type 'int'&gt;
-larch&gt; type('1')
-&lt;type 'str'&gt;
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; type(1)
+&lt;type &#39;int&#39;&gt;
+larch&gt; type(&#39;1&#39;)
+&lt;type &#39;str&#39;&gt;
 larch&gt; type(1.0)
-&lt;type 'float'&gt;
+&lt;type &#39;float&#39;&gt;
 larch&gt; type(1+0j)
-&lt;type 'complex'&gt;
+&lt;type &#39;complex&#39;&gt;
 larch&gt; type(sin)
-&lt;type 'numpy.ufunc'&gt;</pre>
+&lt;type &#39;numpy.ufunc&#39;&gt;
+</pre></div>
 </div>
 <p>The attributes and methods differ for each type of object, but are all
 accessed the same way -- with a '.' (dot) separating the variable name or
 value from the name of the attribute or method.  As above, complex data
 have <tt class="xref py py-attr docutils literal"><span class="pre">real</span></tt> and <tt class="xref py py-attr docutils literal"><span class="pre">imag</span></tt> attributes for the real and imaginary
 parts, which can be accessed:</p>
-<div class="highlight-python"><pre>larch&gt; x = sin(1+1j)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; x = sin(1+1j)
 larch&gt; print x
 (1.2984575814159773+0.63496391478473613j)
 larch&gt; print x.imag
-0.63496391478473613</pre>
+0.63496391478473613
+</pre></div>
 </div>
 <p>Methods are attributes of an object that happen to be callable as a
 function.  Since they belong to to an object, they know about the data and
@@ -272,10 +292,11 @@ other attributes in that object.  To call a method or function, simply add
 parentheses '()' after its name, possibly with arguments inside the
 parentheses to change the methods behavior.  For example, a complex number
 has a <tt class="xref py py-meth docutils literal"><span class="pre">conjugate()</span></tt> method:</p>
-<div class="highlight-python"><pre>larch&gt; x.conjugate
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; x.conjugate
 &lt;built-in method conjugate of complex object at 0x178e54b8&gt;
 larch&gt; x.conjugate()
-(1.2984575814159773-0.63496391478473613j)</pre>
+(1.2984575814159773-0.63496391478473613j)
+</pre></div>
 </div>
 <p>Note that just using <tt class="docutils literal"><span class="pre">x.conjugate</span></tt> returns the method itself, while using
 <tt class="docutils literal"><span class="pre">x.conjugate()</span></tt> actually runs the method.  It's fair to ask why <tt class="docutils literal"><span class="pre">real</span></tt>
@@ -310,25 +331,28 @@ Groups provides a heirarchical structure to all data in a Larch session,
 much like a directory of files.  Each Larch variable belongs to a Group,
 and can always be accessed by its full Group name.  The top-level Group is
 called '_main'.  You'll rarely need to use that fact, but it's there:</p>
-<div class="highlight-python"><pre>larch&gt; myvar = 22.13
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; myvar = 22.13
 larch&gt; print _main.myvar
 22.13
 larch&gt; print myvar
-22.13</pre>
+22.13
+</pre></div>
 </div>
 <p>You can create your own groups and add data to it with the builtin
 <a class="reference internal" href="builtins.html#group" title="group"><tt class="xref py py-meth docutils literal"><span class="pre">group()</span></tt></a> function:</p>
-<div class="highlight-python"><pre>larch&gt; g = group()
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; g = group()
 larch&gt; g
-&lt;Group 0x17ee50f0&gt;</pre>
+&lt;Group 0x17ee50f0&gt;
+</pre></div>
 </div>
 <p>You can add variables to your Group 'g', using the '.' (dot) to separate
 the parent group from the child object:</p>
-<div class="highlight-python"><pre>larch&gt; g.x = 1002.8
-larch&gt; g.label = 'here is a string'
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; g.x = 1002.8
+larch&gt; g.label = &#39;here is a string&#39;
 larch&gt; g.data = arange(100)
 larch&gt; print g.x/5
-200.56</pre>
+200.56
+</pre></div>
 </div>
 <p>(<tt class="xref py py-func docutils literal"><span class="pre">arange()</span></tt> is a builtin function to create an array of numbers).  As
 from the above discussion of objects, the '.' (dot) notation implies that
@@ -344,11 +368,12 @@ can use the <a class="reference internal" href="builtins.html#dir" title="dir"><
 <p>(Note that the order shown may vary).  You can also use the builtin
 <a class="reference internal" href="builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function to get a slightly more complete view of the group's
 contents:</p>
-<div class="highlight-python"><pre>larch&gt; show(g)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; show(g)
 == Group 0x1b8cbfb0: 3 symbols ==
-  data: array&lt;shape=(100,), type=dtype('int32')&gt;
-  name: 'here is a string'
-  x: 1002.8</pre>
+  data: array&lt;shape=(100,), type=dtype(&#39;int32&#39;)&gt;
+  name: &#39;here is a string&#39;
+  x: 1002.8
+</pre></div>
 </div>
 <p>(The '0x1b8cbfb0' is the default name, discussed in more detail below in
 <a class="reference internal" href="#tutor-objectids-sec">3.2.4</a>).  The <a class="reference internal" href="builtins.html#group" title="group"><tt class="xref py py-func docutils literal"><span class="pre">group()</span></tt></a> function can take arguments
@@ -422,12 +447,14 @@ data to be processed, Larch ends up with a complex heirarchy of data.  This
 gives a good way of organizing data, but it also leads to a question of how
 variable names are found.  Of course, you can always access a function or
 data object by its full name:</p>
-<div class="highlight-python"><pre>larch&gt; print _math.sin(_math.pi/2)
-1.0</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print _math.sin(_math.pi/2)
+1.0
+</pre></div>
 </div>
 <p>but that's too painful to use, and of course, one needs to be able to do:</p>
-<div class="highlight-python"><pre>larch&gt; print sin(pi/2)
-1.0</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print sin(pi/2)
+1.0
+</pre></div>
 </div>
 <p>and have Larch know that when you say <tt class="xref py py-func docutils literal"><span class="pre">sin()</span></tt>, you mean
 <tt class="xref py py-func docutils literal"><span class="pre">_math.sin()</span></tt>.  The way this look-up of names works is that Larch keeps
@@ -466,12 +493,13 @@ individual:</p>
 </div>
 <p>You can access the elements of a list using brackets and the integer index
 (starting from 0):</p>
-<div class="highlight-python"><pre>larch&gt; print my_list2[1]
-'string'
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print my_list2[1]
+&#39;string&#39;
 larch&gt; print nested_list[2]
-['c', 'd', ['e', 'f', 'g']]
+[&#39;c&#39;, &#39;d&#39;, [&#39;e&#39;, &#39;f&#39;, &#39;g&#39;]]
 larch&gt; print nested_list[2][0]
-'c'</pre>
+&#39;c&#39;
+</pre></div>
 </div>
 <p>Lists are <strong>mutable</strong> -- they can be changed, in place.   To do this, you
 can replace an element in a list:</p>
@@ -515,11 +543,12 @@ optional custom comparison function passed in), do this:</p>
 <p>as that will sort the list, then happily set 'my_list' to None.</p>
 <p>You can get the length of a list with the built-in <a class="reference internal" href="builtins.html#len" title="len"><tt class="xref py py-func docutils literal"><span class="pre">len()</span></tt></a> function,
 and test whether a particular element is in a list with the <cite>in</cite> operator:</p>
-<div class="highlight-python"><pre>larch&gt; my_list = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j']
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; my_list = [&#39;a&#39;, &#39;b&#39;, &#39;c&#39;, &#39;d&#39;, &#39;e&#39;, &#39;f&#39;, &#39;g&#39;, &#39;h&#39;, &#39;i&#39;, &#39;j&#39;]
 larch&gt; print len(my_list)
 10
-larch&gt; 'e' in my_list
-True</pre>
+larch&gt; &#39;e&#39; in my_list
+True
+</pre></div>
 </div>
 <p>You can access a sub-selection of elements with a <strong>slice</strong>, giving starting
 and ending indices between brackets, separated by a colon.  Of course, the counting
@@ -558,18 +587,20 @@ now say:</p>
 <p>the variable 'your_list' now points to the same value -- the same list.
 That is, it does not make a copy of the list. Since the list is mutable,
 changing 'your_list' will also change 'my_list':</p>
-<div class="highlight-python"><pre>larch&gt; your_list[0] = 500
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; your_list[0] = 500
 larch&gt; print my_list[:3]
-[500, 'b', 'c']                # changed!!</pre>
+[500, &#39;b&#39;, &#39;c&#39;]                # changed!!
+</pre></div>
 </div>
 <p>You can make a copy of a list, by selecting a full slice:</p>
-<div class="highlight-python"><pre>larch&gt; your_list = my_list[:]
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; your_list = my_list[:]
 larch&gt; your_list[0] = 3.2444
 larch&gt; print my_list[:3]
-[500, 'b', 'c']                 # now unchanged
+[500, &#39;b&#39;, &#39;c&#39;]                 # now unchanged
 
 larch&gt; your_list[0] == my_list[0]
-False</pre>
+False
+</pre></div>
 </div>
 <p>Note that this behavior doesn't happen for immutable data types, including
 the more primitive data types such as integers, floats and strings.  This
@@ -603,18 +634,20 @@ tuple of values.  For this case, the simplicity an immutability of tuples
 is a strength becaues, once created, a tuple has a predictable size and
 order to its elements, which is not true for lists.  That is, if a larch
 procedure (which we'll see more of below) returns two values as a tuple:</p>
-<div class="highlight-python"><pre>larch&gt; def sumdiff(x, y):
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; def sumdiff(x, y):
 .....&gt;     return x+y, x-y
 .....&gt; enddef
 larch&gt; x = sumdiff(3, 2)
 larch&gt; print x[0], x[1]
-5 1</pre>
+5 1
+</pre></div>
 </div>
 <p>Because the returned tuple has a fixed structure, you can also assign
 the it directly to a set of (the correct number of) variables:</p>
-<div class="highlight-python"><pre>larch&gt; plus, minus = sumdiff(10, 3)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; plus, minus = sumdiff(10, 3)
 larch&gt; print plus, minus
-13 7</pre>
+13 7
+</pre></div>
 </div>
 </div>
 <div class="section" id="a-second-look-at-strings">
@@ -683,9 +716,10 @@ an integer or floating point number, or even a tuple or some other objects
 -- any <strong>immutable</strong> object can be used.   Dictionaries are delimited by
 curly braces, with colons (':') separating key and value, and commas
 separating different elements:</p>
-<div class="highlight-python"><pre>larch&gt; atomic_weight = {'H': 1.008, 'He': 4.0026, 'Li': 6.9, 'Be': 9.012}
-larch&gt; print atomic_weight['He']
-4.0026</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; atomic_weight = {&#39;H&#39;: 1.008, &#39;He&#39;: 4.0026, &#39;Li&#39;: 6.9, &#39;Be&#39;: 9.012}
+larch&gt; print atomic_weight[&#39;He&#39;]
+4.0026
+</pre></div>
 </div>
 <p>You can also add more elements to a dictionary by assigning to a new key:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">atomic_weight</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">]</span>  <span class="o">=</span> <span class="mf">10.811</span>
@@ -806,12 +840,13 @@ location) of a variable:</p>
 <p>(the value shown will be different each time you run Larch).  Now if we
 assign another variable to <tt class="docutils literal"><span class="pre">x</span></tt>, we can use <a class="reference internal" href="builtins.html#id" title="id"><tt class="xref py py-func docutils literal"><span class="pre">id()</span></tt></a> to see why changing
 the value of one changes the value of the other:</p>
-<div class="highlight-python"><pre>larch&gt; y = x
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; y = x
 larch&gt; id(y)
 108444568      ### The same as id(x) !!
-larch&gt; y[1] = 'hello'
+larch&gt; y[1] = &#39;hello&#39;
 larch&gt; print x
-[1, 'hello', 3, 4, 5]</pre>
+[1, &#39;hello&#39;, 3, 4, 5]
+</pre></div>
 </div>
 <p>Here, <tt class="docutils literal"><span class="pre">x</span></tt> changed because it is identical to <tt class="docutils literal"><span class="pre">y</span></tt> and is mutable.
 However, if we make another variable that happens to have the same value:</p>
@@ -864,12 +899,13 @@ make a new copy of the group but another reference to the same group:</p>
 </pre></div>
 </div>
 <p>If ask for the group to be printed or run the <a class="reference internal" href="builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function on a group:</p>
-<div class="highlight-python"><pre>larch&gt; g
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; g
 &lt;Group 0x6bf17f0&gt;
 larch&gt; show(g)
 == Group 0x6bf17f0: 2 symbols ==
   x: 1
-  text: 'hello'</pre>
+  text: &#39;hello&#39;
+</pre></div>
 </div>
 <p>we see the hexidecimal representation of its  memory address:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="nb">id</span><span class="p">(</span><span class="n">g</span><span class="p">),</span> <span class="nb">hex</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">g</span><span class="p">))</span>
@@ -897,6 +933,12 @@ another variable that points to the same value.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="arrays.html" title="3.3. Tutorial: Basic Array Manipulation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="start.html" title="3.1. Tutorial: Getting Started"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -907,12 +949,13 @@ another variable that points to the same value.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

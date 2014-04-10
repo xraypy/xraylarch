@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="3. Larch Tutorial" href="index.html" />
+    <link rel="next" title="3.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
+    <link rel="prev" title="3.5. Tutorial: Dealing With Errors" href="errors.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="modules.html" title="3.7. Tutorial: Running Larch Scripts, and Modules"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="errors.html" title="3.5. Tutorial: Dealing With Errors"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -75,6 +83,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="errors.html"
+                        title="previous chapter">3.5. Tutorial: Dealing With Errors</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="next chapter">3.7. Tutorial: Running Larch Scripts, and Modules</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/procedures.txt"
@@ -125,8 +139,9 @@ discussed earlier. A simple example would be:</p>
 </div>
 <p>With this definition, one can then run this procedure as you would run any
 other built-in function, by writing:</p>
-<div class="highlight-python"><pre>larch&gt; sayhello()
-hello!</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; sayhello()
+hello!
+</pre></div>
 </div>
 <p>Of course, you can write procedures that take input arguments, such as:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">safe_sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
@@ -139,10 +154,11 @@ hello!</pre>
 </pre></div>
 </div>
 <p>Here <em>x</em> will hold whatever value is passed to it, so that:</p>
-<div class="highlight-python"><pre>larch&gt; safe_sqrt(4)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; safe_sqrt(4)
 2.0
 larch&gt; safe_sqrt(-9)
-Did you want sqrt(9.000000) = 3.000000?</pre>
+Did you want sqrt(9.000000) = 3.000000?
+</pre></div>
 </div>
 <p>Of course, you will most often want a procedure to return a value.  This is
 done with the <strong>return</strong> statement.  A <strong>return</strong> statement can be put
@@ -160,25 +176,28 @@ the procedure has fully executed.  An example:</p>
 </pre></div>
 </div>
 <p>which can now be used as:</p>
-<div class="highlight-python"><pre>larch&gt; print safe_sqrt(4)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print safe_sqrt(4)
 2.0
 larch&gt; x = safe_sqrt(-10)
 larch&gt; print x
-3.16227766017</pre>
+3.16227766017
+</pre></div>
 </div>
 <p><strong>return</strong> can take multiple arguments, separated by a comma, which is to
 say a <strong>tuple</strong>.  As an example:</p>
-<div class="highlight-python"><pre>larch&gt; def sum_diff(x, y):
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; def sum_diff(x, y):
 .....&gt;    return x + y, x-y
 .....&gt; enddef
 larch&gt; print sum_diff(3., 4.)
-(7.0, -1.0)</pre>
+(7.0, -1.0)
+</pre></div>
 </div>
 <p>This is discussed in more detail below.</p>
 <p>The formal definition of a procedure looks like:</p>
-<div class="highlight-python"><pre>def &lt;procedure_name&gt;(&lt;arguments&gt;):
+<div class="highlight-python"><div class="highlight"><pre>def &lt;procedure_name&gt;(&lt;arguments&gt;):
     &lt;block of statements&gt;
-enddef</pre>
+enddef
+</pre></div>
 </div>
 </div>
 <div class="section" id="namespace-and-scope-inside-a-procedure">
@@ -260,22 +279,25 @@ This is a really bad idea, and you should avoid doing it at all costs.</p>
 back a value to the calling code.    The return value can be either a
 single value or a tuple of values, which gives a convenient way to return
 multiple values from a single procedure.  Thus:</p>
-<div class="highlight-python"><pre>larch&gt; def my_divmod(x, y):
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; def my_divmod(x, y):
 .....&gt;    return (x // y, x % y)  # note use of // for integer division!
 .....&gt; enddef
 larch&gt; print my_divmod(100, 7)
-14, 2</pre>
+14, 2
+</pre></div>
 </div>
 <p>But be careful when assigning the return value to variable(s).  You can
 do:</p>
-<div class="highlight-python"><pre>larch&gt; xdiv, xmod = my_divmod(100, 7)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; xdiv, xmod = my_divmod(100, 7)
 larch&gt; print xdiv
-14</pre>
+14
+</pre></div>
 </div>
 <p>or:</p>
-<div class="highlight-python"><pre>larch&gt; result = my_divmod(100, 7)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; result = my_divmod(100, 7)
 larch&gt; print result[0], result[1]
-14, 2</pre>
+14, 2
+</pre></div>
 </div>
 <p>Because a return value from a procedure can hold many values, it is best to
 be careful when writing a procedure that you document what the return value
@@ -291,15 +313,16 @@ arguments.  Larch allows this with <strong>keyword</strong> arguments.
 Keyword arguments offer distinct advantages over positional arguments
 in that they have default values, and can be given in any order.
 In a procedure definition, you add an argument name with a default value,  like this:</p>
-<div class="highlight-python"><pre>def xlog(a, base=e):
-    """return log(a) with base = base (default=e=2.71828...)
-    """
+<div class="highlight-python"><div class="highlight"><pre>def xlog(a, base=e):
+    &quot;&quot;&quot;return log(a) with base = base (default=e=2.71828...)
+    &quot;&quot;&quot;
      if base &gt; 1:
         return log(a) /log(base)
     else:
-        print 'cannot calculate log base %f' % base
+        print &#39;cannot calculate log base %f&#39; % base
     endif
-enddef</pre>
+enddef
+</pre></div>
 </div>
 <p>Unless passed in, the value of <em>base</em> will take the default value of <em>e</em>.
 This can then be used as:</p>
@@ -342,44 +365,46 @@ included in the call to 'addall' past the first two (which will be held by
 <p>To add support for unspecified keyword parameters, one adds a named
 argument to the procedure definition preceded by two asterisks:
 <strong>'**keywords'</strong>.  For example:</p>
-<div class="highlight-python"><pre>def operate(a, b, **options):
-    """perform operation on a and b"""
-    debug = options.get('debug', True)
-    verbose = options.get('verbose', False)
-    op  = options.get('op', 'add')
+<div class="highlight-python"><div class="highlight"><pre>def operate(a, b, **options):
+    &quot;&quot;&quot;perform operation on a and b&quot;&quot;&quot;
+    debug = options.get(&#39;debug&#39;, True)
+    verbose = options.get(&#39;verbose&#39;, False)
+    op  = options.get(&#39;op&#39;, &#39;add&#39;)
     if verbose:
-       print 'op == %s ' % op
+       print &#39;op == %s &#39; % op
     endif
-    if op == 'add':
+    if op == &#39;add&#39;:
         return a + b
-   elif op == 'sub':
+   elif op == &#39;sub&#39;:
         return a - b
-   elif op == 'mul':
+   elif op == &#39;mul&#39;:
         return a * b
-   elif op == 'div':
+   elif op == &#39;div&#39;:
         return a / b
    else:
-        if debug:  print 'unsupported operation!'
+        if debug:  print &#39;unsupported operation!&#39;
    endif
-enddef</pre>
+enddef
+</pre></div>
 </div>
 <p>As you may have figured out, inside the procedure, 'options' will hold a
 dictionary of keyword names/values passed into it.  With this (perhaps
 contrived) definition, you can call 'operate' many ways to change its
 behavior:</p>
-<div class="highlight-python"><pre>larch&gt; operate(3, 2, op='add')
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; operate(3, 2, op=&#39;add&#39;)
 5
-larch&gt; operate(3, 2, op='add', verbose=True)
+larch&gt; operate(3, 2, op=&#39;add&#39;, verbose=True)
 op == add
 5
-larch&gt; operate(3, 2, op='mul', verbose=True)
+larch&gt; operate(3, 2, op=&#39;mul&#39;, verbose=True)
 op == mul
 6
-larch&gt; operate(3, 2, op='xxx', verbose=True)
+larch&gt; operate(3, 2, op=&#39;xxx&#39;, verbose=True)
 op == xxx
 unsupported operation!
-larch&gt; operate(3, 2, op='xxx', debug=False)
-op == xxx</pre>
+larch&gt; operate(3, 2, op=&#39;xxx&#39;, debug=False)
+op == xxx
+</pre></div>
 </div>
 <p>As with the <strong>'*args'</strong>, the <strong>'**options'</strong> in the procedure definition must
 appear after any named keyword parameters, and will not include the named
@@ -395,17 +420,19 @@ not assigned to a variable), then this will be used as the procedure
 documentation.  You can use triple-quoted strings for multi-line
 documentation strings.  This doc string will be used by the built-in help
 mechanism, or when viewing details of the procedure.  For example:</p>
-<div class="highlight-python"><pre>def safe_sqrt(x):
-  """safe sqrt function:
+<div class="highlight-python"><div class="highlight"><pre>def safe_sqrt(x):
+  &quot;&quot;&quot;safe sqrt function:
  returns sqrt(abs(x))
- """
+ &quot;&quot;&quot;
  return sqrt(abs(x))
-enddef</pre>
+enddef
+</pre></div>
 </div>
 <p>With this definition:</p>
-<div class="highlight-python"><pre>larch&gt; help(safe_sqrt)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; help(safe_sqrt)
   safe sqrt function:
-     returns sqrt(abs(x))</pre>
+     returns sqrt(abs(x))
+</pre></div>
 </div>
 </div>
 </div>
@@ -422,6 +449,12 @@ enddef</pre>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="modules.html" title="3.7. Tutorial: Running Larch Scripts, and Modules"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="errors.html" title="3.5. Tutorial: Dealing With Errors"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -432,12 +465,13 @@ enddef</pre>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

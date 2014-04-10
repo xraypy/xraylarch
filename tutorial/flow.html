@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="3. Larch Tutorial" href="index.html" />
+    <link rel="next" title="3.5. Tutorial: Dealing With Errors" href="errors.html" />
+    <link rel="prev" title="3.3. Tutorial: Basic Array Manipulation" href="arrays.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="errors.html" title="3.5. Tutorial: Dealing With Errors"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="arrays.html" title="3.3. Tutorial: Basic Array Manipulation"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -73,6 +81,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="arrays.html"
+                        title="previous chapter">3.3. Tutorial: Basic Array Manipulation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="errors.html"
+                        title="next chapter">3.5. Tutorial: Dealing With Errors</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/flow.txt"
@@ -126,7 +140,8 @@ So far we've seen three types of statements:</p>
 values are printed -- in a script they would not be printed.</p>
 </li>
 <li><p class="first">print statements, such as:</p>
-<div class="highlight-python"><pre>larch&gt; print sqrt(3)</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print sqrt(3)
+</pre></div>
 </div>
 <p>where we explicitly command larch to print the evaluated
 expression -- this would print if run from a script.</p>
@@ -148,7 +163,8 @@ of test.</p>
 <p>A fundamental need is to be able to execute some statement(s) when some
 condition is met.  This is done with the <strong>if</strong> statement, an example of
 which is:</p>
-<div class="highlight-python"><pre>larch&gt; if x == 0: print 'x is 0!'</pre>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; if x == 0: print &#39;x is 0!&#39;
+</pre></div>
 </div>
 <p>Which will print 'x is 0!' if the value of <em>x</em> is equal to 0.  The <cite>x == 0</cite>
 in this if statement is called the <strong>test</strong>.  A test is a Boolean
@@ -172,9 +188,10 @@ into a &quot;block of code&quot;:</p>
 </div>
 <p>Which is to say that the multiple-line form of the if statement looks like
 this:</p>
-<div class="highlight-python"><pre>if &lt;test&gt;:
+<div class="highlight-python"><div class="highlight"><pre>if &lt;test&gt;:
   &lt;statements&gt;
-endif</pre>
+endif
+</pre></div>
 </div>
 <p>where '&lt;statements&gt;' here means a list of statements, and the 'endif' is
 required (see <a class="reference internal" href="../devel/index.html#code-block-ends">10.1.1</a>). For the above, two statements will
@@ -281,9 +298,10 @@ then printing the value of x, which will result in printing out:</p>
 </pre></div>
 </div>
 <p>Similar to the <em>if</em> statement above, the for loop has the form:</p>
-<div class="highlight-python"><pre>for &lt;varlist&gt; in &lt;sequence&gt;:
+<div class="highlight-python"><div class="highlight"><pre>for &lt;varlist&gt; in &lt;sequence&gt;:
     &lt;statements&gt;
-endfor</pre>
+endfor
+</pre></div>
 </div>
 <p>Compared to a C for loop or Fortran do loop, the Larch for loop is much
 more like a  <em>foreach</em> loop.  The common C / Fortran use case of interating
@@ -338,9 +356,10 @@ iterating over a sequence of equal-length tuples, as in:</p>
 </pre></div>
 </div>
 <p>will print:</p>
-<div class="highlight-python"><pre>a 1
+<div class="highlight-python"><div class="highlight"><pre>a 1
 b 2
-c 3</pre>
+c 3
+</pre></div>
 </div>
 <p>This may seem to be mostly of curious interest, but can be extremely useful
 especially when dealing with dictionaries or with arrays or lists of equal
@@ -354,41 +373,46 @@ two-element tuples as above of key, value.  Thus:</p>
 </div>
 <p>will print (note that dictionaries do no preserve order, but the (key, val)
 pairs match):</p>
-<div class="highlight-python"><pre>a 1
+<div class="highlight-python"><div class="highlight"><pre>a 1
 c 3
 b 2
-d 4</pre>
+d 4
+</pre></div>
 </div>
 <p>The builtin <a class="reference internal" href="builtins.html#zip" title="zip"><tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt></a> function is similarly useful, turning a sequence of
 lists or arrays into a sequence of tuples of the corresponding elements of
 the lists or arrays.  Thus:</p>
-<div class="highlight-python"><pre>larch&gt; a = range(10)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; a = range(10)
 larch&gt; b = sin(a)
 larch&gt; c = cos(a)
 larch&gt; print zip(a, b, c)
 [(0, 0.0, 1.0), (1, 0.8414709848078965, 0.54030230586813977),
- (2, 0.90929742682568171, -0.41614683654714241), ....]</pre>
+ (2, 0.90929742682568171, -0.41614683654714241), ....]
+</pre></div>
 </div>
 <p>(Note that for arrays or lists of unequal length, <a class="reference internal" href="builtins.html#zip" title="zip"><tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt></a> will return
 tuples until any of its arguments runs out of elements).   Thus a for loop
 can make use of the <a class="reference internal" href="builtins.html#zip" title="zip"><tt class="xref py py-func docutils literal"><span class="pre">zip()</span></tt></a> function to iterate over multiple arrays:</p>
-<div class="highlight-python"><pre>larch&gt; a = arange(101)/10.0
-larch&gt; print 'X   SIN(X)  SIN(Y)\n================\n'
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; a = arange(101)/10.0
+larch&gt; print &#39;X   SIN(X)  SIN(Y)\n================\n&#39;
 larch&gt; for a, sval, cval in zip(a, sin(a), cos(a)):
-.....&gt;     print '%.3f, %.5f, %.5f' % (a, sval, cval)
-.....&gt; endfor</pre>
+.....&gt;     print &#39;%.3f, %.5f, %.5f&#39; % (a, sval, cval)
+.....&gt; endfor
+</pre></div>
 </div>
 <p>will print a table of sine and cosine values.</p>
 <p>A final utility of note for loops is <a class="reference internal" href="builtins.html#enumerate" title="enumerate"><tt class="xref py py-func docutils literal"><span class="pre">enumerate()</span></tt></a> which will return a
 tuple of (index, value) for a sequence.   That is:</p>
-<div class="highlight-python"><pre>larch&gt; for i, a in enumerate('a', b', 'c'):
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; for i, a in enumerate(&#39;a&#39;, b&#39;, &#39;c&#39;):
 .....&gt;     print i, a
-.....&gt; endfor</pre>
+.....&gt; endfor
+</pre></div>
 </div>
 <p>will print:</p>
-<div class="highlight-python"><pre>0 a
+<div class="highlight-python"><div class="highlight"><pre>0 a
 1 b
-2 c</pre>
+2 c
+</pre></div>
 </div>
 <p>It is sometimes useful to jump out of a for loop, or go onto the next value
 in the sequence.   The <em>break</em> statement will exit a for loop immediately:</p>
@@ -421,9 +445,10 @@ statement:</p>
 <p>While a for loop generally walks through a pre-defined set of values, a
 <em>while</em> loop executes as long as some test is <tt class="docutils literal"><span class="pre">True</span></tt>.   The basic form
 is:</p>
-<div class="highlight-python"><pre>while &lt;test&gt;:
+<div class="highlight-python"><div class="highlight"><pre>while &lt;test&gt;:
    &lt;statements&gt;
-endwhile</pre>
+endwhile
+</pre></div>
 </div>
 <p>Here, the test works as for <em>if</em> -- it is a Boolean expression, evaluated at
 each iteration of the loop. Generally, the expression will test something
@@ -483,6 +508,12 @@ while loop:</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="errors.html" title="3.5. Tutorial: Dealing With Errors"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="arrays.html" title="3.3. Tutorial: Basic Array Manipulation"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="index.html">tutorial</a>|&nbsp;</li>
@@ -493,12 +524,13 @@ while loop:</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

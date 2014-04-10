@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="7. XAFS Analysis" href="index.html" />
+    <link rel="next" title="7.2. XAFS: Post-edge Background Subtraction" href="autobk.html" />
+    <link rel="prev" title="7. XAFS Analysis" href="index.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="7. XAFS Analysis"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -71,6 +79,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">7. XAFS Analysis</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="autobk.html"
+                        title="next chapter">7.2. XAFS: Post-edge Background Subtraction</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/preedge.txt"
@@ -99,9 +113,9 @@
             
   <div class="section" id="xafs-pre-edge-subtraction-and-normalization">
 <h1>7.1. XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#xafs-pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
-<p>After reading in data and constructing <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>, the principle
+<p>After reading in data and constructing <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>, the principle
 pre-processing steps for XAFS analysis.  are pre-edge subtraction and
-normalization.  Reading data and constructing <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> are handled by
+normalization.  Reading data and constructing <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> are handled by
 internal larch functions, especially <tt class="xref py py-func docutils literal"><span class="pre">read_ascii()</span></tt>.  The main
 XAFS-specific function for pre-edge subtraction and normalizaiton is
 <a class="reference internal" href="#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
@@ -111,10 +125,10 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
 <dd><dl class="docutils">
 <dt>Pre-edge subtraction and normalization.  This performs a number of steps:</dt>
 <dd><ol class="first last arabic simple">
-<li>determine <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> (if not supplied) from max of deriv(mu)</li>
+<li>determine <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> (if not supplied) from max of deriv(mu)</li>
 <li>fit a line of polymonial to the region below the edge</li>
 <li>fit a polymonial to the region above the edge</li>
-<li>extrapolate the two curves to <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> to determine the edge jump</li>
+<li>extrapolate the two curves to <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> to determine the edge jump</li>
 </ol>
 </dd>
 </dl>
@@ -124,9 +138,9 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> -- 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> -- 1-d array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
+<li><strong>mu</strong> -- 1-d array of <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/></li>
 <li><strong>group</strong> -- output group</li>
-<li><strong>e0</strong> -- edge energy, <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> in eV.  If None, it will be determined here.</li>
+<li><strong>e0</strong> -- edge energy, <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> in eV.  If None, it will be determined here.</li>
 <li><strong>step</strong> -- edge jump.  If None, it will be determined here.</li>
 <li><strong>pre1</strong> -- low E range (relative to E0) for pre-edge fit</li>
 <li><strong>pre2</strong> -- high E range (relative to E0) for pre-edge fit</li>
@@ -203,14 +217,14 @@ post-edge, normalization curve. Default=3 (quadratic)</li>
 <dl class="docutils">
 <dt>Notes:</dt>
 <dd>nvict gives an exponent to the energy term for the pre-edge fit.
-That is, a line <img class="math" src="../_images/math/009ce44abdece773c5456d540fa0c0392da31efb.png" alt="(m E + b)"/> is fit to
-<img class="math" src="../_images/math/97de16ff6ff1ddb301788a6e681182654946d949.png" alt="\mu(E) E^{nvict}"/>   over the pr-edge region, E= [E0+pre1, E0+pre2].</dd>
+That is, a line <img class="math" src="../_images/math/45c9a466bcbb4f5fce91afa3bf587162e2c0ffef.png" alt="(m E + b)"/> is fit to
+<img class="math" src="../_images/math/85e23a2d0d538cd09fc516164d6222c3f58ee887.png" alt="\mu(E) E^{nvict}"/>   over the pr-edge region, E= [E0+pre1, E0+pre2].</dd>
 </dl>
 <dl class="function">
 <dt id="find_e0">
 <tt class="descname">find_e0</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/>, the energy threshold of the absorption edge,
-from the arrays energy and mu for <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.</p>
+<dd><p>Determine <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/>, the energy threshold of the absorption edge,
+from the arrays energy and mu for <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>.</p>
 <p>This finds the point with maximum derivative with some
 checks to avoid spurious glitches.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -219,7 +233,7 @@ checks to avoid spurious glitches.</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>energy</strong> -- array of x-ray energies, in eV</li>
-<li><strong>mu</strong> -- array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
+<li><strong>mu</strong> -- array of <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/></li>
 <li><strong>group</strong> -- output group</li>
 </ul>
 </td>
@@ -271,6 +285,12 @@ checks to avoid spurious glitches.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="7. XAFS Analysis"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -281,12 +301,13 @@ checks to avoid spurious glitches.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

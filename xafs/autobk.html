@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="7. XAFS Analysis" href="index.html" />
+    <link rel="next" title="7.3. XAFS: Utility functions" href="utilities.html" />
+    <link rel="prev" title="7.1. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="utilities.html" title="7.3. XAFS: Utility functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="preedge.html" title="7.1. XAFS: Pre-edge Subtraction and Normalization"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -68,9 +76,9 @@
 <li><a class="reference internal" href="#">7.2. XAFS: Post-edge Background Subtraction</a><ul>
 <li><a class="reference internal" href="#the-autobk-function">7.2.1. The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
 <li><a class="reference internal" href="#the-autobk-algorithm">7.2.2. The AUTOBK Algorithm</a><ul>
-<li><a class="reference internal" href="#and-spline-for">7.2.2.1. <img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/></a></li>
+<li><a class="reference internal" href="#and-spline-for">7.2.2.1. <img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/></a></li>
 <li><a class="reference internal" href="#selecting-fourier-transform-parameters">7.2.2.2. Selecting Fourier transform parameters</a></li>
-<li><a class="reference internal" href="#using-a-standard">7.2.2.3. Using a standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></a></li>
+<li><a class="reference internal" href="#using-a-standard">7.2.2.3. Using a standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></a></li>
 <li><a class="reference internal" href="#end-point-clamps-for-the-spline">7.2.2.4. End-point clamps for the spline</a></li>
 <li><a class="reference internal" href="#recommendations">7.2.2.5. Recommendations</a></li>
 </ul>
@@ -78,13 +86,19 @@
 <li><a class="reference internal" href="#examples">7.2.3. Examples</a><ul>
 <li><a class="reference internal" href="#basic-example">7.2.3.1. Basic example</a></li>
 <li><a class="reference internal" href="#adjusting-spline-clamps">7.2.3.2. Adjusting spline clamps</a></li>
-<li><a class="reference internal" href="#id1">7.2.3.3. Using a Standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></a></li>
+<li><a class="reference internal" href="#id1">7.2.3.3. Using a Standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="preedge.html"
+                        title="previous chapter">7.1. XAFS: Pre-edge Subtraction and Normalization</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="utilities.html"
+                        title="next chapter">7.3. XAFS: Utility functions</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/autobk.txt"
@@ -114,8 +128,8 @@
   <div class="section" id="module-_xafs">
 <span id="xafs-post-edge-background-subtraction"></span><h1>7.2. XAFS: Post-edge Background Subtraction<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>Background subtraction is one of the most important data processing steps
-in EXAFS analysis, converting the measured <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> into the
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> ready for quantitative analysis.  In Larch, this step is
+in EXAFS analysis, converting the measured <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> into the
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> ready for quantitative analysis.  In Larch, this step is
 performed by the <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function, which has many options and
 subtleties.  This section is devoted to background subtraction with the
 <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function and the underlying algorithm it uses.</p>
@@ -124,35 +138,35 @@ subtleties.  This section is devoted to background subtraction with the
 <dl class="function">
 <dt id="_xafs.autobk">
 <tt class="descclassname">_xafs.</tt><tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
-<dd><p>Determine the post-edge background function, <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, and
-corresponding <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
+<dd><p>Determine the post-edge background function, <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/>, and
+corresponding <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>energy</strong> -- 1-d array of x-ray energies, in eV</li>
-<li><strong>mu</strong> -- 1-d array of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/></li>
+<li><strong>mu</strong> -- 1-d array of <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/></li>
 <li><strong>group</strong> -- output group (and input group for <tt class="docutils literal"><span class="pre">e0</span></tt> and <tt class="docutils literal"><span class="pre">edge_step</span></tt>.</li>
-<li><strong>rbkg</strong> -- distance (in <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>) for <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> above
+<li><strong>rbkg</strong> -- distance (in <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>) for <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> above
 which the signal is ignored. Default = 1.</li>
 <li><strong>e0</strong> -- edge energy, in eV.  If <cite>None</cite>, it will be determined.</li>
 <li><strong>edge_step</strong> -- edge step.  If <cite>None</cite>, it will be determined.</li>
 <li><strong>pre_edge_kws</strong> -- dictionary containing keyword arguments to pass to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</li>
 <li><strong>nknots</strong> -- number of knots in spline.  If <cite>None</cite>, it will be determined.</li>
-<li><strong>kmin</strong> -- minimum <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value   [0]</li>
-<li><strong>kmax</strong> -- maximum <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value   [full data range].</li>
-<li><strong>kweight</strong> -- <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> weight for FFT.  [1]</li>
+<li><strong>kmin</strong> -- minimum <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> value   [0]</li>
+<li><strong>kmax</strong> -- maximum <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> value   [full data range].</li>
+<li><strong>kweight</strong> -- <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> weight for FFT.  [1]</li>
 <li><strong>dk</strong> -- FFT window window parameter.  [0]</li>
 <li><strong>win</strong> -- FFT window function name.     ['hanning']</li>
 <li><strong>nfft</strong> -- array size to use for FFT [2048]</li>
-<li><strong>kstep</strong> -- <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> step size to use for FFT [0.05]</li>
-<li><strong>k_std</strong> -- optional <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> array for standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</li>
-<li><strong>chi_std</strong> -- optional <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> array for standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</li>
+<li><strong>kstep</strong> -- <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> step size to use for FFT [0.05]</li>
+<li><strong>k_std</strong> -- optional <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> array for standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</li>
+<li><strong>chi_std</strong> -- optional <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/> array for standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</li>
 <li><strong>nclamp</strong> -- number of energy end-points for clamp [2]</li>
 <li><strong>clamp_lo</strong> -- weight of low-energy clamp [1]</li>
 <li><strong>clamp_hi</strong> -- weight of high-energy clamp [1]</li>
-<li><strong>calc_uncertaintites</strong> -- Flag to calculate uncertainties in  <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> and <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> [<tt class="docutils literal"><span class="pre">False</span></tt>]</li>
+<li><strong>calc_uncertaintites</strong> -- Flag to calculate uncertainties in  <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> and <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> [<tt class="docutils literal"><span class="pre">False</span></tt>]</li>
 </ul>
 </td>
 </tr>
@@ -175,22 +189,22 @@ which the signal is ignored. Default = 1.</li>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>bkg</td>
-<td>array of <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> (not normalized)</td>
+<td>array of <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> (not normalized)</td>
 </tr>
 <tr class="row-odd"><td>chie</td>
-<td>array of <img class="math" src="../_images/math/48cc4eace36e799ff96a2fefb5f9b0f240586170.png" alt="\chi(E)"/> values.</td>
+<td>array of <img class="math" src="../_images/math/b23b00a7478849245e3d63b024cf6684331fd3fa.png" alt="\chi(E)"/> values.</td>
 </tr>
 <tr class="row-even"><td>k</td>
-<td>array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values, on uniform grid.</td>
+<td>array of <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> values, on uniform grid.</td>
 </tr>
 <tr class="row-odd"><td>chi</td>
-<td>array of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> values, the EXAFS.</td>
+<td>array of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> values, the EXAFS.</td>
 </tr>
 <tr class="row-even"><td><em>delta_chi</em></td>
-<td>array of uncertainty in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</td>
+<td>array of uncertainty in <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</td>
 </tr>
 <tr class="row-odd"><td><em>delta_bkg</em></td>
-<td>array of uncertainty in <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>.</td>
+<td>array of uncertainty in <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/>.</td>
 </tr>
 <tr class="row-even"><td>autobk_details</td>
 <td>Group of arrays with autobk details.</td>
@@ -199,11 +213,11 @@ which the signal is ignored. Default = 1.</li>
 </table>
 </div></blockquote>
 <p>Here, the arrays <tt class="docutils literal"><span class="pre">group.k</span></tt>, <tt class="docutils literal"><span class="pre">group.chi</span></tt> will be the same length,
-giving <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> from 0 to a maximum k value set by <tt class="docutils literal"><span class="pre">kmax</span></tt> or
+giving <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> from 0 to a maximum k value set by <tt class="docutils literal"><span class="pre">kmax</span></tt> or
 the range of available data.  The arrays <tt class="docutils literal"><span class="pre">group.bkg</span></tt> and
 <tt class="docutils literal"><span class="pre">group.chie</span></tt> will correspond to the input <tt class="docutils literal"><span class="pre">energy</span></tt> array.</p>
 <p>The parameters <tt class="docutils literal"><span class="pre">e0</span></tt> and <tt class="docutils literal"><span class="pre">edge_step</span></tt> are needed to determine
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>, and can be specified here.  If they are not, but the
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>, and can be specified here.  If they are not, but the
 input <tt class="docutils literal"><span class="pre">group</span></tt> has attributes <tt class="docutils literal"><span class="pre">e0</span></tt> and <tt class="docutils literal"><span class="pre">edge_step</span></tt> -- say, from
 running <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a> -- those values will be used.  If values
 cannot be found in either place, they will be determined by calling
@@ -213,9 +227,9 @@ The <tt class="docutils literal"><span class="pre">pre_edge_kws</span></tt> argu
 parameters to pass to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>.</p>
 <p>If <tt class="docutils literal"><span class="pre">calc_uncertainties</span></tt> is set to <tt class="docutils literal"><span class="pre">True</span></tt>, the outputs
 <tt class="docutils literal"><span class="pre">group.delta_chi</span></tt> and <tt class="docutils literal"><span class="pre">group.delta_bkg</span></tt>, holding the uncertainties
-in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, respectively.  These
+in <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/>, respectively.  These
 calculations are relatively costly, and can take 20 times longer to
-determine <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> themselves.</p>
+determine <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> themselves.</p>
 <p>The <tt class="docutils literal"><span class="pre">group.autobk_details</span></tt> group will contain the following attributes:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -230,13 +244,13 @@ determine <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>spline_pars</td>
-<td>Parameters used for determining <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> spline.</td>
+<td>Parameters used for determining <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> spline.</td>
 </tr>
 <tr class="row-odd"><td>init_bkg</td>
-<td>Initial value for <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/></td>
+<td>Initial value for <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/></td>
 </tr>
 <tr class="row-even"><td>init_chi</td>
-<td>Initial value for <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></td>
+<td>Initial value for <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></td>
 </tr>
 <tr class="row-odd"><td>knots_e</td>
 <td>Spline knot energies</td>
@@ -257,36 +271,36 @@ determine <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d
 <h2>7.2.2. The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
 (see <span class="citation"><a class="reference internal" href="../biblio.html#citation-autobk">Newville, Livins, Yacoby, Rehr and Stern</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-autobk">10</a><span>]</span></span>), in which a spline function is matched to the
-low-<em>R</em> components of the resulting <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
-<p>For reference, <img class="math" src="../_images/math/397ee84affc2af1775d27f2a27804691b3cf0bb4.png" alt="k = \sqrt{2m_e (E-E_0)/\hbar^2}"/> is the wavenumber of
-the ejected photo-electron, where <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> is the absorption threshold
-energy (the 0 of photo-electron energy).  For <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> in units of
-<img class="math" src="../_images/math/7ef6061afb4bdae4ec1d72f80a680fb291f27a54.png" alt="\rm \AA^{-1}"/> and <img class="math" src="../_images/math/fa2fa899f0afb05d6837885523503a2d4df434f9.png" alt="E"/> in units of eV, <img class="math" src="../_images/math/1d86ba75a289156904dacf43fce747f88b09252a.png" alt="k \approx
+low-<em>R</em> components of the resulting <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</p>
+<p>For reference, <img class="math" src="../_images/math/a8b96ce6ccbb8c69a33bb6947e67ad100c0ae125.png" alt="k = \sqrt{2m_e (E-E_0)/\hbar^2}"/> is the wavenumber of
+the ejected photo-electron, where <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> is the absorption threshold
+energy (the 0 of photo-electron energy).  For <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> in units of
+<img class="math" src="../_images/math/8437d9c4b53d101aca651121dd9dbff3dccb653d.png" alt="\rm \AA^{-1}"/> and <img class="math" src="../_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/> in units of eV, <img class="math" src="../_images/math/d4945df1dc3d129fd98797233ceaeb144846a9d5.png" alt="k \approx
 \sqrt{(E-E_0)/3.81}"/>.  With this conversion of energy to wavenumber,
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> is defined from</p>
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> is defined from</p>
 <blockquote>
-<div><img class="math" src="../_images/math/4b7ef296e96bfdafdd517c90aaf88f18c9f2e1dc.png" alt="\chi(E) = \frac{\mu(E)-\mu_0(E)}{\Delta\mu}"/></div></blockquote>
-<p>where <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> represents the idealized x-ray absorption of a
+<div><img class="math" src="../_images/math/822311ac16957d0fd51d4cb6e032b5b28d602647.png" alt="\chi(E) = \frac{\mu(E)-\mu_0(E)}{\Delta\mu}"/></div></blockquote>
+<p>where <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> represents the idealized x-ray absorption of a
 bare atom, embedded in the molecular or solid environment, but without
 scattering of the outgoing photo-electron that gives rise to the EXAFS, and
-<img class="math" src="../_images/math/7d0e590a03ee2cb35204d1d883ae7a012e592ed6.png" alt="\Delta\mu"/> is the edge step in <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.</p>
-<p>The quantity <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> cannot be independently measured.  Instead,
-we empirically determine it here given the dxta for <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> by
+<img class="math" src="../_images/math/a2fca52d1e6efbd81e4103adcc975e3e49fd84c1.png" alt="\Delta\mu"/> is the edge step in <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>.</p>
+<p>The quantity <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> cannot be independently measured.  Instead,
+we empirically determine it here given the dxta for <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> by
 fitting a spline (a piece-polynomial function that is easily adjusted even
-while its smoothness is controlled) to <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.  An advantage to
+while its smoothness is controlled) to <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>.  An advantage to
 what could easily be described as an <em>ad hoc</em> approach is that the data for
-<img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> can include many systematic drifts and dependencies that are
+<img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> can include many systematic drifts and dependencies that are
 slowly varying with energy.</p>
-<p>The definition above normalizes to the edge step <img class="math" src="../_images/math/7d0e590a03ee2cb35204d1d883ae7a012e592ed6.png" alt="\Delta\mu"/>
-(<tt class="docutils literal"><span class="pre">edge_step</span></tt>) instead of the energy-dependent <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, as is
+<p>The definition above normalizes to the edge step <img class="math" src="../_images/math/a2fca52d1e6efbd81e4103adcc975e3e49fd84c1.png" alt="\Delta\mu"/>
+(<tt class="docutils literal"><span class="pre">edge_step</span></tt>) instead of the energy-dependent <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/>, as is
 often described in introductory texts on EXAFS.  The reason for this is
 essentially the same -- so that we do not need to carefully take care of
-slow energy drifts in the measured <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> or worry about having an
-absolute measure of <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>.</p>
+slow energy drifts in the measured <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> or worry about having an
+absolute measure of <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>.</p>
 <div class="section" id="and-spline-for">
-<h3>7.2.2.1. <img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
+<h3>7.2.2.1. <img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
 <p>A spline is a general mathematical function, and so using one to match
-<img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> that we will subtract from the same <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> could
+<img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> that we will subtract from the same <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> could
 easily match <em>too</em> well, and erase much of the data we're interested in.
 Therefore, we have to carefully consider two aspects:</p>
 <blockquote>
@@ -295,46 +309,46 @@ Therefore, we have to carefully consider two aspects:</p>
 <li>how flexible the spline can be.</li>
 </ol>
 </div></blockquote>
-<p>What we want is a <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> that removes the low frequency (low-<em>R</em>)
-portions of the <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> spectra, and recognizing this can tell us how
+<p>What we want is a <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> that removes the low frequency (low-<em>R</em>)
+portions of the <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/> spectra, and recognizing this can tell us how
 to determine both of these.</p>
 <p>First, since we know the EXAFS oscillations do not extend far below the
 near-neighbor distance and since atoms are essentially never closer than 1
-<img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, and generally more like 2 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, we can say that
-we want to remove the frequencies of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> below some distance,
-<img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/> (<tt class="docutils literal"><span class="pre">rbkg</span></tt>).  That is, we want the spline function to
-be adjusted so that the components of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/056c346f96c5e4f9f2caa7f30265682aeb07b410.png" alt="R_{\rm
-bkg}"/> are minimized.  We can use a default of 1 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>, and
+<img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>, and generally more like 2 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>, we can say that
+we want to remove the frequencies of <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/> below some distance,
+<img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/> (<tt class="docutils literal"><span class="pre">rbkg</span></tt>).  That is, we want the spline function to
+be adjusted so that the components of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/2a8ba5193e20ea72f6a429e748e9db4714272047.png" alt="R_{\rm
+bkg}"/> are minimized.  We can use a default of 1 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>, and
 recommend that the value be roughly half the expected near-neighbor
 distance.</p>
-<p>To do this, we create a spline function consisting of <img class="math" src="../_images/math/19c1c38620999cb84a2823fe276a79a645af36d2.png" alt="N_{\rm knots}"/>
+<p>To do this, we create a spline function consisting of <img class="math" src="../_images/math/21ebaffa9a2fe2db02db9a9bb407ee8d0c8f3cc5.png" alt="N_{\rm knots}"/>
 adjustable points (<em>knots</em> in the spline, where the second derivatives are
-allowed to change), evenly spaced in <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> (that is, quadratic in
+allowed to change), evenly spaced in <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> (that is, quadratic in
 energy).  We do a fit that adjusts the values of the function at each knot,
-computes <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> by simple spline interpolation, calculates
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>, does a Fourier transform to <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>, and then
-seeks to minimize the components of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/056c346f96c5e4f9f2caa7f30265682aeb07b410.png" alt="R_{\rm
+computes <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> by simple spline interpolation, calculates
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>, does a Fourier transform to <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>, and then
+seeks to minimize the components of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/2a8ba5193e20ea72f6a429e748e9db4714272047.png" alt="R_{\rm
 bkg}"/>.</p>
 <p>This leads to the second question of how flexible to make the spline is
 answered from basic signal processing through the <a class="reference external" href="http://en.wikipedia.org/wiki/Nyquist-Shannon_sampling_theorem">Nyquist-Shannon sampling
 theorem</a>,
 which tells us how many adjustable parameters to use for our spline:</p>
 <div class="math">
-<p><img src="../_images/math/c7607ee858ddcaadb7a8e3df60a2fd3f5145b04f.png" alt="N_{\rm knots}  =  1 + \frac{2R_{\rm bkg} \Delta k}{\pi}"/></p>
-</div><p>where <img class="math" src="../_images/math/83db992a1bf9c6721470cff232c7842530571adb.png" alt="\Delta k"/> is the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range of the data.  This value can
+<p><img src="../_images/math/aeaf4ffd0bc47b3fe2d1fef1d1c63901f9fb77fb.png" alt="N_{\rm knots}  =  1 + \frac{2R_{\rm bkg} \Delta k}{\pi}"/></p>
+</div><p>where <img class="math" src="../_images/math/62b512ca3f65a3e31f055fd8833e95675926c48e.png" alt="\Delta k"/> is the <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> range of the data.  This value can
 be over-ridden by specifing <tt class="docutils literal"><span class="pre">nknots</span></tt>, but this is strongly recommended
 against.</p>
 <p>In this way we satisfy both considerations above: limiting the number of
 knots prevents the spline from being able to follow the frequencies of
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> we care about most, and limiting the portion of the
-spectrum to be minimized to the very low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components, we do not
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> we care about most, and limiting the portion of the
+spectrum to be minimized to the very low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> components, we do not
 even try to match those frequencies.  Thus, we are ensured of a
-<img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> that only removes the low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components of
-<img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.</p>
+<img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> that only removes the low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> components of
+<img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/>.</p>
 </div>
 <div class="section" id="selecting-fourier-transform-parameters">
 <h3>7.2.2.2. Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
-<p>In order to determine <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/>, we must do a Fourier transform.
+<p>In order to determine <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/>, we must do a Fourier transform.
 These are discussed in more detail in the next section, but here we give
 the parameters affecting the Fourier transform used, and their default
 values.</p>
@@ -353,18 +367,18 @@ values.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>kmin</td>
-<td><img class="math" src="../_images/math/ecaca89fb930f0b0684b153246a898a30d027a7f.png" alt="k_{\rm min}"/></td>
+<td><img class="math" src="../_images/math/d7cd928e937217ad030d2dac9bb94cc685d087ce.png" alt="k_{\rm min}"/></td>
 <td><ol class="first last arabic simple" start="0">
 <li>should be below 1.0</li>
 </ol>
 </td>
 </tr>
 <tr class="row-odd"><td>kmax</td>
-<td><img class="math" src="../_images/math/f8408bbf95c2b54a312a8755ad9fb1ae4760c725.png" alt="k_{\rm max}"/></td>
-<td>highest <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value. Useful data range.</td>
+<td><img class="math" src="../_images/math/1271b3abefd485707f041bef82d7dfd7a92709ff.png" alt="k_{\rm max}"/></td>
+<td>highest <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> value. Useful data range.</td>
 </tr>
 <tr class="row-even"><td>kweight</td>
-<td><img class="math" src="../_images/math/fa21acf86126fa85b0458231fdf96e15ee44e3b9.png" alt="kw"/></td>
+<td><img class="math" src="../_images/math/aced3253e3d5b1ad4fcdf1c89478ab7ed4fdac6d.png" alt="kw"/></td>
 <td><ol class="first last arabic simple">
 <li>should be 0 or 1 (but not &gt; 2)</li>
 </ol>
@@ -389,58 +403,58 @@ values.</p>
 </td>
 </tr>
 <tr class="row-even"><td>kstep</td>
-<td><img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> step size</td>
+<td><img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> step size</td>
 <td>0.05.  No reason to change this.</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <p>The most important point is that the Fourier transform used to fit
-and visualize <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> is not necessarily the one to use here.  In
+and visualize <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> is not necessarily the one to use here.  In
 particular, the <tt class="docutils literal"><span class="pre">kweight</span></tt> parameter should be 0 or 1 here, as we want to
-emphasize the low-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> portion of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  The default
+emphasize the low-<img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> portion of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  The default
 parameter values for <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> are generally sufficient, and need only
 minor adjustments except in unusual cases.</p>
 </div>
 <div class="section" id="using-a-standard">
-<h3>7.2.2.3. Using a standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
-<p>We said above that we want to minimize the low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components of
-<img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>.  In principle, there should be some leakage of the first
-shell to fairly low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>.  This is especially noticeable for a short
-ligand (say, below 1.75 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/> or so) of a low-Z atom (notably, C,
+<h3>7.2.2.3. Using a standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
+<p>We said above that we want to minimize the low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> components of
+<img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/>.  In principle, there should be some leakage of the first
+shell to fairly low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>.  This is especially noticeable for a short
+ligand (say, below 1.75 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/> or so) of a low-Z atom (notably, C,
 N, and O).  Normally, this is not a serious problem, but it does point out
-that <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> might want to leave some first-shell leakage at
-low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>.</p>
-<p>To accout for this, you can proved a spectrum of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for a
+that <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> might want to leave some first-shell leakage at
+low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>.</p>
+<p>To accout for this, you can proved a spectrum of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> for a
 standard that is meant to be close to the spectrum being analyzed.  This is
 done by providing 2 arrays: <tt class="docutils literal"><span class="pre">k_std</span></tt> and <tt class="docutils literal"><span class="pre">chi_std</span></tt>, which need to be the
-same lenth.  By providing these, the best values for <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> will
+same lenth.  By providing these, the best values for <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> will
 be those that minimize the Fourier transorm of the difference of
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> for the data and standard.  This can be especially helpful
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> for the data and standard.  This can be especially helpful
 to give more consistent background for a set of related spectra.</p>
 </div>
 <div class="section" id="end-point-clamps-for-the-spline">
 <h3>7.2.2.4. End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
-<p>Because the spline is chosen to match the low-<img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> components of
-<img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>, the process does not even look at how the resulting
-<img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> looks.  This can lead to some unstable behavior at the
-end-points of the spline, causing <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to diverge at the ends.</p>
-<p>This can be remedied by adding <em>clamps</em> to the end-points of <img class="math" src="../_images/math/593e7d196e24fdd29e64f979a309c03a717d0e63.png" alt="chi(k)"/>
+<p>Because the spline is chosen to match the low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> components of
+<img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/>, the process does not even look at how the resulting
+<img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> looks.  This can lead to some unstable behavior at the
+end-points of the spline, causing <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to diverge at the ends.</p>
+<p>This can be remedied by adding <em>clamps</em> to the end-points of <img class="math" src="../_images/math/89ac5d3e2e3593b3bc80ef4e7de86d5eefb84cbe.png" alt="chi(k)"/>
 to the fit.  That is, a few points at the low- and high-ends of the
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> array are appended to the array to be minimized in the fit,
-which has the tendency to push the end-points of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to zero.</p>
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> array are appended to the array to be minimized in the fit,
+which has the tendency to push the end-points of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to zero.</p>
 <p>There are three parameters influencing these end-points clamps.  <tt class="docutils literal"><span class="pre">nclamp</span></tt>
-sets the number of data points of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> at the beginning and end
-of the <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> range to add to the fit.  <tt class="docutils literal"><span class="pre">clamp_lo</span></tt> sets the weighting
-factor applied to the first <tt class="docutils literal"><span class="pre">nclamp</span></tt> points for the low-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> end fo
+sets the number of data points of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> at the beginning and end
+of the <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> range to add to the fit.  <tt class="docutils literal"><span class="pre">clamp_lo</span></tt> sets the weighting
+factor applied to the first <tt class="docutils literal"><span class="pre">nclamp</span></tt> points for the low-<img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> end fo
 the data range, and <tt class="docutils literal"><span class="pre">clamp_hi</span></tt> sets the weighting factor applied to the
-last <tt class="docutils literal"><span class="pre">nclamp</span></tt> points at the high-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> end.</p>
+last <tt class="docutils literal"><span class="pre">nclamp</span></tt> points at the high-<img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> end.</p>
 <p>There is not an easy way to determine ahead of time what the clamp
 parameters will be.  Typically, <tt class="docutils literal"><span class="pre">nclamp</span></tt> need only be 1 to 5 data points
 (with 2 being the default).  Setting <tt class="docutils literal"><span class="pre">nclamp</span></tt> to 0 will remove the clamps
 completely.  Values for <tt class="docutils literal"><span class="pre">clamp_lo</span></tt> and <tt class="docutils literal"><span class="pre">clamp_hi</span></tt> are floating point
 numbers, and should range from about 1 (the default) to 10 or 20 for a very
-strong clamp that will almost certainly force <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to be 0 at
+strong clamp that will almost certainly force <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to be 0 at
 the end-points.</p>
 </div>
 <div class="section" id="recommendations">
@@ -451,14 +465,14 @@ order):</p>
 <blockquote>
 <div><p>0. <tt class="docutils literal"><span class="pre">rbkg</span></tt>:  This is the main parameter that sets how flaexible the
 spline function can be.</p>
-<p>1.  <tt class="docutils literal"><span class="pre">e0</span></tt>: It can be hard to know what <img class="math" src="../_images/math/8a52f40afedf1c8727d71b0ad5a7ea0a7119b088.png" alt="E_0"/> should be for any XAFS
-spectra.  As this sets the value of <img class="math" src="../_images/math/badf0ecd1ef8289387d8462393438c6e2710ff28.png" alt="k=0"/>, it will affect the
+<p>1.  <tt class="docutils literal"><span class="pre">e0</span></tt>: It can be hard to know what <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> should be for any XAFS
+spectra.  As this sets the value of <img class="math" src="../_images/math/d85fd3ecb4c7dd371fbf412352b67be347043fba.png" alt="k=0"/>, it will affect the
 location of the knots, and can have a profound affect on the results.  If
-you're unhappy with the <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> and <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>, playing with
+you're unhappy with the <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> and <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>, playing with
 the <tt class="docutils literal"><span class="pre">e0</span></tt> parameter.</p>
 <p>2. <tt class="docutils literal"><span class="pre">kweight</span></tt>: Increasing this emphasizes the fit at high <em>k</em>.  Trying
 both values of 0 and 1 is always a good idea.</p>
-<p>3. <tt class="docutils literal"><span class="pre">clamp_lo</span></tt> and <tt class="docutils literal"><span class="pre">clamp_hi</span></tt>: If <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/> swoops up or down at
+<p>3. <tt class="docutils literal"><span class="pre">clamp_lo</span></tt> and <tt class="docutils literal"><span class="pre">clamp_hi</span></tt>: If <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> swoops up or down at
 the endpoints too much, increasing these values can help greatly.</p>
 </div></blockquote>
 </div>
@@ -492,17 +506,17 @@ using all the default inputs would be:</p>
 <div class="figure compound align-center" id="fig_xafs2">
 <div style="width: 45%" class="subfigure align-center" id="fig-xafs2a">
 <a class="reference external image-reference" href="../_images/xafs_autobk1a.png"><img alt="../_images/xafs_autobk1a.png" src="../_images/xafs_autobk1a.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> Cu metal: <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> and background <img class="math" src="../_images/math/905fac9f91ef097f340d2ae836baab9d7d71ec64.png" alt="\mu_0(E)"/></p>
+<p class="caption"><strong>(a)</strong> Cu metal: <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> and background <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/></p>
 </div>
 <div style="width: 45%" class="subfigure align-center" id="fig-xafs2b">
 <a class="reference external image-reference" href="../_images/xafs_autobk1b.png"><img alt="../_images/xafs_autobk1b.png" src="../_images/xafs_autobk1b.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> resulting <img class="math" src="../_images/math/a6910fe3ac2a8ffc4835afb00e994ff980b8e7db.png" alt="k\chi(k)"/></p>
+<p class="caption"><strong>(b)</strong> resulting <img class="math" src="../_images/math/7a46f4c29d6538db26ad9b1acb6230da67a42164.png" alt="k\chi(k)"/></p>
 </div>
 <p class="caption"><strong>Figure 7.2:</strong> Example of simple usage of <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> for Cu metal.</p>
 </div><p id="fig_xafs2">Thus demonstrating that we can process data on Cu metal.</p>
 <p>For a slightly more challenging example, we try the As K-edge of scorodite
-(<img class="math" src="../_images/math/96a12d68b8a1356b5b1cd12360a019929955bc2e.png" alt="\rm FeAsO4 \cdot (nH_2O)"/>).  Here, we start by reading in data and
-constructing <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/>, then run <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>.  We take most of the
+(<img class="math" src="../_images/math/8921f2f8b68cfddb87443f88c264cbf5c9f99142.png" alt="\rm FeAsO4 \cdot (nH_2O)"/>).  Here, we start by reading in data and
+constructing <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>, then run <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>.  We take most of the
 default values for pararmeters, but pass explicit parameters such as
 <tt class="docutils literal"><span class="pre">nnorm</span></tt> to <a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a> using <tt class="docutils literal"><span class="pre">pre_edge_kws</span></tt>.  Setting these
 parameters is not critically important for this data set, and is mostly
@@ -536,14 +550,14 @@ here to demonstrate the method for passing arguments to <a class="reference inte
 <div style="width: 45%" class="subfigure" id="fig-xafs3b">
 <a class="reference external image-reference" href="../_images/xafs_autobk2b.png"><img alt="../_images/xafs_autobk2b.png" src="../_images/xafs_autobk2b.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.3:</strong> Example usage of <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> for <img class="math" src="../_images/math/96a12d68b8a1356b5b1cd12360a019929955bc2e.png" alt="\rm FeAsO4 \cdot (nH_2O)"/>.</p>
-</div><p id="fig-xafs3">A close examimation of <img class="math" src="../_images/math/403f455215c696d85b8ddfef049109aff50cc574.png" alt="k^2\chi(k)"/> suggests we might be able to do
+<p class="caption"><strong>Figure 7.3:</strong> Example usage of <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> for <img class="math" src="../_images/math/8921f2f8b68cfddb87443f88c264cbf5c9f99142.png" alt="\rm FeAsO4 \cdot (nH_2O)"/>.</p>
+</div><p id="fig-xafs3">A close examimation of <img class="math" src="../_images/math/ef96a6759ac01588fa6f595bec163ef4dcd06763.png" alt="k^2\chi(k)"/> suggests we might be able to do
 better, which brings us to the next section.</p>
 </div>
 <div class="section" id="adjusting-spline-clamps">
 <h3>7.2.3.2. Adjusting spline clamps<a class="headerlink" href="#adjusting-spline-clamps" title="Permalink to this headline">¶</a></h3>
 <p>For the scorodite example above, the XAFS diverges from 0 at the
-high-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> end of the spectra.  Playing with the spline clamps
+high-<img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> end of the spectra.  Playing with the spline clamps
 discussed above, we try a few options to study the effect of adding a
 clamp:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/xafs/doc_autobk3.lar</span>
@@ -578,17 +592,17 @@ clamp:</p>
 <p>results in the following comparison:</p>
 <div class="figure" id="xafs-fig4">
 <a class="reference external image-reference" href="../_images/xafs_autobk3.png"><img alt="../_images/xafs_autobk3.png" src="../_images/xafs_autobk3.png" style="width: 65%;" /></a>
-<p class="caption"><strong>Figure 7.4:</strong> Influence of spline clamps of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/></p>
+<p class="caption"><strong>Figure 7.4:</strong> Influence of spline clamps of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></p>
 </div>
 </div>
 <div class="section" id="id1">
-<h3>7.2.3.3. Using a Standard <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3>7.2.3.3. Using a Standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Since the EXAFS contribution from the first shell is not perfectly isolated
-in <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>, it can leak into portion of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> below
-<img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/>.  It may be desirable to not simply reduce the portion
-of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/dc6cfedd9591ec4a179fadc536d8ac7efd799f6a.png" alt="R_{\rm bkg}"/>, but to account for the
+in <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>, it can leak into portion of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> below
+<img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/>.  It may be desirable to not simply reduce the portion
+of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> below <img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/>, but to account for the
 expected leakage from the first shell.  To do this, you can provide a
-<em>standard</em> <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> spectrum that will simulate the first shell by
+<em>standard</em> <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> spectrum that will simulate the first shell by
 specify arrays for <cite>k_std</cite> and <cite>chi_std</cite> arrays to the <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>
 function.</p>
 <p>As an example:</p>
@@ -640,6 +654,12 @@ function.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="utilities.html" title="7.3. XAFS: Utility functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="preedge.html" title="7.1. XAFS: Pre-edge Subtraction and Normalization"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -650,12 +670,13 @@ function.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

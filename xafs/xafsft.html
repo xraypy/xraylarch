@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="7. XAFS Analysis" href="index.html" />
+    <link rel="next" title="7.5. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
+    <link rel="prev" title="7.3. XAFS: Utility functions" href="utilities.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="feffpaths.html" title="7.5. XAFS: Reading and using Feff Paths"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="utilities.html" title="7.3. XAFS: Utility functions"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -67,8 +75,8 @@
   <ul>
 <li><a class="reference internal" href="#">7.4. XAFS: Fourier Transforms for XAFS</a><ul>
 <li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">7.4.1. Overview of XAFS Fourier transforms</a></li>
-<li><a class="reference internal" href="#forward-xafs-fourier-transforms">7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)</a></li>
-<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)</a></li>
+<li><a class="reference internal" href="#forward-xafs-fourier-transforms">7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/657c5d69378805fef7d84d28a0d975683ffbe6b3.png" alt="k{\rightarrow}R"/>)</a></li>
+<li><a class="reference internal" href="#reverse-xafs-fourier-transforms">7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/50b2940168e58da9cd70ed1a4a1c3d7e6a0821d0.png" alt="R{\rightarrow}q"/>)</a></li>
 <li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">7.4.4. <tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
 <li><a class="reference internal" href="#catalog-of-fourier-transform-window">7.4.5. Catalog of Fourier transform window</a></li>
 <li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">7.4.6. Examples: Forward XAFS Fourier transforms</a></li>
@@ -77,6 +85,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="utilities.html"
+                        title="previous chapter">7.3. XAFS: Utility functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="feffpaths.html"
+                        title="next chapter">7.5. XAFS: Reading and using Feff Paths</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/xafsft.txt"
@@ -114,57 +128,57 @@ throughout the XAFS functionality of Larch.  For example, both
 the XAFS Fourier transform function described here.</p>
 <div class="section" id="overview-of-xafs-fourier-transforms">
 <h2>7.4.1. Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
-<p>The standard Fourier transform of a signal <img class="math" src="../_images/math/1411b4cdb90fcfd2f55c9c77320893b4b4d6d911.png" alt="f(t)"/> can be written as</p>
+<p>The standard Fourier transform of a signal <img class="math" src="../_images/math/31b0b8d2d28f8e1bf186d5a315a68b3fe08617ba.png" alt="f(t)"/> can be written as</p>
 <div class="math">
-<p><img src="../_images/math/1cfed1a7439bb0126593f6fc3852b91ad3b4a7ff.png" alt="\begin{eqnarray*}
+<p><img src="../_images/math/49948d64bfb0ce5399a0a4d3fd397cefac54ace7.png" alt="\begin{eqnarray*}
       {\tilde{f}}(\omega) &amp;=&amp; \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
     f(t) e^{-i{\omega}t} dt \\
     f(t) &amp;=&amp; \frac{1}{\sqrt{2\pi}} \int_{-\infty}^{\infty}
     {\tilde{f}}(\omega) e^{i{\omega}t} d{\omega} \\
 \end{eqnarray*}"/></p>
 </div><p>where the symmetric normalization is one of the more common choices of
-conventions.  This gives conjugate variables of <img class="math" src="../_images/math/54d7d48553f4d9e7ab418118607ea324cbfddfda.png" alt="\omega"/> and
-<img class="math" src="../_images/math/e0d2bf360290fd61d1c1557e763f2622363b3d35.png" alt="t"/>. Because XAFS goes as</p>
+conventions.  This gives conjugate variables of <img class="math" src="../_images/math/c7415c6919c2eb17b1ea36f0243079b59825ee89.png" alt="\omega"/> and
+<img class="math" src="../_images/math/ef9270877405055756d345facd044e4ab297f858.png" alt="t"/>. Because XAFS goes as</p>
 <div class="math">
-<p><img src="../_images/math/30bac55e7dd9e447f4a9bd4b7b908dc6b713004b.png" alt="\chi(k) \sim \sin[2kR + \delta(k)]"/></p>
-</div><p>the conjugate variables in XAFS are generally taken to be <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and
-<img class="math" src="../_images/math/0e86afd07eb8be7351058918c6ecae8e9d6eccb9.png" alt="2R"/>.  The normalization of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/> from a Fourier
-transform of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> is a matter of convention, but we follow the
-symmetric case above (with <img class="math" src="../_images/math/e0d2bf360290fd61d1c1557e763f2622363b3d35.png" alt="t"/> replaced by <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and
-<img class="math" src="../_images/math/54d7d48553f4d9e7ab418118607ea324cbfddfda.png" alt="\omega"/> replaced by <img class="math" src="../_images/math/0e86afd07eb8be7351058918c6ecae8e9d6eccb9.png" alt="2R"/>, and of course <img class="math" src="../_images/math/bb2c93730dbb48558bb3c4738c956c4e8f816437.png" alt="f"/> by
-<img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/>).</p>
+<p><img src="../_images/math/401e7ae2990ffc04b033be1f44cc3609af2c54f5.png" alt="\chi(k) \sim \sin[2kR + \delta(k)]"/></p>
+</div><p>the conjugate variables in XAFS are generally taken to be <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> and
+<img class="math" src="../_images/math/8caeb31798aa9df8c6993cfdb3c0c5edd433071d.png" alt="2R"/>.  The normalization of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/> from a Fourier
+transform of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> is a matter of convention, but we follow the
+symmetric case above (with <img class="math" src="../_images/math/ef9270877405055756d345facd044e4ab297f858.png" alt="t"/> replaced by <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> and
+<img class="math" src="../_images/math/c7415c6919c2eb17b1ea36f0243079b59825ee89.png" alt="\omega"/> replaced by <img class="math" src="../_images/math/8caeb31798aa9df8c6993cfdb3c0c5edd433071d.png" alt="2R"/>, and of course <img class="math" src="../_images/math/0001d02b63ede2fe3219e05a7cd09c82ae6298b6.png" alt="f"/> by
+<img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/>).</p>
 <p>But there are two more important issues to mention.  First, an XAFS Fourier
-transform multiplies <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> by a power of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>, <img class="math" src="../_images/math/67c554dfde776faf84eee88fb710170179f1b5a4.png" alt="k^n"/>
-and by a window function <img class="math" src="../_images/math/96353c36e52c43ad8175ee469239c4e6fcbe8230.png" alt="\Omega(k)"/> before doing the Fourier
-transform.  The power-law weighting allow the oscillations in <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> to
+transform multiplies <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> by a power of <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/>, <img class="math" src="../_images/math/585595002cc6a88bce500edbfc095ce92e4091de.png" alt="k^n"/>
+and by a window function <img class="math" src="../_images/math/19ee175593fd626963a98a790e4393928f2a2894.png" alt="\Omega(k)"/> before doing the Fourier
+transform.  The power-law weighting allow the oscillations in <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> to
 emphasize different portions of the spectra, or to give a uniform intensity
 to the oscillations.  The window function acts to smooth the resulting
 Fourier transform and remove ripple and ringing in it that would result
-from a sudden truncation of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> at the end of the data range.</p>
+from a sudden truncation of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> at the end of the data range.</p>
 <p>The second important issue is that the continuous Fourier transform
 described above is replaced by a discrete transform.  This better matches
-the discrete sampling of energy and <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values of the data, and
+the discrete sampling of energy and <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> values of the data, and
 allows Fast Fourier Transform techniques to be used.  It does change the
-definitions of the transforms used somewhat. First, the <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>
-data must be on <em>uniformly spaced</em> set of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values.  The default
-<img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> spacing used in Larch (including as output from <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>)
-is <img class="math" src="../_images/math/e013ddc448485ecd4281810511cd2a986b06855e.png" alt="\delta k"/> = 0.05 <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/>.  Second, the array size for
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> used in the Fourier transform should be a power of 2. The
-default used in Larch is <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> = 2048.   Together, these
-allow <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> data to 102.4 <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/>.  Of course, real
+definitions of the transforms used somewhat. First, the <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>
+data must be on <em>uniformly spaced</em> set of <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> values.  The default
+<img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> spacing used in Larch (including as output from <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>)
+is <img class="math" src="../_images/math/c975a8e7c33984d020b9b9e7a7f4127a37e4917c.png" alt="\delta k"/> = 0.05 <img class="math" src="../_images/math/65871a40620c98abfbe65647620ccb8be2536e22.png" alt="\rm\AA^{-1}"/>.  Second, the array size for
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> used in the Fourier transform should be a power of 2. The
+default used in Larch is <img class="math" src="../_images/math/f320e7e0f8c552a60d0e98c90a775b207fe552a1.png" alt="N_{\rm fft}"/> = 2048.   Together, these
+allow <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> data to 102.4 <img class="math" src="../_images/math/65871a40620c98abfbe65647620ccb8be2536e22.png" alt="\rm\AA^{-1}"/>.  Of course, real
 data doesn't extend that far, so the array to be transformed is
-<em>zero-padded</em> to the end of the range.  Since the spacing <img class="math" src="../_images/math/54a4250f367ce0b8542a9368e68ef0d4a575db8c.png" alt="\delta R"/>
-of the resulting discrete <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> is given as
-<img class="math" src="../_images/math/6aaa36141c92d3e6925d150ed77e7f22599b017e.png" alt="\pi/{(N_{\rm fft} \delta k )}"/>, the extended range and zero-padding
-will increase the density of points in <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>, smoothly
-interpolating the values.   For <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> = 2048 and
-<img class="math" src="../_images/math/e013ddc448485ecd4281810511cd2a986b06855e.png" alt="\delta k"/> =  0.05 <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/>, the <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> spacing is
-approximately <img class="math" src="../_images/math/54a4250f367ce0b8542a9368e68ef0d4a575db8c.png" alt="\delta R"/> =  0.0307 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>.</p>
-<p>For the discrete Fourier transforms with samples of <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> at the
-points <img class="math" src="../_images/math/875d70b055ab564f18ddfd7908dc2b5c49b5a56e.png" alt="k_n = n \, \delta k"/>, and samples of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> at the
-points <img class="math" src="../_images/math/9052cb2d0874b94841e2ea531f1220373074ebfb.png" alt="R_m = m \, \delta R"/>, the definitions become:</p>
+<em>zero-padded</em> to the end of the range.  Since the spacing <img class="math" src="../_images/math/78061a3043238a250c54cefdcadd77ff0a03c46b.png" alt="\delta R"/>
+of the resulting discrete <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> is given as
+<img class="math" src="../_images/math/7a47125471863833197684d7ea9e33757398d7ac.png" alt="\pi/{(N_{\rm fft} \delta k )}"/>, the extended range and zero-padding
+will increase the density of points in <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>, smoothly
+interpolating the values.   For <img class="math" src="../_images/math/f320e7e0f8c552a60d0e98c90a775b207fe552a1.png" alt="N_{\rm fft}"/> = 2048 and
+<img class="math" src="../_images/math/c975a8e7c33984d020b9b9e7a7f4127a37e4917c.png" alt="\delta k"/> =  0.05 <img class="math" src="../_images/math/65871a40620c98abfbe65647620ccb8be2536e22.png" alt="\rm\AA^{-1}"/>, the <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> spacing is
+approximately <img class="math" src="../_images/math/78061a3043238a250c54cefdcadd77ff0a03c46b.png" alt="\delta R"/> =  0.0307 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>.</p>
+<p>For the discrete Fourier transforms with samples of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> at the
+points <img class="math" src="../_images/math/1c8598cdfcf90b3f01ab4f24c1e459d28a3fa0de.png" alt="k_n = n \, \delta k"/>, and samples of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> at the
+points <img class="math" src="../_images/math/7494165d20beed7401cf36814fb9ec827d0487b1.png" alt="R_m = m \, \delta R"/>, the definitions become:</p>
 <div class="math">
-<p><img src="../_images/math/dcdae00c08825e44c992fc26fb762b726f9edaaa.png" alt="\begin{eqnarray*}
+<p><img src="../_images/math/b02ac83d2dd178b16f1912a7dac83fc1eda0d26e.png" alt="\begin{eqnarray*}
 \tilde\chi(R_m) &amp;=&amp; \frac{i \delta k}{\sqrt{\pi N_{\rm fft}}} \,
                     \sum_{n=1}^{N_{\rm fft}} \chi(k_n) \,
                     \Omega(k_n) \, k_n^w e^{2i\pi n m/N_{\rm fft}} \\
@@ -173,52 +187,52 @@ points <img class="math" src="../_images/math/9052cb2d0874b94841e2ea531f12203730
                     \Omega(R_m) \, e^{-2i\pi n m/N_{\rm fft}} \\
 \end{eqnarray*}"/></p>
 </div><p>These normalizations preserve the symmetry properties of the Fourier
-Transforms with conjugate variables <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> and <img class="math" src="../_images/math/0e86afd07eb8be7351058918c6ecae8e9d6eccb9.png" alt="2R"/>.
-Though the reverse transform converts the complex <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to the
-complex <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> on the same <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> spacing as the starting
-data, we often refer to the filtered <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> as <em>q</em> space.</p>
+Transforms with conjugate variables <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> and <img class="math" src="../_images/math/8caeb31798aa9df8c6993cfdb3c0c5edd433071d.png" alt="2R"/>.
+Though the reverse transform converts the complex <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> to the
+complex <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> on the same <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> spacing as the starting
+data, we often refer to the filtered <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> as <em>q</em> space.</p>
 <p>A final complication in using Fourier transforms for XAFS is that the
-measured <img class="math" src="../_images/math/adda5391fa04cf4b9e1bdc9b8bf51ddd5bec6977.png" alt="\mu(E)"/> and <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> are a strictly real values,
-while the Fourier transform inherently treats <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> and
-<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> as complex values. This leads to an ambiguity about how to
-construct the complex <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/>.  In many formal treatments,
+measured <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> and <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> are a strictly real values,
+while the Fourier transform inherently treats <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> and
+<img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> as complex values. This leads to an ambiguity about how to
+construct the complex <img class="math" src="../_images/math/b8e8014025eec7c673541231730a3287703b2c46.png" alt="\tilde\chi(k)"/>.  In many formal treatments,
 XAFS is written as the imaginary part of a complex function.  This might
-lead one to assume that constructing <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/> as <img class="math" src="../_images/math/f06449aa2e275ef24092dc27b917a9699a774d69.png" alt="0 +
+lead one to assume that constructing <img class="math" src="../_images/math/b8e8014025eec7c673541231730a3287703b2c46.png" alt="\tilde\chi(k)"/> as <img class="math" src="../_images/math/d96f444c60a986a72314eb1974bb9528ecb5c0ef.png" alt="0 +
 i\chi(k)"/> would be the natural choice.  For historical reasons, Larch uses
-the opposite convention, constructing <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/> as
-<img class="math" src="../_images/math/e2e79cd3f834c12d0f4b981ab5d9ad42dc051cd9.png" alt="\chi(k) + 0i"/>.   As we'll see below, you can easily change this
+the opposite convention, constructing <img class="math" src="../_images/math/b8e8014025eec7c673541231730a3287703b2c46.png" alt="\tilde\chi(k)"/> as
+<img class="math" src="../_images/math/9292817e3c41a49ad103c6b8078c8dc1d1f6a6e8.png" alt="\chi(k) + 0i"/>.   As we'll see below, you can easily change this
 convention.  The effect of this choice is minor unless one is
 concerned about the differences of the real and imaginary parts of
-<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> or one is intending to filter and back-transform the
-<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> and compare the filtered and unfiltered data.</p>
+<img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> or one is intending to filter and back-transform the
+<img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> and compare the filtered and unfiltered data.</p>
 </div>
 <div class="section" id="forward-xafs-fourier-transforms">
-<h2>7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/74a778df2be28afb0293f1bd3948fe7da53cf082.png" alt="k{\rightarrow}R"/>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
-<p>The forward Fourier transform converts <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>
+<h2>7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/657c5d69378805fef7d84d28a0d975683ffbe6b3.png" alt="k{\rightarrow}R"/>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<p>The forward Fourier transform converts <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>
 and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a> function.</p>
 <dl class="function">
 <dt id="_xafs.xftf">
 <tt class="descclassname">_xafs.</tt><tt class="descname">xftf</tt><big>(</big><em>k</em>, <em>chi</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.xftf" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a forward XAFS Fourier transform, from <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to
-<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>, using common XAFS conventions.</p>
+<dd><p>perform a forward XAFS Fourier transform, from <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to
+<img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>, using common XAFS conventions.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>k</strong> -- 1-d array of photo-electron wavenumber in <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/></li>
-<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/></li>
+<li><strong>k</strong> -- 1-d array of photo-electron wavenumber in <img class="math" src="../_images/math/65871a40620c98abfbe65647620ccb8be2536e22.png" alt="\rm\AA^{-1}"/></li>
+<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/></li>
 <li><strong>group</strong> -- output Group</li>
-<li><strong>rmax_out</strong> -- highest <em>R</em> for output data (10 <img class="math" src="../_images/math/4b6bdf76ce578daae9153facd099f9665714830d.png" alt="\rm\AA"/>)</li>
-<li><strong>kweight</strong> -- exponent for weighting spectra by <img class="math" src="../_images/math/351cfe295a9c1727c0af7a2d3e2cb31984cd439b.png" alt="k^{\rm kweight}"/></li>
+<li><strong>rmax_out</strong> -- highest <em>R</em> for output data (10 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>)</li>
+<li><strong>kweight</strong> -- exponent for weighting spectra by <img class="math" src="../_images/math/8a41e86bace6f3b84493de823ba6ffdf9ff54ddf.png" alt="k^{\rm kweight}"/></li>
 <li><strong>kmin</strong> -- starting <em>k</em> for FT Window</li>
 <li><strong>kmax</strong> -- ending <em>k</em> for FT Window</li>
 <li><strong>dk</strong> -- tapering parameter for FT Window</li>
 <li><strong>dk2</strong> -- second tapering parameter for FT Window</li>
 <li><strong>window</strong> -- name of window type</li>
-<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/f320e7e0f8c552a60d0e98c90a775b207fe552a1.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/4dec3117547724e16d9eccf961b238867d2a861c.png" alt="\delta{k}"/> (0.05).</li>
 </ul>
 </td>
 </tr>
@@ -241,25 +255,25 @@ encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xaf
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>kwin</td>
-<td>window <img class="math" src="../_images/math/96353c36e52c43ad8175ee469239c4e6fcbe8230.png" alt="\Omega(k)"/> (length of input chi(k)).</td>
+<td>window <img class="math" src="../_images/math/19ee175593fd626963a98a790e4393928f2a2894.png" alt="\Omega(k)"/> (length of input chi(k)).</td>
 </tr>
 <tr class="row-odd"><td>r</td>
-<td>uniform array of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>, out to <tt class="docutils literal"><span class="pre">rmax_out</span></tt>.</td>
+<td>uniform array of <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>, out to <tt class="docutils literal"><span class="pre">rmax_out</span></tt>.</td>
 </tr>
 <tr class="row-even"><td>chir</td>
-<td>complex array of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+<td>complex array of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
 </tr>
 <tr class="row-odd"><td>chir_mag</td>
-<td>magnitude of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+<td>magnitude of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
 </tr>
 <tr class="row-even"><td>chir_pha</td>
-<td>phase of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+<td>phase of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
 </tr>
 <tr class="row-odd"><td>chir_re</td>
-<td>real part of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+<td>real part of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
 </tr>
 <tr class="row-even"><td>chir_im</td>
-<td>imaginary part of <img class="math" src="../_images/math/addf6166115ffd93feb8be6dc7a575e5e6131611.png" alt="\tilde\chi(R)"/>.</td>
+<td>imaginary part of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
 </tr>
 </tbody>
 </table>
@@ -274,23 +288,23 @@ and <tt class="docutils literal"><span class="pre">chi</span></tt> data will be 
 <dl class="function">
 <dt id="_xafs.xftf_fast">
 <tt class="descclassname">_xafs.</tt><tt class="descname">xftf_fast</tt><big>(</big><em>chi</em>, <em>nfft=2048</em>, <em>kstep=0.05</em><big>)</big><a class="headerlink" href="#_xafs.xftf_fast" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a forward XAFS Fourier transform, from <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> to
-<img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>, using common XAFS conventions.  This version demands
+<dd><p>perform a forward XAFS Fourier transform, from <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to
+<img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>, using common XAFS conventions.  This version demands
 <tt class="docutils literal"><span class="pre">chi</span></tt> to include any weighting and windowing, and so to represent
-<img class="math" src="../_images/math/5033522b081001dc55c49c3543b97c7965e65710.png" alt="\chi(k)k^w\Omega(k)"/> on a uniform <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> grid. It returns
-the complex array of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>.</p>
+<img class="math" src="../_images/math/f76eddfe031f6ecb829d0ec8dd91fa9acfa0bc1b.png" alt="\chi(k)k^w\Omega(k)"/> on a uniform <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> grid. It returns
+the complex array of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/> to be transformed</li>
-<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/> to be transformed</li>
+<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/f320e7e0f8c552a60d0e98c90a775b207fe552a1.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/4dec3117547724e16d9eccf961b238867d2a861c.png" alt="\delta{k}"/> (0.05).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">complex <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">complex <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>.</p>
 </td>
 </tr>
 </tbody>
@@ -299,34 +313,34 @@ the complex array of <img class="math" src="../_images/math/ed15c000bb99f0b4faba
 
 </div>
 <div class="section" id="reverse-xafs-fourier-transforms">
-<h2>7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/355651533ada75aa6ca33a45d111bf5553d4301c.png" alt="R{\rightarrow}q"/>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
-<p>Reverse Fourier transforms convert <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> back to filtered
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  We refer to the filtered <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> space as <img class="math" src="../_images/math/0615acc3725de21025457e7d6f7694dab8e2f758.png" alt="q"/> to
-emphasize the distinction between the two.  The filtered <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/> is
-complex.  By convention, the real part of <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/> corresponds to
-the explicitly real <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
+<h2>7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/50b2940168e58da9cd70ed1a4a1c3d7e6a0821d0.png" alt="R{\rightarrow}q"/>)<a class="headerlink" href="#reverse-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
+<p>Reverse Fourier transforms convert <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> back to filtered
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  We refer to the filtered <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> space as <img class="math" src="../_images/math/23f1b45408e5b4130c0f940fcbfcec54492cbdcd.png" alt="q"/> to
+emphasize the distinction between the two.  The filtered <img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/> is
+complex.  By convention, the real part of <img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/> corresponds to
+the explicitly real <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</p>
 <dl class="function">
 <dt id="_xafs.xftr">
 <tt class="descclassname">_xafs.</tt><tt class="descname">xftr</tt><big>(</big><em>r</em>, <em>chir</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.xftr" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a reverse XAFS Fourier transform, from <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to
-<img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.</p>
+<dd><p>perform a reverse XAFS Fourier transform, from <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> to
+<img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/>.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>r</strong> -- 1-d array of distance.</li>
-<li><strong>chir</strong> -- 1-d array of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/></li>
+<li><strong>chir</strong> -- 1-d array of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/></li>
 <li><strong>group</strong> -- output Group</li>
-<li><strong>qmax_out</strong> -- highest <em>k</em> for output data (30 <img class="math" src="../_images/math/2659c8fc56e332af1fdff0d17e5b6d0078003d17.png" alt="\rm\AA^{-1}"/>)</li>
-<li><strong>rweight</strong> -- exponent for weighting spectra by <img class="math" src="../_images/math/7f7dde7e8077bca2262381d70233bdc21c0c05f7.png" alt="r^{\rm rweight}"/> (0)</li>
+<li><strong>qmax_out</strong> -- highest <em>k</em> for output data (30 <img class="math" src="../_images/math/65871a40620c98abfbe65647620ccb8be2536e22.png" alt="\rm\AA^{-1}"/>)</li>
+<li><strong>rweight</strong> -- exponent for weighting spectra by <img class="math" src="../_images/math/df7f0c48985b76e067634fa350cde8a4f837a77c.png" alt="r^{\rm rweight}"/> (0)</li>
 <li><strong>rmin</strong> -- starting <em>R</em> for FT Window</li>
 <li><strong>rmax</strong> -- ending <em>R</em> for FT Window</li>
 <li><strong>dr</strong> -- tapering parameter for FT Window</li>
 <li><strong>dr2</strong> -- second tapering parameter for FT Window</li>
 <li><strong>window</strong> -- name of window type</li>
-<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/f320e7e0f8c552a60d0e98c90a775b207fe552a1.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/4dec3117547724e16d9eccf961b238867d2a861c.png" alt="\delta{k}"/> (0.05).</li>
 </ul>
 </td>
 </tr>
@@ -349,34 +363,34 @@ the explicitly real <img class="math" src="../_images/math/bb12e6fe6361a7e793c32
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>rwin</td>
-<td>window <img class="math" src="../_images/math/3c29d523162251a32c706183e9c88a1d744cee65.png" alt="\Omega(R)"/> (length of input chi(R)).</td>
+<td>window <img class="math" src="../_images/math/0ec554843f4950745c1865b530ae121f3a0e87a7.png" alt="\Omega(R)"/> (length of input chi(R)).</td>
 </tr>
 <tr class="row-odd"><td>q</td>
-<td>uniform array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/>, out to <tt class="docutils literal"><span class="pre">qmax_out</span></tt>.</td>
+<td>uniform array of <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/>, out to <tt class="docutils literal"><span class="pre">qmax_out</span></tt>.</td>
 </tr>
 <tr class="row-even"><td>chiq</td>
-<td>complex array of <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/>.</td>
+<td>complex array of <img class="math" src="../_images/math/b8e8014025eec7c673541231730a3287703b2c46.png" alt="\tilde\chi(k)"/>.</td>
 </tr>
 <tr class="row-odd"><td>chiq_mag</td>
-<td>magnitude of <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/>.</td>
+<td>magnitude of <img class="math" src="../_images/math/b8e8014025eec7c673541231730a3287703b2c46.png" alt="\tilde\chi(k)"/>.</td>
 </tr>
 <tr class="row-even"><td>chiq_pha</td>
-<td>phase of <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/>.</td>
+<td>phase of <img class="math" src="../_images/math/b8e8014025eec7c673541231730a3287703b2c46.png" alt="\tilde\chi(k)"/>.</td>
 </tr>
 <tr class="row-odd"><td>chiq_re</td>
-<td>real part of <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/>.</td>
+<td>real part of <img class="math" src="../_images/math/b8e8014025eec7c673541231730a3287703b2c46.png" alt="\tilde\chi(k)"/>.</td>
 </tr>
 <tr class="row-even"><td>chiq_im</td>
-<td>imaginary part of <img class="math" src="../_images/math/75d0c399209160e54647ed1a585b4a3fd6c50db0.png" alt="\tilde\chi(k)"/>.</td>
+<td>imaginary part of <img class="math" src="../_images/math/b8e8014025eec7c673541231730a3287703b2c46.png" alt="\tilde\chi(k)"/>.</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <p>In analogy with <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>, it is expected that the input <tt class="docutils literal"><span class="pre">r</span></tt> be a
 uniformly spaced array of values starting a 0.</p>
-<p>The input <tt class="docutils literal"><span class="pre">chir</span></tt> array can be either the complex <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> array
+<p>The input <tt class="docutils literal"><span class="pre">chir</span></tt> array can be either the complex <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> array
 as output to <tt class="docutils literal"><span class="pre">Group.chir</span></tt> from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>, or one of the real or
-imaginary parts of the <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> as output to <tt class="docutils literal"><span class="pre">Group.chir_re</span></tt> or
+imaginary parts of the <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> as output to <tt class="docutils literal"><span class="pre">Group.chir_re</span></tt> or
 <tt class="docutils literal"><span class="pre">Group.chir_im</span></tt>.</p>
 <p>The FT window parameters are explained in more detail in the discussion of
 <a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><tt class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></tt></a>.</p>
@@ -385,23 +399,23 @@ imaginary parts of the <img class="math" src="../_images/math/ed15c000bb99f0b4fa
 <dl class="function">
 <dt id="_xafs.xftr_fast">
 <tt class="descclassname">_xafs.</tt><tt class="descname">xftr_fast</tt><big>(</big><em>chir</em>, <em>nfft=2048</em>, <em>kstep=0.05</em><big>)</big><a class="headerlink" href="#_xafs.xftr_fast" title="Permalink to this definition">¶</a></dt>
-<dd><p>perform a reverse XAFS Fourier transform, from <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to
-<img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>, using common XAFS conventions.  This version demands
-<tt class="docutils literal"><span class="pre">chir</span></tt> be  the complex <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> as created from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>.
-It returns the complex array of <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/> without putting any
+<dd><p>perform a reverse XAFS Fourier transform, from <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> to
+<img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/>, using common XAFS conventions.  This version demands
+<tt class="docutils literal"><span class="pre">chir</span></tt> be  the complex <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> as created from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>.
+It returns the complex array of <img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/> without putting any
 values into a group.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>chir</strong> -- 1-d array of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to be transformed</li>
-<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/182d1a26e1047e88dbb946be3bebe76d50f01a60.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/fbdfd51d57bb2c9ba22c27cbd408d65200d28f70.png" alt="\delta{k}"/> (0.05).</li>
+<li><strong>chir</strong> -- 1-d array of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> to be transformed</li>
+<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/f320e7e0f8c552a60d0e98c90a775b207fe552a1.png" alt="N_{\rm fft}"/> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/4dec3117547724e16d9eccf961b238867d2a861c.png" alt="\delta{k}"/> (0.05).</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">complex <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">complex <img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/>.</p>
 </td>
 </tr>
 </tbody>
@@ -491,23 +505,23 @@ convention that the windows taper up from 0 to 1 between <tt class="docutils lit
 <tt class="docutils literal"><span class="pre">xmax+dx2/2</span></tt>.</p>
 <p>The conventions for the Kaiser, Gaussian, and Sine window types is a bit
 more complicated, and is best given explicitly.  In the formulas below,
-<tt class="docutils literal"><span class="pre">dx</span></tt> written as <img class="math" src="../_images/math/953640113c8002037caa26af92570f9cb7d5773c.png" alt="dx"/> and <tt class="docutils literal"><span class="pre">dx2</span></tt> as <img class="math" src="../_images/math/ef7ae99d9c96a8db0e0ed595415b0698139f3093.png" alt="dx_2"/>.  We
-define <img class="math" src="../_images/math/78eee4650adaefc6dafa348b4daa6ac74364b6c2.png" alt="x_i = x_{\rm min} - dx/2"/>, <img class="math" src="../_images/math/51b03691de8732b1d38ac8d02f4535c067f292f1.png" alt="x_f = x_{\rm max} +
-dx_2/2"/>, and <img class="math" src="../_images/math/508cee5c6e8f4034e022e4a4cfe90a8294a459d1.png" alt="x_0 = (x_f + x_i)/2"/>, as the beginning, end, and
+<tt class="docutils literal"><span class="pre">dx</span></tt> written as <img class="math" src="../_images/math/479c792ffdb607cb2ff6f299163ada14633a17af.png" alt="dx"/> and <tt class="docutils literal"><span class="pre">dx2</span></tt> as <img class="math" src="../_images/math/ace4b18a9be5ddd504e6beae4802f9b72f73b6a3.png" alt="dx_2"/>.  We
+define <img class="math" src="../_images/math/ed92375e0bb6f8c1f0f8e785104dfd5acdf29705.png" alt="x_i = x_{\rm min} - dx/2"/>, <img class="math" src="../_images/math/e923ad30993b4fd4bbbf2742da5f2e6b7e54e576.png" alt="x_f = x_{\rm max} +
+dx_2/2"/>, and <img class="math" src="../_images/math/7e7fbb15670acedbb6b4f02f6c985a31102f0e12.png" alt="x_0 = (x_f + x_i)/2"/>, as the beginning, end, and
 center of the widows.  For the Gaussian window, the form is:</p>
 <div class="math">
-<p><img src="../_images/math/8996c67b6d5e0fbd0cbdaa36d75826115becaee5.png" alt="\Omega(x) = \exp{\bigl[ -\frac{(x - x_0)^2}{2{dx}^2}\bigr]}"/></p>
+<p><img src="../_images/math/386b3fd8a68e33a0b6719e9d9320b4e6401d889e.png" alt="\Omega(x) = \exp{\bigl[ -\frac{(x - x_0)^2}{2{dx}^2}\bigr]}"/></p>
 </div><p>The form for the Sine window is</p>
 <div class="math">
-<p><img src="../_images/math/8a459578a28dd26cc842a2f8d18eefc3ae64192e.png" alt="\Omega(x) = \sin{\bigl[ \frac{ \pi(x_f - x)}{x_f - x_i}\bigr]}"/></p>
-</div><p>between <img class="math" src="../_images/math/67bc6daa9d6b964201d6cef60cbeb1ac5fd26ead.png" alt="x_i"/>  and  <img class="math" src="../_images/math/67ada7f9d2a055fd6b1a64ebe5e53a566410af37.png" alt="x_f"/>, and 0 outside this range.
+<p><img src="../_images/math/01b1b64db58d91bbb639c470c76f01b0ddab3a0f.png" alt="\Omega(x) = \sin{\bigl[ \frac{ \pi(x_f - x)}{x_f - x_i}\bigr]}"/></p>
+</div><p>between <img class="math" src="../_images/math/33dfc32d00ebd5c5791c824010a155d9e5630b6f.png" alt="x_i"/>  and  <img class="math" src="../_images/math/b95e46a898a64eabef26b35141b05ec9793d3b1e.png" alt="x_f"/>, and 0 outside this range.
 The Kaiser-Bessel window is slightly more complicated:</p>
 <div class="math">
-<p><img src="../_images/math/585fa421c595e2d4c9242eebfe5d0fcd007c3995.png" alt="\begin{eqnarray*}
+<p><img src="../_images/math/e7918971d8dcf872477d27a75cf40cf9b1814269.png" alt="\begin{eqnarray*}
    a       &amp;=&amp; \sqrt{\max{\bigl[0, 1 - \frac{4(x-x_0)^2}{(x_f-x_i)^2} \bigr] }} \\
   \Omega(x) &amp;=&amp; \frac{i_0(a dx) - 1}{i_0(dx) - 1} \\
 \end{eqnarray*}"/></p>
-</div><p>where <img class="math" src="../_images/math/1b5590d608ffe24233396eb2e4f8ca142ae42963.png" alt="i_0"/> is the modified Bessel function of order 0.</p>
+</div><p>where <img class="math" src="../_images/math/ece62f2132aec3dbcda9d22e30df65ea1fc7c974.png" alt="i_0"/> is the modified Bessel function of order 0.</p>
 </div>
 <div class="section" id="catalog-of-fourier-transform-window">
 <h2>7.4.5. Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
@@ -524,7 +538,7 @@ Welch windows, and illustrated in the two following figures.</p>
 </div>
 <p class="caption"><strong>Figure 7.5:</strong> Fourier Transform window examples and illustration of parameter meaning
 for the Hanning, Parzen, and Welch windows.  Note that
-<img class="math" src="../_images/math/2ae1ad42e768145863b64ec04691fd7ba83f3c31.png" alt="\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5"/>, and that
+<img class="math" src="../_images/math/0e3a1e94317299f3846923fb65b491e957f034c0.png" alt="\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5"/>, and that
 the meaning of <tt class="docutils literal"><span class="pre">dx</span></tt> is to control the taper over which the window
 changes from 0 to 1.  Here, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</p>
 </div><p id="fig-xafsft1">Some more window functions:</p>
@@ -563,8 +577,8 @@ a closer comparison to a Gaussian window is made.</p>
 <div class="section" id="examples-forward-xafs-fourier-transforms">
 <span id="fig-xafsft3"></span><h2>7.4.6. Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>Now we show some example Fourier transforms, illustrating the real and
-imaginary parts of the <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> as well as the magnitude, the effect
-of different windows types, and Fourier filtering to <img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.  We
+imaginary parts of the <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> as well as the magnitude, the effect
+of different windows types, and Fourier filtering to <img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/>.  We
 use a single XAFS dataset from FeO for all these examples, with a
 well-separated first and second shell.  The full scripts to generate the
 figures shown here are included in the <em>examples/xafs/</em> folder.</p>
@@ -623,7 +637,7 @@ window types:</p>
 transforms.</p>
 </div><p id="fig-xafsft_wins">We now turn our attention to the different components of the Fourier
 transform.  As above, it is most common to plot the magnitude of the
-Fourier transform.  But, as the transformed <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> is complex, it
+Fourier transform.  But, as the transformed <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> is complex, it
 can be instructive to plot the real and imaginary components, as shown
 below:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">newplot</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">r</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;chir_mag&#39;</span><span class="p">,</span>
@@ -644,12 +658,12 @@ imaginary components are used, not simply the magnitude.</p>
 </div>
 <div class="section" id="examples-reverse-xafs-fourier-transforms-fourier-filtering">
 <h2>7.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering<a class="headerlink" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering" title="Permalink to this headline">¶</a></h2>
-<p>A reverse Fourier transform will convert data from <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> to
-<img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.  This allows a limited range of frequencies (distances) to
-be isolated and turned back into a <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> spectrum.  Here, we show
-two different <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> windows to filter either just the first shell of
+<p>A reverse Fourier transform will convert data from <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> to
+<img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/>.  This allows a limited range of frequencies (distances) to
+be isolated and turned back into a <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> spectrum.  Here, we show
+two different <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> windows to filter either just the first shell of
 the spectra, or the first two shells, and compare the resulting filtered
-<img class="math" src="../_images/math/cbc9515317140e14d0f369a98cb3a53cc2c3dd02.png" alt="\chi(q)"/>.</p>
+<img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/>.</p>
 <div class="figure compound align-center" id="fig_xafsft_filter">
 <div style="width: 45%" class="subfigure" id="fig-xafsft-filtera">
 <a class="reference external image-reference" href="../_images/xft_example6.png"><img alt="../_images/xft_example6.png" src="../_images/xft_example6.png" style="width: 100%;" /></a>
@@ -678,6 +692,12 @@ array.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="feffpaths.html" title="7.5. XAFS: Reading and using Feff Paths"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="utilities.html" title="7.3. XAFS: Utility functions"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -688,12 +708,13 @@ array.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

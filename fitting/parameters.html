@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="6.3. minimize() and Objective Functions" href="minimize.html" />
+    <link rel="prev" title="6.1. Fitting Overview" href="overview.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="minimize.html" title="6.3. minimize() and Objective Functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="6.1. Fitting Overview"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -73,6 +81,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="overview.html"
+                        title="previous chapter">6.1. Fitting Overview</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="minimize.html"
+                        title="next chapter">6.3. <tt class="docutils literal"><span class="pre">minimize()</span></tt> and Objective Functions</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/parameters.txt"
@@ -117,11 +131,12 @@ course -- this is what will happen during a fit -- but other attributes can
 be set to help determine its value too.  In most cases, a Parameter can be
 used as a floating point number, and its value attribute will be used.
 Thus:</p>
-<div class="highlight-python"><pre>larch&gt; x = param(10)
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; x = param(10)
 larch&gt; print x
 param(10, vary=False)
 larch&gt; print x+2
-12</pre>
+12
+</pre></div>
 </div>
 <p>To create a Parameter, use the <a class="reference internal" href="#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">param()</span></tt></a> function, which takes a value
 as its first argument, and a few optional keyword arguments to control
@@ -360,6 +375,12 @@ propagating errors.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="minimize.html" title="6.3. minimize() and Objective Functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="overview.html" title="6.1. Fitting Overview"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -370,12 +391,13 @@ propagating errors.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>

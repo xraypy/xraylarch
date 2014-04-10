@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -26,7 +24,10 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" /> 
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="7. XAFS Analysis" href="index.html" />
+    <link rel="next" title="7.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
+    <link rel="prev" title="7.2. XAFS: Post-edge Background Subtraction" href="autobk.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -47,6 +48,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
+             accesskey="P">previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -57,7 +64,8 @@
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -72,6 +80,12 @@
 </li>
 </ul>
 
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="autobk.html"
+                        title="previous chapter">7.2. XAFS: Post-edge Background Subtraction</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="xafsft.html"
+                        title="next chapter">7.4. XAFS: Fourier Transforms for XAFS</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/utilities.txt"
@@ -107,22 +121,22 @@ the previous sections.  We will list them here.</p>
 <dl class="function">
 <dt id="_xafs.etok">
 <tt class="descclassname">_xafs.</tt><tt class="descname">etok</tt><big>(</big><em>energies</em><big>)</big><a class="headerlink" href="#_xafs.etok" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert photo-electron energy in eV to wavenumber in <img class="math" src="../_images/math/b46896de215dd1069af5248990c374e59733d11b.png" alt="\AA^{-1}"/>.
+<dd><p>Convert photo-electron energy in eV to wavenumber in <img class="math" src="../_images/math/a9a5387c4e822040389d9d44578721dbdb911f7e.png" alt="\AA^{-1}"/>.
 energies can be a single number or array of numbers.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_xafs.ktoe">
 <tt class="descclassname">_xafs.</tt><tt class="descname">ktoe</tt><big>(</big><em>wavenumbers</em><big>)</big><a class="headerlink" href="#_xafs.ktoe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert photo-electron wavenumber in <img class="math" src="../_images/math/b46896de215dd1069af5248990c374e59733d11b.png" alt="\AA^{-1}"/> ot energy in eV.
+<dd><p>Convert photo-electron wavenumber in <img class="math" src="../_images/math/a9a5387c4e822040389d9d44578721dbdb911f7e.png" alt="\AA^{-1}"/> ot energy in eV.
 wavenumber can be a single number or array of numbers.</p>
 </dd></dl>
 
-<p>An example use would be to print out a table of energies and <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> values:</p>
-<div class="highlight-python"><pre>larch&gt; kvals = linspace(0, 25, 26)
+<p>An example use would be to print out a table of energies and <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> values:</p>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; kvals = linspace(0, 25, 26)
 larch&gt; evals = ktoe(kvals)
 larch&gt; for k,e in zip(kvals, evals)):
-larch&gt;      print " %5.1f 1/Ang -&gt;  %8.2f eV" %(k , e)
+larch&gt;      print &quot; %5.1f 1/Ang -&gt;  %8.2f eV&quot; %(k , e)
 larch&gt; endfor
    0.0 1/Ang -&gt;      0.00 eV
    1.0 1/Ang -&gt;      3.81 eV
@@ -149,7 +163,8 @@ larch&gt; endfor
   22.0 1/Ang -&gt;   1844.03 eV
   23.0 1/Ang -&gt;   2015.48 eV
   24.0 1/Ang -&gt;   2194.55 eV
-  25.0 1/Ang -&gt;   2381.24 eV</pre>
+  25.0 1/Ang -&gt;   2381.24 eV
+</pre></div>
 </div>
 </div>
 <div class="section" id="the-estimate-noise-function">
@@ -157,17 +172,17 @@ larch&gt; endfor
 <dl class="function">
 <dt id="_xafs.estimate_noise">
 <tt class="descclassname">_xafs.</tt><tt class="descname">estimate_noise</tt><big>(</big><em>k</em>, <em>chi</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><big>)</big><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Automatically estimate the noise level in a <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> spectrum.</p>
+<dd><p>Automatically estimate the noise level in a <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>k</strong> -- 1-d array of <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/></li>
-<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/6dcb9b88aaa5f14312835145edf06fb2d0823c29.png" alt="\chi"/></li>
+<li><strong>k</strong> -- 1-d array of <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/></li>
+<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/></li>
 <li><strong>group</strong> -- output group.</li>
-<li><strong>rmin</strong> -- minimum <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> value for noise estimate.</li>
-<li><strong>rmax</strong> -- maximum <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/> value for noise estimate.</li>
+<li><strong>rmin</strong> -- minimum <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> value for noise estimate.</li>
+<li><strong>rmax</strong> -- maximum <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> value for noise estimate.</li>
 <li><strong>kweight</strong> -- exponent for weighting spectra by k**kweight [1]</li>
 <li><strong>kmin</strong> -- starting k for FT Window [0]</li>
 <li><strong>kmax</strong> -- ending k for FT Window  [20]</li>
@@ -198,35 +213,35 @@ larch&gt; endfor
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>epsilon_k</td>
-<td>estimated noise level in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</td>
+<td>estimated noise level in <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</td>
 </tr>
 <tr class="row-odd"><td>epsilon_r</td>
-<td>estimated noise level in <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/>.</td>
+<td>estimated noise level in <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>.</td>
 </tr>
 <tr class="row-even"><td>kmax_suggest</td>
-<td>suggested highest <img class="math" src="../_images/math/8c325612684d41304b9751c175df7bcc0f61f64f.png" alt="k"/> value for which <img class="math" src="../_images/math/2d2f456494a5b1e4cdd8800dcc50179a91930194.png" alt="|\chi(k)| &gt; \epsilon_k"/></td>
+<td>suggested highest <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> value for which <img class="math" src="../_images/math/10e9e3936e884fcf50cbe5306ec844cc5900e0eb.png" alt="|\chi(k)| &gt; \epsilon_k"/></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 </dd></dl>
 
-<p>This method uses the high-R portion of <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> (between <strong>rmin</strong>
-and <strong>rmax</strong>) as a measure of the noise level in the <img class="math" src="../_images/math/ed15c000bb99f0b4fabad9eb23e2d7089bc35895.png" alt="\chi(R)"/> data
+<p>This method uses the high-R portion of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> (between <strong>rmin</strong>
+and <strong>rmax</strong>) as a measure of the noise level in the <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> data
 and uses Parseval's theorem to convert this noise level to that in
-<img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.  This method implicitly assumes that there is no signal in
+<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  This method implicitly assumes that there is no signal in
 the high-R portion of the spectrum, and that the noise in the spectrum is
-&quot;white&quot; (independent of <img class="math" src="../_images/math/eff43e84f8a3bcf7b6965f0a3248bc4d3a9d0cd4.png" alt="R"/>) .  Each of these assumptions can be
+&quot;white&quot; (independent of <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>) .  Each of these assumptions can be
 legitimately questioned.  Then again, making the assertion that these
 assumptions are invalid and disregarding the estimated noise level here
 would require knowledge of the noise in an XAFS spectrum that most users do
 not have.  At the very least, this estimate should be be interpreted as a
-minimal estimate of the noise level in <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/>.</p>
+minimal estimate of the noise level in <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</p>
 <p>The estimate for the output value <strong>kmax_suggest</strong> has a tendency to be
-pessimistic in how far out the <img class="math" src="../_images/math/bb12e6fe6361a7e793c32820d5b6f2d83e1511d2.png" alt="\chi(k)"/> data goes before being
+pessimistic in how far out the <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> data goes before being
 dominated by noise, but has the advantage of being an impartial measure of
 data quality. It is particularly pessimistic for extremely good data.  Then
-again, considering that the estimate for <img class="math" src="../_images/math/eaf4418fbe935c15a606516d8f55dc380cd8e822.png" alt="\epsilon"/> is probably too
+again, considering that the estimate for <img class="math" src="../_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/> is probably too
 small, the estimate may not be that bad.</p>
 </div>
 </div>
@@ -243,6 +258,12 @@ small, the estimate may not be that bad.</p>
         <li class="right" style="margin-right: 10px">
           <a href="../genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
+             >previous</a> |</li>
    <li>[&nbsp; <a href="../contents.html">contents</a>|&nbsp;</li>
    <li><a href="../downloads/index.html">downloads</a>|&nbsp;</li>
    <li><a href="../tutorial/index.html">tutorial</a>|&nbsp;</li>
@@ -253,12 +274,13 @@ small, the estimate may not be that bad.</p>
    <li><a href="../xray/index.html">Xray Data</a>|&nbsp;</li>
    <li><a href="../xrf/index.html">XRF</a>|&nbsp;</li>
    <li><a href="../devel/index.html">devel</a> &nbsp;]</li>
- 
+
+          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
     </div>
   </body>
 </html>
