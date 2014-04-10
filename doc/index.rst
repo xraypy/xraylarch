@@ -42,3 +42,17 @@ all of the Ifeffit package), has some support for visualizing and analyzing
 XRF maps and spectra, and has many extra tools for X-ray spectral analysis,
 data handling, and general-purpose data modeling.
 
+.. toctree::
+   :maxdepth: 1
+
+   downloads/index.rst
+   overview/index.rst
+   tutorial/index.rst
+   data/index.rst
+   plotting/index.rst
+   fitting/index.rst
+   xafs/index.rst
+   xray/index.rst
+   xrf/index.rst
+   devel/index.rst
+
