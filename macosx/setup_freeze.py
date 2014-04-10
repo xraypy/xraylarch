@@ -23,10 +23,12 @@ netcdf_open = netcdf.netcdf_file
 import wxmplot
 from wxmplot.plotframe import PlotFrame
 import larch
-
-import Image
+import PIL as Image
 import epics
 import Carbon
+import h5py
+
+print 'Found all Imports'
 
 libca = epics.ca.initialize_libca()
 mpl_data_files = matplotlib.get_py2exe_datafiles()
@@ -53,8 +55,9 @@ DATA_FILES = []
 
 exe_opts = {# 'packages': ['wx', 'numpy','sqlalchemy'],
             'includes': ['Carbon', 'Carbon.Appearance', 'ConfigParser',
-                         'Image', 'ctypes', 'epics', 'epics.devices',
-                         'fpformat', 'h5py', 'h5py._objects',
+                         'PIL', 'ctypes', 'epics', 'epics.devices',
+                         'fpformat', 'h5py',
+                         'h5py._objects',
                          'h5py._proxy', 'h5py.defs', 'h5py.utils',
                          'matplotlib', 'numpy', 'scipy',
                          'scipy.constants', 'scipy.fftpack',

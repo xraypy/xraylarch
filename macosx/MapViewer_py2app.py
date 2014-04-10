@@ -19,14 +19,14 @@ from scipy.sparse.csgraph import _validation
 from  scipy.io import netcdf
 netcdf_open = netcdf.netcdf_file
 
-import Image
+import PIL as Image
 import epics
 import Carbon
 
 libca = epics.ca.initialize_libca()
 mpl_data_files = matplotlib.get_py2exe_datafiles()
 
-APP = '../bin/GSE_MapViewer'
+APP = 'GSE_MapViewer.py'
 ICONFILE = 'GSEMap.icns'
 
 libca = epics.ca.initialize_libca()
@@ -55,7 +55,8 @@ dll_files = [("larch/dlls/darwin/",
 DATA_FILES = []
 
 OPTIONS = {'includes': ['ConfigParser', 'Image', 'ctypes', 'epics',
-                        'epics.devices', 'fpformat', 'h5py',
+                        'epics.devices', 'fpformat', 'h5py', 'h5py.h5ac',
+                        'h5py.h5ac',
                         'h5py._objects', 'h5py._proxy', 'h5py.defs',
                         'h5py.utils', 'matplotlib', 'numpy', 'scipy',
                         'scipy.constants', 'scipy.fftpack',
