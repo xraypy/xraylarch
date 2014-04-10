@@ -88,7 +88,8 @@ class DTCorrectFrame(wx.Frame):
         
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
-         
+            mdir, p = os.path.split(path)
+            os.chdir(mdir)
             roiname = self.roi_wid.GetValue().strip()
             if len(roiname) < 1: 
                 Popup(self, 
@@ -104,8 +105,8 @@ class DTCorrectFrame(wx.Frame):
                         "could not create directory")
                     return
             for fname in dlg.GetFilenames():
-                print 'dt correct ', roiname, fname
-                gsescan_deadtime_correct(fname, roiname, subdir=dirname)
+                gsescan_deadtime_correct(fname, roiname, 
+                                         subdir=dirname, _larch=self.larch)
 
     def createMainPanel(self):
         panel = wx.Panel(self)

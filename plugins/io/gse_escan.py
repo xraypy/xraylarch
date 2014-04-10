@@ -1003,10 +1003,15 @@ GSE_header_BMD = ['# XDI/1.0  GSE/1.0',
              '# Detectors.ifluor:  Ge SSD detector, XIA xMAP, 12 elements']
 
              
-def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected'):
+def iso8601_time(ts):
+    tzone = '-%2.2i:00' % (time.timezone/3600)
+    s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
+    return "%s%s" % (s, tzone)
+             
+def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=None):
     """convert GSE ESCAN fluorescence XAFS scans to dead time corrected files"""
     try:
-       sg = read_gsescan(fname)
+       sg = gsescan_group(fname, _larch=_larch)
     except:
       print('%s is not a valid ESCAN file' % fname)
       return
@@ -1070,7 +1075,7 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected'):
        fout = open(ofile, 'w')
        fout.write("\n".join(buff))
        fout.close()
-       print("wrote  %s  (npts=%i, channel='%s')" % (ofile, npts, channelname))
+       print("wrote %s, npts=%i, channel='%s'" % (ofile, npts, channelname))
     except: 
        print("could not open / write to output file %s" % ofile)
 
