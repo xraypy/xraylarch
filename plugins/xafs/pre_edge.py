@@ -49,7 +49,7 @@ def find_e0(energy, mu=None, group=None, _larch=None):
                                          fcn_name='find_e0')
 
     energy = remove_dups(energy)
-    dmu = np.diff(mu)/np.diff(energy)
+    dmu = np.gradient(mu)/np.gradient(energy)
     # find points of high derivative
     high_deriv_pts = np.where(dmu >  max(dmu)*0.05)[0]
     idmu_max, dmu_max = 0, 0
@@ -59,7 +59,7 @@ def find_e0(energy, mu=None, group=None, _larch=None):
             (i-1 in high_deriv_pts)):
             idmu_max, dmu_max = i, dmu[i]
 
-    e0 = energy[idmu_max+1]
+    e0 = energy[idmu_max]
     group = set_xafsGroup(group, _larch=_larch)
     group.e0 = e0
     return e0
