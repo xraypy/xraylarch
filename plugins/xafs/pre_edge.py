@@ -105,6 +105,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
         flat        flattened, normalized mu(E)
         pre_edge    determined pre-edge curve
         post_edge   determined post-edge, normalization curve
+        dmude       derivative of mu(E)
 
     (if the output group is None, _sys.xafsGroup will be written to)
 
@@ -199,6 +200,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     group.e0 = e0
     group.norm = norm
     group.flat = flat
+    group.dmude = np.gradient(mu)/np.gradient(energy)
     group.nvict = nvict
     group.nnorm = nnorm
     group.norm1 = norm1
