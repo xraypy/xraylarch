@@ -372,7 +372,6 @@ class LarchFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,event=None):
-        print( 'Close ')
         try:
             self.Hide()
             self.input.SaveHistory()
