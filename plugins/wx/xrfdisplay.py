@@ -29,14 +29,14 @@ try:
 except:
     pass
 
-import larch
+from larch import Interpreter, use_plugin_path
 
-larch.use_plugin_path('math')
+use_plugin_path('math')
 from mathutils import index_of
 
-larch.use_plugin_path('xrf')
-larch.use_plugin_path('xray')
-larch.use_plugin_path('wx')
+use_plugin_path('xrf')
+use_plugin_path('xray')
+use_plugin_path('wx')
 
 
 from wxutils import (SimpleText, EditableListBox, Font,
@@ -109,6 +109,8 @@ class XRFDisplayFrame(wx.Frame):
         self.title = title
         self.plotframe = None
         self.larch = _larch
+        if self.larch is None:
+            self.init_larch()
         self._mcagroup = self.larch.symtable.new_group('_mcas')
         self.exit_callback = exit_callback
         self.roi_patch = None
@@ -375,8 +377,15 @@ class XRFDisplayFrame(wx.Frame):
 
         msizer.Add(self.panel, 1, style, 1)
         pack(self, msizer)
+        wx.CallAfter(self.init_larch)
         self.set_roilist(mca=None)
 
+    def init_larch(self):
+        if self.larch is None:
+            self.larch = Interpreter()
+        self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        self.larch.symtable.set_symbol('_sys.wx.parent', self)
+        
 
     def onZoomIn(self, event=None):
         emin, emax = self.panel.axes.get_xlim()
@@ -938,7 +947,7 @@ class XRFDisplayFrame(wx.Frame):
                             defaultDir=os.getcwd(),
                             wildcard=FILE_WILDCARDS,
                             style=wx.OPEN)
-        path, read = None, False
+        path, re1ad = None, False
         if dlg.ShowModal() == wx.ID_OK:
             read = True
             path = dlg.GetPath().replace('\\', '/')
@@ -965,7 +974,6 @@ class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
         frame = XRFDisplayFrame() #
         frame.Show()
         self.SetTopWindow(frame)
-        self.ShowInspectionTool()
         return True
 
 if __name__ == "__main__":
