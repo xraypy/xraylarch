@@ -6,6 +6,8 @@ import os
 import time
 import shutil
 import numpy as np
+np.seterr(all='ignore')
+
 from random import randrange
 from functools import partial
 from datetime import timedelta
@@ -54,7 +56,7 @@ FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 
-PRE_OPS = ('', 'log', '-log', 'deriv', '-deriv', 'deriv(log', 'deriv(-log')
+PRE_OPS = ('', 'log', '-log')
 ARR_OPS = ('+', '-', '*', '/')
 
 SCANGROUP = '_scan'
@@ -83,7 +85,7 @@ class EditColumnFrame(wx.Frame) :
         self.larch = parent.larch
         self.lgroup = parent.lgroup
 
-        message = "Edit Column Labels for %s" % parent.filename
+        message = "Edit Column Labels for %s" % self.lgroup.filename
 
         wx.Frame.__init__(self, None, -1, 'Edit Column Labels',
                           style=FRAMESTYLE)
@@ -92,8 +94,7 @@ class EditColumnFrame(wx.Frame) :
         self.SetFont(Font(10))
         sizer = wx.GridBagSizer(10, 5)
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((FWID, 550))
-
+        self.SetMinSize((600, 750))
         self.colors = GUIColors()
 
         # title row
@@ -141,7 +142,9 @@ class EditColumnFrame(wx.Frame) :
         fsizer = wx.BoxSizer(wx.VERTICAL)
         self.filecontents = wx.StaticText(fpanel)
         try:
-            text = open(self.lgroup.filename, 'r').read()
+            m = open(self.lgroup.filename, 'r')
+            text = m.read()
+            m.close()
         except:
             text = "The file '%s'\n was not found" % self.lgroup.filename
         self.filecontents.SetLabel(text)
@@ -150,16 +153,13 @@ class EditColumnFrame(wx.Frame) :
 
         pack(fpanel, fsizer)
                 
-        fpanel.SetAutoLayout(1)
+        # fpanel.SetAutoLayout(1)
         fpanel.SetupScrolling()
-
-
 
         ir += 1
         sizer.Add(fpanel, (ir, 0), (1, 4), LCEN|wx.GROW, 3)
 
         pack(panel, sizer)
-        panel.SetupScrolling()
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
         mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
@@ -199,6 +199,7 @@ class ScanViewerFrame(wx.Frame):
         self.file_paths  = []
         title = "Column Data File Viewer"
         self.larch = _larch
+        self.larch_buffer = None
         self.subframes = {}
         self.plotframe = None
         self.groupname = None
@@ -220,7 +221,7 @@ class ScanViewerFrame(wx.Frame):
 
     def createMainPanel(self):
         splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
-        splitter.SetMinimumPaneSize(175)
+        splitter.SetMinimumPaneSize(225)
 
         self.filelist  = wx.ListBox(splitter)
         self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
@@ -245,7 +246,7 @@ class ScanViewerFrame(wx.Frame):
         self.xarr = Choice(panel, choices=[],
                                action=self.onColumnChoices,  size=(120, -1))
         self.xop  = Choice(panel, choices=('', 'log'),
-                               action=self.onColumnChoices, size=(75, -1))
+                               action=self.onColumnChoices, size=(90, -1))
 
         ir += 1
         sizer.Add(SimpleText(panel, 'X = '), (ir, 0), (1, 1), CEN, 0)
@@ -262,7 +263,7 @@ class ScanViewerFrame(wx.Frame):
             self.yarr.append(Choice(panel, **opts))
 
 
-        for opts, sel, siz in ((PRE_OPS, 0, 75),
+        for opts, sel, siz in ((PRE_OPS, 0, 90),
                                (ARR_OPS, 3, 50), (ARR_OPS, 3, 50)):
             w1 = Choice(panel, choices=opts, action=self.onColumnChoices,
                             size=(siz, -1))
@@ -283,10 +284,14 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(self.yarr[2],             (ir, 5), (1, 1), CEN, 0)
         sizer.Add(SimpleText(panel, ']'),   (ir, 6), (1, 1), LCEN, 0)
 
-        ir += 1
+        self.use_deriv = Check(panel, default=False, label='Use Derivative?',
+                              action=self.onColumnChoices)
         self.dtcorr   = Check(panel, default=True, label='correct deadtime?',
                               action=self.onColumnChoices)
-        sizer.Add(self.dtcorr,  (ir,   0), (1, 3), LCEN, 0)
+        ir += 1
+        sizer.Add(self.use_deriv, (ir,   0), (1, 3), LCEN, 0)
+        ir += 1
+        sizer.Add(self.dtcorr,    (ir,   0), (1, 3), LCEN, 0)
 
         pack(panel, sizer)
 
@@ -310,10 +315,10 @@ class ScanViewerFrame(wx.Frame):
         btnbox   = wx.Panel(mainpanel)
         btnsizer = wx.BoxSizer(wx.HORIZONTAL)
         for ttl, opt in (('New Plot',   'new'),
-                         ('Plot (left axis)',  'left'),
-                         ('Plot (right axis)', 'right')):
+                         ('Over Plot (left)',  'left'),
+                         ('Over Plot (right)', 'right')):
 
-            btnsizer.Add(Button(btnbox, ttl, size=(130, -1),
+            btnsizer.Add(Button(btnbox, ttl, size=(135, -1),
                                 action=partial(self.onPlot, opt=opt)),
                          LCEN, 1)
 
@@ -365,7 +370,7 @@ class ScanViewerFrame(wx.Frame):
         self.xas_pre1.SetValue(getattr(lgroup, 'pre1',   -200))
         self.xas_pre2.SetValue(getattr(lgroup, 'pre2',   -30))
         self.xas_nor1.SetValue(getattr(lgroup, 'norm1',  50))
-        self.xas_nor2.SetValue(getattr(lgroup, 'norm2', -50))
+        self.xas_nor2.SetValue(getattr(lgroup, 'norm2', -10))
 
         self.xas_vict.SetSelection(getattr(lgroup, 'nvict', 1))
         self.xas_nnor.SetSelection(getattr(lgroup, 'nnorm', 2))
@@ -377,6 +382,8 @@ class ScanViewerFrame(wx.Frame):
         self.xas_autostep = Check(panel, default=True, label='auto?')
         self.xas_op       = Choice(panel, size=(225, -1),
                                        choices=('Raw Data', 'Normalized',
+                                                'Derivative',
+                                                'Normalized + Derivative',
                                                 'Pre-edge subtracted',
                                    'Raw Data With Pre-edge/Post-edge Curves'),
                                    action=self.onXASChoice)
@@ -483,7 +490,6 @@ class ScanViewerFrame(wx.Frame):
         larch group '_y1_' attribute to be plotted
         """
         out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
-
         preopts = {'group': gname, 'e0': None}
 
         lgroup = getattr(self.larch.symtable, gname)
@@ -529,24 +535,37 @@ class ScanViewerFrame(wx.Frame):
 
         popts1 = dict(style='solid', linewidth=3,
                       marker='None', markersize=4)
-        popts2 = dict(style='short dashed', linewidth=2,
+        popts2 = dict(style='short dashed', linewidth=2, zorder=-5,
                       marker='None', markersize=4)
+        poptsd = dict(style='solid', linewidth=2, zorder=-5, 
+                      side='right',  y2label='derivative',
+                      marker='None', markersize=4)
+
 
         lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
         y4e0 = lgroup._ydat_
         if out.startswith('raw data with'):
-            lgroup.plot_yarrays = [(lgroup.pre_edge,  popts2, 'pre edge'),
-                                   (lgroup.post_edge, popts2, 'post edge'),
-                                   (lgroup._ydat_,    popts1, lgroup.plot_ylabel)]
+            lgroup.plot_yarrays = [(lgroup._ydat_,    popts1, lgroup.plot_ylabel),
+                                   (lgroup.pre_edge,  popts2, 'pre edge'),
+                                   (lgroup.post_edge, popts2, 'post edge')]
         elif out.startswith('pre'):
             self.larch('%s.pre_edge_sub = %s.norm * %s.edge_step' %
                        (gname, gname, gname))
             lgroup.plot_yarrays = [(lgroup.pre_edge_sub, popts1,
                                     'pre edge subtracted XAFS')]
             y4e0 = lgroup.pre_edge_sub
+        elif 'norm' in out and 'deriv' in out:
+            lgroup.plot_yarrays = [(lgroup.norm, popts1, 'normalized XAFS'),
+                                   (lgroup.dmude, poptsd, 'derivative')]
+            y4e0 = lgroup.norm
+
         elif out.startswith('norm'):
             lgroup.plot_yarrays = [(lgroup.norm, popts1, 'normalized XAFS')]
             y4e0 = lgroup.norm
+        elif out.startswith('deriv'):
+            lgroup.plot_yarrays = [(lgroup.dmude, popts1, 'derivative')]
+            y4e0 = lgroup.dmude
+
         lgroup.plot_ymarkers = []
         if self.xas_showe0.IsChecked():
             ie0 = index_of(lgroup._xdat_, lgroup.e0)
@@ -584,6 +603,7 @@ class ScanViewerFrame(wx.Frame):
         recalculate _xdat_ and _ydat_
         arrays for this larch group"""
         dtcorr = self.dtcorr.IsChecked()
+        use_deriv = self.use_deriv.IsChecked()
         ix  = self.xarr.GetSelection()
         x   = self.xarr.GetStringSelection()
         xop = self.xop.GetStringSelection()
@@ -594,6 +614,10 @@ class ScanViewerFrame(wx.Frame):
         y2  = self.yarr[1].GetStringSelection()
         y3  = self.yarr[2].GetStringSelection()
 
+        array_sel = {'xop': xop, 'xarr': x, 
+                     'op1': op1, 'op2': op2, 'op3': op3,
+                     'y1': y1, 'y2': y2, 'y3': y3,
+                     'dtcorr': dtcorr, 'use_deriv': use_deriv}
         try:
             gname = self.groupname
             lgroup = getattr(self.larch.symtable, gname)
@@ -647,11 +671,18 @@ class ScanViewerFrame(wx.Frame):
         lgroup._y3 = y3
         self.larch("%s._xdat_ = %s(%s._x)" % (gname, xop, gname))
         try:
-            self.larch("%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
-                       (gname, op1, gname, op2, gname, op3, gname))
+            yexpr = "%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  % (gname, 
+                    op1, gname, op2, gname, op3, gname)
+            self.larch(yexpr)
         except RuntimeWarning:
             self.larch("%s._ydat_ = %s._y1")
-            
+
+        try:
+            if use_deriv:
+                d_calc = "%s._ydat_ = gradient(%s._ydat_)/gradient(%s._xdat_)"
+                self.larch(d_calc % (gname, gname, gname))
+        except:
+            pass
         try:
             npts = min(len(lgroup._xdat_), len(lgroup._ydat_))
         except AttributeError:
@@ -660,15 +691,18 @@ class ScanViewerFrame(wx.Frame):
 
         del lgroup._x, lgroup._y1, lgroup._y2, lgroup._y3
 
+        lgroup.array_sel   = array_sel
         lgroup.plot_xlabel = xlabel
         lgroup.plot_ylabel = ylabel
         lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
         lgroup._ydat_ = np.array( lgroup._ydat_[:npts])
+
         if (self.nb.GetCurrentPage() == self.xas_panel):
             self.xas_process(self.groupname, new_mu=True)
         else:
             lgroup.plot_yarrays = [(lgroup._ydat_, {}, None)]
 
+        
     def onPlot(self, evt=None, opt='new', npts=None, reprocess=False):
            
         try:
@@ -747,6 +781,14 @@ class ScanViewerFrame(wx.Frame):
                     self.plotpanel.oplot([x], [y], **popts)
             self.plotpanel.canvas.draw()
 
+
+    def onShowLarchBuffer(self, evt=None):
+        if self.larch_buffer is None:
+            self.larch_buffer = larchframe.LarchFrame(_larch=self.larch)
+        
+        self.larch_buffer.Show()
+        self.larch_buffer.Raise()
+
     def ShowFile(self, evt=None, groupname=None, **kws):
         if groupname is None and evt is not None:
             fpath = self.file_paths[evt.GetInt()]
@@ -758,6 +800,8 @@ class ScanViewerFrame(wx.Frame):
 
         self.groupname = groupname
         self.lgroup = getattr(self.datagroups, groupname, None)
+
+        print 'This is ShowFile ', groupname , self.lgroup
 
         if groupname == SCANGROUP:
             self.lgroup.filename = filename
@@ -772,9 +816,23 @@ class ScanViewerFrame(wx.Frame):
                     if isinstance(getattr(self.lgroup, attr), np.ndarray):
                         array_labels.append(attr)
                 self.lgroup.array_labels = array_labels
-
-        self.set_array_labels()
-
+            self.set_array_labels()
+            if hasattr(self.lgroup, 'array_sel'):
+                sel = self.lgroup.array_sel
+                try:
+                    self.xarr.SetStringSelection(sel['xarr'])
+                    self.xop.SetStringSelection(sel['xop'])
+                    self.yops[0].SetStringSelection(sel['op1'])
+                    self.yops[1].SetStringSelection(sel['op2'])
+                    self.yops[2].SetStringSelection(sel['op3'])
+                    self.yarr[0].SetStringSelection(sel['y1'])
+                    self.yarr[1].SetStringSelection(sel['y2'])
+                    self.yarr[2].SetStringSelection(sel['y3'])
+                    self.dtcorr.SetValue({True: 1, False:0}[sel['dtcorr']])
+                    self.use_deriv.SetValue({True: 1, False:0}[sel['use_deriv']])
+                except:
+                    pass
+            
     def set_array_labels(self, labels=None):
         """set choices for array dropdowns from array labels"""
         array_labels = self.lgroup.array_labels
@@ -823,7 +881,12 @@ class ScanViewerFrame(wx.Frame):
         MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
                  "Read Scan File",  self.onReadScan)
 
+        MenuItem(self, fmenu, "Show Larch Buffer",
+                  "Show Larch Programming Buffer",
+                  self.onShowLarchBuffer)
+
         fmenu.AppendSeparator()
+
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         self.menubar.Append(fmenu, "&File")
@@ -832,7 +895,10 @@ class ScanViewerFrame(wx.Frame):
         MenuItem(self, omenu, "Edit Column Labels\tCtrl+E",
                  "Edit Column Labels", self.onEditColumnLabels)
 
+
+
         self.menubar.Append(omenu, "Options")        
+
 
         # fmenu.AppendSeparator()
         # MenuItem(self, fmenu, "&Copy\tCtrl+C",
@@ -851,7 +917,7 @@ class ScanViewerFrame(wx.Frame):
         #         "Toggle Grid on Plot", self.onToggleGrid)
         # self.menubar.Append(pmenu, "Plot Options")
         self.SetMenuBar(self.menubar)
-
+        self.Bind(wx.EVT_CLOSE,  self.onClose)
 
     def onAbout(self,evt):
         dlg = wx.MessageDialog(self, self._about,"About Epics StepScan",
@@ -861,10 +927,17 @@ class ScanViewerFrame(wx.Frame):
 
     def onClose(self,evt):
         save_workdir('scanviewer.dat')
+
         try:
             self.plotframe.Destroy()
         except:
             pass
+        if self.larch_buffer is not None:
+            try:
+                self.larch_buffer.onClose()
+            except:
+                pass
+
         for nam in dir(self.larch.symtable._sys.wx):
             obj = getattr(self.larch.symtable._sys.wx, nam)
             del obj
@@ -885,7 +958,6 @@ class ScanViewerFrame(wx.Frame):
         
     def onEditColumnLabels(self, evt=None):
         self.show_subframe('coledit', EditColumnFrame)
-
        
     def onReadScan(self, evt=None):
         dlg = wx.FileDialog(self, message="Load Column Data File",
