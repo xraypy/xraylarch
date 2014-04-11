@@ -94,7 +94,7 @@ class EditColumnFrame(wx.Frame) :
         self.SetFont(Font(10))
         sizer = wx.GridBagSizer(10, 5)
         panel = scrolled.ScrolledPanel(self)
-        self.SetMinSize((600, 750))
+        self.SetMinSize((600, 600))
         self.colors = GUIColors()
 
         # title row
@@ -128,42 +128,34 @@ class EditColumnFrame(wx.Frame) :
             sizer.Add(new, (ir, 2), (1, 1), LCEN, 2)
 
 
-        ir += 1
-        sizer.Add(wx.StaticLine(panel, size=(FWID, 3), style=wx.LI_HORIZONTAL),
-                  (ir, 0), (1, 4), LCEN|wx.GROW|wx.ALL, 3)
-        #
+
         ir += 1
         sizer.Add(okcancel(panel, self.onOK, self.onClose),
                   (ir, 0), (1, 2), LCEN, 3)
 
-        fpanel = scrolled.ScrolledPanel(panel, size=(FWID, 275),
-                                        style = wx.TAB_TRAVERSAL|wx.SUNKEN_BORDER)
-        fpanel.SetFont(Font(9))
-        fsizer = wx.BoxSizer(wx.VERTICAL)
-        self.filecontents = wx.StaticText(fpanel)
+        ir += 1
+        sizer.Add(wx.StaticLine(panel, size=(FWID, 3), style=wx.LI_HORIZONTAL),
+                  (ir, 0), (1, 4), LCEN|wx.GROW|wx.ALL, 3)
+        #
+        pack(panel, sizer)
+
+        ftext = wx.TextCtrl(self, style=wx.TE_MULTILINE|wx.TE_READONLY,
+                               size=(-1, 275))
         try:
             m = open(self.lgroup.filename, 'r')
             text = m.read()
             m.close()
         except:
             text = "The file '%s'\n was not found" % self.lgroup.filename
-        self.filecontents.SetLabel(text)
+        ftext.SetValue(text)
+        ftext.SetFont(Font(9))
 
-        fsizer.Add(self.filecontents, 1, LCEN|wx.GROW|wx.ALL, 3)
-
-        pack(fpanel, fsizer)
-                
-        # fpanel.SetAutoLayout(1)
-        fpanel.SetupScrolling()
-
-        ir += 1
-        sizer.Add(fpanel, (ir, 0), (1, 4), LCEN|wx.GROW, 3)
-
-        pack(panel, sizer)
 
         mainsizer = wx.BoxSizer(wx.VERTICAL)
-        mainsizer.Add(panel, 1, wx.GROW|wx.ALL, 1)
+        mainsizer.Add(panel, 0, wx.GROW|wx.ALL, 2)
+        mainsizer.Add(ftext, 1, LCEN|wx.GROW,   2)
         pack(self, mainsizer)
+
         self.Show()
         self.Raise()
 
@@ -800,8 +792,6 @@ class ScanViewerFrame(wx.Frame):
 
         self.groupname = groupname
         self.lgroup = getattr(self.datagroups, groupname, None)
-
-        print 'This is ShowFile ', groupname , self.lgroup
 
         if groupname == SCANGROUP:
             self.lgroup.filename = filename
