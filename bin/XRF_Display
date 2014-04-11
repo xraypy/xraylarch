@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+"""
+GSECARS XRF Display App 
+"""
+import larch
+larch.use_plugin_path('wx')
+
+from xrfdisplay import XRFApp
+
+XRFApp().MainLoop()
+

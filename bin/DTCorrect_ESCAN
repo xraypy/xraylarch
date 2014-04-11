@@ -1,0 +1,11 @@
+#!/usr/bin/env python
+"""
+GSECARS ESCAN Deadtime Correction App 
+"""
+import larch
+larch.use_plugin_path('wx')
+
+from gse_dtcorrect import DTViewer
+
+DTViewer().MainLoop()
+
