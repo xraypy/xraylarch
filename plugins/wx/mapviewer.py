@@ -1289,7 +1289,7 @@ Matt Newville <newville @ cars.uchicago.edu>
             pass
         if self.larch_buffer is not None:
             try:
-                self.larch_buffer.Destroy()
+                self.larch_buffer.onClose()
             except:
                 pass
 
