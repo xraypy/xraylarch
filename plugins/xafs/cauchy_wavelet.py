@@ -57,12 +57,13 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
     -------
     Arrays written to output group:
     r                  uniform array of R, out to rmax_out.
-	wcauchy            complex cauchy wavelet(k, R)
-	wcauchy_mag        magnitude of wavelet(k, R)
-	wcauchy_re         real part of wavelet(k, R)
-	wcauchy_im         imaginary part of wavelet(k, R)
+    wcauchy            complex cauchy wavelet(k, R)
+    wcauchy_mag        magnitude of wavelet(k, R)
+    wcauchy_re         real part of wavelet(k, R)
+    wcauchy_im         imaginary part of wavelet(k, R)
 
-    Supports First Argument Group convention (with group member names 'k' and 'chi')
+    Supports First Argument Group convention (with group
+    member names 'k' and 'chi')
     
     """    
     if _larch is None:
@@ -75,6 +76,7 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
     kstep = np.round(1000.*(k[1]-k[0]))/1000.0
     rstep = (np.pi/2048)/kstep
     rmin = 1.e-7
+    rmax = rmax_out
     nrpts = int(np.round((rmax-rmin)/rstep))
     nkout = 10 + int( k.max()/kstep)
     if kweight != 0: 
@@ -116,9 +118,9 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
         out[i, :] = np.fft.ifft(tmp, 2*nfft)[:nkout]      
 
     group = set_xafsGroup(group, _larch=_larch)
-    group.r  =  r[:irmax]
+    group.r  =  r
     group.wcauchy =  out
-    group.wcauchy_mag =  np.sqrt(out.real**2 + out.imag**2)) 
+    group.wcauchy_mag =  np.sqrt(out.real**2 + out.imag**2) 
     group.wcauchy_re =  out.real
     group.wcauchy_im =  out.imag
 
