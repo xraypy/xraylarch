@@ -7,18 +7,18 @@ cu1 = read_ascii(fname)
 
 chidat = read_ascii(chi_fname, labels='k chi')
 
-pre_edge(cu1.energy, cu1.xmu, group=cu1)
+pre_edge(cu1.energy, cu1.mu, group=cu1)
 
 cu2 = copy(cu1)
 
-autobk(cu1.energy, cu1.xmu, rbkg=1, group=cu1)
+autobk(cu1.energy, cu1.mu, rbkg=1, group=cu1)
 
 # now with std...
-autobk(cu2.energy, cu2.xmu, rbkg=1, group=cu2, k_std=chidat.k, chi_std=chidat.chi)
+autobk(cu2.energy, cu2.mu, rbkg=1, group=cu2, k_std=chidat.k, chi_std=chidat.chi)
 
-xafsft(cu1.k, cu1.chi, kmin=2, kmax=16, dk=2, kweight=2, window='han', group=cu1)
+xftf(cu1.k, cu1.chi, kmin=2, kmax=16, dk=2, kweight=2, window='han', group=cu1)
 
-xafsft(cu2.k, cu2.chi, kmin=2, kmax=16, dk=2, kweight=2, window='han', group=cu2)
+xftf(cu2.k, cu2.chi, kmin=2, kmax=16, dk=2, kweight=2, window='han', group=cu2)
 
 
 plot(cu1.k, cu1.chi*cu1.k**2, label='no std', new=True,

@@ -1,9 +1,9 @@
 ## examples/xafs/doc_autobk1.lar
 fname = '../xafsdata/cu_rt01.xmu'
 cu = read_ascii(fname)
-autobk(cu.energy, cu.xmu, rbkg=1.0, group=cu)
+autobk(cu.energy, cu.mu, rbkg=1.0, group=cu)
 
-newplot(cu.energy, cu.xmu,
+newplot(cu.energy, cu.mu,
         xlabel='Energy (eV)', ylabel=r'$\mu(E)$',
         xmin=cu.e0-100, xmax=cu.e0+300,
         title=fname)
