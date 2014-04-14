@@ -2,23 +2,24 @@
 # 
 # Cauchy Wavelet for EXAFS, adopted from 
 # matlab code from Munoz, Argoul, and Farges:
-
-#  CONTINUOUS CAUCHY WAVELET TRANSFORM OF EXAFS SIGNAL               
-#  code freely downloaded from http://www.univ-mlv.fr/~farges/waw 
-#  (c) 2000, Univ. Marne la Vallee, France 
-
+#
+# CONTINUOUS CAUCHY WAVELET TRANSFORM OF EXAFS SIGNAL               
+# code freely downloaded from http://www.univ-mlv.fr/~farges/waw 
+# (c) 2000, Univ. Marne la Vallee, France 
+#
 #  please cite us of this code with:
-#     Munoz M., Argoul P. et Farges F. (2003) 
-#     Continuous Cauchy wavelet transform analyses of EXAFS spectra: a qualitative approach.  
-#     American Mineralogist volume 88, pp. 694-700. 
-
+#   Munoz M., Argoul P. and Farges F.
+#   Continuous Cauchy wavelet transform analyses of
+#   EXAFS spectra: a qualitative approach.  
+#   American Mineralogist 88, pp. 694-700 (2003).
+#
 # version history:
 # 1999 Hans-Argoul : core wavelet algorithm
 # 1999-2002 Argoul-Munoz : EXAFS adapation
 # 2002 Farges : graphical and user interface
 # 2003 Munoz : CPU optimizations and graphical updates
 # 2003 Farges-Munoz : various fixes and web version
-
+#
 # 2014-Apr M Newville : translated to Python for Larch
 
 import larch
@@ -104,16 +105,16 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
     r[0] = 1.e-19
     a  = nrpts/(2*r)
 
-    # Characteristic values of the Cauchy wavelet
-    cauchy_sum = np.log(1.0+np.arange(nrpts)).sum()
+    # Characteristic values for Cauchy wavelet:
+    cauchy_sum = np.log(2*np.pi) - np.log(1.0+np.arange(nrpts)).sum()
 
-    # Main calculation
-    # Cauchy wavelet calculation
-    out = np.zeros(nkout*nrpts, dtype='complex128').reshape(nrpts, nkout)
+    # Main calculation:
+    out = np.zeros(nkout*nrpts, 
+                   dtype='complex128').reshape(nrpts, nkout)
     for i in range(nrpts):
         aom = a[i]*omega
         aom[np.where(aom==0)] = 1.e-19
-        filt = np.log(2*np.pi) - cauchy_sum + nrpts*np.log(aom) - aom
+        filt = cauchy_sum + nrpts*np.log(aom) - aom
         tmp  = np.conj(np.exp(filt))*tff[:nfft]
         out[i, :] = np.fft.ifft(tmp, 2*nfft)[:nkout]      
 
@@ -123,21 +124,6 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
     group.wcauchy_mag =  np.sqrt(out.real**2 + out.imag**2) 
     group.wcauchy_re =  out.real
     group.wcauchy_im =  out.imag
-
     
 def registerLarchPlugin():
     return ('_xafs', {'cauchy_wavelet': cauchy_wavelet})
-# 
-
-# import pylab
-#  
-# dat = np.loadtxt('examples/xafsdata/cu10k.chi')
-# k   = dat[:, 0]
-# chi = dat[:, 1]
-#  
-# tox = cauchy_wavelet(k, chi, kweight=3)
-#  
-# pylab.imshow(np.sqrt(tox.real**2 + tox.imag**2)) 
-# pylab.show()
-# 
-
