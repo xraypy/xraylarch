@@ -1,0 +1,31 @@
+# wavelet transform in larch
+# follows method of Munuz, Argoul, and Farges
+
+f = read_ascii('../xafsdata/feo_xafs.dat')
+autobk(f, rbkg=0.9, kweight=2)
+
+kopts = {'xlabel': r'$k \,(\AA^{-1})$', 
+         'ylabel': r'$k^2\chi(k) \, (\AA^{-2})$', 
+         'linewidth': 3, 'title': 'FeO', 'show_legend':True}
+
+newplot(f.k, f.chi*f.k**2, win=1, label='original data', **kopts)
+
+# do wavelet transform (no window function yet)
+cauchy_wavelet(f, kweight=2)
+
+# display wavelet magnitude, real part
+# horizontal axis is k, vertical is R
+imopts = {'x': f.k, 'y': f.r}
+imshow(f.wcauchy_mag, win=1, label='Wavelet Transform: Magnitude', **imopts)
+imshow(f.wcauchy_re,  win=2, label='Wavelet Transform: Real Part', **imopts)
+
+# plot wavelet projected to k space
+plot(f.k, f.wcauchy_re.sum(axis=0), win=1, label='projected wavelet', **kopts)
+
+ropts = kopts
+ropts['xlabel'] = r'$R \, (\AA) $'
+ropts['ylabel'] = r'$|\chi(R)| \, (\AA^{-3})$'
+
+# plot wavelet projected to R space
+newplot(f.r, f.wcauchy_mag.sum(axis=1), win=2,  label='projected wavelet', **ropts)
+
