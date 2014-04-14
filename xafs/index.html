@@ -104,12 +104,12 @@
   <div class="section" id="xafs-analysis">
 <span id="xafs-chapter"></span><h1>7. XAFS Analysis<a class="headerlink" href="#xafs-analysis" title="Permalink to this headline">¶</a></h1>
 <p>One of the primary motivations for Larch was processing XAFS data.  Larch
-was originally conceived to be version 2 of Ifeffit (<span class="citation"><a class="reference internal" href="../biblio.html#citation-ifeffit">Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-ifeffit">8</a><span>]</span></span>),
+was originally conceived to be version 2 of Ifeffit (<span class="citation"><a class="reference internal" href="../biblio.html#citation-ifeffit">Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-ifeffit">9</a><span>]</span></span>),
 replacing and expanding all the XAFS analysis capabilities of that package.</p>
 <p>This replacement is essentially complete, with all the main functionality
 of Ifeffit available in Larch.  There may still be a few minor features of
 Ifeffit that are not yet available, and some features to port from Athena
-(<span class="citation"><a class="reference internal" href="../biblio.html#citation-athena">Ravel and Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-athena">11</a><span>]</span></span>) back to the core library.   There are some slight
+(<span class="citation"><a class="reference internal" href="../biblio.html#citation-athena">Ravel and Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-athena">12</a><span>]</span></span>) back to the core library.   There are some slight
 differences in implementation details, such that slightly different
 numerical results are obtained.  Importantly, some new features are already
 available with Larch that were not available with Ifeffit 1.2 and some
@@ -135,17 +135,36 @@ Each of these functions produce several scalar values and arrays for their
 results.  Indeed, many of the functions have several output arrays.  In
 addition, several of the functions produce groups containing details of fit
 results.</p>
-<p>To accomodate and help organize the output arrays from these functions, the
-XAFS functions here take a <strong>group</strong> argument, which takes a group into
-which results are written.  There is a special group, <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt>
-that is used as the default group.  When any of these functions gives an
-explicit <strong>group</strong> argument, <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt> is set to this group.  When
-the <strong>group</strong> argument is omitted, outputs will be written to the most
-<tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt>, that is, the most recently used group.  For many
-analysis scripts where a single data set is being analyzed, using a single
-main data group and using the default <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt> can be convenient.
-For anything more complicated than a basic script, explicitly specifying
-<strong>group</strong> is recommended.</p>
+<p>There is a set of conventions used to help organize the output arrays from
+the XAFS functions that are worth understanding.  These are really only
+conventions, but can make using the XAFS function a much more pleasant
+experience.</p>
+<p>First, all the XAFS functions here take a <strong>group</strong> argument, which is used
+as the group into which results are written.  There is also a special
+group, <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt> that is used as the default group to write
+outputs to if no <strong>group</strong> argument is supplied.  When an an explicit
+<strong>group</strong> argument is given, <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt> is set to this group.  This
+means that when working with a set of XAFS data all contained within a
+single group (which is expected to be the normal case), the <strong>group</strong>
+argument does not need to be typed repeatedly.</p>
+<p id="index-0">Second, while the XAFS functions are generally meant to take arrays of data
+as the first two arguments, they allow the first argument to be a Group if
+that Group has the expected named arrays.  This convention, known as the
+<strong>First Argument Group</strong> convention is worth understanding and using.  For
+example, the <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function generally expects the first argument
+to be an array of energy values and the second to be an array of absorbance
+values.  But a normal use case would look like:</p>
+<div class="highlight-python"><div class="highlight"><pre>autobk(dat.energy, dat.mu, group=dat, rbkg=1, ....)
+</pre></div>
+</div>
+<p>This can be abbreviated as:</p>
+<div class="highlight-python"><div class="highlight"><pre>autobk(dat, rbkg=1, ....)
+</pre></div>
+</div>
+<p>That is, as long as the Group <tt class="docutils literal"><span class="pre">dat</span></tt> has an energy array named <tt class="docutils literal"><span class="pre">energy</span></tt>
+and absorbance array named <tt class="docutils literal"><span class="pre">mu</span></tt> the two forms above are equivalent.
+This nearly makes the Larch XAFS functions be object-oriented, or in this
+case, <strong>Group oriented</strong>.</p>
 <p>Further details of the various XAFS functionals are described in the sections
 listed below.</p>
 <div class="toctree-wrapper compound">
@@ -199,6 +218,11 @@ listed below.</p>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-3-fit-3-datasets-with-1-path-each">7.6.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-4-measuring-coordination-number">7.6.11. Example 4: Measuring Coordination number</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-5-comparing-fits-in-different-fit-spaces">7.6.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="wavelets.html">7.7. XAFS: Wavelet Transforms for XAFS</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="wavelets.html#cauchy-wavelet">7.7.1. <tt class="docutils literal"><span class="pre">cauchy_wavelet()</span></tt></a></li>
+<li class="toctree-l2"><a class="reference internal" href="wavelets.html#wavelet-example">7.7.2. Wavelet Example</a></li>
 </ul>
 </li>
 </ul>
