@@ -78,7 +78,7 @@ def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,
     rmin = 1.e-7
     rmax = rmax_out
     nrpts = int(np.round((rmax-rmin)/rstep))
-    nkout = 10 + int( k.max()/kstep)
+    nkout = len(k)
     if kweight != 0: 
         chi = chi * k**kweight
 
