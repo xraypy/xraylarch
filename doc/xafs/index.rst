@@ -39,19 +39,43 @@ XAFS functions described here represent the general steps outlined above.
 Each of these functions produce several scalar values and arrays for their
 results.  Indeed, many of the functions have several output arrays.  In
 addition, several of the functions produce groups containing details of fit
-results.
+results. 
 
-To accomodate and help organize the output arrays from these functions, the
-XAFS functions here take a **group** argument, which takes a group into
-which results are written.  There is a special group, ``_sys.xafsGroup``
-that is used as the default group.  When any of these functions gives an
-explicit **group** argument, ``_sys.xafsGroup`` is set to this group.  When
-the **group** argument is omitted, outputs will be written to the most
-``_sys.xafsGroup``, that is, the most recently used group.  For many
-analysis scripts where a single data set is being analyzed, using a single
-main data group and using the default ``_sys.xafsGroup`` can be convenient.
-For anything more complicated than a basic script, explicitly specifying
-**group** is recommended.
+There is a set of conventions used to help organize the output arrays from
+the XAFS functions that are worth understanding.  These are really only
+conventions, but can make using the XAFS function a much more pleasant
+experience.
+
+First, all the XAFS functions here take a **group** argument, which is used
+as the group into which results are written.  There is also a special
+group, ``_sys.xafsGroup`` that is used as the default group to write
+outputs to if no **group** argument is supplied.  When an an explicit
+**group** argument is given, ``_sys.xafsGroup`` is set to this group.  This
+means that when working with a set of XAFS data all contained within a
+single group (which is expected to be the normal case), the **group**
+argument does not need to be typed repeatedly.
+
+.. index:: First Argument Group convention
+
+Second, while the XAFS functions are generally meant to take arrays of data
+as the first two arguments, they allow the first argument to be a Group if
+that Group has the expected named arrays.  This convention, known as the
+**First Argument Group** convention is worth understanding and using.  For
+example, the :func:`autobk` function generally expects the first argument
+to be an array of energy values and the second to be an array of absorbance
+values.  But a normal use case would look like::
+
+     autobk(dat.energy, dat.mu, group=dat, rbkg=1, ....)
+
+This can be abbreviated as::
+
+     autobk(dat, rbkg=1, ....)
+
+That is, as long as the Group ``dat`` has an energy array named ``energy``
+and absorbance array named ``mu`` the two forms above are equivalent.
+This nearly makes the Larch XAFS functions be object-oriented, or in this
+case, **Group oriented**.
+
 
 Further details of the various XAFS functionals are described in the sections
 listed below.
@@ -65,3 +89,4 @@ listed below.
    xafsft
    feffpaths
    feffit
+   wavelets
