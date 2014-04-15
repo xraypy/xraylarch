@@ -213,7 +213,7 @@ class LarchFrame(wx.Frame):
 
         self.datapanel = Filling(nbook,  rootLabel='_main')
         nbook.AddPage(self.output,      'Output Buffer', select=1)
-        nbook.AddPage(self.datapanel,   'Data Browser')
+        nbook.AddPage(self.datapanel,   'Browser')
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, border=2)
