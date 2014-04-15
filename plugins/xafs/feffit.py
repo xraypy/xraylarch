@@ -317,8 +317,8 @@ def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
 
      Parameters:
      ------------
-      data:     group containing experimental EXAFS (needs arrays 'k' and 'chi').
-      pathlis:  list of FeffPath groups, as created from feffpath()
+      data:      group containing experimental EXAFS (needs arrays 'k' and 'chi').
+      pathlist:  list of FeffPath groups, as created from feffpath()
       transform: Feffit Transform group.
 
      Returns:

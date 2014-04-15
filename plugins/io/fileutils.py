@@ -14,6 +14,13 @@ UNIX_BASE = '/cars5/Data/'
 BAD_FILECHARS = ';~,`!%$@?*#:"/|\'\\\t\r\n (){}[]<>'
 GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
 
+MODDOC = '''
+Functions for Input/Output, especially reading specific types
+of scientific data files.
+
+
+'''
+
 if sys.version[0] == '2':
     from string import maketrans
     BAD_FILETABLE = maketrans(BAD_FILECHARS, GOOD_FILECHARS)
@@ -219,6 +226,14 @@ def test_incrementfilename():
         else:
             npass = npass + 1
     print('Passed %i of %i tests' % (npass, npass+nfail))
+
+
+
+def initializeLarchPlugin(_larch=None):
+    """initialize _io"""
+    if _larch is not None:
+        mod = getattr(_larch.symtable, '_io')
+        mod.__doc__ = MODDOC
 
 def registerLarchPlugin():
     return ('_io', {'increment_filename': increment_filename,

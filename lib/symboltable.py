@@ -12,7 +12,7 @@ from .utils import Closure, fixName, isValidName
 from . import site_config
 
 class Group(object):
-    """Group: a container for variables, modules, and subgroups.
+    """Generic Group: a container for variables, modules, and subgroups.
 
     Methods
     ----------
@@ -108,6 +108,22 @@ class InvalidName:
     symboltable._lookup() uses this to check for invalid names"""
     pass
 
+GroupDocs = {}
+GroupDocs['_sys'] = """
+Larch system-wide status variables, including
+configuration variables and lists of Groups used
+for finding variables.
+"""
+
+GroupDocs['_builtin'] = """
+core built-in functions, most taken from Python
+"""
+
+GroupDocs['_math'] = """
+Mathematical functions, including a host of functtion from numpy and scipy
+"""
+
+    
 class SymbolTable(Group):
     """Main Symbol Table for Larch.
     """
@@ -128,7 +144,11 @@ class SymbolTable(Group):
         setattr(self, self.top_group, self)
 
         for gname in self.core_groups:
-            setattr(self, gname, Group(name=gname))
+            thisgroup = Group(name=gname)
+            if gname in GroupDocs:
+                thisgroup.__doc__ = GroupDocs[gname]
+
+            setattr(self, gname, thisgroup)
 
         self._sys.frames      = []
         self._sys.searchGroups = [self.top_group]
