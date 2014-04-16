@@ -385,7 +385,6 @@ class XRFDisplayFrame(wx.Frame):
             self.larch = Interpreter()
         self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
-        
 
     def onZoomIn(self, event=None):
         emin, emax = self.panel.axes.get_xlim()
@@ -755,7 +754,6 @@ class XRFDisplayFrame(wx.Frame):
         if self.y2data is not None:
             self.oplot(self.x2data, self.y2data)
 
-
     def plotmca(self, mca, title=None, as_mca2=False, **kws):
         if as_mca2:
             self.mca2 = mca
@@ -786,6 +784,7 @@ class XRFDisplayFrame(wx.Frame):
             title = self.win_title
         self.SetTitle(title)
 
+       
     def plot(self, x, y=None, mca=None, **kws):
         if mca is not None:
             self.mca = mca
@@ -832,6 +831,30 @@ class XRFDisplayFrame(wx.Frame):
         panel.canvas.Thaw()
         panel.canvas.Refresh()
 
+    def update_mca(self, counts, energy=None, with_rois=True,
+                   is_mca2=False):
+        """update counts (and optionally energy) for mca, and update plot"""
+        mca = self.mca
+        ix = 0
+        if is_mca2:
+            mca = self.mca2
+            ix = 2
+        mca.counts = counts[:] 
+        if energy is not None:
+            mca.energy = energy[:]
+        if not is_mca2 and with_rois:
+            yroi = -1*np.ones(len(counts))
+            for r in mca.rois:
+                yroi[r.left:r.right] = counts[r.left:r.right]
+            self.panel.update_line(1, mca.energy, yroi, draw=False,
+                                   update_limits=False)
+
+        self.panel.update_line(ix, mca.energy, counts, 
+                               draw=False, update_limits=False)
+
+        self.panel.axes.set_ylim(1, 1.25*max(counts))    
+        self.panel.draw()
+        
     def oplot(self, x, y, color='darkgreen', mca=None, zorder=-5, **kws):
         if mca is not None:
             self.mca2 = mca
@@ -861,6 +884,7 @@ class XRFDisplayFrame(wx.Frame):
         self.mca2 = None
         self.plotmca(self.mca)
 
+            
     def onReadMCAFile(self, event=None):
         dlg = wx.FileDialog(self, message="Open MCA File for reading",
                             defaultDir=os.getcwd(),
