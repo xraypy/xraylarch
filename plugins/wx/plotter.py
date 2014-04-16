@@ -43,12 +43,30 @@ if not os.path.exists(mpl_dir):
         pass
 
 
-
 IMG_DISPLAYS = {}
 PLOT_DISPLAYS = {}
 XRF_DISPLAYS = {}
 MODNAME = '_plotter'
-MAX_WINDOWS = 16
+
+MODDOC = '''
+General Plotting and Image Display Functions
+
+The functions here include (but are not limited too):
+
+function         descrption
+------------     ------------------------------
+plot             2D (x, y) plotting, with many, many options
+plot_text        add text to a 2D plot
+plot_marker      add a marker to a 2D plot
+plot_arrow       add an arrow to a 2D plot
+
+imshow           image display (false-color intensity image)
+
+xrf_plot         browsable display for XRF spectra
+
+'''
+
+MAX_WINDOWS = 20
 
 class XRFDisplay(XRFDisplayFrame):
     def __init__(self, wxparent=None, window=1, _larch=None, size=None, **kws):
@@ -600,6 +618,9 @@ def initializeLarchPlugin(_larch=None):
     cmds = ['plot', 'oplot', 'newplot', 'imshow', 'contour']
     if _larch is not None:
         _larch.symtable._sys.valid_commands.extend(cmds)
+
+        mod = getattr(_larch.symtable, MODNAME)
+        mod.__doc__ = MODDOC
 
 def registerLarchPlugin():
     return (MODNAME, {'plot':_plot,

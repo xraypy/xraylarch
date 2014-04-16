@@ -12,6 +12,25 @@ from xraydb import xrayDB
 
 MODNAME = '_xray'
 
+MODDOC = '''
+Functions for accessing and using data from X-ray Databases and
+Tables.  Many of these take an element as an argument -- this
+can be either the atomic symbol or atomic number Z.
+
+The data and functions here include (but are not limited too):
+
+member name     descrption
+------------    ------------------------------
+materials       dictionary of composition of common materials
+chemparse       parse a Chemical formula to compositiondictionary.
+atomic_mass     return atomic mass for an element
+f0              Thomson X-ray scattering factor
+f1f2_cl         Anomalous scattering factors from Cromer-Libermann
+mu_elam         X-ray attenuation coefficients from Elam etal
+mu_chantler     X-ray attenuation coefficients from Chantler
+xray_edges      X-ray absorption edges for an element
+xray_lines      X-ray emission lines for an element
+'''
 
 def get_xraydb(_larch):
     symname = '%s._xraydb' % MODNAME
@@ -475,6 +494,8 @@ def initializeLarchPlugin(_larch=None):
     """initialize xraydb"""
     if _larch is not None:
         xdb = get_xraydb(_larch)
+        mod = getattr(_larch.symtable, MODNAME)
+        mod.__doc__ = MODDOC
 
 def registerLarchPlugin():
     return (MODNAME, {'f0': f0, 'f0_ions': f0_ions,
