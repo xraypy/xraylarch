@@ -205,7 +205,7 @@ An example use would be to print out a table of energies and :math:`k` values::
 The :func:`estimate_noise` function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-..  function:: estimate_noise(k, chi, group=None, rmin=15, rmax=30, ....)
+..  function:: estimate_noise(k, chi=None, group=None, rmin=15, rmax=30, ....)
 
     Automatically estimate the noise level in a :math:`\chi(k)` spectrum.
 
@@ -228,7 +228,8 @@ The :func:`estimate_noise` function
     The method uses an XAFS Fourier transform, and many of arguments
     (**kmin**, **kmax**, etc) are identical to those of :func:`xftf`.
 
-    The following outputs are written to the supplied **group** (or _sys.xafsGroup if
+    This function follows the First Argument Group convention with arrarys named `k` and `chi`.  
+    The following outputs are written to the supplied **group** (or `_sys.xafsGroup` if
     **group** is not supplied):
 
      ================= ===============================================================
@@ -279,4 +280,6 @@ The :func:`xas_decovolve` function
 
 
     Support First Argument Group convention, requiring group members `energy` and `norm`.
+    
+    Writes the array `deconv` to the output group (or `_sys.xafsGroup`).
 
