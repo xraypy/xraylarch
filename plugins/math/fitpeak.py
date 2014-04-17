@@ -30,7 +30,8 @@ import numpy as np
 from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
 
 import larch
-from larch import Group, Parameter, Minimizer, use_plugin_path
+from larch import Group, Parameter, Minimizer, use_plugin_path, fitting
+
 use_plugin_path('math')
 from mathutils import index_nearest, index_of
 
@@ -54,6 +55,8 @@ expected one of the following:
         self.initialize_background(background=background, **kws)
 
     def add_param(self, name, value=0, vary=True, **kws):
+        if self._larch is not None:
+            self._larch.symtable._sys.paramGroup = self.params
         p = Parameter(value=value, name=name, vary=vary,
                       _larch=self._larch,  **kws)
         setattr(self.params, name, p)
@@ -107,16 +110,19 @@ expected one of the following:
     def guess_starting_values(self, params, y, x=None, **kws):
         raise NotImplementedError
 
-    def fit_report(self, params=None):
+    def fit_report(self, params=None, min_correl=0.2, **kws):
         if params is None:
             params = self.params
-        return lmfit.fit_report(params)
+        return fitting.fit_report(params, min_correl=min_correl,
+                                  _larch=self._larch, **kws)
 
     def fit(self, y, x=None, dy=None, _larch=None, **kws):
         fcn_kws={'y':y, 'x':x, 'dy':dy}
         fcn_kws.update(kws)
+        if _larch is not None:
+            self._larch = _larch
         f = Minimizer(self.__objective, self.params,
-                      _larch=_larch, fcn_kws=fcn_kws,
+                      _larch=self._larch, fcn_kws=fcn_kws,
                       scale_covar=True)
         f.leastsq()
         return f
@@ -225,8 +231,9 @@ class GaussianModel(PeakModel):
     amplitude, center, sigma, optional background"""
     def __init__(self, amplitude=1, center=0, sigma=1,
                  negative=False, background=None, **kws):
-        PeakModel.__init__(self, amplitude=1, center=0, sigma=1,
-                           negative=negative, background=background, **kws)
+        PeakModel.__init__(self, amplitude=amplitude, center=center, 
+                           sigma=sigma, negative=negative,
+                           background=background, **kws)
         self.add_param('fwhm',  expr='2.354820*sigma', vary=False)
 
     def model(self, params=None, x=None, **kws):
@@ -243,7 +250,7 @@ class LorentzianModel(PeakModel):
     amplitude, center, sigma, optional background"""
     def __init__(self, amplitude=1, center=0, sigma=1,
                  negative=False, background=None, **kws):
-        PeakModel.__init__(self, amplitude=1, center=0, sigma=1,
+        PeakModel.__init__(self, amplitude=amplitude, center=center, sigma=sigma,
                            negative=negative, background=background, **kws)
         self.add_param('fwhm',  expr='2*sigma', vary=False)
 
@@ -262,7 +269,7 @@ class VoigtModel(PeakModel):
     """
     def __init__(self, amplitude=1, center=0, sigma=1, use_gamma=False,
                  negative=False, background=None, **kws):
-        PeakModel.__init__(self, amplitude=1, center=0, sigma=1,
+        PeakModel.__init__(self, amplitude=amplitude, center=center, sigma=sigma,
                            negative=negative, background=background, **kws)
         self.add_param('fwhm',  expr='3.60131*sigma', vary=False)
         if use_gamma:
@@ -338,14 +345,18 @@ class RectangularModel(FitModel):
     which will give the functional form for going from 0 to height
    """
     def __init__(self, height=1, center1=0, width1=1,
-                 center2=1, width2=1, step='linear',
+                 center2=1, width2=None, step='linear',
                  negative=False, background=None, **kws):
         FitModel.__init__(self, background=background, **kws)
+           
         self.add_param('height',   value=height)
         self.add_param('center1',  value=center1)
         self.add_param('width1',   value=width1, min=1.e-10)
         self.add_param('center2',  value=center2)
-        self.add_param('width2',   value=width2, min=1.e-10)
+        if width2 is None:
+            self.add_param('width2',   expr='width1')
+        else:
+            self.add_param('width2',  value=width2, min=1.e-10)
         self.add_param('midpoint',
                        expr='(center1+center2)/2.0', vary=False)
         self.step = step
@@ -375,6 +386,7 @@ class RectangularModel(FitModel):
         width1  = params.width1.value
         center2 = params.center2.value
         width2  = params.width2.value
+
         arg1 = (x - center1)/max(width1, 1.e-13)
         arg2 = (center2 - x)/max(width2, 1.e-13)
         if self.step == 'atan':
