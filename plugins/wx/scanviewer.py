@@ -333,7 +333,7 @@ class ScanViewerFrame(wx.Frame):
         self.fit_step = Choice(panel, size=(100, -1),
                                   choices=('linear', 'error function', 'arctan'))
 
-        self.fit_report = wx.TextCtrl(panel, -1, "", size=(400, 200),
+        self.fit_report = wx.TextCtrl(panel, -1, "", size=(500, 270),
                                       style=wx.TE_MULTILINE|wx.TE_READONLY)
 
         self.fit_report.SetFont(Font(9))
@@ -342,14 +342,14 @@ class ScanViewerFrame(wx.Frame):
         sizer.Add(SimpleText(p, 'Fit Model: '),           (0, 0), (1, 1), LCEN)
         sizer.Add(self.fit_model,                         (0, 1), (1, 1), LCEN)
 
-        sizer.Add(SimpleText(p, 'Background: '),          (1, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_bkg,                           (1, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Background: '),          (0, 2), (1, 1), LCEN)
+        sizer.Add(self.fit_bkg,                           (0, 3), (1, 1), LCEN)
 
-        sizer.Add(SimpleText(p, 'Step Function Form: '),  (2, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_step,                          (2, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Step Function Form: '),  (1, 2), (1, 1), LCEN)
+        sizer.Add(self.fit_step,                          (1, 3), (1, 1), LCEN)
         sizer.Add(Button(panel, 'Show Fit', size=(100, -1),
-                             action=self.onFitPeak),       (3, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_report,                         (0, 2), (5, 2), LCEN, 3)
+                             action=self.onFitPeak),       (1, 0), (1, 2), LCEN)
+        sizer.Add(self.fit_report,                         (2, 0), (1, 5), LCEN, 3)
         pack(panel, sizer)
         return panel
 
