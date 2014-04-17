@@ -111,6 +111,8 @@ class Parameter(object):
                 self._val = min(self.max, self._val)
         except(TypeError, ValueError):
             self._val = nan
+        if isinstance(self._val, Parameter):
+            self._val = self._val.value
         return self._val
 
     def setup_bounds(self):
