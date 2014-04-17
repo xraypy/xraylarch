@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.2. XAFS: Post-edge Background Subtraction &mdash; larch 0.9.23 documentation</title>
+    <title>7.3. XAFS: Post-edge Background Subtraction &mdash; larch 0.9.23 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="7. XAFS Analysis" href="index.html" />
-    <link rel="next" title="7.3. XAFS: Utility functions" href="utilities.html" />
-    <link rel="prev" title="7.1. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" /> 
+    <link rel="next" title="7.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
+    <link rel="prev" title="7.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +49,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="utilities.html" title="7.3. XAFS: Utility functions"
+          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="preedge.html" title="7.1. XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="7.2. XAFS: Pre-edge Subtraction and Normalization"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>
@@ -73,20 +73,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.2. XAFS: Post-edge Background Subtraction</a><ul>
-<li><a class="reference internal" href="#the-autobk-function">7.2.1. The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
-<li><a class="reference internal" href="#the-autobk-algorithm">7.2.2. The AUTOBK Algorithm</a><ul>
-<li><a class="reference internal" href="#and-spline-for">7.2.2.1. <img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/></a></li>
-<li><a class="reference internal" href="#selecting-fourier-transform-parameters">7.2.2.2. Selecting Fourier transform parameters</a></li>
-<li><a class="reference internal" href="#using-a-standard">7.2.2.3. Using a standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></a></li>
-<li><a class="reference internal" href="#end-point-clamps-for-the-spline">7.2.2.4. End-point clamps for the spline</a></li>
-<li><a class="reference internal" href="#recommendations">7.2.2.5. Recommendations</a></li>
+<li><a class="reference internal" href="#">7.3. XAFS: Post-edge Background Subtraction</a><ul>
+<li><a class="reference internal" href="#the-autobk-function">7.3.1. The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
+<li><a class="reference internal" href="#the-autobk-algorithm">7.3.2. The AUTOBK Algorithm</a><ul>
+<li><a class="reference internal" href="#and-spline-for">7.3.2.1. <img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/></a></li>
+<li><a class="reference internal" href="#selecting-fourier-transform-parameters">7.3.2.2. Selecting Fourier transform parameters</a></li>
+<li><a class="reference internal" href="#using-a-standard">7.3.2.3. Using a standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></a></li>
+<li><a class="reference internal" href="#end-point-clamps-for-the-spline">7.3.2.4. End-point clamps for the spline</a></li>
+<li><a class="reference internal" href="#recommendations">7.3.2.5. Recommendations</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples">7.2.3. Examples</a><ul>
-<li><a class="reference internal" href="#basic-example">7.2.3.1. Basic example</a></li>
-<li><a class="reference internal" href="#adjusting-spline-clamps">7.2.3.2. Adjusting spline clamps</a></li>
-<li><a class="reference internal" href="#id1">7.2.3.3. Using a Standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></a></li>
+<li><a class="reference internal" href="#examples">7.3.3. Examples</a><ul>
+<li><a class="reference internal" href="#basic-example">7.3.3.1. Basic example</a></li>
+<li><a class="reference internal" href="#adjusting-spline-clamps">7.3.3.2. Adjusting spline clamps</a></li>
+<li><a class="reference internal" href="#id1">7.3.3.3. Using a Standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></a></li>
 </ul>
 </li>
 </ul>
@@ -95,10 +95,10 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="preedge.html"
-                        title="previous chapter">7.1. XAFS: Pre-edge Subtraction and Normalization</a></p>
+                        title="previous chapter">7.2. XAFS: Pre-edge Subtraction and Normalization</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="utilities.html"
-                        title="next chapter">7.3. XAFS: Utility functions</a></p>
+  <p class="topless"><a href="xafsft.html"
+                        title="next chapter">7.4. XAFS: Fourier Transforms for XAFS</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/autobk.txt"
@@ -126,7 +126,7 @@
           <div class="body">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-post-edge-background-subtraction"></span><h1>7.2. XAFS: Post-edge Background Subtraction<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-post-edge-background-subtraction"></span><h1>7.3. XAFS: Post-edge Background Subtraction<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>Background subtraction is one of the most important data processing steps
 in EXAFS analysis, converting the measured <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> into the
 <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> ready for quantitative analysis.  In Larch, this step is
@@ -134,10 +134,10 @@ performed by the <a class="reference internal" href="#_xafs.autobk" title="_xafs
 subtleties.  This section is devoted to background subtraction with the
 <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function and the underlying algorithm it uses.</p>
 <div class="section" id="the-autobk-function">
-<h2>7.2.1. The <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
+<h2>7.3.1. The <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.autobk">
-<tt class="descclassname">_xafs.</tt><tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">_xafs.</tt><tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine the post-edge background function, <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/>, and
 corresponding <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -175,7 +175,8 @@ which the signal is ignored. Default = 1.</li>
 </tr>
 </tbody>
 </table>
-<p>If a <tt class="docutils literal"><span class="pre">group</span></tt> argument is provided, the following data is put into it:</p>
+<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">mu</span></tt>.
+The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -268,7 +269,7 @@ determine <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631
 
 </div>
 <div class="section" id="the-autobk-algorithm">
-<h2>7.2.2. The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2>7.3.2. The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
 (see <span class="citation"><a class="reference internal" href="../biblio.html#citation-autobk">Newville, Livins, Yacoby, Rehr and Stern</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-autobk">11</a><span>]</span></span>), in which a spline function is matched to the
 low-<em>R</em> components of the resulting <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</p>
@@ -298,7 +299,7 @@ essentially the same -- so that we do not need to carefully take care of
 slow energy drifts in the measured <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> or worry about having an
 absolute measure of <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>.</p>
 <div class="section" id="and-spline-for">
-<h3>7.2.2.1. <img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
+<h3>7.3.2.1. <img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/> and spline for <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
 <p>A spline is a general mathematical function, and so using one to match
 <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> that we will subtract from the same <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> could
 easily match <em>too</em> well, and erase much of the data we're interested in.
@@ -347,7 +348,7 @@ even try to match those frequencies.  Thus, we are ensured of a
 <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/>.</p>
 </div>
 <div class="section" id="selecting-fourier-transform-parameters">
-<h3>7.2.2.2. Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
+<h3>7.3.2.2. Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
 <p>In order to determine <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/>, we must do a Fourier transform.
 These are discussed in more detail in the next section, but here we give
 the parameters affecting the Fourier transform used, and their default
@@ -417,7 +418,7 @@ parameter values for <a class="reference internal" href="#_xafs.autobk" title="_
 minor adjustments except in unusual cases.</p>
 </div>
 <div class="section" id="using-a-standard">
-<h3>7.2.2.3. Using a standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
+<h3>7.3.2.3. Using a standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
 <p>We said above that we want to minimize the low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> components of
 <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/>.  In principle, there should be some leakage of the first
 shell to fairly low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>.  This is especially noticeable for a short
@@ -434,7 +435,7 @@ be those that minimize the Fourier transorm of the difference of
 to give more consistent background for a set of related spectra.</p>
 </div>
 <div class="section" id="end-point-clamps-for-the-spline">
-<h3>7.2.2.4. End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
+<h3>7.3.2.4. End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
 <p>Because the spline is chosen to match the low-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> components of
 <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/>, the process does not even look at how the resulting
 <img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/> looks.  This can lead to some unstable behavior at the
@@ -458,7 +459,7 @@ strong clamp that will almost certainly force <img class="math" src="../_images/
 the end-points.</p>
 </div>
 <div class="section" id="recommendations">
-<h3>7.2.2.5. Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h3>
+<h3>7.3.2.5. Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h3>
 <p>Here, we give a few recommendations on what parameters most affect the
 background subtraction.  These parameters are (in roughly increasing
 order):</p>
@@ -478,19 +479,19 @@ the endpoints too much, increasing these values can help greatly.</p>
 </div>
 </div>
 <div class="section" id="examples">
-<h2>7.2.3. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2>7.3.3. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>Here, we give a few examples using <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>, and outline some of its
 features.</p>
 <div class="section" id="basic-example">
-<h3>7.2.3.1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h3>
+<h3>7.3.3.1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h3>
 <p>The simplest example of reading data and doing background subtraction would
 using all the default inputs would be:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/xafs/doc_autobk1.lar</span>
 <span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;../xafsdata/cu_rt01.xmu&#39;</span>
 <span class="n">cu</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">)</span>
-<span class="n">autobk</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu</span><span class="p">)</span>
 
-<span class="n">newplot</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">cu</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$\mu(E)$&#39;</span><span class="p">,</span>
         <span class="n">xmin</span><span class="o">=</span><span class="n">cu</span><span class="o">.</span><span class="n">e0</span><span class="o">-</span><span class="mi">100</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="n">cu</span><span class="o">.</span><span class="n">e0</span><span class="o">+</span><span class="mi">300</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="n">fname</span><span class="p">)</span>
@@ -555,7 +556,7 @@ here to demonstrate the method for passing arguments to <a class="reference inte
 better, which brings us to the next section.</p>
 </div>
 <div class="section" id="adjusting-spline-clamps">
-<h3>7.2.3.2. Adjusting spline clamps<a class="headerlink" href="#adjusting-spline-clamps" title="Permalink to this headline">¶</a></h3>
+<h3>7.3.3.2. Adjusting spline clamps<a class="headerlink" href="#adjusting-spline-clamps" title="Permalink to this headline">¶</a></h3>
 <p>For the scorodite example above, the XAFS diverges from 0 at the
 high-<img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> end of the spectra.  Playing with the spline clamps
 discussed above, we try a few options to study the effect of adding a
@@ -596,7 +597,7 @@ clamp:</p>
 </div>
 </div>
 <div class="section" id="id1">
-<h3>7.2.3.3. Using a Standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3>7.3.3.3. Using a Standard <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Since the EXAFS contribution from the first shell is not perfectly isolated
 in <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>, it can leak into portion of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> below
 <img class="math" src="../_images/math/c58f2b141839359a1c621e216ea93b2f9285c027.png" alt="R_{\rm bkg}"/>.  It may be desirable to not simply reduce the portion
@@ -615,18 +616,18 @@ function.</p>
 
 <span class="n">chidat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">chi_fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;k chi&#39;</span><span class="p">)</span>
 
-<span class="n">pre_edge</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu1</span><span class="p">)</span>
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu1</span><span class="p">)</span>
 
 <span class="n">cu2</span> <span class="o">=</span> <span class="n">copy</span><span class="p">(</span><span class="n">cu1</span><span class="p">)</span>
 
-<span class="n">autobk</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu1</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu1</span><span class="p">)</span>
 
 <span class="c"># now with std...</span>
-<span class="n">autobk</span><span class="p">(</span><span class="n">cu2</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu2</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu2</span><span class="p">,</span> <span class="n">k_std</span><span class="o">=</span><span class="n">chidat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi_std</span><span class="o">=</span><span class="n">chidat</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span>
+<span class="n">autobk</span><span class="p">(</span><span class="n">cu2</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">cu2</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu2</span><span class="p">,</span> <span class="n">k_std</span><span class="o">=</span><span class="n">chidat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">chi_std</span><span class="o">=</span><span class="n">chidat</span><span class="o">.</span><span class="n">chi</span><span class="p">)</span>
 
-<span class="n">xafsft</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;han&#39;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu1</span><span class="p">)</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;han&#39;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu1</span><span class="p">)</span>
 
-<span class="n">xafsft</span><span class="p">(</span><span class="n">cu2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">cu2</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;han&#39;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu2</span><span class="p">)</span>
+<span class="n">xftf</span><span class="p">(</span><span class="n">cu2</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">cu2</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;han&#39;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">cu2</span><span class="p">)</span>
 
 
 <span class="n">plot</span><span class="p">(</span><span class="n">cu1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">cu1</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">cu1</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;no std&#39;</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
@@ -655,10 +656,10 @@ function.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="utilities.html" title="7.3. XAFS: Utility functions"
+          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
              >next</a> |</li>
         <li class="right" >
-          <a href="preedge.html" title="7.1. XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="7.2. XAFS: Pre-edge Subtraction and Normalization"
              >previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>

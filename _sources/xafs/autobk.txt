@@ -15,7 +15,7 @@ subtleties.  This section is devoted to background subtraction with the
 The :func:`autobk` function
 =============================
 
-..  function:: autobk(energy, mu, group=None, rbkg=1.0, ...)
+..  function:: autobk(energy, mu=None, group=None, rbkg=1.0, ...)
 
     Determine the post-edge background function, :math:`\mu_0(E)`, and
     corresponding :math:`\chi(k)`.
@@ -45,7 +45,8 @@ The :func:`autobk` function
 
     :returns: ``None``.
 
-    If a ``group`` argument is provided, the following data is put into it:
+    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
+    The following data is put into the output group:
 
        ================= ===============================================================
         attribute         meaning

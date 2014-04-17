@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.1. XAFS: Pre-edge Subtraction and Normalization &mdash; larch 0.9.23 documentation</title>
+    <title>7.2. XAFS: Pre-edge Subtraction and Normalization &mdash; larch 0.9.23 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="7. XAFS Analysis" href="index.html" />
-    <link rel="next" title="7.2. XAFS: Post-edge Background Subtraction" href="autobk.html" />
-    <link rel="prev" title="7. XAFS Analysis" href="index.html" /> 
+    <link rel="next" title="7.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
+    <link rel="prev" title="7.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +49,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="7.3. XAFS: Post-edge Background Subtraction"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="7. XAFS Analysis"
+          <a href="utilities.html" title="7.1. XAFS Functions: Overview and Naming Conventions"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>
@@ -73,18 +73,18 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.1. XAFS: Pre-edge Subtraction and Normalization</a><ul>
-<li><a class="reference internal" href="#example">7.1.1. Example</a></li>
+<li><a class="reference internal" href="#">7.2. XAFS: Pre-edge Subtraction and Normalization</a><ul>
+<li><a class="reference internal" href="#example">7.2.1. Example</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="index.html"
-                        title="previous chapter">7. XAFS Analysis</a></p>
+  <p class="topless"><a href="utilities.html"
+                        title="previous chapter">7.1. XAFS Functions: Overview and Naming Conventions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="autobk.html"
-                        title="next chapter">7.2. XAFS: Post-edge Background Subtraction</a></p>
+                        title="next chapter">7.3. XAFS: Post-edge Background Subtraction</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/preedge.txt"
@@ -112,7 +112,7 @@
           <div class="body">
             
   <div class="section" id="xafs-pre-edge-subtraction-and-normalization">
-<h1>7.1. XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#xafs-pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
+<h1>7.2. XAFS: Pre-edge Subtraction and Normalization<a class="headerlink" href="#xafs-pre-edge-subtraction-and-normalization" title="Permalink to this headline">¶</a></h1>
 <p>After reading in data and constructing <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>, the principle
 pre-processing steps for XAFS analysis.  are pre-edge subtraction and
 normalization.  Reading data and constructing <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> are handled by
@@ -157,7 +157,8 @@ post-edge, normalization curve. Default=3 (quadratic)</li>
 </tr>
 </tbody>
 </table>
-<p>If a <tt class="docutils literal"><span class="pre">group</span></tt> argument is provided, the following data is put into it:</p>
+<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">mu</span></tt>.
+The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -222,7 +223,7 @@ That is, a line <img class="math" src="../_images/math/45c9a466bcbb4f5fce91afa3b
 </dl>
 <dl class="function">
 <dt id="find_e0">
-<tt class="descname">find_e0</tt><big>(</big><em>energy</em>, <em>mu</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">find_e0</tt><big>(</big><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#find_e0" title="Permalink to this definition">¶</a></dt>
 <dd><p>Determine <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/>, the energy threshold of the absorption edge,
 from the arrays energy and mu for <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/>.</p>
 <p>This finds the point with maximum derivative with some
@@ -240,20 +241,21 @@ checks to avoid spurious glitches.</p>
 </tr>
 </tbody>
 </table>
-<p>The value of <tt class="docutils literal"><span class="pre">e0</span></tt> will be written to the output group.</p>
+<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">energy</span></tt> and <tt class="docutils literal"><span class="pre">mu</span></tt>.
+The value of <tt class="docutils literal"><span class="pre">e0</span></tt> will be written to the output group.</p>
 </dd></dl>
 
 <div class="section" id="example">
-<h2>7.1.1. Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
+<h2>7.2.1. Example<a class="headerlink" href="#example" title="Permalink to this headline">¶</a></h2>
 <p>A simple example of pre-edge subtraction:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">fname</span> <span class="o">=</span> <span class="s">&#39;fe2o3_rt1.xmu&#39;</span>
-<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy xmu i0&#39;</span><span class="p">)</span>
+<span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">fname</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy mu i0&#39;</span><span class="p">)</span>
 
-<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
+<span class="n">pre_edge</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat</span><span class="p">)</span>
 
 <span class="n">show</span><span class="p">(</span><span class="n">dat</span><span class="p">)</span>
 
-<span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">xmu</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39; $ \mu(E) $ &#39;</span><span class="p">,</span>
+<span class="n">newplot</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">energy</span><span class="p">,</span> <span class="n">dat</span><span class="o">.</span><span class="n">mu</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39; $ \mu(E) $ &#39;</span><span class="p">,</span>
         <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;Energy (eV)&#39;</span><span class="p">,</span>
         <span class="n">title</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%s</span><span class="s"> Pre-Edge &#39;</span> <span class="o">%</span> <span class="n">fname</span><span class="p">,</span>
         <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
@@ -286,10 +288,10 @@ checks to avoid spurious glitches.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="autobk.html" title="7.2. XAFS: Post-edge Background Subtraction"
+          <a href="autobk.html" title="7.3. XAFS: Post-edge Background Subtraction"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="7. XAFS Analysis"
+          <a href="utilities.html" title="7.1. XAFS Functions: Overview and Naming Conventions"
              >previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>

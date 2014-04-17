@@ -32,7 +32,9 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
 
     :returns:  None.
 
-    If a ``group`` argument is provided, the following data is put into it:
+
+    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
+    The following data is put into the output group:
 
        ==============   ======================================================
         attribute        meaning
@@ -57,7 +59,7 @@ Notes:
    That is, a line :math:`(m E + b)` is fit to
    :math:`\mu(E) E^{nvict}`   over the pr-edge region, E= [E0+pre1, E0+pre2].
 
-..  function:: find_e0(energy, mu, group=None, ...)
+..  function:: find_e0(energy, mu=None, group=None, ...)
 
     Determine :math:`E_0`, the energy threshold of the absorption edge,
     from the arrays energy and mu for :math:`\mu(E)`.
@@ -70,22 +72,23 @@ Notes:
     :param   mu:    array of :math:`\mu(E)`
     :param group:   output group
 
+    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
     The value of ``e0`` will be written to the output group.
 
 
 Example
-=========
+============
 
 A simple example of pre-edge subtraction::
 
     fname = 'fe2o3_rt1.xmu'
-    dat = read_ascii(fname, labels='energy xmu i0')
+    dat = read_ascii(fname, labels='energy mu i0')
 
-    pre_edge(dat.energy, dat.xmu, group=dat)
+    pre_edge(dat, group=dat)
 
     show(dat)
 
-    newplot(dat.energy, dat.xmu, label=' $ \mu(E) $ ',
+    newplot(dat.energy, dat.mu, label=' $ \mu(E) $ ',
             xlabel='Energy (eV)',
             title='%s Pre-Edge ' % fname,
             show_legend=True)

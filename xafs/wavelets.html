@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.7. XAFS: Wavelet Transforms for XAFS &mdash; larch 0.9.23 documentation</title>
+    <title>7.5. XAFS: Wavelet Transforms for XAFS &mdash; larch 0.9.23 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="7. XAFS Analysis" href="index.html" />
-    <link rel="next" title="8. X-ray Databases" href="../xray/index.html" />
-    <link rel="prev" title="7.6. XAFS: Fitting XAFS to Feff Paths" href="feffit.html" /> 
+    <link rel="next" title="7.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
+    <link rel="prev" title="7.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +49,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../xray/index.html" title="8. X-ray Databases"
+          <a href="feffpaths.html" title="7.6. XAFS: Reading and using Feff Paths"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="feffit.html" title="7.6. XAFS: Fitting XAFS to Feff Paths"
+          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>
@@ -73,19 +73,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.7. XAFS: Wavelet Transforms for XAFS</a><ul>
-<li><a class="reference internal" href="#cauchy-wavelet">7.7.1. <tt class="docutils literal"><span class="pre">cauchy_wavelet()</span></tt></a></li>
-<li><a class="reference internal" href="#wavelet-example">7.7.2. Wavelet Example</a></li>
+<li><a class="reference internal" href="#">7.5. XAFS: Wavelet Transforms for XAFS</a><ul>
+<li><a class="reference internal" href="#cauchy-wavelet">7.5.1. <tt class="docutils literal"><span class="pre">cauchy_wavelet()</span></tt></a></li>
+<li><a class="reference internal" href="#wavelet-example">7.5.2. Wavelet Example</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="feffit.html"
-                        title="previous chapter">7.6. XAFS: Fitting XAFS to Feff Paths</a></p>
+  <p class="topless"><a href="xafsft.html"
+                        title="previous chapter">7.4. XAFS: Fourier Transforms for XAFS</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="../xray/index.html"
-                        title="next chapter">8. X-ray Databases</a></p>
+  <p class="topless"><a href="feffpaths.html"
+                        title="next chapter">7.6. XAFS: Reading and using Feff Paths</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/wavelets.txt"
@@ -113,7 +113,7 @@
           <div class="body">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-wavelet-transforms-for-xafs"></span><span id="xafs-wavelet-sec"></span><h1>7.7. XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-wavelet-transforms-for-xafs"></span><span id="xafs-wavelet-sec"></span><h1>7.5. XAFS: Wavelet Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p><a class="reference external" href="http://en.wikipedia.org/wiki/Wavelet_transform">Wavelet transforms</a> extend Fourier transforms, effectively separating
 contributions of a waveform into both time and frequency (or, for EXAFS,
 <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> and <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>).  A variety of mathematical kernels can be used
@@ -123,7 +123,7 @@ applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by
 <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><tt class="xref py py-func docutils literal"><span class="pre">cauchy_wavelet()</span></tt></a> function described below follows this work,  and
 that article should be cited as the reference for this transform.</p>
 <div class="section" id="cauchy-wavelet">
-<h2>7.7.1. <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><tt class="xref py py-func docutils literal"><span class="pre">cauchy_wavelet()</span></tt></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
+<h2>7.5.1. <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><tt class="xref py py-func docutils literal"><span class="pre">cauchy_wavelet()</span></tt></a><a class="headerlink" href="#cauchy-wavelet" title="Permalink to this headline">¶</a></h2>
 <p>The Continuous Cauchy Wavelet transform of <span class="citation"><a class="reference internal" href="../biblio.html#citation-munoz-wavelet">Munoz, Argoul and Farges</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-munoz-wavelet">7</a><span>]</span></span>
 is implemented as the function <a class="reference internal" href="#_xafs.cauchy_wavelet" title="_xafs.cauchy_wavelet"><tt class="xref py py-func docutils literal"><span class="pre">cauchy_wavelet()</span></tt></a>:</p>
 <dl class="function">
@@ -187,7 +187,7 @@ values with spacing <tt class="docutils literal"><span class="pre">kstep</span><
 
 </div>
 <div class="section" id="wavelet-example">
-<h2>7.7.2. Wavelet Example<a class="headerlink" href="#wavelet-example" title="Permalink to this headline">¶</a></h2>
+<h2>7.5.2. Wavelet Example<a class="headerlink" href="#wavelet-example" title="Permalink to this headline">¶</a></h2>
 <p>Applying the Cauchy wavelet transform to Fe K-edge data of FeO is fairly
 straightforward:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># wavelet transform in larch</span>
@@ -233,7 +233,7 @@ along the horizontal axis extending to 16 <img class="math" src="../_images/math
 <div style="width: 45%" class="subfigure" id="fig-xafswt-2">
 <a class="reference external image-reference" href="../_images/xwt_re.png"><img alt="../_images/xwt_re.png" src="../_images/xwt_re.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.28:</strong> The Cauchy Wavelet transforms, with magnitude on the left hand panel
+<p class="caption"><strong>Figure 7.19:</strong> The Cauchy Wavelet transforms, with magnitude on the left hand panel
 and real part on the right hand panel.</p>
 </div><p id="fig_xafswft">The projection of the wavelets to <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> and <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> space looks like:</p>
 <div class="figure compound align-center" id="fig_xafswft_proj">
@@ -243,7 +243,7 @@ and real part on the right hand panel.</p>
 <div style="width: 45%" class="subfigure" id="fig-xafswt-4">
 <a class="reference external image-reference" href="../_images/xwt_rsp.png"><img alt="../_images/xwt_rsp.png" src="../_images/xwt_rsp.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.29:</strong> The Cauchy Wavelet transform projected to <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> and math:<cite>R</cite>
+<p class="caption"><strong>Figure 7.20:</strong> The Cauchy Wavelet transform projected to <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> and math:<cite>R</cite>
 space.  In the left hand pnael, the original EXAFS (<img class="math" src="../_images/math/ef96a6759ac01588fa6f595bec163ef4dcd06763.png" alt="k^2\chi(k)"/>)
 is shown for comparison.</p>
 <span class="target" id="fig_xafswft_proj"></span></div></div>
@@ -262,10 +262,10 @@ is shown for comparison.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../xray/index.html" title="8. X-ray Databases"
+          <a href="feffpaths.html" title="7.6. XAFS: Reading and using Feff Paths"
              >next</a> |</li>
         <li class="right" >
-          <a href="feffit.html" title="7.6. XAFS: Fitting XAFS to Feff Paths"
+          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
              >previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>

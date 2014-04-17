@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.6. XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.23 documentation</title>
+    <title>7.7. XAFS: Fitting XAFS to Feff Paths &mdash; larch 0.9.23 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,8 +26,8 @@
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="7. XAFS Analysis" href="index.html" />
-    <link rel="next" title="7.7. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
-    <link rel="prev" title="7.5. XAFS: Reading and using Feff Paths" href="feffpaths.html" /> 
+    <link rel="next" title="8. X-ray Databases" href="../xray/index.html" />
+    <link rel="prev" title="7.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" /> 
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -49,10 +49,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="wavelets.html" title="7.7. XAFS: Wavelet Transforms for XAFS"
+          <a href="../xray/index.html" title="8. X-ray Databases"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="feffpaths.html" title="7.5. XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="7.6. XAFS: Reading and using Feff Paths"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>
@@ -73,29 +73,29 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.6. XAFS: Fitting XAFS to Feff Paths</a><ul>
-<li><a class="reference internal" href="#the-feffit-strategy-for-modeling-exafs-data">7.6.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
-<li><a class="reference internal" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit">7.6.2. Fit statistics and goodness-of-fit meassures for <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
-<li><a class="reference internal" href="#the-feffit-functions-in-larch">7.6.3. The Feffit functions in Larch</a></li>
-<li><a class="reference internal" href="#feffit-transform">7.6.4. <tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
-<li><a class="reference internal" href="#feffit-dataset">7.6.5. <tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
-<li><a class="reference internal" href="#feffit">7.6.6. <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
-<li><a class="reference internal" href="#feffit-report">7.6.7. <tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
-<li><a class="reference internal" href="#example-1-simple-fit-with-1-path">7.6.8. Example 1: Simple fit with 1 Path</a></li>
-<li><a class="reference internal" href="#example-2-fit-1-dataset-with-3-paths">7.6.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
-<li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">7.6.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
-<li><a class="reference internal" href="#example-4-measuring-coordination-number">7.6.11. Example 4: Measuring Coordination number</a></li>
-<li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">7.6.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
+<li><a class="reference internal" href="#">7.7. XAFS: Fitting XAFS to Feff Paths</a><ul>
+<li><a class="reference internal" href="#the-feffit-strategy-for-modeling-exafs-data">7.7.1. The Feffit Strategy for Modeling EXAFS Data</a></li>
+<li><a class="reference internal" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit">7.7.2. Fit statistics and goodness-of-fit meassures for <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li><a class="reference internal" href="#the-feffit-functions-in-larch">7.7.3. The Feffit functions in Larch</a></li>
+<li><a class="reference internal" href="#feffit-transform">7.7.4. <tt class="docutils literal"><span class="pre">feffit_transform()</span></tt></a></li>
+<li><a class="reference internal" href="#feffit-dataset">7.7.5. <tt class="docutils literal"><span class="pre">feffit_dataset()</span></tt></a></li>
+<li><a class="reference internal" href="#feffit">7.7.6. <tt class="docutils literal"><span class="pre">feffit()</span></tt></a></li>
+<li><a class="reference internal" href="#feffit-report">7.7.7. <tt class="docutils literal"><span class="pre">feffit_report()</span></tt></a></li>
+<li><a class="reference internal" href="#example-1-simple-fit-with-1-path">7.7.8. Example 1: Simple fit with 1 Path</a></li>
+<li><a class="reference internal" href="#example-2-fit-1-dataset-with-3-paths">7.7.9. Example 2: Fit 1 dataset with 3 Paths</a></li>
+<li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">7.7.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
+<li><a class="reference internal" href="#example-4-measuring-coordination-number">7.7.11. Example 4: Measuring Coordination number</a></li>
+<li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">7.7.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="feffpaths.html"
-                        title="previous chapter">7.5. XAFS: Reading and using Feff Paths</a></p>
+                        title="previous chapter">7.6. XAFS: Reading and using Feff Paths</a></p>
   <h4>Next topic</h4>
-  <p class="topless"><a href="wavelets.html"
-                        title="next chapter">7.7. XAFS: Wavelet Transforms for XAFS</a></p>
+  <p class="topless"><a href="../xray/index.html"
+                        title="next chapter">8. X-ray Databases</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/feffit.txt"
@@ -123,20 +123,20 @@
           <div class="body">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-fitting-xafs-to-feff-paths"></span><h1>7.6. XAFS: Fitting XAFS to Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-fitting-xafs-to-feff-paths"></span><h1>7.7. XAFS: Fitting XAFS to Feff Paths<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>Fitting XAFS data with structural models based on Feff calculations is a
 primary motivation for Larch.  In this section, we describe how to set up a
 fitting model to fit a set of FEFF calculations to XAFS data.  Many parts
 of the documentation so far have touched on important aspects of this
 process, and those sections will be referenced here.</p>
 <div class="section" id="the-feffit-strategy-for-modeling-exafs-data">
-<h2>7.6.1. The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.1. The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
 <p>The basic approach to modeling EXAFS data in Larch (see
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-feffit">Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-feffit">8</a><span>]</span></span>) is to create a model EXAFS <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> as a
 sum of scattering paths that will be compared to experimentally derived
 <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
-As discussed in <a class="reference internal" href="feffpaths.html#xafs-feffpaths-sec">7.5</a>, these FEFF Paths have a fixed
+As discussed in <a class="reference internal" href="feffpaths.html#xafs-feffpaths-sec">7.6</a>, these FEFF Paths have a fixed
 set of physically meaningful parameters than can be modified to alter the
 predicted contribution to <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  Any of these values can be
 defined as algebraic expressions of Larch Parameters defined by
@@ -151,7 +151,7 @@ experimental and model <img class="math" src="../_images/math/6afff318d648d12966
 <div class="math">
 <p><img src="../_images/math/699de8efa0d7f5fd748ca82e34ee0c26623f41c2.png" alt="\chi(k) = \sum_{j} \chi_{j}(k, p_j)"/></p>
 </div><p>where <img class="math" src="../_images/math/2b13d520a1962c3400102442703087f89a90d098.png" alt="\chi_j"/> is the EXAFS contribution for a FEFF Path, as given in
-<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.5.4</a> for path <img class="math" src="../_images/math/d32c78b759903e3f4bd4fd2ce0b86358f7500c5d.png" alt="j"/>, where <img class="math" src="../_images/math/ebca3d0bacbd2a95a89d2663ffe19d17e37ffcbf.png" alt="p_j"/> is the
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a> for path <img class="math" src="../_images/math/d32c78b759903e3f4bd4fd2ce0b86358f7500c5d.png" alt="j"/>, where <img class="math" src="../_images/math/ebca3d0bacbd2a95a89d2663ffe19d17e37ffcbf.png" alt="p_j"/> is the
 set of adjustable Path Parameters (<img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/>, <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/>,
 <img class="math" src="../_images/math/4c750c82e15f7daf4605e7a5cba2736a18ad02da.png" alt="\delta{R}"/>, <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/>, and so on) listed as <tt class="docutils literal"><span class="pre">Adjustable</span></tt> in
 the <a class="reference internal" href="feffpaths.html#xafs-pathparams-table"><em>Table of Feff Path Parameters</em></a>.</p>
@@ -199,7 +199,7 @@ Fourier transforms.   Fitting in unfiltred <img class="math" src="../_images/mat
 recommended.</p>
 </div>
 <div class="section" id="fit-statistics-and-goodness-of-fit-meassures-for-feffit">
-<h2>7.6.2. Fit statistics and goodness-of-fit meassures for <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a><a class="headerlink" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.2. Fit statistics and goodness-of-fit meassures for <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a><a class="headerlink" href="#fit-statistics-and-goodness-of-fit-meassures-for-feffit" title="Permalink to this headline">¶</a></h2>
 <p>The fit done by <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> is conceptually very similar to the fits
 described in <a class="reference internal" href="../fitting/minimize.html#fitting-minimize-sec">6.3</a>.   Therefore, many of the
 statistics discussed in <a class="reference internal" href="../fitting/results.html#fitting-results-sec">6.4</a> are also generated for
@@ -259,7 +259,7 @@ defined as</p>
 </div><p>which is to say, the misfit scaled by the magnitude of the data.</p>
 </div>
 <div class="section" id="the-feffit-functions-in-larch">
-<h2>7.6.3. The Feffit functions in Larch<a class="headerlink" href="#the-feffit-functions-in-larch" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.3. The Feffit functions in Larch<a class="headerlink" href="#the-feffit-functions-in-larch" title="Permalink to this headline">¶</a></h2>
 <p>The function <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> is the principle function to do the fit of a
 set of Feff paths to XAFS spectra.  This essentially runs
 <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> with a parameter group, but with a built-in
@@ -297,7 +297,7 @@ or list of datasets groups.</li>
 </div></blockquote>
 </div>
 <div class="section" id="feffit-transform">
-<h2>7.6.4. <a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><tt class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></tt></a><a class="headerlink" href="#feffit-transform" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.4. <a class="reference internal" href="#_xafs.feffit_transform" title="_xafs.feffit_transform"><tt class="xref py py-func docutils literal"><span class="pre">feffit_transform()</span></tt></a><a class="headerlink" href="#feffit-transform" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit_transform">
 <tt class="descclassname">_xafs.</tt><tt class="descname">feffit_transform</tt><big>(</big><em>fitspace='r'</em>, <em>kmin=0</em>, <em>kmax=20</em>, <em>kweight=2</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.feffit_transform" title="Permalink to this definition">¶</a></dt>
@@ -339,7 +339,7 @@ used to do some transforms.</p>
 
 </div>
 <div class="section" id="feffit-dataset">
-<h2>7.6.5. <a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><tt class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></tt></a><a class="headerlink" href="#feffit-dataset" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.5. <a class="reference internal" href="#_xafs.feffit_dataset" title="_xafs.feffit_dataset"><tt class="xref py py-func docutils literal"><span class="pre">feffit_dataset()</span></tt></a><a class="headerlink" href="#feffit-dataset" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit_dataset">
 <tt class="descclassname">_xafs.</tt><tt class="descname">feffit_dataset</tt><big>(</big><em>data=None</em>, <em>pathlist=</em>, <span class="optional">[</span><span class="optional">]</span><em>transform=None</em><big>)</big><a class="headerlink" href="#_xafs.feffit_dataset" title="Permalink to this definition">¶</a></dt>
@@ -411,7 +411,7 @@ experimental data.</p>
 
 </div>
 <div class="section" id="feffit">
-<h2>7.6.6. <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a><a class="headerlink" href="#feffit" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.6. <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a><a class="headerlink" href="#feffit" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit">
 <tt class="descclassname">_xafs.</tt><tt class="descname">feffit</tt><big>(</big><em>paramgroup</em>, <em>datasets</em>, <em>rmax_out=10</em>, <em>path_outputs=True</em><big>)</big><a class="headerlink" href="#_xafs.feffit" title="Permalink to this definition">¶</a></dt>
@@ -567,7 +567,7 @@ Transforms for XAFS</em></a>.</p>
 </div></blockquote>
 </div>
 <div class="section" id="feffit-report">
-<h2>7.6.7. <a class="reference internal" href="#_xafs.feffit_report" title="_xafs.feffit_report"><tt class="xref py py-func docutils literal"><span class="pre">feffit_report()</span></tt></a><a class="headerlink" href="#feffit-report" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.7. <a class="reference internal" href="#_xafs.feffit_report" title="_xafs.feffit_report"><tt class="xref py py-func docutils literal"><span class="pre">feffit_report()</span></tt></a><a class="headerlink" href="#feffit-report" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.feffit_report">
 <tt class="descclassname">_xafs.</tt><tt class="descname">feffit_report</tt><big>(</big><em>fit_result</em><big>)</big><a class="headerlink" href="#_xafs.feffit_report" title="Permalink to this definition">¶</a></dt>
@@ -584,7 +584,7 @@ Transforms for XAFS</em></a>.</p>
 
 </div>
 <div class="section" id="example-1-simple-fit-with-1-path">
-<h2>7.6.8. Example 1: Simple fit with 1 Path<a class="headerlink" href="#example-1-simple-fit-with-1-path" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.8. Example 1: Simple fit with 1 Path<a class="headerlink" href="#example-1-simple-fit-with-1-path" title="Permalink to this headline">¶</a></h2>
 <p>We start with a fairly minimal example, fitting spectra read from a data
 file with a single Feff Path.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffit1.lar</span>
@@ -713,7 +713,7 @@ commands.</p>
 <div style="width: 45%" class="subfigure" id="fig-feffit1b">
 <a class="reference external image-reference" href="../_images/feffit_example2.png"><img alt="../_images/feffit_example2.png" src="../_images/feffit_example2.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.16:</strong> Results for Feffit for a simple 1-shell fit to a spectrum from Cu
+<p class="caption"><strong>Figure 7.25:</strong> Results for Feffit for a simple 1-shell fit to a spectrum from Cu
 metal.</p>
 </div><p id="fig-feffit1">This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
@@ -876,7 +876,7 @@ the plot commands in the script above with:</p>
 fragment everywhere.  We'll use this in the examples below.</p>
 </div>
 <div class="section" id="example-2-fit-1-dataset-with-3-paths">
-<h2>7.6.9. Example 2: Fit 1 dataset with 3 Paths<a class="headerlink" href="#example-2-fit-1-dataset-with-3-paths" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.9. Example 2: Fit 1 dataset with 3 Paths<a class="headerlink" href="#example-2-fit-1-dataset-with-3-paths" title="Permalink to this headline">¶</a></h2>
 <p>We'll continue with the Cu data set, and add more paths to model further
 shells.  This is fairly straightforward, but in the interest of space,
 we'll limit the example here to 3 paths to model the first two shells of
@@ -1036,7 +1036,7 @@ vary independently for each path.</p>
 <div style="width: 45%" class="subfigure" id="fig-feffit2b">
 <a class="reference external image-reference" href="../_images/feffit_example4.png"><img alt="../_images/feffit_example4.png" src="../_images/feffit_example4.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.17:</strong> Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
+<p class="caption"><strong>Figure 7.26:</strong> Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
 constraining all path distances to expand with a single variable.</p>
 </div><p id="fig-feffit2">Here, we show both the magnitude and real part of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>.  The fit
 to the real part shows excellent agreement over the fit <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> range of
@@ -1055,10 +1055,10 @@ straightforward, as we can just do:</p>
 <div style="width: 45%" class="subfigure" id="fig-feffit3b">
 <a class="reference external image-reference" href="../_images/feffit_example6.png"><img alt="../_images/feffit_example6.png" src="../_images/feffit_example6.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.18:</strong> Path contributions to full mode for the 3-shell fit to Cu spectrum.</p>
+<p class="caption"><strong>Figure 7.27:</strong> Path contributions to full mode for the 3-shell fit to Cu spectrum.</p>
 </div></div>
 <div class="section" id="example-3-fit-3-datasets-with-1-path-each">
-<span id="fig-feffit3"></span><h2>7.6.10. Example 3: Fit 3 datasets with 1 Path each<a class="headerlink" href="#example-3-fit-3-datasets-with-1-path-each" title="Permalink to this headline">¶</a></h2>
+<span id="fig-feffit3"></span><h2>7.7.10. Example 3: Fit 3 datasets with 1 Path each<a class="headerlink" href="#example-3-fit-3-datasets-with-1-path-each" title="Permalink to this headline">¶</a></h2>
 <p>We'll extend the above example by adding two more data sets.  Since the
 three data sets have some things in common, we'll be able to use some a
 smaller number of total variable parameters for all data sets than if we
@@ -1285,7 +1285,7 @@ correlation significantly reduces the estimated uncertainty.</p>
 <a class="reference external image-reference" href="../_images/feffit_3temp6.png"><img alt="../_images/feffit_3temp6.png" src="../_images/feffit_3temp6.png" style="width: 100%;" /></a>
 <p class="caption"><strong>(f)</strong> Fit to Cu <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> at 150 K</p>
 </div>
-<p class="caption"><strong>Figure 7.19:</strong> Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
+<p class="caption"><strong>Figure 7.28:</strong> Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
 3 datasets with 5 variables used.</p>
 </div><p id="fig-feffit3temps">Again, in the interest of brevity and consistency through this chapter,
 these example are deliberately simple and meant to be illustrative of the
@@ -1293,7 +1293,7 @@ capabilities and procedures and should not be viewed as limiting the types
 of problems that can be modeled.</p>
 </div>
 <div class="section" id="example-4-measuring-coordination-number">
-<h2>7.6.11. Example 4: Measuring Coordination number<a class="headerlink" href="#example-4-measuring-coordination-number" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.11. Example 4: Measuring Coordination number<a class="headerlink" href="#example-4-measuring-coordination-number" title="Permalink to this headline">¶</a></h2>
 <p>For this and the following example, we switch from Cu metal data to data on
 a simple metal oxide, FeO.  The structure is a basic rock-salt structure,
 and we'll model 2 paths for Fe-O and Fe-Fe in this structure.  While the
@@ -1445,10 +1445,10 @@ used in the fit.</p>
 <a class="reference external image-reference" href="../_images/feffit_feo_r.png"><img alt="../_images/feffit_feo_r.png" src="../_images/feffit_feo_r.png" style="width: 100%;" /></a>
 <p class="caption"><strong>(b)</strong> Fit to FeO spectra, <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> space</p>
 </div>
-<p class="caption"><strong>Figure 7.20:</strong> Fits to 2-path fit to FeO EXAFS.</p>
+<p class="caption"><strong>Figure 7.29:</strong> Fits to 2-path fit to FeO EXAFS.</p>
 </div></div>
 <div class="section" id="example-5-comparing-fits-in-different-fit-spaces">
-<span id="fig-feffit-feo"></span><h2>7.6.12. Example 5: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-5-comparing-fits-in-different-fit-spaces" title="Permalink to this headline">¶</a></h2>
+<span id="fig-feffit-feo"></span><h2>7.7.12. Example 5: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-5-comparing-fits-in-different-fit-spaces" title="Permalink to this headline">¶</a></h2>
 <p>We now turn to comparing fits in unfiltered k-space, R-space, and filter
 k-space (or &quot;q space&quot;).  This is partly to illustrate the preference for
 using R- or q-space for fitting, and partly to demonstrate how one can run
@@ -1628,10 +1628,10 @@ parameters.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="wavelets.html" title="7.7. XAFS: Wavelet Transforms for XAFS"
+          <a href="../xray/index.html" title="8. X-ray Databases"
              >next</a> |</li>
         <li class="right" >
-          <a href="feffpaths.html" title="7.5. XAFS: Reading and using Feff Paths"
+          <a href="feffpaths.html" title="7.6. XAFS: Reading and using Feff Paths"
              >previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>
