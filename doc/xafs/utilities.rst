@@ -40,8 +40,8 @@ scalars for various data associated with XAFS, including FEFF calculations.  Giv
 the physical quantity described, and the name of function that will generate this value.
 
 
-  +---------------+--------+-----------------------------+---------------------------------+
-  | name          | type   |   meaning                   | created by                      |
+  +---------------+--------+-----------------------------+------------------------------------+
+  | name          | type   |   meaning                   | created by                         |
   +===============+========+=============================+====================================+
   | energy        | array  | :math:`E` in eV             | original data                      | 
   +---------------+--------+-----------------------------+------------------------------------+
@@ -98,7 +98,7 @@ where :math:`q`, :math:`\chi(q)`, and so on indicates back-transformed :math:`k`
 
 
 The XAFS functions encourage following this convention, in that they are consistent in wanting
-:math:`chi(k)` to be represented by the two arrays ``GROUP.k`` and ``GROUP.chi``
+:math:`\chi(k)` to be represented by the two arrays ``GROUP.k`` and ``GROUP.chi``
 
 
 `group` argument and ``_sys.xafsGroup``
@@ -260,8 +260,8 @@ again, considering that the estimate for :math:`\epsilon` is probably too
 small, the estimate may not be that bad.
 
 
-The :func:`xas_decovolve` function
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The :func:`xas_deconvolve` function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ..  function:: xas_deconvolve(energy, norm=Noned group=None, form='gaussian', esigma=1.0, eshift=0.0)
 
@@ -279,7 +279,13 @@ The :func:`xas_decovolve` function
     :param eshift:   energy shift (in eV) to apply to result. [default=0] 
 
 
-    Support First Argument Group convention, requiring group members `energy` and `norm`.
-    
-    Writes the array `deconv` to the output group (or `_sys.xafsGroup`).
+    Follows the First Argument Group convention, using group members named ``energy`` and ``norm``.  
+    The following data is put into the output group:
+
+
+       ================= ===============================================================
+        attribute         meaning
+       ================= ===============================================================
+        deconv            array of deconvolved, normalized :math:`\mu(E)`
+       ================= ===============================================================
 

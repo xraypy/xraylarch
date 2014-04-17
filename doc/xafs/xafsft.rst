@@ -120,7 +120,7 @@ The forward Fourier transform converts :math:`\chi(k)` to :math:`\chi(R)`
 and is of primary importance for XAFS analysis.  In Larch, this is
 encapsulated in the :func:`xftf` function.
 
-..  function:: xftf(k, chi, group=None, ...)
+..  function:: xftf(k, chi=None, group=None, ...)
 
     perform a forward XAFS Fourier transform, from :math:`\chi(k)` to
     :math:`\chi(R)`, using common XAFS conventions.
@@ -140,7 +140,8 @@ encapsulated in the :func:`xftf` function.
 
     :returns:  ``None`` -- outputs are written to supplied group.
 
-    If a ``group`` argument is provided, the following data arrays are put into it:
+    Follows the First Argument Group convention, using group members named ``k`` and ``chi``.  
+    The following data is put into the output group:
 
        ================= ===============================================================
         array name         meaning
@@ -206,7 +207,8 @@ the explicitly real :math:`\chi(k)`.
 
     :returns:  ``None`` -- outputs are written to supplied group.
 
-    If a ``group`` argument is provided, the following data arrays are put into it:
+    Follows the First Argument Group convention, using group members named ``r`` and ``chir``.  
+    The following data is put into the output group:
 
        ================= ===============================================================
         array name         meaning
