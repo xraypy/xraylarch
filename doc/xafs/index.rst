@@ -7,17 +7,16 @@ XAFS Analysis
 One of the primary motivations for Larch was processing XAFS data.  Larch
 was originally conceived to be version 2 of Ifeffit (:cite:ts:`ifeffit`),
 replacing and expanding all the XAFS analysis capabilities of that package.
-
-This replacement is essentially complete, with all the main functionality
-of Ifeffit available in Larch.  There may still be a few minor features of
-Ifeffit that are not yet available, and some features to port from Athena
-(:cite:ts:`athena`) back to the core library.   There are some slight
-differences in implementation details, such that slightly different
-numerical results are obtained.  Importantly, some new features are already
-available with Larch that were not available with Ifeffit 1.2 and some
-small errors in Ifeffit 1.2 have been fixed.
-
 XAFS Analysis can generally be broken into a few separate steps:
+This replacement is essentially complete insofar as all the main
+functionality of Ifeffit is available in Larch.  There may still be a few
+minor features of Ifeffit that are not yet available, and some
+functionality to port from Athena (:cite:ts:`athena`) back to the core
+library.  In addition, there are some minor differences in implementation
+details, so that slightly different numerical results may be obtained.
+Importantly, several features are available with Larch that were not
+available with Ifeffit 1.2 and some small errors in Ifeffit 1.2 have been
+fixed.
 
   1. Reading in raw data.
   2. Making corrections to the data, and converting to  :math:`\mu(E)`
@@ -28,21 +27,43 @@ XAFS Analysis can generally be broken into a few separate steps:
   7. Reading and processing FEFF Paths from external files.
   8. Fitting XAFS :math:`\chi(k)` to a sum of FEFF paths.
 
-Broadly speaking, Larch can do all of these steps.
+The XAFS-specific functions in Larch follow these general steps.  They are
+all kept in the :data:`_xafs` Group, which can be easily accessed, as this
+is in the default search path.
+
 
 .. module:: _xafs
    :synopsis: Basic XAFS Functions
 
-The XAFS-specific functions in Larch are kept in the :data:`_xafs` Group,
-which can be easily accessed, as this is in the default search path.  The
-XAFS functions described here represent the general steps outlined above.
-Each of these functions produce several scalar values and arrays for their
+
+.. toctree::
+   :maxdepth: 2
+
+   utilities
+   preedge
+   autobk
+   xafsft
+   wavelets
+   feffpaths
+   feffit
+
+
+Overview of XAFS Functions
+----------------------------------
+
+
+As with most Larch functions, each of the XAFS functions can act on
+arbitrary
+
+arrays of data, 
+
+produce several scalar values and arrays for their
 results.  Indeed, many of the functions have several output arrays.  In
 addition, several of the functions produce groups containing details of fit
 results. 
 
 There is a set of conventions used to help organize the output arrays from
-the XAFS functions that are worth understanding.  These are really only
+the XAFS functions that are worth understanding.  These really are only
 conventions, but can make using the XAFS function a much more pleasant
 experience.
 
@@ -79,14 +100,3 @@ case, **Group oriented**.
 
 Further details of the various XAFS functionals are described in the sections
 listed below.
-
-.. toctree::
-   :maxdepth: 2
-
-   preedge
-   autobk
-   utilities
-   xafsft
-   feffpaths
-   feffit
-   wavelets

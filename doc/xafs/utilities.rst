@@ -1,16 +1,160 @@
-==============================================
-XAFS: Utility functions
-==============================================
+=========================================================
+XAFS Functions: Overview and Naming Conventions
+=========================================================
 
 .. module:: _xafs
 
-There are a few functions for XAFS analysis that do not fall neatly into
-the previous sections.  We will list them here.
 
+As with most Larch functions, each of the XAFS functions is designed to be
+able to act on arbitrary arrays of data to allow maximum flexibility in
+processing data.  In addition, many of the Larch XAFS functions can write
+out several output values, including both scalaras and arrays.  While
+flexible, this could get rather cumbersome, and mean that you would
+generally have to keep track of a large set of related arrays.   
+
+Naming conventions for XAFS arrays
+=========================================
+
+In Larch, it is most natural to put related data into a Group.  This is
+often natural as data read in from a file is already held in a Group.  If a
+set of XAFS data is held within a Group, then the Group members named
+`energy` and `k` and `chi` can be assumed to have the same standard meaning
+for all groups of XAFS Data.  To make this most common usage easy, all of
+the XAFS functions follow a couple conventions for working more easily with
+Groups tht can work on arbitrary arrays of data, but assume that they will
+write output values to a Group.  In addition, the XAFS functions can
+usually just be given a Group that follows the expected XAFS naming
+convention.  This is not rigidly enforced, and is not exclusive (that is,
+you can add data with other names), but following the expected naming
+conventions will make processing XAFS data much easier.
+
+The naming convention define a set of **expected names and meaning** for
+data arrays and scalars within a Group.  This is summarized in the
+:ref:`Table of Conventional Names for an XAFS Group <xafsnames_table>` below.
+
+
+.. _xafsnames_table:
+
+**Table of Conventional Names for an XAFS Group** These are the standard names for arrays and
+scalars for various data associated with XAFS, including FEFF calculations.  Given are the name,
+the physical quantity described, and the name of function that will generate this value.
+
+
+  +---------------+--------+-----------------------------+---------------------------------+
+  | name          | type   |   meaning                   | created by                      |
+  +===============+========+=============================+====================================+
+  | energy        | array  | :math:`E` in eV             | original data                      | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | mu            | array  | :math:`\mu`                 | original data                      | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | e0            | scalar | :math:`E_0`                 | :func:`pre_edge`, :func:`find_e0`  | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | edge_step     | scalar | :math:`\Delta \mu`          | :func:`pre_edge`                   | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | dmude         | array  | :math:`d\mu/dE`             | :func:`pre_edge`                   | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | norm          | array  | normalized :math:`\mu`      | :func:`pre_edge`                   | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | flat          | array  | flattened :math:`\mu`       | :func:`pre_edge`                   | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | pre_edge      | array  | pre-edge curve              | :func:`pre_edge`                   | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | post_edge     | array  | normalization curve         | :func:`pre_edge`                   | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | bkg           | array  | :math:`\mu_0(E)`            | :func:`autobk`                     | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chie          | array  | :math:`\chi(E)`             | :func:`autobk`                     | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | k             | array  | :math:`k`                   | :func:`autobk`                     | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chi           | array  | :math:`\chi(k)`             | :func:`autobk`                     | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | kwin          | array  | :math:`\Omega(k)`           | :func:`xftf`, :func:`ftwindow`     | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | r             | array  | :math:`R`                   | :func:`xftf`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chir          | array  | :math:`\chi(R)` (complex)   | :func:`xftf`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chir_mag      | array  | :math:`|\chi(R)|`           | :func:`xftf`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chir_re       | array  | :math:`\rm Re[\chi(R)]`     | :func:`xftf`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chir_im       | array  | :math:`\rm Im[\chi(R)]`     | :func:`xftf`                       |
+  +---------------+--------+-----------------------------+------------------------------------+
+  | rwin          | array  | :math:`\Omega(R)`           | :func:`xftr`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | q             | array  | :math:`q`                   | :func:`xftr`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chiq          | array  | :math:`\chi(q)` (complex)   | :func:`xftr`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chiq_mag      | array  | :math:`|\chi(q)|`           | :func:`xftr`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chiq_re       | array  | :math:`\rm Re[\chi(q)]`     | :func:`xftr`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+  | chiq_im       | array  | :math:`\rm Im[\chi(q)]`     | :func:`xftr`                       | 
+  +---------------+--------+-----------------------------+------------------------------------+
+   
+where :math:`q`, :math:`\chi(q)`, and so on indicates back-transformed :math:`k`.
+
+
+The XAFS functions encourage following this convention, in that they are consistent in wanting
+:math:`chi(k)` to be represented by the two arrays ``GROUP.k`` and ``GROUP.chi``
+
+
+`group` argument and ``_sys.xafsGroup``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The XAFS functions need to write outputs to some group -- there are simply too many outputs to
+return and expect you to manage.   So, all functions take a **group** argument, which is used
+as the group into which results are written.  Again, this allows maximum flexibility, but gets
+tedious to provide this argument repeatedly when working with a particular data set.
+
+There is also a special group, ``_sys.xafsGroup`` that is used as the default group to write
+outputs to if no **group** argument is supplied.  When an an explicit **group** argument is given,
+``_sys.xafsGroup`` is set to this group.  This means that when working with a set of XAFS data all
+contained within a single group (which is expected to be the normal case), the **group** argument
+does not need to be typed repeatedly.
+
+.. index:: First Argument Group convention
+
+First Argument Group convention
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to the ``_sys.xafsGroup`` convention above, there is an even simpler approach when
+working with Groups that follow the XAFS naming conventions.  While the XAFS functions are
+generally meant to take arrays of data as the first two arguments, they allow the first argument to
+be a Group if that Group has the expected named arrays.  This convention, known as the **First
+Argument Group** convention is worth understanding and using.  For example, the :func:`autobk`
+function generally expects the first argument to be an array of energy values and the second to be
+an array of absorbance values.  But a normal use case would look like::
+
+     autobk(dat.energy, dat.mu, group=dat, rbkg=1, ....)
+
+This can be abbreviated as::
+
+     autobk(dat, rbkg=1, ....)
+
+That is, as long as the Group ``dat`` follows the XAFS naming conventions (for :func:`autobk` that
+it has an energy array named ``energy`` and absorbance array named ``mu``) the two forms above are
+equivalent.  This nearly makes the Larch XAFS functions be object-oriented, or in this case,
+**Group oriented**.
+
+
+
+
+
+
+
+
+Utility Functions for XAFS
+=============================================
+
+
+Listed below are some general purpose functions for XAFS.
 
 
 The :func:`ktoe` and :func:`etok` functions
-=============================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ..  function:: etok(energies)
 
@@ -59,7 +203,7 @@ An example use would be to print out a table of energies and :math:`k` values::
 
 
 The :func:`estimate_noise` function
-==========================================
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ..  function:: estimate_noise(k, chi, group=None, rmin=15, rmax=30, ....)
 
@@ -113,4 +257,26 @@ dominated by noise, but has the advantage of being an impartial measure of
 data quality. It is particularly pessimistic for extremely good data.  Then
 again, considering that the estimate for :math:`\epsilon` is probably too
 small, the estimate may not be that bad.
+
+
+The :func:`xas_decovolve` function
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+..  function:: xas_deconvolve(energy, norm=Noned group=None, form='gaussian', esigma=1.0, eshift=0.0)
+
+    de-convolves a normalized mu(E) spectra with a peak shape, enhancing separation 
+    of XANES features.  This procedure can be unstable -- Use results with caution!
+    
+
+    :param energy:   1-d array of :math:`E`
+    :param norm:     1-d array of normalized :math:`\mu(E)`
+    :param group:    output group
+    :param form:     form of deconvolution function. One of
+                     'gaussian' (default) or 'lorentzian'
+    :param esigma:   energy :math:`\sigma` (in eV) to pass to 
+                     :func:`gaussian` or :func:`lorentzian` lineshape [default=1.0]
+    :param eshift:   energy shift (in eV) to apply to result. [default=0] 
+
+
+    Support First Argument Group convention, requiring group members `energy` and `norm`.
 
