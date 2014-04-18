@@ -30,7 +30,6 @@ from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import larchframe
 from larch.fitting import fit_report
         
-
 use_plugin_path('math')
 from fitpeak import fit_peak
 from mathutils import index_of
@@ -159,7 +158,6 @@ class EditColumnFrame(wx.Frame) :
         self.Show()
         self.Raise()
 
-
     def onOK(self, event=None):
         """ rename labels -- note that values for new names are first gathered, 
         and then set, so that renaming 'a' and 'b' works."""
@@ -281,9 +279,8 @@ class ScanViewerFrame(wx.Frame):
         self.dtcorr   = Check(panel, default=True, label='correct deadtime?',
                               action=self.onColumnChoices)
         ir += 1
-        sizer.Add(self.use_deriv, (ir,   0), (1, 3), LCEN, 0)
-        ir += 1
-        sizer.Add(self.dtcorr,    (ir,   0), (1, 3), LCEN, 0)
+        sizer.Add(self.use_deriv, (ir,   0), (1, 3), LCEN, 0)       
+        sizer.Add(self.dtcorr,    (ir,   3), (1, 3), LCEN, 0)
 
         pack(panel, sizer)
 
@@ -302,7 +299,6 @@ class ScanViewerFrame(wx.Frame):
         self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
         mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
 
-        mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
 
         btnbox   = wx.Panel(mainpanel)
         btnsizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -316,7 +312,8 @@ class ScanViewerFrame(wx.Frame):
 
         pack(btnbox, btnsizer)
         mainsizer.Add(btnbox, 1, LCEN, 2)
-
+        mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
+        
         pack(mainpanel, mainsizer)
 
         return mainpanel
@@ -425,8 +422,6 @@ class ScanViewerFrame(wx.Frame):
 
     def onFitPeak(self, evt=None):
         gname = self.groupname
-        if self.dtcorr.IsChecked():
-            print( 'fit not doing dt correct!')
 
         dtext = []
         model = self.fit_model.GetStringSelection().lower()
@@ -452,10 +447,9 @@ class ScanViewerFrame(wx.Frame):
 
         pgroup = fit_peak(x, y, model, background=bkg, step=step,
                           _larch=self.larch)
-        
 
         dtext = '\n'.join(dtext)
-        dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params,
+        dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params, min_correl=0.25,
                                                 _larch=self.larch))
         self.fit_report.SetValue(dtext)
         # self.report_panel.SetAutoLayout(1)
@@ -717,7 +711,8 @@ class ScanViewerFrame(wx.Frame):
         elif opt == 'update'  and npts > 4:
             plotcmd = self.plotpanel.update_line
             update = True
-            
+        if 'new' in opt:
+            self.plotpanel.clear()
         popts = {'side': side}
 
         try:
@@ -792,6 +787,10 @@ class ScanViewerFrame(wx.Frame):
 
         self.groupname = groupname
         self.lgroup = getattr(self.datagroups, groupname, None)
+        print 'SHOW FILE ', groupname
+        print dir(self.lgroup)
+        print 'Arrays: ', self.lgroup.array_labels
+        print 'Det Desc: ', getattr(self.lgroup, 'det_desc', 'none')       
 
         if groupname == SCANGROUP:
             self.lgroup.filename = filename
