@@ -74,7 +74,7 @@ class EscanData:
         self.pos_addr    = []
         self.det_desc    = []
         self.det_addr    = []
-
+        self.det_mcas    = []
         self.sums       = []
         self.sums_names = []
         self.sums_list  = []
@@ -124,34 +124,36 @@ class EscanData:
     def get_map(self,name=None,norm=None):
         return self.get_data(name=name,norm=norm)
 
-    def get_data(self,name=None,norm=None,correct=True):
+    def get_data(self, name=None, norm=None, correct=True):
         """return data array by name"""
-        dat = self._getarray(name,correct=correct)
-        if dat is None: return data
-        if norm is not None:
-            norm = self._getarray(norm,correct=True)
+        print 'GET DATA ', name, norm, correct
+        dat = self._getarray(name, correct=correct)
+        if norm is not None and dat is not None:
+            norm = self._getarray(norm,  correct=True)
             dat  = dat/norm
         return dat
 
-    def match_detector_name(self, str, strict=False):
+    def match_detector_name(self, sname, strict=False):
         """return index in self.det_desc most closely matching supplied string"""
-        s  = str.lower()
+        s  = sname.lower()
         sw = s.split()
-        b  = [i.lower() for i in self.det_desc]
-        # look for exact match
-        for i in b:
-            if (s == i):  return b.index(i)
+        dnames  = [i.lower() for i in self.det_desc]
 
+        # look for exact match
+        for nam in dnames:
+            if s == nam:  return dnames.index(nam)
+         
         # look for inexact match 1: compare 1st words
-        for i in b:
-            sx = i.split()
-            if (sw[0] == sx[0]):   return b.index(i)
+        for nam in dnames:
+            sx = nam.split()
+            if sw[0] == sx[0]:           
+                return dnames.index(i)
 
         # check for 1st word in the det name
         if not strict:
-            for i in b:
-                j = i.find(sw[0])
-                if (j >= 0):  return b.index(i)
+            for dnam in dnames:
+                j = dnam.find(sw[0])
+                if (j >= 0):  return dnames.index(i)
         # found no matches
         return -1
 
@@ -375,14 +377,36 @@ class EscanData:
         fh.close()
         return None
 
-    def _getarray(self,name=None,correct=True):
+    def _getarray(self, name=None, correct=True):
         i = None
         arr = None
+        print 'GET ARRAY ', name
         for ip, pname in enumerate(self.pos_desc):
             if name.lower() == pname.lower():
                 return self.pos[ip]
-
-        if name in self.sums_names:
+        if 'mca' in name:
+            name = name.replace('(', '').replace(')', '')
+            words = name.replace('mca', '@@').split('@@', 2)
+            name = words[0].strip().lower()
+            mca = int(words[1])
+            if len(self.det_mcas) < 1:
+                self.det_mcas = [None for i in self.det_desc]
+                for idet, addr in enumerate(self.det_addr):
+                    a = addr.lower().split('.')[0]
+                    if 'mca' in a:
+                         w = a.split('mca')[1]
+                         self.det_mcas[idet] = int(w)
+            print 'MCAS: ' , mca, self.det_mcas
+            for idet, nam in enumerate(self.det_desc):
+                name1 = nam.strip().lower()
+                print idet, name, name1, mca, self.det_mcas[idet]
+                if name == name1 and mca == self.det_mcas[idet]:                   
+                    i = idet
+                    break                    
+            print 'GETARRAY with mca in name: ', name, mca,  ' --> ', i 
+            arr = self.det
+            if correct: arr = self.det_corr
+        elif name in self.sums_names:
             i = self.sums_names.index(name)
             arr = self.sums
             if correct: arr = self.sums_corr
@@ -904,8 +928,6 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
         self.progress = progress_save
         inpf.close()
         self.xrf_dict = None
-
-
 
 
     def save_sums_ascii(self,fname=None, correct=True,extension='dat'):
