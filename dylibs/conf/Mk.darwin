@@ -1,8 +1,8 @@
 # General purpose make configuration for Mac OS X (using 10.6.8)
 
-ARCH_TARGS   = -arch i386 -arch x86_64
+ARCH_TARGS   = -arch x86_64
 MAC_SDK      = -mmacosx-version-min=10.5 -isysroot/Developer/SDKs/MacOSX10.5.sdk
-GFORT_LIBDIR = /usr/local/gfortran/lib/gcc/x86_64-apple-darwin10/4.8.2/
+GFORT_LIBDIR = -L/usr/local/gfortran/lib/gcc/x86_64-apple-darwin13/4.8.2/ -L/usr/local/gfortran/lib/
 
 # GFORT_LIBDIR = /Users/Newville/Codes/ifeffit/local/lib
 #GFORT_LIBDIR = /usr/local/lib
@@ -13,7 +13,7 @@ RANLIB       = ranlib
 CC           = gcc -O2 $(ARCH_TARGS)
 LINK         = gcc -O2 $(ARCH_TARGS) $(MAC_SDK) -fPIC -shared
 LINK         = gcc -O2 $(ARCH_TARGS) -fPIC -shared
-LINK_FFLAGS  = -L$(GFORT_LIBDIR) -lgfortran -lgfortranbegin
+LINK_FFLAGS  = $(GFORT_LIBDIR) -lgfortran -lgfortranbegin
 
 DLLPRE       = lib
 DLLEXT       = dylib
