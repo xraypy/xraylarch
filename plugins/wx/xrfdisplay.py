@@ -842,7 +842,8 @@ class XRFDisplayFrame(wx.Frame):
         mca.counts = counts[:] 
         if energy is not None:
             mca.energy = energy[:]
-        if not is_mca2 and with_rois:
+        nrois = len(mca.rois)
+        if not is_mca2 and with_rois and nrois > 0:
             yroi = -1*np.ones(len(counts))
             for r in mca.rois:
                 yroi[r.left:r.right] = counts[r.left:r.right]
