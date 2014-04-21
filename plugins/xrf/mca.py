@@ -299,3 +299,30 @@ class MCA(Group):
         for d in self.counts:
             fp.write(" %s\n" % d)
         fp.close()
+
+def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
+               name='mca', start_time='', real_time=0, live_time=0,
+               dt_factor=1, input_counts=0, tau=0, _larch=None, **kws):
+
+    """create an MCA object, containing an XRF (or similar) spectrum
+
+     Parameters:
+     ------------
+      counts:   counts array
+      nchans:   # channels
+
+     Returns:
+     ----------
+      an MCA object
+
+    """
+
+    return MCA(counts=counts, nchans=nchans, name=name,
+               start_time=start_time, offset=offset, slope=slope,
+               quad=quad, dt_factor=dt_factor, real_time=real_time,
+               live_time=live_time, input_counts=input_counts,
+               tau=tau, **kws)
+
+def registerLarchPlugin():
+    return ('_xrf', {'create_mca': create_mca})
+
