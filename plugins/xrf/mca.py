@@ -316,7 +316,6 @@ def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
       an MCA object
 
     """
-
     return MCA(counts=counts, nchans=nchans, name=name,
                start_time=start_time, offset=offset, slope=slope,
                quad=quad, dt_factor=dt_factor, real_time=real_time,
