@@ -12,21 +12,34 @@ from cx_Freeze import setup, Executable
 import os, sys
 import wx
 import wx.lib.agw.flatnotebook
+import wx.dataview as dv
 import numpy, scipy, matplotlib
 matplotlib.use('WXAgg')
 import sqlalchemy
 
 from scipy.sparse.csgraph import _validation
+import scipy.sparse.linalg.dsolve.umfpack.umfpack
+# import scipy.special._ufuncs
+# from  scipy.special import wofz, _ufuncs_cxx, _cephes
+from scipy.special import *
+from scipy.integrate import _ode, vode, lsoda, _dop, _odepack, _quadpack
+from scipy.optimize import *
 from  scipy.io import netcdf
 netcdf_open = netcdf.netcdf_file
 
 import wxmplot
 from wxmplot.plotframe import PlotFrame
 import larch
-import PIL as Image
+
 import epics
 import Carbon
 import h5py
+
+try:
+    import Image
+except ImportError:
+    import PIL as Image
+        
 
 print 'Found all Imports'
 
@@ -55,13 +68,20 @@ DATA_FILES = []
 
 exe_opts = {# 'packages': ['wx', 'numpy','sqlalchemy'],
             'includes': ['Carbon', 'Carbon.Appearance', 'ConfigParser',
-                         'PIL', 'ctypes', 'epics', 'epics.devices',
+                         'Image', 'ctypes', 'epics', 'epics.devices',
                          'fpformat', 'h5py',
                          'h5py._objects',
                          'h5py._proxy', 'h5py.defs', 'h5py.utils',
+                         'larch.wxlib', 
                          'matplotlib', 'numpy', 'scipy',
                          'scipy.constants', 'scipy.fftpack',
+                         'scipy.special', 'scipy.special._cephes',
+                         'scipy.special._ufuncs',
+                         'scipy.integrate._ode', 'scipy.integrate.vode','scipy.integrate.lsoda',
+                         'scipy.special._ufuncs_cxx',
                          'scipy.io.matlab.mio5_utils',
+                         'scipy.sparse.linalg.dsolve',
+                         'scipy.sparse.linalg.dsolve.umfpack.umfpack',
                          'scipy.io.matlab.streams', 'scipy.io.netcdf',
                          'scipy.optimize', 'scipy.signal',
                          'skimage', 'skimage.exposure', 'wxutils',
@@ -72,18 +92,20 @@ exe_opts = {# 'packages': ['wx', 'numpy','sqlalchemy'],
                          'wx.lib.colourselect', 'wx.lib.masked',
                          'wx.lib.mixins', 'wx.lib.mixins.inspection',
                          'wx.lib.agw.pycollapsiblepane',
-                         'wx.lib.newevent', 'wx.py', 'wxmplot', 'wxversion',
+                         'wx.lib.newevent', 'wx.py',
+                         'wx.dataview',
+                         'wxmplot', 'wxversion',
                          'xdrlib', 'xml.etree', 'xml.etree.cElementTree'],
             'excludes': ['Tkinter', '_tkinter', 'Tkconstants', 'tcl',
-                         '_imagingtk', 'PIL._imagingtk', 'ImageTk',
-                         'PIL.ImageTk', 'FixTk''_gtkagg', '_tkagg',
+                         '_imagingtk', 'Image._imagingtk', 'ImageTk',
+                         'Image.ImageTk', 'FixTk''_gtkagg', '_tkagg',
                          'matplotlib.tests',
                          'qt', 'PyQt4Gui', 'email', 'IPython'],
             # 'iconfile': 'GSEMap.icns',
             }
 
 appname = 'GSEMapViewer'
-appvers = '1.0'
+appvers = '1.2'
 setup(name = appname,
       version = appvers,
       description = "GSECARS XRM MapViewer",
