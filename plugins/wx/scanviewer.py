@@ -17,6 +17,8 @@ import wx.lib.agw.flatnotebook as flat_nb
 import wx.lib.scrolledpanel as scrolled
 import wx.lib.mixins.inspection
 
+from wx.richtext import RichTextCtrl
+
 HAS_EPICS = False
 try:
     import epics
@@ -311,7 +313,7 @@ class ScanViewerFrame(wx.Frame):
                          LCEN, 1)
 
         pack(btnbox, btnsizer)
-        mainsizer.Add(btnbox, 1, LCEN, 2)
+        mainsizer.Add(btnbox, 0, LCEN, 2)
         mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
         
         pack(mainpanel, mainsizer)
@@ -319,34 +321,43 @@ class ScanViewerFrame(wx.Frame):
         return mainpanel
 
     def CreateFitPanel(self, parent):
-        p = panel = wx.Panel(parent)
-        self.fit_model   = Choice(panel, size=(100, -1),
-                                      choices=('Gaussian', 'Lorentzian',
-                                               'Voigt', 'Linear', 'Quadratic',
-                                               'Step', 'Rectangle',
-                                               'Exponential'))
-        self.fit_bkg = Choice(panel, size=(100, -1),
-                                  choices=('None', 'constant', 'linear', 'quadratic'))
-        self.fit_step = Choice(panel, size=(100, -1),
-                                  choices=('linear', 'error function', 'arctan'))
+        panel = wx.Panel(parent)
+        tpan = wx.Panel(panel)
+        self.fit_model = Choice(tpan, size=(100, -1),
+                                choices=('Gaussian', 'Lorentzian',
+                                         'Voigt', 'Linear', 'Quadratic',
+                                         'Step', 'Rectangle',
+                                         'Exponential'))
+        self.fit_bkg = Choice(tpan, size=(100, -1),
+                              choices=('None', 'constant', 'linear', 'quadratic'))
+        self.fit_step = Choice(tpan, size=(100, -1),
+                               choices=('linear', 'error function', 'arctan'))
 
-        self.fit_report = wx.TextCtrl(panel, -1, "", size=(500, 270),
-                                      style=wx.TE_MULTILINE|wx.TE_READONLY)
+        tsizer = wx.GridBagSizer(10, 4)
+        tsizer.Add(SimpleText(tpan, 'Fit Model: '),     (0, 0), (1, 1), LCEN)
+        tsizer.Add(self.fit_model,                      (0, 1), (1, 1), LCEN)
 
+        tsizer.Add(SimpleText(tpan, 'Background: '),    (0, 2), (1, 1), LCEN)
+        tsizer.Add(self.fit_bkg,                        (0, 3), (1, 1), LCEN)
+
+        tsizer.Add(Button(tpan, 'Show Fit', size=(100, -1),
+                         action=self.onFitPeak),       (1, 1), (1, 1), LCEN)
+
+        tsizer.Add(SimpleText(tpan, 'Step Form: '),     (1, 2), (1, 1), LCEN)
+        tsizer.Add(self.fit_step,                       (1, 3), (1, 1), LCEN)
+
+        pack(tpan, tsizer)
+
+        self.fit_report = RichTextCtrl(panel,  size=(525, 250),
+                                     style=wx.VSCROLL|wx.NO_BORDER)
+        
+        self.fit_report.SetEditable(False)
         self.fit_report.SetFont(Font(9))
         
-        sizer = wx.GridBagSizer(10, 4)
-        sizer.Add(SimpleText(p, 'Fit Model: '),           (0, 0), (1, 1), LCEN)
-        sizer.Add(self.fit_model,                         (0, 1), (1, 1), LCEN)
 
-        sizer.Add(SimpleText(p, 'Background: '),          (0, 2), (1, 1), LCEN)
-        sizer.Add(self.fit_bkg,                           (0, 3), (1, 1), LCEN)
-
-        sizer.Add(SimpleText(p, 'Step Function Form: '),  (1, 2), (1, 1), LCEN)
-        sizer.Add(self.fit_step,                          (1, 3), (1, 1), LCEN)
-        sizer.Add(Button(panel, 'Show Fit', size=(100, -1),
-                             action=self.onFitPeak),       (1, 0), (1, 2), LCEN)
-        sizer.Add(self.fit_report,                         (2, 0), (1, 5), LCEN, 3)
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(tpan, 0, wx.GROW|wx.ALL, 2)
+        sizer.Add(self.fit_report, 1, LCEN|wx.GROW,  2)
         pack(panel, sizer)
         return panel
 
@@ -437,9 +448,14 @@ class ScanViewerFrame(wx.Frame):
         step = self.fit_step.GetStringSelection().lower()
         if model in ('step', 'rectangle'):
             dtext.append('Step form: %s' % step)
-        lgroup =  getattr(self.larch.symtable, gname)
-        x = lgroup._xdat_
-        y = lgroup._ydat_
+
+        try:
+            lgroup =  getattr(self.larch.symtable, gname)
+            x = lgroup._xdat_
+            y = lgroup._ydat_
+        except AttributeError:
+            self.write_message('need data to fit!')
+            return
         if step.startswith('error'):
             step = 'erf'
         elif step.startswith('arctan'):
@@ -451,9 +467,10 @@ class ScanViewerFrame(wx.Frame):
         dtext = '\n'.join(dtext)
         dtext = '%s\n%s\n' % (dtext, fit_report(pgroup.params, min_correl=0.25,
                                                 _larch=self.larch))
+
+        self.fit_report.SetEditable(True)
         self.fit_report.SetValue(dtext)
-        # self.report_panel.SetAutoLayout(1)
-        # self.report_panel.SetupScrolling()
+        self.fit_report.SetEditable(False)
 
         popts1 = dict(style='solid', linewidth=3,
                       marker='None', markersize=4)
@@ -787,10 +804,6 @@ class ScanViewerFrame(wx.Frame):
 
         self.groupname = groupname
         self.lgroup = getattr(self.datagroups, groupname, None)
-        print 'SHOW FILE ', groupname
-        print dir(self.lgroup)
-        print 'Arrays: ', self.lgroup.array_labels
-        print 'Det Desc: ', getattr(self.lgroup, 'det_desc', 'none')       
 
         if groupname == SCANGROUP:
             self.lgroup.filename = filename
