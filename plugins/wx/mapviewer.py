@@ -413,7 +413,11 @@ class SimpleMapPanel(GridPanel):
             if   op == '+': map +=  mapx
             elif op == '-': map -=  mapx
             elif op == '*': map *=  mapx
-            elif op == '/': map /=  mapx
+            elif op == '/':
+                mxmin = min(mapx[np.where(mapx>0)])
+                if mxmin < 1: mxmin = 1.0
+                mapx[np.where(mapx<mxmin)] = mxmin
+                map /=  mapx
 
             title = "(%s) %s (%s)" % (roiname1, op, roiname2)
 
@@ -512,11 +516,13 @@ class TriColorMapPanel(GridPanel):
         if i0 != '1':
             i0map = datafile.get_roimap(i0, det=det, no_hotcols=no_hotcols,
                                         dtcorrect=dtcorrect)
-
+            
         i0min = min(i0map[np.where(i0map>0)])
-        i0map[np.where(i0map<=0)] = i0min
-        i0map = i0map/i0map.max()
-
+        if i0min < 1: i0min = 1.0
+        i0map[np.where(i0map<i0min)] = i0min
+        i0map = 1.0 * i0map / i0map.max()
+        print 'I0 map : ', i0map.min(), i0map.max(), i0map.mean()
+        
         pref, fname = os.path.split(datafile.filename)
         title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
         subtitles = {'red': 'Red: %s' % r,
