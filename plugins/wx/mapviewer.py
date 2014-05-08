@@ -22,6 +22,8 @@ __version__ = '7 (28-March-2014)'
 import os
 import sys
 import time
+import json
+
 from functools import partial
 from threading import Thread
 
@@ -697,7 +699,7 @@ WARNING: This cannot be undone!
         self.clear = Button(pane, 'Clear Map', size=(135, -1),
                             action=self.onClear)
 
-        self.onstats = Button(pane, 'Show Stats', size=(135, -1),
+        self.onstats = Button(pane, 'Calculate Stats', size=(135, -1),
                             action=self.onShowStats)
 
         self.xrf   = Button(pane, 'Show XRF (Fore)',  size=(135, -1),
@@ -777,15 +779,25 @@ WARNING: This cannot be undone!
         areaname  = self._getarea()
         xrmfile  = self.owner.current_file
         xrfmap  = xrmfile.xrfmap
-        area = xrmfile.get_area(name=areaname).value        
+        area = xrmfile.get_area(name=areaname)
+        amask = area.value
+        if 'roistats' in area.attrs:
+           for dat in json.loads(area.attrs['roistats']):
+               dat = tuple(dat)
+               self.report_data.append(dat)
+               wx.CallAfter(self.report.AppendItem, dat)
+           self.choice.Enable()
+           return
+
+        
         d_addrs = [d.lower() for d in xrfmap['roimap/det_address']]
         d_names = [d for d in xrfmap['roimap/det_name']]
         
         # count times
-        ctime = [1.e-6*xrfmap['roimap/det_raw'][:,:,0][area]]
+        ctime = [1.e-6*xrfmap['roimap/det_raw'][:,:,0][amask]]
         for i in range(xrfmap.attrs['N_Detectors']):
             tname = 'det%i/realtime' % (i+1)
-            ctime.append(1.e-6*xrfmap[tname].value[area])
+            ctime.append(1.e-6*xrfmap[tname].value[amask])
         
         for idet, dname in enumerate(d_names):
             daddr = d_addrs[idet]
@@ -798,7 +810,7 @@ WARNING: This cannot be undone!
             if idet == 0:
                 d = 1.e3*ctime[0]
             else:
-                d = xrfmap['roimap/det_raw'][:,:,idet][area]/ctime[det]
+                d = xrfmap['roimap/det_raw'][:,:,idet][amask]/ctime[det]
 
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
@@ -816,6 +828,10 @@ WARNING: This cannot be undone!
                    d.mean(), "%.1f" % d.std(), "%.1f" % np.median(d), smode)
             self.report_data.append(dat)
             wx.CallAfter(self.report.AppendItem, dat)
+        if 'roistats' not in area.attrs:
+           area.attrs['roistats'] = json.dumps(self.report_data)
+           xrmfile.h5root.flush()
+            
         self.choice.Enable()
 
     def update_xrfmap(self, xrfmap):
@@ -899,6 +915,9 @@ WARNING: This cannot be undone!
         self.desc.SetValue(area.attrs['description'])
         self.report.DeleteAllItems()
         self.report_data = []
+        if 'roistats' in area.attrs:
+           self.show_stats()
+        
 
     def onShowStats(self, event=None):
         if self.report is None:

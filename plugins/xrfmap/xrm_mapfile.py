@@ -5,6 +5,7 @@ import time
 import h5py
 import numpy as np
 import scipy.stats as stats
+import json
 import larch
 from larch import use_plugin_path
 from larch.utils.debugtime import debugtime
@@ -1012,15 +1013,20 @@ class GSEXRM_MapFile(object):
         area = self.get_area(name=name, desc=desc)
         if area is None:
             return None
-        area = area.value
+        
+        if 'roistats' in area.attrs:
+            return json.loads(area.attrs['roistats'])
+
+        amask = area.value
+        
         roidata = []
         d_addrs = [d.lower() for d in self.xrfmap['roimap/det_address']]
         d_names = [d for d in self.xrfmap['roimap/det_name']]
         # count times
-        ctime = [1.e-6*self.xrfmap['roimap/det_raw'][:,:,0][area]]
+        ctime = [1.e-6*self.xrfmap['roimap/det_raw'][:,:,0][amask]]
         for i in range(self.xrfmap.attrs['N_Detectors']):
             tname = 'det%i/realtime' % (i+1)
-            ctime.append(1.e-6*self.xrfmap[tname].value[area])
+            ctime.append(1.e-6*self.xrfmap[tname].value[amask])
         
         for idet, dname in enumerate(d_names):
             daddr = d_addrs[idet]
@@ -1033,7 +1039,7 @@ class GSEXRM_MapFile(object):
             if idet == 0:
                 d = ctime[0]
             else:
-                d = self.xrfmap['roimap/det_raw'][:,:,idet][area]/ctime[det]
+                d = self.xrfmap['roimap/det_raw'][:,:,idet][amask]/ctime[det]
 
             try:
                 hmean, gmean = stats.gmean(d), stats.hmean(d)
@@ -1044,6 +1050,10 @@ class GSEXRM_MapFile(object):
             roidata.append((dname, len(d), d.mean(), d.std(), np.median(d),
                             stats.mode(d), d.min(), d.max(), 
                             gmean, hmean, skew, kurtosis))
+            
+            if 'roistats' not in area.attrs:
+                area.attrs['roistats'] = json.dumps(roidata)
+                self.h5root.flush()                
 
         return roidata
 
