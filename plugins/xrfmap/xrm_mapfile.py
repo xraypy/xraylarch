@@ -1486,7 +1486,10 @@ class GSEXRM_MapFile(object):
         # scaler, non-roi data
         if name.lower() in det_names and name.lower() not in roi_names:
             imap = det_names.index(name.lower())
-            return self.xrfmap[dat][:, :, imap]            
+            if no_hotcols:
+                return self.xrfmap[dat][:, 1:-1, imap]
+            else:
+                return self.xrfmap[dat][:, :, imap]
 
         dat = 'roimap/sum_raw'
         if dtcorrect:
