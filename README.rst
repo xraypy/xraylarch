@@ -1,8 +1,10 @@
 Epics Step Scan
 =============================
 
-Step scannng and data acquisition with pyepics
+.. image:: https://zenodo.org/badge/4185/pyepics/stepscan.png
+   :target: http://dx.doi.org/10.5281/zenodo.10092
 
+Step scannng and data acquisition with pyepics
 
 
 Classes and Functions for simple step scanning for epics.
