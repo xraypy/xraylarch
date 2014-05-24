@@ -22,7 +22,7 @@ class Positioner(Saveable):
         else:
             self.pv = PV(pvname)
         self.pv.connect()
-
+        self.done = False
         self.units = units
         if self.pv.connected:
             self.pv.get_ctrlvars()
