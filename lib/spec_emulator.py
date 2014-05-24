@@ -36,20 +36,17 @@ from .spec_config import SpecConfig
 
 class SpecScan(object):
     """Spec Mode for StepScan"""
-    def __init__(self, filename=None, configfile=None):
+    def __init__(self, filename='specscan.001', configfile=None,
+                 auto_increment=True):
         self.motors  = {}
         self.detectors = []
         self.bare_counters = []
-        self._scan = StepScan()
-
+        self._scan = StepScan(filename=filename,
+                              auto_increment=auto_increment)
+        self.datafilename = filename
         if configfile is not None:
             self.configfile = configfile
-
         self.read_config(filename=configfile)
-
-        if filename is not None:
-            self.filename = filename
-
         self.lup = self.dscan
 
     def read_config(self, filename=None):
@@ -92,9 +89,9 @@ class SpecScan(object):
         """
         self._scan.add_extra_pvs(extra_pvs)
 
-    def set_scanfile(self, outputfile):
+    def set_scanfile(self, filename):
         "set file name"
-        self.filename = outputfile
+        self.datafilename = filename
 
     def _checkmotors(self, *args):
         "check that all args are motor names"
@@ -113,7 +110,7 @@ class SpecScan(object):
         for c in self.bare_counters:
             self._scan.add_counter(c)
 
-        self._scan.run(filename=self.filename)
+        self._scan.run(filename=self.datafilename)
 
     def ascan(self, motor, start, finish, npts, dtime):
         "ascan: absolute scan"
