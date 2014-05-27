@@ -431,7 +431,7 @@ class StepScan(object):
                 # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
                 poll(self.pos_settle_time, 0.25)
                 # start triggers, wait for them to finish
-                # print 'Trigger..'
+                # print 'Trigger...'
                 [trig.start() for trig in self.triggers]
                 t0 = time.time()
                 time.sleep(max(0.01, self.min_dwelltime/4.0))
@@ -445,6 +445,8 @@ class StepScan(object):
                     break
                 poll(MIN_POLL_TIME, 0.25)
                 for trig in self.triggers:
+                    if trig.stop is not None:
+                        trig.stop()
                     if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
                 if not point_ok:
@@ -455,7 +457,7 @@ class StepScan(object):
                             point_ok = False
                 if not point_ok:
                     print 'Trigger problem: ', trig, trig.runtime, self.min_dwelltime
-
+                    
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.25)
 
