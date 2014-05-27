@@ -4,7 +4,7 @@ Triggers, Counters, Detectors for Step Scan
 
 import time
 from epics_interface import PV, caget, caput, poll
-from epics.devices import Scaler, Mca, Struck
+from epics.devices import Scaler, MCA, Struck
 from ordereddict import OrderedDict
 
 from .saveable import Saveable
@@ -19,10 +19,10 @@ DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
 
 AD_FILE_PLUGINS = ('TIFF1', 'JPEG1', 'NetCDF1',
                    'HDF1', 'Nexus1', 'Magick1')
-
+ 
 class Trigger(Saveable):
     """Detector Trigger for a scan. The interface is:
-    trig = ScanTrigger(pvname, value=1)
+    trig = Trigger(pvname, value=1)
            defines a trigger PV and trigger value
 
     trig.start(value=None)
@@ -45,7 +45,8 @@ Example usage:
         self.done = False
         self._t0 = 0
         self.runtime = -1
-
+        self.stop = None
+        
     def __repr__(self):
         return "<Trigger (%s)>" % (self.pv.pvname)
 
@@ -63,6 +64,7 @@ Example usage:
         self.pv.put(value, callback=self.__onComplete)
         time.sleep(0.001)
         poll()
+        
 
 class Counter(Saveable):
     """simple scan counter object --
@@ -403,7 +405,7 @@ class McaDetector(DetectorMixin):
                  use_full=False, **kws):
         nrois = int(nrois)
         DetectorMixin.__init__(self, prefix, **kws)
-        self.mca = Mca(prefix)
+        self.mca = MCA(prefix)
         self.dwelltime_pv = PV('%s.PRTM' % prefix)
         self.dwelltime    = None
         self.trigger = Trigger("%sEraseStart" % prefix)
@@ -463,6 +465,168 @@ class MultiMcaDetector(DetectorMixin):
         caput("%sReadAll.SCAN"   % (self.prefix), 9)
         caput("%sStatusAll.SCAN" % (self.prefix), 9)
 
+
+class XSPress3Trigger(Saveable):
+    """Triggers for detectors without a proper Busy record to
+    use as a Trigger.
+
+    This requires a 'stop' method (that is not None)
+
+    as for XSPress3, which does not have a real Busy record
+    for a trigger.
+    """
+    def __init__(self, prefix, value=1, label=None, **kws):
+        
+        Saveable.__init__(self, prefix, label=label, value=value, **kws)
+        self.start_pv = PV(prefix + 'Acquire')
+        self.erase_pv = PV(prefix + 'ERASE')
+        self.prefix = prefix
+        self._val = value
+        self.done = False
+        self._t0 = 0
+        self.runtime = -1
+
+    def __repr__(self):
+        return "<Xspress3Trigger (%s)>" % (self.prefix)
+
+    def stop(self):
+        self.start_pv.put(0)
+        self.done = True
+        self.runtime = time.time() - self._t0
+
+    def start(self, value=None):
+        """triggers detector XSPress3 Trigger is ALWAYS done!"""
+        self.done = True
+        self.erase_pv.put(1)
+        runtime = -1
+        self._t0 = time.time()
+        if value is None:
+            value = self._val
+        self.start_pv.put(value)
+        time.sleep(0.001)
+        poll()
+        self.done = True        
+        
+
+
+class XSPress3Detector(DetectorMixin):
+    """
+    """
+    repr_fmt = ', nmcas=%i, nrois=%i, enable_dtc=%s, use_full=%s'
+
+    def __init__(self, prefix, label=None, nmcas=4, nrois=16,
+                 enable_dtc=True, use=True,
+                 use_unlabeled=False, use_full=False, **kws):
+        Saveable.__init__(self, prefix, label=label, nmcas=nmcas,
+                          nrois=nrois, enable_dtc=enable_dtc, use=use,
+                          use_unlabeled=use_unlabeled,
+                          use_full=use_full, **kws)
+        nmcas, nrois = int(nmcas), int(nrois)
+        if not prefix.endswith(':'):
+            prefix = "%s:" % prefix
+        self.prefix        = prefix
+        self.dwelltime_pv  = None
+        self.dwelltime     = None
+        self.trigger       = XSPress3Trigger(prefix)
+        self.extra_pvs     = None
+        self.enable_dtc = enable_dtc
+        self.label = label
+        if self.label is None:
+            self.label = self.prefix
+
+        self._counter = None
+        self.counters = []
+
+        self._repr_extra = self.repr_fmt % (nmcas, nrois,
+                                            repr(enable_dtc),
+                                            repr(use_full))
+
+        self._connect_args = dict(nmcas=nmcas, nrois=nrois,
+                                  use_unlabeled=use_unlabeled,
+                                  use_full=use_full)
+
+
+    def __repr__(self):
+        return "<%s: '%s', prefix='%s'%s>" % (self.__class__.__name__,
+                                              self.label, self.prefix,
+                                              self._repr_extra)
+
+
+    def connect_counters(self):
+        self._counter = XSPress3Counter(self.prefix, **self._connect_args)
+        self.counters = self._counter.counters
+        self.extra_pvs = self._counter.extra_pvs
+
+
+    def pre_scan(self, scan=None, **kws):
+        if self._counter is None:
+            self.connect_counters()
+
+        caput("%sTriggerMode"   % (self.prefix), 0)   # software mode
+        caput("%sCTRL_MCA_ROI"  % (self.prefix), 1)
+        caput("%sCTRL_DTC"      % (self.prefix), self.enable_dtc)
+        caput("%sNumImages"     % (self.prefix), 1)
+
+
+class XSPress3Counter(DeviceCounter):
+    """Counters for Xspress3 (weird MCA / areaDetector hybrid)
+    """
+    sca_labels = ('Time', 'Reset Ticks', 'Reset Counts',
+                  'All Event', 'All Good', 'Window 1', 'Window 2', 'Pileup')
+    
+    def __init__(self, prefix, outpvs=None, nmcas=4, nrois=16,
+                 nscas=5, use_unlabeled=False,  use_full=False):
+        if not prefix.endswith(':'):
+            prefix = "%s:" % prefix
+        nmcas, nrois = int(nmcas), int(nrois)
+        DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
+        prefix = self.prefix
+        fields = []
+        extras = []
+
+        pvs = {}
+        for imca in range(1, nmcas+1):
+            for iroi in range(1, nrois+1):
+                namepv = '%sC%i_ROI%i:AttrName' % (prefix, imca, iroi)
+                rhipv  = '%sC%i_MCA_ROI%i_HLM' % (prefix, imca, iroi)
+                pvs[namepv] = PV(namepv)
+                pvs[rhipv]  = PV(rhipv)
+            for isca in range(nscas):  # these start counting at 0!!
+                scapv = '%sC%i_SCA%i:Value_RBV' % (prefix, imca, isca)
+                pvs[scapv] = PV(scapv)                
+        poll()
+        time.sleep(0.001)                
+         
+        for imca in range(1, nmcas+1):
+            should_break = False
+            for iroi in range(1, nrois+1):
+                namepv = '%sC%i_ROI%i:AttrName' % (prefix, imca, iroi)
+                rhipv  = '%sC%i_MCA_ROI%i_HLM' % (prefix, imca, iroi)
+                roi_hi = pvs[rhipv].get()
+                roiname = pvs[namepv].get(as_string=True)
+                label = '%s MCA%i'% (roiname, imca)
+                if roi_hi < 1:
+                    should_break = True
+                    break
+                if (roiname is not None and (len(roiname) > 0
+                    and roi_hi > 0) or use_unlabeled):
+                    suff = 'C%i_ROI%i:Value_RBV' % (imca, iroi)
+                    fields.append((suff, label))
+
+            for isca in range(nscas):  # these start counting at 0!!
+                suff  = 'C%i_SCA%i:Value_RBV' % (imca, isca)
+                label = '%s MCA%i' % (self.sca_labels[isca], imca)
+                fields.append((suff, label))
+            
+        if use_full:
+            for imca in range(1, nmcas+1):
+                mca = 'ARR%i.ArrayData' % imca
+                fields.append((mca, 'spectra%i' % imca))
+        self.extra_pvs = extras
+        self.set_counters(fields)
+        
+
+
 def get_detector(prefix, kind=None, label=None, **kws):
     """returns best guess of which Detector class to use
            Mca, MultiMca, Motor, Scaler, Simple
@@ -474,6 +638,7 @@ def get_detector(prefix, kind=None, label=None, **kws):
               'mca': McaDetector,
               'med': MultiMcaDetector,
               'multimca': MultiMcaDetector,
+              'xspress3': XSPress3Detector,              
               None: SimpleDetector}
 
     if kind is None:
