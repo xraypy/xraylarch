@@ -522,6 +522,8 @@ class XSPress3Detector(DetectorMixin):
                           use_unlabeled=use_unlabeled,
                           use_full=use_full, **kws)
         nmcas, nrois = int(nmcas), int(nrois)
+        self.nmcas = nmcas
+        self.nrois = nrois
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         self.prefix        = prefix
@@ -545,7 +547,6 @@ class XSPress3Detector(DetectorMixin):
                                   use_unlabeled=use_unlabeled,
                                   use_full=use_full)
 
-
     def __repr__(self):
         return "<%s: '%s', prefix='%s'%s>" % (self.__class__.__name__,
                                               self.label, self.prefix,
@@ -557,10 +558,16 @@ class XSPress3Detector(DetectorMixin):
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
 
-
     def pre_scan(self, scan=None, **kws):
         if self._counter is None:
             self.connect_counters()
+        else:
+            self._counter._get_counters()
+
+        for i in range(1, self.nmcas+1):
+            card = "%sC%i" % (self.prefix, i)
+            caput("%s_PluginControlValExtraROI" % (card), 0)
+            caput("%s_PluginControlVal"         % (card), 1)
 
         caput("%sTriggerMode"   % (self.prefix), 0)   # software mode
         caput("%sCTRL_MCA_ROI"  % (self.prefix), 1)
@@ -578,13 +585,15 @@ class XSPress3Counter(DeviceCounter):
                  nscas=5, use_unlabeled=False,  use_full=False):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
-        nmcas, nrois = int(nmcas), int(nrois)
+        self.nmcas, self.nrois, self.nscas = int(nmcas), int(nrois), int(nscas)
+        self.use_full = use_full
+        self.use_unlabeled = False
         DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
         prefix = self.prefix
-        fields = []
-        extras = []
-
-        pvs = {}
+        self._fields = []
+        self.extra_pvs = []
+        
+        pvs = self._pvs = {}
         for imca in range(1, nmcas+1):
             for iroi in range(1, nrois+1):
                 namepv = '%sC%i_ROI%i:AttrName' % (prefix, imca, iroi)
@@ -595,11 +604,16 @@ class XSPress3Counter(DeviceCounter):
                 scapv = '%sC%i_SCA%i:Value_RBV' % (prefix, imca, isca)
                 pvs[scapv] = PV(scapv)                
         poll()
-        time.sleep(0.001)                
-         
-        for imca in range(1, nmcas+1):
+        time.sleep(0.01)                
+        self._get_counters()
+
+    def _get_counters(self):
+        prefix = self.prefix
+        pvs = self._pvs
+        fields = []
+        for imca in range(1, self.nmcas+1):
             should_break = False
-            for iroi in range(1, nrois+1):
+            for iroi in range(1, self.nrois+1):
                 namepv = '%sC%i_ROI%i:AttrName' % (prefix, imca, iroi)
                 rhipv  = '%sC%i_MCA_ROI%i_HLM' % (prefix, imca, iroi)
                 roi_hi = pvs[rhipv].get()
@@ -609,20 +623,20 @@ class XSPress3Counter(DeviceCounter):
                     should_break = True
                     break
                 if (roiname is not None and (len(roiname) > 0
-                    and roi_hi > 0) or use_unlabeled):
+                    and roi_hi > 0) or self.use_unlabeled):
                     suff = 'C%i_ROI%i:Value_RBV' % (imca, iroi)
                     fields.append((suff, label))
 
-            for isca in range(nscas):  # these start counting at 0!!
+            for isca in range(self.nscas):  # these start counting at 0!!
                 suff  = 'C%i_SCA%i:Value_RBV' % (imca, isca)
                 label = '%s MCA%i' % (self.sca_labels[isca], imca)
                 fields.append((suff, label))
             
-        if use_full:
-            for imca in range(1, nmcas+1):
+        if self.use_full:
+            for imca in range(1, self.nmcas+1):
                 mca = 'ARR%i.ArrayData' % imca
                 fields.append((mca, 'spectra%i' % imca))
-        self.extra_pvs = extras
+
         self.set_counters(fields)
         
 
