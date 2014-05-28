@@ -108,6 +108,7 @@ class XRFDisplayFrame(wx.Frame):
         self.gsexrmfile = gsexrmfile
         self.title = title
         self.plotframe = None
+        self.wids = {}
         self.larch = _larch
         if self.larch is None:
             self.init_larch()
@@ -118,6 +119,8 @@ class XRFDisplayFrame(wx.Frame):
         self.selected_elem = None
         self.mca = None
         self.mca2 = None
+        self.xdata = np.arange(2048)*0.015
+        self.ydata = np.ones(2048)*1.e-4
         self.x2data = None
         self.y2data = None
         self.rois_shown = False
@@ -154,6 +157,7 @@ class XRFDisplayFrame(wx.Frame):
                 x, y = self.panel.axes.transData.inverted().transform((event.x, event.y))
             except:
                 pass
+        ix = x
         if self.mca is not None:
             ix = index_of(self.mca.energy, x)
             x = self.mca.energy[ix]
@@ -223,27 +227,36 @@ class XRFDisplayFrame(wx.Frame):
             ix = index_of(self.mca.energy, x)
             x = self.mca.energy[ix]
             y = self.mca.counts[ix]
+        else:
+            ix = index_of(self.xdata, x)
+            x = self.xdata[ix]
+            y = self.ydata[ix]
         self.last_rightdown = x
         self.draw_marker('Right:', ix, x, y, 1)
 
-    def createMainPanel(self):
-        self.wids = {}
+    def createPlotPanel(self):
+        """mca plot window"""
+        pan = PlotPanel(self, fontsize=7,
+                        axisbg='#FDFDFA',
+                        axissize=[0.01, 0.11, 0.98, 0.87],
+                        output_title='test.xrf',
+                        messenger=self.write_message)
+
+        pan.conf.labelfont.set_size(7)
+        pan.onRightDown= self.on_rightdown
+        pan.add_cursor_mode('zoom',  motion = self.ignoreEvent,
+                            leftup   = self.ignoreEvent,
+                            leftdown = self.on_leftdown,
+                            rightdown = self.on_rightdown)
+        return pan
+
+
+    def createControlPanel(self):
         ctrlpanel = wx.Panel(self)
         ptable = PeriodicTablePanel(ctrlpanel,  onselect=self.onShowLines,
                                     tooltip_msg='Select Element for KLM Lines')
 
-        plotpanel = self.panel = PlotPanel(self, fontsize=7,
-                                           axisbg='#FDFDFA',
-                                           axissize=[0.01, 0.11, 0.98, 0.87],
-                                           # axissize=[0.12, 0.12, 0.86, 0.86],
-                                           output_title='test.xrf',
-                                           messenger=self.write_message)
-        self.panel.conf.labelfont.set_size(7)
-        self.panel.onRightDown= self.on_rightdown
-        self.panel.add_cursor_mode('zoom',  motion = self.ignoreEvent,
-                                   leftup   = self.ignoreEvent,
-                                   leftdown = self.on_leftdown,
-                                   rightdown = self.on_rightdown)
+        self.wids['ptable'] = ptable
 
         sizer = wx.GridBagSizer(11, 5)
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
@@ -364,19 +377,25 @@ class XRFDisplayFrame(wx.Frame):
         sizer.SetVGap(1)
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
+        return ctrlpanel
+        
+        
+    def createMainPanel(self):
+        ctrlpanel = self.createControlPanel()
+        plotpanel = self.panel = self.createPlotPanel()
 
-        tx, ty = ptable.GetBestSize()
+        tx, ty = self.wids['ptable'].GetBestSize()
         cx, cy = ctrlpanel.GetBestSize()
         px, py = plotpanel.GetBestSize()
 
         self.SetSize((max(cx, tx)+px, 25+max(cy, py)))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
-        msizer = wx.BoxSizer(wx.HORIZONTAL)
-        msizer.Add(ctrlpanel, 0, style, 1)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(ctrlpanel, 0, style, 1)
+        sizer.Add(plotpanel, 1, style, 1)
 
-        msizer.Add(self.panel, 1, style, 1)
-        pack(self, msizer)
+        pack(self, sizer)
         wx.CallAfter(self.init_larch)
         self.set_roilist(mca=None)
 
@@ -532,9 +551,13 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.canvas.draw()
         self.panel.Refresh()
 
+    def createCustomMenus(self, fmenu):
+        return
+
     def createMenus(self):
         self.menubar = wx.MenuBar()
         fmenu = wx.Menu()
+        self.createCustomMenus(fmenu)
         MenuItem(self, fmenu, "&Read MCA Spectra File\tCtrl+O",
                  "Read GSECARS MCA File",  self.onReadMCAFile)
 
@@ -545,7 +568,7 @@ class XRFDisplayFrame(wx.Frame):
                  "Save Column File",  self.onSaveColumnFile)
 
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu,  "&Save\tCtrl+S",
+        MenuItem(self, fmenu,  "&Save\tCtrl+I",
                  "Save PNG Image of Plot", self.onSavePNG)
         MenuItem(self, fmenu, "&Copy\tCtrl+C",
                  "Copy Plot Image to Clipboard",
