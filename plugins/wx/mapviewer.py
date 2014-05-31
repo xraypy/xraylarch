@@ -51,7 +51,7 @@ try:
     HAS_EPICS = True
 except:
     pass
-    
+
 import h5py
 import numpy as np
 import scipy.stats as stats
@@ -449,7 +449,7 @@ class SimpleMapPanel(GridPanel):
 
 class TriColorMapPanel(GridPanel):
     """Panel of Controls for choosing what to display a 3 color ROI map"""
-    label  = '3-Color ROI Map'    
+    label  = '3-Color ROI Map'
     def __init__(self, parent, owner, **kws):
         GridPanel.__init__(self, parent, nrows=8, ncols=5, **kws)
         self.owner = owner
@@ -516,13 +516,13 @@ class TriColorMapPanel(GridPanel):
         if i0 != '1':
             i0map = datafile.get_roimap(i0, det=det, no_hotcols=no_hotcols,
                                         dtcorrect=dtcorrect)
-            
+
         i0min = min(i0map[np.where(i0map>0)])
         if i0min < 1: i0min = 1.0
         i0map[np.where(i0map<i0min)] = i0min
         i0map = 1.0 * i0map / i0map.max()
-        print 'I0 map : ', i0map.min(), i0map.max(), i0map.mean()
-        
+        # print 'I0 map : ', i0map.min(), i0map.max(), i0map.mean()
+
         pref, fname = os.path.split(datafile.filename)
         title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
         subtitles = {'red': 'Red: %s' % r,
@@ -565,7 +565,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
 
         sizer = wx.GridBagSizer(8, 2)
         self.wids = {}
-        
+
         ir = 0
 
         for label in ('Scan Started', 'User Comments 1', 'User Comments 2',
@@ -574,16 +574,16 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                       'Sample Stage X',     'Sample Stage Y',
                       'Sample Stage Z',     'Sample Stage Theta',
                       'Ring Current', 'X-ray Energy',  'X-ray Intensity (I0)'):
-            
+
             ir += 1
             thislabel        = SimpleText(self, '%s:' % label,
                                           style=wx.LEFT, size=(125, -1))
             self.wids[label] = SimpleText(self, ' ' ,
-                                          style=wx.LEFT, size=(300, -1)) 
-            
+                                          style=wx.LEFT, size=(300, -1))
+
             sizer.Add(thislabel,        (ir, 0), (1, 1), 1)
             sizer.Add(self.wids[label], (ir, 1), (1, 1), 1)
- 
+
         pack(self, sizer)
         self.SetupScrolling()
 
@@ -607,14 +607,14 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         start2 = float(xrfmap['config/scan/start2'].value)
         stop1 = float(xrfmap['config/scan/stop1'].value)
         stop2 = float(xrfmap['config/scan/stop2'].value)
-        
+
         step1 = float(xrfmap['config/scan/step1'].value)
         step2 = float(xrfmap['config/scan/step2'].value)
 
         npts1 = int((abs(stop1 - start1) + 1.1*step1)/step1)
         npts2 = int((abs(stop2 - start2) + 1.1*step2)/step2)
 
-        sfmt = "%s: [%.4f:%.4f], step=%.4f, %i pixels" 
+        sfmt = "%s: [%.4f:%.4f], step=%.4f, %i pixels"
         scan1 = sfmt % (pos_label[i1], start1, stop1, step1, npts1)
         scan2 = sfmt % (pos_label[i2], start2, stop2, step2, npts2)
 
@@ -631,11 +631,11 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         env_names = list(xrfmap['config/environ/name'])
         env_vals  = list(xrfmap['config/environ/value'])
         env_addrs = list(xrfmap['config/environ/address'])
-        
+
         fines = {'X': '?', 'Y': '?'}
         i0vals = {'flux':'?', 'current':'?'}
         cur_energy = ''
-        
+
         for name, addr, val in zip(env_names, env_addrs, env_vals):
             name = str(name).lower()
             if 'ring current' in name:
@@ -644,7 +644,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                 self.wids['X-ray Energy'].SetLabel("%s eV" % val)
                 cur_energy = val
             elif 'i0 trans' in name:
-                i0vals['flux'] = val                
+                i0vals['flux'] = val
             elif 'i0 current' in name:
                 i0vals['current'] = val
             else:
@@ -653,7 +653,7 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                     addr = addr[:-4]
                 if addr in pos_addrs:
                     plab = pos_label[pos_addrs.index(addr)].lower()
-                    
+
                     if 'stage x' in plab:
                         self.wids['Sample Stage X'].SetLabel("%s mm" % val)
                     elif 'stage y' in plab:
@@ -668,17 +668,17 @@ class MapInfoPanel(scrolled.ScrolledPanel):
                         fines['Y'] = val
 
         i0val = 'Flux=%(flux)s Hz, I0 Current=%(current)s uA' % i0vals
-        self.wids['X-ray Intensity (I0)'].SetLabel(i0val) 
-        self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines)) 
-                
+        self.wids['X-ray Intensity (I0)'].SetLabel(i0val)
+        self.wids['Sample Fine Stages'].SetLabel('X, Y = %(X)s, %(Y)s mm' % (fines))
+
     def onClose(self):
         pass
 
 
 
 class MapAreaPanel(scrolled.ScrolledPanel):
-    
-    label  = 'Map Areas'    
+
+    label  = 'Map Areas'
     delstr = """   Delete Area '%s'?
 
 WARNING: This cannot be undone!
@@ -696,7 +696,7 @@ WARNING: This cannot be undone!
         self.choice = Choice(pane, choices=[], size=(200, -1),
                              action=self.onSelect)
 
-        
+
         self.desc  = wx.TextCtrl(pane, -1,   '', size=(200, -1))
         self.info  = wx.StaticText(pane, -1, '', size=(250, -1))
 
@@ -746,7 +746,7 @@ WARNING: This cannot be undone!
         # main sizer
         msizer = wx.BoxSizer(wx.VERTICAL)
         msizer.Add(pane, 0, wx.ALIGN_LEFT|wx.ALL, 1)
-        
+
         msizer.Add(wx.StaticLine(self, size=(375, 2),
                                  style=wx.LI_HORIZONTAL),
                    0, wx.EXPAND|wx.ALL, 1)
@@ -764,7 +764,7 @@ WARNING: This cannot be undone!
             for col in range(7):
                 align = wx.ALIGN_RIGHT
                 if col == 0: align = wx.ALIGN_LEFT
-                rep.Columns[col].Sortable = False 
+                rep.Columns[col].Sortable = False
                 rep.Columns[col].Renderer.Alignment = align
                 rep.Columns[col].Alignment = align
 
@@ -795,16 +795,16 @@ WARNING: This cannot be undone!
            self.choice.Enable()
            return
 
-        
+
         d_addrs = [d.lower() for d in xrfmap['roimap/det_address']]
         d_names = [d for d in xrfmap['roimap/det_name']]
-        
+
         # count times
         ctime = [1.e-6*xrfmap['roimap/det_raw'][:,:,0][amask]]
         for i in range(xrfmap.attrs['N_Detectors']):
             tname = 'det%i/realtime' % (i+1)
             ctime.append(1.e-6*xrfmap[tname].value[amask])
-        
+
         for idet, dname in enumerate(d_names):
             daddr = d_addrs[idet]
             det = 0
@@ -828,7 +828,7 @@ WARNING: This cannot be undone!
             mode = stats.mode(d)
             if len(mode) > 0:
                 mode = mode[0]
-                if len(mode) > 0: 
+                if len(mode) > 0:
                     smode = "%.1f" % mode[0]
             dat = (dname, "%.1f" % d.min(), "%.1f" % d.max(), "%.1f" %
                    d.mean(), "%.1f" % d.std(), "%.1f" % np.median(d), smode)
@@ -837,12 +837,12 @@ WARNING: This cannot be undone!
         if 'roistats' not in area.attrs:
            area.attrs['roistats'] = json.dumps(self.report_data)
            xrmfile.h5root.flush()
-            
+
         self.choice.Enable()
 
     def update_xrfmap(self, xrfmap):
         self.set_area_choices(xrfmap, show_last=True)
-        
+
     def set_area_choices(self, xrfmap, show_last=False):
         areas = xrfmap['areas']
         c = self.choice
@@ -862,7 +862,7 @@ WARNING: This cannot be undone!
         c.SetStringSelection(this_label)
         self.desc.SetValue(this_label)
 
-        
+
     def onReport(self, event=None):
         aname = self._getarea()
         path, fname = os.path.split(self.owner.current_file.filename)
@@ -871,19 +871,19 @@ WARNING: This cannot be undone!
         outfile = FileSave(self, "Save Area Statistics File",
                            default_file=deffile,
                            wildcard=FILE_WILDCARDS)
-        
+
         if outfile is None:
             return
 
         aname = self._getarea()
-        area  = self.owner.current_file.xrfmap['areas/%s' % aname]        
+        area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         npix = len(area.value[np.where(area.value)])
         pixtime = self.owner.current_file.pixeltime
         if pixtime is None:
             pixtime = self.owner.current_file.calc_pixeltime()
 
         dtime = npix*pixtime
-        info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds" 
+        info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds"
         buff = ["# Map %s, Area %s" % (self.owner.current_file.filename, aname),
                 "# %i Pixels" % npix,
                 "# %i milliseconds per pixel" % int(round(1000.0*pixtime)),
@@ -900,9 +900,9 @@ WARNING: This cannot be undone!
             fout.write("\n".join(buff))
             fout.close()
         except IOError:
-            print "could not write %s" % outfile               
-            
-        
+            print "could not write %s" % outfile
+
+
     def _getarea(self):
         return self.choices[self.choice.GetStringSelection()]
 
@@ -915,7 +915,7 @@ WARNING: This cannot be undone!
             pixtime = self.owner.current_file.calc_pixeltime()
 
         dtime = npix*pixtime
-        info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds" 
+        info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds"
         self.info.SetLabel(info_fmt%(npix, int(round(1000.0*pixtime)), dtime))
 
         self.desc.SetValue(area.attrs['description'])
@@ -923,7 +923,7 @@ WARNING: This cannot be undone!
         self.report_data = []
         if 'roistats' in area.attrs:
            self.show_stats()
-        
+
 
     def onShowStats(self, event=None):
         if self.report is None:
@@ -1010,7 +1010,7 @@ class MapViewerFrame(wx.Frame):
         self.file_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onFileWatchTimer, self.file_timer)
         self.files_in_progress = []
-        self.no_hotcols = True        
+        self.no_hotcols = True
         self.SetTitle("GSE XRM MapViewer")
         self.SetFont(Font(9))
 
@@ -1029,7 +1029,7 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_nrow = 0
         read_workdir('gsemap.dat')
         # self.onFolderSelect(evt=None)
-        
+
     def CloseFile(self, filename, event=None):
         if filename in self.filemap:
             self.filemap[filename].close()
@@ -1141,10 +1141,10 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.panel.reset_config()
 
     def onMoveToPixel(self, pos1, val1, pos2, val2):
-        if not HAS_EPICS: 
+        if not HAS_EPICS:
             return
-        
-        xrfmap = self.current_file.xrfmap    
+
+        xrfmap = self.current_file.xrfmap
         pos_addrs = [str(x) for x in xrfmap['config/positioners'].keys()]
         pos_label = [str(x.value) for x in xrfmap['config/positioners'].values()]
 
@@ -1152,12 +1152,12 @@ class MapViewerFrame(wx.Frame):
         i2 = pos_label.index(pos2)
         msg = "%s = %.4f, %s = %.4f?" % (pos_label[i1], val1,
                                          pos_label[i2], val2)
-        move = Popup(self, "Really move stages to\n   %s?" % msg, 
+        move = Popup(self, "Really move stages to\n   %s?" % msg,
                      'move stages to pixel?', style=wx.YES_NO)
         if move:
             caput(pos_addrs[i1], val1)
             caput(pos_addrs[i2], val2)
-        
+
     def add_imdisplay(self, title, det=None):
         on_lasso = partial(self.lassoHandler, det=det)
         imframe = MapImageFrame(output_title=title,
@@ -1170,11 +1170,11 @@ class MapViewerFrame(wx.Frame):
                     det=None, subtitles=None, xrmfile=None):
         """display a map in an available image display"""
         displayed = False
-        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)   
-        if x is not None: 
+        lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
+        if x is not None:
             if self.no_hotcols and map.shape[1] != x.shape[0]:
                 x = x[1:-1]
-                
+
         while not displayed:
             try:
                 imd = self.im_displays.pop()
@@ -1225,7 +1225,7 @@ class MapViewerFrame(wx.Frame):
 
         for p in self.nbpanels:
             if hasattr(p, 'update_xrfmap'):
-                p.update_xrfmap(self.current_file.xrfmap)            
+                p.update_xrfmap(self.current_file.xrfmap)
             if hasattr(p, 'set_file_choices'):
                 p.set_file_choices(fnames)
 
@@ -1256,20 +1256,20 @@ class MapViewerFrame(wx.Frame):
         hmenu = wx.Menu()
         MenuItem(self, hmenu, 'About', 'About MapViewer', self.onAbout)
 
-        
+
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(hmenu, "&Help")
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE,  self.onClose)
-        
+
 
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
             self.larch_buffer = larchframe.LarchFrame(_larch=self.larch)
-        
+
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
-         
+
     def onFolderSelect(self, evt=None):
         style = wx.DD_DIR_MUST_EXIST|wx.DD_DEFAULT_STYLE
         dlg = wx.DirDialog(self, "Select Working Directory:", os.getcwd(),
@@ -1351,7 +1351,7 @@ Matt Newville <newville @ cars.uchicago.edu>
                      "Not a Map folder")
                 return
             parent, fx = os.path.split(str(path))
-            self.add_xrmfile(xrmfile) 
+            self.add_xrmfile(xrmfile)
 
     def add_xrmfile(self, xrmfile):
         gname = 'map001'
@@ -1362,7 +1362,7 @@ Matt Newville <newville @ cars.uchicago.edu>
         setattr(self.datagroups, gname, xrmfile)
 
         parent, fname = os.path.split(xrmfile.filename)
-        
+
         if fname not in self.filemap:
             self.filemap[fname] = xrmfile
         if fname not in self.filelist.GetItems():
@@ -1372,7 +1372,7 @@ Matt Newville <newville @ cars.uchicago.edu>
         self.ShowFile(filename=fname)
         os.chdir(nativepath(parent))
         save_workdir(nativepath(parent))
-        
+
     def onReadFile(self, evt=None):
         if not self.h5convert_done:
             print('cannot open file while processing a map folder')
