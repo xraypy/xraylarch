@@ -126,7 +126,6 @@ class EscanData:
 
     def get_data(self, name=None, norm=None, correct=True):
         """return data array by name"""
-        print 'GET DATA ', name, norm, correct
         dat = self._getarray(name, correct=correct)
         if norm is not None and dat is not None:
             norm = self._getarray(norm,  correct=True)
@@ -142,11 +141,11 @@ class EscanData:
         # look for exact match
         for nam in dnames:
             if s == nam:  return dnames.index(nam)
-         
+
         # look for inexact match 1: compare 1st words
         for nam in dnames:
             sx = nam.split()
-            if sw[0] == sx[0]:           
+            if sw[0] == sx[0]:
                 return dnames.index(i)
 
         # check for 1st word in the det name
@@ -380,7 +379,6 @@ class EscanData:
     def _getarray(self, name=None, correct=True):
         i = None
         arr = None
-        print 'GET ARRAY ', name
         for ip, pname in enumerate(self.pos_desc):
             if name.lower() == pname.lower():
                 return self.pos[ip]
@@ -400,10 +398,10 @@ class EscanData:
             for idet, nam in enumerate(self.det_desc):
                 name1 = nam.strip().lower()
                 print idet, name, name1, mca, self.det_mcas[idet]
-                if name == name1 and mca == self.det_mcas[idet]:                   
+                if name == name1 and mca == self.det_mcas[idet]:
                     i = idet
-                    break                    
-            print 'GETARRAY with mca in name: ', name, mca,  ' --> ', i 
+                    break
+            print 'GETARRAY with mca in name: ', name, mca,  ' --> ', i
             arr = self.det
             if correct: arr = self.det_corr
         elif name in self.sums_names:
@@ -1000,39 +998,39 @@ def gsescan_group(fname, _larch=None, **kws):
 
 
 GSE_header_IDE= ['# XDI/1.0  GSE/1.0',
-             '# Column.1: energy eV',
-             '# Column.2: mufluor',
-             '# Column.3: i0',
-             '# Column.4: ifluor   (corrected for deadtime)',
-             '# Column.5: ifluor_raw (not corrected) ',
              '# Beamline.name:  13-ID-E, GSECARS',
              '# Monochromator.name:  Si 111, LN2 Cooled',
              '# Monochromator.dspacing:  3.13477',
              '# Facility.name: APS',
              '# Facility.xray_source: 3.6 cm undulator',
              '# Detectors.i0:  20cm ion chamber, He',
-             '# Detectors.ifluor:  Si SDD Vortex ME-4, XIA xMAP, 4 elements']
-
-GSE_header_BMD = ['# XDI/1.0  GSE/1.0',
+             '# Detectors.ifluor:  Si SDD Vortex ME-4, XIA xMAP, 4 elements',
              '# Column.1: energy eV',
              '# Column.2: mufluor',
              '# Column.3: i0',
              '# Column.4: ifluor   (corrected for deadtime)',
-             '# Column.5: ifluor_raw (not corrected) ',
+             '# Column.5: ifluor_raw (not corrected) '  ]
+
+GSE_header_BMD = ['# XDI/1.0  GSE/1.0',
              '# Beamline.name:  13-BM-D, GSECARS',
              '# Monochromator.name:  Si 111, water cooled ',
              '# Monochromator.dspacing:  3.13477',
              '# Facility.name: APS',
              '# Facility.xray_source: bending magnet',
              '# Detectors.i0:  10cm ion chamber, N2',
-             '# Detectors.ifluor:  Ge SSD detector, XIA xMAP, 12 elements']
+             '# Detectors.ifluor:  Ge SSD detector, XIA xMAP, 12 elements',
+             '# Column.1: energy eV',
+             '# Column.2: mufluor',
+             '# Column.3: i0',
+             '# Column.4: ifluor   (corrected for deadtime)',
+             '# Column.5: ifluor_raw (not corrected) '    ]
 
-             
+
 def iso8601_time(ts):
     tzone = '-%2.2i:00' % (time.timezone/3600)
     s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
     return "%s%s" % (s, tzone)
-             
+
 def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=None):
     """convert GSE ESCAN fluorescence XAFS scans to dead time corrected files"""
     try:
@@ -1042,7 +1040,6 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=N
       return
     energy =  sg.x
     i0 = sg.get_data('i0')
-    i1 = sg.get_data('i1')
 
     ix = -1
     channelname = channelname.lower()
@@ -1050,11 +1047,10 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=N
         if ch.lower().startswith(channelname):
            ix = ich
            break
-       
     if ix < 0:
         print('Cannot find Channel %s in file %s  ' % (channelname, fname))
         return
-  
+
     chans = list(sg.sums_list[ix])
     chans.pop()
     chans = numpy.array(chans)
@@ -1062,7 +1058,6 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=N
 
     fl_raw  = sg.det[chans].sum(axis=0)
     fl_corr = (sg.dt_factor[dchans] * sg.det[chans]).sum(axis=0)
-
     mufluor = fl_corr / i0
     sg.i0  = i0
     sg.fl_raw = fl_raw
@@ -1074,34 +1069,62 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=N
     header = GSE_header_IDE
     if 'BM' in sg.scan_prefix: header = GSE_header_BMD
 
+    i1, iref = None, None
+    ncol, lref = 6, 'iref'
+    labels = [l.lower() for l in sg.sums_names]
+    if 'i1' in labels:
+        i1 = sg.get_data('i1')
+    if 'iref' in labels:
+        iref = sg.get_data('iref')
+    elif 'i2' in labels:
+        iref = sg.get_data('i2')
+
+    if i1 is not None:
+        header.append('# Column.%i: itrans ' % ncol)
+        ncol += 1
+    if iref is not None:
+        header.append('# Column.%i: irefer ' % ncol)
+        ncol += 1
     buff = [l.strip() for l in header]
-    buff.append("# Scan.start_time: %s" %  
+    buff.append("# Scan.start_time: %s" %
                 iso8601_time(os.stat(fname).st_ctime))
 
     thead = ["# ///",
              "# summed %s fluorescence data from %s" % (channelname, fname),
              "# Dead-time correction applied",
-             "#---------------------------------", 
-             "# energy     mufluor    i0    fluor_corr   fluor_raw"]
-    
-    buff.extend(thead)
+             "#---------------------------------"]
 
-    fmt = "   %.3f   %.5f   %.5f   %.5f   %i"
+    arrlabel = "# energy     mufluor    i0    fluor_corr   fluor_raw"
+    if i1 is not None:
+        arrlabel = "%s  itrans"  % arrlabel
+
+    if iref is not None:
+        arrlabel = "%s  irefer"  % arrlabel
+
+    thead.append(arrlabel)
+    buff.extend(thead)
+    fmt = "   %.3f   %.5f   %.1f   %.5f   %.1f"
     for i in range(npts):
-        buff.append(fmt % (energy[i],  mufluor[i], 
-                           i0[i], fl_corr[i], fl_raw[i]))
+        dline = fmt % (energy[i],  mufluor[i], i0[i], fl_corr[i], fl_raw[i])
+        if i1 is not None:
+            dline = "%s  %.1f" % (dline, i1[i])
+        if iref is not None:
+            dline = "%s  %.1f" % (dline, iref[i])
+        buff.append(dline)
 
     ofile = fname[:]
     if ofile.startswith('..'):
         ofile = ofile[3:]
     ofile = ofile.replace('.', '_') + '.dat'
     ofile = os.path.join(subdir, ofile)
-    try: 
+    if not os.path.exists(subdir):
+        os.mkdir(subdir)
+    try:
        fout = open(ofile, 'w')
        fout.write("\n".join(buff))
        fout.close()
        print("wrote %s, npts=%i, channel='%s'" % (ofile, npts, channelname))
-    except: 
+    except:
        print("could not open / write to output file %s" % ofile)
 
     return sg
