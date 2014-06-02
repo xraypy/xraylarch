@@ -20,6 +20,7 @@ from roi import ROI
 
 from configfile import FastMapConfig
 from xmap_netcdf import read_xmap_netcdf
+from xsp3_hdf5 import read_xsp3_hdf5
 from asciifiles import (readASCII, readMasterFile, readROIFile,
                         readEnvironFile, parseEnviron)
 
@@ -92,10 +93,13 @@ def isGSEXRM_MapFolder(fname):
         not os.path.isdir(fname)):
         return False
     flist = os.listdir(fname)
-    for f in ('Master.dat', 'Environ.dat', 'Scan.ini', 'xmap.0001'):
+    for f in ('Master.dat', 'Environ.dat', 'Scan.ini'):
         if f not in flist:
             return False
-    return True
+    has_xrfdata = False
+    for f in ('xmap.0001', 'xsp3.0001'):
+        if f in flist: has_xrfdata = True
+    return has_xrfdata
 
 H5ATTRS = {'Type': 'XRF 2D Map',
            'Version': '1.4.0',
@@ -170,8 +174,16 @@ class GSEXRM_MapRow:
     read one row worth of data:
     """
     def __init__(self, yvalue, xmapfile, xpsfile, sisfile, folder,
-                 reverse=False, ixaddr=0, dimension=2, npts=None,
-                 irow=None, dtime=None):
+                 xrftype='xmap', reverse=False, ixaddr=0, dimension=2, 
+                 nrows_expected=None,
+                 npts=None,  irow=None, dtime=None):
+
+        self.nrows_expected = nrows_expected
+        xrf_reader = read_xmap_netcdf
+        if xrftype.startswith('xsp'):
+            xrf_reader = read_xsp3_hdf5
+        print 'MapRow: ', xrf_reader, xmapfile, self.nrows_expected
+
         self.npts = npts
         self.irow = irow
         self.yvalue = yvalue
@@ -185,19 +197,20 @@ class GSEXRM_MapRow:
         if dtime is not None:  dtime.add('maprow: read ascii files')
         t0 = time.time()
         atime = -1
+
         xmapdat = None
         xmfile = os.path.join(folder, xmapfile)
         while atime < 0 and time.time()-t0 < 10:
             try:
                 atime = os.stat(xmfile).st_ctime
-                xmapdat = read_xmap_netcdf(xmfile, verbose=False)
+                xmapdat = xrf_reader(xmfile, npixels=self.nrows_expected, verbose=False)
             except (IOError, IndexError):
                 time.sleep(0.010)
-
+                
         if atime < 0 or xmapdat is None:
-            print( 'Failed to read xmap data from %s' % self.xmapfile)
+            print( 'Failed to read XRF data from %s' % self.xmapfile)
             return
-        if dtime is not None:  dtime.add('maprow: read xmap files')
+        if dtime is not None:  dtime.add('maprow: read XRF files')
         #
         self.counts    = xmapdat.counts # [:]
         self.inpcounts = xmapdat.inputCounts[:]
@@ -428,6 +441,7 @@ class GSEXRM_MapFile(object):
         self.ndet       = None
         self.start_time = None
         self.xrfmap   = None
+        self.xrfdet_type = 'xmap'
         self.h5root   = None
         self.last_row = -1
         self.rowdata = []
@@ -634,6 +648,7 @@ class GSEXRM_MapFile(object):
         possible once at least 1 row of raw data is available
         in the scan folder.
         """
+        print 'INIT XRFMAP '
         if self.status == GSEXRM_FileStatus.hasdata:
             return
         if self.status != GSEXRM_FileStatus.created:
@@ -714,8 +729,10 @@ class GSEXRM_MapFile(object):
 
         yval, xmapf, sisf, xpsf, etime = self.rowdata[irow]
         reverse = (irow % 2 != 0)
-        # print 'Read Row ', irow, self.ixaddr
+        print 'Read RowData: ', irow, self.ixaddr, xmapf, sisf, xpsf, etime
         return GSEXRM_MapRow(yval, xmapf, xpsf, sisf, irow=irow,
+                             xrftype=self.xrfdet_type,
+                             nrows_expected=self.nrows_expected,
                              ixaddr=self.ixaddr,
                              dimension=self.dimension, npts=self.npts,
                              folder=self.folder, reverse=reverse)
@@ -735,7 +752,7 @@ class GSEXRM_MapFile(object):
                 mcas.append(g)
                 nrows, npts, nchan =  g['counts'].shape
 
-        # print 'XRFMAP Add Row ', thisrow, nrows, npts, nchan
+        print 'XRFMAP Add Row ', thisrow, nrows, nmca, xnpts, nchan
         if thisrow >= nrows:
             self.resize_arrays(32*(1+nrows/32))
 
@@ -807,6 +824,7 @@ class GSEXRM_MapFile(object):
 
     def build_schema(self, row):
         """build schema for detector and scan data"""
+        print 'Build Schema'
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
@@ -946,6 +964,7 @@ class GSEXRM_MapFile(object):
                 realmca_groups.append(g)
             elif g.attrs.get('type', '').startswith('virtual mca'):
                 virtmca_groups.append(g)
+        print 'resize arrays ', realmca_groups
         oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
         for g in realmca_groups:
             g['counts'].resize((nrow, npts, nchan))
@@ -1123,6 +1142,7 @@ class GSEXRM_MapFile(object):
         self.master_header = header
         self.rowdata = rows
         self.scan_version = '1.0'
+        self.nrows_expected = None
         self.start_time = time.ctime()
         for line in header:
             words = line.split('=')
@@ -1130,6 +1150,8 @@ class GSEXRM_MapFile(object):
                 self.start_time = words[1].strip()
             elif 'scan.version' in words[0].lower():
                 self.scan_version = words[1].strip()
+            elif 'scan.nrows_expected' in words[0].lower():
+                self.nrows_expected = int(words[1].strip())
 
         self.folder_modtime = os.stat(self.masterfile).st_mtime
         self.stop_time = time.ctime(self.folder_modtime)
@@ -1154,6 +1176,8 @@ class GSEXRM_MapFile(object):
         step  = mapconf['scan']['step1']
         span = abs(stop-start)
         self.npts = int(abs(step*1.01 + span)/step)
+        
+        self.xrfdet_type = mapconf['xrf']['type'].lower()
 
         pos1 = scanconf['pos1']
         self.pos_addr = [pos1]

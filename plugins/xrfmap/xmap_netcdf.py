@@ -62,7 +62,7 @@ class xMAPData(object):
         self.inputCounts  = np.zeros((npix, ndet), dtype='i4')
         self.outputCounts = np.zeros((npix, ndet), dtype='i4')
 
-def read_xmap_netcdf(fname, verbose=False):
+def read_xmap_netcdf(fname, npixels=None, verbose=False):
     # Reads a netCDF file created with the DXP xMAP driver
     # with the netCDF plugin buffers
 

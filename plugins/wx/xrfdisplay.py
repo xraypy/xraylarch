@@ -402,8 +402,11 @@ class XRFDisplayFrame(wx.Frame):
     def init_larch(self):
         if self.larch is None:
             self.larch = Interpreter()
-        self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
-        self.larch.symtable.set_symbol('_sys.wx.parent', self)
+        symtab = self.larch.symtable
+        if not symtab.has_symbol('_sys.wx.wxapp'):
+            symtab.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        if not symtab.has_symbol('_sys.wx.parent'):
+            symtab.set_symbol('_sys.wx.parent', self)
 
     def onZoomIn(self, event=None):
         emin, emax = self.panel.axes.get_xlim()
