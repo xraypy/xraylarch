@@ -27,25 +27,26 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False):
     clocktick = 12.5e-3
     t0 = time.time()
     h5file = h5py.File(fname, 'r')
-    
+
     root  = h5file['entry/instrument']
-    
     counts = root['detector/data']
     ndattr = root['detector/NDAttributes']
-    print 'XSP3 DATA SHAPE ', fname, counts.shape
-    npix, ndet, nchan = counts.shape
-    if npixels is None: npixels = npix
+    # note: sometimes counts has npix-1 pixels, while the time arrays
+    # really have npix...  So we take npix from the time array, and
+    npix = ndattr['CHAN1SCA0'].shape[0]
+    ndpix, ndet, nchan = counts.shape
+    if npixels is None:
+        npixels = npix
+        if npixels < ndpix:
+            ndpix = npixels
+
     out = XSP3Data(npixels, ndet, nchan)
     out.numPixels = npixels
     t1 = time.time()
-    if npix < npixels:
-        out.counts[:npix, :, :]  = counts[:]
-    else:
-        out.counts = counts[:]
+    out.counts[:ndpix, :, :]  = counts[:]
 
     for i in range(ndet):
         rtime = (ndattr['CHAN%iSCA0' % (i+1)].value * clocktick).astype('i8')
-        print "XSP3:   ", rtime.shape, out.realTime.shape, npix, ndet, nchan
         out.realTime[:, i] = rtime
         out.liveTime[:, i] = rtime
         out.inputCounts[:, i]  = out.counts[:, i, :].sum(axis=1)
@@ -56,7 +57,7 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False):
     if verbose:
         print('   time to read file    = %5.1f ms' % ((t1-t0)*1000))
         print('   time to extract data = %5.1f ms' % ((t2-t1)*1000))
-        print('   read %i pixels ' %  npix)
+        print('   read %i pixels ' %  npixels)
         print('   data shape:    ' ,  out.counts.shape)
     return out
 
