@@ -225,7 +225,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display.SetTitle(title)
     return display
 
-def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None, 
+def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
               wxparent=None, size=None, side='left', force_draw=True, **kws):
     """xrf_plot(energy, data[, win=1], options])
 
@@ -237,7 +237,7 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
         counts :  array of counts
         mca:      Group counting MCA data (rois, etc)
         as_mca2:  use mca as background MCA
-        
+
         win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
         new: flag (True/False, default False) for whether to start a new plot.
         color: color for trace (name such as 'red', or '#RRGGBB' hex string)
@@ -246,7 +246,7 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
         marker:  symbol to draw at each point ('+', 'o', 'x', 'square', etc)
         markersize: integer size of marker
 
-    See Also: oplot, plot
+    See Also: xrf_oplot, plot
     """
     plotter = _getDisplay(wxparent=wxparent, win=win, size=size,
                           _larch=_larch, xrf=True)
@@ -267,6 +267,25 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
             plotter.plot(x, y, mca=mca, **kws)
     else:
         plotter.oplot(x, y, mca=mca, **kws)
+
+def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
+    """xrf_oplot(energy, data[, win=1], options])
+
+    Overplot a second  XRF trace of energy, data
+
+    Parameters:
+    --------------
+        energy :  array of energies
+        counts :  array of counts
+        mca:      Group counting MCA data (rois, etc)
+
+        win: index of Plot Frame (0, 1, etc).  May create a new Plot Frame.
+        color: color for trace (name such as 'red', or '#RRGGBB' hex string)
+        style: trace linestyle (one of 'solid', 'dashed', 'dotted', 'dot-dash')
+
+    See Also: xrf_plot
+    """
+    xrf_plot(x=x, y=y, mca=mca, win=win, _larch=_larch, new=False, **kws)
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
           force_draw=True, side='left', **kws):
@@ -641,4 +660,5 @@ def registerLarchPlugin():
                       'imshow':_imshow,
                       'contour':_contour,
                       'xrf_plot': _xrf_plot,
-                      } )
+                      'xrf_oplot': _xrf_oplot,
+                      })
