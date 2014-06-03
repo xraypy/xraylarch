@@ -93,17 +93,18 @@ def readROIFile(hfile):
     caldat = cp.options('calibration')
     for attr in ('offset', 'slope', 'quad'):
         calib[attr] = [float(x) for x in cp.get('calibration', attr).split()]
-    dxp = {}
+    extra = {}
     ndet = len(calib['offset'])
-    for attr in cp.options('dxp'):
-        tmpdat = [x for x in cp.get('dxp', attr).split()]
-        if len(tmpdat) == 2*ndet:
-            tmpdat = ['%s %s' % (i, j) for i, j in zip(tmpdat[::2], tmpdat[1::2])]
-        try:
-            dxp[attr] = [int(x) for x in tmpdat]
-        except ValueError:
+    for section in ('dxp', 'extra'):
+        for attr in cp.options(section):
+            tmpdat = [x for x in cp.get(section, attr).split()]
+            if len(tmpdat) == 2*ndet:
+                tmpdat = ['%s %s' % (i, j) for i, j in zip(tmpdat[::2], tmpdat[1::2])]
             try:
-                dxp[attr] = [float(x) for x in tmpdat]
+                extra[attr] = [int(x) for x in tmpdat]
             except ValueError:
-                dxp[attr] = tmpdat
-    return roidata, calib, dxp
+                try:
+                    extra[attr] = [float(x) for x in tmpdat]
+                except ValueError:
+                    extra[attr] = tmpdat
+    return roidata, calib, extra

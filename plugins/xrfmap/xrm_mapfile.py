@@ -608,7 +608,7 @@ class GSEXRM_MapFile(object):
 
         group['scan'].create_dataset('text', data=scantext)
 
-        roidat, calib, dxp = readROIFile(os.path.join(self.folder, self.ROIFile))
+        roidat, calib, extra = readROIFile(os.path.join(self.folder, self.ROIFile))
         self.ndet = len(calib['slope'])
         self.xrfmap.attrs['N_Detectors'] = self.ndet
         roi_desc, roi_addr, roi_lim = [], [], []
@@ -627,7 +627,7 @@ class GSEXRM_MapFile(object):
         for key, val in calib.items():
             self.add_data(group['mca_calib'], key, val)
 
-        for key, val in dxp.items():
+        for key, val in extra.items():
             self.add_data(group['mca_settings'], key, val)
 
         self.roi_desc = roi_desc
