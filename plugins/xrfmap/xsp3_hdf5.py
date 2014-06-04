@@ -13,7 +13,7 @@ class XSP3Data(object):
     def __init__(self, npix, ndet, nchan):
         self.firstPixel   = 0
         self.numPixels    = 0
-        self.counts       = np.zeros((npix, ndet, nchan), dtype='f8')
+        self.counts       = np.zeros((npix, ndet, nchan), dtype='f4')
         self.realTime     = np.zeros((npix, ndet), dtype='i8')
         self.liveTime     = np.zeros((npix, ndet), dtype='i8')
         self.inputCounts  = np.zeros((npix, ndet), dtype='i4')

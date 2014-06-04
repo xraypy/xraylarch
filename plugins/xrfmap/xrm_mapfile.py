@@ -182,7 +182,7 @@ class GSEXRM_MapRow:
         xrf_reader = read_xmap_netcdf
         if xmapfile.startswith('xsp'):
             xrf_reader = read_xsp3_hdf5
-        print 'MapRow: ', xrf_reader, xmapfile, self.nrows_expected
+        # print 'MapRow: ', xrf_reader, xmapfile, self.nrows_expected
 
         self.npts = npts
         self.irow = irow
