@@ -95,7 +95,10 @@ def readROIFile(hfile):
         calib[attr] = [float(x) for x in cp.get('calibration', attr).split()]
     extra = {}
     ndet = len(calib['offset'])
+    file_sections = cp.sections()
     for section in ('dxp', 'extra'):
+        if section not in file_sections:
+            continue
         for attr in cp.options(section):
             tmpdat = [x for x in cp.get(section, attr).split()]
             if len(tmpdat) == 2*ndet:
