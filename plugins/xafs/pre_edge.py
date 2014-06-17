@@ -151,7 +151,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
         pre1, pre2 = pre2, pre1
     if norm1 > norm2:
         norm1, norm2 = norm2, norm1
-        
+
     p1 = index_of(energy, pre1+e0)
     p2 = index_nearest(energy, pre2+e0)
     if p2-p1 < 2:
@@ -174,27 +174,26 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     edge_step = step
     if edge_step is None:
         edge_step = post_edge[ie0] - pre_edge[ie0]
-        
-    norm  = (mu - pre_edge)/edge_step
+
+    norm = flat = (mu - pre_edge)/edge_step
 
     # generate flattened spectra, by fitting a quadratic to .norm
-    # and removing that.  A simpler appoach:
-    #   flat_diff  = post_edge - pre_edge
-    #   flat       = norm - flat_diff + flat_diff[ie0]
-    #   flat[:ie0] = norm[:ie0]
-    # works, but still has some curvature to it.
-    fpars = Group(c0 = Parameter(0, vary=True),
-                  c1 = Parameter(0, vary=True),
-                  c2 = Parameter(0, vary=True),
-                  en = energy[p1:p2],
-                  mu = norm[p1:p2])
-    fit = Minimizer(flat_resid, fpars, _larch=_larch, toler=1.e-7)
-    fit.leastsq()
-
-    fc0, fc1, fc2  = fpars.c0.value, fpars.c1.value, fpars.c2.value
-    flat_diff   = fc0 + energy * (fc1 + energy * fc2)
-    flat        = norm - flat_diff  + flat_diff[ie0]
-    flat[:ie0]  = norm[:ie0]
+    # and removing that.
+    if p2-p1 > 4:
+        fpars = Group(c0 = Parameter(0, vary=True),
+                      c1 = Parameter(0, vary=True),
+                      c2 = Parameter(0, vary=True),
+                      en = energy[p1:p2],
+                      mu = norm[p1:p2])
+        fit = Minimizer(flat_resid, fpars, _larch=_larch, toler=1.e-7)
+        try:
+            fit.leastsq()
+        except TypeError, ValueError:
+            pass
+        fc0, fc1, fc2  = fpars.c0.value, fpars.c1.value, fpars.c2.value
+        flat_diff   = fc0 + energy * (fc1 + energy * fc2)
+        flat        = norm - flat_diff  + flat_diff[ie0]
+        flat[:ie0]  = norm[:ie0]
 
     group = set_xafsGroup(group, _larch=_larch)
     group.e0 = e0
