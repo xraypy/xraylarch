@@ -826,9 +826,9 @@ class XRFDisplayFrame(wx.Frame):
         self.xdata = 1.0*x[:]
         self.ydata = 1.0*y[:]
         yroi = None
-        ydat = 1.0*y[:]
+        ydat = 1.0*y[:] + 1.e-9
         kwargs['ymax'] = max(ydat)*1.25
-        kwargs['ymin'] = 1
+        kwargs['ymin'] = 0.90
 
         if mca is not None:
             if not self.rois_shown:
