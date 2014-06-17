@@ -188,7 +188,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
         fit = Minimizer(flat_resid, fpars, _larch=_larch, toler=1.e-7)
         try:
             fit.leastsq()
-        except TypeError, ValueError:
+        except (TypeError, ValueError):
             pass
         fc0, fc1, fc2  = fpars.c0.value, fpars.c1.value, fpars.c2.value
         flat_diff   = fc0 + energy * (fc1 + energy * fc2)
