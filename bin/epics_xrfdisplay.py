@@ -5,7 +5,7 @@ Epics XRF Display App
 
 import sys
 import os
-# import epics
+import epics
 
 import time
 import copy
@@ -41,42 +41,125 @@ use_plugin_path('xray')
 use_plugin_path('wx')
 
 
-from wxutils import (SimpleText, EditableListBox, Font,
+from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      pack, Popup, Button, get_icon, Check, MenuItem,
                      Choice, FileOpen, FileSave, fix_filename, HLine,
                      GridPanel, CEN, LEFT, RIGHT)
 
 from periodictable import PeriodicTablePanel
 
-
 from xrfdisplay import XRFDisplayFrame
 
 class Empty(): pass
+
+class DetectorSelecttDialog(wx.Dialog):
+    """Connect to an Epics MCA detector 
+    Can be either XIA xMAP  or Quantum XSPress3
+    """
+    msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
+    det_types = ('xmap', 'xspress3')
+    def_prefix =  '13SDD1:'
+    def_nelem  =  4
+    def __init__(self, parent=None, prefix=None, dettype='xmap',
+                 title='Select Epics MCA Detector'):
+
+        wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
+
+        self.SetBackgroundColour((240, 240, 230))
+        if parent is not None:
+            self.SetFont(parent.GetFont())
+
+        self.dettype = Choice(self,  size=(120, -1),
+                              choices=self.det_types)
+
+        self.prefix = wx.TextCtrl(self, -1, self.def_prefix, size=(120, -1))
+        self.nelem = FloatCtrl(self, value=4, precision=0, minval=1,
+                               size=(120, -1))
+
+
+        btnsizer = wx.StdDialogButtonSizer()
+        
+        if wx.Platform != "__WXMSW__":
+            btn = wx.ContextHelpButton(self)
+            btnsizer.AddButton(btn)
+        
+        btn = wx.Button(self, wx.ID_OK)
+        btn.SetHelpText("Use this detector")
+        btn.SetDefault()
+        btnsizer.AddButton(btn)
+
+        btn = wx.Button(self, wx.ID_CANCEL)
+        btnsizer.AddButton(btn)
+        btnsizer.Realize()
+
+        sty = LEFT|wx.ALIGN_CENTER_VERTICAL
+        sizer = wx.GridBagSizer(5, 2)
+        sizer.Add(SimpleText(self, 'MCA Type', size=(100, -1)), 
+                  (0, 0), (1, 1), sty, 2)
+
+        sizer.Add(SimpleText(self, 'Epics Prefix', size=(100, -1)), 
+                  (1, 0), (1, 1), sty, 2)
+
+        sizer.Add(SimpleText(self, '# Elements', size=(100, -1)), 
+                  (2, 0), (1, 1), sty, 2)
+
+        sizer.Add(self.dettype,
+                  (0, 1), (1, 1), sty, 2)
+
+        sizer.Add(self.prefix,
+                  (1, 1), (1, 1), sty, 2)
+        
+        sizer.Add(self.nelem,
+                  (2, 1), (1, 1), sty, 2)
+        
+        sizer.Add(wx.StaticLine(self, size=(225, 3), style=wx.LI_HORIZONTAL),
+                  (3, 0), (1, 2), sty, 2)
+
+        sizer.Add(btnsizer,
+                  (4, 0), (1, 2), sty, 2)
+        
+        self.SetSizer(sizer)
+        sizer.Fit(self)
+
 
 class EpicsXRFDisplayFrame(XRFDisplayFrame):
     _about = """Epics XRF Spectra Display
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, detector=None, parent=None,
-                 size=(725, 550),
-                 title='Epics XRF Display',
+    def __init__(self, parent=None, _larch=None, det_prefix=None, det_class=None,
+                 size=(725, 550),  title='Epics XRF Display',
                  output_title='XRF', **kws):
-        if detector is None:
-            print 'need to prompt for detector'
-            detector = Empty()
-        self.det = detector
-        self.det.nmcas = 4
+        self.det_prefix = det_prefix
+        self.det_class  = det_class
+        self.nmcas = 4
+        if det_prefix is None or det_class is None:
+            self.prompt_for_detector()
+
+        self.connect_to_detector(self)
+
         self.det_fore = -1
         self.det_back = -1
-        XRFDisplayFrame.__init__(self, parent=parent,
+        XRFDisplayFrame.__init__(self, parent=parent, _larch=_larch,
                                  title=title, size=size, **kws)
 
+    def prompt_for_detector(self):
+        dlg = DetectorSelectDialog()
+        dlg.Raise()
+        if dlg.ShowModal() == wx.ID_OK:
+            self.det_prefix = dlg.prefix.GetValue()
+            self.det_class  = dlg.dettype.GetStringSelection()
+            self.nmcas      = dlg.nelem.GetValue()
+            dlg.Destroy()
+
+    def connect_to_detector(self):
+        print 'Prompt and got ', self.nmcas, self.det_prefix, self.det_class
+        
+        
     def createCustomMenus(self, fmenu):
         MenuItem(self, fmenu, "Connect Epics Detector\tCtrl+D",
                  "Connect to MCA or XSPress3 Detector",
                  self.onConnectEpics)
         fmenu.AppendSeparator()
-
 
     def createMainPanel(self):
         print 'Epics create Main'
@@ -104,7 +187,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         sizer.Add(bsizer,     1, style, 1)
         pack(self, sizer)
 
-        wx.CallAfter(self.init_larch)
         self.set_roilist(mca=None)
 
     def creatEpicsPanel(self):
@@ -140,16 +222,20 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         isbkg = self.wids['det_as_bkg'].IsChecked()
         if isbkg:
             self.det_back = index
+            if index == self.det_fore:
+                self.det_fore = -1
         else:
             self.det_fore = index
+            if index == self.det_back:
+                self.det_back = -1
+
         for i in range(1, 5):
             dname = 'det%i' % i
             col = (220, 220, 220)
             if i == self.det_fore:
-                col = (120, 120, 240)
+                col = (20, 80, 200)
             elif i == self.det_back:
-                col = (120, 240, 120)
-            print dname, col
+                col = (80, 200, 20)
             self.wids[dname].SetBackgroundColour(col)
         self.Refresh()
 
