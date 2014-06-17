@@ -1066,8 +1066,9 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=N
     sg.energy = energy
 
     npts = len(energy)
-    header = GSE_header_IDE
-    if 'BM' in sg.scan_prefix: header = GSE_header_BMD
+    header = GSE_header_IDE[:]
+    if 'BM' in sg.scan_prefix:
+        header = GSE_header_BMD[:]
 
     i1, iref = None, None
     ncol, lref = 6, 'iref'
