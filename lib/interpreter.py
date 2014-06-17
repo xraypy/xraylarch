@@ -228,7 +228,6 @@ class Interpreter:
         if node.__class__.__name__.lower() not in self.node_handlers:
             return self.unimplemented(node)
         handler = self.node_handlers[node.__class__.__name__.lower()]
-
         # run the handler:  this will likely generate
         # recursive calls into this run method.
         try:
@@ -529,9 +528,7 @@ class Interpreter:
             rval = self.run(rnode)
             out  = comp(lval, rval)
             lval = rval
-            if isinstance(out, numpy.ndarray) and out.any():
-                break
-            elif not out:
+            if not hasattr(out, 'any') and not out:
                 break
         return out
 
