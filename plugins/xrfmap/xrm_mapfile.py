@@ -236,7 +236,7 @@ class GSEXRM_MapRow:
                 sdata.append(sdata[snpts-1])
             sdata = np.array(sdata)
             snpts = self.npts
-        self.sisdata = sdata
+        self.sisdata = sdata[:npts]
 
         if xnpts != npts:
             self.counts  = self.counts[:npts]
