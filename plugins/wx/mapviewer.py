@@ -407,8 +407,8 @@ class SimpleMapPanel(GridPanel):
         title    = roiname1
 
         if roiname2 != '1':
-            mapx = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
-                                       dtcorrect=dtcorrect)
+            mapx =datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
+                                      dtcorrect=dtcorrect)
             op = self.op.GetStringSelection()
             if   op == '+': map +=  mapx
             elif op == '-': map -=  mapx
@@ -417,7 +417,7 @@ class SimpleMapPanel(GridPanel):
                 mxmin = min(mapx[np.where(mapx>0)])
                 if mxmin < 1: mxmin = 1.0
                 mapx[np.where(mapx<mxmin)] = mxmin
-                map /=  mapx
+                map =  map/(1.0*mapx)
 
             title = "(%s) %s (%s)" % (roiname1, op, roiname2)
 
