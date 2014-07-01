@@ -136,6 +136,8 @@ class XRFDisplayFrame(wx.Frame):
         self.win_title = title
         self.SetTitle(title)
 
+        self._menus = []
+        
         self.createMainPanel()
         self.createMenus()
         self.SetFont(Font(9))
@@ -508,23 +510,25 @@ class XRFDisplayFrame(wx.Frame):
         if label is None and event is not None:
             label = event.GetString()
         self.wids['roiname'].SetValue(label)
-        msg = "Counts for ROI  %s: " % label
+        msg = "ROI '%s' " % label
         name, left, right= None, -1, -1
         counts_tot, counts_net = '', ''
         label = label.lower().strip()
         self.selected_roi = None
+        fmt = "%s Chans=[%i:%i], Energy=[%.3f:%.3f]:  Total: %i,  Net: %i"
         if self.mca is not None:
             for roi in self.mca.rois:
                 if roi.name.lower()==label:
                     name = roi.name
                     left = roi.left
                     right= roi.right
+                    elo  = self.mca.energy[left]
+                    ehi  = self.mca.energy[right]
                     ctot = roi.get_counts(self.mca.counts)
                     cnet = roi.get_counts(self.mca.counts, net=True)
                     counts_tot = " Total: %i" % ctot
                     counts_net = " Net: %i" % cnet
-                    msg = "%s  Total: %i, Net: %i, chans=[%i:%i]" % (msg, 
-                                                                     ctot, cnet, left, right)
+                    msg = fmt % (msg, left, right, elo, ehi, ctot, cnet)
                     self.selected_roi = roi
                     break
         if name is None or right == -1:
@@ -542,7 +546,8 @@ class XRFDisplayFrame(wx.Frame):
         e[0]    = e[1]
         e[-1]   = e[-2]
         roi_message = ' Energy Center=%.3f, Width=%.3f keV' % (
-                               (e[0]+e[-1])/2., e[-1] - e[0])
+                               (elo+ehi)/2., (ehi - elo))
+        
         fill = self.panel.axes.fill_between
         self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-10)
         self.energy_for_zoom = self.mca.energy[(left+right)/2]
@@ -554,13 +559,17 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.canvas.draw()
         self.panel.Refresh()
 
-    def createCustomMenus(self, fmenu):
+    def onSaveROIs(self):
+        pass
+    
+    def onRestoreROIs(self):
+        pass
+    
+    def createCustomMenus(self):
         return
 
-    def createMenus(self):
-        self.menubar = wx.MenuBar()
+    def createBaseMenus(self):
         fmenu = wx.Menu()
-        self.createCustomMenus(fmenu)
         MenuItem(self, fmenu, "&Read MCA Spectra File\tCtrl+O",
                  "Read GSECARS MCA File",  self.onReadMCAFile)
 
@@ -571,9 +580,15 @@ class XRFDisplayFrame(wx.Frame):
                  "Save Column File",  self.onSaveColumnFile)
 
         fmenu.AppendSeparator()
-        MenuItem(self, fmenu,  "&Save\tCtrl+I",
+        MenuItem(self, fmenu, "Save ROIs to File",
+                 "Save ROIs to File",  self.onSaveROIs)
+        MenuItem(self, fmenu, "Read ROIs File",
+                 "Read ROIs from File",  self.onRestoreROIs)
+
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu,  "&Save Plot\tCtrl+I",
                  "Save PNG Image of Plot", self.onSavePNG)
-        MenuItem(self, fmenu, "&Copy\tCtrl+C",
+        MenuItem(self, fmenu, "&Copy Plot\tCtrl+C",
                  "Copy Plot Image to Clipboard",
                  self.onCopyImage)
         MenuItem(self, fmenu, 'Page Setup...', 'Printer Setup', self.onPageSetup)
@@ -616,10 +631,16 @@ class XRFDisplayFrame(wx.Frame):
                  "Calibrate Energy",  self.onCalibrateEnergy)
         MenuItem(self, amenu, "Fit Peaks\tCtrl+F",
                  "Fit Peaks in spectra",  self.onFitPeaks)
-
-        self.menubar.Append(fmenu, "&File")
-        self.menubar.Append(omenu, "&Options")
-        self.menubar.Append(amenu, "&Analysis")
+        self._menus = [(fmenu, '&File'),
+                       (omenu, '&Options'),
+                       (amenu, '&Analysis')]
+        
+    def createMenus(self):
+        self.menubar = wx.MenuBar()
+        self.createBaseMenus()
+        self.createCustomMenus()
+        for menu, title in self._menus:
+            self.menubar.Append(menu, title)
         self.SetMenuBar(self.menubar)
         self.Bind(wx.EVT_CLOSE, self.onExit)
 
