@@ -290,11 +290,12 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.det = Epics_MultiMCA(prefix=prefix, nmca=nmca)
         elif det_type.lower().startswith('xsp'):
             print ' connect to xspress3 ' # self.det = Xspress3Detector()
-        wx.CallAfter(self.show_mca)
         
     def show_mca(self):
+        self.needs_newplot = False
         if self.mca is None or self.needs_newplot:
             self.mca = self.det.get_mca(mca=self.det_fore)
+        print 'SHOW MCA: ', self.mca
         self.plotmca(self.mca)
         
         if self.det_back  > 0:
@@ -303,7 +304,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
             e2 = self.det.get_energy(mca=self.det_back)
             c2 = self.det.get_array(mca=self.det_back)
-            self.oplot(e2, c2)
+            try:
+                self.oplot(e2, c2)
+            except ValueError:
+                pass
         self.needs_newplot = False
 
 
@@ -461,7 +465,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
                 energy = self.det.get_energy(mca=self.det_back)
                 counts = self.det.get_array(mca=self.det_back)
-                self.update_mca(counts, energy=energy, is_mca2=True)
+                try:
+                    self.update_mca(counts, energy=energy, is_mca2=True)
+                except ValueError:
+                    pass
             self.det.needs_refresh = False
             
         

@@ -814,9 +814,11 @@ class XRFDisplayFrame(wx.Frame):
                 title = self.mca.title
             elif hasattr(self.mca, 'filename'):
                 title = "%s: %s"% (title, self.mca.filename)
-            self.plot(self.mca.energy, self.mca.counts,
-                      mca=self.mca, **kws)
-
+            try:
+                self.plot(self.mca.energy, self.mca.counts,
+                          mca=self.mca, **kws)
+            except ValueError:
+                pass
         if as_mca2:
             if hasattr(self.mca2, 'title'):
                 title = "%s / bg=%s" % (title, self.mca2.title)
