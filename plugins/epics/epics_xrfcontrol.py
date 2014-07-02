@@ -146,6 +146,7 @@ class Epics_MultiMCA(object):
         self.mcas = []
         self.energies = []
         self.connected = False
+        self.elapsed_real = None
         self.needs_refresh = False
         if self.prefix is not None:
             self.connect()
@@ -153,7 +154,7 @@ class Epics_MultiMCA(object):
     @EpicsFunction
     def connect(self):
         self._xmap = MultiXMAP(self.prefix, nmca=self.nmca)
-        self._xmap.PV('ElapsedReal')
+        self._xmap.PV('ElapsedReal', callback=self.onRealTime)
         self._xmap.PV('DeadTime')
         time.sleep(0.001)
         self.mcas = self._xmap.mcas
@@ -162,22 +163,25 @@ class Epics_MultiMCA(object):
         self.rois = self._xmap.mcas[0].get_rois()
 
     @EpicsFunction
-    def connect_displays(self, status=None, elapsed=None, deadtime=None, mcas=None):
+    def connect_displays(self, status=None, elapsed=None, deadtime=None):
         pvs = self._xmap._pvs
-        for wid, attr, opt in ((status, 'Acquiring', False),
-                               (elapsed, 'ElapsedReal', True),
-                               (deadtime, 'DeadTime', False)):
+        if elapsed is not None:
+            self.elapsed_textwidget = elapsed
+        for wid, attr in ((status, 'Acquiring'),(deadtime, 'DeadTime')):
             if wid is not None:
-                pvs[attr].add_callback(partial(self.update_widget,
-                                               wid=wid, update_mca=opt))
+                pvs[attr].add_callback(partial(self.update_widget, wid=wid))
                 
     @DelayedEpicsCallback
-    def update_widget(self, pvname, value=None, char_value=None,
-                      wid=None, update_mca=False, **kws):
+    def update_widget(self, pvname, char_value=None,  wid=None, **kws):
         if wid is not None:
             wid.SetLabel(char_value)
-        if update_mca:
-            self.needs_refresh = True
+
+    @DelayedEpicsCallback
+    def onRealTime(self, pvname, value=None, **kws):
+        self.elapsed_real = value
+        self.needs_refresh = True
+        if self.elapsed_textwidget is not None:
+            self.elapsed_textwidget.SetLabel("  %8.2f" % value)
             
             
     def set_dwelltime(self, dtime=0):
@@ -194,10 +198,10 @@ class Epics_MultiMCA(object):
         return self._xmap.stop()
 
     def erase(self):
-        self._xmap.EraseAll = 1
+        self._xmap.put('EraseAll', 1)
 
     def get_array(self, mca=1):
-        return self._xmap.mcas[mca-1].get('VAL')
+        return 1.0*self._xmap.mcas[mca-1].get('VAL')
 
     def get_energy(self, mca=1):
         return self._xmap.mcas[mca-1].get_energy()
@@ -295,7 +299,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.needs_newplot = False
         if self.mca is None or self.needs_newplot:
             self.mca = self.det.get_mca(mca=self.det_fore)
-        print 'SHOW MCA: ', self.mca
+        
         self.plotmca(self.mca)
         
         if self.det_back  > 0:
@@ -369,21 +373,20 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         self.set_roilist(mca=None)
         
-        
     def createEpicsPanel(self):
         pane = wx.Panel(self, name='epics panel')
         psizer = wx.BoxSizer(wx.HORIZONTAL)
 
         # det button panel
         btnpanel = wx.Panel(pane, name='foo')
-        # print dir(btnpanel)
+
         btnsizer = wx.GridBagSizer(2, 2)
         style  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         tstyle = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         rstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
         bkg_choices = ['None']
         
-        psizer.Add(SimpleText(pane, ' MCA: '),  0, tstyle, 1)
+        psizer.Add(SimpleText(pane, ' MCAs: '),  0, tstyle, 1)
         for i in range(1, self.nmca+1):
             bkg_choices.append("%i" % i)
             b =  Button(btnpanel, '%i' % i, size=(25, 25),
@@ -394,45 +397,45 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         psizer.Add(btnpanel, 0, style, 1)
         
-        self.wids['det_status'] = SimpleText(pane, '<status>', size=(70, -1))
-        self.wids['elapsed']    = SimpleText(pane, '<elapsed>', size=(70, -1),
+        self.wids['det_status'] = SimpleText(pane, ' ', size=(60, -1))
+        self.wids['elapsed']    = SimpleText(pane, ' ', size=(70, -1),
                                              style=rstyle)
-        self.wids['deadtime']   = SimpleText(pane, '<deadtime>', size=(70, -1),
+        self.wids['deadtime']   = SimpleText(pane, ' ', size=(70, -1),
                                              style=rstyle)
         
-        self.wids['bkg_det'] = Choice(pane, size=(70, -1),
+        self.wids['bkg_det'] = Choice(pane, size=(60, -1),
                                       choices=bkg_choices,
                                       action=self.onSelectDet)
 
-        self.wids['dtime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
-                                       size=(60, -1),act_on_losefocus=True,
+        self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
+                                       size=(55, -1),act_on_losefocus=True,
                                        action=self.onSetDwelltime)
 
-        b1 =  Button(pane, 'Start', size=(60, 25), action=self.onStart)
-        b2 =  Button(pane, 'Stop',  size=(60, 25), action=self.onStop)
-        b3 =  Button(pane, 'Erase', size=(60, 25), action=self.onErase)
+        b0 =  Button(pane, 'Continuous', size=(75, 25), action=partial(self.onStart, dtime=0))        
+        b1 =  Button(pane, 'Start',      size=(75, 25), action=self.onStart)
+        b2 =  Button(pane, 'Stop',       size=(75, 25), action=self.onStop)
+        b3 =  Button(pane, 'Erase',      size=(75, 25), action=self.onErase)
 
-        psizer.Add(SimpleText(pane, ' Background MCA: '),  0, tstyle, 1)
-        psizer.Add(self.wids['bkg_det'], 0, style, 1)
+        psizer.Add(SimpleText(pane, '  Background:  '), 0, tstyle, 1)
+        psizer.Add(self.wids['bkg_det'],            0, style, 1)
 
+        psizer.Add(SimpleText(pane, '  Time (s): '), 0, tstyle, 1)
+        psizer.Add(self.wids['dwelltime'],             0, tstyle, 2)
+        psizer.Add(self.wids['elapsed'],           0, tstyle, 2)
+        
+        # psizer.Add(SimpleText(pane, ' Status:'),  0, tstyle, 1)
+        psizer.Add(self.wids['det_status'],         0, tstyle, 2)
 
-        psizer.Add(SimpleText(pane, ' Dwell Time (s):'), 0, tstyle, 1)
-        psizer.Add(self.wids['dtime'],   0, tstyle, 2)
-        psizer.Add(self.wids['elapsed'], 0, tstyle, 2)
-
-
-        # psizer.Add(SimpleText(pane, ' Status: '),  0, tstyle, 2)        
-        psizer.Add(self.wids['det_status'],        0, tstyle, 2)
-
+        psizer.Add(b0, 0, style, 1)
         psizer.Add(b1, 0, style, 1)
         psizer.Add(b2, 0, style, 1)
         psizer.Add(b3, 0, style, 1)
         
-        psizer.Add(SimpleText(pane, '   % Deadtime: '),  0, tstyle, 2)        
-        psizer.Add(self.wids['deadtime'],              0, tstyle, 2)
+        psizer.Add(SimpleText(pane, '   % Deadtime: '), 0, tstyle, 2)        
+        psizer.Add(self.wids['deadtime'],               0, tstyle, 2)
 
         pack(pane, psizer)
-        pane.SetMinSize((500, 27))
+        # pane.SetMinSize((500, 53))
 
         self.det.connect_displays(status=self.wids['det_status'],
                                   elapsed=self.wids['elapsed'],
@@ -442,23 +445,17 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         self.mca_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.mca_timer)
-        self.mca_timer.Start(250)
+        self.mca_timer.Start(150)
         
         return pane
 
     def onTimer(self, event=None):
         if self.mca is None or self.needs_newplot:
             self.show_mca()
-            
-        if self.det.needs_refresh:
-            if self.mca is None:
-                self.mca = self.det.get_mca(mca=self.det_fore)
+        # self.elapsed_real = self.det.elapsed_real
+        self.mca.real_time = self.det.elapsed_real
 
-            energy = self.det.get_energy(mca=self.det_fore)
-            counts = self.det.get_array(mca=self.det_fore)*1.0 + 7.0*self.det_fore
-            
-            self.update_mca(counts, energy=energy)
-        
+        if self.det.needs_refresh:
             if self.det_back > 0:
                 if self.mca2 is None:
                     self.mca2 = self.det.get_mca(mca=self.det_back)
@@ -466,13 +463,22 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 energy = self.det.get_energy(mca=self.det_back)
                 counts = self.det.get_array(mca=self.det_back)
                 try:
-                    self.update_mca(counts, energy=energy, is_mca2=True)
+                    self.update_mca(counts, energy=energy, is_mca2=True, draw=False)
                 except ValueError:
                     pass
-            self.det.needs_refresh = False
+
+            if self.mca is None:
+                self.mca = self.det.get_mca(mca=self.det_fore)
+
+            energy = self.det.get_energy(mca=self.det_fore)
+            counts = self.det.get_array(mca=self.det_fore)*1.0
             
+            self.update_mca(counts, energy=energy)
+
+            self.det.needs_refresh = False
         
     def onSelectBkgDet(self, event=None, **kws):
+        self.mca2 = None
         self.det_back = self.wids['bkg_det'].GetSelection()
         self.onSelectDet(index=self.det_fore)
         
@@ -499,17 +505,36 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.show_mca()
         self.Refresh()
 
+    def swap_mcas(self, event=None):
+        if self.mca2 is None:
+            return
+        self.mca, self.mca2 = self.mca2, self.mca
+        fore, back = self.det_fore, self.det_back
+        self.wids['bkg_det'].SetSelection(fore)
+        self.onSelectDet(index=back)
+
+
+    def clear_background(self, evt=None):
+        "remove XRF background"
+        self.mca2 = None
+        self.det_back = 0
+        self.wids['bkg_det'].SetSelection(0)
+        self.onSelectDet()
 
     def onSetDwelltime(self, event=None, **kws):
-        if 'dtime' in self.wids:
-            self.det.set_dwelltime(dtime=self.wids['dtime'].GetValue())
+        if 'dwelltime' in self.wids:
+            self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue())
 
     def clear_mcas(self):
         self.mca = self.mca2 = None
         self.needs_newplot = True
         
-    def onStart(self, event=None, **kws):
-        self.det.set_dwelltime(dtime=self.wids['dtime'].GetValue())
+    def onStart(self, event=None, dtime=None, **kws):
+        if dtime is not None:
+            self.wids['dwelltime'].SetValue("%.1f" % dtime)            
+            self.det.set_dwelltime(dtime=dtime)
+        else:
+            self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue())
         self.det.start()
 
     def onStop(self, event=None, **kws):
@@ -526,9 +551,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onNewROI(self, event=None):
         nam = self.wids['roiname'].GetValue()
-        lo  = index_of(self.mca.energy, self.last_leftdown)
-        hi  = index_of(self.mca.energy, self.last_rightdown)
-        self.det.add_roi(nam, lo=lo, hi=hi)
+        self.det.add_roi(nam, lo=self.xmarker_left, hi=self.xmarker_right)
         XRFDisplayFrame.onNewROI(self, event=event)        
         
         
