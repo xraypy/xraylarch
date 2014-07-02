@@ -310,14 +310,14 @@ class XRFDisplayFrame(wx.Frame):
 
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
 
-        self.wids['ylog'] = Choice(ctrlpanel, size=(80, -1),
+        self.wids['ylog'] = Choice(ctrlpanel, size=(70, -1),
                                        choices=['log', 'linear'],
                                        action=self.onLogLinear)
         self.wids['zoom_in'] = Button(ctrlpanel, 'Zoom In',
-                                          size=(80, -1),
+                                          size=(70, -1),
                                           action=self.onZoomIn)
         self.wids['zoom_out'] = Button(ctrlpanel, 'Zoom out',
-                                          size=(80, -1),
+                                          size=(70, -1),
                                           action=self.onZoomOut)
 
         arrowpanel = wx.Panel(ctrlpanel)
@@ -346,14 +346,13 @@ class XRFDisplayFrame(wx.Frame):
 
         self.wids['roilist'] = EditableListBox(ctrlpanel, self.onROI,
                                                right_click=False,
-                                               size=(80, 125))
+                                               size=(75, 125))
+        self.wids['roilist'].SetMinSize((130, 125))
+        self.wids['roiname'] = wx.TextCtrl(ctrlpanel, -1, '', size=(150, -1))
 
-        self.wids['roiname'] = wx.TextCtrl(ctrlpanel, -1, '', size=(140, -1))
-
-
-        self.wids['newroi'] = Button(ctrlpanel, 'Add', size=(75, -1),
+        self.wids['newroi'] = Button(ctrlpanel, 'Add', size=(70, -1),
                                          action=self.onNewROI)
-        self.wids['delroi'] = Button(ctrlpanel, 'Delete', size=(75, -1),
+        self.wids['delroi'] = Button(ctrlpanel, 'Delete', size=(70, -1),
                                          action=self.onDelROI)
 
         rtitle1  = txt(ctrlpanel, ' Bins: ')
@@ -376,7 +375,7 @@ class XRFDisplayFrame(wx.Frame):
         ir += 1
         sizer.Add(txt(ctrlpanel, ' Regions of Interest:', size=140),
                   (ir, 0), (1, 2), labstyle)
-        sizer.Add(self.wids['roilist'],    (ir, 2), (6, 2), labstyle)
+        sizer.Add(self.wids['roilist'],    (ir, 2),  (6, 2), labstyle)
 
         sizer.Add(self.wids['roiname'],    (ir+1, 0), (1, 2), labstyle)
         sizer.Add(self.wids['newroi'],     (ir+2, 0), (1, 1), wx.ALIGN_CENTER)
@@ -408,7 +407,7 @@ class XRFDisplayFrame(wx.Frame):
             dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
             xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
             self.wids['xray_lines'] = xlines
-            xlines.AppendTextColumn('Line ',        width=45)
+            xlines.AppendTextColumn('Line ',        width=50)
             xlines.AppendTextColumn('Energy (keV)', width=85)
             xlines.AppendTextColumn('Strength',     width=85)
             xlines.AppendTextColumn('Init Level',   width=75)

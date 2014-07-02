@@ -41,8 +41,10 @@ class PeriodicTablePanel(wx.Panel):
             'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
             'Md', 'No', 'Lr']
 
+    FRAME_BG = (250, 250, 240)
+    REG_BG = (252, 252, 245)
     REG_FG = ( 20,  20, 120)
-    SEL_FG = ( 70,   0,   0)
+    SEL_FG = (100,   0,   0)
     SEL_BG = (255, 255, 135)
 
     def __init__(self, parent, title='Select Element',
@@ -53,7 +55,7 @@ class PeriodicTablePanel(wx.Panel):
         self.tooltip_msg = tooltip_msg
         self.wids = {}
         self.ctrls = {}
-        self.REG_BG = self.GetBackgroundColour()
+        self.SetBackgroundColour(self.FRAME_BG)
         self.selected = None
         self.elemfont  = wx.Font( 9, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
         self.elemfont  = wx.Font( 9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
@@ -140,18 +142,20 @@ class PeriodicTablePanel(wx.Panel):
             tw = wx.StaticText(self, wid, label=name)
             tw.SetFont(self.elemfont)
             tw.SetForegroundColour(self.REG_FG)
+            tw.SetBackgroundColour(self.REG_BG)
+            tw.SetMinSize((16, 16))
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
                 tw.SetToolTip(wx.ToolTip(self.tooltip_msg))
             self.wids[wid] = tw
             self.ctrls[name] = tw
-            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 2)
+            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 0)
         title = wx.StaticText(self, -1, label='Select Element')
         title.SetFont(self.titlefont)
         sizer.Add(title, (0, 3), (1, 10), wx.ALIGN_CENTER, 2)
         sizer.SetEmptyCellSize((2, 2))
-        sizer.SetHGap(2)
-        sizer.SetVGap(2)
+        sizer.SetHGap(1)
+        sizer.SetVGap(1)
         self.Bind(wx.EVT_KEY_UP, self.onKey)
         self.SetSizer(sizer)
         ix, iy = self.GetBestSize()
