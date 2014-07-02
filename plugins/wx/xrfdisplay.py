@@ -128,8 +128,11 @@ class XRFDisplayFrame(wx.Frame):
         self.minor_markers = []
         self.energy_for_zoom = None
         self.zoom_lims = []
-        self.last_rightdown = None
-        self.last_leftdown = None
+
+        self.xmarker_left = None
+        self.xmarker_right = None
+
+        self.highlight_xrayline = None        
         self.highlight_xrayline = None
         self.cursor_markers = [None, None]
         self.ylog_scale = True
@@ -141,16 +144,16 @@ class XRFDisplayFrame(wx.Frame):
         self.createMainPanel()
         self.createMenus()
         self.SetFont(Font(9))
-        self.statusbar = self.CreateStatusBar(3)
-        self.statusbar.SetStatusWidths([-2, -1, -1])
-        statusbar_fields = ["XRF Display", " "]
+        self.statusbar = self.CreateStatusBar(4)
+        self.statusbar.SetStatusWidths([-1, -1, -1, -1])
+        statusbar_fields = ["XRF Display", " ", " ", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
 
     def ignoreEvent(self, event=None):
         pass
 
-    def on_leftdown(self, event=None):
+    def on_cursor(self, event=None, side='left'):
         if event is None:
             return
         x, y  = event.xdata, event.ydata
@@ -162,12 +165,22 @@ class XRFDisplayFrame(wx.Frame):
         ix = x
         if self.mca is not None:
             ix = index_of(self.mca.energy, x)
-            x = self.mca.energy[ix]
-            y = self.mca.counts[ix]
-        self.last_leftdown = x
-        self.energy_for_zoom = x
-        self.draw_marker('Left:', ix, x, y, 0)
 
+        if side == 'right':
+            self.xmarker_right = ix
+        elif side == 'left':        
+            self.xmarker_left = ix
+            
+        if self.xmarker_left is not None and self.xmarker_right is not None:
+            ix1, ix2 = self.xmarker_left, self.xmarker_right
+            self.xmarker_left  = min(ix1, ix2)
+            self.xmarker_right = max(ix1, ix2)
+
+        if side == 'left':
+            self.energy_for_zoom = self.mca.energy[ix]
+        self.update_status()
+        self.panel.canvas.draw()
+        
     def clear_lines(self, evt=None):
         "remove all Line Markers"
         for m in self.major_markers + self.minor_markers:
@@ -189,52 +202,82 @@ class XRFDisplayFrame(wx.Frame):
             if m is not None:
                 m.remove()
         self.cursor_markers = [None, None]
+        self.xmarker_left  = None
+        self.xmarker_right = None
         self.panel.canvas.draw()
 
     def clear_background(self, evt=None):
         "remove XRF background"
+        self.mca2 = None
         self.plotmca(self.mca)
 
-    def draw_marker(self, title, ix, x, y, idx):
-        arrow = self.panel.axes.arrow
-        if self.cursor_markers[idx] is not None:
-            try:
-                self.cursor_markers[idx].remove()
-            except:
-                pass
-        ymin, ymax = self.panel.axes.get_ylim()
-        dy = int(max((ymax-ymin)*0.10,  min(ymax*0.99, 3*y)) - y)
-        try:
-            self.cursor_markers[idx] = arrow(x, y, 0, dy, shape='full',
-                                             width=0.015, head_width=0.0,
-                                             length_includes_head=True,
-                                             head_starts_at_zero=True,
-                                             color=self.conf.marker_color)
-            self.panel.canvas.draw()
-            self.write_message("%s Chan=%i, E=%.3f keV, Counts=%g" % (title, 
-                                                                      ix,  x, y), 
-                                                                      panel=1+idx)
-        except:
-            pass
-    def on_rightdown(self, event=None):
-        if event is None:
+    def update_status(self):
+        fmt = "%s: Chan=%i [%6.3f keV] Counts=%g"
+        if (self.xmarker_left is None and
+            self.xmarker_right is None and
+            self.selected_roi is None):
             return
-        x, y  = event.xdata, event.ydata
-        if len(self.panel.fig.get_axes()) > 1:
+
+        log = np.log10
+        axes= self.panel.axes
+        def draw_ymarker_range(idx, x, y):
+            ymin, ymax = self.panel.axes.get_ylim()
+            y1 = (y-ymin)/(ymax-ymin+0.0002)
+            if y < 1.0: y = 1.0
+            if  self.ylog_scale:
+                y1 = (log(y)-log(ymin))/(log(ymax)-log(ymin)+2.e-9)
+                if y1 < 0.0: y1 = 0.0
+            y2 = min(y1+0.25, y1*0.1 + 0.9)
+            if self.cursor_markers[idx] is not None:
+                try:
+                    self.cursor_markers[idx].remove()
+                except:
+                    pass
+            self.cursor_markers[idx] = axes.axvline(x, y1, y2, linewidth=2.0, 
+                                                    color=self.conf.marker_color)
+        
+        if self.xmarker_left is not None:
+            ix = self.xmarker_left
+            x, y = self.xdata[ix],  self.ydata[ix]
+            draw_ymarker_range(0, x, y)
+            self.write_message(fmt % ("L", ix, x, y), panel=1)
+        if self.xmarker_right is not None:
+            ix = self.xmarker_right
+            x, y = self.xdata[ix],  self.ydata[ix]
+            draw_ymarker_range(1, x, y)
+            self.write_message(fmt % ("R", ix, x, y), panel=2)
+
+        if self.mca is None:
+            return
+        
+        if (self.xmarker_left is not None and
+            self.xmarker_right is not None):
+            sum = 0.0
+            if self.xmarker_left < self.xmarker_right:
+                sum = self.ydata[self.xmarker_left:self.xmarker_right].sum()
+            dt = self.mca.real_time
+            if dt is None or dt < 0:  dt = 1.0
+            self.write_message("Counts=%10i  CPS=%8.1f"%(sum, sum/dt), panel=3)
+
+        if self.selected_roi is not None:
+            roi = self.selected_roi
+            left, right = roi.left, roi.right
+            self.ShowROIStatus(roi)
+
             try:
-                x, y = self.panel.axes.transData.inverted().transform((event.x, event.y))
+                self.roi_patch.remove()
             except:
                 pass
-        if self.mca is not None:
-            ix = index_of(self.mca.energy, x)
-            x = self.mca.energy[ix]
-            y = self.mca.counts[ix]
-        else:
-            ix = index_of(self.xdata, x)
-            x = self.xdata[ix]
-            y = self.ydata[ix]
-        self.last_rightdown = x
-        self.draw_marker('Right:', ix, x, y, 1)
+
+            e = np.zeros(right-left+2)
+            r = np.ones(right-left+2)
+            e[1:-1] = self.mca.energy[left:right]
+            r[1:-1] = self.mca.counts[left:right]
+            e[0]  = e[1]
+            e[-1] = e[-2]
+            self.roi_patch  = axes.fill_between(e, r, zorder=-10,
+                                                color=self.conf.roi_fillcolor)
+
 
     def createPlotPanel(self):
         """mca plot window"""
@@ -245,22 +288,23 @@ class XRFDisplayFrame(wx.Frame):
                         messenger=self.write_message)
 
         pan.conf.labelfont.set_size(7)
-        pan.onRightDown= self.on_rightdown
+        pan.onRightDown= partial(self.on_cursor, side='right')
         pan.add_cursor_mode('zoom',  motion = self.ignoreEvent,
                             leftup   = self.ignoreEvent,
-                            leftdown = self.on_leftdown,
-                            rightdown = self.on_rightdown)
+                            leftdown = self.on_cursor, 
+                            rightdown = partial(self.on_cursor, side='right'))
         return pan
 
 
     def createControlPanel(self):
-        ctrlpanel = wx.Panel(self)
+        ctrlpanel = wx.Panel(self, name='Ctrl Panel')
+
         ptable = PeriodicTablePanel(ctrlpanel,  onselect=self.onShowLines,
                                     tooltip_msg='Select Element for KLM Lines')
 
         self.wids['ptable'] = ptable
 
-        sizer = wx.GridBagSizer(11, 5)
+        sizer = wx.GridBagSizer(15, 5)
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
 
@@ -302,7 +346,7 @@ class XRFDisplayFrame(wx.Frame):
 
         self.wids['roilist'] = EditableListBox(ctrlpanel, self.onROI,
                                                right_click=False,
-                                               size=(80, 120))
+                                               size=(80, 125))
 
         self.wids['roiname'] = wx.TextCtrl(ctrlpanel, -1, '', size=(140, -1))
 
@@ -312,46 +356,52 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['delroi'] = Button(ctrlpanel, 'Delete', size=(75, -1),
                                          action=self.onDelROI)
 
-        self.wids['counts_tot'] = txt(ctrlpanel, ' Total: ', size=140)
-        self.wids['counts_net'] = txt(ctrlpanel, ' Net:  ', size=140)
-        self.wids['roi_message'] = txt(ctrlpanel, '  ', size=280)
+        rtitle1  = txt(ctrlpanel, ' Bins: ')
+        rtitle2  = txt(ctrlpanel, ' Energy: ')
+        rtitle3  = txt(ctrlpanel, ' Cen/Wid: ')
+        self.wids['roi_msg1'] = txt(ctrlpanel, '  ', size=100)
+        self.wids['roi_msg2'] = txt(ctrlpanel, '  ', size=100)
+        self.wids['roi_msg3'] = txt(ctrlpanel, '  ', size=100)
 
         ir = 0
-        sizer.Add(ptable,  (ir, 1), (1, 4), wx.ALIGN_RIGHT|wx.EXPAND)
+        sizer.Add(ptable,  (ir, 0), (1, 4), wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 5)
 
         ir += 1
-        sizer.Add(arrowpanel, (ir, 1), (1, 4), labstyle)
+        sizer.Add(arrowpanel, (ir, 0), (1, 4), labstyle)
 
         ir += 1
-        sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
+        sizer.Add(lin(ctrlpanel, 195),   (ir, 0), (1, 4), labstyle)
 
         # roi section...
         ir += 1
         sizer.Add(txt(ctrlpanel, ' Regions of Interest:', size=140),
-                  (ir, 1), (1, 2), labstyle)
-        sizer.Add(self.wids['roilist'],    (ir, 3), (5, 2), labstyle)
+                  (ir, 0), (1, 2), labstyle)
+        sizer.Add(self.wids['roilist'],    (ir, 2), (6, 2), labstyle)
 
-        sizer.Add(self.wids['roiname'],    (ir+1, 1), (1, 2), labstyle)
-        sizer.Add(self.wids['newroi'],     (ir+2, 1), (1, 1), wx.ALIGN_CENTER)
-        sizer.Add(self.wids['delroi'],     (ir+2, 2), (1, 1), wx.ALIGN_CENTER)
-        sizer.Add(self.wids['counts_tot'], (ir+3, 1), (1, 2), LEFT)
-        sizer.Add(self.wids['counts_net'], (ir+4, 1), (1, 2), LEFT)
+        sizer.Add(self.wids['roiname'],    (ir+1, 0), (1, 2), labstyle)
+        sizer.Add(self.wids['newroi'],     (ir+2, 0), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(self.wids['delroi'],     (ir+2, 1), (1, 1), wx.ALIGN_CENTER)
+        sizer.Add(rtitle1,                 (ir+3, 0), (1, 1), LEFT)
+        sizer.Add(rtitle2,                 (ir+4, 0), (1, 1), LEFT)
+        sizer.Add(rtitle3,                 (ir+5, 0), (1, 1), LEFT)
 
-        ir += 5
-        sizer.Add(self.wids['roi_message'],  (ir, 1), (1, 5), ctrlstyle)
-        ir += 1
-        sizer.Add(lin(ctrlpanel, 195),       (ir, 1), (1, 4), labstyle)
+        sizer.Add(self.wids['roi_msg1'],   (ir+3, 1), (1, 1), LEFT)
+        sizer.Add(self.wids['roi_msg2'],   (ir+4, 1), (1, 1), LEFT)
+        sizer.Add(self.wids['roi_msg3'],   (ir+5, 1), (1, 1), LEFT)
 
-        ir += 1
-        sizer.Add(txt(ctrlpanel, ' Energy Scale:'),  (ir, 1), (1, 2), labstyle)
-        sizer.Add(self.wids['zoom_in'],              (ir, 3), (1, 1), ctrlstyle)
-        sizer.Add(self.wids['zoom_out'],             (ir, 4), (1, 1), ctrlstyle)
-        ir += 1
-        sizer.Add(txt(ctrlpanel, ' Counts Scale:'),  (ir, 1), (1, 2), labstyle)
-        sizer.Add(self.wids['ylog'],                 (ir, 4), (1, 2), ctrlstyle)
+        ir += 6
+        sizer.Add(lin(ctrlpanel, 195),       (ir, 0), (1, 4), labstyle)
 
         ir += 1
-        sizer.Add(lin(ctrlpanel, 195),   (ir, 1), (1, 4), labstyle)
+        sizer.Add(txt(ctrlpanel, ' Energy Scale:'),  (ir, 0), (1, 2), labstyle)
+        sizer.Add(self.wids['zoom_in'],              (ir, 2), (1, 1), ctrlstyle)
+        sizer.Add(self.wids['zoom_out'],             (ir, 3), (1, 1), ctrlstyle)
+        ir += 1
+        sizer.Add(txt(ctrlpanel, ' Counts Scale:'),  (ir, 0), (1, 2), labstyle)
+        sizer.Add(self.wids['ylog'],                 (ir, 3), (1, 2), ctrlstyle)
+
+        ir += 1
+        sizer.Add(lin(ctrlpanel, 195),   (ir, 0), (1, 4), labstyle)
 
         self.wids['xray_lines'] = None
         if HAS_DV:
@@ -369,19 +419,19 @@ class XRFDisplayFrame(wx.Frame):
                 xlines.Columns[col].Renderer.Alignment = align
                 xlines.Columns[col].Alignment = RIGHT
 
-            xlines.SetMinSize((300, 180))
+            xlines.SetMinSize((300, 200))
+            xlines.SetMaxSize((320, 400))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
 
             ir += 1
-            sizer.Add(xlines,   (ir, 1), (5, 5), wx.GROW|wx.ALL)
+            sizer.Add(xlines,  (ir, 0), (8, 4), wx.GROW|wx.ALL|wx.EXPAND) 
 
         sizer.SetHGap(1)
         sizer.SetVGap(1)
         ctrlpanel.SetSizer(sizer)
         sizer.Fit(ctrlpanel)
         return ctrlpanel
-        
-        
+
     def createMainPanel(self):
         ctrlpanel = self.createControlPanel()
         plotpanel = self.panel = self.createPlotPanel()
@@ -394,8 +444,8 @@ class XRFDisplayFrame(wx.Frame):
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(ctrlpanel, 0, style, 1)
-        sizer.Add(plotpanel, 1, style, 1)
+        sizer.Add(ctrlpanel, 0, style, 3)
+        sizer.Add(plotpanel, 1, style, 2)
 
         pack(self, sizer)
         wx.CallAfter(self.init_larch)
@@ -459,17 +509,16 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.canvas.draw()
 
     def onNewROI(self, event=None):
-        label = self.wids['roiname'].GetValue()
-        if (self.last_leftdown is None or
-            self.last_rightdown is None or
-            self.mca is None):
+        if (self.xmarker_left is None or 
+            self.xmarker_right is None or self.mca is None):
             return
+        label = self.wids['roiname'].GetValue()
         found = False
         for roi in self.mca.rois:
             if roi.name.lower()==label:
                 found = True
-        left  = index_of(self.mca.energy, self.last_leftdown)
-        right = index_of(self.mca.energy, self.last_rightdown)
+        left  = self.xmarker_left
+        right = self.xmarker_right
         if left > right:
             left, right = right, left
         self.mca.add_roi(name=label, left=left, right=right, sort=True)
@@ -506,34 +555,40 @@ class XRFDisplayFrame(wx.Frame):
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
 
+    def ShowROIStatus(self, roi=None):
+        dt = self.mca.real_time
+        if roi is None or self.mca is None:
+            return 
+        counts = roi.get_counts(self.mca.counts)
+        if dt is None or dt < 0:
+            fmt = " %s : Counts=%10i"
+            msg = fmt % (roi.name, counts)
+        else:
+            fmt = " %s : Counts=%10i  CPS=%8.1f"
+            msg = fmt % (roi.name, counts, counts/dt)
+        self.write_message(msg, panel=0)            
+        
     def onROI(self, event=None, label=None):
         if label is None and event is not None:
             label = event.GetString()
         self.wids['roiname'].SetValue(label)
-        msg = "ROI '%s' " % label
         name, left, right= None, -1, -1
-        counts_tot, counts_net = '', ''
         label = label.lower().strip()
         self.selected_roi = None
-        fmt = "%s Chans=[%i:%i], Energy=[%.3f:%.3f]:  Total: %i,  Net: %i"
+        fmt = "%s : Counts= %i"
         if self.mca is not None:
             for roi in self.mca.rois:
                 if roi.name.lower()==label:
-                    name = roi.name
-                    left = roi.left
-                    right= roi.right
+                    left, right, name = roi.left, roi.right, roi.name
                     elo  = self.mca.energy[left]
                     ehi  = self.mca.energy[right]
-                    ctot = roi.get_counts(self.mca.counts)
-                    cnet = roi.get_counts(self.mca.counts, net=True)
-                    counts_tot = " Total: %i" % ctot
-                    counts_net = " Net: %i" % cnet
-                    msg = fmt % (msg, left, right, elo, ehi, ctot, cnet)
                     self.selected_roi = roi
                     break
         if name is None or right == -1:
             return
 
+        self.ShowROIStatus(roi)
+        
         try:
             self.roi_patch.remove()
         except:
@@ -545,17 +600,18 @@ class XRFDisplayFrame(wx.Frame):
         r[1:-1] = self.mca.counts[left:right]
         e[0]    = e[1]
         e[-1]   = e[-2]
-        roi_message = ' Energy Center=%.3f, Width=%.3f keV' % (
-                               (elo+ehi)/2., (ehi - elo))
+        roi_msg1 = '[%6i: %6i]' % (left, right)
+        roi_msg2 = '[%6.3f: %6.3f]' % (elo, ehi)
+        roi_msg3 = ' %6.3f/ %6.3f ' % ((elo+ehi)/2., (ehi - elo))
         
         fill = self.panel.axes.fill_between
         self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-10)
-        self.energy_for_zoom = self.mca.energy[(left+right)/2]
+        self.energy_for_zoom = (elo+ehi)/2.0
 
-        self.wids['counts_tot'].SetLabel(counts_tot)
-        self.wids['counts_net'].SetLabel(counts_net)
-        self.wids['roi_message'].SetLabel(roi_message)
-        self.write_message(msg, panel=0)
+        self.wids['roi_msg1'].SetLabel(roi_msg1)
+        self.wids['roi_msg2'].SetLabel(roi_msg2)
+        self.wids['roi_msg3'].SetLabel(roi_msg3)
+
         self.panel.canvas.draw()
         self.panel.Refresh()
 
@@ -881,7 +937,7 @@ class XRFDisplayFrame(wx.Frame):
         panel.canvas.Refresh()
 
     def update_mca(self, counts, energy=None, with_rois=True,
-                   is_mca2=False):
+                   is_mca2=False, draw=True):
         """update counts (and optionally energy) for mca, and update plot"""
         mca = self.mca
         ix = 0
@@ -889,6 +945,7 @@ class XRFDisplayFrame(wx.Frame):
             mca = self.mca2
             ix = 2
         mca.counts = counts[:] 
+
         if energy is not None:
             mca.energy = energy[:]
         nrois = len(mca.rois)
@@ -902,9 +959,22 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.update_line(ix, mca.energy, counts, 
                                draw=False, update_limits=False)
 
-        self.panel.axes.set_ylim(1, 1.25*max(counts))    
-        self.panel.draw()
+        max_counts = max_counts2 = max(self.mca.counts)
+        try:
+            max_counts2 = max(self.mca2.counts)
+        except:
+            pass
         
+        self.panel.axes.set_ylim(1, 1.25*max(max_counts, max_counts2))
+        if mca == self.mca:
+            self.ydata = 1.0*counts[:]
+        self.update_status()
+        if draw:
+            try:
+                self.panel.canvas.draw()
+            except:
+                pass
+
     def oplot(self, x, y, color='darkgreen', mca=None, zorder=-5, **kws):
         if mca is not None:
             self.mca2 = mca

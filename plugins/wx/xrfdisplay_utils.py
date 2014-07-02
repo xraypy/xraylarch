@@ -341,5 +341,5 @@ class XRFDisplayConfig:
     L_minor = ['Ln', 'Ll', 'Lb2,15', 'Lg2', 'Lg3', 'Lg1', 'La2']
     L_minor = []
     M_major = ['Ma', 'Mb', 'Mg', 'Mz']
-    e_min   = 1.25
+    e_min   = 1.00
     e_max   = 30.0
