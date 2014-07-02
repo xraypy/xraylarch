@@ -47,7 +47,7 @@ class PeriodicTablePanel(wx.Panel):
 
     def __init__(self, parent, title='Select Element',
                  onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
-        wx.Panel.__init__(self, parent, -1, size=size, **kws)
+        wx.Panel.__init__(self, parent, -1, size=size, name='PeriodicTable', **kws)
         self.parent = parent
         self.onselect = onselect
         self.tooltip_msg = tooltip_msg
@@ -145,15 +145,14 @@ class PeriodicTablePanel(wx.Panel):
                 tw.SetToolTip(wx.ToolTip(self.tooltip_msg))
             self.wids[wid] = tw
             self.ctrls[name] = tw
-            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 1)
+            sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 2)
         title = wx.StaticText(self, -1, label='Select Element')
         title.SetFont(self.titlefont)
-        sizer.Add(title, (0, 3), (1, 10), wx.ALIGN_CENTER, 0)
-        sizer.SetEmptyCellSize((1, 1))
-        sizer.SetHGap(1)
-        sizer.SetVGap(1)
+        sizer.Add(title, (0, 3), (1, 10), wx.ALIGN_CENTER, 2)
+        sizer.SetEmptyCellSize((2, 2))
+        sizer.SetHGap(2)
+        sizer.SetVGap(2)
         self.Bind(wx.EVT_KEY_UP, self.onKey)
-
         self.SetSizer(sizer)
         ix, iy = self.GetBestSize()
         self.SetSize((ix+2, iy+2))
