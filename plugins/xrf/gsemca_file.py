@@ -199,6 +199,11 @@ class GSEMCA_File(Group):
         self.name   = 'mcasum'
         self.energy = mca0.energy[:]
         self.environ = mca0.environ
+        self.real_time = mca0.real_time
+        self.live_time = mca0.live_time
+        self.offset = mca0.offset
+        self.slope  = mca0.slope
+        self.quad   = mca0.quad
         self.rois = []
         for roi in mca0.rois:
             self.add_roi(name=roi.name, left=roi.left,
