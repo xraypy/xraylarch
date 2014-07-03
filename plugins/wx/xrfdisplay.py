@@ -306,31 +306,11 @@ class XRFDisplayFrame(wx.Frame):
 
         self.wids['ptable'] = ptable
 
-        sizer = wx.GridBagSizer(15, 5)
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
 
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
 
-        #
-        zoompanel = wx.Panel(ctrlpanel, name='ZoomPanel')
-        zsizer = wx.BoxSizer(wx.HORIZONTAL)
-        z1 = Button(zoompanel, 'Zoom In', size=(75, -1),
-                    action=self.onZoomIn)
-        z2 = Button(zoompanel, 'Zoom out',size=(75, -1),
-                    action=self.onZoomOut)
-        ylog = Choice(zoompanel, size=(70, -1),
-                      choices=['log', 'linear'],
-                      action=self.onLogLinear)
-        ytitl = txt(zoompanel, ' Y Scale:', font=Font(9))
-        yx    = txt(zoompanel, ' ', size=5)
-
-        zsizer.Add(ytitl,   0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
-        zsizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
-        zsizer.Add(yx,      1, wx.EXPAND|wx.ALL, 0)        
-        zsizer.Add(z1,      0, wx.EXPAND|wx.ALL, 0)
-        zsizer.Add(z2,      0, wx.EXPAND|wx.ALL, 0)
-        pack(zoompanel, zsizer)
         #
         arrowpanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -356,65 +336,70 @@ class XRFDisplayFrame(wx.Frame):
         ssizer.Add(self.wids['mseries'],    0, wx.EXPAND|wx.ALL, 0)
         pack(arrowpanel, ssizer)
 
-        self.wids['roilist'] = EditableListBox(ctrlpanel, self.onROI,
+        # roi section...
+        rsizer = wx.GridBagSizer(4, 6)
+        roipanel = wx.Panel(ctrlpanel, name='ROI Panel')
+        self.wids['roilist'] = EditableListBox(roipanel, self.onROI,
                                                right_click=False,
-                                               size=(75, 125))
-        self.wids['roilist'].SetMinSize((130, 125))
-        self.wids['roiname'] = wx.TextCtrl(ctrlpanel, -1, '', size=(160, -1))
+                                               size=(125, 125))
+        self.wids['roilist'].SetMinSize((125, 125))
+        self.wids['roiname'] = wx.TextCtrl(roipanel, -1, '', size=(150, -1))
 
         #
-        roibtns= wx.Panel(ctrlpanel, name='ROIButtons')
+        roibtns= wx.Panel(roipanel, name='ROIButtons')
         zsizer = wx.BoxSizer(wx.HORIZONTAL)
-        z1 = Button(roibtns, 'Add', size=(75, -1),
-                    action=self.onNewROI)
-        z2 = Button(roibtns, 'Delete',size=(75, -1),
-                    action=self.onDelROI)
+        z1 = Button(roibtns, 'Add', size=(60, -1), action=self.onNewROI)
+        z2 = Button(roibtns, 'Delete',size=(50, -1), action=self.onDelROI)
         zsizer.Add(z1,    0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z2,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
+
+        rt1 = txt(roipanel, ' Bins:',   size=60, font=Font(9))
+        rt2 = txt(roipanel, ' Energy:', size=60, font=Font(9))
+        rt3 = txt(roipanel, ' Cen/Wid:',size=60,  font=Font(9))
+        m = ' -           - '
+        self.wids['roi_msg1'] = txt(roipanel, m, size=125, font=Font(9))
+        self.wids['roi_msg2'] = txt(roipanel, m, size=125, font=Font(9))
+        self.wids['roi_msg3'] = txt(roipanel, m, size=125, font=Font(9))
+
+        rsizer.Add(txt(roipanel, ' Regions of Interest:', size=120, font=Font(9)),
+                   (0, 0), (1, 3), labstyle)
+        rsizer.Add(self.wids['roiname'],    (1, 0), (1, 3), labstyle)
+        rsizer.Add(roibtns,                 (2, 0), (1, 3), labstyle)
+        rsizer.Add(rt1,                     (3, 0), (1, 1), LEFT)
+        rsizer.Add(rt2,                     (4, 0), (1, 1), LEFT)
+        rsizer.Add(rt3,                     (5, 0), (1, 1), LEFT)
+        rsizer.Add(self.wids['roi_msg1'],   (3, 1), (1, 2), labstyle)
+        rsizer.Add(self.wids['roi_msg2'],   (4, 1), (1, 2), labstyle)
+        rsizer.Add(self.wids['roi_msg3'],   (5, 1), (1, 2), labstyle)
+        rsizer.Add(self.wids['roilist'],    (0, 3), (6, 1),
+                   wx.EXPAND|wx.ALL|wx.ALIGN_RIGHT)
+        rsizer.SetHGap(1)
+        
+        pack(roipanel, rsizer)        
+        # end roi section
+
+        # zoom buttons
+        zoompanel = wx.Panel(ctrlpanel, name='ZoomPanel')
+        zsizer = wx.BoxSizer(wx.HORIZONTAL)
+        z1 = Button(zoompanel, 'Zoom In', size=(75, -1),
+                    action=self.onZoomIn)
+        z2 = Button(zoompanel, 'Zoom out',size=(75, -1),
+                    action=self.onZoomOut)
+        ylog = Choice(zoompanel, size=(70, -1),
+                      choices=['log', 'linear'],
+                      action=self.onLogLinear)
+        ytitl = txt(zoompanel, ' Y Scale:', font=Font(9))
+        yx    = txt(zoompanel, ' ', size=5)
+
+        zsizer.Add(ytitl,   0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
+        zsizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
+        zsizer.Add(yx,      1, wx.EXPAND|wx.ALL, 0)        
+        zsizer.Add(z1,      0, wx.EXPAND|wx.ALL, 0)
+        zsizer.Add(z2,      0, wx.EXPAND|wx.ALL, 0)
+        pack(zoompanel, zsizer)
+
         #
-
-        rtitle1  = txt(ctrlpanel, ' Bins:', font=Font(9))
-        rtitle2  = txt(ctrlpanel, ' Energy:', font=Font(9))
-        rtitle3  = txt(ctrlpanel, ' Cen/Wid:', font=Font(9))
-        self.wids['roi_msg1'] = txt(ctrlpanel, '  ', size=100, font=Font(9))
-        self.wids['roi_msg2'] = txt(ctrlpanel, '  ', size=100, font=Font(9))
-        self.wids['roi_msg3'] = txt(ctrlpanel, '  ', size=100, font=Font(9))
-
-        ir = 0
-        sizer.Add(ptable,  (ir, 0), (1, 4), wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 5)
-
-        ir += 1
-        sizer.Add(arrowpanel, (ir, 0), (1, 4), labstyle)
-
-        ir += 1
-        sizer.Add(lin(ctrlpanel, 195),   (ir, 0), (1, 4), labstyle)
-
-        # roi section...
-        ir += 1
-        sizer.Add(txt(ctrlpanel, ' Regions of Interest:', size=140),
-                  (ir, 0), (1, 2), labstyle)
-        sizer.Add(self.wids['roilist'],    (ir, 2),  (6, 2), labstyle)
-
-        sizer.Add(self.wids['roiname'],    (ir+1, 0), (1, 2), labstyle)
-        sizer.Add(roibtns,                 (ir+2, 0), (1, 2), labstyle)
-        sizer.Add(rtitle1,                 (ir+3, 0), (1, 1), LEFT)
-        sizer.Add(rtitle2,                 (ir+4, 0), (1, 1), LEFT)
-        sizer.Add(rtitle3,                 (ir+5, 0), (1, 1), LEFT)
-
-        sizer.Add(self.wids['roi_msg1'],   (ir+3, 1), (1, 1), LEFT)
-        sizer.Add(self.wids['roi_msg2'],   (ir+4, 1), (1, 1), LEFT)
-        sizer.Add(self.wids['roi_msg3'],   (ir+5, 1), (1, 1), LEFT)
-
-        ir += 6
-        sizer.Add(lin(ctrlpanel, 195),       (ir, 0), (1, 4), labstyle)
-
-        ir += 1
-        sizer.Add(zoompanel,                 (ir, 0), (1, 3),
-                 wx.ALIGN_RIGHT|wx.ALIGN_BOTTOM|wx.EXPAND)
-        ir += 1
-        sizer.Add(lin(ctrlpanel, 195),   (ir, 0), (1, 4), labstyle)
-
         self.wids['xray_lines'] = None
         if HAS_DV:
             dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
@@ -435,13 +420,20 @@ class XRFDisplayFrame(wx.Frame):
             xlines.SetMaxSize((320, 400))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
 
-            ir += 1
-            sizer.Add(xlines,  (ir, 0), (8, 4), wx.GROW|wx.ALL|wx.EXPAND)
+        # main layout
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(ptable,              0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 4)
+        sizer.Add(arrowpanel,          0, labstyle)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(roipanel,            0, labstyle)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(zoompanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
 
-        sizer.SetHGap(1)
-        sizer.SetVGap(1)
-        ctrlpanel.SetSizer(sizer)
-        sizer.Fit(ctrlpanel)
+        if self.wids['xray_lines'] is not None:
+            sizer.Add(xlines,  0, wx.GROW|wx.ALL|wx.EXPAND)
+
+        pack(ctrlpanel, sizer)
         return ctrlpanel
 
     def createMainPanel(self):
@@ -611,9 +603,9 @@ class XRFDisplayFrame(wx.Frame):
         r[1:-1] = self.mca.counts[left:right]
         e[0]    = e[1]
         e[-1]   = e[-2]
-        roi_msg1 = '[{:}:{:}]'.format(left, right)
-        roi_msg2 = '[{:6.3f}: {:6.3f}]'.format(elo, ehi)
-        roi_msg3 = ' {:6.3f}/ {:6.3f} '.format((elo+ehi)/2., (ehi - elo))
+        roi_msg1 = '[{:} : {:}]'.format(left, right)
+        roi_msg2 = '[{:6.3f} : {:6.3f}]'.format(elo, ehi)
+        roi_msg3 = ' {:6.3f} / {:6.3f} '.format((elo+ehi)/2., (ehi - elo))
 
         fill = self.panel.axes.fill_between
         self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-10)
@@ -868,19 +860,21 @@ class XRFDisplayFrame(wx.Frame):
         if self.y2data is not None:
             self.oplot(self.x2data, self.y2data)
 
-    def plotmca(self, mca, title='', as_mca2=False, **kws):
+    def plotmca(self, mca, title=None, set_title=True, as_mca2=False, **kws):
         if as_mca2:
             self.mca2 = mca
         else:
             self.mca = mca
-        titles = [title]
+        atitles = []
         if self.mca is not None:
             if hasattr(self.mca, 'title'):
-                titles.append(self.mca.title)
+                atitles.append(self.mca.title)
             if hasattr(self.mca, 'filename'):
-                titles.append(" File={:s}".format(self.mca.filename))
+                atitles.append(" File={:s}".format(self.mca.filename))
+            if hasattr(self.mca, 'npixels'):
+                atitles.append(" {:.0f} Pixels".format(self.mca.npixels))
             if hasattr(self.mca, 'real_time'):
-                titles.append(" RealTime={:.1f} sec".format(self.mca.real_time))
+                atitles.append(" RealTime={:.2f} sec".format(self.mca.real_time))
 
             try:
                 self.plot(self.mca.energy, self.mca.counts,
@@ -889,15 +883,19 @@ class XRFDisplayFrame(wx.Frame):
                 pass
         if as_mca2:
             if hasattr(self.mca2, 'title'):
-                titles.append(" BG={:s}".format(self.mca2.title))
+                atitles.append(" BG={:s}".format(self.mca2.title))
             elif  hasattr(self.mca2, 'filename'):
-                titles.append(" BG_File={:s}".format(self.mca2.filename))
+                atitles.append(" BG_File={:s}".format(self.mca2.filename))
             if hasattr(self.mca, 'real_time'):
-                titles.append(" BG_RealTime={:.1f} sec".format(self.mca2.real_time))
+                atitles.append(" BG_RealTime={:.2f} sec".format(self.mca2.real_time))
 
             self.oplot(self.mca2.energy, self.mca2.counts,
                        mca=self.mca2, **kws)
-        self.SetTitle(' '.join(titles))
+        if title is None:
+            title =' '.join(atitles)
+        if set_title:
+            self.SetTitle(title)
+            
 
 
     def plot(self, x, y=None, mca=None, **kws):
