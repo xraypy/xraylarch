@@ -1230,10 +1230,10 @@ class GSEXRM_MapFile(object):
         mapdat = self._det_group(det)
         ix, iy, nmca = mapdat['counts'].shape
 
-        if len(np.where(area)[0]) < 1:
+        npix = len(np.where(area)[0])
+        if npix < 1:
             return None
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
-
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
         NCHUNKSIZE = 16384 # 8192
@@ -1274,7 +1274,7 @@ class GSEXRM_MapFile(object):
 
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=area)
-        return self._getmca(mapdat, counts, areaname,
+        return self._getmca(mapdat, counts, areaname, npixels=npix,
                             real_time=rtime, live_time=ltime)
 
     def get_mca_rect(self, ymin, ymax, xmin, xmax, det=None, dtcorrect=True):
@@ -1300,11 +1300,11 @@ class GSEXRM_MapFile(object):
         counts = self.get_counts_rect(ymin, ymax, xmin, xmax, mapdat=mapdat,
                                       det=det, dtcorrect=dtcorrect)
         name = 'rect(y=[%i:%i], x==[%i:%i])' % (ymin, ymax, xmin, xmax)
-
+        npix = (ymax-ymin+1)*(xmax-xmin+1)
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=None)
 
-        return self._getmca(mapdat, counts, name,
+        return self._getmca(mapdat, counts, name, npixels=npix,
                             real_time=rtime, live_time=ltime)
 
 
@@ -1408,7 +1408,7 @@ class GSEXRM_MapFile(object):
         realtime = 1.e-6*realtime.sum()
         return livetime, realtime
 
-    def _getmca(self, map, counts, name, **kws):
+    def _getmca(self, map, counts, name, npixels=None, **kws):
         """return an MCA object for a detector group
         (map is one of the  'det1', ... 'detsum')
         with specified counts array and a name
@@ -1429,7 +1429,7 @@ class GSEXRM_MapFile(object):
         cal  = map['energy'].attrs
         _mca = MCA(counts=counts, offset=cal['cal_offset'],
                    slope=cal['cal_slope'], **kws)
-
+        
         _mca.energy =  map['energy'].value
         env_names = list(self.xrfmap['config/environ/name'])
         env_addrs = list(self.xrfmap['config/environ/address'])
@@ -1437,6 +1437,9 @@ class GSEXRM_MapFile(object):
         for desc, val, addr in zip(env_names, env_vals, env_addrs):
             _mca.add_environ(desc=desc, val=val, addr=addr)
 
+        if npixels is not None:
+            _mca.npixels=npixels
+            
         # a workaround for poor practice -- some '1.3.0' files
         # were built with 'roi_names', some with 'roi_name'
         roiname = 'roi_name'
@@ -1446,9 +1449,9 @@ class GSEXRM_MapFile(object):
         roilims  = list(map['roi_limits'])
         for roi, lims in zip(roinames, roilims):
             _mca.add_roi(roi, left=lims[0], right=lims[1])
-        _mca.areaname = name
+        _mca.areaname = _mca.title = name
         path, fname = os.path.split(self.filename)
-        _mca.sourcefile = fname
+        _mca.filename = fname
         fmt = "Data from File '%s', detector '%s', area '%s'"
         mapname = map.name.split('/')[-1]
         _mca.info  =  fmt % (self.filename, mapname, name)
