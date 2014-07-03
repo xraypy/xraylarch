@@ -40,6 +40,8 @@ from mca import MCA
 from roi import ROI
 use_plugin_path('xray')
 use_plugin_path('wx')
+use_plugin_path('std')
+from debugtime import DebugTimer
 
 from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      pack, Popup, Button, get_icon, Check, MenuItem,
@@ -210,7 +212,6 @@ class Epics_MultiMCA(object):
         """return an MCA object """
         emca = self._xmap.mcas[mca-1]
         emca.get_rois()
-        
         thismca = MCA(counts=1.0*emca.VAL, offset=emca.CALO, slope=emca.CALS)
         thismca.energy = emca.get_energy()
         thismca.counts += 1.0 
@@ -218,7 +219,6 @@ class Epics_MultiMCA(object):
         for eroi in emca.rois:
             thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
                                     left=eroi.left, right=eroi.right))
-        
         return thismca
     
     def clear_rois(self):
@@ -359,10 +359,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         cx, cy = ctrlpanel.GetBestSize()
         px, py = plotpanel.GetBestSize()
 
-        self.SetMinSize((max(cx, tx)+px-100, max(cy, py)-75))
+        self.SetSize((950, 625))
+        self.SetMinSize((450, 350))
 
         style = wx.ALIGN_LEFT|wx.EXPAND|wx.ALL
-
 
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         bsizer.Add(ctrlpanel, 0, style, 1)
@@ -438,6 +438,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
+        
 
         self.det.connect_displays(status=self.wids['det_status'],
                                   elapsed=self.wids['elapsed'],
@@ -447,8 +448,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         self.mca_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.onTimer, self.mca_timer)
-        self.mca_timer.Start(150)
-        
+        self.mca_timer.Start(100)
         return pane
 
     def onTimer(self, event=None):
@@ -548,13 +548,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onDelROI(self, event=None):
         roiname = self.wids['roiname'].GetValue()        
-        XRFDisplayFrame.onDelROI(self, event=event)
+        XRFDisplayFrame.onDelROI(self)
         self.det.del_roi(roiname)
 
     def onNewROI(self, event=None):
         nam = self.wids['roiname'].GetValue()
         self.det.add_roi(nam, lo=self.xmarker_left, hi=self.xmarker_right)
-        XRFDisplayFrame.onNewROI(self, event=event)        
+        XRFDisplayFrame.onNewROI(self)
         
         
 class EpicsXRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
