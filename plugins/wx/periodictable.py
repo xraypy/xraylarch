@@ -41,7 +41,7 @@ class PeriodicTablePanel(wx.Panel):
             'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
             'Md', 'No', 'Lr']
 
-    FRAME_BG = (250, 250, 240)
+    FRAME_BG = (245, 245, 240)
     REG_BG = (252, 252, 245)
     REG_FG = ( 20,  20, 120)
     SEL_FG = (100,   0,   0)
