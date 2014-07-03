@@ -1230,7 +1230,10 @@ class GSEXRM_MapFile(object):
         mapdat = self._det_group(det)
         ix, iy, nmca = mapdat['counts'].shape
 
+        if len(np.where(area)[0]) < 1:
+            return None
         sy, sx = [slice(min(_a), max(_a)+1) for _a in np.where(area)]
+
         xmin, xmax, ymin, ymax = sx.start, sx.stop, sy.start, sy.stop
         nx, ny = (xmax-xmin), (ymax-ymin)
         NCHUNKSIZE = 16384 # 8192
@@ -1269,12 +1272,8 @@ class GSEXRM_MapFile(object):
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
 
-        l1, r1 = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
+        ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=area)
-        if det is None: det = 1
-        mdat = self._det_group(det)
-        ltime = (1.e-6*mdat['livetime'][area]).sum()
-        rtime = (1.e-6*mdat['realtime'][area]).sum()
         return self._getmca(mapdat, counts, areaname,
                             real_time=rtime, live_time=ltime)
 
@@ -1386,8 +1385,6 @@ class GSEXRM_MapFile(object):
         if ymax < 0: ymax += shape[0]
         if xmax < 0: xmax += shape[1]
         nx, ny = (xmax-xmin, ymax-ymin)
-        #print (" GET LIVE/REAL ", xmin, xmax, ymin, ymax, nx, ny)
-
         sx = slice(xmin, xmax)
         sy = slice(ymin, ymax)
         if det is None:
@@ -1397,6 +1394,8 @@ class GSEXRM_MapFile(object):
                 dmap = self._det_group(d)
                 livetime += dmap['livetime'][sy, sx]
                 realtime += dmap['realtime'][sy, sx]
+            livetime /= (1.0*self.ndet)
+            realtime /= (1.0*self.ndet)
         else:
             dmap = self._det_group(det)
             livetime = dmap['livetime'][sy, sx]
@@ -1408,8 +1407,6 @@ class GSEXRM_MapFile(object):
         livetime = 1.e-6*livetime.sum()
         realtime = 1.e-6*realtime.sum()
         return livetime, realtime
-
-
 
     def _getmca(self, map, counts, name, **kws):
         """return an MCA object for a detector group

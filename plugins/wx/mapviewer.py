@@ -875,14 +875,11 @@ WARNING: This cannot be undone!
         if outfile is None:
             return
 
-        aname = self._getarea()
+        mca   = self.owner.current_file.get_mca_area(aname)
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         npix = len(area.value[np.where(area.value)])
-        pixtime = self.owner.current_file.pixeltime
-        if pixtime is None:
-            pixtime = self.owner.current_file.calc_pixeltime()
-
-        dtime = npix*pixtime
+        pixtime = self.owner.current_file.pixeltime        
+        dtime = mca.real_time
         info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds"
         buff = ["# Map %s, Area %s" % (self.owner.current_file.filename, aname),
                 "# %i Pixels" % npix,
@@ -910,11 +907,14 @@ WARNING: This cannot be undone!
         aname = self._getarea()
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         npix = len(area.value[np.where(area.value)])
-        pixtime = self.owner.current_file.pixeltime
-        if pixtime is None:
-            pixtime = self.owner.current_file.calc_pixeltime()
-
+        pixtime = self.owner.current_file.pixeltime        
         dtime = npix*pixtime
+        try:
+            mca   = self.owner.current_file.get_mca_area(aname)
+            dtime = mca.real_time
+        except:
+            pass
+        
         info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds"
         self.info.SetLabel(info_fmt%(npix, int(round(1000.0*pixtime)), dtime))
 
@@ -977,6 +977,7 @@ WARNING: This cannot be undone!
         area  = xrmfile.xrfmap['areas/%s' % aname]
         label = area.attrs['description']
         self._mca  = None
+
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
         mca_thread = Thread(target=self._getmca_area, args=(aname,))
         mca_thread.start()
@@ -985,8 +986,9 @@ WARNING: This cannot be undone!
 
         pref, fname = os.path.split(self.owner.current_file.filename)
         npix = len(area.value[np.where(area.value)])
-        self._mca.title = "%s, Area=%s (%i Pixels)" % (fname,
-                                                       label, npix)
+        self._mca.filename = fname
+        self._mca.title = label
+        self._mca.npixels = npix
         self.owner.message("Plotting XRF Spectra for area '%s'..." % aname)
         self.owner.xrfdisplay.plotmca(self._mca, as_mca2=as_mca2)
 
@@ -1110,9 +1112,10 @@ class MapViewerFrame(wx.Frame):
             aname = self.sel_mca.areaname
             area  = xrmfile.xrfmap['areas/%s' % aname]
             npix  = len(area.value[np.where(area.value)])
-            title = "XRF Spectra:  %s, Area=%s,  %i Pixels" % (fname, aname, npix)
-
-            self.xrfdisplay.plotmca(self.sel_mca, title=title)
+            self.sel_mca.filename = fname
+            self.sel_mca.title = aname
+            self.sel_mca.npixels = npix
+            self.xrfdisplay.plotmca(self.sel_mca)
             # SET AREA CHOICE
             for p in self.nbpanels:
                 if hasattr(p, 'update_xrfmap'):
