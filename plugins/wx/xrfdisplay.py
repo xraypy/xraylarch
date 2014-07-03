@@ -349,7 +349,7 @@ class XRFDisplayFrame(wx.Frame):
         roibtns= wx.Panel(roipanel, name='ROIButtons')
         zsizer = wx.BoxSizer(wx.HORIZONTAL)
         z1 = Button(roibtns, 'Add', size=(60, -1), action=self.onNewROI)
-        z2 = Button(roibtns, 'Delete',size=(50, -1), action=self.onDelROI)
+        z2 = Button(roibtns, 'Delete',size=(50, -1), action=self.onConfirmDelROI)
         zsizer.Add(z1,    0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z2,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
@@ -451,6 +451,7 @@ class XRFDisplayFrame(wx.Frame):
         sizer.Add(ctrlpanel, 0, style, 3)
         sizer.Add(plotpanel, 1, style, 2)
 
+        self.SetMinSize((450, 150))
         pack(self, sizer)
         wx.CallAfter(self.init_larch)
         self.set_roilist(mca=None)
@@ -517,12 +518,13 @@ class XRFDisplayFrame(wx.Frame):
             self.xmarker_right is None or self.mca is None):
             return
         label = self.wids['roiname'].GetValue()
-        found = False
-        for roi in self.mca.rois:
-            if roi.name.lower()==label:
-                found = True
-        left  = self.xmarker_left
-        right = self.xmarker_right
+        names = [str(r.name.lower()) for r in self.mca.rois]
+        if str(label.lower()) in names:
+            msg = "Overwrite Definition of ROI {:s}?".format(label)            
+            if Popup(self, msg, 'Overwrite ROI?', style=wx.YES_NO) != wx.ID_YES:
+                return
+            
+        left, right  = self.xmarker_left, self.xmarker_right
         if left > right:
             left, right = right, left
         self.mca.add_roi(name=label, left=left, right=right, sort=True)
@@ -535,7 +537,13 @@ class XRFDisplayFrame(wx.Frame):
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
 
-    def onDelROI(self, event=None):
+    def onConfirmDelROI(self, event=None):
+        roiname = self.wids['roiname'].GetValue()
+        msg = "Delete ROI {:s}?".format(roiname)
+        if Popup(self, msg,   'Delete ROI?', style=wx.YES_NO) == wx.ID_YES:
+            self.onDelROI()
+
+    def onDelROI(self):
         roiname = self.wids['roiname'].GetValue()
         rdat = []
         if self.mca is None:
