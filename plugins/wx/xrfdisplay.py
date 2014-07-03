@@ -190,7 +190,10 @@ class XRFDisplayFrame(wx.Frame):
             except:
                 pass
         if self.highlight_xrayline is not None:
-            self.highlight_xrayline.remove()
+            try:
+                self.highlight_xrayline.remove()
+            except:
+                pass
 
         self.highlight_xrayline = None
         self.major_markers = []
@@ -405,16 +408,16 @@ class XRFDisplayFrame(wx.Frame):
             dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
             xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
             self.wids['xray_lines'] = xlines
-            xlines.AppendTextColumn('Line ',        width=50)
-            xlines.AppendTextColumn('Energy (keV)', width=85)
-            xlines.AppendTextColumn('Strength',     width=85)
-            xlines.AppendTextColumn('Init Level',   width=75)
+            xlines.AppendTextColumn('Line ',       width=50)
+            xlines.AppendTextColumn('Energy(keV)', width=80)
+            xlines.AppendTextColumn('Strength',    width=80)
+            xlines.AppendTextColumn('Levels',      width=75)
             for col in (0, 1, 2, 3):
                 xlines.Columns[col].Sortable = True
                 align = RIGHT
                 if col in (0, 3): align = wx.ALIGN_CENTER
+                xlines.Columns[col].Alignment = align ## RIGHT
                 xlines.Columns[col].Renderer.Alignment = align
-                xlines.Columns[col].Alignment = RIGHT
 
             xlines.SetMinSize((300, 200))
             xlines.SetMaxSize((320, 400))
@@ -522,7 +525,7 @@ class XRFDisplayFrame(wx.Frame):
         if str(label.lower()) in names:
             msg = "Overwrite Definition of ROI {:s}?".format(label)            
             if Popup(self, msg, 'Overwrite ROI?', style=wx.YES_NO) != wx.ID_YES:
-                return
+                return False
             
         left, right  = self.xmarker_left, self.xmarker_right
         if left > right:
@@ -536,7 +539,8 @@ class XRFDisplayFrame(wx.Frame):
         self.onROI(label=label)
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
-
+        return True
+    
     def onConfirmDelROI(self, event=None):
         roiname = self.wids['roiname'].GetValue()
         msg = "Delete ROI {:s}?".format(roiname)
@@ -649,7 +653,7 @@ class XRFDisplayFrame(wx.Frame):
         fmenu.AppendSeparator()
         MenuItem(self, fmenu, "Save ROIs to File",
                  "Save ROIs to File",  self.onSaveROIs)
-        MenuItem(self, fmenu, "Read ROIs File",
+        MenuItem(self, fmenu, "Restore ROIs File",
                  "Read ROIs from File",  self.onRestoreROIs)
 
         fmenu.AppendSeparator()
@@ -808,10 +812,10 @@ class XRFDisplayFrame(wx.Frame):
         line_data = {}
         for line in (conf.K_major+conf.K_minor+conf.L_major+
                      conf.L_minor+conf.M_major):
-            line_data[line] = line, -1, 0, ''
+            line_data[line] = line, -1, 0, '', ''
             if line in elines:
                 dat = elines[line]
-                line_data[line] = line, dat[0], dat[1], dat[2]
+                line_data[line] = line, dat[0], dat[1], dat[2], dat[3]
 
         if self.wids['kseries'].IsChecked():
             majors.extend([line_data[l] for l in conf.K_major])
@@ -824,13 +828,14 @@ class XRFDisplayFrame(wx.Frame):
 
         erange = [max(conf.e_min, self.xdata.min()),
                   min(conf.e_max, self.xdata.max())]
-        for label, eev, frac, ilevel in majors:
+        for label, eev, frac, ilevel, flevel in majors:
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.50, zorder=-4)
                 l.set_label(label)
-                dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
+                dat = (label, "%.4f" % e, "%.4f" % frac,
+                       "%s->%s" % (ilevel, flevel))
                 self.wids['xray_linesdata'].append(e)
                 if xlines is not None:
                     xlines.AppendItem(dat)
@@ -839,13 +844,14 @@ class XRFDisplayFrame(wx.Frame):
                 if self.energy_for_zoom is None:
                     self.energy_for_zoom = e
 
-        for label, eev, frac, ilevel in minors:
+        for label, eev, frac, ilevel, flevel in minors:
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.minor_elinecolor,
                           linewidth=1.25, zorder=-6)
                 l.set_label(label)
-                dat = (label, "%.4f" % e, "%.4f" % frac, ilevel)
+                dat = (label, "%.4f" % e, "%.4f" % frac,
+                       "%s->%s" % (ilevel, flevel))                       
                 self.wids['xray_linesdata'].append(e)
                 if xlines is not None:
                     xlines.AppendItem(dat)
