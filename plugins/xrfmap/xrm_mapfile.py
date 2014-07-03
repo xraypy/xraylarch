@@ -51,7 +51,7 @@ def getFileStatus(filename, root=None, folder=None):
     # see if file is empty/too small(signifies "read from folder")
     if os.stat(filename).st_size < 512:
         return GSEXRM_FileStatus.empty, top, vers
-    
+
     # see if file is an H5 file
     try:
         fh = h5py.File(filename)
@@ -174,7 +174,7 @@ class GSEXRM_MapRow:
     read one row worth of data:
     """
     def __init__(self, yvalue, xmapfile, xpsfile, sisfile, folder,
-                 xrftype='xmap', reverse=False, ixaddr=0, dimension=2, 
+                 xrftype='xmap', reverse=False, ixaddr=0, dimension=2,
                  nrows_expected=None,
                  npts=None,  irow=None, dtime=None):
 
@@ -206,7 +206,7 @@ class GSEXRM_MapRow:
                 xmapdat = xrf_reader(xmfile, npixels=self.nrows_expected, verbose=False)
             except (IOError, IndexError):
                 time.sleep(0.010)
-                
+
         if atime < 0 or xmapdat is None:
             print( 'Failed to read XRF data from %s' % self.xmapfile)
             return
@@ -299,16 +299,16 @@ class GSEXRM_Detector(object):
     realtime       array of real time
     livetime       array of live time
     inputcounts    array of input counts
-    outputcount    array of output count 
+    outputcount    array of output count
 
     """
     def __init__(self, xrfmap, index=None):
         self.xrfmap = xrfmap
-        self.__ndet =  xrfmap.attrs['N_Detectors']        
+        self.__ndet =  xrfmap.attrs['N_Detectors']
         self.det = None
         self.rois = []
         detname = 'det1'
-        if index is not None: 
+        if index is not None:
             self.det = self.xrfmap['det%i' % index]
             detname = 'det%i' % index
 
@@ -324,7 +324,7 @@ class GSEXRM_Detector(object):
         for name, addr, lims in zip(rnames, raddrs, rlims):
             self.rois.append(ROI(name=name, address=addr,
                                  left=lims[0], right=lims[1]))
-            
+
     def __getval(self, param):
         if self.det is None:
             out = self.xrfmap['det1/%s' % (param)].value
@@ -332,7 +332,7 @@ class GSEXRM_Detector(object):
                 out += self.xrfmap['det%i/%s' % (i, param)].value
             return out
         return self.det[param].value
-    
+
     @property
     def counts(self):
         "detector counts array"
@@ -370,7 +370,7 @@ class GSEXRM_Area(object):
     def __init__(self, xrfmap, index, det=None):
         self.xrfmap = xrfmap
         self.det = GSEXRM_Detector(xrfmap, index=det)
-        if isinstance(index, int):            
+        if isinstance(index, int):
             index = 'area_%3.3i' % index
         self._area = self.xrfmap['areas/%s' % index]
         self.npts = self._area.value.sum()
@@ -387,10 +387,7 @@ class GSEXRM_Area(object):
         if iroi < 0:
             raise ValueError('ROI name %s not found' % roiname)
         elo, ehi = self.det.rois[iroi].left, self.det.rois[iroi].right
-        print 'roi counts: ', elo, ehi, self.det.rois[iroi].name
         counts = self.det.counts[self.yslice, self.xslice, elo:ehi]
-        print 'Counts : ', counts.shape
-        
 
 
 class GSEXRM_MapFile(object):
@@ -463,7 +460,7 @@ class GSEXRM_MapFile(object):
                 self.folder = ftmp.readlines()[0][:-1].strip()
                 ftmp.close()
                 os.unlink(self.filename)
-                
+
         if isGSEXRM_MapFolder(self.folder):
             self.read_master()
             if self.filename is None:
@@ -514,7 +511,7 @@ class GSEXRM_MapFile(object):
 
     def area_obj(self, index, det=None):
         return GSEXRM_Area(self.xrfmap, index, det=det)
-        
+
     def get_scanconfig(self):
         """return scan configuration from file"""
         conftext = self.xrfmap['config/scan/text'].value
@@ -535,9 +532,9 @@ class GSEXRM_MapFile(object):
                 val = env_vals[env_addrs.index(addr)]
 
             stages.append((addr, val, name))
-            
+
         return stages
-        
+
     def open(self, filename, root=None, check_status=True):
         """open GSEXRM HDF5 File :
         with check_status=False, this **must** be called
@@ -648,7 +645,6 @@ class GSEXRM_MapFile(object):
         possible once at least 1 row of raw data is available
         in the scan folder.
         """
-        print 'INIT XRFMAP '
         if self.status == GSEXRM_FileStatus.hasdata:
             return
         if self.status != GSEXRM_FileStatus.created:
@@ -716,7 +712,7 @@ class GSEXRM_MapFile(object):
         npts = 1 + int((abs(stop - start) + 1.1*step)/step)
         self.pixeltime = rowtime/npts
         return self.pixeltime
-    
+
     def read_rowdata(self, irow):
         """read a row's worth of raw data from the Map Folder
         returns arrays of data
@@ -1027,17 +1023,17 @@ class GSEXRM_MapFile(object):
            name, length, mean, standard_deviation,
            median, mode, minimum, maximum,
            gmean, hmean, skew, kurtosis
-        
+
         """
         area = self.get_area(name=name, desc=desc)
         if area is None:
             return None
-        
+
         if 'roistats' in area.attrs:
             return json.loads(area.attrs['roistats'])
 
         amask = area.value
-        
+
         roidata = []
         d_addrs = [d.lower() for d in self.xrfmap['roimap/det_address']]
         d_names = [d for d in self.xrfmap['roimap/det_name']]
@@ -1046,7 +1042,7 @@ class GSEXRM_MapFile(object):
         for i in range(self.xrfmap.attrs['N_Detectors']):
             tname = 'det%i/realtime' % (i+1)
             ctime.append(1.e-6*self.xrfmap[tname].value[amask])
-        
+
         for idet, dname in enumerate(d_names):
             daddr = d_addrs[idet]
             det = 0
@@ -1067,12 +1063,12 @@ class GSEXRM_MapFile(object):
                 hmean, gmean, skew, kurtosis = 0, 0, 0, 0
             mode = stats.mode(d)
             roidata.append((dname, len(d), d.mean(), d.std(), np.median(d),
-                            stats.mode(d), d.min(), d.max(), 
+                            stats.mode(d), d.min(), d.max(),
                             gmean, hmean, skew, kurtosis))
-            
+
             if 'roistats' not in area.attrs:
                 area.attrs['roistats'] = json.dumps(roidata)
-                self.h5root.flush()                
+                self.h5root.flush()
 
         return roidata
 
@@ -1099,7 +1095,7 @@ class GSEXRM_MapFile(object):
 
     def check_ownership(self):
         return self.check_hostid()
-    
+
     def check_hostid(self):
         """checks host and id of file:
         returns True if this process the owner of the file
@@ -1176,7 +1172,7 @@ class GSEXRM_MapFile(object):
         step  = mapconf['scan']['step1']
         span = abs(stop-start)
         self.npts = int(abs(step*1.01 + span)/step)
-        
+
         self.xrfdet_type = mapconf['xrf']['type'].lower()
 
         pos1 = scanconf['pos1']
@@ -1208,7 +1204,7 @@ class GSEXRM_MapFile(object):
         """returns NY, NX shape of array data"""
         ny, nx, npos = self.xrfmap['positions/pos'].shape
         return ny, nx
-    
+
     def get_mca_area(self, areaname, det=None, dtcorrect=True,
                      callback = None):
         """return XRF spectra as MCA() instance for
@@ -1240,7 +1236,7 @@ class GSEXRM_MapFile(object):
         NCHUNKSIZE = 16384 # 8192
         use_chunks = nx*ny > NCHUNKSIZE
         step = int((nx*ny)/NCHUNKSIZE)
-        
+
         if not use_chunks:
             try:
                 if hasattr(callback , '__call__'):
@@ -1273,8 +1269,12 @@ class GSEXRM_MapFile(object):
                                                 det=det, area=area,
                                                 dtcorrect=dtcorrect)
 
-        ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
+        l1, r1 = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=area)
+        if det is None: det = 1
+        mdat = self._det_group(det)
+        ltime = (1.e-6*mdat['livetime'][area]).sum()
+        rtime = (1.e-6*mdat['realtime'][area]).sum()
         return self._getmca(mapdat, counts, areaname,
                             real_time=rtime, live_time=ltime)
 
@@ -1304,6 +1304,7 @@ class GSEXRM_MapFile(object):
 
         ltime, rtime = self.get_livereal_rect(ymin, ymax, xmin, xmax, det=det,
                                               dtcorrect=dtcorrect, area=None)
+
         return self._getmca(mapdat, counts, name,
                             real_time=rtime, live_time=ltime)
 
@@ -1357,14 +1358,14 @@ class GSEXRM_MapFile(object):
         else:
             counts = counts.sum(axis=0)
         return counts.sum(axis=0)
-        
+
     def get_livereal_rect(self, ymin, ymax, xmin, xmax, det=None,
                           area=None, dtcorrect=True):
         """return livetime, realtime for a map rectangle, optionally
         applying area mask and deadtime correction
 
         Parameters
-        --------- 
+        ---------
         ymin :       int       low y index
         ymax :       int       high y index
         xmin :       int       low x index
@@ -1407,7 +1408,7 @@ class GSEXRM_MapFile(object):
         livetime = 1.e-6*livetime.sum()
         realtime = 1.e-6*realtime.sum()
         return livetime, realtime
-    
+
 
 
     def _getmca(self, map, counts, name, **kws):
@@ -1419,7 +1420,7 @@ class GSEXRM_MapFile(object):
         Parameters
         ---------
         det :        detector object (one of det1, det2, ..., detsum)
-        counts :     ndarray array of counts 
+        counts :     ndarray array of counts
         name  :      name for MCA
 
         Returns
@@ -1465,7 +1466,7 @@ class GSEXRM_MapFile(object):
         ---------
         name :       str    ROI name
         mean :       optional, bool [True]        return mean x-value
-        
+
         with mean=True, and a positioner in the first two position,
         returns a 1-d array of mean x-values
 
@@ -1562,7 +1563,7 @@ class GSEXRM_MapFile(object):
         scale_each : optional, bool [True]
                      scale each map separately to span the full color range.
         scales :     optional, None or 3 element tuple [None]
-                     multiplicative scale for each map. 
+                     multiplicative scale for each map.
 
         By default (scales_each=True, scales=None), each map is scaled by
         1.0/map.max() -- that is 1 of the max value for that map.
