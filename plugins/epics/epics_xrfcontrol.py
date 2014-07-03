@@ -300,18 +300,20 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if self.mca is None or self.needs_newplot:
             self.mca = self.det.get_mca(mca=self.det_fore)
         
-        self.plotmca(self.mca)
-        
+        self.plotmca(self.mca, set_title=False)
+        title = "Foreground: MCA{:d}".format(self.det_fore)
         if self.det_back  > 0:
             if self.mca2 is None:
                 self.mca2 = self.det.get_mca(mca=self.det_back)
 
             e2 = self.det.get_energy(mca=self.det_back)
             c2 = self.det.get_array(mca=self.det_back)
+            title = "{:s}  Background: MCA{:d}".format(title, self.det_back)
             try:
                 self.oplot(e2, c2)
             except ValueError:
                 pass
+        self.SetTitle(title)
         self.needs_newplot = False
 
 
