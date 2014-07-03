@@ -337,10 +337,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                             style = wx.OPEN|wx.CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
-            roifile = dlg.GetPath()
-        
-        self.det.restore_rois(roifile)
-        
+            roifile = dlg.GetPath()        
+            self.det.restore_rois(roifile)
+            self.set_roilist(mca=self.mca)
 
     def createCustomMenus(self):
         menu = wx.Menu()
@@ -553,8 +552,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onNewROI(self, event=None):
         nam = self.wids['roiname'].GetValue()
-        self.det.add_roi(nam, lo=self.xmarker_left, hi=self.xmarker_right)
-        XRFDisplayFrame.onNewROI(self)
+        confirmed = XRFDisplayFrame.onNewROI(self)
+        if confirmed:
+            self.det.add_roi(nam, lo=self.xmarker_left, hi=self.xmarker_right)
         
         
 class EpicsXRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
