@@ -16,7 +16,7 @@ try:
     from wx._core import PyDeadObjectError
 except:
     PyDeadObjectError = Exception
-    
+
 import wx.lib.colourselect  as csel
 import numpy as np
 import matplotlib
@@ -66,7 +66,7 @@ def txt(panel, label, size=75, colour=None, font=None, style=None):
         colour = wx.Colour(0, 0, 50)
     this = SimpleText(panel, label, size=(size, -1),
                       colour=colour, style=style)
-    if font is not None: this.SetFont(font)    
+    if font is not None: this.SetFont(font)
     return this
 
 def lin(panel, len=30, wid=2, style=wx.LI_HORIZONTAL):
@@ -134,14 +134,14 @@ class XRFDisplayFrame(wx.Frame):
         self.xmarker_left = None
         self.xmarker_right = None
 
-        self.highlight_xrayline = None        
+        self.highlight_xrayline = None
         self.highlight_xrayline = None
         self.cursor_markers = [None, None]
         self.ylog_scale = True
         self.SetTitle(title)
 
         self._menus = []
-        
+
         self.createMainPanel()
         self.createMenus()
         self.SetFont(Font(9))
@@ -169,9 +169,9 @@ class XRFDisplayFrame(wx.Frame):
 
         if side == 'right':
             self.xmarker_right = ix
-        elif side == 'left':        
+        elif side == 'left':
             self.xmarker_left = ix
-            
+
         if self.xmarker_left is not None and self.xmarker_right is not None:
             ix1, ix2 = self.xmarker_left, self.xmarker_right
             self.xmarker_left  = min(ix1, ix2)
@@ -181,7 +181,7 @@ class XRFDisplayFrame(wx.Frame):
             self.energy_for_zoom = self.mca.energy[ix]
         self.update_status()
         self.panel.canvas.draw()
-        
+
     def clear_lines(self, evt=None):
         "remove all Line Markers"
         for m in self.major_markers + self.minor_markers:
@@ -311,9 +311,9 @@ class XRFDisplayFrame(wx.Frame):
 
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
-
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
-
+        Font10 = Font(10)
+        Font11 = Font(11)
         #
         arrowpanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -344,28 +344,28 @@ class XRFDisplayFrame(wx.Frame):
         roipanel = wx.Panel(ctrlpanel, name='ROI Panel')
         self.wids['roilist'] = EditableListBox(roipanel, self.onROI,
                                                right_click=False,
-                                               size=(125, 125))
-        self.wids['roilist'].SetMinSize((125, 125))
+                                               size=(135, 120))
+        self.wids['roilist'].SetMinSize((135, 120))
         self.wids['roiname'] = wx.TextCtrl(roipanel, -1, '', size=(150, -1))
 
         #
         roibtns= wx.Panel(roipanel, name='ROIButtons')
         zsizer = wx.BoxSizer(wx.HORIZONTAL)
-        z1 = Button(roibtns, 'Add', size=(60, -1), action=self.onNewROI)
-        z2 = Button(roibtns, 'Delete',size=(50, -1), action=self.onConfirmDelROI)
+        z1 = Button(roibtns, 'Add',   size=(65, 30), action=self.onNewROI)
+        z2 = Button(roibtns, 'Delete',size=(65, 30), action=self.onConfirmDelROI)
         zsizer.Add(z1,    0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z2,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
 
-        rt1 = txt(roipanel, ' Bins:',   size=60, font=Font(9))
-        rt2 = txt(roipanel, ' Energy:', size=60, font=Font(9))
-        rt3 = txt(roipanel, ' Cen/Wid:',size=60,  font=Font(9))
-        m = ' -           - '
-        self.wids['roi_msg1'] = txt(roipanel, m, size=125, font=Font(9))
-        self.wids['roi_msg2'] = txt(roipanel, m, size=125, font=Font(9))
-        self.wids['roi_msg3'] = txt(roipanel, m, size=125, font=Font(9))
+        rt1 = txt(roipanel, ' Channels:', size=60, font=Font10)
+        rt2 = txt(roipanel, ' Energy:',   size=60, font=Font10)
+        rt3 = txt(roipanel, ' Cen/Wid:',  size=60, font=Font10)
+        m = '            '
+        self.wids['roi_msg1'] = txt(roipanel, m, size=125, font=Font10)
+        self.wids['roi_msg2'] = txt(roipanel, m, size=125, font=Font10)
+        self.wids['roi_msg3'] = txt(roipanel, m, size=125, font=Font10)
 
-        rsizer.Add(txt(roipanel, ' Regions of Interest:', size=120, font=Font(9)),
+        rsizer.Add(txt(roipanel, ' Regions of Interest:', size=120, font=Font11),
                    (0, 0), (1, 3), labstyle)
         rsizer.Add(self.wids['roiname'],    (1, 0), (1, 3), labstyle)
         rsizer.Add(roibtns,                 (2, 0), (1, 3), labstyle)
@@ -378,26 +378,26 @@ class XRFDisplayFrame(wx.Frame):
         rsizer.Add(self.wids['roilist'],    (0, 3), (6, 1),
                    wx.EXPAND|wx.ALL|wx.ALIGN_RIGHT)
         rsizer.SetHGap(1)
-        
-        pack(roipanel, rsizer)        
+
+        pack(roipanel, rsizer)
         # end roi section
 
         # zoom buttons
         zoompanel = wx.Panel(ctrlpanel, name='ZoomPanel')
         zsizer = wx.BoxSizer(wx.HORIZONTAL)
-        z1 = Button(zoompanel, 'Zoom In', size=(75, -1),
+        z1 = Button(zoompanel, 'Zoom In', size=(75, 30),
                     action=self.onZoomIn)
-        z2 = Button(zoompanel, 'Zoom out',size=(75, -1),
+        z2 = Button(zoompanel, 'Zoom out',size=(75, 30),
                     action=self.onZoomOut)
-        ylog = Choice(zoompanel, size=(70, -1),
+        ylog = Choice(zoompanel, size=(70, 30),
                       choices=['log', 'linear'],
                       action=self.onLogLinear)
-        ytitl = txt(zoompanel, ' Y Scale:', font=Font(9))
+        ytitl = txt(zoompanel, ' Y Scale:', font=Font(10))
         yx    = txt(zoompanel, ' ', size=5)
 
         zsizer.Add(ytitl,   0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
         zsizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
-        zsizer.Add(yx,      1, wx.EXPAND|wx.ALL, 0)        
+        zsizer.Add(yx,      1, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z1,      0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z2,      0, wx.EXPAND|wx.ALL, 0)
         pack(zoompanel, zsizer)
@@ -408,29 +408,31 @@ class XRFDisplayFrame(wx.Frame):
             dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
             xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
             self.wids['xray_lines'] = xlines
-            xlines.AppendTextColumn('Line ',       width=50)
-            xlines.AppendTextColumn('Energy(keV)', width=80)
-            xlines.AppendTextColumn('Strength',    width=80)
-            xlines.AppendTextColumn('Levels',      width=75)
+            xlines.AppendTextColumn('Line ',        width=50)
+            xlines.AppendTextColumn('Energy (keV)', width=80)
+            xlines.AppendTextColumn('Strength',     width=80)
+            xlines.AppendTextColumn('Levels',       width=75)
             for col in (0, 1, 2, 3):
-                xlines.Columns[col].Sortable = True
+                this = xlines.Columns[col]
+                this.Sortable = True
                 align = RIGHT
-                if col in (0, 3): align = wx.ALIGN_CENTER
-                xlines.Columns[col].Alignment = align ## RIGHT
-                xlines.Columns[col].Renderer.Alignment = align
+                if col == 0: align = wx.ALIGN_CENTER
+                if col == 3: align = wx.ALIGN_LEFT
+                this.Alignment = this.Renderer.Alignment = align
 
             xlines.SetMinSize((300, 200))
             xlines.SetMaxSize((320, 400))
-            xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED, self.onSelectXrayLine)
+            xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
+                        self.onSelectXrayLine)
 
         # main layout
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(ptable,              0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 4)
-        sizer.Add(arrowpanel,          0, labstyle)
-        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(roipanel,            0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(zoompanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
+        sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(ptable,              0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 4)
+        sizer.Add(arrowpanel,          0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
 
         if self.wids['xray_lines'] is not None:
@@ -523,10 +525,10 @@ class XRFDisplayFrame(wx.Frame):
         label = self.wids['roiname'].GetValue()
         names = [str(r.name.lower()) for r in self.mca.rois]
         if str(label.lower()) in names:
-            msg = "Overwrite Definition of ROI {:s}?".format(label)            
+            msg = "Overwrite Definition of ROI {:s}?".format(label)
             if Popup(self, msg, 'Overwrite ROI?', style=wx.YES_NO) != wx.ID_YES:
                 return False
-            
+
         left, right  = self.xmarker_left, self.xmarker_right
         if left > right:
             left, right = right, left
@@ -540,7 +542,7 @@ class XRFDisplayFrame(wx.Frame):
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
         return True
-    
+
     def onConfirmDelROI(self, event=None):
         roiname = self.wids['roiname'].GetValue()
         msg = "Delete ROI {:s}?".format(roiname)
@@ -802,6 +804,7 @@ class XRFDisplayFrame(wx.Frame):
         self.selected_elem = elem
         self.clear_lines()
 
+
         self.energy_for_zoom = None
         xlines = self.wids['xray_lines']
         if xlines is not None:
@@ -851,13 +854,21 @@ class XRFDisplayFrame(wx.Frame):
                           linewidth=1.25, zorder=-6)
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac,
-                       "%s->%s" % (ilevel, flevel))                       
+                       "%s->%s" % (ilevel, flevel))
                 self.wids['xray_linesdata'].append(e)
                 if xlines is not None:
                     xlines.AppendItem(dat)
                 self.minor_markers.append(l)
 
+        edges = []
+        for edge in ('K', 'L3', 'L2', 'M5'):
+            xex = self.larch.symtable._xray.xray_edge(elem, edge)
+            if xex is None: xex = (0., 0)
+            en = xex[0]*0.001
+            if en > erange[0] and en < erange[1]:
+                edges.append("%s=%.3f" % (edge, en))
 
+        self.wids['ptable'].set_subtitle(', '.join(edges))
 
         self.panel.canvas.draw()
 
@@ -909,7 +920,7 @@ class XRFDisplayFrame(wx.Frame):
             title =' '.join(atitles)
         if set_title:
             self.SetTitle(title)
-            
+
 
 
     def plot(self, x, y=None, mca=None, **kws):
