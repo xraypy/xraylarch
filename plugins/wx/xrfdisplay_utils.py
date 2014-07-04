@@ -9,7 +9,7 @@ import wx
 import wx.lib.colourselect  as csel
 
 from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
-                     Check, HLine, GridPanel, CEN, LEFT, RIGHT)
+                     Check, HyperText, HLine, GridPanel, CEN, LEFT, RIGHT)
 
 from wxmplot.colors import hexcolor
 
@@ -167,22 +167,23 @@ class ColorsFrame(wx.Frame):
                           title='XRF Color Settings', **kws)
 
         panel = GridPanel(self)
+        panel.SetFont(Font(11))
         def add_color(panel, name):
             cval = hexcolor(getattr(conf, name))
             c = csel.ColourSelect(panel,  -1, "", cval, size=(35, 25))
             c.Bind(csel.EVT_COLOURSELECT, partial(self.onColor, item=name))
             return c
 
-        SX = 120
+        SX = 130
         def scolor(txt, attr, **kws):
-            panel.AddText(txt, size=(SX, -1), style=LEFT, **kws)
+            panel.AddText(txt, size=(SX, -1), style=LEFT, font=Font(11), **kws)
             panel.Add(add_color(panel, attr),  style=LEFT)
-            
+
         panel.AddText('    XRF Display Colors', dcol=4, colour='#880000')
 
         panel.Add(HLine(panel, size=(400, 3)),  dcol=4, newrow=True)
         scolor(' Main Spectra:',        'spectra_color', newrow=True)
-        scolor(' Second Spectra:',      'spectra2_color')
+        scolor(' Background Spectra:',      'spectra2_color')
         scolor(' ROIs:',                'roi_color',     newrow=True)
         scolor(' ROI Fill:',            'roi_fillcolor')
         scolor(' Cursor:',              'marker_color',  newrow=True)
@@ -236,60 +237,75 @@ class XrayLinesFrame(wx.Frame):
     l3lines = ['Lg1', 'Lg2', 'Lg3']
     mlines  = ['Ma', 'Mb', 'Mg', 'Mz']
 
-    def __init__(self, parent, size=(525, 350), **kws):
+    def __init__(self, parent, size=(500, 300), **kws):
         self.parent = parent
         conf  = parent.conf
         kws['style'] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, parent, -1, size=size,
                           title='XRF Line Selection', **kws)
         panel = GridPanel(self)
-
+        self.checkbox = {}
         def add_elines(panel, lines, checked, action):
             for i in lines:
-                panel.Add(Check(panel, '%s ' % i, default = i in checked,
-                                action=partial(action, label=i)), style=LEFT)
+                cb = Check(panel, '%s ' % i, default = i in checked,
+                           action=partial(action, label=i))
+                self.checkbox[i] = cb
+                panel.Add(cb, style=LEFT)
 
-        labopts = {'size': (150, -1), 'newrow': True, 'style': LEFT}
+        hopts = {'size': (125, -1), 'bgcolour': (250, 250, 200),
+                 'action': self.ToggleLines}
+        labopts = {'newrow': True, 'style': LEFT}
+        self.linedata = {'Major K Lines:': self.k1lines,
+                         'Minor K Lines:': self.k2lines,
+                         'Major L Lines:': self.l1lines,
+                         'Minor L Lines:': self.l2lines+self.l3lines,
+                         'Major M Lines:': self.mlines}
+        panel.AddText(' Select X-ray Emission Lines', dcol=4, colour='#880000')
+        panel.Add(HLine(panel, size=(450, 3)),  dcol=5, newrow=True)
 
-        panel.AddText(' X-ray Emission Lines', dcol=5, colour='#880000')
-        panel.Add(HLine(panel, size=(475, 3)),  dcol=5, newrow=True)
-
-        panel.AddText('Major K Lines:', **labopts)
+        panel.Add(HyperText(panel, 'Major K Lines:', **hopts), **labopts)
         add_elines(panel, self.k1lines, conf.K_major, self.onKMajor)
 
-        panel.AddText('Minor K Lines:', **labopts)
+        panel.Add(HyperText(panel, 'Minor K Lines:',  **hopts), **labopts)
         add_elines(panel, self.k2lines, conf.K_minor, self.onKMinor)
 
-        panel.AddText('Major L Lines:', **labopts)
+        panel.Add(HyperText(panel, 'Major L Lines:', **hopts), **labopts)
         add_elines(panel, self.l1lines, conf.L_major, self.onLMajor)
 
-        panel.AddText('Minor L Lines:', **labopts)
+        panel.Add(HyperText(panel, 'Minor L Lines:', **hopts), **labopts)
         add_elines(panel, self.l2lines, conf.L_minor, self.onLMinor)
 
         panel.AddText(' ', **labopts)
         add_elines(panel, self.l3lines, conf.L_minor, self.onLMinor)
 
-        panel.AddText('Major M Lines:', **labopts)
+        panel.Add(HyperText(panel, 'Major M Lines:', **hopts), **labopts)
         add_elines(panel, self.mlines,  conf.M_major, self.onMMajor)
 
-        panel.AddText('Min Energy (keV): ', **labopts)
+        panel.AddText('Energy Range (keV): ', **labopts)
+        fopts = {'minval':0, 'maxval':1000, 'precision':2, 'size':(75, -1)}
         panel.Add(FloatCtrl(panel, value=conf.e_min,
-                            minval=0, maxval=1000, precision=2,
-                            action=self.onErange, action_kws={'is_max':False}),
-                  dcol=3, style=LEFT)
+                            action=partial(self.onErange, is_max=False),
+                            **fopts),  dcol=2, style=LEFT)
 
-        panel.AddText('Max Energy (keV): ', **labopts)
+        panel.AddText(' : ')
         panel.Add(FloatCtrl(panel, value=conf.e_max,
-                            minval=0, maxval=1000, precision=2,
-                            action=self.onErange, action_kws={'is_max':True}),
-                  dcol=3, style=LEFT)
+                            action=partial(self.onErange, is_max=True),
+                            **fopts), dcol=2, style=LEFT)
 
-        panel.Add(HLine(panel, size=(475, 3)),  dcol=5, newrow=True)
+        panel.Add(HLine(panel, size=(450, 3)),  dcol=5, newrow=True)
         panel.Add(Button(panel, 'Done', size=(80, -1), action=self.onDone),
                   newrow=True, style=LEFT)
         panel.pack()
+        cx, cy = panel.GetBestSize()
+        panel.SetSize((cx+5, cy+5))
         self.Show()
         self.Raise()
+
+    def ToggleLines(self, label=None, event=None, **kws):
+        if not event.leftIsDown:
+            for line in self.linedata.get(label, []):
+                checked = self.checkbox[line].IsChecked()
+                self.checkbox[line].SetValue({True: 1, False:0}[not checked])
 
     def onKMajor(self, event=None, label=None):
         self.onLine(label, event.IsChecked(), self.parent.conf.K_major)
@@ -307,10 +323,9 @@ class XrayLinesFrame(wx.Frame):
         self.onLine(label, event.IsChecked(), self.parent.conf.M_major)
 
     def onErange(self, event=None, value=None, is_max=True):
-        if is_max:
-            self.parent.conf.e_max = float(value)
-        else:
-            self.parent.conf.e_min = float(value)
+        en = self.parent.conf.e_min
+        if is_max: en = self.parent.conf.e_max
+        en = float(value)
 
     def onLine(self, label, checked, plist):
         if label in plist and not checked:
@@ -325,7 +340,7 @@ class XrayLinesFrame(wx.Frame):
 
 class XRFDisplayConfig:
     emph_elinecolor  = '#444444'
-    major_elinecolor = '#DAD8CA'    
+    major_elinecolor = '#DAD8CA'
     minor_elinecolor = '#F4DAC0'
     marker_color     = '#77BB99'
     roi_fillcolor    = '#F8F0BA'
