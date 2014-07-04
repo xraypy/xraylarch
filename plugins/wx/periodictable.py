@@ -41,11 +41,35 @@ class PeriodicTablePanel(wx.Panel):
             'Th', 'Pa', 'U', 'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm',
             'Md', 'No', 'Lr']
 
+
+    names = ['hydrogen', 'helium', 'lithium', 'beryllium', 'boron',
+             'carbon', 'nitrogen', 'oxygen', 'fluorine', 'neon', 'sodium',
+             'magnesium', 'aluminum', 'silicon', 'phosphorus', 'sulfur',
+             'chlorine', 'argon', 'potassium', 'calcium', 'scandium',
+             'titanium', 'vanadium', 'chromium', 'manganese', 'iron',
+             'cobalt', 'nickel', 'copper', 'zinc', 'gallium', 'germanium',
+             'arsenic', 'selenium', 'bromine', 'krypton', 'rubidium',
+             'strontium', 'yttrium', 'zirconium', 'niobium', 'molybdenum',
+             'technetium', 'ruthenium', 'rhodium', 'palladium', 'silver',
+             'cadmium', 'indium', 'tin', 'antimony', 'tellurium', 'iodine',
+             'xenon', 'cesium', 'barium', 'lanthanum', 'cerium',
+             'praseodymium', 'neodymium', 'promethium', 'samarium',
+             'europium', 'gadolinium', 'terbium', 'dysprosium', 'holmium',
+             'erbium', 'thulium', 'ytterbium', 'lutetium', 'hafnium',
+             'tantalum', 'tungsten', 'rhenium', 'osmium', 'iridium',
+             'platinum', 'gold', 'mercury', 'thallium', 'lead', 'bismuth',
+             'polonium', 'astatine', 'radon', 'francium', 'radium',
+             'actinium', 'thorium', 'protactinium', 'uranium', 'neptunium',
+             'plutonium', 'americium', 'curium', 'berkelium', 'californium',
+             'einsteinium', 'fermium', 'mendelevium', 'nobelium',
+             'lawrencium']
+
     FRAME_BG = (245, 245, 240)
     REG_BG = (252, 252, 245)
     REG_FG = ( 20,  20, 120)
     SEL_FG = (100,   0,   0)
     SEL_BG = (255, 255, 135)
+    TITLE_BG = (255, 255, 220)
 
     def __init__(self, parent, title='Select Element',
                  onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
@@ -57,11 +81,10 @@ class PeriodicTablePanel(wx.Panel):
         self.ctrls = {}
         self.SetBackgroundColour(self.FRAME_BG)
         self.selected = None
-        self.elemfont  = wx.Font( 9, wx.MODERN, wx.NORMAL, wx.BOLD, 0, "")
-        self.elemfont  = wx.Font( 9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.titlefont = wx.Font( 9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.elemfont  = wx.Font( 8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.titlefont = wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.subtitlefont = wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.BuildPanel()
-
 
     def onKey(self, event=None, name=None):
         """support browsing through elements with arrow keys"""
@@ -131,6 +154,12 @@ class PeriodicTablePanel(wx.Panel):
             self.selected.SetBackgroundColour(self.REG_BG)
 
         self.selected = textwid
+        znum = self.syms.index(label)
+        name = self.names[znum]
+
+        self.tsym.SetLabel(label)
+        self.title.SetLabel(name)
+        self.tznum.SetLabel("{:d}".format(znum+1))
         if self.onselect is not None:
             self.onselect(elem=label, event=event)
         self.Refresh()
@@ -143,16 +172,33 @@ class PeriodicTablePanel(wx.Panel):
             tw.SetFont(self.elemfont)
             tw.SetForegroundColour(self.REG_FG)
             tw.SetBackgroundColour(self.REG_BG)
-            tw.SetMinSize((16, 16))
+            tw.SetMinSize((17, 13))
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
                 tw.SetToolTip(wx.ToolTip(self.tooltip_msg))
             self.wids[wid] = tw
             self.ctrls[name] = tw
             sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 0)
-        title = wx.StaticText(self, -1, label='Select Element')
-        title.SetFont(self.titlefont)
-        sizer.Add(title, (0, 3), (1, 10), wx.ALIGN_CENTER, 2)
+        self.title = wx.StaticText(self, -1, label=' Select Element ')
+        self.tsym = wx.StaticText(self, -1, label='__')
+        self.tznum = wx.StaticText(self, -1, label='__')
+
+        for a in (self.title, self.tsym, self.tznum):
+            a.SetFont(self.titlefont)
+            a.SetBackgroundColour(self.TITLE_BG)
+
+        sizer.Add(self.title, (0, 4), (1, 7), wx.ALIGN_CENTER, 1)
+        sizer.Add(self.tsym,  (0, 2), (1, 2), wx.ALIGN_LEFT, 1)
+        sizer.Add(self.tznum, (0, 11), (1, 1), wx.ALIGN_LEFT, 1)
+
+        self.subtitle = wx.StaticText(self, -1, label='         ')
+        self.subtitle.SetFont(self.subtitlefont)
+        sizer.Add(self.subtitle, (2, 3), (1, 8), wx.ALIGN_LEFT, 2)
+
+        #s2title = wx.StaticText(self, -1, label='Edge Energies (keV):')
+        #s2title.SetFont(self.subtitlefont)
+        #sizer.Add(s2title,       (1, 2), (1, 7), wx.ALIGN_LEFT, 2)
+
         sizer.SetEmptyCellSize((2, 2))
         sizer.SetHGap(1)
         sizer.SetVGap(1)
@@ -161,6 +207,9 @@ class PeriodicTablePanel(wx.Panel):
         ix, iy = self.GetBestSize()
         self.SetSize((ix+2, iy+2))
         sizer.Fit(self)
+
+    def set_subtitle(self, label):
+        self.subtitle.SetLabel(label)
 
 class PTableFrame(wx.Frame):
     def __init__(self, size=(-1, -1)):
