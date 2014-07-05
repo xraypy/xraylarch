@@ -4,6 +4,7 @@ Helper classes for larch interpreter
 """
 from __future__ import division
 import sys, os
+import ast
 import numpy as np
 import traceback
 import inspect
@@ -17,10 +18,10 @@ VALID_ERRORCOLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan'
 HAS_COLORTERM = False
 try:
     from termcolor import colored
-    HAS_COLORTERM = (os.name != 'nt')    
+    HAS_COLORTERM = (os.name != 'nt')
 except:
     pass
-        
+
 class Empty:
     def __nonzero__(self): return False
 
@@ -58,7 +59,11 @@ class LarchExceptionHolder:
         if self.msg in ('', None) and self.exc_info[1] is not None:
             self.msg = self.exc_info[1]
 
-    def get_error(self):
+    def get_error(self, fname=None, lineno=None):
+        if fname is not None:
+            self.fname = fname
+        if lineno is not None:
+            self.lineno = lineno
         "retrieve error data"
         col_offset = -1
         e_type, e_val, e_tb = self.exc_info
@@ -85,7 +90,7 @@ class LarchExceptionHolder:
         fname = self.fname
 
         if fname != '<stdin>' or self.lineno > 0:
-            if fname != '<stdin>': 
+            if fname != '<stdin>':
                 self.lineno = self.lineno + 1
         fline = 'file %s, line %i' % (fname, self.lineno)
         if self.func is not None:
@@ -132,11 +137,10 @@ class LarchExceptionHolder:
         etext = getattr(e_val, 'text', '')
         if etext not in (None, ''):
             out.append(etext)
-
         if call_expr is None and (self.expr == '<>' or
                                   fname not in (None, '', '<stdin>')):
             # denotes non-saved expression -- go fetch from file!
-            #  print( 'Trying to get non-saved expr ', self.fname, self.lineno)
+            # print( 'Trying to get non-saved expr ', self.fname, self.lineno)
             try:
                 if fname is not None and os.path.exists(fname):
                     ftmp = open(fname, 'r')
@@ -156,7 +160,8 @@ class LarchExceptionHolder:
                     ftmp.close()
             except (IOError, TypeError):
                 pass
-
+        if isinstance(self.expr, ast.AST):
+            self.expr = 'In compiled script'
         if self.expr is None:
             out.append('unknown error\n')
         elif '\n' in self.expr:
@@ -169,20 +174,20 @@ class LarchExceptionHolder:
             else:
                 out.append("    %s^^^" % ((col_offset)*' '))
 
-        if call_expr is not None:
+        if call_expr is not None and not isinstance(call_expr, ast.AST):
             out.append('  %s' % call_expr)
             out.append('file %s, line %i' % (call_fname, call_lineno))
         if HAS_COLORTERM:
             color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
-            if color not in VALID_ERRORCOLORS: 
+            if color not in VALID_ERRORCOLORS:
                 color = 'red'
             attrs = []
             if getattr(self.symtable._sys, 'errortext_bold', True):
                 attrs.append('bold')
-                
+
             if getattr(self.symtable._sys, 'errortext_dark', False):
                 attrs.append('dark')
-                
+
             if getattr(self.symtable._sys, 'errortext_underline', False):
                 attrs.append('underline')
             if getattr(self.symtable._sys, 'errortext_blink', False):
@@ -273,7 +278,7 @@ class Procedure(object):
             if len(self.kwargs) == 0:
                 mod = 'exactly'
             msg = '%s() expected %s %i arguments (got %i)'
-            self.raise_exc(exc=TypeError, 
+            self.raise_exc(exc=TypeError,
                            msg=msg%(self.name, mod, nargs_expected, nargs))
             return
 
@@ -283,7 +288,7 @@ class Procedure(object):
                 msg = 'too many arguments for %s() expected at most %i, got %i'
                 msg = msg % (self.name, len(self.kwargs)+nargs_expected, nargs)
                 self.raise_exc(exc=TypeError, msg=msg)
-                return 
+                return
             for i, xarg in enumerate(args[nargs_expected:]):
                 kw_name = self.kwargs[i][0]
                 if kw_name not in kwargs:
@@ -307,7 +312,7 @@ class Procedure(object):
                 msg = 'extra keyword arguments for procedure %s (%s)'
                 msg = msg % (self.name, ','.join(list(kwargs.keys())))
                 self.raise_exc(exc=TypeError, msg=msg)
-                return 
+                return
 
         except (ValueError, LookupError, TypeError,
                 NameError, AttributeError):
@@ -431,7 +436,7 @@ def read_workdir(conffile):
     can be used to ensure that application startup starts in
     last working directory
     """
-    
+
     try:
         w_file = os.path.join(usr_larchdir, conffile)
         if os.path.exists(w_file):
@@ -444,11 +449,11 @@ def read_workdir(conffile):
 def save_workdir(conffile):
     """write working dir to a config file in the users larch dir
     compare read_workdir(conffile) which will read this value
-    
+
     can be used to ensure that application startup starts in
     last working directory
     """
-               
+
     try:
         w_file = os.path.join(usr_larchdir, conffile)
         fh = open(w_file, 'w')

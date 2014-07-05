@@ -120,21 +120,25 @@ class shell(cmd.Cmd):
             ret = None
             self.input.put(text, lineno=0)
             self.prompt = self.ps2
+
             while len(self.input) > 0:
                 block, fname, lineno = self.input.get()
+                # print fname, lineno, block
                 if len(block) == 0:
                     continue
                 ret = self.larch.eval(block, fname=fname, lineno=lineno)
                 if self.larch.error:
                     err = self.larch.error.pop(0)
-                    fname, lineno = err.fname, err.lineno
-                    sys.stdout.write("%s\n" % err.get_error()[1])
+                    if err.fname is not None:
+                        fname = err.fname
+                        if err.lineno is not None:
+                            lineno = err.lineno
+                    sys.stdout.write("%s\n" % err.get_error(fname=fname, lineno=lineno)[1])
                     for err in self.larch.error:
                         if self.debug or ((err.fname != fname or err.lineno != lineno)
-                                     and err.lineno > 0 and lineno > 0):
+                                          and err.lineno > 0 and lineno > 0):
                             sys.stdout.write("%s\n" % (err.get_error()[1]))
-
-                    self.input.clear()
+                        self.input.clear()
                     self.prompt = self.ps1
                     break
                 elif ret is not None:
