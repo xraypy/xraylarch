@@ -838,12 +838,11 @@ parameters.
 Example 6: Testing EXAFS sensitivity to :math:`Z`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
 .. index:: Phase-corrected Fourier transforms
 
 EXAFS is known to be sensitive to the atomic number :math:`Z` of the
 scattering atom.  This is due to the :math:`Z` dependence of the scattering
-amplitude and phase shift () (:math:`f(k)` and :math:`\delta(k)` in the EXAFS
+amplitude and phase shift (:math:`f(k)` and :math:`\delta(k)` in the EXAFS
 Equation of Section :ref:`xafs-exafsequation_sec`).  A rule-of-thumb that is
 often given is that EXAFS is sensitive to :math:`Z \pm 5`, or perhaps even
 more pessimistically to *row of the Periodic Table*, and certainly not
