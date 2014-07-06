@@ -82,8 +82,8 @@ trans = feffit_transform(rmin=1.5, rmax=3.0, kmin=3, kmax=13,
                          kw=2, dk=4, window='kaiser')
 
 # perform fit for each scatterer
-print '|Scatterer|RedChi2|    S02       |   sigma2     |      E0      |      R       |R_phcor|'
-fmt = '|  %s     |%7.3f|%s|%s|%s|%s|%7.3f|'
+print '|Scatterer|RedChi2|    S02     |   sigma2      |      E0     |      R       |R_phcor|'
+fmt = '|  %s     | %5.1f |%s|%s|%s|%s|%7.3f|'
 
 results = {}
 for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
@@ -98,17 +98,17 @@ for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
     path1 = out.datasets[0].pathlist[0]
 
     # read scatterer from Feff geometry, to be sure it's correct
-    scatt_from_path_geom = path1._feffdat.geom[1][0]
-    title = 'Path: Zn-%s ' % scatt_from_path_geom
+    scatt = path1._feffdat.geom[1][0]
+    title = 'Path: Zn-%s ' % scatt
 
     r_phcor = phase_correct(out.datasets[0])
     rplot_fit(out.datasets[0], title, win=1+ix)
     redchi = out.params.chi_reduced
-    _amp   = '%6.3f(%.3f) ' % (pars.amp.value, pars.amp.stderr)
-    _de0   = '%6.3f(%.3f) ' % (pars.del_e0.value,  pars.del_e0.stderr)
-    _ss2   = '%6.3f(%.3f) ' % (pars.sig2.value,  pars.sig2.stderr)
+    _amp   = '%5.2f(%.2f) ' % (pars.amp.value, pars.amp.stderr)
+    _de0   = '%6.2f(%.2f) ' % (pars.del_e0.value,  pars.del_e0.stderr)
+    _ss2   = '%6.4f(%.4f) ' % (pars.sig2.value,  pars.sig2.stderr)
     _r     = '%6.3f(%.3f) ' % (path1.reff+pars.del_r.value, pars.del_r.stderr)
-    print fmt % (scatterer, redchi, _amp, _ss2, _de0, _r, r_phcor)
+    print fmt % (scatt, redchi, _amp, _ss2, _de0, _r, r_phcor)
     results[scatterer] = out
 #endfor
 
