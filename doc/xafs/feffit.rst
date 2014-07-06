@@ -9,7 +9,7 @@ Fitting XAFS data with structural models based on Feff calculations is a
 primary motivation for Larch.  In this section, we describe how to set up a
 fitting model to fit a set of FEFF calculations to XAFS data.  Many parts
 of the documentation so far have touched on important aspects of this
-process, and those sections will be referenced here.  
+process, and those sections will be referenced here.
 
 
 The Feffit Strategy for Modeling EXAFS Data
@@ -63,7 +63,7 @@ Nyquist as
     N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1
 
 where :math:`\Delta k` and :math:`\Delta R` are the :math:`k` and :math:`R`
-range of the usable data under consideration.  :cite:authors:`Stern93` 
+range of the usable data under consideration.  :cite:authors:`Stern93`
 argues convincingly that the '+1' here should be '+2', but we'll remain
 conservative and keep the '+1', and use this value not only for fit
 statistics but to limit the maximum number of free variables allowed in a
@@ -651,7 +651,7 @@ The output plots for the fits to the three datasets are given below.
     :target: ../_images/feffit_3temp1.png
     :width: 100%
 
-    Fit to Cu :math:`\chi(k)` at 10 K 
+    Fit to Cu :math:`\chi(k)` at 10 K
 
 .. _fig-feffit3temp50k:
 
@@ -659,7 +659,7 @@ The output plots for the fits to the three datasets are given below.
     :target: ../_images/feffit_3temp3.png
     :width: 100%
 
-    Fit to Cu :math:`\chi(k)` at 50 K 
+    Fit to Cu :math:`\chi(k)` at 50 K
 
 .. _fig-feffit3temp150k:
 
@@ -667,7 +667,7 @@ The output plots for the fits to the three datasets are given below.
     :target: ../_images/feffit_3temp5.png
     :width: 100%
 
-    Fit to Cu :math:`\chi(k)` at 150 K 
+    Fit to Cu :math:`\chi(k)` at 150 K
 
 .. _fig-feffit3temp10r:
 
@@ -675,7 +675,7 @@ The output plots for the fits to the three datasets are given below.
     :target: ../_images/feffit_3temp2.png
     :width: 100%
 
-    Fit to Cu :math:`\chi(R)` at 10 K 
+    Fit to Cu :math:`\chi(R)` at 10 K
 
 .. _fig-feffit3temp50r:
 
@@ -683,7 +683,7 @@ The output plots for the fits to the three datasets are given below.
     :target: ../_images/feffit_3temp4.png
     :width: 100%
 
-    Fit to Cu :math:`\chi(R)` at 50 K 
+    Fit to Cu :math:`\chi(R)` at 50 K
 
 .. _fig-feffit3temp150r:
 
@@ -691,7 +691,7 @@ The output plots for the fits to the three datasets are given below.
     :target: ../_images/feffit_3temp6.png
     :width: 100%
 
-    Fit to Cu :math:`\chi(R)` at 150 K 
+    Fit to Cu :math:`\chi(R)` at 150 K
 
 .. subfigend::
     :width: 0.32
@@ -834,3 +834,166 @@ dataset, making modifications and re-doing fits can also include changing
 what parametres are varied, and what constraints are placed between
 parameters.
 
+
+Example 6: Testing EXAFS sensitivity to :math:`Z`
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+.. index:: Phase-corrected Fourier transforms
+
+EXAFS is somewhat sensitive to the atomic number :math:`Z` of the
+scattering atom.  It is often asserted that this sensitivity is to *row of
+the Periodic Table* or perhaps :math:`Z \pm 5`.  In this section, we'll
+explore this, by constructing Feff paths with different scatterers and
+trying to fit data with these different scattering paths.  We'll also
+explore the idea of **Phase corrected** Fourier transforms, and how they
+might be used to better determine both :math:`R` and :math:`Z`.  The
+example here is a little bit complex, and uses a script that is somewhat
+more sophisticated to what we've seen above.
+
+.. _fig-znse-xafs:
+
+.. figure::  ../_images/Feffit_ZnSe_Data.png
+    :target: ../_images/Feffit_ZnSe_Data.png
+    :width: 65%
+    :align: center
+
+    Zn K-edge XAFS data for ZnSe.
+
+For this example, we'll use Zn K-edge data of ZnSe, with :math:`\chi(k)`
+data shown in Figure :num:`fig-znse-xafs`.  The data is adequate, but not
+perfect, but is useful for the study here here because the structure is
+very simple, with a well-isolated and well-ordered shell of scatterers.
+While we're sure that the scatterer should be Se, we'll try scatterers of
+Zn, Ge, Se, Br, and Rb, spanning a small but sufficient range of
+:math:`Z`.   To construct the scattering paths, we'll modify a Feff input
+file, like this (for Br):
+
+.. literalinclude:: ../../examples/feffit/Feff_ZnSe/feff.inp
+
+and gather the resulting **feffNNNN.dat** files.  The script to do the test
+will loop over these different scattering paths, doing a fit for each path,
+and store the results.  The script uses several functions, and programming
+constructs like loops and dictionaries
+
+.. literalinclude:: ../../examples/feffit/doc_feffit6.lar
+
+
+
+.. _xafs-feffit_znse_results:
+
+    Table of ZnSe Results.  The results from fitting ZnSe XAFS data to
+    scattering paths of Zn-Zn, Zn-Ge, Zn-Se, Zn-Br, and Zn-Rb.  All paths
+    started at the nominal distance of 2.454 :math:`\rm\AA`.
+
+   +-----------+-------------------+---------------+--------------+-------------+------------------------+
+   |Scatterer  |reduced chi-square | :math:`S_0^2` | :math:`E_0`  |  :math:`R`  |:math:`R_{\rm{ph cor}}` |
+   +===========+===================+===============+==============+=============+========================+
+   |  Zn (30)  |  57.547           | 0.726(0.069)  | -7.985(1.232)| 2.471(0.006)|  2.451                 |
+   +-----------+-------------------+---------------+--------------+-------------+------------------------+
+   |  Ge (32)  |  32.402           | 0.799(0.057)  | -2.988(0.927)| 2.461(0.004)|  2.457                 |
+   +-----------+-------------------+---------------+--------------+-------------+------------------------+
+   |  Se (34)  |  12.727           | 0.893(0.040)  | 0.086(0.579) | 2.448(0.003)|  2.461                 |
+   +-----------+-------------------+---------------+--------------+-------------+------------------------+
+   |  Br (35)  |  16.675           | 1.075(0.058)  | 1.708(0.695) | 2.444(0.003)|  2.462                 |
+   +-----------+-------------------+---------------+--------------+-------------+------------------------+
+   |  Rb (37)  |  88.686           | 1.098(0.135)  | 5.269(1.424) | 2.425(0.007)|  2.467                 |
+   +-----------+-------------------+---------------+--------------+-------------+------------------------+
+
+
+The results of the fits are given in the :ref:`Table of ZnSe Results <xafs-feffit_znse_results>`, with graphs below showing fits to the 5
+different scatterers.  The values for reduced chi-square indicate that Zn-Se
+is the best fit, and that while :math:`Z \pm 5` may be pessimistic, while
+:math:`Z \pm 2` is not.  Also, note the clear trends in :math:`S_0^2` and
+:math:`E_0` as the :math:`Z` for the scatterer increases.
+
+.. subfigstart::
+
+.. _fig-znse-fit:
+
+.. figure::  ../_images/Feffit_ZnSe_Zn.png
+    :target: ../_images/Feffit_ZnSe_Zn.png
+    :width: 100%
+
+    Fit to ZnSe with Zn back-scatterer
+
+.. _fig_znse_fit-ge:
+
+.. figure::  ../_images/Feffit_ZnSe_Ge.png
+    :target: ../_images/Feffit_ZnSe_Ge.png
+    :width: 100%
+
+    Fit to ZnSe with Ge back-scatterer
+
+.. _fig_znse_fit-se:
+
+.. figure::  ../_images/Feffit_ZnSe_Se.png
+    :target: ../_images/Feffit_ZnSe_Se.png
+    :width: 100%
+
+    Fit to ZnSe with Se back-scatterer
+
+.. _fig_znse_fit-br:
+
+.. figure::  ../_images/Feffit_ZnSe_Br.png
+    :target: ../_images/Feffit_ZnSe_Br.png
+    :width: 100%
+
+    Fit to ZnSe with Br back-scatterer
+
+.. _fig_znse_fit-rb:
+
+.. figure::  ../_images/Feffit_ZnSe_Rb.png
+    :target: ../_images/Feffit_ZnSe_Rb.png
+    :width: 100%
+
+    Fit to ZnSe with Rb back-scatterer
+
+
+.. subfigend::
+    :width: 0.30
+    :label: fig_znse_fits
+
+    Fits to ZnSe XAFS data using different back-scattering atoms.
+
+
+.. index:: Phase-corrected Fourier transforms
+
+The figures also show **phase-corrected** Fourier transforms using the total
+scattering phase from the Feff calculation to correct the data.  This
+correction is done in the ``phase_correct()`` procedure, where the data from
+the *feffNNNN.dat* file (in the ``_feffdat`` group) is used to construct the
+Feff phase shift (:math:`\delta(k)` in the EXAFS Equation of Section
+:ref:`xafs-exafsequation_sec`), and apply it to the data.  Because this uses
+complex math, we use the :func:`xftf_fast` function to the complex Fourier
+transform and build the magnitude of the transform explicitly.
+
+The phase corrected transforms are shown in black in Figure
+:num:`fig_znse_fits`, and show the key benefit of these transforms -- the
+peak in the phase corrected :math:`\chi(R)` peaks much closer to an :math:`R`
+that is the bond distance (for Zn-Se, around 2.46 :math:`\rm\AA`), whereas
+the normal XAFS Fourier transform peaks much lower.  This suggests a further
+test on whether the bond distance and :math:`Z` of the scattering atom are
+correct.  That is, in order for the phase-correction to give the correct
+interatomic distance, the total phase-shift has to be correct, which means
+that the :math:`Z` for the scatterer has to be correct (see the EXAFS
+Equation in Section :ref:`xafs-exafsequation_sec`).  So, we can compare the
+refined distance with the peak in the phase-corrected transform -- if they
+agree, it gives good confidence that the scatterer is correct.
+
+Since the spacing of points in :math:`R` is :math:`\sim 0.03\rm\AA`, using
+the peak position may not be accurate enough.  Instead, we can use the value
+where :math:`\rm Im[\chi(R)_{\rm{ph cor}}]` passes through zero (see dashed
+lines in Figure :num:`fig_znse_fits`).  These values are reported in the
+:ref:`Table of ZnSe Results <xafs-feffit_znse_results>` as :math:`R_{\rm{phcor}}`.
+
+We see an interesting trend that while the refined distance *decreases* with
+:math:`Z`, the value for :math:`R_{\rm{phcor}}` increases.  The two values
+cross between Ge and Se.  This is pretty good agreement, especially
+considering we left out the :math:`\sigma^2` contribution phase-shift in the
+EXAFS equation from this phase correction.  It also suggests that one can
+determine :math:`Z \pm 2`, at least in this case.  Again, this is an
+unusually favorable case -- this method will not work on a mixed coordination
+shell or a highly-disordered system.  Then again, for simple,
+well-characterized systems, the ability to do such analysis can be very
+powerful.
