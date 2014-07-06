@@ -1,7 +1,7 @@
 ## examples/feffit/doc_feffit6.lar
-##
-## Testing sensitivity to Z of backscatterer, and
-## how well "phase corrected" Fourier transforms predict distance
+
+# Testing sensitivity to Z of backscatterer, and
+# how well "phase corrected" Fourier transforms predict distance
 
 def get_zinc_mu(filename, labels='energy dwelltime i0 i1'):
    """read raw data, do background subtraction"""
@@ -31,8 +31,8 @@ def rplot_fit(dset, title, win=1):
 
    # find region around peak in phase-corrected chi(R)
    irmax = where(chir_pha_mag == max(chir_pha_mag))[0]
-   x = dset.model.r[irmax-3: irmax+3]
-   y = dset.model.chir_im[irmax-3: irmax+3]
+   x = dset.model.r[irmax-1: irmax+2]
+   y = dset.model.chir_im[irmax-1: irmax+2]
    plot(x, y, win=win, color='black', style='short dashed',
         marker='o', label='Im[phase-corrected]')
    return
@@ -53,8 +53,8 @@ def phase_correct(dset):
 
    # find region around peak in phase-corrected chi(R)
    irmax = where(chir_pha_mag == max(chir_pha_mag))[0]
-   x = dset.model.r[irmax-3: irmax+3]
-   y = dset.model.chir_im[irmax-3: irmax+3]
+   x = dset.model.r[irmax-1: irmax+2]
+   y = dset.model.chir_im[irmax-1: irmax+2]
    # find where Im[chi(R)_phase_corrected] = 0:
    o = linregress(y, x)
    dset.model.rphcor = o[1]
@@ -68,7 +68,6 @@ znse_data = get_zinc_mu('../xafsdata/znse_zn_xafs.001',
 
 # define Feff Paths, storing them in dictionary
 paths = {}
-
 pathargs = dict(degen=4.0, s02='amp', e0='del_e0', sigma2='sig2', deltar='del_r')
 paths['Zn'] = feffpath('Feff_ZnSe/feff_znzn.dat', **pathargs)
 paths['Ge'] = feffpath('Feff_ZnSe/feff_znge.dat', **pathargs)
@@ -101,7 +100,7 @@ for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
     title = 'Path: Zn-%s ' % scatt_from_path_geom
 
     r_phcor = phase_correct(out.datasets[0])
-    # rplot_fit(out.datasets[0], title, win=1+ix)
+    rplot_fit(out.datasets[0], title, win=1+ix)
     redchi = out.params.chi_reduced
     _amp   = '%6.3f(%.3f) ' % (pars.amp.value, pars.amp.stderr)
     _de0   = '%6.3f(%.3f) ' % (pars.del_e0.value,  pars.del_e0.stderr)
