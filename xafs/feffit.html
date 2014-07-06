@@ -86,6 +86,7 @@
 <li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">7.7.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
 <li><a class="reference internal" href="#example-4-measuring-coordination-number">7.7.11. Example 4: Measuring Coordination number</a></li>
 <li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">7.7.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
+<li><a class="reference internal" href="#example-6-testing-exafs-sensitivity-to">7.7.13. Example 6: Testing EXAFS sensitivity to <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/></a></li>
 </ul>
 </li>
 </ul>
@@ -713,7 +714,7 @@ commands.</p>
 <div style="width: 45%" class="subfigure" id="fig-feffit1b">
 <a class="reference external image-reference" href="../_images/feffit_example2.png"><img alt="../_images/feffit_example2.png" src="../_images/feffit_example2.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.25:</strong> Results for Feffit for a simple 1-shell fit to a spectrum from Cu
+<p class="caption"><strong>Figure 7.18:</strong> Results for Feffit for a simple 1-shell fit to a spectrum from Cu
 metal.</p>
 </div><p id="fig-feffit1">This is a pretty good fit to the first shell of Cu metal, and shows the
 basic mechanics of fitting XAFS data to Feff Paths.  There are several
@@ -1036,7 +1037,7 @@ vary independently for each path.</p>
 <div style="width: 45%" class="subfigure" id="fig-feffit2b">
 <a class="reference external image-reference" href="../_images/feffit_example4.png"><img alt="../_images/feffit_example4.png" src="../_images/feffit_example4.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.26:</strong> Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
+<p class="caption"><strong>Figure 7.19:</strong> Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
 constraining all path distances to expand with a single variable.</p>
 </div><p id="fig-feffit2">Here, we show both the magnitude and real part of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>.  The fit
 to the real part shows excellent agreement over the fit <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> range of
@@ -1055,7 +1056,7 @@ straightforward, as we can just do:</p>
 <div style="width: 45%" class="subfigure" id="fig-feffit3b">
 <a class="reference external image-reference" href="../_images/feffit_example6.png"><img alt="../_images/feffit_example6.png" src="../_images/feffit_example6.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.27:</strong> Path contributions to full mode for the 3-shell fit to Cu spectrum.</p>
+<p class="caption"><strong>Figure 7.20:</strong> Path contributions to full mode for the 3-shell fit to Cu spectrum.</p>
 </div></div>
 <div class="section" id="example-3-fit-3-datasets-with-1-path-each">
 <span id="fig-feffit3"></span><h2>7.7.10. Example 3: Fit 3 datasets with 1 Path each<a class="headerlink" href="#example-3-fit-3-datasets-with-1-path-each" title="Permalink to this headline">¶</a></h2>
@@ -1285,7 +1286,7 @@ correlation significantly reduces the estimated uncertainty.</p>
 <a class="reference external image-reference" href="../_images/feffit_3temp6.png"><img alt="../_images/feffit_3temp6.png" src="../_images/feffit_3temp6.png" style="width: 100%;" /></a>
 <p class="caption"><strong>(f)</strong> Fit to Cu <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> at 150 K</p>
 </div>
-<p class="caption"><strong>Figure 7.28:</strong> Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
+<p class="caption"><strong>Figure 7.21:</strong> Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
 3 datasets with 5 variables used.</p>
 </div><p id="fig-feffit3temps">Again, in the interest of brevity and consistency through this chapter,
 these example are deliberately simple and meant to be illustrative of the
@@ -1445,7 +1446,7 @@ used in the fit.</p>
 <a class="reference external image-reference" href="../_images/feffit_feo_r.png"><img alt="../_images/feffit_feo_r.png" src="../_images/feffit_feo_r.png" style="width: 100%;" /></a>
 <p class="caption"><strong>(b)</strong> Fit to FeO spectra, <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> space</p>
 </div>
-<p class="caption"><strong>Figure 7.29:</strong> Fits to 2-path fit to FeO EXAFS.</p>
+<p class="caption"><strong>Figure 7.22:</strong> Fits to 2-path fit to FeO EXAFS.</p>
 </div></div>
 <div class="section" id="example-5-comparing-fits-in-different-fit-spaces">
 <span id="fig-feffit-feo"></span><h2>7.7.12. Example 5: Comparing Fits in different Fit Spaces<a class="headerlink" href="#example-5-comparing-fits-in-different-fit-spaces" title="Permalink to this headline">¶</a></h2>
@@ -1612,6 +1613,380 @@ the fitting 'space'.  The process of copying the parameter group and
 dataset, making modifications and re-doing fits can also include changing
 what parametres are varied, and what constraints are placed between
 parameters.</p>
+</div>
+<div class="section" id="example-6-testing-exafs-sensitivity-to">
+<h2>7.7.13. Example 6: Testing EXAFS sensitivity to <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/><a class="headerlink" href="#example-6-testing-exafs-sensitivity-to" title="Permalink to this headline">¶</a></h2>
+<p id="index-2">EXAFS is known to be sensitive to the atomic number <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> of the
+scattering atom.  This is due to the <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> dependence of the scattering
+amplitude and phase shift () (<img class="math" src="../_images/math/fd6cf73260eace4707bcdfad4752ccebe59b17b3.png" alt="f(k)"/> and <img class="math" src="../_images/math/498ff2da6918b6280fde87c41164735108709a8b.png" alt="\delta(k)"/> in the EXAFS
+Equation of Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a>).  A rule-of-thumb that is
+often given is that EXAFS is sensitive to <img class="math" src="../_images/math/166507bb97c93b181d8b64c19908d3282a9d25aa.png" alt="Z \pm 5"/>, or perhaps even
+more pessimistically to <em>row of the Periodic Table</em>, and certainly not
+<img class="math" src="../_images/math/9faf628f0b09abd1559f1a2b68f5c95bb88bd1ad.png" alt="Z \pm 1"/>.  Occassionally, you may see work that claims very fine
+<img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> sensitivity, such as being able to distinguish N and O ligands.  In
+those works, XAFS results are typically used with chemical arguments about
+steric effects or known bond distances.</p>
+<p id="index-3">In this section, we'll explore the <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> sensitivity of XAFS with real
+data, by constructing Feff paths with different scatterers and trying to fit
+data with these different scattering paths.  This makes a nice exercise in
+how to manipulate Feff, how to fit XAFS data, and how to compare XAFS fits.
+Just to make it a little more complicated, We'll also explore the idea of
+<strong>Phase corrected</strong> Fourier transforms, and how they might be used to better
+determine both <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> and <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>.  The example here is a little bit
+complex, and uses a script for doing multiple fits and for mathematically
+manipulating the arrays of data.  This somewhat more sophisticated than what
+we've seen above, but exploits many of the features that make Larch a
+convenient way to script data analysis.</p>
+<div class="figure align-center" id="fig-znse-xafs">
+<a class="reference external image-reference" href="../_images/Feffit_ZnSe_Data.png"><img alt="../_images/Feffit_ZnSe_Data.png" src="../_images/Feffit_ZnSe_Data.png" style="width: 65%;" /></a>
+<p class="caption"><strong>Figure 7.23:</strong> Zn K-edge XAFS data for ZnSe.</p>
+</div>
+<p>For this example, we'll use Zn K-edge data of ZnSe, with <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> data
+shown in Figure <a href="#fig-znse-xafs">7.23</a>.  The data is pretty good but not
+perfect, and is useful for the study here because the structure is simple,
+with a well-isolated and well-ordered shell of scatterers (the cubic ZnS
+structure with 1 Zn site surrounded by 4 Se at 2.45 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>).  While
+we're sure that the scatterer <em>should</em> be Se, we'll try scatterers of Zn, Ge,
+Se, Br, and Rb, spanning a small but sufficient range of <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>.</p>
+<p>To construct the scattering paths, we'll modify a Feff input file.  To do we
+start with a feff.inp file generated for crystalline ZnSe by the ATOMS
+program, and add an IPOT to the list of atomic potentials (here the line
+**   3   35   Br**), and then replace the IPOTs for 1 of the neighboring Se
+atoms (that is, replacing a 2 with a 3, and changing the tag for
+convenience).   The resulting feff.inp file for Br looks this:</p>
+<div class="highlight-python"><div class="highlight"><pre> TITLE  ZnSe (cubic zinc sulfide structure)
+ HOLE 1   1.0   *  Zn K edge  (9659.0 eV), second number is S0^2
+
+ CONTROL   1      1     1     1
+ PRINT     1      0     0     0
+ RMAX      6.0
+ NLEG      4
+
+ POTENTIALS
+ *    ipot   Z  element
+        0   30   Zn
+        1   30   Zn
+        2   34   Se
+        3   35   Br
+
+ ATOMS                          * this list contains 35 atoms
+ *   x          y          z      ipot  tag              distance
+    0.00000    0.00000    0.00000  0 Zn1             0.00000
+    1.41690    1.41690    1.41690  2 Se1_1           2.45414
+   -1.41690   -1.41690    1.41690  3 Br_1            2.45414
+   -1.41690    1.41690   -1.41690  2 Se1_1           2.45414
+    1.41690   -1.41690   -1.41690  2 Se1_1           2.45414
+    2.83380    2.83380    0.00000  1 Zn1_1           4.00760
+   -2.83380    2.83380    0.00000  1 Zn1_1           4.00760
+    2.83380   -2.83380    0.00000  1 Zn1_1           4.00760
+   -2.83380   -2.83380    0.00000  1 Zn1_1           4.00760
+    2.83380    0.00000    2.83380  1 Zn1_1           4.00760
+   -2.83380    0.00000    2.83380  1 Zn1_1           4.00760
+    0.00000    2.83380    2.83380  1 Zn1_1           4.00760
+    0.00000   -2.83380    2.83380  1 Zn1_1           4.00760
+    2.83380    0.00000   -2.83380  1 Zn1_1           4.00760
+   -2.83380    0.00000   -2.83380  1 Zn1_1           4.00760
+    0.00000    2.83380   -2.83380  1 Zn1_1           4.00760
+    0.00000   -2.83380   -2.83380  1 Zn1_1           4.00760
+   -4.25070    1.41690    1.41690  2 Se1_2           4.69933
+   -1.41690    4.25070    1.41690  2 Se1_2           4.69933
+    4.25070   -1.41690    1.41690  2 Se1_2           4.69933
+    1.41690   -4.25070    1.41690  2 Se1_2           4.69933
+   -1.41690    1.41690    4.25070  2 Se1_2           4.69933
+    1.41690   -1.41690    4.25070  2 Se1_2           4.69933
+    4.25070    1.41690   -1.41690  2 Se1_2           4.69933
+    1.41690    4.25070   -1.41690  2 Se1_2           4.69933
+   -4.25070   -1.41690   -1.41690  2 Se1_2           4.69933
+   -1.41690   -4.25070   -1.41690  2 Se1_2           4.69933
+    1.41690    1.41690   -4.25070  2 Se1_2           4.69933
+   -1.41690   -1.41690   -4.25070  2 Se1_2           4.69933
+    5.66760    0.00000    0.00000  1 Zn1_2           5.66760
+   -5.66760    0.00000    0.00000  1 Zn1_2           5.66760
+    0.00000    5.66760    0.00000  1 Zn1_2           5.66760
+    0.00000   -5.66760    0.00000  1 Zn1_2           5.66760
+    0.00000    0.00000    5.66760  1 Zn1_2           5.66760
+    0.00000    0.00000   -5.66760  1 Zn1_2           5.66760
+ END
+</pre></div>
+</div>
+<p>Afer running feff.inp, we collect the resulting <tt class="docutils literal"><span class="pre">feffNNNN.dat</span></tt> files --
+either <tt class="docutils literal"><span class="pre">feff0001.dat</span></tt> or <tt class="docutils literal"><span class="pre">feff0002.dat</span></tt> will have the replaced scatterer,
+the other will have Se as the scatterer.   Once we've collected all these
+files for runs of Feff with feff.inp altered for each scatterer, we're ready
+to do the fits.</p>
+<p>The script to do the test will loop over these different scattering paths,
+doing a fit for each path, and store the results.  The script uses several
+Larch functions, and programming constructs like loops and dictionaries, as
+well as mathematical manipulation of the resulting arrays for the phase
+correction.   The full script is:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffit6.lar</span>
+
+<span class="c"># Testing sensitivity to Z of backscatterer, and</span>
+<span class="c"># how well &quot;phase corrected&quot; Fourier transforms predict distance</span>
+
+<span class="k">def</span> <span class="nf">get_zinc_mu</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy dwelltime i0 i1&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;read raw data, do background subtraction&quot;&quot;&quot;</span>
+    <span class="n">dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">)</span>
+    <span class="n">dat</span><span class="o">.</span><span class="n">mu</span> <span class="o">=</span> <span class="o">-</span><span class="n">ln</span><span class="p">(</span><span class="n">dat</span><span class="o">.</span><span class="n">i1</span> <span class="o">/</span> <span class="n">dat</span><span class="o">.</span><span class="n">i0</span><span class="p">)</span>
+    <span class="n">autobk</span><span class="p">(</span><span class="n">dat</span><span class="p">,</span> <span class="n">e0</span> <span class="o">=</span> <span class="mf">9666.0</span><span class="p">,</span> <span class="n">rbkg</span><span class="o">=</span><span class="mf">1.25</span><span class="p">,</span> <span class="n">kweight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dat</span>
+<span class="c">#enddef</span>
+
+<span class="k">def</span> <span class="nf">plot_chidata</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">kopts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$k \rm\,(\AA^{-1})$&#39;</span><span class="p">,</span>
+                 <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$k^2\chi(k) \rm\,(\AA^{-2})$&#39;</span><span class="p">,</span>
+                 <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">chi</span><span class="o">*</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="o">**</span><span class="n">kopts</span><span class="p">)</span>
+<span class="c">#enddef</span>
+
+<span class="k">def</span> <span class="nf">rplot_fit</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="s">&quot;make R-spae plots of results&quot;</span>
+    <span class="n">ropts</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s">r&#39;$R \rm\,(\AA)$&#39;</span><span class="p">,</span>
+                 <span class="n">ylabel</span><span class="o">=</span><span class="s">r&#39;$|\chi(R)| \rm\,(\AA^{-3})$&#39;</span><span class="p">,</span>
+                 <span class="n">title</span><span class="o">=</span><span class="n">title</span><span class="p">,</span> <span class="n">xmax</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">,</span> <span class="n">show_legend</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span> <span class="n">new</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;data&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">ropts</span><span class="p">)</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_mag</span><span class="p">,</span>  <span class="n">label</span><span class="o">=</span><span class="s">&#39;Feff Path&#39;</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">)</span>
+
+    <span class="n">chir_pha</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_phcor</span>
+    <span class="n">chir_pha_mag</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">chir_pha</span><span class="o">.</span><span class="n">real</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">chir_pha</span><span class="o">.</span><span class="n">imag</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">,</span>  <span class="n">chir_pha_mag</span><span class="p">,</span>  <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;phase-corrected data&#39;</span><span class="p">)</span>
+
+    <span class="c"># find region around peak in phase-corrected chi(R)</span>
+    <span class="n">irmax</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">chir_pha_mag</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span><span class="n">chir_pha_mag</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="n">irmax</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="n">irmax</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_im</span><span class="p">[</span><span class="n">irmax</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="n">irmax</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="n">win</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s">&#39;black&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;short dashed&#39;</span><span class="p">,</span>
+         <span class="n">marker</span><span class="o">=</span><span class="s">&#39;o&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s">&#39;Im[phase-corrected]&#39;</span><span class="p">)</span>
+    <span class="k">return</span>
+<span class="c">#enddef</span>
+
+<span class="k">def</span> <span class="nf">phase_correct</span><span class="p">(</span><span class="n">dset</span><span class="p">):</span>
+   <span class="s">&quot;calculate phase-corrected FT, find estimate of R&quot;</span>
+   <span class="n">nrpts</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">)</span>
+   <span class="n">path1</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">pathlist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+   <span class="c"># get phase from Feff path</span>
+   <span class="n">feff_pha</span> <span class="o">=</span> <span class="n">interp</span><span class="p">(</span><span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">pha</span><span class="p">,</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">k</span><span class="p">)</span>
+   <span class="c"># phase-corrected Fourier Transform</span>
+   <span class="n">chir_pha</span> <span class="o">=</span> <span class="n">xftf_fast</span><span class="p">(</span><span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">chi</span> <span class="o">*</span> <span class="n">exp</span><span class="p">(</span><span class="mi">0</span><span class="o">-</span><span class="mi">1j</span><span class="o">*</span><span class="n">feff_pha</span><span class="p">)</span> <span class="o">*</span>
+                        <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">kwin</span> <span class="o">*</span> <span class="n">dset</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">k</span><span class="o">**</span><span class="mi">2</span><span class="p">)[:</span><span class="n">nrpts</span><span class="p">]</span>
+   <span class="n">chir_pha_mag</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">chir_pha</span><span class="o">.</span><span class="n">real</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">chir_pha</span><span class="o">.</span><span class="n">imag</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+   <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_phcor</span> <span class="o">=</span> <span class="n">chir_pha</span>
+
+   <span class="c"># find region around peak in phase-corrected chi(R)</span>
+   <span class="n">irmax</span> <span class="o">=</span> <span class="n">where</span><span class="p">(</span><span class="n">chir_pha_mag</span> <span class="o">==</span> <span class="nb">max</span><span class="p">(</span><span class="n">chir_pha_mag</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+   <span class="n">x</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">r</span><span class="p">[</span><span class="n">irmax</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="n">irmax</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+   <span class="n">y</span> <span class="o">=</span> <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">chir_im</span><span class="p">[</span><span class="n">irmax</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span> <span class="n">irmax</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+   <span class="c"># find where Im[chi(R)_phase_corrected] = 0: use linear regression</span>
+   <span class="n">o</span> <span class="o">=</span> <span class="n">linregress</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+   <span class="n">dset</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">rphcor</span> <span class="o">=</span> <span class="n">o</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+   <span class="k">return</span> <span class="n">o</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="c">#enddef</span>
+
+<span class="c">###################################################</span>
+<span class="n">znse_data</span> <span class="o">=</span> <span class="n">get_zinc_mu</span><span class="p">(</span><span class="s">&#39;../xafsdata/znse_zn_xafs.001&#39;</span><span class="p">,</span>
+                        <span class="n">labels</span><span class="o">=</span><span class="s">&#39;energy dwelltime i0 i1&#39;</span><span class="p">)</span>
+
+<span class="c"># plot_chidata(znse_data, &#39;Zn K-edge ZnSe&#39;)</span>
+
+<span class="c"># define Feff Paths, storing them in dictionary</span>
+<span class="n">paths</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">pathargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">degen</span><span class="o">=</span><span class="mf">4.0</span><span class="p">,</span> <span class="n">s02</span><span class="o">=</span><span class="s">&#39;amp&#39;</span><span class="p">,</span> <span class="n">e0</span><span class="o">=</span><span class="s">&#39;del_e0&#39;</span><span class="p">,</span> <span class="n">sigma2</span><span class="o">=</span><span class="s">&#39;sig2&#39;</span><span class="p">,</span> <span class="n">deltar</span><span class="o">=</span><span class="s">&#39;del_r&#39;</span><span class="p">)</span>
+<span class="n">paths</span><span class="p">[</span><span class="s">&#39;Zn&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;Feff_ZnSe/feff_znzn.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
+<span class="n">paths</span><span class="p">[</span><span class="s">&#39;Ge&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;Feff_ZnSe/feff_znge.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
+<span class="n">paths</span><span class="p">[</span><span class="s">&#39;Se&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;Feff_ZnSe/feff_znse.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
+<span class="n">paths</span><span class="p">[</span><span class="s">&#39;Br&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;Feff_ZnSe/feff_znbr.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
+<span class="n">paths</span><span class="p">[</span><span class="s">&#39;Rb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">feffpath</span><span class="p">(</span><span class="s">&#39;Feff_ZnSe/feff_znrb.dat&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">pathargs</span><span class="p">)</span>
+
+<span class="c"># set FT tranform and Fit ranges</span>
+<span class="n">trans</span> <span class="o">=</span> <span class="n">feffit_transform</span><span class="p">(</span><span class="n">rmin</span><span class="o">=</span><span class="mf">1.5</span><span class="p">,</span> <span class="n">rmax</span><span class="o">=</span><span class="mf">3.0</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span>
+                         <span class="n">kw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;kaiser&#39;</span><span class="p">)</span>
+
+<span class="c"># perform fit for each scatterer</span>
+<span class="k">print</span> <span class="s">&#39;|Scatterer|RedChi2|    S02       |   sigma2     |      E0      |      R       |R_phcor|&#39;</span>
+<span class="n">fmt</span> <span class="o">=</span> <span class="s">&#39;|  </span><span class="si">%s</span><span class="s">     |</span><span class="si">%7.3f</span><span class="s">|</span><span class="si">%s</span><span class="s">|</span><span class="si">%s</span><span class="s">|</span><span class="si">%s</span><span class="s">|</span><span class="si">%s</span><span class="s">|</span><span class="si">%7.3f</span><span class="s">|&#39;</span>
+
+<span class="n">results</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">ix</span><span class="p">,</span> <span class="n">scatterer</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">((</span><span class="s">&#39;Zn&#39;</span><span class="p">,</span> <span class="s">&#39;Ge&#39;</span><span class="p">,</span> <span class="s">&#39;Se&#39;</span><span class="p">,</span> <span class="s">&#39;Br&#39;</span><span class="p">,</span> <span class="s">&#39;Rb&#39;</span><span class="p">)):</span>
+    <span class="n">dset</span>  <span class="o">=</span> <span class="n">feffit_dataset</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">znse_data</span><span class="p">,</span> <span class="n">pathlist</span><span class="o">=</span><span class="p">[</span><span class="n">paths</span><span class="p">[</span><span class="n">scatterer</span><span class="p">]],</span>
+                           <span class="n">transform</span><span class="o">=</span><span class="n">trans</span><span class="p">)</span>
+    <span class="n">pars</span> <span class="o">=</span> <span class="n">group</span><span class="p">(</span><span class="n">amp</span>    <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">1.0</span><span class="p">),</span>
+                 <span class="n">del_e0</span> <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.1</span><span class="p">,</span> <span class="nb">min</span><span class="o">=-</span><span class="mi">20</span><span class="p">,</span> <span class="nb">max</span><span class="o">=</span><span class="mi">20</span><span class="p">),</span>
+                 <span class="n">sig2</span>   <span class="o">=</span> <span class="n">param</span><span class="p">(</span><span class="mf">0.006</span><span class="p">,</span> <span class="n">vary</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="nb">min</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+                 <span class="n">del_r</span>  <span class="o">=</span> <span class="n">guess</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span> <span class="p">)</span>
+
+    <span class="n">out</span> <span class="o">=</span> <span class="n">feffit</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">dset</span><span class="p">)</span>
+    <span class="n">path1</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">pathlist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c"># read scatterer from Feff geometry, to be sure it&#39;s correct</span>
+    <span class="n">scatt_from_path_geom</span> <span class="o">=</span> <span class="n">path1</span><span class="o">.</span><span class="n">_feffdat</span><span class="o">.</span><span class="n">geom</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;Path: Zn-</span><span class="si">%s</span><span class="s"> &#39;</span> <span class="o">%</span> <span class="n">scatt_from_path_geom</span>
+
+    <span class="n">r_phcor</span> <span class="o">=</span> <span class="n">phase_correct</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">rplot_fit</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">datasets</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">title</span><span class="p">,</span> <span class="n">win</span><span class="o">=</span><span class="mi">1</span><span class="o">+</span><span class="n">ix</span><span class="p">)</span>
+    <span class="n">redchi</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">params</span><span class="o">.</span><span class="n">chi_reduced</span>
+    <span class="n">_amp</span>   <span class="o">=</span> <span class="s">&#39;</span><span class="si">%6.3f</span><span class="s">(</span><span class="si">%.3f</span><span class="s">) &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="n">_de0</span>   <span class="o">=</span> <span class="s">&#39;</span><span class="si">%6.3f</span><span class="s">(</span><span class="si">%.3f</span><span class="s">) &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">del_e0</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>  <span class="n">pars</span><span class="o">.</span><span class="n">del_e0</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="n">_ss2</span>   <span class="o">=</span> <span class="s">&#39;</span><span class="si">%6.3f</span><span class="s">(</span><span class="si">%.3f</span><span class="s">) &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">pars</span><span class="o">.</span><span class="n">sig2</span><span class="o">.</span><span class="n">value</span><span class="p">,</span>  <span class="n">pars</span><span class="o">.</span><span class="n">sig2</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="n">_r</span>     <span class="o">=</span> <span class="s">&#39;</span><span class="si">%6.3f</span><span class="s">(</span><span class="si">%.3f</span><span class="s">) &#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">path1</span><span class="o">.</span><span class="n">reff</span><span class="o">+</span><span class="n">pars</span><span class="o">.</span><span class="n">del_r</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">del_r</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+    <span class="k">print</span> <span class="n">fmt</span> <span class="o">%</span> <span class="p">(</span><span class="n">scatterer</span><span class="p">,</span> <span class="n">redchi</span><span class="p">,</span> <span class="n">_amp</span><span class="p">,</span> <span class="n">_ss2</span><span class="p">,</span> <span class="n">_de0</span><span class="p">,</span> <span class="n">_r</span><span class="p">,</span> <span class="n">r_phcor</span><span class="p">)</span>
+    <span class="n">results</span><span class="p">[</span><span class="n">scatterer</span><span class="p">]</span> <span class="o">=</span> <span class="n">out</span>
+<span class="c">#endfor</span>
+
+<span class="c">## end examples/feffit/doc_feffit6.lar</span>
+</pre></div>
+</div>
+<p>After reading in the data, we build FeffPaths, putting them into a
+dictionary.  We define the fitting transform range, then loop over each of
+the scatterers, doing a simple first-shell fit with each.  We then calculate
+the phase-corrected <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>, find the peak value of <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>, and
+print out results.</p>
+<blockquote id="xafs-feffit-znse-results">
+<div><blockquote>
+<div>Table of ZnSe Results.  The results from fitting ZnSe XAFS data to
+scattering paths of Zn-Zn, Zn-Ge, Zn-Se, Zn-Br, and Zn-Rb.  All paths
+started at the nominal distance of 2.454 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>.</div></blockquote>
+<table border="1" class="docutils">
+<colgroup>
+<col width="10%" />
+<col width="17%" />
+<col width="13%" />
+<col width="16%" />
+<col width="12%" />
+<col width="11%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Scatterer</th>
+<th class="head">reduced chi-square</th>
+<th class="head"><img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/></th>
+<th class="head"><img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/></th>
+<th class="head"><img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/></th>
+<th class="head"><img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/></th>
+<th class="head"><img class="math" src="../_images/math/263e7fde73c944281b5c06b6111aea41fc5c22ec.png" alt="R_{\rm{ph cor}}"/></th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Zn (30)</td>
+<td>57.547</td>
+<td>0.726(0.069)</td>
+<td>0.004(0.001)</td>
+<td>-7.985(1.232)</td>
+<td>2.471(0.006)</td>
+<td>2.451</td>
+</tr>
+<tr class="row-odd"><td>Ge (32)</td>
+<td>32.402</td>
+<td>0.799(0.057)</td>
+<td>0.005(0.000)</td>
+<td>-2.988(0.927)</td>
+<td>2.461(0.004)</td>
+<td>2.457</td>
+</tr>
+<tr class="row-even"><td>Se (34)</td>
+<td>12.727</td>
+<td>0.893(0.040)</td>
+<td>0.006(0.000)</td>
+<td>0.086(0.579)</td>
+<td>2.448(0.003)</td>
+<td>2.461</td>
+</tr>
+<tr class="row-odd"><td>Br (35)</td>
+<td>16.675</td>
+<td>1.075(0.058)</td>
+<td>0.007(0.000)</td>
+<td>1.708(0.695)</td>
+<td>2.444(0.003)</td>
+<td>2.462</td>
+</tr>
+<tr class="row-even"><td>Rb (37)</td>
+<td>88.686</td>
+<td>1.098(0.135)</td>
+<td>0.007(0.001)</td>
+<td>5.269(1.424)</td>
+<td>2.425(0.007)</td>
+<td>2.467</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+<p>The results of the fits are given in the <a class="reference internal" href="#xafs-feffit-znse-results"><em>Table of ZnSe Results</em></a>, with graphs below showing fits to the 5
+different scatterers.  The dependence of the results on <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> of the
+back-scattering atom is seen to be reasonably strong.  The values for reduced
+chi-square definitely indicate that Zn-Se is the best fit, and the values for
+the fitted parameters have rather clear correlations with <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> --
+<img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/>, <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/>, and <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> increase with <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>,
+while <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> decreases.  If anything, the <img class="math" src="../_images/math/166507bb97c93b181d8b64c19908d3282a9d25aa.png" alt="Z \pm 5"/> rule-of-thumb
+seems pessimistic, though the fits with Ge and Br look decent enough that it
+would be easy to conclude that <img class="math" src="../_images/math/60e1201435c3a2da3abaa9fac626a11379a30ad8.png" alt="Z \pm 2"/> is reasonable.</p>
+<p>As a curious side note, we note that <img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/> <em>increases</em> with
+<img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>.  The scattering factor should also increase with <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>, which
+might lead us to suspect a trend in the opposite direction.  The confounding
+factor here is <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/> -- if we fix <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/> to 0.006 (by
+changing <tt class="docutils literal"><span class="pre">vary=True</span></tt> to <tt class="docutils literal"><span class="pre">vary=False</span></tt>) and re-run the fits, <img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/>
+has a slight negative dependence on <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>.</p>
+<div class="figure compound align-center" id="fig_znse_fits">
+<div style="width: 30%" class="subfigure" id="fig-znse-fit">
+<a class="reference external image-reference" href="../_images/Feffit_ZnSe_Zn.png"><img alt="../_images/Feffit_ZnSe_Zn.png" src="../_images/Feffit_ZnSe_Zn.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(a)</strong> Fit to ZnSe with Zn back-scatterer</p>
+</div>
+<div style="width: 30%" class="subfigure" id="fig-znse-fit-ge">
+<a class="reference external image-reference" href="../_images/Feffit_ZnSe_Ge.png"><img alt="../_images/Feffit_ZnSe_Ge.png" src="../_images/Feffit_ZnSe_Ge.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(b)</strong> Fit to ZnSe with Ge back-scatterer</p>
+</div>
+<div style="width: 30%" class="subfigure" id="fig-znse-fit-se">
+<a class="reference external image-reference" href="../_images/Feffit_ZnSe_Se.png"><img alt="../_images/Feffit_ZnSe_Se.png" src="../_images/Feffit_ZnSe_Se.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(c)</strong> Fit to ZnSe with Se back-scatterer</p>
+</div>
+<div style="width: 30%" class="subfigure" id="fig-znse-fit-br">
+<a class="reference external image-reference" href="../_images/Feffit_ZnSe_Br.png"><img alt="../_images/Feffit_ZnSe_Br.png" src="../_images/Feffit_ZnSe_Br.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(d)</strong> Fit to ZnSe with Br back-scatterer</p>
+</div>
+<div style="width: 30%" class="subfigure" id="fig-znse-fit-rb">
+<a class="reference external image-reference" href="../_images/Feffit_ZnSe_Rb.pngb"><img alt="../_images/Feffit_ZnSe_Rb.png" src="../_images/Feffit_ZnSe_Rb.png" style="width: 100%;" /></a>
+<p class="caption"><strong>(e)</strong> Fit to ZnSe with Rb back-scatterer</p>
+</div>
+<p class="caption"><strong>Figure 7.24:</strong> Fits to ZnSe XAFS data using different back-scattering atoms.</p>
+<span class="target" id="fig_znse_fits"></span></div><p id="index-4">The figures also show <strong>phase-corrected</strong> Fourier transforms using the total
+scattering phase from the Feff calculation to correct the data.  This
+correction is done in the <tt class="docutils literal"><span class="pre">phase_correct()</span></tt> procedure, where the data from
+the <em>feffNNNN.dat</em> file (in the <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group) is used to construct the
+Feff phase shift (<img class="math" src="../_images/math/498ff2da6918b6280fde87c41164735108709a8b.png" alt="\delta(k)"/> in the EXAFS Equation of Section
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a>), and apply it to the data.  Because this uses
+complex math, we use the <a class="reference internal" href="xafsft.html#_xafs.xftf_fast" title="_xafs.xftf_fast"><tt class="xref py py-func docutils literal"><span class="pre">xftf_fast()</span></tt></a> function to the complex Fourier
+transform and build the magnitude of the transform explicitly.</p>
+<p>The phase corrected transforms are shown in black in Figure
+<a href="#fig_znse_fits">7.24</a>, and show the key benefit of these transforms -- the
+peak in the phase corrected <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> peaks much closer to an <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>
+that is the bond distance (for Zn-Se, around 2.45 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>), whereas
+the normal XAFS Fourier transform peaks much lower.  This suggests a further
+test on whether the bond distance and <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> of the scattering atom are
+correct.  That is, in order for the phase-correction to give the correct
+interatomic distance, the total phase-shift has to be correct, which means
+that the <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> for the scatterer has to be correct (see the EXAFS
+Equation in Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a>).  So, we can compare the
+refined distance with the peak in the phase-corrected transform -- if they
+agree, it gives good confidence that the scatterer is correct.</p>
+<p>Since the spacing of points in <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> is <img class="math" src="../_images/math/2209b3ac2fc7821e6aef2a59398b0110fdb6222a.png" alt="\sim 0.03\rm\AA"/>, using
+the peak position may not be accurate enough.  Instead, we can use the value
+where <img class="math" src="../_images/math/fe0aca31b41df4461684117578ec603ba91d51f0.png" alt="\rm Im[\chi(R)_{\rm{ph cor}}]"/> passes through zero (see dashed
+lines in Figure <a href="#fig_znse_fits">7.24</a>).  These values are reported in the
+<a class="reference internal" href="#xafs-feffit-znse-results"><em>Table of ZnSe Results</em></a> as <img class="math" src="../_images/math/faf50734cc2edb4885445f879d75607ece0389d2.png" alt="R_{\rm{phcor}}"/>.</p>
+<p>We see an interesting trend that while the refined distance <em>decreases</em> with
+<img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>, the value for <img class="math" src="../_images/math/faf50734cc2edb4885445f879d75607ece0389d2.png" alt="R_{\rm{phcor}}"/> increases slightly.  The two
+values cross between Ge and Se.  This is pretty good agreement, especially
+considering we left out the <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/> contribution to phase-shift in
+the EXAFS equation from this phase correction, and applied the theoretical
+phase-shift from Feff to the measured data.  The <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> dependence of
+<img class="math" src="../_images/math/faf50734cc2edb4885445f879d75607ece0389d2.png" alt="R_{\rm{phcor}}"/> is not as strong as the <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> dependence of
+reduced chi-square, but this analysis also suggests that one can determine
+<img class="math" src="../_images/math/bb6fab762576be27b2f9ccfa1bc924b9968fa437.png" alt="Z \pm 3"/>, at least in this rather favorable case.</p>
+<p>Again, this is an unusually favorable case -- a simple structure with a
+single well-isolated coordination shell.  The phase-correction method will
+<strong>not</strong> work at all on a mixed coordination shell, and is likely to give
+larger errors for a highly-disordered system.  But, for simple,
+well-characterized systems, the ability to do such analysis can be very
+powerful, and give increased confidence in the refined structure.</p>
 </div>
 </div>
 

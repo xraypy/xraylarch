@@ -12,13 +12,13 @@ XAFS: Wavelet Transforms for XAFS
 contributions of a waveform into both time and frequency (or, for EXAFS,
 :math:`k` and :math:`R`).  A variety of mathematical kernels can be used
 for wavelet transforms.  There are a few examples in the literature of
-applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by 
+applying wavelet transforms to EXAFS data, with the Cauchy wavelet used by
 :cite:ts:`munoz_wavelet` being one early application.   The
 :func:`cauchy_wavelet` function described below follows this work,  and
 that article should be cited as the reference for this transform.
 
 
-:func:`cauchy_wavelet` 
+:func:`cauchy_wavelet`
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The Continuous Cauchy Wavelet transform of :cite:ts:`munoz_wavelet`
@@ -45,17 +45,17 @@ is implemented as the function :func:`cauchy_wavelet`:
         array name         meaning
        ================= ===============================================================
 	r                  uniform array of :math:`R`, out to ``rmax_out``.
-	wcauchy            complex array cauchy transform of :math:`R` and math:`k`
+ 	wcauchy            complex array cauchy transform of :math:`R` and :math:`k`
 	wcaychy_mag        magnitude of cauchy transform
 	wcauchy_re         real part of cauchy transform
 	wcauchy_im         imaginary part of cauchy transform
        ================= ===============================================================
 
     It is expected that the input ``k`` be a uniformly spaced array of
-    values with spacing ``kstep``, starting a 0. 
+    values with spacing ``kstep``, starting a 0.
 
 
-Wavelet Example 
+Wavelet Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Applying the Cauchy wavelet transform to Fe K-edge data of FeO is fairly
@@ -114,8 +114,8 @@ The projection of the wavelets to :math:`k` and :math:`R` space looks like:
 
 .. subfigend::
     :width: 0.45
-    :label: fig_xafswft_proj    
+    :label: fig_xafswft_proj
 
-    The Cauchy Wavelet transform projected to :math:`k` and math:`R`
-    space.  In the left hand pnael, the original EXAFS (:math:`k^2\chi(k)`)
+    The Cauchy Wavelet transform projected to :math:`k` and :math:`R`
+    space.  In the left hand pnael, the original EXAFS :math:`k^2\chi(k)`
     is shown for comparison.
