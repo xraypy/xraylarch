@@ -841,15 +841,30 @@ Example 6: Testing EXAFS sensitivity to :math:`Z`
 
 .. index:: Phase-corrected Fourier transforms
 
-EXAFS is somewhat sensitive to the atomic number :math:`Z` of the
-scattering atom.  It is often asserted that this sensitivity is to *row of
-the Periodic Table* or perhaps :math:`Z \pm 5`.  In this section, we'll
-explore this, by constructing Feff paths with different scatterers and
-trying to fit data with these different scattering paths.  We'll also
-explore the idea of **Phase corrected** Fourier transforms, and how they
-might be used to better determine both :math:`R` and :math:`Z`.  The
-example here is a little bit complex, and uses a script that is somewhat
-more sophisticated to what we've seen above.
+EXAFS is known to be sensitive to the atomic number :math:`Z` of the
+scattering atom.  This is due to the :math:`Z` dependence of the scattering
+amplitude and phase shift () (:math:`f(k)` and :math:`\delta(k)` in the EXAFS
+Equation of Section :ref:`xafs-exafsequation_sec`).  A rule-of-thumb that is
+often given is that EXAFS is sensitive to :math:`Z \pm 5`, or perhaps even
+more pessimistically to *row of the Periodic Table*, and certainly not
+:math:`Z \pm 1`.  Occassionally, you may see work that claims very fine
+:math:`Z` sensitivity, such as being able to distinguish N and O ligands.  In
+those works, XAFS results are typically used with chemical arguments about
+steric effects or known bond distances.
+
+.. index:: Phase-corrected Fourier transforms
+
+In this section, we'll explore the :math:`Z` sensitivity of XAFS with real
+data, by constructing Feff paths with different scatterers and trying to fit
+data with these different scattering paths.  This makes a nice exercise in
+how to manipulate Feff, how to fit XAFS data, and how to compare XAFS fits.
+Just to make it a little more complicated, We'll also explore the idea of
+**Phase corrected** Fourier transforms, and how they might be used to better
+determine both :math:`R` and :math:`Z`.  The example here is a little bit
+complex, and uses a script for doing multiple fits and for mathematically
+manipulating the arrays of data.  This somewhat more sophisticated than what
+we've seen above, but exploits many of the features that make Larch a
+convenient way to script data analysis.
 
 .. _fig-znse-xafs:
 
@@ -860,24 +875,43 @@ more sophisticated to what we've seen above.
 
     Zn K-edge XAFS data for ZnSe.
 
-For this example, we'll use Zn K-edge data of ZnSe, with :math:`\chi(k)`
-data shown in Figure :num:`fig-znse-xafs`.  The data is adequate, but not
-perfect, but is useful for the study here here because the structure is
-very simple, with a well-isolated and well-ordered shell of scatterers.
-While we're sure that the scatterer should be Se, we'll try scatterers of
-Zn, Ge, Se, Br, and Rb, spanning a small but sufficient range of
-:math:`Z`.   To construct the scattering paths, we'll modify a Feff input
-file, like this (for Br):
+For this example, we'll use Zn K-edge data of ZnSe, with :math:`\chi(k)` data
+shown in Figure :num:`fig-znse-xafs`.  The data is pretty good but not
+perfect, and is useful for the study here because the structure is simple,
+with a well-isolated and well-ordered shell of scatterers (the cubic ZnS
+structure with 1 Zn site surrounded by 4 Se at 2.45 :math:`\rm\AA`).  While
+we're sure that the scatterer *should* be Se, we'll try scatterers of Zn, Ge,
+Se, Br, and Rb, spanning a small but sufficient range of :math:`Z`.
+
+To construct the scattering paths, we'll modify a Feff input file.  To do we
+start with a feff.inp file generated for crystalline ZnSe by the ATOMS
+program, and add an IPOT to the list of atomic potentials (here the line
+**   3   35   Br**), and then replace the IPOTs for 1 of the neighboring Se
+atoms (that is, replacing a 2 with a 3, and changing the tag for
+convenience).   The resulting feff.inp file for Br looks this:
 
 .. literalinclude:: ../../examples/feffit/Feff_ZnSe/feff.inp
 
-and gather the resulting **feffNNNN.dat** files.  The script to do the test
-will loop over these different scattering paths, doing a fit for each path,
-and store the results.  The script uses several functions, and programming
-constructs like loops and dictionaries
+Afer running feff.inp, we collect the resulting ``feffNNNN.dat`` files --
+either ``feff0001.dat`` or ``feff0002.dat`` will have the replaced scatterer,
+the other will have Se as the scatterer.   Once we've collected all these
+files for runs of Feff with feff.inp altered for each scatterer, we're ready
+to do the fits.
+
+The script to do the test will loop over these different scattering paths,
+doing a fit for each path, and store the results.  The script uses several
+Larch functions, and programming constructs like loops and dictionaries, as
+well as mathematical manipulation of the resulting arrays for the phase
+correction.   The full script is:
 
 .. literalinclude:: ../../examples/feffit/doc_feffit6.lar
 
+
+After reading in the data, we build FeffPaths, putting them into a
+dictionary.  We define the fitting transform range, then loop over each of
+the scatterers, doing a simple first-shell fit with each.  We then calculate
+the phase-corrected :math:`\chi(R)`, find the peak value of :math:`R`, and
+print out results.
 
 
 .. _xafs-feffit_znse_results:
@@ -886,26 +920,40 @@ constructs like loops and dictionaries
     scattering paths of Zn-Zn, Zn-Ge, Zn-Se, Zn-Br, and Zn-Rb.  All paths
     started at the nominal distance of 2.454 :math:`\rm\AA`.
 
-   +-----------+-------------------+---------------+--------------+-------------+------------------------+
-   |Scatterer  |reduced chi-square | :math:`S_0^2` | :math:`E_0`  |  :math:`R`  |:math:`R_{\rm{ph cor}}` |
-   +===========+===================+===============+==============+=============+========================+
-   |  Zn (30)  |  57.547           | 0.726(0.069)  | -7.985(1.232)| 2.471(0.006)|  2.451                 |
-   +-----------+-------------------+---------------+--------------+-------------+------------------------+
-   |  Ge (32)  |  32.402           | 0.799(0.057)  | -2.988(0.927)| 2.461(0.004)|  2.457                 |
-   +-----------+-------------------+---------------+--------------+-------------+------------------------+
-   |  Se (34)  |  12.727           | 0.893(0.040)  | 0.086(0.579) | 2.448(0.003)|  2.461                 |
-   +-----------+-------------------+---------------+--------------+-------------+------------------------+
-   |  Br (35)  |  16.675           | 1.075(0.058)  | 1.708(0.695) | 2.444(0.003)|  2.462                 |
-   +-----------+-------------------+---------------+--------------+-------------+------------------------+
-   |  Rb (37)  |  88.686           | 1.098(0.135)  | 5.269(1.424) | 2.425(0.007)|  2.467                 |
-   +-----------+-------------------+---------------+--------------+-------------+------------------------+
+
+   +-----------+-------------------+---------------+------------------+--------------+-------------+------------------------+
+   |Scatterer  |reduced chi-square | :math:`S_0^2` | :math:`\sigma^2` | :math:`E_0`  |  :math:`R`  |:math:`R_{\rm{ph cor}}` |
+   +===========+===================+===============+==================+==============+=============+========================+
+   |  Zn (30)  |  57.547           | 0.726(0.069)  |   0.004(0.001)   | -7.985(1.232)| 2.471(0.006)|  2.451                 |
+   +-----------+-------------------+---------------+------------------+--------------+-------------+------------------------+
+   |  Ge (32)  |  32.402           | 0.799(0.057)  |   0.005(0.000)   | -2.988(0.927)| 2.461(0.004)|  2.457                 |
+   +-----------+-------------------+---------------+------------------+--------------+-------------+------------------------+
+   |  Se (34)  |  12.727           | 0.893(0.040)  |   0.006(0.000)   | 0.086(0.579) | 2.448(0.003)|  2.461                 |
+   +-----------+-------------------+---------------+------------------+--------------+-------------+------------------------+
+   |  Br (35)  |  16.675           | 1.075(0.058)  |   0.007(0.000)   | 1.708(0.695) | 2.444(0.003)|  2.462                 |
+   +-----------+-------------------+---------------+------------------+--------------+-------------+------------------------+
+   |  Rb (37)  |  88.686           | 1.098(0.135)  |   0.007(0.001)   | 5.269(1.424) | 2.425(0.007)|  2.467                 |
+   +-----------+-------------------+---------------+------------------+--------------+-------------+------------------------+
 
 
-The results of the fits are given in the :ref:`Table of ZnSe Results <xafs-feffit_znse_results>`, with graphs below showing fits to the 5
-different scatterers.  The values for reduced chi-square indicate that Zn-Se
-is the best fit, and that while :math:`Z \pm 5` may be pessimistic, while
-:math:`Z \pm 2` is not.  Also, note the clear trends in :math:`S_0^2` and
-:math:`E_0` as the :math:`Z` for the scatterer increases.
+
+The results of the fits are given in the :ref:`Table of ZnSe Results
+<xafs-feffit_znse_results>`, with graphs below showing fits to the 5
+different scatterers.  The dependence of the results on :math:`Z` of the
+back-scattering atom is seen to be reasonably strong.  The values for reduced
+chi-square definitely indicate that Zn-Se is the best fit, and the values for
+the fitted parameters have rather clear correlations with :math:`Z` --
+:math:`S_0^2`, :math:`\sigma^2`, and :math:`E_0` increase with :math:`Z`,
+while :math:`R` decreases.  If anything, the :math:`Z \pm 5` rule-of-thumb
+seems pessimistic, though the fits with Ge and Br look decent enough that it
+would be easy to conclude that :math:`Z \pm 2` is reasonable.
+
+As a curious side note, we note that :math:`S_0^2` *increases* with
+:math:`Z`.  The scattering factor should also increase with :math:`Z`, which
+might lead us to suspect a trend in the opposite direction.  The confounding
+factor here is :math:`\sigma^2` -- if we fix :math:`\sigma^2` to 0.006 (by
+changing ``vary=True`` to ``vary=False``) and re-run the fits, :math:`S_0^2`
+has a slight negative dependence on :math:`Z`.
 
 .. subfigstart::
 
@@ -944,7 +992,7 @@ is the best fit, and that while :math:`Z \pm 5` may be pessimistic, while
 .. _fig_znse_fit-rb:
 
 .. figure::  ../_images/Feffit_ZnSe_Rb.png
-    :target: ../_images/Feffit_ZnSe_Rb.png
+    :target: ../_images/Feffit_ZnSe_Rb.pngb
     :width: 100%
 
     Fit to ZnSe with Rb back-scatterer
@@ -971,7 +1019,7 @@ transform and build the magnitude of the transform explicitly.
 The phase corrected transforms are shown in black in Figure
 :num:`fig_znse_fits`, and show the key benefit of these transforms -- the
 peak in the phase corrected :math:`\chi(R)` peaks much closer to an :math:`R`
-that is the bond distance (for Zn-Se, around 2.46 :math:`\rm\AA`), whereas
+that is the bond distance (for Zn-Se, around 2.45 :math:`\rm\AA`), whereas
 the normal XAFS Fourier transform peaks much lower.  This suggests a further
 test on whether the bond distance and :math:`Z` of the scattering atom are
 correct.  That is, in order for the phase-correction to give the correct
@@ -988,12 +1036,18 @@ lines in Figure :num:`fig_znse_fits`).  These values are reported in the
 :ref:`Table of ZnSe Results <xafs-feffit_znse_results>` as :math:`R_{\rm{phcor}}`.
 
 We see an interesting trend that while the refined distance *decreases* with
-:math:`Z`, the value for :math:`R_{\rm{phcor}}` increases.  The two values
-cross between Ge and Se.  This is pretty good agreement, especially
-considering we left out the :math:`\sigma^2` contribution phase-shift in the
-EXAFS equation from this phase correction.  It also suggests that one can
-determine :math:`Z \pm 2`, at least in this case.  Again, this is an
-unusually favorable case -- this method will not work on a mixed coordination
-shell or a highly-disordered system.  Then again, for simple,
+:math:`Z`, the value for :math:`R_{\rm{phcor}}` increases slightly.  The two
+values cross between Ge and Se.  This is pretty good agreement, especially
+considering we left out the :math:`\sigma^2` contribution to phase-shift in
+the EXAFS equation from this phase correction, and applied the theoretical
+phase-shift from Feff to the measured data.  The :math:`Z` dependence of
+:math:`R_{\rm{phcor}}` is not as strong as the :math:`Z` dependence of
+reduced chi-square, but this analysis also suggests that one can determine
+:math:`Z \pm 3`, at least in this rather favorable case.
+
+Again, this is an unusually favorable case -- a simple structure with a
+single well-isolated coordination shell.  The phase-correction method will
+**not** work at all on a mixed coordination shell, and is likely to give
+larger errors for a highly-disordered system.  But, for simple,
 well-characterized systems, the ability to do such analysis can be very
-powerful.
+powerful, and give increased confidence in the refined structure.

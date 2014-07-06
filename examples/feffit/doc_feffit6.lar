@@ -4,50 +4,51 @@
 # how well "phase corrected" Fourier transforms predict distance
 
 def get_zinc_mu(filename, labels='energy dwelltime i0 i1'):
-   """read raw data, do background subtraction"""
-   dat = read_ascii(filename, labels=labels)
-   dat.mu = -ln(dat.i1 / dat.i0)
-   autobk(dat, e0 = 9666.0, rbkg=1.25, kweight=2)
-   return dat
+    """read raw data, do background subtraction"""
+    dat = read_ascii(filename, labels=labels)
+    dat.mu = -ln(dat.i1 / dat.i0)
+    autobk(dat, e0 = 9666.0, rbkg=1.25, kweight=2)
+    return dat
 #enddef
 
-def plot_data(data, title, win=1):
+def plot_chidata(data, title, win=1):
     kopts = dict(xlabel=r'$k \rm\,(\AA^{-1})$',
                  ylabel=r'$k^2\chi(k) \rm\,(\AA^{-2})$',
-                title=title, xmax=14, new=True, win=win)
+                 title=title, xmax=14, new=True, win=win)
     plot(data.k, data.chi*data.k**2, title=title, **kopts)
 #enddef
 
 def rplot_fit(dset, title, win=1):
-   ropts = dict(xlabel=r'$R \rm\,(\AA)$',
-                ylabel=r'$|\chi(R)| \rm\,(\AA^{-3})$',
-                title=title, xmax=6, win=win, show_legend=True)
-   plot(dset.data.r,  dset.data.chir_mag, new=True, label='data', **ropts)
-   plot(dset.model.r,  dset.model.chir_mag,  label='Feff Path', win=win)
+    "make R-spae plots of results"
+    ropts = dict(xlabel=r'$R \rm\,(\AA)$',
+                 ylabel=r'$|\chi(R)| \rm\,(\AA^{-3})$',
+                 title=title, xmax=6, win=win, show_legend=True)
+    plot(dset.data.r,  dset.data.chir_mag, new=True, label='data', **ropts)
+    plot(dset.model.r,  dset.model.chir_mag,  label='Feff Path', win=win)
 
-   chir_pha = dset.model.chir_phcor
-   chir_pha_mag = sqrt(chir_pha.real**2 + chir_pha.imag**2)
-   plot(dset.model.r,  chir_pha_mag,  win=win, label='phase-corrected data')
+    chir_pha = dset.model.chir_phcor
+    chir_pha_mag = sqrt(chir_pha.real**2 + chir_pha.imag**2)
+    plot(dset.model.r,  chir_pha_mag,  win=win, label='phase-corrected data')
 
-   # find region around peak in phase-corrected chi(R)
-   irmax = where(chir_pha_mag == max(chir_pha_mag))[0]
-   x = dset.model.r[irmax-1: irmax+2]
-   y = dset.model.chir_im[irmax-1: irmax+2]
-   plot(x, y, win=win, color='black', style='short dashed',
-        marker='o', label='Im[phase-corrected]')
-   return
+    # find region around peak in phase-corrected chi(R)
+    irmax = where(chir_pha_mag == max(chir_pha_mag))[0]
+    x = dset.model.r[irmax-1: irmax+2]
+    y = dset.model.chir_im[irmax-1: irmax+2]
+    plot(x, y, win=win, color='black', style='short dashed',
+         marker='o', label='Im[phase-corrected]')
+    return
 #enddef
 
 def phase_correct(dset):
-    "calculate phase-corrected FT, find estimate of R"
+   "calculate phase-corrected FT, find estimate of R"
    nrpts = len(dset.model.r)
    path1 = dset.pathlist[0]
 
    # get phase from Feff path
    feff_pha = interp(path1._feffdat.k, path1._feffdat.pha, dset.model.k)
    # phase-corrected Fourier Transform
-   chir_pha = xftf_fast(dset.data.chi *dset.data.k**2 *
-                                   dset.data.kwin*exp(0-1j*feff_pha))[:nrpts]
+   chir_pha = xftf_fast(dset.data.chi * exp(0-1j*feff_pha) *
+                        dset.data.kwin * dset.data.k**2)[:nrpts]
    chir_pha_mag = sqrt(chir_pha.real**2 + chir_pha.imag**2)
    dset.model.chir_phcor = chir_pha
 
@@ -55,16 +56,17 @@ def phase_correct(dset):
    irmax = where(chir_pha_mag == max(chir_pha_mag))[0]
    x = dset.model.r[irmax-1: irmax+2]
    y = dset.model.chir_im[irmax-1: irmax+2]
-   # find where Im[chi(R)_phase_corrected] = 0:
+   # find where Im[chi(R)_phase_corrected] = 0: use linear regression
    o = linregress(y, x)
    dset.model.rphcor = o[1]
    return o[1]
 #enddef
 
+###################################################
 znse_data = get_zinc_mu('../xafsdata/znse_zn_xafs.001',
                         labels='energy dwelltime i0 i1')
 
-# plot_data(znse_data, 'Zn K-edge ZnSe')
+# plot_chidata(znse_data, 'Zn K-edge ZnSe')
 
 # define Feff Paths, storing them in dictionary
 paths = {}
@@ -80,8 +82,8 @@ trans = feffit_transform(rmin=1.5, rmax=3.0, kmin=3, kmax=13,
                          kw=2, dk=4, window='kaiser')
 
 # perform fit for each scatterer
-print '|Scatterer|RedChi2|    S02       |     E0       |      R       |R_phcor|'
-fmt = '|  %s     |%7.3f|%s|%s|%s|%7.3f|'
+print '|Scatterer|RedChi2|    S02       |   sigma2     |      E0      |      R       |R_phcor|'
+fmt = '|  %s     |%7.3f|%s|%s|%s|%s|%7.3f|'
 
 results = {}
 for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
@@ -89,7 +91,7 @@ for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
                            transform=trans)
     pars = group(amp    = guess(1.0),
                  del_e0 = guess(0.1, min=-20, max=20),
-                 sig2   = guess(0.002, min=0),
+                 sig2   = param(0.006, vary=True, min=0),
                  del_r  = guess(0.) )
 
     out = feffit(pars, dset)
@@ -104,8 +106,9 @@ for ix, scatterer in enumerate(('Zn', 'Ge', 'Se', 'Br', 'Rb')):
     redchi = out.params.chi_reduced
     _amp   = '%6.3f(%.3f) ' % (pars.amp.value, pars.amp.stderr)
     _de0   = '%6.3f(%.3f) ' % (pars.del_e0.value,  pars.del_e0.stderr)
+    _ss2   = '%6.3f(%.3f) ' % (pars.sig2.value,  pars.sig2.stderr)
     _r     = '%6.3f(%.3f) ' % (path1.reff+pars.del_r.value, pars.del_r.stderr)
-    print fmt % (scatterer, redchi, _amp, _de0, _r, r_phcor)
+    print fmt % (scatterer, redchi, _amp, _ss2, _de0, _r, r_phcor)
     results[scatterer] = out
 #endfor
 
