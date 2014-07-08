@@ -1278,10 +1278,13 @@ class MapViewerFrame(wx.Frame):
         dlg = wx.DirDialog(self, "Select Working Directory:", os.getcwd(),
                            style=style)
 
+
         if dlg.ShowModal() == wx.ID_OK:
             basedir = os.path.abspath(str(dlg.GetPath()))
             try:
-                os.chdir(nativepath(basedir))
+                if len(basedir)  > 0:
+                    os.chdir(nativepath(basedir))
+                    save_workdir(nativepath(basedir))                
             except OSError:
                 print( 'Changed folder failed')
                 pass
@@ -1373,9 +1376,10 @@ Matt Newville <newville @ cars.uchicago.edu>
         if self.check_ownership(fname):
             self.process_file(fname)
         self.ShowFile(filename=fname)
-        os.chdir(nativepath(parent))
-        save_workdir(nativepath(parent))
-
+        if parent is not None and len(parent) > 0:
+            os.chdir(nativepath(parent))
+            save_workdir(nativepath(parent))
+        
     def onReadFile(self, evt=None):
         if not self.h5convert_done:
             print('cannot open file while processing a map folder')
