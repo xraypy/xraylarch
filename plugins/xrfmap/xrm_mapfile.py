@@ -24,7 +24,7 @@ from xsp3_hdf5 import read_xsp3_hdf5
 from asciifiles import (readASCII, readMasterFile, readROIFile,
                         readEnvironFile, parseEnviron)
 
-NINIT = 16
+NINIT = 32
 COMPRESSION_LEVEL = 4 # compression level
 DEFAULT_ROOTNAME = 'xrfmap'
 
@@ -725,7 +725,7 @@ class GSEXRM_MapFile(object):
 
         yval, xmapf, sisf, xpsf, etime = self.rowdata[irow]
         reverse = (irow % 2 != 0)
-        print 'Read RowData: ', irow, self.ixaddr, xmapf, sisf, xpsf, etime
+        # print 'Read RowData: ', irow, self.ixaddr, xmapf, sisf, xpsf, etime
         return GSEXRM_MapRow(yval, xmapf, xpsf, sisf, irow=irow,
                              xrftype=self.xrfdet_type,
                              nrows_expected=self.nrows_expected,
@@ -748,7 +748,6 @@ class GSEXRM_MapFile(object):
                 mcas.append(g)
                 nrows, npts, nchan =  g['counts'].shape
 
-        print 'XRFMAP Add Row ', thisrow, nrows, nmca, xnpts, nchan
         if thisrow >= nrows:
             self.resize_arrays(32*(1+nrows/32))
 
@@ -820,7 +819,6 @@ class GSEXRM_MapFile(object):
 
     def build_schema(self, row):
         """build schema for detector and scan data"""
-        print 'Build Schema'
         if not self.check_hostid():
             raise GSEXRM_NotOwner(self.filename)
 
@@ -960,7 +958,7 @@ class GSEXRM_MapFile(object):
                 realmca_groups.append(g)
             elif g.attrs.get('type', '').startswith('virtual mca'):
                 virtmca_groups.append(g)
-        print 'resize arrays ', realmca_groups
+        # print 'resize arrays ', realmca_groups
         oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
         for g in realmca_groups:
             g['counts'].resize((nrow, npts, nchan))
