@@ -357,15 +357,15 @@ class XRFDisplayFrame(wx.Frame):
         zsizer.Add(z2,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
 
-        rt1 = txt(roipanel, ' Channels:', size=60, font=Font10)
-        rt2 = txt(roipanel, ' Energy:',   size=60, font=Font10)
-        rt3 = txt(roipanel, ' Cen/Wid:',  size=60, font=Font10)
+        rt1 = txt(roipanel, ' Channels:', size=70, font=Font10)
+        rt2 = txt(roipanel, ' Energy:',   size=70, font=Font10)
+        rt3 = txt(roipanel, ' Cen/Wid:',  size=70, font=Font10)
         m = '            '
         self.wids['roi_msg1'] = txt(roipanel, m, size=125, font=Font10)
         self.wids['roi_msg2'] = txt(roipanel, m, size=125, font=Font10)
         self.wids['roi_msg3'] = txt(roipanel, m, size=125, font=Font10)
 
-        rsizer.Add(txt(roipanel, ' Regions of Interest:', size=120, font=Font11),
+        rsizer.Add(txt(roipanel, ' Regions of Interest:', size=125, font=Font11),
                    (0, 0), (1, 3), labstyle)
         rsizer.Add(self.wids['roiname'],    (1, 0), (1, 3), labstyle)
         rsizer.Add(roibtns,                 (2, 0), (1, 3), labstyle)
@@ -408,10 +408,10 @@ class XRFDisplayFrame(wx.Frame):
             dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
             xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
             self.wids['xray_lines'] = xlines
-            xlines.AppendTextColumn('Line ',        width=50)
-            xlines.AppendTextColumn('Energy (keV)', width=80)
-            xlines.AppendTextColumn('Strength',     width=80)
-            xlines.AppendTextColumn('Levels',       width=75)
+            xlines.AppendTextColumn('Line ',        width=55)
+            xlines.AppendTextColumn('Energy (keV)', width=90)
+            xlines.AppendTextColumn('Strength',     width=90)
+            xlines.AppendTextColumn('Levels',       width=85)
             for col in (0, 1, 2, 3):
                 this = xlines.Columns[col]
                 this.Sortable = True
@@ -420,8 +420,8 @@ class XRFDisplayFrame(wx.Frame):
                 if col == 3: align = wx.ALIGN_LEFT
                 this.Alignment = this.Renderer.Alignment = align
 
-            xlines.SetMinSize((300, 200))
-            xlines.SetMaxSize((320, 400))
+            xlines.SetMinSize((300, 245))
+            # xlines.SetMaxSize((320, 400))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
                         self.onSelectXrayLine)
 
@@ -436,7 +436,7 @@ class XRFDisplayFrame(wx.Frame):
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
 
         if self.wids['xray_lines'] is not None:
-            sizer.Add(xlines,  0, wx.GROW|wx.ALL|wx.EXPAND)
+            sizer.Add(xlines,  0, wx.ALIGN_CENTER|wx.GROW|wx.ALL|wx.EXPAND)
 
         pack(ctrlpanel, sizer)
         return ctrlpanel
@@ -860,6 +860,9 @@ class XRFDisplayFrame(wx.Frame):
                     xlines.AppendItem(dat)
                 self.minor_markers.append(l)
 
+        if xlines is not None:
+            xlines.Refresh()
+
         edges = []
         for edge in ('K', 'L3', 'L2', 'M5'):
             xex = self.larch.symtable._xray.xray_edge(elem, edge)
@@ -868,7 +871,9 @@ class XRFDisplayFrame(wx.Frame):
             if en > erange[0] and en < erange[1]:
                 edges.append("%s=%.3f" % (edge, en))
 
-        self.wids['ptable'].set_subtitle(', '.join(edges))
+        edges = '  ' + ', '.join(edges)
+        self.wids['ptable'].set_subtitle(edges)
+
 
         self.panel.canvas.draw()
 

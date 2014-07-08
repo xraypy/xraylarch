@@ -83,7 +83,7 @@ class PeriodicTablePanel(wx.Panel):
         self.selected = None
         self.elemfont  = wx.Font( 8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.titlefont = wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.subtitlefont = wx.Font(9, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.subtitlefont = wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
         self.BuildPanel()
 
     def onKey(self, event=None, name=None):
@@ -187,13 +187,13 @@ class PeriodicTablePanel(wx.Panel):
             a.SetFont(self.titlefont)
             a.SetBackgroundColour(self.TITLE_BG)
 
-        sizer.Add(self.title, (0, 4), (1, 7), wx.ALIGN_CENTER, 1)
+        sizer.Add(self.title, (0, 4), (1, 8), wx.ALIGN_CENTER, 1)
         sizer.Add(self.tsym,  (0, 2), (1, 2), wx.ALIGN_LEFT, 1)
-        sizer.Add(self.tznum, (0, 11), (1, 1), wx.ALIGN_LEFT, 1)
+        sizer.Add(self.tznum, (0, 12), (1, 3), wx.ALIGN_LEFT, 1)
 
         self.subtitle = wx.StaticText(self, -1, label='         ')
         self.subtitle.SetFont(self.subtitlefont)
-        sizer.Add(self.subtitle, (2, 3), (1, 8), wx.ALIGN_LEFT, 2)
+        sizer.Add(self.subtitle, (2, 2), (1, 9), wx.ALIGN_LEFT, 2)
 
         #s2title = wx.StaticText(self, -1, label='Edge Energies (keV):')
         #s2title.SetFont(self.subtitlefont)
