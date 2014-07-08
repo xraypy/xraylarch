@@ -992,7 +992,7 @@ has a slight negative dependence on :math:`Z`.
 .. _fig_znse_fit-rb:
 
 .. figure::  ../_images/Feffit_ZnSe_Rb.png
-    :target: ../_images/Feffit_ZnSe_Rb.pngb
+    :target: ../_images/Feffit_ZnSe_Rb.png
     :width: 100%
 
     Fit to ZnSe with Rb back-scatterer
