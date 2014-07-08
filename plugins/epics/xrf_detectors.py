@@ -1,4 +1,5 @@
 import time
+from functools import partial
 import epics
 from epics.devices.mca import  MultiXMAP
 from xspress3 import Xspress3
@@ -47,7 +48,7 @@ class Epics_Xspress3(object):
     def get_energy(self, mca=1):
         raise NotImplemented
 
-    def get_array(self, mca=self.det_back):
+    def get_array(self, mca=1):
         raise NotImplemented
 
     def save_rois(self, roifile):
