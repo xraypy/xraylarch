@@ -245,15 +245,14 @@ class XrayLinesFrame(wx.Frame):
                           title='XRF Line Selection', **kws)
         panel = GridPanel(self)
         self.checkbox = {}
-        def add_elines(panel, lines, checked, action):
+        def add_elines(panel, lines, checked):
             for i in lines:
                 cb = Check(panel, '%s ' % i, default = i in checked,
-                           action=partial(action, label=i))
+                           action=partial(self.onLine, label=i, lines=checked))
                 self.checkbox[i] = cb
                 panel.Add(cb, style=LEFT)
 
-        hopts = {'size': (125, -1), 'bgcolour': (250, 250, 200),
-                 'action': self.ToggleLines}
+        hopts = {'size': (125, -1), 'bgcolour': (250, 250, 200)}
         labopts = {'newrow': True, 'style': LEFT}
         self.linedata = {'Major K Lines:': self.k1lines,
                          'Minor K Lines:': self.k2lines,
@@ -263,23 +262,33 @@ class XrayLinesFrame(wx.Frame):
         panel.AddText(' Select X-ray Emission Lines', dcol=4, colour='#880000')
         panel.Add(HLine(panel, size=(450, 3)),  dcol=5, newrow=True)
 
-        panel.Add(HyperText(panel, 'Major K Lines:', **hopts), **labopts)
-        add_elines(panel, self.k1lines, conf.K_major, self.onKMajor)
+        panel.Add(HyperText(panel, 'Major K Lines:',
+                            action=partial(self.ToggleLines, lines=conf.K_major),
+                            **hopts), **labopts)
+        add_elines(panel, self.k1lines, conf.K_major)
 
-        panel.Add(HyperText(panel, 'Minor K Lines:',  **hopts), **labopts)
-        add_elines(panel, self.k2lines, conf.K_minor, self.onKMinor)
+        panel.Add(HyperText(panel, 'Minor K Lines:',
+                            action=partial(self.ToggleLines, lines=conf.K_minor),
+                            **hopts), **labopts)
+        add_elines(panel, self.k2lines, conf.K_minor)
 
-        panel.Add(HyperText(panel, 'Major L Lines:', **hopts), **labopts)
-        add_elines(panel, self.l1lines, conf.L_major, self.onLMajor)
+        panel.Add(HyperText(panel, 'Major L Lines:',
+                            action=partial(self.ToggleLines, lines=conf.L_major),
+                            **hopts), **labopts)
+        add_elines(panel, self.l1lines, conf.L_major)
 
-        panel.Add(HyperText(panel, 'Minor L Lines:', **hopts), **labopts)
-        add_elines(panel, self.l2lines, conf.L_minor, self.onLMinor)
+        panel.Add(HyperText(panel, 'Minor L Lines:',
+                            action=partial(self.ToggleLines, lines=conf.L_minor),
+                            **hopts), **labopts)
+        add_elines(panel, self.l2lines, conf.L_minor)
 
         panel.AddText(' ', **labopts)
-        add_elines(panel, self.l3lines, conf.L_minor, self.onLMinor)
+        add_elines(panel, self.l3lines, conf.L_minor)
 
-        panel.Add(HyperText(panel, 'Major M Lines:', **hopts), **labopts)
-        add_elines(panel, self.mlines,  conf.M_major, self.onMMajor)
+        panel.Add(HyperText(panel, 'Major M Lines:',
+                            action=partial(self.ToggleLines, lines=conf.M_major),
+                            **hopts), **labopts)
+        add_elines(panel, self.mlines,  conf.M_major)
 
         panel.AddText('Energy Range (keV): ', **labopts)
         fopts = {'minval':0, 'maxval':1000, 'precision':2, 'size':(75, -1)}
@@ -301,39 +310,34 @@ class XrayLinesFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def ToggleLines(self, label=None, event=None, **kws):
+    def ToggleLines(self, label=None, event=None, lines=[], **kws):
         if not event.leftIsDown:
+            self.parent.Freeze()
             for line in self.linedata.get(label, []):
-                checked = self.checkbox[line].IsChecked()
-                self.checkbox[line].SetValue({True: 1, False:0}[not checked])
+                check = not self.checkbox[line].IsChecked()
+                self.checkbox[line].SetValue({True: 1, False:0}[check])
+                self.onLine(checked=check, label=line, lines=lines)
+            self.parent.Thaw()
 
-    def onKMajor(self, event=None, label=None):
-        self.onLine(label, event.IsChecked(), self.parent.conf.K_major)
+    def onLine(self, event=None, checked=None, label=None, lines=[]):
+        if checked is None:
+            try:
+                checked =event.IsChecked()
+            except:
+                pass
+        if checked is None: checked = False
 
-    def onKMinor(self, event=None, label=None):
-        self.onLine(label, event.IsChecked(), self.parent.conf.K_minor)
-
-    def onLMajor(self, event=None, label=None):
-        self.onLine(label, event.IsChecked(), self.parent.conf.L_major)
-
-    def onLMinor(self, event=None, label=None):
-        self.onLine(label, event.IsChecked(), self.parent.conf.L_minor)
-
-    def onMMajor(self, event=None, label=None):
-        self.onLine(label, event.IsChecked(), self.parent.conf.M_major)
+        if label in lines and not checked:
+            lines.remove(label)
+        elif label not in lines and checked:
+            lines.append(label)
+        if self.parent.selected_elem is not None:
+            self.parent.onShowLines(elem=self.parent.selected_elem)
 
     def onErange(self, event=None, value=None, is_max=True):
         en = self.parent.conf.e_min
         if is_max: en = self.parent.conf.e_max
         en = float(value)
-
-    def onLine(self, label, checked, plist):
-        if label in plist and not checked:
-            plist.remove(label)
-        elif label not in plist and checked:
-            plist.append(label)
-        if self.parent.selected_elem is not None:
-            self.parent.onShowLines(elem=self.parent.selected_elem)
 
     def onDone(self, event=None):
         self.Destroy()
