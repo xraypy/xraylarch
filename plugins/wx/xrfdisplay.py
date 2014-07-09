@@ -409,9 +409,9 @@ class XRFDisplayFrame(wx.Frame):
             xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
             self.wids['xray_lines'] = xlines
             xlines.AppendTextColumn('Line ',        width=55)
-            xlines.AppendTextColumn('Energy (keV)', width=90)
-            xlines.AppendTextColumn('Strength',     width=90)
-            xlines.AppendTextColumn('Levels',       width=85)
+            xlines.AppendTextColumn('Energy (keV)', width=85)
+            xlines.AppendTextColumn('Strength',     width=85)
+            xlines.AppendTextColumn('Levels',       width=80)
             for col in (0, 1, 2, 3):
                 this = xlines.Columns[col]
                 this.Sortable = True
@@ -420,8 +420,7 @@ class XRFDisplayFrame(wx.Frame):
                 if col == 3: align = wx.ALIGN_LEFT
                 this.Alignment = this.Renderer.Alignment = align
 
-            xlines.SetMinSize((300, 245))
-            # xlines.SetMaxSize((320, 400))
+            xlines.SetMinSize((300, 240))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
                         self.onSelectXrayLine)
 
