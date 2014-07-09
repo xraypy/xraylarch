@@ -2,7 +2,6 @@ import time
 from functools import partial
 import epics
 from epics.devices.mca import  MultiXMAP
-from xspress3 import Xspress3
 from epics.devices.struck import Struck
 
 from epics.wx import EpicsFunction, DelayedEpicsCallback
@@ -12,6 +11,8 @@ from larch import use_plugin_path
 use_plugin_path('xrf')
 from mca import MCA
 from roi import ROI
+use_plugin_path('epics')
+from xspress3 import Xspress3
 
 class Epics_Xspress3(object):
     """multi-element MCA detector using Quantum Xspress3 electronics
