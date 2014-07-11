@@ -148,8 +148,8 @@ class GSEMCA_File(Group):
                         desc = desc[1:-1]
                     environ.append((desc, val, addr))
                 elif tag[0:4] == 'ROI_':
-                    iroi = int(tag[4:5])
-                    item = tag[6:]
+                    iroi, item = tag[4:].split('_')
+                    iroi = int(iroi)
                     if iroi >= len(rois):
                         for ir in range(1  + iroi - len(rois)):
                             rois.append({'label':[], 'right':[], 'left':[]})
