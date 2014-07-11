@@ -237,7 +237,7 @@ class XrayLinesFrame(wx.Frame):
     l3lines = ['Lg1', 'Lg2', 'Lg3']
     mlines  = ['Ma', 'Mb', 'Mg', 'Mz']
 
-    def __init__(self, parent, size=(500, 300), **kws):
+    def __init__(self, parent, size=(475, 325), **kws):
         self.parent = parent
         conf  = parent.conf
         kws['style'] = wx.DEFAULT_FRAME_STYLE
@@ -305,8 +305,6 @@ class XrayLinesFrame(wx.Frame):
         panel.Add(Button(panel, 'Done', size=(80, -1), action=self.onDone),
                   newrow=True, style=LEFT)
         panel.pack()
-        cx, cy = panel.GetBestSize()
-        panel.SetSize((cx+5, cy+5))
         self.Show()
         self.Raise()
 
@@ -335,9 +333,16 @@ class XrayLinesFrame(wx.Frame):
             self.parent.onShowLines(elem=self.parent.selected_elem)
 
     def onErange(self, event=None, value=None, is_max=True):
-        en = self.parent.conf.e_min
-        if is_max: en = self.parent.conf.e_max
-        en = float(value)
+        if value is None:   return
+
+        val = float(value)
+        if is_max:
+            self.parent.conf.e_max = val
+        else:
+            self.parent.conf.e_min = val
+        if self.parent.selected_elem is not None:
+            self.parent.onShowLines(elem=self.parent.selected_elem)
+
 
     def onDone(self, event=None):
         self.Destroy()
