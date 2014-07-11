@@ -1,0 +1,85 @@
+##
+## fit peaks in an XRF spectra (work in progress)
+
+mca = read_gsemca('../xrf/srm1832.mca')
+
+xrf_plot(mca)
+
+xrf_background(mca)
+xrf_calib_fitrois(mca)
+
+params = group()
+params.sig_slope  = guess(0.01, min=0)
+params.sig_offset = guess(0.04, min=0)
+init = mca.bgr
+names, peaks = [], []
+
+scale = int(log10(max(mca.counts)))-1.0
+scale = 10.0**(-scale)
+
+for i, roi in enumerate(mca.rois):
+    name = roi.name
+    names.append(name)
+    pars = mca.init_calib[name][4].params
+    name = name.replace(' ', '').lower()
+    name = 'p%i' % i
+    peaks.append(name)
+    sig = mca.slope*pars.sigma.value
+    cen = mca.offset  + mca.slope*pars.center.value
+    amp = scale * 0.02 * pars.amplitude.value
+    setattr(params, '%s_cen' % name, guess(cen,   min=cen-1, max=cen+1))
+    setattr(params, '%s_sig' % name, param(expr='sig_offset + sig_slope*%s_cen' % name))
+    setattr(params, '%s_amp' % name, guess(amp,   min=0))
+    init += amp*gaussian(mca.energy, cen, sig)
+#endfor
+
+params.peaks = peaks
+params.names = names
+ 
+
+def residual(pars, mca, trunc=True):
+    model = mca.bgr
+    scale = pars.scale
+    for name in pars.peaks:
+        cen = getattr(params, '%s_cen' % name).value
+        sig = getattr(params, '%s_sig' % name).value
+        amp = getattr(params, '%s_amp' % name).value
+        model = model + scale*amp*gaussian(mca.energy, cen, sig)
+    #endfor
+    out = (model - mca.counts)
+    if trunc:  out = out[pars.imin:pars.imax]
+    return out
+#enddef
+
+params.scale = 1.0/scale
+params.imin = index_of(mca.energy, 2.0)
+params.imax = index_of(mca.energy, 10.0)
+
+minimize(residual, params, args=(mca, ))
+    
+final = residual(params, mca, trunc=False) + mca.counts
+
+print fit_report(params)
+
+xrf_plot(mca, new=True)
+# xrf_plot(mca.energy, mca.counts, mca=mca, new=True)
+xrf_plot(mca.energy, final, as_mca2=True, new=False)
+
+## Final wids and areas
+ens = []
+sigs = []
+areas = []
+for p in peaks:
+    cen = getattr(params, '%s_cen' % p).value
+    sig = getattr(params, '%s_sig' % p).value
+    amp = getattr(params, '%s_amp' % p).value    
+    area = sig * amp
+    sigs.append(sig)
+    areas.append(area)
+    ens.append(cen)
+#endfor
+
+plot(ens, sigs, xlabel='E (keV)', ylabel='Peak sigma (keV)', marker='o',
+     title='Fit results', label='sigma', show_legend=True, new=True)
+plot(ens, areas, marker='o', label='peak area', y2_label='Area', side='right')
+    
