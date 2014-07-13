@@ -260,9 +260,15 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
         y = x.counts
         x = x.energy
 
-    if new:
+    if as_mca2:
+        new = False
         if isLarchMCAGroup(mca):
-            plotter.plotmca(mca, as_mca2=as_mca2, **kws)
+            plotter.plotmca(mca, as_mca2=True, new=False, **kws)
+        elif y is not None:
+            plotter.oplot(x, y, mca=mca, as_mca2=True, **kws)
+    elif new:
+        if isLarchMCAGroup(mca):
+            plotter.plotmca(mca, **kws)
         elif y is not None:
             plotter.plot(x, y, mca=mca, **kws)
     else:
@@ -285,7 +291,7 @@ def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
 
     See Also: xrf_plot
     """
-    xrf_plot(x=x, y=y, mca=mca, win=win, _larch=_larch, new=False, **kws)
+    _xrf_plot(x=x, y=y, mca=mca, win=win, _larch=_larch, new=False, **kws)
 
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
           force_draw=True, side='left', **kws):
