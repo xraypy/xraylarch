@@ -382,22 +382,27 @@ class XRFDisplayFrame(wx.Frame):
         pack(roipanel, rsizer)
         # end roi section
 
+        # y scale
+        yscalepanel = wx.Panel(ctrlpanel, name='YScalePanel')
+        ysizer  = wx.BoxSizer(wx.HORIZONTAL)
+        ytitl = txt(yscalepanel, ' Y Scale:', font=Font(10), size=80)
+        ylog = Choice(yscalepanel, size=(80, 30), choices=['log', 'linear'],
+                      action=self.onLogLinear)
+
+        ysizer.Add(ytitl,   0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
+        ysizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
+        pack(yscalepanel, ysizer)
+
         # zoom buttons
         zoompanel = wx.Panel(ctrlpanel, name='ZoomPanel')
         zsizer = wx.BoxSizer(wx.HORIZONTAL)
-        z1 = Button(zoompanel, 'Zoom In', size=(75, 30),
-                    action=self.onZoomIn)
-        z2 = Button(zoompanel, 'Zoom out',size=(75, 30),
-                    action=self.onZoomOut)
-        ylog = Choice(zoompanel, size=(70, 30),
-                      choices=['log', 'linear'],
-                      action=self.onLogLinear)
-        ytitl = txt(zoompanel, ' Y Scale:', font=Font(10))
-        yx    = txt(zoompanel, ' ', size=5)
+        z1 = Button(zoompanel, 'Zoom In',   size=(80, 30), action=self.onZoomIn)
+        z2 = Button(zoompanel, 'Zoom Out',  size=(80, 30), action=self.onZoomOut)
+        p1 = Button(zoompanel, 'Pan Lo',    size=(75, 30), action=self.onPanLo)
+        p2 = Button(zoompanel, 'Pan Hi',    size=(75, 30), action=self.onPanHi)
 
-        zsizer.Add(ytitl,   0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
-        zsizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
-        zsizer.Add(yx,      1, wx.EXPAND|wx.ALL, 0)
+        zsizer.Add(p1,      0, wx.EXPAND|wx.ALL, 0)
+        zsizer.Add(p2,      0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z1,      0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z2,      0, wx.EXPAND|wx.ALL, 0)
         pack(zoompanel, zsizer)
@@ -428,6 +433,7 @@ class XRFDisplayFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(roipanel,            0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
+        sizer.Add(yscalepanel,         0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(zoompanel,           0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
         sizer.Add(ptable,              0, wx.ALIGN_RIGHT|wx.EXPAND|wx.ALL, 4)
@@ -469,15 +475,34 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_symbol('_sys.wx.parent'):
             symtab.set_symbol('_sys.wx.parent', self)
 
-    def onZoomIn(self, event=None):
+    def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()
-        self.zoom_lims.append((emin, emax))
         erange = emax-emin
         emid   = (emax+emin)/2.0
         dmin, dmax = emin, emax
-
+        drange = erange
         if self.mca is not None:
             dmin, dmax = self.mca.energy.min(), self.mca.energy.max()
+        return (emid, erange, emin, emax, dmin, dmax)
+
+    def onPanLo(self, event=None):
+        emid, erange, emin, emax, dmin, dmax = self._getlims()
+        e1 = max(dmin, emin-erange)
+        e2 = min(dmax, e1 + erange)
+        # print 'Pan Lo ', dmin, dmax, emin, emax, erange, ' --> ', e1, e2
+        self.panel.axes.set_xlim((e1, e2))
+        self.panel.canvas.draw()
+
+    def onPanHi(self, event=None):
+        emid, erange, emin, emax, dmin, dmax = self._getlims()
+        e2 = min(dmax, emax+erange)
+        e1 = max(dmin, e2-erange)
+        # print 'Pan Hi ', dmin, dmax, emin, emax, erange, ' --> ', e1, e2
+        self.panel.axes.set_xlim((e1, e2))
+        self.panel.canvas.draw()
+
+    def onZoomIn(self, event=None):
+        emid, erange, emin, emax, dmin, dmax = self._getlims()
         if self.energy_for_zoom is not None:
             emid = self.energy_for_zoom
         espan = erange/3.0
@@ -486,19 +511,18 @@ class XRFDisplayFrame(wx.Frame):
         self.panel.axes.set_xlim((e1, e2))
         self.panel.canvas.draw()
 
-    def unzoom_all(self, event=None):
-        self.zoom_lims = []
-        self.onZoomOut()
-
     def onZoomOut(self, event=None):
-        e1, e2 = None, None
-        if len(self.zoom_lims) > 0:
-            e1, e2 = self.zoom_lims.pop()
-        elif self.mca is not None:
-            e1, e2 = self.mca.energy.min(), self.mca.energy.max()
-        if e1 is not None:
-            self.panel.axes.set_xlim((e1, e2))
-            self.panel.canvas.draw()
+        emid, erange, emin, emax, dmin, dmax = self._getlims()
+        espan = 1.5*erange
+        e1 = max(dmin, emid-espan)
+        e2 = min(dmax, emid+espan)
+        self.panel.axes.set_xlim((e1, e2))
+        self.panel.canvas.draw()
+
+    def unzoom_all(self, event=None):
+        emid, erange, emin, emax, dmin, dmax = self._getlims()
+        self.panel.axes.set_xlim((dmin, dmax))
+        self.panel.canvas.draw()
 
     def set_roilist(self, mca=None):
         """ Add Roi names to roilist"""
@@ -892,6 +916,7 @@ class XRFDisplayFrame(wx.Frame):
     def plotmca(self, mca, title=None, set_title=True, as_mca2=False, **kws):
         if as_mca2:
             self.mca2 = mca
+            kws['new'] = False
         else:
             self.mca = mca
         atitles = []
