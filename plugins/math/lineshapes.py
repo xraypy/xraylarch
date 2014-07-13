@@ -2,7 +2,8 @@
 """
 Some common lineshapes and distribution functions
 """
-from numpy import pi, log, exp, sqrt, arange, concatenate, convolve
+from numpy import (pi, log, exp, sqrt, arctan, cos, arange,
+                   concatenate, convolve)
 
 from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
 from larch import param_value
@@ -10,6 +11,7 @@ from larch import param_value
 log2 = log(2)
 s2pi = sqrt(2*pi)
 spi  = sqrt(pi)
+s2   = sqrt(2.0)
 
 def gaussian(x, cen=0, sigma=1):
     """1 dimensional gaussian:
@@ -37,7 +39,7 @@ def voigt(x, cen=0, sigma=1, gamma=None):
     sigma = param_value(sigma)
     gamma = param_value(gamma)
 
-    z = (x-cen + 1j*gamma)/ (sigma*sqrt(2))
+    z = (x-cen + 1j*gamma)/ (sigma*s2)
     return wofz(z).real / (sigma*s2pi)
 
 def pvoigt(x, cen=0, sigma=1, frac=0.5):
@@ -59,7 +61,7 @@ def pearson7(x, cen=0, sigma=1, expon=0.5):
     cen = param_value(cen)
     sigma = param_value(sigma)
     expon = param_value(expon)
-    scale = gamma(expon) * sqrt((2**(1/expon) -1)) / (gamma(expon-0.5)) / (sigma*sqrt(pi))
+    scale = gamma(expon) * sqrt((2**(1/expon) -1)) / (gamma(expon-0.5)) / (sigma*spi)
     return scale / (1 + ( ((1.0*x-cen)/sigma)**2) * (2**(1/expon) -1) )**expon
 
 def breit_wigner(x, cen=0, sigma=1, q=1):
@@ -102,6 +104,48 @@ def students_t(x, cen=0, sigma=1):
     denom = (sqrt(sigma*pi)*gamma(sigma/2))
     return (1 + (x-cen)**2/sigma)**(-s1) * gamma(s1) / denom
 
+
+def exgaussian(x, cen=0, sigma=1.0, gamma=1.0):
+    """exponentially modified Gaussian
+
+    = (gamma/2) exp[cen*gamma + (gamma*sigma)**2/2 - gamma*x] *
+                erfc[(cen + gamma*sigma**2 - x)/(sqrt(2)*sigma)]
+
+    http://en.wikipedia.org/wiki/Exponentially_modified_Gaussian_distribution
+    """
+    gss = gamma*sigma*sigma
+    arg1 = gamma*(cen +gss/2.0 - x)
+    arg2 = (cen + gss - x)/s2
+    return (gamma/2) * exp(arg1) * erfc(arg2)
+
+def donaich(x, cen=0, sigma=1.0, gamma=0.0):
+    """Doniach Sunjic asymmetric lineshape, used for photo-emission
+
+    = cos(pi*gamma/2 + (1-gamma) arctan((x-cen)/sigma) /
+                (sigma**2 + (x-cen)**2)**[(1-gamma)/2]
+
+    see http://www.casaxps.com/help_manual/line_shapes.htm
+    """
+    arg = (x-cen)/sigma
+    gm1 = (1.0 - gamma)
+    scale = 1.0/(sigma**gm1)
+    return scale*cos(pi*gamma/2 + gm1*arctan(arg))/(1 + arg**2)**(gm1/2)
+
+def skewed_voigt(x, cen=0, sigma=1.0, gamma=None, skew=0.0):
+    """Skewed Voigt lineshape, skewed with error function
+    useful for ad-hoc Compton scatter profile
+
+    with beta = skew/(sigma*sqrt(2))
+    = voigt(x, cen, sigma, gamma)*(1+erf(beta*(x-cen)))
+
+    skew < 0:  tail to low value of centroid
+    skew > 0:  tail to high value of centroid
+
+    see http://en.wikipedia.org/wiki/Skew_normal_distribution
+    """
+    beta = skew/(s2*sigma)
+    return (1 + erf(beta*(x-cen)))*voigt(x, cen=cen, sigma=sigma, gamma=gamma)
+
 def _erf(x):
     """error function.  = 2/sqrt(pi)*integral(exp(-t**2), t=[0, z])"""
     return erf(x)
@@ -132,6 +176,9 @@ def registerLarchPlugin():
                       'gammaln': _gammaln,
                       'breit_wigner': breit_wigner,
                       'damped_oscillator': damped_oscillator,
+                      'exgaussian': exgaussian,
+                      'donaich': donaich,
+                      'skewed_voigt': skewed_voigt,
                       'students_t': students_t,
                       'logistic': logistic,
                       'erf': _erf,
