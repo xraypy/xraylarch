@@ -20,6 +20,8 @@ except:
 import wx.lib.colourselect  as csel
 import numpy as np
 import matplotlib
+from matplotlib.ticker import LogFormatter
+
 from wxmplot import PlotPanel
 
 HAS_DV = False
@@ -130,7 +132,7 @@ class XRFDisplayFrame(wx.Frame):
         self.minor_markers = []
         self.energy_for_zoom = None
         self.zoom_lims = []
-
+        self.show_yaxis = False
         self.xmarker_left = None
         self.xmarker_right = None
 
@@ -288,10 +290,10 @@ class XRFDisplayFrame(wx.Frame):
         """mca plot window"""
         pan = PlotPanel(self, fontsize=7,
                         axisbg='#FDFDFA',
-                        axissize=[0.01, 0.11, 0.98, 0.87],
+                        axissize=[0.01, 0.11, 0.97, 0.87],
                         output_title='test.xrf',
                         messenger=self.write_message)
-
+        pan.conf.grid_color='#E5E5E5'
         pan.conf.labelfont.set_size(7)
         pan.onRightDown= partial(self.on_cursor, side='right')
         pan.add_cursor_mode('zoom',  motion = self.ignoreEvent,
@@ -299,7 +301,6 @@ class XRFDisplayFrame(wx.Frame):
                             leftdown = self.on_cursor,
                             rightdown = partial(self.on_cursor, side='right'))
         return pan
-
 
     def createControlPanel(self):
         ctrlpanel = wx.Panel(self, name='Ctrl Panel')
@@ -384,13 +385,18 @@ class XRFDisplayFrame(wx.Frame):
 
         # y scale
         yscalepanel = wx.Panel(ctrlpanel, name='YScalePanel')
-        ysizer  = wx.BoxSizer(wx.HORIZONTAL)
-        ytitl = txt(yscalepanel, ' Y Scale:', font=Font(10), size=80)
-        ylog = Choice(yscalepanel, size=(80, 30), choices=['log', 'linear'],
+        ysizer = wx.BoxSizer(wx.HORIZONTAL)
+        ytitle = txt(yscalepanel, ' Y Scale:', font=Font(10), size=80)
+        yspace = txt(yscalepanel, ' ', font=Font(10), size=20)
+        ylog   = Choice(yscalepanel, size=(80, 30), choices=['log', 'linear'],
                       action=self.onLogLinear)
-
-        ysizer.Add(ytitl,   0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
+        yaxis  = Check(yscalepanel, ' Show Y Axis ', action=self.onYAxis,
+                      default=False)
+        self.wids['show_yaxis'] = yaxis
+        ysizer.Add(ytitle,  0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
         ysizer.Add(ylog,    0, wx.EXPAND|wx.ALL, 0)
+        ysizer.Add(yspace,  0, wx.EXPAND|wx.ALL, 0)
+        ysizer.Add(yaxis,   0, wx.EXPAND|wx.ALL, 0)
         pack(yscalepanel, ysizer)
 
         # zoom buttons
@@ -479,50 +485,46 @@ class XRFDisplayFrame(wx.Frame):
         emin, emax = self.panel.axes.get_xlim()
         erange = emax-emin
         emid   = (emax+emin)/2.0
+        if self.energy_for_zoom is not None:
+            emid = self.energy_for_zoom
         dmin, dmax = emin, emax
         drange = erange
         if self.mca is not None:
             dmin, dmax = self.mca.energy.min(), self.mca.energy.max()
-        return (emid, erange, emin, emax, dmin, dmax)
+        return (emid, erange, dmin, dmax)
+
+    def _set_xview(self, e1, e2):
+        self.energy_for_zoom = None
+        self.panel.axes.set_xlim((e1, e2))
+        self.panel.canvas.draw()
 
     def onPanLo(self, event=None):
-        emid, erange, emin, emax, dmin, dmax = self._getlims()
-        e1 = max(dmin, emin-erange)
+        emid, erange, dmin, dmax = self._getlims()
+        e1 = max(dmin, emid-0.9*erange)
         e2 = min(dmax, e1 + erange)
-        # print 'Pan Lo ', dmin, dmax, emin, emax, erange, ' --> ', e1, e2
-        self.panel.axes.set_xlim((e1, e2))
-        self.panel.canvas.draw()
+        self._set_xview(e1, e2)
 
     def onPanHi(self, event=None):
-        emid, erange, emin, emax, dmin, dmax = self._getlims()
-        e2 = min(dmax, emax+erange)
+        emid, erange, dmin, dmax = self._getlims()
+        e2 = min(dmax, emid+0.9*erange)
         e1 = max(dmin, e2-erange)
-        # print 'Pan Hi ', dmin, dmax, emin, emax, erange, ' --> ', e1, e2
-        self.panel.axes.set_xlim((e1, e2))
-        self.panel.canvas.draw()
+        self._set_xview(e1, e2)
 
     def onZoomIn(self, event=None):
-        emid, erange, emin, emax, dmin, dmax = self._getlims()
-        if self.energy_for_zoom is not None:
-            emid = self.energy_for_zoom
-        espan = erange/3.0
-        e1 = max(dmin, emid-espan)
-        e2 = min(dmax, emid+espan)
-        self.panel.axes.set_xlim((e1, e2))
-        self.panel.canvas.draw()
+        emid, erange, dmin, dmax = self._getlims()
+        e1 = max(dmin, emid-erange/3.0)
+        e2 = min(dmax, emid+erange/3.0)
+        self._set_xview(e1, e2)
 
     def onZoomOut(self, event=None):
-        emid, erange, emin, emax, dmin, dmax = self._getlims()
-        espan = 1.5*erange
-        e1 = max(dmin, emid-espan)
-        e2 = min(dmax, emid+espan)
-        self.panel.axes.set_xlim((e1, e2))
-        self.panel.canvas.draw()
+        emid, erange, dmin, dmax = self._getlims()
+        e1 = max(dmin, emid-1.25*erange)
+        e2 = min(dmax, emid+1.25*erange)
+        self._set_xview(e1, e2)
 
     def unzoom_all(self, event=None):
-        emid, erange, emin, emax, dmin, dmax = self._getlims()
-        self.panel.axes.set_xlim((dmin, dmax))
-        self.panel.canvas.draw()
+        emid, erange, dmin, dmax = self._getlims()
+        self._set_xview(dmin, dmax)
 
     def set_roilist(self, mca=None):
         """ Add Roi names to roilist"""
@@ -900,6 +902,16 @@ class XRFDisplayFrame(wx.Frame):
 
         self.panel.canvas.draw()
 
+    def onYAxis(self, event=None):
+        self.show_yaxis = self.wids['show_yaxis'].IsChecked()
+        left, bottom, width, height = self.panel.axissize
+        left, width = 0.01, 0.97
+        if self.show_yaxis: left, width = 0.07, 0.91
+        self.panel.axes.yaxis.set_major_formatter(LogFormatter())
+        self.panel.axes.set_position([left, bottom, width, height])
+        self.panel.axes.get_yaxis().set_visible(self.show_yaxis)
+        self.panel.canvas.draw()
+
     def onLogLinear(self, event=None):
         self.ylog_scale = 'log' == event.GetString()
         roiname = None
@@ -958,7 +970,7 @@ class XRFDisplayFrame(wx.Frame):
         mca = self.mca
         panel = self.panel
         panel.canvas.Freeze()
-        kwargs = {'grid': False, 'xmin': 0,
+        kwargs = {'grid': False, 'gridcolor': '#E5E5E5', 'xmin': 0,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'axes_style': 'bottom',
@@ -987,7 +999,7 @@ class XRFDisplayFrame(wx.Frame):
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='roi', **kwargs)
 
-        panel.axes.get_yaxis().set_visible(False)
+        panel.axes.get_yaxis().set_visible(self.show_yaxis)
         if len(self.zoom_lims) > 0:
             x1, x2 = self.zoom_lims[-1]
             panel.axes.set_xlim(x1, x2)
@@ -1052,7 +1064,7 @@ class XRFDisplayFrame(wx.Frame):
                     'ymax' : ymax,
                     'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale,
-                    'grid': False})
+                    'grid': False, 'gridcolor': '#E5E5E5'})
         self.panel.oplot(self.x2data, self.y2data, color=color, **kws)
 
     def swap_mcas(self, event=None):
