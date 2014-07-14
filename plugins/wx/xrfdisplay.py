@@ -20,7 +20,7 @@ except:
 import wx.lib.colourselect  as csel
 import numpy as np
 import matplotlib
-from matplotlib.ticker import LogFormatter
+from matplotlib.ticker import LogFormatter, FuncFormatter
 
 from wxmplot import PlotPanel
 
@@ -386,11 +386,11 @@ class XRFDisplayFrame(wx.Frame):
         # y scale
         yscalepanel = wx.Panel(ctrlpanel, name='YScalePanel')
         ysizer = wx.BoxSizer(wx.HORIZONTAL)
-        ytitle = txt(yscalepanel, ' Y Scale:', font=Font(10), size=80)
+        ytitle = txt(yscalepanel, ' Y Axis:', font=Font(10), size=80)
         yspace = txt(yscalepanel, ' ', font=Font(10), size=20)
         ylog   = Choice(yscalepanel, size=(80, 30), choices=['log', 'linear'],
                       action=self.onLogLinear)
-        yaxis  = Check(yscalepanel, ' Show Y Axis ', action=self.onYAxis,
+        yaxis  = Check(yscalepanel, ' Show Y Scale ', action=self.onYAxis,
                       default=False)
         self.wids['show_yaxis'] = yaxis
         ysizer.Add(ytitle,  0, wx.ALIGN_CENTER_VERTICAL|wx.ALL, 0)
@@ -702,6 +702,10 @@ class XRFDisplayFrame(wx.Frame):
                  "Configure Colors", self.config_colors)
         MenuItem(self, omenu, "Configure X-ray Lines",
                  "Configure which X-ray Lines are shown", self.config_xraylines)
+        MenuItem(self, omenu, "Configure Plot\tCtrl+K",
+                 "Configure Plot Colors, etc", self.panel.configure)
+        MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
+                 "Zoom out to full data range", self.unzoom_all)
 
         omenu.AppendSeparator()
         MenuItem(self, omenu, "Hide X-ray Lines",
@@ -713,11 +717,6 @@ class XRFDisplayFrame(wx.Frame):
         MenuItem(self, omenu, "Hide XRF Background ",
                  "Hide cursor markers", self.clear_background)
 
-        omenu.AppendSeparator()
-        MenuItem(self, omenu, "Configure Plot\tCtrl+K",
-                 "Configure Plot Colors, etc", self.panel.configure)
-        MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
-                 "Zoom out to full data range", self.unzoom_all)
         omenu.AppendSeparator()
         MenuItem(self, omenu, "Swap MCA and Background MCA",
                  "Swap Foreground and Background MCAs", self.swap_mcas)
@@ -906,11 +905,25 @@ class XRFDisplayFrame(wx.Frame):
         self.show_yaxis = self.wids['show_yaxis'].IsChecked()
         left, bottom, width, height = self.panel.axissize
         left, width = 0.01, 0.97
-        if self.show_yaxis: left, width = 0.07, 0.91
-        self.panel.axes.yaxis.set_major_formatter(LogFormatter())
-        self.panel.axes.set_position([left, bottom, width, height])
-        self.panel.axes.get_yaxis().set_visible(self.show_yaxis)
+        if self.show_yaxis: left, width = 0.06, 0.92
+        ax = self.panel.axes
+        ax.yaxis.set_major_formatter(FuncFormatter(self._formaty))
+        ax.set_position([left, bottom, width, height])
+        ax.get_yaxis().set_visible(self.show_yaxis)
+        ax.spines['right'].set_visible(False)
+        ax.yaxis.set_ticks_position('left')
         self.panel.canvas.draw()
+
+    def _formaty(self, val, index=0, **kws):
+        try:
+            decade = int(np.log10(val))
+        except:
+            decade = 0
+        scale = 10**decade
+        if abs(decade) < 3:
+            return "%.0f" % val
+        val = val / scale
+        return "%.0fe%i" % (val, decade)
 
     def onLogLinear(self, event=None):
         self.ylog_scale = 'log' == event.GetString()
