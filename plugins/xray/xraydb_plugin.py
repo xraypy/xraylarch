@@ -181,7 +181,7 @@ def mu_elam(element, energy, kind='total', _larch=None):
               coherent scattering, and incoherent scattering
               cross sections, respectively.
 
-    Data from Elam, Ravel, and Sieber.    
+    Data from Elam, Ravel, and Sieber.
     """
     if _larch is None:
         return
@@ -324,6 +324,8 @@ def xray_line(element, line='Ka', _larch=None):
     lines = xdb.xray_lines(element)
 
     family = line.lower()
+    if family == 'k': family = 'ka'
+    if family == 'l': family = 'la'
     if family in ('ka', 'kb', 'la', 'lb', 'lg'):
         scale = 1.e-99
         value = 0.0
