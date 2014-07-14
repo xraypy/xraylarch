@@ -1,4 +1,5 @@
 import time
+import numpy as np
 from functools import partial
 import epics
 from epics.devices.mca import  MultiXMAP
@@ -171,13 +172,19 @@ class Epics_MultiXMAP(object):
         """return an MCA object """
         emca = self._xmap.mcas[mca-1]
         emca.get_rois()
-        thismca = MCA(counts=1.0*emca.VAL, offset=emca.CALO, slope=emca.CALS)
+        counts = 1.0*emca.VAL
+        if max(counts) < 1.0:
+            npts = len(counts)
+            counts = counts + np.arange(npts)/(1.0*npts)
+
+        thismca = MCA(counts=counts, offset=emca.CALO, slope=emca.CALS)
         thismca.energy = emca.get_energy()
-        thismca.counts += 1.0
+        thismca.counts = counts
         thismca.rois = []
         for eroi in emca.rois:
             thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
                                     left=eroi.left, right=eroi.right))
+
         return thismca
 
     def clear_rois(self):
