@@ -53,12 +53,17 @@ class DetectorSelectDialog(wx.Dialog):
     Can be either XIA xMAP  or Quantum XSPress3
     """
     msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
-    det_types = ('xmap', 'xspress3')
-    def_prefix =  '13GEXMAP:'
+    amp_types = ('xmap', 'xspress3')
+    det_types = ('ME-4', 'other')
+    def_prefix =  '13SDD1:'
     def_nelem  =  4
-    def __init__(self, parent=None, prefix=None, det_type='xmap', nmca=4,
+
+    def __init__(self, parent=None, prefix=None, det_type='ME-4',
+                 amp_type='xmap', nmca=4,
                  title='Select Epics MCA Detector'):
         if prefix is None: prefix = self.def_prefix
+        if amp_type not in self.amp_types:
+            amp_type = self.amp_types[0]
         if det_type not in self.det_types:
             det_type = self.det_types[0]
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
@@ -67,8 +72,10 @@ class DetectorSelectDialog(wx.Dialog):
         if parent is not None:
             self.SetFont(parent.GetFont())
 
-        self.dettype = Choice(self,  size=(120, -1),
-                              choices=self.det_types)
+        self.amptype = Choice(self, size=(120, -1),choices=self.amp_types)
+        self.amptype.SetStringSelection(amp_type)
+
+        self.dettype = Choice(self,size=(120, -1), choices=self.det_types)
         self.dettype.SetStringSelection(det_type)
 
         self.prefix = wx.TextCtrl(self, -1, prefix, size=(120, -1))
@@ -90,27 +97,23 @@ class DetectorSelectDialog(wx.Dialog):
         btnsizer.AddButton(btn)
         btnsizer.Realize()
 
+        hline = wx.StaticLine(self, size=(225, 3), style=wx.LI_HORIZONTAL)
         sty = LEFT|wx.ALIGN_CENTER_VERTICAL
         sizer = wx.GridBagSizer(5, 2)
-        sizer.Add(SimpleText(self, 'MCA Type', size=(100, -1)),
-                  (0, 0), (1, 1), sty, 2)
+        def txt(label):
+            return SimpleText(self, label, size=(120, -1), style=LEFT)
 
-        sizer.Add(SimpleText(self, 'Epics Prefix', size=(100, -1)),
-                  (1, 0), (1, 1), sty, 2)
+        sizer.Add(txt('Detector Type'), (0, 0), (1, 1), sty, 2)
+        sizer.Add(txt('Electronics'),   (1, 0), (1, 1), sty, 2)
+        sizer.Add(txt('Epics Prefix'),  (2, 0), (1, 1), sty, 2)
+        sizer.Add(txt('# Elements'),    (3, 0), (1, 1), sty, 2)
+        sizer.Add(self.dettype,         (0, 1), (1, 1), sty, 2)
+        sizer.Add(self.amptype,         (1, 1), (1, 1), sty, 2)
+        sizer.Add(self.prefix,          (2, 1), (1, 1), sty, 2)
+        sizer.Add(self.nelem,           (3, 1), (1, 1), sty, 2)
 
-        sizer.Add(SimpleText(self, '# Elements', size=(100, -1)),
-                  (2, 0), (1, 1), sty, 2)
-
-        sizer.Add(self.dettype, (0, 1), (1, 1), sty, 2)
-        sizer.Add(self.prefix, (1, 1), (1, 1), sty, 2)
-        sizer.Add(self.nelem,  (2, 1), (1, 1), sty, 2)
-
-        sizer.Add(wx.StaticLine(self, size=(225, 3), style=wx.LI_HORIZONTAL),
-                  (3, 0), (1, 2), sty, 2)
-
-        sizer.Add(btnsizer,
-                  (4, 0), (1, 2), sty, 2)
-
+        sizer.Add(hline,                (4, 0), (1, 2), sty, 2)
+        sizer.Add(btnsizer,             (5, 0), (1, 2), sty, 2)
         self.SetSizer(sizer)
         sizer.Fit(self)
 
@@ -119,12 +122,15 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     _about = """Epics XRF Spectra Display
   Matt Newville <newville @ cars.uchicago.edu>
   """
-    def __init__(self, parent=None, _larch=None, prefix=None, det_type='xmap',
+    me4_layout = ((0, 0), (1, 0), (1, 1), (0, 1))
+
+    def __init__(self, parent=None, _larch=None, prefix=None,
+                 det_type='ME-4',  amp_type='xmap',
                  nmca=4, size=(725, 580),  title='Epics XRF Display',
                  output_title='XRF', **kws):
 
-
         self.det_type = det_type
+        self.amp_type = amp_type
         self.nmca = nmca
         self.det_fore = 1
         self.det_back = 0
@@ -138,30 +144,34 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onConnectEpics(self, event=None, prefix=None, **kws):
         if prefix is None:
             res  = self.prompt_for_detector(prefix=prefix,
-                                            det_type=self.det_type,
+                                            amp_type=self.amp_type,
                                             nmca=self.nmca)
-            self.prefix, self.det_type, self.nmca = res
+            self.prefix, self.det_type, self.amp_type, self.nmca = res
         self.det_fore = 1
         self.det_back = 0
         self.clear_mcas()
-        self.connect_to_detector(prefix=self.prefix,
+        self.connect_to_detector(prefix=self.prefix, amp_type=self.amp_type,
                                  det_type=self.det_type, nmca=self.nmca)
 
-    def prompt_for_detector(self, prefix=None, det_type='xmap', nmca=4):
-        dlg = DetectorSelectDialog(prefix=prefix, det_type=det_type, nmca=nmca)
+    def prompt_for_detector(self, prefix=None, amp_type='xmap', nmca=4):
+        dlg = DetectorSelectDialog(prefix=prefix, amp_type=amp_type, nmca=nmca)
         dlg.Raise()
         if dlg.ShowModal() == wx.ID_OK:
             dpref = dlg.prefix.GetValue()
+            atype = dlg.amptype.GetStringSelection()
             dtype = dlg.dettype.GetStringSelection()
             nmca = dlg.nelem.GetValue()
             dlg.Destroy()
-        return dpref, dtype, nmca
+        return dpref, dtype, atype, nmca
 
-    def connect_to_detector(self, prefix=None, det_type='xmap', nmca=4):
-        if det_type.lower().startswith('xmap'):
+    def connect_to_detector(self, prefix=None, amp_type='xmap',
+                            det_type=None, nmca=4):
+        self.det = None
+        if amp_type.lower().startswith('xmap'):
             self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
-        elif det_type.lower().startswith('xsp'):
+        elif amp_type.lower().startswith('xsp'):
             print ' connect to xspress3 ' # self.det = Xspress3Detector()
+
 
     def show_mca(self):
         self.needs_newplot = False
@@ -234,9 +244,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         bsizer.Add(ctrlpanel, 0, style, 1)
         bsizer.Add(plotpanel, 1, style, 1)
+        hline = wx.StaticLine(self, size=(425, 2), style=wx.LI_HORIZONTAL|style)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(epicspanel, 0, style, 1)
+        sizer.Add(hline,      0, style, 1)
         sizer.Add(bsizer,     1, style, 1)
         pack(self, sizer)
 
@@ -246,33 +258,39 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         pane = wx.Panel(self, name='epics panel')
         psizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        # det button panel
         btnpanel = wx.Panel(pane, name='foo')
 
-        btnsizer = wx.GridBagSizer(2, 2)
+        nmca = self.nmca
+
+        if self.det_type.lower().startswith('me-4') and nmca<5:
+            btnsizer = wx.GridBagSizer(2, 2)
+        else:
+            btnsizer = wx.GridBagSizer(int((nmca+3.0)/4.0), 4)
+
         style  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         tstyle = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         rstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
         bkg_choices = ['None']
 
         psizer.Add(SimpleText(pane, ' MCAs: '),  0, tstyle, 1)
-        for i in range(1, self.nmca+1):
+        for i in range(1, 1+nmca):
             bkg_choices.append("%i" % i)
             b =  Button(btnpanel, '%i' % i, size=(25, 25),
                         action=partial(self.onSelectDet, index=i))
             self.wids['det%i' % i] = b
-            btnsizer.Add(b, (0, i), (1, 1), style, 1)
+            loc = divmod(i-1, 4)
+            if self.det_type.lower().startswith('me-4') and nmca<5:
+                loc = self.me4_layout[i-1]
+            btnsizer.Add(b,  loc, (1, 1), style, 1)
         pack(btnpanel, btnsizer)
 
         psizer.Add(btnpanel, 0, style, 1)
 
-        self.wids['det_status'] = SimpleText(pane, ' ', size=(60, -1))
-        self.wids['elapsed']    = SimpleText(pane, ' ', size=(70, -1),
-                                             style=rstyle)
-        self.wids['deadtime']   = SimpleText(pane, ' ', size=(70, -1),
-                                             style=rstyle)
+        self.wids['det_status'] = SimpleText(pane, ' ', size=(60, -1), style=rstyle)
+        self.wids['elapsed']    = SimpleText(pane, ' ', size=(60, -1), style=rstyle)
+        self.wids['deadtime']   = SimpleText(pane, ' ', size=(60, -1), style=rstyle)
 
-        self.wids['bkg_det'] = Choice(pane, size=(60, -1),
+        self.wids['bkg_det'] = Choice(pane, size=(75, -1),
                                       choices=bkg_choices,
                                       action=self.onSelectDet)
 
@@ -280,7 +298,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                        size=(55, -1),act_on_losefocus=True,
                                        action=self.onSetDwelltime)
 
-        b0 =  Button(pane, 'Continuous', size=(75, 25), action=partial(self.onStart, dtime=0))
+        b0 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart, dtime=0))
         b1 =  Button(pane, 'Start',      size=(75, 25), action=self.onStart)
         b2 =  Button(pane, 'Stop',       size=(75, 25), action=self.onStop)
         b3 =  Button(pane, 'Erase',      size=(75, 25), action=self.onErase)
@@ -289,8 +307,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         psizer.Add(self.wids['bkg_det'],            0, style, 1)
 
         psizer.Add(SimpleText(pane, '  Time (s): '), 0, tstyle, 1)
-        psizer.Add(self.wids['dwelltime'],             0, tstyle, 2)
-        psizer.Add(self.wids['elapsed'],           0, tstyle, 2)
+        psizer.Add(self.wids['dwelltime'],           0, tstyle, 2)
+        psizer.Add(self.wids['elapsed'],             0, tstyle, 2)
 
         # psizer.Add(SimpleText(pane, ' Status:'),  0, tstyle, 1)
         psizer.Add(self.wids['det_status'],         0, tstyle, 2)
@@ -339,9 +357,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
             energy = self.det.get_energy(mca=self.det_fore)
             counts = self.det.get_array(mca=self.det_fore)*1.0
+            if max(counts) < 1.0:
+                counts += 1.0
 
             self.update_mca(counts, energy=energy)
-
             self.det.needs_refresh = False
 
     def onSelectBkgDet(self, event=None, **kws):
