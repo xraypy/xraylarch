@@ -493,8 +493,9 @@ class XRFDisplayFrame(wx.Frame):
             dmin, dmax = self.mca.energy.min(), self.mca.energy.max()
         return (emid, erange, dmin, dmax)
 
-    def _set_xview(self, e1, e2):
-        self.energy_for_zoom = None
+    def _set_xview(self, e1, e2, keep_zoom=False):
+        if not keep_zoom:
+            self.energy_for_zoom = None
         self.panel.axes.set_xlim((e1, e2))
         self.panel.canvas.draw()
 
@@ -514,7 +515,7 @@ class XRFDisplayFrame(wx.Frame):
         emid, erange, dmin, dmax = self._getlims()
         e1 = max(dmin, emid-erange/3.0)
         e2 = min(dmax, emid+erange/3.0)
-        self._set_xview(e1, e2)
+        self._set_xview(e1, e2, keep_zoom=True)
 
     def onZoomOut(self, event=None):
         emid, erange, dmin, dmax = self._getlims()
@@ -531,7 +532,9 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['roilist'].Clear()
         if mca is not None:
             for roi in mca.rois:
-                self.wids['roilist'].Append(roi.name)
+                name = roi.name.strip()
+                if len(name) > 0:
+                    self.wids['roilist'].Append(roi.name)
 
     def clear_roihighlight(self, event=None):
         self.selected_roi = None
