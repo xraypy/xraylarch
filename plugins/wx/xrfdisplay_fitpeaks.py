@@ -111,7 +111,10 @@ class FitSpectraFrame(wx.Frame):
         p.Add(HLine(p, size=(600, 3)), dcol=5, newrow=True)
         offset, slope = self.mca.offset, self.mca.slope
         for iroi, roi in enumerate(self.mca.rois):
-            cenval, ecen, fwhm, ampval, xfit = self.mca.init_calib[roi.name]
+            try:
+                cenval, ecen, fwhm, ampval, _x = self.mca.init_calib[roi.name]
+            except KeyError:
+                continue
             sigval = 0.4*fwhm
             mincen = offset + slope*(roi.left  - 4 * roi.bgr_width)
             maxcen = offset + slope*(roi.right + 4 * roi.bgr_width)
