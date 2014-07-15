@@ -64,11 +64,11 @@ class PeriodicTablePanel(wx.Panel):
              'einsteinium', 'fermium', 'mendelevium', 'nobelium',
              'lawrencium']
 
-    FRAME_BG = (245, 245, 240)
-    REG_BG = (252, 252, 245)
-    REG_FG = ( 20,  20, 120)
-    SEL_FG = (100,   0,   0)
-    SEL_BG = (255, 255, 135)
+    FRAME_BG = (253, 253, 250)
+    REG_BG   = (253, 253, 250)
+    REG_FG   = ( 20,  20, 120)
+    SEL_FG   = (100,   0,   0)
+    SEL_BG   = (255, 255, 135)
     TITLE_BG = (255, 255, 220)
 
     def __init__(self, parent, title='Select Element',
@@ -81,9 +81,9 @@ class PeriodicTablePanel(wx.Panel):
         self.ctrls = {}
         self.SetBackgroundColour(self.FRAME_BG)
         self.selected = None
-        self.elemfont  = wx.Font( 8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.titlefont = wx.Font(11, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
-        self.subtitlefont = wx.Font(8, wx.SWISS, wx.NORMAL, wx.BOLD, 0, "")
+        self.elemfont  = wx.Font( 8, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, "")
+        self.titlefont = wx.Font(11, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, "")
+        self.subtitlefont = wx.Font(8, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, "")
         self.BuildPanel()
 
     def onKey(self, event=None, name=None):
@@ -180,7 +180,7 @@ class PeriodicTablePanel(wx.Panel):
             self.ctrls[name] = tw
             sizer.Add(tw, coords, (1, 1), wx.ALIGN_LEFT, 0)
         self.title = wx.StaticText(self, -1, label=' Select Element ')
-        self.tsym = wx.StaticText(self, -1, label='__')
+        self.tsym  = wx.StaticText(self, -1, label='__')
         self.tznum = wx.StaticText(self, -1, label='__')
 
         for a in (self.title, self.tsym, self.tznum):
@@ -191,13 +191,14 @@ class PeriodicTablePanel(wx.Panel):
         sizer.Add(self.tsym,  (0, 2), (1, 2), wx.ALIGN_LEFT, 1)
         sizer.Add(self.tznum, (0, 12), (1, 3), wx.ALIGN_LEFT, 1)
 
-        self.subtitle = wx.StaticText(self, -1, label='         ')
-        self.subtitle.SetFont(self.subtitlefont)
-        sizer.Add(self.subtitle, (2, 2), (1, 9), wx.ALIGN_LEFT, 2)
+        self.subtitle = [None, None]
+        self.subtitle[0] = wx.StaticText(self, -1, label='         ')
+        self.subtitle[0].SetFont(self.subtitlefont)
+        self.subtitle[1] = wx.StaticText(self, -1, label='         ')
+        self.subtitle[1].SetFont(self.subtitlefont)
 
-        #s2title = wx.StaticText(self, -1, label='Edge Energies (keV):')
-        #s2title.SetFont(self.subtitlefont)
-        #sizer.Add(s2title,       (1, 2), (1, 7), wx.ALIGN_LEFT, 2)
+        sizer.Add(self.subtitle[0], (1, 2), (1, 9), wx.ALIGN_LEFT, 2)
+        sizer.Add(self.subtitle[1], (2, 2), (1, 9), wx.ALIGN_LEFT, 2)
 
         sizer.SetEmptyCellSize((2, 2))
         sizer.SetHGap(1)
@@ -214,8 +215,9 @@ class PeriodicTablePanel(wx.Panel):
         
     def onGetFocus(self, event=None):      event.Skip()        
 
-    def set_subtitle(self, label):
-        self.subtitle.SetLabel(label)
+    def set_subtitle(self, label, index=0):
+        if index not in (0, 1): index = 0
+        self.subtitle[index].SetLabel(label)
 
 class PTableFrame(wx.Frame):
     def __init__(self, size=(-1, -1)):
