@@ -148,6 +148,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                             amp_type=self.amp_type,
                                             nmca=self.nmca)
             self.prefix, self.det_type, self.amp_type, self.nmca = res
+        else:
+            self.prefix = prefix
         self.det_fore = 1
         self.det_back = 0
         self.clear_mcas()
@@ -171,8 +173,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if amp_type.lower().startswith('xmap'):
             self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
         elif amp_type.lower().startswith('xsp'):
-            print ' connect to xspress3 ' # self.det = Xspress3Detector()
-
+            self.det = Epics_Xspress3(prefix=prefix, nmca=nmca)
 
     def show_mca(self):
         self.needs_newplot = False
@@ -255,7 +256,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def createEpicsPanel(self):
         pane = wx.Panel(self, name='epics panel')
-        psizer = wx.BoxSizer(wx.HORIZONTAL)
+        psizer = wx.GridBagSizer(4, 12) # wx.BoxSizer(wx.HORIZONTAL)
 
         btnpanel = wx.Panel(pane, name='foo')
 
@@ -271,10 +272,10 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         rstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
         bkg_choices = ['None']
 
-        psizer.Add(SimpleText(pane, ' MCAs: '),  0, tstyle, 1)
+        psizer.Add(SimpleText(pane, ' MCAs: '),  (0, 0), (1, 1), tstyle, 1)
         for i in range(1, 1+nmca):
             bkg_choices.append("%i" % i)
-            b =  Button(btnpanel, '%i' % i, size=(25, 25),
+            b =  Button(btnpanel, '%i' % i, size=(30, 25),
                         action=partial(self.onSelectDet, index=i))
             self.wids['det%i' % i] = b
             loc = divmod(i-1, 4)
@@ -282,43 +283,49 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 loc = self.me4_layout[i-1]
             btnsizer.Add(b,  loc, (1, 1), style, 1)
         pack(btnpanel, btnsizer)
+        nrows = 1 + loc[0]
 
-        psizer.Add(btnpanel, 0, style, 1)
+        if self.det_type.lower().startswith('me-4') and nmca<5:
+            nrows = 2
 
-        self.wids['det_status'] = SimpleText(pane, ' ', size=(70, -1), style=rstyle)
-        self.wids['elapsed']    = SimpleText(pane, ' ', size=(70, -1), style=rstyle)
-        self.wids['deadtime']   = SimpleText(pane, ' ', size=(60, -1), style=rstyle)
+        psizer.Add(btnpanel, (0, 1), (nrows, 1), style, 1)
+
+        self.wids['det_status'] = SimpleText(pane, ' ', size=(120, -1), style=rstyle)
+        self.wids['elapsed']    = SimpleText(pane, ' ', size=(100, -1), style=rstyle)
+        self.wids['deadtime']   = SimpleText(pane, ' ', size=(100, -1), style=rstyle)
 
         self.wids['bkg_det'] = Choice(pane, size=(75, -1),
                                       choices=bkg_choices,
                                       action=self.onSelectDet)
 
         self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
-                                       size=(55, -1),act_on_losefocus=True,
-                                       action=self.onSetDwelltime)
+                                           size=(70, -1),act_on_losefocus=True,
+                                           action=self.onSetDwelltime)
 
-        b0 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart, dtime=0))
-        b1 =  Button(pane, 'Start',      size=(75, 25), action=self.onStart)
-        b2 =  Button(pane, 'Stop',       size=(75, 25), action=self.onStop)
-        b3 =  Button(pane, 'Erase',      size=(75, 25), action=self.onErase)
+        b0 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart, 
+                                                                       dtime=0))  
+        b1 =  Button(pane, 'Start',      size=(90, 25), action=self.onStart)
+        b2 =  Button(pane, 'Stop',       size=(90, 25), action=self.onStop)
+        b3 =  Button(pane, 'Erase',      size=(90, 25), action=self.onErase)
 
-        psizer.Add(SimpleText(pane, '  Background:  '), 0, tstyle, 1)
-        psizer.Add(self.wids['bkg_det'],            0, style, 1)
+        psizer.Add(SimpleText(pane, 'Background MCA: '), (0, 2), (1, 1), tstyle, 1)
+        psizer.Add(self.wids['bkg_det'],                (1, 2), (1, 1), style, 1)
 
-        psizer.Add(SimpleText(pane, '  Time (s): '), 0, tstyle, 1)
-        psizer.Add(self.wids['dwelltime'],           0, tstyle, 2)
-        psizer.Add(self.wids['elapsed'],             0, tstyle, 2)
+        psizer.Add(SimpleText(pane, 'Preset Time (s):'),  (0, 3), (1, 1),  tstyle, 1)
+        psizer.Add(SimpleText(pane, 'Elapsed Time (s):'), (1, 3), (1, 1),  tstyle, 1)
+        psizer.Add(self.wids['dwelltime'],                (0, 4), (1, 1),  rstyle, 1)
+        psizer.Add(self.wids['elapsed'],                  (1, 4), (1, 1),  rstyle, 1)
 
-        # psizer.Add(SimpleText(pane, ' Status:'),  0, tstyle, 1)
-        psizer.Add(self.wids['det_status'],         0, tstyle, 2)
+        psizer.Add(b0, (0, 5), (1, 1), style, 1)
+        psizer.Add(b1, (0, 6), (1, 1), style, 1)
+        psizer.Add(b2, (1, 5), (1, 1), style, 1)
+        psizer.Add(b3, (1, 6), (1, 1), style, 1)
 
-        psizer.Add(b0, 0, style, 1)
-        psizer.Add(b1, 0, style, 1)
-        psizer.Add(b2, 0, style, 1)
-        psizer.Add(b3, 0, style, 1)
+        psizer.Add(SimpleText(pane, ' Status:'),  (0, 7), (1, 1), tstyle, 1)
+        psizer.Add(self.wids['det_status'],       (1, 7), (1, 1), tstyle, 2)
 
-        psizer.Add(SimpleText(pane, '   % Deadtime: '), 0, tstyle, 2)
-        psizer.Add(self.wids['deadtime'],               0, tstyle, 2)
+        psizer.Add(SimpleText(pane, '   % Deadtime: '), (0, 8), (1, 1), tstyle, 2)
+        psizer.Add(self.wids['deadtime'],               (1, 8), (1, 1), tstyle, 2)
 
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
@@ -469,14 +476,18 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
 class EpicsXRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
+        self.kws = kws
         wx.App.__init__(self)
 
     def OnInit(self):
         self.Init()
-        frame = EpicsXRFDisplayFrame() #
+        frame = EpicsXRFDisplayFrame(**self.kws) #
         frame.Show()
         self.SetTopWindow(frame)
         return True
 
 if __name__ == "__main__":
+    # e = EpicsXRFApp(prefix='QX4:', det_type='ME-4',
+    #                amp_type='xspress3', nmca=4)
+   
     EpicsXRFApp().MainLoop()
