@@ -329,17 +329,17 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         wx.CallAfter(self.onSelectDet, index=1)
 
         self.mca_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.onTimer, self.mca_timer)
+        self.Bind(wx.EVT_TIMER, self.UpdateData, self.mca_timer)
         self.mca_timer.Start(100)
         return pane
 
-    def onTimer(self, event=None):
+    def UpdateData(self, event=None, force=False):
         if self.mca is None or self.needs_newplot:
             self.show_mca()
         # self.elapsed_real = self.det.elapsed_real
         self.mca.real_time = self.det.elapsed_real
 
-        if self.det.needs_refresh:
+        if force or self.det.needs_refresh:
             if self.det_back > 0:
                 if self.mca2 is None:
                     self.mca2 = self.det.get_mca(mca=self.det_back)
@@ -357,9 +357,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             energy = self.det.get_energy(mca=self.det_fore)
             counts = self.det.get_array(mca=self.det_fore)*1.0
             if max(counts) < 1.0:
-                counts      = 1.0*np.ones(len(counts))
-                counts[:5]  = 2.15*np.random.random(5)
-                counts[-5:] = 2.15*np.random.random(5)
+                counts    = 0.5*np.ones(len(counts))
+                counts[0] = 2.0
 
             self.update_mca(counts, energy=energy)
             self.det.needs_refresh = False
@@ -367,7 +366,21 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onSelectBkgDet(self, event=None, **kws):
         self.mca2 = None
         self.det_back = self.wids['bkg_det'].GetSelection()
-        self.onSelectDet(index=self.det_fore)
+        if self.det_back == self.det_fore:
+            self.det_back = 0
+        if self.det_back != 0:
+            title = "Foreground: MCA{:d}".format(self.det_fore)
+            if self.mca2 is None:
+                self.mca2 = self.det.get_mca(mca=self.det_back)
+            e = self.det.get_energy(mca=self.det_back)
+            c = self.det.get_array(mca=self.det_back)
+            title = "{:s}  Background: MCA{:d}".format(title, self.det_back)
+            try:
+                self.oplot(e, c)
+                self.SetTitle(title)
+            except ValueError:
+                pass
+        self.needs_newplot = False
 
     def onSelectDet(self, event=None, index=0, **kws):
         if index > 0:
@@ -399,7 +412,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.wids['bkg_det'].SetSelection(fore)
         self.onSelectDet(index=back)
 
-
     def clear_background(self, evt=None):
         "remove XRF background"
         self.mca2 = None
@@ -425,6 +437,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onStop(self, event=None, **kws):
         self.det.stop()
+        self.det.needs_refresh = True
+        time.sleep(0.125)
+        self.UpdateData(event=None, force=True)
 
     def onErase(self, event=None, **kws):
         self.needs_newplot = True
