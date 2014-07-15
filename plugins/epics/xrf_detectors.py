@@ -19,14 +19,18 @@ class Epics_Xspress3(object):
     """multi-element MCA detector using Quantum Xspress3 electronics
     AND a triggering Struck SIS multi-channel scaler
     """
+    NPTS = 4095
+    SIS_PREFIX = '13IDE:SIS1:'
     def __init__(self, prefix=None, nmca=4, sis_prefix=None, **kws):
         self.nmca = nmca
+        if sis_prefix is None: sis_prefix = self.SIS_PREFIX
         self.prefix = prefix
         self.sis_prefix = sis_prefix
         self.mcas = []
         self.energies = []
         self.connected = False
         self.elapsed_real = None
+        self.elapsed_textwidget = None
         self.needs_refresh = False
         if self.prefix is not None:
             self.connect()
@@ -37,51 +41,113 @@ class Epics_Xspress3(object):
         if self.sis_prefix is not None:
             self._sis = Struck(self.sis_prefix)
         self._xsp3 = Xspress3(self.prefix)
-        self._xmap.PV('DeadTime')
+        for imca in range(1, self.nmca+1):
+            self._xsp3.PV('ARRSUM%i:ArrayData' % imca)
+
+        self._sis.add_callback('ElapsedReal', self.onRealTime)
         time.sleep(0.001)
-        self.mcas = self._xmap.mcas
         self.connected = True
-        self._xmap.SpectraMode()
-        self.rois = self._xmap.mcas[0].get_rois()
+        self._sis.InternalMode()
+
+    @EpicsFunction
+    def connect_displays(self, status=None, elapsed=None, deadtime=None):
+        if elapsed is not None:
+            self.elapsed_textwidget = elapsed
+        if status is not None:
+            pvs = self._xsp3._pvs
+            attr = 'StatusMessage_RBV'
+            pvs[attr].add_callback(partial(self.update_widget, wid=status))
+
+
+    @DelayedEpicsCallback
+    def update_widget(self, pvname, char_value=None,  wid=None, **kws):
+        if wid is not None:
+            wid.SetLabel(char_value)
+
+    @DelayedEpicsCallback
+    def onRealTime(self, pvname, value=None, **kws):
+        self.elapsed_real = value
+        self.needs_refresh = True
+        if self.elapsed_textwidget is not None:
+            self.elapsed_textwidget.SetLabel("  %8.2f" % value)
+
+    def set_dwelltime(self, dtime=1.0):
+        self._xsp3.useExternalTrigger()
+        self._xsp3.NumImages = 4000
+        self._xsp3.FileCaptureOff()
+        if dtime < 0.1: 
+            dtime = 0.0
+            pixeltime = 0.1
+        else:
+            pixeltime = max(dtime/4000.0, 0.1)
+        self._sis.InternalMode(prescale=1)
+        self._sis.setPresetReal(dtime)
+        self._sis.setDwell(pixeltime)
 
     def get_mca(self, mca=1):
-        raise NotImplemented
+        emca = self._xsp3.mcas[mca-1]
+        emca.get_rois()
+        counts = self.get_array(mca=mca)
+        if max(counts) < 1.0:
+            counts    = 0.5*np.ones(len(counts))
+            counts[0] = 2.0
+
+        thismca = MCA(counts=counts, offset=0.0, slope=0.01)
+        thismca.energy = self.get_energy()
+        thismca.counts = counts
+        thismca.rois = []
+        for eroi in emca.rois:
+            thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
+                                    left=eroi.left, right=eroi.right))
+        return thismca
 
     def get_energy(self, mca=1):
-        raise NotImplemented
+        return np.arange(self.NPTS)*.010
 
     def get_array(self, mca=1):
-        raise NotImplemented
-
-    def save_rois(self, roifile):
-        raise NotImplemented
-
-    def restore_rois(self, roifile):
-        raise NotImplemented
-
-    def connect_displays(self, status=None, elapsed=None,
-                         deadtime=None):
-        raise NotImplemented
-
-    def set_dwelltime(self,dtime=1):
-        raise NotImplemented
+        out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
+        out[np.where(out<0.91)]= 0.91
+        return out
 
     def start(self):
-        raise NotImplemented
+        'xspress3 start '
+        if self._sis.Acquiring == 1:
+            self.stop()
+            while self._xsp3.Acquire_RBV == 1:
+                time.sleep(0.001)
+                self._xsp3.stop()                
+            time.sleep(0.001)
+        self._xsp3.start(capture=False) 
+        time.sleep(0.01)
+        self._sis.start()
 
     def stop(self):
-        raise NotImplemented
+        self._sis.stop()
+        self._xsp3.stop()
 
     def erase(self):
-        raise NotImplemented
+        self._sis.erase()
+        self._xsp3.ERASE = 1
 
     def del_roi(self, roiname):
-        raise NotImplemented
+        for mca in self._xsp3.mcas:
+            mca.del_roi(roiname)
+        self.rois = self._xsp3.mcas[0].get_rois()
 
-    def add_roi(self, nam, lo=-1, hi=-1):
-        raise NotImplemented
+    def add_roi(self, roiname, lo=-1, hi=-1):
+        for mca in self._xsp3.mcas:
+            mca.add_roi(roiname, lo=lo, hi=hi)
+        self.rois = self._xsp3.mcas[0].get_rois()
 
+    def restore_rois(self, roifile):
+        print 'restore rois from ', roifile
+        self._xsp3.restore_rois(roifile)
+        self.rois = self._xsp3.mcas[0].get_rois()
 
+    def save_rois(self, roifile):
+        buff = self._xsp3.roi_calib_info()
+        with open(roifile, 'w') as fout:
+            fout.write("%s\n" % "\n".join(buff))
 
 
 class Epics_MultiXMAP(object):
@@ -147,7 +213,7 @@ class Epics_MultiXMAP(object):
 
 
     def set_dwelltime(self, dtime=0):
-        if dtime <= 1.e-3:
+        if dtime <= 0.1:
             self._xmap.PresetMode = 0
         else:
             self._xmap.PresetMode = 1
