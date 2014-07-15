@@ -929,9 +929,9 @@ class XRFDisplayFrame(wx.Frame):
             decade = 0
         scale = 10**decade
         out = "%.0fe%i" % (val/scale, decade)
-        if abs(decade) < 2:
+        if abs(decade) < 0.9:
             out = "%.1f" % val
-        elif abs(decade) < 4:
+        elif abs(decade) < 3.9:
             out = "%.0f" % val
         return out
 
@@ -1002,7 +1002,7 @@ class XRFDisplayFrame(wx.Frame):
         yroi = None
         ydat = 1.0*y[:] + 1.e-9
         kwargs['ymax'] = max(ydat)*1.25
-        kwargs['ymin'] = 0.90
+        kwargs['ymin'] = 0.9
 
         if mca is not None:
             if not self.rois_shown:
@@ -1060,7 +1060,7 @@ class XRFDisplayFrame(wx.Frame):
         except:
             pass
 
-        self.panel.axes.set_ylim(1, 1.25*max(max_counts, max_counts2))
+        self.panel.axes.set_ylim(0.9, 1.25*max(max_counts, max_counts2))
         if mca == self.mca:
             self.ydata = 1.0*counts[:]
         self.update_status()
