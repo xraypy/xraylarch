@@ -163,7 +163,9 @@ class Epics_MultiXMAP(object):
         self._xmap.put('EraseAll', 1)
 
     def get_array(self, mca=1):
-        return 1.0*self._xmap.mcas[mca-1].get('VAL')
+        out = 1.0*self._xmap.mcas[mca-1].get('VAL')
+        out[np.where(out<0.91)]= 0.91
+        return out
 
     def get_energy(self, mca=1):
         return self._xmap.mcas[mca-1].get_energy()
@@ -172,7 +174,7 @@ class Epics_MultiXMAP(object):
         """return an MCA object """
         emca = self._xmap.mcas[mca-1]
         emca.get_rois()
-        counts = 1.0*emca.VAL
+        counts = self.get_array(mca=mca)
         if max(counts) < 1.0:
             counts    = 0.5*np.ones(len(counts))
             counts[0] = 2.0
