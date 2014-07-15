@@ -963,7 +963,11 @@ class XRFDisplayFrame(wx.Frame):
             if hasattr(self.mca, 'npixels'):
                 atitles.append(" {:.0f} Pixels".format(self.mca.npixels))
             if hasattr(self.mca, 'real_time'):
-                atitles.append(" RealTime={:.2f} sec".format(self.mca.real_time))
+                try:
+                    rtime_str = " RealTime={:.2f} sec".format(self.mca.real_time)
+                except ValueError:
+                    rtime_str = " RealTime= %s sec".format(str(self.mca.real_time))
+                atitles.append(rtime_str)
 
             try:
                 self.plot(self.mca.energy, self.mca.counts,
