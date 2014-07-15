@@ -287,7 +287,7 @@ class XRFDisplayFrame(wx.Frame):
             r[1:-1] = self.mca.counts[left:right]
             e[0]  = e[1]
             e[-1] = e[-2]
-            self.roi_patch  = axes.fill_between(e, r, zorder=-10,
+            self.roi_patch  = axes.fill_between(e, r, zorder=-20,
                                                 color=self.conf.roi_fillcolor)
 
 
@@ -655,7 +655,7 @@ class XRFDisplayFrame(wx.Frame):
         roi_msg3 = ' {:6.3f} / {:6.3f} '.format((elo+ehi)/2., (ehi - elo))
 
         fill = self.panel.axes.fill_between
-        self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-10)
+        self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-20)
         self.energy_for_zoom = (elo+ehi)/2.0
 
         self.wids['roi_msg1'].SetLabel(roi_msg1)
@@ -821,7 +821,7 @@ class XRFDisplayFrame(wx.Frame):
         self.energy_for_zoom = en
         self.highlight_xrayline = self.panel.axes.axvline(en,
                              color=self.conf.emph_elinecolor,
-                             linewidth=2.5, zorder=-20)
+                             linewidth=2.5, zorder=-15)
         self.draw()
 
     def onShowLines(self, event=None, elem=None):
@@ -866,7 +866,7 @@ class XRFDisplayFrame(wx.Frame):
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.major_elinecolor,
-                          linewidth=1.50, zorder=-4)
+                          linewidth=1.50, zorder=-5)
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
@@ -882,7 +882,7 @@ class XRFDisplayFrame(wx.Frame):
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.minor_elinecolor,
-                          linewidth=1.25, zorder=-6)
+                          linewidth=1.25, zorder=-7)
                 l.set_label(label)
                 dat = (label, "%.4f" % e, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
@@ -1040,7 +1040,6 @@ class XRFDisplayFrame(wx.Frame):
             mca = self.mca2
             ix = 2
         mca.counts = counts[:]
-
         if energy is not None:
             mca.energy = energy[:]
         nrois = len(mca.rois)
@@ -1066,7 +1065,7 @@ class XRFDisplayFrame(wx.Frame):
         self.update_status()
         if draw: self.draw()
 
-    def oplot(self, x, y, color='darkgreen', mca=None, zorder=-5, **kws):
+    def oplot(self, x, y, color='darkgreen', mca=None, zorder=-2, **kws):
         if mca is not None:
             self.mca2 = mca
 
