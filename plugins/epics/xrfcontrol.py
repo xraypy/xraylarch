@@ -42,6 +42,8 @@ use_plugin_path('wx')
 from periodictable import PeriodicTablePanel
 from xrfdisplay import XRFDisplayFrame
 
+from xrfdisplay_utils import CalibrationFrame
+
 use_plugin_path('std')
 from debugtime import DebugTimer
 
@@ -140,7 +142,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         XRFDisplayFrame.__init__(self, parent=parent, _larch=_larch,
                                  title=title, size=size, **kws)
 
-
     def onConnectEpics(self, event=None, prefix=None, **kws):
         if prefix is None:
             res  = self.prompt_for_detector(prefix=prefix,
@@ -177,7 +178,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.needs_newplot = False
         if self.mca is None or self.needs_newplot:
             self.mca = self.det.get_mca(mca=self.det_fore)
-
         self.plotmca(self.mca, set_title=False)
         title = "Foreground: MCA{:d}".format(self.det_fore)
         if self.det_back  > 0:
@@ -193,7 +193,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 pass
         self.SetTitle(title)
         self.needs_newplot = False
-
 
     def onSaveROIs(self, event=None, **kws):
         wildcard = ' ROI files (*.roi)|*.roi|All files (*.*)|*.*'
@@ -286,8 +285,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         psizer.Add(btnpanel, 0, style, 1)
 
-        self.wids['det_status'] = SimpleText(pane, ' ', size=(60, -1), style=rstyle)
-        self.wids['elapsed']    = SimpleText(pane, ' ', size=(60, -1), style=rstyle)
+        self.wids['det_status'] = SimpleText(pane, ' ', size=(70, -1), style=rstyle)
+        self.wids['elapsed']    = SimpleText(pane, ' ', size=(70, -1), style=rstyle)
         self.wids['deadtime']   = SimpleText(pane, ' ', size=(60, -1), style=rstyle)
 
         self.wids['bkg_det'] = Choice(pane, size=(75, -1),
@@ -358,7 +357,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             energy = self.det.get_energy(mca=self.det_fore)
             counts = self.det.get_array(mca=self.det_fore)*1.0
             if max(counts) < 1.0:
-                counts += 1.0
+                counts      = 1.0*np.ones(len(counts))
+                counts[:5]  = 2.15*np.random.random(5)
+                counts[-5:] = 2.15*np.random.random(5)
 
             self.update_mca(counts, energy=energy)
             self.det.needs_refresh = False
@@ -371,7 +372,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onSelectDet(self, event=None, index=0, **kws):
         if index > 0:
             self.det_fore = index
-
         self.det_back = self.wids['bkg_det'].GetSelection()
         if self.det_fore  == self.det_back:
             self.det_back = 0
@@ -441,6 +441,16 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if confirmed:
             self.det.add_roi(nam, lo=self.xmarker_left, hi=self.xmarker_right)
 
+    def onCalibrateEnergy(self, event=None, **kws):
+        try:
+            self.win_calib.Raise()
+        except:
+            self.win_calib = CalibrationFrame(self, mca=self.mca,
+                                              larch=self.larch,
+                                              callback=self.onSetCalib)
+
+    def onSetCalib(self, offset, slope, mca=None):
+        print 'XRFControl Set Energy Calibratione' , offset, slope, mca
 
 class EpicsXRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
