@@ -12,7 +12,8 @@ MAX_ROIS = 32
 
 class Xspress3(Device):
     """very simple XSPRESS3 interface"""
-    attrs = ('NumImages','Acquire','ERASE', 'TriggerMode',
+    attrs = ('NumImages','Acquire', 'Acquire_RBV', 
+             'ERASE', 'TriggerMode', 'StatusMessage_RBV',
              'DetectorState_RBV', 'NumImages_RBV')
 
     _nonpvs  = ('_prefix', '_pvs', '_delim', 'filesaver', 'fileroot',
@@ -65,7 +66,6 @@ class Xspress3(Device):
                 caput(pv_hi, hi)
                 caput(pv_lo, lo)
 
-
     def roi_calib_info(self):
         buff = ['[rois]']
         add = buff.append
@@ -81,6 +81,34 @@ class Xspress3(Device):
         add("QUAD   = %s " % (' '.join(["0.00 "] * self.nmca)))
         add('[dxp]')
         return buff
+
+    def restore_rois(self, roifile):
+        """restore ROI setting from ROI.dat file"""
+        cp =  ConfigParser()
+        cp.read(roifile)
+        rois = []
+        self.mcas[0].clear_rois()
+        prefix = self.mcas[0]._prefix
+        if prefix.endswith('.'):
+            prefix = prefix[:-1]
+        iroi = 0
+        for a in cp.options('rois'):
+            if a.lower().startswith('roi'):
+                name, dat = cp.get('rois', a).split('|')
+                lims = [int(i) for i in dat.split()]
+                lo, hi = lims[0], lims[1]
+                roi = ROI(prefix=prefix, roi=iroi)
+                roi.left = lo
+                roi.right = hi
+                roi.name = name.strip()
+                rois.append(roi)
+                iroi += 1
+
+        epics.poll(0.050, 1.0)
+        self.mcas[0].set_rois(rois)
+        cal0 = self.mcas[0].get_calib()
+        for mca in self.mcas[1:]:
+            mca.set_rois(rois, calib=cal0)
 
     def useExternalTrigger(self):
         self.TriggerMode = 3
