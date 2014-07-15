@@ -109,23 +109,26 @@ class Epics_Xspress3(object):
         out[np.where(out<0.91)]= 0.91
         return out
 
-    def start(self):
-        'xspress3 start '
+    def _really_stop(self):
         if self._sis.Acquiring == 1:
             self.stop()
             while self._xsp3.Acquire_RBV == 1:
                 time.sleep(0.001)
                 self._xsp3.stop()                
             time.sleep(0.001)
+
+    def start(self):
+        'xspress3 start '
+        self._really_stop()
         self._xsp3.start(capture=False) 
         time.sleep(0.01)
         self._sis.start()
 
     def stop(self):
-        self._sis.stop()
-        self._xsp3.stop()
+        self._really_stop()
 
     def erase(self):
+        self._really_stop()
         self._sis.erase()
         self._xsp3.ERASE = 1
 
