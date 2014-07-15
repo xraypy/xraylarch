@@ -21,9 +21,10 @@ from xrf_bgr import xrf_background
 from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
 
 class CalibrationFrame(wx.Frame):
-    def __init__(self, parent, mca, larch=None, size=(500, 300)):
+    def __init__(self, parent, mca, larch=None, size=(500, 300), callback=None):
         self.mca = mca
         self.larch = larch
+        self.callback = callback
         wx.Frame.__init__(self, parent, -1, 'Calibrate MCA',
                           size=size, style=wx.DEFAULT_FRAME_STYLE)
 
@@ -149,8 +150,12 @@ class CalibrationFrame(wx.Frame):
 
     def onUseCalib(self, event=None):
         mca = self.mca
-        if hasattr(mca, 'new_calib'):
-            xrf_calib_apply(mca, _larch=self.larch)
+        offset = float(self.new_offset.GetValue())
+        slope  = float(self.new_slope.GetValue())
+        mca.new_calib = offset, slope
+        xrf_calib_apply(mca, offset=offset, slope=slope, _larch=self.larch)
+        if hasattr(self.callback, '__call__'):
+            self.callback(offset, slope, mca=mca)
         self.Destroy()
 
     def onClose(self, event=None):
