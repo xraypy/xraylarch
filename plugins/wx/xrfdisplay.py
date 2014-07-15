@@ -40,7 +40,6 @@ use_plugin_path('xrf')
 use_plugin_path('xray')
 use_plugin_path('wx')
 
-
 from wxutils import (SimpleText, EditableListBox, Font,
                      pack, Popup, Button, get_icon, Check, MenuItem,
                      Choice, FileOpen, FileSave, fix_filename, HLine,
@@ -146,7 +145,7 @@ class XRFDisplayFrame(wx.Frame):
 
         self.createMainPanel()
         self.createMenus()
-        self.SetFont(Font(9))
+        self.SetFont(Font(9, serif=True))
         self.statusbar = self.CreateStatusBar(4)
         self.statusbar.SetStatusWidths([-1, -1, -1, -1])
         statusbar_fields = ["XRF Display", " ", " ", " "]
@@ -182,7 +181,7 @@ class XRFDisplayFrame(wx.Frame):
         if side == 'left':
             self.energy_for_zoom = self.mca.energy[ix]
         self.update_status()
-        self.panel.canvas.draw()
+        self.draw()
 
     def clear_lines(self, evt=None):
         "remove all Line Markers"
@@ -200,7 +199,13 @@ class XRFDisplayFrame(wx.Frame):
         self.highlight_xrayline = None
         self.major_markers = []
         self.minor_markers = []
-        self.panel.canvas.draw()
+        self.draw()
+
+    def draw(self):
+        try:
+            self.panel.canvas.draw()
+        except:
+            pass
 
     def clear_markers(self, evt=None):
         "remove all Cursor Markers"
@@ -210,7 +215,7 @@ class XRFDisplayFrame(wx.Frame):
         self.cursor_markers = [None, None]
         self.xmarker_left  = None
         self.xmarker_right = None
-        self.panel.canvas.draw()
+        self.draw()
 
     def clear_background(self, evt=None):
         "remove XRF background"
@@ -313,8 +318,8 @@ class XRFDisplayFrame(wx.Frame):
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
-        Font10 = Font(10)
-        Font11 = Font(11)
+        Font10 = Font(10, serif=True)
+        Font11 = Font(11, serif=True)
         #
         arrowpanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -386,8 +391,8 @@ class XRFDisplayFrame(wx.Frame):
         # y scale
         yscalepanel = wx.Panel(ctrlpanel, name='YScalePanel')
         ysizer = wx.BoxSizer(wx.HORIZONTAL)
-        ytitle = txt(yscalepanel, ' Y Axis:', font=Font(10), size=80)
-        yspace = txt(yscalepanel, ' ', font=Font(10), size=20)
+        ytitle = txt(yscalepanel, ' Y Axis:', font=Font10, size=80)
+        yspace = txt(yscalepanel, ' ', font=Font10, size=20)
         ylog   = Choice(yscalepanel, size=(80, 30), choices=['log', 'linear'],
                       action=self.onLogLinear)
         yaxis  = Check(yscalepanel, ' Show Y Scale ', action=self.onYAxis,
@@ -497,7 +502,7 @@ class XRFDisplayFrame(wx.Frame):
         if not keep_zoom:
             self.energy_for_zoom = None
         self.panel.axes.set_xlim((e1, e2))
-        self.panel.canvas.draw()
+        self.draw()
 
     def onPanLo(self, event=None):
         emid, erange, dmin, dmax = self._getlims()
@@ -544,7 +549,7 @@ class XRFDisplayFrame(wx.Frame):
             pass
         self.roi_patch = None
         self.wids['roiname'].SetValue('')
-        self.panel.canvas.draw()
+        self.draw()
 
     def onNewROI(self, event=None):
         if (self.xmarker_left is None or
@@ -657,7 +662,7 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['roi_msg2'].SetLabel(roi_msg2)
         self.wids['roi_msg3'].SetLabel(roi_msg3)
 
-        self.panel.canvas.draw()
+        self.draw()
         self.panel.Refresh()
 
     def onSaveROIs(self):
@@ -817,8 +822,7 @@ class XRFDisplayFrame(wx.Frame):
         self.highlight_xrayline = self.panel.axes.axvline(en,
                              color=self.conf.emph_elinecolor,
                              linewidth=2.5, zorder=-20)
-        self.panel.canvas.draw()
-
+        self.draw()
 
     def onShowLines(self, event=None, elem=None):
         if elem is None:
@@ -890,19 +894,20 @@ class XRFDisplayFrame(wx.Frame):
         if xlines is not None:
             xlines.Refresh()
 
-        edges = []
-        for edge in ('K', 'L3', 'L2', 'M5'):
-            xex = self.larch.symtable._xray.xray_edge(elem, edge)
-            if xex is None: xex = (0., 0)
-            en = xex[0]*0.001
-            if en > erange[0] and en < erange[1]:
-                edges.append("%s=%.3f" % (edge, en))
+        for index, edges in ((0, ('K', 'M5')), 
+                             (1, ('L3', 'L2', 'L1'))):
+            out = []
+            for edge in edges:
+                xex = self.larch.symtable._xray.xray_edge(elem, edge)
+                if xex is None: xex = (0., 0)
+                en = xex[0]*0.001
+                if en > erange[0] and en < erange[1]:
+                    out.append("%s=%.3f" % (edge, en))
 
-        edges = '  ' + ', '.join(edges)
-        self.wids['ptable'].set_subtitle(edges)
+            out = '  ' + ', '.join(out)
+            self.wids['ptable'].set_subtitle(out, index=index)
 
-
-        self.panel.canvas.draw()
+        self.draw()
 
     def onYAxis(self, event=None):
         self.show_yaxis = self.wids['show_yaxis'].IsChecked()
@@ -915,7 +920,7 @@ class XRFDisplayFrame(wx.Frame):
         ax.get_yaxis().set_visible(self.show_yaxis)
         ax.spines['right'].set_visible(False)
         ax.yaxis.set_ticks_position('left')
-        self.panel.canvas.draw()
+        self.draw()
 
     def _formaty(self, val, index=0, **kws):
         try:
@@ -923,10 +928,12 @@ class XRFDisplayFrame(wx.Frame):
         except:
             decade = 0
         scale = 10**decade
-        if abs(decade) < 3:
-            return "%.0f" % val
-        val = val / scale
-        return "%.0fe%i" % (val, decade)
+        out = "%.0fe%i" % (val/scale, decade)
+        if abs(decade) < 2:
+            out = "%.1f" % val
+        elif abs(decade) < 4:
+            out = "%.0f" % val
+        return out
 
     def onLogLinear(self, event=None):
         self.ylog_scale = 'log' == event.GetString()
@@ -978,14 +985,12 @@ class XRFDisplayFrame(wx.Frame):
         if set_title:
             self.SetTitle(title)
 
-
-
     def plot(self, x, y=None, mca=None, **kws):
         if mca is not None:
             self.mca = mca
         mca = self.mca
         panel = self.panel
-        panel.canvas.Freeze()
+        #panel.canvas.Freeze()
         kwargs = {'grid': False, 'gridcolor': '#E5E5E5', 'xmin': 0,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
@@ -1022,8 +1027,8 @@ class XRFDisplayFrame(wx.Frame):
         else:
             panel.unzoom_all()
         panel.cursor_mode = 'zoom'
-        panel.canvas.draw()
-        panel.canvas.Thaw()
+        self.draw()
+        #panel.canvas.Thaw()
         panel.canvas.Refresh()
 
     def update_mca(self, counts, energy=None, with_rois=True,
@@ -1059,11 +1064,7 @@ class XRFDisplayFrame(wx.Frame):
         if mca == self.mca:
             self.ydata = 1.0*counts[:]
         self.update_status()
-        if draw:
-            try:
-                self.panel.canvas.draw()
-            except:
-                pass
+        if draw: self.draw()
 
     def oplot(self, x, y, color='darkgreen', mca=None, zorder=-5, **kws):
         if mca is not None:
