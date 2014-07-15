@@ -174,9 +174,8 @@ class Epics_MultiXMAP(object):
         emca.get_rois()
         counts = 1.0*emca.VAL
         if max(counts) < 1.0:
-            counts      = 1.0*np.ones(len(counts))
-            counts[:5]  = 2.15*np.random.random(5)
-            counts[-5:] = 2.15*np.random.random(5)
+            counts    = 0.5*np.ones(len(counts))
+            counts[0] = 2.0
 
         thismca = MCA(counts=counts, offset=emca.CALO, slope=emca.CALS)
         thismca.energy = emca.get_energy()
