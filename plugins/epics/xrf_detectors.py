@@ -75,11 +75,11 @@ class Epics_Xspress3(object):
         self._xsp3.useExternalTrigger()
         self._xsp3.NumImages = 4000
         self._xsp3.FileCaptureOff()
-        if dtime < 0.1: 
+        if dtime < 0.2: 
             dtime = 0.0
-            pixeltime = 0.1
+            pixeltime = 0.2
         else:
-            pixeltime = max(dtime/4000.0, 0.1)
+            pixeltime = max(dtime/4000.0, 0.2)
         self._sis.InternalMode(prescale=1)
         self._sis.setPresetReal(dtime)
         self._sis.setDwell(pixeltime)
@@ -110,11 +110,10 @@ class Epics_Xspress3(object):
         return out
 
     def _really_stop(self):
-        if self._sis.Acquiring == 1:
-            self.stop()
-            while self._xsp3.Acquire_RBV == 1:
-                time.sleep(0.001)
-                self._xsp3.stop()                
+        self._sis.stop()
+        self._xsp3.stop()
+        while self._xsp3.Acquire_RBV == 1:
+            self._xsp3.stop()                
             time.sleep(0.001)
 
     def start(self):
