@@ -65,11 +65,11 @@ class PeriodicTablePanel(wx.Panel):
              'lawrencium']
 
     FRAME_BG = (253, 253, 250)
+    TITLE_BG = (253, 253, 250)
     REG_BG   = (253, 253, 250)
     REG_FG   = ( 20,  20, 120)
-    SEL_FG   = (100,   0,   0)
     SEL_BG   = (255, 255, 135)
-    TITLE_BG = (255, 255, 220)
+    SEL_FG   = (100,   0,   0)
 
     def __init__(self, parent, title='Select Element',
                  onselect=None, tooltip_msg=None, size=(-1, -1), **kws):
