@@ -298,8 +298,10 @@ class XRFDisplayFrame(wx.Frame):
                         output_title='test.xrf',
                         messenger=self.write_message)
         pan.conf.grid_color='#E5E5C0'
+        pan.conf.show_grid = False
         pan.conf.canvas.figure.set_facecolor('#FCFCFE')
-        pan.conf.labelfont.set_size(7)
+        pan.conf.labelfont.set_size(6)
+        pan.conf.legendfont.set_size(6)
         pan.onRightDown= partial(self.on_cursor, side='right')
         pan.add_cursor_mode('zoom',  motion = self.ignoreEvent,
                             leftup   = self.ignoreEvent,
@@ -1004,8 +1006,7 @@ class XRFDisplayFrame(wx.Frame):
         panel.canvas.Freeze()
         panel.yformatter = self._formaty
         panel.axes.get_yaxis().set_visible(False)
-        kwargs = {'grid': False,
-                  'xmin': 0,
+        kwargs = {'xmin': 0,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'axes_style': 'bottom',
@@ -1090,8 +1091,7 @@ class XRFDisplayFrame(wx.Frame):
 
         kws.update({'zorder': zorder, 'label': 'spectra2',
                     'ymax' : ymax, 'axes_style': 'bottom',
-                    'ylog_scale': self.ylog_scale,
-                    'grid': False})
+                    'ylog_scale': self.ylog_scale})
         self.panel.oplot(self.x2data, self.y2data, color=color, **kws)
 
     def swap_mcas(self, event=None):
