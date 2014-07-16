@@ -19,7 +19,7 @@ DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
 
 AD_FILE_PLUGINS = ('TIFF1', 'JPEG1', 'NetCDF1',
                    'HDF1', 'Nexus1', 'Magick1')
- 
+
 class Trigger(Saveable):
     """Detector Trigger for a scan. The interface is:
     trig = Trigger(pvname, value=1)
@@ -46,7 +46,7 @@ Example usage:
         self._t0 = 0
         self.runtime = -1
         self.stop = None
-        
+
     def __repr__(self):
         return "<Trigger (%s)>" % (self.pv.pvname)
 
@@ -64,7 +64,6 @@ Example usage:
         self.pv.put(value, callback=self.__onComplete)
         time.sleep(0.001)
         poll()
-        
 
 class Counter(Saveable):
     """simple scan counter object --
@@ -466,7 +465,7 @@ class MultiMcaDetector(DetectorMixin):
         caput("%sStatusAll.SCAN" % (self.prefix), 9)
 
 
-class XSPress3Trigger(Saveable):
+class XSPress3Trigger(Trigger):
     """Triggers for detectors without a proper Busy record to
     use as a Trigger.
 
@@ -475,11 +474,14 @@ class XSPress3Trigger(Saveable):
     as for XSPress3, which does not have a real Busy record
     for a trigger.
     """
-    def __init__(self, prefix, value=1, label=None, **kws):
-        
-        Saveable.__init__(self, prefix, label=label, value=value, **kws)
-        self.start_pv = PV(prefix + 'Acquire')
-        self.erase_pv = PV(prefix + 'ERASE')
+    def __init__(self, prefix, sis_prefix=None, value=1, label=None, **kws):
+        Trigger.__init__(self, prefix, label=label, value=value,
+                         sis_prefix=sis_prefix, **kws)
+        self.xsp3_start_pv = PV(prefix + 'Acquire')
+        self.xsp3_erase_pv = PV(prefix + 'ERASE')
+        self.xsp3_ison_pv  = PV(prefix + 'Acquire_RBV')
+        self.xsp3_update_pv = PV(prefix + 'UPDATE')
+        self.sis_start_pv = PV(sis_prefix + 'EraseStart')
         self.prefix = prefix
         self._val = value
         self.done = False
@@ -487,26 +489,34 @@ class XSPress3Trigger(Saveable):
         self.runtime = -1
 
     def __repr__(self):
-        return "<Xspress3Trigger (%s)>" % (self.prefix)
+        return "<Xspress3Trigger (%s, SIS=%s)>" % (self.prefix,
+                                                   self.sis_prefix)
 
-    def stop(self):
-        self.start_pv.put(0)
+    def __onComplete(self, pvname=None, **kws):
+        self.xsp3_start_pv.put(0)
+        time.sleep(0.025)
+        self.xsp3_update_pv.put(1)
         self.done = True
         self.runtime = time.time() - self._t0
 
     def start(self, value=None):
-        """triggers detector XSPress3 Trigger is ALWAYS done!"""
-        self.done = True
-        self.erase_pv.put(1)
+        """triggers SIS in internal mode to trigger XSPress3"""
+        self.done = False
         runtime = -1
         self._t0 = time.time()
+        self.xsp3_erase_pv.put(1)
+
         if value is None:
             value = self._val
-        self.start_pv.put(value)
+        self.xsp3_start_pv.put(value)
+        time.sleep(0.010)
+        count = 0
+        while self.xsp3_ison_pv.get() != 1 and count < 100:
+            time.sleep(0.010)
+
+        self.sis_start_pv.put(1, callback=self.__onComplete)
         time.sleep(0.001)
         poll()
-        self.done = True        
-        
 
 
 class XSPress3Detector(DetectorMixin):
@@ -580,7 +590,7 @@ class XSPress3Counter(DeviceCounter):
     """
     sca_labels = ('Time', 'Reset Ticks', 'Reset Counts',
                   'All Event', 'All Good', 'Window 1', 'Window 2', 'Pileup')
-    
+
     def __init__(self, prefix, outpvs=None, nmcas=4, nrois=16,
                  nscas=5, use_unlabeled=False,  use_full=False):
         if not prefix.endswith(':'):
@@ -592,7 +602,7 @@ class XSPress3Counter(DeviceCounter):
         prefix = self.prefix
         self._fields = []
         self.extra_pvs = []
-        
+
         pvs = self._pvs = {}
         for imca in range(1, nmcas+1):
             for iroi in range(1, nrois+1):
@@ -602,9 +612,9 @@ class XSPress3Counter(DeviceCounter):
                 pvs[rhipv]  = PV(rhipv)
             for isca in range(nscas):  # these start counting at 0!!
                 scapv = '%sC%i_SCA%i:Value_RBV' % (prefix, imca, isca)
-                pvs[scapv] = PV(scapv)                
+                pvs[scapv] = PV(scapv)
         poll()
-        time.sleep(0.01)                
+        time.sleep(0.01)
         self._get_counters()
 
     def _get_counters(self):
@@ -631,14 +641,14 @@ class XSPress3Counter(DeviceCounter):
                 suff  = 'C%i_SCA%i:Value_RBV' % (imca, isca)
                 label = '%s MCA%i' % (self.sca_labels[isca], imca)
                 fields.append((suff, label))
-            
+
         if self.use_full:
             for imca in range(1, self.nmcas+1):
                 mca = 'ARR%i.ArrayData' % imca
                 fields.append((mca, 'spectra%i' % imca))
 
         self.set_counters(fields)
-        
+
 
 
 def get_detector(prefix, kind=None, label=None, **kws):
@@ -652,7 +662,7 @@ def get_detector(prefix, kind=None, label=None, **kws):
               'mca': McaDetector,
               'med': MultiMcaDetector,
               'multimca': MultiMcaDetector,
-              'xspress3': XSPress3Detector,              
+              'xspress3': XSPress3Detector,
               None: SimpleDetector}
 
     if kind is None:
