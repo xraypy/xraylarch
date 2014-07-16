@@ -378,9 +378,12 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if self.det_back != 0:
             title = "Foreground: MCA{:d}".format(self.det_fore)
             if self.mca2 is None:
-                self.mca2 = self.det.get_mca(mca=self.det_back)
-            e = self.det.get_energy(mca=self.det_back)
-            c = self.det.get_array(mca=self.det_back)
+                self.mca2 = self.det.get_mca(mca=self.det_back, with_rois=False)
+                c = self.mca2.counts
+                e = self.mca2.energy
+            else:
+                e = self.det.get_energy(mca=self.det_back)
+                c = self.det.get_array(mca=self.det_back)
             title = "{:s}  Background: MCA{:d}".format(title, self.det_back)
             try:
                 self.oplot(e, c)

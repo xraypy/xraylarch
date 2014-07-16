@@ -84,9 +84,10 @@ class Epics_Xspress3(object):
         self._sis.setPresetReal(dtime)
         self._sis.setDwell(pixeltime)
 
-    def get_mca(self, mca=1):
+    def get_mca(self, mca=1, with_rois=True):
         emca = self._xsp3.mcas[mca-1]
-        emca.get_rois()
+        if with_rois:
+            emca.get_rois()
         counts = self.get_array(mca=mca)
         if max(counts) < 1.0:
             counts    = 0.5*np.ones(len(counts))
@@ -96,9 +97,10 @@ class Epics_Xspress3(object):
         thismca.energy = self.get_energy()
         thismca.counts = counts
         thismca.rois = []
-        for eroi in emca.rois:
-            thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
-                                    left=eroi.left, right=eroi.right))
+        if with_rois:
+            for eroi in emca.rois:
+                thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
+                                        left=eroi.left, right=eroi.right))
         return thismca
 
     def get_energy(self, mca=1):
@@ -238,10 +240,11 @@ class Epics_MultiXMAP(object):
     def get_energy(self, mca=1):
         return self._xmap.mcas[mca-1].get_energy()
 
-    def get_mca(self, mca=1):
+    def get_mca(self, mca=1, with_rois=True):
         """return an MCA object """
         emca = self._xmap.mcas[mca-1]
-        emca.get_rois()
+        if with_rois:
+            emca.get_rois()
         counts = self.get_array(mca=mca)
         if max(counts) < 1.0:
             counts    = 0.5*np.ones(len(counts))
@@ -251,9 +254,10 @@ class Epics_MultiXMAP(object):
         thismca.energy = emca.get_energy()
         thismca.counts = counts
         thismca.rois = []
-        for eroi in emca.rois:
-            thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
-                                    left=eroi.left, right=eroi.right))
+        if with_rois:
+            for eroi in emca.rois:
+                thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
+                                        left=eroi.left, right=eroi.right))
 
         return thismca
 
