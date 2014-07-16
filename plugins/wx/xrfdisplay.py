@@ -130,7 +130,7 @@ class XRFDisplayFrame(wx.Frame):
         self.major_markers = []
         self.minor_markers = []
         self.energy_for_zoom = None
-        self.zoom_lims = []
+        self.xview_range = None
         self.show_yaxis = False
         self.xmarker_left = None
         self.xmarker_right = None
@@ -290,15 +290,15 @@ class XRFDisplayFrame(wx.Frame):
             self.roi_patch  = axes.fill_between(e, r, zorder=-20,
                                                 color=self.conf.roi_fillcolor)
 
-
     def createPlotPanel(self):
         """mca plot window"""
         pan = PlotPanel(self, fontsize=7,
-                        axisbg='#FDFDFA',
+                        axisbg='#FEFEFE',
                         axissize=[0.01, 0.11, 0.97, 0.87],
                         output_title='test.xrf',
                         messenger=self.write_message)
-        pan.conf.grid_color='#E5E5E5'
+        pan.conf.grid_color='#E5E5C0'
+        pan.conf.canvas.figure.set_facecolor('#FCFCFE')
         pan.conf.labelfont.set_size(7)
         pan.onRightDown= partial(self.on_cursor, side='right')
         pan.add_cursor_mode('zoom',  motion = self.ignoreEvent,
@@ -460,6 +460,7 @@ class XRFDisplayFrame(wx.Frame):
     def createMainPanel(self):
         ctrlpanel = self.createControlPanel()
         plotpanel = self.panel = self.createPlotPanel()
+        plotpanel.yformatter = self._formaty
 
         tx, ty = self.wids['ptable'].GetBestSize()
         cx, cy = ctrlpanel.GetBestSize()
@@ -502,6 +503,7 @@ class XRFDisplayFrame(wx.Frame):
         if not keep_zoom:
             self.energy_for_zoom = None
         self.panel.axes.set_xlim((e1, e2))
+        self.xview_range = [e1, e2]
         self.draw()
 
     def onPanLo(self, event=None):
@@ -531,6 +533,10 @@ class XRFDisplayFrame(wx.Frame):
     def unzoom_all(self, event=None):
         emid, erange, dmin, dmax = self._getlims()
         self._set_xview(dmin, dmax)
+        self.xview_range = None
+
+    def toggle_grid(self, event=None):
+        self.panel.toggle_grid()
 
     def set_roilist(self, mca=None):
         """ Add Roi names to roilist"""
@@ -714,7 +720,8 @@ class XRFDisplayFrame(wx.Frame):
                  "Configure Plot Colors, etc", self.panel.configure)
         MenuItem(self, omenu, "Zoom Out\tCtrl+Z",
                  "Zoom out to full data range", self.unzoom_all)
-
+        MenuItem(self, omenu, "Toggle Grid\tCtrl+G",
+                 "Toggle Grid Display", self.toggle_grid)
         omenu.AppendSeparator()
         MenuItem(self, omenu, "Hide X-ray Lines",
                  "Hide all X-ray Lines", self.clear_lines)
@@ -894,7 +901,7 @@ class XRFDisplayFrame(wx.Frame):
         if xlines is not None:
             xlines.Refresh()
 
-        for index, edges in ((0, ('K', 'M5')), 
+        for index, edges in ((0, ('K', 'M5')),
                              (1, ('L3', 'L2', 'L1'))):
             out = []
             for edge in edges:
@@ -913,7 +920,7 @@ class XRFDisplayFrame(wx.Frame):
         self.show_yaxis = self.wids['show_yaxis'].IsChecked()
         left, bottom, width, height = self.panel.axissize
         left, width = 0.01, 0.97
-        if self.show_yaxis: left, width = 0.06, 0.92
+        if self.show_yaxis: left, width = 0.08, 0.90
         ax = self.panel.axes
         ax.yaxis.set_major_formatter(FuncFormatter(self._formaty))
         ax.set_position([left, bottom, width, height])
@@ -928,8 +935,8 @@ class XRFDisplayFrame(wx.Frame):
         except:
             decade = 0
         scale = 10**decade
-        out = "%.0fe%i" % (val/scale, decade)
-        if abs(decade) < 0.9:
+        out = "%.1fe%i" % (val/scale, decade)
+        if abs(decade) < 1.9:
             out = "%.1f" % val
         elif abs(decade) < 3.9:
             out = "%.0f" % val
@@ -994,8 +1001,11 @@ class XRFDisplayFrame(wx.Frame):
             self.mca = mca
         mca = self.mca
         panel = self.panel
-        #panel.canvas.Freeze()
-        kwargs = {'grid': False, 'gridcolor': '#E5E5E5', 'xmin': 0,
+        panel.canvas.Freeze()
+        panel.yformatter = self._formaty
+        panel.axes.get_yaxis().set_visible(False)
+        kwargs = {'grid': False,
+                  'xmin': 0,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'axes_style': 'bottom',
@@ -1007,6 +1017,9 @@ class XRFDisplayFrame(wx.Frame):
         ydat = 1.0*y[:] + 1.e-9
         kwargs['ymax'] = max(ydat)*1.25
         kwargs['ymin'] = 0.9
+        if self.xview_range is not None:
+            kwargs['xmin'] = self.xview_range[0]
+            kwargs['xmax'] = self.xview_range[1]
 
         if mca is not None:
             if not self.rois_shown:
@@ -1025,14 +1038,9 @@ class XRFDisplayFrame(wx.Frame):
             panel.oplot(x, yroi, label='roi', **kwargs)
 
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
-        if len(self.zoom_lims) > 0:
-            x1, x2 = self.zoom_lims[-1]
-            panel.axes.set_xlim(x1, x2)
-        else:
-            panel.unzoom_all()
         panel.cursor_mode = 'zoom'
         self.draw()
-        #panel.canvas.Thaw()
+        panel.canvas.Thaw()
         panel.canvas.Refresh()
 
     def update_mca(self, counts, energy=None, with_rois=True,
@@ -1081,10 +1089,9 @@ class XRFDisplayFrame(wx.Frame):
             ymax = max(y)*1.25
 
         kws.update({'zorder': zorder, 'label': 'spectra2',
-                    'ymax' : ymax,
-                    'axes_style': 'bottom',
+                    'ymax' : ymax, 'axes_style': 'bottom',
                     'ylog_scale': self.ylog_scale,
-                    'grid': False, 'gridcolor': '#E5E5E5'})
+                    'grid': False})
         self.panel.oplot(self.x2data, self.y2data, color=color, **kws)
 
     def swap_mcas(self, event=None):
