@@ -465,61 +465,61 @@ class MultiMcaDetector(DetectorMixin):
         caput("%sStatusAll.SCAN" % (self.prefix), 9)
 
 
-class XSPress3Trigger(Trigger):
-    """Triggers for detectors without a proper Busy record to
-    use as a Trigger.
+class Xspress3Trigger(Trigger):
+    """Triggers for Xspress3 + MCS, a detector combination
+    without a proper Busy record to use as a Trigger.
 
     This requires a 'stop' method (that is not None)
 
-    as for XSPress3, which does not have a real Busy record
+    as for Xspress3, which does not have a real Busy record
     for a trigger.
     """
-    def __init__(self, prefix, sis_prefix=None, value=1, label=None, **kws):
+    def __init__(self, prefix, mcs=None, value=1, label=None, **kws):
         Trigger.__init__(self, prefix, label=label, value=value,
-                         sis_prefix=sis_prefix, **kws)
-        self.xsp3_start_pv = PV(prefix + 'Acquire')
-        self.xsp3_erase_pv = PV(prefix + 'ERASE')
-        self.xsp3_ison_pv  = PV(prefix + 'Acquire_RBV')
-        self.xsp3_update_pv = PV(prefix + 'UPDATE')
-        self.sis_start_pv = PV(sis_prefix + 'EraseStart')
+                         mcs=mcs, **kws)
+        self.xsp3_start = PV(prefix + 'Acquire')
+        self.xsp3_erase = PV(prefix + 'ERASE')
+        self.xsp3_ison  = PV(prefix + 'Acquire_RBV')
+        self.xsp3_update = PV(prefix + 'UPDATE')
+        self.mcs_start   = PV(mcs + 'EraseStart')
         self.prefix = prefix
+        self.mca_prefix = mcs
         self._val = value
         self.done = False
         self._t0 = 0
         self.runtime = -1
 
     def __repr__(self):
-        return "<Xspress3Trigger (%s, SIS=%s)>" % (self.prefix,
-                                                   self.sis_prefix)
+        return "<Xspress3Trigger(%s, mcs=%s)>" % (self.prefix,
+                                                  self.mcs_prefix)
 
     def __onComplete(self, pvname=None, **kws):
-        self.xsp3_start_pv.put(0)
+        self.xsp3_start.put(0)
         time.sleep(0.025)
-        self.xsp3_update_pv.put(1)
+        self.xsp3_update.put(1)
         self.done = True
         self.runtime = time.time() - self._t0
 
     def start(self, value=None):
-        """triggers SIS in internal mode to trigger XSPress3"""
+        """triggers MCS in internal mode to trigger Xspress3"""
         self.done = False
         runtime = -1
         self._t0 = time.time()
-        self.xsp3_erase_pv.put(1)
+        self.xsp3_erase.put(1)
 
         if value is None:
             value = self._val
-        self.xsp3_start_pv.put(value)
+        self.xsp3_start.put(value)
         time.sleep(0.010)
         count = 0
-        while self.xsp3_ison_pv.get() != 1 and count < 100:
+        while self.xsp3_ison.get() != 1 and count < 100:
             time.sleep(0.010)
-
-        self.sis_start_pv.put(1, callback=self.__onComplete)
+        self.mcs_start.put(1, callback=self.__onComplete)
         time.sleep(0.001)
         poll()
 
 
-class XSPress3Detector(DetectorMixin):
+class Xspress3Detector(DetectorMixin):
     """
     """
     repr_fmt = ', nmcas=%i, nrois=%i, enable_dtc=%s, use_full=%s'
@@ -539,7 +539,7 @@ class XSPress3Detector(DetectorMixin):
         self.prefix        = prefix
         self.dwelltime_pv  = None
         self.dwelltime     = None
-        self.trigger       = XSPress3Trigger(prefix)
+        self.trigger       = Xspress3Trigger(prefix)
         self.extra_pvs     = None
         self.enable_dtc = enable_dtc
         self.label = label
@@ -564,7 +564,7 @@ class XSPress3Detector(DetectorMixin):
 
 
     def connect_counters(self):
-        self._counter = XSPress3Counter(self.prefix, **self._connect_args)
+        self._counter = Xspress3Counter(self.prefix, **self._connect_args)
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
 
@@ -585,7 +585,7 @@ class XSPress3Detector(DetectorMixin):
         caput("%sNumImages"     % (self.prefix), 1)
 
 
-class XSPress3Counter(DeviceCounter):
+class Xspress3Counter(DeviceCounter):
     """Counters for Xspress3 (weird MCA / areaDetector hybrid)
     """
     sca_labels = ('Time', 'Reset Ticks', 'Reset Counts',
@@ -650,7 +650,6 @@ class XSPress3Counter(DeviceCounter):
         self.set_counters(fields)
 
 
-
 def get_detector(prefix, kind=None, label=None, **kws):
     """returns best guess of which Detector class to use
            Mca, MultiMca, Motor, Scaler, Simple
@@ -662,7 +661,7 @@ def get_detector(prefix, kind=None, label=None, **kws):
               'mca': McaDetector,
               'med': MultiMcaDetector,
               'multimca': MultiMcaDetector,
-              'xspress3': XSPress3Detector,
+              'xspress3': Xspress3Detector,
               None: SimpleDetector}
 
     if kind is None:
