@@ -524,12 +524,12 @@ class Xspress3Detector(DetectorMixin):
     """
     repr_fmt = ', nmcas=%i, nrois=%i, enable_dtc=%s, use_full=%s'
 
-    def __init__(self, prefix, label=None, nmcas=4, nrois=16,
-                 enable_dtc=True, use=True,
-                 use_unlabeled=False, use_full=False, **kws):
-        Saveable.__init__(self, prefix, label=label, nmcas=nmcas,
-                          nrois=nrois, enable_dtc=enable_dtc, use=use,
-                          use_unlabeled=use_unlabeled,
+    def __init__(self, prefix, mcs=None, label=None, nmcas=4, nrois=4,
+                 timebins=10, enable_dtc=True, use=True, use_unlabeled=False, 
+                 use_full=False, **kws): 
+        Saveable.__init__(self, prefix, mcs=mcs, label=label, nmcas=nmcas,
+                          nrois=nrois, timebins=timebins, enable_dtc=enable_dtc, 
+                          use=use, use_unlabeled=use_unlabeled,
                           use_full=use_full, **kws)
         nmcas, nrois = int(nmcas), int(nrois)
         self.nmcas = nmcas
@@ -537,9 +537,11 @@ class Xspress3Detector(DetectorMixin):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         self.prefix        = prefix
+        self.mcs_prefix    = mcs
+        self.timebins      = timebins
         self.dwelltime_pv  = None
         self.dwelltime     = None
-        self.trigger       = Xspress3Trigger(prefix)
+        self.trigger       = Xspress3Trigger(prefix, mcs=mcs)
         self.extra_pvs     = None
         self.enable_dtc = enable_dtc
         self.label = label
@@ -561,7 +563,6 @@ class Xspress3Detector(DetectorMixin):
         return "<%s: '%s', prefix='%s'%s>" % (self.__class__.__name__,
                                               self.label, self.prefix,
                                               self._repr_extra)
-
 
     def connect_counters(self):
         self._counter = Xspress3Counter(self.prefix, **self._connect_args)
@@ -591,41 +592,65 @@ class Xspress3Counter(DeviceCounter):
     sca_labels = ('Time', 'Reset Ticks', 'Reset Counts',
                   'All Event', 'All Good', 'Window 1', 'Window 2', 'Pileup')
 
-    def __init__(self, prefix, outpvs=None, nmcas=4, nrois=16,
-                 nscas=5, use_unlabeled=False,  use_full=False):
+    def __init__(self, prefix, mcs=None, outpvs=None, nmcas=4, nrois=4,
+                 nscas=5, nmcs=4, use_unlabeled=False,  use_full=False):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
-        self.nmcas, self.nrois, self.nscas = int(nmcas), int(nrois), int(nscas)
+
+        self.nmcas, self.nrois = int(nmcas), int(nrois)
+        self.nmcs,  self.nscas = int(nmcs),  int(nscas)
         self.use_full = use_full
         self.use_unlabeled = False
         DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
         prefix = self.prefix
+
         self._fields = []
         self.extra_pvs = []
-
         pvs = self._pvs = {}
+
         for imca in range(1, nmcas+1):
             for iroi in range(1, nrois+1):
                 namepv = '%sC%i_ROI%i:AttrName' % (prefix, imca, iroi)
                 rhipv  = '%sC%i_MCA_ROI%i_HLM' % (prefix, imca, iroi)
+                rarpv  = '%sC%i_ROI%i:ArrayData_RBV' % (prefix, imca, iroi)
                 pvs[namepv] = PV(namepv)
                 pvs[rhipv]  = PV(rhipv)
+                pvs[rarpv]  = PV(rarpv)
             for isca in range(nscas):  # these start counting at 0!!
                 scapv = '%sC%i_SCA%i:Value_RBV' % (prefix, imca, isca)
                 pvs[scapv] = PV(scapv)
+
+        self.mcs_prefix = mcs
+        if mcs is not None:
+            for imcs in range(nmcs):  # MCA arrays from MCS
+                mcapv = '%smca%i.VAL' % (mcs, 1+imcs)
+                pvs[mcapv] = PV(mcapv)
+
         poll()
         time.sleep(0.01)
         self._get_counters()
 
+    def read(self, **kws):
+        "read counters"
+        for c in self.counters:
+            c.read(**kws)
+        self.postvalues()
+
     def _get_counters(self):
         prefix = self.prefix
         pvs = self._pvs
-        fields = []
+
+        self.counters = []
+        def add_counter(pv, lab):
+            self.counters.append(Counter(pv, label=lab))
+
+        print(" - get counter ", self.nmcas, self.nrois)
         for imca in range(1, self.nmcas+1):
             should_break = False
             for iroi in range(1, self.nrois+1):
                 namepv = '%sC%i_ROI%i:AttrName' % (prefix, imca, iroi)
                 rhipv  = '%sC%i_MCA_ROI%i_HLM' % (prefix, imca, iroi)
+                rarpv  = '%sC%i_ROI%i:ArrayData_RBV' % (prefix, imca, iroi)
                 roi_hi = pvs[rhipv].get()
                 roiname = pvs[namepv].get(as_string=True)
                 label = '%s MCA%i'% (roiname, imca)
@@ -634,20 +659,26 @@ class Xspress3Counter(DeviceCounter):
                     break
                 if (roiname is not None and (len(roiname) > 0
                     and roi_hi > 0) or self.use_unlabeled):
-                    suff = 'C%i_ROI%i:Value_RBV' % (imca, iroi)
-                    fields.append((suff, label))
+                    pv1 = '%sC%i_ROI%i:Value_RBV' % (prefix, imca, iroi)
+                    pv2 = '%sC%i_ROI%i:ArrayData_RBV' % (prefix, imca, iroi)
+                    add_counter(pv1, label)
+                    add_counter(pv2, "%s (array)" % label)
 
             for isca in range(self.nscas):  # these start counting at 0!!
-                suff  = 'C%i_SCA%i:Value_RBV' % (imca, isca)
+                pv    = '%sC%i_SCA%i:Value_RBV' % (prefix, imca, isca)
                 label = '%s MCA%i' % (self.sca_labels[isca], imca)
-                fields.append((suff, label))
+                add_counter(pv, label)
+
+        if self.mcs_prefix is not None:
+            for imcs in range(self.nmcs):  # MCA arrays from MCS
+                pv = '%smca%i.VAL' % (self.mcs_prefix, 1+imcs)
+                label = 'MCS %i'% (imcs)
+                add_counter(pv, label)
 
         if self.use_full:
             for imca in range(1, self.nmcas+1):
-                mca = 'ARR%i.ArrayData' % imca
-                fields.append((mca, 'spectra%i' % imca))
-
-        self.set_counters(fields)
+                pv = '%sARR%i.ArrayData' % (prefix, imca)
+                add_counter(pv, 'spectra%i' % imca)
 
 
 def get_detector(prefix, kind=None, label=None, **kws):
