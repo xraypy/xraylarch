@@ -191,7 +191,7 @@ class Epics_MultiXMAP(object):
         time.sleep(0.001)
         self.mcas = self._xmap.mcas
         self.connected = True
-        self._xmap.SpectraMode()
+        # self._xmap.SpectraMode()
         self.rois = self._xmap.mcas[0].get_rois()
 
     @EpicsFunction
