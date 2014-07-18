@@ -392,13 +392,14 @@ class ROI_Averager():
     def __init__(self, roi_pv, reset_pv=None, nsamples=21):
         self.pv = None
         self.nsamples  = nsamples
+        self.time_offset = time.time()
         self.set_pv(roi_pv)
         if reset_pv is not None:
             self.reset = PV(reset_pv, callback=self._onreset)
             
     def clear(self):
         self.index = -1
-        self.time_offset = time.time()
+        self.lastval = 0
         self.data  = np.zeros(self.nsamples, dtype='i32')
         self.times = np.ones(self.nsamples, dtype='f32') * 0.0
         
@@ -406,7 +407,8 @@ class ROI_Averager():
         "adds array x to ring buffer"
         idx = self.index = (self.index + 1) % self.data.size
         # print 'append ', x, idx, self.data[idx], self.data[idx-1]
-        self.data[idx] = max(0, x - self.data[idx-1])
+        self.data[idx] = max(0, x - self.lastval)
+        self.last_val  = x
         newtime = time.time() - self.time_offset
         self.times[idx] =  newtime
         if newtime > self.MAX_TIME:
@@ -418,7 +420,6 @@ class ROI_Averager():
             pass
 
     def _onupdate(self, pvname=None, value=None, **kws):
-        # print 'Val ', pvname, value
         self.append(value)
         
     def set_pv(self, pvname):
@@ -426,9 +427,7 @@ class ROI_Averager():
             self.pv.clear_callbacks()
             self.pv = None
         self.clear()
-        time.sleep(0.005)
         self.pv = PV(pvname, callback=self._onupdate)
-        time.sleep(.002)
         
     def average(self):
         return self.data.sum() / self.times.ptp()
