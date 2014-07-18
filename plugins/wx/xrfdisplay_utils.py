@@ -372,3 +372,65 @@ class XRFDisplayConfig:
     M_major = ['Ma', 'Mb', 'Mg', 'Mz']
     e_min   = 1.00
     e_max   = 30.0
+
+ 
+class ROI_Averager():
+    """ROI averager (over a fixed number of event samples)
+       to give a rolling average of 'recent ROI values'
+       
+       roi_buff = ROI_Averager('13SDD1:mca1.R12',  nsamples=11)
+       while True:
+            print roi_buff.average()
+
+       typically, the ROIs update at a fixed 10 Hz, so 11 samples
+       gives the ROI intensity integrated over the previous second
+       
+       using a ring buffer using numpy arrays
+    """
+    
+    MAX_TIME = 604800.0  # 1 week
+    def __init__(self, roi_pv, reset_pv=None, nsamples=21):
+        self.pv = None
+        self.nsamples  = nsamples
+        self.set_pv(roi_pv)
+        if reset_pv is not None:
+            self.reset = PV(reset_pv, callback=self._onreset)
+            
+    def clear(self):
+        self.index = -1
+        self.time_offset = time.time()
+        self.data  = np.zeros(self.nsamples, dtype='i32')
+        self.times = np.ones(self.nsamples, dtype='f32') * 0.0
+        
+    def append(self, x):
+        "adds array x to ring buffer"
+        idx = self.index = (self.index + 1) % self.data.size
+        # print 'append ', x, idx, self.data[idx], self.data[idx-1]
+        self.data[idx] = max(0, x - self.data[idx-1])
+        newtime = time.time() - self.time_offset
+        self.times[idx] =  newtime
+        if newtime > self.MAX_TIME:
+            self.times       -= self.MAX_TIME
+            self.time_offset += self.MAX_TIME
+
+    def _onreset(self, pvname, value=None, **kws):
+        if value==1:
+            pass
+
+    def _onupdate(self, pvname=None, value=None, **kws):
+        # print 'Val ', pvname, value
+        self.append(value)
+        
+    def set_pv(self, pvname):
+        if self.pv is not None:
+            self.pv.clear_callbacks()
+            self.pv = None
+        self.clear()
+        time.sleep(0.005)
+        self.pv = PV(pvname, callback=self._onupdate)
+        time.sleep(.002)
+        
+    def average(self):
+        return self.data.sum() / self.times.ptp()
+    
+    
