@@ -21,7 +21,7 @@ from xrf_bgr import xrf_background
 from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
 
 class CalibrationFrame(wx.Frame):
-    def __init__(self, parent, mca, larch=None, size=(500, 300), callback=None):
+    def __init__(self, parent, mca, larch=None, size=(-1, -1), callback=None):
         self.mca = mca
         self.larch = larch
         self.callback = callback
@@ -33,22 +33,22 @@ class CalibrationFrame(wx.Frame):
         self.calib_updated = False
         panel.AddText("Calibrate MCA Energy (Energies in eV)",
                       colour='#880000', dcol=7)
-        panel.AddText("ROI", newrow=True)
-        panel.AddText("Predicted")
-        panel.AddText("Current Energies", dcol=3, style=CEN)
-        panel.AddText("Refined Energies", dcol=3, style=CEN)
-        panel.AddText("Use?")
+        panel.AddText("ROI", newrow=True, style=CEN)
+        panel.AddText("Predicted", style=CEN)
+        panel.AddText("Peaks with Current Calibration", dcol=3, style=CEN)
+        panel.AddText("Peaks with Refined Calibration", dcol=3, style=CEN)
 
-        panel.AddText("Name", newrow=True)
-        panel.AddText("Energy")
-        panel.AddText("Center")
-        panel.AddText("Difference")
-        panel.AddText("FWHM")
-        panel.AddText("Center")
-        panel.AddText("Difference")
-        panel.AddText("FWHM")
+        panel.AddText("Name", newrow=True, style=CEN)
+        panel.AddText("Energy", style=CEN)
+        panel.AddText("Center", style=CEN)
+        panel.AddText("Difference", style=CEN)
+        panel.AddText("FWHM", style=CEN)
+        panel.AddText("Center", style=CEN)
+        panel.AddText("Difference", style=CEN)
+        panel.AddText("FWHM", style=CEN)
+        panel.AddText("Use? ", style=CEN)
 
-        panel.Add(HLine(panel, size=(900, 3)),  dcol=9, newrow=True)
+        panel.Add(HLine(panel, size=(700, 3)),  dcol=9, newrow=True)
         self.wids = []
 
         # find ROI peak positions
@@ -58,7 +58,7 @@ class CalibrationFrame(wx.Frame):
             eknown, ecen, fwhm, amp, fit = mca.init_calib[roi.name]
             diff = ecen - eknown
             name = ('   ' + roi.name+' '*10)[:10]
-            opts = {'style': CEN, 'size':(100, -1)}
+            opts = {'style': CEN, 'size':(75, -1)}
             w_name = SimpleText(panel, name,   **opts)
             w_pred = SimpleText(panel, "% .1f" % (1000*eknown), **opts)
             w_ccen = SimpleText(panel, "% .1f" % (1000*ecen),   **opts)
@@ -67,7 +67,7 @@ class CalibrationFrame(wx.Frame):
             w_ncen = SimpleText(panel, "-----",         **opts)
             w_ndif = SimpleText(panel, "-----",         **opts)
             w_nwid = SimpleText(panel, "-----",         **opts)
-            w_use  = Check(panel)
+            w_use  = Check(panel, size=(40, -1), default=fwhm<0.50)
 
             panel.Add(w_name, style=LEFT, newrow=True)
             panel.AddMany((w_pred, w_ccen, w_cdif, w_cwid,
@@ -75,7 +75,7 @@ class CalibrationFrame(wx.Frame):
 
             self.wids.append((roi.name, eknown, ecen, w_ncen, w_ndif, w_nwid, w_use))
 
-        panel.Add(HLine(panel, size=(900, 3)),  dcol=9, newrow=True)
+        panel.Add(HLine(panel, size=(700, 3)),  dcol=9, newrow=True)
         offset = 1000.0*self.mca.offset
         slope  = 1000.0*self.mca.slope
         panel.AddText("Current Calibration:",   dcol=2, newrow=True)
@@ -95,19 +95,20 @@ class CalibrationFrame(wx.Frame):
         panel.Add(self.new_slope,     dcol=1, style=RIGHT)
 
         panel.Add(Button(panel, 'Compute Calibration',
-                         size=(160, -1), action=self.onCalibrate),
+                         size=(125, -1), action=self.onCalibrate),
                   dcol=2, newrow=True)
 
         panel.Add(Button(panel, 'Use New Calibration',
-                         size=(160, -1), action=self.onUseCalib),
+                         size=(125, -1), action=self.onUseCalib),
                   dcol=2, style=RIGHT)
 
         panel.Add(Button(panel, 'Done',
-                         size=(160, -1), action=self.onClose),
+                         size=(125, -1), action=self.onClose),
                   dcol=2, style=RIGHT)
 
         panel.pack()
-        self.SetSize((950, 450))
+        a = panel.GetBestSize()
+        self.SetSize((a[0]+25, a[1]+50))
         self.Show()
         self.Raise()
 
@@ -373,21 +374,21 @@ class XRFDisplayConfig:
     e_min   = 1.00
     e_max   = 30.0
 
- 
+
 class ROI_Averager():
     """ROI averager (over a fixed number of event samples)
        to give a rolling average of 'recent ROI values'
-       
+
        roi_buff = ROI_Averager('13SDD1:mca1.R12',  nsamples=11)
        while True:
             print roi_buff.average()
 
        typically, the ROIs update at a fixed 10 Hz, so 11 samples
        gives the ROI intensity integrated over the previous second
-       
+
        using a ring buffer using numpy arrays
     """
-    
+
     MAX_TIME = 604800.0  # 1 week
     def __init__(self, roi_pv, reset_pv=None, nsamples=21):
         self.pv = None
@@ -396,13 +397,13 @@ class ROI_Averager():
         self.set_pv(roi_pv)
         if reset_pv is not None:
             self.reset = PV(reset_pv, callback=self._onreset)
-            
+
     def clear(self):
         self.index = -1
         self.lastval = 0
         self.data  = np.zeros(self.nsamples, dtype='i32')
         self.times = np.ones(self.nsamples, dtype='f32') * 0.0
-        
+
     def append(self, x):
         "adds array x to ring buffer"
         idx = self.index = (self.index + 1) % self.data.size
@@ -421,15 +422,15 @@ class ROI_Averager():
 
     def _onupdate(self, pvname=None, value=None, **kws):
         self.append(value)
-        
+
     def set_pv(self, pvname):
         if self.pv is not None:
             self.pv.clear_callbacks()
             self.pv = None
         self.clear()
         self.pv = PV(pvname, callback=self._onupdate)
-        
+
     def average(self):
         return self.data.sum() / self.times.ptp()
-    
-    
+
+
