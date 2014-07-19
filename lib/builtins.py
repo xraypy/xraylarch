@@ -411,6 +411,15 @@ def _subgroups(obj, _larch=None, **kws):
     else:
         raise Warning("subgroups() argument must be a group")
 
+def _groupitems(obj, _larch=None, **kws):
+    "returns group items as if items() method of a dict"
+    if _larch is None:
+        raise Warning("cannot run subgroups() -- larch broken?")
+    if isgroup(obj):
+        return obj._members().items()
+    else:
+        raise Warning("group_items() argument must be a group")
+
 def _which(sym, _larch=None, **kws):
     "return full path of object, or None if object cannot be found"
     if _larch is None:
@@ -480,6 +489,7 @@ local_funcs = {'_builtin': {'group':_group,
                             'exists': _exists,
                             'isgroup': _isgroup,
                             'subgroups': _subgroups,
+                            'group_items': _groupitems,
                             'pause': _pause,
                             'sleep': _sleep,
                             'reload':_reload,
