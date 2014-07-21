@@ -673,10 +673,10 @@ class XRFDisplayFrame(wx.Frame):
         self.draw()
         self.panel.Refresh()
 
-    def onSaveROIs(self):
+    def onSaveROIs(self, event=None):
         pass
 
-    def onRestoreROIs(self):
+    def onRestoreROIs(self, event=None):
         pass
 
     def createCustomMenus(self):
@@ -871,6 +871,10 @@ class XRFDisplayFrame(wx.Frame):
 
         erange = [max(conf.e_min, self.xdata.min()),
                   min(conf.e_max, self.xdata.max())]
+
+        view_mid, view_range, d1, d2 = self._getlims()
+        view_emin = view_mid - view_range/2.0
+        view_emax = view_mid + view_range/2.0
         for label, eev, frac, ilevel, flevel in majors:
             e = float(eev) * 0.001
             if (e >= erange[0] and e <= erange[1]):
@@ -884,7 +888,8 @@ class XRFDisplayFrame(wx.Frame):
                     xlines.AppendItem(dat)
 
                 self.major_markers.append(l)
-                if self.energy_for_zoom is None:
+                if (self.energy_for_zoom is None and
+                    e > view_emin and e < view_emax):                
                     self.energy_for_zoom = e
 
         for label, eev, frac, ilevel, flevel in minors:
