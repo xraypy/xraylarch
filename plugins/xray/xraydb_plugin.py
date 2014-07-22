@@ -426,6 +426,30 @@ def core_width(element=None, edge=None, _larch=None):
     return xdb.corehole_width(element=element, edge=edge)
 
 
+def mu_compound(formula, density, energies, kind='total', _larch=None):
+   """mu_compound: absorption coefficient (in 1/cm) for a compound
+
+   arguments
+   ---------
+   formula:   compound formula  -- sent to chemparse()
+   density:   compound density in gr/cm^3
+   energies:  energy or array of energies at which to calculate mu
+   kind:      cross-section to use ('total', 'photo') for mu_elam())
+
+   returns
+   -------
+   mu, absorption length in 1/cm
+
+   >>> print mu_compound('H2O', 1.0, 10000.0)
+   5.32986401658495
+   """
+   mtot, mu = 0.0, 0.0
+   for atom, num in chemparse(formula).items():
+       mass  = num*atomic_mass(atom, _larch=_larch)
+       mu   += mass*mu_elam(atom, energies, kind=kind, _larch=_larch)
+       mtot += mass
+   return density*mu/mtot
+
 ###
 
 class Scatterer:
@@ -499,6 +523,7 @@ def initializeLarchPlugin(_larch=None):
         mod = getattr(_larch.symtable, MODNAME)
         mod.__doc__ = MODDOC
 
+
 def registerLarchPlugin():
     return (MODNAME, {'f0': f0, 'f0_ions': f0_ions,
                       'chantler_energies': chantler_energies,
@@ -507,6 +532,7 @@ def registerLarchPlugin():
                       'f2_chantler': f2_chantler,
                       'mu_chantler': mu_chantler,
                       'mu_elam': mu_elam,
+                      'mu_compound': mu_compound,
                       'coherent_xsec': coherent_cross_section_elam,
                       'incoherent_xsec': incoherent_cross_section_elam,
                       'atomic_number': atomic_number,
