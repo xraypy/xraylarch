@@ -968,6 +968,8 @@ class XRFDisplayFrame(wx.Frame):
             kws['new'] = False
         else:
             self.mca = mca
+            self.panel.conf.show_grid = False
+
         atitles = []
         if self.mca is not None:
             if hasattr(self.mca, 'title'):
@@ -1012,6 +1014,7 @@ class XRFDisplayFrame(wx.Frame):
         panel.yformatter = self._formaty
         panel.axes.get_yaxis().set_visible(False)
         kwargs = {'xmin': 0,
+                  'grid': panel.conf.show_grid,
                   'ylog_scale': self.ylog_scale,
                   'xlabel': 'E (keV)',
                   'axes_style': 'bottom',
