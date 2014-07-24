@@ -42,7 +42,7 @@ def material_mu(name, energy, density=None, kind='total', _larch=None):
     ---------
      name:     name of material  from materials list or chemical compound
      energy:   energy or array of energies in eV
-     density:  material density (gr/cm^3).  If None, and material is a 
+     density:  material density (gr/cm^3).  If None, and material is a
                known material, that density will be used.
      kind:     'photo' or 'total' (default) for whether to
                return photo-absorption or total cross-section.
@@ -118,7 +118,7 @@ def material_get(name, _larch=None):
     return get_materials(_larch).get(name.lower(), None)
 
 def material_add(name, formula, density, _larch=None):
-    """ save material in personal db"""
+    """ save material in local db"""
     if _larch is None:
         return
     materials = get_materials(_larch)

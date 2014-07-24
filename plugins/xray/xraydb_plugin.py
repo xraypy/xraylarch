@@ -177,9 +177,9 @@ def mu_elam(element, energy, kind='total', _larch=None):
     ---------
     element:  atomic number, atomic symbol for element
     energy:   energy or array of energies in eV
-    kind:     one of 'photo', 'coh', and 'incoh' for photo-absorption,
-              coherent scattering, and incoherent scattering
-              cross sections, respectively.
+    kind:     one of 'total' (default) 'photo', 'coh', and 'incoh' for
+              total, photo-absorption, coherent scattering, and
+              incoherent scattering cross sections, respectively.
 
     Data from Elam, Ravel, and Sieber.
     """
