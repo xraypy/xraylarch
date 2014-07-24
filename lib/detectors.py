@@ -483,7 +483,7 @@ class Xspress3Trigger(Trigger):
         self.xsp3_update = PV(prefix + 'UPDATE')
         self.mcs_start   = PV(mcs + 'EraseStart')
         self.prefix = prefix
-        self.mca_prefix = mcs
+        self.mcs_prefix = mcs
         self._val = value
         self.done = False
         self._t0 = 0
@@ -525,10 +525,10 @@ class Xspress3Detector(DetectorMixin):
     repr_fmt = ', nmcas=%i, nrois=%i, enable_dtc=%s, use_full=%s'
 
     def __init__(self, prefix, mcs=None, label=None, nmcas=4, nrois=4,
-                 timebins=10, enable_dtc=True, use=True, use_unlabeled=False, 
-                 use_full=False, **kws): 
+                 timebins=10, enable_dtc=True, use=True, use_unlabeled=False,
+                 use_full=False, **kws):
         Saveable.__init__(self, prefix, mcs=mcs, label=label, nmcas=nmcas,
-                          nrois=nrois, timebins=timebins, enable_dtc=enable_dtc, 
+                          nrois=nrois, timebins=timebins, enable_dtc=enable_dtc,
                           use=use, use_unlabeled=use_unlabeled,
                           use_full=use_full, **kws)
         nmcas, nrois = int(nmcas), int(nrois)
@@ -565,7 +565,8 @@ class Xspress3Detector(DetectorMixin):
                                               self._repr_extra)
 
     def connect_counters(self):
-        self._counter = Xspress3Counter(self.prefix, **self._connect_args)
+        self._counter = Xspress3Counter(self.prefix, mcs=self.mcs_prefix,
+                                        **self._connect_args)
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
 
