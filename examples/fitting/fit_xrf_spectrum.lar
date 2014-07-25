@@ -2,6 +2,7 @@
 ## fit peaks in an XRF spectra (work in progress)
 
 mca = read_gsemca('../xrf/srm1832.mca')
+mca = read_gsemca('../xrf/test.mca')
 
 xrf_plot(mca)
 
@@ -21,13 +22,14 @@ for i, roi in enumerate(mca.rois):
     name = roi.name
     names.append(name)
     pars = mca.init_calib[name][4].params
-    name = name.replace(' ', '').lower()
+    label = name.replace(' ', '').lower()
     name = 'p%i' % i
     peaks.append(name)
     sig = mca.slope*pars.sigma.value
-    cen = mca.offset  + mca.slope*pars.center.value
+    cen = mca.offset  + mca.slope*mca.rois[i].center
     amp = scale * 0.02 * pars.amplitude.value
-    setattr(params, '%s_cen' % name, guess(cen,   min=cen-1, max=cen+1))
+    if amp> 1e8: amp = 10
+    setattr(params, '%s_cen' % name, param(cen,   vary=True)) # , min=cen-1, max=cen+1))
     setattr(params, '%s_sig' % name, param(expr='sig_offset + sig_slope*%s_cen' % name))
     setattr(params, '%s_amp' % name, guess(amp,   min=0))
     init += amp*gaussian(mca.energy, cen, sig)
@@ -35,51 +37,157 @@ for i, roi in enumerate(mca.rois):
 
 params.peaks = peaks
 params.names = names
- 
 
-def residual(pars, mca, trunc=True):
-    model = mca.bgr
-    scale = pars.scale
-    for name in pars.peaks:
-        cen = getattr(params, '%s_cen' % name).value
-        sig = getattr(params, '%s_sig' % name).value
-        amp = getattr(params, '%s_amp' % name).value
-        model = model + scale*amp*gaussian(mca.energy, cen, sig)
-    #endfor
-    out = (model - mca.counts)
-    if trunc:  out = out[pars.imin:pars.imax]
-    return out
+params.escape_energy = param(xray_lines('Si')['Ka1'][0]/1000.0, vary=False)  # K-alpha in keV
+params.escape_thick  = param(0.0400,  vary=False)                            # det thickness in cm!
+params.escape_scale  = param(xray_edge('Si', 'K')[1]/2.,  vary=False)        # f yield
+params.escape_scale.value /= 10.0
+
+params.pileup_scale  = param(1.e-4, min=0, max=0.1, vary=False)
+
+params.compton_scale  = param(10.0, vary=True)
+params.compton_en     = param(12.0, vary=False)
+params.compton_sigma  = param(0.1, vary=True, min=0., max=2.0)
+params.compton_skew   = param(-0.5, vary=True, max=0, min=-6)
+params.compton_gamma  = param(0.0, vary=True, min=-0.50)
+params.rayleigh_en    = param(12.5, vary=False)
+params.rayleigh_scale = param(5.0,  vary=True)
+params.rayleigh_sigma = param(expr='sig_offset + sig_slope*rayleigh_en')
+
+def get_compton(x, p):
+    cen  = p.compton_en.value
+    sig  = p.compton_sigma.value
+    skew = p.compton_skew.value
+    gam  = p.compton_gamma.value
+    amp  = p.compton_scale.value
+    return amp*skewed_voigt(x, cen=cen, sigma=sig, gamma=gam, skew=skew)
 #enddef
 
+def get_scatter(x, p):
+    comp = get_compton(x, p)
+    cen  = p.rayleigh_en.value
+    sig  = p.rayleigh_sigma.value
+    amp  = p.rayleigh_scale.value
+    rayl = amp*gaussian(x, cen, sig)
+    return p.scale*(rayl + comp)
+#enddef
+
+
+def apply_pileup_escape(counts, mca, pars):
+    """apply pileup and escape correction """
+    # pileup
+    pup_scale = pars.pileup_scale.value
+    pup_counts = (convolve(counts*pup_scale, counts*pup_scale, 'full'))
+    pup_energy = mca.offset + mca.slope*arange(len(pup_counts))
+    pileup     = interp1d(pup_energy, pup_counts, mca.energy)/(0.1+mca.energy)**1.0 # 2
+
+    # escape
+    esc_scale = pars.escape_scale.value
+    thick     = pars.escape_thick.value
+    esc_energy  = mca.energy  - pars.escape_energy.value
+    esc_counts = counts * esc_scale * (1.0-exp(-(material_mu('Si', mca.energy*1000.0))*thick))
+    escape = interp1d(esc_energy, esc_counts, mca.energy, fill_value=0.010)
+    return counts + pileup + escape
+#enddef
+
+def residual(pars, mca, trunc=True, pileup=True, spline=True):
+    model = 0*mca.bgr
+    scale = pars.scale
+    for name in pars.peaks:
+        cen = getattr(pars, '%s_cen' % name).value
+        sig = getattr(pars, '%s_sig' % name).value
+        amp = getattr(pars, '%s_amp' % name).value
+        model = model + scale*amp*gaussian(mca.energy, cen, sig)
+    #endfor
+    pars.counter += 1
+    model += get_scatter(mca.energy, pars)
+    if pileup: model = apply_pileup_escape(model, mca, pars)
+    if spline and hasattr(pars, 'spl1_details'):
+        model += spline_eval(mca.energy, pars)
+    #endif
+    out = (model - mca.counts)
+    if trunc:  out = out[pars.imin:pars.imax]
+    return out  # log10(out+0.01)))
+#enddef
+
+
 params.scale = 1.0/scale
-params.imin = index_of(mca.energy, 2.0)
-params.imax = index_of(mca.energy, 10.0)
+params.counter = 0
+params.imin = index_of(mca.energy,  1.0)
+params.imax = index_of(mca.energy, 14.0)
 
-minimize(residual, params, args=(mca, ))
-    
-final = residual(params, mca, trunc=False) + mca.counts
+# Fit 1
+minimize(residual, params, args=(mca, ), kws={'pileup':False})
+print 'First fit done...'
+first = residual(params, mca, trunc=False, pileup=True)[:len(mca.counts)] + mca.counts
 
-print fit_report(params)
+xrf_plot(mca.energy, first, as_mca2=True, color='black')
 
-xrf_plot(mca, new=True)
-# xrf_plot(mca.energy, mca.counts, mca=mca, new=True)
-xrf_plot(mca.energy, final, as_mca2=True, new=False)
+print fit_report(params, min_correl=0.7)
 
-## Final wids and areas
-ens = []
-sigs = []
-areas = []
-for p in peaks:
-    cen = getattr(params, '%s_cen' % p).value
-    sig = getattr(params, '%s_sig' % p).value
-    amp = getattr(params, '%s_amp' % p).value    
-    area = sig * amp
-    sigs.append(sig)
-    areas.append(area)
-    ens.append(cen)
+x = concatenate((linspace(0, 3.0, 7), linspace(4,  20, 9)))
+gg = spline_rep(x, zeros(len(x)), group=params)
+
+
+# params.counter1 = params.counter
+# params.counter = 0
+for name, par in group_items(params):
+    if isparam(par):
+       par.vary = False
+       if 'spl1' in par.name:
+          par.value = 10.0
+          par.min   = -1.0
+          par.vary  = False # True
+       #endif
+     #endif
 #endfor
 
-plot(ens, sigs, xlabel='E (keV)', ylabel='Peak sigma (keV)', marker='o',
-     title='Fit results', label='sigma', show_legend=True, new=True)
-plot(ens, areas, marker='o', label='peak area', y2_label='Area', side='right')
-    
+params.escape_scale.vary = True
+params.pileup_scale.vary = True
+params.compton_scale.vary = True
+params.compton_en.vary = True
+params.compton_sigma.vary=True
+params.compton_skew.vary=True
+params.rayleigh_en.vary = True
+params.rayleigh_scale.vary = True
+
+params.imax = index_of(mca.energy, 25.0)
+
+minimize(residual, params, args=(mca, ), kws={'pileup':True})
+
+final = residual(params, mca, trunc=False, pileup=True)[:len(mca.counts)] + mca.counts
+
+print fit_report(params, min_correl=0.3)
+xrf_plot(mca.energy, final,   as_mca2=True, new=False)
+xrf_plot(mca.energy, spline_eval(mca.energy, params),   as_mca2=True, new=False)
+
+
+# # # comp =  params.scale*get_compton(mca.energy, params)
+# # # _plotter.xrf1.oplot(mca.energy,  comp, color='black', label=name, new=False)
+# # scale = params.scale
+# # for name in params.peaks:
+# #     cen = getattr(params, '%s_cen' % name).value
+# #     sig = getattr(params, '%s_sig' % name).value
+# #     amp = getattr(params, '%s_amp' % name).value
+# #     x = scale*amp*gaussian(mca.energy, cen, sig)
+# #     ## _plotter.xrf1.oplot(mca.energy, x, color='black', label=name, new=False)
+# # #endfor
+# #
+# # # def show_areas(params):
+# # #     ens = []
+# # #     sigs = []
+# # #     areas = []
+# # #     for p in peaks:
+# # #         cen = getattr(params, '%s_cen' % p).value
+# # #         sig = getattr(params, '%s_sig' % p).value
+# # #         amp = getattr(params, '%s_amp' % p).value
+# # #         area = sig * amp
+# # #         sigs.append(sig)
+# # #         areas.append(area)
+# # #         ens.append(cen)
+# # #     #endfor
+# # #     plot(ens, sigs, xlabel='E (keV)', ylabel='Peak sigma (keV)', marker='o',
+# # #          title='Fit results', label='sigma', show_legend=True, new=True)
+# # #     plot(ens, areas, marker='o', label='peak area', y2_label='Area', side='right')
+# # #     #
+# # # #enddef
