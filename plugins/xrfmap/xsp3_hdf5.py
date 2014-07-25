@@ -13,11 +13,11 @@ class XSP3Data(object):
     def __init__(self, npix, ndet, nchan):
         self.firstPixel   = 0
         self.numPixels    = 0
-        self.counts       = np.zeros((npix, ndet, nchan), dtype='f4')
         self.realTime     = np.zeros((npix, ndet), dtype='i8')
-        self.liveTime     = np.zeros((npix, ndet), dtype='i8')
         self.inputCounts  = np.zeros((npix, ndet), dtype='i4')
-        self.outputCounts = np.zeros((npix, ndet), dtype='i4')
+        # self.outputCounts = np.zeros((npix, ndet), dtype='i4')
+        # self.liveTime     = np.zeros((npix, ndet), dtype='i8')
+        # self.counts       = np.zeros((npix, ndet, nchan), dtype='f4')
 
 
 def read_xsp3_hdf5(fname, npixels=None, verbose=False):
@@ -43,14 +43,19 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False):
     out = XSP3Data(npixels, ndet, nchan)
     out.numPixels = npixels
     t1 = time.time()
-    out.counts[:ndpix, :, :]  = counts[:]
+    if ndpix < npix:
+        out.counts = np.zeros((npix, ndet, nchan), dtype='f32')
+        out.counts[:ndpix, :, :]  = counts[:]
+    else:
+        out.counts = counts[:]
 
     for i in range(ndet):
         rtime = (ndattr['CHAN%iSCA0' % (i+1)].value * clocktick).astype('i8')
         out.realTime[:, i] = rtime
-        out.liveTime[:, i] = rtime
         out.inputCounts[:, i]  = out.counts[:, i, :].sum(axis=1)
-        out.outputCounts[:, i] = out.inputCounts[:, i]
+
+    out.outputCounts = out.inputCounts[:]
+    out.liveTime = out.realTime[:]
 
     h5file.close()
     t2 = time.time()

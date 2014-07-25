@@ -825,13 +825,14 @@ WARNING: This cannot be undone!
                 hmean, gmean, skew, kurtosis = 0, 0, 0, 0
 
             smode = '--'
+            fmt = "{:,.1f}".format # use thousands commas, 1 decimal place
             mode = stats.mode(d)
             if len(mode) > 0:
                 mode = mode[0]
                 if len(mode) > 0:
-                    smode = "%.1f" % mode[0]
-            dat = (dname, "%.1f" % d.min(), "%.1f" % d.max(), "%.1f" %
-                   d.mean(), "%.1f" % d.std(), "%.1f" % np.median(d), smode)
+                    smode = fmt(mode[0])
+            dat = (dname, fmt(d.min()), fmt(d.max()), fmt(d.mean()),
+                   fmt(d.std()), fmt(np.median(d)), smode)
             self.report_data.append(dat)
             wx.CallAfter(self.report.AppendItem, dat)
         if 'roistats' not in area.attrs:
