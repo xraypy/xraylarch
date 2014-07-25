@@ -69,6 +69,15 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">8. X-ray Databases</a><ul>
+<li><a class="reference internal" href="#x-ray-properties-of-the-elements">8.1. X-ray Properties of the Elements</a></li>
+<li><a class="reference internal" href="#x-ray-properties-of-materials-and-chemicals">8.2. X-ray Properties of Materials and Chemicals</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="../xafs/feffit.html"
                         title="previous chapter">7.7. XAFS: Fitting XAFS to Feff Paths</a></p>
@@ -103,21 +112,26 @@
             
   <div class="section" id="module-_xray">
 <span id="x-ray-databases"></span><span id="xraydb-chapter"></span><h1>8. X-ray Databases<a class="headerlink" href="#module-_xray" title="Permalink to this headline">¶</a></h1>
-<p>An important aspect of x-ray spectroscopies and scattering analysis is
-having access to tabulated values for x-ray properties of various elements
-and compounds.  Larch provides several functions to access these x-ray
-properties.  These include basic atomic properties like atomic number and
-mass, tabulated values of characteristic energies and transition
+<p>An important aspect of X-ray spectroscopies and scattering analysis is
+having access to tabulated values for X-ray properties of various elements
+and compounds.  Larch provides several functions to access these X-ray
+properties, which can be broken into two general categories:  X-ray
+properties of elements, and properties of materials and compounds by
+chemical formula.</p>
+<p>The first category includes basic atomic properties like atomic number and mass, and
+consists of tabulated values of characteristic energies and transition
 probabilites for core electron levels, absorption cross-sections, elastic
-scattering terms, and anomalous scattering corrections.</p>
+scattering terms, and anomalous scattering factors.  The second category
+allows these elemental properties to be applied to common compounds by name
+or by chemical formula.</p>
 <p>Much of the X-ray spectroscopic data comes from the compilation of
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-elamtables">Elam, Ravel and Sieber</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-elamtables">4</a><span>]</span></span>.  The core-hole widths for excited electronic levels
-comes from <span class="citation"><a class="reference internal" href="../biblio.html#citation-keski-krause">Keski-Rahkonen and Krause</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-keski-krause">5</a><span>]</span></span>, while elastic x-ray scattering data,
-f0(q), is derived from <span class="citation"><a class="reference internal" href="../biblio.html#citation-waasmaier-kirfel">Waasmaier and Kirfel</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-waasmaier-kirfel">17</a><span>]</span></span>.  Anomalous
+comes from <span class="citation"><a class="reference internal" href="../biblio.html#citation-keski-krause">Keski-Rahkonen and Krause</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-keski-krause">5</a><span>]</span></span>, while elastic X-ray scattering data,
+<img class="math" src="../_images/math/55132d1cb64b26b7b567d79fafc8d92aa3675bd7.png" alt="f_0(q)"/>,is derived from <span class="citation"><a class="reference internal" href="../biblio.html#citation-waasmaier-kirfel">Waasmaier and Kirfel</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-waasmaier-kirfel">17</a><span>]</span></span>.  Anomalous
 cross-sections are available as based on the work of
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-cromer-liberman">Cromer and Liberman</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-cromer-liberman">3</a><span>]</span></span>, using the implementation of
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-brennan-cowan">Brennan and Cowan</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-brennan-cowan">1</a><span>]</span></span>.  In addition, values for absorption
-cross-sections and anomalous x-ray scattering factors from
+cross-sections and anomalous X-ray scattering factors from
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-chantler">Chanter</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-chantler">2</a><span>]</span></span> (as from <a class="reference external" href="http://www.nist.gov/pml/data/ffast/index.cfm">http://www.nist.gov/pml/data/ffast/index.cfm</a>)
 are available.  Except for the anomalous cross-section data from Cromer and
 Liberman (which is implemented using the Fortran routine by Brennan and
@@ -125,15 +139,19 @@ Cowan with slight modifications), the data is accessed through a portable
 SQLite3 database file.  This implementation was originally done by Darren
 Dale from CHESS (see <a class="reference external" href="https://github.com/praxes/elam_physical_reference">https://github.com/praxes/elam_physical_reference</a>),
 with some additions and alterations made for Larch.</p>
-<p>The <a class="reference internal" href="#xraydb-funcs-table"><em>Table of X-ray data functions</em></a> gives a brief
+<div class="section" id="x-ray-properties-of-the-elements">
+<h2>8.1. X-ray Properties of the Elements<a class="headerlink" href="#x-ray-properties-of-the-elements" title="Permalink to this headline">¶</a></h2>
+<p>The <a class="reference internal" href="#xraydb-elem-funcs-table"><em>Table of X-ray data functions</em></a> gives a brief
 description to the available functions for accessing these data.  More
 detailed descriptions of function arguments, returned values, and so on are
 then given.</p>
-<blockquote id="xraydb-funcs-table">
-<span id="index-0"></span><div><p>Table of X-ray data functions.  These functions calculate and return some element-specific
-properties.  Most data extends to Z=98 (Cf).  Data for elements with atomic number &gt; 92 (U) may
-not be available and when provided may not be very reliable.  Except where noted, the data
-comes from Elam, Ravel, and Sieber.</p>
+<blockquote id="xraydb-elem-funcs-table">
+<span id="index-0"></span><div><p>Table of X-ray database functions for the Elements.  These functions
+calculate and return some element-specific properties, given the
+element symbol or atomic number.  Most data extends to Z=98 (Cf).  Data
+for elements with atomic number &gt; 92 (U) may not be available and when
+provided may not be very reliable.  Except where noted, the data comes
+from Elam, Ravel, and Sieber.</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -158,58 +176,55 @@ comes from Elam, Ravel, and Sieber.</p>
 <tr class="row-odd"><td><a class="reference internal" href="#_xray.atomic_density" title="_xray.atomic_density"><tt class="xref py py-func docutils literal"><span class="pre">atomic_density()</span></tt></a></td>
 <td>atomic density (for pure element)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.chemparse" title="_xray.chemparse"><tt class="xref py py-func docutils literal"><span class="pre">chemparse()</span></tt></a></td>
-<td>parse a chemical formula to a dictionary of components</td>
-</tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_edge" title="_xray.xray_edge"><tt class="xref py py-func docutils literal"><span class="pre">xray_edge()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_edge" title="_xray.xray_edge"><tt class="xref py py-func docutils literal"><span class="pre">xray_edge()</span></tt></a></td>
 <td>xray edge data for a particular element and edge</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_line" title="_xray.xray_line"><tt class="xref py py-func docutils literal"><span class="pre">xray_line()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_line" title="_xray.xray_line"><tt class="xref py py-func docutils literal"><span class="pre">xray_line()</span></tt></a></td>
 <td>xray emission line data for an element and line</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_edges" title="_xray.xray_edges"><tt class="xref py py-func docutils literal"><span class="pre">xray_edges()</span></tt></a></td>
-<td>dictionary of all x-ray edges data for an element</td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_edges" title="_xray.xray_edges"><tt class="xref py py-func docutils literal"><span class="pre">xray_edges()</span></tt></a></td>
+<td>dictionary of all X-ray edges data for an element</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_lines" title="_xray.xray_lines"><tt class="xref py py-func docutils literal"><span class="pre">xray_lines()</span></tt></a></td>
-<td>dictionary of all x-ray emission line data for an element</td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_lines" title="_xray.xray_lines"><tt class="xref py py-func docutils literal"><span class="pre">xray_lines()</span></tt></a></td>
+<td>dictionary of all X-ray emission line data for an element</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.fluo_yield" title="_xray.fluo_yield"><tt class="xref py py-func docutils literal"><span class="pre">fluo_yield()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.fluo_yield" title="_xray.fluo_yield"><tt class="xref py py-func docutils literal"><span class="pre">fluo_yield()</span></tt></a></td>
 <td>fluorescence yield and weighted line energy</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.core_width" title="_xray.core_width"><tt class="xref py py-func docutils literal"><span class="pre">core_width()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.core_width" title="_xray.core_width"><tt class="xref py py-func docutils literal"><span class="pre">core_width()</span></tt></a></td>
 <td>core level width for an element and edge (Keski-Rahkonen and Krause)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><tt class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><tt class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></tt></a></td>
 <td>absorption cross-section</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.coherent_xsec" title="_xray.coherent_xsec"><tt class="xref py py-func docutils literal"><span class="pre">coherent_xsec()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.coherent_xsec" title="_xray.coherent_xsec"><tt class="xref py py-func docutils literal"><span class="pre">coherent_xsec()</span></tt></a></td>
 <td>coherent cross-section</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.incoherent_xsec" title="_xray.incoherent_xsec"><tt class="xref py py-func docutils literal"><span class="pre">incoherent_xsec()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.incoherent_xsec" title="_xray.incoherent_xsec"><tt class="xref py py-func docutils literal"><span class="pre">incoherent_xsec()</span></tt></a></td>
 <td>incoherent cross-section</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.f0" title="_xray.f0"><tt class="xref py py-func docutils literal"><span class="pre">f0()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.f0" title="_xray.f0"><tt class="xref py py-func docutils literal"><span class="pre">f0()</span></tt></a></td>
 <td>elastic scattering factor (Waasmaier and Kirfel)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.f0_ions" title="_xray.f0_ions"><tt class="xref py py-func docutils literal"><span class="pre">f0_ions()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.f0_ions" title="_xray.f0_ions"><tt class="xref py py-func docutils literal"><span class="pre">f0_ions()</span></tt></a></td>
 <td>list of valid &quot;ions&quot; for <a class="reference internal" href="#_xray.f0" title="_xray.f0"><tt class="xref py py-func docutils literal"><span class="pre">f0()</span></tt></a> (Waasmaier and Kirfel)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.chantler_energies" title="_xray.chantler_energies"><tt class="xref py py-func docutils literal"><span class="pre">chantler_energies()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.chantler_energies" title="_xray.chantler_energies"><tt class="xref py py-func docutils literal"><span class="pre">chantler_energies()</span></tt></a></td>
 <td>energies of tabulation for Chantler data (Chantler)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.f1_chantler" title="_xray.f1_chantler"><tt class="xref py py-func docutils literal"><span class="pre">f1_chantler()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.f1_chantler" title="_xray.f1_chantler"><tt class="xref py py-func docutils literal"><span class="pre">f1_chantler()</span></tt></a></td>
 <td>f'  anomalous factor (Chantler)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.f2_chantler" title="_xray.f2_chantler"><tt class="xref py py-func docutils literal"><span class="pre">f2_chantler()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.f2_chantler" title="_xray.f2_chantler"><tt class="xref py py-func docutils literal"><span class="pre">f2_chantler()</span></tt></a></td>
 <td>f'' anomalous factor (Chantler)</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.mu_chantler" title="_xray.mu_chantler"><tt class="xref py py-func docutils literal"><span class="pre">mu_chantler()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.mu_chantler" title="_xray.mu_chantler"><tt class="xref py py-func docutils literal"><span class="pre">mu_chantler()</span></tt></a></td>
 <td>absorption cross-section (Chantler)</td>
 </tr>
-<tr class="row-even"><td><a class="reference internal" href="#_xray.xray_delta_beta" title="_xray.xray_delta_beta"><tt class="xref py py-func docutils literal"><span class="pre">xray_delta_beta()</span></tt></a></td>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_delta_beta" title="_xray.xray_delta_beta"><tt class="xref py py-func docutils literal"><span class="pre">xray_delta_beta()</span></tt></a></td>
 <td>anomalous components of the index of refraction for a material</td>
 </tr>
-<tr class="row-odd"><td><a class="reference internal" href="#_xray.f1f2_cl" title="_xray.f1f2_cl"><tt class="xref py py-func docutils literal"><span class="pre">f1f2_cl()</span></tt></a></td>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.f1f2_cl" title="_xray.f1f2_cl"><tt class="xref py py-func docutils literal"><span class="pre">f1f2_cl()</span></tt></a></td>
 <td>f' and f'' anomalous factors (Cromer and Liberman)</td>
 </tr>
 </tbody>
@@ -453,22 +468,6 @@ line names</em></a>.  Finally, all energies are in eV.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="_xray.chemparse">
-<tt class="descclassname">_xray.</tt><tt class="descname">chemparse</tt><big>(</big><em>formula</em><big>)</big><a class="headerlink" href="#_xray.chemparse" title="Permalink to this definition">¶</a></dt>
-<dd><p>parse a chemical formula, returning a dictionary with element symbols as
-keys and number for each element as values.  For example:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s">&quot;H2O&quot;</span><span class="p">)</span>
-<span class="p">{</span><span class="s">&#39;H&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
-<span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s">&quot;Mg0.2Fe0.8(SO4)2&quot;</span><span class="p">)</span>
-<span class="p">{</span><span class="s">&#39;S&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;Mg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s">&#39;Fe&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">}</span>
-</pre></div>
-</div>
-<p>Note that factional weights and even use of scientific notation for
-weights is supported, as long as the weight begins with a number and not
-'.'.   That is 'Fe0.8',  but not 'Fe.8'.</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="_xray.xray_edge">
 <tt class="descclassname">_xray.</tt><tt class="descname">xray_edge</tt><big>(</big><em>z_or_symbol</em>, <em>edge_name</em><big>)</big><a class="headerlink" href="#_xray.xray_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>return (edge energy, fluorescence yield, edge jump) for an atomic number or symbol and
@@ -525,9 +524,25 @@ name of the edge.  widths are in eV.</p>
 
 <dl class="function">
 <dt id="_xray.mu_elam">
-<tt class="descclassname">_xray.</tt><tt class="descname">mu_elam</tt><big>(</big><em>z_or_symbol</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.mu_elam" title="Permalink to this definition">¶</a></dt>
-<dd><p>return x-ray mass attenuation coefficient (<img class="math" src="../_images/math/71fea67b878717487aa2590721a805c4533d46aa.png" alt="\mu/\rho"/>) for an atomic number or symbol at
-specified energy values.</p>
+<tt class="descclassname">_xray.</tt><tt class="descname">mu_elam</tt><big>(</big><em>z_or_symbol</em>, <em>energy</em>, <em>kind='total'</em><big>)</big><a class="headerlink" href="#_xray.mu_elam" title="Permalink to this definition">¶</a></dt>
+<dd><p>return X-ray mass attenuation coefficient <img class="math" src="../_images/math/71fea67b878717487aa2590721a805c4533d46aa.png" alt="\mu/\rho"/> in cm^2/gr
+for an atomic number or symbol at specified energy values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>z_or_symbol</strong> -- Integer atomic number or symbol for elemen</li>
+<li><strong>energy</strong> -- energy (single value, list, array) in eV at which
+to calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>.</li>
+<li><strong>kind</strong> -- one of 'total' (default), 'photo', 'coh', and 'incoh' for
+total, photo-absorption, coherent scattering, and
+incoherent scattering cross sections, respectively.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -549,7 +564,7 @@ specified energy values. Values returned are in cm^2/gr.</p>
 <tt class="descclassname">_xray.</tt><tt class="descname">f0</tt><big>(</big><em>ion</em>, <em>qvalues</em><big>)</big><a class="headerlink" href="#_xray.f0" title="Permalink to this definition">¶</a></dt>
 <dd><p>return elastic scattering (Thomson) factor <img class="math" src="../_images/math/55132d1cb64b26b7b567d79fafc8d92aa3675bd7.png" alt="f_0(q)"/> for the supplied values of
 <tt class="docutils literal"><span class="pre">q</span></tt> (<img class="math" src="../_images/math/f2cbd6209aa10e609143fa0948ef4189d1d35af5.png" alt="q = \sin(\theta)/\lambda"/> where <img class="math" src="../_images/math/a9cfbeb8ebee1f365919e147a79e242dcb67ee5d.png" alt="\theta"/> is the scattering angle
-and <img class="math" src="../_images/math/1ab0134b6e0837594649c75a2ed83cfd85a2d03d.png" alt="\lambda"/> is the x-ray wavelength).  Here, <tt class="docutils literal"><span class="pre">ion</span></tt> can be an atomic number or
+and <img class="math" src="../_images/math/1ab0134b6e0837594649c75a2ed83cfd85a2d03d.png" alt="\lambda"/> is the X-ray wavelength).  Here, <tt class="docutils literal"><span class="pre">ion</span></tt> can be an atomic number or
 symbol, or any of the valid ion values (e.g., 'Ga3+') given by Waasmaier and Kirfel.
 The returned values are in units of electron number.</p>
 </dd></dl>
@@ -588,7 +603,7 @@ attenuation coefficient.</p>
 <dl class="function">
 <dt id="_xray.mu_chantler">
 <tt class="descclassname">_xray.</tt><tt class="descname">mu_chantler</tt><big>(</big><em>z_or_element</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.mu_chantler" title="Permalink to this definition">¶</a></dt>
-<dd><p>return x-ray mass attenuation coefficient (<img class="math" src="../_images/math/71fea67b878717487aa2590721a805c4533d46aa.png" alt="\mu/\rho"/>) for an element at the
+<dd><p>return X-ray mass attenuation coefficient (<img class="math" src="../_images/math/71fea67b878717487aa2590721a805c4533d46aa.png" alt="\mu/\rho"/>) for an element at the
 specified energy values, using the tabulation of Chantler.</p>
 </dd></dl>
 
@@ -605,6 +620,169 @@ Lorentzian profile (with <tt class="docutils literal"><span class="pre">width</s
 <p>Note that both f' and f'' are returned here.</p>
 </dd></dl>
 
+</div>
+<div class="section" id="x-ray-properties-of-materials-and-chemicals">
+<h2>8.2. X-ray Properties of Materials and Chemicals<a class="headerlink" href="#x-ray-properties-of-materials-and-chemicals" title="Permalink to this headline">¶</a></h2>
+<p>Compositional data for several common materials are included with Larch,
+and can be read at run time.  The variable <tt class="docutils literal"><span class="pre">_xray.materials</span></tt> contains a
+dictionary of material names, with values of (chemical forumla, density)
+that are read on startup, and can be appended too.  There is a system-wide
+set of 50 or so known materials, and you can add your own favorite
+materials that will then be automatically available in later sessions.</p>
+<p>The <a class="reference internal" href="#xraydb-materials-funcs-table"><em>Table of X-ray functions for materials</em></a>
+gives a brief description to the available functions for accessing these
+data.  More detailed descriptions of function arguments, returned values,
+and so on are then given.</p>
+<blockquote id="xraydb-materials-funcs-table">
+<span id="index-4"></span><div><p>Table of X-ray database functions for materials.  These functions
+calculate and return X-ray properties for known materials or chemical
+formula. Except where noted, the data comes from Elam, Ravel, and
+Sieber.</p>
+<blockquote>
+<div><table border="1" class="docutils">
+<colgroup>
+<col width="34%" />
+<col width="66%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">function</th>
+<th class="head">description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><a class="reference internal" href="#_xray.chemparse" title="_xray.chemparse"><tt class="xref py py-func docutils literal"><span class="pre">chemparse()</span></tt></a></td>
+<td>parse a chemical formula to a dictionary of components</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.material_get" title="_xray.material_get"><tt class="xref py py-func docutils literal"><span class="pre">material_get()</span></tt></a></td>
+<td>get dictionary of elements for a known material</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.material_add" title="_xray.material_add"><tt class="xref py py-func docutils literal"><span class="pre">material_add()</span></tt></a></td>
+<td>add a material to list of known materials</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.material_mu" title="_xray.material_mu"><tt class="xref py py-func docutils literal"><span class="pre">material_mu()</span></tt></a></td>
+<td>calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> for a material or chemical formula</td>
+</tr>
+<tr class="row-even"><td><a class="reference internal" href="#_xray.material_mu_components" title="_xray.material_mu_components"><tt class="xref py py-func docutils literal"><span class="pre">material_mu_components()</span></tt></a></td>
+<td>calculate components of <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> for a material or
+chemical formula</td>
+</tr>
+<tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_delta_beta" title="_xray.xray_delta_beta"><tt class="xref py py-func docutils literal"><span class="pre">xray_delta_beta()</span></tt></a></td>
+<td>anomalous index of refraction for a
+material, using data from Chantler.</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</div></blockquote>
+<dl class="function">
+<dt id="_xray.chemparse">
+<tt class="descclassname">_xray.</tt><tt class="descname">chemparse</tt><big>(</big><em>formula</em><big>)</big><a class="headerlink" href="#_xray.chemparse" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse a chemical formula, returning a dictionary with element symbols as
+keys and number for each element as values.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s">&quot;H2O&quot;</span><span class="p">)</span>
+<span class="p">{</span><span class="s">&#39;H&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">chemparse</span><span class="p">(</span><span class="s">&quot;Mg0.2Fe0.8(SO4)2&quot;</span><span class="p">)</span>
+<span class="p">{</span><span class="s">&#39;S&#39;</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s">&#39;Mg&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s">&#39;Fe&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="mf">8.0</span><span class="p">}</span>
+</pre></div>
+</div>
+<p>Note that factional weights and scientific notation for weights is
+supported, as long as the weight begins with a number and not '.'.  That
+is 'Fe0.8' is supported, but 'Fe.8' is not.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.material_get">
+<tt class="descclassname">_xray.</tt><tt class="descname">material_get</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#_xray.material_get" title="Permalink to this definition">¶</a></dt>
+<dd><p>look up chemical compound by naming returning formula (not parsed!) and
+density.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_get</span><span class="p">(</span><span class="s">&#39;kapton&#39;</span><span class="p">)</span>
+<span class="p">(</span><span class="s">&#39;C22H10N2O5&#39;</span><span class="p">,</span> <span class="mf">1.43</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>material names are not case sensitive.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.material_add">
+<tt class="descclassname">_xray.</tt><tt class="descname">material_add</tt><big>(</big><em>name</em>, <em>formula</em>, <em>density</em><big>)</big><a class="headerlink" href="#_xray.material_add" title="Permalink to this definition">¶</a></dt>
+<dd><p>add material with name, chemical formula, and density.  This will be
+added to the a file in the user's larch directory, and loaded in
+subsequent larch sessions.</p>
+<p>material names are not case sensitive.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.material_mu">
+<tt class="descclassname">_xray.</tt><tt class="descname">material_mu</tt><big>(</big><em>name_or_formula</em>, <em>energy</em>, <em>density=None</em><big>)</big><a class="headerlink" href="#_xray.material_mu" title="Permalink to this definition">¶</a></dt>
+<dd><p>return X-ray attenuation length (in 1/cm) for a material, either by name
+or formula and density.</p>
+<blockquote>
+<div><p>return X-ray mass attenuation coefficient <img class="math" src="../_images/math/71fea67b878717487aa2590721a805c4533d46aa.png" alt="\mu/\rho"/> in cm^2/gr
+for an atomic number or symbol at specified energy values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">param name:</th><td class="field-body">material name or formula</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param energy:</th><td class="field-body">energy (single value, list, array) in eV at which
+to calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">param kind:</th><td class="field-body">one of 'total' (default), 'photo', 'coh', and
+'incoh' (see <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><tt class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></tt></a>)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">param density:</th><td class="field-body">material density (if <tt class="docutils literal"><span class="pre">None</span></tt>, it will be looked up for
+known materials)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body"><img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> in 1/cm.</td>
+</tr>
+</tbody>
+</table>
+<p>uses <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><tt class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></tt></a>. Example:</p>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print material_mu(&#39;water&#39;, 10000.0)
+5.32986401658495
+larch&gt; print material_mu(&#39;H2O&#39;, 10000.0, density=1.0)
+5.32986401658495
+</pre></div>
+</div>
+</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="_xray.material_mu_components">
+<tt class="descclassname">_xray.</tt><tt class="descname">material_mu_components</tt><big>(</big><em>name_or_formula</em>, <em>energy</em>, <em>density=None</em><big>)</big><a class="headerlink" href="#_xray.material_mu_components" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dictionary of components to calculate absorption coefficient.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>name</strong> -- material name or formula</li>
+<li><strong>energy</strong> -- energy (single value, list, array) in eV at which
+to calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>.</li>
+<li><strong>kind</strong> -- one of 'total' (default), 'photo', 'coh', and
+'incoh' (see <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><tt class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></tt></a>)</li>
+<li><strong>density</strong> -- material density (if <tt class="docutils literal"><span class="pre">None</span></tt>, it will be looked up
+for known materials)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dictionary of data for constructing <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> per element.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>The returned dictionary will have elements 'mass' (total mass), 'density', and
+'elements' (list of atomic symbols for elements in material). For each element, there
+will be an item (atomic symbol as key) with tuple of (fraction, atomic mass, <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>).
+For example:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
+<span class="p">{</span><span class="s">&#39;Si&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">28.0855</span><span class="p">,</span> <span class="mf">33.879432430185062</span><span class="p">),</span> <span class="s">&#39;elements&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">],</span>
+<span class="s">&#39;mass&#39;</span><span class="p">:</span> <span class="mf">60.0843</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">15.9994</span><span class="p">,</span> <span class="mf">5.9528248152970837</span><span class="p">),</span> <span class="s">&#39;density&#39;</span><span class="p">:</span> <span class="mf">2.65</span><span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
 <dl class="function">
 <dt id="_xray.xray_delta_beta">
 <tt class="descclassname">_xray.</tt><tt class="descname">xray_delta_beta</tt><big>(</big><em>material</em>, <em>energy</em>, <em>photo_only=False</em><big>)</big><a class="headerlink" href="#_xray.xray_delta_beta" title="Permalink to this definition">¶</a></dt>
@@ -617,7 +795,7 @@ using the tabulated scattering components from Chantler.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>material</strong> -- chemical formula  ('Fe2O3', 'CaMg(CO3)2', 'La1.9Sr0.1CuO4')</li>
 <li><strong>density</strong> -- material density in g/cm^3</li>
-<li><strong>energy</strong> -- x-ray energy in eV</li>
+<li><strong>energy</strong> -- X-ray energy in eV</li>
 <li><strong>photo_only</strong> -- boolean for returning only the photo cross-section component
 for beta and t_atten. If <tt class="docutils literal"><span class="pre">False</span></tt> (the default value), the
 total cross-section is returned.</li>
@@ -671,6 +849,7 @@ factor <img class="math" src="../_images/math/4851b9d6a971ec377c7f829424f58d321c
 <div class="math">
 <p><img src="../_images/math/7ab8dfd60445a0c64748ee77fba67926666a82d9.png" alt="n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}"/></p>
 </div></div>
+</div>
 
 
           </div>
