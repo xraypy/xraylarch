@@ -61,55 +61,63 @@ def material_mu(name, energy, density=None, kind='total', _larch=None):
       >>> print material_mu('H2O', 1.0, 10000.0)
       5.32986401658495
     """
-    if _larch is None:
-        return
-
     _materials = get_materials(_larch)
     mater = _materials.get(name.lower(), None)
     if mater is None:
-        if density is None:
-            density = 1.0
         formula = name
+        if density is None:
+            raise Warning('material_mu(): must give density for unknown materials')
     else:
         formula, density = mater
 
-    msum, mu = 0.0, 0.0
-    for elem, weight in chemparse(formula).items():
-        mass  = weight * atomic_mass(elem, _larch=_larch)
-        msum += mass
+    mass_tot, mu = 0.0, 0.0
+    for elem, frac in chemparse(formula).items():
+        mass  = frac * atomic_mass(elem, _larch=_larch)
         mu   += mass * mu_elam(elem, energy, kind=kind, _larch=_larch)
-    return density*mu/msum
+        mass_tot += mass
+    return density*mu/mass_tot
 
 def material_mu_components(name, energy, density=None, kind='total',
                            _larch=None):
-   """material_mu_components: absorption coefficient (in 1/cm) for a compound
+    """material_mu_components: absorption coefficient (in 1/cm) for a compound
 
-   arguments
-   ---------
-    name:     material name or compound formula
-    energy:   energy or array of energies at which to calculate mu
-    density:  compound density in gr/cm^3
-    kind:     cross-section to use ('total', 'photo') for mu_elam())
+    arguments
+    ---------
+     name:     material name or compound formula
+     energy:   energy or array of energies at which to calculate mu
+     density:  compound density in gr/cm^3
+     kind:     cross-section to use ('total', 'photo') for mu_elam())
 
-   returns
-   -------
-     dictionary of component of mu per element,
+    returns
+    -------
+     dictionary of data for constructing mu per element,
+     with elements 'mass' (total mass), 'density', and
+     'elements' (list of atomic symbols for elements in material).
+     For each element, there will be an item (atomic symbol as key)
+     with tuple of (stoichiometric fraction, atomic mass, mu)
 
-   >>> print mu_compound('H2O', 1.0, 10000.0)
-   5.32986401658495
-   """
-   mtot, mu = 0.0, 0.0
-   out = {}
-   for atom, num in chemparse(formula).items():
-       atmass = atomic_mass(atom, _larch=_larch)
-       mu     = mu_elam(atom, energies, kind=kind, _larch=_larch)
-       out[atom] = (num, atmass, mu)
-       mass  = atmass * num
-       mu   += mass*mu
-       mtot += mass
-   out['mass'] = mtot
-   out['density'] = density
-   return out
+     larch> material_mu_components('quartz', 10000)
+     {'Si': (1, 28.0855, 33.879432430185062), 'elements': ['Si', 'O'],
+     'mass': 60.0843, 'O': (2.0, 15.9994, 5.9528248152970837), 'density': 2.65}
+     """
+    _materials = get_materials(_larch)
+    mater = _materials.get(name.lower(), None)
+    if mater is None:
+        formula = name
+        if density is None:
+            raise Warning('material_mu(): must give density for unknown materials')
+    else:
+        formula, density = mater
+
+
+    out = {'mass': 0.0, 'density': density, 'elements':[]}
+    for atom, frac in chemparse(formula).items():
+        mass  = atomic_mass(atom, _larch=_larch)
+        mu    = mu_elam(atom, energy, kind=kind, _larch=_larch)
+        out['mass'] += frac*mass
+        out[atom] = (frac, mass, mu)
+        out['elements'].append(atom)
+    return out
 
 def material_get(name, _larch=None):
     """lookup material """
@@ -152,4 +160,5 @@ def registerLarchPlugin():
     return ('_xray', {'material_get': material_get,
                       'material_add': material_add,
                       'material_mu':  material_mu,
+                      'material_mu_components': material_mu_components,
                       })
