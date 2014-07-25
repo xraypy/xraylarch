@@ -223,7 +223,8 @@ line names <xraydb-lines_table>`.  Finally, all energies are in eV.
     for an atomic number or symbol at specified energy values.
 
     :param z_or_symbol:  Integer atomic number or symbol for elemen
-    :param energy:       energy (single value, list, array) in eV to calculate :math:`mu` for.
+    :param energy:       energy (single value, list, array) in eV at which
+                         to calculate :math:`\mu`.
     :param kind:         one of 'total' (default), 'photo', 'coh', and 'incoh' for
                          total, photo-absorption, coherent scattering, and
                          incoherent scattering cross sections, respectively.
@@ -316,16 +317,18 @@ and so on are then given.
     formula. Except where noted, the data comes from Elam, Ravel, and
     Sieber.
 
-     ========================== =============================================================
-      function                    description
-     ========================== =============================================================
-      :func:`chemparse`          parse a chemical formula to a dictionary of components
-      :func:`material_get`       get dictionary of elements for a known material
-      :func:`material_add`       add a material to list of known materials
-      :func:`material_mu`        calculate :math:`mu` for a material or chemical formula
-      :func:`xray_delta_beta`    anomalous index of refraction for a
-                                  material, using data from Chantler.
-     ========================== =============================================================
+     =============================== =============================================================
+      function                          description
+     =============================== =============================================================
+      :func:`chemparse`               parse a chemical formula to a dictionary of components
+      :func:`material_get`            get dictionary of elements for a known material
+      :func:`material_add`            add a material to list of known materials
+      :func:`material_mu`             calculate :math:`\mu` for a material or chemical formula
+      :func:`material_mu_components`  calculate components of :math:`\mu` for a material or
+                                      chemical formula
+      :func:`xray_delta_beta`         anomalous index of refraction for a
+                                      material, using data from Chantler.
+     =============================== =============================================================
 
 
 .. function:: chemparse(formula)
@@ -371,14 +374,42 @@ and so on are then given.
     for an atomic number or symbol at specified energy values.
 
     :param name:    material name or formula
-    :param energy:  energy (single value, list, array) in eV to calculate :math:`mu` for.
-    :param kind:    one of 'total' (default), 'photo', 'coh', and 'incoh' (see :func:`mu_elam`)
-    :param density: material density (if ``None``, it will be looked up for known materials)
+    :param energy:  energy (single value, list, array) in eV at which
+                    to calculate :math:`\mu`.
+    :param kind:    one of 'total' (default), 'photo', 'coh', and
+                    'incoh' (see :func:`mu_elam`)
+    :param density: material density (if ``None``, it will be looked up for
+                    known materials)
+    :return:        :math:`\mu` in 1/cm.
 
     uses :func:`mu_elam`. Example::
 
-      >>> print material_mu('H2O', 1.0, 10000.0)
+      larch> print material_mu('water', 10000.0)
       5.32986401658495
+      larch> print material_mu('H2O', 10000.0, density=1.0)
+      5.32986401658495
+
+.. function:: material_mu_components(name_or_formula, energy, density=None)
+
+    return dictionary of components to calculate absorption coefficient.
+
+    :param name:    material name or formula
+    :param energy:  energy (single value, list, array) in eV at which
+                    to calculate :math:`\mu`.
+    :param kind:    one of 'total' (default), 'photo', 'coh', and
+                    'incoh' (see :func:`mu_elam`)
+    :param density: material density (if ``None``, it will be looked up
+                    for known materials)
+    :return:        dictionary of data for constructing :math:`\mu` per element.
+
+    The returned dictionary will have elements 'mass' (total mass), 'density', and
+    'elements' (list of atomic symbols for elements in material). For each element, there
+    will be an item (atomic symbol as key) with tuple of (fraction, atomic mass, :math:`\mu`).
+    For example::
+
+       larch> material_mu_components('quartz', 10000)
+       {'Si': (1, 28.0855, 33.879432430185062), 'elements': ['Si', 'O'],
+       'mass': 60.0843, 'O': (2.0, 15.9994, 5.9528248152970837), 'density': 2.65}
 
 .. function:: xray_delta_beta(material, energy, photo_only=False)
 
