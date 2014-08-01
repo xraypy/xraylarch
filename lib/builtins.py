@@ -5,6 +5,7 @@ import os
 import imp
 import sys
 import time
+import re
 
 from .helper import Helper
 from . import inputText
@@ -14,6 +15,8 @@ from . import larchlib
 from .symboltable import isgroup
 
 PLUGINSTXT = 'plugins.txt'
+PLUGINSREQ = 'requirements.txt'
+REQMATCH = re.compile(r"(.*)\s*(<=?|>=?|==|!=)\s*(.*)", re.IGNORECASE).match
 
 helper = Helper()
 
@@ -331,6 +334,38 @@ def _addplugin(plugin, _larch=None, **kws):
     def on_error(msg):
         _larch.raise_exception(None, exc=ImportError, msg=msg)
 
+    def _check_requirements(ppath):
+        """check for requirements.txt, return True only if all
+        requirements are met
+        """
+        req_file = os.path.abspath(os.path.join(ppath, PLUGINSREQ))
+        if not os.path.exists(req_file):
+            return True
+        with open(req_file, 'r') as fh:
+            for line in fh.readlines():
+                line = line[:-1]
+                if line.startswith('#'): continue
+                match = REQMATCH(line)
+                if match is not None:
+                    modname, cmp, req_version = match.groups()
+                    try:
+                        mod = __import__(modname)
+                        version = getattr(mod, '__version__', None)
+                        isok = False
+                        if   cmp == '>':  isok =  version > req_version
+                        elif cmp == '<':  isok =  version < req_version
+                        elif cmp == '>=': isok =  version >= req_version
+                        elif cmp == '<=': isok =  version <= req_version
+                        elif cmp == '==': isok =  version == req_version
+                        elif cmp == '=':  isok =  version == req_version
+                        elif cmp == '!=': isok =  version != req_version
+                    except:
+                        isok = False
+                    if not isok:
+                        print 'Plugin REQUIREMEMT Not Satisfied', ppath, modname, cmp, req_version
+                        return False
+        return True
+
     def _plugin_file(plugin, path=None):
         "defined here to allow recursive imports for packages"
         fh = None
@@ -344,32 +379,34 @@ def _addplugin(plugin, _larch=None, **kws):
         if is_pkg is None and mod is None:
             write('Warning: plugin %s not found\n' % plugin)
             return
-        if is_pkg:
-            filelist = []
-            if PLUGINSTXT in os.listdir(mod):
-                pfile = os.path.abspath(os.path.join(mod, PLUGINSTXT))
-                try:
-                    with open(pfile, 'r') as pluginsfile:
-                        for name in pluginsfile:
-                            name = name[:-1].strip()
-                            if (not name.startswith('#') and
-                                name.endswith('.py') and len(name) > 3):
-                                filelist.append(name)
-                except:
-                    print("Warning:: Error reading plugin file:\n %s\n" %
-                          pfile)
-            if len(filelist) == 0:
-                for fname in os.listdir(mod):
-                    if fname.endswith('.py') and len(fname) > 3:
-                        filelist.append(fname)
 
-            for fname in filelist:
-                try:
-                    _plugin_file(fname[:-3], path=[mod])
-                except:
-                    write('Warning: %s is not a valid plugin\n' %
-                          pjoin(mod, fname))
-                    write("   error:  %s\n" % (repr(sys.exc_info()[1])))
+        if is_pkg:
+            if _check_requirements(plugin):
+                filelist = []
+                if PLUGINSTXT in os.listdir(mod):
+                    pfile = os.path.abspath(os.path.join(mod, PLUGINSTXT))
+                    try:
+                        with open(pfile, 'r') as pluginsfile:
+                            for name in pluginsfile:
+                                name = name[:-1].strip()
+                                if (not name.startswith('#') and
+                                    name.endswith('.py') and len(name) > 3):
+                                    filelist.append(name)
+                    except:
+                        print("Warning:: Error reading plugin file:\n %s\n" %
+                              pfile)
+                if len(filelist) == 0:
+                    for fname in os.listdir(mod):
+                        if fname.endswith('.py') and len(fname) > 3:
+                            filelist.append(fname)
+
+                for fname in filelist:
+                    try:
+                        _plugin_file(fname[:-3], path=[mod])
+                    except:
+                        write('Warning: %s is not a valid plugin\n' %
+                              pjoin(mod, fname))
+                        write("   error:  %s\n" % (repr(sys.exc_info()[1])))
         else:
             fh, modpath, desc = mod
             out = imp.load_module(plugin, fh, modpath, desc)
@@ -391,8 +428,6 @@ def _addplugin(plugin, _larch=None, **kws):
             fh.close()
         return
     _plugin_file(plugin)
-
-
 
 def _dir(obj=None, _larch=None, **kws):
     "return directory of an object -- thin wrapper about python builtin"
