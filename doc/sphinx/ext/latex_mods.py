@@ -38,6 +38,7 @@ class DocTranslator(BaseTranslator):
         self.in_caption -= 1
 
     def visit_Text(self, node):
+        if not hasattr(self, 'verbatim'): self.verbatim = None
         if self.verbatim is not None:
             self.verbatim += node.astext()
         else:
