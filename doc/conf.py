@@ -20,7 +20,7 @@ CURDIR = os.path.abspath(os.path.dirname(__file__))
 
 sys.path.insert(0, os.path.abspath(os.path.join('sphinx', 'ext')))
 
-# from sphinxtr 
+# from sphinxtr
 import html_mods
 import latex_mods
 
@@ -29,13 +29,11 @@ import latex_mods
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks',
-              'sphinx.ext.pngmath']
+              'sphinx.ext.mathjax',  'sphinx.ext.ifconfig']
 
 # from sphinxtr
 extensions.extend([
               'fix_equation_ref',
-               # 'sphinx.ext.mathjax',
-              'sphinx.ext.ifconfig',
               'subfig',
               'numfig',
               'numsec',
@@ -121,7 +119,7 @@ else:
 # A string of reStructuredText that will be included at the end of
 # every source file that is read.
 rst_epilog = open(os.path.join(CURDIR, 'epilog.rst'),'r').read().decode('utf8')
-    
+
 # The reST default role (used for this markup: `text`) to use for all documents.
 #default_role = None
 
