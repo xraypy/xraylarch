@@ -43,7 +43,7 @@ _EXPORT(char*) XDI_errorstring(int errcode) {
   } else if (errcode == ERR_NCOLS_CHANGE) {
     return "number of columns changes in file";
   } else if (errcode == ERR_NONNUMERIC) {
-    return "non-numeric value in data table";
+    return "non-numeric value in data table or for d-spacing";
   } else if (errcode == ERR_IGNOREDMETA) {
     return "contains unrecognized header lines";
   }
@@ -95,7 +95,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   char *header[MAX_LINES];
   char *words[MAX_WORDS], *cwords[2];
   char *col_labels[MAX_COLUMNS], *col_units[MAX_COLUMNS];
-  char *c, *line, *mkey,  *mval, *version_xdi, *version_extra;
+  char *c, *line, *fullline, *mkey,  *mval, *version_xdi, *version_extra;
   char *reword;
   char tlabel[32];
   char comments[1024] = "";
@@ -119,7 +119,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   COPY_STRING(xdifile->xdi_version, "");
   COPY_STRING(xdifile->extra_version, "");
   COPY_STRING(xdifile->element, "__");
-  COPY_STRING(xdifile->edge, "K");
+  COPY_STRING(xdifile->edge, "_");
   COPY_STRING(xdifile->comments, "");
   COPY_STRING(xdifile->error_line, "");
   COPY_STRING(xdifile->outer_label, "");
@@ -170,8 +170,9 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
      nheader= index of first line that does not start with '#'
   */
   for (i = 1; i < ilen ; i++) {
-    if ((strlen(textlines[i]) > 3) && 
-	(strncmp(textlines[i], TOK_COMM, 1) != 0))  {
+    regex_status = slre_match(1, DATALINE, textlines[i], strlen(textlines[i]));
+    if ((strlen(textlines[i]) > 3) && (regex_status == NULL)) {
+  	/* (strncmp(textlines[i], TOK_COMM, 1) != 0))  { */
       break;
     }
   }
@@ -188,7 +189,9 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
     if (strncmp(textlines[i], TOK_COMM, 1) == 0)  {
       COPY_STRING(line, textlines[i]);
+      COPY_STRING(fullline, textlines[i]);
       line++;
+      fullline++;
       nwords = split_on(line, TOK_DELIM, words);
       if (nwords < 1) { continue; }
       COPY_STRING(mkey, words[0]);
@@ -269,10 +272,10 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 	if ((strlen(comments) > 0) && strlen(comments) < sizeof(comments)) {
 	  strncat(comments, "\n", sizeof(comments)-strlen(comments) - 1);
 	}
-	if (strlen(line) + 1 > sizeof(comments) - strlen(comments)) {
+	if (strlen(fullline) + 1 > sizeof(comments) - strlen(comments)) {
 	  printf("Warning.... user comment may be truncated!\n");
 	}
-	strncat(comments, line, sizeof(comments) - strlen(comments) - 1);
+	strncat(comments, fullline, sizeof(comments) - strlen(comments) - 1);
       } else if (mode == 0) {
 	return ERR_META_FORMAT;
       }
@@ -282,8 +285,8 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
       }
     }
   }
-  if (has_minusline == 0)     { iret = ERR_NOMINUSLINE; }
   if (ignored_headerline > 0) { iret = ERR_IGNOREDMETA; }
+  if (has_minusline == 0)     { iret = ERR_NOMINUSLINE; }
 
   /* check edge, element, return error code if invalid */
   valid = 0;
@@ -350,7 +353,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   /* loop through data table, inserting data into xdifile->array */
   ipt = 0;
   iouter = 1;
-  for (i = nheader-2; i < ilen; i++) {
+  for (i = nheader-2; i <= ilen; i++) {
     /* may find a header line interspersed in array data */
     COPY_STRING(line, textlines[i]);
     xdifile->error_lineno = i; 

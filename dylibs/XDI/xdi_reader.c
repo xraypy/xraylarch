@@ -34,9 +34,14 @@ int main(int argc, char **argv) {
   xdifile = malloc(sizeof(XDIFile));
   ret = XDI_readfile(argv[1], xdifile);
   if (ret < 0) {
-    printf("Error reading XDI file '%s':\n     %s\n",
-	   argv[1], XDI_errorstring(ret));
+    printf("Error reading XDI file '%s':\n     %s\t(error code = %ld)\n",
+	   argv[1], XDI_errorstring(ret), ret);
     return 1;
+  }
+
+  if (ret > 0) {
+    printf("Warning reading XDI file '%s':\n     %s\t(error code = %ld)\n\n",
+	   argv[1], XDI_errorstring(ret), ret);
   }
 
   printf("#------\n# XDI FILE Read %s VERSIONS: |%s|%s|\n" ,
@@ -59,11 +64,10 @@ int main(int argc, char **argv) {
   tdat = (double *)calloc(xdifile->npts, sizeof(double));
   for (j = 0; j < xdifile->narrays; j++ ) {
     ret = XDI_get_array_name(xdifile,xdifile->array_labels[j], tdat);
-    printf(" %ld %9s: ", j, xdifile->array_labels[j], ret);
+    printf(" %ld %9s: ", j, xdifile->array_labels[j]);
     for (k=0; k < nout; k++) {  printf("%.8g, ", tdat[k]); }
-    printf("\n");
-    /* printf("..., %.8g, %.8g\n", tdat[xdifile->npts-2], tdat[xdifile->npts-1]);
-     */
+    /* printf("\n"); */
+    printf("..., %.8g, %.8g\n", tdat[xdifile->npts-2], tdat[xdifile->npts-1]);
   }
 
   if ((strlen(xdifile->outer_label) > 0)&& xdifile->nouter > 1) {

@@ -62,6 +62,7 @@ _EXPORT(int) XDI_get_array_name(XDIFile *xdifile, char *name, double *out);
 #define FAMILYNAME "^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_][ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789]+$"
 #define KEYNAME    "^[ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_0123456789]+$"
 
+#define DATALINE "^[ \t]*[0123456789.]"
 
 /* Notes:
    1. The absorption edge must be one of those listed in ValidEdges below
@@ -94,7 +95,7 @@ static char *ValidElems[] =
 
 
 /* error codes   
-  < 1  data file is not valid
+  < 0  data file is not valid
   = 0  all OK.
   > 0  data file is valid but may be incomplete as XAFS data
 */
