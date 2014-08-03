@@ -29,7 +29,8 @@ import latex_mods
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks',
-              'sphinx.ext.mathjax',  'sphinx.ext.ifconfig']
+              'sphinx.ext.mathjax',  'sphinx.ext.ifconfig',
+              'sphinx.ext.intersphinx']
 
 # from sphinxtr
 extensions.extend([
@@ -42,6 +43,9 @@ extensions.extend([
               'singlehtml_toc',
               'singletext',
               ])
+
+
+intersphinx_mapping = {'py': ('http://docs.python.org/', None)}
 
 
 # Turns on numbered figures for HTML output

@@ -1,3 +1,5 @@
+.. _programming_chapter:
+
 ============================
 Programming with Larch
 ============================
@@ -16,12 +18,12 @@ in Larch is implemented as plugins.  Third, the Larch functions, including
 plugins, can be accessed from Python.
 
 The reader here is assumed to be familiar with computer programming, and to
-have some exposure to working with Larch and/or Python.  While primarily
-aimed at developers and advanced users, Larch (and Python) makes such
-developments easy enough that neither extensive effort no extensive
-training are required.
-
-This chapter is broken into several sections.
+have some exposure to working with Larch and/or Python, at least from the
+:ref:`Tutorial <tutorial_chapter>` (Chapter :ref:`tutorial_chapter`).
+While the present chapter is aimed primarily at developers and advanced
+users, Larch (and Python) makes such developments easy enough that neither
+extensive effort nor training are required to begin writing programs with
+Larch.
 
 
 .. toctree::
