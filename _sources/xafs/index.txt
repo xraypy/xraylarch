@@ -21,7 +21,7 @@ fixed.
   1. Reading in raw data.
   2. Making corrections to the data, and converting to  :math:`\mu(E)`
   3. Pre-edge background removal and normalization.
-  4. Interpreting normalized mu(E) as XANES spectra
+  4. Interpreting normalized :math:`mu(E)` as XANES spectra
   5. Post-edge background removal, conversion to :math:`\chi(k)`
   6. XAFS Fourier Transform to :math:`\chi(R)`
   7. Reading and processing FEFF Paths from external files.

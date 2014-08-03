@@ -78,6 +78,15 @@
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">10.3. Plugins</a><ul>
+<li><a class="reference internal" href="#locations-of-plugins">10.3.1. Locations of Plugins</a></li>
+<li><a class="reference internal" href="#customizing-plugins-and-folders-of-plugins">10.3.2. Customizing Plugins and  Folders of Plugins</a></li>
+</ul>
+</li>
+</ul>
+
   <h4>Previous topic</h4>
   <p class="topless"><a href="modules.html"
                         title="previous chapter">10.2. Modules</a></p>
@@ -112,56 +121,137 @@
             
   <div class="section" id="plugins">
 <span id="plugins-section"></span><h1>10.3. Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h1>
-<p>Plugins are a powerful feature of Larch that allow it to be easily extended
-without the requiring detailed knowledge of all of Larch's internals.  A
-plugin is a specially written Python module that is meant to add
-functionality to Larch at run-time.  Generally speaking, plugins will be
-python modules which define new or customized versions of functions to
-create or manipulate Groups.</p>
-<p>Plugins need access to Larch's symbol table and need to tell Larch how to
-use them.  To do this, each function to be added to Larch in a plugin
-module needs a <cite>_larch</cite> keyword argument, which will be used to pass in the
-instance of the current larch interpreter.  Normally, you will only need
-the <cite>symtable</cite> attribute of the <cite>_larch</cite> variable, which is the symbol table
-used.</p>
-<p>In addition, all functions to be added to Larch need to be <em>registered</em>, by
-defining a function call <tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> that returns a tuple
-containing the name of the group containing the added functions, and a
-dictionary of Larch symbol names and functions.  A simple plugin module
-would look like:</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  <span class="c"># Note:  larch instance passed in to &#39;_larch&#39;</span>
-    <span class="k">if</span> <span class="n">_larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
-    <span class="n">group</span> <span class="o">=</span> <span class="n">_larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;created by f1&#39;</span><span class="p">)</span>
+<p>A Larch plugin is a Python module that adds functionality to Larch at
+run-time.  Plugins are a powerful part of Larch that allow it to be
+extended without the requiring detailed knowledge of all of Larch's
+internals.  Generally speaking, plugins will define new functions or data
+to become part of the Larch framework.  Functions defined in plugins can
+access the Larch interpreter session, including creating or manipulating
+Groups in Larch's symbol table.  Essentially all the scientific
+functionality of Larch is implemented as plugins.</p>
+<span class="target" id="module-larch"></span><p>There are a few points to consider for writing plugins.  First, in order
+for a plugin function to interact with the running Larch interpreter, it
+needs a <tt class="docutils literal"><span class="pre">_larch</span></tt> keyword argument.  To be clear, the function does not
+require a <tt class="docutils literal"><span class="pre">_larch</span></tt> keyword argument, but if the function does have a
+<tt class="docutils literal"><span class="pre">_larch</span></tt> keyword argument, it will be used to pass in the current larch
+interpreter.  Normally, you will only really need the <tt class="docutils literal"><span class="pre">symtable</span></tt>
+attribute of the <tt class="docutils literal"><span class="pre">_larch</span></tt> variable which holds the symbol table used, but
+you can interact with any part of the interpreter if you need to.</p>
+<p>Second, all functions (or data resources) that are to be added to Larch
+need to be <em>registered</em>.  This is done by defining a function called
+<tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> that returns a tuple containing the name of the
+group containing the added functions, and a dictionary with keys used for
+the names to be put into the Larch symbol table, and values of the functions
+or data to be used. of Larch symbol. A simple plugin module would
+look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">myfunc</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="c"># Note: larch instance passed in to &#39;_larch&#39;</span>
+    <span class="k">if</span> <span class="n">_larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">_larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;created by myfunc&#39;</span><span class="p">)</span>
 
-    <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="c"># add symbols by &quot;setting attributes&quot;</span>
-    <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-
+    <span class="n">group</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">x</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">y</span>
+    <span class="n">group</span><span class="o">.</span><span class="n">z</span> <span class="o">=</span> <span class="mi">100</span>
     <span class="k">return</span> <span class="n">group</span>
 
 <span class="k">def</span> <span class="nf">registerLarchPlugin</span><span class="p">():</span> <span class="c"># must have a function with this name!</span>
-    <span class="k">return</span> <span class="p">(</span><span class="s">&#39;mymod&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;f1&#39;</span><span class="p">:</span> <span class="n">_f1</span><span class="p">})</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s">&#39;mymod&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;func&#39;</span><span class="p">:</span> <span class="n">myfunc</span><span class="p">})</span>
 </pre></div>
 </div>
-<p>This is a fairly trivial example, simply putting data into a Group.  Of
-course, the main point of a plugin is that you can do much more complicated
-work inside the function.</p>
-<p>If this is placed in a file called 'myplugin.py' in the larch plugins
-folder (either $HOME/.larch/plugins/ or /usr/local/share/larch/plugins on
-Unix, or C:\Users\ME\larch\plugins or C:\Program Files\larch\plugins on
-Windows), then:</p>
+<p>This would create a top-level Larch group <tt class="docutils literal"><span class="pre">mymod</span></tt> (if it didn't already
+exist), and create a function <tt class="docutils literal"><span class="pre">func</span></tt> in this group that held the python
+function <tt class="docutils literal"><span class="pre">myfunc</span></tt>.  To use this function from the Larch interpreter, you
+would use something like:</p>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; out = mymod.func(12, &#39;a string&#39;)
+larch&gt; print out.x, out.y, out.z
+12  &#39;a string&#39; 100
+</pre></div>
+</div>
+<p>This plugin simply puts data into a Group, but of course you can do much
+more complicated work inside the function.</p>
+<dl class="function">
+<dt>
+<tt class="descname">registerLarchPlugin():</tt></dt>
+<dd><p>register a set of functions or data resources defined in the module into
+the current Larch interpreter.   This function should return a tuple of
+(GroupName, Symbols_Dictionary), where the Group name is the
+top-level Group to place the data in, and the Symbols dictionary maps
+the values (functions or data in the Python module) to names in the
+Larch Group.</p>
+</dd></dl>
+
+<div class="section" id="locations-of-plugins">
+<h2>10.3.1. Locations of Plugins<a class="headerlink" href="#locations-of-plugins" title="Permalink to this headline">¶</a></h2>
+<p>Plugins are meant to be long-lived and reused, and so are not expected to
+be placed in the current working directory.  There are two locations that
+are searched for plugins -- one in the user's Larch Plugin folder (
+$HOME/.larch/plugins/ on Unix or Mac OS X or
+C:\Users\USERNAME\larch\plugins on Windows), the other in the Larch
+system folder (typically /usr/local/share/larch/plugins or C:\Program
+Files\larch\plugins).</p>
+<p>Plugins in the user's Larch Plugin folder can be added into the current
+Larch session with the <a class="reference internal" href="../tutorial/builtins.html#add_plugin" title="add_plugin"><tt class="xref py py-func docutils literal"><span class="pre">add_plugin()</span></tt></a> function.</p>
+<dl class="function">
+<dt id="larch._builtin.add_plugin">
+<tt class="descclassname">_builtin.</tt><tt class="descname">add_plugin</tt><big>(</big><em>python_file</em><big>)</big><a class="headerlink" href="#larch._builtin.add_plugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>add a plugin from the given plugin python file.  In contrast to the
+<tt class="docutils literal"><span class="pre">import</span></tt> statement, <a class="reference internal" href="../tutorial/builtins.html#add_plugin" title="add_plugin"><tt class="xref py py-func docutils literal"><span class="pre">add_plugin()</span></tt></a> will install the resources
+defined by <tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> every time it is run.</p>
+</dd></dl>
+
+<p>If the above plugin file is saved in a file named <cite>myplugin.py</cite> in the
+user's Larch Plugin folder, then doing:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s">&#39;myplugin&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>will add a top-level group 'mymod' with an 'f1' function, so that:</p>
-<div class="highlight-python"><div class="highlight"><pre>larch&gt; g1 = mymod.f1(10, &#39;yes&#39;)
-larch&gt; print g1
-&lt;Group created by f1!&gt;
-larch&gt; print g1.x, g1.y
-(10, &#39;yes&#39;)
+<p>will add a top-level group <tt class="docutils literal"><span class="pre">mymod</span></tt> with the <tt class="docutils literal"><span class="pre">func</span></tt> function, as described
+above.  For commonly used plugins, the <a class="reference internal" href="../tutorial/builtins.html#add_plugin" title="add_plugin"><tt class="xref py py-func docutils literal"><span class="pre">add_plugin()</span></tt></a> call can be added
+to your startup script (<cite>init.lar</cite> in the User's Larch folder).  Since
+<tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> is re-applied every time <a class="reference internal" href="../tutorial/builtins.html#add_plugin" title="add_plugin"><tt class="xref py py-func docutils literal"><span class="pre">add_plugin()</span></tt></a> is
+run, this provides a convenient way to develop and debug plugins.</p>
+<p>Many plugins are installed into the Larch system folder.  These are
+organized into sub-folders, and generally each plugin folder contains
+mulitple files (modules) providing Larch functionality.</p>
+</div>
+<div class="section" id="customizing-plugins-and-folders-of-plugins">
+<h2>10.3.2. Customizing Plugins and  Folders of Plugins<a class="headerlink" href="#customizing-plugins-and-folders-of-plugins" title="Permalink to this headline">¶</a></h2>
+<p>Plugins are meant to be organized in folders.  The standard system plugins
+have several folders, each with several functions.  Generally every file
+(module) in the folder is treated as a plugin module, and if it has a
+function <tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt>, that will be run to place functions
+in the Larch interpreter.</p>
+<p>There are a few ways to control the plugins beyond the
+<tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> function.  First, each module file can have a
+<a class="reference internal" href="#larch.initializeLarchPlugin" title="larch.initializeLarchPlugin"><tt class="xref py py-func docutils literal"><span class="pre">initializeLarchPlugin()</span></tt></a> function that will be run immediately after
+the plugin is registered to initialize plugin functionality.</p>
+<dl class="function">
+<dt id="larch.initializeLarchPlugin">
+<tt class="descclassname">larch.</tt><tt class="descname">initializeLarchPlugin</tt><big>(</big><em>_larch=None</em><big>)</big><a class="headerlink" href="#larch.initializeLarchPlugin" title="Permalink to this definition">¶</a></dt>
+<dd><p>initializes a Larch plugin.  If defined for a plugin, this function is
+run immediately after installing all the symbols.</p>
+</dd></dl>
+
+<p id="index-0">Secondly, you may want to tell larch to look only at certain files within
+the plugin folder for plugins.  To do this, simply include a file named
+<cite>plugins.txt</cite> in the plugin folder that lists the files (one per line) to
+use for plugins.</p>
+<p id="index-1">Finally, a Larch plugin may depend on third party Python modules that may
+not be installed or available on all systems.  This should be considered
+acceptable -- certain plugins may not work on all systems, but that
+shouldn't cause problems for the other functionality.  To specify which
+Python modules (and which versions of the modules), a particular plugin
+depends on, you can include a file <cite>requirements.txt</cite> in the plugin folder
+which contains the module name and version strings, one per line.  A
+typical <cite>requirements.txt</cite> file might look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">epics</span><span class="o">&gt;=</span><span class="mf">3.1</span>
+<span class="n">scipy</span><span class="o">&gt;=</span><span class="mf">0.13</span>
 </pre></div>
 </div>
-<p>For commonly used plugins, the <a class="reference internal" href="../tutorial/builtins.html#add_plugin" title="add_plugin"><tt class="xref py py-func docutils literal"><span class="pre">add_plugin()</span></tt></a> call can be added to your
-startup script.</p>
+<p>to specify which modules and minimal versions for the plugin files in that
+folder to work.  If these requirements are not satisfied, the modules will
+not be installed.</p>
+</div>
 </div>
 
 

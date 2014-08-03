@@ -64,6 +64,8 @@ of a larch interpreter::
     data = read_xdi('feo_rt.xdi', _larch=mylarch)
     autobk(data, rbkg=1.0, kweight=2, _larch=mylarch)
 
-
+That is, the ``_larch=mylarch`` argument is vital to having
+:func:`_io.read_xdi` properly create a Larch group, and for allowing
+:func:`_xafs.autobk` to do the actual fit, and organize the results.
 
 
