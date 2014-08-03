@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10. Programming with Larch &mdash; larch 0.9.23 documentation</title>
+    <title>10.2. Modules &mdash; larch 0.9.23 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -26,8 +26,9 @@
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="next" title="10.1. Differences between Larch and Python" href="notpython.html" />
-    <link rel="prev" title="9. X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" />
+    <link rel="up" title="10. Programming with Larch" href="index.html" />
+    <link rel="next" title="10.3. Plugins" href="plugins.html" />
+    <link rel="prev" title="10.1. Differences between Larch and Python" href="notpython.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({
         "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
@@ -55,10 +56,10 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="notpython.html" title="10.1. Differences between Larch and Python"
+          <a href="plugins.html" title="10.3. Plugins"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../xrf/index.html" title="9. X-ray Fluorescence Analysis with Larch"
+          <a href="notpython.html" title="10.1. Differences between Larch and Python"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>
@@ -69,22 +70,23 @@
    <li><a href="../xafs/index.html">XAFS</a>|</li>
    <li><a href="../xray/index.html">Xray Data</a>|</li>
    <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="#">devel</a>]</li>
- 
+   <li><a href="index.html">devel</a>]</li>
+
+          <li><a href="index.html" accesskey="U">10. Programming with Larch</a> &raquo;</li> 
       </ul>
     </div>
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../xrf/index.html"
-                        title="previous chapter">9. X-ray Fluorescence Analysis with Larch</a></p>
-  <h4>Next topic</h4>
   <p class="topless"><a href="notpython.html"
-                        title="next chapter">10.1. Differences between Larch and Python</a></p>
+                        title="previous chapter">10.1. Differences between Larch and Python</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="plugins.html"
+                        title="next chapter">10.3. Plugins</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
-    <li><a href="../_sources/devel/index.txt"
+    <li><a href="../_sources/devel/modules.txt"
            rel="nofollow">Show Source</a></li>
   </ul>
 <div id="searchbox" style="display: none">
@@ -108,41 +110,13 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="programming-with-larch">
-<span id="programming-chapter"></span><h1>10. Programming with Larch<a class="headerlink" href="#programming-with-larch" title="Permalink to this headline">¶</a></h1>
-<p>This chapter describes some of the key concepts for programming with Larch.
-Larch is a fairly complete programming language for data analysis, but it
-is sometimes desirable to extend Larch with new functionality.  There are
-three main ways to do this.  First, <tt class="docutils literal"><span class="pre">modules</span></tt> are files of Larch or
-Python code that can be imported and used from Larch.  These are primarily
-intended to organize programming text, and to allow re-usable code.
-Second, <tt class="docutils literal"><span class="pre">plugins</span></tt> are specially written Python modules that can be used
-to add functionality to Larch.  These plugins can closely interact with the
-Larch interpreter, and should be the main approach for extending the
-capabilities of Larch.  Indeed, essentially all the real <em>scientific code</em>
-in Larch is implemented as plugins.  Third, the Larch functions, including
-plugins, can be accessed from Python.</p>
-<p>The reader here is assumed to be familiar with computer programming, and to
-have some exposure to working with Larch and/or Python, at least from the
-<a class="reference internal" href="../tutorial/index.html#tutorial-chapter"><em>Tutorial</em></a> (Chapter <a class="reference internal" href="../tutorial/index.html#tutorial-chapter">3</a>).
-While the present chapter is aimed primarily at developers and advanced
-users, Larch (and Python) makes such developments easy enough that neither
-extensive effort nor training are required to begin writing programs with
-Larch.</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="notpython.html">10.1. Differences between Larch and Python</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="notpython.html#code-block-ends">10.1.1. Code Block Ends</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notpython.html#groups-vs-modules">10.1.2. Groups vs Modules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notpython.html#symbol-lookup-rules">10.1.3. Symbol Lookup Rules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="notpython.html#unimplemented-features">10.1.4. Unimplemented features</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="modules.html">10.2. Modules</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plugins.html">10.3. Plugins</a></li>
-<li class="toctree-l1"><a class="reference internal" href="frompython.html">10.4. Using Larch from Python</a></li>
-</ul>
-</div>
+  <div class="section" id="modules">
+<span id="modules-section"></span><h1>10.2. Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
+<p>As discussed in Section <a class="reference internal" href="../tutorial/modules.html#tutorial-modules-section">3.7</a>, Larch can import
+modules either written in Larch (with a '.lar' extension) or Python (with a
+'.py' extension).  When importing a Python module, the full set of Python
+objects is imported as a Python module, which acts very much like a Larch
+Group.</p>
 </div>
 
 
@@ -158,10 +132,10 @@ Larch.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="notpython.html" title="10.1. Differences between Larch and Python"
+          <a href="plugins.html" title="10.3. Plugins"
              >next</a> |</li>
         <li class="right" >
-          <a href="../xrf/index.html" title="9. X-ray Fluorescence Analysis with Larch"
+          <a href="notpython.html" title="10.1. Differences between Larch and Python"
              >previous</a> |</li>
    <li>[<a href="../contents.html">contents</a>|</li>
    <li><a href="../downloads/index.html">downloads</a>|</li>
@@ -172,8 +146,9 @@ Larch.</p>
    <li><a href="../xafs/index.html">XAFS</a>|</li>
    <li><a href="../xray/index.html">Xray Data</a>|</li>
    <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="#">devel</a>]</li>
- 
+   <li><a href="index.html">devel</a>]</li>
+
+          <li><a href="index.html" >10. Programming with Larch</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

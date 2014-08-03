@@ -23,11 +23,18 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="6.2. Parameters" href="parameters.html" />
-    <link rel="prev" title="6. Fitting and Modeling Data" href="index.html" /> 
+    <link rel="prev" title="6. Fitting and Modeling Data" href="index.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -114,15 +121,15 @@ matches experimental data in the sense that the sum of squares of the
 difference between data and model is as small as possible.  Mathematically,
 this is expressed as</p>
 <div class="math">
-<p><img src="../_images/math/de9fc6b9c0b9c4190c3be06a6e84f054d1fae0b3.png" alt="S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta}) } \big]^2"/></p>
-</div><p>where the experimental data is expressed as <img class="math" src="../_images/math/0f7554cc07e22f181cd39cab150a60d365bd8ea5.png" alt="y(x)"/> that is discretely
-sampled at <img class="math" src="../_images/math/75e27f04188974063be3230dca208cd495b77ce1.png" alt="N"/> points, <img class="math" src="../_images/math/50c8fb194c7b0849482f29149da24fafafcc1750.png" alt="f(x, \vec\beta)"/> is a model function of
-some dependent data <img class="math" src="../_images/math/188c175aac0a8a9c22499336711b5d7256407254.png" alt="x"/> and <img class="math" src="../_images/math/487df677de936f8222133fde7ba0e2e9a7218599.png" alt="\vec\beta"/>, a set of parameters in the
+\[S = \sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta}) } \big]^2\]</div>
+<p>where the experimental data is expressed as <span class="math">\(y(x)\)</span> that is discretely
+sampled at <span class="math">\(N\)</span> points, <span class="math">\(f(x, \vec\beta)\)</span> is a model function of
+some dependent data <span class="math">\(x\)</span> and <span class="math">\(\vec\beta\)</span>, a set of parameters in the
 model.  As a simple example, a linear model of data would be written as
-<img class="math" src="../_images/math/3f701b3a21f995df02f239de195997fbe35ee5c7.png" alt="f = \beta_0 + \beta_1{x}"/>.  Of course, models can be arbitrary
+<span class="math">\(f = \beta_0 + \beta_1{x}\)</span>.  Of course, models can be arbitrary
 complex.  There is good statistical justification for using the
 least-squares approach, and many existing tools for helping to find the
-minimal values of <img class="math" src="../_images/math/11a85f3c69ae6702cb1d99d3de451913b8f84c04.png" alt="S"/>.  These justifcations are not without criticism
+minimal values of <span class="math">\(S\)</span>.  These justifcations are not without criticism
 or caveats, but we'll leave that aside for now.</p>
 <p>It is common to include a multiplicative factor to each component in the
 least-squares equation above, so that the different samples (or data
@@ -131,28 +138,28 @@ approaches to this, with one of the most common approaches to weight by the
 inverse of the estimated uncertainty in the data value.  This then what is
 generally called the chi-square goodness-of-fit parameter</p>
 <div class="math">
-<p><img src="../_images/math/3c537883e4fbd20d42ee28a7831bf1af7cccaeaf.png" alt="\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2"/></p>
-</div><p>Here, <img class="math" src="../_images/math/f48bd294a6bca30ab97b3a92a17698fcde1bbd6e.png" alt="\epsilon_i"/> represents the uncertainty in the value of <img class="math" src="../_images/math/410a65f64e2a609a2a7f544ed72f0982b719807a.png" alt="y_i"/>.
+\[\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2\]</div>
+<p>Here, <span class="math">\(\epsilon_i\)</span> represents the uncertainty in the value of <span class="math">\(y_i\)</span>.
 It is common to
-As mentioned, the model describing <img class="math" src="../_images/math/faf3f08580f240258399d03d935ab21626c42ff7.png" alt="f(x, \vec{\beta})"/> can be fairly complex.</p>
+As mentioned, the model describing <span class="math">\(f(x, \vec{\beta})\)</span> can be fairly complex.</p>
 <p>There is an extensive literature for case where the model function
-<img class="math" src="../_images/math/faf3f08580f240258399d03d935ab21626c42ff7.png" alt="f(x, \vec{\beta})"/> depends linearly on its parameters
-<img class="math" src="../_images/math/a0b8d6e28c0e21b5d86aab78ac81db60bc5b0c83.png" alt="\vec{\beta}"/> (but not necessarily linearly on a dependent variable --
-a quadratic function <img class="math" src="../_images/math/946e8034d4e22247aa9e57d54698037a3256be6a.png" alt="\beta_0 + \beta_1 x + \beta_2 x^2"/> is linear in
+<span class="math">\(f(x, \vec{\beta})\)</span> depends linearly on its parameters
+<span class="math">\(\vec{\beta}\)</span> (but not necessarily linearly on a dependent variable --
+a quadratic function <span class="math">\(\beta_0 + \beta_1 x + \beta_2 x^2\)</span> is linear in
 this sense).  Of course, model function need not be linear in its
 parameters, and the minimization is generally referred to a ''non-linear
 least-squares optimization'' in the literature.  All the discussion here
 will assume that the models can be non-linear.</p>
-<p>It is convenient to define the <strong>residual array</strong> <img class="math" src="../_images/math/2ede365ad144ab396916ec60458da03860803078.png" alt="r"/> with <img class="math" src="../_images/math/75e27f04188974063be3230dca208cd495b77ce1.png" alt="N"/>
+<p>It is convenient to define the <strong>residual array</strong> <span class="math">\(r\)</span> with <span class="math">\(N\)</span>
 elements:</p>
 <div class="math">
-<p><img src="../_images/math/34c136cfd31ddfdf40da8f4fc475bd5edc0b5775.png" alt="r_i = \frac{y_i - f(x_i, \vec\beta)}{\epsilon_i}"/></p>
-</div><p>so that the sum to be minimized is a simple sum of this function, <img class="math" src="../_images/math/294317fe66b98ffb7593a8cd94fbc4c2e7b82ffb.png" alt="s
-= \sum_i^{N} r_i^2"/>.  The fitting process can then be made very general
+\[r_i = \frac{y_i - f(x_i, \vec\beta)}{\epsilon_i}\]</div>
+<p>so that the sum to be minimized is a simple sum of this function, <span class="math">\(s
+= \sum_i^{N} r_i^2\)</span>.  The fitting process can then be made very general
 with a few key components required.  Specifically, for Larch, the
 requirements are</p>
 <blockquote>
-<div><p>1. A set of Parameters, <img class="math" src="../_images/math/24090d395bc48bfd8556eb2e0a02b0853690f015.png" alt="{\vec{\beta}}"/>, that are used in the model,
+<div><p>1. A set of Parameters, <span class="math">\({\vec{\beta}}\)</span>, that are used in the model,
 and are to be adjusted to find the least-square value of the sum of
 squares of the residual.  These must be <strong>parameters</strong> (discussed below)
 that are held in a single <strong>parameter group</strong>.  This is a regular Larch
@@ -161,7 +168,7 @@ group, and so can contain other values as well.</p>
 will be a Larch function that takes the <strong>parameter group</strong> described
 above as its first argument, and an unlimited set of optional arguments.
 The arrays for the data should passed in by these optional arguments.
-This function should return the residual array, <img class="math" src="../_images/math/2ede365ad144ab396916ec60458da03860803078.png" alt="r"/> that will be
+This function should return the residual array, <span class="math">\(r\)</span> that will be
 minimized in the least-squares sense.</p>
 </div></blockquote>
 <p>Note that the use of additional data in the <strong>parameter group</strong> makes this

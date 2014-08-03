@@ -23,11 +23,18 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="7. XAFS Analysis" href="index.html" />
     <link rel="next" title="8. X-ray Databases" href="../xray/index.html" />
-    <link rel="prev" title="7.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" /> 
+    <link rel="prev" title="7.6. XAFS: Reading and using Feff Paths" href="feffpaths.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -86,7 +93,7 @@
 <li><a class="reference internal" href="#example-3-fit-3-datasets-with-1-path-each">7.7.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
 <li><a class="reference internal" href="#example-4-measuring-coordination-number">7.7.11. Example 4: Measuring Coordination number</a></li>
 <li><a class="reference internal" href="#example-5-comparing-fits-in-different-fit-spaces">7.7.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
-<li><a class="reference internal" href="#example-6-testing-exafs-sensitivity-to">7.7.13. Example 6: Testing EXAFS sensitivity to <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/></a></li>
+<li><a class="reference internal" href="#example-6-testing-exafs-sensitivity-to">7.7.13. Example 6: Testing EXAFS sensitivity to <span class="math">\(Z\)</span></a></li>
 </ul>
 </li>
 </ul>
@@ -133,28 +140,28 @@ process, and those sections will be referenced here.</p>
 <div class="section" id="the-feffit-strategy-for-modeling-exafs-data">
 <h2>7.7.1. The Feffit Strategy for Modeling EXAFS Data<a class="headerlink" href="#the-feffit-strategy-for-modeling-exafs-data" title="Permalink to this headline">¶</a></h2>
 <p>The basic approach to modeling EXAFS data in Larch (see
-<span class="citation"><a class="reference internal" href="../biblio.html#citation-feffit">Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-feffit">8</a><span>]</span></span>) is to create a model EXAFS <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> as a
+<span class="citation"><a class="reference internal" href="../biblio.html#citation-feffit">Newville</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-feffit">8</a><span>]</span></span>) is to create a model EXAFS <span class="math">\(\chi(k)\)</span> as a
 sum of scattering paths that will be compared to experimentally derived
-<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>. The model will consist of a set of FEFF Scattering Paths
+<span class="math">\(\chi(k)\)</span>. The model will consist of a set of FEFF Scattering Paths
 representing the photo-electron scattering from different sets of atoms.
 As discussed in <a class="reference internal" href="feffpaths.html#xafs-feffpaths-sec">7.6</a>, these FEFF Paths have a fixed
 set of physically meaningful parameters than can be modified to alter the
-predicted contribution to <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  Any of these values can be
+predicted contribution to <span class="math">\(\chi(k)\)</span>.  Any of these values can be
 defined as algebraic expressions of Larch Parameters defined by
 <a class="reference internal" href="../fitting/parameters.html#_math.param" title="_math.param"><tt class="xref py py-func docutils literal"><span class="pre">_math.param()</span></tt></a>.  The actual fit uses the same fitting infrastructure
 as to <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> to refine the values of the variable
 parameters in the model so as to best match the experimental data.  Because
-<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> has known properties and <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> dependencies, it is
+<span class="math">\(\chi(k)\)</span> has known properties and <span class="math">\(k\)</span> dependencies, it is
 common to weight and Fourier transform (as described in <a class="reference internal" href="xafsft.html#xafs-ft-sec">7.4</a>)
 for the analysis.  In general term, the the refinement process will compare
-experimental and model <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> after a <em>Transformation</em>.</p>
-<p>The model for <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> used to compare to data is</p>
+experimental and model <span class="math">\(\chi(k)\)</span> after a <em>Transformation</em>.</p>
+<p>The model for <span class="math">\(\chi(k)\)</span> used to compare to data is</p>
 <div class="math">
-<p><img src="../_images/math/699de8efa0d7f5fd748ca82e34ee0c26623f41c2.png" alt="\chi(k) = \sum_{j} \chi_{j}(k, p_j)"/></p>
-</div><p>where <img class="math" src="../_images/math/2b13d520a1962c3400102442703087f89a90d098.png" alt="\chi_j"/> is the EXAFS contribution for a FEFF Path, as given in
-<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a> for path <img class="math" src="../_images/math/d32c78b759903e3f4bd4fd2ce0b86358f7500c5d.png" alt="j"/>, where <img class="math" src="../_images/math/ebca3d0bacbd2a95a89d2663ffe19d17e37ffcbf.png" alt="p_j"/> is the
-set of adjustable Path Parameters (<img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/>, <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/>,
-<img class="math" src="../_images/math/4c750c82e15f7daf4605e7a5cba2736a18ad02da.png" alt="\delta{R}"/>, <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/>, and so on) listed as <tt class="docutils literal"><span class="pre">Adjustable</span></tt> in
+\[\chi(k) = \sum_{j} \chi_{j}(k, p_j)\]</div>
+<p>where <span class="math">\(\chi_j\)</span> is the EXAFS contribution for a FEFF Path, as given in
+<a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a> for path <span class="math">\(j\)</span>, where <span class="math">\(p_j\)</span> is the
+set of adjustable Path Parameters (<span class="math">\(S_0^2\)</span>, <span class="math">\(E_0\)</span>,
+<span class="math">\(\delta{R}\)</span>, <span class="math">\(\sigma^2\)</span>, and so on) listed as <tt class="docutils literal"><span class="pre">Adjustable</span></tt> in
 the <a class="reference internal" href="feffpaths.html#xafs-pathparams-table"><em>Table of Feff Path Parameters</em></a>.</p>
 <p>The number of FEFF Paths used in the sum can be unlimited, and they do not
 need to originate from a single run of FEFF.  This can be important in
@@ -169,8 +176,8 @@ XAFS spectrum.  A simple estimate of how many parameters could be
 independently measured is given from information theory of Shannon and
 Nyquist as</p>
 <div class="math">
-<p><img src="../_images/math/3b56cc305377298988b9ee3e9955e83deafba41e.png" alt="N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1"/></p>
-</div><p>where <img class="math" src="../_images/math/62b512ca3f65a3e31f055fd8833e95675926c48e.png" alt="\Delta k"/> and <img class="math" src="../_images/math/6f953f6b09f92cf5f76b8922c34bb187e4fe0520.png" alt="\Delta R"/> are the <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> and <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>
+\[N_{\rm ind} \approx  \frac{2 \Delta k \Delta R}{\pi} + 1\]</div>
+<p>where <span class="math">\(\Delta k\)</span> and <span class="math">\(\Delta R\)</span> are the <span class="math">\(k\)</span> and <span class="math">\(R\)</span>
 range of the usable data under consideration.  <span class="citation"><a class="reference internal" href="../biblio.html#citation-stern93">Stern</a><span> </span></span>
 argues convincingly that the '+1' here should be '+2', but we'll remain
 conservative and keep the '+1', and use this value not only for fit
@@ -183,20 +190,20 @@ analysis.</p>
 <p>Because of this fundamental information limit, it is usual to purposely
 limit the spectra being analyzed.  Of course, one usually limits how far
 out in energy to measure a signal based on the strength of the signal
-compared to some noise level.  This limits the <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> range of useful
+compared to some noise level.  This limits the <span class="math">\(k\)</span> range of useful
 data.  In addition, the number of scattering paths that contribute to the
-XAFS diverges very quickly with <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>.  For any <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> interval
-then, the finite <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> range sets an upper limit on the number of
+XAFS diverges very quickly with <span class="math">\(R\)</span>.  For any <span class="math">\(R\)</span> interval
+then, the finite <span class="math">\(k\)</span> range sets an upper limit on the number of
 parameters available for describing the atomic partial pair distribution
 function that gives spectral weight in that interval.  The distance to
 which a structural model can determined from real XAFS data is therefore
 limited to 5 or so Angstroms.  Because of these inherent limitations, it is
-generally preferrable to analyze XAFS data by limiting the <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> range
-of the analysis by using Fourier transforms to convert <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to
-<img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>.  The <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> function allows several choices of
-data transformations, including doing 0 (<img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/>, unfiltered), 1
-(<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>, or Fourier transformed), or 2 (math:<cite>q</cite>, or Fourier filtered)
-Fourier transforms.   Fitting in unfiltred <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> space is generally not
+generally preferrable to analyze XAFS data by limiting the <span class="math">\(R\)</span> range
+of the analysis by using Fourier transforms to convert <span class="math">\(\chi(k)\)</span> to
+<span class="math">\(\chi(R)\)</span>.  The <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> function allows several choices of
+data transformations, including doing 0 (<span class="math">\(k\)</span>, unfiltered), 1
+(<span class="math">\(R\)</span>, or Fourier transformed), or 2 (math:<cite>q</cite>, or Fourier filtered)
+Fourier transforms.   Fitting in unfiltred <span class="math">\(k\)</span> space is generally not
 recommended.</p>
 </div>
 <div class="section" id="fit-statistics-and-goodness-of-fit-meassures-for-feffit">
@@ -206,58 +213,58 @@ described in <a class="reference internal" href="../fitting/minimize.html#fittin
 statistics discussed in <a class="reference internal" href="../fitting/results.html#fitting-results-sec">6.4</a> are also generated for
 <a class="reference internal" href="#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>. In view of the limited amount of information, some of the
 traditional statistical definitions need to be carefully examid, and
-possibly altered slightly.   For example, the typical <img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/>
+possibly altered slightly.   For example, the typical <span class="math">\(\chi^2\)</span>
 statistic (as given in <a class="reference internal" href="../fitting/overview.html#fitting-overview-sec">6.1</a>) is</p>
 <div class="math">
-<p><img src="../_images/math/3c537883e4fbd20d42ee28a7831bf1af7cccaeaf.png" alt="\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2"/></p>
-</div><p>seems simple enough, but actually raises several questions, as we have to
+\[\chi^2 = \sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2\]</div>
+<p>seems simple enough, but actually raises several questions, as we have to
 decide what each of the terms here is.  As above, we'll typically analyze
-data in <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> space after a Fourier transform, so that the &quot;data&quot;
-<img class="math" src="../_images/math/b124ff74afb0914bb434e8fb849eb56d734412f8.png" alt="y"/> actually represents the real and imaginary components of
-<img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>, and the &quot;model&quot; <img class="math" src="../_images/math/0001d02b63ede2fe3219e05a7cd09c82ae6298b6.png" alt="f"/> will also be the Fourier
-transform of the parameterized model for <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</p>
+data in <span class="math">\(R\)</span> space after a Fourier transform, so that the &quot;data&quot;
+<span class="math">\(y\)</span> actually represents the real and imaginary components of
+<span class="math">\(\chi(R)\)</span>, and the &quot;model&quot; <span class="math">\(f\)</span> will also be the Fourier
+transform of the parameterized model for <span class="math">\(\chi(k)\)</span>.</p>
 <p>Perhaps the largest questions are ones that are often dismissed as trivial
 in standard statistics discussions:</p>
-<p>Perhaps surprisingly, the first question is: what is <img class="math" src="../_images/math/75e27f04188974063be3230dca208cd495b77ce1.png" alt="N"/>?  The
-<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> data can be measured (or sampled) on an arbitrarily fine
+<p>Perhaps surprisingly, the first question is: what is <span class="math">\(N\)</span>?  The
+<span class="math">\(\chi(k)\)</span> data can be measured (or sampled) on an arbitrarily fine
 grid, and a Fourier transform can use an arbitrary number of points.  Thus,
-the number of points for both <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> can
+the number of points for both <span class="math">\(\chi(k)\)</span> and <span class="math">\(\chi(R)\)</span> can
 easily be changed without actually changing the quality or quantity of the
 real data.  The best number to use for the sum over the number of data
-points is then <img class="math" src="../_images/math/3a1098bacfd0545fec5bba832141909712655024.png" alt="N_{\rm ind}"/> defined above.  Of course, we generally
-oversample the data, so the value for <img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/> used and reported is</p>
+points is then <span class="math">\(N_{\rm ind}\)</span> defined above.  Of course, we generally
+oversample the data, so the value for <span class="math">\(\chi^2\)</span> used and reported is</p>
 <div class="math">
-<p><img src="../_images/math/3cc2070d9fefaa1c44834c44ac4a10a922b9d042.png" alt="\chi^2 = \frac{N_{\rm ind}}{N}\sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2"/></p>
-</div><p>where the sum can be over an arbitrary number of samples of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>
-or <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>, but the actual range of the data sets <img class="math" src="../_images/math/2904099307a3ce7f1daceeb655489cd37b1f8c9c.png" alt="N_{\rm
-ind}"/>.</p>
-<p>A second consideration is what to use for <img class="math" src="../_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/>, the uncertainty
-in the &quot;data&quot;.  Of course, the uncertainty in the data, <img class="math" src="../_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/>,
+\[\chi^2 = \frac{N_{\rm ind}}{N}\sum_{i=1}^{N} \big[\frac{y_i - f(x_i, \vec{\beta})}{\epsilon_i} \big]^2\]</div>
+<p>where the sum can be over an arbitrary number of samples of <span class="math">\(\chi(k)\)</span>
+or <span class="math">\(\chi(R)\)</span>, but the actual range of the data sets <span class="math">\(N_{\rm
+ind}\)</span>.</p>
+<p>A second consideration is what to use for <span class="math">\(\epsilon\)</span>, the uncertainty
+in the &quot;data&quot;.  Of course, the uncertainty in the data, <span class="math">\(\epsilon\)</span>,
 depends on the details of the data transformation (for example, whether
-fitting in <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> or <img class="math" src="../_images/math/23f1b45408e5b4130c0f940fcbfcec54492cbdcd.png" alt="q"/> space).  Estimating the noise level in
+fitting in <span class="math">\(R\)</span> or <span class="math">\(q\)</span> space).  Estimating the noise level in
 any given spectrum is not at all trivial, and should generally involve a
 proper statistical treatment of the data.  For an individual spectrum, what
 can be done easily and automatically is to estimate the noise level
 assuming that the data is dominated by noise that is independent of
-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>: white noise.  The function <a class="reference internal" href="utilities.html#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> does this
+<span class="math">\(R\)</span>: white noise.  The function <a class="reference internal" href="utilities.html#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> does this
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-newvilleboyanov">Newville, Boyanov and Sayers</a><span> </span></span>, and the estimate derived from this method is
 used unless you specify a value for <tt class="docutils literal"><span class="pre">epsilon_k</span></tt> the noise level in
-<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  Though usually <img class="math" src="../_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/> is taken to be a scalar
+<span class="math">\(\chi(k)\)</span>.  Though usually <span class="math">\(\epsilon\)</span> is taken to be a scalar
 value, it can be specfied as an array (of the same length as
-<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>) if more accurate measures for the uncertainty of the data
+<span class="math">\(\chi(k)\)</span>) if more accurate measures for the uncertainty of the data
 is available.</p>
-<p>It turns out that <img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/> is almost always too big, and reduced
-<img class="math" src="../_images/math/5d3b515981508fe134c404392ba214e4aaee2406.png" alt="chi^2"/> (that is, <img class="math" src="../_images/math/6d3bca792577e98f773f6bc460c6c4ac423c45bf.png" alt="\chi^2/(p - N_{\rm ind})"/> where <img class="math" src="../_images/math/3eca8557203e86160952e1c0f735f7417f3285b1.png" alt="p"/> is
+<p>It turns out that <span class="math">\(\chi^2\)</span> is almost always too big, and reduced
+<span class="math">\(chi^2\)</span> (that is, <span class="math">\(\chi^2/(p - N_{\rm ind})\)</span> where <span class="math">\(p\)</span> is
 the number of fitted parameters) is far greater than 1.  This is partly due
 to a poor assessment of the uncertainty in the data, and partly due to
 imperfections in the calculations that go into the model.  Together, these
 are often called &quot;systematic errors&quot; in the EXAFS literature.  Because of
-this issue, an alternative statistic <img class="math" src="../_images/math/5ccced3de9fc3eaec8c9eac4f3824a488e441795.png" alt="\cal{R}"/> is often used as a
-supplement to <img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/> for EXAFS.  The <img class="math" src="../_images/math/5ccced3de9fc3eaec8c9eac4f3824a488e441795.png" alt="\cal{R}"/> factor is
+this issue, an alternative statistic <span class="math">\(\cal{R}\)</span> is often used as a
+supplement to <span class="math">\(\chi^2\)</span> for EXAFS.  The <span class="math">\(\cal{R}\)</span> factor is
 defined as</p>
 <div class="math">
-<p><img src="../_images/math/a93763ed0cfa2707e4244bedbf9d402cc61538a8.png" alt="{\cal{R}} = \frac{\sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta})}\big]^2}{\sum_{i=1}^{N} {y_i^2}}"/></p>
-</div><p>which is to say, the misfit scaled by the magnitude of the data.</p>
+\[{\cal{R}} = \frac{\sum_{i=1}^{N} \big[{y_i - f(x_i, \vec{\beta})}\big]^2}{\sum_{i=1}^{N} {y_i^2}}\]</div>
+<p>which is to say, the misfit scaled by the magnitude of the data.</p>
 </div>
 <div class="section" id="the-feffit-functions-in-larch">
 <h2>7.7.3. The Feffit functions in Larch<a class="headerlink" href="#the-feffit-functions-in-larch" title="Permalink to this headline">¶</a></h2>
@@ -266,12 +273,12 @@ set of Feff paths to XAFS spectra.  This essentially runs
 <a class="reference internal" href="../fitting/minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a> with a parameter group, but with a built-in
 objective function to calculate the fit residual.  This built-in objective
 function calculates the residual as the difference of model and
-experimental <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> for a list of <em>Datasets</em>.  Here, a <em>Feffit
+experimental <span class="math">\(\chi(k)\)</span> for a list of <em>Datasets</em>.  Here, a <em>Feffit
 Dataset</em> is an important concept that will allow us to easily extend
 modeling to multiple data sets.</p>
 <p>A <em>Feffit Dataset</em> has three principle components.  First, it has an
-experimental data, <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  Second, it has a list of Feff paths --
-<a class="reference internal" href="feffpaths.html#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> will be used to calculate the model <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  Third,
+experimental data, <span class="math">\(\chi(k)\)</span>.  Second, it has a list of Feff paths --
+<a class="reference internal" href="feffpaths.html#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> will be used to calculate the model <span class="math">\(\chi(k)\)</span>.  Third,
 it has a <em>Feffit Transform</em> group which holds the Fourier transform and
 fitting ranges to select how the data and model are to be compared.  In
 addition, a fit has a single parameter group, holding all the variable and
@@ -314,9 +321,9 @@ or list of datasets groups.</li>
 <li><strong>dk</strong> -- tapering parameter for FT Window (4).</li>
 <li><strong>dk2</strong> -- second tapering parameter for FT Window (None).</li>
 <li><strong>window</strong> -- name of window type ('kaiser').</li>
-<li><strong>nfft</strong> -- value to use for <img class="math" src="../_images/math/f320e7e0f8c552a60d0e98c90a775b207fe552a1.png" alt="N_{\rm fft}"/> (2048).</li>
-<li><strong>kstep</strong> -- value to use for <img class="math" src="../_images/math/4dec3117547724e16d9eccf961b238867d2a861c.png" alt="\delta{k}"/> (0.05).</li>
-<li><strong>kweight</strong> -- exponent for weighting spectra by <img class="math" src="../_images/math/8a41e86bace6f3b84493de823ba6ffdf9ff54ddf.png" alt="k^{\rm kweight}"/> (2).</li>
+<li><strong>nfft</strong> -- value to use for <span class="math">\(N_{\rm fft}\)</span> (2048).</li>
+<li><strong>kstep</strong> -- value to use for <span class="math">\(\delta{k}\)</span> (0.05).</li>
+<li><strong>kweight</strong> -- exponent for weighting spectra by <span class="math">\(k^{\rm kweight}\)</span> (2).</li>
 <li><strong>rmin</strong> -- starting <em>R</em> for Fit Range and/or reverse FT Window (0).</li>
 <li><strong>rmax</strong> -- ending <em>R</em> for Fit Range and/or reverse FT Window (10).</li>
 <li><strong>dr</strong> -- tapering parameter for reverse FT Window 0.</li>
@@ -366,13 +373,13 @@ used to do some transforms.</p>
 <p>The value for <tt class="docutils literal"><span class="pre">data</span></tt> must be a group containing arrays <tt class="docutils literal"><span class="pre">k</span></tt> and
 <tt class="docutils literal"><span class="pre">chi</span></tt> (as determined <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">_xafs.autobk()</span></tt></a> or some other procedure).
 If it contains a value (scalar or array) <tt class="docutils literal"><span class="pre">epsilon_k</span></tt>, that will be
-used as the uncertainty in <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> for weighting the fit.
-Otherwise, the uncertainty in <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> will be estimated
+used as the uncertainty in <span class="math">\(\chi(k)\)</span> for weighting the fit.
+Otherwise, the uncertainty in <span class="math">\(\chi(k)\)</span> will be estimated
 automatically, and stored in this dataset.</p>
 <p>The <tt class="docutils literal"><span class="pre">pathlist</span></tt> is a list of Feff Paths, each of which can have its
 Path Parameters written in terms of fit parameters (see the final
 example in the previous section).  This list of paths will be sent to
-<a class="reference internal" href="feffpaths.html#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> to calculate the model <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/> to compare to the
+<a class="reference internal" href="feffpaths.html#_xafs.ff2chi" title="_xafs.ff2chi"><tt class="xref py py-func docutils literal"><span class="pre">ff2chi()</span></tt></a> to calculate the model <span class="math">\(\chi\)</span> to compare to the
 experimental data.   Finally, <tt class="docutils literal"><span class="pre">transform</span></tt> is a Feffit transform group,
 as defined above.</p>
 <p>A Dataset will also have a few other components, including:</p>
@@ -389,23 +396,23 @@ as defined above.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>epsilon_k</td>
-<td>estimated noise in the <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> data.</td>
+<td>estimated noise in the <span class="math">\(\chi(k)\)</span> data.</td>
 </tr>
 <tr class="row-odd"><td>epsilon_r</td>
-<td>estimated noise in the <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> data.</td>
+<td>estimated noise in the <span class="math">\(\chi(R)\)</span> data.</td>
 </tr>
 <tr class="row-even"><td>n_idp</td>
 <td>estimated number of independent points in the data.</td>
 </tr>
 <tr class="row-odd"><td>model</td>
-<td>a group for the model <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/> spectrum.</td>
+<td>a group for the model <span class="math">\(\chi\)</span> spectrum.</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 </div></blockquote>
 <p>The <tt class="docutils literal"><span class="pre">model</span></tt> component will be set after a fit, and will contain the
-standard set of arrays for <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> for the
+standard set of arrays for <span class="math">\(\chi(k)\)</span> and <span class="math">\(\chi(R)\)</span> for the
 fitting model, and can be directly compared to the arrays for the
 experimental data.</p>
 </dd></dl>
@@ -424,7 +431,7 @@ experimental data.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>paramgroup</strong> -- group containing parameters for fit</li>
 <li><strong>datasets</strong> -- Feffit Dataset group or list of Feffit Dataset group.</li>
-<li><strong>rmax_out</strong> -- maximum <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> value to calculate output arrays.</li>
+<li><strong>rmax_out</strong> -- maximum <span class="math">\(R\)</span> value to calculate output arrays.</li>
 <li><strong>path_output</strong> -- Flag to set whether all Path outputs should be written.</li>
 </ul>
 </td>
@@ -536,31 +543,31 @@ Transforms for XAFS</em></a>.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>k</td>
-<td>wavenumber array of <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/>.</td>
+<td>wavenumber array of <span class="math">\(k\)</span>.</td>
 </tr>
 <tr class="row-odd"><td>chi</td>
-<td><img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</td>
+<td><span class="math">\(\chi(k)\)</span>.</td>
 </tr>
 <tr class="row-even"><td>kwin</td>
-<td>window <img class="math" src="../_images/math/19ee175593fd626963a98a790e4393928f2a2894.png" alt="\Omega(k)"/> (length of input chi(k)).</td>
+<td>window <span class="math">\(\Omega(k)\)</span> (length of input chi(k)).</td>
 </tr>
 <tr class="row-odd"><td>r</td>
-<td>uniform array of <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>, out to <tt class="docutils literal"><span class="pre">rmax_out</span></tt>.</td>
+<td>uniform array of <span class="math">\(R\)</span>, out to <tt class="docutils literal"><span class="pre">rmax_out</span></tt>.</td>
 </tr>
 <tr class="row-even"><td>chir</td>
-<td>complex array of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
+<td>complex array of <span class="math">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-odd"><td>chir_mag</td>
-<td>magnitude of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
+<td>magnitude of <span class="math">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-even"><td>chir_pha</td>
-<td>phase of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
+<td>phase of <span class="math">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-odd"><td>chir_re</td>
-<td>real part of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
+<td>real part of <span class="math">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-even"><td>chir_im</td>
-<td>imaginary part of <img class="math" src="../_images/math/4cfd909c62f8e38752736abfb74bd566377103e0.png" alt="\tilde\chi(R)"/>.</td>
+<td>imaginary part of <span class="math">\(\tilde\chi(R)\)</span>.</td>
 </tr>
 </tbody>
 </table>
@@ -723,7 +730,7 @@ including adding more paths to a fit, including multiple-scattering paths,
 simultaneously modeling more than one data set, and building more complex
 fitting models.  We'll get to these in the following examples.</p>
 <p>But first, a small detour.  The plotting commands in the above example for
-plotting <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> and <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> for data and model will be
+plotting <span class="math">\(\chi(k)\)</span> and <span class="math">\(\chi(R)\)</span> for data and model will be
 useful for the other examples as well, so we'll create a slightly
 generalized function to make such plots and put this and several other
 plotting functions into a separate file, <em>doc_macros.lar</em>.  This will look
@@ -887,14 +894,14 @@ not enough freedom in the XAFS signal to measure all the possible
 adjustable Path Parameters independently.  Thus we need to be able to apply
 constraints to the Path Parameters.</p>
 <p>Here, we use two of the most common types of constraints.  First, we apply
-the same amplitude reduction factor and the same <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> shift to all
+the same amplitude reduction factor and the same <span class="math">\(E_0\)</span> shift to all
 Paths.  These may seem obvious for this example, but for more complicated
 examples, either including shells of mixed species or Feff Paths generated
 from different calculation, these become less obvious.</p>
 <p>Second, we introduce a scale the change in distance by a single expansion
-factor <img class="math" src="../_images/math/ad59b6e24a4a00ac621801f8d7513d68be654ab5.png" alt="\alpha"/> (<tt class="docutils literal"><span class="pre">alpha</span></tt> in the script), and using the built-in
+factor <span class="math">\(\alpha\)</span> (<tt class="docutils literal"><span class="pre">alpha</span></tt> in the script), and using the built-in
 value of half-path distance, <tt class="docutils literal"><span class="pre">reff</span></tt>, and setting <tt class="docutils literal"><span class="pre">deltar</span> <span class="pre">=</span>
-<span class="pre">'alpha*reff'</span></tt> for all Paths.  During the calculation of <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>
+<span class="pre">'alpha*reff'</span></tt> for all Paths.  During the calculation of <span class="math">\(\chi(k)\)</span>
 for each path that happens in the fitting process, the value of <tt class="docutils literal"><span class="pre">reff</span></tt>
 will be updated to the correct value for each path.  Thus, as the value of
 <tt class="docutils literal"><span class="pre">alpha</span></tt> varies in the fit, each path will use its proper value for
@@ -945,7 +952,7 @@ one another.</p>
 </div>
 <p>Here we simply create <tt class="docutils literal"><span class="pre">path2</span></tt> and <tt class="docutils literal"><span class="pre">path3</span></tt> using nearly the same parameters
 as for <tt class="docutils literal"><span class="pre">path1</span></tt>.   Compared to the previous example, the other changes
-are that the  <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> range for the fit has been increased so that the
+are that the  <span class="math">\(R\)</span> range for the fit has been increased so that the
 fit will try to fit the second shell, and that  <tt class="docutils literal"><span class="pre">sigma2</span></tt> is allowed to
 vary independently for each path.</p>
 <p>The output for this fit is a bit longer, being:</p>
@@ -1039,9 +1046,9 @@ vary independently for each path.</p>
 </div>
 <p class="caption"><strong>Figure 7.19:</strong> Results for Feffit for a 3-shell fit to a spectrum from Cu metal,
 constraining all path distances to expand with a single variable.</p>
-</div><p id="fig-feffit2">Here, we show both the magnitude and real part of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>.  The fit
-to the real part shows excellent agreement over the fit <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> range of
-[1.4, 3.4] <img class="math" src="../_images/math/427e2f652b16cec5fd40e796e49c926ae7a24190.png" alt="\AA"/>.  It is often useful the contributions from the
+</div><p id="fig-feffit2">Here, we show both the magnitude and real part of <span class="math">\(\chi(R)\)</span>.  The fit
+to the real part shows excellent agreement over the fit <span class="math">\(R\)</span> range of
+[1.4, 3.4] <span class="math">\(\AA\)</span>.  It is often useful the contributions from the
 individual paths.  With the macros defined above, this is pretty
 straightforward, as we can just do:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">plot_modelpaths_k</span><span class="p">(</span><span class="n">dset</span><span class="p">,</span> <span class="n">offset</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
@@ -1076,11 +1083,11 @@ of paths.  Each of these will have a single path.  Since we're modeling
 nearly the same structure, the three paths will use the same Feff.dat file
 and have many parameters in common, but some parameters will be different
 for each data set.  As with the previous example, we use the same amplitude
-reduction factor <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> shift to all data sets.  We allow distances to
+reduction factor <span class="math">\(E_0\)</span> shift to all data sets.  We allow distances to
 vary, but constrain them so that the change is linear in the sample
-temperature, as if there were a simple linear expansion in <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>.  To
+temperature, as if there were a simple linear expansion in <span class="math">\(R\)</span>.  To
 do this, we set <tt class="docutils literal"><span class="pre">deltar</span> <span class="pre">=</span> <span class="pre">'dr_off</span> <span class="pre">+</span> <span class="pre">T*alpha*reff'</span></tt>, where <tt class="docutils literal"><span class="pre">T</span></tt> is the
-temperature for the dataset.  For <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/> we'll use one of the
+temperature for the dataset.  For <span class="math">\(\sigma^2\)</span> we'll use one of the
 built-in models described in <a class="reference internal" href="feffpaths.html#xafs-sigma2calcs-sec"><em>Models for Calculating sigma2</em></a>.  Here we'll use <a class="reference internal" href="feffpaths.html#_xafs.sigma2_eins" title="_xafs.sigma2_eins"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_eins()</span></tt></a>, but
 <a class="reference internal" href="feffpaths.html#_xafs.sigma2_debye" title="_xafs.sigma2_debye"><tt class="xref py py-func docutils literal"><span class="pre">sigma2_debye()</span></tt></a> can be used as well, and does a better job for
 multiple-scattering paths in simple systems.  The model then uses 2
@@ -1142,11 +1149,11 @@ displacements. The full script for the fit looks like this:</p>
 <span class="c"># ## end examples/feffit/doc_feffit3.lar</span>
 </pre></div>
 </div>
-<p>Here we read in 3 datasets for <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/> data and do the background
+<p>Here we read in 3 datasets for <span class="math">\(\mu(E)\)</span> data and do the background
 subtraction on each of them.  We define 5 fitting parameters, including the
 characteristic (here, Einstein) temperature which will determine the value of
-<img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/>, and two parameters for the linear temperature dependence
-of <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>. The output for this fit is:</p>
+<span class="math">\(\sigma^2\)</span>, and two parameters for the linear temperature dependence
+of <span class="math">\(R\)</span>. The output for this fit is:</p>
 <div class="highlight-python"><div class="highlight"><pre>=================== FEFFIT RESULTS ====================
 [[Statistics]]
    npts, nvarys, nfree= 390, 5, 385
@@ -1264,27 +1271,27 @@ correlation significantly reduces the estimated uncertainty.</p>
 <div class="figure compound align-center" id="fig-feffit3temps">
 <div style="width: 32%" class="subfigure" id="fig-feffit3temp10k">
 <a class="reference external image-reference" href="../_images/feffit_3temp1.png"><img alt="../_images/feffit_3temp1.png" src="../_images/feffit_3temp1.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> Fit to Cu <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> at 10 K</p>
+<p class="caption"><strong>(a)</strong> Fit to Cu <span class="math">\(\chi(k)\)</span> at 10 K</p>
 </div>
 <div style="width: 32%" class="subfigure" id="fig-feffit3temp50k">
 <a class="reference external image-reference" href="../_images/feffit_3temp3.png"><img alt="../_images/feffit_3temp3.png" src="../_images/feffit_3temp3.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> Fit to Cu <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> at 50 K</p>
+<p class="caption"><strong>(b)</strong> Fit to Cu <span class="math">\(\chi(k)\)</span> at 50 K</p>
 </div>
 <div style="width: 32%" class="subfigure" id="fig-feffit3temp150k">
 <a class="reference external image-reference" href="../_images/feffit_3temp5.png"><img alt="../_images/feffit_3temp5.png" src="../_images/feffit_3temp5.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(c)</strong> Fit to Cu <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> at 150 K</p>
+<p class="caption"><strong>(c)</strong> Fit to Cu <span class="math">\(\chi(k)\)</span> at 150 K</p>
 </div>
 <div style="width: 32%" class="subfigure" id="fig-feffit3temp10r">
 <a class="reference external image-reference" href="../_images/feffit_3temp2.png"><img alt="../_images/feffit_3temp2.png" src="../_images/feffit_3temp2.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(d)</strong> Fit to Cu <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> at 10 K</p>
+<p class="caption"><strong>(d)</strong> Fit to Cu <span class="math">\(\chi(R)\)</span> at 10 K</p>
 </div>
 <div style="width: 32%" class="subfigure" id="fig-feffit3temp50r">
 <a class="reference external image-reference" href="../_images/feffit_3temp4.png"><img alt="../_images/feffit_3temp4.png" src="../_images/feffit_3temp4.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(e)</strong> Fit to Cu <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> at 50 K</p>
+<p class="caption"><strong>(e)</strong> Fit to Cu <span class="math">\(\chi(R)\)</span> at 50 K</p>
 </div>
 <div style="width: 32%" class="subfigure" id="fig-feffit3temp150r">
 <a class="reference external image-reference" href="../_images/feffit_3temp6.png"><img alt="../_images/feffit_3temp6.png" src="../_images/feffit_3temp6.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(f)</strong> Fit to Cu <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> at 150 K</p>
+<p class="caption"><strong>(f)</strong> Fit to Cu <span class="math">\(\chi(R)\)</span> at 150 K</p>
 </div>
 <p class="caption"><strong>Figure 7.21:</strong> Fit to Cu metal at 10 K, 50 K, and 150 K, from simultaneous fit to all
 3 datasets with 5 variables used.</p>
@@ -1302,16 +1309,16 @@ data is imperfect, we'll use it to illustrate a few points in modeling
 EXAFS data.</p>
 <p>For the examples above with Cu metal, we tacitly assumed that the
 coordination number for the different paths was correct, and we adjusted an
-<img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/> parameter.  But, as with many analyses on real systems of
+<span class="math">\(S_0^2\)</span> parameter.  But, as with many analyses on real systems of
 research interest, we'd like to fit the coordination number for the two
-different paths here.  To do this, we set an <img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/> parameter to a
+different paths here.  To do this, we set an <span class="math">\(S_0^2\)</span> parameter to a
 fixed value, and also force <tt class="docutils literal"><span class="pre">degen</span></tt> (the number of equivalent paths in
 the structure used to generate the Feff.dat files) to be 1 for each path.
 Instead, we'll define parameters <tt class="docutils literal"><span class="pre">n1</span></tt> and <tt class="docutils literal"><span class="pre">n2</span></tt>, and set the Fe-O path's
 amplitude to be <tt class="docutils literal"><span class="pre">s02*n1</span></tt> and the Fe-Fe path's amplitude to be <tt class="docutils literal"><span class="pre">s02*n2</span></tt>.
 We'll allow <tt class="docutils literal"><span class="pre">n1</span></tt> and <tt class="docutils literal"><span class="pre">n2</span></tt> to vary in the fit, and also define variable
 parameters for the other path parameters, including separate variables for
-<img class="math" src="../_images/math/6f953f6b09f92cf5f76b8922c34bb187e4fe0520.png" alt="\Delta R"/> and <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/>.  The script for this fit is below:</p>
+<span class="math">\(\Delta R\)</span> and <span class="math">\(\sigma^2\)</span>.  The script for this fit is below:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/feffit/doc_feffit4.lar</span>
 
 <span class="n">feo_dat</span> <span class="o">=</span> <span class="n">read_ascii</span><span class="p">(</span><span class="s">&#39;../xafsdata/feo_xafs.dat&#39;</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="s">&#39;energy xmu&#39;</span><span class="p">)</span>
@@ -1440,11 +1447,11 @@ used in the fit.</p>
 <div class="figure compound align-center" id="fig-feffit-feo">
 <div style="width: 45%" class="subfigure" id="fig-feffit-feo-a">
 <a class="reference external image-reference" href="../_images/feffit_feo_k.png"><img alt="../_images/feffit_feo_k.png" src="../_images/feffit_feo_k.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> Fit to FeO spectra, <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> space</p>
+<p class="caption"><strong>(a)</strong> Fit to FeO spectra, <span class="math">\(k\)</span> space</p>
 </div>
 <div style="width: 45%" class="subfigure" id="fig-feffit-feo-b">
 <a class="reference external image-reference" href="../_images/feffit_feo_r.png"><img alt="../_images/feffit_feo_r.png" src="../_images/feffit_feo_r.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> Fit to FeO spectra, <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> space</p>
+<p class="caption"><strong>(b)</strong> Fit to FeO spectra, <span class="math">\(R\)</span> space</p>
 </div>
 <p class="caption"><strong>Figure 7.22:</strong> Fits to 2-path fit to FeO EXAFS.</p>
 </div></div>
@@ -1615,24 +1622,24 @@ what parametres are varied, and what constraints are placed between
 parameters.</p>
 </div>
 <div class="section" id="example-6-testing-exafs-sensitivity-to">
-<h2>7.7.13. Example 6: Testing EXAFS sensitivity to <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/><a class="headerlink" href="#example-6-testing-exafs-sensitivity-to" title="Permalink to this headline">¶</a></h2>
-<p id="index-2">EXAFS is known to be sensitive to the atomic number <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> of the
-scattering atom.  This is due to the <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> dependence of the scattering
-amplitude and phase shift (<img class="math" src="../_images/math/fd6cf73260eace4707bcdfad4752ccebe59b17b3.png" alt="f(k)"/> and <img class="math" src="../_images/math/498ff2da6918b6280fde87c41164735108709a8b.png" alt="\delta(k)"/> in the EXAFS
+<h2>7.7.13. Example 6: Testing EXAFS sensitivity to <span class="math">\(Z\)</span><a class="headerlink" href="#example-6-testing-exafs-sensitivity-to" title="Permalink to this headline">¶</a></h2>
+<p id="index-2">EXAFS is known to be sensitive to the atomic number <span class="math">\(Z\)</span> of the
+scattering atom.  This is due to the <span class="math">\(Z\)</span> dependence of the scattering
+amplitude and phase shift (<span class="math">\(f(k)\)</span> and <span class="math">\(\delta(k)\)</span> in the EXAFS
 Equation of Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a>).  A rule-of-thumb that
-is often stated is that EXAFS is sensitive to <img class="math" src="../_images/math/166507bb97c93b181d8b64c19908d3282a9d25aa.png" alt="Z \pm 5"/>, or perhaps
+is often stated is that EXAFS is sensitive to <span class="math">\(Z \pm 5\)</span>, or perhaps
 pessimistically to <em>row of the Periodic Table</em>, but not as sensitive as
-<img class="math" src="../_images/math/9faf628f0b09abd1559f1a2b68f5c95bb88bd1ad.png" alt="Z \pm 1"/>.  Occassionally, you may see work that claims very fine
-<img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> sensitivity, such as being able to distinguish N and O ligands.
+<span class="math">\(Z \pm 1\)</span>.  Occassionally, you may see work that claims very fine
+<span class="math">\(Z\)</span> sensitivity, such as being able to distinguish N and O ligands.
 In those works, XAFS results are typically used with chemical arguments
 about steric effects or known bond distances.</p>
-<p id="index-3">In this section, we'll explore the <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> sensitivity of XAFS with real
+<p id="index-3">In this section, we'll explore the <span class="math">\(Z\)</span> sensitivity of XAFS with real
 data, by constructing Feff paths with different scatterers and trying to
 fit data with these different scattering paths.  This makes a nice exercise
 in how to manipulate Feff, how to fit XAFS data, and how to compare XAFS
 fits.  Just to make it a little more complicated, we'll also explore the
 idea of <strong>Phase corrected</strong> Fourier transforms and how they might be used
-to better determine both <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> and <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>.  The example script here
+to better determine both <span class="math">\(R\)</span> and <span class="math">\(Z\)</span>.  The example script here
 is a little more complex than what we've seen above, using many feature of
 the Larch scripting language to do repeated fits and mathematically
 manipulating the arrays of data.</p>
@@ -1640,14 +1647,14 @@ manipulating the arrays of data.</p>
 <a class="reference external image-reference" href="../_images/Feffit_ZnSe_Data.png"><img alt="../_images/Feffit_ZnSe_Data.png" src="../_images/Feffit_ZnSe_Data.png" style="width: 65%;" /></a>
 <p class="caption"><strong>Figure 7.23:</strong> Zn K-edge XAFS data for ZnSe.</p>
 </div>
-<p>For this example, we'll use Zn K-edge data of ZnSe, with <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>
+<p>For this example, we'll use Zn K-edge data of ZnSe, with <span class="math">\(\chi(k)\)</span>
 data shown in Figure <a href="#fig-znse-xafs">7.23</a>.  The data is pretty good but not
 perfect, and is useful for the study here mainly because the structure is
 simple, with a well-isolated and well-ordered shell of scatterers (the
 cubic ZnS structure with 1 Zn site surrounded by 4 Se at 2.45
-<img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>).  While we're sure that the scatterer <em>should</em> be Se, we'll
+<span class="math">\(\rm\AA\)</span>).  While we're sure that the scatterer <em>should</em> be Se, we'll
 try scatterers of Zn, Ge, Se, Br, and Rb, spanning a small but sufficient
-range of <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>.</p>
+range of <span class="math">\(Z\)</span>.</p>
 <p>To construct the scattering paths, we'll modify a Feff input file.  To do
 this, we start with a feff.inp file generated for crystalline ZnSe by the
 ATOMS program, and add an IPOT to the list of atomic potentials (here the
@@ -1840,13 +1847,13 @@ correction.  The full script is:</p>
 <p>After reading in the data, the script builds Feff Paths, putting them into
 a dictionary.  After define the fitting transform range, the script loops
 over each of the scatterers, doing a simple first-shell fit with each.  The
-the phase-corrected <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> is then calculated, and the peak value of
-<img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> is found for this array.  Finally, results are printed out.</p>
+the phase-corrected <span class="math">\(\chi(R)\)</span> is then calculated, and the peak value of
+<span class="math">\(R\)</span> is found for this array.  Finally, results are printed out.</p>
 <blockquote id="xafs-feffit-znse-results">
 <div><blockquote>
 <div>Table of ZnSe Results.  The results from fitting ZnSe XAFS data to
 scattering paths of Zn-Zn, Zn-Ge, Zn-Se, Zn-Br, and Zn-Rb.  All paths
-started at the nominal distance of 2.454 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>.</div></blockquote>
+started at the nominal distance of 2.454 <span class="math">\(\rm\AA\)</span>.</div></blockquote>
 <table border="1" class="docutils">
 <colgroup>
 <col width="10%" />
@@ -1860,11 +1867,11 @@ started at the nominal distance of 2.454 <img class="math" src="../_images/math/
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Scatterer</th>
 <th class="head">reduced chi-square</th>
-<th class="head"><img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/></th>
-<th class="head"><img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/></th>
-<th class="head"><img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/></th>
-<th class="head"><img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/></th>
-<th class="head"><img class="math" src="../_images/math/263e7fde73c944281b5c06b6111aea41fc5c22ec.png" alt="R_{\rm{ph cor}}"/></th>
+<th class="head"><span class="math">\(S_0^2\)</span></th>
+<th class="head"><span class="math">\(\sigma^2\)</span></th>
+<th class="head"><span class="math">\(E_0\)</span></th>
+<th class="head"><span class="math">\(R\)</span></th>
+<th class="head"><span class="math">\(R_{\rm{ph cor}}\)</span></th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -1912,20 +1919,20 @@ started at the nominal distance of 2.454 <img class="math" src="../_images/math/
 </table>
 </div></blockquote>
 <p>The results of the fits are given in the <a class="reference internal" href="#xafs-feffit-znse-results"><em>Table of ZnSe Results</em></a>, with graphs below showing fits to the 5
-different scatterers.  The dependence of the results on <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> of the
+different scatterers.  The dependence of the results on <span class="math">\(Z\)</span> of the
 back-scattering atom is seen to be reasonably strong.  The values for reduced
 chi-square definitely indicate that Zn-Se is the best fit, and the values for
-the fitted parameters have rather clear correlations with <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> --
-<img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/>, <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/>, and <img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/> increase with <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>,
-while <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> decreases.  If anything, the <img class="math" src="../_images/math/166507bb97c93b181d8b64c19908d3282a9d25aa.png" alt="Z \pm 5"/> rule-of-thumb
+the fitted parameters have rather clear correlations with <span class="math">\(Z\)</span> --
+<span class="math">\(S_0^2\)</span>, <span class="math">\(\sigma^2\)</span>, and <span class="math">\(E_0\)</span> increase with <span class="math">\(Z\)</span>,
+while <span class="math">\(R\)</span> decreases.  If anything, the <span class="math">\(Z \pm 5\)</span> rule-of-thumb
 seems pessimistic, though the fits with Ge and Br look decent enough that it
-would be easy to conclude that <img class="math" src="../_images/math/60e1201435c3a2da3abaa9fac626a11379a30ad8.png" alt="Z \pm 2"/> is reasonable.</p>
-<p>As a curious side note, we note that <img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/> <em>increases</em> with
-<img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>.  The scattering factor should also increase with <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>, which
+would be easy to conclude that <span class="math">\(Z \pm 2\)</span> is reasonable.</p>
+<p>As a curious side note, we note that <span class="math">\(S_0^2\)</span> <em>increases</em> with
+<span class="math">\(Z\)</span>.  The scattering factor should also increase with <span class="math">\(Z\)</span>, which
 might lead us to suspect a trend in the opposite direction.  The confounding
-factor here is <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/> -- if we fix <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/> to 0.006 (by
-changing <tt class="docutils literal"><span class="pre">vary=True</span></tt> to <tt class="docutils literal"><span class="pre">vary=False</span></tt>) and re-run the fits, <img class="math" src="../_images/math/bed54acba2f4fe3733fa2022bc8fb3671d83bf72.png" alt="S_0^2"/>
-has a slight negative dependence on <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>.</p>
+factor here is <span class="math">\(\sigma^2\)</span> -- if we fix <span class="math">\(\sigma^2\)</span> to 0.006 (by
+changing <tt class="docutils literal"><span class="pre">vary=True</span></tt> to <tt class="docutils literal"><span class="pre">vary=False</span></tt>) and re-run the fits, <span class="math">\(S_0^2\)</span>
+has a slight negative dependence on <span class="math">\(Z\)</span>.</p>
 <div class="figure compound align-center" id="fig_znse_fits">
 <div style="width: 30%" class="subfigure" id="fig-znse-fit">
 <a class="reference external image-reference" href="../_images/Feffit_ZnSe_Zn.png"><img alt="../_images/Feffit_ZnSe_Zn.png" src="../_images/Feffit_ZnSe_Zn.png" style="width: 100%;" /></a>
@@ -1952,36 +1959,36 @@ has a slight negative dependence on <img class="math" src="../_images/math/c4563
 scattering phase from the Feff calculation to correct the data.  This
 correction is done in the <tt class="docutils literal"><span class="pre">phase_correct()</span></tt> procedure, where the data from
 the <em>feffNNNN.dat</em> file (in the <tt class="docutils literal"><span class="pre">_feffdat</span></tt> group) is used to construct the
-Feff phase shift (<img class="math" src="../_images/math/498ff2da6918b6280fde87c41164735108709a8b.png" alt="\delta(k)"/> in the EXAFS Equation of Section
+Feff phase shift (<span class="math">\(\delta(k)\)</span> in the EXAFS Equation of Section
 <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a>), and apply it to the data.  Because this uses
 complex math, we use the <a class="reference internal" href="xafsft.html#_xafs.xftf_fast" title="_xafs.xftf_fast"><tt class="xref py py-func docutils literal"><span class="pre">xftf_fast()</span></tt></a> function to the complex Fourier
 transform and build the magnitude of the transform explicitly.</p>
 <p>The phase corrected transforms are shown in black in Figure
 <a href="#fig_znse_fits">7.24</a>, and show the key benefit of these transforms -- the
-peak in the phase corrected <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> peaks much closer to an <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>
-that is the bond distance (for Zn-Se, around 2.45 <img class="math" src="../_images/math/ecf747cd04191a325c4f8ff5407249a1df6ea233.png" alt="\rm\AA"/>), whereas
+peak in the phase corrected <span class="math">\(\chi(R)\)</span> peaks much closer to an <span class="math">\(R\)</span>
+that is the bond distance (for Zn-Se, around 2.45 <span class="math">\(\rm\AA\)</span>), whereas
 the normal XAFS Fourier transform peaks much lower.  This suggests a further
-test on whether the bond distance and <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> of the scattering atom are
+test on whether the bond distance and <span class="math">\(Z\)</span> of the scattering atom are
 correct.  That is, in order for the phase-correction to give the correct
 interatomic distance, the total phase-shift has to be correct, which means
-that the <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> for the scatterer has to be correct (see the EXAFS
+that the <span class="math">\(Z\)</span> for the scatterer has to be correct (see the EXAFS
 Equation in Section <a class="reference internal" href="feffpaths.html#xafs-exafsequation-sec">7.6.4</a>).  So, we can compare the
 refined distance with the peak in the phase-corrected transform -- if they
 agree, it gives good confidence that the scatterer is correct.</p>
-<p>Since the spacing of points in <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> is <img class="math" src="../_images/math/2209b3ac2fc7821e6aef2a59398b0110fdb6222a.png" alt="\sim 0.03\rm\AA"/>, using
+<p>Since the spacing of points in <span class="math">\(R\)</span> is <span class="math">\(\sim 0.03\rm\AA\)</span>, using
 the peak position may not be accurate enough.  Instead, we can use the value
-where <img class="math" src="../_images/math/fe0aca31b41df4461684117578ec603ba91d51f0.png" alt="\rm Im[\chi(R)_{\rm{ph cor}}]"/> passes through zero (see dashed
+where <span class="math">\(\rm Im[\chi(R)_{\rm{ph cor}}]\)</span> passes through zero (see dashed
 lines in Figure <a href="#fig_znse_fits">7.24</a>).  These values are reported in the
-<a class="reference internal" href="#xafs-feffit-znse-results"><em>Table of ZnSe Results</em></a> as <img class="math" src="../_images/math/faf50734cc2edb4885445f879d75607ece0389d2.png" alt="R_{\rm{phcor}}"/>.</p>
+<a class="reference internal" href="#xafs-feffit-znse-results"><em>Table of ZnSe Results</em></a> as <span class="math">\(R_{\rm{phcor}}\)</span>.</p>
 <p>We see an interesting trend that while the refined distance <em>decreases</em> with
-<img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/>, the value for <img class="math" src="../_images/math/faf50734cc2edb4885445f879d75607ece0389d2.png" alt="R_{\rm{phcor}}"/> increases slightly.  The two
+<span class="math">\(Z\)</span>, the value for <span class="math">\(R_{\rm{phcor}}\)</span> increases slightly.  The two
 values cross between Ge and Se.  This is pretty good agreement, especially
-considering we left out the <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/> contribution to phase-shift in
+considering we left out the <span class="math">\(\sigma^2\)</span> contribution to phase-shift in
 the EXAFS equation from this phase correction, and applied the theoretical
-phase-shift from Feff to the measured data.  The <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> dependence of
-<img class="math" src="../_images/math/faf50734cc2edb4885445f879d75607ece0389d2.png" alt="R_{\rm{phcor}}"/> is not as strong as the <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/> dependence of
+phase-shift from Feff to the measured data.  The <span class="math">\(Z\)</span> dependence of
+<span class="math">\(R_{\rm{phcor}}\)</span> is not as strong as the <span class="math">\(Z\)</span> dependence of
 reduced chi-square, but this analysis also suggests that one can determine
-<img class="math" src="../_images/math/bb6fab762576be27b2f9ccfa1bc924b9968fa437.png" alt="Z \pm 3"/>, at least in this rather favorable case.</p>
+<span class="math">\(Z \pm 3\)</span>, at least in this rather favorable case.</p>
 <p>Again, this is an unusually favorable case -- a simple structure with a
 single well-isolated coordination shell.  The phase-correction method will
 <strong>not</strong> work at all on a mixed coordination shell, and is likely to give

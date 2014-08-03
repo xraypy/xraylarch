@@ -23,11 +23,18 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7. XAFS Analysis" href="../xafs/index.html" />
-    <link rel="prev" title="6.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" /> 
+    <link rel="prev" title="6.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -247,7 +254,7 @@ section.</p>
 </pre></div>
 </div>
 <p>The automatic error estimates given from <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt> are meant to be
-1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> uncertainties.   Comparing the two methods we find:</p>
+1-<span class="math">\(\sigma\)</span> uncertainties.   Comparing the two methods we find:</p>
 <blockquote>
 <div><table border="1" class="docutils">
 <colgroup>
@@ -259,8 +266,8 @@ section.</p>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
 <th class="head">Best Value</th>
-<th class="head">Automatic 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> value</th>
-<th class="head">Explicit 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> value</th>
+<th class="head">Automatic 1-<span class="math">\(\sigma\)</span> value</th>
+<th class="head">Explicit 1-<span class="math">\(\sigma\)</span> value</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -289,11 +296,11 @@ section.</p>
 </div></blockquote>
 <p>which seems to justify the use of the automated method.  The uncertainties
 found from the more thorough exploration shows symmetric uncertainties,
-even out to the 3-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> level, and of the 4 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>
+even out to the 3-<span class="math">\(\sigma\)</span> level, and of the 4 1-<span class="math">\(\sigma\)</span>
 uncertainties, 3 are within 2%, and the worst agreement, for the smallest
 uncertainty is within 7%.    It also shows that the scaling of
-uncertainties is fairly linear with <img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>:  the 3-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>
-values are approximately 3 times the 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> values.</p>
+uncertainties is fairly linear with <span class="math">\(\sigma\)</span>:  the 3-<span class="math">\(\sigma\)</span>
+values are approximately 3 times the 1-<span class="math">\(\sigma\)</span> values.</p>
 </div>
 <div class="section" id="confidence-interval-example-2">
 <h2>6.8.2. Confidence interval, Example 2<a class="headerlink" href="#confidence-interval-example-2" title="Permalink to this headline">¶</a></h2>
@@ -381,8 +388,8 @@ intervals in these parameters with:</p>
 </pre></div>
 </div>
 <p>Now can see more asymmetric uncertainty values, specifically that the
--n-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> and +n-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> are different, and don't seem to be
-linear in n.  Comparing the 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> levels between the automated
+-n-<span class="math">\(\sigma\)</span> and +n-<span class="math">\(\sigma\)</span> are different, and don't seem to be
+linear in n.  Comparing the 1-<span class="math">\(\sigma\)</span> levels between the automated
 and explicit methods as we did above, we now have</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -395,8 +402,8 @@ and explicit methods as we did above, we now have</p>
 <thead valign="bottom">
 <tr class="row-odd"><th class="head">Parameter</th>
 <th class="head">Best Value</th>
-<th class="head">Automatic 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> value</th>
-<th class="head">Explicit 1-<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> value</th>
+<th class="head">Automatic 1-<span class="math">\(\sigma\)</span> value</th>
+<th class="head">Explicit 1-<span class="math">\(\sigma\)</span> value</th>
 </tr>
 </thead>
 <tbody valign="top">
@@ -430,10 +437,10 @@ correlations, the full report above hints at a less than ideal case.</p>
 <div class="section" id="chi-square-maps">
 <h2>6.8.3. Chi-square Maps<a class="headerlink" href="#chi-square-maps" title="Permalink to this headline">¶</a></h2>
 <p>We can further explore the correlation between pairs of variables by making
-and visualizing a map of the chi-square (<img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/>) statistic.  This
+and visualizing a map of the chi-square (<span class="math">\(\chi^2\)</span>) statistic.  This
 can be helpful to determine if the automatically calculated uncertainties
 and correlation are reasonable, and to look for pathological cases.  The
-<a class="reference internal" href="#chi2_map" title="chi2_map"><tt class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></tt></a> function will calculate a map of <img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/> for a pair
+<a class="reference internal" href="#chi2_map" title="chi2_map"><tt class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></tt></a> function will calculate a map of <span class="math">\(\chi^2\)</span> for a pair
 of variable parameters by brute force.</p>
 <dl class="function">
 <dt id="chi2_map">
@@ -449,7 +456,7 @@ of variable parameters by brute force.</p>
 <li><strong>yname</strong> -- name of variable for y-axis</li>
 <li><strong>nx</strong> -- number of steps in x [11]</li>
 <li><strong>ny</strong> -- number of steps in y [11]</li>
-<li><strong>sigmas</strong> -- extent of x, y values to calculate, in <img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/></li>
+<li><strong>sigmas</strong> -- extent of x, y values to calculate, in <span class="math">\(\sigma\)</span></li>
 <li><strong>xrange</strong> -- explicit x range of calculations [x.best +/- <tt class="docutils literal"><span class="pre">sigmas</span></tt> * x.stderr]</li>
 <li><strong>yrange</strong> -- explicit y range of calculations [y.best +/- <tt class="docutils literal"><span class="pre">sigmas</span></tt> * y.stderr]</li>
 </ul>

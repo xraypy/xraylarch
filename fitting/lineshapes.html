@@ -23,11 +23,18 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="6.6. Fit Examples" href="examples.html" />
-    <link rel="prev" title="6.4. Fit Results and Outputs" href="results.html" /> 
+    <link rel="prev" title="6.4. Fit Results and Outputs" href="results.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -116,10 +123,10 @@ scalar or array, depending on the input <tt class="docutils literal"><span class
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/4ca75ab2c464fb23614cfe88bc4ca77dcaeb3410.png" alt="f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}"/></p>
-</div><p>where <em>cen</em> is used for <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>.
-The Full-Width at Half-Maximum is <img class="math" src="../_images/math/c336153cde82c23fa107c7a757dcb269cb1ac5f5.png" alt="2\sigma\sqrt{2\ln{2}}"/>,
-approximately <img class="math" src="../_images/math/be7180333f420e437e88bbf6376d6e208cbd390b.png" alt="2.3548\sigma"/></p>
+\[f(x, \mu, \sigma) = \frac{1}{\sigma\sqrt{2\pi}} e^{[{-{(x-\mu)^2}/{{2\sigma}^2}}]}\]</div>
+<p>where <em>cen</em> is used for <span class="math">\(\mu\)</span>.
+The Full-Width at Half-Maximum is <span class="math">\(2\sigma\sqrt{2\ln{2}}\)</span>,
+approximately <span class="math">\(2.3548\sigma\)</span></p>
 <dl class="function">
 <dt id="lorentzian">
 <tt class="descname">lorentzian</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#lorentzian" title="Permalink to this definition">¶</a></dt>
@@ -127,9 +134,9 @@ approximately <img class="math" src="../_images/math/be7180333f420e437e88bbf6376
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/c62e897c6aefd8507435494a7970380555c2d285.png" alt="f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]"/></p>
-</div><p>where <em>cen</em> is used for <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>. The Full-Width at Half-Maximum is
-<img class="math" src="../_images/math/621fc5b163458decf38608fd6656f9439b4962c1.png" alt="2\sigma"/>.</p>
+\[f(x, \mu, \sigma) = \frac{1}{\pi} \big[\frac{\sigma}{(x - \mu)^2 + \sigma^2}\big]\]</div>
+<p>where <em>cen</em> is used for <span class="math">\(\mu\)</span>. The Full-Width at Half-Maximum is
+<span class="math">\(2\sigma\)</span>.</p>
 <dl class="function">
 <dt id="voigt">
 <tt class="descname">voigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>gamma=None</em><big>)</big><a class="headerlink" href="#voigt" title="Permalink to this definition">¶</a></dt>
@@ -137,24 +144,23 @@ approximately <img class="math" src="../_images/math/be7180333f420e437e88bbf6376
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/41fd109c4e97415cf8a3f6937db12ecb8d8f44f2.png" alt="f(x, \mu, \sigma, \gamma) = \frac{\textrm{Re}[w(z)]}{\sigma\sqrt{2 \pi}}"/></p>
-</div><p>where</p>
+\[f(x, \mu, \sigma, \gamma) = \frac{\textrm{Re}[w(z)]}{\sigma\sqrt{2 \pi}}\]</div>
+<p>where</p>
 <div class="math">
-<p><img src="../_images/math/93af46aeca441765298741c64b78c15730c9c6d1.png" alt="\begin{eqnarray*}
-  z &amp;=&amp; \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
-  w(z) &amp;=&amp; e^{-z^2}{\operatorname{erfc}}(-iz)
-\end{eqnarray*}"/></p>
-</div><p>and <tt class="xref py py-func docutils literal"><span class="pre">erfc()</span></tt> is the complimentary error function.  As above, <em>cen</em> is
-used for <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> here, <em>sigma</em> for <img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>, and <em>gamma</em> for the
-parameter <img class="math" src="../_images/math/0ebb67342b546ca42a1c634b1ef03c893c4cdedb.png" alt="\gamma"/>.  If <em>gamma</em> is left as <tt class="docutils literal"><span class="pre">None</span></tt>, it is set equal
-to <em>sigma</em>.  For the case when <img class="math" src="../_images/math/87eb1f88213885d4db65ea108ebc00eb39ed5820.png" alt="\gamma = \sigma"/>, the Full-Width at
-Half-Maximum is approximately <img class="math" src="../_images/math/3820e2650fa78d38c62cb147827621394b34524e.png" alt="3.6013\sigma"/>.</p>
+\[\begin{eqnarray*}
+  z &=& \frac{x-\mu +i\gamma}{\sigma\sqrt{2}} \\
+  w(z) &=& e^{-z^2}{\operatorname{erfc}}(-iz)
+\end{eqnarray*}\]</div><p>and <tt class="xref py py-func docutils literal"><span class="pre">erfc()</span></tt> is the complimentary error function.  As above, <em>cen</em> is
+used for <span class="math">\(\mu\)</span> here, <em>sigma</em> for <span class="math">\(\sigma\)</span>, and <em>gamma</em> for the
+parameter <span class="math">\(\gamma\)</span>.  If <em>gamma</em> is left as <tt class="docutils literal"><span class="pre">None</span></tt>, it is set equal
+to <em>sigma</em>.  For the case when <span class="math">\(\gamma = \sigma\)</span>, the Full-Width at
+Half-Maximum is approximately <span class="math">\(3.6013\sigma\)</span>.</p>
 <dl class="function">
 <dt id="pvoigt">
 <tt class="descname">pvoigt</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>frac=0.5</em><big>)</big><a class="headerlink" href="#pvoigt" title="Permalink to this definition">¶</a></dt>
 <dd><p>a pseudo-Voigt distribution function, which is a weighted sum of a
 Gaussian and Lorentzian distribution functions with the same values for
-<em>cen</em> (<img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>) and <em>sigma</em> (<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>), and <em>frac</em> setting the
+<em>cen</em> (<span class="math">\(\mu\)</span>) and <em>sigma</em> (<span class="math">\(\sigma\)</span>), and <em>frac</em> setting the
 Lorentzian fraction:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">pvoigt</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">frac</span><span class="p">)</span><span class="o">*</span><span class="n">gaussian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span> <span class="o">+</span> <span class="n">frac</span><span class="o">*</span><span class="n">lorentzian</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">cen</span><span class="p">,</span> <span class="n">sigma</span><span class="p">)</span>
 </pre></div>
@@ -169,12 +175,12 @@ function, defined as</p>
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/a1e7b1a5a1ef0a5da563790fa78c988b108a5154.png" alt="f(x, \mu, \sigma, p) = \frac{s}{\big\{[1 + (\frac{x-\mu}{\sigma})^2] (2^{1/p} -1)  \big\}^p}"/></p>
-</div><p>where for <em>cen</em> (<img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>) and <em>sigma</em> (<img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/>) are as for the
-above lineshapes, and <em>expon</em> is <img class="math" src="../_images/math/3eca8557203e86160952e1c0f735f7417f3285b1.png" alt="p"/>, and</p>
+\[f(x, \mu, \sigma, p) = \frac{s}{\big\{[1 + (\frac{x-\mu}{\sigma})^2] (2^{1/p} -1)  \big\}^p}\]</div>
+<p>where for <em>cen</em> (<span class="math">\(\mu\)</span>) and <em>sigma</em> (<span class="math">\(\sigma\)</span>) are as for the
+above lineshapes, and <em>expon</em> is <span class="math">\(p\)</span>, and</p>
 <div class="math">
-<p><img src="../_images/math/f889262fadd6e7c2a4946d895e618871d50557c3.png" alt="s = \frac{\Gamma(p) \sqrt{2^{1/p} -1}}{ \sigma\sqrt{\pi}\,\Gamma(p-1/2)}"/></p>
-</div><p>where <img class="math" src="../_images/math/a0f415b9da3abed59a3a0cba7afdfaf6660dbd6c.png" alt="\Gamma(x)"/> is the gamma function.</p>
+\[s = \frac{\Gamma(p) \sqrt{2^{1/p} -1}}{ \sigma\sqrt{\pi}\,\Gamma(p-1/2)}\]</div>
+<p>where <span class="math">\(\Gamma(x)\)</span> is the gamma function.</p>
 <dl class="function">
 <dt id="students_t">
 <tt class="descname">students_t</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#students_t" title="Permalink to this definition">¶</a></dt>
@@ -182,8 +188,8 @@ above lineshapes, and <em>expon</em> is <img class="math" src="../_images/math/3
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/06d82d34660681cc64d5454c580db9904750d578.png" alt="f(x, \mu, \sigma) = \frac{\Gamma(\frac{\sigma+1}{2})} {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})} \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}"/></p>
-</div><p>where <img class="math" src="../_images/math/a0f415b9da3abed59a3a0cba7afdfaf6660dbd6c.png" alt="\Gamma(x)"/> is the gamma function.</p>
+\[f(x, \mu, \sigma) = \frac{\Gamma(\frac{\sigma+1}{2})} {\sqrt{\sigma\pi}\,\Gamma(\frac{\sigma}{2})} \Bigl[1+\frac{(x-\mu)^2}{\sigma}\Bigr]^{-\frac{\sigma+1}{2}}\]</div>
+<p>where <span class="math">\(\Gamma(x)\)</span> is the gamma function.</p>
 <dl class="function">
 <dt id="breit_wigner">
 <tt class="descname">breit_wigner</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em>, <em>q=1</em><big>)</big><a class="headerlink" href="#breit_wigner" title="Permalink to this definition">¶</a></dt>
@@ -191,24 +197,24 @@ above lineshapes, and <em>expon</em> is <img class="math" src="../_images/math/3
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/780cf69ea52fe2e9c4ea75fa052ab37072795e3d.png" alt="f(x, \mu, \sigma, q) = \frac{(q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}"/></p>
-</div><dl class="function">
+\[f(x, \mu, \sigma, q) = \frac{(q\sigma/2 + x - \mu)^2}{(\sigma/2)^2 + (x - \mu)^2}\]</div>
+<dl class="function">
 <dt id="logistic">
 <tt class="descname">logistic</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#logistic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Logistic lineshape, a sigmoidal curve</p>
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/6572c8b1f31fcd854de4ea8d4319ac65692c40f6.png" alt="f(x, \mu, \sigma) = 1  - \frac{1}{1 + e^{(x-\mu)/\sigma}}"/></p>
-</div><dl class="function">
+\[f(x, \mu, \sigma) = 1  - \frac{1}{1 + e^{(x-\mu)/\sigma}}\]</div>
+<dl class="function">
 <dt id="lognormal">
 <tt class="descname">lognormal</tt><big>(</big><em>x</em>, <em>cen=0</em>, <em>sigma=1</em><big>)</big><a class="headerlink" href="#lognormal" title="Permalink to this definition">¶</a></dt>
 <dd><p>log-normal function</p>
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/863e05381b156cd91db8254cca19b4e6679ffb79.png" alt="f(x, \mu, \sigma) = \frac{e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}"/></p>
-</div><p>Several builtin special functions can also be used to create lineshapes
+\[f(x, \mu, \sigma) = \frac{e^{-(\ln(x) - \mu)/ 2\sigma^2}}{x}\]</div>
+<p>Several builtin special functions can also be used to create lineshapes
 useful in fitting spectra and other x-ray data.  Some of these are detailed
 in the <a class="reference internal" href="#fit-funcs-table"><em>Table of Useful Line shapes</em></a>.</p>
 <blockquote id="fit-funcs-table">

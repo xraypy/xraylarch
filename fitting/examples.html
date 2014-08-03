@@ -23,11 +23,18 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="6.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
-    <link rel="prev" title="6.5. Some Builtin Line-shape Functions" href="lineshapes.html" /> 
+    <link rel="prev" title="6.5. Some Builtin Line-shape Functions" href="lineshapes.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -419,7 +426,7 @@ function:</p>
 =======================================================
 </pre></div>
 </div>
-<p>Adding the third peak here reduced <img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/> by a factor of 10, from
+<p>Adding the third peak here reduced <span class="math">\(\chi^2\)</span> by a factor of 10, from
 0.0001194 to 0.0000103, and so seems to be a significant improvement.  The
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:</p>
@@ -469,7 +476,7 @@ section, we simply change <tt class="docutils literal"><span class="pre">make_mo
 </pre></div>
 </div>
 <p>and we see that the already very low
-<img class="math" src="../_images/math/8bd0685e3bf9101859d24cf0e851651f182364c9.png" alt="\chi^2"/> reduces by another 10%, which suggests a real improvement.
+<span class="math">\(\chi^2\)</span> reduces by another 10%, which suggests a real improvement.
 For completeness,  the plots from this fit look like this:</p>
 <div class="figure compound align-center" id="fig-fit4">
 <div style="width: 45%" class="subfigure align-center" id="fig-fit4a">

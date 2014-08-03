@@ -1,0 +1,204 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>10.3. Plugins &mdash; larch 0.9.23 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.9.23',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/sidebar.js"></script>
+    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
+    <link rel="up" title="10. Programming with Larch" href="index.html" />
+    <link rel="next" title="10.4. Using Larch from Python" href="frompython.html" />
+    <link rel="prev" title="10.2. Modules" href="modules.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
+  </head>
+  <body>
+<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
+<table><tr><td width=0></td>
+  <td width=25% padding=0>
+    <a href="../index.html">
+       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
+    </a>
+  </td><td width=75% padding=0>
+      <font size=+4><a href="../index.html" style="color: #772211">
+          Larch: X-ray Data Analysis   </a></font>
+</td></tr></table>
+</div>
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="frompython.html" title="10.4. Using Larch from Python"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="10.2. Modules"
+             accesskey="P">previous</a> |</li>
+   <li>[<a href="../contents.html">contents</a>|</li>
+   <li><a href="../downloads/index.html">downloads</a>|</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|</li>
+   <li><a href="../data/index.html">data</a>|</li>
+   <li><a href="../plotting/index.html">plot</a>|</li>
+   <li><a href="../fitting/index.html">fit</a>|</li>
+   <li><a href="../xafs/index.html">XAFS</a>|</li>
+   <li><a href="../xray/index.html">Xray Data</a>|</li>
+   <li><a href="../xrf/index.html">XRF</a>|</li>
+   <li><a href="index.html">devel</a>]</li>
+
+          <li><a href="index.html" accesskey="U">10. Programming with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="modules.html"
+                        title="previous chapter">10.2. Modules</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="frompython.html"
+                        title="next chapter">10.4. Using Larch from Python</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/devel/plugins.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="plugins">
+<span id="plugins-section"></span><h1>10.3. Plugins<a class="headerlink" href="#plugins" title="Permalink to this headline">¶</a></h1>
+<p>Plugins are a powerful feature of Larch that allow it to be easily extended
+without the requiring detailed knowledge of all of Larch's internals.  A
+plugin is a specially written Python module that is meant to add
+functionality to Larch at run-time.  Generally speaking, plugins will be
+python modules which define new or customized versions of functions to
+create or manipulate Groups.</p>
+<p>Plugins need access to Larch's symbol table and need to tell Larch how to
+use them.  To do this, each function to be added to Larch in a plugin
+module needs a <cite>_larch</cite> keyword argument, which will be used to pass in the
+instance of the current larch interpreter.  Normally, you will only need
+the <cite>symtable</cite> attribute of the <cite>_larch</cite> variable, which is the symbol table
+used.</p>
+<p>In addition, all functions to be added to Larch need to be <em>registered</em>, by
+defining a function call <tt class="xref py py-func docutils literal"><span class="pre">registerLarchPlugin()</span></tt> that returns a tuple
+containing the name of the group containing the added functions, and a
+dictionary of Larch symbol names and functions.  A simple plugin module
+would look like:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">_f1</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">_larch</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>  <span class="c"># Note:  larch instance passed in to &#39;_larch&#39;</span>
+    <span class="k">if</span> <span class="n">_larch</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span> <span class="k">return</span>
+    <span class="n">group</span> <span class="o">=</span> <span class="n">_larch</span><span class="o">.</span><span class="n">symtable</span><span class="o">.</span><span class="n">create_group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;created by f1&#39;</span><span class="p">)</span>
+
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span> <span class="c"># add symbols by &quot;setting attributes&quot;</span>
+    <span class="nb">setattr</span><span class="p">(</span><span class="n">group</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">group</span>
+
+<span class="k">def</span> <span class="nf">registerLarchPlugin</span><span class="p">():</span> <span class="c"># must have a function with this name!</span>
+    <span class="k">return</span> <span class="p">(</span><span class="s">&#39;mymod&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;f1&#39;</span><span class="p">:</span> <span class="n">_f1</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>This is a fairly trivial example, simply putting data into a Group.  Of
+course, the main point of a plugin is that you can do much more complicated
+work inside the function.</p>
+<p>If this is placed in a file called 'myplugin.py' in the larch plugins
+folder (either $HOME/.larch/plugins/ or /usr/local/share/larch/plugins on
+Unix, or C:\Users\ME\larch\plugins or C:\Program Files\larch\plugins on
+Windows), then:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">add_plugin</span><span class="p">(</span><span class="s">&#39;myplugin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will add a top-level group 'mymod' with an 'f1' function, so that:</p>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; g1 = mymod.f1(10, &#39;yes&#39;)
+larch&gt; print g1
+&lt;Group created by f1!&gt;
+larch&gt; print g1.x, g1.y
+(10, &#39;yes&#39;)
+</pre></div>
+</div>
+<p>For commonly used plugins, the <a class="reference internal" href="../tutorial/builtins.html#add_plugin" title="add_plugin"><tt class="xref py py-func docutils literal"><span class="pre">add_plugin()</span></tt></a> call can be added to your
+startup script.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="frompython.html" title="10.4. Using Larch from Python"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="modules.html" title="10.2. Modules"
+             >previous</a> |</li>
+   <li>[<a href="../contents.html">contents</a>|</li>
+   <li><a href="../downloads/index.html">downloads</a>|</li>
+   <li><a href="../tutorial/index.html">tutorial</a>|</li>
+   <li><a href="../data/index.html">data</a>|</li>
+   <li><a href="../plotting/index.html">plot</a>|</li>
+   <li><a href="../fitting/index.html">fit</a>|</li>
+   <li><a href="../xafs/index.html">XAFS</a>|</li>
+   <li><a href="../xray/index.html">Xray Data</a>|</li>
+   <li><a href="../xrf/index.html">XRF</a>|</li>
+   <li><a href="index.html">devel</a>]</li>
+
+          <li><a href="index.html" >10. Programming with Larch</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright Matthew Newville, The University of Chicago, 2012.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+    </div>
+  </body>
+</html>

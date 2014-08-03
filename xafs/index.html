@@ -23,10 +23,17 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="next" title="7.1. XAFS Functions: Overview and Naming Conventions" href="utilities.html" />
-    <link rel="prev" title="6.8. Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" /> 
+    <link rel="prev" title="6.8. Advanced Confidence Intervals and Chi-square maps" href="../fitting/confidence.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -119,13 +126,13 @@ fixed.</p>
 <blockquote>
 <div><ol class="arabic simple">
 <li>Reading in raw data.</li>
-<li>Making corrections to the data, and converting to  <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/></li>
+<li>Making corrections to the data, and converting to  <span class="math">\(\mu(E)\)</span></li>
 <li>Pre-edge background removal and normalization.</li>
 <li>Interpreting normalized mu(E) as XANES spectra</li>
-<li>Post-edge background removal, conversion to <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></li>
-<li>XAFS Fourier Transform to <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/></li>
+<li>Post-edge background removal, conversion to <span class="math">\(\chi(k)\)</span></li>
+<li>XAFS Fourier Transform to <span class="math">\(\chi(R)\)</span></li>
 <li>Reading and processing FEFF Paths from external files.</li>
-<li>Fitting XAFS <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to a sum of FEFF paths.</li>
+<li>Fitting XAFS <span class="math">\(\chi(k)\)</span> to a sum of FEFF paths.</li>
 </ol>
 </div></blockquote>
 <p>The XAFS-specific functions in Larch follow these general steps.  They are
@@ -150,8 +157,8 @@ is in the default search path.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="xafsft.html">7.4. XAFS: Fourier Transforms for XAFS</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#overview-of-xafs-fourier-transforms">7.4.1. Overview of XAFS Fourier transforms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">7.4.2. Forward XAFS Fourier transforms (<img class="math" src="../_images/math/657c5d69378805fef7d84d28a0d975683ffbe6b3.png" alt="k{\rightarrow}R"/>)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">7.4.3. Reverse XAFS Fourier transforms (<img class="math" src="../_images/math/50b2940168e58da9cd70ed1a4a1c3d7e6a0821d0.png" alt="R{\rightarrow}q"/>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#forward-xafs-fourier-transforms">7.4.2. Forward XAFS Fourier transforms (<span class="math">\(k{\rightarrow}R\)</span>)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="xafsft.html#reverse-xafs-fourier-transforms">7.4.3. Reverse XAFS Fourier transforms (<span class="math">\(R{\rightarrow}q\)</span>)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#ftwindow-generating-fourier-transform-windows">7.4.4. <tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#catalog-of-fourier-transform-window">7.4.5. Catalog of Fourier transform window</a></li>
 <li class="toctree-l2"><a class="reference internal" href="xafsft.html#examples-forward-xafs-fourier-transforms">7.4.6. Examples: Forward XAFS Fourier transforms</a></li>
@@ -165,10 +172,10 @@ is in the default search path.</p>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="feffpaths.html">7.6. XAFS: Reading and using Feff Paths</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#feffpath-and-feffpath-groups">7.6.1. <tt class="docutils literal"><span class="pre">feffpath()</span></tt> and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath">7.6.2. <tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> for a FeffPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#path2chi-and-ff2chi-generating-for-a-feffpath">7.6.2. <tt class="docutils literal"><span class="pre">path2chi()</span></tt> and <tt class="docutils literal"><span class="pre">ff2chi()</span></tt>: Generating <span class="math">\(\chi(k)\)</span> for a FeffPath</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-feffdat-group-full-details-of-the-feff-dat-file">7.6.3. The _feffdat Group: Full Details of the Feff.Dat File</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#the-exafs-equation-using-feff-and-feffpath-groups">7.6.4. The EXAFS Equation using Feff and FeffPath Groups</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating">7.6.5. Models for Calculating <img class="math" src="../_images/math/93c29bfedc993de115781b4fbb7e3a8b9e8d6b51.png" alt="\sigma^2"/></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffpaths.html#models-for-calculating">7.6.5. Models for Calculating <span class="math">\(\sigma^2\)</span></a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-reading-a-feff-file">7.6.6. Example:  Reading a FEFF file</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-adding-feff-files">7.6.7. Example:  Adding FEFF files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffpaths.html#example-using-path-parameters-when-adding-feff-files">7.6.8. Example: Using Path Parameters when adding FEFF files</a></li>
@@ -187,7 +194,7 @@ is in the default search path.</p>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-3-fit-3-datasets-with-1-path-each">7.7.10. Example 3: Fit 3 datasets with 1 Path each</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-4-measuring-coordination-number">7.7.11. Example 4: Measuring Coordination number</a></li>
 <li class="toctree-l2"><a class="reference internal" href="feffit.html#example-5-comparing-fits-in-different-fit-spaces">7.7.12. Example 5: Comparing Fits in different Fit Spaces</a></li>
-<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-6-testing-exafs-sensitivity-to">7.7.13. Example 6: Testing EXAFS sensitivity to <img class="math" src="../_images/math/c4563e7ecec2336a3934447a6c10ef8519b0b452.png" alt="Z"/></a></li>
+<li class="toctree-l2"><a class="reference internal" href="feffit.html#example-6-testing-exafs-sensitivity-to">7.7.13. Example 6: Testing EXAFS sensitivity to <span class="math">\(Z\)</span></a></li>
 </ul>
 </li>
 </ul>

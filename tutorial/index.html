@@ -23,10 +23,17 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="next" title="3.1. Tutorial: Getting Started" href="start.html" />
-    <link rel="prev" title="2. Larch: Motivation and Overview" href="../overview/index.html" /> 
+    <link rel="prev" title="2. Larch: Motivation and Overview" href="../overview/index.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -102,7 +109,7 @@
           <div class="body">
             
   <div class="section" id="larch-tutorial">
-<h1>3. Larch Tutorial<a class="headerlink" href="#larch-tutorial" title="Permalink to this headline">¶</a></h1>
+<span id="tutorial-chapter"></span><h1>3. Larch Tutorial<a class="headerlink" href="#larch-tutorial" title="Permalink to this headline">¶</a></h1>
 <p>At its core, Larch is a language for processing of scientific data.  This
 chapter describes the Larch language and introduces data processing using
 Larch.  An important goal of Larch is to make writing and modifying data
@@ -167,7 +174,6 @@ Python, including tutorials, see the Python documentation at
 <li class="toctree-l1"><a class="reference internal" href="modules.html">3.7. Tutorial: Running Larch Scripts, and Modules</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="modules.html#running-a-larch-script-with-run">3.7.1. Running a larch script with <tt class="docutils literal"><span class="pre">run()</span></tt></a></li>
 <li class="toctree-l2"><a class="reference internal" href="modules.html#importing-a-larch-script-as-a-module">3.7.2. Importing a Larch Script as a Module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules.html#namespaces-again">3.7.3. Namespaces, again</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="builtins.html">3.8. Tutorial: Builtin Functions</a><ul>

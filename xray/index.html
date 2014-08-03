@@ -23,10 +23,17 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="next" title="9. X-ray Fluorescence Analysis with Larch" href="../xrf/index.html" />
-    <link rel="prev" title="7.7. XAFS: Fitting XAFS to Feff Paths" href="../xafs/feffit.html" /> 
+    <link rel="prev" title="7.7. XAFS: Fitting XAFS to Feff Paths" href="../xafs/feffit.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -127,7 +134,7 @@ or by chemical formula.</p>
 <p>Much of the X-ray spectroscopic data comes from the compilation of
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-elamtables">Elam, Ravel and Sieber</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-elamtables">4</a><span>]</span></span>.  The core-hole widths for excited electronic levels
 comes from <span class="citation"><a class="reference internal" href="../biblio.html#citation-keski-krause">Keski-Rahkonen and Krause</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-keski-krause">5</a><span>]</span></span>, while elastic X-ray scattering data,
-<img class="math" src="../_images/math/55132d1cb64b26b7b567d79fafc8d92aa3675bd7.png" alt="f_0(q)"/>,is derived from <span class="citation"><a class="reference internal" href="../biblio.html#citation-waasmaier-kirfel">Waasmaier and Kirfel</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-waasmaier-kirfel">17</a><span>]</span></span>.  Anomalous
+<span class="math">\(f_0(q)\)</span>,is derived from <span class="citation"><a class="reference internal" href="../biblio.html#citation-waasmaier-kirfel">Waasmaier and Kirfel</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-waasmaier-kirfel">17</a><span>]</span></span>.  Anomalous
 cross-sections are available as based on the work of
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-cromer-liberman">Cromer and Liberman</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-cromer-liberman">3</a><span>]</span></span>, using the implementation of
 <span class="citation"><a class="reference internal" href="../biblio.html#citation-brennan-cowan">Brennan and Cowan</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-brennan-cowan">1</a><span>]</span></span>.  In addition, values for absorption
@@ -350,94 +357,94 @@ line names</em></a>.  Finally, all energies are in eV.</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>Ka1</td>
-<td><img class="math" src="../_images/math/f111929cfd8d00fe33abf05222c75e60a6e1d2b8.png" alt="K\alpha_1"/></td>
+<td><span class="math">\(K\alpha_1\)</span></td>
 <td>K-L3</td>
 <td>Lb4</td>
-<td><img class="math" src="../_images/math/129bf1fb1581115365f3ac7eed092aa324f3102a.png" alt="L\beta_4"/></td>
+<td><span class="math">\(L\beta_4\)</span></td>
 <td>L1-M2</td>
 </tr>
 <tr class="row-odd"><td>Ka2</td>
-<td><img class="math" src="../_images/math/a009bc90f511fd9f5d0eae41a2584e97f6a7fc10.png" alt="K\alpha_2"/></td>
+<td><span class="math">\(K\alpha_2\)</span></td>
 <td>K-L2</td>
 <td>Lb5</td>
-<td><img class="math" src="../_images/math/be378c6bae47c04130c19df9d1ed54e2cb00cdfb.png" alt="L\beta_5"/></td>
+<td><span class="math">\(L\beta_5\)</span></td>
 <td>L3-O4,5</td>
 </tr>
 <tr class="row-even"><td>Ka3</td>
-<td><img class="math" src="../_images/math/8c9e691c92b9f3e86c9d46ce815879f0c24aef0d.png" alt="K\alpha_3"/></td>
+<td><span class="math">\(K\alpha_3\)</span></td>
 <td>K-L1</td>
 <td>Lb6</td>
-<td><img class="math" src="../_images/math/ef0233e7c28665d1e9eae603986ccdec7cabfb10.png" alt="L\beta_6"/></td>
+<td><span class="math">\(L\beta_6\)</span></td>
 <td>L3-N1</td>
 </tr>
 <tr class="row-odd"><td>Kb1</td>
-<td><img class="math" src="../_images/math/b12523c9307e08148ea5a41a8687493e0374ef1e.png" alt="K\beta_1"/></td>
+<td><span class="math">\(K\beta_1\)</span></td>
 <td>K-M3</td>
 <td>Lg1</td>
-<td><img class="math" src="../_images/math/4d76acd343f091d80f8b5ac764ae48cfebfa6350.png" alt="L\gamma_1"/></td>
+<td><span class="math">\(L\gamma_1\)</span></td>
 <td>L2-N4</td>
 </tr>
 <tr class="row-even"><td>Kb2</td>
-<td><img class="math" src="../_images/math/00ecbfa445fcaa2f2f62b4f482e6e4fdc8906757.png" alt="K\beta_2"/></td>
+<td><span class="math">\(K\beta_2\)</span></td>
 <td>K-N2,3</td>
 <td>Lg2</td>
-<td><img class="math" src="../_images/math/22e4e1a168c89c649e71e7f89a5ccfc3cf911368.png" alt="L\gamma_2"/></td>
+<td><span class="math">\(L\gamma_2\)</span></td>
 <td>L1-N2</td>
 </tr>
 <tr class="row-odd"><td>Kb3</td>
-<td><img class="math" src="../_images/math/e5b5c821df011a0eb63efa4917a6e09694944a16.png" alt="K\beta_3"/></td>
+<td><span class="math">\(K\beta_3\)</span></td>
 <td>K-M2</td>
 <td>Lg3</td>
-<td><img class="math" src="../_images/math/946888830b774cb5cc2280314a66f4b667054ce7.png" alt="L\gamma_3"/></td>
+<td><span class="math">\(L\gamma_3\)</span></td>
 <td>L1-N3</td>
 </tr>
 <tr class="row-even"><td>Kb4</td>
-<td><img class="math" src="../_images/math/00ecbfa445fcaa2f2f62b4f482e6e4fdc8906757.png" alt="K\beta_2"/></td>
+<td><span class="math">\(K\beta_2\)</span></td>
 <td>K-N4,5</td>
 <td>Lg6</td>
-<td><img class="math" src="../_images/math/96c07a0b420a63b7a12b6dbf4d5e93a50fe94c7e.png" alt="L\gamma_6"/></td>
+<td><span class="math">\(L\gamma_6\)</span></td>
 <td>L2-O4</td>
 </tr>
 <tr class="row-odd"><td>Kb5</td>
-<td><img class="math" src="../_images/math/e5b5c821df011a0eb63efa4917a6e09694944a16.png" alt="K\beta_3"/></td>
+<td><span class="math">\(K\beta_3\)</span></td>
 <td>K-M4,5</td>
 <td>Ll</td>
-<td><img class="math" src="../_images/math/1ab1435ce58e8381a715d42c29c8c3e21b8672ca.png" alt="Ll"/></td>
+<td><span class="math">\(Ll\)</span></td>
 <td>L3-M1</td>
 </tr>
 <tr class="row-even"><td>La1</td>
-<td><img class="math" src="../_images/math/86969d1152559898c7a7e1f9c1041d970cb27d7b.png" alt="L\alpha_1"/></td>
+<td><span class="math">\(L\alpha_1\)</span></td>
 <td>L3-M5</td>
 <td>Ln</td>
-<td><img class="math" src="../_images/math/b1a735205cc50d5827039053a3f0b1afd7a4128a.png" alt="L\nu"/></td>
+<td><span class="math">\(L\nu\)</span></td>
 <td>L2-M1</td>
 </tr>
 <tr class="row-odd"><td>La2</td>
-<td><img class="math" src="../_images/math/86969d1152559898c7a7e1f9c1041d970cb27d7b.png" alt="L\alpha_1"/></td>
+<td><span class="math">\(L\alpha_1\)</span></td>
 <td>L3-M4</td>
 <td>Ma</td>
-<td><img class="math" src="../_images/math/18916860bcaea2fbb4d3e13baa5e7e061b8d3651.png" alt="M\alpha"/></td>
+<td><span class="math">\(M\alpha\)</span></td>
 <td>M5-N6,7</td>
 </tr>
 <tr class="row-even"><td>Lb1</td>
-<td><img class="math" src="../_images/math/e5d2628289d2689eaf25875a1f2b4d6474cc8aaa.png" alt="L\beta_1"/></td>
+<td><span class="math">\(L\beta_1\)</span></td>
 <td>L2-M4</td>
 <td>Mb</td>
-<td><img class="math" src="../_images/math/bb9ec888871b1808c30deac4f58095a0908b0993.png" alt="M\beta"/></td>
+<td><span class="math">\(M\beta\)</span></td>
 <td>M4-N6</td>
 </tr>
 <tr class="row-odd"><td>Lb2,15</td>
-<td><img class="math" src="../_images/math/112fbc6df2ec0b635d19fd17435604145fcf9c50.png" alt="L\beta_2,L\beta_{15}"/></td>
+<td><span class="math">\(L\beta_2,L\beta_{15}\)</span></td>
 <td>L3-N4,5</td>
 <td>Mg</td>
-<td><img class="math" src="../_images/math/7cb636f5263eaaaa837b9531f4387286004963c9.png" alt="M\gamma"/></td>
+<td><span class="math">\(M\gamma\)</span></td>
 <td>M3-N5</td>
 </tr>
 <tr class="row-even"><td>Lb3</td>
-<td><img class="math" src="../_images/math/8f2adb802eb9eb8553294b52b8a17f19f9340428.png" alt="L\beta_3"/></td>
+<td><span class="math">\(L\beta_3\)</span></td>
 <td>L1-M3</td>
 <td>Mz</td>
-<td><img class="math" src="../_images/math/0b590c8a952b4acd57e345ca024d11348afaf97b.png" alt="M\zeta"/></td>
+<td><span class="math">\(M\zeta\)</span></td>
 <td>M4,5-N6,7</td>
 </tr>
 </tbody>
@@ -525,7 +532,7 @@ name of the edge.  widths are in eV.</p>
 <dl class="function">
 <dt id="_xray.mu_elam">
 <tt class="descclassname">_xray.</tt><tt class="descname">mu_elam</tt><big>(</big><em>z_or_symbol</em>, <em>energy</em>, <em>kind='total'</em><big>)</big><a class="headerlink" href="#_xray.mu_elam" title="Permalink to this definition">¶</a></dt>
-<dd><p>return X-ray mass attenuation coefficient <img class="math" src="../_images/math/71fea67b878717487aa2590721a805c4533d46aa.png" alt="\mu/\rho"/> in cm^2/gr
+<dd><p>return X-ray mass attenuation coefficient <span class="math">\(\mu/\rho\)</span> in cm^2/gr
 for an atomic number or symbol at specified energy values.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -534,7 +541,7 @@ for an atomic number or symbol at specified energy values.</p>
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
 <li><strong>z_or_symbol</strong> -- Integer atomic number or symbol for elemen</li>
 <li><strong>energy</strong> -- energy (single value, list, array) in eV at which
-to calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>.</li>
+to calculate <span class="math">\(\mu\)</span>.</li>
 <li><strong>kind</strong> -- one of 'total' (default), 'photo', 'coh', and 'incoh' for
 total, photo-absorption, coherent scattering, and
 incoherent scattering cross sections, respectively.</li>
@@ -562,9 +569,9 @@ specified energy values. Values returned are in cm^2/gr.</p>
 <dl class="function">
 <dt id="_xray.f0">
 <tt class="descclassname">_xray.</tt><tt class="descname">f0</tt><big>(</big><em>ion</em>, <em>qvalues</em><big>)</big><a class="headerlink" href="#_xray.f0" title="Permalink to this definition">¶</a></dt>
-<dd><p>return elastic scattering (Thomson) factor <img class="math" src="../_images/math/55132d1cb64b26b7b567d79fafc8d92aa3675bd7.png" alt="f_0(q)"/> for the supplied values of
-<tt class="docutils literal"><span class="pre">q</span></tt> (<img class="math" src="../_images/math/f2cbd6209aa10e609143fa0948ef4189d1d35af5.png" alt="q = \sin(\theta)/\lambda"/> where <img class="math" src="../_images/math/a9cfbeb8ebee1f365919e147a79e242dcb67ee5d.png" alt="\theta"/> is the scattering angle
-and <img class="math" src="../_images/math/1ab0134b6e0837594649c75a2ed83cfd85a2d03d.png" alt="\lambda"/> is the X-ray wavelength).  Here, <tt class="docutils literal"><span class="pre">ion</span></tt> can be an atomic number or
+<dd><p>return elastic scattering (Thomson) factor <span class="math">\(f_0(q)\)</span> for the supplied values of
+<tt class="docutils literal"><span class="pre">q</span></tt> (<span class="math">\(q = \sin(\theta)/\lambda\)</span> where <span class="math">\(\theta\)</span> is the scattering angle
+and <span class="math">\(\lambda\)</span> is the X-ray wavelength).  Here, <tt class="docutils literal"><span class="pre">ion</span></tt> can be an atomic number or
 symbol, or any of the valid ion values (e.g., 'Ga3+') given by Waasmaier and Kirfel.
 The returned values are in units of electron number.</p>
 </dd></dl>
@@ -603,7 +610,7 @@ attenuation coefficient.</p>
 <dl class="function">
 <dt id="_xray.mu_chantler">
 <tt class="descclassname">_xray.</tt><tt class="descname">mu_chantler</tt><big>(</big><em>z_or_element</em>, <em>energies</em><big>)</big><a class="headerlink" href="#_xray.mu_chantler" title="Permalink to this definition">¶</a></dt>
-<dd><p>return X-ray mass attenuation coefficient (<img class="math" src="../_images/math/71fea67b878717487aa2590721a805c4533d46aa.png" alt="\mu/\rho"/>) for an element at the
+<dd><p>return X-ray mass attenuation coefficient (<span class="math">\(\mu/\rho\)</span>) for an element at the
 specified energy values, using the tabulation of Chantler.</p>
 </dd></dl>
 
@@ -614,7 +621,7 @@ specified energy values, using the tabulation of Chantler.</p>
 element at the specified energies, using the calculation scheme of Cromer and
 Liberman, as implemented by Brennan and Cowan.  The optional argument <tt class="docutils literal"><span class="pre">width</span></tt> can be
 used to specify an energy width (in eV) to use to convolve the output with a
-Lorentzian profile (with <tt class="docutils literal"><span class="pre">width</span></tt> used as <img class="math" src="../_images/math/d77043b872a48a4a5077a8dd2d693e2e5c715d32.png" alt="2\gamma"/> in the Lorentzian).  If
+Lorentzian profile (with <tt class="docutils literal"><span class="pre">width</span></tt> used as <span class="math">\(2\gamma\)</span> in the Lorentzian).  If
 <tt class="docutils literal"><span class="pre">edge</span></tt> is given ('K', 'L3', etc), the core-level width is looked up from
 <a class="reference internal" href="#_xray.core_width" title="_xray.core_width"><tt class="xref py py-func docutils literal"><span class="pre">core_width()</span></tt></a>, and its value is used.</p>
 <p>Note that both f' and f'' are returned here.</p>
@@ -660,10 +667,10 @@ Sieber.</p>
 <td>add a material to list of known materials</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#_xray.material_mu" title="_xray.material_mu"><tt class="xref py py-func docutils literal"><span class="pre">material_mu()</span></tt></a></td>
-<td>calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> for a material or chemical formula</td>
+<td>calculate <span class="math">\(\mu\)</span> for a material or chemical formula</td>
 </tr>
 <tr class="row-even"><td><a class="reference internal" href="#_xray.material_mu_components" title="_xray.material_mu_components"><tt class="xref py py-func docutils literal"><span class="pre">material_mu_components()</span></tt></a></td>
-<td>calculate components of <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> for a material or
+<td>calculate components of <span class="math">\(\mu\)</span> for a material or
 chemical formula</td>
 </tr>
 <tr class="row-odd"><td><a class="reference internal" href="#_xray.xray_delta_beta" title="_xray.xray_delta_beta"><tt class="xref py py-func docutils literal"><span class="pre">xray_delta_beta()</span></tt></a></td>
@@ -717,7 +724,7 @@ subsequent larch sessions.</p>
 <dd><p>return X-ray attenuation length (in 1/cm) for a material, either by name
 or formula and density.</p>
 <blockquote>
-<div><p>return X-ray mass attenuation coefficient <img class="math" src="../_images/math/71fea67b878717487aa2590721a805c4533d46aa.png" alt="\mu/\rho"/> in cm^2/gr
+<div><p>return X-ray mass attenuation coefficient <span class="math">\(\mu/\rho\)</span> in cm^2/gr
 for an atomic number or symbol at specified energy values.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -726,7 +733,7 @@ for an atomic number or symbol at specified energy values.</p>
 <tr class="field-odd field"><th class="field-name">param name:</th><td class="field-body">material name or formula</td>
 </tr>
 <tr class="field-even field"><th class="field-name">param energy:</th><td class="field-body">energy (single value, list, array) in eV at which
-to calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>.</td>
+to calculate <span class="math">\(\mu\)</span>.</td>
 </tr>
 <tr class="field-odd field"><th class="field-name">param kind:</th><td class="field-body">one of 'total' (default), 'photo', 'coh', and
 'incoh' (see <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><tt class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></tt></a>)</td>
@@ -734,7 +741,7 @@ to calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b
 <tr class="field-even field"><th class="field-name">param density:</th><td class="field-body">material density (if <tt class="docutils literal"><span class="pre">None</span></tt>, it will be looked up for
 known materials)</td>
 </tr>
-<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body"><img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> in 1/cm.</td>
+<tr class="field-odd field"><th class="field-name">return:</th><td class="field-body"><span class="math">\(\mu\)</span> in 1/cm.</td>
 </tr>
 </tbody>
 </table>
@@ -759,7 +766,7 @@ larch&gt; print material_mu(&#39;H2O&#39;, 10000.0, density=1.0)
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
 <li><strong>name</strong> -- material name or formula</li>
 <li><strong>energy</strong> -- energy (single value, list, array) in eV at which
-to calculate <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>.</li>
+to calculate <span class="math">\(\mu\)</span>.</li>
 <li><strong>kind</strong> -- one of 'total' (default), 'photo', 'coh', and
 'incoh' (see <a class="reference internal" href="#_xray.mu_elam" title="_xray.mu_elam"><tt class="xref py py-func docutils literal"><span class="pre">mu_elam()</span></tt></a>)</li>
 <li><strong>density</strong> -- material density (if <tt class="docutils literal"><span class="pre">None</span></tt>, it will be looked up
@@ -767,14 +774,14 @@ for known materials)</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dictionary of data for constructing <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/> per element.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">dictionary of data for constructing <span class="math">\(\mu\)</span> per element.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <p>The returned dictionary will have elements 'mass' (total mass), 'density', and
 'elements' (list of atomic symbols for elements in material). For each element, there
-will be an item (atomic symbol as key) with tuple of (fraction, atomic mass, <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/>).
+will be an item (atomic symbol as key) with tuple of (fraction, atomic mass, <span class="math">\(\mu\)</span>).
 For example:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">material_mu_components</span><span class="p">(</span><span class="s">&#39;quartz&#39;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">)</span>
 <span class="p">{</span><span class="s">&#39;Si&#39;</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mf">28.0855</span><span class="p">,</span> <span class="mf">33.879432430185062</span><span class="p">),</span> <span class="s">&#39;elements&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;Si&#39;</span><span class="p">,</span> <span class="s">&#39;O&#39;</span><span class="p">],</span>
@@ -824,31 +831,31 @@ tuple contains the components described in the table below</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>delta</td>
-<td><img class="math" src="../_images/math/b35a9439ad8c8657b1b1d792ad5c2d77a52c0aef.png" alt="\delta"/></td>
+<td><span class="math">\(\delta\)</span></td>
 <td>real part of index of refraction.</td>
 </tr>
 <tr class="row-odd"><td>beta</td>
-<td><img class="math" src="../_images/math/8ce03f78ed945f2ef3dac87c8799b55b393527e7.png" alt="\beta"/></td>
+<td><span class="math">\(\beta\)</span></td>
 <td>imaginary part of index of refraction.</td>
 </tr>
 <tr class="row-even"><td>t_atten</td>
-<td><img class="math" src="../_images/math/c40575c1e4903adae20d0fcb2ee0960fefc91743.png" alt="t_a"/></td>
+<td><span class="math">\(t_a\)</span></td>
 <td>attenuation length, in cm.</td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 <p>and correspond to the anomalous scattering components of the index of
-refraction, defined in the equation below.  Here, <img class="math" src="../_images/math/6b911f213d7e4dcce93e493c1caade05607892a8.png" alt="t_{a} =
-\lambda / 4\pi\beta"/>, and and <img class="math" src="../_images/math/1ab0134b6e0837594649c75a2ed83cfd85a2d03d.png" alt="\lambda"/> is the X-ray wavelength,
-<img class="math" src="../_images/math/b0153babd6c8369f8469e7f7ed416c511e3a825a.png" alt="r_0"/> is the classical electron radius, and the sum is over the
-atomic species with number <img class="math" src="../_images/math/f9ecb2e7f732e9a55b306c2cc3774fe8e638e978.png" alt="n_j"/> and total complex scattering
-factor <img class="math" src="../_images/math/4851b9d6a971ec377c7f829424f58d321cec32bb.png" alt="f_j"/>.</p>
+refraction, defined in the equation below.  Here, <span class="math">\(t_{a} =
+\lambda / 4\pi\beta\)</span>, and and <span class="math">\(\lambda\)</span> is the X-ray wavelength,
+<span class="math">\(r_0\)</span> is the classical electron radius, and the sum is over the
+atomic species with number <span class="math">\(n_j\)</span> and total complex scattering
+factor <span class="math">\(f_j\)</span>.</p>
 </dd></dl>
 
 <div class="math">
-<p><img src="../_images/math/7ab8dfd60445a0c64748ee77fba67926666a82d9.png" alt="n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}"/></p>
-</div></div>
+\[n = 1 - \delta - i \beta = 1 - \lambda^2 \frac{r_{0}}{2\pi} \sum_j{ n_j  f_j}\]</div>
+</div>
 </div>
 
 

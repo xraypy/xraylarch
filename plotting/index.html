@@ -23,10 +23,17 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="next" title="6. Fitting and Modeling Data" href="../fitting/index.html" />
-    <link rel="prev" title="4. Reading and Writing Data" href="../data/index.html" /> 
+    <link rel="prev" title="4. Reading and Writing Data" href="../data/index.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -674,8 +681,8 @@ mathematical symbols and formulae.   A simple example would be:</p>
 as TeX-like markup, and so render the x and y labels as (for the pedantic,
 these renderings below may be only approximate):</p>
 <blockquote>
-<div><p><img class="math" src="../_images/math/05d4d0b4b3f2031c6aa507f5188dfaf24c878359.png" alt="k \rm(\AA^{-1})"/></p>
-<p><img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></p>
+<div><p><span class="math">\(k \rm(\AA^{-1})\)</span></p>
+<p><span class="math">\(\chi(k)\)</span></p>
 </div></blockquote>
 <p>An important point here is the use of the backslash character, '\', which
 you may recall from the tutorial is also used as an escape sequence.  Thus

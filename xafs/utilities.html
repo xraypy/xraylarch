@@ -23,11 +23,18 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="7. XAFS Analysis" href="index.html" />
     <link rel="next" title="7.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
-    <link rel="prev" title="7. XAFS Analysis" href="index.html" /> 
+    <link rel="prev" title="7. XAFS Analysis" href="index.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -167,37 +174,37 @@ the physical quantity described, and the name of function that will generate thi
 <tbody valign="top">
 <tr class="row-even"><td>energy</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/> in eV</td>
+<td><span class="math">\(E\)</span> in eV</td>
 <td>original data</td>
 </tr>
 <tr class="row-odd"><td>mu</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/></td>
+<td><span class="math">\(\mu\)</span></td>
 <td>original data</td>
 </tr>
 <tr class="row-even"><td>e0</td>
 <td>scalar</td>
-<td><img class="math" src="../_images/math/f37d8832b95f83a15141f773c32fbcd917dbc036.png" alt="E_0"/></td>
+<td><span class="math">\(E_0\)</span></td>
 <td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a>, <a class="reference internal" href="preedge.html#find_e0" title="find_e0"><tt class="xref py py-func docutils literal"><span class="pre">find_e0()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>edge_step</td>
 <td>scalar</td>
-<td><img class="math" src="../_images/math/7e3ed7ab00565e0aaa720bd846a35dce34dad549.png" alt="\Delta \mu"/></td>
+<td><span class="math">\(\Delta \mu\)</span></td>
 <td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>dmude</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/5b2889108080bbed76def53b84a4472ba0b58856.png" alt="d\mu/dE"/></td>
+<td><span class="math">\(d\mu/dE\)</span></td>
 <td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>norm</td>
 <td>array</td>
-<td>normalized <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/></td>
+<td>normalized <span class="math">\(\mu\)</span></td>
 <td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>flat</td>
 <td>array</td>
-<td>flattened <img class="math" src="../_images/math/126e84ba38f7dece5f0ad64e929b9588b20f6440.png" alt="\mu"/></td>
+<td>flattened <span class="math">\(\mu\)</span></td>
 <td><a class="reference internal" href="preedge.html#pre_edge" title="pre_edge"><tt class="xref py py-func docutils literal"><span class="pre">pre_edge()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>pre_edge</td>
@@ -212,90 +219,90 @@ the physical quantity described, and the name of function that will generate thi
 </tr>
 <tr class="row-odd"><td>bkg</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/45f2cf4bd561e5c84cbbd0cee036014c2c9a8f01.png" alt="\mu_0(E)"/></td>
+<td><span class="math">\(\mu_0(E)\)</span></td>
 <td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chie</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/b23b00a7478849245e3d63b024cf6684331fd3fa.png" alt="\chi(E)"/></td>
+<td><span class="math">\(\chi(E)\)</span></td>
 <td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>k</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/></td>
+<td><span class="math">\(k\)</span></td>
 <td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chi</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/></td>
+<td><span class="math">\(\chi(k)\)</span></td>
 <td><a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>kwin</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/19ee175593fd626963a98a790e4393928f2a2894.png" alt="\Omega(k)"/></td>
+<td><span class="math">\(\Omega(k)\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>, <a class="reference internal" href="xafsft.html#_xafs.ftwindow" title="_xafs.ftwindow"><tt class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>r</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/></td>
+<td><span class="math">\(R\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>chir</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> (complex)</td>
+<td><span class="math">\(\chi(R)\)</span> (complex)</td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chir_mag</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/232a1d1476253b030a3323cb57a42e49f4521c52.png" alt="|\chi(R)|"/></td>
+<td><span class="math">\(|\chi(R)|\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>chir_re</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/a137b3b3207f753cfd85ff84d4b9c23b068e06a0.png" alt="\rm Re[\chi(R)]"/></td>
+<td><span class="math">\(\rm Re[\chi(R)]\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chir_im</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/c2c60aa563030f3a9597fc7f1aea7c0fb507f4bc.png" alt="\rm Im[\chi(R)]"/></td>
+<td><span class="math">\(\rm Im[\chi(R)]\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>rwin</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/0ec554843f4950745c1865b530ae121f3a0e87a7.png" alt="\Omega(R)"/></td>
+<td><span class="math">\(\Omega(R)\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>q</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/23f1b45408e5b4130c0f940fcbfcec54492cbdcd.png" alt="q"/></td>
+<td><span class="math">\(q\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>chiq</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/> (complex)</td>
+<td><span class="math">\(\chi(q)\)</span> (complex)</td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chiq_mag</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/413fd062b570a4d2052d2a722ffe19b727d96b9b.png" alt="|\chi(q)|"/></td>
+<td><span class="math">\(|\chi(q)|\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-odd"><td>chiq_re</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/a470a15c407f265d0410db5047f067a2fb1264b8.png" alt="\rm Re[\chi(q)]"/></td>
+<td><span class="math">\(\rm Re[\chi(q)]\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 <tr class="row-even"><td>chiq_im</td>
 <td>array</td>
-<td><img class="math" src="../_images/math/564a269c9913cc5f4b541f97f01a5eb818551a93.png" alt="\rm Im[\chi(q)]"/></td>
+<td><span class="math">\(\rm Im[\chi(q)]\)</span></td>
 <td><a class="reference internal" href="xafsft.html#_xafs.xftr" title="_xafs.xftr"><tt class="xref py py-func docutils literal"><span class="pre">xftr()</span></tt></a></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
-<p>where <img class="math" src="../_images/math/23f1b45408e5b4130c0f940fcbfcec54492cbdcd.png" alt="q"/>, <img class="math" src="../_images/math/189fbf067e70310d645f491b8c7f61a4c20836c9.png" alt="\chi(q)"/>, and so on indicates back-transformed <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/>.</p>
+<p>where <span class="math">\(q\)</span>, <span class="math">\(\chi(q)\)</span>, and so on indicates back-transformed <span class="math">\(k\)</span>.</p>
 <p>The XAFS functions encourage following this convention, in that they are consistent in wanting
-<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> to be represented by the two arrays <tt class="docutils literal"><span class="pre">GROUP.k</span></tt> and <tt class="docutils literal"><span class="pre">GROUP.chi</span></tt></p>
+<span class="math">\(\chi(k)\)</span> to be represented by the two arrays <tt class="docutils literal"><span class="pre">GROUP.k</span></tt> and <tt class="docutils literal"><span class="pre">GROUP.chi</span></tt></p>
 <div class="section" id="group-argument-and-sys-xafsgroup">
 <h3>7.1.1.1. <cite>group</cite> argument and <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
 <p>The XAFS functions need to write outputs to some group -- there are simply too many outputs to
@@ -338,18 +345,18 @@ equivalent.  This nearly makes the Larch XAFS functions be object-oriented, or i
 <dl class="function">
 <dt id="_xafs.etok">
 <tt class="descclassname">_xafs.</tt><tt class="descname">etok</tt><big>(</big><em>energies</em><big>)</big><a class="headerlink" href="#_xafs.etok" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert photo-electron energy in eV to wavenumber in <img class="math" src="../_images/math/a9a5387c4e822040389d9d44578721dbdb911f7e.png" alt="\AA^{-1}"/>.
+<dd><p>Convert photo-electron energy in eV to wavenumber in <span class="math">\(\AA^{-1}\)</span>.
 energies can be a single number or array of numbers.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_xafs.ktoe">
 <tt class="descclassname">_xafs.</tt><tt class="descname">ktoe</tt><big>(</big><em>wavenumbers</em><big>)</big><a class="headerlink" href="#_xafs.ktoe" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert photo-electron wavenumber in <img class="math" src="../_images/math/a9a5387c4e822040389d9d44578721dbdb911f7e.png" alt="\AA^{-1}"/> ot energy in eV.
+<dd><p>Convert photo-electron wavenumber in <span class="math">\(\AA^{-1}\)</span> ot energy in eV.
 wavenumber can be a single number or array of numbers.</p>
 </dd></dl>
 
-<p>An example use would be to print out a table of energies and <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> values:</p>
+<p>An example use would be to print out a table of energies and <span class="math">\(k\)</span> values:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; kvals = linspace(0, 25, 26)
 larch&gt; evals = ktoe(kvals)
 larch&gt; for k,e in zip(kvals, evals)):
@@ -389,17 +396,17 @@ larch&gt; endfor
 <dl class="function">
 <dt id="_xafs.estimate_noise">
 <tt class="descclassname">_xafs.</tt><tt class="descname">estimate_noise</tt><big>(</big><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><big>)</big><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
-<dd><p>Automatically estimate the noise level in a <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> spectrum.</p>
+<dd><p>Automatically estimate the noise level in a <span class="math">\(\chi(k)\)</span> spectrum.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>k</strong> -- 1-d array of <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/></li>
-<li><strong>chi</strong> -- 1-d array of <img class="math" src="../_images/math/f632c791f693410fc1bf07ad7cb02c6fcfef9aed.png" alt="\chi"/></li>
+<li><strong>k</strong> -- 1-d array of <span class="math">\(k\)</span></li>
+<li><strong>chi</strong> -- 1-d array of <span class="math">\(\chi\)</span></li>
 <li><strong>group</strong> -- output group.</li>
-<li><strong>rmin</strong> -- minimum <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> value for noise estimate.</li>
-<li><strong>rmax</strong> -- maximum <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/> value for noise estimate.</li>
+<li><strong>rmin</strong> -- minimum <span class="math">\(R\)</span> value for noise estimate.</li>
+<li><strong>rmax</strong> -- maximum <span class="math">\(R\)</span> value for noise estimate.</li>
 <li><strong>kweight</strong> -- exponent for weighting spectra by k**kweight [1]</li>
 <li><strong>kmin</strong> -- starting k for FT Window [0]</li>
 <li><strong>kmax</strong> -- ending k for FT Window  [20]</li>
@@ -431,35 +438,35 @@ The following outputs are written to the supplied <strong>group</strong> (or <ci
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>epsilon_k</td>
-<td>estimated noise level in <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</td>
+<td>estimated noise level in <span class="math">\(\chi(k)\)</span>.</td>
 </tr>
 <tr class="row-odd"><td>epsilon_r</td>
-<td>estimated noise level in <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/>.</td>
+<td>estimated noise level in <span class="math">\(\chi(R)\)</span>.</td>
 </tr>
 <tr class="row-even"><td>kmax_suggest</td>
-<td>suggested highest <img class="math" src="../_images/math/e9203da50e1059455123460d4e716c9c7f440cc3.png" alt="k"/> value for which <img class="math" src="../_images/math/10e9e3936e884fcf50cbe5306ec844cc5900e0eb.png" alt="|\chi(k)| &gt; \epsilon_k"/></td>
+<td>suggested highest <span class="math">\(k\)</span> value for which <span class="math">\(|\chi(k)| &gt; \epsilon_k\)</span></td>
 </tr>
 </tbody>
 </table>
 </div></blockquote>
 </dd></dl>
 
-<p>This method uses the high-R portion of <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> (between <strong>rmin</strong>
-and <strong>rmax</strong>) as a measure of the noise level in the <img class="math" src="../_images/math/c61ed6f6f9e0f0c66a720cabdac4ad2c8fc5311e.png" alt="\chi(R)"/> data
+<p>This method uses the high-R portion of <span class="math">\(\chi(R)\)</span> (between <strong>rmin</strong>
+and <strong>rmax</strong>) as a measure of the noise level in the <span class="math">\(\chi(R)\)</span> data
 and uses Parseval's theorem to convert this noise level to that in
-<img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.  This method implicitly assumes that there is no signal in
+<span class="math">\(\chi(k)\)</span>.  This method implicitly assumes that there is no signal in
 the high-R portion of the spectrum, and that the noise in the spectrum is
-&quot;white&quot; (independent of <img class="math" src="../_images/math/9d86170e7de539c0ff999de09621ee0c7b6c8ed0.png" alt="R"/>) .  Each of these assumptions can be
+&quot;white&quot; (independent of <span class="math">\(R\)</span>) .  Each of these assumptions can be
 legitimately questioned.  Then again, making the assertion that these
 assumptions are invalid and disregarding the estimated noise level here
 would require knowledge of the noise in an XAFS spectrum that most users do
 not have.  At the very least, this estimate should be be interpreted as a
-minimal estimate of the noise level in <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/>.</p>
+minimal estimate of the noise level in <span class="math">\(\chi(k)\)</span>.</p>
 <p>The estimate for the output value <strong>kmax_suggest</strong> has a tendency to be
-pessimistic in how far out the <img class="math" src="../_images/math/6afff318d648d1296604484ebd75631a75bc97b3.png" alt="\chi(k)"/> data goes before being
+pessimistic in how far out the <span class="math">\(\chi(k)\)</span> data goes before being
 dominated by noise, but has the advantage of being an impartial measure of
 data quality. It is particularly pessimistic for extremely good data.  Then
-again, considering that the estimate for <img class="math" src="../_images/math/19bc0073dde1bcd1a8e6a32b251e80cced668f04.png" alt="\epsilon"/> is probably too
+again, considering that the estimate for <span class="math">\(\epsilon\)</span> is probably too
 small, the estimate may not be that bad.</p>
 </div>
 <div class="section" id="the-xas-deconvolve-function">
@@ -474,12 +481,12 @@ of XANES features.  This procedure can be unstable -- Use results with caution!<
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>energy</strong> -- 1-d array of <img class="math" src="../_images/math/cfd13a0f26eb7ef0093319a7669da7dd3771dbac.png" alt="E"/></li>
-<li><strong>norm</strong> -- 1-d array of normalized <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/></li>
+<li><strong>energy</strong> -- 1-d array of <span class="math">\(E\)</span></li>
+<li><strong>norm</strong> -- 1-d array of normalized <span class="math">\(\mu(E)\)</span></li>
 <li><strong>group</strong> -- output group</li>
 <li><strong>form</strong> -- form of deconvolution function. One of
 'gaussian' (default) or 'lorentzian'</li>
-<li><strong>esigma</strong> -- energy <img class="math" src="../_images/math/2298cf1485084afe72757a9c8483af49a138d81f.png" alt="\sigma"/> (in eV) to pass to
+<li><strong>esigma</strong> -- energy <span class="math">\(\sigma\)</span> (in eV) to pass to
 <a class="reference internal" href="../fitting/lineshapes.html#gaussian" title="gaussian"><tt class="xref py py-func docutils literal"><span class="pre">gaussian()</span></tt></a> or <a class="reference internal" href="../fitting/lineshapes.html#lorentzian" title="lorentzian"><tt class="xref py py-func docutils literal"><span class="pre">lorentzian()</span></tt></a> lineshape [default=1.0]</li>
 <li><strong>eshift</strong> -- energy shift (in eV) to apply to result. [default=0]</li>
 </ul>
@@ -502,7 +509,7 @@ The following data is put into the output group:</p>
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>deconv</td>
-<td>array of deconvolved, normalized <img class="math" src="../_images/math/7e398ab434f8ca3b65ac0d2dad7b7c17d806a642.png" alt="\mu(E)"/></td>
+<td>array of deconvolved, normalized <span class="math">\(\mu(E)\)</span></td>
 </tr>
 </tbody>
 </table>

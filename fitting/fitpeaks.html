@@ -23,11 +23,18 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="6.8. Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
-    <link rel="prev" title="6.6. Fit Examples" href="examples.html" /> 
+    <link rel="prev" title="6.6. Fit Examples" href="examples.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -177,11 +184,11 @@ background functions, as detailed in
 </thead>
 <tbody valign="top">
 <tr class="row-even"><td>linear</td>
-<td><img class="math" src="../_images/math/7641c4996537f98c8c832e2d085f48057b661cb7.png" alt="y = mx + b"/></td>
+<td><span class="math">\(y = mx + b\)</span></td>
 <td>offset, slope</td>
 </tr>
 <tr class="row-odd"><td>quadratic</td>
-<td><img class="math" src="../_images/math/e011a03b211c8690c24aa47e70eb8286d7e8eacf.png" alt="y = a + bx + cx^2"/></td>
+<td><span class="math">\(y = a + bx + cx^2\)</span></td>
 <td>offset, slope, quad</td>
 </tr>
 <tr class="row-even"><td>step</td>
@@ -193,7 +200,7 @@ background functions, as detailed in
 <td>height, center1, width1, center2, width2</td>
 </tr>
 <tr class="row-even"><td>exponential</td>
-<td><img class="math" src="../_images/math/3e92d013bbfd259bb9136fee7dc0d480f33ea126.png" alt="y = Ae^{-x/b}"/></td>
+<td><span class="math">\(y = Ae^{-x/b}\)</span></td>
 <td>amplitude, decay</td>
 </tr>
 <tr class="row-odd"><td>gaussian</td>

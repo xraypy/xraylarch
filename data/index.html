@@ -23,10 +23,17 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <script type="text/javascript" src="../_static/sidebar.js"></script>
     <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
     <link rel="next" title="5. Plotting and Displaying Data" href="../plotting/index.html" />
-    <link rel="prev" title="3.8. Tutorial: Builtin Functions" href="../tutorial/builtins.html" /> 
+    <link rel="prev" title="3.8. Tutorial: Builtin Functions" href="../tutorial/builtins.html" />
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({
+        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+        "HTML-CSS": {scale: 90}
+  });</script>
+
   </head>
   <body>
 <div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
@@ -155,8 +162,8 @@ the data.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>filename</strong> (<em>string</em>) -- name of file to read.</li>
-<li><strong>commentchar</strong> (<em>string</em>) -- string of valid comment characters</li>
+<li><strong>filename</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) -- name of file to read.</li>
+<li><strong>commentchar</strong> (<a class="reference external" href="http://docs.python.org/library/string.html#module-string" title="(in Python v2.7)"><em>string</em></a>) -- string of valid comment characters</li>
 <li><strong>labels</strong> -- string to split for column labels</li>
 </ul>
 </td>
