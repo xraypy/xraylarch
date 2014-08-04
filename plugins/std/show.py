@@ -86,12 +86,14 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
     _larch.writer.write("%s\n" % '\n'.join(out))
 
 
-def show_tree(group, _larch=None, indent=0, **kws):
+def show_tree(group, _larch=None, indent=0, groups_shown=None, **kws):
     """show members of a Group, with a tree structure for sub-groups
 
     > show_tree(group1)
 
     """
+    if groups_shown is None:
+        groups_shown = []
     for item in dir(group):
         if (item.startswith('__') and item.endswith('__')):
             continue
@@ -99,7 +101,11 @@ def show_tree(group, _larch=None, indent=0, **kws):
         dval = None
         if _larch.symtable.isgroup(obj):
             _larch.writer.write('%s %s: %s\n' % (indent*' ', item, obj))
-            show_tree(obj, indent=indent+3, _larch=_larch)
+            if id(obj) in groups_shown:
+                _larch.writer.write('%s     (shown above)\n' % (indent*' '))
+            else:
+                groups_shown.append(id(obj))
+                show_tree(obj, indent=indent+3, _larch=_larch, groups_shown=groups_shown)
         else:
             dval = repr(obj)
             if isinstance(obj, numpy.ndarray):
