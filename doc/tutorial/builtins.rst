@@ -2,7 +2,10 @@
 Tutorial: Builtin Functions
 =====================================================
 
-Larch has several built in functions, most of these copied from Python.
+Larch has several general built-in functions for basic manipulation of data and
+programming needs.  Many of these are copied directly from Python, but
+several are Larch-specifc.   Note that the advanced math and scientific
+functions are not listed here, but elsewhere in the documentation.
 
 Builtin data values
 ==========================
@@ -11,18 +14,120 @@ The values ``True``, ``False``  represent the boolean values
 for true and false.  ``None`` is the null value.
 
 
+Larch-Specific Builtin functions
+==============================================
 
-Builtin functions
-==========================
-
-.. function:: abs(value)
-
-   Return the absolute value of the argument.
+These built-in functions are specific to Larch (that is, not inherited from
+Python).  Many help you work with Larch groups or otherwise simplify common tasks.
 
 .. function:: add_plugin(python_file)
 
     add plugin components from plugin file (Python file) or directory for a
     Python module.
+
+.. function:: dict2group(dict)
+
+   return a group created from a dictionary.  Note that this is equivalent
+   to ``group(**dict)``.
+
+.. function:: group(key=val, key2=val2, ....)
+
+    create a group, with optional keyword/value pairs.
+
+.. function:: group_items(group)
+
+    return a list of (key, val) pairs for items in a group. This is
+    equivalent to ``group2dict(group).items()``, and provides the idiomatic
+    way to loop through all items in a group.
+
+.. function:: group2dict(group)
+
+   return dictionary of group members
+
+.. function:: help(object)
+
+    show help on topic or object
+
+.. function:: isgroup(object)
+
+    returns ``True`` is the object is a group.
+
+.. function:: isparam(object)
+
+    returns ``True`` is the object is a parameter.
+
+.. function:: ls(directory_name_or_file_pattern)
+
+    returns a list of files in the current directory.  If a '*' is used in
+    the argument, the returned list is limited to files matching that
+    pattern.  For example::
+
+        larch> ls('.')
+        ['cu.chi', 'cu.xmu', 'cu10k.chi', 'cu_10k.xmu', 'cu_150k.xmu',
+         'cu_50k.xmu', 'cu_metal_rt.xdi', 'cu_rt01.xmu', 'fe.060',
+         'fe2o3_rt1.xmu', 'fe3c_rt.xdi', 'feo_exafs_pnccat2001.dat',
+         'feo_rt1.xmu', 'feo_xafs.dat', 'scorodite_as_xafs.001', 'znse_zn_xafs.001']
+        larch> xdifiles = ls('*.xdi')
+        larch> print xdifiles
+        ['cu_metal_rt.xdi', 'fe3c_rt.xdi']
+
+
+.. function:: more(filename[, pagelenghth=32])
+
+    list file contents, optionally specifying the number of lines to
+    show at a time.  By default, the file is shown 32 lines at a time.::
+
+       larch> more('file.txt')
+       larch> more('file.txt', pagelength=10)
+
+.. function:: parent(object)
+
+    print out parent group name of an object
+
+.. function:: pause(timeout)
+
+   pause for for input from the command line.
+
+.. function:: run(filename[, printall=True])
+
+    execute the larch text in a file as larch code.
+
+.. function:: show(group[, with_private=False])
+
+    display group members. The ``with_private`` option will show private
+    members.
+
+    See Also:  show_tree()
+
+.. function:: show_tree(group)
+
+    show members of a Group, with a tree structure for sub-groups
+
+    larch> show_tree(group1)
+
+.. function:: sleep(t=0)
+
+   sleep for a specified number of seconds.
+
+.. function:: subgroups(group)
+
+    return list of subgroups of a group
+
+.. function:: which(object)
+
+    return full path of object in Larch's symbol table::
+
+        larch> which(which)
+        '_builtin.which'
+
+
+
+Builtin functions inherited from Python
+==============================================
+
+.. function:: abs(value)
+
+   Return the absolute value of the argument.
 
 .. function:: all(x)
 
@@ -31,7 +136,6 @@ Builtin functions
 .. function:: any(x)
 
    Return ``True`` if bool(x) is ``True`` for any x in the iterable.
-
 
 .. function:: bin(number)
 
@@ -138,26 +242,6 @@ Builtin functions
     enumerate is useful for obtaining an indexed list:
     (0, seq[0]), (1, seq[1]), (2, seq[2]), ...
 
-.. function:: file(name[, mode[, buffering]]) -> file object
-
-    Open a file.
-
-    The mode can be 'r', 'w' or 'a' for reading (default),
-    writing or appending.  The file will be created if it doesn't exist
-    when opened for writing or appending; it will be truncated when
-    opened for writing.  Add a 'b' to the mode for binary files.
-    Add a '+' to the mode to allow simultaneous reading and writing.
-    If the buffering argument is given, 0 means unbuffered, 1 means line
-    buffered, and larger numbers specify the buffer size.  The preferred way
-    to open a file is with the builtin open() function.
-    Add a 'U' to mode to open the file for input with universal newline
-    support.  Any line ending in the input file will be seen as a '\n'
-    in Python.  Also, a file so opened gains the attribute 'newlines';
-    the value for this attribute is one of None (no newline read yet),
-    '\r', '\n', '\r\n' or a tuple containing all the newline types seen.
-
-    'U' cannot be combined with 'w' or '+' mode.
-
 .. function:: filter(function or None, sequence)
 
     Return those items of sequence for which function(item) is true.  If
@@ -186,10 +270,6 @@ Builtin functions
     When a default argument is given, it is returned when the attribute doesn't
     exist; without it, an exception is raised in that case.
 
-.. function:: group(key=val, key2=val2, ....)
-
-    create a group, with optional keyword/value pairs.
-
 .. function:: hasattr(object, name)
 
     Return whether the object has an attribute with the given name.
@@ -199,10 +279,6 @@ Builtin functions
 
     Return a hash value for the object.  Two objects with the same value have
     the same hash value.  The reverse is not necessarily true, but likely.
-
-.. function:: help()
-
-    show help on topic or object
 
 .. function:: hex(number)
 
@@ -239,10 +315,6 @@ Builtin functions
     create a list
     list(iterable) -> new list initialized from iterable's items
 
-.. function:: ls(directory_name)
-
-    returns a list of files in the current directory
-
 .. function:: map(function, sequence[, sequence, ...])
 
     Return a list of the results of applying the function to the items of
@@ -266,36 +338,33 @@ Builtin functions
     With a single iterable argument, return its smallest item.
     With two or more arguments, return the smallest argument.
 
-.. function:: more(filename)
-
-    list file contents:
-
-    > more('file.txt')
-    by default, the file is shown 32 lines at a time.
-    You can specify the number of lines to show at a time
-    with the  pagelength option:
-    > more('file.txt', pagelength=10)
-
 .. function:: oct(number)
 
     Return the octal representation of an integer or long integer.
 
 .. function:: open(name[, mode[, buffering]])
 
-    Open a file using the file() type, returns a file object.  This is the
-    preferred way to open a file.  See file.__doc__ for further information.
+    Open a file, returning a file object
+
+    The mode can be 'r', 'w' or 'a' for reading (default),
+    writing or appending.  The file will be created if it doesn't exist
+    when opened for writing or appending; it will be truncated when
+    opened for writing.  Add a 'b' to the mode for binary files.
+    Add a '+' to the mode to allow simultaneous reading and writing.
+    If the buffering argument is given, 0 means unbuffered, 1 means line
+    buffered, and larger numbers specify the buffer size.  The preferred way
+    to open a file is with the builtin open() function.
+    Add a 'U' to mode to open the file for input with universal newline
+    support.  Any line ending in the input file will be seen as a '\n'
+    in Python.  Also, a file so opened gains the attribute 'newlines';
+    the value for this attribute is one of None (no newline read yet),
+    '\r', '\n', '\r\n' or a tuple containing all the newline types seen.
+
+    'U' cannot be combined with 'w' or '+' mode.
 
 .. function:: ord(c)
 
     Return the integer ordinal of a one-character string.
-
-.. function:: parent(object)
-
-    print out parent group name of an object
-
-.. function:: pause(timeout)
-
-   pause for for input from the command line.
 
 .. function:: pow(x, y[, z])
 
@@ -344,10 +413,6 @@ Builtin functions
     Round a number to a given precision in decimal digits (default 0 digits).
     This always returns a floating point number.  Precision may be negative.
 
-.. function:: run(filename)
-
-    execute the larch text in a file as larch code. options:
-
 .. function:: set(list)
 
     create a new set: a collection of unique elements.
@@ -357,25 +422,6 @@ Builtin functions
     Set a named attribute on an object;
 
     setattr(x, 'y', v) is equivalent to ``x.y = v``.
-
-.. function:: show(group)
-
-    display group members.
-    Options
-    -------
-    with_private:  show 'private' members ('__private__')
-
-    See Also:  show_tree()
-
-.. function:: show_tree(group)
-
-    show members of a Group, with a tree structure for sub-groups
-
-    > show_tree(group1)
-
-.. function:: sleep(t=0)
-
-   sleep for a specified number of seconds.
 
 .. function:: slice([start,] stop[, step])
 
@@ -389,10 +435,6 @@ Builtin functions
 
     Return a nice string representation of the object.
     If the argument is a string, the return value is the same object.
-
-.. function:: subgroups(group)
-
-    return list of subgroups
 
 .. function:: sum(sequence[, start])
 
@@ -421,10 +463,6 @@ Builtin functions
     Create a new Unicode object from the given encoded string.
     encoding defaults to the current default string encoding.
     errors can be 'strict', 'replace' or 'ignore' and defaults to 'strict'.
-
-.. function:: which(object)
-
-    return full path of object
 
 .. function:: zip(seq1 [, seq2 [...]])
 
