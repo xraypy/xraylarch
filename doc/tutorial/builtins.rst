@@ -25,10 +25,33 @@ Python).  Many help you work with Larch groups or otherwise simplify common task
     add plugin components from plugin file (Python file) or directory for a
     Python module.
 
+.. function:: cd(directory_name)
+
+    change directory to specified directory.
+
+.. function:: cwd()
+
+    return current working directory
+
 .. function:: dict2group(dict)
 
    return a group created from a dictionary.  Note that this is equivalent
    to ``group(**dict)``.
+
+.. function:: get(name)
+
+   get object from symbol table by name.  For example::
+
+      larch> g = group(a = 1,  b=2.3, z = 'a string')
+      larch> print get('g.z')
+      'a string'
+
+   this is can also be accomplished by the similar::
+
+      larch> print getattr(g, 'z')
+      'a string'
+
+   but the :func:`get` version uses only the name of the object.
 
 .. function:: group(key=val, key2=val2, ....)
 
@@ -70,6 +93,13 @@ Python).  Many help you work with Larch groups or otherwise simplify common task
         larch> xdifiles = ls('*.xdi')
         larch> print xdifiles
         ['cu_metal_rt.xdi', 'fe3c_rt.xdi']
+
+
+.. function:: mkdir(directory_name[, mode=0777])
+
+    create directory (and any intermediate subdirectories) with the
+    specified name.  The ``mode`` option sets the permission mask to use
+    for creating directory (default=0777).
 
 
 .. function:: more(filename[, pagelenghth=32])
@@ -206,10 +236,6 @@ Builtin functions inherited from Python
 .. function:: copy(object)
 
     copy an object
-
-.. function:: cwd()
-
-    return current working directory
 
 .. function:: deepcopy(object)
 
