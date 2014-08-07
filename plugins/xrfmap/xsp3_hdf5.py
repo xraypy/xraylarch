@@ -23,7 +23,7 @@ class XSP3Data(object):
 def read_xsp3_hdf5(fname, npixels=None, verbose=False):
     # Reads a netCDF file created with the DXP xMAP driver
     # with the netCDF plugin buffers
-
+    npixels = None
     clocktick = 12.5e-3
     t0 = time.time()
     h5file = h5py.File(fname, 'r')
