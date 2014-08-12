@@ -2,7 +2,7 @@
 import sys
 import os
 import time
-from  epics import Device, caget, caput
+from  epics import Device, caget, caput, poll
 from epics.devices.mca import MCA, ROI, OrderedDict
 import numpy
 
@@ -104,7 +104,7 @@ class Xspress3(Device):
                 rois.append(roi)
                 iroi += 1
 
-        epics.poll(0.050, 1.0)
+        poll(0.050, 1.0)
         self.mcas[0].set_rois(rois)
         cal0 = self.mcas[0].get_calib()
         for mca in self.mcas[1:]:
