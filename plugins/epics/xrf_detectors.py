@@ -99,8 +99,8 @@ class Epics_Xspress3(object):
         thismca.rois = []
         if with_rois:
             for eroi in emca.rois:
-                thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
-                                        left=eroi.left, right=eroi.right))
+                thismca.rois.append(ROI(name=eroi.NM, address=eroi.address,
+                                        left=eroi.LO, right=eroi.HI))
         return thismca
 
     def get_energy(self, mca=1):
@@ -142,6 +142,15 @@ class Epics_Xspress3(object):
         for mca in self._xsp3.mcas:
             mca.add_roi(roiname, lo=lo, hi=hi)
         self.rois = self._xsp3.mcas[0].get_rois()
+
+    @EpicsFunction
+    def rename_roi(self, i, newname):
+        roi = self._xsp3.mcas[0].rois[i]
+        roi.NM = newname
+        rootname = roi._prefix
+        for imca in range(1, len(self._xmap.mcas)):
+            pvname = rootname.replace('mca1', 'mca%i'  % (1+imca))
+            epics.caput(pvname+'NM', newname)
 
     def restore_rois(self, roifile):
         print 'restore rois from ', roifile
@@ -256,9 +265,8 @@ class Epics_MultiXMAP(object):
         thismca.rois = []
         if with_rois:
             for eroi in emca.rois:
-                thismca.rois.append(ROI(name=eroi.name, address=eroi.address,
-                                        left=eroi.left, right=eroi.right))
-
+                thismca.rois.append(ROI(name=eroi.NM, address=eroi.address,
+                                        left=eroi.LO, right=eroi.HI))
         return thismca
 
     def clear_rois(self):
@@ -276,6 +284,15 @@ class Epics_MultiXMAP(object):
         for mca in self._xmap.mcas:
             mca.add_roi(roiname, lo=lo, hi=hi, calib=calib)
         self.rois = self._xmap.mcas[0].get_rois()
+
+    @EpicsFunction
+    def rename_roi(self, i, newname):
+        roi = self._xmap.mcas[0].rois[i]
+        roi.NM = newname
+        rootname = roi._prefix
+        for imca in range(1, len(self._xmap.mcas)):
+            pvname = rootname.replace('mca1', 'mca%i'  % (1+imca))
+            epics.caput(pvname+'NM', newname)
 
     def restore_rois(self, roifile):
         self._xmap.restore_rois(roifile)

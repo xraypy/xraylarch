@@ -458,15 +458,49 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.det.erase()
 
     def onDelROI(self, event=None):
-        roiname = self.wids['roiname'].GetValue()
-        XRFDisplayFrame.onDelROI(self)
+        nam = self.wids['roiname'].GetValue()
+        errmsg = None
+        if self.roilist_sel is None:
+            errmsg = 'No ROI selected to delete.'
+        if errmsg is not None:
+            return Popup(self, errmsg, 'Cannot Delete ROI')
+
         self.det.del_roi(roiname)
+        XRFDisplayFrame.onDelROI(self)
 
     def onNewROI(self, event=None):
         nam = self.wids['roiname'].GetValue()
+        errmsg = None
+        if self.xmarker_left is None or self.xmarker_right is None:
+            errmsg = 'Must select right and left markers to define ROI'
+        elif nam in self.wids['roilist'].GetStrings():
+            errmsg = '%s is already in ROI list - use a unique name.' % nam
+        if errmsg is not None:
+            return Popup(self, errmsg, 'Cannot Define ROI')
+
         confirmed = XRFDisplayFrame.onNewROI(self)
         if confirmed:
             self.det.add_roi(nam, lo=self.xmarker_left, hi=self.xmarker_right)
+
+    def onRenameROI(self, event=None):
+        nam = self.wids['roiname'].GetValue()
+        errmsg = None
+        if nam in self.wids['roilist'].GetStrings():
+            errmsg = '%s is already in ROI list - use a unique name.' % nam
+        elif self.roilist_sel is None:
+            errmsg = 'No ROI selected to rename.'
+        if errmsg is not None:
+            return Popup(self, errmsg, 'Cannot Rename ROI')
+
+        if self.roilist_sel < len(self.det.mcas[0].rois):
+            self.det.rename_roi(self.roilist_sel, nam)
+            names = self.wids['roilist'].GetStrings()
+            names[self.roilist_sel] = nam
+            self.wids['roilist'].Clear()
+            for sname in names:
+                self.wids['roilist'].Append(sname)
+            self.wids['roilist'].SetSelection(self.roilist_sel)
+
 
     def onCalibrateEnergy(self, event=None, **kws):
         try:
@@ -478,6 +512,14 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onSetCalib(self, offset, slope, mca=None):
         print 'XRFControl Set Energy Calibratione' , offset, slope, mca
+
+    def onClose(self, event=None):
+        self.onStop()
+        XRFDisplayFrame.onClose(self)        
+
+    def onExit(self, event=None):
+        self.onStop()
+        XRFDisplayFrame.onExit(self)        
 
 class EpicsXRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):

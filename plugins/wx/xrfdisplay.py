@@ -119,6 +119,7 @@ class XRFDisplayFrame(wx.Frame):
         self.exit_callback = exit_callback
         self.roi_patch = None
         self.selected_roi = None
+        self.roilist_sel  = None
         self.selected_elem = None
         self.mca = None
         self.mca2 = None
@@ -359,10 +360,13 @@ class XRFDisplayFrame(wx.Frame):
         #
         roibtns= wx.Panel(roipanel, name='ROIButtons')
         zsizer = wx.BoxSizer(wx.HORIZONTAL)
-        z1 = Button(roibtns, 'Add',   size=(65, 30), action=self.onNewROI)
-        z2 = Button(roibtns, 'Delete',size=(65, 30), action=self.onConfirmDelROI)
+        z1 = Button(roibtns, 'Add',    size=(55, 30), action=self.onNewROI)
+        z2 = Button(roibtns, 'Delete', size=(55, 30), action=self.onConfirmDelROI)
+        z3 = Button(roibtns, 'Rename', size=(55, 30), action=self.onRenameROI)
+
         zsizer.Add(z1,    0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z2,    0, wx.EXPAND|wx.ALL, 0)
+        zsizer.Add(z3,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
 
         rt1 = txt(roipanel, ' Channels:', size=70, font=Font10)
@@ -590,6 +594,16 @@ class XRFDisplayFrame(wx.Frame):
         if Popup(self, msg,   'Delete ROI?', style=wx.YES_NO) == wx.ID_YES:
             self.onDelROI()
 
+    def onRenameROI(self, event=None):
+        roiname = self.wids['roiname'].GetValue()
+        if self.roilist_sel is not None:
+            names = self.wids['roilist'].GetStrings()
+            names[self.roilist_sel] = roiname
+            self.wids['roilist'].Clear()
+            for sname in names:
+                self.wids['roilist'].Append(sname)
+            self.wids['roilist'].SetSelection(self.roilist_sel)
+
     def onDelROI(self):
         roiname = self.wids['roiname'].GetValue()
         rdat = []
@@ -630,9 +644,11 @@ class XRFDisplayFrame(wx.Frame):
     def onROI(self, event=None, label=None):
         if label is None and event is not None:
             label = event.GetString()
+            self.roilist_sel = event.GetSelection()
         self.wids['roiname'].SetValue(label)
         name, left, right= None, -1, -1
         label = label.lower().strip()
+
         self.selected_roi = None
         if self.mca is not None:
             for roi in self.mca.rois:
@@ -792,6 +808,7 @@ class XRFDisplayFrame(wx.Frame):
         except:
             pass
 
+        
         try:
             self.Destroy()
         except:
@@ -1193,6 +1210,7 @@ class XRFDisplayFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,event):
+        print 'CLOSE !!! '
         self.Destroy()
 
     def onReadFile(self, event=None):
