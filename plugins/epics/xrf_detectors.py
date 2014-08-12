@@ -274,6 +274,7 @@ class Epics_MultiXMAP(object):
             mca.clear_rois()
         self.rois = self._xmap.mcas[0].get_rois()
 
+    @EpicsFunction
     def del_roi(self, roiname):
         for mca in self._xmap.mcas:
             mca.del_roi(roiname)
