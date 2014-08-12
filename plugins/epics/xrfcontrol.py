@@ -366,11 +366,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             energy = self.det.get_energy(mca=self.det_fore)
             counts = self.det.get_array(mca=self.det_fore)*1.0
             if max(counts) < 1.0:
-                counts    = 0.5*np.ones(len(counts))
+                counts    = 1e-4*np.ones(len(counts))
                 counts[0] = 2.0
-
             self.update_mca(counts, energy=energy)
-
 
     def onSelectBkgDet(self, event=None, **kws):
         self.mca2 = None
