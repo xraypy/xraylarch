@@ -46,7 +46,7 @@ itself.  Here is the function call using the objective function
 defined above, assuming you have a group called ``data`` containing
 the data you are trying to fit::
 
-    minimize(residual, params, kws={'xdata': data.x 'ydata':data.y})
+    minimize(residual, params, kws={'xdata': data.x, 'ydata':data.y})
 
 As the fit proceeds, the values the Parameter values will be updated, and
 the objective function will be called to recalculate the residual array.
