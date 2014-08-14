@@ -2,12 +2,15 @@
 """
 Enable wxPython to be used interacive by setting PyOS_InputHook.
 
-Authors:  Robin Dunn and Brian Granger
+Authors:  Robin Dunn, Brian Granger, Ondrej Certik
+
 tweaked by M Newville, based on reading modified inputhookwx from IPython
 """
 
 import sys
 import time
+from timeit import default_timer as clock
+import signal
 
 if not hasattr(sys, 'frozen'):
     try:
@@ -29,7 +32,7 @@ def stdin_ready():
 if sys.platform == 'win32':
     from msvcrt import kbhit as stdin_ready
 
-POLLTIME = 25 # milliseconds
+POLLTIME = 10 # milliseconds
 ON_INTERRUPT = None
 WXLARCH_SYM = None
 UPDATE_GROUPNAME = '_sys.wx'
@@ -72,17 +75,47 @@ class EventLoopRunner(object):
             self.evtloop.Exit()
             del self.timer, self.evtloop
             clear_update_request()
-#        else:
-#            try:
-#                 t0 = time.time()
-#                 while self.evtloop.Pending() and time.time()-t0 < self.poll_time/2000.0:
-#                     self.evtloop.Dispatch()
-#                     time.sleep(self.poll_time/10000.0)
-#                 wx.GetApp().ProcessIdle()
-#             except:
-#                 pass
 
-def input_handler1():
+def inputhook_wx():
+    """Run the wx event loop by processing pending events only.
+
+    This is like inputhook_wx1, but it keeps processing pending events
+    until stdin is ready.  After processing all pending events, a call to
+    time.sleep is inserted.  This is needed, otherwise, CPU usage is at 100%.
+    This sleep time should be tuned though for best performance.
+    """
+    # We need to protect against a user pressing Control-C when IPython is
+    # idle and this is running. We trap KeyboardInterrupt and pass.
+    try:
+        app = wx.GetApp()
+        if app is not None:
+            assert wx.Thread_IsMain()
+
+            if not callable(signal.getsignal(signal.SIGINT)):
+                signal.signal(signal.SIGINT, signal.default_int_handler)
+            evtloop = wx.EventLoop()
+            ea = wx.EventLoopActivator(evtloop)
+            t = clock()
+            while not stdin_ready() and not update_requested():
+                while evtloop.Pending():
+                    t = clock()
+                    evtloop.Dispatch()
+                app.ProcessIdle()
+                # We need to sleep at this point to keep the idle CPU load
+                # low.  However, if sleep to long, GUI response is poor.
+                used_time = clock() - t
+                ptime = 0.001
+                if used_time > 0.25: ptime = 0.05
+                if used_time > 5.00: ptime = 0.50
+                time.sleep(ptime)
+            del ea
+            clear_update_request()            
+    except KeyboardInterrupt:
+        if hasattr(ON_INTERRUPT, '__call__'):
+            ON_INTERRUPT()
+    return 0
+
+def inputhook_darwin():
     """Run the wx event loop, polling for stdin.
 
     This version runs the wx eventloop for an undetermined amount of time,
@@ -110,67 +143,16 @@ def input_handler1():
             ON_INTERRUPT()
     return 0
 
-def input_handler2():
-    """Run the wx event loop by processing pending events only.
 
-    This is like inputhook_wx1, but it keeps processing pending events
-    until stdin is ready.  After processing all pending events, a call to
-    time.sleep is inserted.  This is needed, otherwise, CPU usage is at 100%.
-    This sleep time should be tuned though for best performance.
-    """
-    app = wx.GetApp()
-    global POLLTIME, ON_INTERRUPT
-    if app is not None:
-        assert wx.Thread_IsMain()
-        evtloop = wx.EventLoop()
-        activator = wx.EventLoopActivator(evtloop)
-        t0 = time.time()
 
-        while update_requested() or not stdin_ready():
-            while evtloop.Pending():
-                evtloop.Dispatch()
-            app.ProcessIdle()
-            try:
-                sleep(0.001*POLLTIME)
-            except KeyboardInterrupt:
-                # print 'INTERRUPT', ON_INTERRUPT, hasattr(ON_INTERRUPT, '__call__')
-                if hasattr(ON_INTERRUPT, '__call__'):
-                    ON_INTERRUPT()
-            clear_update_request()
-
-        activator = None
-        # del activator
-    return 0
-
-def input_handler3():
-    """Run the wx event loop by processing pending events only.
-
-    This approach seems to work, but its performance is not great as it
-    relies on having PyOS_InputHook called regularly.
-    """
-    global ON_INTERRUPT
-    try:
-        app = wx.GetApp()
-        if app is not None:
-            assert wx.Thread_IsMain()
-            # Make a temporary event loop and process system events until
-            # there are no more waiting, then allow idle events (which
-            # will also deal with pending or posted wx events.)
-            evtloop = wx.EventLoop()
-            ea = wx.EventLoopActivator(evtloop)
-            while evtloop.Pending():
-                evtloop.Dispatch()
-            app.ProcessIdle()
-            del ea
-    except KeyboardInterrupt:
-        if hasattr(ON_INTERRUPT, '__call__'):
-            ON_INTERRUPT()
-    return 0
-
-input_handler = input_handler1
+if sys.platform == 'darwin':
+    # On OSX, evtloop.Pending() always returns True, regardless of there being
+    # any events pending. As such we can't use implementations 1 or 3 of the
+    # inputhook as those depend on a pending/dispatch loop.
+    inputhook_wx = inputhook_darwin
 
 input_hook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
-cback = CFUNCTYPE(c_int)(input_handler)
+cback = CFUNCTYPE(c_int)(inputhook_wx)
 input_hook.value = cast(cback, c_void_p).value
 
 def ping(timeout=0.001):
