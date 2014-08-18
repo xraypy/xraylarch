@@ -97,10 +97,11 @@ class Xspress3(Device):
                 name, dat = cp.get('rois', a).split('|')
                 lims = [int(i) for i in dat.split()]
                 lo, hi = lims[0], lims[1]
+                # print('ROI ', name, lo, hi)
                 roi = ROI(prefix=prefix, roi=iroi)
-                roi.left = lo
-                roi.right = hi
-                roi.name = name.strip()
+                roi.LO = lo
+                roi.HI = hi
+                roi.NM = name.strip()
                 rois.append(roi)
                 iroi += 1
 
