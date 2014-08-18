@@ -107,7 +107,10 @@ class Epics_Xspress3(object):
         return np.arange(self.NPTS)*.010
 
     def get_array(self, mca=1):
-        out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
+        try:
+            out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
+        except TypeError:
+            out = np.arange(self.NPTS)*0.91
         out[np.where(out<0.91)]= 0.91
         return out
 
