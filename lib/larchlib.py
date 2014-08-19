@@ -59,6 +59,7 @@ class LarchExceptionHolder:
         for tb in tbfull:
             if not (sys.prefix in tb[0] and
                     ('ast.py' in tb[0] or
+                     os.path.join('larch', 'utils') in tb[0] or
                      os.path.join('larch', 'interpreter') in tb[0] or
                      os.path.join('larch', 'symboltable') in tb[0])):
                 tb_list.append(tb)
