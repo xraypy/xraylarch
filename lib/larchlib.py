@@ -14,13 +14,25 @@ from .utils import Closure
 from .symboltable import Group
 from .site_config import sys_larchdir, usr_larchdir
 
-VALID_ERRORCOLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
+VALID_ERRORCOLORS = ('grey', 'red', 'green', 'yellow',
+                     'blue', 'magenta', 'cyan', 'white')
 HAS_COLORTERM = False
+
 try:
     from termcolor import colored
     HAS_COLORTERM = (os.name != 'nt')
 except:
     pass
+
+class LarchPluginException(Exception):
+    """Exception with Larch Plugin"""
+    def __init__(self, msg):
+        Exception.__init__(self)
+        self.msg = msg
+
+    def __str__(self):
+        return "\n%s" % (self.msg)
+
 
 class Empty:
     def __nonzero__(self): return False
