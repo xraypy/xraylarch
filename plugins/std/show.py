@@ -5,8 +5,9 @@
 import sys
 import types
 import numpy
-from larch import Group
+from larch import Group, ValidateLarchPlugin
 
+@ValidateLarchPlugin
 def _get(sym=None, _larch=None, **kws):
     """get object from symbol table from symbol name:
 
@@ -15,8 +16,6 @@ def _get(sym=None, _larch=None, **kws):
     'a string'
 
     """
-    if _larch is None:
-        raise Warning("cannot show group -- larch broken?")
     if sym is None:
         sym = '_main'
     group = None
@@ -31,6 +30,7 @@ def _get(sym=None, _larch=None, **kws):
     return group
 
 
+@ValidateLarchPlugin
 def _show(sym=None, _larch=None, with_private=False, **kws):
     """display group members.
     Options
@@ -39,8 +39,6 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
 
     See Also:  show_tree()
     """
-    if _larch is None:
-        raise Warning("cannot show group -- larch broken?")
     if sym is None:
         sym = '_main'
     group = None
@@ -86,6 +84,7 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
     _larch.writer.write("%s\n" % '\n'.join(out))
 
 
+@ValidateLarchPlugin
 def show_tree(group, _larch=None, indent=0, groups_shown=None, **kws):
     """show members of a Group, with a tree structure for sub-groups
 
@@ -121,6 +120,7 @@ def group2dict(group, _larch=None):
 def dict2group(d, _larch=None):
     "return group created from a dictionary"
     return Group(**d)
+
 
 def initializeLarchPlugin(_larch=None):
     """initialize show and friends"""

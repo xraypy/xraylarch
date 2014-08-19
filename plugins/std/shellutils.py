@@ -11,6 +11,7 @@ import os
 import sys
 from copy import copy, deepcopy
 from glob import glob
+from larch import ValidateLarchPlugin
 
 MODNAME = '_builtin'
 
@@ -22,10 +23,12 @@ def _deepcopy(obj, **kws):
     """deep copy an object"""
     return deepcopy(obj)
 
+@ValidateLarchPlugin
 def _parent(name, _larch=None, **kw):
     "print out parent group name of an object"
     print(_larch.symtable._lookup(name, create=False))
 
+@ValidateLarchPlugin
 def _ls(directory='.', _larch=None, **kws):
     """return a list of files in the current directory"""
     directory.strip()
@@ -67,6 +70,7 @@ def _mkdir(name, mode=0o777, **kws):
     """
     return os.makedirs(name, mode=mode)
 
+@ValidateLarchPlugin
 def show_more(text, filename=None, writer=None,
               pagelength=30, prefix='', _larch=None, **kws):
     """show lines of text in the style of more """
@@ -98,6 +102,7 @@ def show_more(text, filename=None, writer=None,
                 writer.write("\n")
                 return
 
+@ValidateLarchPlugin
 def _more(fname, pagelength=32, _larch=None, **kws):
     """list file contents:
     > more('file.txt')
@@ -106,10 +111,7 @@ You can specify the number of lines to show at a time
 with the  pagelength option:
     > more('file.txt', pagelength=10)
     """
-    output = sys.stdout.write
-    if _larch is not None:
-        output = _larch.writer.write
-
+    output = _larch.writer.write
     if not os.path.exists(fname):
         output("File '%s' not found.\n" % fname)
         return

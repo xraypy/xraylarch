@@ -192,12 +192,12 @@ class ImageDisplay(ImageFrame):
         if iy is not None:  set('%s_iy' % self.symname, iy)
         if val is not None: set('%s_val' % self.symname, val)
 
+@larch.ValidateLarchPlugin
 def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
                 xrf=False, image=False):
     """make a plotter"""
     # global PLOT_DISPLAYS, IMG_DISPlAYS
-    if _larch is None:
-        return
+
     win = max(1, min(MAX_WINDOWS, int(abs(win))))
     title   = 'Plot Window %i' % win
     symname = '%s.plot%i' % (MODNAME, win)
@@ -225,6 +225,7 @@ def _getDisplay(win=1, _larch=None, wxparent=None, size=None,
         display.SetTitle(title)
     return display
 
+@larch.ValidateLarchPlugin
 def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=None,
               wxparent=None, size=None, side='left', force_draw=True, **kws):
     """xrf_plot(energy, data[, win=1], options])
@@ -274,6 +275,7 @@ def _xrf_plot(x=None, y=None, mca=None, win=1, new=True, as_mca2=False, _larch=N
     else:
         plotter.oplot(x, y, mca=mca, **kws)
 
+@larch.ValidateLarchPlugin
 def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
     """xrf_oplot(energy, data[, win=1], options])
 
@@ -293,6 +295,7 @@ def _xrf_oplot(x=None, y=None, mca=None, win=1, _larch=None, **kws):
     """
     _xrf_plot(x=x, y=y, mca=mca, win=win, _larch=_larch, new=False, **kws)
 
+@larch.ValidateLarchPlugin
 def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
           force_draw=True, side='left', **kws):
     """plot(x, y[, win=1], options])
@@ -342,6 +345,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
     if force_draw:
         update(_larch=_larch)
 
+@larch.ValidateLarchPlugin
 def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
                  side='left', redraw=False, **kws):
     """update a plot trace with new data, avoiding complete redraw"""
@@ -354,6 +358,7 @@ def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
     plotter.panel.update_line(trace, x, y, draw=True, side=side)
     update(_larch)
 
+@larch.ValidateLarchPlugin
 def update(_larch=None, **kws):
     _larch.symtable.set_symbol('_sys.wx.force_wxupdate', True)
     try:
@@ -361,6 +366,8 @@ def update(_larch=None, **kws):
     except:
         pass
 
+
+@larch.ValidateLarchPlugin
 def _oplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
     """oplot(x, y[, win=1[, options]])
 
@@ -374,6 +381,9 @@ def _oplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
     """
     _plot(x, y, win=win, size=size, new=False, _larch=_larch, wxparent=wxparent, **kws)
 
+
+
+@larch.ValidateLarchPlugin
 def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
     """newplot(x, y[, win=1[, options]])
 
@@ -387,6 +397,7 @@ def _newplot(x, y, win=1, _larch=None, wxparent=None,  size=None, **kws):
     """
     _plot(x, y, win=win, size=size, new=True, _larch=_larch, wxparent=wxparent, **kws)
 
+@larch.ValidateLarchPlugin
 def _plot_text(text, x, y, win=1, side='left', size=None,
                rotation=None, ha='left', va='center',
                _larch=None, wxparent=None,  **kws):
@@ -415,6 +426,7 @@ def _plot_text(text, x, y, win=1, side='left', size=None,
     plotter.add_text(text, x, y, side=side,
                      rotation=rotation, ha=ha, va=va, **kws)
 
+@larch.ValidateLarchPlugin
 def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
                 shape='full', color='black',
                 width=0.02, head_width=0.20,
@@ -448,7 +460,7 @@ def _plot_arrow(x1, y1, x2, y2, win=1, side='left',
     plotter.add_arrow(x1, y1, x2, y2, side=side, shape=shape,
                       color=color, width=width, head_width=head_width, **kws)
 
-
+@larch.ValidateLarchPlugin
 def _plot_marker(x, y, marker='o', size=4, color='black',
                _larch=None, wxparent=None,  win=1, **kws):
 
@@ -475,6 +487,7 @@ def _plot_marker(x, y, marker='o', size=4, color='black',
     plotter.oplot([x], [y], marker=marker, markersize=size,
                  color=color, _larch=_larch, wxparent=wxparent,  **kwds)
 
+@larch.ValidateLarchPlugin
 def _plot_axhline(y, xmin=0, xmax=1, win=1, size=None,
                   wxparent=None, _larch=None, **kws):
     """plot_axhline(y, xmin=None, ymin=None, **kws)
@@ -495,6 +508,7 @@ def _plot_axhline(y, xmin=0, xmax=1, win=1, size=None,
     plotter.panel.axes.axhline(y, xmin=xmin, xmax=xmax, **kws)
     plotter.panel.canvas.draw()
 
+@larch.ValidateLarchPlugin
 def _plot_axvline(x, ymin=0, ymax=1, win=1, size=None,
                   wxparent=None, _larch=None, **kws):
     """plot_axvline(y, xmin=None, ymin=None, **kws)
@@ -515,6 +529,7 @@ def _plot_axvline(x, ymin=0, ymax=1, win=1, size=None,
     plotter.panel.axes.axvline(x, ymin=ymin, ymax=ymax, **kws)
     plotter.panel.canvas.draw()
 
+@larch.ValidateLarchPlugin
 def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None, **kws):
     """get_cursor(win=1, timeout=30)
 
@@ -554,6 +569,7 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None, **kws):
     return (symtable.get_symbol(xsym), symtable.get_symbol(ysym))
 
 
+@larch.ValidateLarchPlugin
 def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
           force_draw=True,  **kws):
     """scatterplot(x, y[, win=1], options])
@@ -572,7 +588,7 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
         update(_larch=_larch)
 
 
-
+@larch.ValidateLarchPlugin
 def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
             wxparent=None, size=None, **kws):
     """imshow(map[, options])
@@ -585,6 +601,7 @@ def _imshow(map, x=None, y=None, colormap=None, win=1, _larch=None,
     if img is not None:
         img.display(map, x=x, y=y, colormap=colormap, **kws)
 
+@larch.ValidateLarchPlugin
 def _contour(map, x=None, y=None, **kws):
     """contour(map[, options])
 
@@ -595,6 +612,7 @@ def _contour(map, x=None, y=None, **kws):
     kws.update(dict(style='contour'))
     _imshow(map, x=x, y=y, **kws)
 
+@larch.ValidateLarchPlugin
 def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
               size=None, facecolor='w', edgecolor='w', quality=90,
               image=False, **kws):
@@ -622,11 +640,13 @@ def _saveplot(fname, dpi=300, format=None, win=1, _larch=None, wxparent=None,
         print('unsupported image format: ', format)
     os.chdir(thisdir)
 
+@larch.ValidateLarchPlugin
 def _saveimg(fname, _larch=None, **kws):
     """save image from image display"""
     kws.update({'image':True})
     _saveplot(fname, _larch=_larch, **kws)
 
+@larch.ValidateLarchPlugin
 def _closeDisplays(_larch=None, **kws):
     names = PLOT_DISPLAYS.keys()
     for name in names:
@@ -638,6 +658,7 @@ def _closeDisplays(_larch=None, **kws):
         win.Destroy()
 
 
+@larch.ValidateLarchPlugin
 def initializeLarchPlugin(_larch=None):
     """initialize plotter"""
     cmds = ['plot', 'oplot', 'newplot', 'imshow', 'contour']
