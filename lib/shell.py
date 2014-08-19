@@ -133,6 +133,8 @@ class shell(cmd.Cmd):
                         fname = err.fname
                         if err.lineno is not None:
                             lineno = err.lineno
+                    if err.tback is not None:
+                        sys.stdout.write(err.tback)
                     sys.stdout.write("%s\n" % err.get_error(fname=fname, lineno=lineno)[1])
                     for err in self.larch.error:
                         if self.debug or ((err.fname != fname or err.lineno != lineno)
