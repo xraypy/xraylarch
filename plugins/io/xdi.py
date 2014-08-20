@@ -8,9 +8,9 @@ import ctypes.util
 
 __version__ = '1.1.0larch'
 
-import larch
+from larch import ValidateLarchPlugin, use_plugin_path
 from larch.larchlib import get_dll
-larch.use_plugin_path('xray')
+use_plugin_path('xray')
 from physical_constants import RAD2DEG, PLANCK_HC
 from numpy import array, exp, log, sin, arcsin
 
@@ -32,7 +32,7 @@ class XDIFileStruct(ctypes.Structure):
                 ('comments',      ctypes.c_char_p),
                 ('error_line',    ctypes.c_char_p),
                 ('array_labels',  ctypes.c_void_p),
-                ('outer_label',   ctypes.c_char_p),                
+                ('outer_label',   ctypes.c_char_p),
                 ('array_units',   ctypes.c_void_p),
                 ('meta_families', ctypes.c_void_p),
                 ('meta_keywords', ctypes.c_void_p),
@@ -118,15 +118,15 @@ class XDIFile(object):
         self.array_labels = (self.narrays*pchar).from_address(xdi.array_labels)[:]
         arr_units  = (self.narrays*pchar).from_address(xdi.array_units)[:]
         self.array_units = []
-        self.array_addrs = []        
+        self.array_addrs = []
         for unit in arr_units:
             addr = ''
             if '||' in unit:
                 unit, addr = [x.strip() for x in unit.split('||', 1)]
             self.array_units.append(unit)
             self.array_addrs.append(addr)
-                
-            
+
+
         mfams = (self.nmetadata*pchar).from_address(xdi.meta_families)[:]
         mkeys = (self.nmetadata*pchar).from_address(xdi.meta_keywords)[:]
         mvals = (self.nmetadata*pchar).from_address(xdi.meta_values)[:]
@@ -140,7 +140,7 @@ class XDIFile(object):
 
         parrays = (xdi.narrays*ctypes.c_void_p).from_address(xdi.array)[:]
         rawdata = [(xdi.npts*ctypes.c_double).from_address(p)[:] for p in parrays]
-        
+
         nout = xdi.nouter
         outer, breaks = [], []
         if nout > 1:
@@ -150,8 +150,8 @@ class XDIFile(object):
             delattr(self, attr)
         self.outer_array    = array(outer)
         self.outer_breakpts = array(breaks)
-        
-        
+
+
         rawdata = array(rawdata)
         rawdata.shape = (self.narrays, self.npts)
         self.rawdata = rawdata
@@ -221,12 +221,9 @@ class XDIFile(object):
             elif hasattr(self, 'murefer') and not hasattr(self, 'irefer'):
                 self.irefer = self.itrans * exp(-self.murefer)
 
-
+@ValidateLarchPlugin
 def read_xdi(fname, _larch=None):
     """simple mapping of XDI file to larch groups"""
-    if _larch is None:
-        raise Warning("cannot read xdigroup -- larch broken?")
-
     x = XDIFile(fname)
     group = _larch.symtable.create_group()
     group.__name__ ='XDI file %s' % fname

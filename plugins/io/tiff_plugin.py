@@ -8,8 +8,6 @@ from tifffile import imread, imshow, TIFFfile
 
 def read_tiff(fname, _larch=None, *args, **kws):
     """read image data from a TIFF file as an array"""
-    if _larch is None:
-        raise Warning("cannot read tiff -- larch broken?")
     return imread(fname, *args, **kws)
 
 def tiff_object(fname, _larch=None, *args, **kws):
@@ -18,10 +16,7 @@ def tiff_object(fname, _larch=None, *args, **kws):
 
       series():  series of TIFF pages, with shape and properties
       asarray(): return image data as array (as read_tiff)
-
     """
-    if _larch is None:
-        raise Warning("cannot read tiff -- larch broken?")
     return TIFFfile(fname)
 
 def registerLarchPlugin():

@@ -4,7 +4,8 @@ import numpy as np
 from scipy.signal import convolve
 
 import larch
-from larch.larchlib import use_plugin_path, get_dll
+from larch import use_plugin_path, ValidateLarchPlugin
+from larch.larchlib import get_dll
 
 use_plugin_path('xray')
 
@@ -14,6 +15,7 @@ from xraydb_plugin import core_width, atomic_number
 MODNAME = '_xray'
 CLLIB = None
 
+@ValidateLarchPlugin
 def f1f2(z, energies, width=None, edge=None, _larch=None):
     """Return anomalous scattering factors f1, f2 from Cromer-Liberman
 
@@ -95,4 +97,4 @@ if __name__ == '__main__':
     en = np.linspace(8000, 9200, 51)
     f1, f2 = f1f2(29, en)
     print( en, f1, f2)
-    
+

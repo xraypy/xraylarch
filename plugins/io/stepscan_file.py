@@ -5,6 +5,7 @@ Output data file from Epics Step Scan (slightly different from gse_escan)
 
 import time
 import numpy as np
+from larch import ValidateLarchPlugin
 
 COM1 = '#'
 COM2 = '##'
@@ -120,10 +121,9 @@ class EpicsScanData(object):
         self.comments = '\n'.join(self.comments)
         self.data = np.array(self.data).transpose()
 
-def stepscan_group(fname, _larch=None, **kws):
+@ValidateLarchPlugin
+def read_stepscan(fname, _larch=None, **kws):
     """read Epics Step Scan file to larch Group"""
-    if _larch is None:
-        raise Warning("cannot read stepcan file -- larch broken?")
 
     scan = EpicsScanData(fname)
     group = _larch.symtable.create_group()
@@ -136,4 +136,4 @@ def stepscan_group(fname, _larch=None, **kws):
     return group
 
 def registerLarchPlugin():
-    return ('_io', {'read_stepscan': stepscan_group})
+    return ('_io', {'read_stepscan': read_stepscan})

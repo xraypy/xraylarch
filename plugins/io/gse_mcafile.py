@@ -5,6 +5,7 @@ import sys
 import copy
 import bisect
 import numpy
+from larch import ValidateLarchPlugin
 
 MIN_SLOPE   = 1.e-12
 MIN_EN     = -1.   # in keV
@@ -241,12 +242,9 @@ class GSE_MCAFile:
         f.close()
 
 
-
+@ValidateLarchPlugin
 def gsemca_group(fname, _larch=None, **kws):
     """simple mapping of GSECARS MCA file to larch groups"""
-    if _larch is None:
-        raise Warning("cannot read GSE XRF group -- larch broken?")
-
     xfile = GSE_MCAFile(fname)
     group = _larch.symtable.create_group()
     group.__name__ ='GSE XRF Data file %s' % fname

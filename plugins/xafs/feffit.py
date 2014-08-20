@@ -10,6 +10,7 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 from scipy.optimize import leastsq as scipy_leastsq
 
 from larch import (Group, Parameter, isParameter, Minimizer,
+                   ValidateLarchPlugin,
                    use_plugin_path, isNamedClass)
 
 use_plugin_path('math')
@@ -312,6 +313,7 @@ class FeffitDataSet(Group):
             for p in self.pathlist:
                 xft(p.chi, group=p, rmax_out=rmax_out)
 
+@ValidateLarchPlugin
 def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
     """create a Feffit Dataset group.
 
@@ -330,6 +332,7 @@ def feffit_dataset(data=None, pathlist=None, transform=None, _larch=None):
     return FeffitDataSet(data=data, pathlist=pathlist,
                          transform=transform, _larch=_larch)
 
+@ValidateLarchPlugin
 def feffit_transform(_larch=None, **kws):
     """create a feffit transform group
 
@@ -356,6 +359,7 @@ def feffit_transform(_larch=None, **kws):
     """
     return TransformGroup(_larch=_larch, **kws)
 
+@ValidateLarchPlugin
 def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws):
     """execute a Feffit fit: a fit of feff paths to a list of datasets
 
@@ -474,6 +478,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     return Group(name='feffit fit results', fit=fit, params=params,
                  datasets=datasets)
 
+@ValidateLarchPlugin
 def feffit_report(result, min_correl=0.1, with_paths=True,
                   _larch=None):
     """return a printable report of fit for feffit

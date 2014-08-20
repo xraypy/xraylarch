@@ -3,7 +3,8 @@
 
 import ctypes
 import numpy as np
-from larch.larchlib import use_plugin_path, get_dll
+from larch import ValidateLarchPlugin, use_plugin_path
+from larch.larchlib import get_dll
 
 use_plugin_path('xray')
 
@@ -17,6 +18,7 @@ EINS_FACTOR = 1.e20*consts.hbar**2/(2*consts.k*consts.atomic_mass)
 
 FEFF6LIB = None
 
+@ValidateLarchPlugin
 def sigma2_eins(t, theta, path=None, _larch=None):
     """calculate sigma2 for a Feff Path wih the einstein model
 
@@ -52,6 +54,7 @@ def sigma2_eins(t, theta, path=None, _larch=None):
     tx = theta/(2.0*t)
     return EINS_FACTOR/(theta * fdat.rmass * np.tanh(tx))
 
+@ValidateLarchPlugin
 def sigma2_debye(t, theta, path=None, _larch=None):
     """calculate sigma2 for a Feff Path wih the correlated Debye model
 

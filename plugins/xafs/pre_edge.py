@@ -6,7 +6,8 @@
 import numpy as np
 from scipy import polyfit
 
-from larch import Group, Parameter, Minimizer, isgroup, use_plugin_path
+from larch import (Group, Parameter, ValidateLarchPlugin,
+                   Minimizer, isgroup, use_plugin_path)
 
 use_plugin_path('math')
 use_plugin_path('xafs')
@@ -20,6 +21,7 @@ from xafsutils import set_xafsGroup
 MODNAME = '_xafs'
 MAX_NNORM = 5
 
+@ValidateLarchPlugin
 def find_e0(energy, mu=None, group=None, _larch=None):
     """calculate E0 given mu(energy)
 
@@ -41,9 +43,6 @@ def find_e0(energy, mu=None, group=None, _larch=None):
        Support See First Argument Group convention, requiring group
        members 'energy' and 'mu'
     """
-    if _larch is None:
-        raise Warning("cannot find e0 -- larch broken?")
-
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='find_e0')
@@ -68,6 +67,7 @@ def flat_resid(pars):
     c0, c1, c2 =  pars.c0.value,  pars.c1.value,  pars.c2.value
     return  (pars.mu - (c0 + pars.en * (c1 + pars.en * c2)))
 
+@ValidateLarchPlugin
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
              norm1=100, norm2=None, _larch=None):
@@ -122,10 +122,6 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
        If it exists, group.e0 will be used as e0.
        See First Argrument Group in Documentation
     """
-
-    if _larch is None:
-        raise Warning("cannot remove pre_edge -- larch broken?")
-
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='pre_edge')

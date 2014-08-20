@@ -5,6 +5,7 @@
 import os
 import time
 import numpy as np
+from larch import ValidateLarchPlugin
 from larch.utils import fixName
 from larch.symboltable import isgroup
 
@@ -262,6 +263,7 @@ def _read_ascii0(fname, commentchar='#;%', labels=None, sort=False, sort_column=
             setattr(group, key, val)
     return group
 
+@ValidateLarchPlugin
 def write_ascii(filename, *args, **kws):
     """
     write a list of items to an ASCII column file
@@ -276,9 +278,7 @@ def write_ascii(filename, *args, **kws):
 
     """
     ARRAY_MINLEN = 5
-    _larch = kws.get('_larch', None)
-    if _larch is None:
-        raise Warning("cannot calculate autobk spline -- larch broken?")
+    _larch = kws['_larch']
     com = kws.get('commentchar', '#')
     label = kws.get('label', None)
     header = kws.get('header', [])
@@ -331,6 +331,7 @@ def write_ascii(filename, *args, **kws):
 
     _larch.writer.write("wrote to file '%s'\n" % filename)
 
+@ValidateLarchPlugin
 def write_group(filename, group, scalars=None,
                 arrays=None, arrays_like=None,
                 commentchar='#',  _larch=None):

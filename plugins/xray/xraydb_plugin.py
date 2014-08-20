@@ -1,8 +1,7 @@
 import sys
 from math import pi
 import larch
-from larch import Group
-from larch.larchlib import use_plugin_path
+from larch import Group, use_plugin_path, ValidateLarchPlugin
 
 use_plugin_path('xray')
 
@@ -40,6 +39,7 @@ def get_xraydb(_larch):
     _larch.symtable.set_symbol(symname, xraydb)
     return xraydb
 
+@ValidateLarchPlugin
 def f0(ion, q, _larch=None):
     """returns elastic x-ray scattering factor, f0(q), for an ion.
 
@@ -58,10 +58,10 @@ def f0(ion, q, _larch=None):
     Z values from 1 to 98 (and symbols 'H' to 'Cf') are supported.
     The list of ionic symbols can be read with the function .f0_ions()
     """
-    if _larch is None:  return
     xdb = get_xraydb(_larch)
     return xdb.f0(ion, q)
 
+@ValidateLarchPlugin
 def f0_ions(element=None, _larch=None):
     """return list of ion names supported in the f0() calculation from
     Waasmaier and Kirfel.
@@ -74,10 +74,10 @@ def f0_ions(element=None, _larch=None):
     if element is None, all 211 ions are returned.  If element is
     not None, the ions for that element (atomic symbol) are returned
     """
-    if _larch is None:  return
     xdb = get_xraydb(_larch)
     return xdb.f0_ions(element=element)
 
+@ValidateLarchPlugin
 def chantler_energies(element, emin=0, emax=1.e9, _larch=None):
     """ return array of energies (in eV) at which data is
     tabulated in the Chantler tables for a particular element.
@@ -89,11 +89,10 @@ def chantler_energies(element, emin=0, emax=1.e9, _larch=None):
     emin:  lower bound of energies in eV returned (default=0)
     emax:  upper bound of energies in eV returned (default=1.e9)
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.chantler_energies(element, emin=emin, emax=emax)
 
+@ValidateLarchPlugin
 def chantler_data(element, energy, column, _larch=None, **kws):
     """returns data from Chantler tables.
 
@@ -103,11 +102,10 @@ def chantler_data(element, energy, column, _larch=None, **kws):
     energy:   energy or array of energies in eV
     column:   one of 'f1', 'f2', 'mu_photo', 'mu_incoh', 'mu_total'
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb._getChantler(element, energy, column=column, **kws)
 
+@ValidateLarchPlugin
 def f1_chantler(element, energy, _larch=None, **kws):
     """returns real part of anomalous x-ray scattering factor for
     a selected element and input energy (or array of energies) in eV.
@@ -120,11 +118,10 @@ def f1_chantler(element, energy, _larch=None, **kws):
     element:  atomic number, atomic symbol for element
     energy:   energy or array of energies in eV
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb._getChantler(element, energy, column='f1', **kws)
 
+@ValidateLarchPlugin
 def f2_chantler(element, energy, _larch=None):
     """returns imaginary part of anomalous x-ray scattering factor for
     a selected element and input energy (or array of energies) in eV.
@@ -137,11 +134,10 @@ def f2_chantler(element, energy, _larch=None):
     element:  atomic number, atomic symbol for element
     energy:   energy or array of energies in eV
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb._getChantler(element, energy, column='f2')
 
+@ValidateLarchPlugin
 def mu_chantler(element, energy, incoh=False, photo=False, _larch=None):
     """returns x-ray mass attenuation coefficient, mu/rho, for a
     selected element and input energy (or array of energies) in eV.
@@ -158,14 +154,13 @@ def mu_chantler(element, energy, incoh=False, photo=False, _larch=None):
 
     The default is to return total attenuation coefficient.
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     col = 'mu_total'
     if photo: col = 'mu_photo'
     if incoh: col = 'mu_incoh'
     return xdb._getChantler(element, energy, column=col)
 
+@ValidateLarchPlugin
 def mu_elam(element, energy, kind='total', _larch=None):
     """returns x-ray mass attenuation coefficient, mu/rho, for a
     selected element and input energy (or array of energies) in eV.
@@ -183,11 +178,10 @@ def mu_elam(element, energy, kind='total', _larch=None):
 
     Data from Elam, Ravel, and Sieber.
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.mu_elam(element, energy, kind=kind)
 
+@ValidateLarchPlugin
 def coherent_cross_section_elam(element, energy, _larch=None):
     """returns coherent scattering cross section
     selected element and input energy (or array of energies) in eV.
@@ -200,11 +194,10 @@ def coherent_cross_section_elam(element, energy, _larch=None):
     element:  atomic number, atomic symbol for element
     energy:   energy or array of energies in eV
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.coherent_cross_section_elam(element, energy)
 
+@ValidateLarchPlugin
 def incoherent_cross_section_elam(element, energy, _larch=None):
     """returns incoherent scattering cross section
     selected element and input energy (or array of energies) in eV.
@@ -217,43 +210,38 @@ def incoherent_cross_section_elam(element, energy, _larch=None):
     element:  atomic number, atomic symbol for element
     energy:   energy or array of energies in eV
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.incoherent_cross_section_elam(element, energy)
 
+@ValidateLarchPlugin
 def atomic_number(element, _larch=None):
     "return z for element name"
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return int(xdb._getElementData(element).atomic_number)
 
+@ValidateLarchPlugin
 def atomic_symbol(z, _larch=None):
     "return element symbol from z"
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb._getElementData(z).element
 
+@ValidateLarchPlugin
 def atomic_mass(element, _larch=None):
     "return molar mass (amu) from element symbol or atomic number"
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
         element = atomic_symbol(element, _larch=_larch)
     return xdb._getElementData(element).molar_mass
 
+@ValidateLarchPlugin
 def atomic_density(element, _larch=None):
     "return density (gr/cm^3) from element symbol or atomic number"
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     if isinstance(element, int):
         element = atomic_symbol(element, _larch=_larch)
     return xdb._getElementData(element).density
 
+@ValidateLarchPlugin
 def xray_edges(element, _larch=None):
     """returns dictionary of all x-ray absorption edge energies
     (in eV), fluorescence yield, and jump ratio for an element.
@@ -264,22 +252,20 @@ def xray_edges(element, _larch=None):
 
     Data from Elam, Ravel, and Sieber
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.xray_edges(element)
 
+@ValidateLarchPlugin
 def xray_edge(element, edge, _larch=None):
     """returns edge energy (in eV), fluorescence yield, and
     jump ratio for an element and edge.
 
     Data from Elam, Ravel, and Sieber
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.xray_edge(element, edge)
 
+@ValidateLarchPlugin
 def xray_lines(element, initial_level=None, excitation_energy=None,
                _larch=None):
     """returns dictionary of x-ray emission lines of an element, with
@@ -297,12 +283,11 @@ def xray_lines(element, initial_level=None, excitation_energy=None,
 
     Data from Elam, Ravel, and Sieber.
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.xray_lines(element, initial_level=initial_level,
                           excitation_energy=excitation_energy)
 
+@ValidateLarchPlugin
 def xray_line(element, line='Ka', _larch=None):
     """returns data for an  x-ray emission lines of an element, given
     the siegbahn notation for the like (Ka1, Lb1, etc).  Returns:
@@ -318,8 +303,6 @@ def xray_line(element, line='Ka', _larch=None):
 
     Data from Elam, Ravel, and Sieber.
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     lines = xdb.xray_lines(element)
 
@@ -342,8 +325,7 @@ def xray_line(element, line='Ka', _larch=None):
     else:
         return lines.get(line.title(), None)
 
-
-
+@ValidateLarchPlugin
 def fluo_yield(symbol, edge, emission, energy,
                energy_margin=-150, _larch=None):
     """Given
@@ -391,6 +373,7 @@ def fluo_yield(symbol, edge, emission, energy,
         fyield = 0
     return fyield, net_ener, net_prob
 
+@ValidateLarchPlugin
 def CK_probability(element, initial, final, total=True, _larch=None):
     """return transition probability for an element, initial, and final levels.
 
@@ -404,11 +387,10 @@ def CK_probability(element, initial, final, total=True, _larch=None):
 
     Data from Elam, Ravel, and Sieber.
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.CK_probability(element, initial, final, total=total)
 
+@ValidateLarchPlugin
 def core_width(element=None, edge=None, _larch=None):
     """returns core hole width for an element and edge
 
@@ -420,8 +402,6 @@ def core_width(element=None, edge=None, _larch=None):
 
     Data from Keski-Rahkonen and Krause
     """
-    if _larch is None:
-        return
     xdb = get_xraydb(_larch)
     return xdb.corehole_width(element=element, edge=edge)
 

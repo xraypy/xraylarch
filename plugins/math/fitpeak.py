@@ -29,8 +29,8 @@ Basic Fitting Models for 1-D data, simplifying fits to many standard line shapes
 import numpy as np
 from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
 
-import larch
-from larch import Group, Parameter, Minimizer, use_plugin_path, fitting
+from larch import (Group, Parameter, Minimizer, use_plugin_path, fitting,
+                   ValidateLarchPlugin)
 
 use_plugin_path('math')
 from mathutils import index_nearest, index_of
@@ -231,7 +231,7 @@ class GaussianModel(PeakModel):
     amplitude, center, sigma, optional background"""
     def __init__(self, amplitude=1, center=0, sigma=1,
                  negative=False, background=None, **kws):
-        PeakModel.__init__(self, amplitude=amplitude, center=center, 
+        PeakModel.__init__(self, amplitude=amplitude, center=center,
                            sigma=sigma, negative=negative,
                            background=background, **kws)
         self.add_param('fwhm',  expr='2.354820*sigma', vary=False)
@@ -348,7 +348,7 @@ class RectangularModel(FitModel):
                  center2=1, width2=None, step='linear',
                  negative=False, background=None, **kws):
         FitModel.__init__(self, background=background, **kws)
-           
+
         self.add_param('height',   value=height)
         self.add_param('center1',  value=center1)
         self.add_param('width1',   value=width1, min=1.e-10)
@@ -412,6 +412,7 @@ MODELS = {'linear': LinearModel,
           'voigt': VoigtModel,
           }
 
+@ValidateLarchPlugin
 def fit_peak(x, y, model, dy=None, background=None, step=None,
              negative=False, use_gamma=False, _larch=None):
     """fit peak to one a selection of simple 1d models
@@ -440,9 +441,6 @@ def fit_peak(x, y, model, dy=None, background=None, step=None,
     -------
     Group with fit parameters, and more...
     """
-    if _larch is None:
-        raise Warning("cannot fit peak -- larch broken?")
-
     out = Group(x=x*1.0, y=y*1.0, dy=1.0, model=model,
                 background=background, step=step)
     if dy is not None:

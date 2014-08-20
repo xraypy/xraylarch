@@ -6,15 +6,14 @@
 import h5py
 import numpy
 from larch.utils import Closure, fixName
-
+from larch import ValidateLarchPlugin
 import scipy.io.netcdf
 
+@ValidateLarchPlugin
 def netcdf_group(fname, _larch=None, **kws):
     """open a NetCDF file and map the variables in it to larch groups
     g = netcdf_group('tmp.nc')
     """
-    if _larch is None:
-        raise Warning("cannot run netcdf_file: larch broken?")
     finp = scipy.io.netcdf.netcdf_file(fname, mode='r')
     group = _larch.symtable.create_group()
     for k, v in finp.variables.items():
@@ -35,6 +34,7 @@ def h5file(fname, mode='r', _larch=None):
     """
     return h5py.File(fname, mode)
 
+@ValidateLarchPlugin
 def h5group(fname, mode='r+', _larch=None):
     """open an HDF5 file, and map to larch groups
     g = h5group('myfile.h5')
@@ -50,8 +50,6 @@ def h5group(fname, mode='r+', _larch=None):
      2. Attributes of groups and datasets are generally placed in
        'itemname_attrs'.
     """
-    if _larch is None:
-        raise Warning("cannot run h5group: larch broken?")
     fh = h5py.File(fname, mode)
     group = _larch.symtable.create_group
 

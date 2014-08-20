@@ -2,7 +2,8 @@
 Utility functions used for xafs analysis
 """
 import numpy as np
-from larch import Group
+from larch import Group, ValidateLarchPlugin
+
 import scipy.constants as consts
 KTOE = 1.e20*consts.hbar**2 / (2*consts.m_e * consts.e) # 3.8099819442818976
 ETOK = 1.0/KTOE
@@ -41,7 +42,7 @@ def ktoe(k):
     """convert photo-electron wavenumber to energy"""
     return k*k*KTOE
 
-
+@ValidateLarchPlugin
 def set_xafsGroup(group, _larch=None):
     """set _sys.xafsGroup to the supplied group (if not None)
 

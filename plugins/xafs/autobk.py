@@ -2,8 +2,8 @@
 import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 
-from larch import Group, Parameter, Minimizer, use_plugin_path, isgroup
-
+from larch import Group, Parameter, Minimizer
+from larch import ValidateLarchPlugin, use_plugin_path, isgroup
 # use larch plugins
 use_plugin_path('math')
 use_plugin_path('xafs')
@@ -52,6 +52,7 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
          abs(clamp_lo)*chi[:nclamp]/csum,
          abs(clamp_hi)*chi[-nclamp:]*(kout[-nclamp:]**kweight)/csum))
 
+@ValidateLarchPlugin
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
            edge_step=None, kmin=0, kmax=None, kweight=1, dk=0,
            win='hanning', k_std=None, chi_std=None, nfft=2048, kstep=0.05,
@@ -89,8 +90,6 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
 
     Follows the 'First Argument Group' convention.
     """
-    if _larch is None:
-        raise Warning("cannot calculate autobk spline -- larch broken?")
     msg = _larch.writer.write
     if 'kw' in kws:
         kweight = kws.pop('kw')

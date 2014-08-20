@@ -2,6 +2,7 @@ import json
 import numpy as np
 import h5py
 from larch import Group, Parameter, isParameter, use_plugin_path
+from larch import ValidateLarchPlugin
 
 use_plugin_path('xafs')
 
@@ -123,6 +124,7 @@ class H5PySaveFile(object):
 
         self.fh.close()
 
+@ValidateLarchPlugin
 def save(fname,  *args, **kws):
     """save groups and data into a portable, hdf5 file
 
@@ -136,12 +138,11 @@ def save(fname,  *args, **kws):
    See Also:  restore()
     """
     _larch = kws.get('_larch', None)
-    if _larch is None:
-        raise Warning("save_restore.save: needs _larch instance")
-    
+
     saver = H5PySaveFile(fname, _larch=_larch)
     saver.save(*args)
 
+@ValidateLarchPlugin
 def restore(fname,  group=None, _larch=None):
     """restore groups and data from an hdf5 Larch Save file
 
@@ -160,8 +161,6 @@ def restore(fname,  group=None, _larch=None):
 
    See Also:  save()
    """
-    if _larch is None:
-        raise Warning("save_restore.restore: needs _larch instance")
     symtable = _larch.symtable
     msg  = _larch.writer.write
     fh = h5py.File(fname, 'r')

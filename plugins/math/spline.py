@@ -5,10 +5,12 @@ Splines for fitting to data within Larch
 """
 from scipy.interpolate import splrep, splev
 
-from larch import Parameter, Group, isgroup, isParameter
-from larch.larchlib import use_plugin_path
+from larch import (Parameter, Group, isgroup, isParameter,
+                   use_plugin_path, ValidateLarchPlugin)
+
 use_plugin_path('math')
 
+@ValidateLarchPlugin
 def spline_rep(x, y, group=None, name='spl1', _larch=None):
     """create a spline representation for an (x, y) data set to be
     evaluated with spline_eval(), with
@@ -40,10 +42,6 @@ def spline_rep(x, y, group=None, name='spl1', _larch=None):
     the ``name`` argument must be different for each spline
     representation, and passed to spline_eval()
     """
-
-    if _larch is None:
-        raise Warning("cannot define spline -- larch broken?")
-
     if group is None:
         group = Group()
 
@@ -57,6 +55,7 @@ def spline_rep(x, y, group=None, name='spl1', _larch=None):
         setattr(group, pname, p)
     return group
 
+@ValidateLarchPlugin
 def spline_eval(x, group, name='spl1', _larch=None):
     """evaluate spline at specified x values
 
@@ -71,9 +70,6 @@ def spline_eval(x, group, name='spl1', _larch=None):
     --------
       1-d array with interpolated values
     """
-    if _larch is None:
-        raise Warning("cannot evaluate spline -- larch broken?")
-
     sgroup = getattr(group, "{:s}_details".format(name), None)
     if sgroup is None or not isgroup(sgroup):
         raise Warning("spline_eval: subgroup '{:s}' not found".format(name))

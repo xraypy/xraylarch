@@ -3,8 +3,7 @@
   Estimate Noise in an EXAFS spectrum
 """
 from numpy import pi, sqrt, where
-from larch import Group, isgroup
-from larch.larchlib import use_plugin_path
+from larch import ValidateLarchPlugin, use_plugin_path, Group, isgroup
 
 use_plugin_path('math')
 use_plugin_path('xafs')
@@ -16,6 +15,7 @@ from xafsft import xftf, xftr
 use_plugin_path('std')
 from grouputils import parse_group_args
 
+@ValidateLarchPlugin
 def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
                    kweight=1, kmin=0, kmax=20, dk=4, dk2=None, kstep=0.05,
                    kwindow='kaiser', nfft=2048, _larch=None, **kws):
@@ -61,9 +61,6 @@ def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
         specifiy all of (an array for 'k', an array for 'chi', option output Group)
         OR pass a group with 'k' and 'chi' as the first argument
     """
-    if _larch is None:
-        raise Warning("cannot estimate noise -- larch broken?")
-
     k, chi, group = parse_group_args(k, members=('k', 'chi'),
                                      defaults=(chi,), group=group,
                                      fcn_name='esitmate_noise')

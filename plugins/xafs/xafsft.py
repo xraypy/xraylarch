@@ -10,7 +10,7 @@ from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
 import larch
-from larch.larchlib import use_plugin_path
+from larch import ValidateLarchPlugin, use_plugin_path
 
 use_plugin_path('math')
 use_plugin_path('xafs')
@@ -122,6 +122,7 @@ def ftwindow(x, xmin=None, xmax=None, dx=1, dx2=None,
         fwin =  exp(-(((x - cen)**2)/(2*dx1*dx1)))
     return fwin
 
+@ValidateLarchPlugin
 def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
             dr=1, dr2=None, rw=0, window='kaiser', qmax_out=None,
             nfft=2048, kstep=0.05, _larch=None, **kws):
@@ -166,8 +167,6 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
 
     Supports First Argument Group convention (with group member names 'r' and 'chir')
     """
-    if _larch is None:
-        raise Warning("cannot do xftr -- larch broken?")
     if 'rweight' in kws:
         rw = kws['rweight']
 
@@ -202,6 +201,7 @@ def xftr(r, chir=None, group=None, rmin=0, rmax=20, with_phase=False,
     if with_phase:
         group.chiq_pha =  complex_phase(out[:nkpts])
 
+@ValidateLarchPlugin
 def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
          dk=1, dk2=None, with_phase=False, window='kaiser', rmax_out=10,
          nfft=2048, kstep=0.05, _larch=None, **kws):
@@ -243,8 +243,6 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
 
     Supports First Argument Group convention (with group member names 'k' and 'chi')
     """
-    if _larch is None:
-        raise Warning("cannot do xftf -- larch broken?")
     # allow kweight keyword == kw
     if 'kw' in kws:
         kweight = kws['kw']
@@ -275,6 +273,7 @@ def xftf(k, chi=None, group=None, kmin=0, kmax=20, kweight=0,
         group.chir_pha =  complex_phase(out[:irmax])
 
 
+@ValidateLarchPlugin
 def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
                 window='kaiser', nfft=2048, kstep=0.05, _larch=None):
     """
@@ -292,6 +291,7 @@ def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
     win  = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
     return ((chi_[:npts] *k_[:npts]**kweight), win[:npts])
 
+@ValidateLarchPlugin
 def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     calculate forward XAFS Fourier transform.  Unlike xftf(),
@@ -317,6 +317,7 @@ def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     cchi[0:len(chi)] = chi
     return (kstep / sqrt(pi)) * fft(cchi)[:nfft/2]
 
+@ValidateLarchPlugin
 def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     calculate reverse XAFS Fourier transform, from chi(R) to

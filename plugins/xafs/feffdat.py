@@ -16,6 +16,7 @@ creates a group that contains the chi(k) for the sum of paths.
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 from larch import (Group, Parameter, isParameter,
+                   ValidateLarchPlugin,
                    param_value, use_plugin_path, isNamedClass)
 
 use_plugin_path('xray')
@@ -134,7 +135,7 @@ class FeffDatFile(Group):
                     iz   = int(words[4])
                     if len(words) > 5:
                         lab = words[5]
-                    else: 
+                    else:
                         lab = atomic_symbol(iz, _larch=self._larch)
                     geom = [lab, iz, ipot] + xyz
                     self.geom.append(tuple(geom))
@@ -388,6 +389,7 @@ class FeffPathGroup(Group):
         self.chi = cchi.imag
         self.chi_imag = -cchi.real
 
+@ValidateLarchPlugin
 def _path2chi(path, paramgroup=None, _larch=None, **kws):
     """calculate chi(k) for a Feff Path,
     optionally setting path parameter values
@@ -417,6 +419,7 @@ def _path2chi(path, paramgroup=None, _larch=None, **kws):
             _larch.symtable._sys.paramGroup = Group()
     path._calc_chi(**kws)
 
+@ValidateLarchPlugin
 def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
             k=None, kmax=None, kstep=0.05, **kws):
     """sum chi(k) for a list of FeffPath Groups.

@@ -1,7 +1,8 @@
 import os
 import numpy as np
-import larch
-larch.use_plugin_path('xray')
+from larch import use_plugin_path, ValidateLarchPlugin, site_config
+
+use_plugin_path('xray')
 from xraydb_plugin import mu_elam, atomic_mass
 
 from chemparser import chemparse
@@ -13,7 +14,7 @@ def get_materials(_larch):
     if _larch.symtable.has_symbol(symname):
         return _larch.symtable.get_symbol(symname)
     mat = {}
-    conf = larch.site_config
+    conf = site_config
     paths = [os.path.join(conf.sys_larchdir, 'plugins', 'xray'),
              os.path.join(conf.usr_larchdir)]
 
@@ -119,16 +120,14 @@ def material_mu_components(name, energy, density=None, kind='total',
         out['elements'].append(atom)
     return out
 
+@ValidateLarchPlugin
 def material_get(name, _larch=None):
     """lookup material """
-    if _larch is None:
-        return
     return get_materials(_larch).get(name.lower(), None)
 
+@ValidateLarchPlugin
 def material_add(name, formula, density, _larch=None):
     """ save material in local db"""
-    if _larch is None:
-        return
     materials = get_materials(_larch)
     formula = formula.replace(' ', '')
     materials[name.lower()] = (formula, float(density))

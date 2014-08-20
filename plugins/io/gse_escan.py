@@ -6,20 +6,8 @@ import copy
 import time
 import gc
 
-try:
-    import numpy
-except ImportError:
-    print( "Error: Escan_data can't load numpy")
-    sys.exit(1)
-
-# has_h5 = False
-try:
-    import h5py
-    has_h5 = True
-except ImportError:
-    print( "Warning HDF5 not available")
-    has_h5 = False
-has_h5 = False
+import numpy
+from larch import ValidateLarchPlugin
 
 def _cleanfile(x):
     for o in ' ./?(){}[]",&%^#@$': x = x.replace(o,'_')
@@ -32,10 +20,6 @@ class EscanData:
                   '-----','=====','n_points',
                   'scan began at', 'scan ended at',
                   'column labels', 'scan regions','data')
-
-    h5_attrs = {'Version': '1.0.0',
-                'Title': 'Epics Scan Data',
-                'Beamline': 'GSECARS, 13-IDC / APS'}
 
     def __init__(self,fname=None,**args):
         self.filename    = fname
@@ -171,210 +155,17 @@ class EscanData:
         sys.stdout.write(s)
         sys.stdout.flush()
 
-
-    def read_data_file(self,fname=None,use_h5=True):
+    def read_data_file(self,fname=None):
         """generic data file reader"""
         if fname is None: fname = self.filename
-        if fname.endswith('.h5'):
-            self.filename = fname = fname[:-3]
-        h5name = "%s.h5" % fname
         read_ascii = True
-        # print( 'read_Data_file: ', has_h5, use_h5, os.path.exists(h5name))
-        if has_h5 and use_h5 and os.path.exists(h5name):
-            try:
-                mtime_ascii = os.stat(fname)[8]
-            except:
-                mtime_ascii = 0
-            mtime_h5    = os.stat(h5name)[8]
-            if  (mtime_h5 >=  mtime_ascii):
-                retval = self.read_h5file(h5name)
-                if retval is None:
-                    msg = "file %s read OK" % h5name
-                    # self.ShowMessage(msg)
-                    read_ascii = False
-            else:
-                print( 'h5 exists, ascii is newer!')
-
         if read_ascii:
             retval = self.read_ascii(fname=fname)
             if retval is not None:
                 msg = "problem reading file %s" % fname
                 self.ShowMessage(msg)
-
-            if has_h5 and retval is None:
-                if True: #try:
-                    self.write_h5file(h5name)
-                    x = h5name
-                else: # except:
-                    if os.path.exists(h5name):
-                        print( 'should removing %s due to error.' % h5name)
-                        # os.unlink(h5name)
             gc.collect()
         return retval
-
-    def write_h5file(self,h5name):
-        try:
-            fh = h5py.File(h5name, 'w')
-            print( 'saving hdf5 file %s' %h5name)
-        except:
-            print( 'write_h5file error??? ', h5name)
-
-        def add_group(group,name,dat=None,attrs=None):
-            g = group.create_group(name)
-            if isinstance(dat,dict):
-                for key,val in dat.items():
-                    g[key] = val
-            if isinstance(attrs,dict):
-                for key,val in attrs.items():
-                    g.attrs[key] = val
-            return g
-
-        def add_data(group,name,data, attrs=None, **kws):
-            # print( 'create group in HDF file ', name)
-            kwargs = {'compression':4}
-            kwargs.update(kws)
-            # print( '   add data ', name, group)
-            d = group.create_dataset(name,data=data,**kwargs)
-            if isinstance(attrs,dict):
-                for key,val in attrs.items():
-                    d.attrs[key] = val
-
-            return d
-
-
-        mainattrs = copy.deepcopy(self.h5_attrs)
-        mainattrs.update({'Collection Time': self.start_time})
-
-        maingroup = add_group(fh,'data', attrs=mainattrs)
-
-        g = add_group(maingroup,'environ')
-        add_data(g,'desc',self.env_desc)
-        add_data(g,'addr',self.env_addr)
-        add_data(g,'val', self.env_val)
-
-        scan_attrs = {'dimension':self.dimension,
-                      'stop_time':self.stop_time,
-                      'start_time':self.start_time,
-                      'scan_prefix':self.scan_prefix,
-                      'correct_deadtime': repr(self.correct_deadtime)}
-
-        scangroup = add_group(maingroup,'scan', attrs=scan_attrs)
-
-        scan_data = ['det', 'pos', 'sums','sums_list', 'sums_names',
-                     'scan_regions', 'user_titles', # 'realtime',
-                     'pos_desc', 'pos_addr', 'det_desc', 'det_addr']
-
-        for attr in scan_data:
-            d = getattr(self,attr)
-            if len(d)== 0 and isinstance(d,list): d.append('')
-            add_data(scangroup,attr,d)
-
-        if self.correct_deadtime:
-            add_data(scangroup,'dt_factor', self.dt_factor)
-            add_data(scangroup,'det_corrected', self.det_corr)
-            add_data(scangroup,'sums_corrected', self.sums_corr)
-
-
-        add_data(scangroup,'x', self.x, attrs={'desc':self.xdesc, 'addr':self.xaddr})
-
-        if self.dimension  > 1:
-            add_data(scangroup,'y', self.y, attrs={'desc':self.ydesc, 'addr':self.yaddr})
-
-        if self.has_fullxrf:
-            en_attrs = {'units':'keV'}
-
-            xrf_shape = self.xrf_data.shape
-            gattrs = {'dimension':self.dimension,'nmca':xrf_shape[-1]}
-
-            g = add_group(maingroup,'merged_xrf',attrs=gattrs)
-            add_data(g, 'data', self.xrf_merge)
-            add_data(g, 'data_corrected', self.xrf_merge_corr)
-            add_data(g, 'energies',  self.xrf_energies[0,:], attrs=en_attrs)
-
-
-
-            gattrs.update({'ndetectors':xrf_shape[-2]})
-            g = add_group(maingroup,'full_xrf',attrs=gattrs)
-            add_data(g, 'header', self.xrf_header)
-            add_data(g, 'data',   self.xrf_data)
-            add_data(g, 'energies', self.xrf_energies, attrs=en_attrs)
-
-            add_data(g, 'roi_labels',  self.roi_names)
-            add_data(g, 'roi_lo_limit',self.roi_llim)
-            add_data(g, 'roi_hi_limit',self.roi_hlim)
-
-        fh.close()
-        return None
-
-
-    def read_h5file(self,h5name):
-        fh = h5py.File(h5name,'r')
-        root = fh['data']
-
-        isValid = False
-        attrs  = root.attrs
-        try:
-            version = root.attrs['Version']
-            title   = root.attrs['Title']
-            if title  != 'Epics Scan Data': raise KeyError
-            beamline = root.attrs['Beamline']
-            isValid = True
-        except KeyError:
-            isValid = False
-        if not isValid:
-            raise
-
-        g = root['environ']
-        self.env_desc    = g['desc'].value
-        self.env_addr    = g['addr'].value
-        self.env_val     = g['val'].value
-
-
-        g = root['scan']
-        self.stop_time  = g.attrs['stop_time']
-        self.start_time = g.attrs['start_time']
-        self.dimension  = g.attrs['dimension']
-        self.correct_deadtime = g.attrs['correct_deadtime'] == 'True'
-
-        self.x     = g['x'].value
-        self.xdesc = g['x'].attrs['desc']
-        self.xaddr = g['x'].attrs['addr']
-        self.y     = []
-        self.ydesc  = ''
-        if self.dimension > 1:
-            self.y = g['y'].value
-            self.ydesc = g['y'].attrs['desc']
-            self.yaddr = g['y'].attrs['addr']
-
-
-        for attr in ['det', 'pos', 'sums', 'sums_list', 'sums_names',
-                     'pos_desc', 'pos_addr', 'det_desc', 'det_addr',
-                     'scan_regions', 'user_titles']:
-            setattr(self,attr,  g[attr].value)
-
-        if self.correct_deadtime:
-            self.dt_factor =  g['dt_factor'].value
-            self.det_corr  =  g['det_corrected'].value
-            self.sums_corr =  g['sums_corrected'].value
-
-
-        self.has_fullxrf = 'full_xrf' in root.keys()
-        if self.has_fullxrf:
-            g = root['merged_xrf']
-            self.xrf_merge = g['data'].value
-            self.xrf_merge_corr = g['data_corrected'].value
-
-            g = root['full_xrf']
-            self.xrf_header = g['header'].value
-            self.xrf_energies = g['energies'].value
-            self.xrf_data = g['data'] .value
-
-            self.roi_names = g['roi_labels'].value
-            self.roi_llim  = g['roi_lo_limit'].value
-            self.roi_hlim  = g['roi_hi_limit'].value
-
-        fh.close()
-        return None
 
     def _getarray(self, name=None, correct=True):
         i = None
@@ -975,12 +766,9 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
 
         fout.close()
 
-
+@ValidateLarchPlugin
 def gsescan_group(fname, _larch=None, **kws):
     """simple mapping of EscanData file to larch groups"""
-    if _larch is None:
-        raise Warning("cannot read gsescan group -- larch broken?")
-
     escan = EscanData(fname)
     if escan.status is not None:
         raise ValueError('Not a valid Escan Data file')
@@ -1031,6 +819,7 @@ def iso8601_time(ts):
     s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
     return "%s%s" % (s, tzone)
 
+@ValidateLarchPlugin
 def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=None):
     """convert GSE ESCAN fluorescence XAFS scans to dead time corrected files"""
     try:
