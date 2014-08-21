@@ -9,7 +9,7 @@ This is a Larch group representing a Peak in an XRF Spectrum.
 
 import numpy as np
 from scipy.interpolate import UnivariateSpline
-from larch import (Group, Parameter, isParameter,
+from larch import (Group, Parameter, isParameter, ValidateLarchPlugin,
                    param_value, use_plugin_path, isNamedClass)
 
 use_plugin_path('xray')
@@ -119,6 +119,7 @@ class XRFPeak(Group):
 
         self.counts =  amp*fcn(x, cen=center, sigma=sigma)
 
+@ValidateLarchPlugin
 def xrf_peak(name=None, amplitude=1, sigma=0.1,
              center=None, shape='gaussian',
              sigma_params=None, _larch=None, **kws):

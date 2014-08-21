@@ -107,8 +107,8 @@ Todo:
 """
 
 import numpy as np
-import larch
-larch.use_plugin_path('xrf')
+from larch import use_plugin_path, ValidateLarchPlugin
+use_plugin_path('xrf')
 from mca import isLarchMCAGroup
 
 REFERENCE_AMPL=100.
@@ -164,7 +164,7 @@ class XRFBackground:
 
     def __init__(self, data=None, width=4, slope=1.0,
                  exponent=2, compress=2, tangent=False):
-        self.bgr          = [] 
+        self.bgr          = []
         self.width = width
         self.compress     = compress
         self.exponent     = exponent
@@ -176,7 +176,7 @@ class XRFBackground:
         self.data = data
         if data is not None:
             self.calc(data, slope=slope)
-            
+
     def calc(self, data=None, slope=1.0):
         """compute background
 
@@ -267,28 +267,29 @@ class XRFBackground:
         bgr[idx] = 0
         self.bgr = bgr
 
-def xrf_background(energy, counts=None, group=None, width=4, 
-                   compress=2, exponent=2, slope=None, 
+@ValidateLarchPlugin
+def xrf_background(energy, counts=None, group=None, width=4,
+                   compress=2, exponent=2, slope=None,
                    _larch=None):
     """fit background for XRF spectra.  Arguments:
 
-    xrf_background(energy, counts=None, group=None, width=4, 
+    xrf_background(energy, counts=None, group=None, width=4,
                    compress=2, exponent=2, slope=None)
-  
+
     Arguments
     ---------
     energy     array of energies OR an MCA group.  If an MCA group,
                it will be used to give ``counts`` and ``mca`` arguments
     counts     array of XRF counts (or MCA.counts)
     group      group for outputs
-                     
-    width      full width (in keV) of the concave down polynomials 
+
+    width      full width (in keV) of the concave down polynomials
                for when its full width is 100 counts. default = 4
 
     compress   compression factor to apply to spectra. Default is 2.
-    
+
     exponent   power of polynomial used.  Default is 2, should be even.
-    slope      channel to energy conversion, from energy calibration 
+    slope      channel to energy conversion, from energy calibration
                (default == None --> found from input energy array)
 
     outputs (written to group)
@@ -296,9 +297,6 @@ def xrf_background(energy, counts=None, group=None, width=4,
     bgr       background array
     bgr_info  dictionary of parameters used to calculate background
     """
-    if _larch is None:
-        raise Warning("cannot calculate xrf background -- larch broken?")
-
     if isLarchMCAGroup(energy):
         group  = energy
         counts = group.counts
@@ -312,7 +310,7 @@ def xrf_background(energy, counts=None, group=None, width=4,
     if group is not None:
         group.bgr = xbgr.bgr
         group.bgr_info = xbgr.parinfo
-        
+
 def registerLarchPlugin():
     return ('_xrf', {'xrf_background': xrf_background})
-        
+
