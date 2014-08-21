@@ -356,8 +356,9 @@ def _addplugin(plugin, _larch=None, **kws):
                 break
         if is_pkg is None and mod is None:
             write('Warning: plugin %s not found\n' % plugin)
-            return
+            return False
 
+        retval = True
         if is_pkg:
             if _check_requirements(plugin):
                 filelist = []
@@ -380,17 +381,26 @@ def _addplugin(plugin, _larch=None, **kws):
 
                 for fname in filelist:
                     try:
-                        _plugin_file(fname[:-3], path=[mod])
+                        retval = retval and _plugin_file(fname[:-3], path=[mod])
                     except:
                         write('Warning: %s is not a valid plugin\n' %
                               pjoin(mod, fname))
                         write("   error:  %s\n" % (repr(sys.exc_info()[1])))
+                        retval = False
         else:
             fh, modpath, desc = mod
-            out = imp.load_module(plugin, fh, modpath, desc)
-            _larch.symtable.add_plugin(out, on_error, **kws)
+            try:
+                out = imp.load_module(plugin, fh, modpath, desc)
+                _larch.symtable.add_plugin(out, on_error, **kws)
+            except:
+                err, exc, tb = sys.exc_info()
+                write("Python error adding plugin '%s'\n  %s: %s  %s, line %i\n  %s\n" %
+                      (modpath, err.__name__, exc.msg, exc.filename,
+                       exc.lineno, exc.text))
+                retval = False
 
         if _larch.error:
+            retval = False
             err = _larch.error.pop(0)
             fname, lineno = err.fname, err.lineno
             output = ["Error Adding Plugin %s from file %s" % (plugin, fname),
@@ -404,8 +414,9 @@ def _addplugin(plugin, _larch=None, **kws):
 
         if fh is not None:
             fh.close()
-        return
-    _plugin_file(plugin)
+        return retval
+
+    return _plugin_file(plugin)
 
 def _dir(obj=None, _larch=None, **kws):
     "return directory of an object -- thin wrapper about python builtin"
