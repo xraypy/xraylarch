@@ -89,6 +89,9 @@ Larch session with the :func:`add_plugin` function.
    ``import`` statement, :func:`add_plugin` will install the resources
    defined by :func:`registerLarchPlugin` every time it is run.
 
+   :param python_file:  name of Python file containing plugin code.
+   :return:  ``True`` on success, ``False`` on error
+
 If the above plugin file is saved in a file named `myplugin.py` in the
 user's Larch Plugin folder, then doing::
 
