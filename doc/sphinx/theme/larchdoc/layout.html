@@ -9,6 +9,58 @@
 #}
 {% extends "basic/layout.html" %}
 
+{%- block extrahead %}
+  <script type="text/x-mathjax-config">
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
+{% endblock %}
+
+{% block rootrellink %}
+   <li>[<a href="{{ pathto('data/index') }}">Reading Data</a>|</li>
+   <li><a href="{{ pathto('plotting/index') }}">Plotting</a>|</li>
+   <li><a href="{{ pathto('fitting/index') }}">Fitting Data</a>|</li>
+   <li><a href="{{ pathto('xafs/index') }}">XAFS Analysis</a>|</li>
+   <li><a href="{{ pathto('xray/index') }}">Xray Databases</a>|</li>
+   <li><a href="{{ pathto('xrf/index') }}">XRF Analysis</a>|</li>
+   <li><a href="{{ pathto('devel/index') }}">Scripting</a>]</li>
+{% endblock %}
+
+{% block relbar1 %}
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="{{pathto('index')}}">
+         <img src="{{pathto("_static/larchcones.png", 1)}}" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="{{ pathto('index') }}" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="{{ pathto('downloads/index') }}" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="{{ pathto('community') }}" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="{{ pathto('index') }}" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="{{ pathto('contents') }}" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="{{ pathto('tutorial/index') }}" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="{{ pathto('overview/index') }}" style="color: #772211"> Overview</a></td>
+   </tr></table>
+</div>
+{{ super() }}
+{% endblock %}
+
 {# put the sidebar before the body #}
 {% block sidebar1 %}{{ sidebar() }}{% endblock %}
 {% block sidebar2 %}{% endblock %}
+
