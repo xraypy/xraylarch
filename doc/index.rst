@@ -47,6 +47,7 @@ data handling, and general-purpose data modeling.
 
    downloads/index.rst
    overview/index.rst
+   community.rst
    tutorial/index.rst
    data/index.rst
    plotting/index.rst

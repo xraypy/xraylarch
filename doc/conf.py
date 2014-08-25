@@ -33,16 +33,9 @@ extensions = ['sphinx.ext.autodoc', 'sphinx.ext.extlinks',
               'sphinx.ext.intersphinx']
 
 # from sphinxtr
-extensions.extend([
-              'fix_equation_ref',
-              'subfig',
-              'numfig',
-              'numsec',
-              'natbib',
-              'figtable',
-              'singlehtml_toc',
-              'singletext',
-              ])
+
+extensions.extend(['fix_equation_ref', 'subfig', 'numfig', 'numsec',
+                   'natbib', 'figtable', 'singlehtml_toc', 'singletext'])
 
 
 intersphinx_mapping = {'py': ('http://docs.python.org/', None)}
