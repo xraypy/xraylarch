@@ -291,7 +291,6 @@ def xftf_prep(k, chi, kmin=0, kmax=20, kweight=2, dk=1, dk2=None,
     win  = ftwindow(k_, xmin=kmin, xmax=kmax, dx=dk, dx2=dk2, window=window)
     return ((chi_[:npts] *k_[:npts]**kweight), win[:npts])
 
-@ValidateLarchPlugin
 def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     calculate forward XAFS Fourier transform.  Unlike xftf(),
@@ -317,7 +316,6 @@ def xftf_fast(chi, nfft=2048, kstep=0.05, _larch=None, **kws):
     cchi[0:len(chi)] = chi
     return (kstep / sqrt(pi)) * fft(cchi)[:nfft/2]
 
-@ValidateLarchPlugin
 def xftr_fast(chir, nfft=2048, kstep=0.05, _larch=None, **kws):
     """
     calculate reverse XAFS Fourier transform, from chi(R) to
