@@ -2,13 +2,13 @@
 
 # read 3 datasets
 cu_10 = read_ascii('../xafsdata/cu_10k.xmu')
-autobk(cu_10.energy, cu_10.xmu, group=cu_10, rbkg=1.0, kw=2)
+autobk(cu_10.energy, cu_10.mu, group=cu_10, rbkg=1.0, kw=2)
 
 cu_50 = read_ascii('../xafsdata/cu_50k.xmu')
-autobk(cu_50.energy, cu_50.xmu, group=cu_50, rbkg=1.0, kw=2)
+autobk(cu_50.energy, cu_50.mu, group=cu_50, rbkg=1.0, kw=2)
 
 cu_150 = read_ascii('../xafsdata/cu_150k.xmu')
-autobk(cu_150.energy, cu_150.xmu, group=cu_150, rbkg=1.0, kw=2)
+autobk(cu_150.energy, cu_150.mu, group=cu_150, rbkg=1.0, kw=2)
 
 # define fitting parameter group
 pars = group(amp    = param(1, vary=True),
