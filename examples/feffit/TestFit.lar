@@ -1,17 +1,17 @@
 # test fit to noisy Feff data
 
-p0 = read_feffdat('feff0001.dat')
+p0 = feffpath('feff0001.dat')
 p0.e0  = 7
 p0.s02 = 0.9
 p0.sigma2 = 0.007
 p0.deltar = -0.035
 
-
 k = 0.05 * arange(401)
 
+fdat = group()
 eps = 0.004
-fdat = group(k=k,
-             chi=ff2chi([p0], k=k)  + random.normal(size=len(k), scale=eps))
+ff2chi([p0], k=k, group=fdat)
+fdat.chi = fdat.chi + random.normal(size=len(k), scale=eps)
 
 
 fitparams = group(amp  = guess(1),
@@ -21,7 +21,7 @@ fitparams = group(amp  = guess(1),
                   third = param(0., vary=False)
                   )
 
-path1 = read_feffdat('feff0001.dat')
+path1        = feffpath('feff0001.dat')
 path1.s02    = param(expr='amp')
 path1.e0     = param(expr='de0')
 path1.sigma2 = param(expr='ss2')

@@ -1,4 +1,4 @@
-p1 = read_feffdat('feff0001.dat')
+p1 = feffpath('feff0001.dat')
 
 p1.e0 = param('e0shift')
 p1.sigma2 = 0.008
@@ -8,12 +8,14 @@ p2 = feffpath('feff0002.dat')
 
 for i in range(5):
     e0shift = -7 + 3*i
-    p1.calc_chi()
+    p1._calc_chi()
     plot(p1.k, p1.chi*p1.k**2, label='e0= % .1f' % e0shift, new=i==0)
 endfor
-
 
 p2.e0 = param('e0shift')
 p2.sigma2 = 0.008
 
-sum = ff2chi([p1, p2])
+total = ff2chi([p1, p2])
+
+
+plot(total.k, total.chi*total.k**2, label='sum of paths', win=2)
