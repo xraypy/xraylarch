@@ -428,13 +428,12 @@ def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
     ------------
       pathlist:    a list of FeffPath Groups
       paramgroup:  a Parameter Group for calculating Path Parameters [None]
-      group:       a Group to which the outputs are written  [None]
       kmax:        maximum k value for chi calculation [20].
       kstep:       step in k value for chi calculation [0.05].
       k:           explicit array of k values to calculate chi.
     Returns:
     ---------
-       None -- output arrays for k and chi are written to group.
+       group contain arrays for k and chi 
 
     This essentially calls path2chi() for each of the paths in the
     pathlist and writes the resulting arrays to group.k and group.chi.
@@ -454,9 +453,13 @@ def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
     for path in pathlist:
         out += path.chi
 
-    group = set_xafsGroup(group, _larch=_larch)
+    if group is None:
+        group = Group()
+    else:
+        group = set_xafsGroup(group, _larch=_larch)
     group.k = k
     group.chi = out
+    return group
 
 def feffpath(filename=None, _larch=None, label=None, s02=None,
              degen=None, e0=None,ei=None, deltar=None, sigma2=None,
