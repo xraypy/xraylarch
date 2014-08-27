@@ -59,6 +59,8 @@ class TestScripts(TestCase):
         assert(len(self.session.get_errors()) == 0)
         self.isTrue("len(d2.k) > 200")
         self.isTrue("len(d2.kwin) > 200")
+        self.isTrue("d1.chir_mag.sum() > 30")
+        self.isTrue("where(d1.chir_mag>1)[0][0] > 60")
 
     def test8_xafsft2(self):
         self.runscript('doc_xafsft2.lar', dirname='../examples/xafs/')
@@ -90,6 +92,13 @@ class TestScripts(TestCase):
         self.isTrue("len(dat.rwin) > 200")
         self.isTrue("len(dat.q) > 200")
         self.isTrue("len(dat.chiq_re) > 200")
+
+
+    def test11_wavelet1(self):
+        self.runscript('wavelet_example.lar', dirname='../examples/xafs/')
+        assert(len(self.session.get_errors()) == 0)
+        self.isTrue("f.wcauchy_im.shape = (326, 318)")
+        self.isTrue("f.wcauchy_mag.sum() > 300")
 
 
 if __name__ == '__main__':  # pragma: no cover
