@@ -11,12 +11,20 @@ import numpy as np
 from tempfile import NamedTemporaryFile
 from larch import Interpreter, InputText
 
+def nullfunction(*args, **kwargs):
+    pass
+
 class LarchSession(object):
     def __init__(self):
         self._larch = Interpreter()
         self.input  = InputText(prompt='test>', _larch=self._larch)
         self.symtable = self._larch.symtable
-
+        self.symtable.set_symbol('_plotter.newplot',  nullfunction)
+        self.symtable.set_symbol('_plotter.plot',     nullfunction)
+        self.symtable.set_symbol('_plotter.oplot',    nullfunction)
+        self.symtable.set_symbol('_plotter.imshow',   nullfunction)
+        self.symtable.set_symbol('_plotter.xrfplot',   nullfunction)
+        
     def run(self, text):
         self.input.put(text)
         ret = None
@@ -42,6 +50,15 @@ class TestCase(unittest.TestCase):
         self.session = LarchSession()
         self.symtable = self.session.symtable
         self.set_stdout()
+
+    def runscript(self, fname, dirname='.'):
+        origdir = os.getcwd()
+        os.chdir(dirname)
+        fh = open(fname, 'r')
+        text = fh.read()
+        fh.close()
+        self.session.run(text)
+        os.chdir(origdir)
 
     def set_stdout(self):
         self.stdout = NamedTemporaryFile('w', delete=False,
