@@ -343,7 +343,7 @@ def _plot(x,y, win=1, new=False, _larch=None, wxparent=None, size=None,
     else:
         plotter.oplot(x, y, side=side, **kws)
     if force_draw:
-        update(_larch=_larch)
+        wx_update(_larch=_larch)
 
 @larch.ValidateLarchPlugin
 def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
@@ -356,10 +356,10 @@ def _update_trace(x, y, trace=1, win=1, _larch=None, wxparent=None,
     trace -= 1 # wxmplot counts traces from 0
 
     plotter.panel.update_line(trace, x, y, draw=True, side=side)
-    update(_larch)
+    wx_update(_larch=_larch)
 
 @larch.ValidateLarchPlugin
-def update(_larch=None, **kws):
+def wx_update(_larch=None, **kws):
     _larch.symtable.set_symbol('_sys.wx.force_wxupdate', True)
     try:
         _larch.symtable.get_symbol('_sys.wx.ping')(timeout=0.002)
@@ -561,7 +561,7 @@ def _getcursor(win=1, timeout=30, _larch=None, wxparent=None, size=None, **kws):
 
     t0 = time.time()
     while time.time() - t0 < timeout:
-        update(_larch)
+        wx_update(_larch=_larch)
         if symtable.get_symbol(sentinal):
             break
     symtable.del_symbol(sentinal)
@@ -585,7 +585,7 @@ def _scatterplot(x,y, win=1, _larch=None, wxparent=None, size=None,
     plotter.Raise()
     plotter.scatterplot(x, y, **kws)
     if force_draw:
-        update(_larch=_larch)
+        wx_update(_larch=_larch)
 
 
 @larch.ValidateLarchPlugin
