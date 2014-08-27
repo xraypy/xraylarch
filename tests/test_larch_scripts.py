@@ -43,6 +43,55 @@ class TestScripts(TestCase):
         self.isTrue("len(cu2.k) > 200")
         self.isTrue("max(abs(cu2.chi)) < 2.0")
 
+    def test6_ftwin1(self):
+        self.runscript('doc_ftwin1.lar', dirname='../examples/xafs/')
+        assert(len(self.session.get_errors()) == 0)
+        self.isTrue("len(hann_win1) == 401")
+        self.isTrue("hann_win3.sum() > 50.0")
+
+        self.runscript('doc_ftwin2.lar', dirname='../examples/xafs/')
+        assert(len(self.session.get_errors()) == 0)
+        self.isTrue("len(kai_win1) == 401")
+        self.isTrue("kai_win1.sum() > 20.0")
+       
+    def test7_xafsft1(self):
+        self.runscript('doc_xafsft1.lar', dirname='../examples/xafs/')
+        assert(len(self.session.get_errors()) == 0)
+        self.isTrue("len(d2.k) > 200")
+        self.isTrue("len(d2.kwin) > 200")
+
+    def test8_xafsft2(self):
+        self.runscript('doc_xafsft2.lar', dirname='../examples/xafs/')
+        assert(len(self.session.get_errors()) == 0)
+        self.isTrue("len(d3.k) > 200")
+        self.isTrue("len(d3.kwin) > 200")
+        self.isTrue("len(d4.k) > 200")
+        self.isTrue("len(d4.kwin) > 200")
+        self.isTrue("len(d1.r) > 100")
+        self.isTrue("len(d1.chir_mag) > 100")
+        self.isTrue("len(d3.r) > 100")
+        self.isTrue("len(d3.chir_mag) > 100")
+        self.isTrue("len(d4.r) > 100")
+        self.isTrue("len(d4.chir_mag) > 100")
+        self.isTrue("len(d4.chir_re) > 100")
+        self.isTrue("len(d4.chir_im) > 100")
+
+
+    def test9_xafsft3(self):
+        self.runscript('doc_xafsft3.lar', dirname='../examples/xafs/')
+        assert(len(self.session.get_errors()) == 0)
+        self.isTrue("len(dat.k) > 200")
+        self.isTrue("len(dat.kwin) > 200")
+
+    def test10_xafsft3(self):
+        self.runscript('doc_xafsft4.lar', dirname='../examples/xafs/')
+        assert(len(self.session.get_errors()) == 0)
+        self.isTrue("len(dat.r) > 200")
+        self.isTrue("len(dat.rwin) > 200")
+        self.isTrue("len(dat.q) > 200")
+        self.isTrue("len(dat.chiq_re) > 200")
+
+
 if __name__ == '__main__':  # pragma: no cover
     for suite in (TestScripts,):
         suite = unittest.TestLoader().loadTestsFromTestCase(suite)

@@ -23,6 +23,8 @@ class LarchSession(object):
         self.symtable.set_symbol('_plotter.plot',     nullfunction)
         self.symtable.set_symbol('_plotter.oplot',    nullfunction)
         self.symtable.set_symbol('_plotter.imshow',   nullfunction)
+        self.symtable.set_symbol('_plotter.plot_text',   nullfunction)
+        self.symtable.set_symbol('_plotter.plot_arrow',   nullfunction)
         self.symtable.set_symbol('_plotter.xrfplot',   nullfunction)
         
     def run(self, text):
