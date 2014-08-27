@@ -8,12 +8,10 @@ import sys
 import site
 import glob
 
-DEBUG = True
-
+DEBUG = False
 cmdline_args = sys.argv[1:]
 
 required_modules = ('numpy', 'scipy')
-
 recommended_modules = {'basic analysis': required_modules,
                        'graphical interface and plotting': ('wx', 'wxutils'),
                        'color-enhanced error messages': ('termcolor', ),
@@ -83,9 +81,10 @@ if os.name == 'nt':
     share_basedir = site_configdata.win_installdir
     user_basedir = site_configdata.win_userdir
 
-if os.environ.get('TEST_CI_TEST', '') == '1':
+if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
     share_basedir=os.path.expanduser('~/share/larch')
-    
+
+
 if DEBUG:
     print("##  Settings  (Debug mode) ## ")
     print(" share_basedir: ",  share_basedir)
@@ -96,6 +95,7 @@ if DEBUG:
     print(" site.USER_SITE: ",  site.USER_SITE)
     print(" cmdline_args: ",  cmdline_args)
     print("##   ")
+
 
 # construct list of files to install besides the normal python modules
 # this includes the larch executable files, and all the larch modules
