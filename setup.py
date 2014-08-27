@@ -2,12 +2,13 @@
 
 from __future__ import print_function
 from distutils.core import setup
+
 import os
 import sys
 import site
 import glob
 
-DEBUG = False
+DEBUG = True
 
 cmdline_args = sys.argv[1:]
 
@@ -82,6 +83,9 @@ if os.name == 'nt':
     share_basedir = site_configdata.win_installdir
     user_basedir = site_configdata.win_userdir
 
+if os.environ.get('TEST_CI_TEST', '') == '1':
+    share_basedir=os.path.expanduser('~/share/larch')
+    
 if DEBUG:
     print("##  Settings  (Debug mode) ## ")
     print(" share_basedir: ",  share_basedir)
