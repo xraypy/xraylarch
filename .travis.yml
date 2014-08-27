@@ -15,7 +15,8 @@ before_install:
     - conda update --yes conda
 
 install:
-    - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy wxpython h5py matplotlib dateutil sqlalchemy nose 
+    - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy  wxpython h5py dateutil matplotlib nose 
+    - pip install sqlalchemy 
     - pip install wxmplot 
     - pip install wxutils
     - python setup.py install
