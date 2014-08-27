@@ -429,15 +429,16 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
     # for degrees-of-freedom. But n_idp-params.nvarys is a better measure,
     # so we rescale uncertainties here.
 
-    err_scale = sqrt(params.nfree / (n_idp - params.nvarys))
-    for name in dir(params):
-        p = getattr(params, name)
-        if isParameter(p) and p.vary:
-            p.stderr *= err_scale
-
-    # next, propagate uncertainties to constraints and path parameters.
     covar = getattr(params, 'covar', None)
     if covar is not None:
+        err_scale = (params.nfree / (n_idp - params.nvarys))
+        for name in dir(params):
+            p = getattr(params, name)
+            if isParameter(p) and p.vary:
+                p.stderr *= sqrt(err_scale)
+
+        # next, propagate uncertainties to constraints and path parameters.
+        params.covar *= err_scale
         vsave, vbest = {}, []
         # 1. save current params
         for vname in params.covar_vars:
@@ -447,7 +448,6 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
 
         # 2. get correlated uncertainties, set params accordingly
         uvars = correlated_values(vbest, params.covar)
-
         # 3. evaluate constrained params, save stderr
         for nam in dir(params):
             obj = getattr(params, nam)
