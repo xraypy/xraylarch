@@ -85,7 +85,10 @@ def larcheval_with_uncertainties(*vals,  **kwargs):
         return 0
     for val, name in zip(vals, _names):
         _pars[name]._val = val
-    return _larch.eval(_obj._ast)
+    result =  _larch.eval(_obj._ast)
+    if isParameter(result):
+        result = result.value
+    return result
 
 wrap_ueval = uncertainties.wrap(larcheval_with_uncertainties)
 
@@ -456,11 +459,11 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
                     eval_stderr(obj, uvars, self.var_names,
                                 named_params, self._larch)
 
-                # restore nominal values that may have been tweaked to 
+                # restore nominal values that may have been tweaked to
                 # calculate other stderrs
                 for uval, nam in zip(uvars, self.var_names):
                     named_params[nam]._val  = uval.nominal_value
-                
+
             # clear any errors evaluting uncertainties
             if self._larch.error:
                 self._larch.error = []
