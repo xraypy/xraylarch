@@ -97,7 +97,7 @@ class TestScripts(TestCase):
     def test11_wavelet1(self):
         self.runscript('wavelet_example.lar', dirname='../examples/xafs/')
         assert(len(self.session.get_errors()) == 0)
-        self.isTrue("f.wcauchy_im.shape = (326, 318)")
+        self.isTrue("f.wcauchy_im.shape == (326, 318)")
         self.isTrue("f.wcauchy_mag.sum() > 300")
 
 
