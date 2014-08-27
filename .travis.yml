@@ -1,33 +1,23 @@
 # Config file for automatic testing at travis-ci.org
+
 language: python
 
-matrix:
-    include:
-        - python: 2.7
-          env:
-            - PYTHON=python
-
-# python: 3.2
-# env:
-# PYTHON=python3
-
-git:
-    submodules: false
-
-virtualenv:
-    system_site_packages: true
+python:
+    - 2.7
+    - 3.3
 
 before_install:
-    - sudo apt-get update
-    - sudo apt-get install $PYTHON-setuptools
-    - sudo apt-get install $PYTHON-numpy
-    - sudo apt-get install $PYTHON-scipy
-    - sudo apt-get install $PYTHON-nose
+    - wget http://repo.continuum.io/miniconda/Miniconda3-3.5.5-Linux-x86_64.sh -O miniconda.sh
+    - chmod +x miniconda.sh
+    - ./miniconda.sh -b
+    - export PATH=/home/travis/miniconda3/bin:$PATH
+    - conda config --add channels https://conda.binstar.org/dan_blanchard
+    - conda update --yes conda
 
 install:
-    - sudo $PYTHON setup.py install
+    - conda install --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy wx  h5py matplotlib dateutil sqlalchemy wxutils wxmplot nose 
+    - python setup.py install
 
 script:
     - cd tests
     - nosetests
-
