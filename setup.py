@@ -3,6 +3,7 @@
 from __future__ import print_function
 from distutils.core import setup
 
+import time
 import os
 import sys
 import site
@@ -69,10 +70,25 @@ if not deps_ok:
         sys.exit()
     deps_ok = len(missing) == 0
 
+##
+## For Travis-CI, need to write a local site config file
+## 
+if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
+    share_basedir=os.path.expanduser('~/share/larch')
+    fh = open('lib/site_configdata.py', 'w')
+    fh.write("""#!/usr/bin/env python
+unix_installdir = '%s'
+unix_userdir    = '.larch'
+
+win_installdir = 'C:\\Program Files\\larch'
+win_userdir    = 'larch'
+""" % share_basedir)
+    fh.close()
+    time.sleep(1.0)
+
+
 from lib import site_configdata, site_config, version
 
-
-############
 # read installation locations from lib/site_configdata.py
 share_basedir = site_configdata.unix_installdir
 user_basedir  = site_configdata.unix_userdir
@@ -80,9 +96,6 @@ user_basedir  = site_configdata.unix_userdir
 if os.name == 'nt':
     share_basedir = site_configdata.win_installdir
     user_basedir = site_configdata.win_userdir
-
-if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
-    share_basedir=os.path.expanduser('~/share/larch')
 
 
 if DEBUG:
