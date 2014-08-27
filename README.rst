@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/xraypy/xraylarch.svg?branch=master
+    :target: https://travis-ci.org/xraypy/xraylarch
+
 Larch:  Data Analysis for X-ray Spectroscopies and More
 ======================================
 
