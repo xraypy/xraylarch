@@ -33,8 +33,8 @@ will contain fit statistics chisquare, etc.
    <newville@cars.uchicago.edu>
 """
 
-from numpy import (abs, array, dot, eye, ndarray, ones_like,
-sqrt, take, transpose, triu)
+from numpy import (abs, array, asarray, dot, eye, ndarray, ones_like,
+                   sqrt, take, transpose, triu)
 
 from numpy.dual import inv
 from numpy.linalg import LinAlgError
@@ -116,8 +116,8 @@ def eval_stderr(obj, uvars, _names, _pars, _larch):
 
 
 
-def leastsq(func, x0, args=(), Dfun=None, ftol=1.49012e-8, xtol=1.49012e-8,
-            gtol=0.0, maxfev=0, epsfcn=0.0, factor=100, diag=None):
+def leastsq(func, x0, args=(), Dfun=None, ftol=1.e-7, xtol=1.e-7,
+            gtol=1.e-7, maxfev=0, epsfcn=None, factor=100, diag=None):
     """
     Minimize the sum of squares of a set of equations.
     Adopted from scipy.optimize.leastsq
@@ -215,15 +215,18 @@ def leastsq(func, x0, args=(), Dfun=None, ftol=1.49012e-8, xtol=1.49012e-8,
          params
 
     """
-    x0 = array(x0, ndmin=1)
+    x0 = asarray(x0).flatten()
     n = len(x0)
     if not isinstance(args, tuple):
         args = (args,)
-    m = _check_func('leastsq', 'func', func, x0, args, n)[0]
+    shape, dtype = _check_func('leastsq', 'func', func, x0, args, n)
+    m = shape[0]
     if n > m:
         raise TypeError('Improper input: N=%s must not exceed M=%s' % (n, m))
     if maxfev == 0:
         maxfev = 200*(n + 1)
+    if epsfcn is None:
+        epsfcn = 2.e-5  # a relatively large value!! 
     if Dfun is None:
         retval = _minpack._lmdif(func, x0, args, 1, ftol, xtol,
                                  gtol, maxfev, epsfcn, factor, diag)
@@ -275,7 +278,8 @@ class Minimizer(object):
 or set  leastsq_kws['maxfev']  to increase this maximum."""
 
     def __init__(self, fcn, params, fcn_args=None, fcn_kws=None,
-                 scale_covar=True, toler=1.e-7, _larch=None, jacfcn=None, **kws):
+                 scale_covar=True, toler=1.e-7,
+                 _larch=None, jacfcn=None, **kws):
         self.userfcn = fcn
         self.paramgroup = params
         self.userargs = fcn_args
