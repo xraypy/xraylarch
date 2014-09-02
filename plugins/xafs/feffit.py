@@ -507,8 +507,8 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         return
     topline = '=================== FEFFIT RESULTS ===================='
     header = '[[%s]]'
-    varformat  = '   %12s = % f +/- %f   (init= % f)'
-    exprformat = '   %12s = % f +/- %f  = \'%s\''
+    varformat  = '   %12s = % f +/- %s   (init= % f)'
+    exprformat = '   %12s = % f +/- %s  = \'%s\''
     out = [topline, header % 'Statistics']
 
     npts = len(params.residual)
@@ -562,12 +562,16 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
             name = (name + ' '*14)[:14]
         if isParameter(var):
             if var.vary:
+                stderr = 'unknown'
+                if var.stderr is not None: stderr = "%f" % var.stderr
                 out.append(varformat % (name, var.value,
-                                        var.stderr, var._initval))
+                                        stderr, var._initval))
 
             elif var.expr is not None:
+                stderr = 'unknown'
+                if var.stderr is not None: stderr = "%f" % var.stderr
                 exprs.append(exprformat % (name, var.value,
-                                           var.stderr, var.expr))
+                                           stderr, var.expr))
     if len(exprs) > 0:
         out.append(header % 'Constraint Expressions')
         out.extend(exprs)
