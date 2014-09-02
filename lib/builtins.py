@@ -340,7 +340,6 @@ def _addplugin(plugin, _larch=None, **kws):
                     except:
                         isok = False
                     if not isok:
-                        print 'Plugin REQUIREMEMT Not Satisfied', ppath, modname, cmp, req_version
                         return False
         return True
 
