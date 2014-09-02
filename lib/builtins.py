@@ -379,14 +379,17 @@ def _addplugin(plugin, _larch=None, **kws):
                         if fname.endswith('.py') and len(fname) > 3:
                             filelist.append(fname)
 
+                retvals = []
                 for fname in filelist:
                     try:
-                        retval = retval and _plugin_file(fname[:-3], path=[mod])
+                        ret =  _plugin_file(fname[:-3], path=[mod])
                     except:
                         write('Warning: %s is not a valid plugin\n' %
                               pjoin(mod, fname))
                         write("   error:  %s\n" % (repr(sys.exc_info()[1])))
-                        retval = False
+                        ret = False
+                    retvals.append(ret)
+                retval = all(retvals)
         else:
             fh, modpath, desc = mod
             try:
@@ -394,9 +397,8 @@ def _addplugin(plugin, _larch=None, **kws):
                 _larch.symtable.add_plugin(out, on_error, **kws)
             except:
                 err, exc, tb = sys.exc_info()
-                write("Python error adding plugin '%s'\n  %s: %s  %s, line %i\n  %s\n" %
-                      (modpath, err.__name__, exc.msg, exc.filename,
-                       exc.lineno, exc.text))
+                write("Python error adding plugin '%s'\n  %s: %s\n" %
+                      (modpath, err.__name__, exc.message))
                 retval = False
 
         if _larch.error:
