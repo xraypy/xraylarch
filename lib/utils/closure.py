@@ -50,7 +50,10 @@ class Closure(object):
 
     @property
     def __file__(self):
-        return self.func.__code__.co_filename
+        fname = getattr(self.func, '__filename__', None)
+        if fname is None:
+            fname = self.func.__code__.co_filename
+        return fname
 
     def __call__(self, *args, **c_kwds):
         if self.func is None:

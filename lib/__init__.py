@@ -37,6 +37,7 @@ def ValidateLarchPlugin(fcn):
         return fcn(*args, **keywords)
     wrapper.__doc__ = fcn.__doc__
     wrapper.__name__ = fcn.__name__
+    wrapper.__filename__ = fcn.__code__.co_filename
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
 
