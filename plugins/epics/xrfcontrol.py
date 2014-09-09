@@ -175,11 +175,12 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         elif amp_type.lower().startswith('xsp'):
             self.det = Epics_Xspress3(prefix=prefix, nmca=nmca)
 
-    def show_mca(self):
+    def show_mca(self, init=False):
         self.needs_newplot = False
         if self.mca is None or self.needs_newplot:
             self.mca = self.det.get_mca(mca=self.det_fore)
-        self.plotmca(self.mca, set_title=False)
+
+        self.plotmca(self.mca, set_title=False, init=init)
         title = "Foreground: MCA{:d}".format(self.det_fore)
         if self.det_back  > 0:
             if self.mca2 is None:
@@ -192,6 +193,14 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 self.oplot(e2, c2)
             except ValueError:
                 pass
+
+        roiname = self.wids['roiname'].GetValue()
+
+        if roiname in self.wids['roilist'].GetStrings():
+            i = self.wids['roilist'].GetStrings().index(roiname)
+            self.wids['roilist'].EnsureVisible(i)
+            self.onROI(label=roiname)
+
         self.SetTitle(title)
         self.needs_newplot = False
 
@@ -331,7 +340,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                   elapsed=self.wids['elapsed'],
                                   deadtime=self.wids['deadtime'])
 
-        wx.CallAfter(self.onSelectDet, index=1)
+        wx.CallAfter(self.onSelectDet, index=1, init=True)
         self.timer_counter = 0
         self.mca_timer = wx.Timer(self)
         self.Bind(wx.EVT_TIMER, self.UpdateData, self.mca_timer)
@@ -393,7 +402,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 pass
         self.needs_newplot = False
 
-    def onSelectDet(self, event=None, index=0, **kws):
+    def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
             self.det_fore = index
         self.det_back = self.wids['bkg_det'].GetSelection()
@@ -412,7 +421,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.wids[dname].SetBackgroundColour(bcol)
             self.wids[dname].SetForegroundColour(fcol)
         self.clear_mcas()
-        self.show_mca()
+        self.show_mca(init=init)
         self.Refresh()
 
     def swap_mcas(self, event=None):

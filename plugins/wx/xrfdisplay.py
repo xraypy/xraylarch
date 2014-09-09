@@ -979,13 +979,20 @@ class XRFDisplayFrame(wx.Frame):
         if self.y2data is not None:
             self.oplot(self.x2data, self.y2data)
 
-    def plotmca(self, mca, title=None, set_title=True, as_mca2=False, **kws):
+    def plotmca(self, mca, title=None, set_title=True, as_mca2=False, 
+                fullrange=False, init=False, **kws):
         if as_mca2:
             self.mca2 = mca
             kws['new'] = False
         else:
             self.mca = mca
             self.panel.conf.show_grid = False
+
+        if init: 
+            self.xview_range = (min(self.mca.energy), max(self.mca.energy))
+        else:
+            self.xview_range = self.panel.axes.get_axes().get_xlim()
+
 
         atitles = []
         if self.mca is not None:
@@ -1022,7 +1029,7 @@ class XRFDisplayFrame(wx.Frame):
         if set_title:
             self.SetTitle(title)
 
-    def plot(self, x, y=None, mca=None, **kws):
+    def plot(self, x, y=None, mca=None, init=False, **kws):
         if mca is not None:
             self.mca = mca
         mca = self.mca
@@ -1052,13 +1059,14 @@ class XRFDisplayFrame(wx.Frame):
                 self.set_roilist(mca=mca)
             yroi = -1*np.ones(len(y))
             for r in mca.rois:
+                if (r.left, r.right) in ((0, 0), (-1, -1)):
+                    continue
                 yroi[r.left:r.right] = y[r.left:r.right]
-                ydat[r.left+1:r.right-1] = -1
+                ydat[r.left+1:r.right-1] = -1.0*y[r.left+1:r.right-1]
             yroi = np.ma.masked_less(yroi, 0)
             ydat = np.ma.masked_less(ydat, 0)
 
-        if ydat.max() > 0:
-            panel.plot(x, ydat, label='spectra',  **kwargs)
+        panel.plot(x, ydat, label='spectra',  **kwargs)
         if yroi is not None and yroi.max() > 0:
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='roi', **kwargs)
