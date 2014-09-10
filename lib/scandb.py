@@ -349,6 +349,13 @@ class ScanDB(object):
             table = table.update(whereclause="keyname='%s'" % key)
         table.execute(**data)
 
+    def clobber_all_info(self):
+        """dangerous!!!! clear all info --
+        can leave a DB completely broken and unusable
+        useful when going to repopulate db anyway"""
+        cls, table = self._get_table('info')
+        self.conn.execute(table.delete().where(table.c.keyname!=''))
+
     def set_hostpid(self, clear=False):
         """set hostname and process ID, as on intial set up"""
         name, pid = '', '0'
@@ -448,7 +455,7 @@ class ScanDB(object):
             self.conn.execute(table.delete().where(table.c.name==name))
         elif scanid is not None:
             self.conn.execute(table.delete().where(table.c.id==scanid))
-            
+
     def add_scandef(self, name, text='', notes='', type='', **kws):
         """add scan"""
         cls, table = self._get_table('scandefs')
