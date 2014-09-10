@@ -33,6 +33,17 @@ def buttonrow(panel, onOK=None, onCancel=None):
     btnsizer.Realize()
     return btnsizer
 
+def sort_data(dat, sort_col=None, reverse=False):
+    if sort_col is None:
+        sort_col = len(dat[0])- 2
+    print('SORT ', sort_col, reverse)
+    data = sorted(dat, key=lambda x: x[sort_col])
+    if reverse:
+        data = list(reversed(data))
+    for x in data: print( x)
+    return data
+
+
 
 class GenericDataTable(gridlib.PyGridTableBase):
     def __init__(self):
@@ -88,6 +99,8 @@ class GenericDataTable(gridlib.PyGridTableBase):
     def CanSetValueAs(self, row, col, typeName):
         return self.CanGetValueAs(row, col, typeName)
 
+
+
 class LinearScanDataTable(GenericDataTable):
     def __init__(self, scans):
         GenericDataTable.__init__(self)
@@ -102,9 +115,9 @@ class LinearScanDataTable(GenericDataTable):
                           gridlib.GRID_VALUE_BOOL]
         self.set_data(scans)
 
-    def set_data(self, scans):
+    def set_data(self, scans, sort_col=None, reverse=False):
         self.scans = scans[::-1]
-        self.data = []
+        _dat = []
         self.widths = [150, 100, 80, 125, 125, 60]
         self.colReadOnly = [False, True, True, True, True, False]
         for scan in self.scans:
@@ -113,7 +126,9 @@ class LinearScanDataTable(GenericDataTable):
             npts = sdat['positioners'][0][4]
             mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
             utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
-            self.data.append([scan.name, axis, npts, mtime, utime, 0])
+            _dat.append([scan.name, axis, npts, mtime, utime, 0])
+        self.data = sort_data(_dat, sort_col=sort_col, reverse=reverse)
+                    
                         
 class MeshScanDataTable(GenericDataTable):
     def __init__(self, scans):
@@ -132,9 +147,9 @@ class MeshScanDataTable(GenericDataTable):
                           gridlib.GRID_VALUE_BOOL]
         self.set_data(scans)
 
-    def set_data(self, scans):
+    def set_data(self, scans, sort_col=None, reverse=False):
         self.scans = scans[::-1]
-        self.data = []
+        _dat = []
         self.widths = [150, 100, 100, 80, 125, 125, 60]
         self.colReadOnly = [False, True, True, True, True, True, False]
         for scan in self.scans:
@@ -144,7 +159,9 @@ class MeshScanDataTable(GenericDataTable):
             npts  = int(sdat['outer'][4]) * int(sdat['inner'][4])
             mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
             utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
-            self.data.append([scan.name, axis0, axis1, npts, mtime, utime, 0])
+            _dat.append([scan.name, axis0, axis1, npts, mtime, utime, 0])
+        self.data = sort_data(_dat, sort_col=sort_col, reverse=reverse)
+
 
 class SlewScanDataTable(GenericDataTable):
     def __init__(self, scans):
@@ -161,10 +178,10 @@ class SlewScanDataTable(GenericDataTable):
                           gridlib.GRID_VALUE_STRING,
                           gridlib.GRID_VALUE_BOOL]
         self.set_data(scans)
-
-    def set_data(self, scans):
+        
+    def set_data(self, scans, sort_col=None, reverse=False):
         self.scans = scans[::-1]
-        self.data = []
+        _dat = []
         self.widths = [150, 100, 100, 80, 125, 125, 60]
         self.colReadOnly = [False, True, True, True, True, True, False]
         for scan in self.scans:
@@ -177,8 +194,10 @@ class SlewScanDataTable(GenericDataTable):
                 npts *= int(sdat['outer'][4])
             mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
             utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
-            self.data.append([scan.name, axis0, axis1, npts, mtime, utime, 0])
-
+            _dat.append([scan.name, axis0, axis1, npts, mtime, utime, 0])
+        self.data = sort_data(_dat, sort_col=sort_col, reverse=reverse)
+        
+        
 class XAFSScanDataTable(GenericDataTable):
     def __init__(self, scans):
         GenericDataTable.__init__(self)
@@ -194,9 +213,9 @@ class XAFSScanDataTable(GenericDataTable):
                           gridlib.GRID_VALUE_BOOL]
         self.set_data(scans)
 
-    def set_data(self, scans):
+    def set_data(self, scans, sort_col=None, reverse=False):
         self.scans = scans[::-1]
-        self.data = []
+        _dat = []
         self.widths = [150, 80, 80, 80, 125, 125, 60]
         self.colReadOnly = [False, True, True, True, True, True, False]
         for scan in self.scans:
@@ -208,7 +227,9 @@ class XAFSScanDataTable(GenericDataTable):
                 npts += sdat['regions'][ireg][2]
             mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
             utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
-            self.data.append([scan.name, e0, nreg, npts, mtime, utime, 0])
+            _dat.append([scan.name, e0, nreg, npts, mtime, utime, 0])
+        self.data = sort_data(_dat, sort_col=sort_col, reverse=reverse)
+
 
 class ScandefsFrame(wx.Frame) :
     """Edit Scan Definitions"""
@@ -223,6 +244,8 @@ class ScandefsFrame(wx.Frame) :
         self.SetFont(Font(10))
         sizer = wx.BoxSizer(wx.VERTICAL)
 
+        self.reverse_sort = False
+        
         self.SetMinSize((740, 450))
         self.colors = GUIColors()
         panel = scrolled.ScrolledPanel(self)
@@ -274,10 +297,11 @@ class ScandefsFrame(wx.Frame) :
 
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
-        bsizer.Add(add_button(bpanel, label='Load Current Scan', action=self.onView))
-        bsizer.Add(add_button(bpanel, label='Apply Changes', action=self.onApply))
-        bsizer.Add(add_button(bpanel, label='Refresh List',  action=self.onRefresh))
-        bsizer.Add(add_button(bpanel, label='Done', action=self.onDone))
+        bsizer.Add(add_button(bpanel, label='Load Selected Scan', action=self.onLoad))
+        bsizer.Add(add_button(bpanel, label='Sort',               action=self.onSort))
+        bsizer.Add(add_button(bpanel, label='Apply Changes',      action=self.onApply))
+        bsizer.Add(add_button(bpanel, label='Refresh List',       action=self.onRefresh))
+        bsizer.Add(add_button(bpanel, label='Done',               action=self.onDone))
 
         pack(bpanel, bsizer)
         sizer.Add(bpanel, 0, LCEN, 5)
@@ -316,10 +340,23 @@ class ScandefsFrame(wx.Frame) :
         self.scandb.commit()
         self.onRefresh()
 
+    def onSort(self, event=None):
+        inb =  self.nb.GetSelection()
+        label, thisgrid = self.nblabels[inb]
+        icol = thisgrid.GetGridCursorCol()
+        irow = thisgrid.GetGridCursorRow()
+        all = dir(thisgrid)
+        tab = self.tables[inb]
+        print 'SORT ', tab, icol, self.reverse_sort
+        tab.set_data(tab.scans, sort_col=icol+1, reverse=self.reverse_sort)
+        self.reverse_sort = not self.reverse_sort
+        self.Refresh()
+
+        
     def onDone(self, event=None):
         self.Destroy()
             
-    def onView(self, event=None):
+    def onLoad(self, event=None):
         inb =  self.nb.GetSelection()
         label, thisgrid = self.nblabels[inb]
         irow = thisgrid.GetGridCursorRow()
