@@ -177,7 +177,7 @@ class ScanFrame(wx.Frame):
 
         btnsizer = wx.BoxSizer(wx.HORIZONTAL)
         btnpanel = wx.Panel(bpanel)
-        for ibtn, label in enumerate(("Start", "Pause", "Resume", "Abort")):
+        for ibtn, label in enumerate(("Start", "Pause", "Resume", "Abort", "Debug")):
             btn = add_button(btnpanel, label, size=(120, -1),
                              action=Closure(self.onCtrlScan, cmd=label))
             btnsizer.Add(btn, 0, CEN, 8)
@@ -233,7 +233,7 @@ class ScanFrame(wx.Frame):
         time.sleep(0.05)
         self.statusbar.SetStatusText('Epics Ready')
 
-    def generate_scan(self, scanname=None):
+    def generate_scan(self, scanname=None, debug=False):
         """generate scan definition from current values on GUI"""
         if scanname is None:
             scanname = time.strftime("__%b%d_%H:%M:%S__")
@@ -267,9 +267,14 @@ class ScanFrame(wx.Frame):
         for ep in sdb.select('extrapvs', use=1):
             scan['extra_pvs'].append((ep.name, ep.pvname))
 
-        sdb.add_scandef(scanname,  text=json.dumps(scan),
-                        type=scan['type'])
-        return scanname
+        if debug:
+            return (scanname,  scan)
+
+        else:
+            sdb.add_scandef(scanname,  text=json.dumps(scan),
+                            type=scan['type'])
+            return scanname
+
 
     def onStartScan(self, evt=None):
         scanname = self.generate_scan()
@@ -280,6 +285,14 @@ class ScanFrame(wx.Frame):
         self.statusbar.SetStatusText('Waiting....', 0)
         self.scan_started = False
         self.scantimer.Start(100)
+
+    def onDebugScan(self, evt=None):
+        scanname, dat = self.generate_scan(debug=True)
+        fname = self.filename.GetValue()
+        print("Would Load Scan: ", fname)
+        print(scanname)
+        for key, val in dat.items():
+            print ' {} = {} '.format(key, val)
 
     def onScanTimer(self, evt=None):
         self.statusbar.SetStatusText(self.scandb.get_info('scan_message'), 0)
@@ -299,6 +312,8 @@ class ScanFrame(wx.Frame):
         cmd = cmd.lower()
         if cmd == 'start':
             self.onStartScan()
+        elif cmd == 'debug':
+            self.onDebugScan()
         elif cmd == 'abort':
             self.scandb.set_info('request_command_abort', 1)
         elif cmd == 'pause':
