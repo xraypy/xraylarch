@@ -19,7 +19,7 @@ LCEN  |= wx.ALL
 RCEN  |= wx.ALL
 CEN  |= wx.ALL
 
-DET_CHOICES = ('scaler', 'mca', 'multimca', 'areadetector')
+DET_CHOICES = ('scaler', 'xspress3', 'mca', 'multimca', 'areadetector')
 AD_CHOICES = ['None'] + list(AD_FILE_PLUGINS)
 
 class DetectorDetailsDialog(wx.Dialog):
@@ -304,7 +304,7 @@ class DetectorFrame(wx.Frame) :
                                          options=opts, use=int(use))
             elif 'counter' in wtype:
                 self.scandb.add_counter(name, pvname, use=int(use))
-            self.scandb.commit()
+
         self.Destroy()
 
     def onClose(self, event=None):
