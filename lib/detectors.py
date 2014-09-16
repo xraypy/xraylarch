@@ -12,9 +12,12 @@ from .saveable import Saveable
 DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
                     'areadetector': {'file_plugin': 'TIFF1',
                                      'auto_increment': True},
-                    'mca': {'nrois': 16, 'use_full': False,
+                    'mca': {'nrois': 32, 'use_full': False,
                             'use_net': False},
-                    'multimca': {'nrois': 16, 'nmcas': 4,
+                    'xspress3': {'MultiChannelScaler': '',
+                                 'nmcas': 4, 'nrois': 32,
+                                 'nbins': 10}, 
+                    'multimca': {'nrois': 32, 'nmcas': 4,
                                  'use_full': False, 'use_net': False}}
 
 AD_FILE_PLUGINS = ('TIFF1', 'JPEG1', 'NetCDF1',
