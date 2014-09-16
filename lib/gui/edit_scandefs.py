@@ -70,7 +70,7 @@ class GenericDataTable(gridlib.PyGridTableBase):
             name, delOK = dat[0], dat[-1]
             xtime = (dat[-3], dat[-2])
             if delOK == 1 and name in scandat:
-                self.scandb.del_scandef(scanid=scandat[name])
+                self.scandb.del_scandef(scanid=scandat[name][0])
             else:
                 for key, val in scandat.items():
                     if xtime == val[1] and key != name:
