@@ -36,18 +36,20 @@ def buttonrow(panel, onOK=None, onCancel=None):
 def sort_data(dat, sort_col=None, reverse=False):
     if sort_col is None:
         sort_col = len(dat[0])- 2
-    print('SORT ', sort_col, reverse)
+    # print('SORT ', sort_col, reverse)
     data = sorted(dat, key=lambda x: x[sort_col])
     if reverse:
         data = list(reversed(data))
-    for x in data: print( x)
+    # for x in data: print( x)
     return data
 
 
 
 class GenericDataTable(gridlib.PyGridTableBase):
-    def __init__(self):
+    def __init__(self, scandb, stype='linear'):
         gridlib.PyGridTableBase.__init__(self)
+        self.scandb = scandb
+        self.type = stype.lower()
         self.data = []
         self.scans = []
         self.colLabels = []
@@ -55,15 +57,38 @@ class GenericDataTable(gridlib.PyGridTableBase):
         self.widths = []        
         self.colReadOnly = []
 
-    def onOK(self):
-        del_ids = []
-        for iscan, dat in enumerate(self.data):
-            if self.scans[iscan].name != dat[0]:
-                self.scans[iscan].name = dat[0]
-            if dat[-1] == 1:
-                del_ids.append(self.scans[iscan].id)
-        return del_ids
+    def onApplyChanges(self):
+        "apply changes -- deletes and renames"
+        scandat = {}
+        for scan in self.scandb.getall('scandefs'):
+            if scan.type.lower().startswith(self.type.lower()):
+                mtime = scan.modify_time.strftime("%Y-%b-%d %H:%M")
+                utime = scan.last_used_time.strftime("%Y-%b-%d %H:%M")
+                scandat[scan.name] =  (scan.id, (mtime, utime))
         
+        for dat in self.data:
+            name, delOK = dat[0], dat[-1]
+            xtime = (dat[-3], dat[-2])
+            if delOK == 1 and name in scandat:
+                self.scandb.del_scandef(scanid=scandat[name])
+            else:
+                for key, val in scandat.items():
+                    if xtime == val[1] and key != name:
+                        self.scandb.rename_scandef(val[0], name)
+                        time.sleep(0.1)
+                        
+
+    def onLoadScan(self, row):
+        thisscan = self.data[row]
+        print 'on LoadScan: ', row, thisscan
+        for scan in self.scandb.getall('scandefs'):
+            if (scan.type.lower().startswith(self.type.lower()) and
+                scan.name.lower() == thisscan[0].lower()):
+                print 'Load Scan ', scan
+                return json.loads(scan.text)
+        return {}
+    
+
     def GetNumberRows(self):     return len(self.data) + 1
     def GetNumberCols(self):     return len(self.data[0])
     def GetColLabelValue(self, col):    return self.colLabels[col]
@@ -102,8 +127,8 @@ class GenericDataTable(gridlib.PyGridTableBase):
 
 
 class LinearScanDataTable(GenericDataTable):
-    def __init__(self, scans):
-        GenericDataTable.__init__(self)
+    def __init__(self, scans, scandb, stype='Linear'):
+        GenericDataTable.__init__(self, scandb, stype)
 
         self.colLabels = [' Scan Name ', ' Positioner ', ' # Points ',
                           ' Created ', ' Last Used ', ' Erase? ']
@@ -121,6 +146,8 @@ class LinearScanDataTable(GenericDataTable):
         self.widths = [150, 100, 80, 125, 125, 60]
         self.colReadOnly = [False, True, True, True, True, False]
         for scan in self.scans:
+            if len(scan.name) < 1:
+                continue
             sdat = json.loads(scan.text)
             axis = sdat['positioners'][0][0]
             npts = sdat['positioners'][0][4]
@@ -131,8 +158,8 @@ class LinearScanDataTable(GenericDataTable):
                     
                         
 class MeshScanDataTable(GenericDataTable):
-    def __init__(self, scans):
-        GenericDataTable.__init__(self)
+    def __init__(self, scans, scandb, stype='Mesh'):
+        GenericDataTable.__init__(self, scandb, stype)
 
         self.colLabels = [' Scan Name ', ' Inner Positioner ',
                           ' Outer Positioner ', ' # Points ',
@@ -164,8 +191,8 @@ class MeshScanDataTable(GenericDataTable):
 
 
 class SlewScanDataTable(GenericDataTable):
-    def __init__(self, scans):
-        GenericDataTable.__init__(self)
+    def __init__(self, scans, scandb, stype='Slew'):
+        GenericDataTable.__init__(self, scandb, stype)
 
         self.colLabels = [' Scan Name ', ' Inner Positiner ',
                           ' Outer Positioner ', ' # Points ',
@@ -199,8 +226,8 @@ class SlewScanDataTable(GenericDataTable):
         
         
 class XAFSScanDataTable(GenericDataTable):
-    def __init__(self, scans):
-        GenericDataTable.__init__(self)
+    def __init__(self, scans, scandb, stype='XAFS'):
+        GenericDataTable.__init__(self, scandb, stype)
 
         self.colLabels = [' Scan Name ', ' E0 ', ' # Regions', ' # Points ',
                           ' Created ', ' Last Used ', ' Erase? ']
@@ -265,20 +292,23 @@ class ScandefsFrame(wx.Frame) :
 
         for this in self.scandb.getall('scandefs',
                                        orderby='last_used_time'):
+            if this.type is None:
+                self.scandb.del_scandef(scanid=this.id)
+                continue
             allscans[this.type].append(this)
             utime = this.last_used_time.strftime("%Y-%b-%d %H:%M")
             
-        self.tables = []
+        self.tables = {}
         self.nblabels = []
         for pname, creator in (('Linear', LinearScanDataTable),
-                               ('Mesh', MeshScanDataTable),
-                               ('Slew', SlewScanDataTable),
-                               ('XAFS', XAFSScanDataTable)):
+                               ('Mesh',   MeshScanDataTable),
+                               ('Slew',   SlewScanDataTable),
+                               ('XAFS',   XAFSScanDataTable)):
             tgrid = gridlib.Grid(panel)
             tgrid.SetBackgroundColour('#FAFAF8')            
-            table = creator(allscans[pname.lower()])
+            table = creator(allscans[pname.lower()], self.scandb, stype=pname)
             tgrid.SetTable(table, True)
-            self.tables.append(table)
+            self.tables[pname.lower()] = table
             self.nb.AddPage(tgrid, "%s Scans" % pname)
             self.nblabels.append((pname.lower(), tgrid))
             
@@ -298,9 +328,8 @@ class ScandefsFrame(wx.Frame) :
         bpanel = wx.Panel(panel)
         bsizer = wx.BoxSizer(wx.HORIZONTAL)
         bsizer.Add(add_button(bpanel, label='Load Selected Scan', action=self.onLoad))
-        bsizer.Add(add_button(bpanel, label='Sort',               action=self.onSort))
         bsizer.Add(add_button(bpanel, label='Apply Changes',      action=self.onApply))
-        bsizer.Add(add_button(bpanel, label='Refresh List',       action=self.onRefresh))
+        bsizer.Add(add_button(bpanel, label='Sort Column',        action=self.onSort))
         bsizer.Add(add_button(bpanel, label='Done',               action=self.onDone))
 
         pack(bpanel, bsizer)
@@ -320,24 +349,26 @@ class ScandefsFrame(wx.Frame) :
         for t in SCANTYPES:
             allscans[t] = []
 
-        for this in self.scandb.getall('scandefs',
+        for this in self.scandb.select('scandefs',
                                        orderby='last_used_time'):
-            allscans[this.type].append(this)
-            utime = this.last_used_time.strftime("%Y-%b-%d %H:%M")
+            if len(this.name.strip()) > 0:
+                allscans[this.type].append(this)
+                utime = this.last_used_time.strftime("%Y-%b-%d %H:%M")
             
-        for i, pname in enumerate(SCANTYPES):
-            self.tables[i].set_data(allscans[pname.lower()])
-
+        for pname in SCANTYPES:
+            pname = pname.lower()
+            self.tables[pname].set_data(allscans[pname])
+            
         inb  = self.nb.GetSelection()
         self.nb.SetSelection(inb)
         self.Refresh()
 
     def onApply(self, event=None):
-        for table in self.tables:
-            del_ids = table.onOK()
-            for scanid in del_ids:
-                self.scandb.del_scandef(scanid=scanid)
-        self.scandb.commit()
+        inb =  self.nb.GetSelection()
+        label, thisgrid = self.nblabels[inb]
+        self.tables[label].onApplyChanges()
+        time.sleep(0.01)
+        scans  = self.scandb.select('scandefs')
         self.onRefresh()
 
     def onSort(self, event=None):
@@ -346,9 +377,10 @@ class ScandefsFrame(wx.Frame) :
         icol = thisgrid.GetGridCursorCol()
         irow = thisgrid.GetGridCursorRow()
         all = dir(thisgrid)
-        tab = self.tables[inb]
-        print 'SORT ', tab, icol, self.reverse_sort
-        tab.set_data(tab.scans, sort_col=icol+1, reverse=self.reverse_sort)
+        tab = self.tables[label]
+        # print 'SORT ', tab, icol, self.reverse_sort
+                
+        tab.set_data(tab.scans, sort_col=icol, reverse=self.reverse_sort)
         self.reverse_sort = not self.reverse_sort
         self.Refresh()
 
@@ -360,8 +392,9 @@ class ScandefsFrame(wx.Frame) :
         inb =  self.nb.GetSelection()
         label, thisgrid = self.nblabels[inb]
         irow = thisgrid.GetGridCursorRow()
-        scandef = json.loads(self.tables[inb].scans[irow].text)
+
+        scandef = self.tables[label.lower()].onLoadScan(irow)
+        print 'onLoad -- > ', scandef
         scanpanel = self.parent.scanpanels[label.lower()][1]
         scanpanel.load_scandict(scandef)
         self.parent.nb.SetSelection(inb)
-
