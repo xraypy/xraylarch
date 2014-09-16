@@ -161,7 +161,7 @@ class ScanDB(object):
             raise ValueError("Cannot use '%s' as a Scan Database!" % dbname)
 
         self.conn   = self.engine.connect()
-        self.session = sessionmaker(bind=self.engine)()
+        self.session = sessionmaker(bind=self.engine, autocommit=True)()
 
         tabs, classes, mapprops, mapkeys = map_scandb(self.metadata)
         self.tables, self.classes = tabs, classes
@@ -267,6 +267,9 @@ class ScanDB(object):
 
 
     def _get_table(self, tablename):
+        return self.get_table(tablename)
+    
+    def get_table(self, tablename):
         "return (self.tables, self.classes) for a table name"
         cls   = self.classes[tablename]
         table = self.tables[tablename]
@@ -280,7 +283,7 @@ class ScanDB(object):
         """return objects for all rows from a named table
          orderby   to order results
         """
-        cls, table = self._get_table(tablename)
+        cls, table = self.get_table(tablename)
         columns = table.c.keys()
         q = self.query(cls)
         if orderby is not None and hasattr(cls, orderby):
@@ -292,7 +295,7 @@ class ScanDB(object):
          orderby   to order results
          key=val   to get entries matching a column (where clause)
         """
-        cls, table = self._get_table(tablename)
+        cls, table = self.get_table(tablename)
         columns = table.c.keys()
         q = table.select()
         for key, val in kws.items():
@@ -311,7 +314,7 @@ class ScanDB(object):
         use as_int, as_bool and with_notes to alter the output.
         """
         errmsg = "get_info expected 1 or None value for name='%s'"
-        cls, table = self._get_table('info')
+        cls, table = self.get_table('info')
         if key is None:
             return self.query(table).all()
 
@@ -338,7 +341,7 @@ class ScanDB(object):
 
     def set_info(self, key, value, notes=None):
         """set key / value in the info table"""
-        cls, table = self._get_table('info')
+        cls, table = self.get_table('info')
         vals  = self.query(table).filter(cls.keyname==key).all()
         data = {'keyname': key, 'value': value}
         if notes is not None:
@@ -353,8 +356,8 @@ class ScanDB(object):
         """dangerous!!!! clear all info --
         can leave a DB completely broken and unusable
         useful when going to repopulate db anyway"""
-        cls, table = self._get_table('info')
-        self.conn.execute(table.delete().where(table.c.keyname!=''))
+        cls, table = self.get_table('info')
+        self.session.execute(table.delete().where(table.c.keyname!=''))
 
     def set_hostpid(self, clear=False):
         """set hostname and process ID, as on intial set up"""
@@ -433,7 +436,7 @@ class ScanDB(object):
 
     def getrow(self, table, name, one_or_none=False):
         """return named row from a table"""
-        cls, table = self._get_table(table)
+        cls, table = self.get_table(table)
         if table is None: return None
         if isinstance(name, Table):
             return name
@@ -448,23 +451,26 @@ class ScanDB(object):
         """return scandef by name"""
         return self.getrow('scandefs', name, one_or_none=True)
 
+    def rename_scandef(self, scanid, name):
+        cls, table = self.get_table('scandefs')
+        table.update(whereclause="id='%d'" % scanid).execute(name=name)        
+        
     def del_scandef(self, name=None, scanid=None):
         """delete scan defn by name"""
-        cls, table = self._get_table('scandefs')
+        cls, table = self.get_table('scandefs')
         if name is not None:
-            self.conn.execute(table.delete().where(table.c.name==name))
+            self.session.execute(table.delete().where(table.c.name==name))
         elif scanid is not None:
-            self.conn.execute(table.delete().where(table.c.id==scanid))
-
+            self.session.execute(table.delete().where(table.c.id==scanid))
+            
     def add_scandef(self, name, text='', notes='', type='', **kws):
         """add scan"""
-        cls, table = self._get_table('scandefs')
+        cls, table = self.get_table('scandefs')
         kws.update({'notes': notes, 'text': text, 'type': type})
 
         name = name.strip()
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
-        self.commit()
         return row
 
     def get_scandict(self, scan):
@@ -483,13 +489,12 @@ class ScanDB(object):
     def add_macro(self, name, text, arguments='',
                   output='', notes='', **kws):
         """add macro"""
-        cls, table = self._get_table('macros')
+        cls, table = self.get_table('macros')
         name = name.strip()
         kws.update({'notes': notes, 'text': text,
                     'arguments': arguments})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
-        self.commit()
         return row
 
     # scan data
@@ -497,22 +502,21 @@ class ScanDB(object):
         return self.getall('scandata', orderby='id', **kws)
 
     def add_scandata(self, name, value, notes='', pvname='', **kws):
-        cls, table = self._get_table('scandata')
+        cls, table = self.get_table('scandata')
         kws.update({'notes': notes, 'pvname': pvname})
         name = name.strip()
         row = self.__addRow(cls, ('name', 'data'), (name, value), **kws)
         self.session.add(row)
-        self.commit()
         return row
 
     def set_scandata(self, name, value,  **kws):
-        cls, tab = self._get_table('scandata')
+        cls, tab = self.get_table('scandata')
         where = "name='%s'" % name
         tab.update().where(whereclause=where
                            ).values({tab.c.data: value}).execute()
 
     def append_scandata(self, name, val):
-        cls, tab = self._get_table('scandata')
+        cls, tab = self.get_table('scandata')
         where = "name='%s'" % name
         n = len(tab.select(whereclause=where
                            ).execute().fetchone().data)
@@ -520,11 +524,11 @@ class ScanDB(object):
                            ).values({tab.c.data[n]: val}).execute()
 
     def clear_scandata(self, **kws):
-        cls, table = self._get_table('scandata')
+        cls, table = self.get_table('scandata')
         a = self.get_scandata()
         if len(a) < 0:
             return
-        self.conn.execute(table.delete().where(table.c.id != 0))
+        self.session.execute(table.delete().where(table.c.id != 0))
 
     # positioners
     def get_positioners(self, **kws):
@@ -542,19 +546,19 @@ class ScanDB(object):
 
     def del_slewpositioner(self, name):
         """delete slewscan positioner by name"""
-        cls, table = self._get_table('slewscanpositioners')
-        self.conn.execute(table.delete().where(table.c.name==name))
+        cls, table = self.get_table('slewscanpositioners')
+        self.session.execute(table.delete().where(table.c.name==name))
 
     def del_positioner(self, name):
         """delete positioner by name"""
-        cls, table = self._get_table('scanpositioners')
+        cls, table = self.get_table('scanpositioners')
 
-        self.conn.execute(table.delete().where(table.c.name==name))
+        self.session.execute(table.delete().where(table.c.name==name))
 
     def add_positioner(self, name, drivepv, readpv=None, notes='',
                        extrapvs=None, **kws):
         """add positioner"""
-        cls, table = self._get_table('scanpositioners')
+        cls, table = self.get_table('scanpositioners')
         name = name.strip()
         drivepv = normalize_pvname(drivepv)
         if readpv is not None:
@@ -567,7 +571,6 @@ class ScanDB(object):
 
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
-        self.commit()
         self.add_pv(drivepv, notes=name)
         if readpv is not None:
             self.add_pv(readpv, notes="%s readback" % name)
@@ -582,7 +585,7 @@ class ScanDB(object):
     def add_slewpositioner(self, name, drivepv, readpv=None, notes='',
                            extrapvs=None, **kws):
         """add slewscan positioner"""
-        cls, table = self._get_table('slewscanpositioners')
+        cls, table = self.get_table('slewscanpositioners')
         name = name.strip()
         drivepv = normalize_pvname(drivepv)
         if readpv is not None:
@@ -595,7 +598,6 @@ class ScanDB(object):
 
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
-        self.commit()
         self.add_pv(drivepv, notes=name)
         if readpv is not None:
             self.add_pv(readpv, notes="%s readback" % name)
@@ -610,19 +612,18 @@ class ScanDB(object):
 
     def del_detector(self, name):
         """delete detector by name"""
-        cls, table = self._get_table('scandetectors')
-        self.conn.execute(table.delete().where(table.c.name==name))
+        cls, table = self.get_table('scandetectors')
+        self.session.execute(table.delete().where(table.c.name==name))
 
     def add_detector(self, name, pvname, kind='', options='', **kws):
         """add detector"""
-        cls, table = self._get_table('scandetectors')
+        cls, table = self.get_table('scandetectors')
         name = name.strip()
         pvname = normalize_pvname(pvname)
         kws.update({'pvname': pvname,
                     'kind': kind, 'options': options})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
-        self.commit()
         return row
 
     # counters -- simple, non-triggered PVs to add to detectors
@@ -635,19 +636,18 @@ class ScanDB(object):
 
     def del_counter(self, name):
         """delete counter by name"""
-        cls, table = self._get_table('scancounters')
-        self.conn.execute(table.delete().where(table.c.name==name))
+        cls, table = self.get_table('scancounters')
+        self.session.execute(table.delete().where(table.c.name==name))
 
     def add_counter(self, name, pvname, **kws):
         """add counter (non-triggered detector)"""
-        cls, table = self._get_table('scancounters')
+        cls, table = self.get_table('scancounters')
         pvname = normalize_pvname(pvname)
         name = name.strip()
         kws.update({'pvname': pvname})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.add_pv(pvname, notes=name)
-        self.commit()
         return row
 
     # extra pvs: pvs recorded at breakpoints of scans
@@ -660,19 +660,18 @@ class ScanDB(object):
 
     def del_extrapv(self, name):
         """delete extrapv by name"""
-        cls, table = self._get_table('extrapvs')
-        self.conn.execute(table.delete().where(table.c.name==name))
+        cls, table = self.get_table('extrapvs')
+        self.session.execute(table.delete().where(table.c.name==name))
 
     def add_extrapv(self, name, pvname, use=True, **kws):
         """add extra pv (recorded at breakpoints in scans"""
-        cls, table = self._get_table('extrapvs')
+        cls, table = self.get_table('extrapvs')
         name = name.strip()
         pvname = normalize_pvname(pvname)
         kws.update({'pvname': pvname, 'use': int(use)})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
         self.add_pv(pvname, notes=name)
-        self.commit()
         return row
 
     # add PV to list of PVs
@@ -681,7 +680,7 @@ class ScanDB(object):
         if len(name) < 2:
             return
         name = normalize_pvname(name)
-        cls, table = self._get_table('pvs')
+        cls, table = self.get_table('pvs')
         vals  = self.query(table).filter(cls.name == name).all()
         ismon = {False:0, True:1}[monitor]
         if len(vals) < 1:
@@ -702,13 +701,11 @@ class ScanDB(object):
             pv = self.add_pv(pvname, monitor=True)
             self.pvs[pvname] = pv.id
 
-        cls, table = self._get_table('monitorvalues')
+        cls, table = self.get_table('monitorvalues')
         mval = cls()
         mval.pv_id = self.pvs[pvname]
         mval.value = value
         self.session.add(mval)
-        if commit:
-            self.commit()
 
     def get_monitorvalues(self, pvname, start_date=None, end_date=None):
         """get (value, time) pairs for a monitorpvs given a time range
@@ -718,7 +715,7 @@ class ScanDB(object):
             pv = self.add_monitorpv(pvname)
             self.pvs[pvname] = pv.id
 
-        cls, valtab = self._get_table('monitorvalues')
+        cls, valtab = self.get_table('monitorvalues')
 
         query = select([valtab.c.value, valtab.c.time],
                        valtab.c.monitorpvs_id==self.pvs[pvname])
@@ -732,7 +729,7 @@ class ScanDB(object):
     # commands -- a more complex interface
     def get_commands(self, status=None, **kws):
         """return command by status"""
-        cls, table = self._get_table('commands')
+        cls, table = self.get_table('commands')
         columns = table.c.keys()
         q = self.query(cls)
         q = q.order_by(cls.id)
@@ -746,7 +743,7 @@ class ScanDB(object):
     # commands -- a more complex interface
     def get_mostrecent_command(self):
         """return command by status"""
-        cls, table = self._get_table('commands')
+        cls, table = self.get_table('commands')
         columns = table.c.keys()
         q = self.query(cls)
         q = q.order_by(cls.request_time)
@@ -755,7 +752,7 @@ class ScanDB(object):
     def add_command(self, command, arguments='',output_value='',
                     output_file='', **kws):
         """add command"""
-        cls, table = self._get_table('commands')
+        cls, table = self.get_table('commands')
 
         statid = self.status_codes.get('requested', 1)
 
@@ -766,12 +763,11 @@ class ScanDB(object):
 
         row = self.__addRow(cls, ('command',), (command,), **kws)
         self.session.add(row)
-        self.commit()
         return row
 
     def set_command_status(self, id, status):
         """set the status of a command (by id)"""
-        cls, table = self._get_table('commands')
+        cls, table = self.get_table('commands')
         if status not in self.status_codes:
             status = 'unknown'
         statid = self.status_codes[status]
@@ -781,7 +777,6 @@ class ScanDB(object):
     def cancel_command(self, id):
         """cancel command"""
         self.set_command_status(id, 'canceled')
-        self.commit()
 
 
 if __name__ == '__main__':
