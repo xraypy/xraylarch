@@ -70,7 +70,7 @@ class ScanViewerFrame(wx.Frame):
                                  create=create)
         self.larch = None
         self.lgroup = None
-
+        self.scan_inprogress = False
         self.SetTitle(title)
         self.SetSize((750, 750))
         self.SetFont(Font(9))
@@ -95,12 +95,18 @@ class ScanViewerFrame(wx.Frame):
         self.Show()
         self.Raise()
 
-    def onScanTimer(self, evt=None, **kws):
+    def onScanTimer(self, evt=None,  **kws):
         if self.lgroup is None:
             return
 
-        curfile = fix_filename(self.get_info('filename'))
-        sdata = self.scandb.get_scandata()
+        try:
+            curfile = fix_filename(self.get_info('filename'))
+            sdata = self.scandb.get_scandata()
+            time_est = hms(self.get_info('scan_time_estimate', as_int=True))
+            msg = self.get_info('scan_message')
+        except:
+            return
+        
         npts = len(sdata[-1].data)
         cmd = self.scandb.get_mostrecent_command()
         try:
@@ -108,31 +114,33 @@ class ScanViewerFrame(wx.Frame):
         except AttributeError:
             cmd_stat = 'unknown'
 
-        time_est = hms(self.get_info('scan_time_estimate', as_int=True))
-        msg = self.get_info('scan_message')
-        # print 'MSG ', msg, time_est
-        if cmd_stat.startswith('run'):
-            msg = '%s, %s' % (msg, time_est)        
-        self.SetStatusText(msg)
 
-        if (npts > 2 and npts == self.live_cpt and
-            curfile == self.live_scanfile): # no new data
-            return
+        force_newplot = False
 
+        if ((curfile != self.live_scanfile or msg.lower().startswith('starting scan')) and
+            not self.scan_inprogress):
         # filename changed -- scan starting, so update
         # list of positioners, detectors, etc
-        force_newplot = False
-        if curfile != self.live_scanfile:
+            self.scan_inprogress = True            
             force_newplot = True
             self.live_scanfile = curfile
             self.title.SetLabel(curfile)
             self.set_column_names(sdata)
 
-        if npts == self.live_cpt:
-            return
+        elif msg.lower().startswith('scan complete') and self.scan_inprogress:
+            self.scan_inprogress = False
+            force_newplot = True
 
-        time_est = hms(self.get_info('scan_time_estimate', as_int=True))
-        msg = self.get_info('scan_message')
+        if not (self.scan_inprogress or force_newplot):
+            return
+        
+        if cmd_stat.startswith('run'):
+            msg = '%s, %s' % (msg, time_est)        
+        self.SetStatusText(msg)
+
+        if (npts > 2 and npts == self.live_cpt and not force_newplot):  # no new data
+                return
+
         if cmd_stat.startswith('run'):
             msg = '%s, %s' % (msg, time_est)        
 
