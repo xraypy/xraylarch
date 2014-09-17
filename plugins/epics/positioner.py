@@ -3,8 +3,14 @@ Positioner for Step Scan
 """
 import time
 import numpy as np
-from epics_interface import PV, caget
-from .saveable import Saveable
+from epics import PV, caget
+
+
+from larch import use_plugin_path
+
+use_plugin_path('epics')
+
+from saveable import Saveable
 
 
 class Positioner(Saveable):

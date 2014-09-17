@@ -3,11 +3,13 @@ Triggers, Counters, Detectors for Step Scan
 """
 
 import time
-from epics_interface import PV, caget, caput, poll
+from epics import PV, caget, caput, poll
 from epics.devices import Scaler, MCA, Struck
-from ordereddict import OrderedDict
+from larch.utils.ordereddict import OrderedDict
 
-from .saveable import Saveable
+from larch import use_plugin_path
+use_plugin_path('epics')
+from saveable import Saveable
 
 DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
                     'areadetector': {'file_plugin': 'TIFF1',

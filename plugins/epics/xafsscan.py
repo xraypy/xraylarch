@@ -6,9 +6,12 @@ based on EpicsApps.StepScan.
 """
 import numpy as np
 
-from .stepscan import StepScan
-from .positioner import Positioner
-from .saveable import Saveable
+from larch import use_plugin_path
+use_plugin_path('epics')
+
+from stepscan import StepScan
+from positioner import Positioner
+from saveable import Saveable
 
 XAFS_K2E = 3.809980849311092
 
