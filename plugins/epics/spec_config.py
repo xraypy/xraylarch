@@ -4,8 +4,13 @@ import os
 import time
 from ConfigParser import  ConfigParser
 from cStringIO import StringIO
-from ordereddict import OrderedDict
-from .file_utils import get_homedir, get_timestamp
+
+from larch.utils.ordereddict import OrderedDict
+
+from larch import use_plugin_path
+use_plugin_path('epics')
+
+from file_utils import get_homedir, get_timestamp
 
 LEGEND     = '# index = label || PVname'
 DET_LEGEND = '# index = label || DetectorPV || options '

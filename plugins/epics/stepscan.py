@@ -86,8 +86,11 @@ import threading
 import numpy as np
 from epics import PV, poll
 
-from .detectors import Counter, DeviceCounter, Trigger
-from .datafile import ASCIIScanFile
+from larch import use_plugin_path
+use_plugin_path('epics')
+
+from detectors import Counter, DeviceCounter, Trigger
+from datafile import ASCIIScanFile
 
 MIN_POLL_TIME = 1.e-3
 

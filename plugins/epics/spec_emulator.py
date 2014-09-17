@@ -27,12 +27,14 @@ yet to be implemented:
 from time import sleep
 from numpy import array, linspace
 
-from epics_interface import PV, caget, poll
+from epics import PV, caget, poll
+from larch import use_plugin_path
+use_plugin_path('epics')
 
-from .stepscan   import StepScan
-from .positioner import Positioner
-from .detectors  import get_detector, Counter
-from .spec_config import SpecConfig
+from stepscan   import StepScan
+from positioner import Positioner
+from detectors  import get_detector, Counter
+from spec_config import SpecConfig
 
 class SpecScan(object):
     """Spec Mode for StepScan"""

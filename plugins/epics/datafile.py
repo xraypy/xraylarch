@@ -23,8 +23,11 @@ import os
 import time
 import numpy as np
 
-from .file_utils import new_filename, get_timestamp, fix_filename
-from .ordereddict import OrderedDict
+from larch import use_plugin_path
+from larch.utils.ordereddict import OrderedDict
+
+use_plugin_path('epics')
+from file_utils import new_filename, get_timestamp, fix_filename
 
 COM1 = '#'
 COM2 = '/'*3 + '  Users Comments  ' + '/'*3
