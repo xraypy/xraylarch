@@ -238,7 +238,10 @@ class ScanDB(object):
 
     def commit(self):
         "commit session state"
-        return self.session.commit()
+        try:
+            return self.session.commit()
+        except:
+            pass
 
     def close(self):
         "close session"
