@@ -9,7 +9,7 @@ import numpy as np
 from larch import use_plugin_path
 use_plugin_path('epics')
 
-from stepscan import StepScan
+from stepscan import LarchStepScan
 from positioner import Positioner
 from saveable import Saveable
 
@@ -32,14 +32,14 @@ class ScanRegion(Saveable):
                           dtime_final=dtime_final,
                           dtime_wt=dtime_wt)
 
-class XAFS_Scan(StepScan):
+class XAFS_Scan(LarchStepScan):
     def __init__(self, label=None, energy_pv=None, read_pv=None,
                  extra_pvs=None,  e0=0, **kws):
         self.label = label
         self.e0 = e0
         self.energies = []
         self.regions = []
-        StepScan.__init__(self, **kws)
+        LarchStepScan.__init__(self, **kws)
         self.dwelltime = []
         self.energy_pos = None
         self.set_energy_pv(energy_pv, read_pv=read_pv, extra_pvs=extra_pvs)

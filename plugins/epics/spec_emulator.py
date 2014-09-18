@@ -31,7 +31,7 @@ from epics import PV, caget, poll
 from larch import use_plugin_path
 use_plugin_path('epics')
 
-from stepscan   import StepScan
+from stepscan   import LarchStepScan
 from positioner import Positioner
 from detectors  import get_detector, Counter
 from spec_config import SpecConfig
@@ -39,12 +39,13 @@ from spec_config import SpecConfig
 class SpecScan(object):
     """Spec Mode for StepScan"""
     def __init__(self, filename='specscan.001', configfile=None,
-                 auto_increment=True):
+                 auto_increment=True, _larch=None):
         self.motors  = {}
         self.detectors = []
         self.bare_counters = []
-        self._scan = StepScan(filename=filename,
-                              auto_increment=auto_increment)
+        self._scan = LarchStepScan(filename=filename,
+                                   auto_increment=auto_increment,
+                                   _larch=_larch)
         self.datafilename = filename
         if configfile is not None:
             self.configfile = configfile
