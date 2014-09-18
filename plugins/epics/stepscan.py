@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-"""
-Classes and Functions for simple step scanning for epics.
+MODDOC = """
+=== Epics Scanning Functions for Larch ===
+
 
 This does not used the Epics SScan Record, and the scan is intended to run
 as a python application, but many concepts from the Epics SScan Record are
@@ -86,7 +87,7 @@ import threading
 import numpy as np
 from epics import PV, poll
 
-from larch import use_plugin_path
+from larch import use_plugin_path, Group, ValidateLarchPlugin
 use_plugin_path('epics')
 
 from detectors import Counter, DeviceCounter, Trigger
@@ -143,23 +144,26 @@ class ScanMessenger(threading.Thread):
             if self.cpt is None or time.time()-t0 > self.timeout:
                 return
 
-class StepScan(object):
+class LarchStepScan(object):
     """
-    General Step Scanning for Epics
+    Epics Step Scanning for Larch
     """
     def __init__(self, filename=None, auto_increment=True,
-                 configdb=None, comments=None, messenger=None):
+                 comments=None, scandb=None, _larch=None):
         self.pos_settle_time = MIN_POLL_TIME
         self.det_settle_time = MIN_POLL_TIME
         self.pos_maxmove_time = 3600.0
         self.det_maxcount_time = 86400.0
+        self._larch = _larch
+        self._scangroup =  _larch.symtable._scan
+        self.scandb = scandb
+
         self.dwelltime = None
         self.comments = comments
 
         self.filename = filename
         self.auto_increment = auto_increment
         self.filetype = 'ASCII'
-        self.configdb = configdb
 
         self.verified = False
         self.abort = False
@@ -169,8 +173,6 @@ class StepScan(object):
         self.exittime = 0 # time to complete scan (post_scan, return positioners, complete i/o)
         self.runtime  = 0 # inittime + looptime + exittime
 
-        self.message_thread = None
-        self.messenger = messenger
         if filename is not None:
             self.datafile = self.open_output_file(filename=filename,
                                                   comments=comments)
@@ -296,17 +298,18 @@ class StepScan(object):
         the HLM and LLM field (if available)
         """
         npts = None
-        self.error_message = ''
-        for p in self.positioners:
-            if not p.verify_array():
-                self.error_message = 'Positioner %s array out of bounds' % p.pv.pvname
+        for pos in self.positioners:
+            if not pos.verify_array():
+                self.set_error('Positioner {0} array out of bounds'.format(
+                    pos.pv.pvname))
                 return False
             if npts is None:
-                npts = len(p.array)
-            if len(p.array) != npts:
-                self.error_message = 'Inconsistent positioner array length'
+                npts = len(pos.array)
+            if len(pos.array) != npts:
+                self.set_error('Inconsistent positioner array length')
                 return False
         return True
+
 
     def check_outputs(self, out, msg='unknown'):
         """ check outputs of a previous command
@@ -330,6 +333,28 @@ class StepScan(object):
             c.clear()
         self.pos_actual = []
 
+
+    def _messenger(self, cpt, npts=0, **kws):
+        time_left = (npts-cpt)* (self.pos_settle_time + self.det_settle_time)
+        if self.dwelltime_varys:
+            time_left += self.dwelltime[cpt:].sum()
+        else:
+            time_left += (npts-cpt)*self.dwelltime
+        self.set_info('scan_time_estimate', time_left)
+        if cpt < 4:
+            self.set_info('filename', self.filename)
+        for c in self.counters:
+            self.set_scandata(fix_varname(c.label), c.buff)
+        
+    def set_error(self, msg):
+        """set scan error message"""
+        self.scangroup.error_message = msg
+        
+    def set_info(self, attr, value):
+        """set scan info to _scan variable"""
+        setattr(self.scangroup, attr, value)
+        
+        
     def run(self, filename=None, comments=None):
         """ run the actual scan:
            Verify, Save original positions,
@@ -349,8 +374,7 @@ class StepScan(object):
 
         ts_start = time.time()
         if not self.verify_scan():
-            print 'Cannot execute scan'
-            print self.error_message
+            print 'Cannot execute scan ',  self.scangroup.error_message
             return
         self.abort = False
         self.pause = False
@@ -388,11 +412,8 @@ class StepScan(object):
                     d.set_dwelltime(self.dwelltime)
 
         if self.debug: print 'StepScan Run (dwelltimes set)'
-        self.message_thread = None
-        if hasattr(self.messenger, '__call__'):
-            self.message_thread = ScanMessenger(func=self.messenger,
-                                                scan = self, npts=npts, cpt=0)
-            self.message_thread.start()
+        self.msg_thread = ScanMessenger(func=self.messenger, npts=npts, cpt=0)
+        self.msg_thread.start()
         self.cpt = 0
         self.npts = npts
         t0 = time.time()
@@ -470,8 +491,8 @@ class StepScan(object):
                 self.pos_actual.append([p.current() for p in self.positioners])
 
                 # if a messenger exists, let it know this point has finished
-                if self.message_thread is not None:
-                    self.message_thread.cpt = self.cpt
+                if self.msg_thread is not None:
+                    self.msg_thread.cpt = self.cpt
 
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
@@ -502,9 +523,9 @@ class StepScan(object):
         self.complete = True
 
         # end messenger thread
-        if self.message_thread is not None:
-            self.message_thread.cpt = None
-            self.message_thread.join()
+        if self.msg_thread is not None:
+            self.msg_thread.cpt = None
+            self.msg_thread.join()
 
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
@@ -512,3 +533,15 @@ class StepScan(object):
         return self.datafile.filename
         ##
 
+@ValidateLarchPlugin
+def scan_json(text, _larch=None):
+    print 'JSON Scan ', text
+    
+def initializeLarchPlugin(_larch=None):
+    """initialize _scan"""
+    if _larch is not None:
+        mod = _larch.symtable._scan = Group()
+        mod.__doc__ = MODDOC
+
+def registerLarchPlugin():
+    return ('_scan', {'scan_json': scan_json})
