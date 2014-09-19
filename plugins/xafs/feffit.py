@@ -391,7 +391,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
         chir_im      imaginary part of chi(R).
     """
 
-    def _resid(params, datasets=None, _larch=None, **kws):
+    def _resid(params, datasets=None, _larch=None, **kwargs):
         """ this is the residual function"""
         return concatenate([d._residual() for d in datasets])
 
@@ -403,7 +403,7 @@ def feffit(params, datasets, _larch=None, rmax_out=10, path_outputs=True, **kws)
             return
     fitkws = dict(datasets=datasets)
     fit = Minimizer(_resid, params, fcn_kws=fitkws,
-                    scale_covar=True,  _larch=_larch)
+                    scale_covar=True,  _larch=_larch, **kws)
 
     fit.leastsq()
     dat = concatenate([d._residual(data_only=True) for d in datasets])
