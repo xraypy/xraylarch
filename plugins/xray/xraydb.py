@@ -144,7 +144,7 @@ class ChantlerTable(_BaseTable):
 
 class xrayDB(object):
     "interface to Xray Data"
-    def __init__(self, dbname='xrayref.db'):
+    def __init__(self, dbname='xrayref.db', read_only=True):
         "connect to an existing database"
         if not os.path.exists(dbname):
             parent, child = os.path.split(__file__)
@@ -158,7 +158,16 @@ class xrayDB(object):
         self.dbname = dbname
         self.engine = make_engine(dbname)
         self.conn = self.engine.connect()
-        self.session = sessionmaker(bind=self.engine)()
+        kwargs = {}
+        if read_only:
+            kwargs = {'autoflush': True, 'autocommit':False}
+            def readonly_flush(*args, **kwargs):
+                return
+            self.session = sessionmaker(bind=self.engine, **kwargs)()
+            self.session.flush = readonly_flush
+        else:
+            self.session = sessionmaker(bind=self.engine, **kwargs)()            
+            
         self.metadata =  MetaData(self.engine)
         self.metadata.reflect()
         tables = self.tables = self.metadata.tables
