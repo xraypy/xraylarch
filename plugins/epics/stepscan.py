@@ -84,14 +84,22 @@ with it.  It will use these for PVs to post data at each point of the scan.
 
 import time
 import threading
+import json
 import numpy as np
 from epics import PV, poll
 
 from larch import use_plugin_path, Group, ValidateLarchPlugin
 use_plugin_path('epics')
 
-from detectors import Counter, DeviceCounter, Trigger
+from detectors import Counter, DeviceCounter, Trigger, get_detector
 from datafile import ASCIIScanFile
+from positioner import Positioner
+from xafsscan import XAFS_Scan
+from file_utils import fix_varname
+from scandb import ScanDB
+  
+MODNAME = '_scan'
+SCANDB_NAME = '%s._scandb' % MODNAME
 
 MIN_POLL_TIME = 1.e-3
 
@@ -148,18 +156,19 @@ class LarchStepScan(object):
     """
     Epics Step Scanning for Larch
     """
-    def __init__(self, filename=None, auto_increment=True,
-                 comments=None, scandb=None, _larch=None):
+    def __init__(self, filename=None, auto_increment=True, _larch=None):
         self.pos_settle_time = MIN_POLL_TIME
         self.det_settle_time = MIN_POLL_TIME
         self.pos_maxmove_time = 3600.0
         self.det_maxcount_time = 86400.0
         self._larch = _larch
         self._scangroup =  _larch.symtable._scan
-        self.scandb = scandb
+        self.scandb = None
+        if self._scan._scandb is not None:
+            self.scandb = self._scan._scandb
 
         self.dwelltime = None
-        self.comments = comments
+        self.comments = None
 
         self.filename = filename
         self.auto_increment = auto_increment
@@ -172,10 +181,6 @@ class LarchStepScan(object):
         self.looptime = 0 # time to run scan loop (even if aborted)
         self.exittime = 0 # time to complete scan (post_scan, return positioners, complete i/o)
         self.runtime  = 0 # inittime + looptime + exittime
-
-        if filename is not None:
-            self.datafile = self.open_output_file(filename=filename,
-                                                  comments=comments)
 
         self.cpt = 0
         self.npts = 0
@@ -288,7 +293,6 @@ class LarchStepScan(object):
         if self.debug: print 'POST SCAN '
         return [m() for m in self.post_scan_methods]
 
-
     def verify_scan(self):
         """ this does some simple checks of Scans, checking that
         the length of the positions array matches the length of the
@@ -343,18 +347,46 @@ class LarchStepScan(object):
         self.set_info('scan_time_estimate', time_left)
         if cpt < 4:
             self.set_info('filename', self.filename)
+        self.set_info('scan_message', 'Point %i/%i' % (cpt, npts))
         for c in self.counters:
             self.set_scandata(fix_varname(c.label), c.buff)
         
     def set_error(self, msg):
         """set scan error message"""
-        self.scangroup.error_message = msg
-        
+        self._scangroup.error_message = msg
+        if self.scandb is not None:
+            self.scandb.set_info('last_error', msg)
+
     def set_info(self, attr, value):
         """set scan info to _scan variable"""
-        setattr(self.scangroup, attr, value)
+        setattr(self._scangroup, attr, value)
+        if self.scandb is not None:
+            self.scandb.set_info(attr, value)
         
+    def set_scandata(self, attr, value):
+        setattr(self._scangroup, attr, value)
+        if self.scandb is not None:        
+            self.scandb.set_scandata(attr, value)
+
+            
+    def look_for_interrupt_requests(self):
+        """set interrupt requests:
         
+        abort / pause / resume
+         
+        if scandb is being used, these are looked up from database.
+        otherwise local larch variables are used.
+        """
+        if self.scandb is None:
+            def isset(key):
+                getattr(self._scan, key)
+        else:
+            def isset(key):
+                return self.scandb.get_info(key, as_bool=True)
+        self.abort_request = isset('request_command_abort')
+        self.pause_request = isset('request_command_pause')
+        self.resume_request = isset('request_command_resume')
+
     def run(self, filename=None, comments=None):
         """ run the actual scan:
            Verify, Save original positions,
@@ -363,18 +395,23 @@ class LarchStepScan(object):
            Loop over points
            run post_scan methods
         """
+
         self.complete = False
         if filename is not None:
             self.filename  = filename
         if comments is not None:
             self.comments = comments
 
+        if self.scandb is not None:
+            self.scandb.clear_scandata()
+                
         self.pos_settle_time = max(MIN_POLL_TIME, self.pos_settle_time)
         self.det_settle_time = max(MIN_POLL_TIME, self.det_settle_time)
 
         ts_start = time.time()
         if not self.verify_scan():
-            print 'Cannot execute scan ',  self.scangroup.error_message
+            print 'Cannot execute scan ',  self._scangroup.error_message
+            self.set_info('scan_message', 'cannot execute scan')
             return
         self.abort = False
         self.pause = False
@@ -392,10 +429,11 @@ class LarchStepScan(object):
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
         if self.debug: print 'StepScan Run (data file opened)'
+        self.set_info('scan_message', 'pre-scan')
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
         if self.debug:  print 'StepScan Run (prescan done)'
-
+        self.set_info('scan_message', 'starting')
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
         if self.dwelltime is not None:
@@ -411,8 +449,20 @@ class LarchStepScan(object):
                 for d in self.detectors:
                     d.set_dwelltime(self.dwelltime)
 
+        time_est = npts*(self.pos_settle_time + self.det_settle_time)
+        if self.dwelltime_varys:
+            time_est += self.dwelltime.sum()
+        else:
+            time_est += npts*self.dwelltime
+
+        if self.scandb is not None:
+            self.scandb.set_info('scan_time_estimate', time_est)
+            self.scandb.set_info('scan_total_points', npts)
+            self.scandb.set_info('request_command_abort', 0)
+            self.scandb.set_info('scan_message', 'Preparing Scan (watcher)')
+
         if self.debug: print 'StepScan Run (dwelltimes set)'
-        self.msg_thread = ScanMessenger(func=self.messenger, npts=npts, cpt=0)
+        self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
         self.msg_thread.start()
         self.cpt = 0
         self.npts = npts
@@ -534,14 +584,118 @@ class LarchStepScan(object):
         ##
 
 @ValidateLarchPlugin
-def scan_json(text, _larch=None):
-    print 'JSON Scan ', text
+def scan_from_json(text, filename='scan.001', _larch=None):
+    sdict = json.loads(text)
     
+    scan = LarchStepScan(filename=filename, _larch=_larch)
+    if sdict['type'] == 'xafs':
+        print 'xafs scan soon'
+        scan  = XAFS_Scan(energy_pv=sdict['energy_drive'],
+                          read_pv=sdict['energy_read'],
+                          e0=sdict['e0'])
+        t_kw  = sdict['time_kw']
+        t_max = sdict['max_time']
+        nreg  = len(sdict['regions'])
+        kws  = {'relative': sdict['is_relative']}
+        for i, det in enumerate(sdict['regions']):
+            start, stop, npts, dt, units = det
+            kws['dtime'] =  dt
+            kws['use_k'] =  units.lower() !='ev'
+            if i == nreg-1: # final reg
+                if t_max > dt and t_kw>0 and kws['use_k']:
+                    kws['dtime_final'] = t_max
+                    kws['dtime_wt'] = t_kw
+            scan.add_region(start, stop, npts=npts, **kws)
+
+    elif sdict['type'] == 'linear':
+        for pos in sdict['positioners']:
+            label, pvs, start, stop, npts = pos
+            p = Positioner(pvs[0], label=label)
+            p.array = np.linspace(start, stop, npts)
+            scan.add_positioner(p)
+            if len(pvs) > 0:
+                scan.add_counter(pvs[1], label="%s_read" % label)
+
+    elif sdict['type'] == 'mesh':
+        label1, pvs1, start1, stop1, npts1 = sdict['inner']
+        label2, pvs2, start2, stop2, npts2 = sdict['outer']
+        p1 = Positioner(pvs1[0], label=label1)
+        p2 = Positioner(pvs2[0], label=label2)
+
+        inner = npts2* [np.linspace(start1, stop1, npts1)]
+        outer = [[i]*npts1 for i in np.linspace(start2, stop2, npts2)]
+
+        p1.array = np.array(inner).flatten()
+        p2.array = np.array(outer).flatten()
+        scan.add_positioner(p1)
+        scan.add_positioner(p2)
+        if len(pvs1) > 0:
+            scan.add_counter(pvs1[1], label="%s_read" % label1)
+        if len(pvs2) > 0:
+            scan.add_counter(pvs2[1], label="%s_read" % label2)
+
+    elif sdict['type'] == 'slew':
+        label1, pvs1, start1, stop1, npts1 = sdict['inner']
+        p1 = Positioner(pvs1[0], label=label1)
+        p1.array = np.linspace(start1, stop1, npts1)
+        scan.add_positioner(p1)
+        if len(pvs1) > 0:
+            scan.add_counter(pvs1[1], label="%s_read" % label1)
+        if sdict['dimension'] >=2:
+            label2, pvs2, start2, stop2, npts2 = sdict['outer']
+            p2 = Positioner(pvs2[0], label=label2)
+            p2.array = np.linspace(start2, stop2, npts2)
+            scan.add_positioner(p2)
+            if len(pvs2) > 0:
+                scan.add_counter(pvs2[1], label="%s_read" % label2)
+
+    for dpars in sdict['detectors']:
+        scan.add_detector(get_detector(**dpars))
+
+    if 'counters' in sdict:
+        for label, pvname  in sdict['counters']:
+            scan.add_counter(pvname, label=label)
+
+    scan.add_extra_pvs(sdict['extra_pvs'])
+    scan.scantime  = sdict.get('scantime', -1)
+    scan.filename  = sdict.get('filename', 'scan.dat')
+    if filename is not None:
+        scan.filename  = filename
+    scan.pos_settle_time = sdict.get('pos_settle_time', 0.01)
+    scan.det_settle_time = sdict.get('det_settle_time', 0.01)
+    if scan.dwelltime is None:
+        scan.set_dwelltime(sdict.get('dwelltime', 1))
+    return scan
+
+
+@ValidateLarchPlugin
+def scan_from_db(name, filename='scan.001', _larch=None):
+    """get scan definition from ScanDB"""
+    if _larch.symtable._scan._scandb is None:
+        return
+    sdb = _larch.symtable._scan._scandb
+    return scan_from_json(sdb.get_scandef(name).text,
+                          filename=filename, _larch=_larch)
+    
+@ValidateLarchPlugin
+def connect_scandb(dbname=None, server='postgresql',
+                   _larch=None, **kwargs):
+    if (_larch.symtable.has_symbol(SCANDB_NAME) and 
+        _larch.symtable.get_symbol(SCANDB_NAME) is not None):
+        return _larch.symtable.get_symbol(SCANDB_NAME)
+    scandb = ScanDB(dbname=dbname, server=server, **kwargs)
+    _larch.symtable.set_symbol(SCANDB_NAME, scandb)
+    return scandb
+
+
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
-    if _larch is not None:
-        mod = _larch.symtable._scan = Group()
-        mod.__doc__ = MODDOC
-
+    _larch.symtable._scan.__doc__ = MODDOC
+    _larch.symtable._scan._scandb = None
+        
 def registerLarchPlugin():
-    return ('_scan', {'scan_json': scan_json})
+    print 'adding scan plugins'
+    return ('_scan', {'scan_from_json': scan_from_json,
+                      'scan_from_db':   scan_from_db,
+                      'connect_scandb': connect_scandb,
+                      })
