@@ -94,8 +94,8 @@ use_plugin_path('epics')
 from detectors import Counter, DeviceCounter, Trigger, get_detector
 from datafile import ASCIIScanFile
 from positioner import Positioner
-from xafsscan import XAFS_Scan
-from file_utils import fix_varname
+# from xafsscan import XAFS_Scan
+from file_utils import fix_varname, get_units
 from scandb import ScanDB
   
 MODNAME = '_scan'
@@ -164,8 +164,8 @@ class LarchStepScan(object):
         self._larch = _larch
         self._scangroup =  _larch.symtable._scan
         self.scandb = None
-        if self._scan._scandb is not None:
-            self.scandb = self._scan._scandb
+        if self._scangroup._scandb is not None:
+            self.scandb = self._scangroup._scandb
 
         self.dwelltime = None
         self.comments = None
@@ -347,7 +347,9 @@ class LarchStepScan(object):
         self.set_info('scan_time_estimate', time_left)
         if cpt < 4:
             self.set_info('filename', self.filename)
-        self.set_info('scan_message', 'Point %i/%i' % (cpt, npts))
+        msg = 'Point %i/%i' % (cpt, npts)
+        self.set_info('scan_message', msg)
+        print msg
         for c in self.counters:
             self.set_scandata(fix_varname(c.label), c.buff)
         
@@ -366,10 +368,37 @@ class LarchStepScan(object):
     def set_scandata(self, attr, value):
         setattr(self._scangroup, attr, value)
         if self.scandb is not None:        
-            self.scandb.set_scandata(attr, value)
+            self.scandb.set_scandata(fix_varname(attr), value)
 
-            
-    def look_for_interrupt_requests(self):
+    def init_scandata(self):
+        if self.scandb is None:
+            return
+        self.scandb.clear_scandata()
+        names = []
+        npts = len(self.positioners[0].array)
+        for p in self.positioners:
+            units = get_units(p.pv, 'unknown')
+            name = fix_varname(p.label)
+            if name in names:
+                name += '_2'
+            if name not in names:
+                self.scandb.add_scandata(name, p.array.tolist(),
+                                         pvname=p.pv.pvname,
+                                         units=units, notes='positioner')
+                names.append(name)
+        for c in self.counters:
+            units = get_units(c.pv, 'counts')
+            name = fix_varname(c.label)
+            if name in names:
+                name += '_2'
+            if name not in names:
+                self.scandb.add_scandata(name, [],
+                                         pvname=c.pv.pvname,
+                                         units=units, notes='counter')
+                names.append(name)
+        
+
+    def look_for_interrupts(self):
         """set interrupt requests:
         
         abort / pause / resume
@@ -383,9 +412,29 @@ class LarchStepScan(object):
         else:
             def isset(key):
                 return self.scandb.get_info(key, as_bool=True)
-        self.abort_request = isset('request_command_abort')
-        self.pause_request = isset('request_command_pause')
-        self.resume_request = isset('request_command_resume')
+        self.abort  = isset('request_abort')
+        self.pause  = isset('request_pause')
+        self.resume = isset('request_resume')
+        return self.abort
+    
+    def clear_interrupts(self):
+        """re-set interrupt requests:
+        
+        abort / pause / resume
+         
+        if scandb is being used, these are looked up from database.
+        otherwise local larch variables are used.
+        """
+        if self.scandb is None:
+            def doset(key, val):
+                setattr(self._scan, key, val)
+        else:
+            def doset(key, val):
+                return self.scandb.set_info(key, val)
+        self.abort = self.pause = self.resume = False
+        doset('request_abort', 0)
+        doset('request_pause', 0)
+        doset('request_resume', 0)
 
     def run(self, filename=None, comments=None):
         """ run the actual scan:
@@ -402,9 +451,6 @@ class LarchStepScan(object):
         if comments is not None:
             self.comments = comments
 
-        if self.scandb is not None:
-            self.scandb.clear_scandata()
-                
         self.pos_settle_time = max(MIN_POLL_TIME, self.pos_settle_time)
         self.det_settle_time = max(MIN_POLL_TIME, self.det_settle_time)
 
@@ -413,18 +459,17 @@ class LarchStepScan(object):
             print 'Cannot execute scan ',  self._scangroup.error_message
             self.set_info('scan_message', 'cannot execute scan')
             return
-        self.abort = False
-        self.pause = False
+        self.clear_interrupts()
 
         orig_positions = [p.current() for p in self.positioners]
 
         # print 'StepScan Run 2 (move to start)'
         out = [p.move_to_start(wait=False) for p in self.positioners]
         self.check_outputs(out, msg='move to start')
-        self.clear_data()
 
         self.datafile = self.open_output_file(filename=self.filename,
                                               comments=self.comments)
+
 
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
@@ -455,10 +500,13 @@ class LarchStepScan(object):
         else:
             time_est += npts*self.dwelltime
 
+        self.clear_data()
+
         if self.scandb is not None:
+            self.init_scandata()
             self.scandb.set_info('scan_time_estimate', time_est)
             self.scandb.set_info('scan_total_points', npts)
-            self.scandb.set_info('request_command_abort', 0)
+            self.scandb.set_info('request_abort', 0)
             self.scandb.set_info('scan_message', 'Preparing Scan (watcher)')
 
         if self.debug: print 'StepScan Run (dwelltimes set)'
@@ -482,9 +530,10 @@ class LarchStepScan(object):
             try:
                 point_ok = True
                 self.cpt = i+1
+                self.look_for_interrupts()
                 while self.pause:
                     time.sleep(0.25)
-                    if self.abort:
+                    if self.look_for_interrupts():
                         break
                 # move to next position, wait for moves to finish
                 [p.move_to_pos(i) for p in self.positioners]
@@ -495,15 +544,17 @@ class LarchStepScan(object):
                 mcount = 0
                 while (not all([p.done for p in self.positioners]) and
                        time.time() - t0 < self.pos_maxmove_time):
-                    if self.abort:
+                    if self.look_for_interrupts():
                         break
                     poll(5*MIN_POLL_TIME, 0.25)
                     mcount += 1
-                if self.abort:
+                if self.look_for_interrupts():
                     break
                 # wait for positioners to settle
                 # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
                 poll(self.pos_settle_time, 0.25)
+                if self.look_for_interrupts():
+                    break
                 # start triggers, wait for them to finish
                 # print 'Trigger...'
                 [trig.start() for trig in self.triggers]
@@ -512,10 +563,10 @@ class LarchStepScan(object):
                 while not (all([trig.done for trig in self.triggers]) and
                            (time.time() - t0 < self.det_maxcount_time) and
                            (time.time() - t0 > self.min_dwelltime/2.0)):
-                    if self.abort:
+                    if self.look_for_interrupts():
                         break
                     poll(MIN_POLL_TIME, 0.25)
-                if self.abort:
+                if self.look_for_interrupts():
                     break
                 poll(MIN_POLL_TIME, 0.25)
                 for trig in self.triggers:
@@ -534,7 +585,8 @@ class LarchStepScan(object):
                     
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.25)
-
+                if self.look_for_interrupts():
+                    break
                 [c.read() for c in self.counters]
                 # print 'Read Counters done'
                 self.cdat = [c.buff[-1] for c in self.counters]
@@ -547,9 +599,11 @@ class LarchStepScan(object):
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
                     self.at_break(breakpoint=i, clear=True)
+                    if self.look_for_interrupts():
+                        break
 
             except KeyboardInterrupt:
-                self.abort = True
+                self.scandb.set_info('request_abort', 1l)
             if not point_ok:
                 print 'point messed up... try again?'
                 i -= 1
@@ -558,13 +612,14 @@ class LarchStepScan(object):
         # return to original positions, write data
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
-        if self.abort:
+        if self.look_for_interrupts():
             print "scan aborted at point %i of %i." % (self.cpt, self.npts)
 
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
         self.datafile.write_data(breakpoint=-1, close_file=True, clear=False)
         self.abort = False
+        self.clear_interrupts()
 
         # run post_scan methods
         out = self.post_scan()
@@ -590,6 +645,7 @@ def scan_from_json(text, filename='scan.001', _larch=None):
     scan = LarchStepScan(filename=filename, _larch=_larch)
     if sdict['type'] == 'xafs':
         print 'xafs scan soon'
+        x = """
         scan  = XAFS_Scan(energy_pv=sdict['energy_drive'],
                           read_pv=sdict['energy_read'],
                           e0=sdict['e0'])
@@ -606,7 +662,7 @@ def scan_from_json(text, filename='scan.001', _larch=None):
                     kws['dtime_final'] = t_max
                     kws['dtime_wt'] = t_kw
             scan.add_region(start, stop, npts=npts, **kws)
-
+        """
     elif sdict['type'] == 'linear':
         for pos in sdict['positioners']:
             label, pvs, start, stop, npts = pos
