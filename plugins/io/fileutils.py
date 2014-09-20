@@ -8,8 +8,6 @@ import os
 import sys
 from random import seed, randrange
 from string import printable
-WIN_BASE = 'T:\\'
-UNIX_BASE = '/cars5/Data/'
 
 BAD_FILECHARS = ';~,`!%$@?*#:"/|\'\\\t\r\n (){}[]<>'
 GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
@@ -17,8 +15,6 @@ GOOD_FILECHARS = '_'*len(BAD_FILECHARS)
 MODDOC = '''
 Functions for Input/Output, especially reading specific types
 of scientific data files.
-
-
 '''
 
 if sys.version[0] == '2':
@@ -34,6 +30,12 @@ if sys.version[0] == '2':
                 idot = t.find('.')
                 t = "%s_%s" % (t[:idot], t[idot+1:])
         return t
+    def fix_varname(s):
+        """fix string to be a 'good' variable name."""
+        t = str(s).translate(BAD_FILETABLE)
+        while t.endswith('_'): t = t[:-1]
+        return t
+
 elif sys.version[0] == '3':
     def fix_filename(s):
         """fix string to be a 'good' filename.
@@ -45,32 +47,44 @@ elif sys.version[0] == '3':
                 idot = t.find('.')
                 t = "%s_%s" % (t[:idot], t[idot+1:])
         return t
+    def fix_varname(s):
+        """fix string to be a 'good' variable name."""
+        t = s.translate(s.maketrans(BAD_FILECHARS, GOOD_FILECHARS))
+        while t.endswith('_'): t = t[:-1]
+        return t
 
-    
-def unixpath(d):
-    if d.startswith(WIN_BASE):
-        d = d.replace(WIN_BASE, UNIX_BASE)
+def strip_quotes(t):
+    d3, s3, d1, s1 = '"""', "'''", '"', "'"
+    if hasattr(t, 'startswith'):
+        if ((t.startswith(d3) and t.endswith(d3)) or
+            (t.startswith(s3) and t.endswith(s3))):
+            t = t[3:-3]
+        elif ((t.startswith(d1) and t.endswith(d1)) or
+              (t.startswith(s1) and t.endswith(s1))):
+            t = t[1:-1]
+    return t
 
-    d = d.replace('\\','/')
-    if not d.endswith('/'): d = '%s/' % d
-    return d
+def asciikeys(adict):
+    """ensure a dictionary has ASCII keys (and so can be an **kwargs)"""
+    return dict((k.encode('ascii'), v) for k, v in adict.items())
 
-def winpath(d):
-    if d.startswith('//'): d = d[1:]
-    if d.startswith(UNIX_BASE):
-        d = d.replace(UNIX_BASE, WIN_BASE)
-    d = d.replace('/','\\')
-    if not d.endswith('\\'): d = '%s\\' % d
-    return d
+def get_timestamp(with_t=False):
+    """return ISO format of current timestamp:
+    argument
+    --------
+    with_t    boolean (False)
 
-def nativepath(d):
-    if os.name == 'nt':
-        return winpath(d)
-    return unixpath(d)
+    when with_t is True, the returned string
+    will match 'YYYY-mm-ddTHH:MM:SS'
+    otherwise  'YYYY-mm-dd HH:MM:SS'
+    """
+    if with_t:
+        time.strftime('%Y-%m-%dT%H:%M:%S')
+    return time.strftime('%Y-%m-%d %H:%M:%S')
 
 def random_string(n):
     """  random_string(n)
-    generates a random string of length n, that will match this pattern:
+    generates a random string of length n, that will match:
        [a-z][a-z0-9](n-1)
     """
     seed(time.time())
@@ -79,8 +93,51 @@ def random_string(n):
     return ''.join(s)
 
 def pathOf(dir, base, ext, delim='.'):
+    """return the normalized path name of file created with
+    a directory, base, extension, and delimiter"""
     p = os.path
     return p.normpath(p.join(dir,"%s%s%s" % (base, delim, ext)))
+
+def unixpath(d):
+    "ensure path uses unix delimiters"
+    d = d.replace('\\','/')
+    if not d.endswith('/'): d = '%s/' % d
+    return d
+
+def winpath(d):
+    "ensure path uses windows delimiters"
+    if d.startswith('//'): d = d[1:]
+    d = d.replace('/','\\')
+    if not d.endswith('\\'): d = '%s\\' % d
+    return d
+
+def nativepath(d):
+    "ensure path uses delimiters for current OS"
+    if os.name == 'nt':
+        return winpath(d)
+    return unixpath(d)
+
+def get_homedir():
+    """return home directory, or best approximation
+    On Windows, this returns the Roaming Profile APPDATA
+    (use CSIDL_LOCAL_APPDATA for Local Profile)
+    """
+    homedir = '.'
+    if os.name == 'nt':
+        # For Windows, ask for parent of Roaming 'Application Data' directory
+        try:
+            from win32com.shell import shellcon, shell
+            homedir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+        except ImportError: # if win32com is not found
+            homedir = os.get_environ('HOME', '.')
+    else:
+        try:
+            os.path.expanduser("~")
+        except:
+            pass
+    return homedir
+
+
 
 def increment_filename(inpfile, ndigits=3, delim='.'):
     """
@@ -136,7 +193,7 @@ def increment_filename(inpfile, ndigits=3, delim='.'):
 
     def _incr(base, ext):
         if ext.isdigit():
-            ext = form % (int(ext)+1)           
+            ext = form % (int(ext)+1)
         else:
             found = False
             if '_' in base:
@@ -146,7 +203,7 @@ def increment_filename(inpfile, ndigits=3, delim='.'):
                         parts[len(parts)-iw-1] = form % (int(word)+1)
                         found = True
                         break
-                base = '_'.join(parts)                        
+                base = '_'.join(parts)
             if not found and '.' in base:
                 parts = base.split('.')
                 for iw, word in enumerate(parts[::-1]):
@@ -154,7 +211,7 @@ def increment_filename(inpfile, ndigits=3, delim='.'):
                         parts[len(parts)-iw-1] = form % (int(word)+1)
                         found = True
                         break
-                base = '.'.join(parts)                        
+                base = '.'.join(parts)
             if not found:
                 base = "%s_001" % base
         return (base, ext)
@@ -229,6 +286,7 @@ def test_incrementfilename():
 
 
 
+
 def initializeLarchPlugin(_larch=None):
     """initialize _io"""
     if _larch is not None:
@@ -240,7 +298,11 @@ def registerLarchPlugin():
                     'new_filename': new_filename,
                     'new_dirname': new_dirname,
                     'fix_filename': fix_filename,
+                    'fix_varname': fix_varname,
                     'pathOf': pathOf,
                     'unixpath': unixpath,
                     'winpath': winpath,
-                    'nativepath': nativepath})
+                    'nativepath': nativepath,
+                    'strip_quotes': strip_quotes,
+                    'get_timestamp': get_timestamp,
+                    'asciikeys': asciikeys})
