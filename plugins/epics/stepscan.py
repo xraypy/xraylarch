@@ -95,9 +95,14 @@ from detectors import Counter, DeviceCounter, Trigger, get_detector
 from datafile import ASCIIScanFile
 from positioner import Positioner
 # from xafsscan import XAFS_Scan
-from file_utils import fix_varname, get_units
+
+from epics_plugin import pv_units
+
 from scandb import ScanDB
-  
+
+use_plugin_path('io')
+from fileutils import fix_varname
+
 MODNAME = '_scan'
 SCANDB_NAME = '%s._scandb' % MODNAME
 
@@ -352,7 +357,7 @@ class LarchStepScan(object):
         print msg
         for c in self.counters:
             self.set_scandata(fix_varname(c.label), c.buff)
-        
+
     def set_error(self, msg):
         """set scan error message"""
         self._scangroup.error_message = msg
@@ -364,10 +369,10 @@ class LarchStepScan(object):
         setattr(self._scangroup, attr, value)
         if self.scandb is not None:
             self.scandb.set_info(attr, value)
-        
+
     def set_scandata(self, attr, value):
         setattr(self._scangroup, attr, value)
-        if self.scandb is not None:        
+        if self.scandb is not None:
             self.scandb.set_scandata(fix_varname(attr), value)
 
     def init_scandata(self):
@@ -377,7 +382,7 @@ class LarchStepScan(object):
         names = []
         npts = len(self.positioners[0].array)
         for p in self.positioners:
-            units = get_units(p.pv, 'unknown')
+            units = pv_units(p.pv, 'unknown')
             name = fix_varname(p.label)
             if name in names:
                 name += '_2'
@@ -387,7 +392,7 @@ class LarchStepScan(object):
                                          units=units, notes='positioner')
                 names.append(name)
         for c in self.counters:
-            units = get_units(c.pv, 'counts')
+            units = pv_units(c.pv, 'counts')
             name = fix_varname(c.label)
             if name in names:
                 name += '_2'
@@ -396,13 +401,13 @@ class LarchStepScan(object):
                                          pvname=c.pv.pvname,
                                          units=units, notes='counter')
                 names.append(name)
-        
+
 
     def look_for_interrupts(self):
         """set interrupt requests:
-        
+
         abort / pause / resume
-         
+
         if scandb is being used, these are looked up from database.
         otherwise local larch variables are used.
         """
@@ -416,12 +421,12 @@ class LarchStepScan(object):
         self.pause  = isset('request_pause')
         self.resume = isset('request_resume')
         return self.abort
-    
+
     def clear_interrupts(self):
         """re-set interrupt requests:
-        
+
         abort / pause / resume
-         
+
         if scandb is being used, these are looked up from database.
         otherwise local larch variables are used.
         """
@@ -582,7 +587,7 @@ class LarchStepScan(object):
                             point_ok = False
                 if not point_ok:
                     print 'Trigger problem: ', trig, trig.runtime, self.min_dwelltime
-                    
+
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.25)
                 if self.look_for_interrupts():
@@ -641,7 +646,7 @@ class LarchStepScan(object):
 @ValidateLarchPlugin
 def scan_from_json(text, filename='scan.001', _larch=None):
     sdict = json.loads(text)
-    
+
     scan = LarchStepScan(filename=filename, _larch=_larch)
     if sdict['type'] == 'xafs':
         print 'xafs scan soon'
@@ -732,11 +737,11 @@ def scan_from_db(name, filename='scan.001', _larch=None):
     sdb = _larch.symtable._scan._scandb
     return scan_from_json(sdb.get_scandef(name).text,
                           filename=filename, _larch=_larch)
-    
+
 @ValidateLarchPlugin
 def connect_scandb(dbname=None, server='postgresql',
                    _larch=None, **kwargs):
-    if (_larch.symtable.has_symbol(SCANDB_NAME) and 
+    if (_larch.symtable.has_symbol(SCANDB_NAME) and
         _larch.symtable.get_symbol(SCANDB_NAME) is not None):
         return _larch.symtable.get_symbol(SCANDB_NAME)
     scandb = ScanDB(dbname=dbname, server=server, **kwargs)
@@ -746,12 +751,13 @@ def connect_scandb(dbname=None, server='postgresql',
 
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
-    _larch.symtable._scan.__doc__ = MODDOC
-    _larch.symtable._scan._scandb = None
-        
+    if not _larch.symtable.has_group(MODNAME):
+        g = Group()
+        g.__doc__ = MODDOC
+        _larch.symtable.set_symbol(MODNAME, g)
+
 def registerLarchPlugin():
-    print 'adding scan plugins'
-    return ('_scan', {'scan_from_json': scan_from_json,
-                      'scan_from_db':   scan_from_db,
-                      'connect_scandb': connect_scandb,
-                      })
+    return ('_epics', {'scan_from_json': scan_from_json,
+                       'scan_from_db':   scan_from_db,
+                       'connect_scandb': connect_scandb,
+                       })
