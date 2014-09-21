@@ -29,6 +29,9 @@ For further details, consult the pyepics documentation
 plugins = {}
 try:
     import epics
+except:
+    pass
+else:
     def caget(pvname, _larch=None, **kws):
         return epics.caget(pvname, **kws)
     def caput(pvname, value, _larch=None, **kws):
@@ -43,8 +46,8 @@ try:
     cainfo.__doc__ = epics.cainfo.__doc__
     PV.__doc__ = epics.PV.__doc__
 
-
-    def pv_units(pv, default):
+    def pv_units(pv, default=''):
+        """get units for pv, with optional default value"""
         try:
             units = pv.units
         except:
@@ -55,15 +58,15 @@ try:
 
     def pv_fullname(name):
         """ make sure Epics PV name either ends with .VAL or .SOMETHING!"""
-        if  '.' in name:
-            return name
-        return "%s.VAL" % name
-
-    plugins = {'PV': PV, 'caget': caget, 'caput': caput,
+        if  '.' not in name:
+            name = "%s.VAL"
+        return name
+    plugins = {'PV': PV, 'caget': caget, 'caput': caput, 'cainfo': cainfo,
                'pv_units': pv_units, 'pv_fullname': pv_fullname}
 
-except:
-    pass
+def initializeLarchPlugin(_larch=None):
+    """initialize _epics"""
+    _larch.symtable._epics.__doc__ = MODDOC
 
 def registerLarchPlugin():
     return ('_epics', plugins)
