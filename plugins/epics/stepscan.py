@@ -191,6 +191,7 @@ class LarchStepScan(object):
         self.npts = 0
         self.complete = False
         self.debug = False
+        self.message_points = 2
         self.extra_pvs = []
         self.positioners = []
         self.triggers = []
@@ -353,8 +354,9 @@ class LarchStepScan(object):
         if cpt < 4:
             self.set_info('filename', self.filename)
         msg = 'Point %i/%i' % (cpt, npts)
+        if cpt % self.message_points == 0:
+            print msg
         self.set_info('scan_message', msg)
-        print msg
         for c in self.counters:
             self.set_scandata(fix_varname(c.label), c.buff)
 
@@ -483,7 +485,7 @@ class LarchStepScan(object):
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
         if self.debug:  print 'StepScan Run (prescan done)'
-        self.set_info('scan_message', 'starting')
+        self.set_info('scan_message', 'starting scan')
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
         if self.dwelltime is not None:
@@ -738,6 +740,7 @@ def scan_from_db(name, filename='scan.001', _larch=None):
     return scan_from_json(sdb.get_scandef(name).text,
                           filename=filename, _larch=_larch)
 
+
 @ValidateLarchPlugin
 def connect_scandb(dbname=None, server='postgresql',
                    _larch=None, **kwargs):
@@ -748,6 +751,18 @@ def connect_scandb(dbname=None, server='postgresql',
     _larch.symtable.set_symbol(SCANDB_NAME, scandb)
     return scandb
 
+@ValidateLarchPlugin
+def do_scan(scanname, filename='scan.001', number=1,
+            _larch=None):
+    """execute scan defined in ScanDB"""
+    if _larch.symtable._scan._scandb is None:
+        print 'need to connect to scandb!'
+        return
+    scan = scan_from_db(scanname, filename=filename,
+                            _larch=_larch)
+    for i in range(number):
+        scan.run()
+
 
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
@@ -757,7 +772,9 @@ def initializeLarchPlugin(_larch=None):
         _larch.symtable.set_symbol(MODNAME, g)
 
 def registerLarchPlugin():
+    print 'loaded step scan plugin'
     return ('_epics', {'scan_from_json': scan_from_json,
                        'scan_from_db':   scan_from_db,
-                       'connect_scandb': connect_scandb,
+                       'connect_scandb':    connect_scandb,
+                       'do_scan': do_scan,
                        })
