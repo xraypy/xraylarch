@@ -191,7 +191,7 @@ class LarchStepScan(object):
         self.npts = 0
         self.complete = False
         self.debug = False
-        self.message_points = 2
+        self.message_points = 10
         self.extra_pvs = []
         self.positioners = []
         self.triggers = []
@@ -355,7 +355,7 @@ class LarchStepScan(object):
             self.set_info('filename', self.filename)
         msg = 'Point %i/%i' % (cpt, npts)
         if cpt % self.message_points == 0:
-            print msg
+            print msg, "%.2f" % time_left
         self.set_info('scan_message', msg)
         for c in self.counters:
             self.set_scandata(fix_varname(c.label), c.buff)
@@ -451,7 +451,6 @@ class LarchStepScan(object):
            Loop over points
            run post_scan methods
         """
-
         self.complete = False
         if filename is not None:
             self.filename  = filename
@@ -477,15 +476,18 @@ class LarchStepScan(object):
         self.datafile = self.open_output_file(filename=self.filename,
                                               comments=self.comments)
 
-
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
-        if self.debug: print 'StepScan Run (data file opened)'
-        self.set_info('scan_message', 'pre-scan')
+
+        self.clear_data()
+        if self.scandb is not None:
+            self.init_scandata()
+            self.scandb.set_info('request_abort', 0)
+            self.scandb.set_info('scan_message', 'Preparing Scan (watcher)')
+
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
-        if self.debug:  print 'StepScan Run (prescan done)'
-        self.set_info('scan_message', 'starting scan')
+
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
         if self.dwelltime is not None:
@@ -507,16 +509,12 @@ class LarchStepScan(object):
         else:
             time_est += npts*self.dwelltime
 
-        self.clear_data()
 
         if self.scandb is not None:
-            self.init_scandata()
             self.scandb.set_info('scan_time_estimate', time_est)
             self.scandb.set_info('scan_total_points', npts)
-            self.scandb.set_info('request_abort', 0)
-            self.scandb.set_info('scan_message', 'Preparing Scan (watcher)')
 
-        if self.debug: print 'StepScan Run (dwelltimes set)'
+        self.set_info('scan_message', 'starting scan')
         self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
         self.msg_thread.start()
         self.cpt = 0
@@ -629,6 +627,7 @@ class LarchStepScan(object):
         self.clear_interrupts()
 
         # run post_scan methods
+        self.set_info('scan_message', 'finishing')
         out = self.post_scan()
         self.check_outputs(out, msg='post scan')
 
@@ -639,6 +638,7 @@ class LarchStepScan(object):
             self.msg_thread.cpt = None
             self.msg_thread.join()
 
+        self.set_info('scan_message', 'scan complete. Wrote %s' % self.filename)
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
         self.runtime  = ts_exit - ts_start
@@ -726,6 +726,7 @@ def scan_from_json(text, filename='scan.001', _larch=None):
         scan.filename  = filename
     scan.pos_settle_time = sdict.get('pos_settle_time', 0.01)
     scan.det_settle_time = sdict.get('det_settle_time', 0.01)
+    scan.nscans          = sdict.get('nscans', 1)
     if scan.dwelltime is None:
         scan.set_dwelltime(sdict.get('dwelltime', 1))
     return scan
@@ -752,15 +753,17 @@ def connect_scandb(dbname=None, server='postgresql',
     return scandb
 
 @ValidateLarchPlugin
-def do_scan(scanname, filename='scan.001', number=1,
-            _larch=None):
+def do_scan(scanname, nscans=1, comments='',
+            filename='scan.001', _larch=None):
     """execute scan defined in ScanDB"""
     if _larch.symtable._scan._scandb is None:
         print 'need to connect to scandb!'
         return
     scan = scan_from_db(scanname, filename=filename,
-                            _larch=_larch)
-    for i in range(number):
+                        _larch=_larch)
+    scan.comments = comments
+    scan.nscans = nscans
+    for i in range(nscans):
         scan.run()
 
 
@@ -772,7 +775,6 @@ def initializeLarchPlugin(_larch=None):
         _larch.symtable.set_symbol(MODNAME, g)
 
 def registerLarchPlugin():
-    print 'loaded step scan plugin'
     return ('_epics', {'scan_from_json': scan_from_json,
                        'scan_from_db':   scan_from_db,
                        'connect_scandb':    connect_scandb,
