@@ -348,16 +348,19 @@ class ScanDB(object):
     def set_info(self, key, value, notes=None):
         """set key / value in the info table"""
         cls, table = self.get_table('info')
-        vals  = self.query(table).filter(cls.keyname==key).all()
-        data = {'keyname': key, 'value': value}
-        if notes is not None:
-            data['notes'] = notes
-        if len(vals) < 1:
-            table = table.insert()
-        else:
-            table = table.update(whereclause="keyname='%s'" % key)
-        table.execute(**data)
-
+        try:
+            vals  = self.query(table).filter(cls.keyname==key).all()
+            data = {'keyname': key, 'value': value}
+            if notes is not None:
+                data['notes'] = notes
+            if len(vals) < 1:
+                table = table.insert()
+            else:
+                table = table.update(whereclause="keyname='%s'" % key)
+            table.execute(**data)
+        except:
+            pass
+        
     def clobber_all_info(self):
         """dangerous!!!! clear all info --
         can leave a DB completely broken and unusable
