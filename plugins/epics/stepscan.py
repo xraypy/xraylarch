@@ -86,6 +86,9 @@ import time
 import threading
 import json
 import numpy as np
+
+from datetime import timedelta
+
 from epics import PV, poll
 
 from larch import use_plugin_path, Group, ValidateLarchPlugin
@@ -107,6 +110,11 @@ MODNAME = '_scan'
 SCANDB_NAME = '%s._scandb' % MODNAME
 
 MIN_POLL_TIME = 1.e-3
+
+
+def hms(secs):
+    "format time in seconds to H:M:S"
+    return str(timedelta(seconds=int(secs)))
 
 class ScanMessenger(threading.Thread):
     """ Provides a way to run user-supplied functions per scan point,
@@ -351,11 +359,12 @@ class LarchStepScan(object):
         else:
             time_left += (npts-cpt)*self.dwelltime
         self.set_info('scan_time_estimate', time_left)
+        time_est  = hms(time_left)
         if cpt < 4:
             self.set_info('filename', self.filename)
-        msg = 'Point %i/%i' % (cpt, npts)
+        msg = 'Point %i/%i,  time left: %s' % (cpt, npts, time_est)
         if cpt % self.message_points == 0:
-            print msg, "%.2f" % time_left
+            print msg
         self.set_info('scan_message', msg)
         for c in self.counters:
             self.set_scandata(fix_varname(c.label), c.buff)
@@ -483,10 +492,6 @@ class LarchStepScan(object):
         if self.scandb is not None:
             self.init_scandata()
             self.scandb.set_info('request_abort', 0)
-            self.scandb.set_info('scan_message', 'Preparing Scan (watcher)')
-
-        out = self.pre_scan()
-        self.check_outputs(out, msg='pre scan')
 
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
@@ -509,7 +514,12 @@ class LarchStepScan(object):
         else:
             time_est += npts*self.dwelltime
 
+        if self.scandb is not None:
+            self.scandb.set_info('scan_message', 'preparing scan')
 
+        out = self.pre_scan()
+        self.check_outputs(out, msg='pre scan')
+        
         if self.scandb is not None:
             self.scandb.set_info('scan_time_estimate', time_est)
             self.scandb.set_info('scan_total_points', npts)
@@ -527,7 +537,6 @@ class LarchStepScan(object):
         i = -1
         ts_init = time.time()
         self.inittime = ts_init - ts_start
-
         while not self.abort:
             i += 1
             if i >= npts:
