@@ -76,11 +76,11 @@ class Epics_Xspress3(object):
         self._xsp3.useExternalTrigger()
         self._xsp3.NumImages = 4000
         self._xsp3.FileCaptureOff()
-        if dtime < 0.2: 
+        if dtime < 0.1: 
             dtime = 0.0
-            pixeltime = 0.2
+            pixeltime = 0.1
         else:
-            pixeltime = max(dtime/4000.0, 0.2)
+            pixeltime = 0.01*int(100*max(dtime/2000.0, 0.1))
         self._sis.InternalMode(prescale=1)
         self._sis.setPresetReal(dtime)
         self._sis.setDwell(pixeltime)
