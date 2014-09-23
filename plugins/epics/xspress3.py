@@ -17,7 +17,8 @@ class Xspress3(Device):
              'DetectorState_RBV', 'NumImages_RBV')
 
     _nonpvs  = ('_prefix', '_pvs', '_delim', 'filesaver', 'fileroot',
-                'pathattrs', '_nonpvs', 'nmca', 'dxps', 'mcas')
+                'pathattrs', '_nonpvs', '_save_rois', 
+                'nmca', 'dxps', 'mcas')
 
     pathattrs = ('FilePath', 'FileTemplate',
                  'FileName', 'FileNumber',
@@ -32,7 +33,7 @@ class Xspress3(Device):
         self.filesaver = filesaver
         self.fileroot = fileroot
         self._prefix = prefix
-
+        self._save_rois = []
         self.mcas = [MCA(prefix, mca=i+1) for i in range(nmca)]
 
         Device.__init__(self, prefix, attrs=attrs, delim='')
@@ -42,25 +43,29 @@ class Xspress3(Device):
     def get_rois(self):
         return [m.get_rois() for m in self.mcas]
 
-    def copy_rois_to_savearrays(self, roilist):
+    def select_rois_to_save(self, roilist):
         """copy rois from MCA record to arrays to be saved
         by XSPress3"""
         roilist = list(roilist)
-        if len(roilist) < 4: roilist.append((10, 4090))
+        if len(roilist) < 4: roilist.append((50, 4050))
         pref = self._prefix
+        self._save_rois = []
         for iroi, roiname in enumerate(roilist):
+            label = roiname
             if isinstance(roiname, tuple):
                 lo, hi = roiname
+                label = '[%i:%i]'  % (lo, hi)
             else:
-                roiname = roiname.lower().strip()
-                lo, hi = 1, 4000
-                for ix in range(nroi):
+                rname = roiname.lower().strip()
+                lo, hi = 50, 4050
+                for ix in range(MAX_ROIS):
                     nm = caget('%smca1.R%iNM' % (pref, ix))
-                    if nm.lower().strip() == roiname:
+                    if nm.lower().strip() == rname:
                         lo = caget('%smca1.R%iLO' % (pref, ix))
                         hi = caget('%smca1.R%iHI' % (pref, ix))
                         break
-            for imca in range(1, nmca+1):
+            self._save_rois.append(label)
+            for imca in range(1, self.nmca+1):
                 pv_lo = "%sC%i_MCA_ROI%i_LLM" % (pref, imca, iroi+1)
                 pv_hi = "%sC%i_MCA_ROI%i_HLM" % (pref, imca, iroi+1)
                 caput(pv_hi, hi)
