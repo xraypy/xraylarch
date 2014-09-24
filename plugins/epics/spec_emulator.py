@@ -40,7 +40,7 @@ from epics import PV, caget, poll
 from stepscan   import LarchStepScan
 from positioner import Positioner
 from detectors  import get_detector, Counter
-from spec_config import SpecConfig
+# from spec_config import SpecConfig
 
 
 class SpykConfig(object):
