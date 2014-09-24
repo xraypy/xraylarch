@@ -8,10 +8,11 @@ Authors/Modifications:
 * modified and simplified for Larch, M Newville
 """
 import numpy as np
+from larch import Group, isgroup, use_plugin_path
+use_plugin_path('xrf')
 from deadtime import calc_icr, correction_factor
 from roi import ROI
 
-from larch import Group, isgroup
 
 def isLarchMCAGroup(grp):
     """tests whether variable holds a valid Larch MCAGroup"""
