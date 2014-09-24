@@ -465,7 +465,7 @@ class LarchStepScan(object):
             self.filename  = filename
         if comments is not None:
             self.comments = comments
-
+        print 'Larch Stepscan.run ' ,  filename
         self.pos_settle_time = max(MIN_POLL_TIME, self.pos_settle_time)
         self.det_settle_time = max(MIN_POLL_TIME, self.det_settle_time)
 
@@ -721,8 +721,10 @@ def scan_from_json(text, filename='scan.001', _larch=None):
             if len(pvs2) > 0:
                 scan.add_counter(pvs2[1], label="%s_read" % label2)
 
+    rois = sdict.get('rois', None)
     for dpars in sdict['detectors']:
-        scan.add_detector(get_detector(**dpars))
+        dpars['rois'] = rois
+        scan.add_detector( get_detector(**dpars))
 
     if 'counters' in sdict:
         for label, pvname  in sdict['counters']:
@@ -765,6 +767,7 @@ def connect_scandb(dbname=None, server='postgresql',
 def do_scan(scanname, nscans=1, comments='',
             filename='scan.001', _larch=None):
     """execute scan defined in ScanDB"""
+    print 'Larch.do_scan ', scanname, nscans, filename
     if _larch.symtable._scan._scandb is None:
         print 'need to connect to scandb!'
         return
