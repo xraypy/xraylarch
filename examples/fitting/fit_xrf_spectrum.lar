@@ -85,7 +85,7 @@ def apply_pileup_escape(counts, mca, pars):
     esc_scale = pars.escape_scale.value
     thick     = pars.escape_thick.value
     esc_energy  = mca.energy  - pars.escape_energy.value
-    esc_counts = counts * esc_scale * (1.0-exp(-(material_mu('Si', mca.energy*1000.0))*thick))
+    esc_counts = counts * esc_scale * (1.0-exp(-(material_mu('silicon', mca.energy*1000.0))*thick))
     escape = interp1d(esc_energy, esc_counts, mca.energy, fill_value=0.010)
     return counts + pileup + escape
 #enddef
