@@ -74,16 +74,21 @@ class Xspress3(Device):
     def roi_calib_info(self):
         buff = ['[rois]']
         add = buff.append
-        roidat = self.get_rois()
-        for i, k in enumerate(roidat[0].keys()):
-            s = [list(roidat[m][k]) for m in range(self.nmca)]
-            rd = repr(s).replace('],', '').replace('[', '').replace(']','').replace(',','')
-            add("ROI%2.2i = %s | %s" % (i,k,rd))
+        rois = self.get_rois()
+        for iroi in range(len(rois[0])):
+            name = rois[0][iroi].NM
+            hi   = rois[0][iroi].HI
+            if len(name.strip()) > 0 and hi > 0:
+                dbuff = []
+                for m in range(self.nmca):
+                    dbuff.extend([rois[m][iroi].LO, rois[m][iroi].HI])
+                dbuff = ' '.join([str(i) for i in dbuff])
+                add("ROI%2.2i = %s | %s" % (iroi, name, dbuff))
 
         add('[calibration]')
-        add("OFFSET = %s " % (' '.join(["0.00 "] * self.nmca)))
-        add("SLOPE  = %s " % (' '.join(["0.10 "] * self.nmca)))
-        add("QUAD   = %s " % (' '.join(["0.00 "] * self.nmca)))
+        add("OFFSET = %s " % (' '.join(["0.000 "] * self.nmca)))
+        add("SLOPE  = %s " % (' '.join(["0.010 "] * self.nmca)))
+        add("QUAD   = %s " % (' '.join(["0.000 "] * self.nmca)))
         add('[dxp]')
         return buff
 
