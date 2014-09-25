@@ -5,15 +5,7 @@ import time
 import numpy as np
 from epics import PV, caget
 
-
-from larch import use_plugin_path
-
-use_plugin_path('epics')
-
-from saveable import Saveable
-
-
-class Positioner(Saveable):
+class Positioner(object):
     """a positioner for a scan
     This sets an ordinate value for scan.
 
@@ -21,8 +13,6 @@ class Positioner(Saveable):
     """
     def __init__(self, pvname, label=None, array=None, units=None,
                  extra_pvs=None, **kws):
-        Saveable.__init__(self, pvname, label=label, units=units,
-                          array=array, extra_pvs=extra_pvs, **kws)
         if isinstance(pvname, PV):
             self.pv = pvname
         else:

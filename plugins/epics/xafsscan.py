@@ -11,26 +11,11 @@ use_plugin_path('epics')
 
 from stepscan import LarchStepScan
 from positioner import Positioner
-from saveable import Saveable
-
 XAFS_K2E = 3.809980849311092
 
-def etok(energy):
-    return np.sqrt(energy/XAFS_K2E)
+def etok(energy):  return np.sqrt(energy/XAFS_K2E)
+def ktoe(k):       return k*k*XAFS_K2E
 
-def ktoe(k):
-    return k*k*XAFS_K2E
-
-class ScanRegion(Saveable):
-    def __init__(self, start, stop, npts=None,
-                 relative=True, e0=None, use_k=False,
-                 dtime=None, dtime_final=None, dtime_wt=1):
-        Saveable.__init__(self, start, stop, npts=npts,
-                          relative=relative,
-                          e0=e0, use_k=use_k,
-                          dtime=dtime,
-                          dtime_final=dtime_final,
-                          dtime_wt=dtime_wt)
 
 class XAFS_Scan(LarchStepScan):
     def __init__(self, label=None, energy_pv=None, read_pv=None,
@@ -76,16 +61,9 @@ class XAFS_Scan(LarchStepScan):
             npts = 1 + int(0.1  + abs(stop - start)/step)
 
         en_arr = list(np.linspace(start, stop, npts))
-        # note: save region definition using npts here,
-        # even though npts may be reduced below, this set
-        # will provide reproducible results, and so can be
-        # savd for later re-use.
-        self.regions.append(ScanRegion(start, stop, npts=npts,
-                                       relative=relative,
-                                       e0=e0, use_k=use_k,
-                                       dtime=dtime,
-                                       dtime_final=dtime_final,
-                                       dtime_wt=dtime_wt))
+        
+        self.regions.append((start, stop, npts, relative, e0,
+                             use_k, dtime, dtime_final, dtime_wt))
 
         if use_k:
             for i, k in enumerate(en_arr):

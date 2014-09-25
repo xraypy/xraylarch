@@ -21,8 +21,13 @@ from sqlalchemy.orm.exc import  NoResultFound
 # needed for py2exe?
 from sqlalchemy.dialects import sqlite, mysql, postgresql
 
-from scandb_schema import get_dbengine, create_scandb, map_scandb
+from larch import use_plugin_path
+use_plugin_path('io')
+from fileutils import strip_quotes, asciikeys
 
+use_plugin_path('epics')
+
+from scandb_schema import get_dbengine, create_scandb, map_scandb
 from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            Macros, Commands, ScanData, ScanPositioners,
                            ScanCounters, ScanDetectors, ScanDefs,
@@ -30,11 +35,11 @@ from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            Instruments, Instrument_PV,
                            Instrument_Precommands, Instrument_Postcommands)
 
-from larch import use_plugin_path
-use_plugin_path('io')
-from fileutils import strip_quotes, asciikeys
-use_plugin_path('epics')
-from epics_plugin import pv_fullname
+
+def pv_fullname(name):
+    if  '.' not in name:
+        name = "%s.VAL"
+    return name
 
 class ScanDBException(Exception):
     """Scan Exception: General Errors"""
