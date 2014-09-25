@@ -92,14 +92,15 @@ from datetime import timedelta
 from epics import PV, poll
 
 from larch import use_plugin_path, Group, ValidateLarchPlugin
+from larch.utils import debugtime
 use_plugin_path('epics')
+
+from epics_plugin import pv_units
 
 from detectors import Counter, DeviceCounter, Trigger, get_detector
 from datafile import ASCIIScanFile
 from positioner import Positioner
 # from xafsscan import XAFS_Scan
-
-from epics_plugin import pv_units
 
 from scandb import ScanDB
 
@@ -154,6 +155,7 @@ class ScanMessenger(threading.Thread):
         """
         last_point = self.cpt
         t0 = time.time()
+
         while True:
             poll(MIN_POLL_TIME, 0.25)
             if self.cpt != last_point:
@@ -460,12 +462,13 @@ class LarchStepScan(object):
            Loop over points
            run post_scan methods
         """
+        self.dtimer = dtimer = debugtime()
+        
         self.complete = False
         if filename is not None:
             self.filename  = filename
         if comments is not None:
             self.comments = comments
-        print 'Larch Stepscan.run ' ,  filename
         self.pos_settle_time = max(MIN_POLL_TIME, self.pos_settle_time)
         self.det_settle_time = max(MIN_POLL_TIME, self.det_settle_time)
 
@@ -475,7 +478,7 @@ class LarchStepScan(object):
             self.set_info('scan_message', 'cannot execute scan')
             return
         self.clear_interrupts()
-
+        dtimer.add('PRE: cleared interrupts')
         orig_positions = [p.current() for p in self.positioners]
 
         # print 'StepScan Run 2 (move to start)'
@@ -488,6 +491,7 @@ class LarchStepScan(object):
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
 
+        dtimer.add('PRE: openend file')
         self.clear_data()
         if self.scandb is not None:
             self.init_scandata()
@@ -517,9 +521,10 @@ class LarchStepScan(object):
         if self.scandb is not None:
             self.scandb.set_info('scan_message', 'preparing scan')
 
+        dtimer.add('PRE: cleared data')
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
-        
+        dtimer.add('PRE: pre_scan done')        
         if self.scandb is not None:
             self.scandb.set_info('scan_time_estimate', time_est)
             self.scandb.set_info('scan_total_points', npts)
@@ -529,6 +534,10 @@ class LarchStepScan(object):
         self.msg_thread.start()
         self.cpt = 0
         self.npts = npts
+        trigger_has_stop = False
+        for trig in self.triggers:
+            trigger_has_stop = trig.stop or trigger_has_stop
+        
         t0 = time.time()
         out = [p.move_to_start(wait=True) for p in self.positioners]
         self.check_outputs(out, msg='move to start, wait=True')
@@ -537,6 +546,7 @@ class LarchStepScan(object):
         i = -1
         ts_init = time.time()
         self.inittime = ts_init - ts_start
+        dtimer.add('PRE: start scan')
         while not self.abort:
             i += 1
             if i >= npts:
@@ -565,13 +575,17 @@ class LarchStepScan(object):
                 if self.look_for_interrupts():
                     break
                 # wait for positioners to settle
+                dtimer.add('Pt %i : pos done' % i)
                 # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
                 poll(self.pos_settle_time, 0.25)
+                dtimer.add('Pt %i : pos settled' % i)
                 if self.look_for_interrupts():
                     break
+                dtimer.add('Pt %i : look for interrupts1' % i)
                 # start triggers, wait for them to finish
                 # print 'Trigger...'
                 [trig.start() for trig in self.triggers]
+                dtimer.add('Pt %i : triggers fired' % i)
                 t0 = time.time()
                 time.sleep(max(0.01, self.min_dwelltime/4.0))
                 while not (all([trig.done for trig in self.triggers]) and
@@ -580,14 +594,18 @@ class LarchStepScan(object):
                     if self.look_for_interrupts():
                         break
                     poll(MIN_POLL_TIME, 0.25)
+                dtimer.add('Pt %i : triggers done(a)' % i)
                 if self.look_for_interrupts():
                     break
-                poll(MIN_POLL_TIME, 0.25)
-                for trig in self.triggers:
-                    if trig.stop is not None:
-                        trig.stop()
+                dtimer.add('Pt %i : look for interrupts2' % i)
+                # #dtimer.add('Pt %i : polled' % i)
+                if trigger_has_stop:
+                    for trig in self.triggers:
+                        if trig.stop is not None:
+                            trig.stop()
                     if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
+                dtimer.add('Pt %i : triggers stopped' % i)                        
                 if not point_ok:
                     point_ok = True
                     poll(5*MIN_POLL_TIME, 0.25)
@@ -599,10 +617,18 @@ class LarchStepScan(object):
 
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.25)
+                dtimer.add('Pt %i : det settled done.' % i)
                 if self.look_for_interrupts():
                     break
+
+                if trigger_has_stop:
+                    for trig in self.triggers:
+                        if trig.stop is not None:
+                            trig.stop(wait=True)
+
                 [c.read() for c in self.counters]
                 # print 'Read Counters done'
+                dtimer.add('Pt %i : read counters' % i)                
                 self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
 
@@ -615,6 +641,7 @@ class LarchStepScan(object):
                     self.at_break(breakpoint=i, clear=True)
                     if self.look_for_interrupts():
                         break
+                dtimer.add('Pt %i: done.' % i)
 
             except KeyboardInterrupt:
                 self.scandb.set_info('request_abort', 1l)
@@ -624,6 +651,7 @@ class LarchStepScan(object):
 
         # scan complete
         # return to original positions, write data
+        dtimer.add('Post scan start')
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
         if self.look_for_interrupts():
@@ -631,7 +659,9 @@ class LarchStepScan(object):
 
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
+        dtimer.add('Post: return move issued')
         self.datafile.write_data(breakpoint=-1, close_file=True, clear=False)
+        dtimer.add('Post: file written')
         self.abort = False
         self.clear_interrupts()
 
@@ -639,7 +669,7 @@ class LarchStepScan(object):
         self.set_info('scan_message', 'finishing')
         out = self.post_scan()
         self.check_outputs(out, msg='post scan')
-
+        dtimer.add('Post: post_scan done')
         self.complete = True
 
         # end messenger thread
@@ -651,6 +681,8 @@ class LarchStepScan(object):
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
         self.runtime  = ts_exit - ts_start
+        dtimer.add('Post: fully done')
+
         return self.datafile.filename
         ##
 
