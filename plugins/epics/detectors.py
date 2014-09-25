@@ -756,13 +756,13 @@ class Xspress3Counter(DeviceCounter):
                     pref = "%sC%i" % (prefix, imca)
                     caput('%s_MCA_ROI%i_LLM' % (pref, iroi), lo)
                     caput('%s_MCA_ROI%i_HLM' % (pref, iroi), hi)
-                    xlab = "%s (mca%i)" % (label, imca)
+                    xlab = "%s mca%i" % (label, imca)
                     add_counter('%s_ROI%i:ArrayData_RBV' % (pref, iroi), xlab)
 
         for isca in range(self.nscas):  # these start counting at 0!!
             for imca in range(1, self.nmcas+1):
                 pv    = '%sC%i_SCA%i:ArrayData_RBV' % (prefix, imca, isca)
-                label = '%s (mca%i)' % (self.sca_labels[isca], imca)
+                label = '%s mca%i' % (self.sca_labels[isca], imca)
                 add_counter(pv, label)
 
         if self.use_full:
