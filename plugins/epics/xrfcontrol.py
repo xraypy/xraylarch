@@ -55,9 +55,9 @@ class DetectorSelectDialog(wx.Dialog):
     Can be either XIA xMAP  or Quantum XSPress3
     """
     msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
-    amp_types = ('xmap', 'xspress3')
+    amp_types = ('xspress3', 'xmap')
     det_types = ('ME-4', 'other')
-    def_prefix =  '13SDD1:'
+    def_prefix = '13QX4:'   # SDD1:'
     def_nelem  =  4
 
     def __init__(self, parent=None, prefix=None, det_type='ME-4',
@@ -126,8 +126,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
   """
     me4_layout = ((0, 0), (1, 0), (1, 1), (0, 1))
 
-    def __init__(self, parent=None, _larch=None, prefix=None,
-                 det_type='ME-4',  amp_type='xmap',
+    def __init__(self, parent=None, _larch=None, prefix='13QX4:',
+                 det_type='ME-4',  amp_type='xspress3',
                  nmca=4, size=(725, 580),  title='Epics XRF Display',
                  output_title='XRF', **kws):
 
@@ -156,7 +156,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.connect_to_detector(prefix=self.prefix, amp_type=self.amp_type,
                                  det_type=self.det_type, nmca=self.nmca)
 
-    def prompt_for_detector(self, prefix=None, amp_type='xmap', nmca=4):
+    def prompt_for_detector(self, prefix=None, amp_type='xspress3', nmca=4):
         dlg = DetectorSelectDialog(prefix=prefix, amp_type=amp_type, nmca=nmca)
         dlg.Raise()
         if dlg.ShowModal() == wx.ID_OK:
@@ -228,6 +228,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.det.restore_rois(roifile)
             self.set_roilist(mca=self.mca)
             self.show_mca()
+            self.onSelectDet(event=None, index=0)
 
     def createCustomMenus(self):
         menu = wx.Menu()
