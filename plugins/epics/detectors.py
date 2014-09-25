@@ -668,11 +668,11 @@ class ArrayCounter(Counter):
 class Xspress3Counter(DeviceCounter):
     """Counters for Xspress3 (weird MCA / areaDetector hybrid)
     """
-    sca_labels = ('Time', 'Reset Ticks', 'Reset Counts',
-                  'All Event', 'All Good', 'Window 1', 'Window 2', 'Pileup')
+    sca_labels = ('Clock', 'ResetTicks', 'ResetCounts',
+                  'AllEvent', 'AllGood', 'Window1', 'Window2', 'Pileup')
 
     def __init__(self, prefix, mcs=None, scaler=None, outpvs=None, nmcas=4,
-                 nrois=32, rois=None, nscas=5, nmcs=4, use_unlabeled=False,
+                 nrois=32, rois=None, nscas=8, nmcs=4, use_unlabeled=False,
                  use_full=False):
         
         if not prefix.endswith(':'):
@@ -736,62 +736,34 @@ class Xspress3Counter(DeviceCounter):
         if len(self.roilist) < 4:
             self.roilist.append("ocr")
         nmax = len(caget('%sARR1:ArrayData' % prefix))
-        current_rois = {'ocr': ('OCR', 50, nmax)}
+        known_rois = {'ocr': ('OCR', 50, nmax)}
         
         for iroi in range(1, self.nrois+1):
             label = caget("%smca1.R%iNM" % (prefix, iroi))
             if len(label.strip()) > 0:
                 lo = caget("%smca1.R%iLO" % (prefix, iroi))
                 hi = caget("%smca1.R%iHI" % (prefix, iroi))
-                current_rois[label.lower()] = (label, lo, hi)
+                known_rois[label.lower()] = (label, lo, hi)
             else:
                 break
-        
-        for imca in range(1, 1+self.nmcas):
-            _rois = []
-            pref = "%smca%i" % (prefix, imca)
-            for rname in self.roilist:
-                if rname in current_rois:
-                    _rois.append(current_rois[rname])
-            pref = "%sC%i" % (prefix, imca)
-            iroi = 0
-            for label, lo, hi in _rois:
+
+        iroi = 0
+        for rname in self.roilist:
+            if rname in known_rois:
                 iroi += 1
-                caput('%s_MCA_ROI%i_LLM' % (pref, iroi), lo)
-                caput('%s_MCA_ROI%i_HLM' % (pref, iroi), hi)
-                label = "%s mca%i" % (label, imca)
-                add_counter('%s_ROI%i:ArrayData_RBV' % (pref, iroi), label)
+                label, lo, hi = known_rois[rname]
+                for imca in range(1, 1+self.nmcas):
+                    pref = "%sC%i" % (prefix, imca)
+                    caput('%s_MCA_ROI%i_LLM' % (pref, iroi), lo)
+                    caput('%s_MCA_ROI%i_HLM' % (pref, iroi), hi)
+                    xlab = "%s (mca%i)" % (label, imca)
+                    add_counter('%s_ROI%i:ArrayData_RBV' % (pref, iroi), xlab)
 
-        for imca in range(1, self.nmcas+1):
-            for isca in range(self.nscas):  # these start counting at 0!!
+        for isca in range(self.nscas):  # these start counting at 0!!
+            for imca in range(1, self.nmcas+1):
                 pv    = '%sC%i_SCA%i:ArrayData_RBV' % (prefix, imca, isca)
-                label = '%s MCA%i' % (self.sca_labels[isca], imca)
+                label = '%s (mca%i)' % (self.sca_labels[isca], imca)
                 add_counter(pv, label)
-
-#         for imca in range(1, self.nmcas+1):
-#             should_break = False
-#             for iroi in range(1, self.nrois+1):
-#                 namepv = '%sC%i_ROI%i:AttrName' % (prefix, imca, iroi)
-#                 rhipv  = '%sC%i_MCA_ROI%i_HLM' % (prefix, imca, iroi)
-#                 rarpv  = '%sC%i_ROI%i:ArrayData_RBV' % (prefix, imca, iroi)
-#                 roi_hi = pvs[rhipv].get()
-#                 roiname = pvs[namepv].get(as_string=True)
-#                 label = '%s MCA%i'% (roiname, imca)
-#                 if roi_hi < 1:
-#                     should_break = True
-#                     break
-#                 if (roiname is not None and (len(roiname) > 0
-#                     and roi_hi > 0) or self.use_unlabeled):
-#                     pv1 = '%sC%i_ROI%i:Value_RBV' % (prefix, imca, iroi)
-#                     pv2 = '%sC%i_ROI%i:ArrayData_RBV' % (prefix, imca, iroi)
-#                     add_counter(pv1, label)
-#                     add_counter(pv2, "%s (array)" % label)
-# 
-#             for isca in range(self.nscas):  # these start counting at 0!!
-#                 pv    = '%sC%i_SCA%i:Value_RBV' % (prefix, imca, isca)
-#                 label = '%s MCA%i' % (self.sca_labels[isca], imca)
-#                 add_counter(pv, label)
-
 
         if self.use_full:
             for imca in range(1, self.nmcas+1):
