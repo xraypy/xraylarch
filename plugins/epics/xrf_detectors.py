@@ -309,5 +309,5 @@ class Epics_MultiXMAP(object):
             fout.write("%s\n" % "\n".join(buff))
 
     def save_mca(self, fname):
-        buff = self._xmap.
+        buff = self._xmap
         
