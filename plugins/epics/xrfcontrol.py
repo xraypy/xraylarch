@@ -156,6 +156,33 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.connect_to_detector(prefix=self.prefix, amp_type=self.amp_type,
                                  det_type=self.det_type, nmca=self.nmca)
 
+
+    def onSaveMCAFile(self, event=None, **kws):
+        print 'SaveMCA File'
+        deffile = ''
+        if hasattr(self.mca, 'sourcefile'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
+        if hasattr(self.mca, 'areaname'):
+            deffile = "%s%s" % (deffile, getattr(self.mca, 'areaname'))
+        if deffile == '':
+            deffile ='test'
+        if not deffile.endswith('.mca'):
+            deffile = deffile + '.mca'
+
+        deffile = fix_filename(str(deffile))
+
+        outfile = FileSave(self, "Save MCA File",
+                           default_file=deffile,
+                           wildcard=FILE_WILDCARDS)
+
+        if outfile is not None:
+            print 'Would write ', outfile
+            print self.det
+
+    def onSaveColumnFile(self, event=None, **kws):
+        print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
+        pass
+
     def prompt_for_detector(self, prefix=None, amp_type='xspress3', nmca=4):
         dlg = DetectorSelectDialog(prefix=prefix, amp_type=amp_type, nmca=nmca)
         dlg.Raise()
