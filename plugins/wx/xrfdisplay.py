@@ -1191,7 +1191,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca.save_mcafile(outfile)
 
     def onSaveColumnFile(self, event=None, **kws):
-        print( '  onSaveColumnFile   ')
+        print( '  onSaveColumnFile not yet implemented  ')
         pass
 
     def onCalibrateEnergy(self, event=None, **kws):
