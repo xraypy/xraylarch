@@ -112,6 +112,17 @@ SCANDB_NAME = '%s._scandb' % MODNAME
 
 MIN_POLL_TIME = 1.e-3
 
+XAFS_K2E = 3.809980849311092
+
+def etok(energy):
+    return np.sqrt(energy/XAFS_K2E)
+
+def ktoe(k):
+    return k*k*XAFS_K2E
+
+
+
+
 
 def hms(secs):
     "format time in seconds to H:M:S"
@@ -463,7 +474,7 @@ class LarchStepScan(object):
            run post_scan methods
         """
         self.dtimer = dtimer = debugtime()
-        
+
         self.complete = False
         if filename is not None:
             self.filename  = filename
@@ -524,7 +535,7 @@ class LarchStepScan(object):
         dtimer.add('PRE: cleared data')
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
-        dtimer.add('PRE: pre_scan done')        
+        dtimer.add('PRE: pre_scan done')
         if self.scandb is not None:
             self.scandb.set_info('scan_time_estimate', time_est)
             self.scandb.set_info('scan_total_points', npts)
@@ -537,7 +548,7 @@ class LarchStepScan(object):
         trigger_has_stop = False
         for trig in self.triggers:
             trigger_has_stop = trig.stop or trigger_has_stop
-        
+
         t0 = time.time()
         out = [p.move_to_start(wait=True) for p in self.positioners]
         self.check_outputs(out, msg='move to start, wait=True')
@@ -605,7 +616,7 @@ class LarchStepScan(object):
                             trig.stop()
                     if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
-                dtimer.add('Pt %i : triggers stopped' % i)                        
+                dtimer.add('Pt %i : triggers stopped' % i)
                 if not point_ok:
                     point_ok = True
                     poll(5*MIN_POLL_TIME, 0.25)
@@ -628,7 +639,7 @@ class LarchStepScan(object):
 
                 [c.read() for c in self.counters]
                 # print 'Read Counters done'
-                dtimer.add('Pt %i : read counters' % i)                
+                dtimer.add('Pt %i : read counters' % i)
                 self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
 
@@ -686,14 +697,92 @@ class LarchStepScan(object):
         return self.datafile.filename
         ##
 
+
+
+class XAFS_Scan(LarchStepScan):
+    """XAFS Scan"""
+    def __init__(self, label=None, energy_pv=None, read_pv=None,
+                 extra_pvs=None,  e0=0, **kws):
+        self.label = label
+        self.e0 = e0
+        self.energies = []
+        self.regions = []
+        LarchStepScan.__init__(self, **kws)
+        self.dwelltime = []
+        self.energy_pos = None
+        self.set_energy_pv(energy_pv, read_pv=read_pv, extra_pvs=extra_pvs)
+
+    def set_energy_pv(self, energy_pv, read_pv=None, extra_pvs=None):
+        self.energy_pv = energy_pv
+        self.read_pv = read_pv
+        if energy_pv is not None:
+            self.energy_pos = Positioner(energy_pv, label='Energy',
+                                         extra_pvs=extra_pvs)
+            self.positioners = []
+            self.add_positioner(self.energy_pos)
+        if read_pv is not None:
+            self.add_counter(read_pv, label='Energy_readback')
+
+    def add_region(self, start, stop, step=None, npts=None,
+                   relative=True, use_k=False, e0=None,
+                   dtime=None, dtime_final=None, dtime_wt=1):
+        """add a region to an EXAFS scan.
+        Note that scans must be added in order of increasing energy
+        """
+        if e0 is None:
+            e0 = self.e0
+        if dtime is None:
+            dtime = self.dtime
+        self.e0 = e0
+        self.dtime = dtime
+
+        if npts is None and step is None:
+            print 'add_region needs start, stop, and either step on npts'
+            return
+
+        if step is not None:
+            npts = 1 + int(0.1  + abs(stop - start)/step)
+
+        en_arr = list(np.linspace(start, stop, npts))
+
+        self.regions.append((start, stop, npts, relative, e0,
+                             use_k, dtime, dtime_final, dtime_wt))
+
+        if use_k:
+            for i, k in enumerate(en_arr):
+                en_arr[i] = e0 + ktoe(k)
+        elif relative:
+            for i, v in enumerate(en_arr):
+                en_arr[i] = e0 + v
+
+        # check that all energy values in this region are greater
+        # than previously defined regions
+        en_arr.sort()
+        if len(self.energies)  > 0:
+            en_arr = [e for e in en_arr if e > max(self.energies)]
+
+        npts   = len(en_arr)
+
+        dt_arr = [dtime]*npts
+        # allow changing counting time linear or by a power law.
+        if dtime_final is not None and dtime_wt > 0:
+            _vtime = (dtime_final-dtime)*(1.0/(npts-1))**dtime_wt
+            dt_arr= [dtime + _vtime *i**dtime_wt for i in range(npts)]
+        self.energies.extend(en_arr)
+        self.dwelltime.extend(dt_arr)
+        self.energy_pos.array = np.array(self.energies)
+
+
 @ValidateLarchPlugin
 def scan_from_json(text, filename='scan.001', _larch=None):
+    """creates and returns a  LarchStepScan object from
+    a json-text representation.
+    """
     sdict = json.loads(text)
-
-    scan = LarchStepScan(filename=filename, _larch=_larch)
+    #
+    # create positioners
     if sdict['type'] == 'xafs':
         print 'xafs scan soon'
-        x = """
         scan  = XAFS_Scan(energy_pv=sdict['energy_drive'],
                           read_pv=sdict['energy_read'],
                           e0=sdict['e0'])
@@ -710,58 +799,62 @@ def scan_from_json(text, filename='scan.001', _larch=None):
                     kws['dtime_final'] = t_max
                     kws['dtime_wt'] = t_kw
             scan.add_region(start, stop, npts=npts, **kws)
-        """
-    elif sdict['type'] == 'linear':
-        for pos in sdict['positioners']:
-            label, pvs, start, stop, npts = pos
-            p = Positioner(pvs[0], label=label)
-            p.array = np.linspace(start, stop, npts)
-            scan.add_positioner(p)
-            if len(pvs) > 0:
-                scan.add_counter(pvs[1], label="%s_read" % label)
+    else:
+        scan = LarchStepScan(filename=filename, _larch=_larch)
+        if sdict['type'] == 'linear':
+            for pos in sdict['positioners']:
+                label, pvs, start, stop, npts = pos
+                p = Positioner(pvs[0], label=label)
+                p.array = np.linspace(start, stop, npts)
+                scan.add_positioner(p)
+                if len(pvs) > 0:
+                    scan.add_counter(pvs[1], label="%s_read" % label)
 
-    elif sdict['type'] == 'mesh':
-        label1, pvs1, start1, stop1, npts1 = sdict['inner']
-        label2, pvs2, start2, stop2, npts2 = sdict['outer']
-        p1 = Positioner(pvs1[0], label=label1)
-        p2 = Positioner(pvs2[0], label=label2)
-
-        inner = npts2* [np.linspace(start1, stop1, npts1)]
-        outer = [[i]*npts1 for i in np.linspace(start2, stop2, npts2)]
-
-        p1.array = np.array(inner).flatten()
-        p2.array = np.array(outer).flatten()
-        scan.add_positioner(p1)
-        scan.add_positioner(p2)
-        if len(pvs1) > 0:
-            scan.add_counter(pvs1[1], label="%s_read" % label1)
-        if len(pvs2) > 0:
-            scan.add_counter(pvs2[1], label="%s_read" % label2)
-
-    elif sdict['type'] == 'slew':
-        label1, pvs1, start1, stop1, npts1 = sdict['inner']
-        p1 = Positioner(pvs1[0], label=label1)
-        p1.array = np.linspace(start1, stop1, npts1)
-        scan.add_positioner(p1)
-        if len(pvs1) > 0:
-            scan.add_counter(pvs1[1], label="%s_read" % label1)
-        if sdict['dimension'] >=2:
+        elif sdict['type'] == 'mesh':
+            label1, pvs1, start1, stop1, npts1 = sdict['inner']
             label2, pvs2, start2, stop2, npts2 = sdict['outer']
+            p1 = Positioner(pvs1[0], label=label1)
             p2 = Positioner(pvs2[0], label=label2)
-            p2.array = np.linspace(start2, stop2, npts2)
+
+            inner = npts2* [np.linspace(start1, stop1, npts1)]
+            outer = [[i]*npts1 for i in np.linspace(start2, stop2, npts2)]
+
+            p1.array = np.array(inner).flatten()
+            p2.array = np.array(outer).flatten()
+            scan.add_positioner(p1)
             scan.add_positioner(p2)
+            if len(pvs1) > 0:
+                scan.add_counter(pvs1[1], label="%s_read" % label1)
             if len(pvs2) > 0:
                 scan.add_counter(pvs2[1], label="%s_read" % label2)
 
+        elif sdict['type'] == 'slew':
+            label1, pvs1, start1, stop1, npts1 = sdict['inner']
+            p1 = Positioner(pvs1[0], label=label1)
+            p1.array = np.linspace(start1, stop1, npts1)
+            scan.add_positioner(p1)
+            if len(pvs1) > 0:
+                scan.add_counter(pvs1[1], label="%s_read" % label1)
+            if sdict['dimension'] >=2:
+                label2, pvs2, start2, stop2, npts2 = sdict['outer']
+                p2 = Positioner(pvs2[0], label=label2)
+                p2.array = np.linspace(start2, stop2, npts2)
+                scan.add_positioner(p2)
+                if len(pvs2) > 0:
+                    scan.add_counter(pvs2[1], label="%s_read" % label2)
+
+    # detectors
     rois = sdict.get('rois', None)
     for dpars in sdict['detectors']:
         dpars['rois'] = rois
         scan.add_detector( get_detector(**dpars))
 
+    # extra counters (not-triggered things to count
     if 'counters' in sdict:
         for label, pvname  in sdict['counters']:
             scan.add_counter(pvname, label=label)
 
+    # other bits
     scan.add_extra_pvs(sdict['extra_pvs'])
     scan.scantime  = sdict.get('scantime', -1)
     scan.filename  = sdict.get('filename', 'scan.dat')
