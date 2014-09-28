@@ -21,7 +21,6 @@ class ReadlineTextCtrl(wx.TextCtrl):
     def __init__(self, parent=None, id=-1, value='', size=(400,-1),
                  historyfile = None, mode = 'emacs',
                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER, **kws):
-        print( 'READ LINE TEXT CTRL')
         wx.TextCtrl.__init__(self, parent, id, value=value,
                              size=size, style=style, **kws)
 
