@@ -21,6 +21,7 @@ class ReadlineTextCtrl(wx.TextCtrl):
     def __init__(self, parent=None, id=-1, value='', size=(400,-1),
                  historyfile = None, mode = 'emacs',
                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER, **kws):
+        print( 'READ LINE TEXT CTRL')
         wx.TextCtrl.__init__(self, parent, id, value=value,
                              size=size, style=style, **kws)
 
@@ -36,8 +37,12 @@ class ReadlineTextCtrl(wx.TextCtrl):
         self.hist_mark = len(self.hist_buff)
         self.hist_sessionstart = self.hist_mark
 
-        self.Bind(wx.EVT_CHAR, self.onChar)
-        self.Bind(wx.EVT_SET_FOCUS, self.onSetFocus)
+        if sys.platform == 'darwin':
+            self.Bind(wx.EVT_KEY_UP,     self.onChar)
+        else:
+            self.Bind(wx.EVT_CHAR,       self.onChar)
+
+        self.Bind(wx.EVT_SET_FOCUS,  self.onSetFocus)
         self.Bind(wx.EVT_KILL_FOCUS, self.onKillFocus)
         self.__GetMark()
         self.notebooks = None
@@ -194,4 +199,3 @@ class ReadlineTextCtrl(wx.TextCtrl):
             self.hist_mark = len(self.hist_buff)
 
         event.Skip()
-
