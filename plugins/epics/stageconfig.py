@@ -113,7 +113,7 @@ class StageConfig(object):
 
 
 @ValidateLarchPlugin
-def read_gestage(filename='SampleStage_autosave.ini', _larch=None):
+def read_gsestage(filename='SampleStage_autosave.ini', _larch=None):
     "read positions from XYZ Sample stage config file"
 
     if not hasattr(_larch.symtable._epics, 'stageconfig'):
