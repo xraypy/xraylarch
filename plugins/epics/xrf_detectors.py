@@ -20,7 +20,6 @@ class Epics_Xspress3(object):
     """multi-element MCA detector using Quantum Xspress3 electronics
     AND a triggering Struck SIS multi-channel scaler
     """
-    NPTS = 4095
     SIS_PREFIX = '13IDE:SIS1:'
     def __init__(self, prefix=None, nmca=4, sis_prefix=None, **kws):
         self.nmca = nmca
@@ -28,6 +27,7 @@ class Epics_Xspress3(object):
         self.prefix = prefix
         self.sis_prefix = sis_prefix
         self.mcas = []
+        self.npts  = 4096
         self.energies = []
         self.connected = False
         self.elapsed_real = None
@@ -105,13 +105,15 @@ class Epics_Xspress3(object):
         return thismca
 
     def get_energy(self, mca=1):
-        return np.arange(self.NPTS)*.010
+        return np.arange(self.npts)*.010
 
     def get_array(self, mca=1):
         try:
             out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
         except TypeError:
-            out = np.arange(self.NPTS)*0.91
+            out = np.arange(self.npts)*0.91
+        if len(out) != self.npts:
+            self.npts = len(out)
         out[np.where(out<0.91)]= 0.91
         return out
 
