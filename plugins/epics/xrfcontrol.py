@@ -201,6 +201,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
         elif amp_type.lower().startswith('xsp'):
             self.det = Epics_Xspress3(prefix=prefix, nmca=nmca)
+            self.det.get_mca(mca=1)
+            self.needs_newplot=True
 
     def show_mca(self, init=False):
         self.needs_newplot = False
@@ -213,8 +215,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             if self.mca2 is None:
                 self.mca2 = self.det.get_mca(mca=self.det_back)
 
-            e2 = self.det.get_energy(mca=self.det_back)
             c2 = self.det.get_array(mca=self.det_back)
+            e2 = self.det.get_energy(mca=self.det_back)
             title = "{:s}  Background: MCA{:d}".format(title, self.det_back)
             try:
                 self.oplot(e2, c2)
@@ -391,8 +393,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 if self.mca2 is None:
                     self.mca2 = self.det.get_mca(mca=self.det_back)
 
-                energy = self.det.get_energy(mca=self.det_back)
                 counts = self.det.get_array(mca=self.det_back)
+                energy = self.det.get_energy(mca=self.det_back)
                 try:
                     self.update_mca(counts, energy=energy, is_mca2=True, draw=False)
                 except ValueError:
@@ -401,8 +403,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             if self.mca is None:
                 self.mca = self.det.get_mca(mca=self.det_fore)
 
-            energy = self.det.get_energy(mca=self.det_fore)
             counts = self.det.get_array(mca=self.det_fore)*1.0
+            energy = self.det.get_energy(mca=self.det_fore)
             if max(counts) < 1.0:
                 counts    = 1e-4*np.ones(len(counts))
                 counts[0] = 2.0
@@ -420,8 +422,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 c = self.mca2.counts
                 e = self.mca2.energy
             else:
-                e = self.det.get_energy(mca=self.det_back)
                 c = self.det.get_array(mca=self.det_back)
+                e = self.det.get_energy(mca=self.det_back)
             title = "{:s}  Background: MCA{:d}".format(title, self.det_back)
             try:
                 self.oplot(e, c)
@@ -537,7 +539,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             for sname in names:
                 self.wids['roilist'].Append(sname)
             self.wids['roilist'].SetSelection(self.roilist_sel)
-
 
     def onCalibrateEnergy(self, event=None, **kws):
         try:
