@@ -524,10 +524,12 @@ class LarchStepScan(object):
                     d.set_dwelltime(self.dwelltime)
 
         time_est = npts*(self.pos_settle_time + self.det_settle_time)
+        print 'time_est #1 ', time_est
         if self.dwelltime_varys:
             time_est += self.dwelltime.sum()
         else:
             time_est += npts*self.dwelltime
+        print 'time est #2 ', time_est
 
         if self.scandb is not None:
             self.scandb.set_info('scan_message', 'preparing scan')
@@ -698,16 +700,15 @@ class LarchStepScan(object):
         ##
 
 
-
 class XAFS_Scan(LarchStepScan):
     """XAFS Scan"""
     def __init__(self, label=None, energy_pv=None, read_pv=None,
-                 extra_pvs=None,  e0=0, **kws):
+                 extra_pvs=None,  e0=0, _larch=None, **kws):
         self.label = label
         self.e0 = e0
         self.energies = []
         self.regions = []
-        LarchStepScan.__init__(self, **kws)
+        LarchStepScan.__init__(self, _larch=_larch, **kws)
         self.dwelltime = []
         self.energy_pos = None
         self.set_energy_pv(energy_pv, read_pv=read_pv, extra_pvs=extra_pvs)
@@ -782,10 +783,11 @@ def scan_from_json(text, filename='scan.001', _larch=None):
     #
     # create positioners
     if sdict['type'] == 'xafs':
-        print 'xafs scan soon'
+        print 'XAFS SCAN !'
         scan  = XAFS_Scan(energy_pv=sdict['energy_drive'],
                           read_pv=sdict['energy_read'],
-                          e0=sdict['e0'])
+                          e0=sdict['e0'], _larch=_larch)
+        print 'XAFS SCAN ', scan
         t_kw  = sdict['time_kw']
         t_max = sdict['max_time']
         nreg  = len(sdict['regions'])
