@@ -227,7 +227,7 @@ class GSEXRM_MapRow:
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
         # print( 'Row Data ', gnpts, snpts, xnpts, self.realtime.shape)
-        npts = min(gnpts, xnpts)
+        npts = min(gnpts, xnpts, snpts)
         if self.npts is None:
             self.npts = npts
         if snpts < self.npts:  # extend struck data if needed
@@ -238,7 +238,7 @@ class GSEXRM_MapRow:
             snpts = self.npts
         self.sisdata = sdata[:npts]
 
-        if xnpts != npts:
+        if xnpts > npts:
             self.counts  = self.counts[:npts]
             self.realtime = self.realtime[:npts]
             self.livetime = self.livetime[:npts]
