@@ -33,10 +33,11 @@ class Epics_Xspress3(object):
         self.elapsed_real = None
         self.elapsed_textwidget = None
         self.needs_refresh = False
+        self._xsp3 = None
         if self.prefix is not None:
             self.connect()
 
-    @EpicsFunction
+    # @EpicsFunction
     def connect(self):
         self._sis = None
         if self.sis_prefix is not None:
@@ -86,6 +87,10 @@ class Epics_Xspress3(object):
         self._sis.setDwell(pixeltime)
 
     def get_mca(self, mca=1, with_rois=True):
+        if self._xsp3 is None:
+            self.connect()
+            time.sleep(0.5)
+
         emca = self._xsp3.mcas[mca-1]
         if with_rois:
             emca.get_rois()

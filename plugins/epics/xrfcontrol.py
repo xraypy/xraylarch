@@ -201,6 +201,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
         elif amp_type.lower().startswith('xsp'):
             self.det = Epics_Xspress3(prefix=prefix, nmca=nmca)
+            self.det.connect()
+            time.sleep(0.5)
             self.det.get_mca(mca=1)
             self.needs_newplot=True
 
