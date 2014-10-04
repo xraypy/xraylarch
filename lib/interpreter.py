@@ -762,7 +762,6 @@ class Interpreter:
         this method covers a lot of cases (larch or python, import
         or from-import, use of asname) and so is fairly long.
         """
-        # print('import_mod A ', name, do_reload)
         st_sys = self.symtable._sys
         for idir in st_sys.path:
             if idir not in sys.path and os.path.exists(idir):
@@ -779,7 +778,7 @@ class Interpreter:
         elif name in sys.modules:
             thismod = sys.modules[name]
 
-        if (do_reload or thismod is None):
+        if thismod is None or do_reload:
             # first look for "name.lar"
             islarch = False
             larchname = "%s.lar" % name
@@ -793,21 +792,24 @@ class Interpreter:
                         thismod = builtins._run(filename=modname, _larch=self,
                                                 new_module=name)
                     except:
-                        self.raise_exception(None, exc=ImportError, msg='Import Error')
+                        thismod = None
 
-                    # save current module group
-                    #  create new group, set as moduleGroup and localGroup
+                if thismod is not None:
+                    break
             if len(self.error) > 0:
                 st_sys.modules.pop(name)
                 return
             # or, if not a larch module, load as a regular python module
-            if not islarch and name not in sys.modules:
+            if thismod is None and not islarch and name not in sys.modules:
                 try:
                     __import__(name)
                     thismod = sys.modules[name]
                 except:
-                    self.raise_exception(None, exc=ImportError, msg='Import Error')
-                    return
+                    thismod = None
+
+        if thismod is None:
+            self.raise_exception(None, exc=ImportError, msg='Import Error')
+            return
 
         # now we install thismodule into the current moduleGroup
         # import full module
