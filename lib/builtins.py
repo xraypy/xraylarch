@@ -218,7 +218,7 @@ def _eval(text=None, filename=None, _larch=None,
     return output
 
 
-def _run(filename=None, _larch=None):
+def _run(filename=None, new_module=None, _larch=None):
     "execute the larch text in a file as larch code."
     if _larch is None:
         raise Warning("cannot run file '%s' -- larch broken?" % filename)
@@ -239,7 +239,7 @@ def _run(filename=None, _larch=None):
             return
 
     return  _eval(text=text, filename=filename, _larch=_larch,
-                  new_module=None, interactive=False, printall=False)
+                  new_module=new_module, interactive=False, printall=False)
 
 def _reload(mod, _larch=None, **kws):
     """reload a module, either larch or python"""
