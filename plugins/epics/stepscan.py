@@ -82,6 +82,7 @@ A step scan can have an Epics SScan Record or StepScan database associated
 with it.  It will use these for PVs to post data at each point of the scan.
 """
 
+import os, shutil
 import time
 import threading
 import json
@@ -89,7 +90,7 @@ import numpy as np
 
 from datetime import timedelta
 
-from epics import PV, poll
+from epics import PV, poll, caput, caget
 
 from larch import use_plugin_path, Group, ValidateLarchPlugin
 from larch.utils import debugtime
@@ -311,13 +312,13 @@ class LarchStepScan(object):
         return out
 
     def pre_scan(self, **kws):
-        if self.debug: print 'PRE SCAN '
+        if self.debug: print('Stepscan PRE SCAN ')
         for (desc, pv) in self.extra_pvs:
             pv.connect()
         return [m(scan=self) for m in self.pre_scan_methods]
 
     def post_scan(self):
-        if self.debug: print 'POST SCAN '
+        if self.debug: print('Stepscan POST SCAN ')
         return [m() for m in self.post_scan_methods]
 
     def verify_scan(self):
@@ -426,7 +427,6 @@ class LarchStepScan(object):
                                          units=units, notes='counter')
                 names.append(name)
 
-
     def look_for_interrupts(self):
         """set interrupt requests:
 
@@ -533,8 +533,10 @@ class LarchStepScan(object):
         if self.scandb is not None:
             self.scandb.set_info('scan_message', 'preparing scan')
 
+        dtimer.add('PRE: cleared data')
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
+
         dtimer.add('PRE: pre_scan done')
         if self.scandb is not None:
             self.scandb.set_info('scan_time_estimate', time_est)
@@ -697,29 +699,30 @@ class LarchStepScan(object):
         return self.datafile.filename
         ##
 
-    def epics_slewscan(self, filename=None, comments=None,
-                       mapper='13XRM:map:'):
-        """ request and what a slew-scan, executed with epics interface
-        and separate fastmap collector....
-        should be replaced!
-        """
-        if filename is None: filename = 'scan.001'
+    def write_fastmap_config(self, datafile, comments):
+        "write ini file for fastmap"
+        if datafile is None: datafile = 'scan.001'
         if comments is None: comments = ''
         sname = 'CurrentScan.ini'
-        if os.path.exists(sname):
-            shutil.copy(sname, 'PreviousScan.ini')
+        oname = 'PreviousScan.ini'
+        workdir = self.scandb.get_info('user_folder')
+        sname1 = os.path.join(workdir, 'Maps', sname)
+        oname1 = os.path.join(workdir, 'Maps', oname)
+        if os.path.exists(sname1):
+            shutil.copy(sname1, oname1)
         txt = ['# FastMap configuration file (saved: %s)'%(time.ctime()),
                '#-------------------------#',  '[scan]',
-               'filename = %s' % filename,
+               'filename = %s' % datafile,
                'comments = %s' % comments]
 
         dim  = len(self.positioners)
         pos  = self.positioners[0]
+        pospv = str(pos.pv.pvname)
+        if pospv.endswith('.VAL'): pospv = pospv[:-4]
         arr  = pos.array
         ltim = self.dwelltime*(len(arr) - 1)
-
         txt.append('dimension = %i' % dim)
-        txt.append('pos1 = %s'     % str(pos.pv.pvname))
+        txt.append('pos1 = %s'     % pospv)
         txt.append('start1 = %.3f' % arr[0])
         txt.append('stop1 = %.3f'  % arr[-1])
         txt.append('step1 = %.3f'  % (arr[1]-arr[0]))
@@ -727,60 +730,90 @@ class LarchStepScan(object):
 
         if dim > 1:
             pos = self.positioners[1]
+            pospv = str(pos.pv.pvname)
+            if pospv.endswith('.VAL'): pospv = pospv[:-4]
             arr = pos.array
-            txt.append('pos2 = %s'   % str(pos.pv.pvname))
+            txt.append('pos2 = %s'   % pospv)
             txt.append('start2 = %.3f' % arr[0])
             txt.append('stop2 = %.3f' % arr[-1])
             txt.append('step2 = %.3f' % (arr[1]-arr[0]))
         txt.append('#------------------#')
 
-        f = open(sname, 'w')
+        f = open(sname1, 'w')
         f.write('\n'.join(txt))
         f.close()
+        return sname
+
+    def epics_slewscan(self, filename='map.001', comments=None,
+                       mapper='13XRM:map:'):
+        """ request and what a slew-scan, executed with epics interface
+        and separate fastmap collector....
+        should be replaced!
+        """
+        scanname = self.write_fastmap_config(filename, comments)
 
         # now start scan
-
         caput('%sfilename' % mapper, filename)
-        caput('%sscanfile' % mapper, sname)
+        caput('%sscanfile' % mapper, scanname)
         caput('%smessage' % mapper, 'starting...')
         caput('%sStart' % mapper, 1)
 
+        self.abort = False
+        self.clear_interrupts()
         # watch scan
         # first, wait for scan to start (status == 2)
         collecting = False
         t0 = time.time()
         while not collecting and time.time()-t0 < 120:
             collecting = (2 == caget('%sstatus' % mapper))
-            sleep(0.25)
-
+            time.sleep(0.25)
+            if self.look_for_interrupts():
+                break
+        if self.abort:
+            print 'slewscan aborted'
+            return
         print 'slewscan started, wait for it to finish'
-
         nrow = 0
         t0 = time.time()
         maxrow = caget('%smaxrow' % mapper)
         #  wait for scan to get past row 1
         while nrow < 1 and time.time()-t0 < 120:
-            nrow = caget('%nrow' % mapper)
-            sleep(0.25)
-
+            nrow = caget('%snrow' % mapper)
+            time.sleep(0.25)
+            if self.look_for_interrupts():
+                break
+        if self.abort:
+            print 'slewscan aborted'
+            return
 
         # wait for map to finish
         status = 2
-        count = 0
+        time_at_endrow = None
         nrowx = -1
         while status > 0:
-            sleep(0.25)
+            time.sleep(0.25)
             nrow = caget('%snrow' % mapper)
             status = caget('%sstatus' % mapper)
-
+            if self.look_for_interrupts():
+                break
             if nrowx != nrow:
                 nrowx = nrow
 
             if nrow >= maxrow and status !=2:
-                count +=  1
-            if count > 60: status = 0
-
-
+                if time_at_endrow is None:
+                    time_at_endrow = time.time()
+                if (time.time() - time_at_endrow) > 60.0:
+                    print 'slewscan appears to have completed'
+                    status = 0
+        if self.abort:
+            caput('%sAbort' % mapper, 1)
+            for i in range(250):
+                time.sleep(0.01)
+                if caget('%sstatus' % mapper) == 0:
+                    break
+            return
+        print 'slewscan done!'
+        return
 
 class XAFS_Scan(LarchStepScan):
     """XAFS Scan"""
@@ -912,15 +945,12 @@ def scan_from_json(text, filename='scan.001', _larch=None):
                 scan.add_counter(pvs2[1], label="%s_read" % label2)
 
         elif sdict['type'] == 'slew':
-            print( ' slew scan ')
             label1, pvs1, start1, stop1, npts1 = sdict['inner']
-            print( ' pvs  ' , pvs1[0], label1)
             p1 = Positioner(pvs1[0], label=label1)
             p1.array = np.linspace(start1, stop1, npts1)
             scan.add_positioner(p1)
             if len(pvs1) > 0:
                 scan.add_counter(pvs1[1], label="%s_read" % label1)
-            print (' A')
             if sdict['dimension'] >=2:
                 label2, pvs2, start2, stop2, npts2 = sdict['outer']
                 p2 = Positioner(pvs2[0], label=label2)
@@ -928,23 +958,18 @@ def scan_from_json(text, filename='scan.001', _larch=None):
                 scan.add_positioner(p2)
                 if len(pvs2) > 0:
                     scan.add_counter(pvs2[1], label="%s_read" % label2)
-            print(' B')
     # detectors
     rois = sdict.get('rois', None)
-    print ( " rois ", rois)
     for dpars in sdict['detectors']:
         dpars['rois'] = rois
-        print ( " detectors " , dpars)
 
         scan.add_detector( get_detector(**dpars))
     # extra counters (not-triggered things to count
-    print ( " counter ")
     if 'counters' in sdict:
         for label, pvname  in sdict['counters']:
             scan.add_counter(pvname, label=label)
 
     # other bits
-    print ( " extra ")
     scan.add_extra_pvs(sdict['extra_pvs'])
     scan.scantype = sdict.get('type', 'linear')
     scan.scantime = sdict.get('scantime', -1)
@@ -1017,13 +1042,12 @@ def do_slewscan(scanname, comments='', filename='scan.001', _larch=None):
     if _larch.symtable._scan._scandb is None:
         print 'need to connect to scandb!'
         return
-    scan = scan_from_db(scanname, filename=filename, _larch=_larch)
+    scan = scan_from_db(scanname, _larch=_larch)
     if scan.scantype != 'slew':
         return do_scan(scanname, comment=comments, nscans=1,
                        filename=filename, _larch=_larch)
     else:
-        print 'Do SlewScan!! '
-        scan.epics_slewscan()
+        scan.epics_slewscan(filename=filename)
 
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
