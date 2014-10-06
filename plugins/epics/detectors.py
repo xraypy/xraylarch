@@ -590,6 +590,11 @@ class Xspress3Detector(DetectorMixin):
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
 
+    def set_dwelltime(self, val):
+        self.dwelltime = val
+        if self.dwelltime_pv is not None:
+            self.dwelltime_pv.put(val)
+
     def pre_scan(self, scan=None, **kws):
         if self._counter is None:
             self.connect_counters()
@@ -607,6 +612,7 @@ class Xspress3Detector(DetectorMixin):
 
         # need to set MCS to internal trigger and with a least
         # 11 bins (or bins at least 0.02 seconds long)
+
         dwelltime = self.dwelltime
         pixeltime = self.pixeltime
         if dwelltime is None:
@@ -615,8 +621,8 @@ class Xspress3Detector(DetectorMixin):
             pixeltime = 0.1
         nbins = dwelltime/pixeltime
         if nbins > 1000:
-            pixeltime = 0.001 * self.dwelltime
-        self.dwelltime += pixeltime
+            pixeltime = 0.001 * dwelltime
+        dwelltime += pixeltime
         caput("%sChannelAdvance" % self.mcs_prefix, 0) # internal
         caput("%sCountOnStart"   % self.mcs_prefix, 0)
         caput("%sDwell"          % self.mcs_prefix, pixeltime)
@@ -627,7 +633,7 @@ class Xspress3Detector(DetectorMixin):
             caput("%sNumImages"     % (self.prefix), nimages)
 
         for det in scan.detectors:
-            det.set_dwelltime(self.dwelltime)
+            det.set_dwelltime(dwelltime)
         for counter in scan.counters:
             counter.hi = nbins-1
 
