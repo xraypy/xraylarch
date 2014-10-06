@@ -17,7 +17,7 @@ DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
                     'xspress3': {'mcs': '',
                                  'scaler': '',
                                  'nmcas': 4, 'nrois': 32,
-                                 'nbins': 11}, 
+                                 'nbins': 11},
                     'multimca': {'nrois': 32, 'nmcas': 4,
                                  'use_full': False, 'use_net': False}}
 
@@ -50,7 +50,7 @@ Example usage:
         self._t0 = 0
         self.runtime = -1
         self.stop = None
-        
+
     def __repr__(self):
         return "<Trigger (%s)>" % (self.pv.pvname)
 
@@ -188,7 +188,7 @@ class McaCounter(DeviceCounter):
     """Simple MCA Counter: saves all ROIs (total or net) and, optionally full spectra
     """
     invalid_device_msg = 'McaCounter must use an Epics MCA'
-    def __init__(self, prefix, outpvs=None, nrois=32, rois=None, 
+    def __init__(self, prefix, outpvs=None, nrois=32, rois=None,
                  use_net=False,  use_unlabeled=False, use_full=False):
         nrois = int(nrois)
         DeviceCounter.__init__(self, prefix, rtype='mca', outpvs=outpvs)
@@ -197,14 +197,14 @@ class McaCounter(DeviceCounter):
         roilist = None
         if rois is not None and len(rois)>0:
             roilist = [s.lower().strip() for s in rois]
-        
+
         prefix = self.prefix
         fields = []
         for i in range(nrois):
             label = caget('%s.R%iNM' % (prefix, i))
             if roilist is not None and label.lower().strip() not in roilist:
                 continue
-            
+
             if len(label) > 0 or use_unlabeled:
                 suff = '.R%i' % i
                 if use_net:
@@ -218,7 +218,7 @@ class MultiMcaCounter(DeviceCounter):
     invalid_device_msg = 'McaCounter must use an Epics Multi-Element MCA'
     _dxp_fields = (('InputCountRate', 'ICR'),
                    ('OutputCountRate', 'OCR'))
-    def __init__(self, prefix, outpvs=None, nmcas=4, nrois=32, rois=None,                
+    def __init__(self, prefix, outpvs=None, nmcas=4, nrois=32, rois=None,
                  search_all = False,  use_net=False,
                  use_unlabeled=False, use_full=False):
         if not prefix.endswith(':'):
@@ -230,7 +230,7 @@ class MultiMcaCounter(DeviceCounter):
         roilist = None
         if rois is not None and len(rois)>0:
             roilist = [s.lower().strip() for s in rois]
-        
+
         prefix = self.prefix
         fields = []
         extras = []
@@ -507,7 +507,7 @@ class Xspress3Trigger(Trigger):
         self._t0 = 0
         self.runtime = -1
         self.stop = self.trigger_stop
-        
+
     def __repr__(self):
         return "<Xspress3Trigger(%s, mcs=%s)>" % (self.prefix,
                                                   self.mcs_prefix)
@@ -535,7 +535,7 @@ class Xspress3Trigger(Trigger):
             time.sleep(0.005)
         self.mcs_start.put(1, callback=self.__onComplete)
         poll()
-        
+
     def trigger_stop(self, value=0, **kws):
         self.xsp3_start.put(value, **kws)
 
@@ -547,7 +547,7 @@ class Xspress3Detector(DetectorMixin):
     def __init__(self, prefix, mcs=None, scaler=None, label=None, nmcas=4,
                  nrois=32, rois=None, pixeltime=0.1,  enable_dtc=True,
                  use=True, use_unlabeled=False, use_full=False, **kws):
-        
+
         nmcas, nrois = int(nmcas), int(nrois)
         self.nmcas = nmcas
         self.nrois = nrois
@@ -630,7 +630,7 @@ class Xspress3Detector(DetectorMixin):
             det.set_dwelltime(self.dwelltime)
         for counter in scan.counters:
             counter.hi = nbins-1
-            
+
     def post_scan(self, scan=None, **kws):
         for i in range(1, self.nmcas+1):
             card = "%sC%i" % (self.prefix, i)
@@ -674,7 +674,7 @@ class Xspress3Counter(DeviceCounter):
     def __init__(self, prefix, mcs=None, scaler=None, outpvs=None, nmcas=4,
                  nrois=32, rois=None, nscas=1, nmcs=4, use_unlabeled=False,
                  use_full=False):
-        
+
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
 
@@ -722,10 +722,18 @@ class Xspress3Counter(DeviceCounter):
             for imcs in range(1, 1+self.nmcs):  # MCA arrays from MCS
                 pv = '%smca%i.VAL' % (self.mcs_prefix, imcs)
                 label = ''
+                dlab = 'MCS %i'% (imcs)
+
                 if self.scaler_prefix is not None:
                     label = caget("%s.NM%i" % (self.scaler_prefix, imcs))
-                if label.strip() == '':
-                    label = 'MCS %i'% (imcs)
+
+                try:
+                    label = label.strip()
+                    if len(label) < 1:
+                        label = dlab
+                except:
+                    label = dlab
+
                 add_counter(pv, label)
 
         if self.roilist is None:
@@ -735,16 +743,22 @@ class Xspress3Counter(DeviceCounter):
         nmax = 2000
         if len(self.roilist) < 4:
             self.roilist.append("ocr")
-        nmax = len(caget('%sARR1:ArrayData' % prefix))
+        try:
+            nmax = len(caget('%sARR1:ArrayData' % prefix))
+        except:
+            pass
         known_rois = {'ocr': ('OCR', 50, nmax)}
-        
+
         for iroi in range(1, self.nrois+1):
-            label = caget("%smca1.R%iNM" % (prefix, iroi))
-            if len(label.strip()) > 0:
-                lo = caget("%smca1.R%iLO" % (prefix, iroi))
-                hi = caget("%smca1.R%iHI" % (prefix, iroi))
-                known_rois[label.lower()] = (label, lo, hi)
-            else:
+            try:
+                label = caget("%smca1.R%iNM" % (prefix, iroi))
+                if len(label.strip()) > 0:
+                    lo = caget("%smca1.R%iLO" % (prefix, iroi))
+                    hi = caget("%smca1.R%iHI" % (prefix, iroi))
+                    known_rois[label.lower()] = (label, lo, hi)
+                else:
+                    break
+            except:
                 break
 
         iroi = 0
