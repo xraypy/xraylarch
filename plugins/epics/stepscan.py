@@ -199,7 +199,7 @@ class LarchStepScan(object):
         self.filename = filename
         self.auto_increment = auto_increment
         self.filetype = 'ASCII'
-
+        self.scantype = 'linear'
         self.verified = False
         self.abort = False
         self.pause = False
@@ -699,6 +699,90 @@ class LarchStepScan(object):
         return self.datafile.filename
         ##
 
+    def epics_slewscan(self, filename=None, comments=None,
+                       mapper='13XRM:map:'):
+        """ request and what a slew-scan, executed with epics interface
+        and separate fastmap collector....
+        should be replaced!
+        """
+        if filename is None: filename = 'scan.001'
+        if comments is None: comments = ''
+        sname = 'CurrentScan.ini'
+        if os.path.exists(sname):
+            shutil.copy(sname, 'PreviousScan.ini')
+        txt = ['# FastMap configuration file (saved: %s)'%(time.ctime()),
+               '#-------------------------#',  '[scan]',
+               'filename = %s' % filename,
+               'comments = %s' % comments]
+
+        dim  = len(self.positioners)
+        pos  = self.positioners[0]
+        arr  = pos.array
+        ltim = self.dwelltime*(len(arr) - 1)
+
+        txt.append('dimension = %i' % dim)
+        txt.append('pos1 = %s'     % str(pos.pv.pvname))
+        txt.append('start1 = %.3f' % arr[0])
+        txt.append('stop1 = %.3f'  % arr[-1])
+        txt.append('step1 = %.3f'  % (arr[1]-arr[0]))
+        txt.append('time1 = %.3f'  % ltim)
+
+        if dim > 1:
+            pos = self.positioners[1]
+            arr = pos.array
+            txt.append('pos2 = %s'   % str(pos.pv.pvname))
+            txt.append('start2 = %.3f' % arr[0])
+            txt.append('stop2 = %.3f' % arr[-1])
+            txt.append('step2 = %.3f' % (arr[1]-arr[0]))
+        txt.append('#------------------#')
+
+        f = open(sname, 'w')
+        f.write('\n'.join(txt))
+        f.close()
+
+        # now start scan
+
+        caput('%sfilename' % mapper, filename)
+        caput('%sscanfile' % mapper, sname)
+        caput('%smessage' % mapper, 'starting...')
+        caput('%sStart' % mapper, 1)
+
+        # watch scan
+        # first, wait for scan to start (status == 2)
+        collecting = False
+        t0 = time.time()
+        while not collecting and time.time()-t0 < 120:
+            collecting = (2 == caget('%sstatus' % mapper))
+            sleep(0.25)
+
+        print 'slewscan started, wait for it to finish'
+
+        nrow = 0
+        t0 = time.time()
+        maxrow = caget('%smaxrow' % mapper)
+        #  wait for scan to get past row 1
+        while nrow < 1 and time.time()-t0 < 120:
+            nrow = caget('%nrow' % mapper)
+            sleep(0.25)
+
+
+        # wait for map to finish
+        status = 2
+        count = 0
+        nrowx = -1
+        while status > 0:
+            sleep(0.25)
+            nrow = caget('%snrow' % mapper)
+            status = caget('%sstatus' % mapper)
+
+            if nrowx != nrow:
+                nrowx = nrow
+
+            if nrow >= maxrow and status !=2:
+                count +=  1
+            if count > 60: status = 0
+
+
 
 class XAFS_Scan(LarchStepScan):
     """XAFS Scan"""
@@ -709,6 +793,7 @@ class XAFS_Scan(LarchStepScan):
         self.energies = []
         self.regions = []
         LarchStepScan.__init__(self, _larch=_larch, **kws)
+        self.scantype = 'xafs'
         self.dwelltime = []
         self.energy_pos = None
         self.set_energy_pv(energy_pv, read_pv=read_pv, extra_pvs=extra_pvs)
@@ -783,11 +868,9 @@ def scan_from_json(text, filename='scan.001', _larch=None):
     #
     # create positioners
     if sdict['type'] == 'xafs':
-        print 'XAFS SCAN !'
         scan  = XAFS_Scan(energy_pv=sdict['energy_drive'],
                           read_pv=sdict['energy_read'],
                           e0=sdict['e0'], _larch=_larch)
-        print 'XAFS SCAN ', scan
         t_kw  = sdict['time_kw']
         t_max = sdict['max_time']
         nreg  = len(sdict['regions'])
@@ -831,12 +914,15 @@ def scan_from_json(text, filename='scan.001', _larch=None):
                 scan.add_counter(pvs2[1], label="%s_read" % label2)
 
         elif sdict['type'] == 'slew':
+            print( ' slew scan ')
             label1, pvs1, start1, stop1, npts1 = sdict['inner']
+            print( ' pvs  ' , pvs1[0], label1)
             p1 = Positioner(pvs1[0], label=label1)
             p1.array = np.linspace(start1, stop1, npts1)
             scan.add_positioner(p1)
             if len(pvs1) > 0:
                 scan.add_counter(pvs1[1], label="%s_read" % label1)
+            print (' A')
             if sdict['dimension'] >=2:
                 label2, pvs2, start2, stop2, npts2 = sdict['outer']
                 p2 = Positioner(pvs2[0], label=label2)
@@ -844,22 +930,27 @@ def scan_from_json(text, filename='scan.001', _larch=None):
                 scan.add_positioner(p2)
                 if len(pvs2) > 0:
                     scan.add_counter(pvs2[1], label="%s_read" % label2)
-
+            print(' B')
     # detectors
     rois = sdict.get('rois', None)
+    print ( " rois ", rois)
     for dpars in sdict['detectors']:
         dpars['rois'] = rois
-        scan.add_detector( get_detector(**dpars))
+        print ( " detectors " , dpars)
 
+        scan.add_detector( get_detector(**dpars))
     # extra counters (not-triggered things to count
+    print ( " counter ")
     if 'counters' in sdict:
         for label, pvname  in sdict['counters']:
             scan.add_counter(pvname, label=label)
 
     # other bits
+    print ( " extra ")
     scan.add_extra_pvs(sdict['extra_pvs'])
-    scan.scantime  = sdict.get('scantime', -1)
-    scan.filename  = sdict.get('filename', 'scan.dat')
+    scan.scantype = sdict.get('type', 'linear')
+    scan.scantime = sdict.get('scantime', -1)
+    scan.filename = sdict.get('filename', 'scan.dat')
     if filename is not None:
         scan.filename  = filename
     scan.pos_settle_time = sdict.get('pos_settle_time', 0.01)
@@ -894,7 +985,7 @@ def connect_scandb(dbname=None, server='postgresql',
 def do_scan(scanname, nscans=1, comments='',
             filename='scan.001', _larch=None):
     """execute scan defined in ScanDB"""
-    print 'Larch.do_scan ', scanname, nscans, filename
+    # print 'Larch.do_scan ', scanname, nscans, filename
     if _larch.symtable._scan._scandb is None:
         print 'need to connect to scandb!'
         return
@@ -905,6 +996,37 @@ def do_scan(scanname, nscans=1, comments='',
     for i in range(nscans):
         scan.run()
 
+@ValidateLarchPlugin
+def do_scan(scanname, nscans=1, comments='',
+            filename='scan.001', _larch=None):
+    """execute scan defined in ScanDB"""
+    if _larch.symtable._scan._scandb is None:
+        print 'need to connect to scandb!'
+        return
+    scan = scan_from_db(scanname, filename=filename,
+                        _larch=_larch)
+    if scan.scantype == 'slew':
+        return do_slewscan(scanname, comment=comments,
+                           filename=filename, _larch=_larch)
+    else:
+        scan.comments = comments
+        scan.nscans = nscans
+        for i in range(nscans):
+            scan.run()
+
+@ValidateLarchPlugin
+def do_slewscan(scanname, comments='', filename='scan.001', _larch=None):
+    """execute slew scan defined in ScanDB"""
+    if _larch.symtable._scan._scandb is None:
+        print 'need to connect to scandb!'
+        return
+    scan = scan_from_db(scanname, filename=filename, _larch=_larch)
+    if scan.scantype != 'slew':
+        return do_scan(scanname, comment=comments, nscans=1,
+                       filename=filename, _larch=_larch)
+    else:
+        print 'Do SlewScan!! '
+        scan.epics_slewscan()
 
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
@@ -918,4 +1040,5 @@ def registerLarchPlugin():
                        'scan_from_db':   scan_from_db,
                        'connect_scandb':    connect_scandb,
                        'do_scan': do_scan,
+                       'do_slewscan': do_slewscan,
                        })
