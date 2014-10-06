@@ -519,22 +519,20 @@ class LarchStepScan(object):
                 self.min_dwelltime = min(self.dwelltime)
                 self.max_dwelltime = max(self.dwelltime)
                 self.dwelltime_varys = True
-            else:
-                for d in self.detectors:
-                    d.set_dwelltime(self.dwelltime)
 
         time_est = npts*(self.pos_settle_time + self.det_settle_time)
-        print 'time_est #1 ', time_est
         if self.dwelltime_varys:
             time_est += self.dwelltime.sum()
+            for d in self.detectors:
+                d.set_dwelltime(self.dwelltime[0])
         else:
             time_est += npts*self.dwelltime
-        print 'time est #2 ', time_est
+            for d in self.detectors:
+                d.set_dwelltime(self.dwelltime)
 
         if self.scandb is not None:
             self.scandb.set_info('scan_message', 'preparing scan')
 
-        dtimer.add('PRE: cleared data')
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
         dtimer.add('PRE: pre_scan done')
@@ -959,7 +957,6 @@ def scan_from_json(text, filename='scan.001', _larch=None):
     if scan.dwelltime is None:
         scan.set_dwelltime(sdict.get('dwelltime', 1))
     return scan
-
 
 @ValidateLarchPlugin
 def scan_from_db(name, filename='scan.001', _larch=None):
