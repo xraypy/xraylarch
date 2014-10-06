@@ -158,6 +158,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
 
     def onSaveMCAFile(self, event=None, **kws):
+        tmp = '''
         print 'SaveMCA File'
         deffile = ''
         if hasattr(self.mca, 'sourcefile'):
@@ -168,16 +169,16 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             deffile ='test'
         if not deffile.endswith('.mca'):
             deffile = deffile + '.mca'
+        '''
 
-        deffile = fix_filename(str(deffile))
-
+        deffile = 'save.mca' # fix_filename(str(deffile))
         outfile = FileSave(self, "Save MCA File",
                            default_file=deffile,
                            wildcard=FILE_WILDCARDS)
 
         if outfile is not None:
-            print 'Would write ', outfile
-            print self.det
+            print 'Would write ', outfile,  self.det
+            self.mca.save_mcafile(outfile)
 
     def onSaveColumnFile(self, event=None, **kws):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
@@ -520,6 +521,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         confirmed = XRFDisplayFrame.onNewROI(self)
         if confirmed:
+            print 'NEW ROI ' , self.det, roiname, self.xmarker_left, self.xmarker_right
             self.det.add_roi(roiname, lo=self.xmarker_left, 
                              hi=self.xmarker_right)
 
