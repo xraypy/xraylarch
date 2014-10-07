@@ -62,7 +62,7 @@ roughly (that is, skipping error checking) as:
        while not all([p.done for p in pos]):
            time.sleep(0.001)
        [trig.start() for trig in det.triggers]
-       while not all([trig.done for trig in det.triggers]):
+       while not all([trig.isdone() for trig in det.triggers]):
            time.sleep(0.001)
        [det.read() for det in det.counters]
 
@@ -381,7 +381,7 @@ class LarchStepScan(object):
             print msg
         self.set_info('scan_message', msg)
         for c in self.counters:
-            name = hasattr(c, 'db_label', None)
+            name = getattr(c, 'db_label', None)
             if name is None:
                 name = fix_varname(c.label)
                 c.db_label = name
@@ -604,14 +604,13 @@ class LarchStepScan(object):
                 [trig.start() for trig in self.triggers]
                 dtimer.add('Pt %i : triggers fired' % i)
                 t0 = time.time()
-                time.sleep(max(0.01, self.min_dwelltime/4.0))
-                while not (all([trig.done for trig in self.triggers]) and
-                           (time.time() - t0 < self.det_maxcount_time) and
-                           (time.time() - t0 > self.min_dwelltime/2.0)):
+                time.sleep(max(0.1, self.min_dwelltime/2.0))
+                while not (all([trig.isdone() for trig in self.triggers]) and
+                           (time.time() - t0 < self.det_maxcount_time)):
                     if self.look_for_interrupts():
                         break
                     poll(MIN_POLL_TIME, 0.25)
-                dtimer.add('Pt %i : triggers done(a)' % i)
+                dtimer.add('Pt %i : triggers done' % i)
                 if self.look_for_interrupts():
                     break
                 dtimer.add('Pt %i : look for interrupts2' % i)
@@ -622,7 +621,8 @@ class LarchStepScan(object):
                             trig.stop()
                     if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
-                dtimer.add('Pt %i : triggers stopped' % i)
+
+                dtimer.add('Pt %i : triggers stopped (no-wait)' % i)
                 if not point_ok:
                     point_ok = True
                     poll(5*MIN_POLL_TIME, 0.25)
@@ -635,19 +635,18 @@ class LarchStepScan(object):
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.25)
                 dtimer.add('Pt %i : det settled done.' % i)
-                if self.look_for_interrupts():
-                    break
-
                 if trigger_has_stop:
                     for trig in self.triggers:
-                        if trig.stop is not None:
-                            trig.stop(wait=True)
-
+                        if trig.wait_for_stop is not None:
+                            trig.wait_for_stop()
+                dtimer.add('Pt %i : triggers fully stopped' % i)
                 [c.read() for c in self.counters]
-                # print 'Read Counters done'
                 dtimer.add('Pt %i : read counters' % i)
-                self.cdat = [c.buff[-1] for c in self.counters]
+                # self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
+                if self.look_for_interrupts():
+                    break
+                dtimer.add('Pt %i : look for interrupts' % i)
 
                 # if a messenger exists, let it know this point has finished
                 self._messenger(cpt=self.cpt, npts=npts)
@@ -968,7 +967,7 @@ def scan_from_json(text, filename='scan.001', _larch=None):
     for dpars in sdict['detectors']:
         dpars['rois'] = rois
 
-        scan.add_detector( get_detector(**dpars))
+        scan.add_detector(get_detector(**dpars))
     # extra counters (not-triggered things to count
     if 'counters' in sdict:
         for label, pvname  in sdict['counters']:

@@ -58,6 +58,12 @@ Example usage:
         self.done = True
         self.runtime = time.time() - self._t0
 
+    def isdone(self):
+        status = (0 == self.pv.get())
+        if status:
+            self.runtime = time.time() - self._t0
+        return status
+
     def start(self, value=1):
         """triggers detector"""
         self.done = False
@@ -65,7 +71,7 @@ Example usage:
         self._t0 = time.time()
         if value is None:
             value = self._val
-        self.pv.put(value, callback=self.__onComplete)
+        self.pv.put(value) # , callback=self.__onComplete)
         time.sleep(0.001)
         poll()
 
@@ -500,6 +506,7 @@ class Xspress3Trigger(Trigger):
         self.xsp3_ison  = PV(prefix + 'Acquire_RBV')
         self.xsp3_update = PV(prefix + 'UPDATE')
         self.mcs_start   = PV(mcs + 'EraseStart')
+        self.mcs_status  = PV(mcs + 'Acquiring')
         self.prefix = prefix
         self.mcs_prefix = mcs
         self._val = value
@@ -513,11 +520,14 @@ class Xspress3Trigger(Trigger):
                                                   self.mcs_prefix)
 
     def __onComplete(self, pvname=None, **kws):
-        self.xsp3_start.put(0)
-        time.sleep(0.025)
-        self.xsp3_update.put(1)
         self.done = True
         self.runtime = time.time() - self._t0
+
+    def isdone(self):
+        stat = (0 == self.mcs_status.get())
+        if stat:
+            self.runtime = time.time() - self._t0
+        return stat
 
     def start(self, value=None):
         """triggers MCS in internal mode to trigger Xspress3"""
@@ -533,11 +543,24 @@ class Xspress3Trigger(Trigger):
         count = 0
         while self.xsp3_ison.get() != 1 and count < 100:
             time.sleep(0.005)
-        self.mcs_start.put(1, callback=self.__onComplete)
+        self.mcs_start.put(1) # , callback=self.__onComplete)
         poll()
 
+
     def trigger_stop(self, value=0, **kws):
-        self.xsp3_start.put(value, **kws)
+        self.xsp3_start.put(0)
+        time.sleep(0.025)
+        self.xsp3_update.put(1)
+        print("XSP3 Trigger_Stop %.3f" % time.clock())
+
+    def wait_for_stop(self,timeout=3.0):
+        t0 = time.time()
+        print("XSP3 Trigger Wait_for_Stop1 %.3f" % time.clock())
+        while (1 == self.xsp3_start.get() and 
+               time.time()-t0 < timeout):
+            time.sleep(0.002)
+        print("XSP3 Trigger Wait_for_Stop2 %.3f" % time.clock())
+
 
 class Xspress3Detector(DetectorMixin):
     """
