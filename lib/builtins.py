@@ -289,6 +289,11 @@ def _addplugin(plugin, _larch=None, **kws):
     errmsg = 'is not a valid larch plugin\n'
     pjoin = os.path.join
 
+    path = site_config.plugins_path
+    _sysconf = _larch.symtable._sys.config
+    if not hasattr(_sysconf, 'plugin_paths'):
+        _sysconf.plugin_paths = site_config.plugins_path
+
     def _find_plugin(plugin, p_path):
         """find the plugin from path
         returns True, package name for packages
@@ -348,7 +353,11 @@ def _addplugin(plugin, _larch=None, **kws):
         fh = None
 
         if path is None:
-            path = site_config.plugins_path
+            try:
+                path = _larch.symtable._sys.config.plugins_path
+            except:
+                path = site_config.plugins_path
+
         for p_path in path:
             is_pkg, mod = _find_plugin(plugin, p_path)
             if is_pkg is not None:
