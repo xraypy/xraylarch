@@ -381,7 +381,11 @@ class LarchStepScan(object):
             print msg
         self.set_info('scan_message', msg)
         for c in self.counters:
-            self.set_scandata(fix_varname(c.label), c.buff)
+            name = hasattr(c, 'db_label', None)
+            if name is None:
+                name = fix_varname(c.label)
+                c.db_label = name
+            self.set_scandata(name, c.buff)
 
     def set_error(self, msg):
         """set scan error message"""
@@ -543,8 +547,8 @@ class LarchStepScan(object):
             self.scandb.set_info('scan_total_points', npts)
 
         self.set_info('scan_message', 'starting scan')
-        self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
-        self.msg_thread.start()
+        #self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
+        # self.msg_thread.start()
         self.cpt = 0
         self.npts = npts
         trigger_has_stop = False
@@ -646,8 +650,9 @@ class LarchStepScan(object):
                 self.pos_actual.append([p.current() for p in self.positioners])
 
                 # if a messenger exists, let it know this point has finished
-                if self.msg_thread is not None:
-                    self.msg_thread.cpt = self.cpt
+                self._messenger(cpt=self.cpt, npts=npts)
+                #if self.msg_thread is not None:
+                #    self.msg_thread.cpt = self.cpt
 
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
@@ -686,9 +691,9 @@ class LarchStepScan(object):
         self.complete = True
 
         # end messenger thread
-        if self.msg_thread is not None:
-            self.msg_thread.cpt = None
-            self.msg_thread.join()
+        # if self.msg_thread is not None:
+        #      self.msg_thread.cpt = None
+        #      self.msg_thread.join()
 
         self.set_info('scan_message', 'scan complete. Wrote %s' % self.filename)
         ts_exit = time.time()
