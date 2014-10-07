@@ -598,7 +598,6 @@ class LarchStepScan(object):
                 dtimer.add('Pt %i : pos settled' % i)
                 if self.look_for_interrupts():
                     break
-                dtimer.add('Pt %i : look for interrupts1' % i)
                 # start triggers, wait for them to finish
                 # print 'Trigger...'
                 [trig.start() for trig in self.triggers]
@@ -613,8 +612,6 @@ class LarchStepScan(object):
                 dtimer.add('Pt %i : triggers done' % i)
                 if self.look_for_interrupts():
                     break
-                dtimer.add('Pt %i : look for interrupts2' % i)
-                # #dtimer.add('Pt %i : polled' % i)
                 if trigger_has_stop:
                     for trig in self.triggers:
                         if trig.stop is not None:
@@ -622,7 +619,7 @@ class LarchStepScan(object):
                     if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
 
-                dtimer.add('Pt %i : triggers stopped (no-wait)' % i)
+                    dtimer.add('Pt %i : triggers stopped(a)' % i)
                 if not point_ok:
                     point_ok = True
                     poll(5*MIN_POLL_TIME, 0.25)
@@ -639,19 +636,14 @@ class LarchStepScan(object):
                     for trig in self.triggers:
                         if trig.wait_for_stop is not None:
                             trig.wait_for_stop()
-                dtimer.add('Pt %i : triggers fully stopped' % i)
+                    dtimer.add('Pt %i : triggers stopped(b)' % i)
                 [c.read() for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
                 # self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
-                if self.look_for_interrupts():
-                    break
-                dtimer.add('Pt %i : look for interrupts' % i)
 
                 # if a messenger exists, let it know this point has finished
                 self._messenger(cpt=self.cpt, npts=npts)
-                #if self.msg_thread is not None:
-                #    self.msg_thread.cpt = self.cpt
 
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
