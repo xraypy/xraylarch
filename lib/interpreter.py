@@ -794,11 +794,13 @@ class Interpreter:
                     except:
                         thismod = None
 
-                if thismod is not None:
+                    # we found a module with the right name,
+                    # so break out of loop, even if there was an error.
                     break
-            if len(self.error) > 0:
+
+            if len(self.error) > 0 and name in st_sys.modules:
                 st_sys.modules.pop(name)
-                return
+
             # or, if not a larch module, load as a regular python module
             if thismod is None and not islarch and name not in sys.modules:
                 try:
