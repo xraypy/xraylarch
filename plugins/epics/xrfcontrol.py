@@ -126,7 +126,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
   """
     me4_layout = ((0, 0), (1, 0), (1, 1), (0, 1))
 
-    def __init__(self, parent=None, _larch=None, prefix='13QX4:',
+    def __init__(self, parent=None, _larch=None, prefix=None,
                  det_type='ME-4',  amp_type='xspress3',
                  nmca=4, size=(725, 580),  title='Epics XRF Display',
                  output_title='XRF', **kws):
