@@ -50,6 +50,7 @@ from debugtime import DebugTimer
 use_plugin_path('epics')
 from xrf_detectors import Epics_MultiXMAP, Epics_Xspress3
 
+        
 class DetectorSelectDialog(wx.Dialog):
     """Connect to an Epics MCA detector
     Can be either XIA xMAP  or Quantum XSPress3
@@ -68,6 +69,7 @@ class DetectorSelectDialog(wx.Dialog):
             amp_type = self.amp_types[0]
         if det_type not in self.det_types:
             det_type = self.det_types[0]
+
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
         self.SetBackgroundColour((240, 240, 230))
@@ -412,6 +414,23 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                 counts    = 1e-4*np.ones(len(counts))
                 counts[0] = 2.0
             self.update_mca(counts, energy=energy)
+
+    def ShowROIStatus(self, left, right, name='', panel=0):
+        if left > right:
+            return
+        sum = self.ydata[left:right].sum()
+        dt = self.mca.real_time
+        roi_ave = self.roi_aves[panel]
+        roi_ave.update(sum)
+
+        nmsg, cmsg, rmsg = '', '', ''
+        if len(name) > 0:
+            nmsg = " %s" % name
+        cmsg = " Counts={:10,.0f}".format(sum)
+        rmsg = " CPS={:10,.1f}".format(roi_ave.get_cps())
+
+        self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
+
 
     def onSelectBkgDet(self, event=None, **kws):
         self.mca2 = None
