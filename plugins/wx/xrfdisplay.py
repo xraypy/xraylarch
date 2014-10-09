@@ -47,7 +47,7 @@ from wxutils import (SimpleText, EditableListBox, Font,
 
 from periodictable import PeriodicTablePanel
 
-from xrfdisplay_utils import (CalibrationFrame, ColorsFrame,
+from xrfdisplay_utils import (CalibrationFrame, ColorsFrame, ROI_Averager,
                               XrayLinesFrame, XRFDisplayConfig)
 
 from xrfdisplay_fitpeaks import FitSpectraFrame
@@ -106,6 +106,9 @@ class XRFDisplayFrame(wx.Frame):
                           title=title, size=size,
                           **kws)
         self.conf = XRFDisplayConfig()
+        # 1 ROI Averager per status line
+        self.roi_aves = [ROI_Averager(nsamples=11) for i in range(4)]
+        
         self.subframes = {}
         self.data = None
         self.gsexrmfile = gsexrmfile
@@ -271,7 +274,7 @@ class XRFDisplayFrame(wx.Frame):
         if self.selected_roi is not None:
             roi = self.selected_roi
             left, right = roi.left, roi.right
-            self.ShowROIStatus(left, right, name=roi.name)
+            self.ShowROIStatus(left, right, name=roi.name, panel=0)
             self.ShowROIPatch(left, right)
 
     def createPlotPanel(self):
@@ -617,6 +620,7 @@ class XRFDisplayFrame(wx.Frame):
             return
         sum = self.ydata[left:right].sum()
         dt = self.mca.real_time
+        self.roi_aves[panel].update(sum)
 
         nmsg, cmsg, rmsg = '', '', ''
         if len(name) > 0:
@@ -663,6 +667,8 @@ class XRFDisplayFrame(wx.Frame):
         if name is None or right == -1:
             return
 
+        [rave.clear() for rave in self.roi_aves]
+        
         self.ShowROIStatus(left, right, name=name)
         self.ShowROIPatch(left, right)
 
@@ -888,7 +894,7 @@ class XRFDisplayFrame(wx.Frame):
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.50, zorder=-5)
                 l.set_label(label)
-                dat = (label, e+1.e-15, "%.4f" % frac,
+                dat = (label, e, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
                 # dat = (label, "%.4f" % e, "%.4f" % frac,
                 #      "%s->%s" % (ilevel, flevel))

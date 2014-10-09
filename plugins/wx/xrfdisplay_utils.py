@@ -4,6 +4,8 @@ utilities for XRF display
 """
 import copy
 from functools import partial
+import time
+import numpy as np
 
 import wx
 import wx.lib.colourselect  as csel
@@ -388,49 +390,31 @@ class ROI_Averager():
 
        using a ring buffer using numpy arrays
     """
-
-    MAX_TIME = 604800.0  # 1 week
-    def __init__(self, roi_pv, reset_pv=None, nsamples=21):
-        self.pv = None
-        self.nsamples  = nsamples
-        self.time_offset = time.time()
-        self.set_pv(roi_pv)
-        if reset_pv is not None:
-            self.reset = PV(reset_pv, callback=self._onreset)
-
-    def clear(self):
+    def __init__(self, nsamples=11):
+        self.clear(nsamples = nsamples)
+        
+    def clear(self, nsamples=11):
+        self.nsamples = nsamples
         self.index = -1
         self.lastval = 0
-        self.data  = np.zeros(self.nsamples, dtype='i32')
-        self.times = np.ones(self.nsamples, dtype='f32') * 0.0
+        self.toffset = time.clock()
+        self.data  = np.zeros(self.nsamples, dtype='f32')
+        self.times = np.zeros(self.nsamples, dtype='f32')
 
-    def append(self, x):
-        "adds array x to ring buffer"
+    def append(self, value):
+        "adds value to ring buffer"
         idx = self.index = (self.index + 1) % self.data.size
-        # print 'append ', x, idx, self.data[idx], self.data[idx-1]
-        self.data[idx] = max(0, x - self.lastval)
-        self.last_val  = x
-        newtime = time.time() - self.time_offset
-        self.times[idx] =  newtime
-        if newtime > self.MAX_TIME:
-            self.times       -= self.MAX_TIME
-            self.time_offset += self.MAX_TIME
+        self.data[idx] = max(0, value - self.lastval)
+        self.lastval  = value
+        self.times[idx] =  time.clock() - self.toffset
 
-    def _onreset(self, pvname, value=None, **kws):
-        if value==1:
-            pass
-
-    def _onupdate(self, pvname=None, value=None, **kws):
+    def update(self, value):
         self.append(value)
 
-    def set_pv(self, pvname):
-        if self.pv is not None:
-            self.pv.clear_callbacks()
-            self.pv = None
-        self.clear()
-        self.pv = PV(pvname, callback=self._onupdate)
-
-    def average(self):
+    def get_mean(self):
+        return self.data.mean()
+    
+    def get_cps(self):
         return self.data.sum() / self.times.ptp()
 
 
