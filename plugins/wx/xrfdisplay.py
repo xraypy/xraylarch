@@ -264,32 +264,15 @@ class XRFDisplayFrame(wx.Frame):
 
         if (self.xmarker_left is not None and
             self.xmarker_right is not None):
-            sum = 0.0
-            if self.xmarker_left < self.xmarker_right:
-                sum = self.ydata[self.xmarker_left:self.xmarker_right].sum()
-            dt = self.mca.real_time
-            if dt is None or dt < 0:  dt = 1.0
-            fmt = "Counts={:10,.0f}  CPS={:10,.1f}".format
-            self.write_message(fmt(sum, sum/dt), panel=3)
+            self.ShowROIStatus(self.xmarker_left,
+                               self.xmarker_right,
+                               name='', panel=3)
 
         if self.selected_roi is not None:
             roi = self.selected_roi
             left, right = roi.left, roi.right
-            self.ShowROIStatus(roi)
-
-            try:
-                self.roi_patch.remove()
-            except:
-                pass
-
-            e = np.zeros(right-left+2)
-            r = np.ones(right-left+2)
-            e[1:-1] = self.mca.energy[left:right]
-            r[1:-1] = self.mca.counts[left:right]
-            e[0]  = e[1]
-            e[-1] = e[-2]
-            self.roi_patch  = axes.fill_between(e, r, zorder=-20,
-                                                color=self.conf.roi_fillcolor)
+            self.ShowROIStatus(left, right, name=roi.name)
+            self.ShowROIPatch(left, right)
 
     def createPlotPanel(self):
         """mca plot window"""
@@ -441,11 +424,12 @@ class XRFDisplayFrame(wx.Frame):
                 if col == 0: align = wx.ALIGN_CENTER
                 if col == 3: align = wx.ALIGN_LEFT
                 this.Alignment = this.Renderer.Alignment = align
-
+            #print xlines.Columns[1]
+            #print xlines.Columns[1].Renderer
+            
             xlines.SetMinSize((300, 240))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
                         self.onSelectXrayLine)
-
         # main layout
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(roipanel,            0, labstyle)
@@ -628,18 +612,36 @@ class XRFDisplayFrame(wx.Frame):
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
 
-    def ShowROIStatus(self, roi=None):
-        dt = self.mca.real_time
-        if roi is None or self.mca is None:
+    def ShowROIStatus(self, left, right, name='', panel=0):
+        if left > right:
             return
-        counts = roi.get_counts(self.mca.counts)
-        if dt is None or dt < 0:
-            msg = " {:s}: Counts={:10,.0f}".format(roi.name, counts)
-        else:
-            msg = " {:s}: Counts={:10,.0f}  CPS={:10,.1f}".format(roi.name,
-                                                                  counts,
-                                                                  counts/dt)
-        self.write_message(msg, panel=0)
+        sum = self.ydata[left:right].sum()
+        dt = self.mca.real_time
+
+        nmsg, cmsg, rmsg = '', '', ''
+        if len(name) > 0:
+            nmsg = " %s" % name
+        cmsg = " Counts={:10,.0f}".format(sum)
+        if dt is not None and dt > 1.e-9:
+            rmsg = " CPS={:10,.1f}".format(sum/dt)
+
+        self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
+
+
+    def ShowROIPatch(self, left, right):
+        try:
+            self.roi_patch.remove()
+        except:
+            pass
+
+        e = np.zeros(right-left+2)
+        r = np.ones(right-left+2)
+        e[1:-1] = self.mca.energy[left:right]
+        r[1:-1] = self.mca.counts[left:right]
+        e[0]  = e[1]
+        e[-1] = e[-2]
+        self.roi_patch = self.panel.axes.fill_between(e, r, zorder=-20,
+                                          color=self.conf.roi_fillcolor)
 
     def onROI(self, event=None, label=None):
         if label is None and event is not None:
@@ -661,25 +663,13 @@ class XRFDisplayFrame(wx.Frame):
         if name is None or right == -1:
             return
 
-        self.ShowROIStatus(roi)
+        self.ShowROIStatus(left, right, name=name)
+        self.ShowROIPatch(left, right)
 
-        try:
-            self.roi_patch.remove()
-        except:
-            pass
-
-        e = np.zeros(right-left+2)
-        r = np.ones(right-left+2)
-        e[1:-1] = self.mca.energy[left:right]
-        r[1:-1] = self.mca.counts[left:right]
-        e[0]    = e[1]
-        e[-1]   = e[-2]
         roi_msg1 = '[{:} : {:}]'.format(left, right)
         roi_msg2 = '[{:6.3f} : {:6.3f}]'.format(elo, ehi)
         roi_msg3 = ' {:6.3f} / {:6.3f} '.format((elo+ehi)/2., (ehi - elo))
 
-        fill = self.panel.axes.fill_between
-        self.roi_patch  = fill(e, r, color=self.conf.roi_fillcolor, zorder=-20)
         self.energy_for_zoom = (elo+ehi)/2.0
 
         self.wids['roi_msg1'].SetLabel(roi_msg1)
@@ -808,7 +798,7 @@ class XRFDisplayFrame(wx.Frame):
         except:
             pass
 
-        
+
         try:
             self.Destroy()
         except:
@@ -898,15 +888,17 @@ class XRFDisplayFrame(wx.Frame):
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.50, zorder=-5)
                 l.set_label(label)
-                dat = (label, "%.4f" % e, "%.4f" % frac,
+                dat = (label, e+1.e-15, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
+                # dat = (label, "%.4f" % e, "%.4f" % frac,
+                #      "%s->%s" % (ilevel, flevel))
                 self.wids['xray_linesdata'].append(e)
                 if xlines is not None:
                     xlines.AppendItem(dat)
 
                 self.major_markers.append(l)
                 if (self.energy_for_zoom is None and
-                    e > view_emin and e < view_emax):                
+                    e > view_emin and e < view_emax):
                     self.energy_for_zoom = e
 
         for label, eev, frac, ilevel, flevel in minors:
@@ -915,8 +907,12 @@ class XRFDisplayFrame(wx.Frame):
                 l = vline(e, color= self.conf.minor_elinecolor,
                           linewidth=1.25, zorder=-7)
                 l.set_label(label)
-                dat = (label, "%.4f" % e, "%.4f" % frac,
+
+                # dat = (label, "%.4f" % e, "%.4f" % frac,
+                #       "%s->%s" % (ilevel, flevel))
+                dat = (label,  e, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
+
                 self.wids['xray_linesdata'].append(e)
                 if xlines is not None:
                     xlines.AppendItem(dat)
@@ -979,7 +975,7 @@ class XRFDisplayFrame(wx.Frame):
         if self.y2data is not None:
             self.oplot(self.x2data, self.y2data)
 
-    def plotmca(self, mca, title=None, set_title=True, as_mca2=False, 
+    def plotmca(self, mca, title=None, set_title=True, as_mca2=False,
                 fullrange=False, init=False, **kws):
         if as_mca2:
             self.mca2 = mca
@@ -988,7 +984,7 @@ class XRFDisplayFrame(wx.Frame):
             self.mca = mca
             self.panel.conf.show_grid = False
 
-        if init: 
+        if init:
             self.xview_range = (min(self.mca.energy), max(self.mca.energy))
         else:
             self.xview_range = self.panel.axes.get_axes().get_xlim()
@@ -1067,13 +1063,19 @@ class XRFDisplayFrame(wx.Frame):
             ydat = np.ma.masked_less(ydat, 0)
 
         panel.plot(x, ydat, label='spectra',  **kwargs)
+       
+        self.unzoom_all()
         if yroi is not None and yroi.max() > 0:
             kwargs['color'] = self.conf.roi_color
             panel.oplot(x, yroi, label='roi', **kwargs)
 
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
         panel.cursor_mode = 'zoom'
+        
+        a, b, c, d = self._getlims()
+        self.panel.axes.set_xlim((c, d))        
         self.draw()
+
         panel.canvas.Thaw()
         panel.canvas.Refresh()
 
@@ -1218,7 +1220,6 @@ class XRFDisplayFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,event):
-        print 'CLOSE !!! '
         self.Destroy()
 
     def onReadFile(self, event=None):
