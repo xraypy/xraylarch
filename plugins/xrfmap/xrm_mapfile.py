@@ -215,13 +215,15 @@ class GSEXRM_MapRow:
         self.counts    = xmapdat.counts # [:]
         self.inpcounts = xmapdat.inputCounts[:]
         self.outcounts = xmapdat.outputCounts[:]
-        den = self.outcounts[:]*1.0000
-        den[np.where(den<1)] = 1.00
-        self.dtfactor  = (xmapdat.inputCounts)/den
+
         # times are extracted from the netcdf file as floats of microseconds
         # here we truncate to nearest microsecond (clock tick is 0.32 microseconds)
         self.livetime  = (xmapdat.liveTime[:]).astype('int')
         self.realtime  = (xmapdat.realTime[:]).astype('int')
+
+        dt_denom = xmapdat.outputCounts*xmapdat.liveTime
+        dt_denom[np.where(dt_denom < 1)] = 1.0
+        self.dtfactor  = xmapdat.inputCounts*xmapdat.realTime/dt_denom
 
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
