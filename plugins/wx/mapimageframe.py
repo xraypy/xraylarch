@@ -86,8 +86,9 @@ class MapImageFrame(ImageFrame):
         self.this_point = None
         self.rbbox = None
 
-    def display(self, map, det=None, xrmfile=None, **kws):
-
+    def display(self, map, det=None, xrmfile=None, xoff=0, yoff=0, **kws):
+        self.xoff = xoff
+        self.yoff = yoff
         self.det = det
         self.xrmfile = xrmfile
         self.map = map
@@ -330,6 +331,7 @@ class MapImageFrame(ImageFrame):
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
             self.lasso_callback(data=data, selected=selected, mask=mask,
+                                xoff=self.xoff, yoff=self.yoff,
                                 det=self.det, xrmfile=self.xrmfile, **kws)
 
     def CustomConfig(self, panel, sizer, irow):
