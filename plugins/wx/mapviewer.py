@@ -60,7 +60,7 @@ from wxmplot import PlotFrame
 
 from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
                      pack, Popup, Button, MenuItem, Choice, Check,
-                     GridPanel, FileSave)
+                     GridPanel, FileSave, HLine)
 
 import larch
 from larch.larchlib import read_workdir, save_workdir
@@ -328,16 +328,49 @@ class SimpleMapPanel(GridPanel):
                                action=partial(self.onShowMap, new=False))
         self.show_cor = Button(self, 'Map1 vs. Map2', size=(125, -1),
                                action=self.onShowCorrel)
-
+        
         self.AddManyText(('Detector', 'Map 1', 'Operator', 'Map 2'))
         self.AddMany((self.det, self.roi1, self.op, self.roi2), newrow=True)
 
         self.Add(self.cor,       dcol=2, newrow=True, style=LEFT)
-        self.Add(self.hotcols, dcol=2, style=LEFT)
+        self.Add(self.hotcols,   dcol=2, style=LEFT)
         self.Add(self.show_new,  dcol=2, newrow=True, style=LEFT)
         self.Add(self.show_old,  dcol=2,              style=LEFT)
         self.Add(self.show_cor,  dcol=2, newrow=True, style=LEFT)
+
+        fopts = dict(minval=-20000, precision=0, size=(70, -1))
+        self.lims = [FloatCtrl(self, value= 0, **fopts),
+                     FloatCtrl(self, value=-1, **fopts),
+                     FloatCtrl(self, value= 0, **fopts),
+                     FloatCtrl(self, value=-1, **fopts)]
+
+        for wid in self.lims: wid.Disable()
+                
+        self.limrange  = Check(self, default=False,
+                               label=' Limit Map Range to Pixel Range:',
+                               action=self.onLimitRange)        
+        self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
+        self.Add(self.limrange, dcol=4,   newrow=True, style=LEFT)
+        self.Add(SimpleText(self, 'X Range:'), dcol=1,
+                 newrow=True, style=LEFT)
+        self.Add(self.lims[0], dcol=1, style=LEFT)
+        self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
+        self.Add(self.lims[1], dcol=1, style=LEFT)
+        self.Add(SimpleText(self, 'Y Range:'), dcol=1,
+                 newrow=True, style=LEFT)
+        self.Add(self.lims[2], dcol=1, style=LEFT)
+        self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
+        self.Add(self.lims[3], dcol=1, style=LEFT)
+
         self.pack()
+
+    def onLimitRange(self, event=None):
+        if self.limrange.IsChecked():
+            for wid in self.lims:
+                wid.Enable()
+        else:
+            for wid in self.lims:
+                wid.Disable()
 
     def onClose(self):
         for p in self.plotframes:
@@ -371,14 +404,20 @@ class SimpleMapPanel(GridPanel):
         no_hotcols = self.hotcols.IsChecked()
         self.owner.no_hotcols = no_hotcols
         map1 = datafile.get_roimap(roiname1, det=det, no_hotcols=no_hotcols,
-                                   dtcorrect=dtcorrect).flatten()
+                                   dtcorrect=dtcorrect)
         map2 = datafile.get_roimap(roiname2, det=det, no_hotcols=no_hotcols,
-                                   dtcorrect=dtcorrect).flatten()
+                                   dtcorrect=dtcorrect)
+
+        if self.limrange.IsChecked():
+            lims = [wid.GetValue() for wid in self.lims]
+            map1 = map1[lims[2]:lims[3], lims[0]:lims[1]]
+            map2 = map2[lims[2]:lims[3], lims[0]:lims[1]]
 
         path, fname = os.path.split(datafile.filename)
         title ='%s: %s vs %s' %(fname, roiname2, roiname1)
         pframe = PlotFrame(title=title, output_title=title)
-        pframe.plot(map2, map1, xlabel=roiname2, ylabel=roiname1,
+        pframe.plot(map2.flatten(), map1.flatten(),
+                    xlabel=roiname2, ylabel=roiname1,
                     marker='o', markersize=4, linewidth=0)
         pframe.panel.cursor_mode = 'lasso'
         pframe.panel.lasso_callback = partial(self.onLasso, xrmfile=datafile)
@@ -387,9 +426,7 @@ class SimpleMapPanel(GridPanel):
         pframe.Raise()
         self.owner.plot_displays.append(pframe)
 
-
     def onShowMap(self, event=None, new=True):
-
         datafile  = self.owner.current_file
         det =self.det.GetStringSelection()
         if det == 'sum':
@@ -434,10 +471,22 @@ class SimpleMapPanel(GridPanel):
         title = '%s: %s' % (fname, title)
         info  = 'Intensity: [%g, %g]' %(map.min(), map.max())
 
+        xoff, yoff = 0, 0
+        if self.limrange.IsChecked():
+            nx, ny = map.shape
+            lims = [wid.GetValue() for wid in self.lims]
+            map = map[lims[2]:lims[3], lims[0]:lims[1]]
+            if y is not None:
+                y   = y[lims[2]:lims[3]]
+            if x is not None:
+                x   = x[lims[0]:lims[1]]
+            xoff, yoff = lims[0], lims[2]
+            
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=det)
         self.owner.display_map(map, title=title, info=info, x=x, y=y,
-                               det=det, xrmfile=datafile)
+                               xoff=xoff, yoff=yoff, det=det,
+                               xrmfile=datafile)
 
     def update_xrfmap(self, xrfmap):
         self.set_roi_choices(xrfmap)
@@ -479,8 +528,40 @@ class TriColorMapPanel(GridPanel):
         self.Add(self.show_new, dcol=2, newrow=True, style=LEFT)
         self.Add(self.show_old, dcol=2,              style=LEFT)
 
+        fopts = dict(minval=-1, precision=0, size=(70, -1))
+        self.lims = [FloatCtrl(self, value= 0, **fopts),
+                     FloatCtrl(self, value=-1, **fopts),
+                     FloatCtrl(self, value= 0, **fopts),
+                     FloatCtrl(self, value=-1, **fopts)]
+
+        for wid in self.lims: wid.Disable()
+                
+        self.limrange  = Check(self, default=False,
+                               label=' Limit Map Range to Pixel Range:',
+                               action=self.onLimitRange)        
+        self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
+        self.Add(self.limrange, dcol=4,   newrow=True, style=LEFT)
+        self.Add(SimpleText(self, 'X Range:'), dcol=1,
+                 newrow=True, style=LEFT)
+        self.Add(self.lims[0], dcol=1, style=LEFT)
+        self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
+        self.Add(self.lims[1], dcol=1, style=LEFT)
+        self.Add(SimpleText(self, 'Y Range:'), dcol=1,
+                 newrow=True, style=LEFT)
+        self.Add(self.lims[2], dcol=1, style=LEFT)
+        self.Add(SimpleText(self, ':'), dcol=1, style=LEFT)
+        self.Add(self.lims[3], dcol=1, style=LEFT)
+
         self.pack()
 
+    def onLimitRange(self, event=None):
+        if self.limrange.IsChecked():
+            for wid in self.lims:
+                wid.Enable()
+        else:
+            for wid in self.lims:
+                wid.Disable()
+            
     def onShowMap(self, event=None, new=True):
         """show 3 color map"""
         datafile = self.owner.current_file
@@ -516,7 +597,7 @@ class TriColorMapPanel(GridPanel):
         if i0 != '1':
             i0map = datafile.get_roimap(i0, det=det, no_hotcols=no_hotcols,
                                         dtcorrect=dtcorrect)
-
+           
         i0min = min(i0map[np.where(i0map>0)])
         if i0min < 1: i0min = 1.0
         i0map[np.where(i0map<i0min)] = i0min
@@ -537,6 +618,17 @@ class TriColorMapPanel(GridPanel):
             y = datafile.get_pos(1, mean=True)
         except:
             y = None
+
+        if self.limrange.IsChecked():
+            lims = [wid.GetValue() for wid in self.lims]
+            rmap = rmap[lims[2]:lims[3], lims[0]:lims[1]]
+            gmap = gmap[lims[2]:lims[3], lims[0]:lims[1]]
+            bmap = bmap[lims[2]:lims[3], lims[0]:lims[1]]
+            i0map = i0map[lims[2]:lims[3], lims[0]:lims[1]]
+            if y is not None:
+                y   = y[lims[2]:lims[3]]
+            if x is not None:
+                x   = x[lims[0]:lims[1]]
 
         map = np.array([rmap/i0map, gmap/i0map, bmap/i0map])
         map = map.swapaxes(0, 2).swapaxes(0, 1)
@@ -1094,15 +1186,27 @@ class MapViewerFrame(wx.Frame):
         # sizer.Add(self.area_sel, 0, wx.ALL|wx.EXPAND)
         pack(parent, sizer)
 
-    def get_mca_area(self, det, mask, xrmfile=None):
+    def get_mca_area(self, det, mask, xoff=0, yoff=0, xrmfile=None):
         if xrmfile is None:
             xrmfile = self.current_file
         aname = xrmfile.add_area(mask)
         self.sel_mca = xrmfile.get_mca_area(aname, det=det)
 
-    def lassoHandler(self, mask=None, det=None, xrmfile=None, **kws):
+    def lassoHandler(self, mask=None, det=None, xrmfile=None,
+                     xoff=0, yoff=0, **kws):
+        ny, nx, npos = xrmfile.xrfmap['positions/pos'].shape
+        # print 'lasso handler ', mask.shape, ny, nx
+        if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
+            ym, xm = mask.shape
+            tmask = np.zeros((ny, nx)).astype(bool)
+            for iy in range(ym):
+                tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
+            mask = tmask
+            # print 'shifted mask!'
+            
+        kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff)
         mca_thread = Thread(target=self.get_mca_area,
-                            args=(det, mask), kwargs={'xrmfile':xrmfile})
+                            args=(det,mask), kwargs=kwargs)
         mca_thread.start()
 
         self.show_XRFDisplay(xrmfile=xrmfile)
@@ -1171,7 +1275,7 @@ class MapViewerFrame(wx.Frame):
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None,
-                    det=None, subtitles=None, xrmfile=None):
+                    xoff=0, yoff=0, det=None, subtitles=None, xrmfile=None):
         """display a map in an available image display"""
         displayed = False
         lasso_cb = partial(self.lassoHandler, det=det, xrmfile=xrmfile)
@@ -1182,19 +1286,19 @@ class MapViewerFrame(wx.Frame):
         while not displayed:
             try:
                 imd = self.im_displays.pop()
-                imd.display(map, title=title, x=x, y=y,
+                imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                             subtitles=subtitles, det=det, xrmfile=xrmfile)
                 #for col, wid in imd.wid_subtitles.items():
                 #    wid.SetLabel("%s: %s" % (col.title(), subtitles[col]))
-                imd.lass_callback = lasso_cb
+                imd.lasso_callback = lasso_cb
                 displayed = True
             except IndexError:
                 imd = MapImageFrame(output_title=title,
                                     lasso_callback=lasso_cb,
                                     cursor_labels = self.cursor_menulabels,
                                     move_callback=self.onMoveToPixel)
-                imd.display(map, title=title, x=x, y=y, subtitles=subtitles,
-                            det=det, xrmfile=xrmfile)
+                imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
+                            subtitles=subtitles, det=det, xrmfile=xrmfile)
                 displayed = True
             except PyDeadObjectError:
                 displayed = False
