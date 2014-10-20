@@ -397,7 +397,7 @@ class ROI_Averager():
         self.nsamples = nsamples
         self.index = -1
         self.lastval = 0
-        self.toffset = time.clock()
+        self.toffset = time.time()
         self.data  =  np.zeros(self.nsamples, dtype='f32')
         self.times =  -np.ones(self.nsamples, dtype='f32')
 
@@ -406,7 +406,7 @@ class ROI_Averager():
         idx = self.index = (self.index + 1) % self.data.size
         self.data[idx] = max(0, value - self.lastval)
         self.lastval  = value
-        dt = time.clock() - self.toffset
+        dt = time.time() - self.toffset
         # avoid first time point
         if (idx == 0 and max(self.times) < 0): 
             dt = 0
