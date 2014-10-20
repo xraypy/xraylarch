@@ -1010,25 +1010,23 @@ def do_scan(scanname, nscans=None, comments='',
     scandb =  _larch.symtable._scan._scandb
     if nscans is not None:
         scandb.set_info('nscans', nscans)
+
     scan = scan_from_db(scanname, filename=filename,
                         _larch=_larch)
+    scan.comments = comments
     if scan.scantype == 'slew':
         return do_slewscan(scanname, comment=comments,
                            filename=filename, _larch=_larch)
     else:
-        scan.comments = comments
-        done = False
-        iscan = 0
-        while not done:
+        scans_completed = 0
+        nscans = int(scandb.get_info('nscans'))
+        abort  = scandb.get_info('request_abort', as_bool=True)        
+        while (scans_completed  < nscans) and not abort:
             scan.run()
             scans_completed += 1
-            try:
-                n_scans = int(scandb.get_info('nscans'))
-            except:
-                n_scans = 1
-            abort = scandb.get_info('request_abort', as_bool=True)
-            done =  abort or (scans_completed  >= n_scans)
-    return sca
+            nscans = int(scandb.get_info('nscans'))
+            abort  = scandb.get_info('request_abort', as_bool=True)
+        return scan
 
 @ValidateLarchPlugin
 def do_slewscan(scanname, comments='', filename='scan.001', _larch=None):
@@ -1042,6 +1040,7 @@ def do_slewscan(scanname, comments='', filename='scan.001', _larch=None):
                        filename=filename, _larch=_larch)
     else:
         scan.epics_slewscan(filename=filename)
+    return scan
 
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
