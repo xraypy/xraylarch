@@ -15,16 +15,29 @@ class debugtime(object):
         # print( msg)
         self.times.append((msg,time.time()))
 
-    def show(self):
-        m0,t0 = self.times[0]
+    def get_report(self):
+        m0, t0 = self.times[0]
         tlast= t0
-        print("# %s  %s " % (m0,time.ctime(t0)))
-        print("#----------------")
-        print("#       Message                       Total     Delta")
+        out = []
+        add = out.append
+        add("# %s  %s " % (m0,time.ctime(t0)))
+        add("#----------------")
+        add("#       Message                       Total     Delta")
         for m,t in self.times[1:]:
             tt = t-t0
             dt = t-tlast
             if len(m)<32:
                 m = m + ' '*(32-len(m))
-            print("  %32s    %.3f    %.3f" % (m,tt, dt))
+            add("  %32s    %.3f    %.3f" % (m,tt, dt))
             tlast = t
+        return "\n".join(out)
+
+    def show(self):
+        print(self.get_report())
+        
+    def save(self, fname='debugtimer.dat'):
+        dat = self.get_report()
+        with open(fname, 'w') as fh:
+            fh.write('%s\n' % dat)
+        
+            
