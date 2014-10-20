@@ -168,6 +168,7 @@ class ScanMessenger(threading.Thread):
         last_point = self.cpt
         t0 = time.time()
 
+
         while True:
             poll(MIN_POLL_TIME, 0.25)
             if self.cpt != last_point:
@@ -505,7 +506,6 @@ class LarchStepScan(object):
 
         self.datafile.write_data(breakpoint=0)
         self.filename =  self.datafile.filename
-
         dtimer.add('PRE: openend file')
         self.clear_data()
         if self.scandb is not None:
@@ -999,28 +999,17 @@ def connect_scandb(dbname=None, server='postgresql',
     _larch.symtable.set_symbol(SCANDB_NAME, scandb)
     return scandb
 
-@ValidateLarchPlugin
-def do_scan(scanname, nscans=1, comments='',
-            filename='scan.001', _larch=None):
-    """execute scan defined in ScanDB"""
-    # print 'Larch.do_scan ', scanname, nscans, filename
-    if _larch.symtable._scan._scandb is None:
-        print 'need to connect to scandb!'
-        return
-    scan = scan_from_db(scanname, filename=filename,
-                        _larch=_larch)
-    scan.comments = comments
-    scan.nscans = nscans
-    for i in range(nscans):
-        scan.run()
 
 @ValidateLarchPlugin
-def do_scan(scanname, nscans=1, comments='',
+def do_scan(scanname, nscans=None, comments='',
             filename='scan.001', _larch=None):
     """execute scan defined in ScanDB"""
     if _larch.symtable._scan._scandb is None:
         print 'need to connect to scandb!'
         return
+    scandb =  _larch.symtable._scan._scandb
+    if nscans is not None:
+        scandb.set_info('nscans', nscans)
     scan = scan_from_db(scanname, filename=filename,
                         _larch=_larch)
     if scan.scantype == 'slew':
@@ -1028,9 +1017,18 @@ def do_scan(scanname, nscans=1, comments='',
                            filename=filename, _larch=_larch)
     else:
         scan.comments = comments
-        scan.nscans = nscans
-        for i in range(nscans):
+        done = False
+        iscan = 0
+        while not done:
             scan.run()
+            scans_completed += 1
+            try:
+                n_scans = int(scandb.get_info('nscans'))
+            except:
+                n_scans = 1
+            abort = scandb.get_info('request_abort', as_bool=True)
+            done =  abort or (scans_completed  >= n_scans)
+    return sca
 
 @ValidateLarchPlugin
 def do_slewscan(scanname, comments='', filename='scan.001', _larch=None):
