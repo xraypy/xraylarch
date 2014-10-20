@@ -462,7 +462,7 @@ class MultiMcaDetector(DetectorMixin):
         self.dwelltime     = None
         self.extra_pvs     = None
         self._counter      = None
-        self._connect_args = dict(nmcas=nmcas, nrois=nrois, rois=roise,
+        self._connect_args = dict(nmcas=nmcas, nrois=nrois, rois=rois,
                                   search_all=search_all, use_net=use_net,
                                   use_unlabeled=use_unlabeled,
                                   use_full=use_full)
@@ -502,9 +502,9 @@ class Xspress3Trigger(Trigger):
     def __init__(self, prefix, mcs=None, value=1, label=None, **kws):
         Trigger.__init__(self, prefix, label=label, value=value,
                          mcs=mcs, **kws)
-        self.xsp3_start = PV(prefix + 'Acquire')
-        self.xsp3_erase = PV(prefix + 'ERASE')
-        self.xsp3_ison  = PV(prefix + 'Acquire_RBV')
+        self.xsp3_start  = PV(prefix + 'Acquire')
+        self.xsp3_erase  = PV(prefix + 'ERASE')
+        self.xsp3_ison   = PV(prefix + 'Acquire_RBV')
         self.xsp3_update = PV(prefix + 'UPDATE')
         self.mcs_start   = PV(mcs + 'EraseStart')
         self.mcs_status  = PV(mcs + 'Acquiring')
