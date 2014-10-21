@@ -1,3 +1,4 @@
+
 #!/usr/bin/env python
 MODDOC = """
 === Epics Scanning Functions for Larch ===
@@ -90,13 +91,14 @@ import numpy as np
 
 from datetime import timedelta
 
-from epics import PV, poll, caput, caget
+from epics  import PV, poll, caput, caget
+
 
 from larch import use_plugin_path, Group, ValidateLarchPlugin
 from larch.utils import debugtime
-use_plugin_path('epics')
 
-from epics_plugin import pv_units
+use_plugin_path('epics')
+from epics_plugin  import pv_units
 
 from detectors import Counter, DeviceCounter, Trigger, get_detector
 from datafile import ASCIIScanFile
@@ -202,6 +204,7 @@ class LarchStepScan(object):
         self.auto_increment = auto_increment
         self.filetype = 'ASCII'
         self.scantype = 'linear'
+
         self.verified = False
         self.abort = False
         self.pause = False
@@ -245,8 +248,7 @@ class LarchStepScan(object):
         "add simple counter"
         if isinstance(counter, (str, unicode)):
             counter = Counter(counter, label)
-        if (isinstance(counter, (Counter, DeviceCounter)) and
-            counter not in self.counters):
+        if counter not in self.counters:
             self.counters.append(counter)
         self.verified = False
 
@@ -254,8 +256,7 @@ class LarchStepScan(object):
         "add simple detector trigger"
         if isinstance(trigger, (str, unicode)):
             trigger = Trigger(trigger, label=label, value=value)
-        if (isinstance(trigger, Trigger) and
-            trigger not in self.triggers):
+        if trigger not in self.triggers:
             self.triggers.append(trigger)
         self.verified = False
 
@@ -381,12 +382,17 @@ class LarchStepScan(object):
         if cpt % self.message_points == 0:
             print msg
         self.set_info('scan_message', msg)
+
+    def publish_scandata(self):
+        "post scan data to db"
+        if self.scandb is None:
+            return
         for c in self.counters:
             name = getattr(c, 'db_label', None)
             if name is None:
-                name = fix_varname(c.label)
-                c.db_label = name
-            self.set_scandata(name, c.buff)
+                name = c.label
+            c.db_label = fix_varname(name)
+            self.scandb.set_scandata(c.db_label, c.buff)
 
     def set_error(self, msg):
         """set scan error message"""
@@ -401,7 +407,6 @@ class LarchStepScan(object):
             self.scandb.set_info(attr, value)
 
     def set_scandata(self, attr, value):
-        setattr(self._scangroup, attr, value)
         if self.scandb is not None:
             self.scandb.set_scandata(fix_varname(attr), value)
 
@@ -564,6 +569,7 @@ class LarchStepScan(object):
         ts_init = time.time()
         self.inittime = ts_init - ts_start
         dtimer.add('PRE: start scan')
+        # print 'Prescan done ', npts, self.abort
         while not self.abort:
             i += 1
             if i >= npts:
@@ -578,6 +584,10 @@ class LarchStepScan(object):
                         break
                 # move to next position, wait for moves to finish
                 [p.move_to_pos(i) for p in self.positioners]
+
+                # publish scan data while waiting for move to finish
+                self.publish_scandata()
+                dtimer.add('Pt %i : publish data' % i)
                 if self.dwelltime_varys:
                     for d in self.detectors:
                         d.set_dwelltime(self.dwelltime[i])
@@ -601,7 +611,7 @@ class LarchStepScan(object):
                 # start triggers, wait for them to finish
                 # print 'Trigger...'
                 [trig.start() for trig in self.triggers]
-                dtimer.add('Pt %i : triggers fired' % i)
+                dtimer.add('Pt %i : triggers fired, (%d)' % (i, len(self.triggers)))
                 t0 = time.time()
                 time.sleep(max(0.1, self.min_dwelltime/2.0))
                 while not (all([trig.isdone() for trig in self.triggers]) and
@@ -619,7 +629,7 @@ class LarchStepScan(object):
                     if trig.runtime < self.min_dwelltime / 2.0:
                         point_ok = False
 
-                    dtimer.add('Pt %i : triggers stopped(a)' % i)
+                    dtimer.add('Pt %i : triggers stopped(a) %s' % (i, repr(point_ok)))
                 if not point_ok:
                     point_ok = True
                     poll(5*MIN_POLL_TIME, 0.25)
@@ -636,20 +646,22 @@ class LarchStepScan(object):
                     for trig in self.triggers:
                         if trig.wait_for_stop is not None:
                             trig.wait_for_stop()
-                    dtimer.add('Pt %i : triggers stopped(b)' % i)
+                    dtimer.add('Pt %i : triggers stopped(b) %d' % (i, len(self.triggers)))
                 [c.read() for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
+                # print 'Read '
                 # self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
-
+                dtimer.add('Pt %i : added positions' % i)
                 # if a messenger exists, let it know this point has finished
                 self._messenger(cpt=self.cpt, npts=npts)
-
+                dtimer.add('Pt %i : sent message' % i)
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
                     self.at_break(breakpoint=i, clear=True)
                     if self.look_for_interrupts():
                         break
+
                 dtimer.add('Pt %i: done.' % i)
 
             except KeyboardInterrupt:
@@ -661,6 +673,7 @@ class LarchStepScan(object):
         # scan complete
         # return to original positions, write data
         dtimer.add('Post scan start')
+        self.publish_scandata()
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
         if self.look_for_interrupts():
@@ -958,8 +971,8 @@ def scan_from_json(text, filename='scan.001', _larch=None):
     rois = sdict.get('rois', None)
     for dpars in sdict['detectors']:
         dpars['rois'] = rois
-
         scan.add_detector(get_detector(**dpars))
+
     # extra counters (not-triggered things to count
     if 'counters' in sdict:
         for label, pvname  in sdict['counters']:
