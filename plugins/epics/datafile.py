@@ -224,11 +224,14 @@ class ASCIIScanFile(ScanFile):
     version = '2.0'
     def __init__(self, name=None, scan=None, comments=None,
                  auto_increment=True):
-        ScanFile.__init__(self, name=name, scan=scan)
-        if name is None:
-            self.filename = 'test.dat'
+        self.fh = None
+        self.scan = scan
         self.auto_increment = auto_increment
         self.comments = comments
+
+        self.filename = name
+        if name is None:
+            self.filename = 'test.dat'
 
     def write_lines(self, buff):
         "write array of text lines"
