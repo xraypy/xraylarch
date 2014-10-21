@@ -399,7 +399,7 @@ class ROI_Averager():
         self.lastval = 0
         self.toffset = time.time()
         self.data  =  np.zeros(self.nsamples, dtype='f32')
-        self.times =  -np.ones(self.nsamples, dtype='f32')
+        self.times = -np.ones(self.nsamples, dtype='f32')
 
     def append(self, value):
         "adds value to ring buffer"
@@ -421,7 +421,8 @@ class ROI_Averager():
     
     def get_cps(self):
         valid = np.where(self.times > 0)[0]
-        print 'GET CPS ', len(valid), self.data[valid], self.times[valid]
+        if len(valid) < 1 or  self.times[valid].ptp() < 0.5:
+            return 0
         return self.data[valid].sum() / self.times[valid].ptp()
-
+            
 
