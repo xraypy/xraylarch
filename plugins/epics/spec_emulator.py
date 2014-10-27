@@ -36,7 +36,7 @@ use_plugin_path('io')
 from fileutils import get_homedir, get_timestamp
 
 use_plugin_path('epics')
-from epics import PV, caget, poll
+
 from stepscan   import LarchStepScan
 from positioner import Positioner
 from detectors  import get_detector, Counter

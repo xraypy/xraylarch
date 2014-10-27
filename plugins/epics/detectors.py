@@ -5,7 +5,7 @@ Triggers, Counters, Detectors for Step Scan
 import time
 from numpy import ndarray
 
-from epics import PV, caget, caput, poll
+from epics import PV, get_pv, caget, caput, poll
 from epics.devices import Scaler, MCA, Struck
 from larch.utils.ordereddict import OrderedDict
 
@@ -44,7 +44,7 @@ Example usage:
     <read detector data>
     """
     def __init__(self, pvname, value=1, label=None, **kws):
-        self.pv  = PV(pvname)
+        self.pv  = get_pv(pvname)
         self._val = value
         self.done = False
         self._t0 = 0
@@ -80,7 +80,7 @@ class Counter(object):
     """simple scan counter object --
     a value that will be counted at each point in the scan"""
     def __init__(self, pvname, label=None, units=''):
-        self.pv  = PV(pvname)
+        self.pv  = get_pv(pvname)
         if label is None:
             label = pvname
         self.label = label
@@ -258,7 +258,7 @@ class MultiMcaCounter(DeviceCounter):
             for i in range(nrois):
                 for suf in ('NM', 'HI'):
                     pvname = '%s%s.R%i%s' % (prefix, mca, i, suf)
-                    pvs[pvname] = PV(pvname)
+                    pvs[pvname] = get_pv(pvname)
 
         poll()
         time.sleep(0.001)
@@ -360,7 +360,7 @@ class ScalerDetector(DetectorMixin):
         self.scaler = Scaler(prefix, nchan=nchan)
         self._counter = ScalerCounter(prefix, nchan=nchan,
                                       use_calc=use_calc)
-        self.dwelltime_pv = PV('%s.TP' % prefix)
+        self.dwelltime_pv = get_pv('%s.TP' % prefix)
         self.dwelltime    = None
         self.counters = self._counter.counters
         self.extra_pvs = [('Scaler.frequency', '%s.FREQ' % prefix),
@@ -388,7 +388,7 @@ class AreaDetector(DetectorMixin):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         DetectorMixin.__init__(self, prefix, **kws)
-        self.dwelltime_pv = PV('%scam1:AcquireTime' % prefix)
+        self.dwelltime_pv = get_pv('%scam1:AcquireTime' % prefix)
         self.dwelltime    = None
         self.file_plugin  = None
         self.counters = [Counter("%scam1:ArrayCounter_RBV" % prefix,
@@ -431,7 +431,7 @@ class McaDetector(DetectorMixin):
         nrois = int(nrois)
         DetectorMixin.__init__(self, prefix, **kws)
         self.mca = MCA(prefix)
-        self.dwelltime_pv = PV('%s.PRTM' % prefix)
+        self.dwelltime_pv = get_pv('%s.PRTM' % prefix)
         self.dwelltime    = None
         self.trigger = Trigger("%sEraseStart" % prefix)
         self._counter = McaCounter(prefix, nrois=nrois, rois=rois,
@@ -457,7 +457,7 @@ class MultiMcaDetector(DetectorMixin):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
         self.prefix        = prefix
-        self.dwelltime_pv  = PV('%sPresetReal' % prefix)
+        self.dwelltime_pv  = get_pv('%sPresetReal' % prefix)
         self.trigger       = Trigger("%sEraseStart" % prefix)
         self.dwelltime     = None
         self.extra_pvs     = None
@@ -502,12 +502,12 @@ class Xspress3Trigger(Trigger):
     def __init__(self, prefix, mcs=None, value=1, label=None, **kws):
         Trigger.__init__(self, prefix, label=label, value=value,
                          mcs=mcs, **kws)
-        self.xsp3_start  = PV(prefix + 'Acquire')
-        self.xsp3_erase  = PV(prefix + 'ERASE')
-        self.xsp3_ison   = PV(prefix + 'Acquire_RBV')
-        self.xsp3_update = PV(prefix + 'UPDATE')
-        self.mcs_start   = PV(mcs + 'EraseStart')
-        self.mcs_status  = PV(mcs + 'Acquiring')
+        self.xsp3_start  = get_pv(prefix + 'Acquire')
+        self.xsp3_erase  = get_pv(prefix + 'ERASE')
+        self.xsp3_ison   = get_pv(prefix + 'Acquire_RBV')
+        self.xsp3_update = get_pv(prefix + 'UPDATE')
+        self.mcs_start   = get_pv(mcs + 'EraseStart')
+        self.mcs_status  = get_pv(mcs + 'Acquiring')
         self.prefix = prefix
         self.mcs_prefix = mcs
         self._val = value
@@ -582,7 +582,7 @@ class Xspress3Detector(DetectorMixin):
         self.scaler_prefix = scaler
         self.pixeltime    = pixeltime
         if mcs is not None:
-            self.dwelltime_pv  = PV('%sPresetReal' % mcs)
+            self.dwelltime_pv  = get_pv('%sPresetReal' % mcs)
         self.dwelltime     = None
         self.trigger       = Xspress3Trigger(prefix, mcs=mcs)
         self.extra_pvs     = None
@@ -724,7 +724,7 @@ class Xspress3Counter(DeviceCounter):
         if mcs is not None:
             for imcs in range(nmcs):  # MCA arrays from MCS
                 mcapv = '%smca%i.VAL' % (mcs, 1+imcs)
-                pvs[mcapv] = PV(mcapv)
+                pvs[mcapv] = get_pv(mcapv)
 
         poll()
         time.sleep(0.01)

@@ -91,7 +91,7 @@ import numpy as np
 
 from datetime import timedelta
 
-from epics  import PV, poll, caput, caget
+from epics  import PV, get_pv, poll, caput, caget
 
 
 from larch import use_plugin_path, Group, ValidateLarchPlugin
@@ -268,7 +268,7 @@ class LarchStepScan(object):
             if isinstance(pvname, PV):
                 pv = pvname
             else:
-                pv = PV(pvname)
+                pv = get_pv(pvname)
 
             if (desc, pv) not in self.extra_pvs:
                 self.extra_pvs.append((desc, pv))

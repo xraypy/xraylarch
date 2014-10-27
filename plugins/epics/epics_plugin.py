@@ -39,7 +39,7 @@ else:
     def cainfo(pvname, print_out=True, _larch=None):
         return epics.cainfo(pvname, print_out=print_out)
     def PV(pvname, _larch=None, **kws):
-        return epics.PV(pvname, **kws)
+        return epics.get_pv(pvname, **kws)
 
     caget.__doc__ = epics.caget.__doc__
     caput.__doc__ = epics.caput.__doc__
