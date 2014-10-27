@@ -1174,7 +1174,10 @@ class GSEXRM_MapFile(object):
         span = abs(stop-start)
         self.npts = int(abs(step*1.01 + span)/step)
 
-        self.xrfdet_type = mapconf['xrf']['type'].lower()
+        try:
+            self.xrfdet_type = mapconf['xrf']['type'].lower()
+        except:
+            pass
 
         pos1 = scanconf['pos1']
         self.pos_addr = [pos1]
