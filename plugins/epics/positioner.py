@@ -3,7 +3,7 @@ Positioner for Step Scan
 """
 import time
 import numpy as np
-from epics import PV, caget
+from epics import PV, get_pv, caget
 
 class Positioner(object):
     """a positioner for a scan
@@ -16,7 +16,7 @@ class Positioner(object):
         if isinstance(pvname, PV):
             self.pv = pvname
         else:
-            self.pv = PV(pvname)
+            self.pv = get_pv(pvname)
         self.pv.connect()
         self.done = False
         self.units = units
