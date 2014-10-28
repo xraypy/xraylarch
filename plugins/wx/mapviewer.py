@@ -91,6 +91,8 @@ FILE_WILDCARDS = "X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*"
 
 # FILE_WILDCARDS = "X-ray Maps (*.0*)|*.0&"
 
+ICON_FILE = 'GSEMap.ico'
+
 NOT_OWNER_MSG = """The File
    '%s'
 appears to be open by another process.  Having two
@@ -1314,6 +1316,12 @@ class MapViewerFrame(wx.Frame):
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
         self.title.SetLabel('')
+        larchdir = larch.site_config.sys_larchdir
+        fico = os.path.join(larchdir, 'bin', ICON_FILE)
+        try:
+            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+        except:
+            pass
 
     def ShowFile(self, evt=None, filename=None,  **kws):
         if filename is None and evt is not None:
@@ -1397,15 +1405,15 @@ class MapViewerFrame(wx.Frame):
         save_workdir('gsemap.dat')
         dlg.Destroy()
 
-    def onAbout(self, evt=None):
-        about = """GSECARS X-ray Microprobe Map Viewer:
+    def onAbout(self, eventt=None):
+        msg = """GSECARS X-ray Microprobe Map Viewer:
 Matt Newville <newville @ cars.uchicago.edu>
+       
+   MapViewer version: %s
+   X-ray Larch version: %s
+        """  % (VERSION, larch.version.__version__)
 
-    MapViewer version: %s
-    X-ray Larch version: %s
-    """  % (VERSION, larch.version.__version__)
-        # larch.__version__
-        dlg = wx.MessageDialog(self, about, "About GSE XRM MapViewer",
+        dlg = wx.MessageDialog(self, msg, "About GSECARS MapViewer",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
