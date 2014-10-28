@@ -324,27 +324,29 @@ def _addplugin(plugin, _larch=None, **kws):
         req_file = os.path.abspath(os.path.join(ppath, PLUGINSREQ))
         if not os.path.exists(req_file):
             return True
-        with open(req_file, 'r') as fh:
-            for line in fh.readlines():
-                line = line[:-1]
-                if line.startswith('#'): continue
-                match = REQMATCH(line)
-                if match is not None:
-                    modname, cmp, req_version = match.groups()
+        if os.path.exists(req_file):
+            with open(req_file, 'r') as fh:
+                for line in fh.readlines():
+                    line = line[:-1]
+                    if line.startswith('#'):  continue
+                    match = REQMATCH(line)
+                    if match is None:
+                        continue
+                    ok = False
+                    modname, cmp, req_vers = match.groups()
                     try:
                         mod = __import__(modname)
-                        version = getattr(mod, '__version__', None)
-                        isok = False
-                        if   cmp == '>':  isok =  version > req_version
-                        elif cmp == '<':  isok =  version < req_version
-                        elif cmp == '>=': isok =  version >= req_version
-                        elif cmp == '<=': isok =  version <= req_version
-                        elif cmp == '==': isok =  version == req_version
-                        elif cmp == '=':  isok =  version == req_version
-                        elif cmp == '!=': isok =  version != req_version
+                        vers = getattr(mod, '__version__', None)
+                        if   cmp == '>':  ok = vers >  req_vers
+                        elif cmp == '<':  ok = vers <  req_vers
+                        elif cmp == '>=': ok = vers >= req_vers
+                        elif cmp == '<=': ok = vers <= req_vers
+                        elif cmp == '==': ok = vers == req_vers
+                        elif cmp == '=':  ok = vers == req_vers
+                        elif cmp == '!=': ok = vers != req_vers
                     except:
-                        isok = False
-                    if not isok:
+                        ok = False
+                    if not ok:
                         return False
         return True
 
