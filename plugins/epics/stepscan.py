@@ -98,7 +98,6 @@ from larch import use_plugin_path, Group, ValidateLarchPlugin
 from larch.utils import debugtime
 
 use_plugin_path('epics')
-from epics_plugin  import pv_units
 
 from detectors import Counter, DeviceCounter, Trigger, get_detector
 from datafile import ASCIIScanFile
@@ -417,7 +416,11 @@ class LarchStepScan(object):
         names = []
         npts = len(self.positioners[0].array)
         for p in self.positioners:
-            units = pv_units(p.pv, 'unknown')
+            try:
+                units = p.pv.units
+            except:
+                units = 'unknown'
+
             name = fix_varname(p.label)
             if name in names:
                 name += '_2'
@@ -427,7 +430,11 @@ class LarchStepScan(object):
                                          units=units, notes='positioner')
                 names.append(name)
         for c in self.counters:
-            units = pv_units(c.pv, 'counts')
+            try:
+                units = c.pv.units
+            except:
+                units = 'counts'
+            
             name = fix_varname(c.label)
             if name in names:
                 name += '_2'
