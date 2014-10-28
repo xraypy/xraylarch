@@ -120,6 +120,11 @@ mod_dir = os.path.join(share_basedir, 'modules')
 modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
 data_files.append((mod_dir, modfiles))
 
+icofiles = glob.glob('bin/*.ico') 
+ico_dir = os.path.join(share_basedir, 'bin')
+data_files.append((ico_dir, icofiles))
+print( 'MODFILES ',  ico_dir, icofiles)
+
 #dlls
 dll_maindir = os.path.join(share_basedir, 'dlls')
 archs = []
