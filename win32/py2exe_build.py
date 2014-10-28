@@ -18,6 +18,7 @@ import sys
 import os
 import shutil
 import numpy
+import numpy.oldnumeric
 import scipy
 import matplotlib
 import h5py
@@ -28,6 +29,7 @@ import ctypes
 import ctypes.util
 from numpy import sort
 
+import scipy.lib.six
 import scipy.io.netcdf
 from scipy.io.netcdf import netcdf_file
 
@@ -37,6 +39,8 @@ from scipy.special import _ufuncs, _ufuncs_cxx
 import scipy.constants
 
 loadlib =  ctypes.windll.LoadLibrary
+
+x = xrange(10)
 
 # larch library bits...
 import larch
@@ -133,17 +137,28 @@ py2exe_opts = {'optimize':1,
                'includes': ['ConfigParser', 'Image', 'ctypes',
                             'larch', 'larch.builtins', 
                             'epics', 'epics.devices', 'epics.wx', 
-                            'fpformat', 'h5py',
-                            'h5py._objects', 'h5py._proxy', 'h5py.defs',
-                            'h5py.utils', 'matplotlib', 'numpy', 'scipy',
-                            'scipy.constants', 'scipy.fftpack',
+                            'fpformat',
+                            'h5py', 'h5py._objects', 'h5py._proxy',
+                            'h5py.defs', 'h5py.utils',
+                            'matplotlib',
+                            'numpy', 'numpy.oldnumeric',
+                            'scipy',
+                            'scipy.lib', 
+                            'scipy.lib.six', 
+                            'scipy.constants',
+                            'scipy.fftpack',
                             'scipy.sparse',
+                            # 'scipy.sparse.compressed',
+                            # 'scipy.sparse.sparsetools',
                             'scipy.sparse.csgraph',
                             'scipy.sparse.csgraph._validation',
                             'scipy.special._ufuncs_cxx',
                             'scipy.io.matlab.mio5_utils',
-                            'scipy.io.matlab.streams', 'scipy.io.netcdf',
-                            'scipy.optimize', 'scipy.signal', 'skimage',
+                            'scipy.io.matlab.streams',
+                            'scipy.io.netcdf',
+                            'scipy.optimize',
+                            'scipy.signal',
+                            'skimage',
                             'skimage.exposure', 'wxutils', 'sqlalchemy',
                             'sqlalchemy.dialects.sqlite', 'sqlalchemy.orm',
                             'sqlalchemy.pool', 'sqlite3', 'wx', 'wx._core',
