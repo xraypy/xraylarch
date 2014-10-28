@@ -122,19 +122,20 @@ style_xml = """
 """
 
 windows_apps = [{'script': '../bin/larch_gui',
-                 'icon_resources': [(0, 'larch.ico')],
+                 'icon_resources': [(0, '../bin/larch.ico')],
                  # 'other_resources': [(24, 1, style_xml)],
                  },
                 {'script': '../bin/GSE_MapViewer',
-                 'icon_resources': [(0, 'GSEMap.ico')],
+                 'icon_resources': [(0, '../bin/GSEMap.ico')],
                  # 'other_resources': [(24, 1, style_xml)],
                  },
                 {'script': '../bin/EpicsXRFDisplay',
-                 'icon_resources': [(0, 'ptable.ico')],
+                 'icon_resources': [(0, '../bin/ptable.ico')],
                  # 'other_resources': [(24, 1, style_xml)],
                  },
                 ]
-console_apps = [{'script': '../bin/larch',         'icon_resources': [(0, 'larch.ico')]}]
+console_apps = [{'script': '../bin/larch',
+                 'icon_resources': [(0, '../bin/larch.ico')]}]
 
 
 py2exe_opts = {'optimize':1,
