@@ -17,7 +17,7 @@ Needed Visualizations:
          lasso in correlations:  show XRF spectra, enhance map points
 """
 
-__version__ = '7 (28-March-2014)'
+VERSION = '8 (28-October-2014)'
 
 import os
 import sys
@@ -1362,8 +1362,9 @@ class MapViewerFrame(wx.Frame):
                   "Quit program", self.onClose)
 
         hmenu = wx.Menu()
-        MenuItem(self, hmenu, 'About', 'About MapViewer', self.onAbout)
-
+        ID_ABOUT = wx.NewId()
+        hmenu.Append(ID_ABOUT, "&About", "About GSECARS MapViewer")
+        self.Bind(wx.EVT_MENU, self.onAbout, id=ID_ABOUT)
 
         self.menubar.Append(fmenu, "&File")
         self.menubar.Append(hmenu, "&Help")
@@ -1396,13 +1397,14 @@ class MapViewerFrame(wx.Frame):
         save_workdir('gsemap.dat')
         dlg.Destroy()
 
-    def onAbout(self, evt):
+    def onAbout(self, evt=None):
         about = """GSECARS X-ray Microprobe Map Viewer:
 Matt Newville <newville @ cars.uchicago.edu>
-    MapViewer version: %s
-    Built with X-ray Larch version: %s
-    """  % (__version__, larch.__version__)
 
+    MapViewer version: %s
+    X-ray Larch version: %s
+    """  % (VERSION, larch.version.__version__)
+        # larch.__version__
         dlg = wx.MessageDialog(self, about, "About GSE XRM MapViewer",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
