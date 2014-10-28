@@ -61,7 +61,7 @@ except ImportError:
 
 
 extra_files = ['inno_setup.iss', '../COPYING', '../README.txt',
-               'GSEMap.ico', 'larch.ico', 'ptable.ico']
+               '../bin/GSEMap.ico', '../bin/larch.ico', '../bin/ptable.ico']
 scipy_dlls = ['lib/site-packages/scipy/optimize/minpack2.pyd',
               'lib/site-packages/scipy/interpolate/dftipack.pyd',
               'lib/site-packages/scipy/integrate/_quadpack.pyd',
