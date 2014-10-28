@@ -28,6 +28,8 @@ BANNER = """%s
          '%i.%i.%i' % sys.version_info[:3],
          numpy.__version__, wx.__version__, header)
 
+ICON_FILE = 'larch.ico'
+
 def makeColorPanel(parent, color):
     p = wx.Panel(parent, -1)
     p.SetBackgroundColour(color)
@@ -57,8 +59,10 @@ class LarchWxShell(object):
         # self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
         self.SetPrompt()
+
         for fname in larch.site_config.init_files:
             self.execute("run('%s')" % fname)
+
 
     def onUpdate(self, event=None):
         symtable = self.symtable
@@ -162,6 +166,13 @@ class LarchFrame(wx.Frame):
         else:
             self.Bind(wx.EVT_CLOSE,  self.onClose)            
         #self.timer.Start(200)
+        larchdir = larch.site_config.sys_larchdir
+        fico = os.path.join(larchdir, 'bin', ICON_FILE)
+        try:
+            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+        except:
+            pass
+
 
     def InputPanel(self, parent):
         panel = wx.Panel(parent, -1)
