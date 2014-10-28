@@ -31,7 +31,7 @@ try:
 except:
     pass
 
-from larch import Interpreter, use_plugin_path
+from larch import Interpreter, use_plugin_path, site_config
 
 use_plugin_path('math')
 from mathutils import index_of
@@ -59,6 +59,8 @@ FILE_ALREADY_READ = """The File
    '%s'
 has already been read.
 """
+
+ICON_FILE = 'ptable.ico'
 
 def txt(panel, label, size=75, colour=None, font=None, style=None):
     if style is None:
@@ -95,6 +97,7 @@ class XRFDisplayFrame(wx.Frame):
     _about = """XRF Spectral Viewer
   Matt Newville <newville @ cars.uchicago.edu>
   """
+    main_title = 'XRF Display'
     def __init__(self, _larch=None, parent=None, gsexrmfile=None,
                  size=(725, 450), axissize=None, axisbg=None,
                  title='XRF Display', exit_callback=None,
@@ -143,7 +146,7 @@ class XRFDisplayFrame(wx.Frame):
         self.highlight_xrayline = None
         self.cursor_markers = [None, None]
         self.ylog_scale = True
-        self.SetTitle(title)
+        self.SetTitle("%s: %s " % (self.main_title, title))
 
         self._menus = []
 
@@ -479,6 +482,13 @@ class XRFDisplayFrame(wx.Frame):
             symtab.set_symbol('_sys.wx.wxapp', wx.GetApp())
         if not symtab.has_symbol('_sys.wx.parent'):
             symtab.set_symbol('_sys.wx.parent', self)
+
+        larchdir = site_config.sys_larchdir
+        fico = os.path.join(larchdir, 'bin', ICON_FILE)
+        try:
+            self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
+        except:
+            pass
 
     def _getlims(self):
         emin, emax = self.panel.axes.get_xlim()

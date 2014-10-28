@@ -127,7 +127,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
   Matt Newville <newville @ cars.uchicago.edu>
   """
     me4_layout = ((0, 0), (1, 0), (1, 1), (0, 1))
-
+    main_title = 'Epics XRF Control'
     def __init__(self, parent=None, _larch=None, prefix=None,
                  det_type='ME-4',  amp_type='xspress3',
                  nmca=4, size=(725, 580),  title='Epics XRF Display',
@@ -235,7 +235,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             self.wids['roilist'].EnsureVisible(i)
             self.onROI(label=roiname)
 
-        self.SetTitle(title)
+        self.SetTitle("%s: %s" % (self.main_title, title))
         self.needs_newplot = False
 
     def onSaveROIs(self, event=None, **kws):
@@ -448,7 +448,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             title = "{:s}  Background: MCA{:d}".format(title, self.det_back)
             try:
                 self.oplot(e, c)
-                self.SetTitle(title)
+                self.SetTitle("%s: %s" % (self.main_title, title))
             except ValueError:
                 pass
         self.needs_newplot = False

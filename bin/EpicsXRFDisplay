@@ -2,12 +2,13 @@
 """
 GSECARS Epics XRF Display App 
 """
-import os
-import sys
+import os, sys
 import larch
+
 larch.use_plugin_path('epics')
 
 from xrfcontrol import EpicsXRFApp
+
 os.chdir(larch.site_config.home_dir)
 
 EpicsXRFApp().MainLoop()
