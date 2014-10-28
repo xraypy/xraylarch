@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>3.5. Tutorial: Dealing With Errors &mdash; larch 0.9.23 documentation</title>
+    <title>4.5. Tutorial: Dealing With Errors &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,29 +25,46 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="up" title="3. Larch Tutorial" href="index.html" />
-    <link rel="next" title="3.6. Tutorial: Writing Functions or Procedures" href="procedures.html" />
-    <link rel="prev" title="3.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="up" title="4. Larch Tutorial" href="index.html" />
+    <link rel="next" title="4.6. Tutorial: Writing Functions or Procedures" href="procedures.html" />
+    <link rel="prev" title="4.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="procedures.html" title="3.6. Tutorial: Writing Functions or Procedures"
+          <a href="procedures.html" title="4.6. Tutorial: Writing Functions or Procedures"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="flow.html" title="3.4. Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="4.4. Tutorial: Conditional Execution and Flow Control"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -80,21 +95,21 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3.5. Tutorial: Dealing With Errors</a><ul>
-<li><a class="reference internal" href="#syntax-errors">3.5.1. Syntax Errors</a></li>
-<li><a class="reference internal" href="#exceptions">3.5.2. Exceptions</a></li>
-<li><a class="reference internal" href="#try-and-except">3.5.3. Try and Except</a></li>
-<li><a class="reference internal" href="#raising-your-own-exceptions">3.5.4. Raising your own exceptions</a></li>
+<li><a class="reference internal" href="#">4.5. Tutorial: Dealing With Errors</a><ul>
+<li><a class="reference internal" href="#syntax-errors">4.5.1. Syntax Errors</a></li>
+<li><a class="reference internal" href="#exceptions">4.5.2. Exceptions</a></li>
+<li><a class="reference internal" href="#try-and-except">4.5.3. Try and Except</a></li>
+<li><a class="reference internal" href="#raising-your-own-exceptions">4.5.4. Raising your own exceptions</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="flow.html"
-                        title="previous chapter">3.4. Tutorial: Conditional Execution and Flow Control</a></p>
+                        title="previous chapter">4.4. Tutorial: Conditional Execution and Flow Control</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="procedures.html"
-                        title="next chapter">3.6. Tutorial: Writing Functions or Procedures</a></p>
+                        title="next chapter">4.6. Tutorial: Writing Functions or Procedures</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/errors.txt"
@@ -122,12 +137,12 @@
           <div class="body">
             
   <div class="section" id="tutorial-dealing-with-errors">
-<h1>3.5. Tutorial: Dealing With Errors<a class="headerlink" href="#tutorial-dealing-with-errors" title="Permalink to this headline">¶</a></h1>
+<h1>4.5. Tutorial: Dealing With Errors<a class="headerlink" href="#tutorial-dealing-with-errors" title="Permalink to this headline">¶</a></h1>
 <p>When an error exists in the syntax of your script, or an error happens when
 running your script, an <em>Error</em> or <em>Exception</em> is generated, and the
 execution of your script is stopped.</p>
 <div class="section" id="syntax-errors">
-<h2>3.5.1. Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
+<h2>4.5.1. Syntax Errors<a class="headerlink" href="#syntax-errors" title="Permalink to this headline">¶</a></h2>
 <p>Syntax errors result from incomplete or ill-formed larch syntax.  For
 example:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; x = 3 +
@@ -148,7 +163,7 @@ form, then execute that intermediate form), syntax errors are sometimes
 referred to as a parsing errors.</p>
 </div>
 <div class="section" id="exceptions">
-<h2>3.5.2. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
+<h2>4.5.2. Exceptions<a class="headerlink" href="#exceptions" title="Permalink to this headline">¶</a></h2>
 <p>Even if the syntax of your script is correct, the logic might not be.  In addition,
 even if the logic is correct for most cases, it might not be correct for
 all.  For example, certain values might cause an error run time:</p>
@@ -188,7 +203,7 @@ modern computer languages, and Larch has this capability with
 its <strong>try</strong> and <strong>except</strong> statements.</p>
 </div>
 <div class="section" id="try-and-except">
-<h2>3.5.3. Try and Except<a class="headerlink" href="#try-and-except" title="Permalink to this headline">¶</a></h2>
+<h2>4.5.3. Try and Except<a class="headerlink" href="#try-and-except" title="Permalink to this headline">¶</a></h2>
 <p>The <strong>try</strong> statement will execute a block of code and look for certain
 types of exceptions.  One or more <strong>except</strong> statements can be added to
 specify blocks of code to execute if the specified exception occurs.
@@ -243,7 +258,7 @@ inherited from Python.   See the standard Python documentation for more
 details.</p>
 </div>
 <div class="section" id="raising-your-own-exceptions">
-<h2>3.5.4. Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Permalink to this headline">¶</a></h2>
+<h2>4.5.4. Raising your own exceptions<a class="headerlink" href="#raising-your-own-exceptions" title="Permalink to this headline">¶</a></h2>
 <p>In certain cases, you may want to cause an exception to occur.  This need is
 most likely to happen when writing your own procedures, and want to ensure
 that the input arguments can be handled correctly.</p>
@@ -268,28 +283,25 @@ be &quot;raising an exception&quot;:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="procedures.html" title="3.6. Tutorial: Writing Functions or Procedures"
+          <a href="procedures.html" title="4.6. Tutorial: Writing Functions or Procedures"
              >next</a> |</li>
         <li class="right" >
-          <a href="flow.html" title="3.4. Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="4.4. Tutorial: Conditional Execution and Flow Control"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

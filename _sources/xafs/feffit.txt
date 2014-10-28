@@ -172,35 +172,39 @@ The Feffit functions in Larch
 
 The function :func:`feffit` is the principle function to do the fit of a
 set of Feff paths to XAFS spectra.  This essentially runs
-:func:`_math.minimize` with a parameter group, but with a built-in
-objective function to calculate the fit residual.  This built-in objective
-function calculates the residual as the difference of model and
-experimental :math:`\chi(k)` for a list of *Datasets*.  Here, a *Feffit
-Dataset* is an important concept that will allow us to easily extend
-modeling to multiple data sets.
+:func:`_math.minimize` with a parameter group holding all the variable and
+constrained parameters, and with a built-in objective function to calculate
+the fit residual.  This objective function defines the residual as the
+difference of model and experimental :math:`\chi(k)` for a list of
+*Datasets*.  Here, a *Feffit Dataset* is an important concept that will
+allow us to easily extend modeling to multiple data sets.
 
-A *Feffit Dataset* has three principle components.  First, it has an
+
+While conceptually fairly simple, the approach is quite general and
+flexible, and the level of flexibility can sometimes be daunting.  A
+*Feffit Dataset* has three principle components.  First, it has an
 experimental data, :math:`\chi(k)`.  Second, it has a list of Feff paths --
-:func:`ff2chi` will be used to calculate the model :math:`\chi(k)`.  Third,
-it has a *Feffit Transform* group which holds the Fourier transform and
-fitting ranges to select how the data and model are to be compared.  In
-addition, a fit has a single parameter group, holding all the variable and
-constrained parameters used by all the paths and data sets in a fit.
-
-To be clear, the Path Parameters for all Feff Paths in the fits should be written in terms of
-variable parameters help in a single parameter group.
+that will be used to calculate the model :math:`\chi(k)` (using the same
+calculation as used by :func:`ff2chi`).  Third, it has a *Feffit Transform*
+group which holds the Fourier transform and fitting ranges to select how
+the data and model are to be compared.  Since the fit is done with a single
+group holding all the parameters, it is important that the Path Parameters
+for all Feff Paths used in the fits should be written in terms of variable
+parameters in a single parameter group.
 
 
 There are then 3 principle functions for setting up and executing
 :func:`feffit`:
 
   1. :func:`feffit_transform` is used to create a Transform group,
-     which holds the set of Fourier transform parameters.
+     which holds the set of Fourier transform parameters, fitting ranges,
+     and *space* in which the data and sum of paths are to be compared.
+
 
   2. :func:`feffit_dataset` is used to create a Dataset group, which
      consists of the three components described above:
 
-     a. a group holding experimental data (``k`` and ``chi``).
+     a. a group holding experimental data (arrays holding ``k`` and ``chi``).
      b. a list of Feff paths.
      c. a Transform group.
 
@@ -208,8 +212,8 @@ There are then 3 principle functions for setting up and executing
      the variable and constrained Parameters for the fit, and a dataset
      or list of datasets groups.
 
-:func:`feffit_transform`
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+:func:`feffit_transform` and the Feffit Transform Group
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ..  function:: feffit_transform(fitspace='r', kmin=0, kmax=20, kweight=2, ...)
 
@@ -223,20 +227,56 @@ There are then 3 principle functions for setting up and executing
     :param window:   name of window type ('kaiser').
     :param nfft:     value to use for :math:`N_{\rm fft}` (2048).
     :param kstep:    value to use for :math:`\delta{k}` (0.05).
-    :param kweight:  exponent for weighting spectra by :math:`k^{\rm kweight}` (2).
+    :param kweight:  exponent(s) for weighting spectra by :math:`k^{\rm kweight}` (2).
     :param rmin:     starting *R* for Fit Range and/or reverse FT Window (0).
     :param rmax:     ending *R* for Fit Range and/or reverse FT Window (10).
     :param dr:       tapering parameter for reverse FT Window 0.
     :param rwindow:  name of window type for reverse FT Window ('kaiser').
     :returns:        a Feffit Transform group
 
-    The parameters stored in the returned group object will be used to
-    control how the fit is performed.  That is, the Transform group
-    determines the Fourier transform parameters and fit space for a fit.
-    All the arguments passed in will be stored as variables of the same
-    name in the Feffit Transform group.  Additional variables may
-    be stored in this group as well, once the group has been
-    used to do some transforms.
+The parameters stored in the returned Feffit Transform Group will be used
+to control how the fit is performed, including Fourier transform parameters
+and fit space for a fit.  All the arguments passed in will be stored as
+variables of the same name in the Feffit Transform group.  Additional
+variables may be stored in this group as well.
+
+The returned Feffit Transform Group will have members listed in
+:ref:`Feffit Transform Group Members <xafs-feffit_transform_table>`.
+
+.. index:: Feffit Transform Group Members
+.. _xafs-feffit_transform_table:
+
+    Table of Feffit Transform Group Memebers Most of these parameters
+    follow the conventions for :func:`xftf` in section on :ref:`Fourier
+    Transforms for XAFS <xafs-ft_sec>`.
+
+    ================= =====================================================================
+     member name        description
+    ================= =====================================================================
+      fitspace          space used for fitting -- one of ``'k'``, ``'r'``, or ``'q'`` (``'r'``)
+      kmin              starting :math:`k` for FT Window (0).
+      kmax              ending :math:`k` for FT Window  (20).
+      kweight           exponent(s) for weighting spectra by :math:`k^{\rm kweight}` (2).
+      dk                tapering parameter for FT Window  (4).
+      dk2               second tapering parameter for FT Window (``None`` -- equal to ``dk``).
+      window            name of window type for FT (``'kaiser'``).
+      kstep             value to use for :math:`\delta{k}` (0.05).
+      nfft              value to use for :math:`N_{\rm fft}` (2048).
+      rmin              starting :math:`R` for back FT Window (0).
+      rmax              ending :math:`R` for back FT Window (10).
+      dr                tapering parameter for back FT Window (0).
+      dr2               second tapering parameter for back FT Window (``None`` -- equal to ``dr``).
+      rwindow           name of window type for back FT (``'hanning'``).
+    ================= =====================================================================
+
+As an important note, ``kweight`` can either be a single integer value, or
+a list or tuple of integers.  Supplying more than one value will have the
+effect of having **all** the kweights used in the fit.  If multiple
+:math:`k` weights are provided, they can be in any order -- ``kweight=(1,
+2, 3)`` will produce the same result as ``kweight=(3, 1, 2)``.  Some
+functions (such as generating output arrays for plotting) may need to
+assume 1 :math:`k` weight -- these will take the first one listed.
+
 
 
 :func:`feffit_dataset`

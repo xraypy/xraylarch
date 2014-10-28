@@ -1,7 +1,7 @@
 :orphan:
 
 =================================================
-Table of Contents 
+Table of Contents
 =================================================
 
 .. toctree::
@@ -9,6 +9,7 @@ Table of Contents
    :numbered:
 
    downloads/index.rst
+   community.rst
    overview/index.rst
    tutorial/index.rst
    data/index.rst

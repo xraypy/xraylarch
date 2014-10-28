@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Larch &mdash; larch 0.9.23 documentation</title>
+    <title>Larch &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,27 +25,44 @@
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="#" />
+    <link rel="top" title="larch 0.9.24 documentation" href="#" />
     <link rel="next" title="1. Downloading and Installation" href="downloads/index.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="#">
-       <img src="_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="#" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="#">
+         <img src="_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="#" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="#" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="tutorial/index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
         <li class="right" >
           <a href="downloads/index.html" title="1. Downloading and Installation"
              accesskey="N">next</a> |</li>
-   <li>[<a href="contents.html">contents</a>|</li>
-   <li><a href="downloads/index.html">downloads</a>|</li>
-   <li><a href="tutorial/index.html">tutorial</a>|</li>
-   <li><a href="data/index.html">data</a>|</li>
-   <li><a href="plotting/index.html">plot</a>|</li>
-   <li><a href="fitting/index.html">fit</a>|</li>
-   <li><a href="xafs/index.html">XAFS</a>|</li>
-   <li><a href="xray/index.html">Xray Data</a>|</li>
-   <li><a href="xrf/index.html">XRF</a>|</li>
-   <li><a href="devel/index.html">devel</a>]</li>
+   <li>[<a href="data/index.html">Reading Data</a>|</li>
+   <li><a href="plotting/index.html">Plotting</a>|</li>
+   <li><a href="fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="xray/index.html">Xray Databases</a>|</li>
+   <li><a href="xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="devel/index.html">Scripting</a>]</li>
  
       </ul>
     </div>
 
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper"><h3>Downloads</h3>
-<p>Current version: <b>0.9.23</b></p>
+<p>Current version: <b>0.9.24</b></p>
 
 <p> Downloads:
 <ul>
@@ -147,15 +162,16 @@ data handling, and general-purpose data modeling.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="downloads/index.html">1. Downloading and Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="overview/index.html">2. Larch: Motivation and Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">3. Larch Tutorial</a></li>
-<li class="toctree-l1"><a class="reference internal" href="data/index.html">4. Reading and Writing Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">5. Plotting and Displaying Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">6. Fitting and Modeling Data</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">7. XAFS Analysis</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xray/index.html">8. X-ray Databases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="xrf/index.html">9. X-ray Fluorescence Analysis with Larch</a></li>
-<li class="toctree-l1"><a class="reference internal" href="devel/index.html">10. Programming with Larch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="overview/index.html">3. Larch: Motivation and Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="community.html">2. Larch Community and Support</a></li>
+<li class="toctree-l1"><a class="reference internal" href="tutorial/index.html">4. Larch Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data/index.html">5. Reading and Writing Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="plotting/index.html">6. Plotting and Displaying Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fitting/index.html">7. Fitting and Modeling Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xafs/index.html">8. XAFS Analysis</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xray/index.html">9. X-ray Databases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="xrf/index.html">10. X-ray Fluorescence Analysis with Larch</a></li>
+<li class="toctree-l1"><a class="reference internal" href="devel/index.html">11. Programming with Larch</a></li>
 </ul>
 </div>
 </div>
@@ -175,22 +191,19 @@ data handling, and general-purpose data modeling.</p>
         <li class="right" >
           <a href="downloads/index.html" title="1. Downloading and Installation"
              >next</a> |</li>
-   <li>[<a href="contents.html">contents</a>|</li>
-   <li><a href="downloads/index.html">downloads</a>|</li>
-   <li><a href="tutorial/index.html">tutorial</a>|</li>
-   <li><a href="data/index.html">data</a>|</li>
-   <li><a href="plotting/index.html">plot</a>|</li>
-   <li><a href="fitting/index.html">fit</a>|</li>
-   <li><a href="xafs/index.html">XAFS</a>|</li>
-   <li><a href="xray/index.html">Xray Data</a>|</li>
-   <li><a href="xrf/index.html">XRF</a>|</li>
-   <li><a href="devel/index.html">devel</a>]</li>
+   <li>[<a href="data/index.html">Reading Data</a>|</li>
+   <li><a href="plotting/index.html">Plotting</a>|</li>
+   <li><a href="fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="xray/index.html">Xray Databases</a>|</li>
+   <li><a href="xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="devel/index.html">Scripting</a>]</li>
  
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

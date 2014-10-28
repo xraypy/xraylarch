@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>6.5. Some Builtin Line-shape Functions &mdash; larch 0.9.23 documentation</title>
+    <title>7.5. Some Builtin Line-shape Functions &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,29 +25,46 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
-    <link rel="next" title="6.6. Fit Examples" href="examples.html" />
-    <link rel="prev" title="6.4. Fit Results and Outputs" href="results.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="7.6. Fit Examples" href="examples.html" />
+    <link rel="prev" title="7.4. Fit Results and Outputs" href="results.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="examples.html" title="6.6. Fit Examples"
+          <a href="examples.html" title="7.6. Fit Examples"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="results.html" title="6.4. Fit Results and Outputs"
+          <a href="results.html" title="7.4. Fit Results and Outputs"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -80,10 +95,10 @@
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="results.html"
-                        title="previous chapter">6.4. Fit Results and Outputs</a></p>
+                        title="previous chapter">7.4. Fit Results and Outputs</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="examples.html"
-                        title="next chapter">6.6. Fit Examples</a></p>
+                        title="next chapter">7.6. Fit Examples</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/lineshapes.txt"
@@ -111,7 +126,7 @@
           <div class="body">
             
   <div class="section" id="some-builtin-line-shape-functions">
-<span id="lineshape-functions-label"></span><h1>6.5. Some Builtin Line-shape Functions<a class="headerlink" href="#some-builtin-line-shape-functions" title="Permalink to this headline">¶</a></h1>
+<span id="lineshape-functions-label"></span><h1>7.5. Some Builtin Line-shape Functions<a class="headerlink" href="#some-builtin-line-shape-functions" title="Permalink to this headline">¶</a></h1>
 <p>Larch provides a number of convenience functions for common line-shapes
 used in fitting of experimental data.  This list is not exhaustive, but can
 be amended easily.  All these functions return either a floating point
@@ -294,28 +309,25 @@ etc) can be accessed from scipy.special:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="examples.html" title="6.6. Fit Examples"
+          <a href="examples.html" title="7.6. Fit Examples"
              >next</a> |</li>
         <li class="right" >
-          <a href="results.html" title="6.4. Fit Results and Outputs"
+          <a href="results.html" title="7.4. Fit Results and Outputs"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

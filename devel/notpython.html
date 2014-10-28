@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>10.1. Differences between Larch and Python &mdash; larch 0.9.23 documentation</title>
+    <title>11.1. Differences between Larch and Python &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,29 +25,46 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="up" title="10. Programming with Larch" href="index.html" />
-    <link rel="next" title="10.2. Modules" href="modules.html" />
-    <link rel="prev" title="10. Programming with Larch" href="index.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="up" title="11. Programming with Larch" href="index.html" />
+    <link rel="next" title="11.2. Modules" href="modules.html" />
+    <link rel="prev" title="11. Programming with Larch" href="index.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="modules.html" title="10.2. Modules"
+          <a href="modules.html" title="11.2. Modules"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="10. Programming with Larch"
+          <a href="index.html" title="11. Programming with Larch"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">10. Programming with Larch</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">11. Programming with Larch</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -80,21 +95,21 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">10.1. Differences between Larch and Python</a><ul>
-<li><a class="reference internal" href="#code-block-ends">10.1.1. Code Block Ends</a></li>
-<li><a class="reference internal" href="#groups-vs-modules">10.1.2. Groups vs Modules</a></li>
-<li><a class="reference internal" href="#symbol-lookup-rules">10.1.3. Symbol Lookup Rules</a></li>
-<li><a class="reference internal" href="#unimplemented-features">10.1.4. Unimplemented features</a></li>
+<li><a class="reference internal" href="#">11.1. Differences between Larch and Python</a><ul>
+<li><a class="reference internal" href="#code-block-ends">11.1.1. Code Block Ends</a></li>
+<li><a class="reference internal" href="#groups-vs-modules">11.1.2. Groups vs Modules</a></li>
+<li><a class="reference internal" href="#symbol-lookup-rules">11.1.3. Symbol Lookup Rules</a></li>
+<li><a class="reference internal" href="#unimplemented-features">11.1.4. Unimplemented features</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">10. Programming with Larch</a></p>
+                        title="previous chapter">11. Programming with Larch</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="modules.html"
-                        title="next chapter">10.2. Modules</a></p>
+                        title="next chapter">11.2. Modules</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/devel/notpython.txt"
@@ -122,7 +137,7 @@
           <div class="body">
             
   <div class="section" id="differences-between-larch-and-python">
-<span id="python-diffs-section"></span><h1>10.1. Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h1>
+<span id="python-diffs-section"></span><h1>11.1. Differences between Larch and Python<a class="headerlink" href="#differences-between-larch-and-python" title="Permalink to this headline">¶</a></h1>
 <p>Larch is based on and very similar to Python, but there are some very
 important differences that need to be noted, especially for those familiar
 with Python.  These differences are not here because we feel Python is
@@ -182,7 +197,7 @@ changes from the standard Python name lookup rules.</li>
 <p>You can also see that Python's syntax is followed very closely, so that the
 translation from Larch-to-Python is minimal.</p>
 <div class="section" id="code-block-ends">
-<span id="id1"></span><h2>10.1.1. Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h2>
+<span id="id1"></span><h2>11.1.1. Code Block Ends<a class="headerlink" href="#code-block-ends" title="Permalink to this headline">¶</a></h2>
 <p>Unlike Python, Larch does not use significant whitespace to define blocks.
 There, that was easy.  Instead, Larch uses &quot;end blocks&quot;, of the form:</p>
 <div class="highlight-python"><div class="highlight"><pre>if test:
@@ -207,14 +222,14 @@ Python, which can be useful in translating code:</p>
 <p>This code is both valid Larch and valid Python.</p>
 </div>
 <div class="section" id="groups-vs-modules">
-<h2>10.1.2. Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this headline">¶</a></h2>
+<h2>11.1.2. Groups vs Modules<a class="headerlink" href="#groups-vs-modules" title="Permalink to this headline">¶</a></h2>
 <p>This is at least partly a semantic distinction.  Larch organizes data and
 code into Groups -- simple containers that hold data, functions, and other
 groups.  These are implemented as a simple, empty class that is part of the
 symbol table.</p>
 </div>
 <div class="section" id="symbol-lookup-rules">
-<h2>10.1.3. Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this headline">¶</a></h2>
+<h2>11.1.3. Symbol Lookup Rules<a class="headerlink" href="#symbol-lookup-rules" title="Permalink to this headline">¶</a></h2>
 <p>Looking up symbol names is a key feature of any language.  Python and Larch
 both allow <em>namespaces</em> in which symbols can be nested into a heirarchy,
 using a syntax of <strong>parent.child</strong>, with a dot ('.') separating the
@@ -303,7 +318,7 @@ which holds a group of Parameters used during fits (more on this, and why
 it is needed here in the section on Parameters).</p>
 </div>
 <div class="section" id="unimplemented-features">
-<h2>10.1.4. Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this headline">¶</a></h2>
+<h2>11.1.4. Unimplemented features<a class="headerlink" href="#unimplemented-features" title="Permalink to this headline">¶</a></h2>
 <p>A domain-specific-language like Larch does not need to be as full-featured
 as Python, so we left a few things out.  These include (this may not be an
 exhaustive list):</p>
@@ -333,28 +348,25 @@ exhaustive list):</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="modules.html" title="10.2. Modules"
+          <a href="modules.html" title="11.2. Modules"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="10. Programming with Larch"
+          <a href="index.html" title="11. Programming with Larch"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >10. Programming with Larch</a> &raquo;</li> 
+          <li><a href="index.html" >11. Programming with Larch</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

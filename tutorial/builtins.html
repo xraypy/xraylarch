@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>3.8. Tutorial: Builtin Functions &mdash; larch 0.9.23 documentation</title>
+    <title>4.8. Tutorial: Builtin Functions &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,29 +25,46 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="up" title="3. Larch Tutorial" href="index.html" />
-    <link rel="next" title="4. Reading and Writing Data" href="../data/index.html" />
-    <link rel="prev" title="3.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="up" title="4. Larch Tutorial" href="index.html" />
+    <link rel="next" title="5. Reading and Writing Data" href="../data/index.html" />
+    <link rel="prev" title="4.7. Tutorial: Running Larch Scripts, and Modules" href="modules.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../data/index.html" title="4. Reading and Writing Data"
+          <a href="../data/index.html" title="5. Reading and Writing Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="3.7. Tutorial: Running Larch Scripts, and Modules"
+          <a href="modules.html" title="4.7. Tutorial: Running Larch Scripts, and Modules"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -80,19 +95,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3.8. Tutorial: Builtin Functions</a><ul>
-<li><a class="reference internal" href="#builtin-data-values">3.8.1. Builtin data values</a></li>
-<li><a class="reference internal" href="#builtin-functions">3.8.2. Builtin functions</a></li>
+<li><a class="reference internal" href="#">4.8. Tutorial: Builtin Functions</a><ul>
+<li><a class="reference internal" href="#builtin-data-values">4.8.1. Builtin data values</a></li>
+<li><a class="reference internal" href="#larch-specific-builtin-functions">4.8.2. Larch-Specific Builtin functions</a></li>
+<li><a class="reference internal" href="#builtin-functions-inherited-from-python">4.8.3. Builtin functions inherited from Python</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="modules.html"
-                        title="previous chapter">3.7. Tutorial: Running Larch Scripts, and Modules</a></p>
+                        title="previous chapter">4.7. Tutorial: Running Larch Scripts, and Modules</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../data/index.html"
-                        title="next chapter">4. Reading and Writing Data</a></p>
+                        title="next chapter">5. Reading and Writing Data</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/builtins.txt"
@@ -120,26 +136,200 @@
           <div class="body">
             
   <div class="section" id="tutorial-builtin-functions">
-<h1>3.8. Tutorial: Builtin Functions<a class="headerlink" href="#tutorial-builtin-functions" title="Permalink to this headline">¶</a></h1>
-<p>Larch has several built in functions, most of these copied from Python.</p>
+<h1>4.8. Tutorial: Builtin Functions<a class="headerlink" href="#tutorial-builtin-functions" title="Permalink to this headline">¶</a></h1>
+<p>Larch has several general built-in functions for basic manipulation of data and
+programming needs.  Many of these are copied directly from Python, but
+several are Larch-specifc.   Note that the advanced math and scientific
+functions are not listed here, but elsewhere in the documentation.</p>
 <div class="section" id="builtin-data-values">
-<h2>3.8.1. Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this headline">¶</a></h2>
+<h2>4.8.1. Builtin data values<a class="headerlink" href="#builtin-data-values" title="Permalink to this headline">¶</a></h2>
 <p>The values <tt class="docutils literal"><span class="pre">True</span></tt>, <tt class="docutils literal"><span class="pre">False</span></tt>  represent the boolean values
 for true and false.  <tt class="docutils literal"><span class="pre">None</span></tt> is the null value.</p>
 </div>
-<div class="section" id="builtin-functions">
-<h2>3.8.2. Builtin functions<a class="headerlink" href="#builtin-functions" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="abs">
-<tt class="descname">abs</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#abs" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the absolute value of the argument.</p>
-</dd></dl>
-
+<div class="section" id="larch-specific-builtin-functions">
+<h2>4.8.2. Larch-Specific Builtin functions<a class="headerlink" href="#larch-specific-builtin-functions" title="Permalink to this headline">¶</a></h2>
+<p>These built-in functions are specific to Larch (that is, not inherited from
+Python).  Many help you work with Larch groups or otherwise simplify common tasks.</p>
 <dl class="function">
 <dt id="add_plugin">
 <tt class="descname">add_plugin</tt><big>(</big><em>python_file</em><big>)</big><a class="headerlink" href="#add_plugin" title="Permalink to this definition">¶</a></dt>
 <dd><p>add plugin components from plugin file (Python file) or directory for a
 Python module.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cd">
+<tt class="descname">cd</tt><big>(</big><em>directory_name</em><big>)</big><a class="headerlink" href="#cd" title="Permalink to this definition">¶</a></dt>
+<dd><p>change directory to specified directory.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="cwd">
+<tt class="descname">cwd</tt><big>(</big><big>)</big><a class="headerlink" href="#cwd" title="Permalink to this definition">¶</a></dt>
+<dd><p>return current working directory</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dict2group">
+<tt class="descname">dict2group</tt><big>(</big><em>dict</em><big>)</big><a class="headerlink" href="#dict2group" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a group created from a dictionary.  Note that this is equivalent
+to <tt class="docutils literal"><span class="pre">group(**dict)</span></tt>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="get">
+<tt class="descname">get</tt><big>(</big><em>name</em><big>)</big><a class="headerlink" href="#get" title="Permalink to this definition">¶</a></dt>
+<dd><p>get object from symbol table by name.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; g = group(a = 1,  b=2.3, z = &#39;a string&#39;)
+larch&gt; print get(&#39;g.z&#39;)
+&#39;a string&#39;
+</pre></div>
+</div>
+<p>this is can also be accomplished by the similar:</p>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; print getattr(g, &#39;z&#39;)
+&#39;a string&#39;
+</pre></div>
+</div>
+<p>but the <a class="reference internal" href="#get" title="get"><tt class="xref py py-func docutils literal"><span class="pre">get()</span></tt></a> version uses only the name of the object.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="group">
+<tt class="descname">group</tt><big>(</big><em>key=val</em>, <em>key2=val2</em>, <em>....</em><big>)</big><a class="headerlink" href="#group" title="Permalink to this definition">¶</a></dt>
+<dd><p>create a group, with optional keyword/value pairs.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="group_items">
+<tt class="descname">group_items</tt><big>(</big><em>group</em><big>)</big><a class="headerlink" href="#group_items" title="Permalink to this definition">¶</a></dt>
+<dd><p>return a list of (key, val) pairs for items in a group. This is
+equivalent to <tt class="docutils literal"><span class="pre">group2dict(group).items()</span></tt>, and provides the idiomatic
+way to loop through all items in a group.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="group2dict">
+<tt class="descname">group2dict</tt><big>(</big><em>group</em><big>)</big><a class="headerlink" href="#group2dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>return dictionary of group members</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="help">
+<tt class="descname">help</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#help" title="Permalink to this definition">¶</a></dt>
+<dd><p>show help on topic or object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="isgroup">
+<tt class="descname">isgroup</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#isgroup" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns <tt class="docutils literal"><span class="pre">True</span></tt> is the object is a group.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="isparam">
+<tt class="descname">isparam</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#isparam" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns <tt class="docutils literal"><span class="pre">True</span></tt> is the object is a parameter.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ls">
+<tt class="descname">ls</tt><big>(</big><em>directory_name_or_file_pattern</em><big>)</big><a class="headerlink" href="#ls" title="Permalink to this definition">¶</a></dt>
+<dd><p>returns a list of files in the current directory.  If a '*' is used in
+the argument, the returned list is limited to files matching that
+pattern.  For example:</p>
+<div class="highlight-python"><div class="highlight"><pre>larch&gt; ls(&#39;.&#39;)
+[&#39;cu.chi&#39;, &#39;cu.xmu&#39;, &#39;cu10k.chi&#39;, &#39;cu_10k.xmu&#39;, &#39;cu_150k.xmu&#39;,
+ &#39;cu_50k.xmu&#39;, &#39;cu_metal_rt.xdi&#39;, &#39;cu_rt01.xmu&#39;, &#39;fe.060&#39;,
+ &#39;fe2o3_rt1.xmu&#39;, &#39;fe3c_rt.xdi&#39;, &#39;feo_exafs_pnccat2001.dat&#39;,
+ &#39;feo_rt1.xmu&#39;, &#39;feo_xafs.dat&#39;, &#39;scorodite_as_xafs.001&#39;, &#39;znse_zn_xafs.001&#39;]
+larch&gt; xdifiles = ls(&#39;*.xdi&#39;)
+larch&gt; print xdifiles
+[&#39;cu_metal_rt.xdi&#39;, &#39;fe3c_rt.xdi&#39;]
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="mkdir">
+<tt class="descname">mkdir</tt><big>(</big><em>directory_name</em><span class="optional">[</span>, <em>mode=0777</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#mkdir" title="Permalink to this definition">¶</a></dt>
+<dd><p>create directory (and any intermediate subdirectories) with the
+specified name.  The <tt class="docutils literal"><span class="pre">mode</span></tt> option sets the permission mask to use
+for creating directory (default=0777).</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="more">
+<tt class="descname">more</tt><big>(</big><em>filename</em><span class="optional">[</span>, <em>pagelenghth=32</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#more" title="Permalink to this definition">¶</a></dt>
+<dd><p>list file contents, optionally specifying the number of lines to
+show at a time.  By default, the file is shown 32 lines at a time.:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s">&#39;file.txt&#39;</span><span class="p">)</span>
+<span class="n">larch</span><span class="o">&gt;</span> <span class="n">more</span><span class="p">(</span><span class="s">&#39;file.txt&#39;</span><span class="p">,</span> <span class="n">pagelength</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="function">
+<dt id="parent">
+<tt class="descname">parent</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>print out parent group name of an object</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="pause">
+<tt class="descname">pause</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#pause" title="Permalink to this definition">¶</a></dt>
+<dd><p>pause for for input from the command line.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="run">
+<tt class="descname">run</tt><big>(</big><em>filename</em><span class="optional">[</span>, <em>printall=True</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#run" title="Permalink to this definition">¶</a></dt>
+<dd><p>execute the larch text in a file as larch code.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="show">
+<tt class="descname">show</tt><big>(</big><em>group</em><span class="optional">[</span>, <em>with_private=False</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#show" title="Permalink to this definition">¶</a></dt>
+<dd><p>display group members. The <tt class="docutils literal"><span class="pre">with_private</span></tt> option will show private
+members.</p>
+<p>See Also:  show_tree()</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="show_tree">
+<tt class="descname">show_tree</tt><big>(</big><em>group</em><big>)</big><a class="headerlink" href="#show_tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>show members of a Group, with a tree structure for sub-groups</p>
+<p>larch&gt; show_tree(group1)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="sleep">
+<tt class="descname">sleep</tt><big>(</big><em>t=0</em><big>)</big><a class="headerlink" href="#sleep" title="Permalink to this definition">¶</a></dt>
+<dd><p>sleep for a specified number of seconds.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="subgroups">
+<tt class="descname">subgroups</tt><big>(</big><em>group</em><big>)</big><a class="headerlink" href="#subgroups" title="Permalink to this definition">¶</a></dt>
+<dd><p>return list of subgroups of a group</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="which">
+<tt class="descname">which</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#which" title="Permalink to this definition">¶</a></dt>
+<dd><p>return full path of object in Larch's symbol table:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="n">larch</span><span class="o">&gt;</span> <span class="n">which</span><span class="p">(</span><span class="n">which</span><span class="p">)</span>
+<span class="s">&#39;_builtin.which&#39;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="builtin-functions-inherited-from-python">
+<h2>4.8.3. Builtin functions inherited from Python<a class="headerlink" href="#builtin-functions-inherited-from-python" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="abs">
+<tt class="descname">abs</tt><big>(</big><em>value</em><big>)</big><a class="headerlink" href="#abs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the absolute value of the argument.</p>
 </dd></dl>
 
 <dl class="function">
@@ -212,8 +402,8 @@ Note that classes are callable, as are instances with a __call__() method.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="cd">
-<tt class="descname">cd</tt><big>(</big><em>directory</em><big>)</big><a class="headerlink" href="#cd" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">cd</tt><big>(</big><em>directory</em><big>)</big></dt>
 <dd><p>change directory to specified directory</p>
 </dd></dl>
 
@@ -248,12 +438,6 @@ This is equivalent to (real + imag*1j) where imag defaults to 0.</p>
 <dt id="copy">
 <tt class="descname">copy</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>copy an object</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="cwd">
-<tt class="descname">cwd</tt><big>(</big><big>)</big><a class="headerlink" href="#cwd" title="Permalink to this definition">¶</a></dt>
-<dd><p>return current working directory</p>
 </dd></dl>
 
 <dl class="function">
@@ -299,26 +483,6 @@ enumerate is useful for obtaining an indexed list:
 </dd></dl>
 
 <dl class="function">
-<dt id="file">
-<tt class="descname">file</tt><big>(</big><em>name</em><span class="optional">[</span>, <em>mode</em><span class="optional">[</span>, <em>buffering</em><span class="optional">]</span><span class="optional">]</span><big>)</big> &rarr; file object<a class="headerlink" href="#file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Open a file.</p>
-<p>The mode can be 'r', 'w' or 'a' for reading (default),
-writing or appending.  The file will be created if it doesn't exist
-when opened for writing or appending; it will be truncated when
-opened for writing.  Add a 'b' to the mode for binary files.
-Add a '+' to the mode to allow simultaneous reading and writing.
-If the buffering argument is given, 0 means unbuffered, 1 means line
-buffered, and larger numbers specify the buffer size.  The preferred way
-to open a file is with the builtin open() function.
-Add a 'U' to mode to open the file for input with universal newline
-support.  Any line ending in the input file will be seen as a 'n'
-in Python.  Also, a file so opened gains the attribute 'newlines';
-the value for this attribute is one of None (no newline read yet),
-'r', 'n', 'rn' or a tuple containing all the newline types seen.</p>
-<p>'U' cannot be combined with 'w' or '+' mode.</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="filter">
 <tt class="descname">filter</tt><big>(</big><em>function or None</em>, <em>sequence</em><big>)</big><a class="headerlink" href="#filter" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return those items of sequence for which function(item) is true.  If
@@ -345,8 +509,8 @@ or string, return the same type, else return a list.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="get">
-<tt class="descname">get</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#get" title="Permalink to this definition">¶</a></dt>
+<dt>
+<tt class="descname">get</tt><big>(</big><em>object</em><big>)</big></dt>
 <dd><p>get object from symbol table from symbol name</p>
 </dd></dl>
 
@@ -356,12 +520,6 @@ or string, return the same type, else return a list.</p>
 <dd><p>Get a named attribute from an object; getattr(x, 'y') is equivalent to x.y.
 When a default argument is given, it is returned when the attribute doesn't
 exist; without it, an exception is raised in that case.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="group">
-<tt class="descname">group</tt><big>(</big><em>key=val</em>, <em>key2=val2</em>, <em>....</em><big>)</big><a class="headerlink" href="#group" title="Permalink to this definition">¶</a></dt>
-<dd><p>create a group, with optional keyword/value pairs.</p>
 </dd></dl>
 
 <dl class="function">
@@ -376,12 +534,6 @@ exist; without it, an exception is raised in that case.</p>
 <tt class="descname">hash</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#hash" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a hash value for the object.  Two objects with the same value have
 the same hash value.  The reverse is not necessarily true, but likely.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="help">
-<tt class="descname">help</tt><big>(</big><big>)</big><a class="headerlink" href="#help" title="Permalink to this definition">¶</a></dt>
-<dd><p>show help on topic or object</p>
 </dd></dl>
 
 <dl class="function">
@@ -432,12 +584,6 @@ list(iterable) -&gt; new list initialized from iterable's items</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="ls">
-<tt class="descname">ls</tt><big>(</big><em>directory_name</em><big>)</big><a class="headerlink" href="#ls" title="Permalink to this definition">¶</a></dt>
-<dd><p>returns a list of files in the current directory</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="map">
 <tt class="descname">map</tt><big>(</big><em>function</em>, <em>sequence</em><span class="optional">[</span>, <em>sequence</em>, <em>...</em><span class="optional">]</span><big>)</big><a class="headerlink" href="#map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of the results of applying the function to the items of
@@ -467,17 +613,6 @@ With two or more arguments, return the smallest argument.</div></blockquote>
 </dd></dl>
 
 <dl class="function">
-<dt id="more">
-<tt class="descname">more</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#more" title="Permalink to this definition">¶</a></dt>
-<dd><p>list file contents:</p>
-<p>&gt; more('file.txt')
-by default, the file is shown 32 lines at a time.
-You can specify the number of lines to show at a time
-with the  pagelength option:
-&gt; more('file.txt', pagelength=10)</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="oct">
 <tt class="descname">oct</tt><big>(</big><em>number</em><big>)</big><a class="headerlink" href="#oct" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the octal representation of an integer or long integer.</p>
@@ -486,26 +621,27 @@ with the  pagelength option:
 <dl class="function">
 <dt id="open">
 <tt class="descname">open</tt><big>(</big><em>name</em><span class="optional">[</span>, <em>mode</em><span class="optional">[</span>, <em>buffering</em><span class="optional">]</span><span class="optional">]</span><big>)</big><a class="headerlink" href="#open" title="Permalink to this definition">¶</a></dt>
-<dd><p>Open a file using the file() type, returns a file object.  This is the
-preferred way to open a file.  See file.__doc__ for further information.</p>
+<dd><p>Open a file, returning a file object</p>
+<p>The mode can be 'r', 'w' or 'a' for reading (default),
+writing or appending.  The file will be created if it doesn't exist
+when opened for writing or appending; it will be truncated when
+opened for writing.  Add a 'b' to the mode for binary files.
+Add a '+' to the mode to allow simultaneous reading and writing.
+If the buffering argument is given, 0 means unbuffered, 1 means line
+buffered, and larger numbers specify the buffer size.  The preferred way
+to open a file is with the builtin open() function.
+Add a 'U' to mode to open the file for input with universal newline
+support.  Any line ending in the input file will be seen as a 'n'
+in Python.  Also, a file so opened gains the attribute 'newlines';
+the value for this attribute is one of None (no newline read yet),
+'r', 'n', 'rn' or a tuple containing all the newline types seen.</p>
+<p>'U' cannot be combined with 'w' or '+' mode.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="ord">
 <tt class="descname">ord</tt><big>(</big><em>c</em><big>)</big><a class="headerlink" href="#ord" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the integer ordinal of a one-character string.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="parent">
-<tt class="descname">parent</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#parent" title="Permalink to this definition">¶</a></dt>
-<dd><p>print out parent group name of an object</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="pause">
-<tt class="descname">pause</tt><big>(</big><em>timeout</em><big>)</big><a class="headerlink" href="#pause" title="Permalink to this definition">¶</a></dt>
-<dd><p>pause for for input from the command line.</p>
 </dd></dl>
 
 <dl class="function">
@@ -572,12 +708,6 @@ This always returns a floating point number.  Precision may be negative.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="run">
-<tt class="descname">run</tt><big>(</big><em>filename</em><big>)</big><a class="headerlink" href="#run" title="Permalink to this definition">¶</a></dt>
-<dd><p>execute the larch text in a file as larch code. options:</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="set">
 <tt class="descname">set</tt><big>(</big><em>list</em><big>)</big><a class="headerlink" href="#set" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a new set: a collection of unique elements.</p>
@@ -588,29 +718,6 @@ This always returns a floating point number.  Precision may be negative.</p>
 <tt class="descname">setattr</tt><big>(</big><em>object</em>, <em>name</em>, <em>value</em><big>)</big><a class="headerlink" href="#setattr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set a named attribute on an object;</p>
 <p>setattr(x, 'y', v) is equivalent to <tt class="docutils literal"><span class="pre">x.y</span> <span class="pre">=</span> <span class="pre">v</span></tt>.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="show">
-<tt class="descname">show</tt><big>(</big><em>group</em><big>)</big><a class="headerlink" href="#show" title="Permalink to this definition">¶</a></dt>
-<dd><p>display group members.
-Options
--------
-with_private:  show 'private' members ('__private__')</p>
-<p>See Also:  show_tree()</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="show_tree">
-<tt class="descname">show_tree</tt><big>(</big><em>group</em><big>)</big><a class="headerlink" href="#show_tree" title="Permalink to this definition">¶</a></dt>
-<dd><p>show members of a Group, with a tree structure for sub-groups</p>
-<p>&gt; show_tree(group1)</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="sleep">
-<tt class="descname">sleep</tt><big>(</big><em>t=0</em><big>)</big><a class="headerlink" href="#sleep" title="Permalink to this definition">¶</a></dt>
-<dd><p>sleep for a specified number of seconds.</p>
 </dd></dl>
 
 <dl class="function">
@@ -630,12 +737,6 @@ with_private:  show 'private' members ('__private__')</p>
 <tt class="descname">str</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#str" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a nice string representation of the object.
 If the argument is a string, the return value is the same object.</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="subgroups">
-<tt class="descname">subgroups</tt><big>(</big><em>group</em><big>)</big><a class="headerlink" href="#subgroups" title="Permalink to this definition">¶</a></dt>
-<dd><p>return list of subgroups</p>
 </dd></dl>
 
 <dl class="function">
@@ -676,12 +777,6 @@ errors can be 'strict', 'replace' or 'ignore' and defaults to 'strict'.</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="which">
-<tt class="descname">which</tt><big>(</big><em>object</em><big>)</big><a class="headerlink" href="#which" title="Permalink to this definition">¶</a></dt>
-<dd><p>return full path of object</p>
-</dd></dl>
-
-<dl class="function">
 <dt id="zip">
 <tt class="descname">zip</tt><big>(</big><em>seq1 [, seq2 [...]]</em><big>)</big><a class="headerlink" href="#zip" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a list of tuples, where each tuple contains the i-th element
@@ -705,28 +800,25 @@ in length to the length of the shortest argument sequence.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../data/index.html" title="4. Reading and Writing Data"
+          <a href="../data/index.html" title="5. Reading and Writing Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="modules.html" title="3.7. Tutorial: Running Larch Scripts, and Modules"
+          <a href="modules.html" title="4.7. Tutorial: Running Larch Scripts, and Modules"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

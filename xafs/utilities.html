@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.1. XAFS Functions: Overview and Naming Conventions &mdash; larch 0.9.23 documentation</title>
+    <title>8.1. XAFS Functions: Overview and Naming Conventions &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,29 +25,46 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="up" title="7. XAFS Analysis" href="index.html" />
-    <link rel="next" title="7.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
-    <link rel="prev" title="7. XAFS Analysis" href="index.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="up" title="8. XAFS Analysis" href="index.html" />
+    <link rel="next" title="8.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
+    <link rel="prev" title="8. XAFS Analysis" href="index.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="preedge.html" title="7.2. XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="8.2. XAFS: Pre-edge Subtraction and Normalization"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="7. XAFS Analysis"
+          <a href="index.html" title="8. XAFS Analysis"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -80,16 +95,16 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.1. XAFS Functions: Overview and Naming Conventions</a><ul>
-<li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">7.1.1. Naming conventions for XAFS arrays</a><ul>
-<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">7.1.1.1. <cite>group</cite> argument and <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt></a></li>
-<li><a class="reference internal" href="#first-argument-group-convention">7.1.1.2. First Argument Group convention</a></li>
+<li><a class="reference internal" href="#">8.1. XAFS Functions: Overview and Naming Conventions</a><ul>
+<li><a class="reference internal" href="#naming-conventions-for-xafs-arrays">8.1.1. Naming conventions for XAFS arrays</a><ul>
+<li><a class="reference internal" href="#group-argument-and-sys-xafsgroup">8.1.1.1. <cite>group</cite> argument and <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt></a></li>
+<li><a class="reference internal" href="#first-argument-group-convention">8.1.1.2. First Argument Group convention</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#utility-functions-for-xafs">7.1.2. Utility Functions for XAFS</a><ul>
-<li><a class="reference internal" href="#the-ktoe-and-etok-functions">7.1.2.1. The <tt class="docutils literal"><span class="pre">ktoe()</span></tt> and <tt class="docutils literal"><span class="pre">etok()</span></tt> functions</a></li>
-<li><a class="reference internal" href="#the-estimate-noise-function">7.1.2.2. The <tt class="docutils literal"><span class="pre">estimate_noise()</span></tt> function</a></li>
-<li><a class="reference internal" href="#the-xas-deconvolve-function">7.1.2.3. The <tt class="docutils literal"><span class="pre">xas_deconvolve()</span></tt> function</a></li>
+<li><a class="reference internal" href="#utility-functions-for-xafs">8.1.2. Utility Functions for XAFS</a><ul>
+<li><a class="reference internal" href="#the-ktoe-and-etok-functions">8.1.2.1. The <tt class="docutils literal"><span class="pre">ktoe()</span></tt> and <tt class="docutils literal"><span class="pre">etok()</span></tt> functions</a></li>
+<li><a class="reference internal" href="#the-estimate-noise-function">8.1.2.2. The <tt class="docutils literal"><span class="pre">estimate_noise()</span></tt> function</a></li>
+<li><a class="reference internal" href="#the-xas-deconvolve-function">8.1.2.3. The <tt class="docutils literal"><span class="pre">xas_deconvolve()</span></tt> function</a></li>
 </ul>
 </li>
 </ul>
@@ -98,10 +113,10 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="index.html"
-                        title="previous chapter">7. XAFS Analysis</a></p>
+                        title="previous chapter">8. XAFS Analysis</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="preedge.html"
-                        title="next chapter">7.2. XAFS: Pre-edge Subtraction and Normalization</a></p>
+                        title="next chapter">8.2. XAFS: Pre-edge Subtraction and Normalization</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/utilities.txt"
@@ -129,7 +144,7 @@
           <div class="body">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-functions-overview-and-naming-conventions"></span><h1>7.1. XAFS Functions: Overview and Naming Conventions<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-functions-overview-and-naming-conventions"></span><h1>8.1. XAFS Functions: Overview and Naming Conventions<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>As with most Larch functions, each of the XAFS functions is designed to be
 able to act on arbitrary arrays of data to allow maximum flexibility in
 processing data.  In addition, many of the Larch XAFS functions can write
@@ -137,7 +152,7 @@ out several output values, including both scalaras and arrays.  While
 flexible, this could get rather cumbersome, and mean that you would
 generally have to keep track of a large set of related arrays.</p>
 <div class="section" id="naming-conventions-for-xafs-arrays">
-<h2>7.1.1. Naming conventions for XAFS arrays<a class="headerlink" href="#naming-conventions-for-xafs-arrays" title="Permalink to this headline">¶</a></h2>
+<h2>8.1.1. Naming conventions for XAFS arrays<a class="headerlink" href="#naming-conventions-for-xafs-arrays" title="Permalink to this headline">¶</a></h2>
 <p>In Larch, it is most natural to put related data into a Group.  This is
 often natural as data read in from a file is already held in a Group.  If a
 set of XAFS data is held within a Group, then the Group members named
@@ -304,7 +319,7 @@ the physical quantity described, and the name of function that will generate thi
 <p>The XAFS functions encourage following this convention, in that they are consistent in wanting
 <span class="math">\(\chi(k)\)</span> to be represented by the two arrays <tt class="docutils literal"><span class="pre">GROUP.k</span></tt> and <tt class="docutils literal"><span class="pre">GROUP.chi</span></tt></p>
 <div class="section" id="group-argument-and-sys-xafsgroup">
-<h3>7.1.1.1. <cite>group</cite> argument and <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
+<h3>8.1.1.1. <cite>group</cite> argument and <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt><a class="headerlink" href="#group-argument-and-sys-xafsgroup" title="Permalink to this headline">¶</a></h3>
 <p>The XAFS functions need to write outputs to some group -- there are simply too many outputs to
 return and expect you to manage.   So, all functions take a <strong>group</strong> argument, which is used
 as the group into which results are written.  Again, this allows maximum flexibility, but gets
@@ -316,7 +331,7 @@ contained within a single group (which is expected to be the normal case), the <
 does not need to be typed repeatedly.</p>
 </div>
 <div class="section" id="first-argument-group-convention">
-<span id="index-0"></span><h3>7.1.1.2. First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
+<span id="index-0"></span><h3>8.1.1.2. First Argument Group convention<a class="headerlink" href="#first-argument-group-convention" title="Permalink to this headline">¶</a></h3>
 <p>In addition to the <tt class="docutils literal"><span class="pre">_sys.xafsGroup</span></tt> convention above, there is an even simpler approach when
 working with Groups that follow the XAFS naming conventions.  While the XAFS functions are
 generally meant to take arrays of data as the first two arguments, they allow the first argument to
@@ -338,10 +353,10 @@ equivalent.  This nearly makes the Larch XAFS functions be object-oriented, or i
 </div>
 </div>
 <div class="section" id="utility-functions-for-xafs">
-<h2>7.1.2. Utility Functions for XAFS<a class="headerlink" href="#utility-functions-for-xafs" title="Permalink to this headline">¶</a></h2>
+<h2>8.1.2. Utility Functions for XAFS<a class="headerlink" href="#utility-functions-for-xafs" title="Permalink to this headline">¶</a></h2>
 <p>Listed below are some general purpose functions for XAFS.</p>
 <div class="section" id="the-ktoe-and-etok-functions">
-<h3>7.1.2.1. The <a class="reference internal" href="#_xafs.ktoe" title="_xafs.ktoe"><tt class="xref py py-func docutils literal"><span class="pre">ktoe()</span></tt></a> and <a class="reference internal" href="#_xafs.etok" title="_xafs.etok"><tt class="xref py py-func docutils literal"><span class="pre">etok()</span></tt></a> functions<a class="headerlink" href="#the-ktoe-and-etok-functions" title="Permalink to this headline">¶</a></h3>
+<h3>8.1.2.1. The <a class="reference internal" href="#_xafs.ktoe" title="_xafs.ktoe"><tt class="xref py py-func docutils literal"><span class="pre">ktoe()</span></tt></a> and <a class="reference internal" href="#_xafs.etok" title="_xafs.etok"><tt class="xref py py-func docutils literal"><span class="pre">etok()</span></tt></a> functions<a class="headerlink" href="#the-ktoe-and-etok-functions" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.etok">
 <tt class="descclassname">_xafs.</tt><tt class="descname">etok</tt><big>(</big><em>energies</em><big>)</big><a class="headerlink" href="#_xafs.etok" title="Permalink to this definition">¶</a></dt>
@@ -392,7 +407,7 @@ larch&gt; endfor
 </div>
 </div>
 <div class="section" id="the-estimate-noise-function">
-<h3>7.1.2.2. The <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> function<a class="headerlink" href="#the-estimate-noise-function" title="Permalink to this headline">¶</a></h3>
+<h3>8.1.2.2. The <a class="reference internal" href="#_xafs.estimate_noise" title="_xafs.estimate_noise"><tt class="xref py py-func docutils literal"><span class="pre">estimate_noise()</span></tt></a> function<a class="headerlink" href="#the-estimate-noise-function" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.estimate_noise">
 <tt class="descclassname">_xafs.</tt><tt class="descname">estimate_noise</tt><big>(</big><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>rmin=15</em>, <em>rmax=30</em>, <em>....</em><big>)</big><a class="headerlink" href="#_xafs.estimate_noise" title="Permalink to this definition">¶</a></dt>
@@ -470,7 +485,7 @@ again, considering that the estimate for <span class="math">\(\epsilon\)</span> 
 small, the estimate may not be that bad.</p>
 </div>
 <div class="section" id="the-xas-deconvolve-function">
-<h3>7.1.2.3. The <a class="reference internal" href="#_xafs.xas_deconvolve" title="_xafs.xas_deconvolve"><tt class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></tt></a> function<a class="headerlink" href="#the-xas-deconvolve-function" title="Permalink to this headline">¶</a></h3>
+<h3>8.1.2.3. The <a class="reference internal" href="#_xafs.xas_deconvolve" title="_xafs.xas_deconvolve"><tt class="xref py py-func docutils literal"><span class="pre">xas_deconvolve()</span></tt></a> function<a class="headerlink" href="#the-xas-deconvolve-function" title="Permalink to this headline">¶</a></h3>
 <dl class="function">
 <dt id="_xafs.xas_deconvolve">
 <tt class="descclassname">_xafs.</tt><tt class="descname">xas_deconvolve</tt><big>(</big><em>energy</em>, <em>norm=Noned group=None</em>, <em>form='gaussian'</em>, <em>esigma=1.0</em>, <em>eshift=0.0</em><big>)</big><a class="headerlink" href="#_xafs.xas_deconvolve" title="Permalink to this definition">¶</a></dt>
@@ -533,28 +548,25 @@ The following data is put into the output group:</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="preedge.html" title="7.2. XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="8.2. XAFS: Pre-edge Subtraction and Normalization"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="7. XAFS Analysis"
+          <a href="index.html" title="8. XAFS Analysis"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

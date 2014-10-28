@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.3. XAFS: Post-edge Background Subtraction &mdash; larch 0.9.23 documentation</title>
+    <title>8.3. XAFS: Post-edge Background Subtraction &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,29 +25,46 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="up" title="7. XAFS Analysis" href="index.html" />
-    <link rel="next" title="7.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
-    <link rel="prev" title="7.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="up" title="8. XAFS Analysis" href="index.html" />
+    <link rel="next" title="8.4. XAFS: Fourier Transforms for XAFS" href="xafsft.html" />
+    <link rel="prev" title="8.2. XAFS: Pre-edge Subtraction and Normalization" href="preedge.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="8.4. XAFS: Fourier Transforms for XAFS"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="preedge.html" title="7.2. XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="8.2. XAFS: Pre-edge Subtraction and Normalization"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">7. XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -80,20 +95,20 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">7.3. XAFS: Post-edge Background Subtraction</a><ul>
-<li><a class="reference internal" href="#the-autobk-function">7.3.1. The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
-<li><a class="reference internal" href="#the-autobk-algorithm">7.3.2. The AUTOBK Algorithm</a><ul>
-<li><a class="reference internal" href="#and-spline-for">7.3.2.1. <span class="math">\(R_{\rm bkg}\)</span> and spline for <span class="math">\(\mu_0(E)\)</span></a></li>
-<li><a class="reference internal" href="#selecting-fourier-transform-parameters">7.3.2.2. Selecting Fourier transform parameters</a></li>
-<li><a class="reference internal" href="#using-a-standard">7.3.2.3. Using a standard <span class="math">\(\chi(k)\)</span></a></li>
-<li><a class="reference internal" href="#end-point-clamps-for-the-spline">7.3.2.4. End-point clamps for the spline</a></li>
-<li><a class="reference internal" href="#recommendations">7.3.2.5. Recommendations</a></li>
+<li><a class="reference internal" href="#">8.3. XAFS: Post-edge Background Subtraction</a><ul>
+<li><a class="reference internal" href="#the-autobk-function">8.3.1. The <tt class="docutils literal"><span class="pre">autobk()</span></tt> function</a></li>
+<li><a class="reference internal" href="#the-autobk-algorithm">8.3.2. The AUTOBK Algorithm</a><ul>
+<li><a class="reference internal" href="#and-spline-for">8.3.2.1. <span class="math">\(R_{\rm bkg}\)</span> and spline for <span class="math">\(\mu_0(E)\)</span></a></li>
+<li><a class="reference internal" href="#selecting-fourier-transform-parameters">8.3.2.2. Selecting Fourier transform parameters</a></li>
+<li><a class="reference internal" href="#using-a-standard">8.3.2.3. Using a standard <span class="math">\(\chi(k)\)</span></a></li>
+<li><a class="reference internal" href="#end-point-clamps-for-the-spline">8.3.2.4. End-point clamps for the spline</a></li>
+<li><a class="reference internal" href="#recommendations">8.3.2.5. Recommendations</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#examples">7.3.3. Examples</a><ul>
-<li><a class="reference internal" href="#basic-example">7.3.3.1. Basic example</a></li>
-<li><a class="reference internal" href="#adjusting-spline-clamps">7.3.3.2. Adjusting spline clamps</a></li>
-<li><a class="reference internal" href="#id1">7.3.3.3. Using a Standard <span class="math">\(\chi(k)\)</span></a></li>
+<li><a class="reference internal" href="#examples">8.3.3. Examples</a><ul>
+<li><a class="reference internal" href="#basic-example">8.3.3.1. Basic example</a></li>
+<li><a class="reference internal" href="#adjusting-spline-clamps">8.3.3.2. Adjusting spline clamps</a></li>
+<li><a class="reference internal" href="#id1">8.3.3.3. Using a Standard <span class="math">\(\chi(k)\)</span></a></li>
 </ul>
 </li>
 </ul>
@@ -102,10 +117,10 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="preedge.html"
-                        title="previous chapter">7.2. XAFS: Pre-edge Subtraction and Normalization</a></p>
+                        title="previous chapter">8.2. XAFS: Pre-edge Subtraction and Normalization</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="xafsft.html"
-                        title="next chapter">7.4. XAFS: Fourier Transforms for XAFS</a></p>
+                        title="next chapter">8.4. XAFS: Fourier Transforms for XAFS</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/xafs/autobk.txt"
@@ -133,7 +148,7 @@
           <div class="body">
             
   <div class="section" id="module-_xafs">
-<span id="xafs-post-edge-background-subtraction"></span><h1>7.3. XAFS: Post-edge Background Subtraction<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
+<span id="xafs-post-edge-background-subtraction"></span><h1>8.3. XAFS: Post-edge Background Subtraction<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
 <p>Background subtraction is one of the most important data processing steps
 in EXAFS analysis, converting the measured <span class="math">\(\mu(E)\)</span> into the
 <span class="math">\(\chi(k)\)</span> ready for quantitative analysis.  In Larch, this step is
@@ -141,7 +156,7 @@ performed by the <a class="reference internal" href="#_xafs.autobk" title="_xafs
 subtleties.  This section is devoted to background subtraction with the
 <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function and the underlying algorithm it uses.</p>
 <div class="section" id="the-autobk-function">
-<h2>7.3.1. The <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
+<h2>8.3.1. The <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> function<a class="headerlink" href="#the-autobk-function" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="_xafs.autobk">
 <tt class="descclassname">_xafs.</tt><tt class="descname">autobk</tt><big>(</big><em>energy</em>, <em>mu=None</em>, <em>group=None</em>, <em>rbkg=1.0</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.autobk" title="Permalink to this definition">¶</a></dt>
@@ -276,7 +291,7 @@ determine <span class="math">\(\chi(k)\)</span> and <span class="math">\(\mu_0(E
 
 </div>
 <div class="section" id="the-autobk-algorithm">
-<h2>7.3.2. The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
+<h2>8.3.2. The AUTOBK Algorithm<a class="headerlink" href="#the-autobk-algorithm" title="Permalink to this headline">¶</a></h2>
 <p>The background subtraction method used is the <strong>AUTOBK</strong> algorithm
 (see <span class="citation"><a class="reference internal" href="../biblio.html#citation-autobk">Newville, Livins, Yacoby, Rehr and Stern</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-autobk">11</a><span>]</span></span>), in which a spline function is matched to the
 low-<em>R</em> components of the resulting <span class="math">\(\chi(k)\)</span>.</p>
@@ -306,7 +321,7 @@ essentially the same -- so that we do not need to carefully take care of
 slow energy drifts in the measured <span class="math">\(\mu(E)\)</span> or worry about having an
 absolute measure of <span class="math">\(\mu(E)\)</span>.</p>
 <div class="section" id="and-spline-for">
-<h3>7.3.2.1. <span class="math">\(R_{\rm bkg}\)</span> and spline for <span class="math">\(\mu_0(E)\)</span><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
+<h3>8.3.2.1. <span class="math">\(R_{\rm bkg}\)</span> and spline for <span class="math">\(\mu_0(E)\)</span><a class="headerlink" href="#and-spline-for" title="Permalink to this headline">¶</a></h3>
 <p>A spline is a general mathematical function, and so using one to match
 <span class="math">\(\mu(E)\)</span> that we will subtract from the same <span class="math">\(\mu(E)\)</span> could
 easily match <em>too</em> well, and erase much of the data we're interested in.
@@ -355,7 +370,7 @@ even try to match those frequencies.  Thus, we are ensured of a
 <span class="math">\(\chi\)</span>.</p>
 </div>
 <div class="section" id="selecting-fourier-transform-parameters">
-<h3>7.3.2.2. Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
+<h3>8.3.2.2. Selecting Fourier transform parameters<a class="headerlink" href="#selecting-fourier-transform-parameters" title="Permalink to this headline">¶</a></h3>
 <p>In order to determine <span class="math">\(\mu_0(E)\)</span>, we must do a Fourier transform.
 These are discussed in more detail in the next section, but here we give
 the parameters affecting the Fourier transform used, and their default
@@ -425,7 +440,7 @@ parameter values for <a class="reference internal" href="#_xafs.autobk" title="_
 minor adjustments except in unusual cases.</p>
 </div>
 <div class="section" id="using-a-standard">
-<h3>7.3.2.3. Using a standard <span class="math">\(\chi(k)\)</span><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
+<h3>8.3.2.3. Using a standard <span class="math">\(\chi(k)\)</span><a class="headerlink" href="#using-a-standard" title="Permalink to this headline">¶</a></h3>
 <p>We said above that we want to minimize the low-<span class="math">\(R\)</span> components of
 <span class="math">\(\chi\)</span>.  In principle, there should be some leakage of the first
 shell to fairly low-<span class="math">\(R\)</span>.  This is especially noticeable for a short
@@ -442,7 +457,7 @@ be those that minimize the Fourier transorm of the difference of
 to give more consistent background for a set of related spectra.</p>
 </div>
 <div class="section" id="end-point-clamps-for-the-spline">
-<h3>7.3.2.4. End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
+<h3>8.3.2.4. End-point clamps for the spline<a class="headerlink" href="#end-point-clamps-for-the-spline" title="Permalink to this headline">¶</a></h3>
 <p>Because the spline is chosen to match the low-<span class="math">\(R\)</span> components of
 <span class="math">\(\chi\)</span>, the process does not even look at how the resulting
 <span class="math">\(\mu_0(E)\)</span> looks.  This can lead to some unstable behavior at the
@@ -466,7 +481,7 @@ strong clamp that will almost certainly force <span class="math">\(\chi(k)\)</sp
 the end-points.</p>
 </div>
 <div class="section" id="recommendations">
-<h3>7.3.2.5. Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h3>
+<h3>8.3.2.5. Recommendations<a class="headerlink" href="#recommendations" title="Permalink to this headline">¶</a></h3>
 <p>Here, we give a few recommendations on what parameters most affect the
 background subtraction.  These parameters are (in roughly increasing
 order):</p>
@@ -486,11 +501,11 @@ the endpoints too much, increasing these values can help greatly.</p>
 </div>
 </div>
 <div class="section" id="examples">
-<h2>7.3.3. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
+<h2>8.3.3. Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
 <p>Here, we give a few examples using <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>, and outline some of its
 features.</p>
 <div class="section" id="basic-example">
-<h3>7.3.3.1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h3>
+<h3>8.3.3.1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h3>
 <p>The simplest example of reading data and doing background subtraction would
 using all the default inputs would be:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/xafs/doc_autobk1.lar</span>
@@ -520,7 +535,7 @@ using all the default inputs would be:</p>
 <a class="reference external image-reference" href="../_images/xafs_autobk1b.png"><img alt="../_images/xafs_autobk1b.png" src="../_images/xafs_autobk1b.png" style="width: 100%;" /></a>
 <p class="caption"><strong>(b)</strong> resulting <span class="math">\(k\chi(k)\)</span></p>
 </div>
-<p class="caption"><strong>Figure 7.2:</strong> Example of simple usage of <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> for Cu metal.</p>
+<p class="caption"><strong>Figure 8.2:</strong> Example of simple usage of <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> for Cu metal.</p>
 </div><p id="fig_xafs2">Thus demonstrating that we can process data on Cu metal.</p>
 <p>For a slightly more challenging example, we try the As K-edge of scorodite
 (<span class="math">\(\rm FeAsO4 \cdot (nH_2O)\)</span>).  Here, we start by reading in data and
@@ -558,12 +573,12 @@ here to demonstrate the method for passing arguments to <a class="reference inte
 <div style="width: 45%" class="subfigure" id="fig-xafs3b">
 <a class="reference external image-reference" href="../_images/xafs_autobk2b.png"><img alt="../_images/xafs_autobk2b.png" src="../_images/xafs_autobk2b.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.3:</strong> Example usage of <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> for <span class="math">\(\rm FeAsO4 \cdot (nH_2O)\)</span>.</p>
+<p class="caption"><strong>Figure 8.3:</strong> Example usage of <a class="reference internal" href="#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> for <span class="math">\(\rm FeAsO4 \cdot (nH_2O)\)</span>.</p>
 </div><p id="fig-xafs3">A close examimation of <span class="math">\(k^2\chi(k)\)</span> suggests we might be able to do
 better, which brings us to the next section.</p>
 </div>
 <div class="section" id="adjusting-spline-clamps">
-<h3>7.3.3.2. Adjusting spline clamps<a class="headerlink" href="#adjusting-spline-clamps" title="Permalink to this headline">¶</a></h3>
+<h3>8.3.3.2. Adjusting spline clamps<a class="headerlink" href="#adjusting-spline-clamps" title="Permalink to this headline">¶</a></h3>
 <p>For the scorodite example above, the XAFS diverges from 0 at the
 high-<span class="math">\(k\)</span> end of the spectra.  Playing with the spline clamps
 discussed above, we try a few options to study the effect of adding a
@@ -600,11 +615,11 @@ clamp:</p>
 <p>results in the following comparison:</p>
 <div class="figure" id="xafs-fig4">
 <a class="reference external image-reference" href="../_images/xafs_autobk3.png"><img alt="../_images/xafs_autobk3.png" src="../_images/xafs_autobk3.png" style="width: 65%;" /></a>
-<p class="caption"><strong>Figure 7.4:</strong> Influence of spline clamps of <span class="math">\(\chi(k)\)</span></p>
+<p class="caption"><strong>Figure 8.4:</strong> Influence of spline clamps of <span class="math">\(\chi(k)\)</span></p>
 </div>
 </div>
 <div class="section" id="id1">
-<h3>7.3.3.3. Using a Standard <span class="math">\(\chi(k)\)</span><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<h3>8.3.3.3. Using a Standard <span class="math">\(\chi(k)\)</span><a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
 <p>Since the EXAFS contribution from the first shell is not perfectly isolated
 in <span class="math">\(R\)</span>, it can leak into portion of <span class="math">\(\chi(R)\)</span> below
 <span class="math">\(R_{\rm bkg}\)</span>.  It may be desirable to not simply reduce the portion
@@ -663,28 +678,25 @@ function.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="xafsft.html" title="7.4. XAFS: Fourier Transforms for XAFS"
+          <a href="xafsft.html" title="8.4. XAFS: Fourier Transforms for XAFS"
              >next</a> |</li>
         <li class="right" >
-          <a href="preedge.html" title="7.2. XAFS: Pre-edge Subtraction and Normalization"
+          <a href="preedge.html" title="8.2. XAFS: Pre-edge Subtraction and Normalization"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >7. XAFS Analysis</a> &raquo;</li> 
+          <li><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

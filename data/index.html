@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4. Reading and Writing Data &mdash; larch 0.9.23 documentation</title>
+    <title>5. Reading and Writing Data &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,28 +25,45 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="next" title="5. Plotting and Displaying Data" href="../plotting/index.html" />
-    <link rel="prev" title="3.8. Tutorial: Builtin Functions" href="../tutorial/builtins.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="next" title="6. Plotting and Displaying Data" href="../plotting/index.html" />
+    <link rel="prev" title="4.8. Tutorial: Builtin Functions" href="../tutorial/builtins.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -55,21 +73,18 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../plotting/index.html" title="5. Plotting and Displaying Data"
+          <a href="../plotting/index.html" title="6. Plotting and Displaying Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../tutorial/builtins.html" title="3.8. Tutorial: Builtin Functions"
+          <a href="../tutorial/builtins.html" title="4.8. Tutorial: Builtin Functions"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="#">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="#">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
  
       </ul>
     </div>
@@ -78,25 +93,25 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">4. Reading and Writing Data</a><ul>
-<li><a class="reference internal" href="#simple-ascii-column-files">4.1. Simple ASCII Column Files</a></li>
-<li><a class="reference internal" href="#using-hdf5-files">4.2. Using HDF5 Files</a></li>
-<li><a class="reference internal" href="#reading-netcdf-files">4.3. Reading NetCDF Files</a></li>
-<li><a class="reference internal" href="#reading-tiff-images">4.4. Reading TIFF Images</a></li>
-<li><a class="reference internal" href="#working-with-epics-channel-access">4.5. Working with Epics Channel Access</a></li>
-<li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">4.6. Reading Scan Data from APS Beamlines</a></li>
-<li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">4.7. Reading XAFS Data Interchange (XDI) Files</a></li>
-<li><a class="reference internal" href="#saving-and-restoring-larch-groups">4.8. Saving and Restoring Larch Groups</a></li>
+<li><a class="reference internal" href="#">5. Reading and Writing Data</a><ul>
+<li><a class="reference internal" href="#simple-ascii-column-files">5.1. Simple ASCII Column Files</a></li>
+<li><a class="reference internal" href="#using-hdf5-files">5.2. Using HDF5 Files</a></li>
+<li><a class="reference internal" href="#reading-netcdf-files">5.3. Reading NetCDF Files</a></li>
+<li><a class="reference internal" href="#reading-tiff-images">5.4. Reading TIFF Images</a></li>
+<li><a class="reference internal" href="#working-with-epics-channel-access">5.5. Working with Epics Channel Access</a></li>
+<li><a class="reference internal" href="#reading-scan-data-from-aps-beamlines">5.6. Reading Scan Data from APS Beamlines</a></li>
+<li><a class="reference internal" href="#reading-xafs-data-interchange-xdi-files">5.7. Reading XAFS Data Interchange (XDI) Files</a></li>
+<li><a class="reference internal" href="#saving-and-restoring-larch-groups">5.8. Saving and Restoring Larch Groups</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="../tutorial/builtins.html"
-                        title="previous chapter">3.8. Tutorial: Builtin Functions</a></p>
+                        title="previous chapter">4.8. Tutorial: Builtin Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../plotting/index.html"
-                        title="next chapter">5. Plotting and Displaying Data</a></p>
+                        title="next chapter">6. Plotting and Displaying Data</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/data/index.txt"
@@ -124,7 +139,7 @@
           <div class="body">
             
   <div class="section" id="reading-and-writing-data">
-<span id="data-io-chapter"></span><h1>4. Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Permalink to this headline">¶</a></h1>
+<span id="data-io-chapter"></span><h1>5. Reading and Writing Data<a class="headerlink" href="#reading-and-writing-data" title="Permalink to this headline">¶</a></h1>
 <p>Larch has several built-in functions for reading and writing scientific
 data.  The intention is that the types and varieties of supported files
 will increase.  In addition, because standard Python modules can be used
@@ -132,7 +147,7 @@ from Larch, many types of standard data and image types can be used by
 importing the appropriate Python module.  This chapter describes the Larch
 functions for data handling.</p>
 <span class="target" id="module-_io"></span><div class="section" id="simple-ascii-column-files">
-<h2>4.1. Simple ASCII Column Files<a class="headerlink" href="#simple-ascii-column-files" title="Permalink to this headline">¶</a></h2>
+<h2>5.1. Simple ASCII Column Files<a class="headerlink" href="#simple-ascii-column-files" title="Permalink to this headline">¶</a></h2>
 <p>A simple way to store small amounts of numerical data, and one that is
 widely used in the XAFS community, is to store data in plaintext (ASCII
 encoded) data files, with whitespace delimited numbers layed out as a
@@ -239,7 +254,7 @@ data.</p>
 
 </div>
 <div class="section" id="using-hdf5-files">
-<h2>4.2. Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
+<h2>5.2. Using HDF5 Files<a class="headerlink" href="#using-hdf5-files" title="Permalink to this headline">¶</a></h2>
 <p>HDF5 is an increasingly popular data format for scientific data, as it can
 efficiently hold very large arrays in a heirarchical format that holds
 &quot;metadata&quot; about the data, and can be explored with a variety of tools.
@@ -285,7 +300,7 @@ and schemas become standardized, better interfaces can easily be made on
 top of this approach.</p>
 </div>
 <div class="section" id="reading-netcdf-files">
-<h2>4.3. Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Permalink to this headline">¶</a></h2>
+<h2>5.3. Reading NetCDF Files<a class="headerlink" href="#reading-netcdf-files" title="Permalink to this headline">¶</a></h2>
 <p>NetCDF4 is an older and less flexible file format than HDF5, but is
 efficient for storing array data and still in wide use.</p>
 <dl class="function">
@@ -302,7 +317,7 @@ efficient for storing array data and still in wide use.</p>
 
 </div>
 <div class="section" id="reading-tiff-images">
-<h2>4.4. Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Permalink to this headline">¶</a></h2>
+<h2>5.4. Reading TIFF Images<a class="headerlink" href="#reading-tiff-images" title="Permalink to this headline">¶</a></h2>
 <p>TIFF is a popular image format used by many cameras and detectors. The
 interface used in Larch is based on code from Chrisoph Gohlke.</p>
 <dl class="function">
@@ -321,7 +336,7 @@ and multiple series.</p>
 
 </div>
 <div class="section" id="working-with-epics-channel-access">
-<h2>4.5. Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Permalink to this headline">¶</a></h2>
+<h2>5.5. Working with Epics Channel Access<a class="headerlink" href="#working-with-epics-channel-access" title="Permalink to this headline">¶</a></h2>
 <p>Many synchrotron facilities use the Epics control system.  If the Epics
 Channel Access layer, which requires network access and configuration
 discussed elsewhere, are set correcty, then Larch can read and write data
@@ -355,7 +370,7 @@ which will be run with new values everytime the PV value changes.</p>
 
 </div>
 <div class="section" id="reading-scan-data-from-aps-beamlines">
-<h2>4.6. Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Permalink to this headline">¶</a></h2>
+<h2>5.6. Reading Scan Data from APS Beamlines<a class="headerlink" href="#reading-scan-data-from-aps-beamlines" title="Permalink to this headline">¶</a></h2>
 <p>This list is minimal, but can be expanded easily to accomodate more
 facilities and beamlines.</p>
 <dl class="function">
@@ -380,7 +395,7 @@ very well tested -- use with caution!</p>
 
 </div>
 <div class="section" id="reading-xafs-data-interchange-xdi-files">
-<h2>4.7. Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Permalink to this headline">¶</a></h2>
+<h2>5.7. Reading XAFS Data Interchange (XDI) Files<a class="headerlink" href="#reading-xafs-data-interchange-xdi-files" title="Permalink to this headline">¶</a></h2>
 <p>The X-ray Data Interchange Format has been developed as part of an effort
 to standardize the format of XAFS data files (see <a class="reference external" href="https://github.com/XraySpectroscopy/XAS-Data-Interchange">xdi</a>.)</p>
 <dl class="function">
@@ -391,7 +406,7 @@ to standardize the format of XAFS data files (see <a class="reference external" 
 
 </div>
 <div class="section" id="saving-and-restoring-larch-groups">
-<h2>4.8. Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
+<h2>5.8. Saving and Restoring Larch Groups<a class="headerlink" href="#saving-and-restoring-larch-groups" title="Permalink to this headline">¶</a></h2>
 <p>It is often useful to save groups of data and be able to open them again
 later.  The <a class="reference internal" href="#_io.save" title="_io.save"><tt class="xref py py-func docutils literal"><span class="pre">save()</span></tt></a> / <a class="reference internal" href="#_io.restore" title="_io.restore"><tt class="xref py py-func docutils literal"><span class="pre">restore()</span></tt></a> mechanism here allows you to
 save the state of a number of Larch groups and use them in another session.</p>
@@ -432,27 +447,24 @@ the save file will be put inside that group, and will not be returned.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../plotting/index.html" title="5. Plotting and Displaying Data"
+          <a href="../plotting/index.html" title="6. Plotting and Displaying Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="../tutorial/builtins.html" title="3.8. Tutorial: Builtin Functions"
+          <a href="../tutorial/builtins.html" title="4.8. Tutorial: Builtin Functions"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="#">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="#">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
  
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

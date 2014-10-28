@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>5. Plotting and Displaying Data &mdash; larch 0.9.23 documentation</title>
+    <title>6. Plotting and Displaying Data &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,28 +25,45 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="next" title="6. Fitting and Modeling Data" href="../fitting/index.html" />
-    <link rel="prev" title="4. Reading and Writing Data" href="../data/index.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="next" title="7. Fitting and Modeling Data" href="../fitting/index.html" />
+    <link rel="prev" title="5. Reading and Writing Data" href="../data/index.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -55,21 +73,18 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="../fitting/index.html" title="6. Fitting and Modeling Data"
+          <a href="../fitting/index.html" title="7. Fitting and Modeling Data"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../data/index.html" title="4. Reading and Writing Data"
+          <a href="../data/index.html" title="5. Reading and Writing Data"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="#">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="#">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
  
       </ul>
     </div>
@@ -78,26 +93,26 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">5. Plotting and Displaying Data</a><ul>
-<li><a class="reference internal" href="#line-plots">5.1. Line Plots</a><ul>
-<li><a class="reference internal" href="#plotting-commands">5.1.1. Plotting commands</a></li>
-<li><a class="reference internal" href="#plot-examples">5.1.2. Plot Examples</a></li>
-<li><a class="reference internal" href="#interactive-use-of-the-plot-windows">5.1.3. Interactive Use of the Plot Windows</a></li>
-<li><a class="reference internal" href="#using-tex-like-commands-for-labels-and-titles">5.1.4. Using TeX-like commands for labels and titles</a></li>
+<li><a class="reference internal" href="#">6. Plotting and Displaying Data</a><ul>
+<li><a class="reference internal" href="#line-plots">6.1. Line Plots</a><ul>
+<li><a class="reference internal" href="#plotting-commands">6.1.1. Plotting commands</a></li>
+<li><a class="reference internal" href="#plot-examples">6.1.2. Plot Examples</a></li>
+<li><a class="reference internal" href="#interactive-use-of-the-plot-windows">6.1.3. Interactive Use of the Plot Windows</a></li>
+<li><a class="reference internal" href="#using-tex-like-commands-for-labels-and-titles">6.1.4. Using TeX-like commands for labels and titles</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#image-display-and-contour">5.2. Image Display and Contour</a></li>
-<li><a class="reference internal" href="#advanced-plotting-using-matplotlib">5.3. Advanced Plotting: using matplotlib</a></li>
+<li><a class="reference internal" href="#image-display-and-contour">6.2. Image Display and Contour</a></li>
+<li><a class="reference internal" href="#advanced-plotting-using-matplotlib">6.3. Advanced Plotting: using matplotlib</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="../data/index.html"
-                        title="previous chapter">4. Reading and Writing Data</a></p>
+                        title="previous chapter">5. Reading and Writing Data</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../fitting/index.html"
-                        title="next chapter">6. Fitting and Modeling Data</a></p>
+                        title="next chapter">7. Fitting and Modeling Data</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/plotting/index.txt"
@@ -125,7 +140,7 @@
           <div class="body">
             
   <div class="section" id="plotting-and-displaying-data">
-<span id="plotting-chapter"></span><h1>5. Plotting and Displaying Data<a class="headerlink" href="#plotting-and-displaying-data" title="Permalink to this headline">¶</a></h1>
+<span id="plotting-chapter"></span><h1>6. Plotting and Displaying Data<a class="headerlink" href="#plotting-and-displaying-data" title="Permalink to this headline">¶</a></h1>
 <p>Plotting and Visualizing data are vital to any scientific analysis package,
 and Larch provides several methods for data visualization.  These are
 largely built on two types of data display.  The first is the line plot
@@ -142,7 +157,7 @@ Finally, copying and saving images of the graphics is easy and can be done
 either with keyboard commands such as Ctrl-C or from dropdown menus on the
 graphic elements.</p>
 <div class="section" id="line-plots">
-<h2>5.1. Line Plots<a class="headerlink" href="#line-plots" title="Permalink to this headline">¶</a></h2>
+<h2>6.1. Line Plots<a class="headerlink" href="#line-plots" title="Permalink to this headline">¶</a></h2>
 <p>Larch provides a few functions for making line plots, with the principle
 function being called <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt>.  The <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function takes two
 arrays: <cite>x</cite>, the abscissa array, and <cite>y</cite>, the ordinate array.  It also
@@ -159,7 +174,7 @@ give even more options, including Copy-to-clipboard and printing.</p>
 window, and you can control which one is drawn to with a plot window index
 <tt class="docutils literal"><span class="pre">win</span></tt>.</p>
 <span class="target" id="module-_plotter"></span><div class="section" id="plotting-commands">
-<h3>5.1.1. Plotting commands<a class="headerlink" href="#plotting-commands" title="Permalink to this headline">¶</a></h3>
+<h3>6.1.1. Plotting commands<a class="headerlink" href="#plotting-commands" title="Permalink to this headline">¶</a></h3>
 <dl class="method">
 <dt id="_plotter.plot">
 <tt class="descclassname">_plotter.</tt><tt class="descname">plot</tt><big>(</big><em>x</em>, <em>y</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.plot" title="Permalink to this definition">¶</a></dt>
@@ -592,12 +607,12 @@ just happens that the data for the trace has been replaced.</p>
 access to the PlotDisplay object, which is the wxPython frame for the
 plot window.  The plot itself is contained in the <tt class="docutils literal"><span class="pre">panel</span></tt> attribute,
 which contains the matplotlib components  <tt class="docutils literal"><span class="pre">axes</span></tt> and <tt class="docutils literal"><span class="pre">canvas</span></tt>.  For
-more details, see <a class="reference internal" href="#plot-mpl-sec">5.3</a>.</p>
+more details, see <a class="reference internal" href="#plot-mpl-sec">6.3</a>.</p>
 </dd></dl>
 
 </div>
 <div class="section" id="plot-examples">
-<h3>5.1.2. Plot Examples<a class="headerlink" href="#plot-examples" title="Permalink to this headline">¶</a></h3>
+<h3>6.1.2. Plot Examples<a class="headerlink" href="#plot-examples" title="Permalink to this headline">¶</a></h3>
 <p>Here are a few example line plots, to whet your appetite:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">101</span><span class="p">)</span>
 <span class="n">y1</span> <span class="o">=</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
@@ -608,7 +623,7 @@ more details, see <a class="reference internal" href="#plot-mpl-sec">5.3</a>.</p
 <p>will make this plot:</p>
 <div class="figure" id="plotting-fig1">
 <a class="reference external image-reference" href="../_images/plot_basic1.png"><img alt="../_images/plot_basic1.png" src="../_images/plot_basic1.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 5.1:</strong> A basic line plot.</p>
+<p class="caption"><strong>Figure 6.1:</strong> A basic line plot.</p>
 </div>
 <p>Adding a second curve, and setting some labels:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s">&#39;x (mm)&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s">&#39;f(x)&#39;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s">&#39;Example Plot&#39;</span><span class="p">)</span>
@@ -617,11 +632,11 @@ more details, see <a class="reference internal" href="#plot-mpl-sec">5.3</a>.</p
 <p>will make this plot:</p>
 <div class="figure" id="plotting-fig2">
 <a class="reference external image-reference" href="../_images/plot_basic2.png"><img alt="../_images/plot_basic2.png" src="../_images/plot_basic2.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 5.2:</strong> A line plot with two curves.</p>
+<p class="caption"><strong>Figure 6.2:</strong> A line plot with two curves.</p>
 </div>
 </div>
 <div class="section" id="interactive-use-of-the-plot-windows">
-<h3>5.1.3. Interactive Use of the Plot Windows<a class="headerlink" href="#interactive-use-of-the-plot-windows" title="Permalink to this headline">¶</a></h3>
+<h3>6.1.3. Interactive Use of the Plot Windows<a class="headerlink" href="#interactive-use-of-the-plot-windows" title="Permalink to this headline">¶</a></h3>
 <p>From the main plot window, you can perform several tasks interactively:</p>
 <p><strong>Getting Cursor Position</strong>:</p>
 <p>From the plot window you can click the left button of your mouse, and see
@@ -664,13 +679,13 @@ select Configure) will bring up the plot configuration window, which looks
 like this:</p>
 <div class="figure" id="plotting-fig3">
 <a class="reference external image-reference" href="../_images/plot_config.png"><img alt="../_images/plot_config.png" src="../_images/plot_config.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 5.3:</strong> Screenshot of the Configuration window for Plots.</p>
+<p class="caption"><strong>Figure 6.3:</strong> Screenshot of the Configuration window for Plots.</p>
 </div>
 <p>From here you can set the titles, axis labels, and styles, colors, symbols,
 labels, and so on for each of the line traces drawn.</p>
 </div>
 <div class="section" id="using-tex-like-commands-for-labels-and-titles">
-<h3>5.1.4. Using TeX-like commands for labels and titles<a class="headerlink" href="#using-tex-like-commands-for-labels-and-titles" title="Permalink to this headline">¶</a></h3>
+<h3>6.1.4. Using TeX-like commands for labels and titles<a class="headerlink" href="#using-tex-like-commands-for-labels-and-titles" title="Permalink to this headline">¶</a></h3>
 <p>The titles and labels for plot elements can be simple strings or use a
 subset of TeX markup to give fine control over typesetting greek letters,
 mathematical symbols and formulae.   A simple example would be:</p>
@@ -702,7 +717,7 @@ normal white color) if there is an error in rendering your TeX string.</p>
 </div>
 </div>
 <div class="section" id="image-display-and-contour">
-<h2>5.2. Image Display and Contour<a class="headerlink" href="#image-display-and-contour" title="Permalink to this headline">¶</a></h2>
+<h2>6.2. Image Display and Contour<a class="headerlink" href="#image-display-and-contour" title="Permalink to this headline">¶</a></h2>
 <dl class="method">
 <dt id="_plotter.imshow">
 <tt class="descclassname">_plotter.</tt><tt class="descname">imshow</tt><big>(</big><em>dat</em>, <em>x=None</em>, <em>y=None</em>, <em>colormap=None</em>, <em>**kws</em><big>)</big><a class="headerlink" href="#_plotter.imshow" title="Permalink to this definition">¶</a></dt>
@@ -782,16 +797,16 @@ image, generated with</p>
 <p>is shown below:</p>
 <div class="figure" id="plotting-fig4">
 <a class="reference external image-reference" href="../_images/plot_image1.png"><img alt="../_images/plot_image1.png" src="../_images/plot_image1.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 5.4:</strong> A false-color display of 2 dimensional image data.</p>
+<p class="caption"><strong>Figure 6.4:</strong> A false-color display of 2 dimensional image data.</p>
 </div>
 <p>and as a contour plot, with a different color table:</p>
 <div class="figure" id="plotting-fig5">
 <a class="reference external image-reference" href="../_images/plot_contour1.png"><img alt="../_images/plot_contour1.png" src="../_images/plot_contour1.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 5.5:</strong> A contour plot of 2 dimensional image data.</p>
+<p class="caption"><strong>Figure 6.5:</strong> A contour plot of 2 dimensional image data.</p>
 </div>
 </div>
 <div class="section" id="advanced-plotting-using-matplotlib">
-<span id="plot-mpl-sec"></span><h2>5.3. Advanced Plotting: using matplotlib<a class="headerlink" href="#advanced-plotting-using-matplotlib" title="Permalink to this headline">¶</a></h2>
+<span id="plot-mpl-sec"></span><h2>6.3. Advanced Plotting: using matplotlib<a class="headerlink" href="#advanced-plotting-using-matplotlib" title="Permalink to this headline">¶</a></h2>
 <p>So far, this chapter has shown how to make simple plots and images.
 One of the main goals of Larch is to not only make the simple tasks very
 simple, but to keep the more difficult tasks possible and accessible.  To
@@ -857,7 +872,7 @@ matplotlib's <tt class="xref py py-func docutils literal"><span class="pre">hist
 <p>which generates a plot that looks like</p>
 <div class="figure" id="plotting-fig6">
 <a class="reference external image-reference" href="../_images/plot_histogram.png"><img alt="../_images/plot_histogram.png" src="../_images/plot_histogram.png" style="width: 60%;" /></a>
-<p class="caption"><strong>Figure 5.6:</strong> A histogram plot made using matplotlib's <tt class="xref py py-func docutils literal"><span class="pre">hist()</span></tt> function.</p>
+<p class="caption"><strong>Figure 6.6:</strong> A histogram plot made using matplotlib's <tt class="xref py py-func docutils literal"><span class="pre">hist()</span></tt> function.</p>
 </div>
 </div>
 </div>
@@ -875,27 +890,24 @@ matplotlib's <tt class="xref py py-func docutils literal"><span class="pre">hist
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="../fitting/index.html" title="6. Fitting and Modeling Data"
+          <a href="../fitting/index.html" title="7. Fitting and Modeling Data"
              >next</a> |</li>
         <li class="right" >
-          <a href="../data/index.html" title="4. Reading and Writing Data"
+          <a href="../data/index.html" title="5. Reading and Writing Data"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="#">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="#">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
  
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

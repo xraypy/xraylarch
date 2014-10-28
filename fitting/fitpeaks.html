@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>6.7. Simplified Peak Fitting with fit_peak() &mdash; larch 0.9.23 documentation</title>
+    <title>7.7. Simplified Peak Fitting with fit_peak() &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,29 +25,46 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="up" title="6. Fitting and Modeling Data" href="index.html" />
-    <link rel="next" title="6.8. Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
-    <link rel="prev" title="6.6. Fit Examples" href="examples.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
+    <link rel="next" title="7.8. Advanced Confidence Intervals and Chi-square maps" href="confidence.html" />
+    <link rel="prev" title="7.6. Fit Examples" href="examples.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="../tutorial/index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="confidence.html" title="6.8. Advanced Confidence Intervals and Chi-square maps"
+          <a href="confidence.html" title="7.8. Advanced Confidence Intervals and Chi-square maps"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="6.6. Fit Examples"
+          <a href="examples.html" title="7.6. Fit Examples"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">6. Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -80,19 +95,19 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">6.7. Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a><ul>
-<li><a class="reference internal" href="#example-fitting-a-gaussian-background-with-fit-peak">6.7.1. Example: Fitting a Gaussian + background with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></li>
-<li><a class="reference internal" href="#example-fitting-a-rectangular-function-with-fit-peak">6.7.2. Example: Fitting a Rectangular function with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></li>
+<li><a class="reference internal" href="#">7.7. Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a><ul>
+<li><a class="reference internal" href="#example-fitting-a-gaussian-background-with-fit-peak">7.7.1. Example: Fitting a Gaussian + background with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></li>
+<li><a class="reference internal" href="#example-fitting-a-rectangular-function-with-fit-peak">7.7.2. Example: Fitting a Rectangular function with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="examples.html"
-                        title="previous chapter">6.6. Fit Examples</a></p>
+                        title="previous chapter">7.6. Fit Examples</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="confidence.html"
-                        title="next chapter">6.8. Advanced Confidence Intervals and Chi-square maps</a></p>
+                        title="next chapter">7.8. Advanced Confidence Intervals and Chi-square maps</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/fitting/fitpeaks.txt"
@@ -120,7 +135,7 @@
           <div class="body">
             
   <div class="section" id="module-_math">
-<span id="simplified-peak-fitting-with-fit-peak"></span><h1>6.7. Simplified Peak Fitting with <tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt><a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
+<span id="simplified-peak-fitting-with-fit-peak"></span><h1>7.7. Simplified Peak Fitting with <tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt><a class="headerlink" href="#module-_math" title="Permalink to this headline">¶</a></h1>
 <p>As shown in the previous sections, it is pretty simple to use Larch's
 fitting mechanism to set up and perform fits to data.  In fact, it is
 pretty commom to need to fit data to simple line-shapes, as when setting up
@@ -272,7 +287,7 @@ be included, which (depending on the form chosen) will add parameters named
 </div></blockquote>
 </div></blockquote>
 <div class="section" id="example-fitting-a-gaussian-background-with-fit-peak">
-<h2>6.7.1. Example: Fitting a Gaussian + background with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a><a class="headerlink" href="#example-fitting-a-gaussian-background-with-fit-peak" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.1. Example: Fitting a Gaussian + background with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a><a class="headerlink" href="#example-fitting-a-gaussian-background-with-fit-peak" title="Permalink to this headline">¶</a></h2>
 <p>As in the <a class="reference internal" href="examples.html#fit-example1-sec"><em>Example in the previous section</em></a>, we
 make a simple mock data set and fit a Gaussian function to it. Here we also
 add a linear background, and do the whole fit with a single function,
@@ -330,7 +345,7 @@ not strictly correct.</p>
 <p>And the plot of data and fit will look like this:</p>
 <div class="figure" id="fig-fitpeak1">
 <a class="reference external image-reference" href="../_images/fit_peakfit1.png"><img alt="../_images/fit_peakfit1.png" src="../_images/fit_peakfit1.png" style="width: 65%;" /></a>
-<p class="caption"><strong>Figure 6.9:</strong> Simple fit to mock data using a Gaussian model and a linear background
+<p class="caption"><strong>Figure 7.9:</strong> Simple fit to mock data using a Gaussian model and a linear background
 with the <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a> function.</p>
 </div>
 <p>Although the fit is quite good, the model is probably imperfect, and using
@@ -339,7 +354,7 @@ point here is not just that the fit is good, but that it was accomplished
 with a single line of code.</p>
 </div>
 <div class="section" id="example-fitting-a-rectangular-function-with-fit-peak">
-<h2>6.7.2. Example: Fitting a Rectangular function with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a><a class="headerlink" href="#example-fitting-a-rectangular-function-with-fit-peak" title="Permalink to this headline">¶</a></h2>
+<h2>7.7.2. Example: Fitting a Rectangular function with <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a><a class="headerlink" href="#example-fitting-a-rectangular-function-with-fit-peak" title="Permalink to this headline">¶</a></h2>
 <p>Here, we simulate data that might represent a line-up scan at a beamline.
 The fit is to a function that takes a step up and a step down.</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c">## examples/fitting/doc_example_fitpeak2.lar</span>
@@ -408,7 +423,7 @@ will look like this:</p>
 </div>
 <div class="figure" id="fig-fitpeak2">
 <a class="reference external image-reference" href="../_images/fit_peakfit2.png"><img alt="../_images/fit_peakfit2.png" src="../_images/fit_peakfit2.png" style="width: 65%;" /></a>
-<p class="caption"><strong>Figure 6.10:</strong> Simple fit to mock data to a rectangular function and a linear
+<p class="caption"><strong>Figure 7.10:</strong> Simple fit to mock data to a rectangular function and a linear
 background using the <a class="reference internal" href="#_math.fit_peak" title="_math.fit_peak"><tt class="xref py py-func docutils literal"><span class="pre">fit_peak()</span></tt></a> function.</p>
 </div>
 <p>Again, the principle point here is not how well the rectangular model
@@ -433,28 +448,25 @@ analysis of any data.</p>
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="confidence.html" title="6.8. Advanced Confidence Intervals and Chi-square maps"
+          <a href="confidence.html" title="7.8. Advanced Confidence Intervals and Chi-square maps"
              >next</a> |</li>
         <li class="right" >
-          <a href="examples.html" title="6.6. Fit Examples"
+          <a href="examples.html" title="7.6. Fit Examples"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="../tutorial/index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >6. Fitting and Modeling Data</a> &raquo;</li> 
+          <li><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>

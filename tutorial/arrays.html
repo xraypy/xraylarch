@@ -1,3 +1,4 @@
+
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -6,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>3.3. Tutorial: Basic Array Manipulation &mdash; larch 0.9.23 documentation</title>
+    <title>4.3. Tutorial: Basic Array Manipulation &mdash; larch 0.9.24 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -14,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.23',
+        VERSION:     '0.9.24',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,29 +25,46 @@
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
     <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <script type="text/javascript" src="../_static/sidebar.js"></script>
-    <link rel="top" title="larch 0.9.23 documentation" href="../index.html" />
-    <link rel="up" title="3. Larch Tutorial" href="index.html" />
-    <link rel="next" title="3.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
-    <link rel="prev" title="3.2. Tutorial: Basic and Complex Data Types" href="datatypes.html" />
+    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <link rel="up" title="4. Larch Tutorial" href="index.html" />
+    <link rel="next" title="4.4. Tutorial: Conditional Execution and Flow Control" href="flow.html" />
+    <link rel="prev" title="4.2. Tutorial: Basic and Complex Data Types" href="datatypes.html" />
   <script type="text/x-mathjax-config">
-     MathJax.Hub.Config({
-        "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
-        "HTML-CSS": {scale: 90}
-  });</script>
+     MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
+                         "HTML-CSS": {scale: 90}});
+  </script>
 
   </head>
   <body>
-<div style=" color: #c5daba;  text-align: left; height:100px; padding: 0px">
-<table><tr><td width=0></td>
-  <td width=25% padding=0>
-    <a href="../index.html">
-       <img src="../_static/larchcones.png" height=90px alt="larchcones"/>
-    </a>
-  </td><td width=75% padding=0>
-      <font size=+4><a href="../index.html" style="color: #772211">
-          Larch: X-ray Data Analysis   </a></font>
-</td></tr></table>
+<div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
+<table border=1>
+  <tr>
+    <td width=20% padding=0 rowspan=2>
+	<a href="../index.html">
+         <img src="../_static/larchcones.png" height=80px alt="larchcones"/></a>
+    </td>
+    <td width=54% padding=0>
+	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
+    </td>
+    <td width=8%>
+	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	</td>
+    <td width=8%>
+	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
+        </td>
+    <td width=8%>
+	<a href="../community.html" style="color: #772211"> Community</a></td>
+        </td>
+   </tr>
+  <tr>
+   <td width=54% padding=0>
+	 <font size=+2><a href="../index.html" style="color: #772211">
+	Data Analysis for X-ray Spectrosocopy and Synchrotron Data</a></font>
+   </td>
+    <td width=8%> <a href="../contents.html" style="color: #772211"> Contents</a></td>
+    <td width=8%> <a href="index.html" style="color: #772211"> Tutorial</a></td>
+    <td width=8%> <a href="../overview/index.html" style="color: #772211"> Overview</a></td>
+   </tr></table>
 </div>
 
     <div class="related">
@@ -56,23 +74,20 @@
           <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="flow.html" title="3.4. Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="4.4. Tutorial: Conditional Execution and Flow Control"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="datatypes.html" title="3.2. Tutorial: Basic and Complex Data Types"
+          <a href="datatypes.html" title="4.2. Tutorial: Basic and Complex Data Types"
              accesskey="P">previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">3. Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
@@ -80,23 +95,23 @@
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">3.3. Tutorial: Basic Array Manipulation</a><ul>
-<li><a class="reference internal" href="#functions-for-creating-arrays">3.3.1. Functions for creating arrays</a></li>
-<li><a class="reference internal" href="#the-array-dtype-datatype">3.3.2. The array <em>dtype</em> -- datatype</a></li>
-<li><a class="reference internal" href="#basic-array-manipulation">3.3.3. Basic array manipulation</a></li>
-<li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">3.3.4. Slicing and extracting sub-arrays</a></li>
-<li><a class="reference internal" href="#array-attributes-and-methods">3.3.5. Array attributes and methods</a></li>
-<li><a class="reference internal" href="#mathematical-functions-for-arrays">3.3.6. Mathematical functions for arrays</a></li>
+<li><a class="reference internal" href="#">4.3. Tutorial: Basic Array Manipulation</a><ul>
+<li><a class="reference internal" href="#functions-for-creating-arrays">4.3.1. Functions for creating arrays</a></li>
+<li><a class="reference internal" href="#the-array-dtype-datatype">4.3.2. The array <em>dtype</em> -- datatype</a></li>
+<li><a class="reference internal" href="#basic-array-manipulation">4.3.3. Basic array manipulation</a></li>
+<li><a class="reference internal" href="#slicing-and-extracting-sub-arrays">4.3.4. Slicing and extracting sub-arrays</a></li>
+<li><a class="reference internal" href="#array-attributes-and-methods">4.3.5. Array attributes and methods</a></li>
+<li><a class="reference internal" href="#mathematical-functions-for-arrays">4.3.6. Mathematical functions for arrays</a></li>
 </ul>
 </li>
 </ul>
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="datatypes.html"
-                        title="previous chapter">3.2. Tutorial: Basic and Complex Data Types</a></p>
+                        title="previous chapter">4.2. Tutorial: Basic and Complex Data Types</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="flow.html"
-                        title="next chapter">3.4. Tutorial: Conditional Execution and Flow Control</a></p>
+                        title="next chapter">4.4. Tutorial: Conditional Execution and Flow Control</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="../_sources/tutorial/arrays.txt"
@@ -124,7 +139,7 @@
           <div class="body">
             
   <div class="section" id="tutorial-basic-array-manipulation">
-<span id="tutor-array-sec"></span><h1>3.3. Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
+<span id="tutor-array-sec"></span><h1>4.3. Tutorial: Basic Array Manipulation<a class="headerlink" href="#tutorial-basic-array-manipulation" title="Permalink to this headline">¶</a></h1>
 <p>Arrays are sequences of numerical data, with each element having the same
 underlying data type -- integers, real (floating point) numbers, or complex
 numbers.  Of course, arrays are very important for scientific data, and the
@@ -141,10 +156,10 @@ intended to get you far enough along to be able to manipulate arrays
 sufficiently for most needs.  The <a class="reference external" href="http://docs.scipy.org/doc">numpy documentation</a> is quite extensive
 and well-written, and should be consulted for more details.</p>
 <div class="section" id="functions-for-creating-arrays">
-<h2>3.3.1. Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
+<h2>4.3.1. Functions for creating arrays<a class="headerlink" href="#functions-for-creating-arrays" title="Permalink to this headline">¶</a></h2>
 <p>There are a handful of builtin functions for creating arrays from scratch.
 These are listed in <a class="reference internal" href="#tutor-arraycreate-table"><em>Table of Array Creation Functions</em></a> In addition, when dealing with data stored in
-files, reading the files (see <a class="reference internal" href="../data/index.html#data-io-chapter">4</a>) with Larch will create
+files, reading the files (see <a class="reference internal" href="../data/index.html#data-io-chapter">5</a>) with Larch will create
 arrys for you.  Like lists, arrays are <em>mutable</em>.  That is, elements of
 arrays can be changed without changing the rest of the array.</p>
 <blockquote id="tutor-arraycreate-table">
@@ -289,7 +304,7 @@ array([[-1. , -1. , -1. , -1. , -1. ],
 two-dimensional mesh or map of the input <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> values.</p>
 </div>
 <div class="section" id="the-array-dtype-datatype">
-<h2>3.3.2. The array <em>dtype</em> -- datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
+<h2>4.3.2. The array <em>dtype</em> -- datatype<a class="headerlink" href="#the-array-dtype-datatype" title="Permalink to this headline">¶</a></h2>
 <p>Arrays are sequences of numbers stored in memory to make access to the
 elements of the arrays fast and memory use efficient.  As mentioned above,
 each array will use one of several storage conventions depending on what
@@ -359,7 +374,7 @@ functions using the <tt class="docutils literal"><span class="pre">dtype</span><
 </div></blockquote>
 </div>
 <div class="section" id="basic-array-manipulation">
-<h2>3.3.3. Basic array manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h2>
+<h2>4.3.3. Basic array manipulation<a class="headerlink" href="#basic-array-manipulation" title="Permalink to this headline">¶</a></h2>
 <p>Arrays can either be used as a single object, or individual or ranges of elements can be extracted
 from them.   Usually, mathematical operations and functions done to arrays are applied
 element-by-element.  For example:</p>
@@ -396,7 +411,7 @@ larch&gt; print (y-3*x)[2]
 <p>which leads us to the next section.</p>
 </div>
 <div class="section" id="slicing-and-extracting-sub-arrays">
-<h2>3.3.4. Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
+<h2>4.3.4. Slicing and extracting sub-arrays<a class="headerlink" href="#slicing-and-extracting-sub-arrays" title="Permalink to this headline">¶</a></h2>
 <p>An important aspect of arrays is that they can be treated as a single entity.  That is, <tt class="docutils literal"><span class="pre">sin(x)</span></tt>
 operates on each element of <tt class="docutils literal"><span class="pre">x</span></tt>.  But sometimes it is necessary to get a particular element from
 an array or work on only a selected part of an array.  To do these, one takes a sub-set of the array
@@ -473,7 +488,7 @@ larch&gt; print x[1,:4]   # same
 of 0, for <tt class="docutils literal"><span class="pre">j</span></tt> of the length of the array, and for <tt class="docutils literal"><span class="pre">k</span></tt> of 1.</p>
 </div>
 <div class="section" id="array-attributes-and-methods">
-<h2>3.3.5. Array attributes and methods<a class="headerlink" href="#array-attributes-and-methods" title="Permalink to this headline">¶</a></h2>
+<h2>4.3.5. Array attributes and methods<a class="headerlink" href="#array-attributes-and-methods" title="Permalink to this headline">¶</a></h2>
 <p>Arrays have several useful attributes and methods.  As mentioned above, each array has a
 <tt class="xref py py-data docutils literal"><span class="pre">dtype</span></tt> attribute describing how its data is mapped in memory.  In addition, each
 has a <tt class="xref py py-data docutils literal"><span class="pre">size</span></tt> attribute giving the number of elements, a <tt class="xref py py-data docutils literal"><span class="pre">ndim</span></tt> giving the
@@ -629,7 +644,7 @@ attributes and methods marked <tt class="docutils literal"><span class="pre">rea
 </div></blockquote>
 </div>
 <div class="section" id="mathematical-functions-for-arrays">
-<h2>3.3.6. Mathematical functions for arrays<a class="headerlink" href="#mathematical-functions-for-arrays" title="Permalink to this headline">¶</a></h2>
+<h2>4.3.6. Mathematical functions for arrays<a class="headerlink" href="#mathematical-functions-for-arrays" title="Permalink to this headline">¶</a></h2>
 <p>Many of the basic mathemetical functions in larch automatically work on arrays
 element-by-element.  For example, <tt class="xref py py-func docutils literal"><span class="pre">sqrt()</span></tt> returns the square-root of a single
 value or for each element in an array:</p>
@@ -1087,28 +1102,25 @@ builtin <a class="reference internal" href="builtins.html#help" title="help"><tt
           <a href="../genindex.html" title="General Index"
              >index</a></li>
         <li class="right" >
-          <a href="flow.html" title="3.4. Tutorial: Conditional Execution and Flow Control"
+          <a href="flow.html" title="4.4. Tutorial: Conditional Execution and Flow Control"
              >next</a> |</li>
         <li class="right" >
-          <a href="datatypes.html" title="3.2. Tutorial: Basic and Complex Data Types"
+          <a href="datatypes.html" title="4.2. Tutorial: Basic and Complex Data Types"
              >previous</a> |</li>
-   <li>[<a href="../contents.html">contents</a>|</li>
-   <li><a href="../downloads/index.html">downloads</a>|</li>
-   <li><a href="index.html">tutorial</a>|</li>
-   <li><a href="../data/index.html">data</a>|</li>
-   <li><a href="../plotting/index.html">plot</a>|</li>
-   <li><a href="../fitting/index.html">fit</a>|</li>
-   <li><a href="../xafs/index.html">XAFS</a>|</li>
-   <li><a href="../xray/index.html">Xray Data</a>|</li>
-   <li><a href="../xrf/index.html">XRF</a>|</li>
-   <li><a href="../devel/index.html">devel</a>]</li>
+   <li>[<a href="../data/index.html">Reading Data</a>|</li>
+   <li><a href="../plotting/index.html">Plotting</a>|</li>
+   <li><a href="../fitting/index.html">Fitting Data</a>|</li>
+   <li><a href="../xafs/index.html">XAFS Analysis</a>|</li>
+   <li><a href="../xray/index.html">Xray Databases</a>|</li>
+   <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
+   <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >3. Larch Tutorial</a> &raquo;</li> 
+          <li><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.2.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
     </div>
   </body>
 </html>
