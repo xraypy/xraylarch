@@ -19,7 +19,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import  NoResultFound
 
 # needed for py2exe?
-from sqlalchemy.dialects import sqlite, mysql, postgresql
+# from sqlalchemy.dialects import sqlite, mysql, postgresql
+from sqlalchemy.dialects import sqlite, postgresql
 
 from larch import use_plugin_path
 use_plugin_path('io')
