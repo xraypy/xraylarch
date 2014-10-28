@@ -20,7 +20,8 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
-from sqlalchemy.dialects import sqlite, mysql, postgresql
+from sqlalchemy.dialects import sqlite, postgresql
+# from sqlalchemy.dialects import sqlite, mysql, postgresql
 
 ## status states for commands
 CMD_STATUS = ('unknown', 'requested', 'canceled', 'starting', 'running',
