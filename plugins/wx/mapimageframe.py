@@ -92,6 +92,9 @@ class MapImageFrame(ImageFrame):
         self.det = det
         self.xrmfile = xrmfile
         self.map = map
+        self.title = ''
+        if 'title' in kws:
+            self.title = kws['title']
         ImageFrame.display(self, map, **kws)
         if 'x' in kws:
             self.panel.xdata = kws['x']
@@ -203,17 +206,23 @@ class MapImageFrame(ImageFrame):
             x, y = y, x
             xlabel, y2label = y2label, xlabel
         self.prof_plotter.panel.clear() # reset_config()
-        self.prof_plotter.plot(x, z, xlabel=xlabel, show_legend=True,
-                               xmin=min(x)-3, xmax=max(x)+3, zorder=10,
-                               ylabel='counts', label='counts',
-                               linewidth=2, marker='+', color='blue')
+
+        if len(self.title) < 1:
+            self.title = os.path.split(self.xrmfile.filename)[1]
+
+        opts = dict(linewidth=2, marker='+', markersize=3, 
+                    show_legend=True, xlabel=xlabel)
+        self.prof_plotter.plot(x, z, title=self.title, color='blue',
+                               zorder=20, xmin=min(x)-3, xmax=max(x)+3,
+                               ylabel='counts', label='counts', **opts)
+
         self.prof_plotter.oplot(x, y, y2label=y2label, label=y2label,
-                                side='right', show_legend=True, zorder=5,
-                                color='#771111', linewidth=1, marker='+',
-                                markersize=3)
+                              zorder=3, side='right', color='#771111', **opts)
+
         self.prof_plotter.panel.unzoom_all()
         self.prof_plotter.Show()
         self.zoom_ini = None
+
 
     def prof_report_coords(self, event=None):
         """override report leftdown for profile plotter"""
