@@ -1405,18 +1405,23 @@ class MapViewerFrame(wx.Frame):
         save_workdir('gsemap.dat')
         dlg.Destroy()
 
-    def onAbout(self, eventt=None):
-        msg = """GSECARS X-ray Microprobe Map Viewer:
-Matt Newville <newville @ cars.uchicago.edu>
-       
-   MapViewer version: %s
-   X-ray Larch version: %s
-        """  % (VERSION, larch.version.__version__)
+    def onAbout(self, event=None):
+        #print 'ON ABOUT '
+        info = wx.AboutDialogInfo()
+        #print 'Info ', info
+        
+        info.SetName('GSECARS X-ray Microprobe Map Viewer')
 
-        dlg = wx.MessageDialog(self, msg, "About GSECARS MapViewer",
-                               wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
+        desc = "Using X-ray Larch version: %s" % larch.version.__version__
+
+        info.SetDescription(desc)
+
+        info.SetVersion(VERSION)
+        info.AddDeveloper('Matt Newville: newville at cars.uchicago.edu')
+        #print 'Info ', info
+        
+        dlg = wx.AboutBox(info)
+
 
     def onClose(self, evt):
         save_workdir('gsemap.dat')
