@@ -907,7 +907,7 @@ class XAFS_Scan(LarchStepScan):
 
 
 @ValidateLarchPlugin
-def scan_from_json(text, filename='scan.001', _larch=None):
+def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
     """creates and returns a  LarchStepScan object from
     a json-text representation.
     """
@@ -975,7 +975,9 @@ def scan_from_json(text, filename='scan.001', _larch=None):
                 if len(pvs2) > 0:
                     scan.add_counter(pvs2[1], label="%s_read" % label2)
     # detectors
-    rois = sdict.get('rois', None)
+    if rois is None:
+        rois = sdict.get('rois', None)
+
     for dpars in sdict['detectors']:
         dpars['rois'] = rois
         scan.add_detector(get_detector(**dpars))
@@ -1005,8 +1007,10 @@ def scan_from_db(name, filename='scan.001', _larch=None):
     if _larch.symtable._scan._scandb is None:
         return
     sdb = _larch.symtable._scan._scandb
+    rois = json.loads(sdb.get_info('rois'))
     return scan_from_json(sdb.get_scandef(name).text,
-                          filename=filename, _larch=_larch)
+                          filename=filename, rois=rois,
+                          _larch=_larch)
 
 
 @ValidateLarchPlugin
