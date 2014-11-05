@@ -220,8 +220,9 @@ def leastsq(func, x0, args=(), Dfun=None, ftol=1.e-7, xtol=1.e-7,
     if not isinstance(args, tuple):
         args = (args,)
     shape = _check_func('leastsq', 'func', func, x0, args, n)
-    if isinstance(shape, tuple):  # older versions returned only shape
-                                  # newer versions return (shape, dtype)
+    if isinstance(shape, tuple) and len(shape) > 1:
+        # older versions returned only shape
+        # newer versions return (shape, dtype)
         shape = shape[0]
     m = shape[0]
     if n > m:
