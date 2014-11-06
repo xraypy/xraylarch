@@ -140,7 +140,6 @@ def _eval(text=None, filename=None, _larch=None,
     if _larch is None:
         raise Warning("cannot eval string. larch broken?")
 
-
     if text is None:
         return None
 
@@ -214,7 +213,6 @@ def _eval(text=None, filename=None, _larch=None,
         output = "\n".join(output)
     else:
         output = None
-    # print 'FINAL OUT : ', output
     return output
 
 
@@ -227,16 +225,15 @@ def _run(filename=None, new_module=None, _larch=None):
     if isinstance(filename, file):
         text = filename.read()
         filename = filename.name
-    elif isinstance(filename, str):
-        if os.path.exists(filename) and os.path.isfile(filename):
-            try:
-                text = open(filename).read()
-            except IOError:
-                _larch.writer.write("cannot read file '%s'\n" % filename)
-                return
-        else:
-            _larch.writer.write("file not found '%s'\n" % filename)
+    elif os.path.exists(filename) and os.path.isfile(filename):
+        try:
+            text = open(filename).read()
+        except IOError:
+            _larch.writer.write("cannot read file '%s'\n" % filename)
             return
+    else:
+        _larch.writer.write("file not found '%s'\n" % filename)
+        return
 
     return  _eval(text=text, filename=filename, _larch=_larch,
                   new_module=new_module, interactive=False, printall=False)
