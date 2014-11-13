@@ -26,7 +26,103 @@ For further details, consult the pyepics documentation
            and several other methods.
 '''
 
+caget_doc = """caget(pvname, as_string=False, use_numpy=True, timeout=None)
+
+    get value for Epics PV
+
+    Parameters
+    ----------
+      pvname:    string name of PV
+      as_string: True/False(default) return string representation
+      use_numpy: True(default)/False return numpy array for array PVs
+      count:     max count to return for array PVs
+      timeout:   time in seconds to wait for slow/unconnected PV
+
+    Returns
+    -------
+       PV's value, can by any type.
+
+    Examples
+    --------
+       x = caget('XXX.VAL')
+       x = caget('XXX.VAL', as_string=True)
+
+    Notes
+    ------
+      1. The default timeout is 0.5 sec for scalar PVs.
+      
+""" 
+
+caput_doc = """caput(pvname, value, wait=False, timeout=60)
+
+    put value for Epics PV
+
+    Parameters
+    ----------
+      pvname:    string name of PV
+      value:     value to put.
+      wait:      True/False(default) whether to wait for processing
+                 to complete before returning.
+      timeout:   time in seconds to wait for completion
+
+    Examples
+    --------
+       caput('XXX.VAL', 22)
+       caput('XXX.VAL', 0.0, wait=True)
+
+    Returns
+    -------
+       None
+
+    Notes
+    -----
+     1.  waiting may take a long time, as it waits for all processing
+         to complete (motor move, detector acquire to finish, etc).
+""" 
+
+cainfo_doc = """cainfo(pvname, print_out=True)
+
+    return printable information about pv
+
+    Parameters
+    ----------
+      pvname:    string name of PV
+      print_out: True(default)/False whether to print info to standard out
+                 or return sring with info
+
+    Returns
+    -------
+       None or string with info paragraph
+       
+    Examples
+    --------
+      cainfo('xx.VAL')
+
+    """
+
+pv_doc = """PV(pvname)
+
+    create an Epics PV (Process Variable) object
+
+    Parameters
+    ----------
+      pvname:    string name of PV
+
+    Examples
+    --------
+      mypv = PV('xx.VAL')
+      mypv.get()
+      mypv.put(value)
+      print mypv.pvname, mypv.count, mypv.type
+ 
+    Notes
+    -----
+      A PV has many attributes and methods.  Consult the documentation.
+"""
+
+
 plugins = {}
+
 try:
     import epics
 except:
@@ -41,13 +137,24 @@ else:
     def PV(pvname, _larch=None, **kws):
         return epics.get_pv(pvname, **kws)
 
-    caget.__doc__ = epics.caget.__doc__
-    caput.__doc__ = epics.caput.__doc__
-    cainfo.__doc__ = epics.cainfo.__doc__
-    PV.__doc__ = epics.PV.__doc__
+    caget.__doc__ = caget_doc
+    caput.__doc__ = caput_doc
+    cainfo.__doc__ = cainfo_doc
+    PV.__doc__ = pv_doc
 
     def pv_units(pv, default=''):
-        """get units for pv, with optional default value"""
+        """get units for pv object, with optional default value
+
+    Parameters
+    ----------
+       pv:       pv object (created by PV())
+       default:  string value for default units
+
+    Returns
+    -------
+       string with units
+      
+    """
         try:
             units = pv.units
         except:
@@ -57,10 +164,22 @@ else:
         return units
 
     def pv_fullname(name):
-        """ make sure Epics PV name either ends with .VAL or .SOMETHING!"""
+        """ make sure an Epics PV name ends with .VAL or .SOMETHING!
+
+    Parameters
+    ----------
+       pvname:   name of PV
+
+    Returns
+    -------
+       string with full PV name
+      
+    """
+
         if  '.' not in name:
             name = "%s.VAL"
         return name
+
     plugins = {'PV': PV, 'caget': caget, 'caput': caput, 'cainfo': cainfo,
                'pv_units': pv_units, 'pv_fullname': pv_fullname}
 
