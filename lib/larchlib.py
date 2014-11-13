@@ -229,8 +229,16 @@ class Procedure(object):
         self.__doc__  = doc
         self.lineno   = lineno
         self.__file__ = fname
+        self.__name__ = name
 
     def __repr__(self):
+        sig = self._signature()
+        sig = "<Procedure %s, file=%s>" % (sig, self.__file__)
+        if self.__doc__ is not None:
+            sig = "%s\n  %s" % (sig, self.__doc__)
+        return sig
+
+    def _signature(self):
         sig = ""
         if len(self.argnames) > 0:
             sig = "%s%s" % (sig, ', '.join(self.argnames))
@@ -244,10 +252,7 @@ class Procedure(object):
 
             if self.varkws is not None:
                 sig = "%s, **%s" % (sig, self.varkws)
-        sig = "<Procedure %s(%s), file=%s>" % (self.name, sig, self.__file__)
-        if self.__doc__ is not None:
-            sig = "%s\n  %s" % (sig, self.__doc__)
-        return sig
+        return "%s(%s)" % (self.name, sig)
 
     def raise_exc(self, **kws):
         ekws = dict(lineno=self.lineno, func=self, fname=self.__file__)
@@ -474,3 +479,4 @@ def save_workdir(conffile):
         fh.close()
     except:
         pass
+
