@@ -1229,8 +1229,13 @@ class XRFDisplayFrame(wx.Frame):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
 
-    def onAbout(self,event):
-        dlg = wx.MessageDialog(self, self._about,"About XRF Viewer",
+    def onAbout(self, event=None):
+        print 'On About  ', event
+        dlg = wx.MessageDialog(self,
+                               """XRF Spectral Viewer
+                               Matt Newville <newville @ cars.uchicago.edu>
+                               """,
+                               "About XRF Viewer",
                                wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()

@@ -908,8 +908,11 @@ class XAFS_Scan(LarchStepScan):
 
 @ValidateLarchPlugin
 def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
-    """creates and returns a  LarchStepScan object from
-    a json-text representation.
+    """(PRIVATE)
+
+    creates and returns a LarchStepScan object from a json-text
+    representation.
+    
     """
     sdict = json.loads(text)
     #
@@ -1003,7 +1006,10 @@ def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
 
 @ValidateLarchPlugin
 def scan_from_db(name, filename='scan.001', _larch=None):
-    """get scan definition from ScanDB"""
+    """(PRIVATE)
+
+    get scan definition from ScanDB
+    """
     if _larch.symtable._scan._scandb is None:
         return
     sdb = _larch.symtable._scan._scandb
@@ -1025,9 +1031,27 @@ def connect_scandb(dbname=None, server='postgresql',
 
 
 @ValidateLarchPlugin
-def do_scan(scanname, nscans=None, comments='',
-            filename='scan.001', _larch=None):
-    """execute scan defined in ScanDB"""
+def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
+    """do_scan(scanname, filename='scan.001', nscans=1, comments='')
+
+    execute a step scan as defined in Scan database
+
+    Parameters
+    ----------
+    scanname:     string, name of scan 
+    filename:     string, name of output data file
+    comments:     string, user comments for file
+    nscans:       integer (default 1) number of repeats to make.
+
+    Examples
+    --------
+      do_scan('cu_xafs', 'cu_sample1.001', nscans=3)
+
+    Notes
+    ------
+      1. The filename will be incremented so that each scan uses a new filename.
+    """
+
     if _larch.symtable._scan._scandb is None:
         print 'need to connect to scandb!'
         return
@@ -1039,8 +1063,8 @@ def do_scan(scanname, nscans=None, comments='',
                         _larch=_larch)
     scan.comments = comments
     if scan.scantype == 'slew':
-        return do_slewscan(scanname, comment=comments,
-                           filename=filename, _larch=_larch)
+        return do_slewscan(scanname, filename=filename, nscans=nscans,
+                           comment=comments, _larch=_larch)
     else:
         scans_completed = 0
         nscans = int(scandb.get_info('nscans'))
@@ -1053,7 +1077,28 @@ def do_scan(scanname, nscans=None, comments='',
         return scan
 
 @ValidateLarchPlugin
-def do_slewscan(scanname, comments='', filename='scan.001', _larch=None):
+def do_slewscan(scanname, filename='scan.001', comments='',
+                nscans=1, _larch=None):
+    """do_slewscan(scanname, filename='scan.001', nscans=1, comments='')
+
+    execute a slewscan as defined in Scan database
+
+    Parameters
+    ----------
+    scanname:     string, name of scan 
+    filename:     string, name of output data file
+    comments:     string, user comments for file
+    nscans:       integer (default 1) number of repeats to make.
+
+    Examples
+    --------
+      do_slewscan('small_map', 'map.001')
+
+    Notes
+    ------
+      1. The filename will be incremented so that each scan uses a new filename.
+    """
+
     """execute slew scan defined in ScanDB"""
     if _larch.symtable._scan._scandb is None:
         print 'need to connect to scandb!'
@@ -1074,9 +1119,9 @@ def initializeLarchPlugin(_larch=None):
         _larch.symtable.set_symbol(MODNAME, g)
 
 def registerLarchPlugin():
-    return ('_epics', {'scan_from_json': scan_from_json,
-                       'scan_from_db':   scan_from_db,
-                       'connect_scandb':    connect_scandb,
-                       'do_scan': do_scan,
-                       'do_slewscan': do_slewscan,
-                       })
+    return (MODNAME, {'scan_from_json': scan_from_json,
+                      'scan_from_db':   scan_from_db,
+                      'connect_scandb':    connect_scandb,
+                      'do_scan': do_scan,
+                      'do_slewscan': do_slewscan,
+                      })

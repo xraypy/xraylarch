@@ -11,7 +11,7 @@ from larch.symboltable import isgroup
 
 MODNAME = '_io'
 TINY = 1.e-7
-MAX_FILESIZE = 10*1024*1024  # 10 Mb limit
+MAX_FILESIZE = 100*1024*1024  # 100 Mb limit
 COMMENTCHARS = '#;%*!$'
 
 def getfloats(txt):
@@ -115,6 +115,8 @@ def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
     # set column labels
     _labels = ['col%i' % (i+1) for i in range(ncols)]
     if labels is None:
+        if _labelline is None:
+            _labelline = ' '.join(_labels)
         if _labelline[0] in COMMENTCHARS:
             _labelline = _labelline[1:].strip()
         _labelline = _labelline.lower()
@@ -219,7 +221,7 @@ def _read_ascii0(fname, commentchar='#;%', labels=None, sort=False, sort_column=
                 else:
                     header_kws[key] = words[1].strip()
         else:
-            words = line.split()
+            words = line.replace(',', ' ').split()
             data.append([float(w) for w in words])
 
 
