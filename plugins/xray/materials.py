@@ -35,6 +35,7 @@ def get_materials(_larch):
     _larch.symtable.set_symbol(symname, mat)
     return mat
 
+@ValidateLarchPlugin
 def material_mu(name, energy, density=None, kind='total', _larch=None):
     """
     return X-ray attenuation length (in 1/cm) for a material by name or formula
@@ -78,6 +79,7 @@ def material_mu(name, energy, density=None, kind='total', _larch=None):
         mass_tot += mass
     return density*mu/mass_tot
 
+@ValidateLarchPlugin
 def material_mu_components(name, energy, density=None, kind='total',
                            _larch=None):
     """material_mu_components: absorption coefficient (in 1/cm) for a compound
