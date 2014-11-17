@@ -689,7 +689,8 @@ class ArrayCounter(Counter):
 
     def read(self, full=False, **kws):
         time.sleep(0.001)
-        val = self.pv.get(count=self.hi+3, **kws)
+        val = self.pv.get(count=self.hi+2, **kws)
+        # print 'ArrayCounter ', self._lab, len(val), self.lo, self.hi
         if not full and isinstance(val, ndarray):
             lo, hi = self.lo, self.hi
             val = val[lo:hi].sum()
@@ -737,6 +738,7 @@ class Xspress3Counter(DeviceCounter):
 
     def read(self, **kws):
         "read counters"
+        time.sleep(0.005)
         for c in self.counters:
             c.read(**kws)
         self.postvalues()
