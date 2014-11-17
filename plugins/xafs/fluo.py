@@ -66,4 +66,4 @@ def sacorr_fluo(energy, mu, formula, elem, edge='K', anginp=45, angout=45,
     return preout['norm']
 
 def registerLarchPlugin(): # must have a function with this name!
-    return ('xafs', {'sacorr_fluo': sacorr_fluo})
+    return (MODNAME, {'sacorr_fluo': sacorr_fluo})
