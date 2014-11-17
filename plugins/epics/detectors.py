@@ -688,7 +688,8 @@ class ArrayCounter(Counter):
         return "<ArrayCounter %s (%s)>" % (self.label, self.pv.pvname)
 
     def read(self, full=False, **kws):
-        val = self.pv.get(**kws)
+        time.sleep(0.001)
+        val = self.pv.get(count=self.hi+3, **kws)
         if not full and isinstance(val, ndarray):
             lo, hi = self.lo, self.hi
             val = val[lo:hi].sum()
