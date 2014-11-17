@@ -242,7 +242,7 @@ def atomic_density(element, _larch=None):
     return xdb._getElementData(element).density
 
 @ValidateLarchPlugin
-def xray_edges(element, energy_only=False, _larch=None):
+def xray_edges(element, _larch=None):
     """returns dictionary of all x-ray absorption edge energies
     (in eV), fluorescence yield, and jump ratio for an element.
 
@@ -253,20 +253,21 @@ def xray_edges(element, energy_only=False, _larch=None):
     Data from Elam, Ravel, and Sieber
     """
     xdb = get_xraydb(_larch)
-    out = xdb.xray_edges(element)
-    if energy_only:
-        out = out[0]
-    return out
+    return xdb.xray_edges(element)
 
 @ValidateLarchPlugin
-def xray_edge(element, edge, _larch=None):
+def xray_edge(element, edge, energy_only=False, _larch=None):
     """returns edge energy (in eV), fluorescence yield, and
     jump ratio for an element and edge.
 
     Data from Elam, Ravel, and Sieber
     """
     xdb = get_xraydb(_larch)
-    return xdb.xray_edge(element, edge)
+    out = xdb.xray_edge(element, edge)
+    if energy_only:
+        out = out[0]
+    return out
+
 
 @ValidateLarchPlugin
 def xray_lines(element, initial_level=None, excitation_energy=None,
