@@ -9,7 +9,7 @@ from materials import material_mu
 use_plugin_path('xafs')
 from pre_edge import preedge
 
-MODNAME = '_xray'
+MODNAME = '_xafs'
 
 def sacorr_fluo(energy, mu, formula, elem, edge='K', anginp=45, angout=45,
                 e0=None, pre1=None, pre2=-50, norm1=100, norm2=None,
