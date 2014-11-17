@@ -4,15 +4,17 @@ from __future__ import print_function
 import time
 
 class debugtime(object):
-    def __init__(self):
+    def __init__(self, verbose=False):
         self.clear()
+        self.verbose = verbose
         self.add('init')
 
     def clear(self):
         self.times = []
 
     def add(self,msg=''):
-        # print( msg)
+        if verbose:
+            print(msg, time.ctime())
         self.times.append((msg,time.time()))
 
     def get_report(self):
