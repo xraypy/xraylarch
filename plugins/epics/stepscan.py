@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python
 MODDOC = """
 === Epics Scanning Functions for Larch ===
@@ -444,6 +443,16 @@ class LarchStepScan(object):
                                          units=units, notes='counter')
                 names.append(name)
 
+    def get_infobool(self, key):
+        if self.scandb is None:
+            return getattr(self._scan, key)
+        return self.scandb.get_info(key, as_bool=True)
+
+    def set_info(self, key, val):
+        if self.scandb is None:
+            return setattr(self._scan, key, val)
+        return self.scandb.set_info(key, val)
+              
     def look_for_interrupts(self):
         """set interrupt requests:
 
@@ -452,15 +461,9 @@ class LarchStepScan(object):
         if scandb is being used, these are looked up from database.
         otherwise local larch variables are used.
         """
-        if self.scandb is None:
-            def isset(key):
-                getattr(self._scan, key)
-        else:
-            def isset(key):
-                return self.scandb.get_info(key, as_bool=True)
-        self.abort  = isset('request_abort')
-        self.pause  = isset('request_pause')
-        self.resume = isset('request_resume')
+        self.abort  = self.get_infobool('request_abort')
+        self.pause  = self.get_infobool('request_pause')
+        self.resume = self.get_infobool('request_resume')
         return self.abort
 
     def clear_interrupts(self):
@@ -471,16 +474,10 @@ class LarchStepScan(object):
         if scandb is being used, these are looked up from database.
         otherwise local larch variables are used.
         """
-        if self.scandb is None:
-            def doset(key, val):
-                setattr(self._scan, key, val)
-        else:
-            def doset(key, val):
-                return self.scandb.set_info(key, val)
         self.abort = self.pause = self.resume = False
-        doset('request_abort', 0)
-        doset('request_pause', 0)
-        doset('request_resume', 0)
+        self.set_info('request_abort', 0)
+        self.set_info('request_pause', 0)
+        self.set_info('request_resume', 0)
 
     def run(self, filename=None, comments=None):
         """ run the actual scan:
@@ -606,15 +603,11 @@ class LarchStepScan(object):
                         break
                     poll(5*MIN_POLL_TIME, 0.25)
                     mcount += 1
-                if self.look_for_interrupts():
-                    break
                 # wait for positioners to settle
                 dtimer.add('Pt %i : pos done' % i)
                 # print 'Move completed in %.5f s, %i' % (time.time()-t0, mcount)
                 poll(self.pos_settle_time, 0.25)
                 dtimer.add('Pt %i : pos settled' % i)
-                if self.look_for_interrupts():
-                    break
                 # start triggers, wait for them to finish
                 # print 'Trigger...'
                 [trig.start() for trig in self.triggers]
@@ -623,12 +616,11 @@ class LarchStepScan(object):
                 time.sleep(max(0.1, self.min_dwelltime/2.0))
                 while not (all([trig.isdone() for trig in self.triggers]) and
                            (time.time() - t0 < self.det_maxcount_time)):
-                    if self.look_for_interrupts():
-                        break
-                    poll(MIN_POLL_TIME, 0.25)
+                    poll(MIN_POLL_TIME, 0.1)
                 dtimer.add('Pt %i : triggers done' % i)
                 if self.look_for_interrupts():
                     break
+
                 if trigger_has_stop:
                     for trig in self.triggers:
                         if trig.stop is not None:
@@ -666,9 +658,6 @@ class LarchStepScan(object):
                 # if this is a breakpoint, execute those functions
                 if i in self.breakpoints:
                     self.at_break(breakpoint=i, clear=True)
-                    if self.look_for_interrupts():
-                        break
-
                 dtimer.add('Pt %i: done.' % i)
 
             except KeyboardInterrupt:
@@ -1058,6 +1047,9 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     scandb =  _larch.symtable._scan._scandb
     if nscans is not None:
         scandb.set_info('nscans', nscans)
+    print("LARCH.do_scan ", scanname, filename)
+    print os.getcwd()
+        
 
     scan = scan_from_db(scanname, filename=filename,
                         _larch=_larch)
