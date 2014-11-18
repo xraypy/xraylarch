@@ -659,7 +659,7 @@ class Xspress3Detector(DetectorMixin):
         for det in scan.detectors:
             det.set_dwelltime(dwelltime)
         for counter in scan.counters:
-            counter.hi = nbins-1
+            counter.hi = int(nbins-1)
 
     def post_scan(self, scan=None, **kws):
         for i in range(1, self.nmcas+1):
@@ -680,19 +680,20 @@ class ArrayCounter(Counter):
     def __init__(self, pvname, label=None, lo=1, hi=-1):
         Counter.__init__(self, pvname, label=label)
         self.clear()
+        self.pv.get()
         self._lab = label
-        self.lo = lo
-        self.hi = hi
+        self.lo = int(lo)
+        self.hi = int(hi)
 
     def __repr__(self):
         return "<ArrayCounter %s (%s)>" % (self.label, self.pv.pvname)
 
     def read(self, full=False, **kws):
         time.sleep(0.001)
-        val = self.pv.get(count=self.hi+2, **kws)
-        # print 'ArrayCounter ', self._lab, len(val), self.lo, self.hi
+        hi = int(self.hi)
+        lo = int(self.lo)
+        val = self.pv.get(count=hi+2, **kws)
         if not full and isinstance(val, ndarray):
-            lo, hi = self.lo, self.hi
             val = val[lo:hi].sum()
         self.buff.append(val)
         return val
