@@ -98,7 +98,7 @@ from larch.utils import debugtime
 
 use_plugin_path('epics')
 
-from detectors import Counter, DeviceCounter, Trigger, get_detector
+from detectors import Counter, ArrayCounter, DeviceCounter, Trigger, get_detector
 from datafile import ASCIIScanFile
 from positioner import Positioner
 # from xafsscan import XAFS_Scan
@@ -564,6 +564,12 @@ class LarchStepScan(object):
         for trig in self.triggers:
             trigger_has_stop = trig.stop or trigger_has_stop
 
+        using_array_counters = False
+        for c in self.counters:
+            if isinstance(c, ArrayCounter):
+                using_array_counters = True
+                
+
         t0 = time.time()
         out = [p.move_to_start(wait=True) for p in self.positioners]
         self.check_outputs(out, msg='move to start, wait=True')
@@ -646,7 +652,10 @@ class LarchStepScan(object):
                         if trig.wait_for_stop is not None:
                             trig.wait_for_stop()
                     dtimer.add('Pt %i : triggers stopped(b) %d' % (i, len(self.triggers)))
-                [c.read() for c in self.counters]
+
+                if using_array_counters:
+                    nbins = self.detectors[0].get_nbins()
+                [c.read(nbins=nbins) for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
                 # print 'Read '
                 # self.cdat = [c.buff[-1] for c in self.counters]
