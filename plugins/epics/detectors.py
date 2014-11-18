@@ -581,8 +581,10 @@ class Xspress3Detector(DetectorMixin):
         self.mcs_prefix    = mcs
         self.scaler_prefix = scaler
         self.pixeltime    = pixeltime
+        self.nbins_pv = None
         if mcs is not None:
             self.dwelltime_pv  = get_pv('%sPresetReal' % mcs)
+            self.nbins_pv      = get_pv('%sCurrentChannel' % mcs)            
         self.dwelltime     = None
         self.trigger       = Xspress3Trigger(prefix, mcs=mcs)
         self.extra_pvs     = None
@@ -614,6 +616,11 @@ class Xspress3Detector(DetectorMixin):
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
 
+    def get_nbins(self):
+        if self.nbins_pv is None:
+            return 11
+        return self.nbins_pv.get()
+    
     def set_dwelltime(self, val):
         self.dwelltime = val
         if self.dwelltime_pv is not None:
@@ -688,11 +695,12 @@ class ArrayCounter(Counter):
     def __repr__(self):
         return "<ArrayCounter %s (%s)>" % (self.label, self.pv.pvname)
 
-    def read(self, full=False, **kws):
+    def read(self, nbins=None, full=False, **kws):
         time.sleep(0.001)
         hi = int(self.hi)
         lo = int(self.lo)
-        val = self.pv.get(count=hi+2, **kws)
+        if nbins is not None: hi = nbins+1
+        val = self.pv.get(count=hi+1, **kws)
         if not full and isinstance(val, ndarray):
             val = val[lo:hi].sum()
         self.buff.append(val)
