@@ -13,7 +13,7 @@ class debugtime(object):
         self.times = []
 
     def add(self,msg=''):
-        if verbose:
+        if self.verbose:
             print(msg, time.ctime())
         self.times.append((msg,time.time()))
 
