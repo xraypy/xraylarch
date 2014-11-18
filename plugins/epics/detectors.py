@@ -90,7 +90,7 @@ class Counter(object):
     def __repr__(self):
         return "<Counter %s (%s)>" % (self.label, self.pv.pvname)
 
-    def read(self, **kws):
+    def read(self, nbins=None, **kws):
         val = self.pv.get(**kws)
         self.buff.append(val)
         return val
@@ -699,7 +699,7 @@ class ArrayCounter(Counter):
         time.sleep(0.001)
         hi = int(self.hi)
         lo = int(self.lo)
-        if nbins is not None: hi = nbins+1
+        if nbins is not None: hi = nbins
         val = self.pv.get(count=hi+1, **kws)
         if not full and isinstance(val, ndarray):
             val = val[lo:hi].sum()
