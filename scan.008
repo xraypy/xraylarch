@@ -1,0 +1,23 @@
+#XDI/1.1    Epics StepScan File / 2.0
+# Scan.start_time: 2014-11-18 10:54:49
+# Legend.Start: Column.N: Name  units || EpicsPV
+# Column.1: Fine_X mm  ||  13XRM:m1.VAL
+# Column.2: Fine_X_read mm  ||  13XRM:m1.RBV
+# Column.3: TSCALER counts  ||  13IDE:SIS1:mca1.VAL
+# Column.4: I0 counts  ||  13IDE:SIS1:mca2.VAL
+# Column.5: I1 counts  ||  13IDE:SIS1:mca3.VAL
+# Column.6: I2 counts  ||  13IDE:SIS1:mca4.VAL
+# Column.7: Fe_Ka_mca1 counts  ||  13QX4:C1_ROI1:ArrayData_RBV
+# Column.8: Fe_Ka_mca2 counts  ||  13QX4:C2_ROI1:ArrayData_RBV
+# Column.9: Fe_Ka_mca3 counts  ||  13QX4:C3_ROI1:ArrayData_RBV
+# Column.10: Fe_Ka_mca4 counts  ||  13QX4:C4_ROI1:ArrayData_RBV
+# Column.11: OCR_mca1 counts  ||  13QX4:C1_ROI2:ArrayData_RBV
+# Column.12: OCR_mca2 counts  ||  13QX4:C2_ROI2:ArrayData_RBV
+# Column.13: OCR_mca3 counts  ||  13QX4:C3_ROI2:ArrayData_RBV
+# Column.14: OCR_mca4 counts  ||  13QX4:C4_ROI2:ArrayData_RBV
+# Column.15: Clock_mca1 counts  ||  13QX4:C1_SCA0:ArrayData_RBV
+# Column.16: Clock_mca2 counts  ||  13QX4:C2_SCA0:ArrayData_RBV
+# Column.17: Clock_mca3 counts  ||  13QX4:C3_SCA0:ArrayData_RBV
+# Column.18: Clock_mca4 counts  ||  13QX4:C4_SCA0:ArrayData_RBV
+# Legend.End: here
+# Scan.end_time: 2014-11-18 10:55:14
