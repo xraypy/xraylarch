@@ -31,7 +31,7 @@ from larch import Interpreter, use_plugin_path, isParameter
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import larchframe
 from larch.fitting import fit_report
-        
+from larch.utils import debugtime        
 use_plugin_path('math')
 from fitpeak import fit_peak
 from mathutils import index_of
@@ -39,9 +39,6 @@ from mathutils import index_of
 use_plugin_path('io')
 from gse_escan import gsescan_group
 from xdi import read_xdi
-
-use_plugin_path('xafs')
-from pre_edge import find_e0, pre_edge
 
 use_plugin_path('wx')
 from mapviewer import MapViewerFrame
@@ -492,6 +489,7 @@ class ScanViewerFrame(wx.Frame):
         """ process (pre-edge/normalize) XAS data from XAS form, overwriting
         larch group '_y1_' attribute to be plotted
         """
+
         out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
         preopts = {'group': gname, 'e0': None}
 
@@ -511,6 +509,8 @@ class ScanViewerFrame(wx.Frame):
         if not self.xas_autostep.IsChecked():
             preopts['step'] = self.xas_step.GetValue()
 
+        dt = debugtime()
+
         preopts['pre1']  = self.xas_pre1.GetValue()
         preopts['pre2']  = self.xas_pre2.GetValue()
         preopts['norm1'] = self.xas_nor1.GetValue()
@@ -519,13 +519,15 @@ class ScanViewerFrame(wx.Frame):
         preopts['nvict'] = self.xas_vict.GetSelection()
         preopts['nvict'] = self.xas_vict.GetSelection()
         preopts['nnorm'] = self.xas_nnor.GetSelection()
+
+        preopts['make_flat'] = 'False'
         preopts['group'] = gname
         preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
 
         preedge_cmd = "pre_edge(%s._xdat_, %s._ydat_, %s)"
-
+        print(" --> Preedge" , preedge_cmd)
         self.larch(preedge_cmd % (gname, gname, preopts))
-        
+        print(" --> Done! ")        
         if self.xas_autoe0.IsChecked():
             self.xas_e0.SetValue(lgroup.e0)
         if self.xas_autostep.IsChecked():
@@ -543,7 +545,6 @@ class ScanViewerFrame(wx.Frame):
         poptsd = dict(style='solid', linewidth=2, zorder=-5, 
                       side='right',  y2label='derivative',
                       marker='None', markersize=4)
-
 
         lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
         y4e0 = lgroup._ydat_
@@ -672,6 +673,7 @@ class ScanViewerFrame(wx.Frame):
         lgroup._y1 = y1
         lgroup._y2 = y2
         lgroup._y3 = y3
+        
         self.larch("%s._xdat_ = %s(%s._x)" % (gname, xop, gname))
         try:
             yexpr = "%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  % (gname, 
@@ -686,6 +688,7 @@ class ScanViewerFrame(wx.Frame):
                 self.larch(d_calc % (gname, gname, gname))
         except:
             pass
+
         try:
             npts = min(len(lgroup._xdat_), len(lgroup._ydat_))
         except AttributeError:
@@ -704,7 +707,6 @@ class ScanViewerFrame(wx.Frame):
             self.xas_process(self.groupname, new_mu=True)
         else:
             lgroup.plot_yarrays = [(lgroup._ydat_, {}, None)]
-
         
     def onPlot(self, evt=None, opt='new', npts=None, reprocess=False):
            
