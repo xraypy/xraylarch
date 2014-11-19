@@ -15,7 +15,7 @@ use_plugin_path('std')
 from grouputils import parse_group_args
 
 # now we can reliably import other std and xafs modules...
-from mathutils import index_of, index_nearest, remove_dups
+from mathutils import index_of, index_nearest, remove_dups, remove_nans2
 from xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
@@ -93,7 +93,6 @@ def preedge(energy, mu, e0=None, step=None,
     norm2:   high E range (relative to E0) for post-edge fit
     nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
              post-edge normalization curve. Default=3 (quadratic), max=5
-
     Returns
     -------
       dictionary with elements (among others)
@@ -128,7 +127,6 @@ def preedge(energy, mu, e0=None, step=None,
                 idmu_max, dmu_max = i, dmu[i]
 
         e0 = energy[idmu_max]
-
     nnorm = max(min(nnorm, MAX_NNORM), 1)
     ie0 = index_nearest(energy, e0)
     e0 = energy[ie0]
@@ -150,7 +148,8 @@ def preedge(energy, mu, e0=None, step=None,
         p2 = min(len(energy), p1 + 2)
 
     omu  = mu*energy**nvict
-    precoefs = polyfit(energy[p1:p2], omu[p1:p2], 1)
+    ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
+    precoefs = polyfit(ex, mx, 1)    
     pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
     # normalization
     p1 = index_of(energy, norm1+e0)
@@ -168,7 +167,6 @@ def preedge(energy, mu, e0=None, step=None,
         edge_step = post_edge[ie0] - pre_edge[ie0]
 
     norm = (mu - pre_edge)/edge_step
-
     out = {'e0': e0, 'edge_step': edge_step, 'norm': norm,
            'pre_edge': pre_edge, 'post_edge': post_edge,
            'norm_coefs': norm_coefs, 'nvict': nvict,
@@ -180,7 +178,7 @@ def preedge(energy, mu, e0=None, step=None,
 @ValidateLarchPlugin
 def pre_edge(energy, mu=None, group=None, e0=None, step=None,
              nnorm=3, nvict=0, pre1=None, pre2=-50,
-             norm1=100, norm2=None, _larch=None):
+             norm1=100, norm2=None, make_flat=True, _larch=None):
     """pre edge subtraction, normalization for XAFS
 
     This performs a number of steps:
@@ -203,6 +201,8 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     norm2:   high E range (relative to E0) for post-edge fit
     nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
              post-edge normalization curve. Default=3 (quadratic), max=5
+    make_flat: boolean (Default True) to calculate flattened output.
+             
 
     Returns
     -------
@@ -235,11 +235,9 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='pre_edge')
-
     pre_dat = preedge(energy, mu, e0=e0, step=step, nnorm=nnorm,
                       nvict=nvict, pre1=pre1, pre2=pre2, norm1=norm1,
                       norm2=norm2)
-
     e0    = pre_dat['e0']
     norm  = pre_dat['norm']
     norm1 = pre_dat['norm1']
@@ -253,13 +251,14 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     if p2-p1 < 2:
         p2 = min(len(energy), p1 + 2)
 
-    if p2-p1 > 4:
+    if make_flat and p2-p1 > 4:
+        enx, mux = remove_nans2(energy[p1:p2], norm[p1:p2])
+        # enx, mux = (energy[p1:p2], norm[p1:p2])
         fpars = Group(c0 = Parameter(0, vary=True),
                       c1 = Parameter(0, vary=True),
                       c2 = Parameter(0, vary=True),
-                      en = energy[p1:p2],
-                      mu = norm[p1:p2])
-        fit = Minimizer(flat_resid, fpars, _larch=_larch, toler=1.e-7)
+                      en=enx, mu=mux)
+        fit = Minimizer(flat_resid, fpars, _larch=_larch, toler=1.e-5)
         try:
             fit.leastsq()
         except (TypeError, ValueError):
