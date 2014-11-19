@@ -180,6 +180,62 @@ def remove_dups(arr, tiny=1.e-8, frac=0.02):
         arr.shape = shape
     return arr
 
+
+def remove_nans2(a, b):
+    """removes NAN and INF from 2 arrays,
+    returning 2 arrays of the same length
+    with NANs and INFs removed
+
+    Parameters
+    ----------
+    a :      array 1
+    b :      array 2
+    
+    Returns
+    -------
+    anew, bnew
+
+    Example
+    -------
+    >>> x = array([0, 1.1, 2.2, nan, 3.3])
+    >>> y = array([1,  2,   3,   4,   5)
+    >>> emove_nans2(x, y)
+    >>> array([ 0.   ,  1.1, 2.2, 3.3]), array([1, 2, 3, 5])
+
+    """
+    if not isinstance(a, np.ndarray):
+        try:
+            a = np.array(a)
+        except:
+            print( 'remove_nans2: argument 1 is not an array')
+    if not isinstance(b, np.ndarray):
+        try:
+            b = np.array(b)
+        except:
+            print( 'remove_nans2: argument 2 is not an array')
+    if (np.any(np.isinf(a)) or np.any(np.isinf(b)) or
+        np.any(np.isnan(a)) or np.any(np.isnan(b))):
+        a1 = a[:]
+        b1 = b[:]
+        if np.any(np.isinf(a)):
+            bad = np.where(a==np.inf)[0]
+            a1 = np.delete(a1, bad)
+            b1 = np.delete(b1, bad)
+        if np.any(np.isinf(b)):
+            bad = np.where(b==np.inf)[0]
+            a1 = np.delete(a1, bad)
+            b1 = np.delete(b1, bad)            
+        if np.any(np.isnan(a)):
+            bad = np.where(a==np.nan)[0]
+            a1 = np.delete(a1, bad)
+            b1 = np.delete(b1, bad)            
+        if np.any(np.isnan(b)):
+            bad = np.where(b==np.nan)[0]
+            a1 = np.delete(a1, bad)
+            b1 = np.delete(b1, bad)            
+        return a1, b1
+    return a, b
+
 def registerLarchPlugin():
     return ('_math', {'linregress': linregress,
                       'polyfit': polyfit,
@@ -190,6 +246,7 @@ def registerLarchPlugin():
                       'interp': _interp,
                       'interp1d': _interp1d,
                       'remove_dups': remove_dups,
+                      'remove_nans2': remove_nans2,                      
                       'index_of': index_of,
                       'index_nearest': index_nearest,
                       }
