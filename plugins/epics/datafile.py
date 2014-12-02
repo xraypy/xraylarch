@@ -22,12 +22,12 @@ which  can be overridden to create a new Output file type
 import os
 import time
 import numpy as np
-
+import json
 from larch import use_plugin_path
 from larch.utils.ordereddict import OrderedDict
 
 use_plugin_path('io')
-from fileutils import new_filename, get_timestamp, fix_filename
+from fileutils import new_filename, get_timestamp, fix_filename, gformat
 
 COM1 = '#'
 COM2 = '/'*3 + '  Users Comments  ' + '/'*3
@@ -327,8 +327,10 @@ class ASCIIScanFile(ScanFile):
             words.extend([c.buff[i] for c in self.scan.counters])
             try:
                 thisline = ' '.join([self.num_format % w for w in words])
+                # thisline = ' '.join([gformat(w, length=13) for w in words])
             except:
                 thisline = ' '.join([repr(w) for w in words])
+            # thisline = json.dumps(words)
             out.append(thisline)
 
         self.write_lines(out)
