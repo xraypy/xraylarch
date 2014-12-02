@@ -580,7 +580,7 @@ class LarchStepScan(object):
         ts_init = time.time()
         self.inittime = ts_init - ts_start
         dtimer.add('PRE: start scan')
-        # print 'Prescan done ', npts, self.abort
+
         while not self.abort:
             i += 1
             if i >= npts:
@@ -597,7 +597,8 @@ class LarchStepScan(object):
                 [p.move_to_pos(i) for p in self.positioners]
 
                 # publish scan data while waiting for move to finish
-                self.publish_scandata()
+                if i > 1:
+                    self.publish_scandata()
                 dtimer.add('Pt %i : publish data' % i)
                 if self.dwelltime_varys:
                     for d in self.detectors:
