@@ -565,12 +565,11 @@ class LarchStepScan(object):
             trigger_has_stop = trig.stop or trigger_has_stop
 
         using_array_counters = False
-        nbins = None
         for c in self.counters:
             if isinstance(c, ArrayCounter):
                 using_array_counters = True
-                if nbins is None:
-                    nbins = c.hi
+                
+
         t0 = time.time()
         out = [p.move_to_start(wait=True) for p in self.positioners]
         self.check_outputs(out, msg='move to start, wait=True')
@@ -654,6 +653,8 @@ class LarchStepScan(object):
                             trig.wait_for_stop()
                     dtimer.add('Pt %i : triggers stopped(b) %d' % (i, len(self.triggers)))
 
+                if using_array_counters:
+                    nbins = self.detectors[0].get_nbins()
                 [c.read(nbins=nbins) for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
                 # print 'Read '
