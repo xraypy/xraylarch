@@ -137,7 +137,32 @@ def get_homedir():
             pass
     return homedir
 
-
+def gformat(val, length=11):
+    """format a number with '%g'-like format, except that
+    the return will be length ``length`` (default=12)
+    and have at least length-6 significant digits
+    """
+    length = max(length, 7)
+    fmt = '{: .%ig}' % (length-6)
+    if isinstance(val, int):
+        out = ('{: .%ig}' % (length-2)).format(val)
+        if len(out) > length:
+            out = fmt.format(val)
+    else:
+        out = fmt.format(val)
+    if len(out) < length:
+        if 'e' in out:
+            ie = out.find('e')
+            if '.' not in out[:ie]:
+                out = out[:ie] + '.' + out[ie:]
+            out = out.replace('e', '0'*(length-len(out))+'e')
+        else:
+            fmt = '{: .%ig}' % (length-1)
+            out = fmt.format(val)[:length]
+            if len(out) < length:
+                pad = '0' if '.' in  out else ' '
+                out += pad*(length-len(out))
+    return out
 
 def increment_filename(inpfile, ndigits=3, delim='.'):
     """
