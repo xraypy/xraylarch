@@ -777,7 +777,7 @@ def str2rng_larch(rngstr, keeporder=True, _larch=None):
 str2rng_larch.__doc__ = _str2rng.__doc__
 
 def registerLarchPlugin():
-    if HAS_PYMCA:
+    if HAS_SPECFILE:
         return ('_io', {'read_specfile_scan': spec_getscan2group,
                         'read_specfile_map' : spec_getmap2group,
                         'read_specfile_mrg' : spec_getmrg2group,
