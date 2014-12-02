@@ -632,6 +632,8 @@ class Xspress3Detector(DetectorMixin):
         else:
             self._counter._get_counters()
 
+
+        caput("%sAcquire"   % (self.prefix), 0) 
         for i in range(1, self.nmcas+1):
             card = "%sC%i" % (self.prefix, i)
             caput("%s_PluginControlValExtraROI" % (card), 1)
@@ -640,6 +642,10 @@ class Xspress3Detector(DetectorMixin):
         caput("%sTriggerMode"   % (self.prefix), 3)   # Trigger TTL
         caput("%sCTRL_MCA_ROI"  % (self.prefix), 1)
         caput("%sCTRL_DTC"      % (self.prefix), self.enable_dtc)
+        caput("%sERASE"         % (self.prefix), 1) 
+        time.sleep(0.01)
+        caput("%sUPDATE"        % (self.prefix), 1) 
+        time.sleep(0.01)
 
         # need to set MCS to internal trigger and with a least
         # 11 bins (or bins at least 0.02 seconds long)
@@ -667,7 +673,9 @@ class Xspress3Detector(DetectorMixin):
             det.set_dwelltime(dwelltime)
         for counter in scan.counters:
             counter.hi = int(nbins)
-
+        time.sleep(0.001)
+        caput("%sUPDATE"   % (self.prefix), 1) 
+                
     def post_scan(self, scan=None, **kws):
         for i in range(1, self.nmcas+1):
             card = "%sC%i" % (self.prefix, i)
@@ -699,12 +707,15 @@ class ArrayCounter(Counter):
         time.sleep(0.001)
         if nbins is None:
             val = self.pv.get(**kws)
+            if isinstance(val, ndarray):
+                val = val[1:-1]
         else:
             val = self.pv.get(count=nbins+1, **kws)
             if isinstance(val, ndarray):
-                val = val[:nbins]
+                val = val[1:nbins]
+        # print("Read ", self.pv.pvname, val.mean(), val.std(), val.min(), val.max())
         if not full and isinstance(val, ndarray):
-            val = val[1:].sum()
+            val = val.sum()
         self.buff.append(val)
         return val
         # hi = int(self.hi)
