@@ -17,7 +17,7 @@ DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
                     'xspress3': {'mcs': '',
                                  'scaler': '',
                                  'nmcas': 4, 'nrois': 32,
-                                 'nbins': 11},
+                                 'nbins': 21},
                     'multimca': {'nrois': 32, 'nmcas': 4,
                                  'use_full': False, 'use_net': False}}
 
@@ -618,7 +618,7 @@ class Xspress3Detector(DetectorMixin):
 
     def get_nbins(self):
         if self.nbins_pv is None:
-            return 11
+            return 21
         return self.nbins_pv.get()
     
     def set_dwelltime(self, val):
@@ -666,7 +666,7 @@ class Xspress3Detector(DetectorMixin):
         for det in scan.detectors:
             det.set_dwelltime(dwelltime)
         for counter in scan.counters:
-            counter.hi = int(nbins-1)
+            counter.hi = int(nbins)
 
     def post_scan(self, scan=None, **kws):
         for i in range(1, self.nmcas+1):
@@ -697,14 +697,25 @@ class ArrayCounter(Counter):
 
     def read(self, nbins=None, full=False, **kws):
         time.sleep(0.001)
-        hi = int(self.hi)
-        lo = int(self.lo)
-        if nbins is not None: hi = nbins
-        val = self.pv.get(count=hi+1, **kws)
+        if nbins is None:
+            val = self.pv.get(**kws)
+        else:
+            val = self.pv.get(count=nbins+1, **kws)
+            if isinstance(val, ndarray):
+                val = val[:nbins]
         if not full and isinstance(val, ndarray):
-            val = val[lo:hi].sum()
+            val = val[1:].sum()
         self.buff.append(val)
         return val
+        # hi = int(self.hi)
+        # lo = int(self.lo)
+        # if nbins is not None: hi = nbins
+        # val = self.pv.get(count=hi+1, **kws)
+        # print(" READ ", self.pv.pvname, lo, hi)
+        # if not full and isinstance(val, ndarray):
+        #     val = val[lo:hi].sum()
+        # self.buff.append(val)
+        # return val
 
 class Xspress3Counter(DeviceCounter):
     """Counters for Xspress3 (weird MCA / areaDetector hybrid)
