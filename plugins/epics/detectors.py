@@ -632,7 +632,6 @@ class Xspress3Detector(DetectorMixin):
         else:
             self._counter._get_counters()
 
-
         caput("%sAcquire"   % (self.prefix), 0) 
         for i in range(1, self.nmcas+1):
             card = "%sC%i" % (self.prefix, i)
@@ -672,7 +671,7 @@ class Xspress3Detector(DetectorMixin):
         for det in scan.detectors:
             det.set_dwelltime(dwelltime)
         for counter in scan.counters:
-            counter.hi = int(nbins)
+            counter.hi = int(nbins-1)
         time.sleep(0.001)
         caput("%sUPDATE"   % (self.prefix), 1) 
                 
@@ -704,18 +703,11 @@ class ArrayCounter(Counter):
         return "<ArrayCounter %s (%s)>" % (self.label, self.pv.pvname)
 
     def read(self, nbins=None, full=False, **kws):
-        time.sleep(0.001)
-        if nbins is None:
-            val = self.pv.get(**kws)
-            if isinstance(val, ndarray):
-                val = val[1:-1]
-        else:
-            val = self.pv.get(count=nbins+1, **kws)
-            if isinstance(val, ndarray):
-                val = val[1:nbins]
-        # print("Read ", self.pv.pvname, val.mean(), val.std(), val.min(), val.max())
+        if nbins is not None:
+            kws['count'] = nbins+1
+        val = self.pv.get(**kws)
         if not full and isinstance(val, ndarray):
-            val = val.sum()
+            val = val[1:nbins].sum()
         self.buff.append(val)
         return val
         # hi = int(self.hi)
