@@ -53,10 +53,6 @@ class Group(object):
     def __id__(self):
         return id(self)
 
-    def __setattr__(self, attr, val):
-        """set group attributes."""
-        self.__dict__[attr] = val
-
     def __dir__(self):
         "return list of member names"
         cls_members = []
@@ -123,7 +119,7 @@ GroupDocs['_math'] = """
 Mathematical functions, including a host of functtion from numpy and scipy
 """
 
-    
+
 class SymbolTable(Group):
     """Main Symbol Table for Larch.
     """
