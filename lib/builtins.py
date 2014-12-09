@@ -394,6 +394,7 @@ def _addplugin(plugin, _larch=None, **kws):
                         write('Warning: %s is not a valid plugin\n' %
                               pjoin(mod, fname))
                         write("   error:  %s\n" % (repr(sys.exc_info()[1])))
+
                         ret = False
                     retvals.append(ret)
                 retval = all(retvals)
@@ -403,9 +404,11 @@ def _addplugin(plugin, _larch=None, **kws):
                 out = imp.load_module(plugin, fh, modpath, desc)
                 _larch.symtable.add_plugin(out, on_error, **kws)
             except:
-                err, exc, tb = sys.exc_info()
-                write("Python error adding plugin '%s'\n  %s: %s\n" %
-                      (modpath, err.__name__, exc.message))
+                err, exc, tback = sys.exc_info()
+                write("""Python Error in plugin '%s', line %d
+  %s %s^
+%s: %s\n""" % (modpath, exc.lineno, exc.text, ' '*exc.offset,
+               err.__name__, exc.msg))
                 retval = False
 
         if _larch.error:
