@@ -17,6 +17,149 @@ use_plugin_path('epics')
 from xspress3 import Xspress3
 
 class Epics_Xspress3(object):
+    """multi-element MCA detector using Quantum Xspress3 electronics 3-1-10
+    """
+    def __init__(self, prefix=None, nmca=4, **kws):
+        self.nmca = nmca
+        self.prefix = prefix
+        self.mcas = []
+        self.npts  = 4096
+        self.energies = []
+        self.connected = False
+        self.elapsed_real = None
+        self.elapsed_textwidget = None
+        self.needs_refresh = False
+        self._xsp3 = None
+        if self.prefix is not None:
+            self.connect()
+
+    # @EpicsFunction
+    def connect(self):
+        self._xsp3 = Xspress3(self.prefix)
+        for imca in range(1, self.nmca+1):
+            self._xsp3.PV('ARRSUM%i:ArrayData' % imca)
+        time.sleep(0.001)
+        self.connected = True
+
+    @EpicsFunction
+    def connect_displays(self, status=None, elapsed=None, deadtime=None):
+        if elapsed is not None:
+            self.elapsed_textwidget = elapsed
+        if status is not None:
+            pvs = self._xsp3._pvs
+            attr = 'StatusMessage_RBV'
+            pvs[attr].add_callback(partial(self.update_widget, wid=status))
+
+
+    @DelayedEpicsCallback
+    def update_widget(self, pvname, char_value=None,  wid=None, **kws):
+        if wid is not None:
+            wid.SetLabel(char_value)
+
+    @DelayedEpicsCallback
+    def onRealTime(self, pvname, value=None, **kws):
+        self.elapsed_real = value
+        self.needs_refresh = True
+        if self.elapsed_textwidget is not None:
+            self.elapsed_textwidget.SetLabel("  %8.2f" % value)
+
+    def set_dwelltime(self, dtime=1.0, nframes=4000):
+        self._xsp3.useInternalTrigger()
+        self._xsp3.FileCaptureOff()
+        dtime     = max(0.1, dtime)
+        frametime = min(0.1, dtime/nframes)
+        nframes   = int((dtime+frametime*0.1)/frametime)
+        self._xsp3.NumImages = nframes
+        self._xsp3.AcquireTime = frametime
+
+    def get_mca(self, mca=1, with_rois=True):
+        if self._xsp3 is None:
+            self.connect()
+            time.sleep(0.5)
+
+        emca = self._xsp3.mcas[mca-1]
+        if with_rois:
+            emca.get_rois()
+        counts = self.get_array(mca=mca)
+        if max(counts) < 1.0:
+            counts    = 0.5*np.ones(len(counts))
+            counts[0] = 2.0
+
+        thismca = MCA(counts=counts, offset=0.0, slope=0.01)
+        thismca.energy = self.get_energy()
+        thismca.counts = counts
+        thismca.rois = []
+        if with_rois:
+            for eroi in emca.rois:
+                thismca.rois.append(ROI(name=eroi.NM, address=eroi.address,
+                                        left=eroi.LO, right=eroi.HI))
+        return thismca
+
+    def get_energy(self, mca=1):
+        return np.arange(self.npts)*.010
+
+    def get_array(self, mca=1):
+        try:
+            out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
+        except TypeError:
+            out = np.arange(self.npts)*0.91
+        if len(out) != self.npts:
+            self.npts = len(out)
+        out[np.where(out<0.91)]= 0.91
+        return out
+
+    def _really_stop(self):
+        self._sis.stop()
+        self._xsp3.stop()
+        while self._xsp3.Acquire_RBV == 1:
+            self._xsp3.stop()                
+            time.sleep(0.001)
+
+    def start(self):
+        'xspress3 start '
+        self._really_stop()
+        self._xsp3.start(capture=False) 
+        time.sleep(0.01)
+        self._sis.start()
+
+    def stop(self):
+        self._really_stop()
+
+    def erase(self):
+        self._really_stop()
+        self._sis.erase()
+        self._xsp3.ERASE = 1
+
+    def del_roi(self, roiname):
+        for mca in self._xsp3.mcas:
+            mca.del_roi(roiname)
+        self.rois = self._xsp3.mcas[0].get_rois()
+
+    def add_roi(self, roiname, lo=-1, hi=-1):
+        for mca in self._xsp3.mcas:
+            mca.add_roi(roiname, lo=lo, hi=hi)
+        self.rois = self._xsp3.mcas[0].get_rois()
+
+    @EpicsFunction
+    def rename_roi(self, i, newname):
+        roi = self._xsp3.mcas[0].rois[i]
+        roi.NM = newname
+        rootname = roi._prefix
+        for imca in range(1, len(self._xmap.mcas)):
+            pvname = rootname.replace('mca1', 'mca%i'  % (1+imca))
+            epics.caput(pvname+'NM', newname)
+
+    def restore_rois(self, roifile):
+        print 'restore rois from ', roifile
+        self._xsp3.restore_rois(roifile)
+        self.rois = self._xsp3.mcas[0].get_rois()
+
+    def save_rois(self, roifile):
+        buff = self._xsp3.roi_calib_info()
+        with open(roifile, 'w') as fout:
+            fout.write("%s\n" % "\n".join(buff))
+
+class Epics_Xspress3_SIS(object):
     """multi-element MCA detector using Quantum Xspress3 electronics
     AND a triggering Struck SIS multi-channel scaler
     """
