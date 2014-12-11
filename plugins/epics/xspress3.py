@@ -12,12 +12,14 @@ MAX_ROIS = 32
 
 class Xspress3(Device):
     """very simple XSPRESS3 interface"""
-    attrs = ('NumImages','Acquire', 'Acquire_RBV', 
-             'ERASE', 'TriggerMode', 'StatusMessage_RBV',
-             'DetectorState_RBV', 'NumImages_RBV')
+    attrs = ('NumImages', 'NumImages_RBV',
+             'Acquire', 'Acquire_RBV', 
+             'ERASE', 'UPDATE', 'AcquireTime',
+             'TriggerMode', 'StatusMessage_RBV',
+             'DetectorState_RBV')
 
-    _nonpvs  = ('_prefix', '_pvs', '_delim', 'filesaver', 'fileroot',
-                'pathattrs', '_nonpvs', '_save_rois', 
+    _nonpvs  = ('_prefix', '_pvs', '_delim', 'filesaver', 
+                'fileroot', 'pathattrs', '_nonpvs', '_save_rois',
                 'nmca', 'dxps', 'mcas')
 
     pathattrs = ('FilePath', 'FileTemplate',
@@ -123,6 +125,9 @@ class Xspress3(Device):
 
     def useExternalTrigger(self):
         self.TriggerMode = 3
+
+    def useInternalTrigger(self):
+        self.TriggerMode = 1
 
     def setTriggerMode(self, mode):
         self.TriggerMode = mode
