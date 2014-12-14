@@ -192,7 +192,7 @@ class LarchStepScan(object):
         self._larch = _larch
         self._scangroup =  _larch.symtable._scan
         self.scandb = None
-        if self._scangroup._scandb is not None:
+        if getattr(self._scangroup, '_scandb', None) is not None:
             self.scandb = self._scangroup._scandb
 
         self.dwelltime = None
@@ -433,7 +433,7 @@ class LarchStepScan(object):
                 units = c.pv.units
             except:
                 units = 'counts'
-            
+
             name = fix_varname(c.label)
             if name in names:
                 name += '_2'
@@ -452,7 +452,7 @@ class LarchStepScan(object):
         if self.scandb is None:
             return setattr(self._scan, key, val)
         return self.scandb.set_info(key, val)
-              
+
     def look_for_interrupts(self):
         """set interrupt requests:
 
@@ -837,7 +837,8 @@ class XAFS_Scan(LarchStepScan):
         self.e0 = e0
         self.energies = []
         self.regions = []
-        LarchStepScan.__init__(self, _larch=_larch, **kws)
+        super(XAFS_Scan, self).__init__(_larch=_larch, **kws)
+
         self.scantype = 'xafs'
         self.dwelltime = []
         self.energy_pos = None
@@ -901,7 +902,8 @@ class XAFS_Scan(LarchStepScan):
             dt_arr= [dtime + _vtime *i**dtime_wt for i in range(npts)]
         self.energies.extend(en_arr)
         self.dwelltime.extend(dt_arr)
-        self.energy_pos.array = np.array(self.energies)
+        if self.energy_pos is not None:
+            self.energy_pos.array = np.array(self.energies)
 
 
 @ValidateLarchPlugin
@@ -910,7 +912,7 @@ def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
 
     creates and returns a LarchStepScan object from a json-text
     representation.
-    
+
     """
     sdict = json.loads(text)
     #
@@ -1036,7 +1038,7 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
 
     Parameters
     ----------
-    scanname:     string, name of scan 
+    scanname:     string, name of scan
     filename:     string, name of output data file
     comments:     string, user comments for file
     nscans:       integer (default 1) number of repeats to make.
@@ -1058,7 +1060,7 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
         scandb.set_info('nscans', nscans)
     print("LARCH.do_scan ", scanname, filename)
     print os.getcwd()
-        
+
 
     scan = scan_from_db(scanname, filename=filename,
                         _larch=_larch)
@@ -1069,7 +1071,7 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     else:
         scans_completed = 0
         nscans = int(scandb.get_info('nscans'))
-        abort  = scandb.get_info('request_abort', as_bool=True)        
+        abort  = scandb.get_info('request_abort', as_bool=True)
         while (scans_completed  < nscans) and not abort:
             scan.run()
             scans_completed += 1
@@ -1086,7 +1088,7 @@ def do_slewscan(scanname, filename='scan.001', comments='',
 
     Parameters
     ----------
-    scanname:     string, name of scan 
+    scanname:     string, name of scan
     filename:     string, name of output data file
     comments:     string, user comments for file
     nscans:       integer (default 1) number of repeats to make.
