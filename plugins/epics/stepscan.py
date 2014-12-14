@@ -62,7 +62,7 @@ roughly (that is, skipping error checking) as:
        while not all([p.done for p in pos]):
            time.sleep(0.001)
        [trig.start() for trig in det.triggers]
-       while not all([trig.isdone() for trig in det.triggers]):
+       while not all([trig.done for trig in det.triggers]):
            time.sleep(0.001)
        [det.read() for det in det.counters]
 
@@ -622,7 +622,7 @@ class LarchStepScan(object):
                 dtimer.add('Pt %i : triggers fired, (%d)' % (i, len(self.triggers)))
                 t0 = time.time()
                 time.sleep(max(0.1, self.min_dwelltime/2.0))
-                while not (all([trig.isdone() for trig in self.triggers]) and
+                while not (all([trig.done for trig in self.triggers]) and
                            (time.time() - t0 < self.det_maxcount_time)):
                     poll(MIN_POLL_TIME, 0.1)
                 dtimer.add('Pt %i : triggers done' % i)
