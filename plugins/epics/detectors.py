@@ -629,23 +629,23 @@ class Xspress3Counter(DeviceCounter):
             nmax = 2000
 
         roidata = OrderedDict()
-        roidata['mo']  = (True, 'Mo Ka', 1700, 1780)
-        roidata['ocr'] = (True, 'OCR', 5, nmax-5)
+        # roidata['fe']  = (True, 'Fe Ka', 610, 670)
+        # roidata['ocr'] = (True, 'OCR', 5, nmax-5)
 
-        # for roiname in self.roilist:
-        #    roidata[roiname.lower().strip()] = (False, roiname, -1, -1)
-        #if len(roidata) < 4:
-        #    roidata['ocr'] = (True, 'OutputCounts', 5, nmax-5)
+        for roiname in self.roilist:
+            roidata[roiname.lower().strip()] = (False, roiname, -1, -1)
+        if len(roidata) < 4:
+            roidata['ocr'] = (True, 'OutputCounts', 5, nmax-5)
 
-        # for iroi in range(1, self.nrois+1):
-        #    label = caget("%smca1.R%iNM" % (prefix, iroi))
-        #    slab = label.lower().strip()
-        #    if slab in roidata and not roidata[slab][0]:
-        #        lo = caget("%smca1.R%iLO" % (prefix, iroi))
-        #        hi = caget("%smca1.R%iHI" % (prefix, iroi))
-        #        roidata[slab] = (True, label, lo, hi)
-        #        if all([rdat[0] for rdat in roidata]):
-        #            break
+        for iroi in range(1, self.nrois+1):
+            label = caget("%smca1.R%iNM" % (prefix, iroi))
+            slab = label.lower().strip()
+            if slab in roidata and not roidata[slab][0]:
+                lo = caget("%smca1.R%iLO" % (prefix, iroi))
+                hi = caget("%smca1.R%iHI" % (prefix, iroi))
+                roidata[slab] = (True, label, lo, hi)
+                if all([rdat[0] for rdat in roidata]):
+                    break
 
         iroi = 0
         for sname, dat in roidata.items():
