@@ -106,16 +106,17 @@ def find_delims(s, delim='"',match=None):
     >>> find_delims(mystr, delim=":")
     >>> find_delims(mystr, delim='<', match='>')
     """
-    esc = "\\"
+    esc, dbesc = "\\", "\\\\"
     if match is None:
         match = delim
     j = s.find(delim)
     if j > -1 and s[j:j+len(delim)] == delim:
-        p, k = None, j
+        p1, p2, k = None, None, j
         while k < j+len(s[j+1:]):
             k = k+1
-            if s[k:k+len(match)] == match and p != esc:
+            if k > 0: p1 = s[k-1:k]
+            if k > 1: p2 = s[k-2:k]
+            if (s[k:k+len(match)] == match and not (p1 == esc and p2 != dbesc)):
                 return True, j, k+len(match)-1
-            p = s[k:k+1]
+            p1 = s[k:k+1]
     return False, j, len(s)
-
