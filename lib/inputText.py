@@ -49,6 +49,7 @@ def get_DefVar(text):
 
 
 OPENS, CLOSES, QUOTES, BSLASH, COMMENT = '{([', '})]', '\'"', '\\', '#'
+DBSLASH = "%s%s" % (BSLASH, BSLASH)
 
 class InputText:
     """Input Larch Code:  handles loading and reading code text, and
@@ -162,7 +163,7 @@ class InputText:
             self.input_buff.append((txt, complete,
                                     self.eos, self.fname, self.lineno))
             self.lineno += 1
-            # print 'Add : ', self.lineno, complete, self.eos, self.delims, txt
+            # print(' Add : ', self.lineno, complete, self.eos, self.delims, txt)
             return complete
 
         for t in text.split('\n'):
@@ -218,7 +219,9 @@ class InputText:
         self.input_buff.reverse()
         while self.input_buff:
             text, complete, eos, fname, lineno = self.input_buff.pop()
+            
             text = self.clean_text(text)
+
             long_text = eos in '"\''
             sindent = self.indent*(indent_level+1)
             while not complete:
@@ -228,6 +231,8 @@ class InputText:
                     text = "%s\n%s" % (text, tnext)
                 else:
                     text = "%s\n  %s%s" % (text, sindent, tnext)
+
+
 
             if text.startswith('"') or text.startswith("'"):
                 delim = text[0]
@@ -367,10 +372,11 @@ class InputText:
                 inext = txt[istart:].find(eos)
                 if inext < 0:  # reached end of text before match found
                     return eos, len(txt)
-                elif txt[istart+inext-1] == BSLASH: # matched quote was escaped
+                elif (txt[istart+inext-1] == BSLASH and
+                      txt[istart+inext-2] != BSLASH):  # matched quote was escaped
                     istart = istart+inext+len(eos)
                 else: # real match found! skip ahead in string
-                    return '', istart+inext+len(self.eos)-1
+                    return '', istart+inext+len(eos)-1
 
         if self.eos != '':
             self.eos, i = find_eostring(txt, self.eos, 0)

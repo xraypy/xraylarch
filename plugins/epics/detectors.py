@@ -14,10 +14,8 @@ DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
                                      'auto_increment': True},
                     'mca': {'nrois': 32, 'use_full': False,
                             'use_net': False},
-                    'xspress3': {'mcs': '',
-                                 'scaler': '',
-                                 'nmcas': 4, 'nrois': 32,
-                                 'nbins': 21},
+                    'xspress3': {'nrois': 32, 'nmcas': 4, 
+                                 'use_full': False},
                     'multimca': {'nrois': 32, 'nmcas': 4,
                                  'use_full': False, 'use_net': False}}
 
@@ -58,13 +56,6 @@ Example usage:
         self.done = True
         self.runtime = time.time() - self._t0
 
-    def isdone(self):
-        return self.done
-#         status = (0 == self.pv.get())
-#         if status:
-#             self.runtime = time.time() - self._t0
-#         return status
-
     def start(self, value=1):
         """triggers detector"""
         self.done = False
@@ -90,7 +81,7 @@ class Counter(object):
     def __repr__(self):
         return "<Counter %s (%s)>" % (self.label, self.pv.pvname)
 
-    def read(self, nbins=None, **kws):
+    def read(self, nbins=None, full=False, **kws):
         val = self.pv.get(**kws)
         self.buff.append(val)
         return val
@@ -101,7 +92,7 @@ class Counter(object):
     def get_buffers(self):
         return {self.label: self.buff}
 
-class DeviceCounter():
+class DeviceCounter(object):
     """Generic Multi-PV Counter to be base class for
     ScalerCounter, MCACounter, etc
     """
@@ -234,7 +225,7 @@ class MultiMcaCounter(DeviceCounter):
         DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
 
         # use roilist to limit ROI to those listed:
-        roilist = None
+        roilist = []
         if rois is not None and len(rois)>0:
             roilist = [s.lower().strip() for s in rois]
 
@@ -270,7 +261,7 @@ class MultiMcaCounter(DeviceCounter):
                 namepv = '%s%s.R%iNM' % (prefix, mca, i)
                 rhipv  = '%s%s.R%iHI' % (prefix, mca, i)
                 roi    = pvs[namepv].get()
-                if roilist is not None and roi.lower().strip() not in roilist:
+                if roi.lower().strip() not in roilist:
                     continue
                 roi_hi = pvs[rhipv].get()
                 label = '%s %s'% (roi, mca)
@@ -490,112 +481,69 @@ class MultiMcaDetector(DetectorMixin):
         caput("%sStatusAll.SCAN" % (self.prefix), 9)
 
 
+
 class Xspress3Trigger(Trigger):
-    """Triggers for Xspress3 + MCS, a detector combination
-    without a proper Busy record to use as a Trigger.
-
-    This requires a 'stop' method (that is not None)
-
-    as for Xspress3, which does not have a real Busy record
-    for a trigger.
+    """Triggers for Xspress3:  has separate ERASE and Acquire
+    which correspond to EraseStart.
     """
-    def __init__(self, prefix, mcs=None, value=1, label=None, **kws):
-        Trigger.__init__(self, prefix, label=label, value=value,
-                         mcs=mcs, **kws)
-        self.xsp3_start  = get_pv(prefix + 'Acquire')
-        self.xsp3_erase  = get_pv(prefix + 'ERASE')
-        self.xsp3_ison   = get_pv(prefix + 'Acquire_RBV')
-        self.xsp3_update = get_pv(prefix + 'UPDATE')
-        self.mcs_start   = get_pv(mcs + 'EraseStart')
-        self.mcs_status  = get_pv(mcs + 'Acquiring')
+    def __init__(self, prefix, value=1, label=None, **kws):
+        Trigger.__init__(self, prefix, label=label, value=value, **kws)
+        self._start = get_pv(prefix + 'Acquire')
+        self._erase = get_pv(prefix + 'ERASE')
         self.prefix = prefix
-        self.mcs_prefix = mcs
         self._val = value
         self.done = False
         self._t0 = 0
         self.runtime = -1
-        self.stop = self.trigger_stop
 
     def __repr__(self):
-        return "<Xspress3Trigger(%s, mcs=%s)>" % (self.prefix,
-                                                  self.mcs_prefix)
+        return "<Xspress3Trigger(%s)>" % (self.prefix)
 
     def __onComplete(self, pvname=None, **kws):
         self.done = True
         self.runtime = time.time() - self._t0
 
-    def isdone(self):
-        stat = (0 == self.mcs_status.get())
-        if stat:
-            self.runtime = time.time() - self._t0
-        return stat
-
     def start(self, value=None):
-        """triggers MCS in internal mode to trigger Xspress3"""
+        """ERASE and start Xspress3"""
         self.done = False
         runtime = -1
         self._t0 = time.time()
-        self.xsp3_erase.put(1)
-
         if value is None:
             value = self._val
-        self.xsp3_start.put(value)
+        self._erase.put(1, wait=True)
         time.sleep(0.005)
-        count = 0
-        while self.xsp3_ison.get() != 1 and count < 100:
-            time.sleep(0.005)
-        self.mcs_start.put(1) # , callback=self.__onComplete)
-        poll()
-
-
-    def trigger_stop(self, value=0, **kws):
-        self.xsp3_start.put(0)
-        time.sleep(0.025)
-        self.xsp3_update.put(1)
-        # print("XSP3 Trigger_Stop %.3f" % time.clock())
-
-    def wait_for_stop(self,timeout=3.0):
-        t0 = time.time()
-        # print("XSP3 Trigger Wait_for_Stop1 %.3f" % time.clock())
-        while (1 == self.xsp3_start.get() and 
-               time.time()-t0 < timeout):
-            time.sleep(0.002)
-        # print("XSP3 Trigger Wait_for_Stop2 %.3f" % time.clock())
+        self._start.put(value, callback=self.__onComplete)
+        time.sleep(0.005)
 
 
 class Xspress3Detector(DetectorMixin):
     """
+    Xspress 3 MultiMCA detector, 3.1.10
     """
     repr_fmt = ', nmcas=%i, nrois=%i, enable_dtc=%s, use_full=%s'
 
-    def __init__(self, prefix, mcs=None, scaler=None, label=None, nmcas=4,
-                 nrois=32, rois=None, pixeltime=0.1,  enable_dtc=True,
+    def __init__(self, prefix, label=None, nmcas=4,
+                 nrois=32, rois=None, pixeltime=0.1, enable_dtc=True,
                  use=True, use_unlabeled=False, use_full=False, **kws):
 
-        nmcas, nrois = int(nmcas), int(nrois)
-        self.nmcas = nmcas
-        self.nrois = nrois
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
-        self.prefix        = prefix
-        self.mcs_prefix    = mcs
-        self.scaler_prefix = scaler
-        self.pixeltime    = pixeltime
-        self.nbins_pv = None
-        if mcs is not None:
-            self.dwelltime_pv  = get_pv('%sPresetReal' % mcs)
-            self.nbins_pv      = get_pv('%sCurrentChannel' % mcs)            
-        self.dwelltime     = None
-        self.trigger       = Xspress3Trigger(prefix, mcs=mcs)
-        self.extra_pvs     = None
+
+        self.nmcas = nmcas = int(nmcas)
+        self.nrois = nrois = int(nrois)
+
+        self.prefix     = prefix
+        self.dwelltime  = None
+        self.dwelltime_pv = get_pv('%sAcquireTime' % prefix)
+        self.trigger    = Xspress3Trigger(prefix)
+        self.extra_pvs  = None
         self.enable_dtc = enable_dtc
-        self.label = label
+        self.label      = label
         if self.label is None:
             self.label = self.prefix
 
         self._counter = None
         self.counters = []
-
         self._repr_extra = self.repr_fmt % (nmcas, nrois,
                                             repr(enable_dtc),
                                             repr(use_full))
@@ -610,81 +558,118 @@ class Xspress3Detector(DetectorMixin):
                                               self._repr_extra)
 
     def connect_counters(self):
-        self._counter = Xspress3Counter(self.prefix, mcs=self.mcs_prefix,
-                                        scaler=self.scaler_prefix,
-                                        **self._connect_args)
+        self._counter = Xspress3Counter(self.prefix, **self._connect_args)
         self.counters = self._counter.counters
         self.extra_pvs = self._counter.extra_pvs
-
-    def get_nbins(self):
-        if self.nbins_pv is None:
-            return 21
-        return self.nbins_pv.get()
-    
-    def set_dwelltime(self, val):
-        self.dwelltime = val
-        if self.dwelltime_pv is not None:
-            self.dwelltime_pv.put(val)
 
     def pre_scan(self, scan=None, **kws):
         if self._counter is None:
             self.connect_counters()
-        else:
-            self._counter._get_counters()
+        if (self.dwelltime is not None and
+            isinstance(self.dwelltime_pv, PV)):
+            self.dwelltime_pv.put(self.dwelltime)
 
-        caput("%sAcquire"   % (self.prefix), 0) 
-        for i in range(1, self.nmcas+1):
-            card = "%sC%i" % (self.prefix, i)
-            caput("%s_PluginControlValExtraROI" % (card), 1)
-            caput("%s_PluginControlVal"         % (card), 1)
-
-        caput("%sTriggerMode"   % (self.prefix), 3)   # Trigger TTL
-        caput("%sCTRL_MCA_ROI"  % (self.prefix), 1)
-        caput("%sCTRL_DTC"      % (self.prefix), self.enable_dtc)
-        caput("%sERASE"         % (self.prefix), 1) 
-        time.sleep(0.01)
-        caput("%sUPDATE"        % (self.prefix), 1) 
-        time.sleep(0.01)
-
-        # need to set MCS to internal trigger and with a least
-        # 11 bins (or bins at least 0.02 seconds long)
-
-        dwelltime = self.dwelltime
-        pixeltime = self.pixeltime
-        if dwelltime is None:
-            dwelltime = 1.0
-        if pixeltime is None:
-            pixeltime = 0.1
-        nbins = dwelltime/pixeltime
-        if nbins > 1000:
-            pixeltime = 0.001 * dwelltime
-        dwelltime += pixeltime
-        caput("%sChannelAdvance" % self.mcs_prefix, 0) # internal
-        caput("%sCountOnStart"   % self.mcs_prefix, 0)
-        caput("%sDwell"          % self.mcs_prefix, pixeltime)
-
-        nimages = min(4000, nbins+5)
-        numimages = caget("%sNumImages"  %self.prefix)
-        if nimages > numimages:
-            caput("%sNumImages"     % (self.prefix), nimages)
-
-        for det in scan.detectors:
-            det.set_dwelltime(dwelltime)
-        for counter in scan.counters:
-            counter.hi = int(nbins-1)
-        time.sleep(0.001)
-        caput("%sUPDATE"   % (self.prefix), 1) 
-                
-    def post_scan(self, scan=None, **kws):
+        caput("%sERASE"   % (self.prefix), 1)
+        caput("%sAcquire"   % (self.prefix), 0)
         for i in range(1, self.nmcas+1):
             card = "%sC%i" % (self.prefix, i)
             caput("%s_PluginControlValExtraROI" % (card), 0)
             caput("%s_PluginControlVal"         % (card), 1)
 
-        caput("%sTriggerMode"   % (self.prefix), 3)   # Trigger TTL
+        caput("%sTriggerMode" % (self.prefix), 1)   # Internal Mode
+        caput("%sNumImages"   % (self.prefix), 1)   # 1 Image
+
         caput("%sCTRL_MCA_ROI"  % (self.prefix), 1)
         caput("%sCTRL_DTC"      % (self.prefix), self.enable_dtc)
-        caput("%sNumImages"     % (self.prefix), 4000)
+        time.sleep(0.01)
+        caput("%sUPDATE"        % (self.prefix), 1)
+        time.sleep(0.01)
+
+
+class Xspress3Counter(DeviceCounter):
+    """Counters for Xspress3-1-10 (weird ROIs / areaDetector hybrid)
+    """
+    sca_labels = ('Clock', 'ResetTicks', 'ResetCounts',
+                  'AllEvent', 'AllGood', 'Window1', 'Window2', 'Pileup')
+
+    def __init__(self, prefix, outpvs=None, nmcas=4,
+                 nrois=32, rois=None, nscas=1, use_unlabeled=False,
+                 use_full=False):
+
+        if not prefix.endswith(':'):
+            prefix = "%s:" % prefix
+
+        self.nmcas, self.nrois = int(nmcas), int(nrois)
+        self.nscas =  int(nscas)
+        self.use_full = use_full
+        self.use_unlabeled = False
+        DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
+
+        prefix = self.prefix
+        self._fields = []
+        self.extra_pvs = []
+        pvs = self._pvs = {}
+
+        time.sleep(0.01)
+        # use roilist to limit ROI to those listed:
+        self.roilist = []
+        if rois is not None and len(rois)>0:
+            self.roilist = [s.lower().strip() for s in rois]
+        self._get_counters()
+
+    def _get_counters(self):
+        prefix = self.prefix
+        self.counters = []
+        def add_counter(pv, lab):
+            self.counters.append(Counter(pv, label=lab))
+
+        try:
+            nmax = len(caget('%sARR1:ArrayData' % prefix))
+        except:
+            nmax = 2000
+
+        roidata = OrderedDict()
+        # roidata['fe']  = (True, 'Fe Ka', 610, 670)
+        # roidata['ocr'] = (True, 'OCR', 5, nmax-5)
+
+        for roiname in self.roilist:
+            roidata[roiname.lower().strip()] = (False, roiname, -1, -1)
+        if len(roidata) < 4:
+            roidata['ocr'] = (True, 'OutputCounts', 5, nmax-5)
+
+        for iroi in range(1, self.nrois+1):
+            label = caget("%smca1.R%iNM" % (prefix, iroi))
+            slab = label.lower().strip()
+            if slab in roidata and not roidata[slab][0]:
+                lo = caget("%smca1.R%iLO" % (prefix, iroi))
+                hi = caget("%smca1.R%iHI" % (prefix, iroi))
+                roidata[slab] = (True, label, lo, hi)
+                if all([rdat[0] for rdat in roidata]):
+                    break
+
+        iroi = 0
+        for sname, dat in roidata.items():
+            found, label, lo, hi = dat
+            if found:
+                iroi += 1
+                for imca in range(1, 1+self.nmcas):
+                    pref = "%sC%i" % (prefix, imca)
+                    caput('%s_MCA_ROI%i_LLM' % (pref, iroi), lo)
+                    caput('%s_MCA_ROI%i_HLM' % (pref, iroi), hi)
+                    xlab = "%s mca%i" % (label, imca)
+                    add_counter('%s_ROI%i:Value_RBV' % (pref, iroi), xlab)
+
+        for isca in range(self.nscas):  # these start counting at 0!!
+            for imca in range(1, self.nmcas+1):
+                pv    = '%sC%i_SCA%i:Value_RBV' % (prefix, imca, isca)
+                label = '%s mca%i' % (self.sca_labels[isca], imca)
+                add_counter(pv, label)
+
+        if self.use_full:
+            for imca in range(1, self.nmcas+1):
+                pv = '%sARR%i.ArrayData' % (prefix, imca)
+                add_counter(pv, 'spectra%i' % imca)
+
 
 class ArrayCounter(Counter):
     """Xspress3 Array Counters -- read converts array to scaler,
@@ -710,136 +695,6 @@ class ArrayCounter(Counter):
             val = val[1:nbins].sum()
         self.buff.append(val)
         return val
-        # hi = int(self.hi)
-        # lo = int(self.lo)
-        # if nbins is not None: hi = nbins
-        # val = self.pv.get(count=hi+1, **kws)
-        # print(" READ ", self.pv.pvname, lo, hi)
-        # if not full and isinstance(val, ndarray):
-        #     val = val[lo:hi].sum()
-        # self.buff.append(val)
-        # return val
-
-class Xspress3Counter(DeviceCounter):
-    """Counters for Xspress3 (weird MCA / areaDetector hybrid)
-    """
-    sca_labels = ('Clock', 'ResetTicks', 'ResetCounts',
-                  'AllEvent', 'AllGood', 'Window1', 'Window2', 'Pileup')
-
-    def __init__(self, prefix, mcs=None, scaler=None, outpvs=None, nmcas=4,
-                 nrois=32, rois=None, nscas=1, nmcs=4, use_unlabeled=False,
-                 use_full=False):
-
-        if not prefix.endswith(':'):
-            prefix = "%s:" % prefix
-
-        self.nmcas, self.nrois = int(nmcas), int(nrois)
-        self.nmcs,  self.nscas = int(nmcs),  int(nscas)
-        self.use_full = use_full
-        self.use_unlabeled = False
-        DeviceCounter.__init__(self, prefix, rtype=None, outpvs=outpvs)
-
-        prefix = self.prefix
-        self._fields = []
-        self.extra_pvs = []
-        pvs = self._pvs = {}
-
-        self.mcs_prefix = mcs
-        self.scaler_prefix = scaler
-        if mcs is not None:
-            for imcs in range(nmcs):  # MCA arrays from MCS
-                mcapv = '%smca%i.VAL' % (mcs, 1+imcs)
-                pvs[mcapv] = get_pv(mcapv)
-
-        poll()
-        time.sleep(0.01)
-        # use roilist to limit ROI to those listed:
-        self.roilist = None
-        if rois is not None and len(rois)>0:
-            self.roilist = [s.lower().strip() for s in rois]
-        self._get_counters()
-
-    def read(self, **kws):
-        "read counters"
-        time.sleep(0.005)
-        for c in self.counters:
-            c.read(**kws)
-        self.postvalues()
-
-    def _get_counters(self):
-        prefix = self.prefix
-        pvs = self._pvs
-
-        self.counters = []
-        def add_counter(pv, lab):
-            self.counters.append(ArrayCounter(pv, label=lab))
-
-        if self.mcs_prefix is not None:
-            for imcs in range(1, 1+self.nmcs):  # MCA arrays from MCS
-                pv = '%smca%i.VAL' % (self.mcs_prefix, imcs)
-                label = ''
-                dlab = 'MCS %i'% (imcs)
-
-                if self.scaler_prefix is not None:
-                    label = caget("%s.NM%i" % (self.scaler_prefix, imcs))
-
-                try:
-                    label = label.strip()
-                    if len(label) < 1:
-                        label = dlab
-                except:
-                    label = dlab
-
-                add_counter(pv, label)
-
-        if self.roilist is None:
-            self.roilist = []
-            for i in range(3):
-                self.roilist.append(caget("%mca1.R%iNM" % (prefix, i+1)))
-        nmax = 2000
-        if len(self.roilist) < 4:
-            self.roilist.append("ocr")
-        try:
-            nmax = len(caget('%sARR1:ArrayData' % prefix))
-        except:
-            pass
-        known_rois = {'ocr': ('OCR', 50, nmax)}
-
-        for iroi in range(1, self.nrois+1):
-            try:
-                label = caget("%smca1.R%iNM" % (prefix, iroi))
-                if len(label.strip()) > 0:
-                    lo = caget("%smca1.R%iLO" % (prefix, iroi))
-                    hi = caget("%smca1.R%iHI" % (prefix, iroi))
-                    known_rois[label.lower()] = (label, lo, hi)
-                else:
-                    break
-            except:
-                break
-
-        iroi = 0
-        for rname in self.roilist:
-            if rname in known_rois:
-                iroi += 1
-                label, lo, hi = known_rois[rname]
-                for imca in range(1, 1+self.nmcas):
-                    pref = "%sC%i" % (prefix, imca)
-                    caput('%s_MCA_ROI%i_LLM' % (pref, iroi), lo)
-                    caput('%s_MCA_ROI%i_HLM' % (pref, iroi), hi)
-                    xlab = "%s mca%i" % (label, imca)
-                    add_counter('%s_ROI%i:ArrayData_RBV' % (pref, iroi), xlab)
-
-        for isca in range(self.nscas):  # these start counting at 0!!
-            for imca in range(1, self.nmcas+1):
-                pv    = '%sC%i_SCA%i:ArrayData_RBV' % (prefix, imca, isca)
-                label = '%s mca%i' % (self.sca_labels[isca], imca)
-                add_counter(pv, label)
-
-        if self.use_full:
-            for imca in range(1, self.nmcas+1):
-                pv = '%sARR%i.ArrayData' % (prefix, imca)
-                add_counter(pv, 'spectra%i' % imca)
-
 
 def get_detector(prefix, kind=None, label=None, **kws):
     """returns best guess of which Detector class to use
