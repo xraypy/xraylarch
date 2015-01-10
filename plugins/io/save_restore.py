@@ -3,6 +3,7 @@ import numpy as np
 import h5py
 from larch import Group, Parameter, isParameter, use_plugin_path
 from larch import ValidateLarchPlugin
+from larch.utils import fixName
 
 use_plugin_path('xafs')
 
@@ -115,6 +116,7 @@ class H5PySaveFile(object):
 
         for obj in self._objs:
             nam = getattr(obj, '__name__', hex(id(obj)))
+            nam = fixName(nam, allow_dot=False)
             if nam.startswith('0x'):
                 nam = 'obj_%s' % nam[2:]
             try:
@@ -217,4 +219,3 @@ def restore(fname,  group=None, _larch=None):
 
 def registerLarchPlugin():
     return ('_io', {'save': save, 'restore': restore})
-
