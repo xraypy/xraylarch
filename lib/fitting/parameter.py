@@ -22,7 +22,7 @@ class Parameter(object):
 
     def __init__(self, value=0, min=None, max=None, vary=False,
                  name=None, expr=None, stderr=None, correl=None,
-                 units='', decimals=None, _larch=None, **kws):
+                 units=None, decimals=5, _larch=None, **kws):
         self._val = self._initval = value
         self._uval = None
         self.vary = vary
