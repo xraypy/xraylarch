@@ -195,7 +195,7 @@ class FeffitDataSet(Group):
         # print( 'feffit dataset prepare_fit ', dir(self.data))
         if hasattr(self.data, 'epsilon_k'):
             eps_k = self.data.epsilon_k
-            if isinstance(self.eps_k, numpy.ndarray):
+            if isinstance(eps_k, numpy.ndarray):
                 eps_k = interp(self.model.k, self.data.k, self.data.epsilon_k)
             self.set_epsilon_k(eps_k)
         else:
