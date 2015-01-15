@@ -548,7 +548,7 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
             if isinstance(ds.epsilon_k, np.ndarray):
                 eps_k = repr(ds.epsilon_k)
             else:
-                eps_k = '%.6' % ds.epsilon_k
+                eps_k = '%.6f' % ds.epsilon_k
             eps_r = '%.6f' % ds.epsilon_r
             kweigh = '%i' % tr.kweight
 
