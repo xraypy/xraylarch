@@ -22,11 +22,14 @@ from xmlrpclib import ServerProxy
 from larch.xmlrpc_server import LarchServer
 
 def start_server(port=4966, host='localhost',
-                 local_echo=False, with_wx=True):
+                 local_echo=False, with_wx=True, quiet=False):
     "start server"
     thispath, thisfile = os.path.split(os.path.abspath(__file__))
     exe = os.path.join(thispath, 'larch')
-    return subprocess.Popen([exe, '-r', '-p', '%d' % port])
+    if quiet:
+        return subprocess.Popen([exe, '-r', '-q', '-p', '%d' % port])
+    else:
+        return subprocess.Popen([exe, '-r', '-p', '%d' % port])
 
 
 def stop_server(port=4966, host='localhost'):
@@ -67,6 +70,8 @@ parser = OptionParser(usage=usage, prog="larch_server",
 
 parser.add_option("-p", "--port", dest="port", default='4966',
                   metavar='PORT', help="port number for server")
+parser.add_option("-q", "--quiet", action="store_true", dest="quiet", default=False,
+                  help="suppress screen messages from this launcher script")
 
 (options, args) = parser.parse_args()
 
@@ -78,9 +83,9 @@ port = int(options.port)
 
 if command == 'start':
     if test_server(port=port):
-        print 'Yes: Larch server on port %d running' % port
+        if not options.quiet: print 'Yes: Larch server on port %d running' % port
     else:
-        start_server(port=port)
+        start_server(port=port, quiet=options.quiet)
         
 elif command == 'stop':
     stop_server(port=port)
@@ -89,13 +94,13 @@ elif command == 'restart':
     if test_server(port=port):
         stop_server(port=port)
     time.sleep(0.5)
-    start_server(port=port)
+    start_server(port=port, quiet=options.quiet)
 
 elif command == 'status':
     if test_server(port=port):
-        print 'Yes: Larch server on port %d running' % port
+        if not options.quiet: print 'Yes: Larch server on port %d running' % port
         sys.exit(0)
     else:
-        print 'No: Larch server on port %d not running' % port
+        if not options.quiet: print 'No: Larch server on port %d not running' % port
         sys.exit(1)
 

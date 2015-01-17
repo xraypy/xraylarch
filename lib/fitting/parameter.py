@@ -22,7 +22,7 @@ class Parameter(object):
 
     def __init__(self, value=0, min=None, max=None, vary=False,
                  name=None, expr=None, stderr=None, correl=None,
-                 _larch=None, **kws):
+                 units=None, decimals=5, _larch=None, **kws):
         self._val = self._initval = value
         self._uval = None
         self.vary = vary
@@ -32,6 +32,8 @@ class Parameter(object):
         self._expr = expr
         self.stderr = stderr
         self.correl = correl
+        self.units = units
+        self.decimals = decimals
         self._ast = None
         self._larch = None
         self._from_internal = lambda val: val
@@ -59,7 +61,8 @@ class Parameter(object):
         return json.dumps({'name': self.name, 'val': val,
                            'min': self.min,   'max': self.max,
                            'vary': self.vary, 'expr': self.expr,
-                           'stderr': self.stderr, 'correl': self.correl})
+                           'stderr': self.stderr, 'correl': self.correl,
+                           'units': self.units, 'decimals': self.decimals})
 
     @property
     def expr(self):
@@ -170,7 +173,19 @@ class Parameter(object):
         w = []
         if self.name is not None:
             w.append("name='%s'" % self.name)
-        w.append("value=%s" % repr(val))
+
+        if self.decimals is not None:
+            fmtstr = "value=%." + str(self.decimals) + "f"
+            string = fmtstr % float(repr(val))
+            if self.stderr is not None:
+                fmtstr = " +/- %." + str(self.decimals) + "f"
+                string = string + fmtstr % self.stderr
+            if self.units is not None:
+                string = string + " %s" % self.units
+            w.append(string)
+        else:
+            w.append("value=%s" % repr(val))
+
         if self._expr is not None:
             w.append("expr='%s'" % self._expr)
         else:

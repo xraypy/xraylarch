@@ -192,15 +192,16 @@ class FeffitDataSet(Group):
         # ikmax = index_of(trans.k_, max(self.data.k))
         self.model.k = trans.k_[:ikmax]
         self.__chi = interp(self.model.k, self.data.k, self.data.chi)
-        # print( 'feffit dataset prepare_fit ', dir(self.data))
+        self.n_idp = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
         if hasattr(self.data, 'epsilon_k'):
             eps_k = self.data.epsilon_k
-            if isinstance(self.eps_k, numpy.ndarray):
+            if isinstance(eps_k, np.ndarray):
                 eps_k = interp(self.model.k, self.data.k, self.data.epsilon_k)
             self.set_epsilon_k(eps_k)
         else:
             self.estimate_noise(chi=self.__chi, rmin=15.0, rmax=30.0)
         self.__prepared = True
+        # print( 'feffit dataset prepare_fit ', dir(self.data), self.n_idp, self.epsilon_k)
 
     def estimate_noise(self, chi=None, rmin=15.0, rmax=30.0, all_kweights=True):
         """estimage noise in a chi spectrum from its high r components"""
@@ -235,12 +236,14 @@ class FeffitDataSet(Group):
 
         trans.rmin, trans.rmax, trans.fitspace = save
 
-        self.n_idp  = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
+        ## self.n_idp  = 1 + 2*(trans.rmax-trans.rmin)*(trans.kmax-trans.kmin)/pi
         self.epsilon_k = eps_k
         self.epsilon_r = eps_r
         if len(eps_r) == 1:
             self.epsilon_k = eps_k[0]
             self.epsilon_r = eps_r[0]
+        if isinstance(eps_r, np.ndarray):
+            self.epsilon_r = eps_r.mean()
 
     def set_epsilon_k(self, eps_k):
         """set epsilon_k and epsilon_r -- ucertainties in chi(k) and chi(R)"""
@@ -250,6 +253,8 @@ class FeffitDataSet(Group):
         eps_r = eps_k / scale
         self.epsilon_k = eps_k
         self.epsilon_r = eps_r
+        if isinstance(eps_r, np.ndarray):
+            self.epsilon_r = eps_r.mean()
 
     def _residual(self, paramgroup=None, data_only=False, **kws):
         """return the residual for this data set
@@ -267,7 +272,12 @@ class FeffitDataSet(Group):
         _ff2chi(self.pathlist, k=self.model.k,
                 _larch=self._larch, group=self.model)
 
-        eps_k = max(1.e-12, self.epsilon_k)
+        eps_k = self.epsilon_k
+        if isinstance(eps_k, np.ndarray):
+            eps_k[np.where(eps_k<1.e-12)[0]] = 1.e-12
+        else:
+            eps_k = max(1.e-12, eps_k)
+
         diff  = (self.__chi - self.model.chi)
         if data_only:  # for extracting transformed data separately from residual
             diff  = self.__chi
@@ -528,11 +538,17 @@ def feffit_report(result, min_correl=0.1, with_paths=True,
         if len(datasets) > 1:
             out.append(' dataset %i:' % (i+1))
         if isinstance(tr.kweight, Iterable):
-            eps_k = ', '.join(['%.6f' % eps for eps in ds.epsilon_k])
+            if isinstance(ds.epsilon_k[0], np.ndarray):
+                eps_k = ', '.join([repr(eps) for eps in ds.epsilon_k])
+            else:
+                eps_k = ', '.join(['%.6f' % eps for eps in ds.epsilon_k])
             eps_r = ', '.join(['%.6f' % eps for eps in ds.epsilon_r])
             kweigh = ', '.join(['%i' % kwe for kwe in tr.kweight])
         else:
-            eps_k = '%.6f' % ds.epsilon_k
+            if isinstance(ds.epsilon_k, np.ndarray):
+                eps_k = repr(ds.epsilon_k)
+            else:
+                eps_k = '%.6f' % ds.epsilon_k
             eps_r = '%.6f' % ds.epsilon_r
             kweigh = '%i' % tr.kweight
 
@@ -616,5 +632,3 @@ def registerLarchPlugin():
                       'feffit_dataset': feffit_dataset,
                       'feffit_transform': feffit_transform,
                       'feffit_report': feffit_report})
-
-

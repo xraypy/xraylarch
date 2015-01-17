@@ -6,7 +6,6 @@ import sys
 import types
 import numpy
 from larch import Group, ValidateLarchPlugin
-from termcolor import colored
 
 @ValidateLarchPlugin
 def _get(sym=None, _larch=None, **kws):
@@ -64,8 +63,6 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
         title = 'Group _main'
 
     members = dir(group)
-    colors=('white', 'cyan')
-    count=1
     out = ['== %s: %i symbols ==' % (title, len(members))]
     for item in members:
         if (item.startswith('__') and item.endswith('__') and
@@ -77,14 +74,9 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
             if len(obj) > 10 or len(obj.shape)>1:
                 dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
                                                          repr(obj.dtype))
-        elif isinstance(obj, (list, tuple)):
-            if len(obj) > 6:
-                dval = "%s, %d items, [%s, ..., %s]" % (type(obj).__name__, len(obj), str(obj[0]), str(obj[-1]))
         if dval is None:
             dval = repr(obj)
-        out.append(colored('  %s: ' % item, 'yellow', attrs=['bold']) +
-                   colored('%s' % dval, colors[count%2]) )
-        count+=1
+        out.append('  %s: %s' % (item, dval))
 #         if not (item.startswith('_Group__') or
 #                 item == '__name__' or item == '_larch' or
 #                 item.startswith('_SymbolTable__')):
