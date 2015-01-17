@@ -24,11 +24,12 @@ except ImportError:
 
 class LarchServer(SimpleXMLRPCServer):
     def __init__(self, host='127.0.0.1', port=5465, with_wx=True,
-                 local_echo=True, **kws):
+                 local_echo=True, quiet=False, **kws):
         self.keep_alive = True
         self.port = port
         self.with_wx = HAS_WX and with_wx
         self.local_echo = local_echo
+        self.quiet = quiet
         self.out_buffer = []
         SimpleXMLRPCServer.__init__(self, (host, port),
                                     logRequests=False, allow_none=True, **kws)
@@ -84,25 +85,26 @@ class LarchServer(SimpleXMLRPCServer):
         return ret
 
     def help(self):
-        print( 'Serving Larch at port %s' % repr(self.port))
-        # print dir(self)
-        print('Registered Functions:')
-        fnames = ['ls', 'chdir', 'cwd', 'exit', 'larch', 'wx_update',  'get_data']
-        for kname in self.funcs.keys():
-            if not kname.startswith('system') and kname not in fnames:
-                fnames.append(kname)
+        if not self.quiet: 
+            print( 'Serving Larch at port %s' % repr(self.port))
+            # print dir(self)
+            print('Registered Functions:')
+            fnames = ['ls', 'chdir', 'cwd', 'exit', 'larch', 'wx_update',  'get_data']
+            for kname in self.funcs.keys():
+                if not kname.startswith('system') and kname not in fnames:
+                    fnames.append(kname)
 
-        out = ''
-        for fname in sorted(fnames):
-            if len(out) == 0:
-                out = fname
-            else:
-                out = "%s, %s" % (out, fname)
-            if len(out) > 70:
+            out = ''
+            for fname in sorted(fnames):
+                if len(out) == 0:
+                    out = fname
+                else:
+                    out = "%s, %s" % (out, fname)
+                if len(out) > 70:
+                    print("  %s" % out)
+                    out = ''
+            if len(out) >  0:
                 print("  %s" % out)
-                out = ''
-        if len(out) >  0:
-            print("  %s" % out)
 
 
     def exit(self, app=None, **kws):

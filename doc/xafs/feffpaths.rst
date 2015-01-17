@@ -195,7 +195,7 @@ you really know what you're doing.
     ================= =====================================================================
        amp               array: total amplitude,   :math:`F_{\rm eff}(k)`
        degen             path degeneracy (coordination number)
-       edge              energy threshold relative to atomic value (a poor estimate)
+       edge              energy threshold relative to atomic valu (a poor estimate)
        exch              string describing electronic exchange model
        filename          File name
        gam_ch            core level energy width
@@ -222,7 +222,7 @@ you really know what you're doing.
 The arrays from the data columns of the Feff data file break up the
 amplitude and phase into two components (essentially as one for the central
 atom and one for the scattering atoms) that are simply added together.
-Thus ``amp`` = ``red_fact`` * ``mag_feff`` and the product is used as
+Thus ``amp`` = ``red_fact`` + ``mag_feff`` and the sum is used as
 :math:`F_{\rm eff}(k)`.  Similarly, ``pha`` = ``real_phc`` + ``pha_feff``
 and the sum is used as :math:`\delta(k)`.
 
