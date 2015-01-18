@@ -43,7 +43,8 @@ ReturnedNone = Empty()
 class LarchExceptionHolder:
     "basic exception handler"
     def __init__(self, node, msg='', fname='<stdin>',
-                 func=None, expr=None, exc=None, symtable=None, lineno=0):
+                 func=None, expr=None, exc=None, symtable=None,
+                 lineno=0):
         self.node = node
         self.fname  = fname
         self.func = func
@@ -190,7 +191,7 @@ class LarchExceptionHolder:
         if call_expr is not None and not isinstance(call_expr, ast.AST):
             out.append('  %s' % call_expr)
             out.append('file %s, line %i' % (call_fname, call_lineno))
-        if HAS_COLORTERM:
+        if HAS_COLORTERM and getattr(symtable._sys, 'color_exceptions', True):
             color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
             if color not in VALID_ERRORCOLORS:
                 color = 'red'
@@ -479,4 +480,3 @@ def save_workdir(conffile):
         fh.close()
     except:
         pass
-
