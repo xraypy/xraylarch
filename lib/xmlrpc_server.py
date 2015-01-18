@@ -116,6 +116,7 @@ class LarchServer(SimpleXMLRPCServer):
         self.larch  = Interpreter(writer=self)
         self.input  = InputText(prompt='', _larch=self.larch,
                                 interactive=False)
+        self.larch.symtable.set_symbol('_sys.color_exceptions', False)
         self.larch.run_init_scripts()
         self.wxapp = None
         self.wx_evtloop = None
