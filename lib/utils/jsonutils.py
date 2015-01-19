@@ -9,42 +9,35 @@ from larch import isParameter, Parameter, Group
 import numpy as np
 import json
 
-def json_encode(name, symtable=None):
+def json_encode(expr, _larch=None):
     """
-    return json encoded object from larch symbol table
+    return json encoded larch expression
     """
-    if symtable is None:
-        return None
-    if not symtable.has_symbol(name):
-        return None
-    obj = symtable.get_symbol(name)
-    if isinstance(obj, np.ndarray):
-        out = {'__class__': 'Array', '__shape__': obj.shape,
-               '__dtype__': obj.dtype.name}
-        out['value'] = json.dumps(obj.tolist())
-    elif symtable.isgroup(obj):
-        out = {'__class__': 'Group'}
-        for member in dir(obj):
-            try:
-                out[member] = json_encode(getattr(obj, member))
-            except:
-                pass
-        return out
-    elif isParameter(obj):
-        out = {'__class__': 'Parameter'}
-        for attr in ('value', 'name', 'vary', 'min', 'max', 'expr'):
-            val = getattr(obj, attr, None)
-            if val is not None:
-                out[attr] = val
-    else:
-        try:
-            out = json.dumps(obj)
-        except:
-            try:
-                out = json.dumps(repr(obj))
-            except:
-                out = None
-    return out
+    def _get(expr, _larch=None):
+        if _larch is None:
+            return None
+        obj = _larch.eval(expr)
+        if isinstance(obj, np.ndarray):
+            out = {'__class__': 'Array', '__shape__': obj.shape,
+                   '__dtype__': obj.dtype.name}
+            out['value'] = obj.tolist()
+            return out
+        elif _larch.symtable.isgroup(obj):
+            out = {'__class__': 'Group'}
+            for item in dir(obj):
+                out[item] = _get(repr(getattr(obj, item)), _larch=_larch)
+            return out
+        elif isParameter(obj):
+            out = {'__class__': 'Parameter'}
+            for attr in ('value', 'name', 'vary', 'min', 'max',
+                         'expr', 'stderr', 'correl'):
+                val = getattr(obj, attr, None)
+                if val is not None:
+                    out[attr] = val
+            return out
+        else:
+            return obj
+    return json.dumps(_get(expr, _larch=_larch))
 
 def json_decode(value, _larch=None):
     """
@@ -75,4 +68,3 @@ def json_decode(value, _larch=None):
     if out is None:
         out = json.loads(value)
     return out
-
