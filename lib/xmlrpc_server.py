@@ -85,7 +85,7 @@ class LarchServer(SimpleXMLRPCServer):
         return ret
 
     def help(self):
-        if not self.quiet: 
+        if not self.quiet:
             print( 'Serving Larch at port %s' % repr(self.port))
             # print dir(self)
             print('Registered Functions:')
@@ -116,7 +116,7 @@ class LarchServer(SimpleXMLRPCServer):
         self.larch  = Interpreter(writer=self)
         self.input  = InputText(prompt='', _larch=self.larch,
                                 interactive=False)
-
+        self.larch.symtable.set_symbol('_sys.color_exceptions', False)
         self.larch.run_init_scripts()
         self.wxapp = None
         self.wx_evtloop = None
@@ -143,14 +143,15 @@ class LarchServer(SimpleXMLRPCServer):
                 self.wx_evtloop.run(poll_time=5)
         return True
 
-    def get_data(self, symname):
-        "return json encoded data"
+    def get_data(self, expr):
+        "return json encoded data for a larch expression"
         if not self.initialized:
             self.initialize_larch()
-        return json_encode(symname, symtable=self.larch.symtable)
+        return json_encode(expr, _larch=self.larch)
 
-    def larch_exec(self, text):
+    def larch_exec(self, text, debug=True):
         "execute larch command"
+        self.debug = debug
         if not self.initialized:
             self.initialize_larch()
         text = text.strip()
@@ -183,4 +184,3 @@ class LarchServer(SimpleXMLRPCServer):
 if __name__ == '__main__':
     s = LarchServer(host='localhost', port=4966)
     s.run()
-
