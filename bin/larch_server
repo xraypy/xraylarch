@@ -88,7 +88,10 @@ if command == 'start':
         start_server(port=port, quiet=options.quiet)
         
 elif command == 'stop':
-    stop_server(port=port)
+    if test_server(port=port):
+        stop_server(port=port)
+    else:
+        if not options.quiet: print 'No: Larch server on port %d not running' % port
 
 elif command == 'restart':
     if test_server(port=port):
