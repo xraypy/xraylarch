@@ -56,52 +56,46 @@ def encode4js(obj):
     return obj
 
 
-def decode4js(val):
+def decode4js(obj):
     """
     return decoded Python object from encoded object.
     """
-    if isinstance(val, dict):
-        classname = val.pop('__class__', None)
+    if isinstance(obj, dict):
+        classname = obj.pop('__class__', None)
         if classname is None:
-            return val
+            return obj
         elif classname == 'Complex':
-            return val['value'][0] + 1j*val['value'][1]
+            return obj['value'][0] + 1j*obj['value'][1]
         elif classname in ('List', 'Tuple'):
             out = []
-            for item in val['value']:
+            for item in obj['value']:
                 out.append(decode4js(item))
             if classname == 'Tuple':
                 out = tuple(out)
             return out
+        elif classname == 'Dict':
+            out = {}
+            for key, val in obj.items():
+                out[key] = decode4js(val)
+            return out
         elif classname == 'Array':
-            if val['__dtype__'].startswith('complex'):
-                re = np.fromiter(val['value'][0], dtype='double')
-                im = np.fromiter(val['value'][1], dtype='double')
+            if obj['__dtype__'].startswith('complex'):
+                re = np.fromiter(obj['value'][0], dtype='double')
+                im = np.fromiter(obj['value'][1], dtype='double')
                 out = re + 1j*im
             else:
-                out = np.fromiter(val['value'],
-                                  dtype=val['__dtype__'])
-            out.shape = val['__shape__']
+                out = np.fromiter(obj['value'],
+                                  dtype=obj['__dtype__'])
+            out.shape = obj['__shape__']
             return out
         elif classname == 'Parameter':
             args = {}
-            for key, value in val.items():
-                args[key] = decode4js(value)
+            for key, val in obj.items():
+                args[key] = decode4js(val)
             return Parameter(**args)
         elif classname == 'Group':
             args = {}
-            for key, value in val.items():
-                args[key] = decode4js(value)
+            for key, val in obj.items():
+                args[key] = decode4js(val)
             return Group(**args)
-    return val
-
-#         elif classname == 'Parameter':
-#             args = {'_larch': _larch}
-#             for attr in ('value', 'name', 'vary', 'min', 'max', 'expr'):
-#                 val = value.get(attr, None)
-#                 if val is not None:
-#                     args[attr] = val
-#             out = Parameter(**args)
-#         elif classname == 'Tuple':
-#             out = tuple(out['value'])
-#     return out
+    return obj
