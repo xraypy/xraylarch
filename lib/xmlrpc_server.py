@@ -145,7 +145,7 @@ class LarchServer(SimpleXMLRPCServer):
 
     def get_data(self, expr):
         "return json encoded data for a larch expression"
-        return encode4js(self.larch_exec(expr))
+        return encode4js(self.larch.eval(expr))
 
     def larch_exec(self, text, debug=True):
         "execute larch command"
