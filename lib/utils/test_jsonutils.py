@@ -10,8 +10,7 @@ import numpy as np
 from numpy.testing import assert_, assert_allclose
 
 from larch import isParameter, Parameter, isgroup, Group
-# from larch.utils.jsonutils import encode4js, decode4js
-from jsonutils import encode4js, decode4js
+from larch.utils.jsonutils import encode4js, decode4js
 
 def encode(obj):
     out = encode4js(obj)
