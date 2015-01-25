@@ -7,7 +7,7 @@ import time
 import larch
 from larch.interpreter import Interpreter
 from larch.inputText import InputText
-from larch.utils.jsonutils import json_encode
+from larch.utils.jsonutils import encode4js
 
 if not hasattr(sys, 'frozen'):
     try:
@@ -145,9 +145,7 @@ class LarchServer(SimpleXMLRPCServer):
 
     def get_data(self, expr):
         "return json encoded data for a larch expression"
-        if not self.initialized:
-            self.initialize_larch()
-        return json_encode(expr, _larch=self.larch)
+        return encode4js(self.larch_exec(expr))
 
     def larch_exec(self, text, debug=True):
         "execute larch command"
