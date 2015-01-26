@@ -57,7 +57,7 @@ class Parameter(object):
                          name=self.name,  _larch=self._larch)
     def asjson(self):
         val = self._val
-        if self.expr is not None: val = 0.
+        # if self.expr is not None: val = 0.
         return json.dumps({'name': self.name, 'val': val,
                            'min': self.min,   'max': self.max,
                            'vary': self.vary, 'expr': self.expr,
@@ -91,7 +91,7 @@ class Parameter(object):
         self._val = val
 
     def _getval(self):
-        if self._larch is not None and self._expr is not None:
+        if self._larch is not None and self._expr is not None and not self.vary:
             if self._ast is None:
                 self._expr = self._expr.strip()
                 self._ast = self._larch.parse(self._expr)
@@ -186,10 +186,9 @@ class Parameter(object):
         else:
             w.append("value=%s" % repr(val))
 
+        w.append('vary=%s' % repr(self.vary))
         if self._expr is not None:
             w.append("expr='%s'" % self._expr)
-        else:
-            w.append('vary=%s' % repr(self.vary))
         if self.min not in (None, -inf):
             w.append('min=%s' % repr(self.min))
         if self.max not in (None, inf):
