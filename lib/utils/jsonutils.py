@@ -55,47 +55,37 @@ def encode4js(obj):
         return out
     return obj
 
-
 def decode4js(obj):
     """
     return decoded Python object from encoded object.
     """
+    out = obj
     if isinstance(obj, dict):
         classname = obj.pop('__class__', None)
         if classname is None:
             return obj
         elif classname == 'Complex':
-            return obj['value'][0] + 1j*obj['value'][1]
+            out = obj['value'][0] + 1j*obj['value'][1]
         elif classname in ('List', 'Tuple'):
             out = []
             for item in obj['value']:
                 out.append(decode4js(item))
             if classname == 'Tuple':
                 out = tuple(out)
-            return out
-        elif classname == 'Dict':
-            out = {}
-            for key, val in obj.items():
-                out[key] = decode4js(val)
-            return out
         elif classname == 'Array':
             if obj['__dtype__'].startswith('complex'):
                 re = np.fromiter(obj['value'][0], dtype='double')
                 im = np.fromiter(obj['value'][1], dtype='double')
                 out = re + 1j*im
             else:
-                out = np.fromiter(obj['value'],
-                                  dtype=obj['__dtype__'])
+                out = np.fromiter(obj['value'], dtype=obj['__dtype__'])
             out.shape = obj['__shape__']
-            return out
-        elif classname == 'Parameter':
-            args = {}
+        elif classname in ('Dict', 'Parameter', 'Group'):
+            out = {}
             for key, val in obj.items():
-                args[key] = decode4js(val)
-            return Parameter(**args)
-        elif classname == 'Group':
-            args = {}
-            for key, val in obj.items():
-                args[key] = decode4js(val)
-            return Group(**args)
-    return obj
+                out[key] = decode4js(val)
+            if classname == 'Parameter':
+                out = Parameter(**out)
+            elif classname == 'Group':
+                out = Group(**out)
+    return out
