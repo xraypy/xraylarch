@@ -240,6 +240,7 @@ class EncodeDecode4Json_Test(unittest.TestCase):
         assert(out.dx['tup']   == (0, None))
         assert(out.dx['blist'] == [1,2,3.0])
 
-
 if __name__ == '__main__':
-    nose.main()
+    for suite in (EncodeDecode4Json_Test,):
+        suite = unittest.TestLoader().loadTestsFromTestCase(suite)
+        unittest.TextTestRunner(verbosity=0).run(suite)
