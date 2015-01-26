@@ -230,7 +230,7 @@ def leastsq(func, x0, args=(), Dfun=None, ftol=1.e-7, xtol=1.e-7,
     if maxfev == 0:
         maxfev = 200*(n + 1)
     if epsfcn is None:
-        epsfcn = 2.e-5  # a relatively large value!! 
+        epsfcn = 2.e-5  # a relatively large value!!
     if Dfun is None:
         retval = _minpack._lmdif(func, x0, args, 1, ftol, xtol,
                                  gtol, maxfev, epsfcn, factor, diag)
@@ -356,11 +356,11 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             par = getattr(self.paramgroup, name)
             if isParameter(par):
                 val0 = par.setup_bounds()
-                if par.expr is not None:
-                    par._getval()
-                elif par.vary:
+                if par.vary:
                     self.var_names.append(name)
                     self.vars.append(val0)
+                elif par.expr is not None:
+                    par._getval()
                 if not hasattr(par, 'name') or par.name is None:
                    par.name = name
         self.nvarys = len(self.vars)
@@ -388,7 +388,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
         toler = self.toler
         lskws = dict(xtol=toler, ftol=toler,
                      gtol=toler, maxfev=1000*(self.nvarys+1), Dfun=None)
-
         lskws.update(self.kws)
         lskws.update(kws)
 
@@ -419,7 +418,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
             par.stderr  = 0
             par.correl  = {}
             par._uval   = None
-
         # modified from JJ Helmus' leastsqbound.py
         # compute covariance matrix here explicitly...
         infodict['fjac'] = transpose(transpose(infodict['fjac']) /
@@ -447,7 +445,6 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
                 uvars = uncertainties.correlated_values(vbest, cov)
             except (LinAlgError, ValueError):
                 cov, uvars = None, None
-
             group.covar_vars = self.var_names
             group.covar = cov
 
@@ -478,6 +475,7 @@ or set  leastsq_kws['maxfev']  to increase this maximum."""
 
         # collect results for output group
         message = 'Fit succeeded.'
+
         if ier == 0:
             message = 'Invalid Input Parameters.'
         elif ier == 5:
@@ -677,10 +675,10 @@ def fit_report(group, show_correl=True, min_correl=0.1, precision=None,
             sval = fmt_sca % var.value
             if var.stderr is not None:
                 sval = fmt_err % (var.value, var.stderr)
-            if var.expr is not None:
-                exprs.append(exprformat % (name, sval, var.expr))
-            elif var.vary:
+            if var.vary:
                 out.append(varformat % (name, sval, var._initval))
+            elif var.expr is not None:
+                exprs.append(exprformat % (name, sval, var.expr))
 
     if len(exprs) > 0:
         out.append(header % ('Constraint Expressions', ''))
