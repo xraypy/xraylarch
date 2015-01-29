@@ -345,11 +345,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                            action=self.onSetDwelltime)
         self.wids['elapsed']   = SimpleText(pane, ' ', size=(80, -1),  style=rstyle)
 
-        b0 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart, 
-                                                                       dtime=0))  
         b1 =  Button(pane, 'Start',      size=(90, 25), action=self.onStart)
         b2 =  Button(pane, 'Stop',       size=(90, 25), action=self.onStop)
         b3 =  Button(pane, 'Erase',      size=(90, 25), action=self.onErase)
+        b4 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart, 
+                                                                      dtime=0))  
 
         psizer.Add(SimpleText(pane, 'Background MCA: '), (0, 2), (1, 1), style, 1)
         psizer.Add(self.wids['bkg_det'],                 (1, 2), (1, 1), style, 1)
@@ -359,8 +359,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         psizer.Add(self.wids['dwelltime'],                (0, 4), (1, 1),  style, 1)
         psizer.Add(self.wids['elapsed'],                  (1, 4), (1, 1),  style, 1)
 
-        psizer.Add(b0, (0, 5), (1, 1), style, 1)
-        psizer.Add(b1, (0, 6), (1, 1), style, 1)
+        psizer.Add(b1, (0, 5), (1, 1), style, 1)
+        psizer.Add(b4, (0, 6), (1, 1), style, 1)
         psizer.Add(b2, (1, 5), (1, 1), style, 1)
         psizer.Add(b3, (1, 6), (1, 1), style, 1)
 
