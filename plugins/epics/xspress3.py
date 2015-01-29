@@ -14,6 +14,7 @@ class Xspress3(Device):
     """very simple XSPRESS3 interface"""
     attrs = ('NumImages', 'NumImages_RBV',
              'Acquire', 'Acquire_RBV', 
+             'ArrayCounter_RBV', 
              'ERASE', 'UPDATE', 'AcquireTime',
              'TriggerMode', 'StatusMessage_RBV',
              'DetectorState_RBV')
@@ -39,7 +40,6 @@ class Xspress3(Device):
         self.mcas = [MCA(prefix, mca=i+1) for i in range(nmca)]
 
         Device.__init__(self, prefix, attrs=attrs, delim='')
-
         time.sleep(0.1)
 
     def get_rois(self):

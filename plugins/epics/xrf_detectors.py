@@ -31,6 +31,7 @@ class Epics_Xspress3(object):
         self.connected = False
         self.elapsed_real = None
         self.elapsed_textwidget = None
+        self.frametime = self.MIN_FRAMETIME
         self.needs_refresh = False
         self._xsp3 = None
         if self.prefix is not None:
@@ -39,6 +40,9 @@ class Epics_Xspress3(object):
     # @EpicsFunction
     def connect(self):
         self._xsp3 = Xspress3(self.prefix)
+        counterpv = self._xsp3.PV('ArrayCounter_RBV')
+        counterpv.clear_callbacks()
+        counterpv.add_callback(self.onRealTime)
         for imca in range(1, self.nmca+1):
             self._xsp3.PV('ARRSUM%i:ArrayData' % imca)
         time.sleep(0.001)
@@ -53,7 +57,6 @@ class Epics_Xspress3(object):
             attr = 'StatusMessage_RBV'
             pvs[attr].add_callback(partial(self.update_widget, wid=status))
 
-
     @DelayedEpicsCallback
     def update_widget(self, pvname, char_value=None,  wid=None, **kws):
         if wid is not None:
@@ -61,10 +64,10 @@ class Epics_Xspress3(object):
 
     @DelayedEpicsCallback
     def onRealTime(self, pvname, value=None, **kws):
-        self.elapsed_real = value
+        self.elapsed_real = value * self.frametime
         self.needs_refresh = True
         if self.elapsed_textwidget is not None:
-            self.elapsed_textwidget.SetLabel("  %8.2f" % value)
+            self.elapsed_textwidget.SetLabel("  %8.2f" % self.elapsed_real)
 
     def set_dwelltime(self, dtime=1.0, **kws):
         self._xsp3.useInternalTrigger()
@@ -80,7 +83,7 @@ class Epics_Xspress3(object):
         else:
             nframes   = int((dtime+frametime*0.1)/frametime)
         self._xsp3.NumImages = nframes
-        self._xsp3.AcquireTime = frametime
+        self._xsp3.AcquireTime = self.frametime = frametime
         
     def get_mca(self, mca=1, with_rois=True):
         if self._xsp3 is None:
@@ -113,28 +116,27 @@ class Epics_Xspress3(object):
             out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
         except TypeError:
             out = np.arange(self.npts)*0.91
+            
         if len(out) != self.npts:
             self.npts = len(out)
         out[np.where(out<0.91)]= 0.91
         return out
 
-    def _really_stop(self):
-        self._xsp3.stop()
-        while self._xsp3.Acquire_RBV == 1:
-            self._xsp3.stop()                
-            time.sleep(0.001)
-
     def start(self):
         'xspress3 start '
-        self._really_stop()
+        self.stop()
         self._xsp3.start(capture=False) 
         time.sleep(0.01)
 
-    def stop(self):
-        self._really_stop()
+    def stop(self, timeout=0.5):
+        self._xsp3.stop()
+        t0 = time.time()
+        while self._xsp3.Acquire_RBV == 1 and time.time()-t0 < timeout:
+            self._xsp3.stop()                
+            time.sleep(0.005)
 
     def erase(self):
-        self._really_stop()
+        self.stop()
         self._xsp3.ERASE = 1
 
     def del_roi(self, roiname):
@@ -225,6 +227,7 @@ class Epics_MultiXMAP(object):
     def onRealTime(self, pvname, value=None, **kws):
         self.elapsed_real = value
         self.needs_refresh = True
+        print(" onRealTime ", pvname, value)
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel("  %8.2f" % value)
 
