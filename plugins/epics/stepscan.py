@@ -1114,6 +1114,10 @@ def do_slewscan(scanname, filename='scan.001', comments='',
         scan.epics_slewscan(filename=filename)
     return scan
 
+@ValidateLarchPlugin
+def make_xafs_scan(label=None, e0=0, _larch=None, **kws):
+    return XAFS_Scan(label=label, e0=e0, _larch=_larch, **kws)
+
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
     if not _larch.symtable.has_group(MODNAME):
@@ -1124,6 +1128,7 @@ def initializeLarchPlugin(_larch=None):
 def registerLarchPlugin():
     return (MODNAME, {'scan_from_json': scan_from_json,
                       'scan_from_db':   scan_from_db,
+                      'make_xafs_scan': make_xafs_scan,
                       'connect_scandb':    connect_scandb,
                       'do_scan': do_scan,
                       'do_slewscan': do_slewscan,
