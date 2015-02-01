@@ -837,7 +837,7 @@ class XAFS_Scan(LarchStepScan):
         self.e0 = e0
         self.energies = []
         self.regions = []
-        super(XAFS_Scan, self).__init__(_larch=_larch, **kws)
+        super(self.__class__, self).__init__(_larch=_larch, **kws)
 
         self.scantype = 'xafs'
         self.dwelltime = []
