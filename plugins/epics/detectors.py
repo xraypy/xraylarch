@@ -523,7 +523,7 @@ class Xspress3Detector(DetectorMixin):
     repr_fmt = ', nmcas=%i, nrois=%i, enable_dtc=%s, use_full=%s'
 
     def __init__(self, prefix, label=None, nmcas=4,
-                 nrois=32, rois=None, pixeltime=0.1, enable_dtc=True,
+                 nrois=32, rois=None, pixeltime=0.1, enable_dtc=False,
                  use=True, use_unlabeled=False, use_full=False, **kws):
 
         if not prefix.endswith(':'):
@@ -656,6 +656,7 @@ class Xspress3Counter(DeviceCounter):
                     pref = "%sC%i" % (prefix, imca)
                     caput('%s_MCA_ROI%i_LLM' % (pref, iroi), lo)
                     caput('%s_MCA_ROI%i_HLM' % (pref, iroi), hi)
+                    caput('%s_ROI%i:ValueSum_RBV.DESC' % (pref, iroi), label)
                     xlab = "%s mca%i" % (label, imca)
                     add_counter('%s_ROI%i:Value_RBV' % (pref, iroi), xlab)
 
