@@ -625,17 +625,15 @@ class Xspress3Counter(DeviceCounter):
 
         try:
             nmax = len(caget('%sARR1:ArrayData' % prefix))
-        except:
-            nmax = 2000
+        except ValueError:
+            nmax = 2048
 
         roidata = OrderedDict()
-        # roidata['fe']  = (True, 'Fe Ka', 610, 670)
-        # roidata['ocr'] = (True, 'OCR', 5, nmax-5)
 
         for roiname in self.roilist:
             roidata[roiname.lower().strip()] = (False, roiname, -1, -1)
         if len(roidata) < 4:
-            roidata['ocr'] = (True, 'OutputCounts', 5, nmax-5)
+            roidata['ocr'] = (True, 'OutputCounts', 25, nmax-25)
 
         for iroi in range(1, self.nrois+1):
             label = caget("%smca1.R%iNM" % (prefix, iroi))
