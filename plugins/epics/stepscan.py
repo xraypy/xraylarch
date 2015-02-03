@@ -114,6 +114,8 @@ SCANDB_NAME = '%s._scandb' % MODNAME
 MIN_POLL_TIME = 1.e-3
 
 XAFS_K2E = 3.809980849311092
+HC       = 12398.4193
+RAD2DEG  = 180.0/np.pi
 
 def etok(energy):
     return np.sqrt(energy/XAFS_K2E)
@@ -121,6 +123,9 @@ def etok(energy):
 def ktoe(k):
     return k*k*XAFS_K2E
 
+def energy2angle(energy, dspace=3.13555):
+    omega   = HC/(2.0 * dspace)
+    return RAD2DEG * np.arcsin(omega/energy)
 
 
 
@@ -904,6 +909,48 @@ class XAFS_Scan(LarchStepScan):
         self.dwelltime.extend(dt_arr)
         if self.energy_pos is not None:
             self.energy_pos.array = np.array(self.energies)
+
+    def make_XPS_trajectory(self, height=25.0, dspace=3.1355,
+                            theta_offset=0, width_offset=0,
+                            theta_accel=0.1, width_accel=0.1):
+        """this method builds the text of a Trajectory script for
+        a Newport XPS Controller based on the energies and dwelltimes"""
+
+
+
+        energy = np.array(self.energy)
+        times  = np.array(self.dwelltime)
+
+        traw    = energy2angle(energy, dspace=dspace)
+        theta  = 1.0*traw
+        theta[1:-1] = traw[1:-1]/2.0 + traw[:-2]/4.0 + traw[2:]/4.0
+        theta += theta_offset
+
+        width  = height / (2.0 * np.cos(theta/RAD2DEG))
+        width += width_offset
+
+        tvelo = np.gradient(theta)/times
+        wvelo = np.gradient(width)/times
+        tim0  = abs(tvelo[0] / theta_accel)
+        the0  = 0.5 * tvelo[ 0] * tim0
+        wid0  = 0.5 * wvelo[ 0] * tim0
+        the1  = 0.5 * tvelo[-1] * tim0
+        wid1  = 0.5 * wvelo[-1] * tim0
+
+        dtheta = np.diff(theta)
+        dwidth = np.diff(width)
+        dtime  = times[1:]
+        fmt = '%.8f, %.8f, %.8f, %.8f, %.8f'
+        efirst = fmt % (tim0, the0, tvelo[0], wid0, wvelo[0])
+        elast  = fmt % (tim0, the1, 0.00,     wid1, 0.00)
+
+        buff  = ['', efirst]
+        for i in range(len(dtheta)):
+            buff.append(fmt % (dtime[i], dtheta[i], tvelo[i],
+                               dwidth[i], wvelo[i]))
+        buff.append(elast)
+        buff.append('')
+        return '\n'.join(buff)
 
 
 @ValidateLarchPlugin
