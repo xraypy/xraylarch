@@ -629,12 +629,10 @@ class Xspress3Counter(DeviceCounter):
             nmax = 2048
 
         roidata = OrderedDict()
-
         for roiname in self.roilist:
             roidata[roiname.lower().strip()] = (False, roiname, -1, -1)
         if len(roidata) < 4:
             roidata['ocr'] = (True, 'OutputCounts', 25, nmax-25)
-
         for iroi in range(1, self.nrois+1):
             label = caget("%smca1.R%iNM" % (prefix, iroi))
             slab = label.lower().strip()
@@ -642,7 +640,7 @@ class Xspress3Counter(DeviceCounter):
                 lo = caget("%smca1.R%iLO" % (prefix, iroi))
                 hi = caget("%smca1.R%iHI" % (prefix, iroi))
                 roidata[slab] = (True, label, lo, hi)
-                if all([rdat[0] for rdat in roidata]):
+                if all([rdat[0] for rdat in roidata.values()]):
                     break
 
         iroi = 0
