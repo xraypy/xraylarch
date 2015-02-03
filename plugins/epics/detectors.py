@@ -520,10 +520,10 @@ class Xspress3Detector(DetectorMixin):
     """
     Xspress 3 MultiMCA detector, 3.1.10
     """
-    repr_fmt = ', nmcas=%i, nrois=%i, enable_dtc=%s, use_full=%s'
+    repr_fmt = ', nmcas=%i, nrois=%i, use_dtc=%s, use_full=%s'
 
     def __init__(self, prefix, label=None, nmcas=4,
-                 nrois=32, rois=None, pixeltime=0.1, enable_dtc=False,
+                 nrois=32, rois=None, pixeltime=0.1, use_dtc=False,
                  use=True, use_unlabeled=False, use_full=False, **kws):
 
         if not prefix.endswith(':'):
@@ -537,7 +537,7 @@ class Xspress3Detector(DetectorMixin):
         self.dwelltime_pv = get_pv('%sAcquireTime' % prefix)
         self.trigger    = Xspress3Trigger(prefix)
         self.extra_pvs  = None
-        self.enable_dtc = enable_dtc
+        self.use_dtc    = use_dtc
         self.label      = label
         if self.label is None:
             self.label = self.prefix
@@ -545,7 +545,7 @@ class Xspress3Detector(DetectorMixin):
         self._counter = None
         self.counters = []
         self._repr_extra = self.repr_fmt % (nmcas, nrois,
-                                            repr(enable_dtc),
+                                            repr(use_dtc),
                                             repr(use_full))
 
         self._connect_args = dict(nmcas=nmcas, nrois=nrois, rois=rois,
@@ -580,7 +580,7 @@ class Xspress3Detector(DetectorMixin):
         caput("%sNumImages"   % (self.prefix), 1)   # 1 Image
 
         caput("%sCTRL_MCA_ROI"  % (self.prefix), 1)
-        caput("%sCTRL_DTC"      % (self.prefix), self.enable_dtc)
+        caput("%sCTRL_DTC"      % (self.prefix), self.use_dtc)
         time.sleep(0.01)
         caput("%sUPDATE"        % (self.prefix), 1)
         time.sleep(0.01)
