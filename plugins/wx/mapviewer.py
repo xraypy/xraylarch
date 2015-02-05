@@ -1406,20 +1406,12 @@ class MapViewerFrame(wx.Frame):
         dlg.Destroy()
 
     def onAbout(self, event=None):
-        #print 'ON ABOUT '
         info = wx.AboutDialogInfo()
-        #print 'Info ', info
-        
         info.SetName('GSECARS X-ray Microprobe Map Viewer')
-
         desc = "Using X-ray Larch version: %s" % larch.version.__version__
-
         info.SetDescription(desc)
-
         info.SetVersion(VERSION)
         info.AddDeveloper('Matt Newville: newville at cars.uchicago.edu')
-        #print 'Info ', info
-        
         dlg = wx.AboutBox(info)
 
 
@@ -1470,12 +1462,12 @@ class MapViewerFrame(wx.Frame):
             path = dlg.GetPath().replace('\\', '/')
         dlg.Destroy()
         if read:
-            try:
-                xrmfile = GSEXRM_MapFile(folder=str(path))
-            except:
-                Popup(self, NOT_GSEXRM_FOLDER % str(path),
-                     "Not a Map folder")
-                return
+            #try:
+            xrmfile = GSEXRM_MapFile(folder=str(path))
+            #except:
+            #    Popup(self, NOT_GSEXRM_FOLDER % str(path),
+            #         "Not a Map folder")
+            #    return
             parent, fx = os.path.split(str(path))
             self.add_xrmfile(xrmfile)
 
@@ -1521,12 +1513,7 @@ class MapViewerFrame(wx.Frame):
 
         if read:
             parent, fname = os.path.split(path)
-            try:
-                xrmfile = GSEXRM_MapFile(filename=str(path))
-            except:
-                Popup(self, NOT_GSEXRM_FILE % str(path),
-                     "Not a Map folder")
-                return
+            xrmfile = GSEXRM_MapFile(filename=str(path))
             self.add_xrmfile(xrmfile)
 
     def onWatchFiles(self, event=None):
