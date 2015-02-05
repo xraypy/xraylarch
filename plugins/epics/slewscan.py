@@ -35,7 +35,7 @@ def do_fastmap(scan='CurrentScan.ini', datafile='default.dat',
     while collecting_map:
         time.sleep(0.5)
         status = caget(mapper + 'status')        
-        nrow = = caget(mapper + 'nrow')
+        nrow   = caget(mapper + 'nrow')
         if nrowx != nrow:
             print ' map at row %i of %i' % (nrow, maxrow)
             nrowx = nrow
