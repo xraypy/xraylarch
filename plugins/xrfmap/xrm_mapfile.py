@@ -229,8 +229,9 @@ class GSEXRM_MapRow:
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
         # print( 'Row Data ', gnpts, snpts, xnpts, self.realtime.shape)
-        # npts = min(gnpts, xnpts, snpts)
-        npts = min(gnpts, xnpts)
+        npts = min(gnpts, xnpts, snpts)
+        # npts = min(gnpts, xnpts)
+		
         if self.npts is None:
             self.npts = npts
         if snpts < self.npts:  # extend struck data if needed
@@ -615,7 +616,7 @@ class GSEXRM_MapFile(object):
         roi_slices = []
         for iroi, label, lims in roidat:
             roi_desc.append(label)
-            roi_addr.append("%smca%%i.R%i" % (config['general']['xmap'], iroi))
+            roi_addr.append("%smca%%i.R%i" % (config['xrf']['prefix'], iroi))
             roi_lim.append([lims[i] for i in range(self.ndet)])
             roi_slices.append([slice(lims[i][0], lims[i][1]) for i in range(self.ndet)])
         roi_lim = np.array(roi_lim)
@@ -770,6 +771,9 @@ class GSEXRM_MapFile(object):
         # self.dt.add('add_rowdata for detsum')
 
         pos    = self.xrfmap['positions/pos']
+        # print(" ADD ROWDATA ", row)
+        # print(" ADD ROWDATA ", row.posvals)
+
         pos[thisrow, :, :] = np.array(row.posvals).transpose()
 
         # now add roi map data
@@ -1115,6 +1119,7 @@ class GSEXRM_MapFile(object):
                 file_pid == os.getpid())
 
     def folder_has_newdata(self):
+        # print("XRM_MAPFILE ", self.folder, isGSEXRM_MapFolder(self.folder))
         if self.folder is not None and isGSEXRM_MapFolder(self.folder):
             self.read_master()
             return (self.last_row < len(self.rowdata)-1)
@@ -1127,8 +1132,11 @@ class GSEXRM_MapFile(object):
         self.masterfile = os.path.join(nativepath(self.folder),
                                        self.MasterFile)
         mtime = int(os.stat(self.masterfile).st_mtime)
-        if mtime <= self.masterfile_mtime:
-            return
+        #print "READ MASTER ", self.masterfile
+        #if mtime <= self.masterfile_mtime:
+        #    print "could skip reading master file, mtime too soon"
+        #    print mtime, self.masterfile_mtime , abs(mtime- self.masterfile_mtime )
+        #    # return
         self.masterfile_mtime = mtime
         try:
             header, rows = readMasterFile(self.masterfile)
@@ -1177,7 +1185,8 @@ class GSEXRM_MapFile(object):
         try:
             self.xrfdet_type = mapconf['xrf']['type'].lower()
         except:
-            pass
+            print 'Could not read xrf type'
+
 
         pos1 = scanconf['pos1']
         self.pos_addr = [pos1]
@@ -1299,7 +1308,6 @@ class GSEXRM_MapFile(object):
 
         """
 
-        # print 'GET MCA RECT ', ymin, ymax, xmin, xmax
         mapdat = self._det_group(det)
         counts = self.get_counts_rect(ymin, ymax, xmin, xmax, mapdat=mapdat,
                                       det=det, dtcorrect=dtcorrect)
