@@ -228,18 +228,19 @@ class GSEXRM_MapRow:
         gnpts, ngather  = gdata.shape
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
-        # print( 'Row Data ', gnpts, snpts, xnpts, self.realtime.shape)
-        npts = min(gnpts, xnpts, snpts)
-        # npts = min(gnpts, xnpts)
-		
-        if self.npts is None:
+        # npts = min(gnpts, xnpts, snpts)
+        # print '  MapRow: ', self.npts, npts, gnpts, snpts, xnpts
+        npts = min(gnpts, xnpts)
+        if self.npts is  None:
             self.npts = npts
-        if snpts < self.npts:  # extend struck data if needed
+            
+        if snpts < npts:  # extend struck data if needed
+            print '     extending SIS data!', snpts, npts
             sdata = list(sdata)
-            for i in range(self.npts+1-snpts):
+            for i in range(npts+1-snpts):
                 sdata.append(sdata[snpts-1])
             sdata = np.array(sdata)
-            snpts = self.npts
+            snpts = npts
         self.sisdata = sdata[:npts]
 
         if xnpts > npts:
@@ -285,9 +286,7 @@ class GSEXRM_MapRow:
         self.livetime = self.livetime.transpose()
         self.realtime = self.realtime.transpose()
         self.counts   = self.counts.swapaxes(0, 1)
-
-
-
+        
 class GSEXRM_Detector(object):
     """Detector class, representing 1 detector element (real or virtual)
     has the following properties (many of these as runtime-calculated properties)
@@ -729,7 +728,6 @@ class GSEXRM_MapFile(object):
 
         yval, xmapf, sisf, xpsf, etime = self.rowdata[irow]
         reverse = (irow % 2 != 0)
-        # print 'Read RowData: ', irow, self.ixaddr, xmapf, sisf, xpsf, etime
         return GSEXRM_MapRow(yval, xmapf, xpsf, sisf, irow=irow,
                              xrftype=self.xrfdet_type,
                              nrows_expected=self.nrows_expected,
