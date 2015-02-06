@@ -10,6 +10,21 @@ from larch import ValidateLarchPlugin
 @ValidateLarchPlugin
 def do_fastmap(scan='CurrentScan.ini', datafile='default.dat',
                mapper='13XRM:map:', _larch=None):
+    """do_fastmap(scanname, datafile='scan.001')
+
+    execute a Fast Map slewscan
+
+    Parameters
+    ----------
+    scan:         string, name of scan
+    filename:     string, name of output data file
+
+    Examples
+    --------
+      do_fastmap('CurrentScan.ini', 'map.001')
+
+
+    """
     #  execute a fast map
     caput(mapper + 'filename', datafile)
     caput(mapper + 'scanfile', scan)
@@ -43,7 +58,7 @@ def do_fastmap(scan='CurrentScan.ini', datafile='default.dat',
             collecting_map = ((time.time() - t0) < 10.0)
         else:
             t0 = time.time()
-    print ' fastmap has finished!'
+    print 'fastmap has finished!'
 
 def registerLarchPlugin():
     return (MODNAME, {'do_fastmap': do_fastmap})
