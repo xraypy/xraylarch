@@ -1149,7 +1149,6 @@ def do_slewscan(scanname, filename='scan.001', comments='',
       1. The filename will be incremented so that each scan uses a new filename.
     """
 
-    """execute slew scan defined in ScanDB"""
     if _larch.symtable._scan._scandb is None:
         print 'need to connect to scandb!'
         return
@@ -1178,5 +1177,5 @@ def registerLarchPlugin():
                       'make_xafs_scan': make_xafs_scan,
                       'connect_scandb':    connect_scandb,
                       'do_scan': do_scan,
-                      'do_slewscan': do_slewscan,
+                      'do_slewscan_beta': do_slewscan,
                       })
