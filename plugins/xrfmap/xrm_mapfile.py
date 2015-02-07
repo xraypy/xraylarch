@@ -230,28 +230,26 @@ class GSEXRM_MapRow:
         xnpts, nmca, nchan = self.counts.shape
         # npts = min(gnpts, xnpts, snpts)
         # print '  MapRow: ', self.npts, npts, gnpts, snpts, xnpts
-        npts = min(gnpts, xnpts)
-        if self.npts is  None:
-            self.npts = npts
-            
-        if snpts < npts:  # extend struck data if needed
-            print '     extending SIS data!', snpts, npts
+        if self.npts is None:
+            self.npts = min(gnpts, xnpts) - 1
+        if snpts < self.npts:  # extend struck data if needed
+            print '     extending SIS data!', snpts, self.npts
             sdata = list(sdata)
-            for i in range(npts+1-snpts):
+            for i in range(self.npts+1-snpts):
                 sdata.append(sdata[snpts-1])
             sdata = np.array(sdata)
-            snpts = npts
-        self.sisdata = sdata[:npts]
+            snpts = self.npts
+        self.sisdata = sdata[:self.npts]
 
-        if xnpts > npts:
-            self.counts  = self.counts[:npts]
-            self.realtime = self.realtime[:npts]
-            self.livetime = self.livetime[:npts]
-            self.dtfactor = self.dtfactor[:npts]
-            self.inpcounts= self.inpcounts[:npts]
-            self.outcounts= self.outcounts[:npts]
+        if xnpts > self.npts:
+            self.counts  = self.counts[:self.npts]
+            self.realtime = self.realtime[:self.npts]
+            self.livetime = self.livetime[:self.npts]
+            self.dtfactor = self.dtfactor[:self.npts]
+            self.inpcounts= self.inpcounts[:self.npts]
+            self.outcounts= self.outcounts[:self.npts]
 
-        points = range(1, npts+1)
+        points = range(1, self.npts+1)
         if reverse:
             points.reverse()
             self.sisdata  = self.sisdata[::-1]
@@ -784,7 +782,7 @@ class GSEXRM_MapFile(object):
         detraw = list(row.sisdata[:npts].transpose())
 
         if verbose:
-            pform ="Add row=%4i, yval=%s, npts=%i, xmapfile=%s"
+            pform = "Add row %4i, yval=%s, npts=%i, xrffile=%s"
             print(pform % (thisrow+1, row.yvalue, npts, row.xmapfile))
 
         detcor = detraw[:]
