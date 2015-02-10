@@ -912,22 +912,19 @@ class XAFS_Scan(LarchStepScan):
 
     def make_XPS_trajectory(self, height=25.0, dspace=3.1355,
                             theta_offset=0, width_offset=0,
-                            theta_accel=0.1, width_accel=0.1):
+                            theta_accel=0.25, width_accel=0.25):
         """this method builds the text of a Trajectory script for
         a Newport XPS Controller based on the energies and dwelltimes"""
 
-
-
-        energy = np.array(self.energy)
+        energy = np.array(self.energies)
         times  = np.array(self.dwelltime)
-
         traw    = energy2angle(energy, dspace=dspace)
         theta  = 1.0*traw
         theta[1:-1] = traw[1:-1]/2.0 + traw[:-2]/4.0 + traw[2:]/4.0
-        theta += theta_offset
-
         width  = height / (2.0 * np.cos(theta/RAD2DEG))
-        width += width_offset
+
+        width -= width_offset
+        theta -= theta_offset
 
         tvelo = np.gradient(theta)/times
         wvelo = np.gradient(width)/times
@@ -950,8 +947,17 @@ class XAFS_Scan(LarchStepScan):
                                dwidth[i], wvelo[i]))
         buff.append(elast)
         buff.append('')
-        return '\n'.join(buff)
-
+        
+        # print "Energy0 ", energy[0]
+        # print 'Height ', height, width[0]
+        # print "Theta0 ", theta[0] - the0
+        # print "Wid0   ", width[0] - wid0
+        return  Group(buffer='\n'.join(buff), 
+                      start_theta=theta[0]-the0,
+                      start_width=width[0]-wid0,
+                      theta=theta, 
+                      energy=energy,
+                      width=width)
 
 @ValidateLarchPlugin
 def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
