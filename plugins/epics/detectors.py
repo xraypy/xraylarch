@@ -643,6 +643,15 @@ class Xspress3Counter(DeviceCounter):
                 if all([rdat[0] for rdat in roidata.values()]):
                     break
 
+        # clear ROI definitions
+        for imca in range(1, 5):
+            pref = "%sC%i" % (prefix, imca)
+            for jroi in range(1, 5):
+                caput('%s_MCA_ROI%i_LLM' % (pref, jroi), 1)
+                caput('%s_MCA_ROI%i_HLM' % (pref, jroi), 4095)
+                caput('%s_ROI%i:ValueSum_RBV.DESC' % (pref, jroi), 'unused')
+                time.sleep(0.05)
+        
         iroi = 0
         for sname, dat in roidata.items():
             found, label, lo, hi = dat
