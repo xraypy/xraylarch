@@ -536,7 +536,8 @@ class Xspress3Detector(DetectorMixin):
         self.dwelltime  = None
         self.dwelltime_pv = get_pv('%sAcquireTime' % prefix)
         self.trigger    = Xspress3Trigger(prefix)
-        self.extra_pvs  = None
+        self.extra_pvs  = self.add_extrapvs_GSE()
+        
         self.use_dtc    = use_dtc
         self.label      = label
         if self.label is None:
@@ -557,6 +558,13 @@ class Xspress3Detector(DetectorMixin):
                                               self.label, self.prefix,
                                               self._repr_extra)
 
+    def add_extrapvs_GSE(self):
+        e = [('mca1 tau(nsec)', '13IDE:userTran3.A'),
+             ('mca2 tau(nsec)', '13IDE:userTran3.B'),
+             ('mca3 tau(nsec)', '13IDE:userTran3.C'),
+             ('mca4 tau(nsec)', '13IDE:userTran3.D')]
+        return e
+        
     def connect_counters(self):
         self._counter = Xspress3Counter(self.prefix, **self._connect_args)
         self.counters = self._counter.counters
