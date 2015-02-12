@@ -910,7 +910,7 @@ class XAFS_Scan(LarchStepScan):
         if self.energy_pos is not None:
             self.energy_pos.array = np.array(self.energies)
 
-    def make_XPS_trajectory(self, height=25.0, dspace=3.1355,
+    def make_XPS_trajectory(self, height=25.0, dspace=3.1355, reverse=True,
                             theta_offset=0, width_offset=0,
                             theta_accel=0.25, width_accel=0.25):
         """this method builds the text of a Trajectory script for
@@ -918,6 +918,10 @@ class XAFS_Scan(LarchStepScan):
 
         energy = np.array(self.energies)
         times  = np.array(self.dwelltime)
+        if reverse:
+            energy = energy[::-1]
+            times  = times[::-1]
+
         traw    = energy2angle(energy, dspace=dspace)
         theta  = 1.0*traw
         theta[1:-1] = traw[1:-1]/2.0 + traw[:-2]/4.0 + traw[2:]/4.0
