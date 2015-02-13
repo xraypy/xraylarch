@@ -536,7 +536,7 @@ class Xspress3Detector(DetectorMixin):
         self.dwelltime  = None
         self.dwelltime_pv = get_pv('%sAcquireTime' % prefix)
         self.trigger    = Xspress3Trigger(prefix)
-        self.extra_pvs  = None
+        self.extra_pvs  = self.add_extrapvs_GSE()
         self.use_dtc    = use_dtc
         self.label      = label
         if self.label is None:
@@ -551,12 +551,20 @@ class Xspress3Detector(DetectorMixin):
         self._connect_args = dict(nmcas=nmcas, nrois=nrois, rois=rois,
                                   use_unlabeled=use_unlabeled,
                                   use_full=use_full)
+        self.connect_counters()
 
     def __repr__(self):
         return "<%s: '%s', prefix='%s'%s>" % (self.__class__.__name__,
                                               self.label, self.prefix,
                                               self._repr_extra)
 
+    def add_extrapvs_GSE(self):
+        e = [('mca1 tau(nsec)', '13IDE:userTran3.A'),
+             ('mca2 tau(nsec)', '13IDE:userTran3.B'),
+             ('mca3 tau(nsec)', '13IDE:userTran3.C'),
+             ('mca4 tau(nsec)', '13IDE:userTran3.D')]
+        return e
+        
     def connect_counters(self):
         self._counter = Xspress3Counter(self.prefix, **self._connect_args)
         self.counters = self._counter.counters
@@ -643,6 +651,14 @@ class Xspress3Counter(DeviceCounter):
                 if all([rdat[0] for rdat in roidata.values()]):
                     break
 
+        # clear ROI definitions
+        for imca in range(1, 5):
+            pref = "%sC%i" % (prefix, imca)
+            for jroi in range(1, 5):
+                caput('%s_MCA_ROI%i_LLM' % (pref, jroi), 1)
+                caput('%s_MCA_ROI%i_HLM' % (pref, jroi), 4095)
+                caput('%s_ROI%i:ValueSum_RBV.DESC' % (pref, jroi), 'unused')
+                time.sleep(0.05)
         iroi = 0
         for sname, dat in roidata.items():
             found, label, lo, hi = dat
@@ -655,6 +671,7 @@ class Xspress3Counter(DeviceCounter):
                     caput('%s_ROI%i:ValueSum_RBV.DESC' % (pref, iroi), label)
                     xlab = "%s mca%i" % (label, imca)
                     add_counter('%s_ROI%i:Value_RBV' % (pref, iroi), xlab)
+                    print 'Add Counter ', pref, xlab
 
         for isca in range(self.nscas):  # these start counting at 0!!
             for imca in range(1, self.nmcas+1):
