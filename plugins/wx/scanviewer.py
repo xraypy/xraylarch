@@ -525,9 +525,7 @@ class ScanViewerFrame(wx.Frame):
         preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
 
         preedge_cmd = "pre_edge(%s._xdat_, %s._ydat_, %s)"
-        print(" --> Preedge" , preedge_cmd)
         self.larch(preedge_cmd % (gname, gname, preopts))
-        print(" --> Done! ")        
         if self.xas_autoe0.IsChecked():
             self.xas_e0.SetValue(lgroup.e0)
         if self.xas_autostep.IsChecked():
