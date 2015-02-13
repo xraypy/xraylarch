@@ -44,7 +44,7 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False):
     out.numPixels = npixels
     t1 = time.time()
     if ndpix < npix:
-        out.counts = np.zeros((npix, ndet, nchan), dtype='f32')
+        out.counts = np.zeros((npix, ndet, nchan), dtype='float32')
         out.counts[:ndpix, :, :]  = counts[:]
     else:
         out.counts = counts[:]
