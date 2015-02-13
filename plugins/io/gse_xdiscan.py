@@ -40,6 +40,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
     group = _larch.symtable.create_group()
     group.__name__ ='GSE XDI Data file %s' % fname
     group._xdi = xdi
+    group.filename = fname
     group.npts = xdi.npts
     for family in ('scan', 'mono', 'facility'):
         for key, val in xdi.attrs[family].items():
