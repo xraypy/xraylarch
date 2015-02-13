@@ -991,13 +991,15 @@ class ScanViewerFrame(wx.Frame):
             fh = open(path, 'r')
             line1 = fh.readline().lower()
             fh.close()
+            reader = 'read_ascii'
             if 'epics scan' in line1:
-                self.larch("%s = read_gsescan('%s')" % (gname, path))
+                reader = 'read_gsescan'
             elif 'xdi' in line1:
-                self.larch("%s = read_xdi('%s')" % (gname, path))
-            else:
-                self.larch("%s = read_ascii('%s')" % (gname, path))
+                reader = 'read_xdi'
+                if 'epics stepscan file' in line1:
+                    reader = 'read_gsexdi'
                 
+            self.larch("%s = %s('%s')" % (gname, reader, path))
             self.larch("%s.path  = '%s'"     % (gname, path))
             self.filelist.Append(fname)
             self.file_paths.append(path)
