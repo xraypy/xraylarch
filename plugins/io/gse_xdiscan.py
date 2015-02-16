@@ -36,7 +36,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
     """Read GSE XDI Scan Data to larch group,
     summing ROI data for MCAs and apply deadtime corrections
     """
-    xdi = XDIFile(fname)
+    xdi = XDIFile(str(fname))
     group = _larch.symtable.create_group()
     group.__name__ ='GSE XDI Data file %s' % fname
     group._xdi = xdi
