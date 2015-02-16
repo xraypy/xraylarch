@@ -27,6 +27,7 @@ from larch.larchlib import read_workdir, save_workdir
         
 use_plugin_path('io')
 from gse_escan import gsescan_deadtime_correct
+from gse_xdiscan import gsexdi_deadtime_correct, is_GSEXDI
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
@@ -105,8 +106,10 @@ class DTCorrectFrame(wx.Frame):
                         "could not create directory")
                     return
             for fname in dlg.GetFilenames():
-                gsescan_deadtime_correct(fname, roiname, 
-                                         subdir=dirname, _larch=self.larch)
+                corr_fcn = gsescan_deadtime_correct
+                if is_GSEXDI(fname):
+                    corr_fcn = gsexdi_deadtime_correct
+                corr_fcn(fname, roiname, subdir=dirname, _larch=self.larch)
 
     def createMainPanel(self):
         panel = wx.Panel(self)
