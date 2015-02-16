@@ -24,6 +24,12 @@ def getfloats(txt):
 def colname(txt):
     return fixName(txt.strip().lower()).replace('.', '_')
 
+
+def iso8601_time(ts):
+    tzone = '-%2.2i:00' % (time.timezone/3600)
+    s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
+    return "%s%s" % (s, tzone)
+
 def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
     """read a column ascii column file, returning a group containing the data from the file.
 

@@ -7,7 +7,9 @@ import time
 import gc
 
 import numpy
-from larch import ValidateLarchPlugin
+from larch import ValidateLarchPlugin, use_plugin_path
+use_plugin_path('io')
+from columnfile import iso8601_time
 
 def _cleanfile(x):
     for o in ' ./?(){}[]",&%^#@$': x = x.replace(o,'_')
@@ -814,10 +816,6 @@ GSE_header_BMD = ['# XDI/1.0  GSE/1.0',
              '# Column.5: ifluor_raw (not corrected) '    ]
 
 
-def iso8601_time(ts):
-    tzone = '-%2.2i:00' % (time.timezone/3600)
-    s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
-    return "%s%s" % (s, tzone)
 
 @ValidateLarchPlugin
 def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=None):
