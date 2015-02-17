@@ -303,6 +303,7 @@ def _addplugin(plugin, _larch=None, **kws):
         except ImportError:
             is_pkg = os.path.isdir(pjoin(p_path, plugin))
 
+        # write("LARCH ADD_PLUGIN FIND PLUGIN ", plugin, p_path, is_pkg, mod)
         if is_pkg or (mod is not None and
                       mod[2][2] == imp.PKG_DIRECTORY):
             return True, pjoin(p_path, plugin)
@@ -379,7 +380,7 @@ def _addplugin(plugin, _larch=None, **kws):
                                     name.endswith('.py') and len(name) > 3):
                                     filelist.append(name)
                     except:
-                        print("Warning:: Error reading plugin file:\n %s\n" %
+                        write("Warning:: Error reading plugin file:\n %s\n" %
                               pfile)
                 if len(filelist) == 0:
                     for fname in os.listdir(mod):
@@ -422,7 +423,7 @@ def _addplugin(plugin, _larch=None, **kws):
                 if ((err.fname != fname or err.lineno != lineno) and
                     err.lineno > 0 and lineno > 0):
                     output.append("%s" % (err.get_error()[1]))
-            _larch.writer.write('\n'.join(output))
+            write('\n'.join(output))
 
         if fh is not None:
             fh.close()
