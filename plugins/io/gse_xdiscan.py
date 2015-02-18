@@ -14,22 +14,8 @@ use_plugin_path('io')
 from xdi import XDIFile
 from columnfile import iso8601_time
 
-XSPRESS3_TAUS = [109.e-9, 91.e-9, 99.e-9, 98.e-9]
-
-def estimate_icr(ocr, tau, niter=3):
-    maxicr = 1.0/tau
-    maxocr = 1/(tau*np.exp(1.0))
-    ocr[np.where(ocr>2*maxocr)[0]] = 2*maxocr
-    icr = 1.0*ocr
-    for c in range(niter):
-        delta = (icr - ocr*np.exp(icr*tau))/(icr*tau - 1)
-        delta[np.where(delta < 0)[0]] = 0.0
-        icr = icr + delta
-        icr[np.where(icr>5*maxicr)[0]] = 5*maxicr
-    #endfor
-    return icr
-#enddef
-
+use_plugin_path('xrfmap')
+from xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
 
 @ValidateLarchPlugin
 def read_gsexdi(fname, _larch=None, nmca=4, **kws):
@@ -43,6 +29,9 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
     group.filename = fname
     group.npts = xdi.npts
     group.dtc_taus = XSPRESS3_TAUS
+    if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
+        group.dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
+
     for family in ('scan', 'mono', 'facility'):
         for key, val in xdi.attrs[family].items():
             if '||' in val:
