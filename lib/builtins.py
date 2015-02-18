@@ -406,10 +406,14 @@ def _addplugin(plugin, _larch=None, **kws):
                 _larch.symtable.add_plugin(out, on_error, **kws)
             except:
                 err, exc, tback = sys.exc_info()
+                lineno = getattr(exc, 'lineno', 0)
+                offset = getattr(exc, 'offset', 0)
+                etext  = getattr(exc, 'text', '')
+                emsg   = getattr(exc, 'message', '')
+                # write(traceback.print_tb(tback))
                 write("""Python Error in plugin '%s', line %d
   %s %s^
-%s: %s\n""" % (modpath, exc.lineno, exc.text, ' '*exc.offset,
-               err.__name__, exc.msg))
+%s: %s\n""" % (modpath, lineno, etext, ' '*offset, err.__name__, emsg))
                 retval = False
 
         if _larch.error:
