@@ -9,18 +9,40 @@ import h5py
 import sys
 import os
 
+from larch import Group, ValidateLarchPlugin, use_plugin_path
+
+# Default tau values for xspress3
+
+XSPRESS3_TAUS = [109.e-9, 91.e-9, 99.e-9, 98.e-9]
+
+def estimate_icr(ocr, tau, niter=3):
+    "estimate icr from ocr and tau"
+    maxicr = 1.0/tau
+    maxocr = 1/(tau*np.exp(1.0))
+    ocr[np.where(ocr>2*maxocr)[0]] = 2*maxocr
+    icr = 1.0*ocr
+    for c in range(niter):
+        delta = (icr - ocr*np.exp(icr*tau))/(icr*tau - 1)
+        delta[np.where(delta < 0)[0]] = 0.0
+        icr = icr + delta
+        icr[np.where(icr>5*maxicr)[0]] = 5*maxicr
+    #endfor
+    return icr
+#enddef
+
+
 class XSP3Data(object):
     def __init__(self, npix, ndet, nchan):
         self.firstPixel   = 0
         self.numPixels    = 0
-        self.realTime     = np.zeros((npix, ndet), dtype='i8')
-        self.inputCounts  = np.zeros((npix, ndet), dtype='i4')
-        # self.outputCounts = np.zeros((npix, ndet), dtype='i4')
-        # self.liveTime     = np.zeros((npix, ndet), dtype='i8')
+        self.realTime     = np.zeros((npix, ndet), dtype='f8')
+        self.liveTime     = np.zeros((npix, ndet), dtype='f8')
+        self.outputCounts = np.zeros((npix, ndet), dtype='f8')
+        self.inputCounts  = np.zeros((npix, ndet), dtype='f8')
         # self.counts       = np.zeros((npix, ndet, nchan), dtype='f4')
 
-
-def read_xsp3_hdf5(fname, npixels=None, verbose=False):
+@ValidateLarchPlugin
+def read_xsp3_hdf5(fname, npixels=None, verbose=False, _larch=None):
     # Reads a netCDF file created with the DXP xMAP driver
     # with the netCDF plugin buffers
     npixels = None
@@ -44,18 +66,25 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False):
     out.numPixels = npixels
     t1 = time.time()
     if ndpix < npix:
-        out.counts = np.zeros((npix, ndet, nchan), dtype='float32')
+        out.counts = np.zeros((npix, ndet, nchan), dtype='f8')
         out.counts[:ndpix, :, :]  = counts[:]
     else:
         out.counts = counts[:]
 
+    dtc_taus = XSPRESS3_TAUS
+    if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
+        dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
+        
     for i in range(ndet):
         rtime = (ndattr['CHAN%iSCA0' % (i+1)].value * clocktick).astype('i8')
         out.realTime[:, i] = rtime
-        out.inputCounts[:, i]  = out.counts[:, i, :].sum(axis=1)
+        out.liveTime[:, i] = rtime
+        ocounts = out.counts[:, i, 5:-5].sum(axis=1)
+        ocr = ocounts/(rtime*1.e-6)
+        icr = estimate_icr(ocr, dtc_taus[i], niter=3)
+        out.inputCounts[:, i]  = icr * (rtime*1.e-6)
+        out.outputCounts[:, i] = ocounts
 
-    out.outputCounts = out.inputCounts[:]
-    out.liveTime = out.realTime[:]
 
     h5file.close()
     t2 = time.time()
@@ -70,6 +99,12 @@ def test_read(fname):
     print( fname,  os.stat(fname))
     fd = read_xsp3_hdf5(fname, verbose=True)
     print(fd.counts.shape)
+
+def initializeLarchPlugin(_larch=None):
+    """initialize xspress3 data"""
+    g = _larch.symtable.create_group(xspress3_taus=XSPRESS3_TAUS)
+    _larch.symtable.set_symbol("_sys.gsecars", g)
+
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xsp3_hdf5': read_xsp3_hdf5})
