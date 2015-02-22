@@ -135,7 +135,7 @@ class Interpreter:
             self.symtable._sys.valid_commands.append(cmd)
 
         # add all plugins in standard plugins folder
-        plugins_dir = os.path.join(site_config.sys_larchdir, 'plugins')
+        plugins_dir = os.path.join(site_config.larchdir, 'plugins')
         for pname in os.listdir(plugins_dir):
             pdir = os.path.join(plugins_dir, pname)
             if os.path.isdir(pdir):
