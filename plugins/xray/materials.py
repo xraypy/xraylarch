@@ -15,8 +15,8 @@ def get_materials(_larch):
         return _larch.symtable.get_symbol(symname)
     mat = {}
     conf = site_config
-    paths = [os.path.join(conf.sys_larchdir, 'plugins', 'xray'),
-             os.path.join(conf.usr_larchdir)]
+    paths = [os.path.join(conf.larchdir, 'plugins', 'xray'),
+             os.path.join(conf.larchdir)]
 
     for dirname in paths:
         fname = os.path.join(dirname, 'materials.dat')
@@ -137,7 +137,7 @@ def material_add(name, formula, density, _larch=None):
     symname = '%s._materials' % MODNAME
     _larch.symtable.set_symbol(symname, materials)
 
-    fname = os.path.join(larch.site_config.usr_larchdir, 'materials.dat')
+    fname = os.path.join(larch.site_config.larchdir, 'materials.dat')
     if os.path.exists(fname):
         fh = open(fname, 'r')
         text = fh.readlines()
