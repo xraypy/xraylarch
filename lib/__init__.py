@@ -28,6 +28,7 @@ def ValidateLarchPlugin(fcn):
     """function decorator to ensure that _larch is included in keywords,
     and that it is a valid Interpeter"""
     errmsg = "plugin function '%s' needs a valid '_larch' argument"
+
     def wrapper(*args, **keywords):
         "ValidateLarchPlugin"
         if ('_larch' not in keywords or
@@ -40,4 +41,3 @@ def ValidateLarchPlugin(fcn):
     wrapper.__filename__ = fcn.__code__.co_filename
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
-
