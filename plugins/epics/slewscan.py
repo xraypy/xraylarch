@@ -27,6 +27,8 @@ def do_fastmap(scan='CurrentScan.ini', datafile='default.dat',
     """
     #  execute a fast map
     caput(mapper + 'filename', datafile)
+    if not scan.endswith('.ini'):
+        scan = scan + '.ini'
     caput(mapper + 'scanfile', scan)
     time.sleep(0.5)
     caput(mapper + 'Start',  1)
