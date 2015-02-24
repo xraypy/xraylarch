@@ -26,9 +26,7 @@ def _get(sym=None, _larch=None, **kws):
         group = sym
     elif isinstance(sym, (str, unicode)):
         group = symtable._lookup(sym, create=False)
-
     return group
-
 
 @ValidateLarchPlugin
 def _show(sym=None, _larch=None, with_private=False, **kws):
@@ -50,8 +48,6 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
     elif isinstance(sym, types.ModuleType):
         group = sym
         title = sym.__name__
-    elif isinstance(sym, (str, unicode)):
-        group = symtable._lookup(sym, create=False)
 
     if group is None:
         _larch.writer.write("%s\n" % repr(sym))

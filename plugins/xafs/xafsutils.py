@@ -59,7 +59,7 @@ def set_xafsGroup(group, _larch=None):
 
 
 def initializeLarchPlugin(_larch=None):
-    """initialize _io"""
+    """initialize _xafs"""
     if _larch is not None:
         mod = getattr(_larch.symtable, '_xafs')
         mod.__doc__ = MODDOC
