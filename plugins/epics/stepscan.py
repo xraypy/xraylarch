@@ -718,17 +718,24 @@ class LarchStepScan(object):
         return self.datafile.filename
         ##
 
-    def write_fastmap_config(self, datafile, comments):
+    def write_fastmap_config(self, datafile, comments, mapper='13XRM:map:'):
         "write ini file for fastmap"
         if datafile is None: datafile = 'scan.001'
         if comments is None: comments = ''
-        sname = 'CurrentScan.ini'
-        oname = 'PreviousScan.ini'
+        currscan = 'CurrentScan.ini'
+        server  = self.scandb.get_info('server_fileroot')
         workdir = self.scandb.get_info('user_folder')
-        sname1 = os.path.join(workdir, 'Maps', sname)
-        oname1 = os.path.join(workdir, 'Maps', oname)
-        if os.path.exists(sname1):
-            shutil.copy(sname1, oname1)
+        basedir = os.path.join(server, workdir, 'Maps')
+        sname = os.path.join(server, workdir, 'Maps', currscan)
+        oname = os.path.join(server, workdir, 'Maps', 'PreviousScan.ini')
+
+        if mapper is not None:
+            caput('%sbasedir'  % mapper, basedir)
+            caput('%sfilename' % mapper, datafile)
+            caput('%sscanfile' % mapper, currscan)
+
+        if os.path.exists(sname):
+            shutil.copy(sname, oname)
         txt = ['# FastMap configuration file (saved: %s)'%(time.ctime()),
                '#-------------------------#',  '[scan]',
                'filename = %s' % datafile,
@@ -746,7 +753,7 @@ class LarchStepScan(object):
         txt.append('stop1 = %.3f'  % arr[-1])
         txt.append('step1 = %.3f'  % (arr[1]-arr[0]))
         txt.append('time1 = %.3f'  % ltim)
-
+        
         if dim > 1:
             pos = self.positioners[1]
             pospv = str(pos.pv.pvname)
@@ -758,9 +765,10 @@ class LarchStepScan(object):
             txt.append('step2 = %.3f' % (arr[1]-arr[0]))
         txt.append('#------------------#')
 
-        f = open(sname1, 'w')
+        f = open(sname, 'w')
         f.write('\n'.join(txt))
         f.close()
+        print 'Wrote %s ' % (sname)
         return sname
 
     def epics_slewscan(self, filename='map.001', comments=None,
@@ -769,16 +777,13 @@ class LarchStepScan(object):
         and separate fastmap collector....
         should be replaced!
         """
-        scanname = self.write_fastmap_config(filename, comments)
-
-        # now start scan
-        caput('%sfilename' % mapper, filename)
-        caput('%sscanfile' % mapper, scanname)
+        self.write_fastmap_config(filename, comments, mapper=mapper)
         caput('%smessage' % mapper, 'starting...')
         caput('%sStart' % mapper, 1)
 
         self.abort = False
         self.clear_interrupts()
+
         # watch scan
         # first, wait for scan to start (status == 2)
         collecting = False
@@ -805,33 +810,39 @@ class LarchStepScan(object):
             print 'slewscan aborted'
             return
 
-        # wait for map to finish
-        status = 2
-        time_at_endrow = None
-        nrowx = -1
-        while status > 0:
-            time.sleep(0.25)
-            nrow = caget('%snrow' % mapper)
-            status = caget('%sstatus' % mapper)
+        maxrow  = caget("%smaxrow" % mapper)
+        time.sleep(1.0)
+
+        # wait for map to finish:
+        # must see "status=Idle" for 10 consequetive seconds
+        collecting_map = True
+        nrowx, nrow = 0, 0
+        t0 = time.time()
+        while collecting_map:
+            time.sleep(0.5)
+            status = caget("%sstatus" % mapper)
+            nrow   = caget("%snrow" % mapper)
             if self.look_for_interrupts():
                 break
             if nrowx != nrow:
+                print ' map at row %i of %i' % (nrow, maxrow)
                 nrowx = nrow
+            if status == 0:
+                collecting_map = ((time.time() - t0) < 10.0)
+            else:
+                t0 = time.time()
 
-            if nrow >= maxrow and status !=2:
-                if time_at_endrow is None:
-                    time_at_endrow = time.time()
-                if (time.time() - time_at_endrow) > 60.0:
-                    print 'slewscan appears to have completed'
-                    status = 0
+        # if aborted from ScanDB / ScanGUI wait for status
+        # to go to 0 (or 5 minutes)
         if self.abort:
             caput('%sAbort' % mapper, 1)
-            for i in range(250):
-                time.sleep(0.01)
-                if caget('%sstatus' % mapper) == 0:
-                    break
-            return
-        print 'slewscan done!'
+            status = 1
+            t0 = time.time()
+            while status != 0 and (time.time()-t0 < 60.0):
+                time.sleep(0.25)
+                status = caget('%sstatus' % mapper)
+
+        print 'slewscan finished!'
         return
 
 class XAFS_Scan(LarchStepScan):
@@ -1187,5 +1198,6 @@ def registerLarchPlugin():
                       'make_xafs_scan': make_xafs_scan,
                       'connect_scandb':    connect_scandb,
                       'do_scan': do_scan,
-                      'do_slewscan_beta': do_slewscan,
+                      'do_slewscan': do_slewscan,
+                      'do_fastmap':  do_slewscan,
                       })
