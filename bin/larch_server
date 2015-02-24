@@ -18,6 +18,7 @@ import json
 
 from optparse import OptionParser
 from xmlrpclib import ServerProxy
+from distutils.spawn import find_executable
 
 from larch.xmlrpc_server import LarchServer
 
