@@ -26,10 +26,12 @@ def start_server(port=4966, host='localhost',
     "start server"
     thispath, thisfile = os.path.split(os.path.abspath(__file__))
     exe = os.path.join(thispath, 'larch')
-    if quiet:
-        return subprocess.Popen([exe, '-r', '-q', '-p', '%d' % port])
-    else:
-        return subprocess.Popen([exe, '-r', '-p', '%d' % port])
+    args = [exe, '-r', '-p', '%d' % port]
+    if quiet:                   # insert -q flag
+        args[2:2] = ['-q']
+    if os.name == 'nt':         # prepend fully resolved python executable
+        args[:0] = [find_executable('python')]
+    return subprocess.Popen(args)
 
 
 def stop_server(port=4966, host='localhost'):
