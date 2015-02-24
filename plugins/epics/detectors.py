@@ -537,7 +537,7 @@ class Xspress3Detector(DetectorMixin):
         self.dwelltime_pv = get_pv('%sAcquireTime' % prefix)
         self.trigger    = Xspress3Trigger(prefix)
         self.extra_pvs  = self.add_extrapvs_GSE()
-        self.use_dtc    = use_dtc
+        self.use_dtc    = False #  use_dtc  # KLUDGE DTC!!
         self.label      = label
         if self.label is None:
             self.label = self.prefix
@@ -671,7 +671,7 @@ class Xspress3Counter(DeviceCounter):
                     caput('%s_ROI%i:ValueSum_RBV.DESC' % (pref, iroi), label)
                     xlab = "%s mca%i" % (label, imca)
                     add_counter('%s_ROI%i:Value_RBV' % (pref, iroi), xlab)
-                    print 'Add Counter ', pref, xlab
+                    # print 'Add Counter ', pref, xlab
 
         for isca in range(self.nscas):  # these start counting at 0!!
             for imca in range(1, self.nmcas+1):
