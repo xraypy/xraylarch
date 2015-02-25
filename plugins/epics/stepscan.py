@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 MODDOC = """
 === Epics Scanning Functions for Larch ===
 
@@ -81,7 +83,6 @@ Non-mesh scans are also possible.
 A step scan can have an Epics SScan Record or StepScan database associated
 with it.  It will use these for PVs to post data at each point of the scan.
 """
-
 import os, shutil
 import time
 import threading
@@ -383,7 +384,7 @@ class LarchStepScan(object):
             self.set_info('filename', self.filename)
         msg = 'Point %i/%i,  time left: %s' % (cpt, npts, time_est)
         if cpt % self.message_points == 0:
-            print msg
+            print(msg)
         self.set_info('scan_message', msg)
 
     def publish_scandata(self):
@@ -504,14 +505,13 @@ class LarchStepScan(object):
 
         ts_start = time.time()
         if not self.verify_scan():
-            print 'Cannot execute scan ',  self._scangroup.error_message
+            print('Cannot execute scan ',  self._scangroup.error_message)
             self.set_info('scan_message', 'cannot execute scan')
             return
         self.clear_interrupts()
         dtimer.add('PRE: cleared interrupts')
         orig_positions = [p.current() for p in self.positioners]
 
-        # print 'StepScan Run 2 (move to start)'
         out = [p.move_to_start(wait=False) for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
@@ -622,7 +622,6 @@ class LarchStepScan(object):
                 poll(self.pos_settle_time, 0.25)
                 dtimer.add('Pt %i : pos settled' % i)
                 # start triggers, wait for them to finish
-                # print 'Trigger...'
                 [trig.start() for trig in self.triggers]
                 dtimer.add('Pt %i : triggers fired, (%d)' % (i, len(self.triggers)))
                 t0 = time.time()
@@ -649,7 +648,7 @@ class LarchStepScan(object):
                         if trig.runtime < self.min_dwelltime / 2.0:
                             point_ok = False
                 if not point_ok:
-                    print 'Trigger problem: ', trig, trig.runtime, self.min_dwelltime
+                    print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
 
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.25)
@@ -662,7 +661,6 @@ class LarchStepScan(object):
 
                 [c.read(nbins=nbins) for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
-                # print 'Read '
                 # self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
                 dtimer.add('Pt %i : added positions' % i)
@@ -677,7 +675,7 @@ class LarchStepScan(object):
             except KeyboardInterrupt:
                 self.scandb.set_info('request_abort', 1l)
             if not point_ok:
-                print 'point messed up... try again?'
+                print('point messed up... try again?')
                 i -= 1
 
         # scan complete
@@ -687,7 +685,7 @@ class LarchStepScan(object):
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
         if self.look_for_interrupts():
-            print "scan aborted at point %i of %i." % (self.cpt, self.npts)
+            print("scan aborted at point %i of %i." % (self.cpt, self.npts))
 
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
@@ -768,7 +766,6 @@ class LarchStepScan(object):
         f = open(sname, 'w')
         f.write('\n'.join(txt))
         f.close()
-        print 'Wrote %s ' % (sname)
         return sname
 
     def epics_slewscan(self, filename='map.001', comments=None,
@@ -794,9 +791,9 @@ class LarchStepScan(object):
             if self.look_for_interrupts():
                 break
         if self.abort:
-            print 'slewscan aborted'
+            print('slewscan aborted')
             return
-        print 'slewscan started, wait for it to finish'
+        print('slewscan started....')
         nrow = 0
         t0 = time.time()
         maxrow = caget('%smaxrow' % mapper)
@@ -807,11 +804,12 @@ class LarchStepScan(object):
             if self.look_for_interrupts():
                 break
         if self.abort:
-            print 'slewscan aborted'
+            print('slewscan aborted before it began')
             return
-
         maxrow  = caget("%smaxrow" % mapper)
         time.sleep(1.0)
+        fname  = caget("%sfilename" % mapper, as_string=True)
+        self.set_info('filename', fname)
 
         # wait for map to finish:
         # must see "status=Idle" for 10 consequetive seconds
@@ -819,15 +817,20 @@ class LarchStepScan(object):
         nrowx, nrow = 0, 0
         t0 = time.time()
         while collecting_map:
-            time.sleep(0.5)
-            status = caget("%sstatus" % mapper)
-            nrow   = caget("%snrow" % mapper)
+            time.sleep(0.25)
+            status_val = caget("%sstatus" % mapper)
+            status_str = caget("%sstatus" % mapper, as_string=True)
+            nrow       = caget("%snrow" % mapper)
+            self.set_info('scan_status', status_str)
+            time.sleep(0.25)
             if self.look_for_interrupts():
                 break
             if nrowx != nrow:
-                print ' map at row %i of %i' % (nrow, maxrow)
+                info = caget("%sinfo" % mapper, as_string=True)
+                print('>> map: %s' % (info))
+                self.set_info('scan_message', info)
                 nrowx = nrow
-            if status == 0:
+            if status_val == 0:
                 collecting_map = ((time.time() - t0) < 10.0)
             else:
                 t0 = time.time()
@@ -838,11 +841,13 @@ class LarchStepScan(object):
             caput('%sAbort' % mapper, 1)
             status = 1
             t0 = time.time()
-            while status != 0 and (time.time()-t0 < 60.0):
+            while status_val != 0 and (time.time()-t0 < 60.0):
                 time.sleep(0.25)
-                status = caget('%sstatus' % mapper)
-
-        print 'slewscan finished!'
+                status_val = caget('%sstatus' % mapper)
+        status_strg = caget('%sstatus' % mapper, as_string=True)                
+        self.set_info('scan_status', status_str)
+        print( 'slewscan finished!')
+        self.clear_interrupts()
         return
 
 class XAFS_Scan(LarchStepScan):
@@ -885,7 +890,7 @@ class XAFS_Scan(LarchStepScan):
         self.dtime = dtime
 
         if npts is None and step is None:
-            print 'add_region needs start, stop, and either step on npts'
+            print('add_region needs start, stop, and either step on npts')
             return
 
         if step is not None:
@@ -963,10 +968,6 @@ class XAFS_Scan(LarchStepScan):
         buff.append(elast)
         buff.append('')
         
-        # print "Energy0 ", energy[0]
-        # print 'Height ', height, width[0]
-        # print "Theta0 ", theta[0] - the0
-        # print "Wid0   ", width[0] - wid0
         return  Group(buffer='\n'.join(buff), 
                       start_theta=theta[0]-the0,
                       start_width=width[0]-wid0,
@@ -1121,14 +1122,12 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     """
 
     if _larch.symtable._scan._scandb is None:
-        print 'need to connect to scandb!'
+        print('need to connect to scandb!')
         return
     scandb =  _larch.symtable._scan._scandb
     if nscans is not None:
         scandb.set_info('nscans', nscans)
     print("LARCH.do_scan ", scanname, filename)
-    print os.getcwd()
-
 
     scan = scan_from_db(scanname, filename=filename,
                         _larch=_larch)
@@ -1171,7 +1170,7 @@ def do_slewscan(scanname, filename='scan.001', comments='',
     """
 
     if _larch.symtable._scan._scandb is None:
-        print 'need to connect to scandb!'
+        print('need to connect to scandb!')
         return
     scan = scan_from_db(scanname, _larch=_larch)
     if scan.scantype != 'slew':
