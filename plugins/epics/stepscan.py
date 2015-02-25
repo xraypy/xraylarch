@@ -747,10 +747,10 @@ class LarchStepScan(object):
         ltim = self.dwelltime*(len(arr) - 1)
         txt.append('dimension = %i' % dim)
         txt.append('pos1 = %s'     % pospv)
-        txt.append('start1 = %.3f' % arr[0])
-        txt.append('stop1 = %.3f'  % arr[-1])
-        txt.append('step1 = %.3f'  % (arr[1]-arr[0]))
-        txt.append('time1 = %.3f'  % ltim)
+        txt.append('start1 = %.4f' % arr[0])
+        txt.append('stop1 = %.4f'  % arr[-1])
+        txt.append('step1 = %.4f'  % (arr[1]-arr[0]))
+        txt.append('time1 = %.4f'  % ltim)
         
         if dim > 1:
             pos = self.positioners[1]
@@ -758,9 +758,9 @@ class LarchStepScan(object):
             if pospv.endswith('.VAL'): pospv = pospv[:-4]
             arr = pos.array
             txt.append('pos2 = %s'   % pospv)
-            txt.append('start2 = %.3f' % arr[0])
-            txt.append('stop2 = %.3f' % arr[-1])
-            txt.append('step2 = %.3f' % (arr[1]-arr[0]))
+            txt.append('start2 = %.4f' % arr[0])
+            txt.append('stop2 = %.4f' % arr[-1])
+            txt.append('step2 = %.4f' % (arr[1]-arr[0]))
         txt.append('#------------------#')
 
         f = open(sname, 'w')
