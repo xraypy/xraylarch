@@ -78,16 +78,19 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
             dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
         
     for i in range(ndet):
-        rtime = (ndattr['CHAN%iSCA0' % (i+1)].value * clocktick).astype('i8')
+        rtime = clocktick * ndattr['CHAN%iSCA0' % (i+1)].value 
+        rtime[np.where(rtime<0.1)] = 0.1
         out.realTime[:, i] = rtime
         out.liveTime[:, i] = rtime
         ocounts = out.counts[:, i, 1:-1].sum(axis=1)
+        ocounts[np.where(ocounts<0.1)] = 0.1
         out.outputCounts[:, i] = ocounts
         out.inputCounts[:, i]  = ocounts
         if kludge_dtc:
             ocr = ocounts/(rtime*1.e-6)
             icr = estimate_icr(ocr, dtc_taus[i], niter=3)
             out.inputCounts[:, i]  = icr * (rtime*1.e-6)
+            
 
     h5file.close()
     t2 = time.time()
