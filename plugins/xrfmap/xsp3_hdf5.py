@@ -41,9 +41,9 @@ class XSP3Data(object):
         self.inputCounts  = np.zeros((npix, ndet), dtype='f8')
         # self.counts       = np.zeros((npix, ndet, nchan), dtype='f4')
 
-#  @ValidateLarchPlugin
+@ValidateLarchPlugin
 def read_xsp3_hdf5(fname, npixels=None, verbose=False,
-                   kludge_dtc=True, _larch=None):
+                   kludge_dtc=False, _larch=None):
     # Reads a HDF5 file created with the DXP xMAP driver
     # with the netCDF plugin buffers
     npixels = None
@@ -74,9 +74,8 @@ def read_xsp3_hdf5(fname, npixels=None, verbose=False,
 
     if kludge_dtc:
         dtc_taus = XSPRESS3_TAUS
-        if _larch is not None:
-            if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
-                dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
+        if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
+            dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
         
     for i in range(ndet):
         rtime = (ndattr['CHAN%iSCA0' % (i+1)].value * clocktick).astype('i8')
