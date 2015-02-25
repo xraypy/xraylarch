@@ -10,16 +10,17 @@ use_plugin_path('std')
 from show import _show
 
 class FeffRunner(Group):
-    """A Larch plugin for managing calls to the feff85exafs stand-alone executables.
+    """
+    A Larch plugin for managing calls to the feff85exafs stand-alone executables.
     This plugin does not manage the output of Feff.  See feffpath() and other tools.
 
     Methods:
         run -- run one or more parts of feff
 
-            a = feffrunner(feffinp='path/to/feff.inp')
-            a.run() to run feff monolithically
-            a.run(exe='rdinp')
-            a.run(exe='xsph')
+            feff = feffrunner(feffinp='path/to/feff.inp')
+            feff.run() to run feff monolithically
+            feff.run('rdinp')
+            feff.run('xsph')
                and so on to run individual parts of feff
                ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x')
 
@@ -28,19 +29,25 @@ class FeffRunner(Group):
           git repository, set the repo attribute to the top of the
           respository:
 
-            a = feffrunner(feffinp='path/to/feff.inp')
-            a.repo = '/home/bruce/git/feff85exafs'
-            a.run()
+            feff = feffrunner(feffinp='path/to/feff.inp')
+            feff.repo = '/home/bruce/git/feff85exafs'
+            feff.run()
+
+          If the symbol _xafs._feff_executable is set to a Feff executable,
+          it can be run by doing
+
+            feff = feffrunner(feffinp='path/to/feff6.inp')
+            feff.run(None)
 
           run returns None if feff ran successfully, otherwise it
           returns an Exception with a useful message
 
-          Other versions of feff can also be handled, with the caveat
-          that the executable begins with "feff', i.e. "feff6",
-          "feff7", etc.
+          Other versions of feff in the execution path can also be
+          handled, with the caveat that the executable begins with
+          "feff', i.e. "feff6", "feff7", etc.
 
-            a = feffrunner(feffinp='path/to/feff6.inp')
-            a.run(module='feff6')
+            feff = feffrunner(feffinp='path/to/feff6.inp')
+            feff.run('feff6')
 
           If the value of the feffinp attribute is a file with a
           basename other than "feff.inp", that file will be renamed to
@@ -52,6 +59,7 @@ class FeffRunner(Group):
         repo     -- when set to the top of the feff85exfas repository, the newly compiled executables will be used
         resolved -- the fully resolved path to the most recently run executable
         verbose  -- write screen messages if True
+
     """
 
     def __init__(self, feffinp=None, verbose=True, repo=None, _larch=None, **kws):
@@ -77,7 +85,8 @@ class FeffRunner(Group):
 
 
     def run(self, exe='monolithic'):
-        """Make system call to run one or more of the stand-alone executables,
+        """
+        Make system call to run one or more of the stand-alone executables,
         writing a log file to the folder containing the input file.
 
         """
@@ -114,10 +123,10 @@ class FeffRunner(Group):
         ##
         ## the logic is:
         ##  1. if exe seems to be a feff version, try to find that Feff executable
-        ##  2. if repo is None, try to find the installed executable
-        ##  3. if repo is set, try to find the newly compiled executable
-        ##  4. if nothing has been found, try to use _xafs.feff_executable
-        ##  5. if nothing is found, raise and Exception
+        ##  2. if repo is None, try to find the installed feff85exafs executable
+        ##  3. if repo is set, try to find the newly compiled feff85exafs executable
+        ##  4. if nothing has yet been found, try to use _xafs._feff_executable
+        ##  5. if nothing is found, raise an Exception
         program=None
         if exe.startswith('feff'): # step 1, exe seems to be numbered feff (e.g. feff6, feff7, ...)
             self.resolved = find_executable(exe)
@@ -146,15 +155,13 @@ class FeffRunner(Group):
                     raise Exception("'%s' is not an executable" % program)
 
         if program == None:  # step 4, try _xafs.feff_executable
-            program = self._larch.symtable.get_symbol('_xafs._feff_executable')[0]
+            program = self._larch.symtable.get_symbol('_xafs._feff_executable')
             try:
-                program = self._larch.symtable.get_symbol('_xafs._feff_executable')[0]
+                program = self._larch.symtable.get_symbol('_xafs._feff_executable')
             except NameError:
-                print program
                 os.chdir(here)
                 raise Exception("_xafs._feff_executable is not set (1)")
             except AttributeError:
-                print program
                 os.chdir(here)
                 raise Exception("_xafs._feff_executable is not set (2)")
 
@@ -194,7 +201,7 @@ class FeffRunner(Group):
 
 def initializeLarchPlugin(_larch=None):
     """initialize _xafs._feff_executable"""
-    _larch.symtable.set_symbol('_xafs._feff_executable', ['/usr/local/bin/feff6',])
+    _larch.symtable.set_symbol('_xafs._feff_executable', find_executable('feff6'))
 
 
 def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
@@ -206,4 +213,3 @@ def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
     
 def registerLarchPlugin(): # must have a function with this name!
     return ('_xafs', { 'feffrunner': feffrunner })
-    
