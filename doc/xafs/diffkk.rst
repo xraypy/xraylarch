@@ -21,15 +21,17 @@ factors, which are sensitive to chemical state and atomic environment,
 may be useful for many x-ray scattering and imaging experiments near
 resonances.  The primary application is for the interpretation of
 fixed-q absorption experiments, such diffraction anomalous
-fine-structure (DAFS) or reflectively-EXAFS (a.k.a. reflexafs).
+fine-structure (DAFS) or reflectively-EXAFS (sometimes known as
+ReflEXAFS).
 
 This performs the same algorithm as the venerable DIFFKK program
 described in :cite:ts:`diffkk`.  This uses the MacLaurin series
 algorithm to compute the differential (i.e. difference between the
-data and the tabulated :math:`f''(E)`).  This algorithm is described
-in :cite:ts:`Ohta:88`.  This implementation casts the MacLaurin series
-algorithm in vectorized form, so it is quite a bit faster that the
-earlier implementation or the implementation in `CARD`_.
+data and the tabulated :math:`f''(E)`) Kramers-Kronig transform.  This
+algorithm is described in :cite:ts:`Ohta:88`.  This implementation
+casts the MacLaurin series algorithm in vectorized form using numpy,
+so it is quite a bit faster that the earlier Fortran implementation or
+the scalar python implementation used in `CARD`_.
 
 The input :math:`\mu(E)` data are first matched to the tabulated
 :math:`f''(E)` using the MBACK algorithm of :cite:ts:`Weng` with an
@@ -40,10 +42,10 @@ tabulated value.  This is seen at the top of Figure
 :num:`fig-cu-diffkk`.
 
 The difference between the scaled :math:`\mu(E)` and the tabulated
-:math:`f''(E)` is then subjected to the differential KK transform.
-The reuslt is added to the tabulated :math:`f'(E)` spectrum to produce
-the resulting real part of the energy-dependent complex scattering
-factor.  This is shown at the bottom of :num:`fig-cu-diffkk`.
+:math:`f''(E)` is then subjected to the KK transform.  The reuslt is
+added to the tabulated :math:`f'(E)` spectrum to produce the resulting
+real part of the energy-dependent complex scattering factor.  This is
+shown at the bottom of :num:`fig-cu-diffkk`.
 
 .. _fig-cu-diffkk:
 
@@ -94,7 +96,7 @@ The following data is put into the diffKK group:
         fp                array of KK transformed :math:`f'(E)`
        ================= ===============================================================
 
-All four arrays are on the same data grid as the input data.
+All four arrays are on the same energy grid as the input data.
 
 Here is an example script to make the figure shown above:
 
@@ -114,3 +116,4 @@ Here is an example script to make the figure shown above:
   plot(dkk.energy, dkk.fp,  label='f\'(E)')
 
 
+Need to discuss L edge data...
