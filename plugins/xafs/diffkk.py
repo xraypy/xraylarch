@@ -152,7 +152,7 @@ def kkmclr_sca(e, finp):
 
 ###
 ###  These are vector forms of the MacLaurin series algorithm, adapted from Matt's code by Bruce
-###  They are 10 time faster.
+###  They are about an order of magnitude faster.
 ###
 
 def kkmclf(e, finp):
@@ -335,12 +335,10 @@ class diffKKGroup(Group):
         if edge == None:
             Exception("absorption edge not provided for diffKK")
 
+        ## this is used to weight the pre- and post-edge differently in MBACK
         theta1 = 1*(self.energy<self.e0)
         theta2 = 1*(self.energy>self.e0)
         self.theta = sqrt(sum(theta1))*theta1 + sqrt(sum(theta2))*theta2
-
-        #pre_edge(self.energy, mu=self.xmu, group=self, _larch=self._larch)
-        #self.fpp = self.xmu - self.pre_edge
 
         (self.f1, self.f2) = f1f2(self.z, self.energy, edge=self.edge, _larch=self._larch)
 
@@ -363,13 +361,14 @@ class diffKKGroup(Group):
         self.fpp = self.matched
 
         ## clean up group
-        for att in ('dmude', 'edge_step', 'flat', 'grid', 'matched', 'nnorm', 'norm_c0', 'norm_c1', 'norm_c2', 'norm_c3',
-                    'normalization_function', 'nvict', 'post_edge', 'pre1', 'pre2', 'pre_edge', 'pre_slope', 'pre_offset',
-                    'theta', 'norm', 'norm1', 'norm2'):
+        for att in ('normalization_function', 'matched', 'theta', 'grid'):
             if hasattr(self, att): delattr(self, att)
 
 
     def plotkk(self):
+        """
+        Make a quick-n-dirty plot of the output of the KK transform.
+        """
         _newplot(self.energy, self.f2, _larch=self._larch, label='f2', xlabel='Energy (eV)', ylabel='scattering factors',
                  show_legend=True, legend_loc='lr')
         _plot(self.energy, self.fpp, _larch=self._larch, label='f"(E)')
