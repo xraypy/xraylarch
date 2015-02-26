@@ -1,0 +1,13 @@
+import time
+
+print 'Reading copper foil data'
+a=read_ascii('../xafsdata/cu_10k.xmu')
+b=diffkk(a.energy, a.mu, e0=8979, z=29, order=4, form='mback')
+
+print 'Doing diff KK transform'
+start = time.clock()
+b.kktrans()
+
+finish = time.clock()
+print 'That took %.2f seconds' % float(finish - start)
+b.plotkk()
