@@ -46,5 +46,6 @@ is in the default search path.
    wavelets
    feffpaths
    feffit
+   diffkk
 
 
