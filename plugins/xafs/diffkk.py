@@ -1,9 +1,4 @@
 
-import os
-from   os.path   import realpath, isdir, isfile, join, basename, dirname
-from shutil import copy, move
-import subprocess
-
 from larch import (Group, Parameter, isParameter, param_value, use_plugin_path, isNamedClass, Interpreter, Minimizer)
 use_plugin_path('std')
 from show import _show
@@ -13,16 +8,19 @@ use_plugin_path('xray')
 from cromer_liberman import f1f2
 from xraydb_plugin import xray_edge, xray_line
 use_plugin_path('xafs')
-from pre_edge import pre_edge
-from numpy import zeros, ones, size, exp, sqrt, linspace, mod, nditer, arange
+#from pre_edge import pre_edge
+import numpy as np
 from scipy.special import erfc
 from math import pi
 
 use_plugin_path('wx')
 from plotter import (_newplot, _plot)
 
-tiny = 1e-20
-fopi = 4/pi
+import time
+
+TINY = 1e-20
+FOPI = 4/pi
+MAXORDER = 6
 
 ##
 ## to test the advantage of the vectorized MacLaurin series algorithm:
@@ -59,12 +57,12 @@ def match_f2(p):
     eoff   = p.e - p.e0.value
 
     norm = a*erfc((p.e-em)/xi) + c0 # erfc function + constant term of polynomial
-    for i in range(6):             # successive orders of polynomial
+    for i in range(MAXORDER):       # successive orders of polynomial
         j = i+1
         attr = 'c%d' % j
         if hasattr(p, attr):
             norm = norm + getattr(getattr(p, attr), 'value') * eoff**j
-    func = (p.f2 + norm - s*p.x) / p.th
+    func = (p.f2 + norm - s*p.x) * p.theta / p.weight
     if p.form.lower() == 'lee':
         func = func / s*p.x
     return func
@@ -100,7 +98,7 @@ def kkmclf_sca(e, finp):
         Exception("Array has an odd number of elements in kkmclf_sca")
     fout = [0.0]*npts
     if npts >= 2:
-        factor = fopi * (e[npts-1] - e[0]) / (npts - 1)
+        factor = FOPI * (e[npts-1] - e[0]) / (npts - 1)
         nptsk = npts / 2
         for i in range(npts):
             fout[i] = 0.0
@@ -109,8 +107,8 @@ def kkmclf_sca(e, finp):
             for k in range(nptsk):
                 j = k + k + ioff
                 de2 = e[j]*e[j] - ei2
-                if abs(de2) <= tiny:
-                    de2 = tiny
+                if abs(de2) <= TINY:
+                    de2 = TINY
                 fout[i] = fout[i] + finp[j]/de2
             fout[i] *= factor*e[i]
     return fout
@@ -135,7 +133,7 @@ def kkmclr_sca(e, finp):
         Exception("Array has an odd number of elements in kkmclr")
     fout = [0.0]*npts
 
-    factor = -fopi * (e[npts-1] - e[0]) / (npts - 1)
+    factor = -FOPI * (e[npts-1] - e[0]) / (npts - 1)
     nptsk  = npts / 2
     for i in range(npts):
         fout[i] = 0.0
@@ -144,8 +142,8 @@ def kkmclr_sca(e, finp):
         for k in range(nptsk):
             j = k + k + ioff
             de2 = e[j]*e[j] - ei2
-            if abs(de2) <= tiny:
-                de2 = tiny
+            if abs(de2) <= TINY:
+                de2 = TINY
             fout[i] = fout[i] + e[j]*finp[j]/de2
         fout[i] *= factor
     return fout
@@ -172,15 +170,14 @@ def kkmclf(e, finp):
     if npts % 2:
         Exception("Array has an odd number of elements for diff KK transform in kkmclr")
 
-    fout   = zeros(npts)
-    factor = -fopi * (e[-1] - e[0]) / (npts-1)
+    fout   = np.zeros(npts)
+    factor = FOPI * (e[-1] - e[0]) / (npts-1)
     ei2    = e**2
-    ioff   = mod(arange(npts), 2) - 1
+    ioff   = np.mod(np.arange(npts), 2) - 1
 
     nptsk  = npts/2
-    k      = arange(nptsk)
+    k      = np.arange(nptsk)
 
-    it = nditer(fout, op_flags=['readwrite'])
     for i in range(npts):
         j    = 2*k + ioff[i]
         de2  = e[j]**2 - ei2[i]
@@ -207,15 +204,14 @@ def kkmclr(e, finp):
     if npts % 2:
         Exception("Array has an odd number of elements for diff KK transform in kkmclr")
 
-    fout   = zeros(npts)
-    factor = -fopi * (e[-1] - e[0]) / (npts-1)
+    fout   = np.zeros(npts)
+    factor = -FOPI * (e[-1] - e[0]) / (npts-1)
     ei2    = e**2
-    ioff   = mod(arange(npts), 2) - 1
+    ioff   = np.mod(np.arange(npts), 2) - 1
 
     nptsk  = npts/2
-    k      = arange(nptsk)
+    k      = np.arange(nptsk)
 
-    it = nditer(fout, op_flags=['readwrite'])
     for i in range(npts):
         j    = 2*k + ioff[i]
         de2  = e[j]**2 - ei2[i]
@@ -230,17 +226,18 @@ class diffKKGroup(Group):
     A Larch Group for generating f'(E) and f"(E) from a XAS measurement of mu(E).
     """
 
-    def __init__(self, energy=None, xmu=None, e0=None, z=None, edge='K', order=3, form='mback', _larch=None, **kws):
+    def __init__(self, energy=None, xmu=None, e0=None, z=None, edge='K', order=3, form='mback', whiteline=False, _larch=None, **kws):
         kwargs = dict(name='diffKK')
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
-        self.energy = energy
-        self.xmu    = xmu
-        self.e0     = e0
-        self.z      = z
-        self.edge   = edge
-        self.order  = order
-        self.form   = form
+        self.energy     = energy
+        self.xmu        = xmu
+        self.e0         = e0
+        self.z          = z
+        self.edge       = edge
+        self.order      = order
+        self.form       = form
+        self.whiteline  = whiteline
 
         if _larch == None:
             self._larch   = Interpreter()
@@ -253,21 +250,28 @@ class diffKKGroup(Group):
 
     def __normalize__(self):
         """Match mu(E) data for tabulated f"(E) using the MBACK algorithm or the Lee & Xiang extension"""
-        if self.order < 2: self.order = 2 # set order of polynomial
-        if self.order > 6: self.order = 6
+        if self.order < 1: self.order = 1 # set order of polynomial
+        if self.order > MAXORDER: self.order = MAXORDER
+
+
+        #toss = Group()
+        #pre_edge(self.energy, self.xmu, group=toss,_larch=self._larch, e0=self.e0)
+        #self.pre_edge = toss.pre_edge
+        #del toss
 
         n = self.edge
         if self.edge.lower().startswith('l'): n = 'L'
         
         self.params = Group(s      = Parameter(1,      vary=True,  _larch=self._larch), # scale of data
-                            a      = Parameter(1,      vary=True,  _larch=self._larch), # amplitude of erfc
-                            xi     = Parameter(1,      vary=True,  _larch=self._larch), # width of erfc
+                            a      = Parameter(1,      vary=False,  _larch=self._larch), # amplitude of erfc
+                            xi     = Parameter(1,      vary=False,  _larch=self._larch), # width of erfc
                             em     = Parameter(xray_line(self.z, n,         _larch=self._larch)[0], vary=False, _larch=self._larch), # erfc centroid
                             e0     = Parameter(xray_edge(self.z, self.edge, _larch=self._larch)[0], vary=False, _larch=self._larch), # abs. edge energy
                             e      = self.energy,
                             x      = self.xmu,
                             f2     = self.f2,
-                            th     = self.theta,
+                            weight = self.weight,
+                            theta  = self.theta,
                             form   = self.form,
                             _larch = self._larch)
 
@@ -279,20 +283,20 @@ class diffKKGroup(Group):
         fit.leastsq()
         eoff = self.energy - self.params.e0.value
         self.normalization_function = self.params.a.value*erfc((self.energy-self.params.em.value)/self.params.xi.value) + self.params.c0.value
-        for i in range(6):
+        for i in range(MAXORDER):
             j = i+1
             attr = 'c%d' % j
             if hasattr(self.params, attr):
                 self.normalization_function  = self.normalization_function + getattr(getattr(self.params, attr), 'value') * eoff**j
-        if self.form.lower() == 'lee':
-            self.normalization_function = self.normalization_function / s*p.x
+        #if self.form.lower() == 'lee':
+        #    self.normalization_function = self.normalization_function / s*p.x
 
-        self.matched = self.params.s*self.xmu - self.normalization_function
+        self.fpp = self.params.s*self.xmu - self.normalization_function
         
 
 
 
-    def kktrans(self, energy=None, xmu=None, e0=None, z=None, edge=None, order=None, form=None, how=None):
+    def kk(self, energy=None, xmu=None, e0=None, z=None, edge=None, order=3, form='mback', whiteline=False, how=None):
         """
         Convert mu(E) data into f'(E) and f"(E).  f"(E) is made by
         matching mu(E) to the tabulated values of the imaginary part
@@ -301,12 +305,14 @@ class diffKKGroup(Group):
         on the matched f"(E).
 
           Attributes
-            energy:  energy array
-            xmu:     array with mu(E) data
-            e0:      edge energy
-            z:       Z number of absorber
-            order:   order of normalization polynomial (2 to 6)
-            form:    functional form of normalization function, "mback" or "lee"
+            energy:     energy array
+            xmu:        array with mu(E) data
+            e0:         edge energy
+            z:          Z number of absorber
+            order:      order of normalization polynomial (2 to 6)
+            form:       functional form of normalization function, "mback" or "lee"
+            whiteline   margin around L3/L2 white lines to exclude from determination of
+                        normalization, it should be a smallish, positive number, like 20
 
           Returns
             self.f1, self.f2:  CL values over on the input energy grid
@@ -327,18 +333,36 @@ class diffKKGroup(Group):
         if z    != None: self.z    = z
         if edge != None: self.edge = edge
         if form != None: self.form = form
+        if whiteline:    self.whiteline = whiteline
 
-        if z == None:
+        if self.z == None:
             Exception("Z for absorber not provided for diffKK")
-        if e0 == None:
+        if self.e0 == None:
             Exception("e0 value not provided for diffKK")
-        if edge == None:
+        if self.edge == None:
             Exception("absorption edge not provided for diffKK")
 
+        start = time.clock()       
+
+        self.theta = np.ones(len(self.energy))
+        if self.edge.lower().startswith('l'):
+            l2 = xray_edge(self.z, 'L2', _larch=self._larch)[0]
+            if self.whiteline:
+                theta_pre  = 1*(self.energy<self.e0)
+                theta_post = 1*(self.energy>self.e0+float(self.whiteline))
+                self.theta = theta_pre + theta_post
+
+                l2_pre  = 1*(self.energy<l2)
+                l2_post = 1*(self.energy>l2+float(self.whiteline))
+                l2theta = l2_pre + l2_post
+                self.theta = self.theta * l2theta
+
+
         ## this is used to weight the pre- and post-edge differently in MBACK
-        theta1 = 1*(self.energy<self.e0)
-        theta2 = 1*(self.energy>self.e0)
-        self.theta = sqrt(sum(theta1))*theta1 + sqrt(sum(theta2))*theta2
+        #if self.edge.lower().startswith('k'):
+        weight1 = 1*(self.energy<self.e0)
+        weight2 = 1*(self.energy>self.e0)
+        self.weight = np.sqrt(sum(weight1))*weight1 + np.sqrt(sum(weight2))*weight2
 
         (self.f1, self.f2) = f1f2(self.z, self.energy, edge=self.edge, _larch=self._larch)
 
@@ -347,8 +371,8 @@ class diffKKGroup(Group):
 
         ## interpolate matched data onto an even grid with an even number of elements (about 1 eV)
         npts = int(self.energy[-1] - self.energy[0]) + (int(self.energy[-1] - self.energy[0])%2)
-        self.grid = linspace(self.energy[0], self.energy[-1], npts)
-        fpp = _interp(self.energy, self.f2-self.matched, self.grid, fill_value=0.0)
+        self.grid = np.linspace(self.energy[0], self.energy[-1], npts)
+        fpp = _interp(self.energy, self.f2-self.fpp, self.grid, fill_value=0.0)
 
         ## do difference KK
         if repr(how).startswith('sca'):
@@ -358,11 +382,12 @@ class diffKKGroup(Group):
 
         ## interpolate back to original grid and add diffKK result to f1 to make fp array
         self.fp = self.f1 + _interp(self.grid, fp, self.energy, fill_value=0.0)
-        self.fpp = self.matched
 
         ## clean up group
-        for att in ('normalization_function', 'matched', 'theta', 'grid'):
-            if hasattr(self, att): delattr(self, att)
+        #for att in ('normalization_function', 'weight', 'grid'):
+        #    if hasattr(self, att): delattr(self, att)
+        finish = time.clock()
+        self.time_elapsed = float(finish-start)
 
 
     def plotkk(self):
@@ -376,19 +401,22 @@ class diffKKGroup(Group):
         _plot(self.energy, self.fp,  _larch=self._larch, label='f\'(E)')
 
 
-def diffkk(energy=None, xmu=None, e0=None, z=None, edge='K', order=3, form='mback', _larch=None, **kws):
+def diffkk(energy=None, xmu=None, e0=None, z=None, edge='K', order=3, form='mback', whiteline=False, _larch=None, **kws):
     """
     Make a diffKK group given mu(E) data
 
       Attributes
-        energy:  energy array
-        xmu:     array with mu(E) data
-        e0:      edge energy
-        z:       Z number of absorber
-        order:   order of normalization polynomial (2 to 6)
-        form:    functional form of normalization function, "mback" or "lee"
+        energy:     energy array
+        xmu:        array with mu(E) data
+        e0:         edge energy
+        z:          Z number of absorber
+        order:      order of normalization polynomial (2 to 6)
+        form:       functional form of normalization function, "mback" or "lee"
+        whiteline:  margin around L3/L2 white lines to exclude from determination of
+                    normalization, it should be a smallish, positive number, like 20
+
     """
-    return diffKKGroup(energy=energy, xmu=xmu, e0=e0, z=z, edge=edge, order=order, form=form, _larch=_larch)
+    return diffKKGroup(energy=energy, xmu=xmu, e0=e0, z=z, edge=edge, order=order, form=form, whiteline=whiteline, _larch=_larch)
     
     
 def registerLarchPlugin(): # must have a function with this name!
