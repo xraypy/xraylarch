@@ -1,0 +1,10 @@
+
+print 'Reading copper foil data'
+data=read_ascii('../xafsdata/cu_10k.xmu')
+dkk=diffkk(data.energy, data.mu, e0=8979, z=29, edge='K', order=4, form='mback')
+
+print 'Doing diff KK transform'
+dkk.kk()
+
+print 'That took %.2f seconds' % dkk.time_elapsed
+dkk.plotkk()
