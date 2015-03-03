@@ -385,7 +385,7 @@ class LarchStepScan(object):
         msg = 'Point %i/%i,  time left: %s' % (cpt, npts, time_est)
         if cpt % self.message_points == 0:
             print(msg)
-        self.set_info('scan_message', msg)
+        self.set_info('scan_progress', msg)
 
     def publish_scandata(self):
         "post scan data to db"
@@ -549,7 +549,7 @@ class LarchStepScan(object):
                 d.set_dwelltime(self.dwelltime)
 
         if self.scandb is not None:
-            self.scandb.set_info('scan_message', 'preparing scan')
+            self.scandb.set_info('scan_progress', 'preparing scan')
 
         dtimer.add('PRE: cleared data')
         out = self.pre_scan()
@@ -560,7 +560,7 @@ class LarchStepScan(object):
             self.scandb.set_info('scan_time_estimate', time_est)
             self.scandb.set_info('scan_total_points', npts)
 
-        self.set_info('scan_message', 'starting scan')
+        self.set_info('scan_progress', 'starting scan')
         #self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
         # self.msg_thread.start()
         self.cpt = 0
@@ -696,7 +696,7 @@ class LarchStepScan(object):
         self.clear_interrupts()
 
         # run post_scan methods
-        self.set_info('scan_message', 'finishing')
+        self.set_info('scan_progress', 'finishing')
         out = self.post_scan()
         self.check_outputs(out, msg='post scan')
         dtimer.add('Post: post_scan done')
@@ -707,7 +707,7 @@ class LarchStepScan(object):
         #      self.msg_thread.cpt = None
         #      self.msg_thread.join()
 
-        self.set_info('scan_message', 'scan complete. Wrote %s' % self.filename)
+        self.set_info('scan_progress', 'scan complete. Wrote %s' % self.filename)
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
         self.runtime  = ts_exit - ts_start
@@ -827,8 +827,7 @@ class LarchStepScan(object):
                 break
             if nrowx != nrow:
                 info = caget("%sinfo" % mapper, as_string=True)
-                print('>> map: %s' % (info))
-                self.set_info('scan_message', info)
+                self.set_info('scan_progress', info)
                 nrowx = nrow
             if status_val == 0:
                 collecting_map = ((time.time() - t0) < 10.0)
