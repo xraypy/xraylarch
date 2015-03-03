@@ -3,18 +3,18 @@ XAFS: Pre-edge Subtraction and Normalization
 ==============================================
 
 After reading in data and constructing :math:`\mu(E)`, the principle
-pre-processing steps for XAFS analysis.  are pre-edge subtraction and
+pre-processing steps for XAFS analysis are pre-edge subtraction and
 normalization.  Reading data and constructing :math:`\mu(E)` are handled by
 internal larch functions, especially :func:`read_ascii`.  The main
-XAFS-specific function for pre-edge subtraction and normalizaiton is
+XAFS-specific function for pre-edge subtraction and normalization is
 :func:`pre_edge`.
 
 ..  function:: pre_edge(energy, mu, group=None, ...)
 
     Pre-edge subtraction and normalization.  This performs a number of steps:
        1. determine :math:`E_0` (if not supplied) from max of deriv(mu)
-       2. fit a line of polymonial to the region below the edge
-       3. fit a polymonial to the region above the edge
+       2. fit a line of polynomial to the region below the edge
+       3. fit a polynomial to the region above the edge
        4. extrapolate the two curves to :math:`E_0` to determine the edge jump
 
     :param energy:  1-d array of x-ray energies, in eV
@@ -24,7 +24,7 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
     :param step:    edge jump.  If None, it will be determined here.
     :param pre1:    low E range (relative to E0) for pre-edge fit
     :param pre2:    high E range (relative to E0) for pre-edge fit
-    :param nvict:   energy exponent to use for pre-edg fit.  See Note below.
+    :param nvict:   energy exponent to use for pre-edge fit.  See Note below.
     :param norm1:   low E range (relative to E0) for post-edge fit
     :param norm2:   high E range (relative to E0) for post-edge fit
     :param nnorm:   number of terms in polynomial (that is, 1+degree) for
@@ -36,9 +36,9 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
     Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
     The following data is put into the output group:
 
-       ==============   ======================================================
+       ==============   =======================================================
         attribute        meaning
-       ==============   ======================================================
+       ==============   =======================================================
         e0               energy origin
         edge_step        edge step
         norm             normalized mu(E)   (array)
@@ -50,9 +50,9 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
         nnorm            value of nnorm used
         norm_c0          constant of normalization polynomial
         norm_c1          linear coefficient of normalization polynomial
-        norm_c2          quadratic coefficient of normalizaion polynomial
-        norm_c*          higher power coefficents of normalization polynomial
-       ==============   ======================================================
+        norm_c2          quadratic coefficient of normalization polynomial
+        norm_c*          higher power coefficients of normalization polynomial
+       ==============   =======================================================
 
 Notes:
    nvict gives an exponent to the energy term for the pre-edge fit.
@@ -76,8 +76,8 @@ Notes:
     The value of ``e0`` will be written to the output group.
 
 
-Example
-============
+Normalization Example
+=====================
 
 A simple example of pre-edge subtraction::
 
@@ -111,5 +111,135 @@ gives the following results:
     XAFS Pre-edge subtraction.
 
 
+The MBACK algorithm
+===================
+
+Larch provides an implementation of the MBACK algorithm of
+:cite:ts:`Weng` with an option of using the modification proposed by
+:cite:ts:`lee-xiang`.  In MBACK, the data are matched to the tabulated
+values of the imaginary part of the energy-dependent correction to the
+Thompson scattering factor, :math:`f''(E)`.  To account for any
+instrumental or sample-dependent aspects of the shape of the measured
+data, :math:`\mu_{data}(E)`, a Legendre polynomial of order :math:`m`
+centered around the absorption edge is is subtracted from the data.
+To account for the sort of highly non-linear pre-edge which often
+results from Compton scattering in the measurement window of an
+energy-discriminating detector, a complementary error function is
+added to the Legendre polynomial.
+
+The form of the normalization function, then, is
+
+   :math:`\mu_{back}(E) = \left[\sum_0^m C_i(E-E_0)^i\right] + A\cdot\mathrm{erfc}\left((E-E_{em}\right)/\xi)`
+
+where :math:`A`, :math:`E_{em}`, and :math:`\xi` are the amplitude,
+centroid, and width of the complementary error function.
+:math:`E_{em}` is typically the centroid of the emission line for the
+measured edge.  This results in a function of :math:`2+m` variables (a
+tabulated value of :math:`E_{em}` is used).  The function to be
+minimized, then is
+
+   :math:`\frac{1}{n_1} \sum_{1}^{n_1} \left[\mu_{tab}(E) + \mu_{back}(E) + s\mu_{data}(E)\right]^2 + \frac{1}{n_2} \sum_{n_1}^{N} \left[\mu_{tab}(E) + \mu_{back}(E) + s\mu_{data}(E)\right]^2`
+
+To give weight in the fit to the pre-edge region, which typically has
+fewer measured points than the post-edge region, the weight is
+adjusted by breaking the minimization function into two regions: the
+:math:`n_1` data points below the absorption edge and the :math:`n_2`
+data points above the absorption edge.  :math:`n_1+n_2=N`, where N is
+the total number of data points.
+
+If this is used in publication, a citation should be given to
+:cite:ts:`Weng`.
+
+..  function:: mback(energy, mu, group=None, ...)
+
+    Match measured :math:`\mu(E)` data to tabulated cross-section data.
+
+    :param energy:    1-d array of x-ray energies, in eV
+    :param mu:        1-d array of :math:`\mu(E)`
+    :param group:     output group
+    :param z:         the Z number of the absorber
+    :param edge:      the absorption edge, usually 'K' or 'L3'
+    :param e0:        edge energy, :math:`E_0` in eV.  If None, it will be determined here.
+    :param emin:      the minimum energy to include in the fit.  If None, use first energy point
+    :param emax:      the maximum energy to include in the fit.  If None, use last energy point
+    :param whiteline: a margin around the edge to exclude from the fit.  If not None, must be a positive integer
+    :param form:      if 'lee' use the Lee&Xiang extension
+    :param tables:    'CL' or 'Chantler', 'CL' (Cromer-Liberman) is the default
+    :param fit_erfc:  if True, fit the amplitude and width of the complementary error function
+    :param return_f1: if True, put f1 in the output group
+    :param pre_edge_kws:  dictionary containing keyword arguments to pass to :func:`pre_edge`.
+    :returns:  None.
 
 
+    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
+    The following data is put into the output group:
+
+       ==============   ===========================================================
+        attribute        meaning
+       ==============   ===========================================================
+        fpp              matched :math:`\mu(E)` data
+        f2               tabulated :math:`f''(E)` data
+        f1               tabulated :math:`f'(E)` data (if ``return_f1`` is True)
+       ==============   ===========================================================
+
+Notes:
+
+  - The ``whiteline`` parameter is used to exclude the region around the
+    white line in the data from the fit.  The large spectral weight under
+    the white line can skew the fit result, particularly in data
+    measured over a short data range.  The value is eV units.
+  - The ``order`` parameter is the order of the Legendre polynomial.
+    Data measured over a very short data range are likely best processed
+    with ``order=2``.  Extended XAS data are often better processed with
+    a value of 3 or 4.  The order is enforced to be an integer between 1
+    and 6.
+  - A call to :func:`pre_edge` is made if ``e0`` is not supplied.
+  - The option to return :math:`f'(E)` is used by :func:`diffkk`.
+
+
+Here is an example of processing XANES data measured over an extended
+data range.  This example is the K edge of copper foil, with the
+result shown in :num:`fig-mback-copper`.
+
+.. code:: python
+
+  data=read_ascii('../xafsdata/cu_10k.xmu')
+  mback(data.energy, data.mu, group=a, z=29, edge='K', e0=8979, order=4)
+  newplot(data.energy, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
+          legend_loc='lr', show_legend=True)
+  plot(data.energy, data.fpp, label='Copper foil')
+
+.. _fig-mback-copper:
+
+.. figure::  ../_images/mback_copper.png
+    :target: ../_images/mback_copper.png
+    :width: 65%
+    :align: center
+
+    Using MBACK to match Cu K edge data measured on a copper foil.
+
+
+Here is an example of processing XANES data measured over a rather
+short data range.  This example is the magnesium silicate mineral
+talc, Mg\ :sub:`3`\ Si\ :sub:`4`\ O\ :sub:`10`\ (OH)\ :sub:`2`,
+measured at the Si K edge, with the result shown in
+:num:`fig-mback-talc`.  Note that the order of the Legendre polynomial
+is set to 2 and that the ``whiteline`` parameter is set to avoid the
+large features near the edge.
+
+.. code:: python
+
+  data=read_ascii('Talc.xmu')
+  mback(data.e, data.xmu, group=a, z=14, edge='K', e0=1839, order=2, whiteline=50, fit_erfc=True)
+  newplot(data.e, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
+          legend_loc='lr', show_legend=True)
+  plot(data.e, data.fpp, label='Talc ($\mathrm{Mg}_3\mathrm{Si}_4\mathrm{O}_{10}\mathrm{(OH)}_2$)')
+
+.. _fig-mback-talc:
+
+.. figure::  ../_images/mback_talc.png
+    :target: ../_images/mback_talc.png
+    :width: 65%
+    :align: center
+
+    Using MBACK to match Si K edge data measured on talc.
