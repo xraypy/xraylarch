@@ -6,14 +6,14 @@ XAFS: Computing anomalous scattering factors from XAFS data
    :synopsis: Differential Kramers-Kronig transforms
 
 
-An input XAFS spectra is used to generate energy-dependent, anomlous
+An input XAFS spectra is used to generate energy-dependent, anomalous
 scattering factors.  This is used to improve upon the bare atom
 anomalous scattering factors of :cite:ts:`Cromer_Liberman`,
 :cite:ts:`Chantler`, and others near the absorption edge.
 
 Since XAFS is sensitive to the atomic environment of the resonant atom
 (through the variations of the absorption coefficient), the scattering
-factors from the differential KK ttransform will also be sensitive to
+factors from the differential KK transform will also be sensitive to
 the local atomic structure of the resonant atom.  These scattering
 factors, which are sensitive to chemical state and atomic environment,
 may be useful for many x-ray scattering and imaging experiments near
@@ -30,7 +30,7 @@ described in :cite:ts:`diffkk`.  This uses the MacLaurin series
 algorithm to compute the differential (i.e. difference between the
 data and the tabulated :math:`f''(E)`) Kramers-Kronig transform.  This
 algorithm is described in :cite:ts:`Ohta:88`.  This implementation
-casts the MacLaurin series algorithm in vectorized form using numpy,
+casts the MacLaurin series algorithm in vectorized form using NumPy,
 so it is reasonably fast -- not quite as fast as the original Fortran
 diffKK program, but certainly speedy enough for interactive data
 processing.
@@ -44,7 +44,7 @@ tabulated value.  This is seen at the top of Figure
 :num:`fig-cu-diffkk`.
 
 The difference between the scaled :math:`\mu(E)` and the tabulated
-:math:`f''(E)` is then subjected to the KK transform.  The reuslt is
+:math:`f''(E)` is then subjected to the KK transform.  The result is
 added to the tabulated :math:`f'(E)` spectrum to produce the resulting
 real part of the energy-dependent complex scattering factor.  This is
 shown at the bottom of :num:`fig-cu-diffkk`.
@@ -56,36 +56,30 @@ shown at the bottom of :num:`fig-cu-diffkk`.
     :width: 65%
     :align: center
 
-    The anomalous scattering factors determined fpr copper metal from
+    The anomalous scattering factors determined for copper metal from
     a copper foil, compared with the bare-atom, Cromer-Liberman values.
 
 
-..  function:: diffkk(energy=None, xmu=None, e0=None, z=None, edge='K', order=3, form='mback', whiteline=False)
+..  function:: diffkk(energy=None, mu=None, z=None, edge='K', mback_kws=None)
 
     create a diffKK Group.
 
     :param energy:    an array containing the energy axis of the measurement
-    :param xmu:       an array containing the measured :math:`\mu(E)`
-    :param e0:        the edge energy of the measured data
+    :param mu:        an array containing the measured :math:`\mu(E)`
     :param z:         the Z number of the absorber element
     :param edge:      the edge measured, usually K or L3
-    :param order:     the order of the polynomial used to normalize the data to the tabulated :math:`f''(E)`
-    :param form:      the form of the normalization function ('mback' or 'lee')
-    :param whiteline: the width in eV of the exclusion zone around the L3 whiteline when matching :math:`\mu(E)` to :math:`f''(E)`
+    :param mback_kws: arguments passed to the MBACK algorithm
     :returns:         a diffKK Group.
 
-..  function:: diffkk.kk(energy=None, xmu=None, e0=None, z=None, edge='K', order=3, form='mback', whiteline=False)
+..  function:: diffkk.kk(energy=None, mu=None, z=None, edge='K', mback_kws=None)
 
     Perform the KK transform.
 
     :param energy:    an array containing the energy axis of the measurement
-    :param xmu:       an array containing the measured :math:`\mu(E)`
-    :param e0:        the edge energy of the measured data
+    :param mu:        an array containing the measured :math:`\mu(E)`
     :param z:         the Z number of the absorber element
     :param edge:      the edge measured, usually K or L3
-    :param order:     the order of the polynomial used to normalize the data to the tabulated :math:`f''(E)`
-    :param form:      the form of the normalization function ('mback' or 'lee')
-    :param whiteline: the width in eV of the exclusion zone around the L3 whiteline when matching :math:`\mu(E)` to :math:`f''(E)`
+    :param mback_kws: arguments passed to the MBACK algorithm
     :returns:         None
 
 
@@ -108,7 +102,7 @@ Here is an example script to make the figure shown above:
 
   print 'Reading copper foil data'
   data=read_ascii('../xafsdata/cu_10k.xmu')
-  dkk=diffkk(data.energy, data.mu, e0=8979, z=29, order=4, form='mback')
+  dkk=diffkk(data.energy, data.mu, z=29, edge='K', mback_kws={'e0':8979, 'order':4})
 
   print 'Doing diff KK transform'
   dkk.kk()
@@ -175,13 +169,13 @@ These larch command created the plot in the middle of :num:`fig-CeO2-diffkk`.
 .. code:: python
 
   data=read_ascii('CeO2_L321.xmu')
-  dkk=diffkk(data.e, data.xmu, e0=5723, z=58, edge='L3', order=2, form='mback')
+  dkk=diffkk(data.e, data.xmu, z=58, edge='L3', mback_kws={'e0':5723, 'order':2})
   dkk.kk()
 
 The large white lines of the L\ :sub:`3`\ L\ :sub:`2`\ edges cause an
 upwards slope in the function used to match the measured data to the
 tabulated data.  This results in a suspicious :math:`f'(E)`.  The
-situation is even worse when a higher order polynoimial is used for
+situation is even worse when a higher order polynomial is used for
 the normalization.
 
 
@@ -190,7 +184,7 @@ The situation is improved somewhat by a simple trick.
 .. code:: python
 
   data=read_ascii('CeO2_L321.xmu')
-  dkk=diffkk(data.e, data.xmu, e0=5723, z=58, edge='L3', order=2, form='mback', whiteline=20)
+  dkk=diffkk(data.e, data.xmu, z=58, edge='L3', mback_kws={'e0':5723, 'order':2, 'whiteline':20})
   dkk.kk()
 
 The result is shown on the left of :num:`fig-CeO2-diffkk`.  A margin
