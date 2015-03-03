@@ -9,24 +9,25 @@ import sys
 import json
 import time
 import atexit
+import logging
+
 from socket import gethostname
 from datetime import datetime
 
 # from utils import backup_versions, save_backup
+import sqlalchemy
 from sqlalchemy import MetaData, Table, select, and_, create_engine
 from sqlalchemy.orm import sessionmaker, mapper
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import  NoResultFound
 
 # needed for py2exe?
-# from sqlalchemy.dialects import sqlite, mysql, postgresql
 from sqlalchemy.dialects import sqlite, postgresql
 
 from larch import use_plugin_path
 use_plugin_path('io')
 from fileutils import strip_quotes, asciikeys
-
-use_plugin_path('epics')
 
 from scandb_schema import get_dbengine, create_scandb, map_scandb
 from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
@@ -37,7 +38,7 @@ from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            Instrument_Precommands, Instrument_Postcommands)
 
 
-def pv_fullname(name):
+def normalize_pvname(name):
     if  '.' not in name:
         name = "%s.VAL"
     return name
@@ -111,6 +112,28 @@ class ScanDB(object):
             time.sleep(0.5)
             self.connect(dbname, backup=False, **kws)
 
+    def set_path(self, fileroot=None):
+        workdir = self.get_info('user_folder')
+        workdir = workdir.replace('\\', '/').replace('//', '/')
+        if workdir.startswith('/'): workdir = workdir[1:]
+        if fileroot is None:
+            fileroot = self.get_info('server_fileroot')
+            fileroot = fileroot.replace('\\', '/').replace('//', '/')
+        if workdir.startswith(fileroot):
+            workdir = workdir[len(fileroot):]
+
+        fullpath = os.path.join(fileroot, workdir)
+        fullpath = fullpath.replace('\\', '/').replace('//', '/')
+        try:
+            os.chdir(fullpath)
+        except:
+            logging.exception("ScanDB: Could not set working directory to %s " % fullpath)
+        finally:
+            self.set_info('server_fileroot',  fileroot)
+            self.set_info('user_folder',  workdir)
+        # print("ScanDB: Working directory %s " % os.getcwd())
+        time.sleep(0.1)
+
     def isScanDB(self, dbname, server='sqlite',
                  user='', password='', host='', port=None):
         """test if a file is a valid scan database:
@@ -177,8 +200,10 @@ class ScanDB(object):
         self.mapprops, self.mapkeys = mapprops, mapkeys
 
         self.status_codes = {}
+        self.status_names = {}
         for row in self.getall('status'):
             self.status_codes[row.name] = row.id
+            self.status_names[row.id] = row.name
         atexit.register(self.close)
 
     def read_station_config(self, config):
@@ -195,7 +220,7 @@ class ScanDB(object):
             self.set_info('slew_%s' % key, val)
 
         for name, pvname in config.extrapvs.items():
-            pvname = pv_fullname(pvname)
+            pvname = normalize_pvname(pvname)
             this = self.get_extrapv(name)
             if this is None:
                 self.add_extrapv(name, pvname)
@@ -206,7 +231,7 @@ class ScanDB(object):
         for name, data in config.detectors.items():
             thisdet  = self.get_detector(name)
             pvname, opts = data
-            pvname = pv_fullname(pvname)
+            pvname = normalize_pvname(pvname)
             dkind = strip_quotes(opts.pop('kind'))
             opts = json_encode(opts)
             if thisdet is None:
@@ -218,8 +243,8 @@ class ScanDB(object):
 
         for name, data in config.positioners.items():
             thispos  = self.get_positioner(name)
-            drivepv = pv_fullname(data[0])
-            readpv = pv_fullname(data[1])
+            drivepv = normalize_pvname(data[0])
+            readpv = normalize_pvname(data[1])
             if thispos is None:
                 self.add_positioner(name, drivepv, readpv=readpv)
             else:
@@ -228,8 +253,8 @@ class ScanDB(object):
 
         for name, data in config.slewscan_positioners.items():
             thispos  = self.get_slewpositioner(name)
-            drivepv = pv_fullname(data[0])
-            readpv = pv_fullname(data[1])
+            drivepv = normalize_pvname(data[0])
+            readpv = normalize_pvname(data[1])
             if thispos is None:
                 self.add_slewpositioner(name, drivepv, readpv=readpv)
             else:
@@ -237,7 +262,7 @@ class ScanDB(object):
                                   {'drivepv': drivepv, 'readpv': readpv})
 
         for name, pvname in config.counters.items():
-            pvname = pv_fullname(pvname)
+            pvname = normalize_pvname(pvname)
             this  = self.get_counter(name)
             if this is None:
                 self.add_counter(name, pvname)
@@ -246,22 +271,18 @@ class ScanDB(object):
                                   {'pvname': pvname})
 
     def commit(self):
-        "commit session state"
-        try:
-            return self.session.commit()
-        except:
-            pass
+        "commit session state -- null op since using autocommit"
+        self.session.flush()
 
     def close(self):
         "close session"
         try:
             self.set_hostpid(clear=True)
-            self.session.commit()
             self.session.flush()
             self.session.close()
             self.conn.close()
         except:
-            pass
+            logging.exception("could not close session")
 
     def query(self, *args, **kws):
         "generic query"
@@ -275,8 +296,9 @@ class ScanDB(object):
                 return self.session.query(*args, **kws)
             except:
                 self.session.rollback()
+                logging.exception("rolling back session at query", args, kws)
                 return None
-
+        # self.session.autoflush = True
 
     def _get_table(self, tablename):
         return self.get_table(tablename)
@@ -318,12 +340,13 @@ class ScanDB(object):
         return q.execute().fetchall()
 
     def get_info(self, key=None, default=None,
-                 as_int=False, as_bool=False, with_notes=False):
+                 as_int=False, as_bool=False,
+                 full_row=False):
         """get a value for an entry in the info table,
         if this key doesn't exist, it will be added with the default
         value and the default value will be returned.
 
-        use as_int, as_bool and with_notes to alter the output.
+        use as_int, as_bool and full_row to alter the output.
         """
         errmsg = "get_info expected 1 or None value for name='%s'"
         cls, table = self.get_table('info')
@@ -342,31 +365,27 @@ class ScanDB(object):
         if as_int:
             if out is None: out = 0
             out = int(float(out))
-        if as_bool:
+        elif as_bool:
             if out is None: out = 0
             out = bool(int(out))
-        if with_notes:
-            notes = ''
-            if thisrow is not None: notes = thisrow.notes
-            out = out, notes
+        elif full_row:
+            out = thisrow
         return out
 
     def set_info(self, key, value, notes=None):
         """set key / value in the info table"""
         cls, table = self.get_table('info')
-        try:
-            vals  = self.query(table).filter(cls.keyname==key).all()
-            data = {'keyname': key, 'value': value}
-            if notes is not None:
-                data['notes'] = notes
-            if len(vals) < 1:
-                table = table.insert()
-            else:
-                table = table.update(whereclause="keyname='%s'" % key)
-            table.execute(**data)
-        except:
-            pass
-        
+        vals  = self.query(table).filter(cls.keyname==key).all()
+        data = {'keyname': key, 'value': value}
+        if notes is not None:
+            data['notes'] = notes
+        if len(vals) < 1:
+            table = table.insert()
+        else:
+            table = table.update(whereclause="keyname='%s'" % key)
+        table.execute(**data)
+        self.commit()
+
     def clobber_all_info(self):
         """dangerous!!!! clear all info --
         can leave a DB completely broken and unusable
@@ -403,7 +422,6 @@ class ScanDB(object):
             setattr(table, key, val)
         try:
             self.session.add(table)
-            # self.session.commit()
         except IntegrityError, msg:
             self.session.rollback()
             raise Warning('Could not add data to table %s\n%s' % (table, msg))
@@ -500,7 +518,6 @@ class ScanDB(object):
         """return macro by name"""
         return self.getrow('macros', name, one_or_none=True)
 
-
     def add_macro(self, name, text, arguments='',
                   output='', notes='', **kws):
         """add macro"""
@@ -575,12 +592,12 @@ class ScanDB(object):
         """add positioner"""
         cls, table = self.get_table('scanpositioners')
         name = name.strip()
-        drivepv = pv_fullname(drivepv)
+        drivepv = normalize_pvname(drivepv)
         if readpv is not None:
-            readpv = pv_fullname(readpv)
+            readpv = normalize_pvname(readpv)
         epvlist = []
         if extrapvs is not None:
-            epvlist = [pv_fullname(p) for p in extrapvs]
+            epvlist = [normalize_pvname(p) for p in extrapvs]
         kws.update({'notes': notes, 'drivepv': drivepv,
                     'readpv': readpv, 'extrapvs':json.dumps(epvlist)})
 
@@ -602,12 +619,12 @@ class ScanDB(object):
         """add slewscan positioner"""
         cls, table = self.get_table('slewscanpositioners')
         name = name.strip()
-        drivepv = pv_fullname(drivepv)
+        drivepv = normalize_pvname(drivepv)
         if readpv is not None:
-            readpv = pv_fullname(readpv)
+            readpv = normalize_pvname(readpv)
         epvlist = []
         if extrapvs is not None:
-            epvlist = [pv_fullname(p) for p in extrapvs]
+            epvlist = [normalize_pvname(p) for p in extrapvs]
         kws.update({'notes': notes, 'drivepv': drivepv,
                     'readpv': readpv, 'extrapvs':json.dumps(evpvlist)})
 
@@ -634,7 +651,7 @@ class ScanDB(object):
         """add detector"""
         cls, table = self.get_table('scandetectors')
         name = name.strip()
-        pvname = pv_fullname(pvname)
+        pvname = normalize_pvname(pvname)
         kws.update({'pvname': pvname,
                     'kind': kind, 'options': options})
         row = self.__addRow(cls, ('name',), (name,), **kws)
@@ -657,7 +674,7 @@ class ScanDB(object):
     def add_counter(self, name, pvname, **kws):
         """add counter (non-triggered detector)"""
         cls, table = self.get_table('scancounters')
-        pvname = pv_fullname(pvname)
+        pvname = normalize_pvname(pvname)
         name = name.strip()
         kws.update({'pvname': pvname})
         row = self.__addRow(cls, ('name',), (name,), **kws)
@@ -682,7 +699,7 @@ class ScanDB(object):
         """add extra pv (recorded at breakpoints in scans"""
         cls, table = self.get_table('extrapvs')
         name = name.strip()
-        pvname = pv_fullname(pvname)
+        pvname = normalize_pvname(pvname)
         kws.update({'pvname': pvname, 'use': int(use)})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
@@ -694,7 +711,7 @@ class ScanDB(object):
         """add pv to PV table if not already there """
         if len(name) < 2:
             return
-        name = pv_fullname(name)
+        name = normalize_pvname(name)
         cls, table = self.get_table('pvs')
         vals  = self.query(table).filter(cls.name == name).all()
         ismon = {False:0, True:1}[monitor]
@@ -709,9 +726,9 @@ class ScanDB(object):
             self.pvs[name] = thispv.id
         return thispv
 
-    def record_monitorpv(self, pvname, value, commit=False):
+    def record_monitorpv(self, pvname, value):
         """save value for monitor pvs"""
-        pvname = pv_fullname(pvname)
+        pvname = normalize_pvname(pvname)
         if pvname not in self.pvs:
             pv = self.add_pv(pvname, monitor=True)
             self.pvs[pvname] = pv.id
@@ -723,10 +740,9 @@ class ScanDB(object):
         self.session.add(mval)
 
     def get_monitorvalues(self, pvname, start_date=None, end_date=None):
+        """get (value, time) pairs for a monitorpvs given a time range
         """
-        get (value, time) pairs for a monitorpvs given a time range
-        """
-        pvname = pv_fullname(pvname)
+        pvname = normalize_pvname(pvname)
         if pvname not in self.pvs:
             pv = self.add_monitorpv(pvname)
             self.pvs[pvname] = pv.id
@@ -743,56 +759,96 @@ class ScanDB(object):
         return query.execute().fetchall()
 
     # commands -- a more complex interface
-    def get_commands(self, status=None, **kws):
+    def get_commands(self, status=None, reverse=False,
+                     requested_since=None, **kws):
         """return command by status"""
         cls, table = self.get_table('commands')
-        columns = table.c.keys()
-        q = self.query(cls)
-        q = q.order_by(cls.id)
-        if status is None:
-            return q.all()
-        if status not in self.status_codes:
-            status = 'unknown'
-        statid = self.status_codes[status]
-        return q.filter(cls.status_id==statid).all()
+        order = cls.id
+        if reverse:
+            order = cls.id.desc()
+        q = table.select().order_by(order)
+        if status in self.status_codes:
+            q = q.where(table.c.status_id == self.status_codes[status])
+        if requested_since is not None:
+            q = q.where(table.c.request_time >= requested_since)
+        return q.execute().fetchall()
 
     # commands -- a more complex interface
     def get_mostrecent_command(self):
-        """return command by status"""
+        """return last command entered"""
         cls, table = self.get_table('commands')
-        columns = table.c.keys()
-        q = self.query(cls)
-        q = q.order_by(cls.request_time)
+        q = self.query(cls).order_by(cls.request_time)
         return q.all()[-1]
 
+    def get_current_command(self):
+        """return command by status"""
+        cmd_id  = self.get_info('current_command_id', default=0)
+        if cmd_id == 0:
+            cmd_id = self.get_mostrecent_command().id
+
+        cls, table = self.get_table('commands')
+        q = table.select().where(table.c.id==cmd_id)
+        return q.execute().fetchall()[0]
+
     def add_command(self, command, arguments='',output_value='',
-                    output_file='', **kws):
+                    output_file='', notes='', nrepeat=1, **kws):
         """add command"""
         cls, table = self.get_table('commands')
-
         statid = self.status_codes.get('requested', 1)
 
         kws.update({'arguments': arguments,
                     'output_file': output_file,
                     'output_value': output_value,
+                    'notes': notes,
+                    'nrepeat': nrepeat,
                     'status_id': statid})
 
-        row = self.__addRow(cls, ('command',), (command,), **kws)
-        self.session.add(row)
-        return row
+        this  = cls()
+        this.command = command
+        for key, val in kws.items():
+            if key == 'attributes':
+                val = json_encode(val)
+            setattr(this, key, val)
 
-    def set_command_status(self, id, status):
+        self.session.add(this)
+        return this
+
+    def get_command_status(self, cmdid):
+        "get status for a command by id"
+        cls, table = self.get_table('commands')
+        ret = table.select().where(table.c.id==cmdid).execute().fetchone()
+        return self.status_names[ret.status_id]
+
+    def set_command_status(self, cmdid, status):
         """set the status of a command (by id)"""
         cls, table = self.get_table('commands')
+        status = status.lower()
         if status not in self.status_codes:
             status = 'unknown'
         statid = self.status_codes[status]
-        table.update(whereclause="id='%i'" % id).execute(status_id=statid)
-        self.commit()
+        table.update(whereclause="id='%i'" % cmdid).execute(status_id=statid)
+
+
+    def set_command_output(self, cmdid, value=None):
+        """set the status of a command (by id)"""
+        cls, table = self.get_table('commands')
+        table.update(whereclause="id='%i'" % cmdid).execute(output_value=repr(value))
 
     def cancel_command(self, id):
         """cancel command"""
         self.set_command_status(id, 'canceled')
+
+    def cancel_remaining_commands(self):
+        """cancel all commmands to date"""
+        cls, table = self.get_table('commands')
+        cancel = 3
+        for key, val in self.status_codes.items():
+            if key.lower().startswith('cancel'):
+                cancel = val
+                break
+        cmd = self.get_current_command()
+        cmdid = cmd.id
+        table.update(whereclause="id>'%i'" % cmdid).execute(status_id=cancel)
 
 
 if __name__ == '__main__':

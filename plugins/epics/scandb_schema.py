@@ -7,6 +7,7 @@ Main Class for full Database:  ScanDB
 import os
 import time
 from datetime import datetime
+import logging
 
 # from utils import backup_versions, save_backup
 
@@ -20,8 +21,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
-from sqlalchemy.dialects import sqlite, postgresql
-# from sqlalchemy.dialects import sqlite, mysql, postgresql
+from sqlalchemy.dialects import sqlite, mysql, postgresql
 
 ## status states for commands
 CMD_STATUS = ('unknown', 'requested', 'canceled', 'starting', 'running',
@@ -114,7 +114,8 @@ class _BaseTable(object):
     "generic class to encapsulate SQLAlchemy table"
     def __repr__(self):
         name = self.__class__.__name__
-        fields = ['%s' % getattr(self, 'name', 'UNNAMED')]
+        fields = ['%s' % getattr(self, 'name', 'UNNAMED'),
+                  'id=%d' % getattr(self, 'id', 'NOID')]
         return "<%s(%s)>" % (name, ', '.join(fields))
 
 class Info(_BaseTable):
@@ -174,11 +175,11 @@ class Commands(_BaseTable):
     command, notes, arguments = None, None, None
     status, status_name = None, None
     request_time, start_time, modify_time = None, None, None
-    output_value, output_file = None, None
-
+    output_value, output_file, nrepeat = None, None, None
     def __repr__(self):
         name = self.__class__.__name__
-        fields = ['%s' % getattr(self, 'command', 'Unknown')]
+        fields = ['%s' % getattr(self, 'command', 'Unknown'),
+                  'id=%d' % getattr(self, 'id', 'NOID')]
         return "<%s(%s)>" % (name, ', '.join(fields))
 
 class ScanData(_BaseTable):
@@ -277,6 +278,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                       cols=[StrCol('command'),
                             StrCol('arguments'),
                             PointerCol('status', default=1),
+                            IntCol('nrepeat',  default=1),
                             Column('request_time', DateTime,
                                    default=datetime.now),
                             Column('start_time',    DateTime),
@@ -288,10 +290,10 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
     pvtypes = NamedTable('pvtypes', metadata)
     pv      = NamedTable('pvs', metadata,
                          cols=[PointerCol('pvtypes'),
-                               Column('is_monitor', Integer, default=0)])
+                               IntCol('is_monitor', default=0)])
 
     monvals = Table('monitorvalues', metadata,
-                    Column('id', Integer, primary_key=True),
+                    IntCol('id', primary_key=True),
                     PointerCol('pvs'),
                     StrCol('value'),
                     Column('modify_time', DateTime))
@@ -304,32 +306,32 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                                  Column('modify_time', DateTime)])
 
     instrument = NamedTable('instruments', metadata,
-                            cols=[Column('show', Integer, default=1),
-                                  Column('display_order', Integer, default=0)])
+                            cols=[IntCol('show', default=1),
+                                  IntCol('display_order', default=0)])
 
     position  = NamedTable('positions', metadata,
                            cols=[Column('modify_time', DateTime),
                                  PointerCol('instruments')])
 
     instrument_precommand = NamedTable('instrument_precommands', metadata,
-                                       cols=[Column('exec_order', Integer),
+                                       cols=[IntCol('exec_order'),
                                              PointerCol('commands'),
                                              PointerCol('instruments')])
 
     instrument_postcommand = NamedTable('instrument_postcommands', metadata,
-                                        cols=[Column('exec_order', Integer),
+                                        cols=[IntCol('exec_order'),
                                               PointerCol('commands'),
                                               PointerCol('instruments')])
 
     instrument_pv = Table('instrument_pv', metadata,
-                          Column('id', Integer, primary_key=True),
+                          IntCol('id', primary_key=True),
                           PointerCol('instruments'),
                           PointerCol('pvs'),
-                          Column('display_order', Integer, default=0))
+                          IntCol('display_order', default=0))
 
 
     position_pv = Table('position_pv', metadata,
-                        Column('id', Integer, primary_key=True),
+                        IntCol('id', primary_key=True),
                         StrCol('notes'),
                         PointerCol('positions'),
                         PointerCol('pvs'),
@@ -352,10 +354,10 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                            ("user_name", ""),
                            ("experiment_id",  ""),
                            ("user_folder",    ""),
-                           ("request_command_abort", "0"),
-                           ("request_command_pause", "0"),
-                           ("request_command_resume", "0"),
-                           ("request_command_killall", "0"),
+                           ("request_abort", "0"),
+                           ("request_pause", "0"),
+                           ("request_resume", "0"),
+                           ("request_killall", "0"),
                            ("request_shutdown", "0") ):
         info.insert().execute(keyname=keyname, value=value)
     session.commit()
@@ -376,7 +378,8 @@ def map_scandb(metadata):
     try:
         clear_mappers()
     except:
-        pass
+        logging.exception("error clearing mappers")
+
 
     for cls in (Info, Status, PVs, PVTypes, MonitorValues, Macros, ExtraPVs,
                 Commands, ScanData, ScanPositioners, ScanCounters,
