@@ -159,7 +159,7 @@ If this is used in publication, a citation should be given to
     :param group:     output group
     :param z:         the Z number of the absorber
     :param edge:      the absorption edge, usually 'K' or 'L3'
-    :param e0:        edge energy, :math:`E_0` in eV.  If None, it will be determined here.
+    :param e0:        edge energy, :math:`E_0` in eV.  If None, the tabulated value is used.
     :param emin:      the minimum energy to include in the fit.  If None, use first energy point
     :param emax:      the maximum energy to include in the fit.  If None, use last energy point
     :param whiteline: a margin around the edge to exclude from the fit.  If not None, must be a positive integer
@@ -204,7 +204,7 @@ result shown in :num:`fig-mback-copper`.
 .. code:: python
 
   data=read_ascii('../xafsdata/cu_10k.xmu')
-  mback(data.energy, data.mu, group=a, z=29, edge='K', e0=8979, order=4)
+  mback(data.energy, data.mu, group=a, z=29, edge='K', order=4)
   newplot(data.energy, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
           legend_loc='lr', show_legend=True)
   plot(data.energy, data.fpp, label='Copper foil')
@@ -230,7 +230,7 @@ large features near the edge.
 .. code:: python
 
   data=read_ascii('Talc.xmu')
-  mback(data.e, data.xmu, group=a, z=14, edge='K', e0=1839, order=2, whiteline=50, fit_erfc=True)
+  mback(data.e, data.xmu, group=a, z=14, edge='K', order=2, whiteline=50, fit_erfc=True)
   newplot(data.e, data.f2, xlabel='Energy (eV)', ylabel='matched absorption', label='$f_2$',
           legend_loc='lr', show_legend=True)
   plot(data.e, data.fpp, label='Talc ($\mathrm{Mg}_3\mathrm{Si}_4\mathrm{O}_{10}\mathrm{(OH)}_2$)')
