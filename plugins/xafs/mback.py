@@ -1,7 +1,7 @@
 
-from larch import (Group, Parameter, isParameter, isgroup, param_value, use_plugin_path, isNamedClass, Interpreter, Minimizer)
+from larch import (Group, Parameter, isgroup, use_plugin_path, Minimizer)
 use_plugin_path('math')
-from mathutils import _interp, index_of
+from mathutils import index_of
 use_plugin_path('xray')
 from cromer_liberman import f1f2
 from xraydb_plugin import xray_edge, xray_line, f2_chantler
@@ -9,11 +9,10 @@ use_plugin_path('std')
 from grouputils import parse_group_args
 use_plugin_path('xafs')
 from xafsutils import set_xafsGroup
-from pre_edge import find_e0, pre_edge
+from pre_edge import find_e0
 
 import numpy as np
 from scipy.special import erfc
-from math import pi
 
 MAXORDER = 6
 
@@ -43,7 +42,7 @@ def match_f2(p):
 
 def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None, emax=None,
           whiteline=None, form='mback', tables='cl', fit_erfc=False, return_f1=False,
-          pre_edge_kws=None, _larch=None):
+          _larch=None):
     """
     Match mu(E) data for tabulated f"(E) using the MBACK algorithm or the Lee & Xiang extension
 
@@ -59,7 +58,6 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
       form:          'mback' or 'lee'
       tables:        'cl' or 'chantler'
       fit_erfc:      True to float parameters of error function
-      pre_edge_kws:  dictionary containing keyword arguments to pass to pre_edge()
 
     References:
       * MBACK (Weng, Waldo, Penner-Hahn): http://dx.doi.org/10.1086/303711
@@ -71,28 +69,20 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
     if order < 1: order = 1 # set order of polynomial
     if order > MAXORDER: order = MAXORDER
 
-    ### ---------------------------------------------------------------------
     ### implement the First Argument Group convention
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
                                          fcn_name='mback')
     group = set_xafsGroup(group, _larch=_larch)
 
-    if e0 is None and isgroup(group, 'e0'):
+    if e0 is None:              # need to run find_e0:
+        e0 = xray_edge(z, edge, _larch=_larch)[0]
+    if e0 is None:
         e0 = group.e0
     if e0 is None:
-        # need to run pre_edge:
-        pre_kws = dict(nnorm=3, nvict=0, pre1=None,
-                       pre2=-50., norm1=100., norm2=None)
-        if pre_edge_kws is not None:
-            pre_kws.update(pre_edge_kws)
-        pre_edge(energy, mu, group=group, _larch=_larch, **pre_kws)
-        if e0 is None:
-            e0 = group.e0
-    ### ---------------------------------------------------------------------
+        find_e0(energy, mu, group=group)
 
 
-    ### ---------------------------------------------------------------------
     ### theta is an array used to exclude the regions <emin, >emax, and
     ### around white lines, theta=0.0 in excluded regions, theta=1.0 elsewhere
     (i1, i2) = (0, len(energy)-1)
@@ -110,13 +100,14 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
         l2_pre  = 1.0*(energy<l2)
         l2_post = 1.0*(energy>l2+float(whiteline))
         theta   = theta * (l2_pre + l2_post)
-    ### ---------------------------------------------------------------------
+
 
     ## this is used to weight the pre- and post-edge differently as
     ## defined in the MBACK paper
     weight1 = 1*(energy<e0)
     weight2 = 1*(energy>e0)
     weight  = np.sqrt(sum(weight1))*weight1 + np.sqrt(sum(weight2))*weight2
+
 
     ## get the f'' function from CL or Chantler
     if tables.lower() == 'chantler':
@@ -129,7 +120,6 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
 
     n = edge
     if edge.lower().startswith('l'): n = 'L'
-        
     params = Group(s      = Parameter(1, vary=True, _larch=_larch),     # scale of data
                    xi     = Parameter(50, vary=fit_erfc, min=0, _larch=_larch), # width of erfc
                    em     = Parameter(xray_line(z, n, _larch=_larch)[0], vary=False, _larch=_larch), # erfc centroid

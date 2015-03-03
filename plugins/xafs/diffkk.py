@@ -271,7 +271,6 @@ class diffKKGroup(Group):
 
         start = time.clock()       
 
-        #print mb_kws
         mback(self.energy, self.mu, group=self, _larch=self._larch, **mb_kws)
 
         ## interpolate matched data onto an even grid with an even number of elements (about 1 eV)
