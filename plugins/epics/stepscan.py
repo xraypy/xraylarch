@@ -234,6 +234,13 @@ class LarchStepScan(object):
         self.post_scan_methods = []
         self.pos_actual  = []
 
+    def set_info(self, attr, value):
+        """set scan info to _scan variable"""
+        setattr(self._scangroup, attr, value)
+        if self.scandb is not None:
+            self.scandb.set_info(attr, value)
+            self.scandb.set_info('heartbeat', time.ctime())
+
     def open_output_file(self, filename=None, comments=None):
         """opens the output file"""
         creator = ASCIIScanFile
@@ -402,14 +409,8 @@ class LarchStepScan(object):
         """set scan error message"""
         self._scangroup.error_message = msg
         if self.scandb is not None:
-            self.scandb.set_info('last_error', msg)
-
-    def set_info(self, attr, value):
-        """set scan info to _scan variable"""
-        setattr(self._scangroup, attr, value)
-        if self.scandb is not None:
-            self.scandb.set_info(attr, value)
-
+            self.set_info('last_error', msg)
+            
     def set_scandata(self, attr, value):
         if self.scandb is not None:
             self.scandb.set_scandata(fix_varname(attr), value)
@@ -453,11 +454,6 @@ class LarchStepScan(object):
         if self.scandb is None:
             return getattr(self._scan, key)
         return self.scandb.get_info(key, as_bool=True)
-
-    def set_info(self, key, val):
-        if self.scandb is None:
-            return setattr(self._scan, key, val)
-        return self.scandb.set_info(key, val)
 
     def look_for_interrupts(self):
         """set interrupt requests:
@@ -524,7 +520,7 @@ class LarchStepScan(object):
         self.clear_data()
         if self.scandb is not None:
             self.init_scandata()
-            self.scandb.set_info('request_abort', 0)
+            self.set_info('request_abort', 0)
 
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
@@ -549,7 +545,7 @@ class LarchStepScan(object):
                 d.set_dwelltime(self.dwelltime)
 
         if self.scandb is not None:
-            self.scandb.set_info('scan_progress', 'preparing scan')
+            self.set_info('scan_progress', 'preparing scan')
 
         dtimer.add('PRE: cleared data')
         out = self.pre_scan()
@@ -557,8 +553,8 @@ class LarchStepScan(object):
 
         dtimer.add('PRE: pre_scan done')
         if self.scandb is not None:
-            self.scandb.set_info('scan_time_estimate', time_est)
-            self.scandb.set_info('scan_total_points', npts)
+            self.set_info('scan_time_estimate', time_est)
+            self.set_info('scan_total_points', npts)
 
         self.set_info('scan_progress', 'starting scan')
         #self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
@@ -673,7 +669,7 @@ class LarchStepScan(object):
                 dtimer.add('Pt %i: done.' % i)
 
             except KeyboardInterrupt:
-                self.scandb.set_info('request_abort', 1l)
+                self.set_info('request_abort', 1l)
             if not point_ok:
                 print('point messed up... try again?')
                 i -= 1
