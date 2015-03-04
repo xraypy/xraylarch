@@ -101,6 +101,8 @@ class LarchExceptionHolder:
         #    out.append(self.tback)
 
         call_expr = None
+        call_fname = None
+        call_lineno = None
         fname = self.fname
 
         if fname != '<stdin>' or self.lineno > 0:
@@ -190,7 +192,8 @@ class LarchExceptionHolder:
 
         if call_expr is not None and not isinstance(call_expr, ast.AST):
             out.append('  %s' % call_expr)
-            out.append('file %s, line %i' % (call_fname, call_lineno))
+            if call_fname is not None and call_lineno is not None:
+                out.append('file %s, line %i' % (call_fname, call_lineno))
         if HAS_COLORTERM and getattr(self.symtable._sys, 'color_exceptions', True):
             color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
             if color not in VALID_ERRORCOLORS:
