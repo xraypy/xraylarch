@@ -172,12 +172,11 @@ These larch command created the plot in the middle of :num:`fig-CeO2-diffkk`.
   dkk=diffkk(data.e, data.xmu, z=58, edge='L3', mback_kws={'e0':5723, 'order':2})
   dkk.kk()
 
-The large white lines of the L\ :sub:`3`\ L\ :sub:`2`\ edges cause an
+The large white lines of the L\ :sub:`3`\ and L\ :sub:`2`\ edges cause an
 upwards slope in the function used to match the measured data to the
 tabulated data.  This results in a suspicious :math:`f'(E)`.  The
 situation is even worse when a higher order polynomial is used for
 the normalization.
-
 
 The situation is improved somewhat by a simple trick.
 
