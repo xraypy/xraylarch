@@ -129,16 +129,21 @@ added to the Legendre polynomial.
 
 The form of the normalization function, then, is
 
-   :math:`\mu_{back}(E) = \left[\sum_0^m C_i(E-E_0)^i\right] + A\cdot\mathrm{erfc}\left((E-E_{em}\right)/\xi)`
+.. math::
+
+  \mu_{back}(E) = \left[\sum_0^m C_i(E-E_0)^i\right] + A\cdot\operatorname{erfc}\left((E-E_{em}\right)/\xi)
 
 where :math:`A`, :math:`E_{em}`, and :math:`\xi` are the amplitude,
-centroid, and width of the complementary error function.
-:math:`E_{em}` is typically the centroid of the emission line for the
-measured edge.  This results in a function of :math:`2+m` variables (a
-tabulated value of :math:`E_{em}` is used).  The function to be
-minimized, then is
+centroid, and width of the complementary error function and :math:`s`
+is a scaling factor for the measured data.  :math:`E_{em}` is
+typically the centroid of the emission line for the measured edge.
+This results in a function of :math:`3+m` variables (a tabulated value
+of :math:`E_{em}` is used).  The function to be minimized, then is
 
-   :math:`\frac{1}{n_1} \sum_{1}^{n_1} \left[\mu_{tab}(E) + \mu_{back}(E) + s\mu_{data}(E)\right]^2 + \frac{1}{n_2} \sum_{n_1}^{N} \left[\mu_{tab}(E) + \mu_{back}(E) + s\mu_{data}(E)\right]^2`
+.. math::
+
+   \frac{1}{n_1} \sum_{1}^{n_1} \left[\mu_{tab}(E) + \mu_{back}(E) + s\cdot\mu_{data}(E)\right]^2 +
+   \frac{1}{n_2} \sum_{n_1+1}^{N} \left[\mu_{tab}(E) + \mu_{back}(E) + s\cdot\mu_{data}(E)\right]^2
 
 To give weight in the fit to the pre-edge region, which typically has
 fewer measured points than the post-edge region, the weight is
@@ -163,10 +168,10 @@ If this is used in publication, a citation should be given to
     :param emin:      the minimum energy to include in the fit.  If None, use first energy point
     :param emax:      the maximum energy to include in the fit.  If None, use last energy point
     :param whiteline: a margin around the edge to exclude from the fit.  If not None, must be a positive integer
-    :param form:      if 'lee' use the Lee&Xiang extension
-    :param tables:    'CL' or 'Chantler', 'CL' (Cromer-Liberman) is the default
-    :param fit_erfc:  if True, fit the amplitude and width of the complementary error function
-    :param return_f1: if True, put f1 in the output group
+    :param leexiang:  flag for using the use the Lee&Xiang extension [False]
+    :param tables:    'CL' (Cromer-Liberman) or 'Chantler', ['CL']
+    :param fit_erfc:  if True, fit the amplitude and width of the complementary error function [False]
+    :param return_f1: if True, put f1 in the output group [False]
     :param pre_edge_kws:  dictionary containing keyword arguments to pass to :func:`pre_edge`.
     :returns:  None.
 
@@ -180,6 +185,7 @@ If this is used in publication, a citation should be given to
         fpp              matched :math:`\mu(E)` data
         f2               tabulated :math:`f''(E)` data
         f1               tabulated :math:`f'(E)` data (if ``return_f1`` is True)
+	mback_params     params group for the MBACK minimization function
        ==============   ===========================================================
 
 Notes:

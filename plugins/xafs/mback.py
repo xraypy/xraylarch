@@ -19,7 +19,7 @@ MAXORDER = 6
 def match_f2(p):
     """
     Objective function for matching mu(E) data to tabulated f"(E) using the MBACK
-    algorithm or the Lee & Xiang extension.
+    algorithm and, optionally, the Lee & Xiang extension.
     """
     s      = p.s.value
     a      = p.a.value
@@ -35,17 +35,19 @@ def match_f2(p):
         if hasattr(p, attr):
             norm = norm + getattr(getattr(p, attr), 'value') * eoff**j
     func = (p.f2 + norm - s*p.mu) * p.theta / p.weight
-    if p.form.lower() == 'lee':
+    if p.leexiang:
         func = func / s*p.mu
     return func
 
 
 def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None, emax=None,
-          whiteline=None, form='mback', tables='cl', fit_erfc=False, return_f1=False,
+          whiteline=None, leexiang=False, tables='cl', fit_erfc=False, return_f1=False,
           _larch=None):
     """
-    Match mu(E) data for tabulated f"(E) using the MBACK algorithm or the Lee & Xiang extension
+    Match mu(E) data for tabulated f"(E) using the MBACK algorithm and,
+    optionally, the Lee & Xiang extension
 
+    Arguments:
       energy, mu:    arrays of energy and mu(E)
       order:         order of polynomial [3]
       group:         output group (and input group for e0)
@@ -55,9 +57,16 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
       emin:          beginning energy for fit
       emax:          ending energy for fit
       whiteline:     exclusion zone around white lines
-      form:          'mback' or 'lee'
+      leexiang:      flag to use the Lee & Xiang extension
       tables:        'cl' or 'chantler'
       fit_erfc:      True to float parameters of error function
+      return_f1:     True to put the f1 array in the group
+
+    Returns:
+      group.f2:      tabulated f2(E)
+      group.f1:      tabulated f1(E) (if return_f1 is True)
+      group.fpp:     matched data
+      group.mback_params:  Group of parameters for the minimization
 
     References:
       * MBACK (Weng, Waldo, Penner-Hahn): http://dx.doi.org/10.1086/303711
@@ -124,12 +133,13 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
                    xi     = Parameter(50, vary=fit_erfc, min=0, _larch=_larch), # width of erfc
                    em     = Parameter(xray_line(z, n, _larch=_larch)[0], vary=False, _larch=_larch), # erfc centroid
                    e0     = Parameter(e0, vary=False, _larch=_larch),   # abs. edge energy
+                   ## various arrays need by the objective function
                    en     = energy,
                    mu     = mu,
                    f2     = group.f2,
                    weight = weight,
                    theta  = theta,
-                   form   = form,
+                   leexiang = leexiang,
                    _larch = _larch)
     if fit_erfc:
         params.a = Parameter(1, vary=True,  _larch=_larch) # amplitude of erfc
