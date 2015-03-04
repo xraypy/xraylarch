@@ -28,7 +28,7 @@ from sqlalchemy.dialects import sqlite, postgresql
 from larch import use_plugin_path
 use_plugin_path('io')
 from fileutils import strip_quotes, asciikeys
-
+use_plugin_path('epics')
 from scandb_schema import get_dbengine, create_scandb, map_scandb
 from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            Macros, Commands, ScanData, ScanPositioners,
