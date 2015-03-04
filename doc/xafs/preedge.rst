@@ -121,9 +121,9 @@ values of the imaginary part of the energy-dependent correction to the
 Thompson scattering factor, :math:`f''(E)`.  To account for any
 instrumental or sample-dependent aspects of the shape of the measured
 data, :math:`\mu_{data}(E)`, a Legendre polynomial of order :math:`m`
-centered around the absorption edge is is subtracted from the data.
-To account for the sort of highly non-linear pre-edge which often
-results from Compton scattering in the measurement window of an
+centered around the absorption edge is subtracted from the data.  To
+account for the sort of highly non-linear pre-edge which often results
+from Compton scattering in the measurement window of an
 energy-discriminating detector, a complementary error function is
 added to the Legendre polynomial.
 
