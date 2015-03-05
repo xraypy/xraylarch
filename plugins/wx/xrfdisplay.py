@@ -1111,6 +1111,7 @@ class XRFDisplayFrame(wx.Frame):
             yroi = -1*np.ones(len(counts))
             for r in mca.rois:
                 yroi[r.left:r.right] = counts[r.left:r.right]
+            yroi = np.ma.masked_less(yroi, 0)
             self.panel.update_line(1, mca.energy, yroi, draw=False,
                                    update_limits=False)
 
