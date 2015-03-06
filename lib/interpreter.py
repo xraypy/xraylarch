@@ -279,8 +279,7 @@ class Interpreter:
         for fname in site_config.init_files:
             if os.path.exists(fname):
                 try:
-                    builtins._run(filename=fname, _larch=self,
-                                  printall = True)
+                    builtins._run(filename=fname, _larch=self)
                 except:
                     self.raise_exception(None, exc=RuntimeError,
                                          msg='Initialization Error')
