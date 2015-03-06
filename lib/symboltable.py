@@ -183,8 +183,7 @@ class SymbolTable(Group):
                                  history_file= site_config.history_file,
                                  init_files  = site_config.init_files,
                                  modules_path= site_config.modules_path,
-                                 usr_larchdir= site_config.usr_larchdir,
-                                 sys_larchdir= site_config.sys_larchdir)
+                                 larchdir    = site_config.larchdir)
 
     def save_frame(self):
         " save current local/module group"

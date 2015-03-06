@@ -34,7 +34,7 @@ from xrfdisplay import XRFDisplayFrame
 larch.use_plugin_path('xrf')
 from mca import isLarchMCAGroup
 
-mpl_dir = os.path.join(larch.site_config.usr_larchdir, 'matplotlib')
+mpl_dir = os.path.join(larch.site_config.larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir
 if not os.path.exists(mpl_dir):
     try:
