@@ -19,6 +19,7 @@ Running Feff
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. _feff85exafs: https://github.com/xraypy/feff85exafs
+.. _feff85exafs unit tests: https://github.com/xraypy/feff85exafs/tree/master/tests
 
 Larch provides a tool for running Feff as an external executable.  The
 default behavior is intended to make it easy to use the executables
@@ -48,23 +49,23 @@ The simplest example of its use is
 
 .. code:: python
 
-   a = feffrunner('path/to/feff.inp')
-   a.run()
+   feff = feffrunner('path/to/feff.inp')
+   feff.run()
 
 The *feff.inp* file is specified when the Group is created, then
 `feff85exafs`_ is run in the same folder as the *feff.inp* file.  In
 this case, since no argument is given to the *run()* method, the
 various modules of `feff85exafs`_ are run in sequence.  This behaves
-much like the old-fashioned, monolithic Feff executables of yore.
+much like the monolithic Feff executables of yore.
 
 The `feff85exafs`_ modules (*rdinp*, *pot*, *xsph*, *pathfinder*,
 *genfmt*, and *ff2x*) can be be run individually
 
 .. code:: python
 
-   a = feffrunner('path/to/feff.inp')
-   a.run('rdinp')
-   a.run('pot')
+   feff = feffrunner('path/to/feff.inp')
+   feff.run('rdinp')
+   feff.run('pot')
    ## and so on ...
 
 To specifically use the `feff85exafs`_ modules from a local copy of
@@ -72,12 +73,12 @@ the feff85exafs repository, do
 
 .. code:: python
 
-   a = feffrunner('path/to/feff.inp')
-   a.repo = '/home/bruce/git/feff85exafs'
-   a.run()
+   feff = feffrunner('path/to/feff.inp')
+   feff.repo = '/home/bruce/git/feff85exafs'
+   feff.run()
 
 The ``repo`` attribute is used when working on `feff85exafs`_ itself.
-For example, the `feff85exafs`_ unit tests set the ``repo`` attribute
+For example, the `feff85exafs unit tests`_ set the ``repo`` attribute
 so that the just-compiled versions of the programs get used.
 
 If you have an executable for some other version of Feff in a location
@@ -87,16 +88,16 @@ be run as
 
 .. code:: python
 
-   a = feffrunner('path/to/feff.inp')
-   a.run('feff6') # or whatever your executable is called
+   feff = feffrunner('path/to/feff.inp')
+   feff.run('feff6') # or whatever your executable is called
 
 If the *_xafs._feff_executable* symbol in Larch's symbol table is set
 to a valid executable, then you can use that by doing
 
 .. code:: python
 
-   a = feffrunner('path/to/feff.inp')
-   a.run(None)
+   feff = feffrunner('path/to/feff.inp')
+   feff.run(None)
 
 The *feff.inp* file need not be called by that name.  FeffRunner will
 copy the specified file to *feff.inp* in the specified folder --
