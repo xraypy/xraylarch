@@ -23,10 +23,11 @@ def do_fastmap(scan='CurrentScan.ini', datafile='default.dat',
     --------
       do_fastmap('CurrentScan.ini', 'map.001')
 
-
     """
     #  execute a fast map
     caput(mapper + 'filename', datafile)
+    if not scan.endswith('.ini'):
+        scan = scan + '.ini'
     caput(mapper + 'scanfile', scan)
     time.sleep(0.5)
     caput(mapper + 'Start',  1)
@@ -61,5 +62,5 @@ def do_fastmap(scan='CurrentScan.ini', datafile='default.dat',
     print 'fastmap has finished!'
 
 def registerLarchPlugin():
-    return (MODNAME, {'do_fastmap': do_fastmap})
+    return (MODNAME, {'do_fastmap_old': do_fastmap})
 

@@ -15,6 +15,113 @@ this documentation, here we describe how to read the results from FEFF into
 Larch.  The main interface for this is the :func:`feffpath` function that
 reads FEFF *feffNNNN.dat* file and creates a FeffPath Group.
 
+Running Feff
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. _feff85exafs: https://github.com/xraypy/feff85exafs
+
+Larch provides a tool for running Feff as an external executable.  The
+default behavior is intended to make it easy to use the executables
+from the `feff85exafs`_ package.  However, the FeffRunner tool is
+quite flexible and can be used to run specific modules from
+`feff85exafs`_ or other versions of Feff that you might have on your
+computer.
+
+
+..  function:: feffrunner(feffinp=None, verbose=True, repo=None)
+
+    create a FeffRunner Group from a *feffNNNN.inp* file.
+
+    :param feffinp:   name (full path of) *feff.inp* file
+    :param verbose:   flag controlling screen output from Feff [True]
+    :param repo:      full path of the location of the feff85exafs repository [None]
+    :returns: a FeffRunner Group.
+
+..  function:: feffrunner.run(exe)
+
+    run Feff for FeffRunner Group.
+
+    :param exe:   the name of the Feff program to be run [run all of feff85exafs]
+    :returns: None when Feff is run successfully or an Exception when a problem in encoiuntered
+
+The simplest example of its use is
+
+.. code:: python
+
+   a = feffrunner('path/to/feff.inp')
+   a.run()
+
+The *feff.inp* file is specified when the Group is created, then
+`feff85exafs`_ is run in the same folder as the *feff.inp* file.  In
+this case, since no argument is given to the *run()* method, the
+various modules of `feff85exafs`_ are run in sequence.  This behaves
+much like the old-fashioned, monolithic Feff executables of yore.
+
+The `feff85exafs`_ modules (*rdinp*, *pot*, *xsph*, *pathfinder*,
+*genfmt*, and *ff2x*) can be be run individually
+
+.. code:: python
+
+   a = feffrunner('path/to/feff.inp')
+   a.run('rdinp')
+   a.run('pot')
+   ## and so on ...
+
+To specifically use the `feff85exafs`_ modules from a local copy of
+the feff85exafs repository, do
+
+.. code:: python
+
+   a = feffrunner('path/to/feff.inp')
+   a.repo = '/home/bruce/git/feff85exafs'
+   a.run()
+
+The ``repo`` attribute is used when working on `feff85exafs`_ itself.
+For example, the `feff85exafs`_ unit tests set the ``repo`` attribute
+so that the just-compiled versions of the programs get used.
+
+If you have an executable for some other version of Feff in a location
+that in your shell's execution path and it is called something like
+*feff6*, *feff7*, or any other name than begins with *feff*, that can
+be run as
+
+.. code:: python
+
+   a = feffrunner('path/to/feff.inp')
+   a.run('feff6') # or whatever your executable is called
+
+If the *_xafs._feff_executable* symbol in Larch's symbol table is set
+to a valid executable, then you can use that by doing
+
+.. code:: python
+
+   a = feffrunner('path/to/feff.inp')
+   a.run(None)
+
+The *feff.inp* file need not be called by that name.  FeffRunner will
+copy the specified file to *feff.inp* in the specified folder --
+taking care **not** to clobber an existing *feff.inp* file -- before
+running Feff.  Once finished, it will copy files back to their
+original names.
+
+A log file called *f85e.log* is written in the same folder as the
+*feff.inp*.  This log file captures all of the screen output (both
+STDOUT and STDERR) from Feff.
+
+The full structure of the FeffRunner group looks something like this::
+
+    == External Feff Group: Copper/testrun/feff.inp: 5 symbols ==
+      feffinp: 'Copper/testrun/feff.inp'
+      repo: None
+      resolved: '/usr/local/bin/ff2x'
+      run: <bound method FeffRunner.run of <External Feff Group: Copper/testrun/feff.inp>>
+      verbose: True
+
+The ``resolved`` attribute has the fully resolved path to the most
+recently run executable.  This can be used to verify that the
+logic for executable resolution described above worked as intended.
+
+
 
 :func:`feffpath` and FeffPath Groups
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
