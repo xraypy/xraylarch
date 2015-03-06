@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 MODDOC = """
 === Epics Scanning Functions for Larch ===
 
@@ -81,7 +83,6 @@ Non-mesh scans are also possible.
 A step scan can have an Epics SScan Record or StepScan database associated
 with it.  It will use these for PVs to post data at each point of the scan.
 """
-
 import os, shutil
 import time
 import threading
@@ -233,6 +234,13 @@ class LarchStepScan(object):
         self.post_scan_methods = []
         self.pos_actual  = []
 
+    def set_info(self, attr, value):
+        """set scan info to _scan variable"""
+        setattr(self._scangroup, attr, value)
+        if self.scandb is not None:
+            self.scandb.set_info(attr, value)
+            self.scandb.set_info('heartbeat', time.ctime())
+
     def open_output_file(self, filename=None, comments=None):
         """opens the output file"""
         creator = ASCIIScanFile
@@ -383,8 +391,8 @@ class LarchStepScan(object):
             self.set_info('filename', self.filename)
         msg = 'Point %i/%i,  time left: %s' % (cpt, npts, time_est)
         if cpt % self.message_points == 0:
-            print msg
-        self.set_info('scan_message', msg)
+            print(msg)
+        self.set_info('scan_progress', msg)
 
     def publish_scandata(self):
         "post scan data to db"
@@ -401,14 +409,8 @@ class LarchStepScan(object):
         """set scan error message"""
         self._scangroup.error_message = msg
         if self.scandb is not None:
-            self.scandb.set_info('last_error', msg)
-
-    def set_info(self, attr, value):
-        """set scan info to _scan variable"""
-        setattr(self._scangroup, attr, value)
-        if self.scandb is not None:
-            self.scandb.set_info(attr, value)
-
+            self.set_info('last_error', msg)
+            
     def set_scandata(self, attr, value):
         if self.scandb is not None:
             self.scandb.set_scandata(fix_varname(attr), value)
@@ -452,11 +454,6 @@ class LarchStepScan(object):
         if self.scandb is None:
             return getattr(self._scan, key)
         return self.scandb.get_info(key, as_bool=True)
-
-    def set_info(self, key, val):
-        if self.scandb is None:
-            return setattr(self._scan, key, val)
-        return self.scandb.set_info(key, val)
 
     def look_for_interrupts(self):
         """set interrupt requests:
@@ -504,14 +501,13 @@ class LarchStepScan(object):
 
         ts_start = time.time()
         if not self.verify_scan():
-            print 'Cannot execute scan ',  self._scangroup.error_message
+            print('Cannot execute scan ',  self._scangroup.error_message)
             self.set_info('scan_message', 'cannot execute scan')
             return
         self.clear_interrupts()
         dtimer.add('PRE: cleared interrupts')
         orig_positions = [p.current() for p in self.positioners]
 
-        # print 'StepScan Run 2 (move to start)'
         out = [p.move_to_start(wait=False) for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
@@ -524,7 +520,7 @@ class LarchStepScan(object):
         self.clear_data()
         if self.scandb is not None:
             self.init_scandata()
-            self.scandb.set_info('request_abort', 0)
+            self.set_info('request_abort', 0)
 
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
@@ -549,7 +545,7 @@ class LarchStepScan(object):
                 d.set_dwelltime(self.dwelltime)
 
         if self.scandb is not None:
-            self.scandb.set_info('scan_message', 'preparing scan')
+            self.set_info('scan_progress', 'preparing scan')
 
         dtimer.add('PRE: cleared data')
         out = self.pre_scan()
@@ -557,10 +553,10 @@ class LarchStepScan(object):
 
         dtimer.add('PRE: pre_scan done')
         if self.scandb is not None:
-            self.scandb.set_info('scan_time_estimate', time_est)
-            self.scandb.set_info('scan_total_points', npts)
+            self.set_info('scan_time_estimate', time_est)
+            self.set_info('scan_total_points', npts)
 
-        self.set_info('scan_message', 'starting scan')
+        self.set_info('scan_progress', 'starting scan')
         #self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
         # self.msg_thread.start()
         self.cpt = 0
@@ -622,7 +618,6 @@ class LarchStepScan(object):
                 poll(self.pos_settle_time, 0.25)
                 dtimer.add('Pt %i : pos settled' % i)
                 # start triggers, wait for them to finish
-                # print 'Trigger...'
                 [trig.start() for trig in self.triggers]
                 dtimer.add('Pt %i : triggers fired, (%d)' % (i, len(self.triggers)))
                 t0 = time.time()
@@ -649,7 +644,7 @@ class LarchStepScan(object):
                         if trig.runtime < self.min_dwelltime / 2.0:
                             point_ok = False
                 if not point_ok:
-                    print 'Trigger problem: ', trig, trig.runtime, self.min_dwelltime
+                    print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
 
                 # wait, then read read counters and actual positions
                 poll(self.det_settle_time, 0.25)
@@ -662,7 +657,6 @@ class LarchStepScan(object):
 
                 [c.read(nbins=nbins) for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
-                # print 'Read '
                 # self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
                 dtimer.add('Pt %i : added positions' % i)
@@ -675,9 +669,9 @@ class LarchStepScan(object):
                 dtimer.add('Pt %i: done.' % i)
 
             except KeyboardInterrupt:
-                self.scandb.set_info('request_abort', 1l)
+                self.set_info('request_abort', 1l)
             if not point_ok:
-                print 'point messed up... try again?'
+                print('point messed up... try again?')
                 i -= 1
 
         # scan complete
@@ -687,7 +681,7 @@ class LarchStepScan(object):
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
         if self.look_for_interrupts():
-            print "scan aborted at point %i of %i." % (self.cpt, self.npts)
+            print("scan aborted at point %i of %i." % (self.cpt, self.npts))
 
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
@@ -698,7 +692,7 @@ class LarchStepScan(object):
         self.clear_interrupts()
 
         # run post_scan methods
-        self.set_info('scan_message', 'finishing')
+        self.set_info('scan_progress', 'finishing')
         out = self.post_scan()
         self.check_outputs(out, msg='post scan')
         dtimer.add('Post: post_scan done')
@@ -709,7 +703,7 @@ class LarchStepScan(object):
         #      self.msg_thread.cpt = None
         #      self.msg_thread.join()
 
-        self.set_info('scan_message', 'scan complete. Wrote %s' % self.filename)
+        self.set_info('scan_progress', 'scan complete. Wrote %s' % self.filename)
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
         self.runtime  = ts_exit - ts_start
@@ -718,17 +712,24 @@ class LarchStepScan(object):
         return self.datafile.filename
         ##
 
-    def write_fastmap_config(self, datafile, comments):
+    def write_fastmap_config(self, datafile, comments, mapper='13XRM:map:'):
         "write ini file for fastmap"
         if datafile is None: datafile = 'scan.001'
         if comments is None: comments = ''
-        sname = 'CurrentScan.ini'
-        oname = 'PreviousScan.ini'
+        currscan = 'CurrentScan.ini'
+        server  = self.scandb.get_info('server_fileroot')
         workdir = self.scandb.get_info('user_folder')
-        sname1 = os.path.join(workdir, 'Maps', sname)
-        oname1 = os.path.join(workdir, 'Maps', oname)
-        if os.path.exists(sname1):
-            shutil.copy(sname1, oname1)
+        basedir = os.path.join(server, workdir, 'Maps')
+        sname = os.path.join(server, workdir, 'Maps', currscan)
+        oname = os.path.join(server, workdir, 'Maps', 'PreviousScan.ini')
+
+        if mapper is not None:
+            caput('%sbasedir'  % mapper, basedir)
+            caput('%sfilename' % mapper, datafile)
+            caput('%sscanfile' % mapper, currscan)
+
+        if os.path.exists(sname):
+            shutil.copy(sname, oname)
         txt = ['# FastMap configuration file (saved: %s)'%(time.ctime()),
                '#-------------------------#',  '[scan]',
                'filename = %s' % datafile,
@@ -742,23 +743,23 @@ class LarchStepScan(object):
         ltim = self.dwelltime*(len(arr) - 1)
         txt.append('dimension = %i' % dim)
         txt.append('pos1 = %s'     % pospv)
-        txt.append('start1 = %.3f' % arr[0])
-        txt.append('stop1 = %.3f'  % arr[-1])
-        txt.append('step1 = %.3f'  % (arr[1]-arr[0]))
-        txt.append('time1 = %.3f'  % ltim)
-
+        txt.append('start1 = %.4f' % arr[0])
+        txt.append('stop1 = %.4f'  % arr[-1])
+        txt.append('step1 = %.4f'  % (arr[1]-arr[0]))
+        txt.append('time1 = %.4f'  % ltim)
+        
         if dim > 1:
             pos = self.positioners[1]
             pospv = str(pos.pv.pvname)
             if pospv.endswith('.VAL'): pospv = pospv[:-4]
             arr = pos.array
             txt.append('pos2 = %s'   % pospv)
-            txt.append('start2 = %.3f' % arr[0])
-            txt.append('stop2 = %.3f' % arr[-1])
-            txt.append('step2 = %.3f' % (arr[1]-arr[0]))
+            txt.append('start2 = %.4f' % arr[0])
+            txt.append('stop2 = %.4f' % arr[-1])
+            txt.append('step2 = %.4f' % (arr[1]-arr[0]))
         txt.append('#------------------#')
 
-        f = open(sname1, 'w')
+        f = open(sname, 'w')
         f.write('\n'.join(txt))
         f.close()
         return sname
@@ -769,16 +770,13 @@ class LarchStepScan(object):
         and separate fastmap collector....
         should be replaced!
         """
-        scanname = self.write_fastmap_config(filename, comments)
-
-        # now start scan
-        caput('%sfilename' % mapper, filename)
-        caput('%sscanfile' % mapper, scanname)
+        self.write_fastmap_config(filename, comments, mapper=mapper)
         caput('%smessage' % mapper, 'starting...')
         caput('%sStart' % mapper, 1)
 
         self.abort = False
         self.clear_interrupts()
+
         # watch scan
         # first, wait for scan to start (status == 2)
         collecting = False
@@ -789,9 +787,9 @@ class LarchStepScan(object):
             if self.look_for_interrupts():
                 break
         if self.abort:
-            print 'slewscan aborted'
+            print('slewscan aborted')
             return
-        print 'slewscan started, wait for it to finish'
+        print('slewscan started....')
         nrow = 0
         t0 = time.time()
         maxrow = caget('%smaxrow' % mapper)
@@ -802,36 +800,49 @@ class LarchStepScan(object):
             if self.look_for_interrupts():
                 break
         if self.abort:
-            print 'slewscan aborted'
+            print('slewscan aborted before it began')
             return
+        maxrow  = caget("%smaxrow" % mapper)
+        time.sleep(1.0)
+        fname  = caget("%sfilename" % mapper, as_string=True)
+        self.set_info('filename', fname)
 
-        # wait for map to finish
-        status = 2
-        time_at_endrow = None
-        nrowx = -1
-        while status > 0:
+        # wait for map to finish:
+        # must see "status=Idle" for 10 consequetive seconds
+        collecting_map = True
+        nrowx, nrow = 0, 0
+        t0 = time.time()
+        while collecting_map:
             time.sleep(0.25)
-            nrow = caget('%snrow' % mapper)
-            status = caget('%sstatus' % mapper)
+            status_val = caget("%sstatus" % mapper)
+            status_str = caget("%sstatus" % mapper, as_string=True)
+            nrow       = caget("%snrow" % mapper)
+            self.set_info('scan_status', status_str)
+            time.sleep(0.25)
             if self.look_for_interrupts():
                 break
             if nrowx != nrow:
+                info = caget("%sinfo" % mapper, as_string=True)
+                self.set_info('scan_progress', info)
                 nrowx = nrow
+            if status_val == 0:
+                collecting_map = ((time.time() - t0) < 10.0)
+            else:
+                t0 = time.time()
 
-            if nrow >= maxrow and status !=2:
-                if time_at_endrow is None:
-                    time_at_endrow = time.time()
-                if (time.time() - time_at_endrow) > 60.0:
-                    print 'slewscan appears to have completed'
-                    status = 0
+        # if aborted from ScanDB / ScanGUI wait for status
+        # to go to 0 (or 5 minutes)
         if self.abort:
             caput('%sAbort' % mapper, 1)
-            for i in range(250):
-                time.sleep(0.01)
-                if caget('%sstatus' % mapper) == 0:
-                    break
-            return
-        print 'slewscan done!'
+            status = 1
+            t0 = time.time()
+            while status_val != 0 and (time.time()-t0 < 60.0):
+                time.sleep(0.25)
+                status_val = caget('%sstatus' % mapper)
+        status_strg = caget('%sstatus' % mapper, as_string=True)                
+        self.set_info('scan_status', status_str)
+        print( 'slewscan finished!')
+        self.clear_interrupts()
         return
 
 class XAFS_Scan(LarchStepScan):
@@ -874,7 +885,7 @@ class XAFS_Scan(LarchStepScan):
         self.dtime = dtime
 
         if npts is None and step is None:
-            print 'add_region needs start, stop, and either step on npts'
+            print('add_region needs start, stop, and either step on npts')
             return
 
         if step is not None:
@@ -952,10 +963,6 @@ class XAFS_Scan(LarchStepScan):
         buff.append(elast)
         buff.append('')
         
-        # print "Energy0 ", energy[0]
-        # print 'Height ', height, width[0]
-        # print "Theta0 ", theta[0] - the0
-        # print "Wid0   ", width[0] - wid0
         return  Group(buffer='\n'.join(buff), 
                       start_theta=theta[0]-the0,
                       start_width=width[0]-wid0,
@@ -1110,14 +1117,12 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     """
 
     if _larch.symtable._scan._scandb is None:
-        print 'need to connect to scandb!'
+        print('need to connect to scandb!')
         return
     scandb =  _larch.symtable._scan._scandb
     if nscans is not None:
         scandb.set_info('nscans', nscans)
     print("LARCH.do_scan ", scanname, filename)
-    print os.getcwd()
-
 
     scan = scan_from_db(scanname, filename=filename,
                         _larch=_larch)
@@ -1160,7 +1165,7 @@ def do_slewscan(scanname, filename='scan.001', comments='',
     """
 
     if _larch.symtable._scan._scandb is None:
-        print 'need to connect to scandb!'
+        print('need to connect to scandb!')
         return
     scan = scan_from_db(scanname, _larch=_larch)
     if scan.scantype != 'slew':
@@ -1187,5 +1192,6 @@ def registerLarchPlugin():
                       'make_xafs_scan': make_xafs_scan,
                       'connect_scandb':    connect_scandb,
                       'do_scan': do_scan,
-                      'do_slewscan_beta': do_slewscan,
+                      'do_slewscan': do_slewscan,
+                      'do_fastmap':  do_slewscan,
                       })
