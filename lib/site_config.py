@@ -15,8 +15,20 @@ from . import site_configdata
 def unixdir(f):
     return f.replace('\\', '/')
 
+def windir(d):
+    "ensure path uses windows delimiters"
+    if d.startswith('//'): d = d[1:]
+    d = d.replace('/','\\')
+    return d
+
+def nativedir(d):
+    "ensure path uses delimiters for current OS"
+    if os.name == 'nt':
+        return windir(d)
+    return unixdir(d)
+
 def join(*args):
-    return unixdir(os.path.join(*args))
+    return nativedir(os.path.join(*args))
 
 exists = os.path.exists
 abspath = os.path.abspath
@@ -41,7 +53,7 @@ def get_homedir():
 
     if home_dir is None:
         home_dir = os.path.abspath('.')
-    return unixdir(home_dir)
+    return nativedir(home_dir)
 
 # set larch install directories
 # on unix, these would be
@@ -58,9 +70,9 @@ home_dir = get_homedir()
 larchdir = join(home_dir, larchdir)
 
 if 'LARCHDIR' in os.environ:
-    larchdir = unixdir(os.environ['LARCHDIR'])
+    larchdir = nativedir(os.environ['LARCHDIR'])
 else:
-    larchdir = unixdir(abspath(join(home_dir, larchdir)))
+    larchdir = nativedir(abspath(join(home_dir, larchdir)))
 
 # frozen executables, as from cx_freeze, will have
 # these paths to be altered...
@@ -132,7 +144,7 @@ plugins_path = []
 _path = [larchdir]
 
 if 'LARCHPATH' in os.environ:
-    _path.extend([unixdir(s) for s in os.environ['LARCHPATH'].split(':')])
+    _path.extend([nativedir(s) for s in os.environ['LARCHPATH'].split(':')])
 
 for pth in _path:
     mdir = join(pth, 'modules')
@@ -149,7 +161,7 @@ init_files = [join(larchdir, 'init.lar')]
 if 'LARCHSTARTUP' in os.environ:
     startup = os.environ['LARCHSTARTUP']
     if exists(startup):
-        init_files = [unixdir(startup)]
+        init_files = [nativedir(startup)]
 
 # history file:
 history_file = join(larchdir, 'history.lar')
