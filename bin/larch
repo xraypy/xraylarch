@@ -75,7 +75,7 @@ if not options.nowx:
     except ImportError:
         HAS_WX = False
 
-BANNER = """  Larch %s (%s) M. Newville, T. Trainor
+BANNER = """  Larch %s (%s) M. Newville and the Larch Development Team
   using python %s, numpy %s"""  %  (larch.__version__, larch.__date__,
                                          '%i.%i.%i' % sys.version_info[:3],
                                          numpy.__version__)
