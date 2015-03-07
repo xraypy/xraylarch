@@ -144,6 +144,10 @@ class Interpreter:
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))
 
+    def add_plugin(self, mod, **kws):
+        """add plugin components from plugin directory"""
+        builtins._addplugin(mod, _larch=self, **kws)
+
     def unimplemented(self, node):
         "unimplemented nodes"
         self.raise_exception(node, exc=NotImplementedError,
