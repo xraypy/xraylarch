@@ -139,14 +139,10 @@ class Interpreter:
         for pname in os.listdir(plugins_dir):
             pdir = os.path.join(plugins_dir, pname)
             if os.path.isdir(pdir):
-                self.add_plugin(pdir)
+                builtins._addplugin(pdir, _larch=self)
 
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))
-
-    def add_plugin(self, mod, **kws):
-        """add plugin components from plugin directory"""
-        builtins._addplugin(mod, _larch=self, **kws)
 
     def unimplemented(self, node):
         "unimplemented nodes"
