@@ -40,7 +40,7 @@ def find_e0(energy, mu=None, group=None, _larch=None):
 
     Notes
     -----
-       Support See First Argument Group convention, requiring group
+       Supports First Argument Group convention, requiring group
        members 'energy' and 'mu'
     """
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
@@ -149,7 +149,7 @@ def preedge(energy, mu, e0=None, step=None,
 
     omu  = mu*energy**nvict
     ex, mx = remove_nans2(energy[p1:p2], omu[p1:p2])
-    precoefs = polyfit(ex, mx, 1)    
+    precoefs = polyfit(ex, mx, 1)
     pre_edge = (precoefs[0] * energy + precoefs[1]) * energy**(-nvict)
     # normalization
     p1 = index_of(energy, norm1+e0)
@@ -202,7 +202,7 @@ def pre_edge(energy, mu=None, group=None, e0=None, step=None,
     nnorm:   degree of polynomial (ie, nnorm+1 coefficients will be found) for
              post-edge normalization curve. Default=3 (quadratic), max=5
     make_flat: boolean (Default True) to calculate flattened output.
-             
+
 
     Returns
     -------
