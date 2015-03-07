@@ -9,6 +9,9 @@ internal larch functions, especially :func:`read_ascii`.  The main
 XAFS-specific function for pre-edge subtraction and normalizaiton is
 :func:`pre_edge`.
 
+The :func:`pre_edge` function
+=================================
+
 ..  function:: pre_edge(energy, mu, group=None, ...)
 
     Pre-edge subtraction and normalization.  This performs a number of steps:
@@ -16,6 +19,7 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
        2. fit a line of polymonial to the region below the edge
        3. fit a polymonial to the region above the edge
        4. extrapolate the two curves to :math:`E_0` to determine the edge jump
+
 
     :param energy:  1-d array of x-ray energies, in eV
     :param mu:      1-d array of :math:`\mu(E)`
@@ -33,7 +37,7 @@ XAFS-specific function for pre-edge subtraction and normalizaiton is
     :returns:  None.
 
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
+    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.
     The following data is put into the output group:
 
        ==============   ======================================================
@@ -72,12 +76,12 @@ Notes:
     :param   mu:    array of :math:`\mu(E)`
     :param group:   output group
 
-    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.  
+    Follows the First Argument Group convention, using group members named ``energy`` and ``mu``.
     The value of ``e0`` will be written to the output group.
 
 
-Example
-============
+Pre-Edge Subtraction Example
+=================================
 
 A simple example of pre-edge subtraction::
 
@@ -111,5 +115,48 @@ gives the following results:
     XAFS Pre-edge subtraction.
 
 
+Over-absorption Corrections
+=================================
+
+For XAFS data measured in fluorescence, a common problem of
+*over-absorption* in which too much of the total X-ray absorption
+coefficient is from the absorbing element.  In such cases, the implicit
+assumption in a fluorescence XAFS measurement that the fluorescence
+intensity is proportional to the absorption coefficient of the element of
+interest breaks down.  This is often referred to as *self-absorption* in
+the older XAFS literature, but the term should be avoided as it is quite a
+different effect from self-absorption in X-ray fluorescence analysis.  In
+fact, the effect is more like *extinction* in that the fluorescence
+probability approaches a constant, with no XAFS oscillations, as the total
+absorption coefficient is dominated by the element of interest.
+Over-absorption most stongly effects the XAFS oscillation amplitude, and so
+coordination number and mean-square displacement parameters in the EXAFS,
+and edge-position and pre-edge peak height for XANES.  Fortunately, the
+effect can be corrected for small over-absorption.
+
+For XANES, a common correction method from the FLUO program by D. Haskel
+(:cite:ts:`fluo`) can be used.  The algorithm is contained in the
+:func:`fluo_corr` function.
 
 
+.. function:: fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45, angout=45, **pre_kws)
+
+    calculate :math:`\mu(E)` corrected for over-absorption in fluorescence
+    XAFS using the FLUO algorithm (suitabe for XANES, but questionable for
+    EXAFS).
+
+    :param energy:    1-d array of x-ray energies, in eV
+    :param mu:        1-d array of :math:`\mu(E)`
+    :param formula:   string for sample stoichiometry
+    :param group:     output group
+    :param elem:      atomic symbol ('Zn') or Z of absorbing element
+    :param edge:      name of edge ('K', 'L3', ...) [default 'K']
+    :param anginp:    input angle in degrees  [default 45]
+    :param angout:    output angle in degrees [default 45]
+    :param **pre_kws: additional keywords for :func:`pre_edge`.
+
+    :returns:         None
+
+    Follows the First Argument Group convention, using group members named
+    ``energy`` and ``mu``.  The value of ``mu_corr`` and ``norm_corr`` will be written to the
+    output group, containing :math:`\mu(E)` and normalized :math:`\mu(E)` corrected for over-absorption.
