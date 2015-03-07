@@ -97,8 +97,7 @@ def make_larchdirs():
              'history.lar': '# history of larch commands will be placed here\n'}
     subdirs = {'matplotlib': '# matplotlib may put files here...\n',
                'dlls':       '# put dlls here \n',
-               'modules':    '# put custom larch or python modules here \n',
-               'plugins':    '# put larch plugins here \n'}
+               'modules':    '# put custom larch or python modules here \n'}
 
     def make_dir(dname):
         if exists(dname): return True
