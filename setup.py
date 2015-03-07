@@ -102,7 +102,7 @@ mod_dir = os.path.join(larchdir, 'modules')
 modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
 data_files.append((mod_dir, modfiles))
 
-icofiles = glob.glob('icons/*.ico')
+icofiles = glob.glob('icons/*.ic*')
 ico_dir = os.path.join(larchdir, 'icons')
 data_files.append((ico_dir, icofiles))
 
