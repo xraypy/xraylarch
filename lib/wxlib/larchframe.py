@@ -59,10 +59,7 @@ class LarchWxShell(object):
         # self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
         self.SetPrompt()
-
-        for fname in larch.site_config.init_files:
-            self.execute("run('%s')" % fname)
-
+        self.larch.run_init_scripts()
 
     def onUpdate(self, event=None):
         symtable = self.symtable
