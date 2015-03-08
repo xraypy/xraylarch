@@ -167,11 +167,9 @@ class LarchFrame(wx.Frame):
             self.Bind(wx.EVT_CLOSE,  self.onClose)
         #self.timer.Start(200)
         larchdir = larch.site_config.larchdir
-        fico = os.path.join(larchdir, 'bin', ICON_FILE)
-        try:
+        fico = os.path.join(larchdir, 'icons', ICON_FILE)
+        if os.path.exists(fico):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-        except:
-            pass
 
 
     def InputPanel(self, parent):
