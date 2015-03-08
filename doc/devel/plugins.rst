@@ -73,12 +73,9 @@ Locations of Plugins
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Plugins are meant to be long-lived and reused, and so are not expected to
-be placed in the current working directory.  There are two locations that
-are searched for plugins -- one in the user's Larch Plugin folder (
-$HOME/.larch/plugins/ on Unix or Mac OS X or
-C:\\Users\\USERNAME\\larch\\plugins on Windows), the other in the Larch
-system folder (typically /usr/local/share/larch/plugins or C:\\Program
-Files\\larch\\plugins).
+be placed in the current working directory.  Plugins are located in the the
+installed Larch Plugin folder ( $HOME/.larch/plugins/ on Unix or Mac OS X
+or C:\\Users\\USERNAME\\larch\\plugins on Windows).
 
 Plugins in the user's Larch Plugin folder can be added into the current
 Larch session with the :func:`add_plugin` function.
@@ -152,4 +149,3 @@ typical `requirements.txt` file might look like::
 to specify which modules and minimal versions for the plugin files in that
 folder to work.  If these requirements are not satisfied, the modules will
 not be installed.
-
