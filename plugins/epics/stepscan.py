@@ -128,9 +128,6 @@ def energy2angle(energy, dspace=3.13555):
     omega   = HC/(2.0 * dspace)
     return RAD2DEG * np.arcsin(omega/energy)
 
-
-
-
 def hms(secs):
     "format time in seconds to H:M:S"
     return str(timedelta(seconds=int(secs)))
@@ -961,8 +958,7 @@ class XAFS_Scan(LarchStepScan):
             buff.append(fmt % (dtime[i], dtheta[i], tvelo[i],
                                dwidth[i], wvelo[i]))
         buff.append(elast)
-        buff.append('')
-        
+
         return  Group(buffer='\n'.join(buff), 
                       start_theta=theta[0]-the0,
                       start_width=width[0]-wid0,
