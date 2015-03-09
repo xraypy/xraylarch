@@ -128,9 +128,6 @@ def energy2angle(energy, dspace=3.13555):
     omega   = HC/(2.0 * dspace)
     return RAD2DEG * np.arcsin(omega/energy)
 
-
-
-
 def hms(secs):
     "format time in seconds to H:M:S"
     return str(timedelta(seconds=int(secs)))
@@ -233,6 +230,13 @@ class LarchStepScan(object):
         self.pre_scan_methods = []
         self.post_scan_methods = []
         self.pos_actual  = []
+
+    def set_info(self, attr, value):
+        """set scan info to _scan variable"""
+        setattr(self._scangroup, attr, value)
+        if self.scandb is not None:
+            self.scandb.set_info(attr, value)
+            self.scandb.set_info('heartbeat', time.ctime())
 
     def open_output_file(self, filename=None, comments=None):
         """opens the output file"""
@@ -385,7 +389,7 @@ class LarchStepScan(object):
         msg = 'Point %i/%i,  time left: %s' % (cpt, npts, time_est)
         if cpt % self.message_points == 0:
             print(msg)
-        self.set_info('scan_message', msg)
+        self.set_info('scan_progress', msg)
 
     def publish_scandata(self):
         "post scan data to db"
@@ -402,14 +406,8 @@ class LarchStepScan(object):
         """set scan error message"""
         self._scangroup.error_message = msg
         if self.scandb is not None:
-            self.scandb.set_info('last_error', msg)
-
-    def set_info(self, attr, value):
-        """set scan info to _scan variable"""
-        setattr(self._scangroup, attr, value)
-        if self.scandb is not None:
-            self.scandb.set_info(attr, value)
-
+            self.set_info('last_error', msg)
+            
     def set_scandata(self, attr, value):
         if self.scandb is not None:
             self.scandb.set_scandata(fix_varname(attr), value)
@@ -453,11 +451,6 @@ class LarchStepScan(object):
         if self.scandb is None:
             return getattr(self._scan, key)
         return self.scandb.get_info(key, as_bool=True)
-
-    def set_info(self, key, val):
-        if self.scandb is None:
-            return setattr(self._scan, key, val)
-        return self.scandb.set_info(key, val)
 
     def look_for_interrupts(self):
         """set interrupt requests:
@@ -524,7 +517,7 @@ class LarchStepScan(object):
         self.clear_data()
         if self.scandb is not None:
             self.init_scandata()
-            self.scandb.set_info('request_abort', 0)
+            self.set_info('request_abort', 0)
 
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
@@ -549,7 +542,7 @@ class LarchStepScan(object):
                 d.set_dwelltime(self.dwelltime)
 
         if self.scandb is not None:
-            self.scandb.set_info('scan_message', 'preparing scan')
+            self.set_info('scan_progress', 'preparing scan')
 
         dtimer.add('PRE: cleared data')
         out = self.pre_scan()
@@ -557,10 +550,10 @@ class LarchStepScan(object):
 
         dtimer.add('PRE: pre_scan done')
         if self.scandb is not None:
-            self.scandb.set_info('scan_time_estimate', time_est)
-            self.scandb.set_info('scan_total_points', npts)
+            self.set_info('scan_time_estimate', time_est)
+            self.set_info('scan_total_points', npts)
 
-        self.set_info('scan_message', 'starting scan')
+        self.set_info('scan_progress', 'starting scan')
         #self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
         # self.msg_thread.start()
         self.cpt = 0
@@ -673,7 +666,7 @@ class LarchStepScan(object):
                 dtimer.add('Pt %i: done.' % i)
 
             except KeyboardInterrupt:
-                self.scandb.set_info('request_abort', 1l)
+                self.set_info('request_abort', 1l)
             if not point_ok:
                 print('point messed up... try again?')
                 i -= 1
@@ -696,7 +689,7 @@ class LarchStepScan(object):
         self.clear_interrupts()
 
         # run post_scan methods
-        self.set_info('scan_message', 'finishing')
+        self.set_info('scan_progress', 'finishing')
         out = self.post_scan()
         self.check_outputs(out, msg='post scan')
         dtimer.add('Post: post_scan done')
@@ -707,7 +700,7 @@ class LarchStepScan(object):
         #      self.msg_thread.cpt = None
         #      self.msg_thread.join()
 
-        self.set_info('scan_message', 'scan complete. Wrote %s' % self.filename)
+        self.set_info('scan_progress', 'scan complete. Wrote %s' % self.filename)
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
         self.runtime  = ts_exit - ts_start
@@ -827,8 +820,7 @@ class LarchStepScan(object):
                 break
             if nrowx != nrow:
                 info = caget("%sinfo" % mapper, as_string=True)
-                print('>> map: %s' % (info))
-                self.set_info('scan_message', info)
+                self.set_info('scan_progress', info)
                 nrowx = nrow
             if status_val == 0:
                 collecting_map = ((time.time() - t0) < 10.0)
@@ -966,8 +958,7 @@ class XAFS_Scan(LarchStepScan):
             buff.append(fmt % (dtime[i], dtheta[i], tvelo[i],
                                dwidth[i], wvelo[i]))
         buff.append(elast)
-        buff.append('')
-        
+
         return  Group(buffer='\n'.join(buff), 
                       start_theta=theta[0]-the0,
                       start_width=width[0]-wid0,

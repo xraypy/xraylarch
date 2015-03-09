@@ -109,12 +109,8 @@ modules outside of the current working directory.  For this, there is a
 **search path** used to find larch modules.  The search path is held in the
 system variable ``_sys.path``, and can thus be set during a larch session.
 By default, this starts with the current working directory ('.'), and is
-then followed by the user's Larch module directory, typically
+then followed by the user's Larch module directory, which will typically
 ``$HOME/.larch/modules`` on Unix or Mac OSX or ``$USER\larch\modules`` on
-Windows, and then the system-wide Larch module directory, which will depend
-on installation details but will typically be ``/usr/share/larch/modules``
-on Unix and Mac OSX and ``C:\Program Files\larch\modules`` on Windows.  If
-a file with the ``.lar`` extension is not found in one of these three
-places, the standard Python rules for importing modules will be used.
-
-
+Windows.  If a file with the ``.lar`` extension is not found in one of
+these three places, the standard Python rules for importing modules will be
+used.

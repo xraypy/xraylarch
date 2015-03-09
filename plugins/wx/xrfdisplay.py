@@ -111,7 +111,7 @@ class XRFDisplayFrame(wx.Frame):
         self.conf = XRFDisplayConfig()
         # 1 ROI Averager per status line
         self.roi_aves = [ROI_Averager(nsamples=11) for i in range(4)]
-        
+
         self.subframes = {}
         self.data = None
         self.gsexrmfile = gsexrmfile
@@ -432,7 +432,7 @@ class XRFDisplayFrame(wx.Frame):
                 this.Alignment = this.Renderer.Alignment = align
             #print xlines.Columns[1]
             #print xlines.Columns[1].Renderer
-            
+
             xlines.SetMinSize((300, 240))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
                         self.onSelectXrayLine)
@@ -483,8 +483,7 @@ class XRFDisplayFrame(wx.Frame):
         if not symtab.has_symbol('_sys.wx.parent'):
             symtab.set_symbol('_sys.wx.parent', self)
 
-        larchdir = site_config.sys_larchdir
-        fico = os.path.join(larchdir, 'bin', ICON_FILE)
+        fico = os.path.join(site_config.larchdir, 'icons', ICON_FILE)
         try:
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
         except:
@@ -678,7 +677,7 @@ class XRFDisplayFrame(wx.Frame):
             return
 
         [rave.clear() for rave in self.roi_aves]
-        
+
         self.ShowROIStatus(left, right, name=name)
         self.ShowROIPatch(left, right)
 
@@ -1079,7 +1078,7 @@ class XRFDisplayFrame(wx.Frame):
             ydat = np.ma.masked_less(ydat, 0)
 
         panel.plot(x, ydat, label='spectra',  **kwargs)
-       
+
         self.unzoom_all()
         if yroi is not None and yroi.max() > 0:
             kwargs['color'] = self.conf.roi_color
@@ -1087,9 +1086,9 @@ class XRFDisplayFrame(wx.Frame):
 
         panel.axes.get_yaxis().set_visible(self.show_yaxis)
         panel.cursor_mode = 'zoom'
-        
+
         a, b, c, d = self._getlims()
-        self.panel.axes.set_xlim((c, d))        
+        self.panel.axes.set_xlim((c, d))
         self.draw()
 
         panel.canvas.Thaw()
@@ -1111,6 +1110,7 @@ class XRFDisplayFrame(wx.Frame):
             yroi = -1*np.ones(len(counts))
             for r in mca.rois:
                 yroi[r.left:r.right] = counts[r.left:r.right]
+            yroi = np.ma.masked_less(yroi, 0)
             self.panel.update_line(1, mca.energy, yroi, draw=False,
                                    update_limits=False)
 

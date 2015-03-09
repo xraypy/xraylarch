@@ -9,14 +9,31 @@ site configuration for larch:
 from __future__ import print_function
 
 import os
+HAS_PWD = True
+try:
+    import pwd
+except ImportError:
+    HAS_PWD = False
 import sys
 from . import site_configdata
 
 def unixdir(f):
     return f.replace('\\', '/')
 
+def windir(d):
+    "ensure path uses windows delimiters"
+    if d.startswith('//'): d = d[1:]
+    d = d.replace('/','\\')
+    return d
+
+def nativedir(d):
+    "ensure path uses delimiters for current OS"
+    if os.name == 'nt':
+        return windir(d)
+    return unixdir(d)
+
 def join(*args):
-    return unixdir(os.path.join(*args))
+    return nativedir(os.path.join(*args))
 
 exists = os.path.exists
 abspath = os.path.abspath
@@ -33,57 +50,64 @@ def get_homedir():
             print(sys.exc_info[1])
         return None
 
-    home_dir = check(os.path.expanduser, '~')
-    if home_dir is not None:
+    # sudo case!
+    username = os.environ.get("SUDO_USER", None)
+    if HAS_PWD and username is not None:
+        home_dir = pwd.getpwnam(username).pw_dir
+    else:
+        home_dir = check(os.path.expanduser, '~')
+    if home_dir is  None:
         for var in ('$HOME', '$USERPROFILE', '$ALLUSERSPROFILE', '$HOMEPATH'):
             home_dir = check(os.path.expandvars, var)
             if home_dir is not None: break
 
     if home_dir is None:
         home_dir = os.path.abspath('.')
-    return unixdir(home_dir)
+    return nativedir(home_dir)
 
-# set system and user-specific larch install directories
-# on unix, these would be (approximately, usually):
-#   sys_larchdir = /usr/share/larch
-#   usr_larchdir =  $USER/.larch
+# set larch install directories
+# on unix, these would be
+#   larchdir =  $USER/.larch
 #
 # on windows, these would be
-#   sys_larchdir = C:\Program Files\larch
-#   usr_larchdir = $USER/larch
+#   larchdir = $USER/larch
 
-sys_larchdir = site_configdata.unix_installdir
-usr_larchdir = site_configdata.unix_userdir
+larchdir = site_configdata.larchdir
+if os.name == 'nt' and larchdir.startswith('.'):
+    larchdir = larchdir[1:]
+
+home_dir = get_homedir()
+larchdir = join(home_dir, larchdir)
+
+if 'LARCHDIR' in os.environ:
+    larchdir = nativedir(os.environ['LARCHDIR'])
+else:
+    larchdir = nativedir(abspath(join(home_dir, larchdir)))
 
 # frozen executables, as from cx_freeze, will have
 # these paths to be altered...
-if os.name == 'nt':
-    usr_larchdir = unixdir(site_configdata.win_userdir)
-    sys_larchdir = unixdir(site_configdata.win_installdir)
-
 if hasattr(sys, 'frozen'):
     if os.name == 'nt':
         try:
             tdir, exe = os.path.split(sys.executable)
             toplevel, bindir = os.path.split(tdir)
-            sys_larchdir = os.path.abspath(toplevel)
+            larchdir = os.path.abspath(toplevel)
         except:
             pass
 
     elif sys.platform.lower().startswith('darwin'):
         tdir, exe = os.path.split(sys.executable)
         toplevel, bindir = os.path.split(tdir)
-        sys_larchdir = os.path.join(toplevel, 'Resources', 'larch')
+        larchdir = join(toplevel, 'Resources', 'larch')
 
-home_dir = get_homedir()
 
-def make_larch_userdirs():
+def make_larchdirs():
     "create users .larch directories"
     files = {'init.lar': '# put startup larch commands here\n',
              'history.lar': '# history of larch commands will be placed here\n'}
     subdirs = {'matplotlib': '# matplotlib may put files here...\n',
-               'modules':    '# put custom larch or python modules here \n',
-               'plugins':    '# put larch plugins here \n'}
+               'dlls':       '# put dlls here \n',
+               'modules':    '# put custom larch or python modules here \n'}
 
     def make_dir(dname):
         if exists(dname): return True
@@ -111,65 +135,45 @@ def make_larch_userdirs():
             print(sys.exc_info()[1])
         return False
 
-    user_dir = abspath(join(home_dir, usr_larchdir))
-    if not make_dir(user_dir):
-
+    if not make_dir(larchdir):
         return
     for fname, text in files.items():
-        fname = join(user_dir, fname)
+        fname = join(larchdir, fname)
         write_file(fname, text)
+
     for sdir, text in subdirs.items():
-        sdir = join(user_dir, sdir)
+        sdir = join(larchdir, sdir)
         if not make_dir(sdir):
             break
         fname = join(sdir, 'README')
         write_file(fname, text)
 
-
-if 'LARCHDIR' in os.environ:
-    usr_larchdir = unixdir(os.environ['LARCHDIR'])
-else:
-    usr_larchdir = unixdir(abspath(join(home_dir, usr_larchdir)))
-
-# modules_path, plugins_path
-#  determine the search path for modules
-
-modules_path, plugins_path = [], []
-modpath = []
+modules_path = []
+plugins_path = []
+_path = [larchdir]
 
 if 'LARCHPATH' in os.environ:
-    modpath.extend([unixdir(s) for s in os.environ['LARCHPATH'].split(':')])
-else:
-    modpath.append(unixdir(usr_larchdir))
+    _path.extend([nativedir(s) for s in os.environ['LARCHPATH'].split(':')])
 
-modpath.append(sys_larchdir)
-
-for mp in modpath:
-    mdir = join(mp, 'modules')
+for pth in _path:
+    mdir = join(pth, 'modules')
     if exists(mdir) and mdir not in modules_path:
         modules_path.append(mdir)
 
-for mp in (usr_larchdir, sys_larchdir):
-    mdir = join(mp, 'plugins')
-    if exists(mdir) and mdir not in plugins_path:
-        plugins_path.append(mdir)
+    pdir = join(pth, 'plugins')
+    if exists(pdir) and pdir not in plugins_path:
+        plugins_path.append(pdir)
 
 # initialization larch files to be run on startup
-init_files = []
-for folder in (sys_larchdir, usr_larchdir):
-    ifile = join(folder, 'init.lar')
-    if exists(ifile):
-        init_files.append(ifile)
+init_files = [join(larchdir, 'init.lar')]
 
 if 'LARCHSTARTUP' in os.environ:
     startup = os.environ['LARCHSTARTUP']
     if exists(startup):
-        init_files.append(unixdir(startup))
+        init_files = [nativedir(startup)]
 
 # history file:
-history_file = join(home_dir, '.larch_history')
-if exists(usr_larchdir) and os.path.isdir(usr_larchdir):
-    history_file = join(usr_larchdir, 'history.lar')
+history_file = join(larchdir, 'history.lar')
 
 def show_site_config():
     is_frozen = repr(getattr(sys, 'frozen', None))
@@ -183,7 +187,7 @@ def show_site_config():
   modules search path:  %s
   plugins search path:  %s
 ========================
-""" % (sys.executable, is_frozen, home_dir, usr_larchdir,
+""" % (sys.executable, is_frozen, home_dir, larchdir,
        history_file, init_files,
        modules_path, plugins_path))
 

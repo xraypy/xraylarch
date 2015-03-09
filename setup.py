@@ -72,40 +72,22 @@ if not deps_ok:
 
 ##
 ## For Travis-CI, need to write a local site config file
-## 
+##
 if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
-    share_basedir=os.path.expanduser('~/share/larch')
-    fh = open('lib/site_configdata.py', 'w')
-    fh.write("""#!/usr/bin/env python
-unix_installdir = '%s'
-unix_userdir    = '.larch'
-
-win_installdir = 'C:\\Program Files\\larch'
-win_userdir    = 'larch'
-""" % share_basedir)
-    fh.close()
-    time.sleep(1.0)
+    time.sleep(0.2)
 
 
-from lib import site_configdata, site_config, version
+from lib import site_config, version
 
 # read installation locations from lib/site_configdata.py
-share_basedir = site_configdata.unix_installdir
-user_basedir  = site_configdata.unix_userdir
-# windows
-if os.name == 'nt':
-    share_basedir = site_configdata.win_installdir
-    user_basedir = site_configdata.win_userdir
+larchdir = site_config.larchdir
 
 
 if DEBUG:
     print("##  Settings  (Debug mode) ## ")
-    print(" share_basedir: ",  share_basedir)
-    print(" user_basedir: ",  user_basedir)
+    print(" larchdir: ",  larchdir)
     print(" sys.prefix: ",  sys.prefix)
     print(" sys.exec_prefix: ",  sys.exec_prefix)
-    print(" site.USER_BASE: ",  site.USER_BASE)
-    print(" site.USER_SITE: ",  site.USER_SITE)
     print(" cmdline_args: ",  cmdline_args)
     print("##   ")
 
@@ -116,17 +98,16 @@ if DEBUG:
 
 data_files  = [('bin', glob.glob('bin/*'))]
 
-mod_dir = os.path.join(share_basedir, 'modules')
+mod_dir = os.path.join(larchdir, 'modules')
 modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
 data_files.append((mod_dir, modfiles))
 
-icofiles = glob.glob('bin/*.ico') 
-ico_dir = os.path.join(share_basedir, 'bin')
+icofiles = glob.glob('icons/*.ic*')
+ico_dir = os.path.join(larchdir, 'icons')
 data_files.append((ico_dir, icofiles))
-print( 'MODFILES ',  ico_dir, icofiles)
 
 #dlls
-dll_maindir = os.path.join(share_basedir, 'dlls')
+dll_maindir = os.path.join(larchdir, 'dlls')
 archs = []
 if os.name == 'nt':
     archs.extend(['win32', 'win64'])
@@ -141,7 +122,7 @@ for dx in archs:
     dllfiles = glob.glob('dlls/%s/*' % dx)
     data_files.append((dlldir, dllfiles))
 
-plugin_dir = os.path.join(share_basedir, 'plugins')
+plugin_dir = os.path.join(larchdir, 'plugins')
 pluginfiles = []
 pluginpaths = []
 for fname in glob.glob('plugins/*'):
@@ -163,7 +144,9 @@ for pdir in pluginpaths:
             print('Warning -- not walking subdirectories for Plugins!!')
         else:
             pfiles.append(fname)
-    data_files.append((os.path.join(share_basedir, pdir), pfiles))
+    data_files.append((os.path.join(larchdir, pdir), pfiles))
+
+site_config.make_larchdirs()
 
 # now we have all the data files, so we can run setup
 setup(name = 'larch',
@@ -179,8 +162,6 @@ setup(name = 'larch',
       packages = ['larch', 'larch.utils', 'larch.wxlib',
                   'larch.fitting', 'larch.fitting.uncertainties'],
       data_files  = data_files)
-
-site_config.make_larch_userdirs()
 
 def remove_cruft(basedir, filelist):
     """remove files from base directory"""
@@ -226,7 +207,7 @@ def fix_permissions(*dirnames):
 
 fix_permissions('matplotlib', 'larch')
 if cmdline_args[0] == 'install':
-    remove_cruft(share_basedir, historical_cruft)
+    remove_cruft(larchdir, historical_cruft)
 
 if deps_ok and not os.path.exists('.deps'):
     f = open('.deps', 'w')
