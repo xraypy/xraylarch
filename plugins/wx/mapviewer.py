@@ -330,7 +330,7 @@ class SimpleMapPanel(GridPanel):
                                action=partial(self.onShowMap, new=False))
         self.show_cor = Button(self, 'Map1 vs. Map2', size=(125, -1),
                                action=self.onShowCorrel)
-        
+
         self.AddManyText(('Detector', 'Map 1', 'Operator', 'Map 2'))
         self.AddMany((self.det, self.roi1, self.op, self.roi2), newrow=True)
 
@@ -347,10 +347,10 @@ class SimpleMapPanel(GridPanel):
                      FloatCtrl(self, value=-1, **fopts)]
 
         for wid in self.lims: wid.Disable()
-                
+
         self.limrange  = Check(self, default=False,
                                label=' Limit Map Range to Pixel Range:',
-                               action=self.onLimitRange)        
+                               action=self.onLimitRange)
         self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
         self.Add(self.limrange, dcol=4,   newrow=True, style=LEFT)
         self.Add(SimpleText(self, 'X Range:'), dcol=1,
@@ -483,7 +483,7 @@ class SimpleMapPanel(GridPanel):
             if x is not None:
                 x   = x[lims[0]:lims[1]]
             xoff, yoff = lims[0], lims[2]
-            
+
         if len(self.owner.im_displays) == 0 or new:
             iframe = self.owner.add_imdisplay(title, det=det)
         self.owner.display_map(map, title=title, info=info, x=x, y=y,
@@ -537,10 +537,10 @@ class TriColorMapPanel(GridPanel):
                      FloatCtrl(self, value=-1, **fopts)]
 
         for wid in self.lims: wid.Disable()
-                
+
         self.limrange  = Check(self, default=False,
                                label=' Limit Map Range to Pixel Range:',
-                               action=self.onLimitRange)        
+                               action=self.onLimitRange)
         self.Add(HLine(self, size=(350, 3)), dcol=4, newrow=True, style=CEN)
         self.Add(self.limrange, dcol=4,   newrow=True, style=LEFT)
         self.Add(SimpleText(self, 'X Range:'), dcol=1,
@@ -563,7 +563,7 @@ class TriColorMapPanel(GridPanel):
         else:
             for wid in self.lims:
                 wid.Disable()
-            
+
     def onShowMap(self, event=None, new=True):
         """show 3 color map"""
         datafile = self.owner.current_file
@@ -599,7 +599,7 @@ class TriColorMapPanel(GridPanel):
         if i0 != '1':
             i0map = datafile.get_roimap(i0, det=det, no_hotcols=no_hotcols,
                                         dtcorrect=dtcorrect)
-           
+
         i0min = min(i0map[np.where(i0map>0)])
         if i0min < 1: i0min = 1.0
         i0map[np.where(i0map<i0min)] = i0min
@@ -973,7 +973,7 @@ WARNING: This cannot be undone!
         mca   = self.owner.current_file.get_mca_area(aname)
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         npix = len(area.value[np.where(area.value)])
-        pixtime = self.owner.current_file.pixeltime        
+        pixtime = self.owner.current_file.pixeltime
         dtime = mca.real_time
         info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds"
         buff = ["# Map %s, Area %s" % (self.owner.current_file.filename, aname),
@@ -1002,14 +1002,14 @@ WARNING: This cannot be undone!
         aname = self._getarea()
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         npix = len(area.value[np.where(area.value)])
-        pixtime = self.owner.current_file.pixeltime        
+        pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
         try:
             mca   = self.owner.current_file.get_mca_area(aname)
             dtime = mca.real_time
         except:
             pass
-        
+
         info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds"
         self.info.SetLabel(info_fmt%(npix, int(round(1000.0*pixtime)), dtime))
 
@@ -1205,7 +1205,7 @@ class MapViewerFrame(wx.Frame):
                 tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
             mask = tmask
             # print 'shifted mask!'
-            
+
         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff)
         mca_thread = Thread(target=self.get_mca_area,
                             args=(det,mask), kwargs=kwargs)
@@ -1316,8 +1316,7 @@ class MapViewerFrame(wx.Frame):
         self.SetStatusText('ready')
         self.datagroups = self.larch.symtable
         self.title.SetLabel('')
-        larchdir = larch.site_config.sys_larchdir
-        fico = os.path.join(larchdir, 'bin', ICON_FILE)
+        fico = os.path.join(larch.site_config.larchdir, 'icons', ICON_FILE)
         try:
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
         except:
@@ -1398,7 +1397,7 @@ class MapViewerFrame(wx.Frame):
             try:
                 if len(basedir)  > 0:
                     os.chdir(nativepath(basedir))
-                    save_workdir(nativepath(basedir))                
+                    save_workdir(nativepath(basedir))
             except OSError:
                 print( 'Changed folder failed')
                 pass
@@ -1491,7 +1490,7 @@ class MapViewerFrame(wx.Frame):
         if parent is not None and len(parent) > 0:
             os.chdir(nativepath(parent))
             save_workdir(nativepath(parent))
-        
+
     def onReadFile(self, evt=None):
         if not self.h5convert_done:
             print('cannot open file while processing a map folder')

@@ -28,9 +28,8 @@ for the ``import`` statements to work.
     in the specified plugin folder.
 
     The argument is the subfolder for each plugin, relative to the
-    installed Larch plugins (typically ``/usr/share/larch/plugins`` for
-    Unix or Mac OSX or ``C:\Program Files\Larch\plugins`` on Windows).
-
+    installed Larch plugins (typically ``$HOME/.larch/plugins`` for
+    Unix or Mac OSX or ``$USER\larch\plugins`` on Windows).
 
 Thus to get the :func:`_xafs.autobk` function into a Python module, you
 would have to do::
@@ -67,5 +66,3 @@ of a larch interpreter::
 That is, the ``_larch=mylarch`` argument is vital to having
 :func:`_io.read_xdi` properly create a Larch group, and for allowing
 :func:`_xafs.autobk` to do the actual fit, and organize the results.
-
-

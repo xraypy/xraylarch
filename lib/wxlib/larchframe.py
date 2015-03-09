@@ -59,10 +59,7 @@ class LarchWxShell(object):
         # self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
         self.SetPrompt()
-
-        for fname in larch.site_config.init_files:
-            self.execute("run('%s')" % fname)
-
+        self.larch.run_init_scripts()
 
     def onUpdate(self, event=None):
         symtable = self.symtable
@@ -89,7 +86,7 @@ class LarchWxShell(object):
             sys.stdout.write(text)
             sys.stdout.flush()
             return
-        
+
         pos0 = self.output.GetLastPosition()
         self.output.WriteText(text)
         if color is not None:
@@ -98,7 +95,7 @@ class LarchWxShell(object):
             sfont = style.GetFont()
             pos1  = self.output.GetLastPosition()
             self.output.SetStyle(pos0, pos1, wx.TextAttr(color, bgcol, sfont))
-            
+
         self.output.SetInsertionPoint(self.output.GetLastPosition())
         self.output.Refresh()
         self.output.Update()
@@ -150,9 +147,9 @@ class LarchWxShell(object):
 
 class LarchFrame(wx.Frame):
     def __init__(self,  parent=None, _larch=None,
-                 histfile='history_larchgui.lar', 
+                 histfile='history_larchgui.lar',
                  exit_on_close=False, **kwds):
-        
+
         self.histfile = histfile
         self.BuildFrame(parent=parent, **kwds)
         self.larchshell = LarchWxShell(wxparent=self,
@@ -164,14 +161,12 @@ class LarchFrame(wx.Frame):
         if exit_on_close:
             self.Bind(wx.EVT_CLOSE,  self.onExit)
         else:
-            self.Bind(wx.EVT_CLOSE,  self.onClose)            
+            self.Bind(wx.EVT_CLOSE,  self.onClose)
         #self.timer.Start(200)
-        larchdir = larch.site_config.sys_larchdir
-        fico = os.path.join(larchdir, 'bin', ICON_FILE)
-        try:
+        larchdir = larch.site_config.larchdir
+        fico = os.path.join(larchdir, 'icons', ICON_FILE)
+        if os.path.exists(fico):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
-        except:
-            pass
 
 
     def InputPanel(self, parent):
@@ -180,7 +175,7 @@ class LarchFrame(wx.Frame):
         self.prompt = wx.StaticText(panel, -1, 'Larch>',
                                     size = (65,-1),
                                     style = pstyle)
-        histFile= os.path.join(larch.site_config.usr_larchdir, self.histfile)
+        histFile= os.path.join(larch.site_config.larchdir, self.histfile)
         self.input = ReadlineTextCtrl(panel, -1,  '', size=(525,-1),
                                  historyfile=histFile, mode='emacs',
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
@@ -293,7 +288,7 @@ class LarchFrame(wx.Frame):
 
     def onReadData(self, event=None):
         wildcard = 'Data file (*.dat)|*.dat|All files (*.*)|*.*'
-        dlg = wx.FileDialog(self, message='Open Data File', 
+        dlg = wx.FileDialog(self, message='Open Data File',
                             wildcard=wildcard,
                             style=wx.OPEN|wx.CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
@@ -314,7 +309,7 @@ class LarchFrame(wx.Frame):
             path, fname = os.path.split(fout)
             os.chdir(path)
             text = "run('%s')" % fname
-            self.larchshell.write(">%s\n" % text)            
+            self.larchshell.write(">%s\n" % text)
             self.input.AddToHistory(text)
             wx.CallAfter(self.larchshell.execute, text)
         dlg.Destroy()
@@ -331,7 +326,7 @@ class LarchFrame(wx.Frame):
             self.input.SaveHistory(filename=fout, session_only=True)
             self.SetStatusText("Wrote %s" % fout, 0)
         dlg.Destroy()
-        
+
     def onText(self, event=None):
         text =  event.GetString()
         self.larchshell.write(">%s\n" % text)
@@ -416,5 +411,3 @@ if __name__ == '__main__':
     f = LarchFrame(None)
     f.Show()
     app.MainLoop()
-
-

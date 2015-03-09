@@ -227,7 +227,7 @@ class Epics_MultiXMAP(object):
     def onRealTime(self, pvname, value=None, **kws):
         self.elapsed_real = value
         self.needs_refresh = True
-        print(" onRealTime ", pvname, value)
+        # print(" onRealTime ", pvname, value)
         if self.elapsed_textwidget is not None:
             self.elapsed_textwidget.SetLabel("  %8.2f" % value)
 

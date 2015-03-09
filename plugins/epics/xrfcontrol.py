@@ -306,11 +306,12 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         btnpanel = wx.Panel(pane, name='foo')
 
         nmca = self.nmca
+        NPERROW = 6
 
         if self.det_type.lower().startswith('me-4') and nmca<5:
             btnsizer = wx.GridBagSizer(2, 2)
         else:
-            btnsizer = wx.GridBagSizer(int((nmca+3.0)/4.0), 4)
+            btnsizer = wx.GridBagSizer(int((nmca+NPERROW-2)/(1.0*NPERROW)), NPERROW)
 
         style  = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
         rstyle = wx.ALIGN_RIGHT|wx.ALIGN_CENTER_VERTICAL
@@ -322,8 +323,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             b =  Button(btnpanel, '%i' % i, size=(30, 25),
                         action=partial(self.onSelectDet, index=i))
             self.wids['det%i' % i] = b
-            loc = divmod(i-1, 4)
-            if self.det_type.lower().startswith('me-4') and nmca<5:
+            loc = divmod(i-1, NPERROW)
+            if self.det_type.lower().startswith('me-4') and nmca<NPERROW-1:
                 loc = self.me4_layout[i-1]
             btnsizer.Add(b,  loc, (1, 1), style, 1)
         pack(btnpanel, btnsizer)

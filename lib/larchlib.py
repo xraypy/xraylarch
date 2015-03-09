@@ -12,7 +12,7 @@ import ctypes
 import ctypes.util
 from .utils import Closure
 from .symboltable import Group
-from .site_config import sys_larchdir, usr_larchdir
+from .site_config import larchdir
 
 VALID_ERRORCOLORS = ('grey', 'red', 'green', 'yellow',
                      'blue', 'magenta', 'cyan', 'white')
@@ -101,6 +101,8 @@ class LarchExceptionHolder:
         #    out.append(self.tback)
 
         call_expr = None
+        call_fname = None
+        call_lineno = None
         fname = self.fname
 
         if fname != '<stdin>' or self.lineno > 0:
@@ -190,7 +192,8 @@ class LarchExceptionHolder:
 
         if call_expr is not None and not isinstance(call_expr, ast.AST):
             out.append('  %s' % call_expr)
-            out.append('file %s, line %i' % (call_fname, call_lineno))
+            if call_fname is not None and call_lineno is not None:
+                out.append('file %s, line %i' % (call_fname, call_lineno))
         if HAS_COLORTERM and getattr(self.symtable._sys, 'color_exceptions', True):
             color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
             if color not in VALID_ERRORCOLORS:
@@ -366,7 +369,7 @@ def plugin_path(val):
 
     sys.path.insert(0, plugin_path('std'))
     """
-    return os.path.abspath(os.path.join(sys_larchdir, 'plugins', val))
+    return os.path.abspath(os.path.join(larchdir, 'plugins', val))
 
 def use_plugin_path(val):
     """include the specifed Larch plugin path in a module:
@@ -420,7 +423,7 @@ def get_dll(libname):
     _paths = {'PATH': '', 'LD_LIBRARY_PATH': '', 'DYLD_LIBRARY_PATH':''}
     _dylib_formats = {'win32': '%s.dll', 'linux2': 'lib%s.so',
                       'darwin': 'lib%s.dylib'}
-    thisdir = os.path.abspath(os.path.join(sys_larchdir, 'dlls',
+    thisdir = os.path.abspath(os.path.join(larchdir, 'dlls',
                                            get_dlldir()))
     dirs = [thisdir]
 
@@ -428,7 +431,7 @@ def get_dll(libname):
 
     if sys.platform == 'win32':
         loaddll = ctypes.windll.LoadLibrary
-        dirs.append(sys_larchdir)
+        dirs.append(larchdir)
 
     if hasattr(sys, 'frozen'): # frozen with py2exe!!
         dirs.append(os.path.dirname(sys.executable))
@@ -457,7 +460,7 @@ def read_workdir(conffile):
     """
 
     try:
-        w_file = os.path.join(usr_larchdir, conffile)
+        w_file = os.path.join(larchdir, conffile)
         if os.path.exists(w_file):
             line = open(w_file, 'r').readlines()
             workdir = line[0][:-1]
@@ -474,7 +477,7 @@ def save_workdir(conffile):
     """
 
     try:
-        w_file = os.path.join(usr_larchdir, conffile)
+        w_file = os.path.join(larchdir, conffile)
         fh = open(w_file, 'w')
         fh.write("%s\n" % os.getcwd())
         fh.close()
