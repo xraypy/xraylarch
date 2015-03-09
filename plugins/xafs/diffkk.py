@@ -8,7 +8,7 @@ use_plugin_path('xray')
 from cromer_liberman import f1f2
 from xraydb_plugin import xray_edge, xray_line
 use_plugin_path('xafs')
-#from pre_edge import pre_edge
+from mback import mback
 import numpy as np
 from scipy.special import erfc
 from math import pi
@@ -45,27 +45,6 @@ MAXORDER = 6
 ##
 ## I got 7.6 seconds and 76.1 seconds for 10 iterations of each.  Awesome!
 ##
-
-
-def match_f2(p):
-    """Match mu(E) data for tabulated f"(E) using the MBACK algorithm or the Lee & Xiang extension"""
-    s      = p.s.value
-    a      = p.a.value
-    em     = p.em.value
-    xi     = p.xi.value
-    c0     = p.c0.value
-    eoff   = p.e - p.e0.value
-
-    norm = a*erfc((p.e-em)/xi) + c0 # erfc function + constant term of polynomial
-    for i in range(MAXORDER):       # successive orders of polynomial
-        j = i+1
-        attr = 'c%d' % j
-        if hasattr(p, attr):
-            norm = norm + getattr(getattr(p, attr), 'value') * eoff**j
-    func = (p.f2 + norm - s*p.x) * p.theta / p.weight
-    if p.form.lower() == 'lee':
-        func = func / s*p.x
-    return func
 
 
 ###
@@ -226,18 +205,15 @@ class diffKKGroup(Group):
     A Larch Group for generating f'(E) and f"(E) from a XAS measurement of mu(E).
     """
 
-    def __init__(self, energy=None, xmu=None, e0=None, z=None, edge='K', order=3, form='mback', whiteline=False, _larch=None, **kws):
+    def __init__(self, energy=None, mu=None, z=None, edge='K', mback_kws=None, _larch=None, **kws):
         kwargs = dict(name='diffKK')
         kwargs.update(kws)
         Group.__init__(self,  **kwargs)
         self.energy     = energy
-        self.xmu        = xmu
-        self.e0         = e0
+        self.mu         = mu
         self.z          = z
         self.edge       = edge
-        self.order      = order
-        self.form       = form
-        self.whiteline  = whiteline
+        self.mback_kws  = mback_kws
 
         if _larch == None:
             self._larch   = Interpreter()
@@ -248,55 +224,8 @@ class diffKKGroup(Group):
         return '<diffKK Group>'
 
 
-    def __normalize__(self):
-        """Match mu(E) data for tabulated f"(E) using the MBACK algorithm or the Lee & Xiang extension"""
-        if self.order < 1: self.order = 1 # set order of polynomial
-        if self.order > MAXORDER: self.order = MAXORDER
-
-
-        #toss = Group()
-        #pre_edge(self.energy, self.xmu, group=toss,_larch=self._larch, e0=self.e0)
-        #self.pre_edge = toss.pre_edge
-        #del toss
-
-        n = self.edge
-        if self.edge.lower().startswith('l'): n = 'L'
-        
-        self.params = Group(s      = Parameter(1,      vary=True,  _larch=self._larch), # scale of data
-                            a      = Parameter(1,      vary=False,  _larch=self._larch), # amplitude of erfc
-                            xi     = Parameter(1,      vary=False,  _larch=self._larch), # width of erfc
-                            em     = Parameter(xray_line(self.z, n,         _larch=self._larch)[0], vary=False, _larch=self._larch), # erfc centroid
-                            e0     = Parameter(xray_edge(self.z, self.edge, _larch=self._larch)[0], vary=False, _larch=self._larch), # abs. edge energy
-                            e      = self.energy,
-                            x      = self.xmu,
-                            f2     = self.f2,
-                            weight = self.weight,
-                            theta  = self.theta,
-                            form   = self.form,
-                            _larch = self._larch)
-
-        for i in range(self.order): # polynomial coefficients
-            setattr(self.params, 'c%d' % i, Parameter(0, vary=True, _larch=self._larch))
-
-
-        fit = Minimizer(match_f2, self.params, _larch=self._larch, toler=1.e-5) 
-        fit.leastsq()
-        eoff = self.energy - self.params.e0.value
-        self.normalization_function = self.params.a.value*erfc((self.energy-self.params.em.value)/self.params.xi.value) + self.params.c0.value
-        for i in range(MAXORDER):
-            j = i+1
-            attr = 'c%d' % j
-            if hasattr(self.params, attr):
-                self.normalization_function  = self.normalization_function + getattr(getattr(self.params, attr), 'value') * eoff**j
-        #if self.form.lower() == 'lee':
-        #    self.normalization_function = self.normalization_function / s*p.x
-
-        self.fpp = self.params.s*self.xmu - self.normalization_function
-        
-
-
-
-    def kk(self, energy=None, xmu=None, e0=None, z=None, edge=None, order=3, form='mback', whiteline=False, how=None):
+# e0=None, z=None, edge=None, order=3, form='mback', whiteline=False, how=None
+    def kk(self, energy=None, mu=None, z=None, edge='K', how='scalar', mback_kws=None):
         """
         Convert mu(E) data into f'(E) and f"(E).  f"(E) is made by
         matching mu(E) to the tabulated values of the imaginary part
@@ -306,13 +235,10 @@ class diffKKGroup(Group):
 
           Attributes
             energy:     energy array
-            xmu:        array with mu(E) data
-            e0:         edge energy
+            mu:         array with mu(E) data
             z:          Z number of absorber
-            order:      order of normalization polynomial (2 to 6)
-            form:       functional form of normalization function, "mback" or "lee"
-            whiteline   margin around L3/L2 white lines to exclude from determination of
-                        normalization, it should be a smallish, positive number, like 20
+            edge:       absorption edge, usually 'K' or 'L3'
+            mback_kws:  arguments for the mback algorithm
 
           Returns
             self.f1, self.f2:  CL values over on the input energy grid
@@ -328,46 +254,24 @@ class diffKKGroup(Group):
         """
         
         if type(energy).__name__ == 'ndarray': self.energy = energy
-        if type(xmu).__name__    == 'ndarray': self.xmu    = xmu
-        if e0   != None: self.e0   = e0
+        if type(mu).__name__     == 'ndarray': self.mu     = mu
         if z    != None: self.z    = z
         if edge != None: self.edge = edge
-        if form != None: self.form = form
-        if whiteline:    self.whiteline = whiteline
+        if mback_kws != None: self.mback_kws = mback_kws
 
         if self.z == None:
             Exception("Z for absorber not provided for diffKK")
-        if self.e0 == None:
-            Exception("e0 value not provided for diffKK")
         if self.edge == None:
             Exception("absorption edge not provided for diffKK")
 
+        mb_kws = dict(order=3, z=self.z, edge=self.edge, e0=None, emin=None, emax=None,
+                      whiteline=False, form='mback', tables='cl', fit_erfc=False, return_f1=True)
+        if self.mback_kws is not None:
+            mb_kws.update(self.mback_kws)
+
         start = time.clock()       
 
-        self.theta = np.ones(len(self.energy))
-        if self.edge.lower().startswith('l'):
-            l2 = xray_edge(self.z, 'L2', _larch=self._larch)[0]
-            if self.whiteline:
-                theta_pre  = 1*(self.energy<self.e0)
-                theta_post = 1*(self.energy>self.e0+float(self.whiteline))
-                self.theta = theta_pre + theta_post
-
-                l2_pre  = 1*(self.energy<l2)
-                l2_post = 1*(self.energy>l2+float(self.whiteline))
-                l2theta = l2_pre + l2_post
-                self.theta = self.theta * l2theta
-
-
-        ## this is used to weight the pre- and post-edge differently in MBACK
-        #if self.edge.lower().startswith('k'):
-        weight1 = 1*(self.energy<self.e0)
-        weight2 = 1*(self.energy>self.e0)
-        self.weight = np.sqrt(sum(weight1))*weight1 + np.sqrt(sum(weight2))*weight2
-
-        (self.f1, self.f2) = f1f2(self.z, self.energy, edge=self.edge, _larch=self._larch)
-
-        ## match mu(E) data to f2
-        self.__normalize__()
+        mback(self.energy, self.mu, group=self, _larch=self._larch, **mb_kws)
 
         ## interpolate matched data onto an even grid with an even number of elements (about 1 eV)
         npts = int(self.energy[-1] - self.energy[0]) + (int(self.energy[-1] - self.energy[0])%2)
@@ -394,29 +298,25 @@ class diffKKGroup(Group):
         """
         Make a quick-n-dirty plot of the output of the KK transform.
         """
-        _newplot(self.energy, self.f2, _larch=self._larch, label='f2', xlabel='Energy (eV)', ylabel='scattering factors',
+        _newplot(self.energy, self.f2, _larch=self._larch, label='$f_2$', xlabel='Energy (eV)', ylabel='scattering factors',
                  show_legend=True, legend_loc='lr')
-        _plot(self.energy, self.fpp, _larch=self._larch, label='f"(E)')
-        _plot(self.energy, self.f1,  _larch=self._larch, label='f1')
-        _plot(self.energy, self.fp,  _larch=self._larch, label='f\'(E)')
+        _plot(self.energy, self.fpp, _larch=self._larch, label="$f''(E)$")
+        _plot(self.energy, self.f1,  _larch=self._larch, label='$f_1$')
+        _plot(self.energy, self.fp,  _larch=self._larch, label="$f'(E)$")
 
 
-def diffkk(energy=None, xmu=None, e0=None, z=None, edge='K', order=3, form='mback', whiteline=False, _larch=None, **kws):
+def diffkk(energy=None, mu=None, z=None, edge='K', mback_kws=None, _larch=None, **kws):
     """
     Make a diffKK group given mu(E) data
 
       Attributes
         energy:     energy array
-        xmu:        array with mu(E) data
-        e0:         edge energy
+        mu:         array with mu(E) data
         z:          Z number of absorber
-        order:      order of normalization polynomial (2 to 6)
-        form:       functional form of normalization function, "mback" or "lee"
-        whiteline:  margin around L3/L2 white lines to exclude from determination of
-                    normalization, it should be a smallish, positive number, like 20
-
+        edge:       absorption edge, usually 'K' or 'L3'
+        mback_kws:  arguments for the mback algorithm
     """
-    return diffKKGroup(energy=energy, xmu=xmu, e0=e0, z=z, edge=edge, order=order, form=form, whiteline=whiteline, _larch=_larch)
+    return diffKKGroup(energy=energy, mu=mu, z=z, mback_kws=mback_kws, _larch=_larch)
     
     
 def registerLarchPlugin(): # must have a function with this name!
