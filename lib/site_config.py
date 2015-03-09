@@ -9,6 +9,11 @@ site configuration for larch:
 from __future__ import print_function
 
 import os
+HAS_PWD = True
+try:
+    import pwd
+except ImportError:
+    HAS_PWD = False
 import sys
 from . import site_configdata
 
@@ -45,8 +50,13 @@ def get_homedir():
             print(sys.exc_info[1])
         return None
 
-    home_dir = check(os.path.expanduser, '~')
-    if home_dir is not None:
+    # sudo case!
+    username = os.environ.get("SUDO_USER", None)
+    if HAS_PWD and username is not None:
+        home_dir = pwd.getpwnam(username).pw_dir
+    else:
+        home_dir = check(os.path.expanduser, '~')
+    if home_dir is  None:
         for var in ('$HOME', '$USERPROFILE', '$ALLUSERSPROFILE', '$HOMEPATH'):
             home_dir = check(os.path.expandvars, var)
             if home_dir is not None: break
