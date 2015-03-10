@@ -178,7 +178,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                            wildcard=FILE_WILDCARDS)
 
         if outfile is not None:
-            print 'Would write ', outfile,  self.det
+            # print 'Would write ', outfile,  self.det
             self.det.save_mcafile(outfile)
 
     def onSaveColumnFile(self, event=None, **kws):

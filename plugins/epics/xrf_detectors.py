@@ -159,7 +159,7 @@ class Epics_Xspress3(object):
             epics.caput(pvname+'NM', newname)
 
     def restore_rois(self, roifile):
-        print 'restore rois from ', roifile
+
         self._xsp3.restore_rois(roifile)
         self.rois = self._xsp3.mcas[0].get_rois()
 
@@ -203,38 +203,50 @@ class Epics_Xspress3(object):
         * filename: output file name
         """
         rois = self._xsp3.get_rois()
-        print "ROIS "
-        print rois
-        
-        xx = """
+        realtime = self._xsp3.AcquireTime * self._xsp3.ArrayCounter_RBV
+        nelem = len(self._xsp3.mcas)
+        mca1 = self.get_mca(mca=1)
+        npts = len(mca1.counts)
         fp = open(filename, 'w')
-        fp.write('VERSION:    3.1\n')
-        fp.write('ELEMENTS:   1\n')
-        fp.write('DATE:       %s\n' % self.start_time)
-        fp.write('CHANNELS:   %i\n' % len(self.counts))
-        fp.write('REAL_TIME:  %f\n' % self.real_time)
-        fp.write('LIVE_TIME:  %f\n' % self.live_time)
-        fp.write('CAL_OFFSET: %e\n' % self.offset)
-        fp.write('CAL_SLOPE:  %e\n' % self.slope)
-        fp.write('CAL_QUAD:   %e\n' % self.quad)
+        fp.write('VERSION:    3.1\n') 
+        fp.write('ELEMENTS:   %i\n' % nelem)
+        fp.write('DATE:       %s\n' % time.ctime())
+        fp.write('CHANNELS:   %i\n' % npts)
+        fp.write('REAL_TIME:  %f\n' % realtime)
+        fp.write('LIVE_TIME:  %f\n' % realtime)
+        fp.write('CAL_OFFSET: %e\n' % 0.0)
+        fp.write('CAL_SLOPE:  %e\n' % 0.010)
+        fp.write('CAL_QUAD:   %e\n' % 0.0)
 
         # Write ROIS  in channel units
-        fp.write('ROIS:      %i\n' % len(self.rois))
-        for i, roi in enumerate(self.rois):
-            fp.write('ROI_%i_LEFT:  %i\n' % (i, roi.left))
-            fp.write('ROI_%i_RIGHT:  %i\n' % (i, roi.right))
-            fp.write('ROI_%i_LABEL: %s &\n' % (i, roi.name))
+        fp.write('ROIS:      %i\n' % len(rois[0]))
+        for iroi, roi in enumerate(rois[0]):
+            name = [roi.name]
+            left = ['%i' % roi.left]
+            right = ['%i' % roi.right]
+            for other in rois[1:]:
+                name.append(other[iroi].name)
+                left.append('%i' % other[iroi].left)
+                right.append('%i' % other[iroi].right)
+            name = '& '.join(name)
+            left = '& '.join(left)
+            right = '& '.join(right)
+            fp.write('ROI_%i_LEFT:  %s\n' % (iroi, left))
+            fp.write('ROI_%i_RIGHT: %s\n' % (iroi, right))
+            fp.write('ROI_%i_LABEL: %s\n' % (iroi, name))
 
         # environment
-        for e in self.environ:
-            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
+        #for e in self.environ:
+        #    fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
 
         # data
         fp.write('DATA: \n')
-        for d in self.counts:
-            fp.write(" %s\n" % d)
+        mcas = [self.get_mca(mca=i+1, with_rois=False) for i in range(nelem)]
+        for i in range(npts):
+            x = ['%i' % m.counts[i] for m in mcas]
+            fp.write("%s\n" % ' '.join(x))
         fp.close()
-        """
+
 
 class Epics_MultiXMAP(object):
     """multi-element MCA detector using XIA xMAP electronics
@@ -265,7 +277,7 @@ class Epics_MultiXMAP(object):
         if self.prefix is not None:
             self.connect()
 
-    @EpicsFunction
+    # @EpicsFunction
     def connect(self):
         self._xmap = MultiXMAP(self.prefix, nmca=self.nmca)
         self._xmap.PV('ElapsedReal', callback=self.onRealTime)
