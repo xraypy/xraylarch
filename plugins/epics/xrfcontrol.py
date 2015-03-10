@@ -179,8 +179,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         if outfile is not None:
             print 'Would write ', outfile,  self.det
-            self.mca.save_mcafile(outfile)
-
+            self.det.save_mcafile(outfile)
 
     def onSaveColumnFile(self, event=None, **kws):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
