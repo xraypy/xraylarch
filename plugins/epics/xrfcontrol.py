@@ -40,7 +40,7 @@ from larch import use_plugin_path
 # use_plugin_path('xray')
 use_plugin_path('wx')
 from periodictable import PeriodicTablePanel
-from xrfdisplay import XRFDisplayFrame
+from xrfdisplay import XRFDisplayFrame, FILE_WILDCARDS
 
 from xrfdisplay_utils import CalibrationFrame
 
@@ -49,7 +49,6 @@ from debugtime import DebugTimer
 
 use_plugin_path('epics')
 from xrf_detectors import Epics_MultiXMAP, Epics_Xspress3
-
         
 class DetectorSelectDialog(wx.Dialog):
     """Connect to an Epics MCA detector
@@ -181,6 +180,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         if outfile is not None:
             print 'Would write ', outfile,  self.det
             self.mca.save_mcafile(outfile)
+
 
     def onSaveColumnFile(self, event=None, **kws):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')

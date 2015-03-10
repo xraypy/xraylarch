@@ -168,6 +168,73 @@ class Epics_Xspress3(object):
         with open(roifile, 'w') as fout:
             fout.write("%s\n" % "\n".join(buff))
 
+    def save_columnfile(self, filename, headerlines=None):
+        "write summed counts to simple ASCII column file for mca counts"
+        f = open(filename, "w+")
+        f.write("#XRF counts for %s\n" % self.name)
+        if headerlines is not None:
+            for i in headerlines:
+                f.write("#%s\n" % i)
+        f.write("#\n")
+        f.write("#EnergyCalib.offset = %.9g \n" % self.offset)
+        f.write("#EnergyCalib.slope = %.9g \n" % self.slope)
+        f.write("#EnergyCalib.quad  = %.9g \n" % self.quad)
+        f.write("#Acquire.RealTime  = %.9g \n" % self.real_time)
+        f.write("#Acquire.LiveTime  = %.9g \n" % self.live_time)
+        roiform = "#ROI_%i '%s': [%i, %i]\n"
+        for i, r in enumerate(self.rois):
+            f.write(roiform % (i+1, r.name, r.left, r.right))
+
+        f.write("#-----------------------------------------\n")
+        f.write("#    energy       counts     log_counts\n")
+
+        for e, d in zip(self.energy, self.counts):
+            dlog = 0.
+            if  d > 0: dlog = np.log10(max(d, 1))
+            f.write(" %10.4f  %12i  %12.6g\n" % (e, d, dlog))
+        f.write("\n")
+        f.close()
+
+    def save_mcafile(self, filename):
+        """write MultiChannel MCA file
+
+        Parameters:
+        -----------
+        * filename: output file name
+        """
+        rois = self._xsp3.get_rois()
+        print "ROIS "
+        print rois
+        
+        xx = """
+        fp = open(filename, 'w')
+        fp.write('VERSION:    3.1\n')
+        fp.write('ELEMENTS:   1\n')
+        fp.write('DATE:       %s\n' % self.start_time)
+        fp.write('CHANNELS:   %i\n' % len(self.counts))
+        fp.write('REAL_TIME:  %f\n' % self.real_time)
+        fp.write('LIVE_TIME:  %f\n' % self.live_time)
+        fp.write('CAL_OFFSET: %e\n' % self.offset)
+        fp.write('CAL_SLOPE:  %e\n' % self.slope)
+        fp.write('CAL_QUAD:   %e\n' % self.quad)
+
+        # Write ROIS  in channel units
+        fp.write('ROIS:      %i\n' % len(self.rois))
+        for i, roi in enumerate(self.rois):
+            fp.write('ROI_%i_LEFT:  %i\n' % (i, roi.left))
+            fp.write('ROI_%i_RIGHT:  %i\n' % (i, roi.right))
+            fp.write('ROI_%i_LABEL: %s &\n' % (i, roi.name))
+
+        # environment
+        for e in self.environ:
+            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
+
+        # data
+        fp.write('DATA: \n')
+        for d in self.counts:
+            fp.write(" %s\n" % d)
+        fp.close()
+        """
 
 class Epics_MultiXMAP(object):
     """multi-element MCA detector using XIA xMAP electronics
