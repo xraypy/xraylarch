@@ -14,7 +14,7 @@ typedef struct {
   long npts;             /* number of data points for all arrays */
   long narray_labels;    /* number of labeled arrays (may be < narrays) */
   long nouter;           /* number of points in outer scan */
-  long error_lineno;    /* line numberfor any existing error */
+  long error_lineno;     /* line numberfor any existing error */
   double dspacing;       /* monochromator d spacing */
   char *xdi_libversion;  /* XDI version of library */
   char *xdi_version;     /* XDI version string from file*/
@@ -39,6 +39,7 @@ typedef struct {
 _EXPORT(int) XDI_readfile(char *filename, XDIFile *xdifile) ;
 _EXPORT(int) XDI_get_array_index(XDIFile *xdifile, long n, double *out);
 _EXPORT(int) XDI_get_array_name(XDIFile *xdifile, char *name, double *out);
+_EXPORT(void) XDI_cleanup(XDIFile *xdifile, long err) ;
 
 
 /* Tokens used in XDI File */

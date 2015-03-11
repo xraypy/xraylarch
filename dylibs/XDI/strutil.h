@@ -1,6 +1,7 @@
 #define CR "\n"
 #define CRLF "\n\r"
 
+#define MAX_WORD_LENGTH 8192 /* Max length of an interpretable word */
 #define MAX_LINE_LENGTH 8192 /* Max chars in a line */
 #define MAX_LINES 16384      /* Max number of lines */
 #define MAX_WORDS 128
