@@ -104,7 +104,7 @@ from datafile import ASCIIScanFile
 from positioner import Positioner
 # from xafsscan import XAFS_Scan
 
-from scandb import ScanDB
+from scandb import ScanDB, ScanDBException
 
 use_plugin_path('io')
 from fileutils import fix_varname
@@ -1074,10 +1074,12 @@ def scan_from_db(name, filename='scan.001', _larch=None):
         return
     sdb = _larch.symtable._scan._scandb
     rois = json.loads(sdb.get_info('rois'))
-    return scan_from_json(sdb.get_scandef(name).text,
+    scandef = sdb.get_scandef(name)
+    if scandef is None:
+        raise ScanDBException("no scan definition '%s' found" % name)
+    return scan_from_json(scandef.text,
                           filename=filename, rois=rois,
                           _larch=_larch)
-
 
 @ValidateLarchPlugin
 def connect_scandb(dbname=None, server='postgresql',
