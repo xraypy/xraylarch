@@ -43,7 +43,7 @@ except ImportError:
 
 CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to zoom to rectangular box'),
-                     'lasso': ('Select Points for XRF Spectra\tCtrl+X',
+                     'lasso': ('Select Points for XRF Spectra\tCtrl+N',
                                'Left-Drag to select points freehand'),
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
@@ -51,7 +51,7 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
 
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
-    
+
 class MapImageFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
@@ -100,7 +100,7 @@ class MapImageFrame(ImageFrame):
             self.panel.xdata = kws['x']
         if 'y' in kws:
             self.panel.ydata = kws['y']
-            
+
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
             return
@@ -210,7 +210,7 @@ class MapImageFrame(ImageFrame):
         if len(self.title) < 1:
             self.title = os.path.split(self.xrmfile.filename)[1]
 
-        opts = dict(linewidth=2, marker='+', markersize=3, 
+        opts = dict(linewidth=2, marker='+', markersize=3,
                     show_legend=True, xlabel=xlabel)
         self.prof_plotter.plot(x, z, title=self.title, color='blue',
                                zorder=20, xmin=min(x)-3, xmax=max(x)+3,
@@ -281,7 +281,7 @@ class MapImageFrame(ImageFrame):
         conf = self.panel.conf
         if conf.flip_ud:  iy = conf.data.shape[0] - iy
         if conf.flip_lr:  ix = conf.data.shape[1] - ix
-      
+
         self.this_point = None
         msg = ''
         if (ix >= 0 and ix < conf.data.shape[1] and
@@ -305,9 +305,9 @@ class MapImageFrame(ImageFrame):
             else:
                 dval = "%.4g" % dval
             if pan.xdata is not None and pan.ydata is not None:
-                self.this_point = (pan.xlab, pan.xdata[ix], 
+                self.this_point = (pan.xlab, pan.xdata[ix],
                                    pan.ylab, pan.ydata[iy])
-            
+
             msg = "Pixel [%i, %i], %s, Intensity=%s " % (ix, iy, pos, dval)
         self.panel.write_message(msg, panel=0)
 
@@ -359,12 +359,11 @@ class MapImageFrame(ImageFrame):
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
         if isGSECARS_Domain():
-        
+
             s = Button(panel, 'Move to Pixel', size=(140, -1),
                        action=self.onMoveToPixel)
             sizer.Add(s, (irow+1, 1), (1, 2), labstyle, 3)
-    
+
     def onMoveToPixel(self, event=None):
         if self.this_point is not None and self.move_callback is not None:
             self.move_callback(*self.this_point)
-
