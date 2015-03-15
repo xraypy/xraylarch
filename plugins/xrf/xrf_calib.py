@@ -23,7 +23,6 @@ from fitpeak import fit_peak
 use_plugin_path('xray')
 from xraydb_plugin import xray_line, xray_lines
 
-@ValidateLarchPlugin
 def xrf_calib_fitrois(mca, _larch=None):
     """initial calibration step for MCA:
     find energy locations for all ROIs
@@ -62,7 +61,6 @@ def xrf_calib_fitrois(mca, _larch=None):
         calib[roi.name] = (eknown, ecen, fwhm, ccen, fit)
     mca.init_calib = calib
 
-@ValidateLarchPlugin
 def xrf_calib_compute(mca, apply=False, _larch=None):
     """compute linear energy calibration
     from init_calib dictionary found from xrf_calib_fitrois()
@@ -91,7 +89,6 @@ def xrf_calib_compute(mca, apply=False, _larch=None):
     if apply:
         xrf_calib_apply(mca, offset=_o, slope=_s)
 
-@ValidateLarchPlugin
 def xrf_calib_apply(mca, offset=None, slope=None, _larch=None):
     """apply calibration to MCA
 
