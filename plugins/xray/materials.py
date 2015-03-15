@@ -64,13 +64,19 @@ def material_mu(name, energy, density=None, kind='total', _larch=None):
       5.32986401658495
     """
     _materials = get_materials(_larch)
+    formula = None
     mater = _materials.get(name.lower(), None)
-    if mater is None:
-        formula = name
-        if density is None:
-            raise Warning('material_mu(): must give density for unknown materials')
-    else:
+    if mater is not None:
         formula, density = mater
+    else:
+        for key, val in _materials.items():
+            if name.lower() == val[0].lower(): # match formula
+                formula, density = val
+                break
+    if formula is None:
+        raise Warning("material_mu(): could not find material '%s'" % name)
+    if density is None:
+        raise Warning('material_mu(): must give density for unknown materials')
 
     mass_tot, mu = 0.0, 0.0
     for elem, frac in chemparse(formula).items():
