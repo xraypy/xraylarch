@@ -57,10 +57,10 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
         else:
             icr = 1.0*ocr
             if is_xspress3:
-                icr = estimate_icr(ocr, XSPRESS3_TAUS[i], niter=5)
+                tau = group.dtc_taus[i]
+                icr = estimate_icr(ocr*1.00, tau, niter=7)
         ocrs.append(ocr)
         icrs.append(icr)
-            
     labels = []
     sums = OrderedDict()
     for i, arrname in enumerate(xdi.array_labels):
@@ -91,11 +91,16 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
     for name, dat in sums.items():
         if not hasattr(group, name):
             setattr(group, name, dat)
-            
+
     for arrname in xdi.array_labels:
         sname = arrname.lower()
         if sname not in labels:
             labels.append(sname)
+
+    for imca in range(nmca):
+        setattr(group, 'ocr_mca%i' % (imca+1), ocrs[imca])
+        setattr(group, 'icr_mca%i' % (imca+1), icrs[imca])
+
             
     group.array_labels = labels
     return group
