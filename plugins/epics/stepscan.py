@@ -99,7 +99,8 @@ from larch.utils import debugtime
 
 use_plugin_path('epics')
 
-from detectors import Counter, ArrayCounter, DeviceCounter, Trigger, get_detector
+from detectors import (Counter, ArrayCounter, DeviceCounter, Trigger, 
+                       AreaDetector, get_detector)
 from datafile import ASCIIScanFile
 from positioner import Positioner
 # from xafsscan import XAFS_Scan
@@ -754,7 +755,19 @@ class LarchStepScan(object):
             txt.append('start2 = %.4f' % arr[0])
             txt.append('stop2 = %.4f' % arr[-1])
             txt.append('step2 = %.4f' % (arr[1]-arr[0]))
+
         txt.append('#------------------#')
+        use_xrd = any([isinstance(det, AreaDetector) for det in self.detectors])
+        for det in self.detectors:
+            print( ' Detectors ', det, isinstance(det, AreaDetector))
+        print(" USE XRD? ", use_xrd)
+
+        if use_xrd:
+            txt.append('[xrd_ad]')
+            txt.append('use = True')
+            txt.append('type = PEDET1')
+            txt.append('prefix = 13PE1:')
+            txt.append('prefix = HDF51:')
 
         f = open(sname, 'w')
         f.write('\n'.join(txt))
