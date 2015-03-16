@@ -98,7 +98,7 @@ class XRFDisplayFrame(wx.Frame):
   Matt Newville <newville @ cars.uchicago.edu>
   """
     main_title = 'XRF Display'
-    def __init__(self, _larch=None, parent=None, gsexrmfile=None,
+    def __init__(self, _larch=None, parent=None, mca_file=None,
                  size=(725, 450), axissize=None, axisbg=None,
                  title='XRF Display', exit_callback=None,
                  output_title='XRF', **kws):
@@ -114,7 +114,6 @@ class XRFDisplayFrame(wx.Frame):
 
         self.subframes = {}
         self.data = None
-        self.gsexrmfile = gsexrmfile
         self.title = title
         self.plotframe = None
         self.wids = {}
@@ -158,6 +157,12 @@ class XRFDisplayFrame(wx.Frame):
         statusbar_fields = ["XRF Display", " ", " ", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
+        if mca_file is not None:
+            self.mca = gsemca_group(mca_file, _larch=self.larch)
+            self._mcagroup.mca1 = self.mca
+            self._mcagroup.mca2 = None
+            self.plotmca(self.mca, show_mca2=False)
+
 
     def ignoreEvent(self, event=None):
         pass
@@ -437,6 +442,13 @@ class XRFDisplayFrame(wx.Frame):
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
                         self.onSelectXrayLine)
         # main layout
+        # may have to adjust comparison....
+        store = xlines.GetStore()
+        # print 'store ', store
+        # print dir(store)
+        # print store.Compare, store.HasDefaultCompare
+        # store.Compare = self.XLines_Compare
+
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(roipanel,            0, labstyle)
         sizer.Add(lin(ctrlpanel, 195), 0, labstyle)
@@ -865,8 +877,6 @@ class XRFDisplayFrame(wx.Frame):
             return
         self.selected_elem = elem
         self.clear_lines()
-
-
         self.energy_for_zoom = None
         xlines = self.wids['xray_lines']
         if xlines is not None:
@@ -899,11 +909,12 @@ class XRFDisplayFrame(wx.Frame):
         view_emax = view_mid + view_range/2.0
         for label, eev, frac, ilevel, flevel in majors:
             e = float(eev) * 0.001
+            # print 'Major ', label, eev, e, frac, ilevel, flevel
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.50, zorder=-5)
                 l.set_label(label)
-                dat = (label, e, "%.4f" % frac,
+                dat = (label, "%.4f" % e, "%.4f" % frac,
                        "%s->%s" % (ilevel, flevel))
                 # dat = (label, "%.4f" % e, "%.4f" % frac,
                 #      "%s->%s" % (ilevel, flevel))
@@ -1260,19 +1271,17 @@ class XRFDisplayFrame(wx.Frame):
         if read:
             try:
                 parent, fname = os.path.split(path)
-                # xrmfile = GSEXRM_MapFile(fname)
             except:
-                # Popup(self, NOT_GSEXRM_FILE % fname,
-                # "Not a Map file!")
                 return
 
 class XRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
-    def __init__(self, **kws):
+    def __init__(self, mca_file=None, **kws):
+        self.mca_file = mca_file
         wx.App.__init__(self)
 
     def OnInit(self):
         self.Init()
-        frame = XRFDisplayFrame() #
+        frame = XRFDisplayFrame(mca_file=self.mca_file) #
         frame.Show()
         self.SetTopWindow(frame)
         return True
