@@ -1,85 +1,60 @@
-// Copyright (c) 2004-2012 Sergey Lyubka <valenok@gmail.com>
-// All rights reserved
-//
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
-//
-// The above copyright notice and this permission notice shall be included in
-// all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-// THE SOFTWARE.
+/*
+ * Copyright (c) 2004-2013 Sergey Lyubka <valenok@gmail.com>
+ * Copyright (c) 2013 Cesanta Software Limited
+ * All rights reserved
+ *
+ * This library is dual-licensed: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation. For the terms of this
+ * license, see <http://www.gnu.org/licenses/>.
+ *
+ * You are free to use this library under the terms of the GNU General
+ * Public License, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ * Alternatively, you can license this library under a commercial
+ * license, as set out in <http://cesanta.com/products.html>.
+ */
+
+/*
+ * This is a regular expression library that implements a subset of Perl RE.
+ * Please refer to README.md for a detailed reference.
+ */
 
 #ifndef SLRE_HEADER_DEFINED
 #define SLRE_HEADER_DEFINED
 
-// This is a regular expression library that implements a subset of Perl RE.
-// Please refer to http://slre.googlecode.com for detailed description.
-//
-// Supported syntax:
-//    ^        Match beginning of a buffer
-//    $        Match end of a buffer
-//    ()       Grouping and substring capturing
-//    [...]    Match any character from set
-//    [^...]   Match any character but ones from set
-//    \s       Match whitespace
-//    \S       Match non-whitespace
-//    \d       Match decimal digit
-//    \r       Match carriage return
-//    \n       Match newline
-//    +        Match one or more times (greedy)
-//    +?       Match one or more times (non-greedy)
-//    *        Match zero or more times (greedy)
-//    *?       Match zero or more times (non-greedy)
-//    ?        Match zero or once
-//    \xDD     Match byte with hex value 0xDD
-//    \meta    Match one of the meta character: ^$().[*+\?
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-// Match string buffer "buf" of length "buf_len" against "regexp", which should
-// conform the syntax outlined above. "options" could be either 0 or
-// SLRE_CASE_INSENSITIVE for case-insensitive match. If regular expression
-// "regexp" contains brackets, slre_match() will capture the respective
-// substring into the passed placeholder. Thus, each opening parenthesis
-// should correspond to three arguments passed:
-//   placeholder_type, placeholder_size, placeholder_address
-//
-// Usage example: parsing HTTP request line.
-//
-//  char method[10], uri[100];
-//  int http_version_minor, http_version_major;
-//  const char *error;
-//  const char *request = " \tGET /index.html HTTP/1.0\r\n\r\n";
+struct slre_cap {
+  const char *ptr;
+  int len;
+};
 
-//  error = slre_match(0, "^\\s*(GET|POST)\\s+(\\S+)\\s+HTTP/(\\d)\\.(\\d)",
-//                     request, strlen(request),
-//                     SLRE_STRING,  sizeof(method), method,
-//                     SLRE_STRING, sizeof(uri), uri,
-//                     SLRE_INT,sizeof(http_version_major),&http_version_major,
-//                     SLRE_INT,sizeof(http_version_minor),&http_version_minor);
-//
-//  if (error != NULL) {
-//    printf("Error parsing HTTP request: %s\n", error);
-//  } else {
-//    printf("Requested URI: %s\n", uri);
-//  }
-//
-//
-// Return:
-//   NULL: string matched and all captures successfully made
-//   non-NULL: in this case, the return value is an error string
 
-enum slre_option {SLRE_CASE_INSENSITIVE = 1};
-enum slre_capture {SLRE_STRING, SLRE_INT, SLRE_FLOAT};
-const char *slre_match(enum slre_option options, const char *regexp,
-                       const char *buf, int buf_len, ...);
+int slre_match(const char *regexp, const char *buf, int buf_len,
+               struct slre_cap *caps, int num_caps, int flags);
 
-#endif /* SLRE_HEADER_DEFINED */
+/* Possible flags for slre_match() */
+enum { SLRE_IGNORE_CASE = 1 };
+
+
+/* slre_match() failure codes */
+#define SLRE_NO_MATCH               -1
+#define SLRE_UNEXPECTED_QUANTIFIER  -2
+#define SLRE_UNBALANCED_BRACKETS    -3
+#define SLRE_INTERNAL_ERROR         -4
+#define SLRE_INVALID_CHARACTER_SET  -5
+#define SLRE_INVALID_METACHARACTER  -6
+#define SLRE_CAPS_ARRAY_TOO_SMALL   -7
+#define SLRE_TOO_MANY_BRANCHES      -8
+#define SLRE_TOO_MANY_BRACKETS      -9
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif  /* SLRE_HEADER_DEFINED */
