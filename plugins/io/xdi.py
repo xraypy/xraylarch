@@ -107,7 +107,7 @@ class XDIFile(object):
         self.status = out = self.xdilib.XDI_readfile(filename, pxdi)
         if out < 0:
             msg =  self.xdilib.XDI_errorstring(out)
-            # self.xdilib.XDI_cleanup(pxdi, out)
+            self.xdilib.XDI_cleanup(pxdi, out)
             msg = 'Error reading XDIFile %s\n%s' % (filename, msg)
             raise XDIFileException(msg)
 
@@ -161,8 +161,8 @@ class XDIFile(object):
         for attr in ('nmetadata', 'narray_labels', 'meta_families',
                      'meta_keywords', 'meta_values', 'array'):
             delattr(self, attr)
+        self.xdilib.XDI_cleanup(pxdi, 0)
 
-        # self.xdilib.XDI_cleanup(pxdi, 0)
 
     def _assign_arrays(self):
         """assign data arrays for principle data attributes:
