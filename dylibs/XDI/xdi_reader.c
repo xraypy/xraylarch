@@ -33,24 +33,29 @@ int main(int argc, char **argv) {
   /* read xdifile */
   xdifile = malloc(sizeof(XDIFile));
   ret = XDI_readfile(argv[1], xdifile);
+
+  /* react to a terminal error */
   if (ret < 0) {
     printf("Error reading XDI file '%s':\n     %s\t(error code = %ld)\n",
-	   argv[1], XDI_errorstring(ret), ret);
+	   argv[1], xdifile->error_message, ret);
     XDI_cleanup(xdifile, ret);
+    free(xdifile);
     return 1;
   }
 
+  /* react to a warning */
   if (ret > 0) {
-    printf("Warning reading XDI file '%s':\n     %s\t(error code = %ld)\n\n",
-	   argv[1], XDI_errorstring(ret), ret);
+    printf("Warning reading XDI file '%s':\n     %s\t(warning code = %ld)\n\n",
+	   argv[1], xdifile->error_message, ret);
   }
 
+  /* print some basic information about the file to the screen */
   printf("#------\n# XDI FILE Read %s VERSIONS: |%s|%s|\n" ,
 	 xdifile->filename, xdifile->xdi_version, xdifile->extra_version);
-
   printf("# Elem/Edge: %s|%s|\n", xdifile->element, xdifile->edge);
   printf("# User Comments:\n%s\n", xdifile->comments);
 
+  /* print all the metadata to the screen, validate each item */
   printf("# Metadata(%ld entries):\n", xdifile->nmetadata);
   printf(" --- \n");
   for (i=0; i < xdifile->nmetadata; i++) {
@@ -58,8 +63,23 @@ int main(int argc, char **argv) {
 	   xdifile->meta_families[i],
 	   xdifile->meta_keywords[i],
 	   xdifile->meta_values[i]);
+
+    j = XDI_validate_item(xdifile, xdifile->meta_families[i], xdifile->meta_keywords[i], xdifile->meta_values[i]);
+    if (j!=0) {
+      printf("-- Warning for %s.%s: %s\t(warning code = %ld)\n\t%s\n",
+	     xdifile->meta_families[i], xdifile->meta_keywords[i], xdifile->meta_values[i], j, xdifile->error_message);
+    }
   }
 
+  /* do the test for REQUIRED metadata */
+  j = XDI_required_metadata(xdifile);
+  printf("\n# check for required metadata -- (requirement code %ld):\n%s\n", j, xdifile->error_message);
+
+  /* do the test for RECOMMENDED metadata */
+  j = XDI_recommended_metadata(xdifile);
+  printf("\n# check for recommended metadata -- (recommendation code %ld):\n%s\n", j, xdifile->error_message);
+
+  /* print the data table to the screen */
   nout = min(4, xdifile->npts - 2);
   printf("# Arrays Index, Name, Values: (%ld points total): \n", xdifile->npts);
   tdat = (double *)calloc(xdifile->npts, sizeof(double));
@@ -83,7 +103,10 @@ int main(int argc, char **argv) {
     }
     printf("\n");
   }
+
+  /* free memory before leaving */
   free(tdat);
   XDI_cleanup(xdifile, 0);
+  free(xdifile);
   return 0;
 }
