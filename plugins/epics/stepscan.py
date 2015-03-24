@@ -105,7 +105,7 @@ from datafile import ASCIIScanFile
 from positioner import Positioner
 # from xafsscan import XAFS_Scan
 
-from scandb import ScanDB, ScanDBException
+from scandb import ScanDB, ScanDBException, ScanDBAbort
 
 use_plugin_path('io')
 from fileutils import fix_varname
@@ -502,6 +502,7 @@ class LarchStepScan(object):
             print('Cannot execute scan ',  self._scangroup.error_message)
             self.set_info('scan_message', 'cannot execute scan')
             return
+
         self.clear_interrupts()
         dtimer.add('PRE: cleared interrupts')
         orig_positions = [p.current() for p in self.positioners]
@@ -665,9 +666,11 @@ class LarchStepScan(object):
                 if i in self.breakpoints:
                     self.at_break(breakpoint=i, clear=True)
                 dtimer.add('Pt %i: done.' % i)
+                self.look_for_interrupts()
 
             except KeyboardInterrupt:
-                self.set_info('request_abort', 1l)
+                self.set_info('request_abort', 1)
+                self.abort = True
             if not point_ok:
                 print('point messed up... try again?')
                 i -= 1
@@ -678,16 +681,15 @@ class LarchStepScan(object):
         self.publish_scandata()
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
-        if self.look_for_interrupts():
-            print("scan aborted at point %i of %i." % (self.cpt, self.npts))
-
+        
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
         dtimer.add('Post: return move issued')
         self.datafile.write_data(breakpoint=-1, close_file=True, clear=False)
         dtimer.add('Post: file written')
-        self.abort = False
-        self.clear_interrupts()
+        if self.look_for_interrupts():
+            print("scan aborted at point %i of %i." % (self.cpt, self.npts))
+            raise ScanDBAbort("scan aborted")
 
         # run post_scan methods
         self.set_info('scan_progress', 'finishing')
@@ -758,9 +760,9 @@ class LarchStepScan(object):
 
         txt.append('#------------------#')
         use_xrd = any([isinstance(det, AreaDetector) for det in self.detectors])
-        for det in self.detectors:
-            print( ' Detectors ', det, isinstance(det, AreaDetector))
-        print(" USE XRD? ", use_xrd)
+        # for det in self.detectors:
+        #     print( ' Detectors ', det, isinstance(det, AreaDetector))
+        # print(" USE XRD? ", use_xrd)
 
         if use_xrd:
             txt.append('[xrd_ad]')
@@ -784,25 +786,26 @@ class LarchStepScan(object):
         caput('%smessage' % mapper, 'starting...')
         caput('%sStart' % mapper, 1)
 
-        self.abort = False
         self.clear_interrupts()
-
+        self.set_info('scan_progress', 'starting')
         # watch scan
         # first, wait for scan to start (status == 2)
         collecting = False
         t0 = time.time()
         while not collecting and time.time()-t0 < 120:
+
             collecting = (2 == caget('%sstatus' % mapper))
             time.sleep(0.25)
             if self.look_for_interrupts():
                 break
         if self.abort:
-            print('slewscan aborted')
-            return
-        print('slewscan started....')
+            caput("%sAbort" % mapper, 1)
+
         nrow = 0
         t0 = time.time()
         maxrow = caget('%smaxrow' % mapper)
+        info = caget("%sinfo" % mapper, as_string=True)
+        self.set_info('scan_progress', info)
         #  wait for scan to get past row 1
         while nrow < 1 and time.time()-t0 < 120:
             nrow = caget('%snrow' % mapper)
@@ -810,8 +813,8 @@ class LarchStepScan(object):
             if self.look_for_interrupts():
                 break
         if self.abort:
-            print('slewscan aborted before it began')
-            return
+            caput("%sAbort" % mapper, 1)
+
         maxrow  = caget("%smaxrow" % mapper)
         time.sleep(1.0)
         fname  = caget("%sfilename" % mapper, as_string=True)
@@ -842,17 +845,20 @@ class LarchStepScan(object):
 
         # if aborted from ScanDB / ScanGUI wait for status
         # to go to 0 (or 5 minutes)
+        self.look_for_interrupts()
         if self.abort:
             caput('%sAbort' % mapper, 1)
-            status = 1
+            time.sleep(0.5)
             t0 = time.time()
-            while status_val != 0 and (time.time()-t0 < 60.0):
+            status_val = caget('%sstatus' % mapper)
+            while status_val != 0 and (time.time()-t0 < 10.0):
                 time.sleep(0.25)
                 status_val = caget('%sstatus' % mapper)
+
         status_strg = caget('%sstatus' % mapper, as_string=True)                
         self.set_info('scan_status', status_str)
-        print( 'slewscan finished!')
-        self.clear_interrupts()
+        if self.abort:
+            raise ScanDBAbort("slewscan aborted")
         return
 
 class XAFS_Scan(LarchStepScan):
@@ -1090,6 +1096,7 @@ def scan_from_db(name, filename='scan.001', _larch=None):
     scandef = sdb.get_scandef(name)
     if scandef is None:
         raise ScanDBException("no scan definition '%s' found" % name)
+    
     return scan_from_json(scandef.text,
                           filename=filename, rois=rois,
                           _larch=_larch)
@@ -1133,7 +1140,6 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     scandb =  _larch.symtable._scan._scandb
     if nscans is not None:
         scandb.set_info('nscans', nscans)
-    print("LARCH.do_scan ", scanname, filename)
 
     scan = scan_from_db(scanname, filename=filename,
                         _larch=_larch)
