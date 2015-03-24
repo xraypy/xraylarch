@@ -49,6 +49,12 @@ class ScanDBException(Exception):
         Exception.__init__(self, *args)
         sys.excepthook(*sys.exc_info())
 
+class ScanDBAbort(Exception):
+    """Scan Abort Exception"""
+    def __init__(self, *args):
+        Exception.__init__(self, *args)
+        sys.excepthook(*sys.exc_info())
+
 def json_encode(val):
     "simple wrapper around json.dumps"
     if val is None or isinstance(val, (str, unicode)):
