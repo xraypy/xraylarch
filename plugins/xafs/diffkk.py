@@ -265,7 +265,7 @@ class diffKKGroup(Group):
             Exception("absorption edge not provided for diffKK")
 
         mb_kws = dict(order=3, z=self.z, edge=self.edge, e0=None, emin=None, emax=None,
-                      whiteline=False, form='mback', tables='cl', fit_erfc=False, return_f1=True)
+                      whiteline=False, leexiang=False, tables='cl', fit_erfc=False, return_f1=True)
         if self.mback_kws is not None:
             mb_kws.update(self.mback_kws)
 
