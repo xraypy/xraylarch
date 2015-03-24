@@ -284,7 +284,7 @@ class GSEXRM_MapRow:
         self.livetime = self.livetime.transpose()
         self.realtime = self.realtime.transpose()
         self.counts   = self.counts.swapaxes(0, 1)
-        
+
 class GSEXRM_Detector(object):
     """Detector class, representing 1 detector element (real or virtual)
     has the following properties (many of these as runtime-calculated properties)
@@ -454,8 +454,8 @@ class GSEXRM_MapFile(object):
         if self.filename is not None:
             self.status, self.root, self.version = \
                          getFileStatus(self.filename, root=root)
-            # print 'Filename ', self.filename, self.status, self.root, self.version
-            # see if file is too small (signifies "read from folder")
+            # see if file contains name of folder
+            # (signifies "read from folder")
             if self.status == GSEXRM_FileStatus.empty:
                 ftmp = open(self.filename, 'r')
                 self.folder = ftmp.readlines()[0][:-1].strip()
@@ -471,7 +471,6 @@ class GSEXRM_MapFile(object):
                          getFileStatus(self.filename, root=root,
                                        folder=self.folder)
 
-
         # for existing file, read initial settings
         if self.status in (GSEXRM_FileStatus.hasdata,
                            GSEXRM_FileStatus.created):
@@ -484,7 +483,15 @@ class GSEXRM_MapFile(object):
                 "'%s' is not a readlable HDF5 file" % self.filename)
 
         # create empty HDF5 if needed
-        # print '-> filename ', self.filename, self.status
+        if self.status == GSEXRM_FileStatus.empty and os.path.exists(self.filename):
+            try:
+                flines = open(self.filename, 'r').readlines()
+                if len(flines) < 3:
+                    os.unlink(self.filename)
+                self.status =  GSEXRM_FileStatus.err_notfound
+            except IOError, ValueError:
+                pass
+
         if (self.status in (GSEXRM_FileStatus.err_notfound,
                             GSEXRM_FileStatus.wrongfolder) and
             self.folder is not None and isGSEXRM_MapFolder(self.folder)):
@@ -495,10 +502,10 @@ class GSEXRM_MapFile(object):
                 cfile.Read(os.path.join(self.folder, self.ScanFile))
                 cfile.config['scan']['filename'] = self.filename
                 cfile.Save(os.path.join(self.folder, self.ScanFile))
-
             self.h5root = h5py.File(self.filename)
             if self.dimension is None and isGSEXRM_MapFolder(self.folder):
                 self.read_master()
+
             create_xrfmap(self.h5root, root=self.root, dimension=self.dimension,
                           folder=self.folder, start_time=self.start_time)
             self.status = GSEXRM_FileStatus.created
@@ -1437,7 +1444,7 @@ class GSEXRM_MapFile(object):
         cal  = map['energy'].attrs
         _mca = MCA(counts=counts, offset=cal['cal_offset'],
                    slope=cal['cal_slope'], **kws)
-        
+
         _mca.energy =  map['energy'].value
         env_names = list(self.xrfmap['config/environ/name'])
         env_addrs = list(self.xrfmap['config/environ/address'])
@@ -1447,7 +1454,7 @@ class GSEXRM_MapFile(object):
 
         if npixels is not None:
             _mca.npixels=npixels
-            
+
         # a workaround for poor practice -- some '1.3.0' files
         # were built with 'roi_names', some with 'roi_name'
         roiname = 'roi_name'
@@ -1656,4 +1663,3 @@ def read_xrfmap(filename, root=None):
 
 def registerLarchPlugin():
     return ('_xrf', {'read_xrfmap': read_xrfmap})
-
