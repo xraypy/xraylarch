@@ -38,11 +38,13 @@ def get_materials(_larch):
 @ValidateLarchPlugin
 def material_mu(name, energy, density=None, kind='total', _larch=None):
     """
+    material_mu(name, energy, density=None, kind='total')
+
     return X-ray attenuation length (in 1/cm) for a material by name or formula
 
     arguments
     ---------
-     name:     name of material  from materials list or chemical compound
+     name:     chemical formul or name of material from materials list.
      energy:   energy or array of energies in eV
      density:  material density (gr/cm^3).  If None, and material is a
                known material, that density will be used.
@@ -60,7 +62,7 @@ def material_mu(name, energy, density=None, kind='total', _larch=None):
 
     example
     -------
-      >>> print material_mu('H2O', 1.0, 10000.0)
+      >>> print material_mu('H2O', 10000.0)
       5.32986401658495
     """
     _materials = get_materials(_larch)
