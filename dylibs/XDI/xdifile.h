@@ -65,11 +65,11 @@ _EXPORT(int)  XDI_required_metadata(XDIFile *xdifile);
 _EXPORT(int)  XDI_recommended_metadata(XDIFile *xdifile);
 _EXPORT(int)  XDI_defined_family(XDIFile *xdifile, char *family);
 _EXPORT(int)  XDI_validate_item(XDIFile *xdifile, char *family, char *name, char *value);
-_EXPORT(int)  XDI_validate_mono(XDIFile *xdifile, char *name, char *value);
-_EXPORT(int)  XDI_validate_sample(XDIFile *xdifile, char *name, char *value);
-_EXPORT(int)  XDI_validate_scan(XDIFile *xdifile, char *name, char *value);
-_EXPORT(int)  XDI_validate_column(XDIFile *xdifile, char *name, char *value);
-_EXPORT(int)  XDI_validate_element(XDIFile *xdifile, char *name, char *value);
+int XDI_validate_mono(XDIFile *xdifile, char *name, char *value);
+int XDI_validate_sample(XDIFile *xdifile, char *name, char *value);
+int XDI_validate_scan(XDIFile *xdifile, char *name, char *value);
+int XDI_validate_column(XDIFile *xdifile, char *name, char *value);
+int XDI_validate_element(XDIFile *xdifile, char *name, char *value);
 
 _EXPORT(void) XDI_cleanup(XDIFile *xdifile, long err);
 
