@@ -25,7 +25,8 @@ else:
     if system.lower().startswith('linu'):
         dlldir = 'linux32'
         makefile = 'Mk.linux'
-        if arch.startswith('64'):    dlldir = 'linux64'
+        if arch.startswith('64'):   
+            dlldir = 'linux64'
     elif system.lower().startswith('darw'):
         dlldir = 'darwin'
         makefile = 'Mk.darwin'
