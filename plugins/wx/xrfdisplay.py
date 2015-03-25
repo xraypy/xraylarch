@@ -98,7 +98,7 @@ class XRFDisplayFrame(wx.Frame):
   Matt Newville <newville @ cars.uchicago.edu>
   """
     main_title = 'XRF Display'
-    def __init__(self, _larch=None, parent=None, mca_file=None,
+    def __init__(self, _larch=None, parent=None, gsexrmfile=None,
                  size=(725, 450), axissize=None, axisbg=None,
                  title='XRF Display', exit_callback=None,
                  output_title='XRF', **kws):
@@ -157,11 +157,11 @@ class XRFDisplayFrame(wx.Frame):
         statusbar_fields = ["XRF Display", " ", " ", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-        if mca_file is not None:
-            self.mca = gsemca_group(mca_file, _larch=self.larch)
-            self._mcagroup.mca1 = self.mca
-            self._mcagroup.mca2 = None
-            self.plotmca(self.mca, show_mca2=False)
+        #if mca_file is not None:
+        #    self.mca = gsemca_group(mca_file, _larch=self.larch)
+        #    self._mcagroup.mca1 = self.mca
+        #    self._mcagroup.mca2 = None
+        #    self.plotmca(self.mca, show_mca2=False)
 
 
     def ignoreEvent(self, event=None):
