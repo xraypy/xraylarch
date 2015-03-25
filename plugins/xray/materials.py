@@ -73,8 +73,9 @@ def material_mu(name, energy, density=None, kind='total', _larch=None):
             if name.lower() == val[0].lower(): # match formula
                 formula, density = val
                 break
+    # default to using passed in name as a formula
     if formula is None:
-        raise Warning("material_mu(): could not find material '%s'" % name)
+        formula = name
     if density is None:
         raise Warning('material_mu(): must give density for unknown materials')
 
