@@ -41,5 +41,4 @@ clean :
 	rm -f $(OBJ)  $(STATICLIB) $(SHAREDLIB)
 
 install: $(SHAREDLIB)
-	mkdir -p $(INSTALLDIR)
 	cp $(SHAREDLIB) $(INSTALLDIR)/.
