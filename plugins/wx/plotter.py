@@ -658,13 +658,11 @@ def _closeDisplays(_larch=None, **kws):
         win.Destroy()
 
 
-@larch.ValidateLarchPlugin
 def initializeLarchPlugin(_larch=None):
     """initialize plotter"""
     cmds = ['plot', 'oplot', 'newplot', 'imshow', 'contour']
     if _larch is not None:
         _larch.symtable._sys.valid_commands.extend(cmds)
-
         mod = getattr(_larch.symtable, MODNAME)
         mod.__doc__ = MODDOC
 
