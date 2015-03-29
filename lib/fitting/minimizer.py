@@ -54,7 +54,7 @@ from . import uncertainties
 from .parameter import isParameter
 
 try:
-    from larch import Group
+    from ..symboltable import Group
 except:
     Group = None
 
