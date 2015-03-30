@@ -7,24 +7,20 @@ import time
 import os
 import sys
 import site
-import glob
+from glob import glob
 
 DEBUG = False
 cmdline_args = sys.argv[1:]
 
-required_modules = ('numpy', 'scipy')
+required_modules = ['numpy', 'scipy', 'matplotlib', 'h5py', 'sqlalchemy']
 recommended_modules = {'basic analysis': required_modules,
-                       'graphical interface and plotting': ('wx', 'wxutils'),
+                       'graphics and plotting': ('wx', 'wxmplot', 'wxutils'),
                        'color-enhanced error messages': ('termcolor', ),
-                       'plotting': ('matplotlib', 'wxmplot'),
-                       'accessing x-ray databases': ('sqlalchemy', ),
-                       'readng hdf5 files': ('h5py', ),
                        'using the EPICS control system': ('epics', ),
                        }
 
-# files that may be in share_basedir (from earlier installs)
-# and should be removedn
-historical_cruft = ['plugins/wx/wxutils.py']
+# files that may be left from earlier installs) and should be removed
+historical_cruft = []
 
 modules_imported = {}
 missing = []
@@ -96,15 +92,13 @@ if DEBUG:
 # this includes the larch executable files, and all the larch modules
 # and plugins
 
-data_files  = [('bin', glob.glob('bin/*'))]
-
-mod_dir = os.path.join(larchdir, 'modules')
-modfiles = glob.glob('modules/*.lar') + glob.glob('modules/*.py')
-data_files.append((mod_dir, modfiles))
-
-icofiles = glob.glob('icons/*.ic*')
+bin_dir = os.path.join(larchdir, 'bin')
 ico_dir = os.path.join(larchdir, 'icons')
-data_files.append((ico_dir, icofiles))
+mod_dir = os.path.join(larchdir, 'modules')
+data_files  = [('bin', glob('bin/*')),
+               (bin_dir, glob('bin/*')),
+               (ico_dir, glob('icons/*.ic*')),
+               (mod_dir, glob('modules/*.lar') + glob('modules/*.py'))]
 
 #dlls
 dll_maindir = os.path.join(larchdir, 'dlls')
@@ -119,13 +113,13 @@ else:
 
 for dx in archs:
     dlldir = os.path.join(dll_maindir, dx)
-    dllfiles = glob.glob('dlls/%s/*' % dx)
+    dllfiles = glob('dlls/%s/*' % dx)
     data_files.append((dlldir, dllfiles))
 
 plugin_dir = os.path.join(larchdir, 'plugins')
 pluginfiles = []
 pluginpaths = []
-for fname in glob.glob('plugins/*'):
+for fname in glob('plugins/*'):
     if os.path.isdir(fname):
         pluginpaths.append(fname)
     else:
@@ -138,7 +132,7 @@ for pdir in pluginpaths:
     filelist = []
     for ext in ('py', 'txt', 'db', 'dat', 'rst', 'lar',
                 'dll', 'dylib', 'so'):
-        filelist.extend(glob.glob('%s/*.%s' % (pdir, ext)))
+        filelist.extend(glob('%s/*.%s' % (pdir, ext)))
     for fname in filelist:
         if os.path.isdir(fname):
             print('Warning -- not walking subdirectories for Plugins!!')
@@ -155,7 +149,7 @@ setup(name = 'larch',
       author_email = 'newville@cars.uchicago.edu',
       url          = 'http://xraypy.github.io/xraylarch/',
       download_url = 'http://xraypy.github.io/xraylarch/',
-      requires = ('numpy', 'scipy', 'matplotlib'),
+      requires = required_modules,
       license = 'BSD',
       description = 'Synchrotron X-ray data analysis in python',
       package_dir = {'larch': 'lib'},
@@ -180,17 +174,17 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'o')
 
 
-def fix_permissions(*dirnames):
+def fix_permissions(dirnames):
     """
     set permissions on a list of directories to match
-    thoseof the HOME directory
+    those of the HOME directory
     """
     try:
         home = os.environ['HOME']
     except:
         return
     stat =  os.stat(home)
-    def own(nam, mode=0o750):
+    def own(nam, mode=0o755):
         try:
             os.chown(nam, stat.st_uid, stat.st_gid)
             os.chmod(nam, mode)
@@ -200,12 +194,10 @@ def fix_permissions(*dirnames):
         folder = os.path.join(home, '.%s' % dname)
         for top, dirs, files in os.walk(folder):
             own(top)
-            for d in dirs:
+            for d in dirs+files:
                 own(os.path.join(top, d))
-            for d in files:
-                own(os.path.join(top, d), mode=0o640)
 
-fix_permissions('matplotlib', 'larch')
+fix_permissions(('matplotlib', 'larch'))
 if cmdline_args[0] == 'install':
     remove_cruft(larchdir, historical_cruft)
 
