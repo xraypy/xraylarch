@@ -1076,7 +1076,7 @@ WARNING: This cannot be undone!
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
         mca_thread = Thread(target=self._getmca_area, args=(aname,))
         mca_thread.start()
-        self.owner.show_XRFDisplay(xrmfile=xrmfile)
+        self.owner.show_XRFDisplay()
         mca_thread.join()
 
         pref, fname = os.path.split(self.owner.current_file.filename)
@@ -1211,7 +1211,7 @@ class MapViewerFrame(wx.Frame):
                             args=(det,mask), kwargs=kwargs)
         mca_thread.start()
 
-        self.show_XRFDisplay(xrmfile=xrmfile)
+        self.show_XRFDisplay()
         mca_thread.join()
 
         if hasattr(self, 'sel_mca'):
@@ -1234,14 +1234,14 @@ class MapViewerFrame(wx.Frame):
         if xrmfile is None:
             xrmfile = self.current_file
         if self.xrfdisplay is None:
-            self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
-                                              gsexrmfile=xrmfile)
+            self.xrfdisplay = XRFDisplayFrame(_larch=self.larch)
+
         try:
             self.xrfdisplay.Show()
 
         except PyDeadObjectError:
             self.xrfdisplay = XRFDisplayFrame(_larch=self.larch,
-                                              gsexrmfile=xrmfile)
+                                              xrmfile=xrmfile)
             self.xrfdisplay.Show()
 
         if do_raise:

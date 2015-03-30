@@ -1,261 +1,307 @@
 #!/usr/bin/python
 
 import os
-import sys
 import copy
-import bisect
-import numpy
-from larch import ValidateLarchPlugin
+import numpy as np
+from scipy.interpolate import UnivariateSpline
 
-MIN_SLOPE   = 1.e-12
-MIN_EN     = -1.   # in keV
-MAX_EN     = 511.  # in keV
+from larch import use_plugin_path, Group, param_value, Parameter, Interpreter
+use_plugin_path('xrf')
 
-def str2float(str):
-    return [float(i) for i in str.split()]
+from mca import MCA
+from roi import ROI
 
-def str2int(str):
-    return [int(i) for i in str2float(str)]
+def str2floats(s, delim='&'):
+    s = s.replace('&', ' ')
+    return [float(i) for i in s.split()]
 
-def str2str(str, delim=None):
-    return [i.strip() for i in str.split(delim)]
+def str2ints(s, delim='&'):
+    return [int(i) for i in str2floats(s, delim=delim)]
 
-class GSE_MCAFile:
+def str2str(s, delim='&'):
+    s = s.strip()
+    return [i.strip() for i in s.split(delim) if len(i) > 0]
+
+class GSEMCA_Header(object):
+    version  = 'unknown'
+    date = ''
+    elements = 1
+    channels = 2048
+    rois = []
+    live_time = []
+    real_time = []
+    cal_slope = []
+    cal_offset = []
+    cal_quad = []
+
+class GSEMCA_File(Group):
     """
     Read GSECARS style MCA / Multi-element MCA files
-
     """
-    def __init__(self, file=None, ndetectors=1, bad=None, maxpts=2048):
+    def __init__(self, filename=None, bad=None, **kws):
 
-        self.ndetectors = ndetectors
-        self.maxpts     = maxpts
-        self.nrois      =  0
-
-        self.data       = []
-        self.rois       = []
-        self.detectors  = []
-        self.bad        = bad
+        kwargs = {'name': 'GSE MCA File: %s' % filename}
+        kwargs.update(kws)
+        Group.__init__(self,  **kwargs)
+        self.mcas   = []
+        self.__mca0 = None
+        self.bad    = bad
         if bad is None:
             self.bad = []
-        self._det0      = -1  # main "good" detector for energy calibration
-        self.environ    = []
-        self.elapsed    = {'live time':[], 'real time':[], 'start time':''}
-        self.calibration= {'offset':[], 'slope':[], 'quad':[], 'twotheta':[]}
 
-        if file: self.read(file=file)
+        self.filename = filename
+        if filename:
+            self.read(filename=filename)
 
-    def get_calibration(self,detector=-1):
-        if detector < 0: detector = self._det0
-        if detector < 0:
-            return (0,0,0)
+    def __get_mca0(self, chan_min=2, min_counts=2):
+        """ find first good detector for alignment
+        'good' is defined as at least min_counts counts
+        above channel chan_min
+        """
+        if self.__mca0 is None:
+            for imca, mca in enumerate(self.mcas):
+                if mca.counts[chan_min:].sum() > min_counts:
+                    self.__mca0 = mca
+                    self.offset = mca.offset
+                    self.slope  = mca.slope
+                    self.quad   = mca.quad
+                    break
+                elif imca not in self.bad:
+                    self.bad.append(imca)
+            if self.__mca0 is None:
+                self.__mca0 = mca = self.mcas[0]
+                self.offset = mca.offset
+                self.slope  = mca.slope
+                self.quad   = mca.quad
+        return self.__mca0
 
-        o = self.calibration['offset'][detector]
-        s = self.calibration['slope'][detector]
-        q = self.calibration['quad'][detector]
-        s = max(s, MIN_SLOPE)
-        return (o,s,q)
+    def get_energy(self, imca=None):
+        "get energy, optionally selecting which mca to use"
+        if imca is not None:
+            mca = self.mcas[imca]
+        else:
+            mca = self.__get_mca0()
+        return mca.get_energy()
 
-    def chan2energy(self,i,detector=None):
-        d = detector
-        if (not d): d = self._det0
-        return (self.calibration['offset'][d] + i *
-                (self.calibration['slope'][d] + i *
-                 self.calibration['quad'][d]))
+    def get_counts(self, dt_correct=True, align=True):
+        """ get summed MCA spectra,
 
-    def get_energy(self,detector=None):
-        e = []
-        d = detector
-        if self._det0 == -1:
-            # print " no data read"
-            return numpy.zeros(self.maxpts)
-        if not d:             d = self._det0
-        e = numpy.arange(self.maxpts, dtype='f')
+        Options:
+        --------
+          align   align spectra in energy before summing (True).
+        """
+        mca0 = self.__get_mca0()
+        en  = mca0.get_energy()
+        dat = 0
+        for mca in self.mcas:
+            mdat = mca.counts
+            if align and mca != mca0:
+                _en  = mca.get_energy()
+                mdat = UnivariateSpline(_en, mdat, s=0)(en)
+            if dt_correct:
+                mdat = mdat * mca.dt_factor
+            dat = dat + mdat
+        return dat.astype(np.int)
 
-        e = (self.calibration['offset'][d] + e *
-             (self.calibration['slope'][d] + e *
-              self.calibration['quad'][d]))
-        return e
-
-    def get_data(self, detector=None, align=True):
-        " get summed detectors, aligning to specified detector "
-        if self.ndetectors == 1:
-            return self.data
-        d   = detector
-        if d is None: d = self._det0
-        dat = self.data[d]
-        if align:
-            (o1,s1,q1) = self.get_calibration(detector=d)
-            for j in self.detectors:
-                if (j != d):
-                    (o2,s2,q2) = self.get_calibration(detector=j)
-                    etmp = o2 + s2 * numpy.arange(len(dat),dtype='f')
-                    for i in range(self.maxpts):
-                        e = o1 + s1*i
-
-                        ip = bisect.bisect(etmp,e)
-                        if ip < 1: ip=1
-                        if ip > 2047: ip=2047
-
-                        x0 = o2 + s2*(ip-1)
-                        y0 = self.data[j][ip-1]
-                        y1 = self.data[j][ip]
-
-                        dat[i]  = dat[i] + y0 + (y1-y0)*(e-x0)/(s2)
-                dat = numpy.array(dat)
-        return dat
-
-    def get_element(self,detector=0):
-        " get data from a single element"
-        if self.ndetector == 1:
-            return self.data
-        return self.data[detector]
-
-    def read(self, file=None, bad=[]):
-        self.filename = file
-        f    = open(file)
-        lines = f.readlines()
-        f.close()
-        ndet        = 1  # Assume single element data
-        nrow        = 0
-        self.data   = []
-        data_mode   = 0
+    def read(self, filename=None, bad=None):
+        """read GSE MCA file"""
+        self.filename = filename
+        if bad is None:
+            bad = self.bad
+        fh    = open(filename)
+        lines = fh.readlines()
+        fh.close()
+        nrow       = 0
+        data_mode  = 'HEADER'
+        counts     = []
+        rois       = []
+        environ    = []
+        head = self.header = GSEMCA_Header()
         for l in lines:
             l  = l.strip()
             if len(l) < 1: continue
-            if data_mode == 1:
-                self.data.append(str2int(l))
+            if data_mode == 'DATA':
+                counts.append(str2ints(l))
             else:
                 pos = l.find(' ')
                 if (pos == -1): pos = len(l)
-                tag = l[0:pos].strip()
+                tag = l[0:pos].strip().lower()
+                if tag.endswith(':'):
+                    tag = tag[:-1]
                 val = l[pos:len(l)].strip()
-                if tag == 'VERSION:':
-                    pass
-                elif tag == "DATE:":
-                    for i in range(len(self.elapsed['start time'])):
-                        self.elapsed['start_time'] = val
-                elif tag == "ELEMENTS:":
-                    self.ndetectors = int(val)
-                elif tag == 'CHANNELS:':
-                    self.maxpts = int(val)
-                elif tag == 'ROIS:':
-                    self.nrois = max(str2int(val))
-                elif tag == 'REAL_TIME:':
-                    self.elapsed['real time']  = str2float(val)
-                elif tag == 'LIVE_TIME:':
-                    self.elapsed['live time']  = str2float(val)
-                elif tag == 'CAL_OFFSET:':
-                    self.calibration['offset'] = str2float(val)
-                elif tag == 'CAL_SLOPE:':
-                    self.calibration['slope']  = str2float(val)
-                elif tag == 'CAL_QUAD:':
-                    self.calibration['quad']   = str2float(val)
-                elif tag == 'TWO_THETA:':
-                    self.calibration['twotheta'] = str2float(val)
-                elif tag == 'DATA:':
-                    data_mode = 1
-                elif tag == 'ENVIRONMENT:':
+                if tag in ('version', 'date'):
+                    setattr(head, tag, val)
+                elif tag in ('elements', 'channels'):
+                    setattr(head, tag, int(val))
+                elif tag in ('real_time', 'live_time', 'cal_offset',
+                             'cal_slope', 'cal_quad'):
+                    setattr(head, tag, str2floats(val))
+                elif tag == 'rois':
+                    head.rois = str2ints(val)
+                    self.nrois = max(head.rois)
+                elif tag == 'data':
+                    data_mode = 'DATA'
+                elif tag == 'environment':
                     addr, val = val.split('="')
-                    val, desc  = val.split('"')
-                    val.strip()
-                    desc.strip()
+                    val, desc = val.split('"')
+                    val = val.strip()
+                    desc = desc.strip()
                     if desc.startswith('(') and desc.endswith(')'):
                         desc = desc[1:-1]
-                    self.environ.append({'name': addr, 'value': val,
-                                         'desc': desc})
-
-                elif tag[0:4] == 'ROI_':
-                    iroi = int(tag[4:5])
-                    item = tag[6:]
-                    if iroi >= len(self.rois):
-                        for ir in range(1  + iroi - len(self.rois)):
-                            self.rois.append({'label':[], 'right':[], 'left':[]})
-                    if item == "LABEL:":
-                        self.rois[iroi]['label'] = str2str(val, delim='\&')
-                    elif item == "LEFT:":
-                        self.rois[iroi]['left']  = str2int(val)
-                    elif item == "RIGHT:":
-                        self.rois[iroi]['right'] = str2int(val)
+                    environ.append((desc, val, addr))
+                elif tag[0:4] == 'roi_':
+                    iroi, item = tag[4:].split('_')
+                    iroi = int(iroi)
+                    if iroi >= len(rois):
+                        for ir in range(1  + iroi - len(rois)):
+                            rois.append({'label':[], 'right':[], 'left':[]})
+                    if item == "label":
+                        rois[iroi]['label'] = str2str(val, delim='&')
+                    elif item == "left":
+                        rois[iroi]['left']  = str2ints(val)
+                    elif item == "right":
+                        rois[iroi]['right'] = str2ints(val)
                 else:
                     pass # print " Warning: " , tag, " is not supported here!"
 
-        #  find first valid detector, identify bad detectors
-        self.data = numpy.transpose(numpy.array(self.data))
+        #
+        counts =  np.array(counts)
+        ## Data has been read, now store in MCA objects
+        sum_mca = None
+        for imca in range(head.elements):
+            thismca = MCA(name='mca%i' % (imca+1),
+                          nchans=head.channels,
+                          counts=counts[:,imca],
+                          start_time=head.date,
+                          offset=head.cal_offset[imca],
+                          slope=head.cal_slope[imca],
+                          quad=head.cal_quad[imca],
+                          real_time=head.real_time[imca],
+                          live_time=head.live_time[imca])
 
-        m = self.maxpts - 1
-        self._det0 = -1
-        for i in range(self.ndetectors):
-            is_good = i not in bad
-            if is_good:
-                o, s, q = self.get_calibration(detector=i)
-                emin   = q
-                emax   = o + m * (s + m  * q)
-                d      = self.get_data(detector=i, align=0)
-                if (self._det0 == -1 and
-                    emin > MIN_EN  and emax < MAX_EN):
-                    self._det0 = i
-                if emax > MAX_EN or d.max() < 2:
-                    is_good = False
-            if is_good:
-                self.detectors.append(i)
-        if self.ndetectors == 1:
-            self.data = self.data[0]
+            for desc, val, addr in environ:
+                thismca.add_environ(desc=desc, val=val, addr=addr)
 
+            for roi in rois:
+                left = roi['left'][imca]
+                right = roi['right'][imca]
+                label = roi['label'][imca]
+                if right > 1 and len(label) > 1:
+                    thismca.add_roi(name=label, left=left, right=right,
+                                    sort=False, counts=counts[:,imca])
+            thismca.rois.sort()
+            self.mcas.append(thismca)
+
+        mca0 = self.__get_mca0()
+        self.counts = self.get_counts()
+        self.raw    = self.get_counts(dt_correct=False)
+        self.name   = 'mcasum'
+        self.energy = mca0.energy[:]
+        self.environ = mca0.environ
+        self.real_time = mca0.real_time
+        self.live_time = mca0.live_time
+        self.offset = mca0.offset
+        self.slope  = mca0.slope
+        self.quad   = mca0.quad
+        self.rois = []
+        for roi in mca0.rois:
+            self.add_roi(name=roi.name, left=roi.left,
+                         right=roi.right, sort=False,
+                         counts=counts, to_mcas=False)
+        self.rois.sort()
         return
 
-    def write_ascii(self, file=None, elem=None, all=1, det=[]):
-        if file is None:
-            return -1
-        f = open(file, "w+")
-        f.write("# XRF data from %s\n" % (self.filename))
-
-        f.write("# energy calibration (offset/slope/quad)= (%.9g/%.9g%.9g)\n"\
-                %  self.get_calibration())
-        f.write("# Live Time, Real Time = %f, %f\n" %
-                (self.elapsed['real time'][0],   self.elapsed['live time'][0]))
-        f.write("# %i ROIS:\n" % self.nrois)
-        for r in self.rois:
-            try:
-                label = r['label'][0]
-                left  = r['left'][0]
-                right = r['right'][0]
-                f.write("#   %s : [%i, %i]\n" % (label, left, right))
-            except IndexError:
-                pass
-
-        f.write("#-------------------------\n")
-        f.write("#    energy       counts     log10(counts)\n")
-
-        e = self.get_energy()
-
-        if all == 1:
-            d = self.get_data(align=1)
+    def add_roi(self, name='', left=0, right=0, bgr_width=3,
+                counts=None, sort=True, to_mcas=True):
+        """add an ROI to the sum spectra"""
+        name = name.strip()
+        # print 'GSEMCA: Add ROI ', name, left, right
+        roi = ROI(name=name, left=left, right=right,
+                  bgr_width=bgr_width, counts=counts)
+        rnames = [r.name.lower() for r in self.rois]
+        if name.lower() in rnames:
+            iroi = rnames.index(name.lower())
+            self.rois[iroi] = roi
         else:
-            if elem is not None: elem = 0
-            d = self.get_data(detector=elem)
+            self.rois.append(roi)
+        if sort:
+            self.rois.sort()
+        if to_mcas:
+            mca0 = self.__get_mca0()
+            slo0 = mca0.slope
+            off0 = mca0.offset
+            mca0.add_roi(name=name, left=left, right=right,
+                         bgr_width=bgr_width)
+            for mca in self.mcas:
+                if mca != mca0:
+                    xleft  = int(0.5 + ((off0 + left*slo0) - mca.offset)/mca.slope)
+                    xright = int(0.5 + ((off0 + right*slo0) - mca.offset)/mca.slope)
+                    mca.add_roi(name=name, left=xleft, right=xright,
+                                 bgr_width=bgr_width)
 
-        for i in range(len(e)-1):
-            xlog = 0.
-            if  d[i] > 0:   xlog = numpy.log10(d[i])
-            f.write(" %10.4f  %12.3f  %10.5f\n" % (e[i],d[i],xlog))
-        f.write("\n")
-        f.close()
+    def save_mcafile(self, filename):
+        """
+        write multi-element MCA file
+        Parameters:
+        -----------
+        * filename: output file name
+        """
+        nchans = len(self.counts)
+        ndet   = len(self.mcas)
+
+        # formatted count times and calibration
+        rtimes  = ["%f" % m.real_time for m in self.mcas]
+        ltimes  = ["%f" % m.live_time for m in self.mcas]
+        offsets = ["%e" % m.offset    for m in self.mcas]
+        slopes  = ["%e" % m.slope     for m in self.mcas]
+        quads   = ["%e" % m.quad      for m in self.mcas]
+
+        fp = open(filename, 'w')
+        fp.write('VERSION:    3.1\n')
+        fp.write('ELEMENTS:   %i\n' % ndet)
+        fp.write('DATE:       %s\n' % self.mcas[0].start_time)
+        fp.write('CHANNELS:   %i\n' % nchans)
+        fp.write('REAL_TIME:  %s\n' % ' '.join(rtimes))
+        fp.write('LIVE_TIME:  %s\n' % ' '.join(ltimes))
+        fp.write('CAL_OFFSET: %s\n' % ' '.join(offsets))
+        fp.write('CAL_SLOPE:  %s\n' % ' '.join(slopes))
+        fp.write('CAL_QUAD:   %s\n' % ' '.join(quads))
+
+        # Write ROIS  in channel units
+        nrois = ["%i" % len(m.rois) for m in self.mcas]
+        rois = [m.rois for m in self.mcas]
+        fp.write('ROIS:      %s\n' % ' '.join(nrois))
+
+        # don't assume number of ROIS is same for all elements
+        nrois = max([len(r) for r in rois])
+        print 'NROIS ' , nrois, [len(r) for r in rois]
+        for ir, r in enumerate(rois):
+            if len(r) < nrois:
+                for i in range(nrois - len(r)):
+                    r.append(ROI(name='', left=0, right=0))
+        print 'NROIS ' , nrois, [len(r) for r in rois]
+        for i in range(len(rois[0])):
+            names = ' &  '.join([r[i].name  for r in rois])
+            left  = ' '.join(['%i' % r[i].left  for r in rois])
+            right = ' '.join(['%i' % r[i].right for r in rois])
+            fp.write('ROI_%i_LEFT:  %s\n' % (i, left))
+            fp.write('ROI_%i_RIGHT:  %s\n' % (i, right))
+            fp.write('ROI_%i_LABEL: %s &\n' % (i, names))
+
+        # environment
+        for e in self.environ:
+            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
+        # data
+        fp.write('DATA: \n')
+        for i in range(nchans):
+            d = ' '.join(["%i" % m.counts[i] for m in self.mcas])
+            fp.write(" %s\n" % d)
+        fp.close()
 
 
-@ValidateLarchPlugin
 def gsemca_group(fname, _larch=None, **kws):
-    """simple mapping of GSECARS MCA file to larch groups"""
-    xfile = GSE_MCAFile(fname)
-    group = _larch.symtable.create_group()
-    group.__name__ ='GSE XRF Data file %s' % fname
-    group.energy = xfile.get_energy()
-    group.chan2energy  = xfile.chan2energy
-    group.get_data  = xfile.get_data
-    for key, val in xfile.__dict__.items():
-        if not key.startswith('_'):
-            setattr(group, key, val)
-    return group
+    """read GSECARS MCA file to larch group"""
+    return GSEMCA_File(fname)
 
 def registerLarchPlugin():
-    return ('_io', {'_gsemca_old': gsemca_group})
-
+    return ('_io', {'read_gsemca': gsemca_group})

@@ -37,7 +37,6 @@ use_plugin_path('math')
 from mathutils import index_of
 
 use_plugin_path('xrf')
-use_plugin_path('xray')
 use_plugin_path('wx')
 
 from wxutils import (SimpleText, EditableListBox, Font,
@@ -52,7 +51,8 @@ from xrfdisplay_utils import (CalibrationFrame, ColorsFrame, ROI_Averager,
 
 from xrfdisplay_fitpeaks import FitSpectraFrame
 
-from gsemca_file import GSEMCA_File, gsemca_group
+use_plugin_path('io')
+from gse_mcafile import GSEMCA_File, gsemca_group
 
 FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"
 FILE_ALREADY_READ = """The File
@@ -98,7 +98,7 @@ class XRFDisplayFrame(wx.Frame):
   Matt Newville <newville @ cars.uchicago.edu>
   """
     main_title = 'XRF Display'
-    def __init__(self, _larch=None, parent=None, gsexrmfile=None,
+    def __init__(self, _larch=None, parent=None, mca_file=None,
                  size=(725, 450), axissize=None, axisbg=None,
                  title='XRF Display', exit_callback=None,
                  output_title='XRF', **kws):
@@ -148,7 +148,6 @@ class XRFDisplayFrame(wx.Frame):
         self.SetTitle("%s: %s " % (self.main_title, title))
 
         self._menus = []
-
         self.createMainPanel()
         self.createMenus()
         self.SetFont(Font(9, serif=True))
@@ -157,11 +156,11 @@ class XRFDisplayFrame(wx.Frame):
         statusbar_fields = ["XRF Display", " ", " ", " "]
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
-        #if mca_file is not None:
-        #    self.mca = gsemca_group(mca_file, _larch=self.larch)
-        #    self._mcagroup.mca1 = self.mca
-        #    self._mcagroup.mca2 = None
-        #    self.plotmca(self.mca, show_mca2=False)
+        if mca_file is not None:
+            self.mca = gsemca_group(mca_file, _larch=self.larch)
+            self._mcagroup.mca1 = self.mca
+            self._mcagroup.mca2 = None
+            self.plotmca(self.mca, show_mca2=False)
 
 
     def ignoreEvent(self, event=None):
@@ -1211,7 +1210,6 @@ class XRFDisplayFrame(wx.Frame):
             deffile = deffile + '.mca'
 
         deffile = fix_filename(str(deffile))
-
         outfile = FileSave(self, "Save MCA File",
                            default_file=deffile,
                            wildcard=FILE_WILDCARDS)
