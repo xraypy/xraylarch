@@ -1146,7 +1146,7 @@ def do_scan(scanname, filename='scan.001', nscans=1, comments='', _larch=None):
     scan.comments = comments
     if scan.scantype == 'slew':
         return do_slewscan(scanname, filename=filename, nscans=nscans,
-                           comment=comments, _larch=_larch)
+                           comments=comments, _larch=_larch)
     else:
         scans_completed = 0
         nscans = int(scandb.get_info('nscans'))
@@ -1186,7 +1186,7 @@ def do_slewscan(scanname, filename='scan.001', comments='',
         return
     scan = scan_from_db(scanname, _larch=_larch)
     if scan.scantype != 'slew':
-        return do_scan(scanname, comment=comments, nscans=1,
+        return do_scan(scanname, comments=comments, nscans=1,
                        filename=filename, _larch=_larch)
     else:
         scan.epics_slewscan(filename=filename)
