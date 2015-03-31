@@ -1,14 +1,12 @@
 import numpy as np
 import pylab
+from larch import enable_plugins, Interpreter, Group
 
-from larch import use_plugin_path, Interpreter, Group
-
-# tell Python to where to find larch plugins
-use_plugin_path('xafs')
+# tell Python to use all larch plugins
+enable_plugins()
+# now import larch-specific Python code
 from autobk import autobk
-from xafsft import xftf 
-
-use_plugin_path('math')
+from xafsft import xftf
 from mathutils import index_nearest # (uses numpy's argmin())
 
 # create a larch interpreter, passed to most functions
@@ -30,7 +28,7 @@ xafsdat.i0     = rawdata[:, 1]
 # write data for 'k', 'chi', 'kwin', 'e0', ... into xafsdat
 autobk(xafsdat, rbkg=1.0, kweight=2, _larch=my_larch)
 
-# Fourier transform to R space, again passing in a Group (here, 
+# Fourier transform to R space, again passing in a Group (here,
 # 'k' and 'chi' are expected, and writitng out 'r', 'chir_mag',
 # and so on
 xftf(xafsdat, kmin=2, kmax=15, dk=3, kweight=2, _larch=my_larch)
@@ -66,4 +64,3 @@ pylab.xlabel(r'$ R (\AA) $')
 pylab.ylabel(r'$ \chi(R) (\AA^{-3}) $')
 
 pylab.show()
-
