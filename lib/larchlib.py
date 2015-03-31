@@ -378,6 +378,15 @@ def use_plugin_path(val):
     """
     sys.path.insert(0, plugin_path(val))
 
+def enable_plugins():
+    """add all available Larch plugin paths
+    """
+    plugin_dir = os.path.abspath(os.path.join(larchdir, 'plugins'))
+    for name in reversed(os.listdir(plugin_dir)):
+        dname = os.path.abspath(os.path.join(plugin_dir, name))
+        if os.path.isdir(dname):
+            sys.path.insert(0, dname)
+
 def add2path(envvar='PATH', dirname='.'):
     """add specified dir to begninng of PATH and
     DYLD_LIBRARY_PATH, LD_LIBRARY_PATH environmental variables,
