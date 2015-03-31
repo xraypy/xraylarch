@@ -1,20 +1,17 @@
 
-from larch import (Group, Parameter, isParameter, param_value, use_plugin_path, isNamedClass, Interpreter, Minimizer)
-use_plugin_path('std')
-from show import _show
-use_plugin_path('math')
-from mathutils import _interp
-use_plugin_path('xray')
-from cromer_liberman import f1f2
-from xraydb_plugin import xray_edge, xray_line
-use_plugin_path('xafs')
-from mback import mback
+from larch import (Group, Parameter, isParameter, param_value,
+                   isNamedClass, Interpreter, Minimizer)
+
+from larch_plugins.std.show import _show
+from larch_plugins.math.mathutils import _interp
+from larch_plugins.xray.cromer_liberman import f1f2
+from larch_plugins.xray.xraydb_plugin import xray_edge, xray_line
+from larch_plugins.xafs.mback import mback
 import numpy as np
 from scipy.special import erfc
 from math import pi
 
-use_plugin_path('wx')
-from plotter import (_newplot, _plot)
+from larch_plugins.wx.plotter import (_newplot, _plot)
 
 import time
 
@@ -91,7 +88,7 @@ def kkmclf_sca(e, finp):
                 fout[i] = fout[i] + finp[j]/de2
             fout[i] *= factor*e[i]
     return fout
- 
+
 def kkmclr_sca(e, finp):
     """
     reverse (f''->f') kk transform, using maclaurin series algorithm
@@ -230,7 +227,7 @@ class diffKKGroup(Group):
         Convert mu(E) data into f'(E) and f"(E).  f"(E) is made by
         matching mu(E) to the tabulated values of the imaginary part
         of the scattering factor (Cromer-Liberman), f'(E) is then
-        obtained by performing a differential Kramers-Kronig transform 
+        obtained by performing a differential Kramers-Kronig transform
         on the matched f"(E).
 
           Attributes
@@ -252,7 +249,7 @@ class diffKKGroup(Group):
           * Lee and Xiang: http://dx.doi.org/10.1088/0004-637X/702/2/970
 
         """
-        
+
         if type(energy).__name__ == 'ndarray': self.energy = energy
         if type(mu).__name__     == 'ndarray': self.mu     = mu
         if z    != None: self.z    = z
@@ -269,7 +266,7 @@ class diffKKGroup(Group):
         if self.mback_kws is not None:
             mb_kws.update(self.mback_kws)
 
-        start = time.clock()       
+        start = time.clock()
 
         mback(self.energy, self.mu, group=self, _larch=self._larch, **mb_kws)
 
@@ -317,8 +314,7 @@ def diffkk(energy=None, mu=None, z=None, edge='K', mback_kws=None, _larch=None, 
         mback_kws:  arguments for the mback algorithm
     """
     return diffKKGroup(energy=energy, mu=mu, z=z, mback_kws=mback_kws, _larch=_larch)
-    
-    
+
+
 def registerLarchPlugin(): # must have a function with this name!
     return ('_xafs', { 'diffkk': diffkk })
-    

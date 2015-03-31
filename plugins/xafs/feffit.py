@@ -10,18 +10,11 @@ from numpy import array, arange, interp, pi, zeros, sqrt, concatenate
 from scipy.optimize import leastsq as scipy_leastsq
 
 from larch import (Group, Parameter, isParameter, Minimizer,
-                   ValidateLarchPlugin,
-                   use_plugin_path, isNamedClass)
+                   ValidateLarchPlugin, isNamedClass)
 
-use_plugin_path('math')
-use_plugin_path('xafs')
-
-from mathutils import index_of, realimag, complex_phase
-
-# from minimizer import Minimizer
-from xafsft import xftf_fast, xftr_fast, ftwindow, set_xafsGroup
-
-from feffdat import FeffPathGroup, _ff2chi
+from larch_plugins.math.mathutils import index_of, realimag, complex_phase
+from larch_plugins.xafs.xafsft import xftf_fast, xftr_fast, ftwindow, set_xafsGroup
+from larch_plugins.xafs.feffdat import FeffPathGroup, _ff2chi
 
 # use larch's uncertainties package
 from larch.fitting import correlated_values, eval_stderr

@@ -1,15 +1,12 @@
 
-from larch import (Group, Parameter, isgroup, use_plugin_path, Minimizer)
-use_plugin_path('math')
-from mathutils import index_of
-use_plugin_path('xray')
-from cromer_liberman import f1f2
-from xraydb_plugin import xray_edge, xray_line, f2_chantler
-use_plugin_path('std')
-from grouputils import parse_group_args
-use_plugin_path('xafs')
-from xafsutils import set_xafsGroup
-from pre_edge import find_e0
+from larch import (Group, Parameter, isgroup, Minimizer)
+
+from larch_plugins.math.mathutils import index_of
+from larch_plugins.xray.cromer_liberman import f1f2
+from larch_plugins.xray.xraydb_plugin import xray_edge, xray_line, f2_chantler
+from larch_plugins.std.grouputils import parse_group_args
+from larch_plugins.xafs.xafsutils import set_xafsGroup
+from larch_plugins.xafs.pre_edge import find_e0
 
 import numpy as np
 from scipy.special import erfc
@@ -149,7 +146,7 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
     for i in range(order): # polynomial coefficients
         setattr(params, 'c%d' % i, Parameter(0, vary=True, _larch=_larch))
 
-    fit = Minimizer(match_f2, params, _larch=_larch, toler=1.e-5) 
+    fit = Minimizer(match_f2, params, _larch=_larch, toler=1.e-5)
     fit.leastsq()
 
     eoff = energy - params.e0.value
@@ -159,11 +156,10 @@ def mback(energy, mu, group=None, order=3, z=None, edge='K', e0=None, emin=None,
         attr = 'c%d' % j
         if hasattr(params, attr):
             normalization_function  = normalization_function + getattr(getattr(params, attr), 'value') * eoff**j
-    
+
     group.fpp = params.s*mu - normalization_function
     group.mback_params = params
 
 
 def registerLarchPlugin(): # must have a function with this name!
     return ('_xafs', { 'mback': mback })
-    

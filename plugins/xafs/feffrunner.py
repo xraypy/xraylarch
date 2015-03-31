@@ -5,9 +5,8 @@ from   distutils.spawn import find_executable
 from shutil import copy, move
 import subprocess
 
-from larch import (Group, Parameter, isParameter, param_value, use_plugin_path, isNamedClass, Interpreter)
-use_plugin_path('std')
-from show import _show
+from larch import (Group, Parameter, isParameter, param_value, isNamedClass, Interpreter)
+from larch_plugins.std.show import _show
 
 class FeffRunner(Group):
     """
@@ -100,7 +99,7 @@ class FeffRunner(Group):
         here=os.getcwd()
         os.chdir(dirname(self.feffinp))
         log = 'f85e.log'
-        
+
         if exe == None:
             exe = ''
         else:
@@ -209,7 +208,7 @@ def feffrunner(feffinp=None, verbose=True, repo=None, _larch=None, **kws):
     Make a FeffRunner group given a folder containing a baseline calculation
     """
     return FeffRunner(feffinp=feffinp, verbose=verbose, repo=repo, _larch=_larch)
-    
-    
+
+
 def registerLarchPlugin(): # must have a function with this name!
     return ('_xafs', { 'feffrunner': feffrunner })

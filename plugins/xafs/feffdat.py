@@ -17,13 +17,10 @@ import numpy as np
 from scipy.interpolate import UnivariateSpline
 from larch import (Group, Parameter, isParameter,
                    ValidateLarchPlugin,
-                   param_value, use_plugin_path, isNamedClass)
+                   param_value, isNamedClass)
 
-use_plugin_path('xray')
-use_plugin_path('xafs')
-
-from xafsutils import ETOK, set_xafsGroup
-from xraydb_plugin import atomic_mass, atomic_symbol
+from larch_plugins.xafs.xafsutils import ETOK, set_xafsGroup
+from larch_plugins.xray.xraydb_plugin import atomic_mass, atomic_symbol
 
 SMALL = 1.e-6
 
@@ -433,7 +430,7 @@ def _ff2chi(pathlist, group=None, paramgroup=None, _larch=None,
       k:           explicit array of k values to calculate chi.
     Returns:
     ---------
-       group contain arrays for k and chi 
+       group contain arrays for k and chi
 
     This essentially calls path2chi() for each of the paths in the
     pathlist and writes the resulting arrays to group.k and group.chi.

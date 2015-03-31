@@ -22,19 +22,12 @@
 #
 # 2014-Apr M Newville : translated to Python for Larch
 
-
-from larch import ValidateLarchPlugin, use_plugin_path
-
-use_plugin_path('math')
-use_plugin_path('xafs')
-
-from mathutils import complex_phase
-from xafsutils import set_xafsGroup
-
-use_plugin_path('std')
-from grouputils import parse_group_args
-
 import numpy as np
+from larch import ValidateLarchPlugin
+
+from larch_plugins.math.mathutils import complex_phase
+from larch_plugins.xafs.xafsutils import set_xafsGroup
+from larch_plugins.std.grouputils import parse_group_args
 
 @ValidateLarchPlugin
 def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,

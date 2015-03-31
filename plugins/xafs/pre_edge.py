@@ -7,16 +7,13 @@ import numpy as np
 from scipy import polyfit
 
 from larch import (Group, Parameter, ValidateLarchPlugin,
-                   Minimizer, isgroup, use_plugin_path)
-
-use_plugin_path('math')
-use_plugin_path('xafs')
-use_plugin_path('std')
-from grouputils import parse_group_args
+                   Minimizer, isgroup)
 
 # now we can reliably import other std and xafs modules...
-from mathutils import index_of, index_nearest, remove_dups, remove_nans2
-from xafsutils import set_xafsGroup
+from larch_plugins.std.grouputils import parse_group_args
+from larch_plugins.math.mathutils import (index_of, index_nearest,
+                                          remove_dups, remove_nans2)
+from larch_plugins.xafs.xafsutils import set_xafsGroup
 
 MODNAME = '_xafs'
 MAX_NNORM = 5

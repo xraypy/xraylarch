@@ -3,20 +3,16 @@ import numpy as np
 from scipy.interpolate import splrep, splev, UnivariateSpline
 
 from larch import Group, Parameter, Minimizer
-from larch import ValidateLarchPlugin, use_plugin_path, isgroup
-# use larch plugins
-use_plugin_path('math')
-use_plugin_path('xafs')
+from larch import ValidateLarchPlugin, isgroup
 
-# now we can reliably import other std and xafs modules...
-from mathutils import index_of, index_nearest, realimag, remove_dups
+# import other plugins from std, math, and xafs modules...
+from larch_plugins.std.grouputils import parse_group_args
+from larch_plugins.math.mathutils import (index_of, index_nearest,
+                                          realimag, remove_dups)
 
-from xafsutils import ETOK, set_xafsGroup
-from xafsft import ftwindow, xftf_fast
-from pre_edge import find_e0, pre_edge
-
-use_plugin_path('std')
-from grouputils import parse_group_args
+from larch_plugins.xafs.xafsutils import ETOK, set_xafsGroup
+from larch_plugins.xafs.xafsft import ftwindow, xftf_fast
+from larch_plugins.xafs.pre_edge import find_e0, pre_edge
 
 # check for uncertainties package
 HAS_UNCERTAIN = False
