@@ -10,16 +10,11 @@ from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
 import larch
-from larch import ValidateLarchPlugin, use_plugin_path
+from larch import ValidateLarchPlugin
 
-use_plugin_path('math')
-use_plugin_path('xafs')
-
-from mathutils import complex_phase
-from xafsutils import set_xafsGroup
-
-use_plugin_path('std')
-from grouputils import parse_group_args
+from larch_plugins.math.mathutils import complex_phase
+from larch_plugins.xafs.xafsutils import set_xafsGroup
+from larch_plugins.std.grouputils import parse_group_args
 
 MODNAME = '_xafs'
 VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par', 'wel', 'sin', 'bes']

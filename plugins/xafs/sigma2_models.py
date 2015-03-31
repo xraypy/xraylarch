@@ -3,12 +3,10 @@
 
 import ctypes
 import numpy as np
-from larch import ValidateLarchPlugin, use_plugin_path
+from larch import ValidateLarchPlugin
 from larch.larchlib import get_dll
 
-use_plugin_path('xray')
-
-from xraydb_plugin import atomic_mass
+from larch_plugins.xray.xraydb_plugin import atomic_mass
 import scipy.constants as consts
 # EINS_FACTOR  = hbarc*hbarc/(2 * k_boltz * amu) = 24.254360157751783
 #    k_boltz = 8.6173324e-5  # [eV / K]
