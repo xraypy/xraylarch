@@ -1,13 +1,11 @@
 import numpy as np
 import pylab
-from larch import enable_plugins, Interpreter, Group
+from larch import Interpreter, Group
 
-# tell Python to use all larch plugins
-enable_plugins()
 # now import larch-specific Python code
-from autobk import autobk
-from xafsft import xftf
-from mathutils import index_nearest # (uses numpy's argmin())
+from larch_plugins.xafs.autobk import autobk
+from larch_plugins.xafs.xafsft import xftf
+from larch_plugins.math.mathutils import index_nearest # (uses numpy's argmin())
 
 # create a larch interpreter, passed to most functions
 my_larch = Interpreter()
