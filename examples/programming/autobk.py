@@ -2,12 +2,11 @@
 
 ## Autobk (XAFS background subtraction) in pure Python,
 ## using Python code from Larch.
-from larch import Interpreter, enable_plugins
-enable_plugins()
+from larch import Interpreter
 
-from pre_edge import pre_edge
-from autobk import autobk
-from columnfile import _read_ascii
+from larch_plugins.xafs.pre_edge import pre_edge
+from larch_plugins.xafs.autobk import autobk
+from larch_plugins.io.columnfile import _read_ascii
 
 _larch = Interpreter()
 
