@@ -174,33 +174,42 @@ def remove_cruft(basedir, filelist):
             remove_file(basedir, fname+'o')
 
 
-def fix_permissions(dirnames):
+def fix_permissions(dirname, stat=None):
     """
     set permissions on a list of directories to match
     those of the HOME directory
     """
-    try:
-        home = os.environ['HOME']
-    except:
+    if stat is None:
         return
-    stat =  os.stat(home)
-    def own(nam, mode=0o755):
+    def set_perms(fname):
         try:
-            os.chown(nam, stat.st_uid, stat.st_gid)
-            os.chmod(nam, mode)
+            os.chown(fname, stat.st_uid, stat.st_gid)
+            os.chmod(fname, stat.st_mode)
         except(AttributeError, OSError):
             pass
-    for dname in (dirnames):
-        folder = os.path.join(home, '.%s' % dname)
-        for top, dirs, files in os.walk(folder):
-            own(top)
-            for d in dirs+files:
-                own(os.path.join(top, d))
 
-fix_permissions(('matplotlib', 'larch'))
+    for top, dirs, files in os.walk(dirname):
+        set_perms(top)
+        for d in dirs+files:
+            set_perms(os.path.join(top, d))
+
+
 if cmdline_args[0] == 'install':
     remove_cruft(larchdir, historical_cruft)
 
+    home_dir = site_config.get_homedir()
+    try:
+        home_stat = os.stat(home_dir)
+    except:
+        home_stat = None
+
+    if home_stat is not None:
+        fix_permissions(larchdir, stat=home_stat)
+        fix_permissions(bin_dir,  stat=home_stat)
+        mpl_dir = os.path.join(home_dir, '.matplotlib')
+        if os.path.exists(mpl_dir):
+            fix_permissions(mpl_dir,  stat=home_stat)
+    
 if deps_ok and not os.path.exists('.deps'):
     f = open('.deps', 'w')
     f.write('1\n')
