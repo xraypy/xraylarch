@@ -29,11 +29,9 @@ Basic Fitting Models for 1-D data, simplifying fits to many standard line shapes
 import numpy as np
 from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
 
-from larch import (Group, Parameter, Minimizer, use_plugin_path, fitting,
-                   ValidateLarchPlugin)
+from larch import Group, Parameter, Minimizer, fitting, ValidateLarchPlugin
 
-use_plugin_path('math')
-from mathutils import index_nearest, index_of
+from larch.plugins.math import index_nearest, index_of
 
 VALID_BKGS = ('constant', 'linear', 'quadratic')
 
