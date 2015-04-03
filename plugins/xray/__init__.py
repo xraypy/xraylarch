@@ -1,8 +1,13 @@
+
 from larch.plugins.xray import physical_constants
 
-R_ELECTRON_CM = physical_constants.
+R_ELECTRON_CM = physical_constants.R_ELECTRON_CM
 AVOGADRO = physical_constants.AVOGADRO
 PLANCK_HC = physical_constants.PLANCK_HC
+RAD2DEG = physical_constants.RAD2DEG
+
+from larch.plugins.xray import chemparser
+chemparse = chemparser.chemparse
 
 from larch.plugins.xray import xraydb
 
@@ -11,7 +16,7 @@ xrayDB     = xraydb.xrayDB
 
 from larch.plugins.xray import xraydb_plugin
 atomic_mass = xraydb_plugin.atomic_mass
-atomic_number = xraydb_plugin.atomic_numer
+atomic_number = xraydb_plugin.atomic_number
 atomic_symbol = xraydb_plugin.atomic_symbol
 xray_line   = xraydb_plugin.xray_line
 xray_lines  = xraydb_plugin.xray_lines
@@ -28,9 +33,6 @@ core_width  = xraydb_plugin.core_width
 from larch.plugins.xray import materials
 material_mu = materials.material_mu
 material_get = materials.material_get
-
-from larch.plugins.xray import chemparser
-chemparse = chemparser.chemparse
 
 from larch.plugins.xray import cromer_liberman
 f1f2 = cromer_liberman.f1f2
