@@ -2,9 +2,8 @@
 """
 Read/Write TIFF Files, using tifffile.py from Christoph Gohlke
 """
-from larch.larchlib import use_plugin_path
-use_plugin_path('io')
-from tifffile import imread, imshow, TIFFfile
+import larch
+from larch.plugins.io import imread, imshow, TIFFfile
 
 def read_tiff(fname, _larch=None, *args, **kws):
     """read image data from a TIFF file as an array"""

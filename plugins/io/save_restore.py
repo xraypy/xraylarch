@@ -1,14 +1,12 @@
 import json
 import numpy as np
 import h5py
-from larch import Group, Parameter, isParameter, use_plugin_path
+from larch import Group, Parameter, isParameter
 from larch import ValidateLarchPlugin
 from larch.utils import fixName
 
-use_plugin_path('xafs')
-
-from feffdat import FeffPathGroup, FeffDatFile
-from feffit import FeffitDataSet, TransformGroup
+from larch.plugins.xafs import (FeffPathGroup, FeffDatFile,
+                                FeffitDataSet, TransformGroup)
 
 class H5PySaveFile(object):
     def __init__(self, fname, _larch=None):

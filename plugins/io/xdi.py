@@ -8,10 +8,9 @@ import ctypes.util
 
 __version__ = '1.1.0larch'
 
-from larch import ValidateLarchPlugin, use_plugin_path
+from larch import ValidateLarchPlugin
 from larch.larchlib import get_dll
-use_plugin_path('xray')
-from physical_constants import RAD2DEG, PLANCK_HC
+from larch.plugins.xray import RAD2DEG, PLANCK_HC
 from numpy import array, exp, log, sin, arcsin
 
 class XDIFileStruct(ctypes.Structure):

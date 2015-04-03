@@ -1,5 +1,10 @@
-from larch.plugins.io import columnfile, file_utils, xdi
+from larch.plugins.io import tifffile
+imread = tifffile.imread
+imshow = tifffile.imshow
+imread = tifffile.imread
 
+
+from larch.plugins.io import columnfile, file_utils, xdi
 
 read_xdi = xdi.read_xdi
 

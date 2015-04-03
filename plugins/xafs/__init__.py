@@ -20,7 +20,14 @@ ftwindow  = xafsft.ftwindow
 
 from larch.plugins.xafs import feffdat
 FeffPathGroup = feffdat.FeffPathGroup
+FeffDatFile = feffdat.FeffDatFile
 _ff2chi = feffdat._ff2chi
+
+
+from larch.plugins.xafs import feffit
+FeffitDataSet = feffit.FeffitDataSet
+TransformGroup = feffit.TransformGroup
+
 
 from larch.plugins.xafs import autobk
 from larch.plugins.xafs import mback
