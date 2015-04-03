@@ -48,12 +48,8 @@ from datetime import date
 from string import Template
 import numpy as np
 
+from larch.plugins.math import gaussian, lorentzian
 
-from larch import use_plugin_path
-use_plugin_path('math')
-#from mathutils import index_of, index_nearest #not used, get_ene_index() instead
-from lineshapes import gaussian, lorentzian
-    
 def get_ene_index(ene, cen, hwhm):
     """ returns the min/max indexes for array ene at (cen-hwhm) and (cen+hwhm)
     very similar to index_of in larch
@@ -118,7 +114,7 @@ def atan_gamma(ene, gamma_hole, gamma_max=15., e0=0, eslope=1.):
 
 def conv(e, mu, kernel='gaussian', fwhm_e=None, efermi=None):
     """ linear broadening
-    
+
     Parameters
     ----------
     e : x-axis (energy)
@@ -326,16 +322,15 @@ ${gauss_sel}${gaussian} !Gaussian conv for experimental res\n\
         f = open('convfile.txt', 'w')
         f.write(outstr)
         f.close()
-        
+
     def run(self):
         """ runs fdmnes """
         self.wfdmfile()  # write fdmfile.txt
         self.wconvfile() # write convfile.txt
         try:
-            subprocess.call('fdmnes', shell=True) 
+            subprocess.call('fdmnes', shell=True)
         except OSError:
             print "check 'fdmnes' executable exists!"
 
 def registerLarchPlugin():
     return (MODNAME, {'glinbroad': glinbroad})
-

@@ -6,9 +6,7 @@ Splines for fitting to data within Larch
 from scipy.interpolate import splrep, splev
 
 from larch import (Parameter, Group, isgroup, isParameter,
-                   use_plugin_path, ValidateLarchPlugin)
-
-use_plugin_path('math')
+                   ValidateLarchPlugin)
 
 @ValidateLarchPlugin
 def spline_rep(x, y, group=None, name='spl1', _larch=None):
