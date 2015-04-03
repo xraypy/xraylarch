@@ -12,6 +12,7 @@ from larch.plugins.math import (index_of, index_nearest,
 
 from larch.plugins.xafs import (ETOK, set_xafsGroup, ftwindow,
                                 xftf_fast, find_e0, pre_edge)
+pre_edge = pre_edge.pre_edge
 
 # check for uncertainties package
 HAS_UNCERTAIN = False
