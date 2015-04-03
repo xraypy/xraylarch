@@ -10,10 +10,10 @@ from larch import (Group, Parameter, ValidateLarchPlugin,
                    Minimizer, isgroup)
 
 # now we can reliably import other std and xafs modules...
-from larch_plugins.std.grouputils import parse_group_args
-from larch_plugins.math.mathutils import (index_of, index_nearest,
-                                          remove_dups, remove_nans2)
-from larch_plugins.xafs.xafsutils import set_xafsGroup
+from larch.plugins.std import parse_group_args
+from larch.plugins.math import (index_of, index_nearest,
+                                remove_dups, remove_nans2)
+from larch.plugins.xafs import set_xafsGroup
 
 MODNAME = '_xafs'
 MAX_NNORM = 5

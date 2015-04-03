@@ -5,8 +5,9 @@ from   distutils.spawn import find_executable
 from shutil import copy, move
 import subprocess
 
-from larch import (Group, Parameter, isParameter, param_value, isNamedClass, Interpreter)
-from larch_plugins.std.show import _show
+from larch import (Group, Parameter, isParameter, param_value,
+                   isNamedClass, Interpreter)
+from larch.plugins.std import _show
 
 class FeffRunner(Group):
     """

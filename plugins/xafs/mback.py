@@ -1,12 +1,10 @@
 
-from larch import (Group, Parameter, isgroup, Minimizer)
+from larch import Group, Parameter, isgroup, Minimizer
 
-from larch_plugins.math.mathutils import index_of
-from larch_plugins.xray.cromer_liberman import f1f2
-from larch_plugins.xray.xraydb_plugin import xray_edge, xray_line, f2_chantler
-from larch_plugins.std.grouputils import parse_group_args
-from larch_plugins.xafs.xafsutils import set_xafsGroup
-from larch_plugins.xafs.pre_edge import find_e0
+from larch.plugins.std  import parse_group_args
+from larch.plugins.math import index_of
+from larch.plugins.xray import xray_edge, xray_line, f2_chantler, f1f2
+from larch.plugins.xafs import set_xafsGroup, find_e0
 
 import numpy as np
 from scipy.special import erfc

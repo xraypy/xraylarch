@@ -2,16 +2,16 @@
 from larch import (Group, Parameter, isParameter, param_value,
                    isNamedClass, Interpreter, Minimizer)
 
-from larch_plugins.std.show import _show
-from larch_plugins.math.mathutils import _interp
-from larch_plugins.xray.cromer_liberman import f1f2
-from larch_plugins.xray.xraydb_plugin import xray_edge, xray_line
-from larch_plugins.xafs.mback import mback
+from larch.plugins.std  import _show
+from larch.plugins.math import _interp
+from larch.plugins.xray import f1f2, xray_edge, xray_line
+from larch.plugins.xafs import mback
+mback = mback.mback
 import numpy as np
 from scipy.special import erfc
 from math import pi
 
-from larch_plugins.wx.plotter import (_newplot, _plot)
+from larch.plugins.wx.plotter import (_newplot, _plot)
 
 import time
 
