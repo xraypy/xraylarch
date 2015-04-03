@@ -385,6 +385,7 @@ def enable_plugins():
     sys.path.insert(0, topdir)
     import plugins
     sys.modules['larch.plugins'] = plugins
+    return plugins
 
 def add2path(envvar='PATH', dirname='.'):
     """add specified dir to begninng of PATH and
