@@ -24,7 +24,6 @@ from .inputText import InputText
 from .utils import Closure, fixName
 from .version import __date__, __version__
 
-enable_plugins()
 
 def ValidateLarchPlugin(fcn):
     """function decorator to ensure that _larch is included in keywords,
