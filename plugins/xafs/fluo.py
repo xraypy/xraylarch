@@ -1,10 +1,10 @@
 import numpy as np
 
 from larch import ValidateLarchPlugin
-from larch_plugins.xray.xraydb_plugin import xray_line, xray_edge
-from larch_plugins.xray.materials import material_mu
-from larch_plugins.xafs.pre_edge import preedge
-from larch_plugins.std.grouputils import parse_group_args
+from larch.plugins.xray import xray_line, xray_edge
+from larch.plugins.xray import material_mu
+from larch.plugins.xafs import preedge
+from larch.plugins.std import parse_group_args
 
 MODNAME = '_xafs'
 

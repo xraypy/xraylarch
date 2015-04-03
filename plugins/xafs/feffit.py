@@ -12,9 +12,9 @@ from scipy.optimize import leastsq as scipy_leastsq
 from larch import (Group, Parameter, isParameter, Minimizer,
                    ValidateLarchPlugin, isNamedClass)
 
-from larch_plugins.math.mathutils import index_of, realimag, complex_phase
-from larch_plugins.xafs.xafsft import xftf_fast, xftr_fast, ftwindow, set_xafsGroup
-from larch_plugins.xafs.feffdat import FeffPathGroup, _ff2chi
+from larch.plugins.math import index_of, realimag, complex_phase
+from larch.plugins.xafs import (xftf_fast, xftr_fast, ftwindow, set_xafsGroup,
+                                FeffPathGroup, _ff2chi)
 
 # use larch's uncertainties package
 from larch.fitting import correlated_values, eval_stderr

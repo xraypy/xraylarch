@@ -9,12 +9,10 @@ from numpy import (pi, arange, zeros, ones, sin, cos,
 from scipy.fftpack import fft, ifft
 from scipy.special import i0 as bessel_i0
 
-import larch
 from larch import ValidateLarchPlugin
-
-from larch_plugins.math.mathutils import complex_phase
-from larch_plugins.xafs.xafsutils import set_xafsGroup
-from larch_plugins.std.grouputils import parse_group_args
+from larch.plugins.math import complex_phase
+from larch.plugins.xafs import set_xafsGroup
+from larch.plugins.std import parse_group_args
 
 MODNAME = '_xafs'
 VALID_WINDOWS = ['han', 'fha', 'gau', 'kai', 'par', 'wel', 'sin', 'bes']
