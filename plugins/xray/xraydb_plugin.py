@@ -1,13 +1,10 @@
 import sys
 from math import pi
 import larch
-from larch import Group, use_plugin_path, ValidateLarchPlugin
+from larch import Group, ValidateLarchPlugin
 
-use_plugin_path('xray')
-
-from physical_constants import R_ELECTRON_CM, AVOGADRO, PLANCK_HC
-from chemparser import chemparse
-from xraydb import xrayDB
+from larch.plugins.xray import (R_ELECTRON_CM, AVOGADRO, PLANCK_HC,
+                                chemparse, xrayDB)
 
 MODNAME = '_xray'
 
