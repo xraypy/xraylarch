@@ -4,13 +4,10 @@ import numpy as np
 from scipy.signal import convolve
 
 import larch
-from larch import use_plugin_path, ValidateLarchPlugin
+from larch import  ValidateLarchPlugin
 from larch.larchlib import get_dll
 
-use_plugin_path('xray')
-
-from xraydb import as_ndarray
-from xraydb_plugin import core_width, atomic_number
+from larch.plugins.xray import as_ndarray, core_width, atomic_number
 
 MODNAME = '_xray'
 CLLIB = None
@@ -97,4 +94,3 @@ if __name__ == '__main__':
     en = np.linspace(8000, 9200, 51)
     f1, f2 = f1f2(29, en)
     print( en, f1, f2)
-

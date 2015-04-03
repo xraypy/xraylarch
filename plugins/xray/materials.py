@@ -1,11 +1,9 @@
 import os
 import numpy as np
-from larch import use_plugin_path, ValidateLarchPlugin, site_config
+from larch import ValidateLarchPlugin, site_config
 
-use_plugin_path('xray')
-from xraydb_plugin import mu_elam, atomic_mass
+from larch.plugins.xray import mu_elam, atomic_mass, chemparse
 
-from chemparser import chemparse
 MODNAME = '_xray'
 
 def get_materials(_larch):
