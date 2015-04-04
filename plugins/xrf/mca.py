@@ -10,9 +10,8 @@ Authors/Modifications:
 import numpy as np
 from larch import Group, isgroup
 
-from .deadtime import calc_icr, correction_factor
-from roi import ROI
-
+from larch_plugins.xrf.deadtime import calc_icr, correction_factor
+from larch_plugins.xrf.roi import ROI
 
 def isLarchMCAGroup(grp):
     """tests whether variable holds a valid Larch MCAGroup"""
