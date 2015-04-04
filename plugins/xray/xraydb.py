@@ -18,7 +18,7 @@ from sqlalchemy.pool import SingletonThreadPool
 # needed for py2exe?
 import sqlalchemy.dialects.sqlite
 
-from ..math.mathutils import as_ndarray
+from larch_plugins.math import as_ndarray
 
 def OLDas_ndarray(obj):
     """make sure a float, int, list of floats or ints,
