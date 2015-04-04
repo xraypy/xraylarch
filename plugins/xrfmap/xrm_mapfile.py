@@ -7,25 +7,19 @@ import numpy as np
 import scipy.stats as stats
 import json
 import larch
-from larch import use_plugin_path
 from larch.utils.debugtime import debugtime
 
-use_plugin_path('io')
-use_plugin_path('xrf')
-use_plugin_path('xrfmap')
+from ..io import nativepath, new_filename
+from ..xrf import MCA, ROI
 
-from fileutils import nativepath, new_filename
-from mca import MCA
-from roi import ROI
-
-from configfile import FastMapConfig
-from xmap_netcdf import read_xmap_netcdf
-from xsp3_hdf5 import read_xsp3_hdf5
-from asciifiles import (readASCII, readMasterFile, readROIFile,
+from .configfile import FastMapConfig
+from .xmap_netcdf import read_xmap_netcdf
+from .xsp3_hdf5 import read_xsp3_hdf5
+from .asciifiles import (readASCII, readMasterFile, readROIFile,
                         readEnvironFile, parseEnviron)
 
 NINIT = 32
-COMPRESSION_LEVEL = 4 # compression level
+COMPRESSION_LEVEL = 4
 DEFAULT_ROOTNAME = 'xrfmap'
 
 class GSEXRM_FileStatus:
