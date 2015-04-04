@@ -13,12 +13,13 @@ import wx.lib.scrolledpanel as scrolled
 from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
                      Check, HLine, GridPanel, RowPanel, CEN, LEFT, RIGHT)
 
-from larch import use_plugin_path, Group, Parameter
+from larch import Group, Parameter
 from larch.larchlib import Empty
-use_plugin_path('xrf')
-from xrf_bgr import xrf_background
-from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
-from materials import material_mu, material_get
+
+from ..xrf import (xrf_background, xrf_calib_fitrois,
+                   xrf_calib_compute, xrf_calib_apply)
+
+from ..xray import material_mu, material_get
 
 from parameter import ParameterPanel
 try:
@@ -380,5 +381,3 @@ class FitSpectraFrame(wx.Frame):
 
     def onClose(self, event=None):
         self.Destroy()
-
-

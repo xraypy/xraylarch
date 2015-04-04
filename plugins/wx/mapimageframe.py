@@ -20,11 +20,6 @@ from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 import larch
 
-larch.use_plugin_path('std')
-from debugtime import DebugTimer
-
-larch.use_plugin_path('wx')
-
 from wxmplot import ImageFrame, PlotFrame
 from wxmplot.imagepanel import ImagePanel
 from wxmplot.imageconf import ColorMap_List, Interp_List
@@ -63,7 +58,6 @@ class MapImageFrame(ImageFrame):
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
 
-        dbt = DebugTimer()
         self.det = None
         self.xrmfile = None
         self.map = None
