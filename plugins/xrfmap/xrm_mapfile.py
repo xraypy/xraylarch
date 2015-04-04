@@ -9,14 +9,13 @@ import json
 import larch
 from larch.utils.debugtime import debugtime
 
-from ..io import nativepath, new_filename
-from ..xrf import MCA, ROI
+from larch_plugins.io import nativepath, new_filename
+from larch_plugins.xrf import MCA, ROI
 
-from .configfile import FastMapConfig
-from .xmap_netcdf import read_xmap_netcdf
-from .xsp3_hdf5 import read_xsp3_hdf5
-from .asciifiles import (readASCII, readMasterFile, readROIFile,
-                        readEnvironFile, parseEnviron)
+from larch_plugins.xrfmap import (FastMapConfig, read_xmap_netcdf,
+                                  read_xsp3_hdf5, readASCII,
+                                  readMasterFile, readROIFile,
+                                  readEnvironFile, parseEnviron)
 
 NINIT = 32
 COMPRESSION_LEVEL = 4
