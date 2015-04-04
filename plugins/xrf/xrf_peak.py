@@ -13,8 +13,8 @@ from larch import (Group, Parameter, isParameter,
                    ValidateLarchPlugin,
                    param_value, isNamedClass)
 
-from ..xray import xray_line, xray_lines
-from ..math import gaussian, lorentzian, voigt, pvoigt
+from larch_plugins.xray import xray_line, xray_lines
+from larch_plugins.math import gaussian, lorentzian, voigt, pvoigt
 
 class XRFPeak(Group):
     def __init__(self, name=None, shape='gaussian',

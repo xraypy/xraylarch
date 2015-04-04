@@ -11,11 +11,11 @@ try:
 except ImportError:
     from larch.utils import OrderedDict
 
-from .mca import isLarchMCAGroup
-from .roi import split_roiname
+from larch_plugins.xrf import isLarchMCAGroup
+from larch_plugins.xrf import split_roiname
 
-from ..math import index_of, linregress, fit_peak
-from ..xray import xray_line, xray_lines
+from larch_plugins.math import index_of, linregress, fit_peak
+from larch_plugins.xray import xray_line, xray_lines
 
 def xrf_calib_fitrois(mca, _larch=None):
     """initial calibration step for MCA:

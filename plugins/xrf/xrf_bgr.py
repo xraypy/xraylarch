@@ -108,7 +108,7 @@ Todo:
 
 import numpy as np
 from larch import ValidateLarchPlugin
-from .mca import isLarchMCAGroup
+from larch_plugins.xrf import isLarchMCAGroup
 
 REFERENCE_AMPL=100.
 TINY = 1.E-20
