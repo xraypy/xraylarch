@@ -2,8 +2,7 @@ import os
 import numpy as np
 from larch import ValidateLarchPlugin, site_config
 
-from .chemparser import chemparse
-from .xraydb_plugin import mu_elam, atomic_mass
+from larch_plugins.xray import chemparse, mu_elam, atomic_mass
 
 MODNAME = '_xray'
 
