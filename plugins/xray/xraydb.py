@@ -18,7 +18,9 @@ from sqlalchemy.pool import SingletonThreadPool
 # needed for py2exe?
 import sqlalchemy.dialects.sqlite
 
-def as_ndarray(obj):
+from ..math.mathutils import as_ndarray
+
+def OLDas_ndarray(obj):
     """make sure a float, int, list of floats or ints,
     or tuple of floats or ints, acts as a numpy array
     """
@@ -166,8 +168,8 @@ class xrayDB(object):
             self.session = sessionmaker(bind=self.engine, **kwargs)()
             self.session.flush = readonly_flush
         else:
-            self.session = sessionmaker(bind=self.engine, **kwargs)()            
-            
+            self.session = sessionmaker(bind=self.engine, **kwargs)()
+
         self.metadata =  MetaData(self.engine)
         self.metadata.reflect()
         tables = self.tables = self.metadata.tables
@@ -543,7 +545,7 @@ class xrayDB(object):
             xsec += calc(element, energies, kind='incoh')
 
         return xsec
-    
+
     def coherent_cross_section_elam(self, element, energies):
         """returns coherenet scattering cross section for an element
         at energies (in eV)
