@@ -8,9 +8,9 @@ Authors/Modifications:
 * modified and simplified for Larch, M Newville
 """
 import numpy as np
-from larch import Group, isgroup, use_plugin_path
-use_plugin_path('xrf')
-from deadtime import calc_icr, correction_factor
+from larch import Group, isgroup
+
+from .deadtime import calc_icr, correction_factor
 from roi import ROI
 
 
@@ -325,4 +325,3 @@ def create_mca(counts=None, nchans=2048, offset=0, slope=0, quad=0,
 
 def registerLarchPlugin():
     return ('_xrf', {'create_mca': create_mca})
-
