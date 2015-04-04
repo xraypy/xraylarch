@@ -7,8 +7,8 @@ from numpy import pi, log, exp, sqrt, arange, concatenate, convolve
 from numpy import int, abs, linalg, mat, linspace, interp, diff
 
 import larch
-from larch.plugins.math import index_of, index_nearest, realimag, remove_dups
-from larch.plugins.math import gaussian, lorentzian, voigt
+from .mathutils import index_of, index_nearest, realimag, remove_dups
+from .lineshapes import gaussian, lorentzian, voigt
 
 def lsmooth(x, sigma=1, gamma=None, form='lorentzian', npad=None):
     """convolve a 1-d array with a lorentzian, gaussian, or voigt function.
