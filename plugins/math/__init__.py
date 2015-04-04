@@ -5,8 +5,8 @@ from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, pearson7,
                          skewed_voigt, students_t, logistic, erf, erfc)
 
 from .mathutils import (as_ndarray, index_nearest, index_of, realimag,
-                        remove_dups, remove_nans2, complex_phase, _interp)
+                        remove_dups, remove_nans2, complex_phase,
+                        linregress, _interp)
 
 from .fitpeak import fit_peak
-from .smoothing import savitzky_golay, smooth
 from .convolution1D import glinbroad
