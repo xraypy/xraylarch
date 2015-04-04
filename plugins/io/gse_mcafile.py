@@ -5,11 +5,9 @@ import copy
 import numpy as np
 from scipy.interpolate import UnivariateSpline
 
-from larch import use_plugin_path, Group, param_value, Parameter, Interpreter
-use_plugin_path('xrf')
+from larch import Group, param_value, Parameter, Interpreter
 
-from mca import MCA
-from roi import ROI
+from larch_plugins.xrf import MCA, ROI
 
 def str2floats(s, delim='&'):
     s = s.replace('&', ' ')
