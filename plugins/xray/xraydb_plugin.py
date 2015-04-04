@@ -3,8 +3,9 @@ from math import pi
 import larch
 from larch import Group, ValidateLarchPlugin
 
-from larch.plugins.xray import (R_ELECTRON_CM, AVOGADRO, PLANCK_HC,
-                                chemparse, xrayDB)
+from .physical_constants import R_ELECTRON_CM, AVOGADRO, PLANCK_HC
+from .xraydb import xrayDB
+from .chemparser import chemparse
 
 MODNAME = '_xray'
 
