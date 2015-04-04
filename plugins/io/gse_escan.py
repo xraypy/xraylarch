@@ -8,8 +8,8 @@ import gc
 
 import numpy
 from larch import ValidateLarchPlugin, use_plugin_path
-use_plugin_path('io')
-from columnfile import iso8601_time
+
+from .columnfile import iso8601_time
 
 def _cleanfile(x):
     for o in ' ./?(){}[]",&%^#@$': x = x.replace(o,'_')
@@ -922,4 +922,3 @@ def registerLarchPlugin():
     return ('_io', {'read_gsescan': gsescan_group,
                     'gsescan_dtcorrect': gsescan_deadtime_correct,
     })
-
