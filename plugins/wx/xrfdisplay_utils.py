@@ -17,10 +17,8 @@ from wxmplot.colors import hexcolor
 
 import larch
 
-larch.use_plugin_path('xrf')
-
-from xrf_bgr import xrf_background
-from xrf_calib import xrf_calib_fitrois, xrf_calib_compute, xrf_calib_apply
+from ..xrf import (xrf_background, xrf_calib_fitrois,
+                   xrf_calib_compute, xrf_calib_apply)
 
 class CalibrationFrame(wx.Frame):
     def __init__(self, parent, mca, larch=None, size=(-1, -1), callback=None):
@@ -392,7 +390,7 @@ class ROI_Averager():
     """
     def __init__(self, nsamples=11):
         self.clear(nsamples = nsamples)
-        
+
     def clear(self, nsamples=11):
         self.nsamples = nsamples
         self.index = -1
@@ -408,7 +406,7 @@ class ROI_Averager():
         self.lastval  = value
         dt = time.time() - self.toffset
         # avoid first time point
-        if (idx == 0 and max(self.times) < 0): 
+        if (idx == 0 and max(self.times) < 0):
             dt = 0
         self.times[idx] =  dt
 
@@ -418,11 +416,9 @@ class ROI_Averager():
     def get_mean(self):
         valid = np.where(self.times > 0)[0]
         return self.data[valid].mean()
-    
+
     def get_cps(self):
         valid = np.where(self.times > 0)[0]
         if len(valid) < 1 or  self.times[valid].ptp() < 0.5:
             return 0
         return self.data[valid].sum() / self.times[valid].ptp()
-            
-

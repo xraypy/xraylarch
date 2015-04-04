@@ -26,22 +26,18 @@ try:
     HAS_EPICS = True
 except ImportError:
     pass
-    
-from larch import Interpreter, use_plugin_path, isParameter
+
+from larch import Interpreter, isParameter
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import larchframe
 from larch.fitting import fit_report
-from larch.utils import debugtime        
-use_plugin_path('math')
-from fitpeak import fit_peak
-from mathutils import index_of
+from larch.utils import debugtime
 
-use_plugin_path('io')
-from gse_escan import gsescan_group
-from xdi import read_xdi
+from ..math import fit_peak, index_of
 
-use_plugin_path('wx')
-from mapviewer import MapViewerFrame
+from ..io import gsescan_group, read_xdi
+
+from .mapviewer import MapViewerFrame
 
 from wxmplot import PlotFrame, PlotPanel
 
@@ -74,7 +70,7 @@ def okcancel(panel, onOK=None, onCancel=None):
     btnsizer.Realize()
     return btnsizer
 
- 
+
 class EditColumnFrame(wx.Frame) :
     """Set Column Labels for a file"""
     def __init__(self, parent, pos=(-1, -1)):
@@ -88,7 +84,7 @@ class EditColumnFrame(wx.Frame) :
         wx.Frame.__init__(self, None, -1, 'Edit Column Labels',
                           style=FRAMESTYLE)
 
-        FWID = 600 
+        FWID = 600
         self.SetFont(Font(10))
         sizer = wx.GridBagSizer(10, 5)
         panel = scrolled.ScrolledPanel(self)
@@ -158,7 +154,7 @@ class EditColumnFrame(wx.Frame) :
         self.Raise()
 
     def onOK(self, event=None):
-        """ rename labels -- note that values for new names are first gathered, 
+        """ rename labels -- note that values for new names are first gathered,
         and then set, so that renaming 'a' and 'b' works."""
         labels = []
         tmp = {}
@@ -197,7 +193,7 @@ class ScanViewerFrame(wx.Frame):
         self.SetFont(Font(10))
 
         self.config = {'chdir_on_fileopen': True}
-        
+
         self.createMainPanel()
         self.createMenus()
         self.statusbar = self.CreateStatusBar(2, 0)
@@ -278,7 +274,7 @@ class ScanViewerFrame(wx.Frame):
         self.dtcorr   = Check(panel, default=True, label='correct deadtime?',
                               action=self.onColumnChoices)
         ir += 1
-        sizer.Add(self.use_deriv, (ir,   0), (1, 3), LCEN, 0)       
+        sizer.Add(self.use_deriv, (ir,   0), (1, 3), LCEN, 0)
         sizer.Add(self.dtcorr,    (ir,   3), (1, 3), LCEN, 0)
 
         pack(panel, sizer)
@@ -312,7 +308,7 @@ class ScanViewerFrame(wx.Frame):
         pack(btnbox, btnsizer)
         mainsizer.Add(btnbox, 0, LCEN, 2)
         mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
-        
+
         pack(mainpanel, mainsizer)
 
         return mainpanel
@@ -347,10 +343,10 @@ class ScanViewerFrame(wx.Frame):
 
         self.fit_report = RichTextCtrl(panel,  size=(525, 250),
                                      style=wx.VSCROLL|wx.NO_BORDER)
-        
+
         self.fit_report.SetEditable(False)
         self.fit_report.SetFont(Font(9))
-        
+
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(tpan, 0, wx.GROW|wx.ALL, 2)
@@ -540,7 +536,7 @@ class ScanViewerFrame(wx.Frame):
                       marker='None', markersize=4)
         popts2 = dict(style='short dashed', linewidth=2, zorder=-5,
                       marker='None', markersize=4)
-        poptsd = dict(style='solid', linewidth=2, zorder=-5, 
+        poptsd = dict(style='solid', linewidth=2, zorder=-5,
                       side='right',  y2label='derivative',
                       marker='None', markersize=4)
 
@@ -616,7 +612,7 @@ class ScanViewerFrame(wx.Frame):
         y2  = self.yarr[1].GetStringSelection()
         y3  = self.yarr[2].GetStringSelection()
 
-        array_sel = {'xop': xop, 'xarr': x, 
+        array_sel = {'xop': xop, 'xarr': x,
                      'op1': op1, 'op2': op2, 'op3': op3,
                      'y1': y1, 'y2': y2, 'y3': y3,
                      'dtcorr': dtcorr, 'use_deriv': use_deriv}
@@ -671,10 +667,10 @@ class ScanViewerFrame(wx.Frame):
         lgroup._y1 = y1
         lgroup._y2 = y2
         lgroup._y3 = y3
-        
+
         self.larch("%s._xdat_ = %s(%s._x)" % (gname, xop, gname))
         try:
-            yexpr = "%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  % (gname, 
+            yexpr = "%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  % (gname,
                     op1, gname, op2, gname, op3, gname)
             self.larch(yexpr)
         except RuntimeWarning:
@@ -705,9 +701,9 @@ class ScanViewerFrame(wx.Frame):
             self.xas_process(self.groupname, new_mu=True)
         else:
             lgroup.plot_yarrays = [(lgroup._ydat_, {}, None)]
-        
+
     def onPlot(self, evt=None, opt='new', npts=None, reprocess=False):
-           
+
         try:
             self.plotframe.Show()
         except: #  wx.PyDeadObjectError
@@ -742,7 +738,7 @@ class ScanViewerFrame(wx.Frame):
 
         if not hasattr(lgroup, '_xdat_'):
             self.onColumnChoices()
-            
+
         lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
         plot_yarrays = [(lgroup._ydat_, {}, None)]
         if hasattr(lgroup, 'plot_yarrays'):
@@ -789,7 +785,7 @@ class ScanViewerFrame(wx.Frame):
     def onShowLarchBuffer(self, evt=None):
         if self.larch_buffer is None:
             self.larch_buffer = larchframe.LarchFrame(_larch=self.larch)
-        
+
         self.larch_buffer.Show()
         self.larch_buffer.Raise()
 
@@ -797,7 +793,7 @@ class ScanViewerFrame(wx.Frame):
         if groupname is None and evt is not None:
             fpath = self.file_paths[evt.GetInt()]
             groupname = self.file_groups[fpath]
-            
+
         if not hasattr(self.datagroups, groupname):
             print( 'Error reading file ', groupname)
             return
@@ -834,7 +830,7 @@ class ScanViewerFrame(wx.Frame):
                     self.use_deriv.SetValue({True: 1, False:0}[sel['use_deriv']])
                 except:
                     pass
-            
+
     def set_array_labels(self, labels=None):
         """set choices for array dropdowns from array labels"""
         array_labels = self.lgroup.array_labels
@@ -860,7 +856,7 @@ class ScanViewerFrame(wx.Frame):
             if j == 0:
                 self.yarr[j].SetItems(ycols)
                 if _yarr[j] in ycols and len(_yarr[j]) > 0:
-                    self.yarr[j].SetStringSelection(_yarr[j])                    
+                    self.yarr[j].SetStringSelection(_yarr[j])
                 elif ycols[0] == _xarr and len(ycols)> 1:
                     self.yarr[j].SetStringSelection(ycols[1])
             else:
@@ -899,7 +895,7 @@ class ScanViewerFrame(wx.Frame):
 
 
 
-        self.menubar.Append(omenu, "Options")        
+        self.menubar.Append(omenu, "Options")
 
 
         # fmenu.AppendSeparator()
@@ -957,10 +953,10 @@ class ScanViewerFrame(wx.Frame):
         if not shown:
             self.subframes[name] = frameclass(self)
 
-        
+
     def onEditColumnLabels(self, evt=None):
         self.show_subframe('coledit', EditColumnFrame)
-       
+
     def onReadScan(self, evt=None):
         dlg = wx.FileDialog(self, message="Load Column Data File",
                             defaultDir=os.getcwd(),
@@ -985,7 +981,7 @@ class ScanViewerFrame(wx.Frame):
             parent, fname = os.path.split(path)
             if self.config['chdir_on_fileopen']:
                 os.chdir(parent)
-            
+
             fh = open(path, 'r')
             line1 = fh.readline().lower()
             fh.close()
@@ -996,7 +992,7 @@ class ScanViewerFrame(wx.Frame):
                 reader = 'read_xdi'
                 if 'epics stepscan file' in line1:
                     reader = 'read_gsexdi'
-                
+
             self.larch("%s = %s('%s')" % (gname, reader, path))
             self.larch("%s.path  = '%s'"     % (gname, path))
             self.filelist.Append(fname)
@@ -1044,5 +1040,3 @@ def registerLarchPlugin():
     return ('_plotter', {'scanviewer':_scanviewer,
                          'mapviewer':_mapviewer,
                          'larchgui':_larchgui})
-
-
