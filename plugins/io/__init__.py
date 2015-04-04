@@ -4,12 +4,13 @@ from .fileutils import (increment_filename, new_filename, new_dirname,
                         winpath, nativepath, strip_quotes, get_timestamp)
 
 from .columnfile import read_ascii, write_ascii, write_group, iso8601_time
-from .tiff_plugin import read_tiff, tiff_object
-from .xdi import read_xdi
+from .xdi import read_xdi, XDIFile
 from .mda import read_mda
 
 from .hdf5group import h5file, h5group, netcdf_file, netcdf_group
 
 from .gse_escan import gsescan_group, gsescan_deadtime_correct
-from .gse_xdiscan import read_gsexdi, gsexdi_deadtime_correct
-from .gse_mcafile import gsemca_group
+from .gse_xdiscan import read_gsexdi, gsexdi_deadtime_correct, is_GSEXDI
+from .gse_mcafile import gsemca_group, GSEMCA_File
+from .save_restore import save, restore
+from .tiff_plugin import read_tiff, tiff_object

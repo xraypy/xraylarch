@@ -12,7 +12,7 @@ from numpy import array, exp, log, sin, arcsin
 
 from larch import ValidateLarchPlugin
 from larch.larchlib import get_dll
-from ..xray import RAD2DEG, PLANCK_HC
+from larch_plugins.xray import RAD2DEG, PLANCK_HC
 
 class XDIFileStruct(ctypes.Structure):
     "emulate XDI File"

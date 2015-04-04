@@ -5,7 +5,7 @@ from larch import Group, Parameter, isParameter
 from larch import ValidateLarchPlugin
 from larch.utils import fixName
 
-from larch.plugins.xafs import (FeffPathGroup, FeffDatFile,
+from larch_plugins.xafs import (FeffPathGroup, FeffDatFile,
                                 FeffitDataSet, TransformGroup)
 
 class H5PySaveFile(object):

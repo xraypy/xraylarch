@@ -9,7 +9,7 @@ import gc
 import numpy
 from larch import ValidateLarchPlugin, use_plugin_path
 
-from .columnfile import iso8601_time
+from larch_plugins.io import iso8601_time
 
 def _cleanfile(x):
     for o in ' ./?(){}[]",&%^#@$': x = x.replace(o,'_')
