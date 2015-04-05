@@ -16,10 +16,10 @@ from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
 from larch import Group, Parameter
 from larch.larchlib import Empty
 
-from ..xrf import (xrf_background, xrf_calib_fitrois,
-                   xrf_calib_compute, xrf_calib_apply)
+from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
+                               xrf_calib_compute, xrf_calib_apply)
 
-from ..xray import material_mu, material_get
+from larch_plugins.xray import material_mu, material_get
 
 from parameter import ParameterPanel
 try:

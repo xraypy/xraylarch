@@ -28,9 +28,9 @@ from wxmplot import PlotFrame, ImageFrame
 
 import larch
 
-from .gui_utils import ensuremod
-from .xrfdisplay import XRFDisplayFrame
-from ..xrf import isLarchMCAGroup
+from larch_plugins.wx.gui_utils import ensuremod
+from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
+from larch_plugins.xrf import isLarchMCAGroup
 
 mpl_dir = os.path.join(larch.site_config.larchdir, 'matplotlib')
 os.environ['MPLCONFIGDIR'] = mpl_dir
