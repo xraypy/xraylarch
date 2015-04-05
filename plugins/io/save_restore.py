@@ -5,6 +5,7 @@ from larch import Group, Parameter, isParameter
 from larch import ValidateLarchPlugin
 from larch.utils import fixName
 
+
 class H5PySaveFile(object):
     def __init__(self, fname, _larch=None):
         self.fname = fname
@@ -169,6 +170,7 @@ def restore(fname,  group=None, _larch=None):
 
     from larch_plugins.xafs import (FeffPathGroup, FeffDatFile,
                                     FeffitDataSet, TransformGroup)
+
     def make_group(h5group):
         creators = {'TransformGroup': TransformGroup,
                     'FeffDatFile':    FeffDatFile,
