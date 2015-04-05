@@ -5,8 +5,6 @@ from larch import Group, Parameter, isParameter
 from larch import ValidateLarchPlugin
 from larch.utils import fixName
 
-from larch_plugins.xafs import (FeffPathGroup, FeffDatFile,
-                                FeffitDataSet, TransformGroup)
 
 class H5PySaveFile(object):
     def __init__(self, fname, _larch=None):
@@ -169,6 +167,9 @@ def restore(fname,  group=None, _larch=None):
         msg("File  '%s' is not a valid larch save file\n" % fname)
         return
     create_group = _larch.symtable.create_group
+
+    from larch_plugins.xafs import (FeffPathGroup, FeffDatFile,
+                                    FeffitDataSet, TransformGroup)
 
     def make_group(h5group):
         creators = {'TransformGroup': TransformGroup,
