@@ -31,7 +31,7 @@ from scipy.special import gamma, gammaln, beta, betaln, erf, erfc, wofz
 
 from larch import Group, Parameter, Minimizer, fitting, ValidateLarchPlugin
 
-from larch_plugins.math.mathutils import index_nearest, index_of
+from larch_plugins.math import index_nearest, index_of
 
 VALID_BKGS = ('constant', 'linear', 'quadratic')
 
