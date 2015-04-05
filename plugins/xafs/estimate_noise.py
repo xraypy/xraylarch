@@ -5,9 +5,9 @@
 from numpy import pi, sqrt, where
 from larch import ValidateLarchPlugin, Group, isgroup
 
-from larch.plugins.math import index_of, realimag
-from larch.plugins.xafs import set_xafsGroup, xftf, xftr
-from larch.plugins.std  import parse_group_args
+from larch_plugins.std  import parse_group_args
+from larch_plugins.math import index_of, realimag
+from larch_plugins.xafs import set_xafsGroup, xftf, xftr
 
 @ValidateLarchPlugin
 def estimate_noise(k, chi=None, group=None, rmin=15.0, rmax=30.0,
