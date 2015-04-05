@@ -24,8 +24,6 @@ from .inputText import InputText
 from .utils import Closure, fixName
 from .version import __date__, __version__
 
-enable_plugins()
-
 def ValidateLarchPlugin(fcn):
     """function decorator to ensure that _larch is included in keywords,
     and that it is a valid Interpeter"""
@@ -44,3 +42,5 @@ def ValidateLarchPlugin(fcn):
     wrapper.__filename__ = fcn.__code__.co_filename
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
+
+enable_plugins()
