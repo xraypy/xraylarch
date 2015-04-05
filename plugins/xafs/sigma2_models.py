@@ -6,7 +6,7 @@ import numpy as np
 from larch import ValidateLarchPlugin
 from larch.larchlib import get_dll
 
-from larch_plugins.xray import atomic_mass
+from larch.plugins.xray import atomic_mass
 import scipy.constants as consts
 # EINS_FACTOR  = hbarc*hbarc/(2 * k_boltz * amu) = 24.254360157751783
 #    k_boltz = 8.6173324e-5  # [eV / K]

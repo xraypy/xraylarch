@@ -7,6 +7,7 @@ import subprocess
 
 from larch import (Group, Parameter, isParameter, param_value,
                    isNamedClass, Interpreter)
+from larch.plugins.std import _show
 
 class FeffRunner(Group):
     """
@@ -43,14 +44,14 @@ class FeffRunner(Group):
 
           Other versions of feff in the execution path can also be
           handled, with the caveat that the executable begins with
-          'feff', i.e. 'feff6', 'feff7', etc.
+          "feff', i.e. "feff6", "feff7", etc.
 
             feff = feffrunner(feffinp='path/to/feff6.inp')
             feff.run('feff6')
 
           If the value of the feffinp attribute is a file with a
-          basename other than 'feff.inp', that file will be renamed to
-          'feff.inp' and care will be taken to preserve and existing
+          basename other than "feff.inp", that file will be renamed to
+          "feff.inp" and care will be taken to preserve and existing
           file by that name.
 
     Attributes:
