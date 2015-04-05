@@ -6,6 +6,7 @@ import imp
 import sys
 import time
 import re
+import traceback
 
 from .helper import Helper
 from . import inputText
@@ -185,9 +186,6 @@ def _eval(text=None, filename=None, _larch=None,
         b = block.strip()
         if len(b) <= 0:
             continue
-        # print 'eval %i  : %i, %s ' % (lineno, len(block), block)
-
-
         ret = _larch.eval(block, fname=fname, lineno=lineno)
         if hasattr(ret, '__call__') and not isinstance(ret, type):
             try:
@@ -303,7 +301,6 @@ def _addplugin(plugin, _larch=None, **kws):
         except ImportError:
             is_pkg = os.path.isdir(pjoin(p_path, plugin))
 
-        # write("LARCH ADD_PLUGIN FIND PLUGIN ", plugin, p_path, is_pkg, mod)
         if is_pkg or (mod is not None and
                       mod[2][2] == imp.PKG_DIRECTORY):
             return True, pjoin(p_path, plugin)
@@ -351,7 +348,8 @@ def _addplugin(plugin, _larch=None, **kws):
     def _plugin_file(plugin, path=None):
         "defined here to allow recursive imports for packages"
         fh = None
-
+        if plugin == '__init__':
+            return
         if path is None:
             try:
                 path = _larch.symtable._sys.config.plugins_path
@@ -410,8 +408,8 @@ def _addplugin(plugin, _larch=None, **kws):
                 offset = getattr(exc, 'offset', 0)
                 etext  = getattr(exc, 'text', '')
                 emsg   = getattr(exc, 'message', '')
-                # write(traceback.print_tb(tback))
-                write("""Python Error in plugin '%s', line %d
+                write(traceback.print_tb(tback))
+                write("""Python Error at plugin '%s', line %d
   %s %s^
 %s: %s\n""" % (modpath, lineno, etext, ' '*offset, err.__name__, emsg))
                 retval = False
