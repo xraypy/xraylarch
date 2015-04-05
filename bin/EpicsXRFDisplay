@@ -4,6 +4,6 @@ GSECARS Epics XRF Display App
 """
 import os
 import larch
-from larch_plugins.wx import EpicsXRFApp
+from larch_plugins.epics import EpicsXRFApp
 os.chdir(larch.site_config.home_dir)
 EpicsXRFApp().MainLoop()
