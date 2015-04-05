@@ -94,21 +94,18 @@ from datetime import timedelta
 from epics  import PV, get_pv, poll, caput, caget
 
 
-from larch import use_plugin_path, Group, ValidateLarchPlugin
+from larch import Group, ValidateLarchPlugin
 from larch.utils import debugtime
 
-use_plugin_path('epics')
+from larch_plugins.epics import (Counter, ArrayCounter,
+                                 DeviceCounter, Trigger,
+                                 AreaDetector, get_detector)
 
-from detectors import (Counter, ArrayCounter, DeviceCounter, Trigger, 
-                       AreaDetector, get_detector)
-from datafile import ASCIIScanFile
-from positioner import Positioner
-# from xafsscan import XAFS_Scan
+from larch_plugins.epics.datafile import ASCIIScanFile
+from larch_plugins.epics.positioner import Positioner
+from larch_plugins.epics import ScanDB, ScanDBException, ScanDBAbort
 
-from scandb import ScanDB, ScanDBException, ScanDBAbort
-
-use_plugin_path('io')
-from fileutils import fix_varname
+from larch_plugins.io import fix_varname
 
 MODNAME = '_scan'
 SCANDB_NAME = '%s._scandb' % MODNAME
@@ -408,7 +405,7 @@ class LarchStepScan(object):
         self._scangroup.error_message = msg
         if self.scandb is not None:
             self.set_info('last_error', msg)
-            
+
     def set_scandata(self, attr, value):
         if self.scandb is not None:
             self.scandb.set_scandata(fix_varname(attr), value)
@@ -681,7 +678,7 @@ class LarchStepScan(object):
         self.publish_scandata()
         ts_loop = time.time()
         self.looptime = ts_loop - ts_init
-        
+
         for val, pos in zip(orig_positions, self.positioners):
             pos.move_to(val, wait=False)
         dtimer.add('Post: return move issued')
@@ -747,7 +744,7 @@ class LarchStepScan(object):
         txt.append('stop1 = %.4f'  % arr[-1])
         txt.append('step1 = %.4f'  % (arr[1]-arr[0]))
         txt.append('time1 = %.4f'  % ltim)
-        
+
         if dim > 1:
             pos = self.positioners[1]
             pospv = str(pos.pv.pvname)
@@ -855,7 +852,7 @@ class LarchStepScan(object):
                 time.sleep(0.25)
                 status_val = caget('%sstatus' % mapper)
 
-        status_strg = caget('%sstatus' % mapper, as_string=True)                
+        status_strg = caget('%sstatus' % mapper, as_string=True)
         self.set_info('scan_status', status_str)
         if self.abort:
             raise ScanDBAbort("slewscan aborted")
@@ -978,10 +975,10 @@ class XAFS_Scan(LarchStepScan):
                                dwidth[i], wvelo[i]))
         buff.append(elast)
 
-        return  Group(buffer='\n'.join(buff), 
+        return  Group(buffer='\n'.join(buff),
                       start_theta=theta[0]-the0,
                       start_width=width[0]-wid0,
-                      theta=theta, 
+                      theta=theta,
                       energy=energy,
                       width=width)
 
@@ -1096,7 +1093,7 @@ def scan_from_db(name, filename='scan.001', _larch=None):
     scandef = sdb.get_scandef(name)
     if scandef is None:
         raise ScanDBException("no scan definition '%s' found" % name)
-    
+
     return scan_from_json(scandef.text,
                           filename=filename, rois=rois,
                           _larch=_larch)
