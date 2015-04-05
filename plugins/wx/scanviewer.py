@@ -33,11 +33,11 @@ from larch.wxlib import larchframe
 from larch.fitting import fit_report
 from larch.utils import debugtime
 
-from ..math import fit_peak, index_of
+from larch_plugins.math import fit_peak, index_of
 
-from ..io import gsescan_group, read_xdi
+from larch_plugins.io import gsescan_group, read_xdi
 
-from .mapviewer import MapViewerFrame
+from larch_plugins.wx.mapviewer import MapViewerFrame
 
 from wxmplot import PlotFrame, PlotPanel
 

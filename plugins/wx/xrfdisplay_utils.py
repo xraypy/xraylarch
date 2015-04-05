@@ -17,8 +17,8 @@ from wxmplot.colors import hexcolor
 
 import larch
 
-from ..xrf import (xrf_background, xrf_calib_fitrois,
-                   xrf_calib_compute, xrf_calib_apply)
+from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
+                               xrf_calib_compute, xrf_calib_apply)
 
 class CalibrationFrame(wx.Frame):
     def __init__(self, parent, mca, larch=None, size=(-1, -1), callback=None):

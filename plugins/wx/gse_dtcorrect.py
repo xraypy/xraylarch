@@ -25,8 +25,8 @@ except ImportError:
 from larch import Interpreter
 from larch.larchlib import read_workdir, save_workdir
 
-from ..io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
-                   is_GSEXDI)
+from larch_plugins.io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
+                               is_GSEXDI)
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
