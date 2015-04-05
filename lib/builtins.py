@@ -281,9 +281,9 @@ def _addplugin(plugin, _larch=None, **kws):
     if _larch is None:
         raise Warning("cannot add plugins. larch broken?")
     write = _larch.writer.write
-    errmsg = 'is not a valid larch plugin\n'
+    errmsg = 'is (not!) a valid larch plugin\n'
     pjoin = os.path.join
-
+    # print("ADD PLUGIN ", plugin)
     path = site_config.plugins_path
     _sysconf = _larch.symtable._sys.config
     if not hasattr(_sysconf, 'plugin_paths'):
@@ -295,6 +295,9 @@ def _addplugin(plugin, _larch=None, **kws):
                 False, (fh, modpath, desc) for imported modules
                 None, None for Not Found
         """
+
+        if plugin == '__init__':
+            return None, None
         mod, is_pkg = None, False
         try:
             mod = imp.find_module(plugin, [p_path])
@@ -357,6 +360,7 @@ def _addplugin(plugin, _larch=None, **kws):
                 path = site_config.plugins_path
 
         for p_path in path:
+            # print(" -- find_plugin ", plugin)
             is_pkg, mod = _find_plugin(plugin, p_path)
             if is_pkg is not None:
                 break
@@ -390,7 +394,9 @@ def _addplugin(plugin, _larch=None, **kws):
                     try:
                         ret =  _plugin_file(fname[:-3], path=[mod])
                     except:
-                        write('Warning: %s is not a valid plugin\n' %
+                        err, exc, tback = sys.exc_info()
+                        write(traceback.print_tb(tback))
+                        write('Warning: %s is =not= a valid plugin\n' %
                               pjoin(mod, fname))
                         write("   error:  %s\n" % (repr(sys.exc_info()[1])))
 
