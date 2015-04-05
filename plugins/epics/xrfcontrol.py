@@ -35,21 +35,11 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      Choice, FileOpen, FileSave, fix_filename, HLine,
                      GridPanel, CEN, LEFT, RIGHT)
 
-from larch import use_plugin_path
+import larch
+from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
+                              FILE_WILDCARDS, CalibrationFrame)
+from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3
 
-# use_plugin_path('xray')
-use_plugin_path('wx')
-from periodictable import PeriodicTablePanel
-from xrfdisplay import XRFDisplayFrame, FILE_WILDCARDS
-
-from xrfdisplay_utils import CalibrationFrame
-
-use_plugin_path('std')
-from debugtime import DebugTimer
-
-use_plugin_path('epics')
-from xrf_detectors import Epics_MultiXMAP, Epics_Xspress3
-        
 class DetectorSelectDialog(wx.Dialog):
     """Connect to an Epics MCA detector
     Can be either XIA xMAP  or Quantum XSPress3
@@ -348,8 +338,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         b1 =  Button(pane, 'Start',      size=(90, 25), action=self.onStart)
         b2 =  Button(pane, 'Stop',       size=(90, 25), action=self.onStop)
         b3 =  Button(pane, 'Erase',      size=(90, 25), action=self.onErase)
-        b4 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart, 
-                                                                      dtime=0))  
+        b4 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart,
+                                                                      dtime=0))
 
         psizer.Add(SimpleText(pane, 'Background MCA: '), (0, 2), (1, 1), style, 1)
         psizer.Add(self.wids['bkg_det'],                 (1, 2), (1, 1), style, 1)
@@ -384,7 +374,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     # def update_mca(self, counts, **kws):
     #    self.det.needs_refresh = False
-                   
+
     def UpdateData(self, event=None, force=False):
         self.timer_counter += 1
         if self.mca is None or self.needs_newplot:
@@ -541,7 +531,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         confirmed = XRFDisplayFrame.onNewROI(self)
         if confirmed:
             print 'NEW ROI ' , self.det, roiname, self.xmarker_left, self.xmarker_right
-            self.det.add_roi(roiname, lo=self.xmarker_left, 
+            self.det.add_roi(roiname, lo=self.xmarker_left,
                              hi=self.xmarker_right)
 
     def onRenameROI(self, event=None):
@@ -576,11 +566,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onClose(self, event=None):
         self.onStop()
-        XRFDisplayFrame.onClose(self)        
+        XRFDisplayFrame.onClose(self)
 
     def onExit(self, event=None):
         self.onStop()
-        XRFDisplayFrame.onExit(self)        
+        XRFDisplayFrame.onExit(self)
 
 class EpicsXRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, **kws):
@@ -597,5 +587,5 @@ class EpicsXRFApp(wx.App, wx.lib.mixins.inspection.InspectionMixin):
 if __name__ == "__main__":
     # e = EpicsXRFApp(prefix='QX4:', det_type='ME-4',
     #                amp_type='xspress3', nmca=4)
-   
+
     EpicsXRFApp().MainLoop()
