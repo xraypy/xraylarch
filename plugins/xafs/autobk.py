@@ -6,13 +6,12 @@ from larch import Group, Parameter, Minimizer
 from larch import ValidateLarchPlugin, isgroup
 
 # import other plugins from std, math, and xafs modules...
-from larch.plugins.std  import parse_group_args
-from larch.plugins.math import (index_of, index_nearest,
+from larch_plugins.std  import parse_group_args
+from larch_plugins.math import (index_of, index_nearest,
                                 realimag, remove_dups)
 
-from larch.plugins.xafs import (ETOK, set_xafsGroup, ftwindow,
-                                xftf_fast, find_e0, pre_edge)
-pre_edge = pre_edge.pre_edge
+from larch_plugins.xafs import (ETOK, set_xafsGroup, ftwindow, xftf_fast,
+                                find_e0, pre_edge)
 
 # check for uncertainties package
 HAS_UNCERTAIN = False
