@@ -1,18 +1,18 @@
 #!/usr/bin/env python
 
 ## Autobk (XAFS background subtraction) in pure Python,
-## using Python code from Larch.
+## using Python code from Lxsarch.
 from larch import Interpreter
 
-from larch_plugins.xafs.pre_edge import pre_edge
-from larch_plugins.xafs.autobk import autobk
-from larch_plugins.io.columnfile import _read_ascii
+from larch_plugins.xafs import pre_edge, autobk
+from larch_plugins.io import read_ascii
 
-_larch = Interpreter()
+# create plain interpreter, don't load all the plugins
+_larch = Interpreter(with_plugins=False)
 
 fname = '../xafsdata/cu_rt01.xmu'
 
-cu = _read_ascii(fname, labels='energy mu i0', _larch=_larch)
+cu = read_ascii(fname, labels='energy mu i0', _larch=_larch)
 print 'Read ASCII File:', cu
 print dir(cu)
 
