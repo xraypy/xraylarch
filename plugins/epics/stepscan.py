@@ -94,18 +94,20 @@ from datetime import timedelta
 from epics  import PV, get_pv, poll, caput, caget
 
 
-from larch import Group, ValidateLarchPlugin
+from larch import Group, ValidateLarchPlugin, use_plugin_path
 from larch.utils import debugtime
 
-from larch_plugins.epics import (Counter, ArrayCounter,
-                                 DeviceCounter, Trigger,
-                                 AreaDetector, get_detector)
+use_plugin_path('epics')
 
-from larch_plugins.epics.datafile import ASCIIScanFile
-from larch_plugins.epics.positioner import Positioner
-from larch_plugins.epics import ScanDB, ScanDBException, ScanDBAbort
+from detectors import (Counter, ArrayCounter, DeviceCounter, Trigger,
+                       AreaDetector, get_detector)
+from datafile import ASCIIScanFile
+from positioner import Positioner
 
-from larch_plugins.io import fix_varname
+from scandb import ScanDB, ScanDBException, ScanDBAbort
+
+use_plugin_path('io')
+from fileutils import fix_varname
 
 MODNAME = '_scan'
 SCANDB_NAME = '%s._scandb' % MODNAME

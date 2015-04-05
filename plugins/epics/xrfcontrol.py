@@ -35,10 +35,21 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      Choice, FileOpen, FileSave, fix_filename, HLine,
                      GridPanel, CEN, LEFT, RIGHT)
 
-import larch
-from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
-                              FILE_WILDCARDS, CalibrationFrame)
-from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3
+
+from larch import use_plugin_path
+
+use_plugin_path('wx')
+from periodictable import PeriodicTablePanel
+from xrfdisplay import XRFDisplayFrame, FILE_WILDCARDS
+
+from xrfdisplay_utils import CalibrationFrame
+
+use_plugin_path('std')
+from debugtime import DebugTimer
+
+use_plugin_path('epics')
+from xrf_detectors import Epics_MultiXMAP, Epics_Xspress3
+
 
 class DetectorSelectDialog(wx.Dialog):
     """Connect to an Epics MCA detector
