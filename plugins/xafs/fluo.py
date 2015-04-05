@@ -1,15 +1,16 @@
 import numpy as np
 
 from larch import ValidateLarchPlugin
-from larch_plugins.std import parse_group_args
-from larch_plugins.xray import xray_line, xray_edge, material_mu
-from larch_plugins.xafs import preedge
+from larch.plugins.xray import xray_line, xray_edge
+from larch.plugins.xray import material_mu
+from larch.plugins.xafs import preedge
+from larch.plugins.std import parse_group_args
 
 MODNAME = '_xafs'
 
 @ValidateLarchPlugin
-def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
-              angout=45,  _larch=None, **pre_kws):
+def fluo_oacorr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
+                angout=45,  _larch=None, **pre_kws):
     """correct over-absorption (self-absorption) for fluorescene XAFS
     using the FLUO alogrithm of D. Haskel.
 
@@ -39,7 +40,7 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
     """
     energy, mu, group = parse_group_args(energy, members=('energy', 'mu'),
                                          defaults=(mu,), group=group,
-                                         fcn_name='fluo_corr')
+                                         fcn_name='fluo_oacorr')
 
     # generate normalized mu for correction
     preinp   = preedge(energy, mu, **pre_kws)
@@ -70,4 +71,4 @@ def fluo_corr(energy, mu, formula, elem, group=None, edge='K', anginp=45,
         group.norm_corr = preout['norm']
 
 def registerLarchPlugin():
-    return (MODNAME, {'fluo_corr': fluo_corr})
+    return (MODNAME, {'fluo_oacorr': fluo_oacorr})

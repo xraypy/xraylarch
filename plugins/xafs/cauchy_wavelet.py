@@ -25,9 +25,9 @@
 import numpy as np
 from larch import ValidateLarchPlugin
 
-from larch_plugins.std  import parse_group_args
-from larch_plugins.math import complex_phase
-from larch_plugins.xafs import set_xafsGroup
+from larch.plugins.std  import parse_group_args
+from larch.plugins.math import complex_phase
+from larch.plugins.xafs import set_xafsGroup
 
 @ValidateLarchPlugin
 def cauchy_wavelet(k, chi=None, group=None, kweight=0, rmax_out=10,

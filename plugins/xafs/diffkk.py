@@ -1,18 +1,19 @@
 
-import time
-import numpy as np
-from scipy.special import erfc
-
 from larch import (Group, Parameter, isParameter, param_value,
                    isNamedClass, Interpreter, Minimizer)
 
-from larch_plugins.std  import show
-from larch_plugins.math import _interp
-from larch_plugins.xray import f1f2, xray_edge, xray_line
-from larch_plugins.xafs import mback
-from larch_plugins.wx   import _newplot, _plot
+from larch.plugins.std  import _show
+from larch.plugins.math import _interp
+from larch.plugins.xray import f1f2, xray_edge, xray_line
+from larch.plugins.xafs import mback
+mback = mback.mback
+import numpy as np
+from scipy.special import erfc
+from math import pi
 
-pi = np.pi
+from larch.plugins.wx.plotter import (_newplot, _plot)
+
+import time
 
 TINY = 1e-20
 FOPI = 4/pi
