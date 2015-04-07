@@ -9,15 +9,12 @@ This is a Larch group representing a Peak in an XRF Spectrum.
 
 import numpy as np
 from scipy.interpolate import UnivariateSpline
-from larch import (Group, Parameter, isParameter, ValidateLarchPlugin,
-                   param_value, use_plugin_path, isNamedClass)
+from larch import (Group, Parameter, isParameter,
+                   ValidateLarchPlugin,
+                   param_value, isNamedClass)
 
-use_plugin_path('xray')
-use_plugin_path('math')
-use_plugin_path('xrf')
-
-from xraydb_plugin import xray_line, xray_lines
-from lineshapes import gaussian, lorentzian, voigt, pvoigt
+from larch_plugins.xray import xray_line, xray_lines
+from larch_plugins.math import gaussian, lorentzian, voigt, pvoigt
 
 class XRFPeak(Group):
     def __init__(self, name=None, shape='gaussian',
@@ -147,4 +144,3 @@ def xrf_peak(name=None, amplitude=1, sigma=0.1,
 
 def registerLarchPlugin():
     return ('_xrf', {'xrf_peak': xrf_peak})
-

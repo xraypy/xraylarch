@@ -1,14 +1,12 @@
-#
-from larch.plugins.math import mathutils, lineshapes
 
-gaussian = lineshapes.gaussian
-lorenztian = lineshapes.lorentzian
-voigt = lineshapes.voigt
+from .lineshapes import (gaussian, lorentzian, voigt, pvoigt, pearson7,
+                         wofz, lognormal, gammaln, breit_wigner,
+                         damped_oscillator, exgaussian, donaich,
+                         skewed_voigt, students_t, logistic, erf, erfc)
 
-index_nearest = mathutils.index_nearest
-index_of = mathutils.index_of
-realimag = mathutils.realimag
-remove_dups = mathutils.remove_dups
-remove_nans2 = mathutils.remove_nans2
-complex_phase = mathutils.complex_phase
-_interp = mathutils._interp
+from .mathutils import (as_ndarray, index_nearest, index_of, realimag,
+                        remove_dups, remove_nans2, complex_phase,
+                        linregress, _interp)
+
+from .fitpeak import fit_peak
+from .convolution1D import glinbroad

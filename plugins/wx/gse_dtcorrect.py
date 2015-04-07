@@ -21,13 +21,12 @@ try:
     HAS_EPICS = True
 except ImportError:
     pass
-    
-from larch import Interpreter, use_plugin_path
+
+from larch import Interpreter
 from larch.larchlib import read_workdir, save_workdir
-        
-use_plugin_path('io')
-from gse_escan import gsescan_deadtime_correct
-from gse_xdiscan import gsexdi_deadtime_correct, is_GSEXDI
+
+from larch_plugins.io  import (gsescan_deadtime_correct, gsexdi_deadtime_correct,
+                               is_GSEXDI)
 
 from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      Choice,  Check, MenuItem, GUIColors,
@@ -38,7 +37,7 @@ FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 
-WORKDIR_FILE = 'dtc_file.txt' 
+WORKDIR_FILE = 'dtc_file.txt'
 
 def okcancel(panel, onOK=None, onCancel=None):
     btnsizer = wx.StdDialogButtonSizer()
@@ -52,7 +51,7 @@ def okcancel(panel, onOK=None, onCancel=None):
     btnsizer.Realize()
     return btnsizer
 
-    
+
 class DTCorrectFrame(wx.Frame):
     _about = """GSECARS Deadtime Corrections
   Matt Newville <newville @ cars.uchicago.edu>
@@ -65,7 +64,7 @@ class DTCorrectFrame(wx.Frame):
         title = "DeadTime Correction "
         self.larch = _larch
         self.subframes = {}
-       
+
         self.SetSize((380, 180))
         self.SetFont(Font(10))
 
@@ -79,21 +78,21 @@ class DTCorrectFrame(wx.Frame):
         for i in range(len(statusbar_fields)):
             self.statusbar.SetStatusText(statusbar_fields[i], i)
         read_workdir(WORKDIR_FILE)
-        
+
     def onBrowse(self, event=None):
-        dlg = wx.FileDialog(parent=self, 
+        dlg = wx.FileDialog(parent=self,
                         message='Select Files',
                         defaultDir=os.getcwd(),
                         wildcard =FILE_WILDCARDS,
                         style=wx.OPEN|wx.MULTIPLE|wx.CHANGE_DIR)
-        
+
         if dlg.ShowModal() == wx.ID_OK:
             path = dlg.GetPath()
             mdir, p = os.path.split(path)
             os.chdir(mdir)
             roiname = self.roi_wid.GetValue().strip()
-            if len(roiname) < 1: 
-                Popup(self, 
+            if len(roiname) < 1:
+                Popup(self,
                     'Must give ROI name!', 'No ROI name')
                 return
             dirname = self.dir_wid.GetValue().strip()
@@ -101,7 +100,7 @@ class DTCorrectFrame(wx.Frame):
                 try:
                     os.mkdir(dirname)
                 except:
-                    Popup(self, 
+                    Popup(self,
                         'Could not create directory %s' % dirname,
                         "could not create directory")
                     return
@@ -114,7 +113,7 @@ class DTCorrectFrame(wx.Frame):
     def createMainPanel(self):
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(5, 4)
- 
+
         lab1 = SimpleText(panel, ' Element / ROI Name')
         lab2 = SimpleText(panel, ' Output Folder:')
         lab3 = SimpleText(panel, ' Select Files:')
@@ -122,20 +121,20 @@ class DTCorrectFrame(wx.Frame):
         self.dir_wid = wx.TextCtrl(panel, -1, 'DT_Corrected', size=(200, -1))
         self.sel_wid = Button(panel, 'Browse', size=(100, -1),
                                 action=self.onBrowse)
-        
+
         ir = 0
         sizer.Add(lab1,         (ir, 0), (1, 1), LCEN, 2)
         sizer.Add(self.roi_wid, (ir, 1), (1, 1), LCEN, 2)
         ir += 1
         sizer.Add(lab2,          (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.dir_wid,  (ir, 1), (1, 1), LCEN, 2)      
+        sizer.Add(self.dir_wid,  (ir, 1), (1, 1), LCEN, 2)
         ir += 1
         sizer.Add(lab3,          (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.sel_wid,  (ir, 1), (1, 1), LCEN, 2)              
+        sizer.Add(self.sel_wid,  (ir, 1), (1, 1), LCEN, 2)
 
         pack(panel, sizer)
         wx.CallAfter(self.init_larch)
-        return 
+        return
 
     def init_larch(self):
         t0 = time.time()
@@ -145,7 +144,7 @@ class DTCorrectFrame(wx.Frame):
         self.larch.symtable.set_symbol('_sys.wx.parent', self)
 
         self.SetStatusText('ready')
-        
+
     def write_message(self, s, panel=0):
         """write a message to the Status Bar"""
         self.SetStatusText(s, panel)
@@ -155,19 +154,19 @@ class DTCorrectFrame(wx.Frame):
         self.menubar = wx.MenuBar()
         #
         fmenu = wx.Menu()
-        
+
         MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
 
         self.menubar.Append(fmenu, "&File")
 
-      
+
         self.SetMenuBar(self.menubar)
 
     def onClose(self,evt):
         save_workdir(WORKDIR_FILE)
         self.Destroy()
 
-  
+
 class DTViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
     def __init__(self, _larch=None, **kws):
         self._larch = _larch

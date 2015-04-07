@@ -4,24 +4,18 @@ XRF Calibration routines
 """
 
 import numpy as np
-from larch import use_plugin_path, ValidateLarchPlugin
+from larch import ValidateLarchPlugin
 
 try:
     from collections import OrderedDict
 except ImportError:
     from larch.utils import OrderedDict
 
-use_plugin_path('xrf')
-from mca import isLarchMCAGroup
-from roi import split_roiname
+from larch_plugins.xrf import isLarchMCAGroup
+from larch_plugins.xrf import split_roiname
 
-use_plugin_path('math')
-
-from mathutils import index_of, linregress
-from fitpeak import fit_peak
-
-use_plugin_path('xray')
-from xraydb_plugin import xray_line, xray_lines
+from larch_plugins.math import index_of, linregress, fit_peak
+from larch_plugins.xray import xray_line, xray_lines
 
 def xrf_calib_fitrois(mca, _larch=None):
     """initial calibration step for MCA:

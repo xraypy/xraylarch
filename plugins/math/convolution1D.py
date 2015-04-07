@@ -48,7 +48,7 @@ from datetime import date
 from string import Template
 import numpy as np
 
-from larch.plugins.math import gaussian, lorentzian
+from larch_plugins.math.lineshapes import gaussian, lorentzian
 
 def get_ene_index(ene, cen, hwhm):
     """ returns the min/max indexes for array ene at (cen-hwhm) and (cen+hwhm)

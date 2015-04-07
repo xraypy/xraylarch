@@ -4,17 +4,11 @@ from functools import partial
 import epics
 from epics.devices.mca import  MultiXMAP
 from epics.devices.struck import Struck
-
 from epics.wx import EpicsFunction, DelayedEpicsCallback
 
-from larch import use_plugin_path
-
-use_plugin_path('xrf')
-from mca import MCA
-from roi import ROI
-
-use_plugin_path('epics')
-from xspress3 import Xspress3
+from larch_plugins.xrf import MCA, ROI
+from larch_plugins.epics.xspress3 import Xspress3
+ROI, MCA = None, None
 
 class Epics_Xspress3(object):
     """multi-element MCA detector using Quantum Xspress3 electronics 3-1-10
@@ -84,7 +78,7 @@ class Epics_Xspress3(object):
             nframes   = int((dtime+frametime*0.1)/frametime)
         self._xsp3.NumImages = nframes
         self._xsp3.AcquireTime = self.frametime = frametime
-        
+
     def get_mca(self, mca=1, with_rois=True):
         if self._xsp3 is None:
             self.connect()
@@ -116,7 +110,7 @@ class Epics_Xspress3(object):
             out = 1.0*self._xsp3.get('ARRSUM%i:ArrayData' % mca)
         except TypeError:
             out = np.arange(self.npts)*0.91
-            
+
         if len(out) != self.npts:
             self.npts = len(out)
         out[np.where(out<0.91)]= 0.91
@@ -125,14 +119,14 @@ class Epics_Xspress3(object):
     def start(self):
         'xspress3 start '
         self.stop()
-        self._xsp3.start(capture=False) 
+        self._xsp3.start(capture=False)
         time.sleep(0.01)
 
     def stop(self, timeout=0.5):
         self._xsp3.stop()
         t0 = time.time()
         while self._xsp3.Acquire_RBV == 1 and time.time()-t0 < timeout:
-            self._xsp3.stop()                
+            self._xsp3.stop()
             time.sleep(0.005)
 
     def erase(self):
@@ -208,7 +202,7 @@ class Epics_Xspress3(object):
         mca1 = self.get_mca(mca=1)
         npts = len(mca1.counts)
         fp = open(filename, 'w')
-        fp.write('VERSION:    3.1\n') 
+        fp.write('VERSION:    3.1\n')
         fp.write('ELEMENTS:   %i\n' % nelem)
         fp.write('DATE:       %s\n' % time.ctime())
         fp.write('CHANNELS:   %i\n' % npts)
@@ -392,4 +386,3 @@ class Epics_MultiXMAP(object):
 
     def save_mca(self, fname):
         buff = self._xmap
-        

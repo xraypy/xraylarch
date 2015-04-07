@@ -107,9 +107,8 @@ Todo:
 """
 
 import numpy as np
-from larch import use_plugin_path, ValidateLarchPlugin
-use_plugin_path('xrf')
-from mca import isLarchMCAGroup
+from larch import ValidateLarchPlugin
+from larch_plugins.xrf import isLarchMCAGroup
 
 REFERENCE_AMPL=100.
 TINY = 1.E-20
@@ -313,4 +312,3 @@ def xrf_background(energy, counts=None, group=None, width=4,
 
 def registerLarchPlugin():
     return ('_xrf', {'xrf_background': xrf_background})
-

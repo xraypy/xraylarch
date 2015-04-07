@@ -872,7 +872,7 @@ def opMDA(op, d1, d2):
         print("opMDA supports up to 4D scans")
     return s
 
-def _readmda(fname, maxdim=4, verbose=False, _larch=None, **kws):
+def read_mda(fname, maxdim=4, verbose=False, _larch=None, **kws):
     """read an MDA file from the Epics Scan Record
 
     Warning: not very well tested for scans of high dimension
@@ -893,4 +893,4 @@ def _readmda(fname, maxdim=4, verbose=False, _larch=None, **kws):
 
 
 def registerLarchPlugin():
-    return ('_io', {'read_mda': _readmda})
+    return ('_io', {'read_mda': read_mda})

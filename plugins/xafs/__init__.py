@@ -1,33 +1,15 @@
+from .xafsutils import KTOE, ETOK, set_xafsGroup
 
-from larch.plugins.xafs import xafsutils
+from .xafsft import xftf, xftr, xftf_fast, xftr_fast, ftwindow
 
-KTOE = xafsutils.KTOE
-ETOK = xafsutils.ETOK
-set_xafsGroup = xafsutils.set_xafsGroup
+from .pre_edge import pre_edge, preedge, find_e0
 
-from larch.plugins.xafs import pre_edge
-preedge = pre_edge.preedge
-find_e0 = pre_edge.find_e0
-# pre_edge = _preEdgeMod.pre_edge # note order!
-
-from larch.plugins.xafs import xafsft
-xftf = xafsft.xftf
-xftr = xafsft.xftr
-xftf_fast = xafsft.xftf_fast
-xftr_fast = xafsft.xftr_fast
-ftwindow  = xafsft.ftwindow
+from .feffdat import FeffPathGroup, FeffDatFile, _ff2chi
 
 
-from larch.plugins.xafs import feffdat
-FeffPathGroup = feffdat.FeffPathGroup
-FeffDatFile = feffdat.FeffDatFile
-_ff2chi = feffdat._ff2chi
+from .feffit import FeffitDataSet, TransformGroup, feffit
 
-
-from larch.plugins.xafs import feffit
-FeffitDataSet = feffit.FeffitDataSet
-TransformGroup = feffit.TransformGroup
-
-
-from larch.plugins.xafs import autobk
-from larch.plugins.xafs import mback
+from .autobk import autobk
+from .mback import mback
+from .diffkk import diffkk
+from .fluo import fluo_corr

@@ -36,11 +36,9 @@ use_plugin_path('io')
 from fileutils import get_homedir, get_timestamp
 
 use_plugin_path('epics')
-
 from stepscan   import LarchStepScan
 from positioner import Positioner
 from detectors  import get_detector, Counter
-# from spec_config import SpecConfig
 
 
 class SpykConfig(object):

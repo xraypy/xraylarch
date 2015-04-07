@@ -89,7 +89,7 @@ class Interpreter:
                        'subscript', 'tryexcept', 'tuple', 'unaryop',
                        'while')
 
-    def __init__(self, symtable=None, writer=None):
+    def __init__(self, symtable=None, writer=None, with_plugins=True):
         self.writer = writer or sys.stdout
 
         if symtable is None:
@@ -134,12 +134,12 @@ class Interpreter:
         for cmd in builtins.valid_commands:
             self.symtable._sys.valid_commands.append(cmd)
 
-        # add all plugins in standard plugins folder
-        plugins_dir = os.path.join(site_config.larchdir, 'plugins')
-        for pname in os.listdir(plugins_dir):
-            pdir = os.path.join(plugins_dir, pname)
-            if os.path.isdir(pdir):
-                builtins._addplugin(pdir, _larch=self)
+        if with_plugins: # add all plugins in standard plugins folder
+            plugins_dir = os.path.join(site_config.larchdir, 'plugins')
+            for pname in os.listdir(plugins_dir):
+                pdir = os.path.join(plugins_dir, pname)
+                if os.path.isdir(pdir):
+                    builtins._addplugin(pdir, _larch=self)
 
         self.node_handlers = dict(((node, getattr(self, "on_%s" % node))
                                    for node in self.supported_nodes))

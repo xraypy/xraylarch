@@ -31,28 +31,23 @@ try:
 except:
     pass
 
-from larch import Interpreter, use_plugin_path, site_config
-
-use_plugin_path('math')
-from mathutils import index_of
-
-use_plugin_path('xrf')
-use_plugin_path('wx')
+from larch import Interpreter, site_config
 
 from wxutils import (SimpleText, EditableListBox, Font,
                      pack, Popup, Button, get_icon, Check, MenuItem,
                      Choice, FileOpen, FileSave, fix_filename, HLine,
                      GridPanel, CEN, LEFT, RIGHT)
 
-from periodictable import PeriodicTablePanel
+from larch_plugins.wx.periodictable import PeriodicTablePanel
+from larch_plugins.wx.xrfdisplay_utils import (CalibrationFrame,
+                                               ColorsFrame, ROI_Averager,
+                                               XrayLinesFrame,
+                                               XRFDisplayConfig)
 
-from xrfdisplay_utils import (CalibrationFrame, ColorsFrame, ROI_Averager,
-                              XrayLinesFrame, XRFDisplayConfig)
+from larch_plugins.wx.xrfdisplay_fitpeaks import FitSpectraFrame
 
-from xrfdisplay_fitpeaks import FitSpectraFrame
-
-use_plugin_path('io')
-from gse_mcafile import GSEMCA_File, gsemca_group
+from larch_plugins.math import index_of
+from larch_plugins.io import GSEMCA_File, gsemca_group
 
 FILE_WILDCARDS = "MCA File (*.mca)|*.mca|All files (*.*)|*.*"
 FILE_ALREADY_READ = """The File

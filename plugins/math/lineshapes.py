@@ -162,7 +162,7 @@ def _gamma(x):
     """gamma function"""
     return gamma(x)
 
-def _gammaln(x):
+def gammaln(x):
     """log of absolute value of gamma function"""
     return gammaln(x)
 
@@ -173,7 +173,7 @@ def registerLarchPlugin():
                       'pvoigt': pvoigt,
                       'pearson7': pearson7,
                       'lognormal': lognormal,
-                      'gammaln': _gammaln,
+                      'gammaln': gammaln,
                       'breit_wigner': breit_wigner,
                       'damped_oscillator': damped_oscillator,
                       'exgaussian': exgaussian,
@@ -184,4 +184,3 @@ def registerLarchPlugin():
                       'erf': _erf,
                       'erfc': _erfc,
                       'wofz': _wofz})
-
