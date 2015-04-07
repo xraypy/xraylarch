@@ -30,7 +30,7 @@ def iso8601_time(ts):
     s = time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(ts))
     return "%s%s" % (s, tzone)
 
-def _read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
+def read_ascii(fname, labels=None, sort=False, sort_column=0, _larch=None):
     """read a column ascii column file, returning a group containing the data from the file.
 
     read_ascii(filename, labels=None, sort=False, sort_column=0)
@@ -387,9 +387,8 @@ def write_group(filename, group, scalars=None,
                 label=label, header=header, _larch=_larch)
 
 def registerLarchPlugin():
-    return (MODNAME, {'read_ascii': _read_ascii,
-                      'read_ascii0': _read_ascii0,
+    return (MODNAME, {'read_ascii': read_ascii,
+                      # 'read_ascii0': _read_ascii0,
                       'write_ascii': write_ascii,
                       'write_group': write_group,
                      })
-

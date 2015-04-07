@@ -5,9 +5,7 @@ Viewer App for GSE XRF Maps
 import os
 import sys
 import larch
-larch.use_plugin_path('wx')
-
-from mapviewer import MapViewer
+from larch_plugins.wx import MapViewer
 
 os.chdir(larch.site_config.home_dir)
 MapViewer().run()

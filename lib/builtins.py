@@ -6,6 +6,7 @@ import imp
 import sys
 import time
 import re
+import traceback
 
 from .helper import Helper
 from . import inputText
@@ -185,9 +186,6 @@ def _eval(text=None, filename=None, _larch=None,
         b = block.strip()
         if len(b) <= 0:
             continue
-        # print 'eval %i  : %i, %s ' % (lineno, len(block), block)
-
-
         ret = _larch.eval(block, fname=fname, lineno=lineno)
         if hasattr(ret, '__call__') and not isinstance(ret, type):
             try:
@@ -283,9 +281,9 @@ def _addplugin(plugin, _larch=None, **kws):
     if _larch is None:
         raise Warning("cannot add plugins. larch broken?")
     write = _larch.writer.write
-    errmsg = 'is not a valid larch plugin\n'
+    errmsg = 'is (not!) a valid larch plugin\n'
     pjoin = os.path.join
-
+    # print("ADD PLUGIN ", plugin)
     path = site_config.plugins_path
     _sysconf = _larch.symtable._sys.config
     if not hasattr(_sysconf, 'plugin_paths'):
@@ -297,13 +295,15 @@ def _addplugin(plugin, _larch=None, **kws):
                 False, (fh, modpath, desc) for imported modules
                 None, None for Not Found
         """
+
+        if plugin == '__init__':
+            return None, None
         mod, is_pkg = None, False
         try:
             mod = imp.find_module(plugin, [p_path])
         except ImportError:
             is_pkg = os.path.isdir(pjoin(p_path, plugin))
 
-        # write("LARCH ADD_PLUGIN FIND PLUGIN ", plugin, p_path, is_pkg, mod)
         if is_pkg or (mod is not None and
                       mod[2][2] == imp.PKG_DIRECTORY):
             return True, pjoin(p_path, plugin)
@@ -351,7 +351,8 @@ def _addplugin(plugin, _larch=None, **kws):
     def _plugin_file(plugin, path=None):
         "defined here to allow recursive imports for packages"
         fh = None
-
+        if plugin == '__init__':
+            return
         if path is None:
             try:
                 path = _larch.symtable._sys.config.plugins_path
@@ -359,6 +360,7 @@ def _addplugin(plugin, _larch=None, **kws):
                 path = site_config.plugins_path
 
         for p_path in path:
+            # print(" -- find_plugin ", plugin)
             is_pkg, mod = _find_plugin(plugin, p_path)
             if is_pkg is not None:
                 break
@@ -392,7 +394,9 @@ def _addplugin(plugin, _larch=None, **kws):
                     try:
                         ret =  _plugin_file(fname[:-3], path=[mod])
                     except:
-                        write('Warning: %s is not a valid plugin\n' %
+                        err, exc, tback = sys.exc_info()
+                        write(traceback.print_tb(tback))
+                        write('Warning: %s is =not= a valid plugin\n' %
                               pjoin(mod, fname))
                         write("   error:  %s\n" % (repr(sys.exc_info()[1])))
 
@@ -410,8 +414,8 @@ def _addplugin(plugin, _larch=None, **kws):
                 offset = getattr(exc, 'offset', 0)
                 etext  = getattr(exc, 'text', '')
                 emsg   = getattr(exc, 'message', '')
-                # write(traceback.print_tb(tback))
-                write("""Python Error in plugin '%s', line %d
+                write(traceback.print_tb(tback))
+                write("""Python Error at plugin '%s', line %d
   %s %s^
 %s: %s\n""" % (modpath, lineno, etext, ' '*offset, err.__name__, emsg))
                 retval = False

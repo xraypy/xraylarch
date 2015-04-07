@@ -10,9 +10,8 @@ import numpy as np
 from larch import Group, ValidateLarchPlugin, use_plugin_path
 from larch.utils import OrderedDict
 
-use_plugin_path('io')
-from xdi import XDIFile
-from columnfile import iso8601_time
+
+from larch_plugins.io import XDIFile, iso8601_time
 
 use_plugin_path('xrfmap')
 from xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
@@ -41,7 +40,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
             except:
                 pass
             setattr(group, "%s_%s" % (family, key), val)
-        
+
     ocrs, icrs = [], []
     ctime = xdi.CountTime
     is_xspress3 = any(['13QX4' in a[1] for a in xdi.attrs['column'].items()])
@@ -73,7 +72,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
             datraw = dat*1.0
             rawname = sumname + '_nodtc'
             dat   = dat * icrs[imca]/ ocrs[imca]
-            
+
         setattr(group, aname, dat)
         if sumname not in labels:
             labels.append(sumname)
@@ -82,7 +81,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
                 sums[rawname] = datraw
                 if rawname not in labels:
                     labels.append(rawname)
-                
+
         else:
             sums[sumname] = sums[sumname] + dat
             if rawname != sumname:
@@ -101,7 +100,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
         setattr(group, 'ocr_mca%i' % (imca+1), ocrs[imca])
         setattr(group, 'icr_mca%i' % (imca+1), icrs[imca])
 
-            
+
     group.array_labels = labels
     return group
 
@@ -128,8 +127,8 @@ def is_GSEXDI(filename):
     """
     line1 = open(filename, 'r').readline()
     return (line1.startswith('#XDI/1') and 'Epics StepScan File' in line1)
-    
-    
+
+
 @ValidateLarchPlugin
 def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=None):
     """convert GSE XDI fluorescence XAFS scans to dead time corrected files"""
@@ -147,15 +146,15 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=No
 
     if hasattr(xdi, 'energy_readback'):
         out.energy = xdi.energy_readback
-    
+
     mono_cut = 'Si(111)'
     if xdi.mono_dspacing < 2:
         mono_cut = 'Si(311)'
     header_args = {'mono_dspace': xdi.mono_dspacing, 'mono_cut': mono_cut}
-              
+
     arrname = None
     channelname = channelname.lower().replace(' ', '_')
-    
+
     for arr in xdi.array_labels:
         if arr.lower().startswith(channelname):
             arrname = arr
@@ -177,10 +176,10 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=No
 
     arrlabel = ['#', ' energy ', ' mufluor ', ' i0  ', ' fluor_dtc',
                 ' fluor_raw', ' counttime']
-    
+
     header = DTC_header % header_args
     buff   = [l.strip() for l in header.split('\n')]
-    
+
     has_i1, has_i2 = False, False
     if hasattr(out, 'i1'):
         ncol += 1
@@ -191,7 +190,7 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=No
         ncol += 1
         buff.append('# Column.%i: irefer ' % ncol)
         arrlabel.append(' irefer ')
-        has_i2 = True        
+        has_i2 = True
     arrlabel = '       '.join(arrlabel)
 
     buff.extend(["# Scan.start_time: %s" % out.scan_start_time,
@@ -229,4 +228,3 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=No
 def registerLarchPlugin():
     return ('_io', {'read_gsexdi': read_gsexdi,
                     'gsexdi_deadtime_correct': gsexdi_deadtime_correct})
-

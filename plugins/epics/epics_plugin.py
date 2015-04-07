@@ -50,8 +50,8 @@ caget_doc = """caget(pvname, as_string=False, use_numpy=True, timeout=None)
     Notes
     ------
       1. The default timeout is 0.5 sec for scalar PVs.
-      
-""" 
+
+"""
 
 caput_doc = """caput(pvname, value, wait=False, timeout=60)
 
@@ -78,7 +78,7 @@ caput_doc = """caput(pvname, value, wait=False, timeout=60)
     -----
      1.  waiting may take a long time, as it waits for all processing
          to complete (motor move, detector acquire to finish, etc).
-""" 
+"""
 
 cainfo_doc = """cainfo(pvname, print_out=True)
 
@@ -93,7 +93,7 @@ cainfo_doc = """cainfo(pvname, print_out=True)
     Returns
     -------
        None or string with info paragraph
-       
+
     Examples
     --------
       cainfo('xx.VAL')
@@ -114,14 +114,17 @@ pv_doc = """PV(pvname)
       mypv.get()
       mypv.put(value)
       print mypv.pvname, mypv.count, mypv.type
- 
+
     Notes
     -----
       A PV has many attributes and methods.  Consult the documentation.
 """
 
 
-plugins = {}
+def nullfcn(*args, **kwargs): return None
+
+plugins = {'PV': nullfcn, 'caget': nullfcn, 'caput': nullfcn, 'cainfo': nullfcn,
+           'pv_units': nullfcn, 'pv_fullname': nullfcn}
 
 try:
     import epics
@@ -153,7 +156,7 @@ else:
     Returns
     -------
        string with units
-      
+
     """
         try:
             units = pv.units
@@ -173,7 +176,7 @@ else:
     Returns
     -------
        string with full PV name
-      
+
     """
 
         if  '.' not in name:
@@ -189,4 +192,3 @@ def initializeLarchPlugin(_larch=None):
 
 def registerLarchPlugin():
     return ('_epics', plugins)
-

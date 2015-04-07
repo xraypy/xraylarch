@@ -3,12 +3,11 @@ import pylab
 from larch import Interpreter, Group
 
 # now import larch-specific Python code
-from larch_plugins.xafs.autobk import autobk
-from larch_plugins.xafs.xafsft import xftf
-from larch_plugins.math.mathutils import index_nearest # (uses numpy's argmin())
+from larch_plugins.xafs import autobk, xftf
+from larch_plugins.math import index_nearest # (uses numpy's argmin())
 
 # create a larch interpreter, passed to most functions
-my_larch = Interpreter()
+my_larch = Interpreter(with_plugins=False)
 
 # create an empty Group
 xafsdat = Group()

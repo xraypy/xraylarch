@@ -19,8 +19,8 @@ from larch import (Group, Parameter, isParameter,
                    ValidateLarchPlugin,
                    param_value, isNamedClass)
 
-from larch.plugins.xafs import ETOK, set_xafsGroup
-from larch.plugins.xray import atomic_mass, atomic_symbol
+from larch_plugins.xafs import ETOK, set_xafsGroup
+from larch_plugins.xray import atomic_mass, atomic_symbol
 
 SMALL = 1.e-6
 

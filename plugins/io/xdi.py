@@ -8,10 +8,11 @@ import ctypes.util
 
 __version__ = '1.1.0larch'
 
+from numpy import array, exp, log, sin, arcsin
+
 from larch import ValidateLarchPlugin
 from larch.larchlib import get_dll
-from larch.plugins.xray import RAD2DEG, PLANCK_HC
-from numpy import array, exp, log, sin, arcsin
+from larch_plugins.xray import RAD2DEG, PLANCK_HC
 
 class XDIFileStruct(ctypes.Structure):
     "emulate XDI File"

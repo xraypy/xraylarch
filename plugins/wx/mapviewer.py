@@ -65,18 +65,14 @@ from wxutils import (SimpleText, EditableListBox, FloatCtrl, Font,
 import larch
 from larch.larchlib import read_workdir, save_workdir
 from larch.wxlib import larchframe
-larch.use_plugin_path('wx')
-larch.use_plugin_path('io')
-larch.use_plugin_path('xrfmap')
-larch.use_plugin_path('std')
 
-from xrfdisplay import XRFDisplayFrame
-from mapimageframe import MapImageFrame
+from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
+from larch_plugins.wx.mapimageframe import MapImageFrame
 
-from fileutils import nativepath
+from larch_plugins.io import nativepath
 
-from xrm_mapfile import (GSEXRM_MapFile, GSEXRM_FileStatus,
-                         GSEXRM_Exception, GSEXRM_NotOwner)
+from larch_plugins.xrfmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
+                                  GSEXRM_Exception, GSEXRM_NotOwner)
 
 CEN = wx.ALIGN_CENTER|wx.ALIGN_CENTER_VERTICAL
 LEFT = wx.ALIGN_LEFT|wx.ALIGN_CENTER_VERTICAL
