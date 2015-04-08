@@ -166,6 +166,14 @@ class GSEMCA_File(Group):
         counts =  np.array(counts)
         ## Data has been read, now store in MCA objects
         sum_mca = None
+    
+        for tag in ('real_time', 'live_time', 'cal_offset',
+                    'cal_slope', 'cal_quad'):
+            val = getattr(head, tag)
+            # print( ' Attr ', tag, val)
+            if len(val) == 1 and head.elements > 1:
+                val = [val[0]]*head.elements
+                setattr(head, tag, val)
         for imca in range(head.elements):
             thismca = MCA(name='mca%i' % (imca+1),
                           nchans=head.channels,
