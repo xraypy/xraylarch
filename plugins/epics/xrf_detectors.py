@@ -8,7 +8,6 @@ from epics.wx import EpicsFunction, DelayedEpicsCallback
 
 from larch_plugins.xrf import MCA, ROI
 from larch_plugins.epics.xspress3 import Xspress3
-ROI, MCA = None, None
 
 class Epics_Xspress3(object):
     """multi-element MCA detector using Quantum Xspress3 electronics 3-1-10
@@ -267,6 +266,7 @@ class Epics_MultiXMAP(object):
         self.energies = []
         self.connected = False
         self.elapsed_real = None
+        self.elapsed_textwidget = None        
         self.needs_refresh = False
         if self.prefix is not None:
             self.connect()
