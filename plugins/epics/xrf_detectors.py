@@ -200,19 +200,25 @@ class Epics_Xspress3(object):
         nelem = len(self._xsp3.mcas)
         mca1 = self.get_mca(mca=1)
         npts = len(mca1.counts)
+        nrois = len(rois[0])
         fp = open(filename, 'w')
         fp.write('VERSION:    3.1\n')
         fp.write('ELEMENTS:   %i\n' % nelem)
         fp.write('DATE:       %s\n' % time.ctime())
         fp.write('CHANNELS:   %i\n' % npts)
-        fp.write('REAL_TIME:  %f\n' % realtime)
-        fp.write('LIVE_TIME:  %f\n' % realtime)
-        fp.write('CAL_OFFSET: %e\n' % 0.0)
-        fp.write('CAL_SLOPE:  %e\n' % 0.010)
-        fp.write('CAL_QUAD:   %e\n' % 0.0)
+        s_rtime = " ".join([".4f" % realtime for i in range(nelm)])
+        s_off   = " ".join(["0.000"          for i in range(nelm)])
+        s_quad  = " ".join(["0.000"          for i in range(nelm)])
+        s_slope = " ".join(["0.010"          for i in range(nelm)])
+        s_rois  = " ".join(["%i" % nrois     for i in range(nelm)])
+        fp.write('REAL_TIME:  %s\n' % s_rtime)
+        fp.write('LIVE_TIME:  %s\n' % s_rtime)
+        fp.write('CAL_OFFSET: %s\n' % s_off)
+        fp.write('CAL_SLOPE:  %s\n' % s_slope)
+        fp.write('CAL_QUAD:   %s\n' % s_quad)
 
         # Write ROIS  in channel units
-        fp.write('ROIS:      %i\n' % len(rois[0]))
+        fp.write('ROIS:       %s\n' % s_rois)
         for iroi, roi in enumerate(rois[0]):
             name = [roi.name]
             left = ['%i' % roi.left]
