@@ -525,7 +525,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             errmsg = 'No ROI selected to delete.'
         if errmsg is not None:
             return Popup(self, errmsg, 'Cannot Delete ROI')
-
         self.det.del_roi(roiname)
         XRFDisplayFrame.onDelROI(self)
 
@@ -541,7 +540,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
         confirmed = XRFDisplayFrame.onNewROI(self)
         if confirmed:
-            print 'NEW ROI ' , self.det, roiname, self.xmarker_left, self.xmarker_right
             self.det.add_roi(roiname, lo=self.xmarker_left,
                              hi=self.xmarker_right)
 
