@@ -565,27 +565,40 @@ class XRFDisplayFrame(wx.Frame):
         self.wids['roiname'].SetValue('')
         self.draw()
 
+    def get_roiname(self):
+        roiname = self.wids['roiname'].GetValue()
+        if len(roiname) < 1:
+            roiname = 'ROI 1'
+            names = [str(r.name.lower()) for r in self.mca.rois]            
+            if str(roiname.lower()) in names:
+                ix = 1
+                while str(roiname.lower()) in names:
+                    roiname = "ROI %i" % (ix)
+                    ix += 1
+        return roiname
+       
     def onNewROI(self, event=None):
         if (self.xmarker_left is None or
             self.xmarker_right is None or self.mca is None):
             return
-        label = self.wids['roiname'].GetValue()
+        roiname = self.get_roiname()
+            
         names = [str(r.name.lower()) for r in self.mca.rois]
-        if str(label.lower()) in names:
-            msg = "Overwrite Definition of ROI {:s}?".format(label)
+        if str(roiname.lower()) in names:
+            msg = "Overwrite Definition of ROI {:s}?".format(roiname)
             if Popup(self, msg, 'Overwrite ROI?', style=wx.YES_NO) != wx.ID_YES:
                 return False
 
         left, right  = self.xmarker_left, self.xmarker_right
         if left > right:
             left, right = right, left
-        self.mca.add_roi(name=label, left=left, right=right, sort=True)
+        self.mca.add_roi(name=roiname, left=left, right=right, sort=True)
         self.set_roilist(mca=self.mca)
         for roi in self.mca.rois:
-            if roi.name.lower()==label:
+            if roi.name.lower()==roiname:
                 selected_roi = roi
         self.plot(self.xdata, self.ydata)
-        self.onROI(label=label)
+        self.onROI(label=roiname)
         if self.selected_elem is not None:
             self.onShowLines(elem=self.selected_elem)
         return True
@@ -597,7 +610,8 @@ class XRFDisplayFrame(wx.Frame):
             self.onDelROI()
 
     def onRenameROI(self, event=None):
-        roiname = self.wids['roiname'].GetValue()
+        roiname = self.get_roiname()
+
         if self.roilist_sel is not None:
             names = self.wids['roilist'].GetStrings()
             names[self.roilist_sel] = roiname

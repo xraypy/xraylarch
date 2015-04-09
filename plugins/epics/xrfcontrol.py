@@ -228,7 +228,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             except ValueError:
                 pass
 
-        roiname = self.wids['roiname'].GetValue()
+        roiname = self.get_roiname()
 
         if roiname in self.wids['roilist'].GetStrings():
             i = self.wids['roilist'].GetStrings().index(roiname)
@@ -519,7 +519,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.det.erase()
 
     def onDelROI(self, event=None):
-        roiname = self.wids['roiname'].GetValue()
+        roiname = self.get_roiname()
         errmsg = None
         if self.roilist_sel is None:
             errmsg = 'No ROI selected to delete.'
@@ -529,7 +529,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         XRFDisplayFrame.onDelROI(self)
 
     def onNewROI(self, event=None):
-        roiname = self.wids['roiname'].GetValue()
+        roiname = self.get_roiname()
         errmsg = None
         if self.xmarker_left is None or self.xmarker_right is None:
             errmsg = 'Must select right and left markers to define ROI'
@@ -544,7 +544,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                              hi=self.xmarker_right)
 
     def onRenameROI(self, event=None):
-        roiname = self.wids['roiname'].GetValue()
+        roiname = self.get_roiname()
         errmsg = None
         if roiname in self.wids['roilist'].GetStrings():
             errmsg = '%s is already in ROI list - use a unique name.' % roiname
