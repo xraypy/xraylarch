@@ -1,3 +1,4 @@
+import sys
 import wx
 import wx.lib.mixins.inspection
 
@@ -81,9 +82,13 @@ class PeriodicTablePanel(wx.Panel):
         self.ctrls = {}
         self.SetBackgroundColour(self.FRAME_BG)
         self.selected = None
-        self.elemfont     = wx.Font( 9,  wx.SWISS,   wx.NORMAL, wx.NORMAL)
         self.titlefont    = wx.Font(10,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.elemfont     = wx.Font( 9,  wx.SWISS,   wx.NORMAL, wx.NORMAL)
         self.subtitlefont = wx.Font( 7,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        if sys.platform.lower().startswith('win'):
+            self.elemfont     = wx.Font( 8,  wx.SWISS,   wx.NORMAL, wx.BOLD)
+            self.subtitlefont = wx.Font( 8,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
+            
         self.BuildPanel()
 
     def onKey(self, event=None, name=None):
