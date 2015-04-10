@@ -1,4 +1,4 @@
-from .mca import MCA, isLarchMCAGroup
+from .mca import MCA, isLarchMCAGroup, Environment
 from .roi import ROI, split_roiname
 from .deadtime import calc_icr, correction_factor
 from .xrf_bgr import xrf_background
