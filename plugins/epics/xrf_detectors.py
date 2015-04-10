@@ -6,7 +6,7 @@ from epics.devices.mca import  MultiXMAP
 from epics.devices.struck import Struck
 from epics.wx import EpicsFunction, DelayedEpicsCallback
 
-from larch_plugins.xrf import MCA, ROI
+from larch_plugins.xrf import MCA, ROI, Environment
 from larch_plugins.epics.xspress3 import Xspress3
 
 class Epics_Xspress3(object):
@@ -18,6 +18,7 @@ class Epics_Xspress3(object):
     def __init__(self, prefix=None, nmca=4, **kws):
         self.nmca = nmca
         self.prefix = prefix
+        self.environ = []
         self.mcas = []
         self.npts  = 4096
         self.energies = []
@@ -206,11 +207,13 @@ class Epics_Xspress3(object):
         fp.write('ELEMENTS:   %i\n' % nelem)
         fp.write('DATE:       %s\n' % time.ctime())
         fp.write('CHANNELS:   %i\n' % npts)
-        s_rtime = " ".join([".4f" % realtime for i in range(nelm)])
-        s_off   = " ".join(["0.000"          for i in range(nelm)])
-        s_quad  = " ".join(["0.000"          for i in range(nelm)])
-        s_slope = " ".join(["0.010"          for i in range(nelm)])
-        s_rois  = " ".join(["%i" % nrois     for i in range(nelm)])
+
+        s_rtime = " ".join(["%.4f" % realtime for i in range(nelem)])
+        s_off   = " ".join(["0.000"          for i in range(nelem)])
+        s_quad  = " ".join(["0.000"          for i in range(nelem)])
+        s_slope = " ".join(["0.010"          for i in range(nelem)])
+        s_rois  = " ".join(["%i" % nrois     for i in range(nelem)])
+
         fp.write('REAL_TIME:  %s\n' % s_rtime)
         fp.write('LIVE_TIME:  %s\n' % s_rtime)
         fp.write('CAL_OFFSET: %s\n' % s_off)
