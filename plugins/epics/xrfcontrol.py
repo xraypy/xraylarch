@@ -46,17 +46,14 @@ class DetectorSelectDialog(wx.Dialog):
     Can be either XIA xMAP  or Quantum XSPress3
     """
     msg = '''Select XIA xMAP or Quantum XSPress3 MultiElement MCA detector'''
-    amp_types = ('xspress3', 'xmap')
     det_types = ('ME-4', 'other')
     def_prefix = '13QX4:'   # SDD1:'
     def_nelem  =  4
 
     def __init__(self, parent=None, prefix=None, det_type='ME-4',
-                 amp_type='xmap', nmca=4,
+                 is_xsp3=False, nmca=4,
                  title='Select Epics MCA Detector'):
         if prefix is None: prefix = self.def_prefix
-        if amp_type not in self.amp_types:
-            amp_type = self.amp_types[0]
         if det_type not in self.det_types:
             det_type = self.det_types[0]
 
@@ -67,8 +64,7 @@ class DetectorSelectDialog(wx.Dialog):
         if parent is not None:
             self.SetFont(parent.GetFont())
 
-        self.amptype = Choice(self, size=(120, -1),choices=self.amp_types)
-        self.amptype.SetStringSelection(amp_type)
+        self.is_xsp3 = Check(self, size=(120, -1), default=False)
 
         self.dettype = Choice(self,size=(120, -1), choices=self.det_types)
         self.dettype.SetStringSelection(det_type)
@@ -98,12 +94,12 @@ class DetectorSelectDialog(wx.Dialog):
         def txt(label):
             return SimpleText(self, label, size=(120, -1), style=LEFT)
 
-        sizer.Add(txt('Detector Type'), (0, 0), (1, 1), sty, 2)
-        sizer.Add(txt('Electronics'),   (1, 0), (1, 1), sty, 2)
-        sizer.Add(txt('Epics Prefix'),  (2, 0), (1, 1), sty, 2)
-        sizer.Add(txt('# Elements'),    (3, 0), (1, 1), sty, 2)
+        sizer.Add(txt('  Detector Type'),  (0, 0), (1, 1), sty, 2)
+        sizer.Add(txt('  Uses Xspress3?'), (1, 0), (1, 1), sty, 2)
+        sizer.Add(txt('  Epics Prefix'),  (2, 0), (1, 1), sty, 2)
+        sizer.Add(txt('  # Elements'),    (3, 0), (1, 1), sty, 2)
         sizer.Add(self.dettype,         (0, 1), (1, 1), sty, 2)
-        sizer.Add(self.amptype,         (1, 1), (1, 1), sty, 2)
+        sizer.Add(self.is_xsp3,         (1, 1), (1, 1), sty, 2)
         sizer.Add(self.prefix,          (2, 1), (1, 1), sty, 2)
         sizer.Add(self.nelem,           (3, 1), (1, 1), sty, 2)
 
@@ -120,12 +116,12 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     me4_layout = ((0, 0), (1, 0), (1, 1), (0, 1))
     main_title = 'Epics XRF Control'
     def __init__(self, parent=None, _larch=None, prefix=None,
-                 det_type='ME-4',  amp_type='xspress3',
+                 det_type='ME-4',  is_xsp3=False,
                  nmca=4, size=(725, 580),  title='Epics XRF Display',
                  output_title='XRF', **kws):
 
         self.det_type = det_type
-        self.amp_type = amp_type
+        self.is_xsp3 = is_xsp3
         self.nmca = nmca
         self.det_fore = 1
         self.det_back = 0
@@ -138,15 +134,15 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     def onConnectEpics(self, event=None, prefix=None, **kws):
         if prefix is None:
             res  = self.prompt_for_detector(prefix=prefix,
-                                            amp_type=self.amp_type,
+                                            is_xsp3=self.is_xsp3,
                                             nmca=self.nmca)
-            self.prefix, self.det_type, self.amp_type, self.nmca = res
+            self.prefix, self.det_type, self.is_xsp3, self.nmca = res
         else:
             self.prefix = prefix
         self.det_fore = 1
         self.det_back = 0
         self.clear_mcas()
-        self.connect_to_detector(prefix=self.prefix, amp_type=self.amp_type,
+        self.connect_to_detector(prefix=self.prefix, is_xsp3=self.is_xsp3,
                                  det_type=self.det_type, nmca=self.nmca)
 
 
@@ -177,28 +173,28 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
         pass
 
-    def prompt_for_detector(self, prefix=None, amp_type='xspress3', nmca=4):
-        dlg = DetectorSelectDialog(prefix=prefix, amp_type=amp_type, nmca=nmca)
+    def prompt_for_detector(self, prefix=None, is_xsp3=False,  nmca=4):
+        dlg = DetectorSelectDialog(prefix=prefix, is_xsp3=is_xsp3, nmca=nmca)
         dlg.Raise()
         if dlg.ShowModal() == wx.ID_OK:
             dpref = dlg.prefix.GetValue()
-            atype = dlg.amptype.GetStringSelection()
+            atype = dlg.is_xsp3.IsChecked()
             dtype = dlg.dettype.GetStringSelection()
             nmca = dlg.nelem.GetValue()
             dlg.Destroy()
         return dpref, dtype, atype, nmca
 
-    def connect_to_detector(self, prefix=None, amp_type='xmap',
+    def connect_to_detector(self, prefix=None, is_xsp3=False,
                             det_type=None, nmca=4):
         self.det = None
-        if amp_type.lower().startswith('xmap'):
-            self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
-        elif amp_type.lower().startswith('xsp'):
+        if is_xsp3:
             self.det = Epics_Xspress3(prefix=prefix, nmca=nmca)
             self.det.connect()
             time.sleep(0.5)
             self.det.get_mca(mca=1)
             self.needs_newplot=True
+        else:
+            self.det = Epics_MultiXMAP(prefix=prefix, nmca=nmca)
 
     def show_mca(self, init=False):
         self.needs_newplot = False
