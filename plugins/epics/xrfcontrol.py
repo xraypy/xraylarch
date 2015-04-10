@@ -438,28 +438,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
             rmsg = " CPS={:10,.1f}".format(cps)
         self.write_message("%s%s%s" % (nmsg, cmsg, rmsg), panel=panel)
 
-    def onSelectBkgDet(self, event=None, **kws):
-        self.mca2 = None
-        self.det_back = self.wids['bkg_det'].GetSelection()
-        if self.det_back == self.det_fore:
-            self.det_back = 0
-        if self.det_back != 0:
-            title = "Foreground: MCA{:d}".format(self.det_fore)
-            if self.mca2 is None:
-                self.mca2 = self.det.get_mca(mca=self.det_back, with_rois=False)
-                c = self.mca2.counts
-                e = self.mca2.energy
-            else:
-                c = self.det.get_array(mca=self.det_back)
-                e = self.det.get_energy(mca=self.det_back)
-            title = "{:s}  Background: MCA{:d}".format(title, self.det_back)
-            try:
-                self.oplot(e, c)
-                self.SetTitle("%s: %s" % (self.main_title, title))
-            except ValueError:
-                pass
-        self.needs_newplot = False
-
     def onSelectDet(self, event=None, index=0, init=False, **kws):
         if index > 0:
             self.det_fore = index
@@ -490,19 +468,13 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.wids['bkg_det'].SetSelection(fore)
         self.onSelectDet(index=back)
 
-    def clear_background(self, evt=None):
-        "remove XRF background"
-        self.mca2 = None
-        self.det_back = 0
-        self.wids['bkg_det'].SetSelection(0)
-        self.onSelectDet()
-
     def onSetDwelltime(self, event=None, **kws):
         if 'dwelltime' in self.wids:
             self.det.set_dwelltime(dtime=self.wids['dwelltime'].GetValue())
 
     def clear_mcas(self):
         self.mca = self.mca2 = None
+        self.x2data = self.y2data = None
         self.needs_newplot = True
 
     def onStart(self, event=None, dtime=None, **kws):
