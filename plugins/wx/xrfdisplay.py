@@ -309,8 +309,9 @@ class XRFDisplayFrame(wx.Frame):
         labstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM|wx.EXPAND
         ctrlstyle = wx.ALIGN_LEFT|wx.ALIGN_BOTTOM
         txtstyle=wx.ALIGN_LEFT|wx.ST_NO_AUTORESIZE|wx.TE_PROCESS_ENTER
-        Font10 = Font(10, serif=True)
-        Font11 = Font(11, serif=True)
+        Font9  = Font(9)
+        Font10 = Font(10)
+        Font11 = Font(11)
         #
         arrowpanel = wx.Panel(ctrlpanel)
         ssizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -320,17 +321,18 @@ class XRFDisplayFrame(wx.Frame):
                              ('downarrow', 'down')):
             self.wids[wname] = wx.BitmapButton(arrowpanel, -1,
                                                get_icon(wname),
+                                               size=(40, 40),
                                                style=wx.NO_BORDER)
             self.wids[wname].Bind(wx.EVT_BUTTON,
                                  partial(ptable.onKey, name=dname))
 
-            ssizer.Add(self.wids[wname],  0, wx.EXPAND|wx.ALL, 2)
+            ssizer.Add(self.wids[wname],  0, wx.EXPAND|wx.ALL)
 
         self.wids['kseries'] = Check(arrowpanel, ' K ', action=self.onKLM)
         self.wids['lseries'] = Check(arrowpanel, ' L ', action=self.onKLM)
         self.wids['mseries'] = Check(arrowpanel, ' M ', action=self.onKLM)
 
-        ssizer.Add(txt(arrowpanel, '  '),   1, wx.EXPAND|wx.ALL, 0)
+        ssizer.Add(txt(arrowpanel, '  '),   0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['kseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['lseries'],    0, wx.EXPAND|wx.ALL, 0)
         ssizer.Add(self.wids['mseries'],    0, wx.EXPAND|wx.ALL, 0)
@@ -339,31 +341,30 @@ class XRFDisplayFrame(wx.Frame):
         # roi section...
         rsizer = wx.GridBagSizer(4, 6)
         roipanel = wx.Panel(ctrlpanel, name='ROI Panel')
-        self.wids['roilist'] = EditableListBox(roipanel, self.onROI,
-                                               right_click=False,
-                                               size=(135, 120))
+        self.wids['roilist'] = wx.ListBox(roipanel, size=(135, 120))
+        self.wids['roilist'].Bind(wx.EVT_LISTBOX, self.onROI)
         self.wids['roilist'].SetMinSize((135, 120))
         self.wids['roiname'] = wx.TextCtrl(roipanel, -1, '', size=(150, -1))
 
         #
         roibtns= wx.Panel(roipanel, name='ROIButtons')
         zsizer = wx.BoxSizer(wx.HORIZONTAL)
-        z1 = Button(roibtns, 'Add',    size=(55, 30), action=self.onNewROI)
-        z2 = Button(roibtns, 'Delete', size=(55, 30), action=self.onConfirmDelROI)
-        z3 = Button(roibtns, 'Rename', size=(55, 30), action=self.onRenameROI)
+        z1 = Button(roibtns, 'Add',    size=(70, 30), action=self.onNewROI)
+        z2 = Button(roibtns, 'Delete', size=(70, 30), action=self.onConfirmDelROI)
+        z3 = Button(roibtns, 'Rename', size=(70, 30), action=self.onRenameROI)
 
         zsizer.Add(z1,    0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z2,    0, wx.EXPAND|wx.ALL, 0)
         zsizer.Add(z3,    0, wx.EXPAND|wx.ALL, 0)
         pack(roibtns, zsizer)
 
-        rt1 = txt(roipanel, ' Channels:', size=70, font=Font10)
-        rt2 = txt(roipanel, ' Energy:',   size=70, font=Font10)
-        rt3 = txt(roipanel, ' Cen/Wid:',  size=70, font=Font10)
-        m = '            '
-        self.wids['roi_msg1'] = txt(roipanel, m, size=125, font=Font10)
-        self.wids['roi_msg2'] = txt(roipanel, m, size=125, font=Font10)
-        self.wids['roi_msg3'] = txt(roipanel, m, size=125, font=Font10)
+        rt1 = txt(roipanel, ' Channels:', size=75, font=Font9)
+        rt2 = txt(roipanel, ' Energy:',   size=75, font=Font9)
+        rt3 = txt(roipanel, ' Cen/Wid:',  size=75, font=Font9)
+        m = ''
+        self.wids['roi_msg1'] = txt(roipanel, m, size=135, font=Font9)
+        self.wids['roi_msg2'] = txt(roipanel, m, size=135, font=Font9)
+        self.wids['roi_msg3'] = txt(roipanel, m, size=135, font=Font9)
 
         rsizer.Add(txt(roipanel, ' Regions of Interest:', size=125, font=Font11),
                    (0, 0), (1, 3), labstyle)
@@ -418,19 +419,16 @@ class XRFDisplayFrame(wx.Frame):
             dvstyle = dv.DV_SINGLE|dv.DV_VERT_RULES|dv.DV_ROW_LINES
             xlines = dv.DataViewListCtrl(ctrlpanel, style=dvstyle)
             self.wids['xray_lines'] = xlines
-            xlines.AppendTextColumn('Line ',        width=55)
-            xlines.AppendTextColumn('Energy (keV)', width=85)
-            xlines.AppendTextColumn('Strength',     width=85)
-            xlines.AppendTextColumn('Levels',       width=80)
+            xlines.AppendTextColumn('Line  ',         width=55)
+            xlines.AppendTextColumn('Energy(keV)  ',  width=110)
+            xlines.AppendTextColumn('Strength  ',     width=85)
+            xlines.AppendTextColumn('Levels  ',       width=75)
             for col in (0, 1, 2, 3):
                 this = xlines.Columns[col]
                 this.Sortable = True
                 align = RIGHT
-                if col == 0: align = wx.ALIGN_CENTER
-                if col == 3: align = wx.ALIGN_LEFT
+                if col in (0, 3): align = wx.ALIGN_LEFT
                 this.Alignment = this.Renderer.Alignment = align
-            #print xlines.Columns[1]
-            #print xlines.Columns[1].Renderer
 
             xlines.SetMinSize((300, 240))
             xlines.Bind(dv.EVT_DATAVIEW_SELECTION_CHANGED,
@@ -438,10 +436,6 @@ class XRFDisplayFrame(wx.Frame):
         # main layout
         # may have to adjust comparison....
         store = xlines.GetStore()
-        # print 'store ', store
-        # print dir(store)
-        # print store.Compare, store.HasDefaultCompare
-        # store.Compare = self.XLines_Compare
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(roipanel,            0, labstyle)
