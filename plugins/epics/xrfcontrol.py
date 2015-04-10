@@ -73,6 +73,7 @@ class DetectorSelectDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, wx.ID_ANY, title=title)
 
         self.SetBackgroundColour((240, 240, 230))
+        self.SetFont(Font(9))
         if parent is not None:
             self.SetFont(parent.GetFont())
 
@@ -303,11 +304,11 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         pane = wx.Panel(self, name='epics panel')
         psizer = wx.GridBagSizer(4, 12) # wx.BoxSizer(wx.HORIZONTAL)
 
-        btnpanel = wx.Panel(pane, name='foo')
+        btnpanel = wx.Panel(pane, name='buttons')
 
         nmca = self.nmca
         NPERROW = 6
-
+        self.SetFont(Font(9))
         if self.det_type.lower().startswith('me-4') and nmca<5:
             btnsizer = wx.GridBagSizer(2, 2)
         else:
@@ -344,7 +345,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.wids['dwelltime'] = FloatCtrl(pane, value=0.0, precision=1, minval=0,
                                            size=(80, -1), act_on_losefocus=True,
                                            action=self.onSetDwelltime)
-        self.wids['elapsed']   = SimpleText(pane, ' ', size=(80, -1),  style=rstyle)
+        self.wids['elapsed']   = SimpleText(pane, ' ', size=(80, -1),  style=style)
 
         b1 =  Button(pane, 'Start',      size=(90, 25), action=self.onStart)
         b2 =  Button(pane, 'Stop',       size=(90, 25), action=self.onStop)
@@ -352,24 +353,29 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         b4 =  Button(pane, 'Continuous', size=(90, 25), action=partial(self.onStart,
                                                                       dtime=0))
 
-        psizer.Add(SimpleText(pane, 'Background MCA: '), (0, 2), (1, 1), style, 1)
-        psizer.Add(self.wids['bkg_det'],                 (1, 2), (1, 1), style, 1)
+        bkg_lab = SimpleText(pane, 'Background MCA:',   size=(150, -1))
+        pre_lab = SimpleText(pane, 'Preset Time (s):',  size=(125, -1))
+        ela_lab = SimpleText(pane, 'Elapsed Time (s):', size=(125, -1))
+        sta_lab = SimpleText(pane, 'Status :',          size=(100, -1))
+        dea_lab = SimpleText(pane, '% Deadtime:',       size=(100, -1))
 
-        psizer.Add(SimpleText(pane, 'Preset Time (s):'),  (0, 3), (1, 1),  style, 1)
-        psizer.Add(SimpleText(pane, 'Elapsed Time (s):'), (1, 3), (1, 1),  style, 1)
-        psizer.Add(self.wids['dwelltime'],                (0, 4), (1, 1),  style, 1)
-        psizer.Add(self.wids['elapsed'],                  (1, 4), (1, 1),  style, 1)
+
+        psizer.Add(bkg_lab,                (0, 2), (1, 1), style, 1)
+        psizer.Add(self.wids['bkg_det'],   (1, 2), (1, 1), style, 1)
+        psizer.Add(pre_lab,                (0, 3), (1, 1),  style, 1)
+        psizer.Add(ela_lab,                (1, 3), (1, 1),  style, 1)
+        psizer.Add(self.wids['dwelltime'], (0, 4), (1, 1),  style, 1)
+        psizer.Add(self.wids['elapsed'],   (1, 4), (1, 1),  style, 1)
 
         psizer.Add(b1, (0, 5), (1, 1), style, 1)
         psizer.Add(b4, (0, 6), (1, 1), style, 1)
         psizer.Add(b2, (1, 5), (1, 1), style, 1)
         psizer.Add(b3, (1, 6), (1, 1), style, 1)
 
-        psizer.Add(SimpleText(pane, 'Status:'),      (0, 7), (1, 1), style, 1)
-        psizer.Add(self.wids['det_status'],          (0, 8), (1, 1), style, 1)
-        psizer.Add(SimpleText(pane, '% Deadtime: '), (1, 7), (1, 1), style, 1)
-        psizer.Add(self.wids['deadtime'],            (1, 8), (1, 1), style, 1)
-
+        psizer.Add(sta_lab,                  (0, 7), (1, 1), style, 1)
+        psizer.Add(self.wids['det_status'],  (0, 8), (1, 1), style, 1)
+        psizer.Add(dea_lab,                  (1, 7), (1, 1), style, 1)
+        psizer.Add(self.wids['deadtime'],    (1, 8), (1, 1), style, 1)
         pack(pane, psizer)
         # pane.SetMinSize((500, 53))
         self.det.connect_displays(status=self.wids['det_status'],

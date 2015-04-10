@@ -306,13 +306,11 @@ class Epics_MultiXMAP(object):
             wid.SetLabel(char_value)
 
     @DelayedEpicsCallback
-    def onRealTime(self, pvname, value=None, **kws):
+    def onRealTime(self, pvname, value=None, char_value=None, **kws):
         self.elapsed_real = value
         self.needs_refresh = True
-        # print(" onRealTime ", pvname, value)
         if self.elapsed_textwidget is not None:
-            self.elapsed_textwidget.SetLabel("  %8.2f" % value)
-
+            self.elapsed_textwidget.SetLabel(" %8.2f" % value)
 
     def set_dwelltime(self, dtime=0):
         if dtime <= 0.1:

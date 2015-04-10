@@ -81,9 +81,9 @@ class PeriodicTablePanel(wx.Panel):
         self.ctrls = {}
         self.SetBackgroundColour(self.FRAME_BG)
         self.selected = None
-        self.elemfont  = wx.Font( 8, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, "")
-        self.titlefont = wx.Font(11, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, "")
-        self.subtitlefont = wx.Font(8, wx.DEFAULT, wx.NORMAL, wx.BOLD, 0, "")
+        self.elemfont     = wx.Font( 9,  wx.SWISS,   wx.NORMAL, wx.NORMAL)
+        self.titlefont    = wx.Font(10,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
+        self.subtitlefont = wx.Font( 7,  wx.DEFAULT, wx.NORMAL, wx.BOLD)
         self.BuildPanel()
 
     def onKey(self, event=None, name=None):
@@ -172,7 +172,7 @@ class PeriodicTablePanel(wx.Panel):
             tw.SetFont(self.elemfont)
             tw.SetForegroundColour(self.REG_FG)
             tw.SetBackgroundColour(self.REG_BG)
-            tw.SetMinSize((17, 13))
+            tw.SetMinSize((18, 18))
             tw.Bind(wx.EVT_LEFT_DOWN, self.onclick)
             if self.tooltip_msg is not None:
                 tw.SetToolTip(wx.ToolTip(self.tooltip_msg))
