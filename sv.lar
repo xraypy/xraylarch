@@ -1,0 +1,4 @@
+add_plugin('scanviewer')
+
+print 'hello'
+scanview()

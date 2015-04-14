@@ -1,0 +1,12 @@
+f = read_xrfmap('t131_A.h5')
+print f
+
+print f.get_livereal_rect(40, 50, 70, 80)
+
+a1 = f.get_mca_area('area_001')
+a2 = f.get_mca_area('area_002')
+mca1 = f.get_mca_area('area_001')
+mca1.save_mcafile('area001.mca')
+
+
+

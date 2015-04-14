@@ -1,0 +1,20 @@
+# wxlarch history saved Mon Feb 03 15:10:40 2014
+
+x = 1
+print range(100)
+print range(1000)
+print range(100)
+print range(100)
+print range(100)
+q = 11
+print arange(300)*.102.1
+print arange(300)*.102
+q = 11
+a = 88
+print sqrt(a)
+a = 88
+print sqrt(a)
+a = 1.234*arange(100)
+print sqrt(a)
+a = 1.234*arange(300)
+print sqrt(a)
