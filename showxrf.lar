@@ -1,3 +1,0 @@
-mca = read_gsemca('area001.mca')
-xrf_plot(mca)
-
