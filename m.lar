@@ -1,9 +1,0 @@
-
-x = linspace(0, 20, 501)
-eps = random.normal(scale=0.13, size=len(x)) 
-y = 34.3*voigt(x, 11.0, 1.4881) +  x*0.051135  + 0.25121 + eps
-
-header = ['test data', 'from somewhere, ok made up']
-write_ascii('0t.dat', x, y, eps, label='x   y  noise', header=header)
-
-plot(x, y)
