@@ -36,10 +36,14 @@ from wxutils import (SimpleText, EditableListBox, Font, FloatCtrl,
                      GridPanel, CEN, LEFT, RIGHT)
 
 
+import larch
 from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
                               FILE_WILDCARDS, CalibrationFrame)
 
+larch.use_plugin_path('epics')
 from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3
+from scandb import ScanDB
+
 
 class DetectorSelectDialog(wx.Dialog):
     """Connect to an Epics MCA detector
@@ -117,7 +121,8 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
     main_title = 'Epics XRF Control'
     def __init__(self, parent=None, _larch=None, prefix=None,
                  det_type='ME-4',  is_xsp3=False,
-                 nmca=4, size=(725, 580),  title='Epics XRF Display',
+                 nmca=4, size=(725, 580),  scandb_conn=None,
+                 title='Epics XRF Display',
                  output_title='XRF', **kws):
 
         self.det_type = det_type
@@ -125,6 +130,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.nmca = nmca
         self.det_fore = 1
         self.det_back = 0
+        self.scandb = None
+        if scandb_conn is not None:
+            self.ConnectScanDB(**scandb_conn)
 
         self.onConnectEpics(event=None, prefix=prefix)
 
@@ -145,6 +153,24 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.connect_to_detector(prefix=self.prefix, is_xsp3=self.is_xsp3,
                                  det_type=self.det_type, nmca=self.nmca)
 
+    def ConnectScanDB(self, **kws):
+        self.scandb = ScanDB(**kws)
+        print "Scandb ", self.scandb
+        if self.scandb is not None:
+            basedir = self.scandb.get_info('user_folder')
+            fileroot = self.scandb.get_info('server_fileroot')
+        basedir = str(basedir)
+        fileroot = str(fileroot)
+        if basedir.startswith(fileroot):
+            basedir = basedir[len(fileroot):]
+        fullpath = os.path.join(fileroot, basedir)
+        fullpath = fullpath.replace('\\', '/').replace('//', '/')
+        curdir = os.getcwd()
+        try:
+            os.chdir(fullpath)
+        except:
+            os.chdir(curdir)
+        self.scandb.connect_pvs()
 
     def onSaveMCAFile(self, event=None, **kws):
         tmp = '''
@@ -165,9 +191,18 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                            default_file=deffile,
                            wildcard=FILE_WILDCARDS)
 
+        environ = []
+        if self.scandb is not None:
+            c, table = self.scandb.get_table('pvs')
+            pvrows = self.scandb.query(table).all()
+            for row in pvrows:
+                addr = str(row.name)
+                desc = str(row.notes)
+                val  = self.scandb.pvs[addr].get(as_string=True)
+                environ.append((addr, val, desc))
+
         if outfile is not None:
-            # print 'Would write ', outfile,  self.det
-            self.det.save_mcafile(outfile)
+            self.det.save_mcafile(outfile, environ=environ)
 
     def onSaveColumnFile(self, event=None, **kws):
         print( '  EPICS-XRFDisplay onSaveColumnFile not yet implemented  ')
