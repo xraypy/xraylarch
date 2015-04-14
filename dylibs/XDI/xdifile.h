@@ -99,7 +99,7 @@ _EXPORT(void) XDI_cleanup(XDIFile *xdifile, long err);
 /* #define FAMILYNAME "(?i)^[a-z_][a-z0-9_]+$" */
 /* #define KEYNAME    "(?i)^[a-z0-9_]+$" */
 
-#define DATALINE "^([ \\t]*[0-9\\.])"
+#define DATALINE "^([ \\t]*[-+]*?[0-9\\.])"
 
 /* Notes:
    1. The absorption edge must be one of those listed in ValidEdges below

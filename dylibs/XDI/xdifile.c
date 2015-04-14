@@ -241,6 +241,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
     }
   }
   nheader = i+1;
+  if (nheader < 1) {nheader = 1;}
   xdifile->meta_families = calloc(nheader, sizeof(char *));
   xdifile->meta_keywords = calloc(nheader, sizeof(char *));
   xdifile->meta_values   = calloc(nheader, sizeof(char *));
@@ -410,6 +411,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   npts_ = ilen - nheader + 1;
 
   nouter = npts_ - 1;
+  if (nouter < 1) {nouter = 1;}  
   outer_arr = calloc(nouter, sizeof(double));
   outer_pts = calloc(nouter, sizeof(long));
   outer_arr[0] = outer_arr0;
@@ -422,7 +424,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   COPY_STRING(xdifile->filename, filename);
 
   maxcol++;
-
+  if (ncols < 1) {ncols = 1;}
   xdifile->array_labels = calloc(ncols, sizeof(char *));
   xdifile->array_units  = calloc(ncols, sizeof(char *));
   has_energy = 0;
@@ -446,6 +448,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
   /* set size of data arrays */
   xdifile->array = calloc(ncols, sizeof(double *));
+  if (npts_ < 0) {npts_ = 0;}  
   for (j = 0; j < ncols; j++) {
     xdifile->array[j] = calloc(npts_+1, sizeof(double));
     if (0 != xdi_strtod(words[j], &dval)) {
@@ -546,6 +549,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   xdifile->narrays = ncols;
   xdifile->narray_labels = min(ncols, maxcol);
   xdifile->nmetadata = ndict+1;
+  if (iouter < 1) {iouter = 1;}  
   xdifile->outer_array    = calloc(iouter, sizeof(double));
   xdifile->outer_breakpts = calloc(iouter, sizeof(long));
   for (j= 0; j < iouter; j++) {
