@@ -25,6 +25,8 @@ from sqlalchemy.orm.exc import  NoResultFound
 # needed for py2exe?
 from sqlalchemy.dialects import sqlite, postgresql
 
+import epics
+
 from larch import use_plugin_path
 use_plugin_path('io')
 from fileutils import strip_quotes, asciikeys
@@ -719,7 +721,7 @@ class ScanDB(object):
             return
         name = normalize_pvname(name)
         cls, table = self.get_table('pvs')
-        vals  = self.query(table).filter(cls.name == name).all()
+        vals  = self.query(table).filter(table.c.name == name).all()
         ismon = {False:0, True:1}[monitor]
         if len(vals) < 1:
             table.insert().execute(name=name, notes=notes, is_monitor=ismon)
@@ -728,30 +730,68 @@ class ScanDB(object):
             table.update(whereclause=where).execute(notes=notes,
                                                     is_monitor=ismon)
         thispv = self.query(table).filter(cls.name == name).one()
-        if name not in self.pvs:
-            self.pvs[name] = thispv.id
+        self.connect_pvs(names=[name])                    
         return thispv
 
+    def get_pvrow(self, name):
+        """return db row for a PV"""
+        if len(name) < 2:
+            return
+
+        cls, table = self.get_table('pvs')
+        return self.query(table).filter(table.c.name == name).one()
+
+    def get_pv(self, name):
+        """return pv object from known PVs"""
+        if len(name) > 2:
+            name = normalize_pvname(name)
+            if name in self.pvs:
+                return self.pvs[name]
+
+    def connect_pvs(self, names=None):
+        "connect all PVs in pvs table"
+        if names is None:
+            cls, table = self.get_table('pvs')
+            names = [str(row.name) for row in self.query(table).all()]
+
+        _connect = []
+        for name in names:
+            name = normalize_pvname(name)
+            if len(name) < 2:
+                continue
+            if name not in self.pvs:
+                self.pvs[name] = epics.PV(name)
+                _connect.append(name)
+        
+        for name in _connect:
+            connected, count = False, 0
+            while not connected:
+                time.sleep(0.001)
+                count += 1
+                connected = self.pvs[name].connected or count > 100
+
     def record_monitorpv(self, pvname, value):
-        """save value for monitor pvs"""
+        """save value for monitor pvs
         pvname = normalize_pvname(pvname)
         if pvname not in self.pvs:
             pv = self.add_pv(pvname, monitor=True)
-            self.pvs[pvname] = pv.id
+        
 
-        cls, table = self.get_table('monitorvalues')
-        mval = cls()
-        mval.pv_id = self.pvs[pvname]
-        mval.value = value
-        self.session.add(mval)
+        #cls, table = self.get_table('monitorvalues')
+        #mval = cls()
+        ## mval.pv_id = self.pvs[pvname]
+        #mval.value = value
+        #self.session.add(mval)
+        """
+        pass
 
     def get_monitorvalues(self, pvname, start_date=None, end_date=None):
         """get (value, time) pairs for a monitorpvs given a time range
-        """
+        
         pvname = normalize_pvname(pvname)
         if pvname not in self.pvs:
             pv = self.add_monitorpv(pvname)
-            self.pvs[pvname] = pv.id
+            # self.pvs[pvname] = pv.id
 
         cls, valtab = self.get_table('monitorvalues')
 
@@ -763,6 +803,8 @@ class ScanDB(object):
             query = query.where(valtab.c.time <= end_date)
 
         return query.execute().fetchall()
+        """
+        pass
 
     # commands -- a more complex interface
     def get_commands(self, status=None, reverse=False,
@@ -855,6 +897,23 @@ class ScanDB(object):
         cmd = self.get_current_command()
         cmdid = cmd.id
         table.update(whereclause="id>'%i'" % cmdid).execute(status_id=cancel)
+
+    def test_abort(self, msg='scan abort'):
+        """look for abort, raise ScanDBAbort if set"""
+        if self.get_info('request_abort', as_bool=True):
+            raise ScanDBAbort(msg)
+
+    def wait_for_pause(self, timeout=86400.0):
+        """if request_pause is set, wait until it is unset"""
+        paused = self.get_info('request_pause', as_bool=True)
+        if not paused:
+            return
+
+        t0 = time.time()
+        while paused:
+            time.sleep(0.25)
+            paused = (self.get_info('request_pause', as_bool=True) and
+                      (time.time() - t0) < timeout)
 
 
 if __name__ == '__main__':
