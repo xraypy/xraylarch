@@ -189,7 +189,7 @@ class Epics_Xspress3(object):
         f.write("\n")
         f.close()
 
-    def save_mcafile(self, filename):
+    def save_mcafile(self, filename, environ=None):
         """write MultiChannel MCA file
 
         Parameters:
@@ -238,8 +238,11 @@ class Epics_Xspress3(object):
             fp.write('ROI_%i_LABEL: %s\n' % (iroi, name))
 
         # environment
-        #for e in self.environ:
-        #    fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (e.addr, e.val, e.desc))
+        if environ is None:
+            environ = []
+        for addr, val, desc in environ:
+            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (addr, val, desc))
+
 
         # data
         fp.write('DATA: \n')
