@@ -1,0 +1,770 @@
+#!/usr/bin/env python
+"""
+
+"""
+import os
+import time
+import shutil
+import numpy as np
+from random import randrange
+from functools import partial
+from datetime import timedelta
+
+import wx
+import wx.lib.agw.flatnotebook as flat_nb
+import wx.lib.scrolledpanel as scrolled
+import wx.lib.mixins.inspection
+from wx._core import PyDeadObjectError
+
+import epics
+from epics.wx import DelayedEpicsCallback, EpicsFunction
+
+from larch import Interpreter, use_plugin_path, isParameter
+from larch.larchlib import read_workdir, save_workdir
+from larch.fitting import fit_report
+
+use_plugin_path('math')
+from fitpeak import fit_peak
+from mathutils import index_of
+
+use_plugin_path('io')
+from gse_escan import gsescan_group
+from xdi import read_xdi
+
+use_plugin_path('xafs')
+from pre_edge import find_e0, pre_edge
+
+from wxmplot import PlotFrame, PlotPanel
+
+from wxutils import (SimpleText, FloatCtrl, pack, Button,
+                     Choice,  Check, MenuItem,
+                     CEN, RCEN, LCEN, FRAMESTYLE, Font)
+
+CEN |=  wx.ALL
+FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
+FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
+
+
+PRE_OPS = ('', 'log', '-log', 'deriv', '-deriv', 'deriv(log', 'deriv(-log')
+ARR_OPS = ('+', '-', '*', '/')
+
+SCANGROUP = '_scan'
+def randname(n=6):
+    "return random string of n (default 6) lowercase letters"
+    return ''.join([chr(randrange(26)+97) for i in range(n)])
+
+class ScanViewerFrame(wx.Frame):
+    _about = """Scan 2D Plotter
+  Matt Newville <newville @ cars.uchicago.edu>
+  """
+    def __init__(self, _larch=None, **kws):
+
+        wx.Frame.__init__(self, None, -1, style=FRAMESTYLE)
+        self.filemap = {}
+        title = "ASCII Column Data File Viewer"
+        self.larch = None
+        self.plotframe = None
+        self.groupname = None
+        self.SetTitle(title)
+        self.SetSize((850, 650))
+        self.SetFont(Font(9))
+
+        self.createMainPanel()
+        self.createMenus()
+        self.statusbar = self.CreateStatusBar(2, 0)
+        self.statusbar.SetStatusWidths([-3, -1])
+        statusbar_fields = ["Initializing....", " "]
+        for i in range(len(statusbar_fields)):
+            self.statusbar.SetStatusText(statusbar_fields[i], i)
+        read_workdir('scanviewer.dat')
+
+    def createMainPanel(self):
+        splitter  = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter.SetMinimumPaneSize(175)
+
+        self.filelist  = wx.ListBox(splitter)
+        self.filelist.SetBackgroundColour(wx.Colour(255, 255, 255))
+        self.filelist.Bind(wx.EVT_LISTBOX, self.ShowFile)
+
+        self.detailspanel = self.createDetailsPanel(splitter)
+
+        splitter.SplitVertically(self.filelist, self.detailspanel, 1)
+        wx.CallAfter(self.init_larch)
+
+    def createDetailsPanel(self, parent):
+        mainpanel = wx.Panel(parent)
+        mainsizer = wx.BoxSizer(wx.VERTICAL)
+        panel = wx.Panel(mainpanel)
+        sizer = wx.GridBagSizer(8, 7)
+
+        self.title = SimpleText(panel, 'initializing...')
+        ir = 0
+        sizer.Add(self.title, (ir, 0), (1, 6), LCEN, 2)
+        # x-axis
+
+        self.xarr = Choice(panel, choices=[],
+                               action=self.onColumnChoices,  size=(120, -1))
+        self.xop  = Choice(panel, choices=('', 'log'),
+                               action=self.onColumnChoices, size=(75, -1))
+
+        ir += 1
+        sizer.Add(SimpleText(panel, 'X = '), (ir, 0), (1, 1), CEN, 0)
+        sizer.Add(self.xop,                  (ir, 1), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, '('),    (ir, 2), (1, 1), CEN, 0)
+        sizer.Add(self.xarr,                 (ir, 3), (1, 1), RCEN, 0)
+        sizer.Add(SimpleText(panel, ')'),    (ir, 4), (1, 1), CEN, 0)
+
+        self.yops = []
+        self.yarr = []
+
+        opts= {'choices':[], 'size':(120, -1), 'action':self.onColumnChoices}
+        for i in range(3):
+            self.yarr.append(Choice(panel, **opts))
+
+
+        for opts, sel, siz in ((PRE_OPS, 0, 75),
+                               (ARR_OPS, 3, 50), (ARR_OPS, 3, 50)):
+            w1 = Choice(panel, choices=opts, action=self.onColumnChoices,
+                            size=(siz, -1))
+            w1.SetSelection(sel)
+            self.yops.append(w1)
+
+        ir += 1
+        label = 'Y = '
+        sizer.Add(SimpleText(panel, label), (ir, 0), (1, 1), CEN, 0)
+        sizer.Add(self.yops[0],             (ir, 1), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, '[('),  (ir, 2), (1, 1), CEN, 0)
+        sizer.Add(self.yarr[0],             (ir, 3), (1, 1), CEN, 0)
+        sizer.Add(self.yops[1],             (ir, 4), (1, 1), CEN, 0)
+        sizer.Add(self.yarr[1],             (ir, 5), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, ')'),   (ir, 6), (1, 1), LCEN, 0)
+        ir += 1
+        sizer.Add(self.yops[2],             (ir, 4), (1, 1), CEN, 0)
+        sizer.Add(self.yarr[2],             (ir, 5), (1, 1), CEN, 0)
+        sizer.Add(SimpleText(panel, ']'),   (ir, 6), (1, 1), LCEN, 0)
+
+        ir += 1
+        self.dtcorr   = Check(panel, default=True, label='correct deadtime?',
+                              action=self.onColumnChoices)
+        sizer.Add(self.dtcorr,  (ir,   0), (1, 3), LCEN, 0)
+
+        pack(panel, sizer)
+
+        self.nb = flat_nb.FlatNotebook(mainpanel, -1, agwStyle=FNB_STYLE)
+
+        self.nb.SetTabAreaColour(wx.Colour(248,248,240))
+        self.nb.SetActiveTabColour(wx.Colour(254,254,195))
+
+        self.nb.SetNonActiveTabTextColour(wx.Colour(40,40,180))
+        self.nb.SetActiveTabTextColour(wx.Colour(80,0,0))
+
+        self.xas_panel = self.CreateXASPanel(self.nb) # mainpanel)
+        self.fit_panel = self.CreateFitPanel(self.nb) # mainpanel)
+
+        self.nb.AddPage(self.fit_panel, ' General Analysis ', True)
+        self.nb.AddPage(self.xas_panel, ' XAS Processing ',   True)
+        mainsizer.Add(panel,   0, LCEN|wx.EXPAND, 2)
+
+        mainsizer.Add(self.nb, 1, LCEN|wx.EXPAND, 2)
+
+        btnbox   = wx.Panel(mainpanel)
+        btnsizer = wx.BoxSizer(wx.HORIZONTAL)
+        for ttl, opt in (('New Plot',   'new'),
+                         ('Plot (left axis)',  'left'),
+                         ('Plot (right axis)', 'right')):
+
+            btnsizer.Add(Button(btnbox, ttl, size=(130, -1),
+                                action=partial(self.onPlot, opt=opt)), LCEN, 1)
+
+        pack(btnbox, btnsizer)
+        mainsizer.Add(btnbox, 1, LCEN, 2)
+
+        pack(mainpanel, mainsizer)
+
+        return mainpanel
+
+    def CreateFitPanel(self, parent):
+        p = panel = wx.Panel(parent)
+        self.fit_model   = Choice(panel, size=(100, -1),
+                                      choices=('Gaussian', 'Lorentzian',
+                                               'Voigt', 'Linear', 'Quadratic',
+                                               'Step', 'Rectangle',
+                                               'Exponential'))
+        self.fit_bkg = Choice(panel, size=(100, -1),
+                                  choices=('None', 'constant', 'linear', 'quadratic'))
+        self.fit_step = Choice(panel, size=(100, -1),
+                                  choices=('linear', 'error function', 'arctan'))
+
+        self.fit_report = wx.StaticText(panel, -1, "", (180, 200))
+        sizer = wx.GridBagSizer(10, 4)
+        sizer.Add(SimpleText(p, 'Fit Model: '),           (0, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_model,                         (0, 1), (1, 1), LCEN)
+
+        sizer.Add(SimpleText(p, 'Background: '),          (1, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_bkg,                           (1, 1), (1, 1), LCEN)
+
+        sizer.Add(SimpleText(p, 'Step Function Form: '),  (2, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_step,                          (2, 1), (1, 1), LCEN)
+        sizer.Add(Button(panel, 'Show Fit', size=(100, -1),
+                             action=self.onFitPeak),       (3, 0), (1, 1), LCEN)
+        sizer.Add(self.fit_report,                         (0, 2), (4, 2), LCEN, 3)
+        pack(panel, sizer)
+        return panel
+
+    def InitializeXASPanel(self):
+        if self.groupname is None:
+            lgroup = None
+        lgroup = getattr(self.larch.symtable, self.groupname)
+        self.xas_e0.SetValue(getattr(lgroup, 'e0', 0))
+        self.xas_step.SetValue(getattr(lgroup, 'edge_step', 0))
+        self.xas_pre1.SetValue(getattr(lgroup, 'pre1',   -200))
+        self.xas_pre2.SetValue(getattr(lgroup, 'pre2',   -30))
+        self.xas_nor1.SetValue(getattr(lgroup, 'norm1',  50))
+        self.xas_nor2.SetValue(getattr(lgroup, 'norm2', -50))
+
+        self.xas_vict.SetSelection(getattr(lgroup, 'nvict', 1))
+        self.xas_nnor.SetSelection(getattr(lgroup, 'nnorm', 2))
+
+    def CreateXASPanel(self, parent):
+        p = panel = wx.Panel(parent)
+        self.xas_autoe0   = Check(panel, default=True, label='auto?')
+        self.xas_showe0   = Check(panel, default=True, label='show?')
+        self.xas_autostep = Check(panel, default=True, label='auto?')
+        self.xas_op       = Choice(panel, size=(225, -1),
+                                       choices=('Raw Data', 'Normalized',
+                                                'Pre-edge subtracted',
+                                   'Raw Data With Pre-edge/Post-edge Curves'),
+                                   action=self.onXASChoice)
+        opts = {'size': (95, -1), 'precision': 3} # , 'action': self.onXASChoice}
+        self.xas_e0   = FloatCtrl(panel, value  = 0, **opts)
+        self.xas_step = FloatCtrl(panel, value  = 0, **opts)
+        opts['precision'] = 1
+        self.xas_pre1 = FloatCtrl(panel, value=-200, **opts)
+        self.xas_pre2 = FloatCtrl(panel, value= -30, **opts)
+        self.xas_nor1 = FloatCtrl(panel, value=  50, **opts)
+        self.xas_nor2 = FloatCtrl(panel, value= -50, **opts)
+        opts = {'size': (50, -1), 'choices': ('0', '1', '2', '3'),
+               'action': self.onXASChoice}
+        self.xas_vict = Choice(panel, **opts)
+        self.xas_nnor = Choice(panel, **opts)
+        self.xas_vict.SetSelection(1)
+        self.xas_nnor.SetSelection(2)
+        sizer = wx.GridBagSizer(10, 4)
+
+        sizer.Add(SimpleText(p, 'Plot XAS as: '),         (0, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'E0 : '),                 (1, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Edge Step: '),           (2, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Pre-edge range: '),      (3, 0), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'Normalization range: '), (4, 0), (1, 1), LCEN)
+
+        sizer.Add(self.xas_op,                 (0, 1), (1, 3), LCEN)
+        sizer.Add(self.xas_e0,                 (1, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_step,               (2, 1), (1, 1), LCEN)
+        sizer.Add(self.xas_pre1,               (3, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, ':'),          (3, 2), (1, 1), LCEN)
+        sizer.Add(self.xas_pre2,               (3, 3), (1, 1), LCEN)
+        sizer.Add(self.xas_nor1,               (4, 1), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, ':'),          (4, 2), (1, 1), LCEN)
+        sizer.Add(self.xas_nor2,               (4, 3), (1, 1), LCEN)
+
+        sizer.Add(self.xas_autoe0,             (1, 2), (1, 2), LCEN)
+        sizer.Add(self.xas_showe0,             (1, 4), (1, 2), LCEN)
+        sizer.Add(self.xas_autostep,           (2, 2), (1, 2), LCEN)
+
+        sizer.Add(SimpleText(p, 'Victoreen:'), (3, 4), (1, 1), LCEN)
+        sizer.Add(self.xas_vict,               (3, 5), (1, 1), LCEN)
+        sizer.Add(SimpleText(p, 'PolyOrder:'), (4, 4), (1, 1), LCEN)
+        sizer.Add(self.xas_nnor,               (4, 5), (1, 1), LCEN)
+
+        pack(panel, sizer)
+        return panel
+
+    def onFitPeak(self, evt=None):
+        gname = self.groupname
+        if self.dtcorr.IsChecked():
+            print( 'fit needs to dt correct!')
+
+        dtext = []
+        model = self.fit_model.GetStringSelection().lower()
+        dtext.append('Fit Model: %s' % model)
+        bkg =  self.fit_bkg.GetStringSelection()
+        if bkg == 'None':
+            bkg = None
+        if bkg is None:
+            dtext.append('No Background')
+        else:
+            dtext.append('Background: %s' % bkg)
+
+        step = self.fit_step.GetStringSelection().lower()
+        if model in ('step', 'rectangle'):
+            dtext.append('Step form: %s' % step)
+        lgroup =  getattr(self.larch.symtable, gname)
+        x = lgroup._xdat_
+        y = lgroup._ydat_
+        pgroup = fit_peak(x, y, model, background=bkg, step=step,
+                          _larch=self.larch)
+        text = fit_report(pgroup.params, _larch=self.larch)
+        dtext.append('Parameters: ')
+        for pname in dir(pgroup.params):
+            par = getattr(pgroup.params, pname)
+            if isParameter(par):
+                ptxt = "    %s= %.4f" % (par.name, par.value)
+                if (hasattr(par, 'stderr') and par.stderr is not None):
+                    ptxt = "%s(%.4f)" % (ptxt, par.stderr)
+                dtext.append(ptxt)
+
+        dtext = '\n'.join(dtext)
+        # plotframe = self.get_plotwindow()
+        # plotframe.oplot(x, pgroup.fit, label='fit (%s)' % model)
+        text = fit_report(pgroup.params, _larch=self.larch)
+        self.fit_report.SetLabel(dtext)
+
+        popts1 = dict(style='solid', linewidth=3,
+                      marker='None', markersize=4)
+        popts2 = dict(style='short dashed', linewidth=2,
+                      marker='None', markersize=4)
+
+        lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
+        if bkg is None:
+            lgroup._fit = pgroup.fit[:]
+            lgroup.plot_yarrays.append((lgroup._fit, popts2, 'fit'))
+        else:
+            lgroup._fit     = pgroup.fit[:]
+            lgroup._fit_bgr = pgroup.bkg[:]
+            lgroup.plot_yarrays.append((lgroup._fit,     popts2, 'fit'))
+            lgroup.plot_yarrays.append((lgroup._fit_bgr, popts2, 'background'))
+        self.onPlot(opt='new', use_plot_yarrays=True)
+
+    def xas_process(self, gname, new_mu=False, **kws):
+        """ process (pre-edge/normalize) XAS data from XAS form, overwriting
+        larch group '_y1_' attribute to be plotted
+        """
+        out = self.xas_op.GetStringSelection().lower() # raw, pre, norm, flat
+
+        preopts = {'group': gname, 'e0': None}
+
+        lgroup = getattr(self.larch.symtable, gname)
+        dtcorr = self.dtcorr.IsChecked()
+        if new_mu:
+            try:
+                del lgroup.e0, lgroup.edge_step
+            except:
+                pass
+
+        if not hasattr(lgroup, 'e0'):
+            preopts['e0'] = None
+        else:
+            e0 = self.xas_e0.GetValue()
+            if e0 < max(lgroup._xdat_) and e0 > min(lgroup._xdat_):
+                preopts['e0'] = e0
+
+        if not hasattr(lgroup, 'edge_step'):
+            preopts['step'] = None
+        else:
+            preopts['step'] = self.xas_step.GetValue()
+
+        preopts['pre1']  = self.xas_pre1.GetValue()
+        preopts['pre2']  = self.xas_pre2.GetValue()
+        preopts['norm1'] = self.xas_nor1.GetValue()
+        preopts['norm2'] = self.xas_nor2.GetValue()
+
+        preopts['nvict'] = self.xas_vict.GetSelection()
+        preopts['nnorm'] = self.xas_nnor.GetSelection()
+        preopts['group'] = gname
+        preopts = ", ".join(["%s=%s" %(k, v) for k,v in preopts.items()])
+        preedge_cmd = "pre_edge(%s._xdat_, %s._ydat_, %s)"
+        self.larch(preedge_cmd % (gname, gname, preopts))
+
+        self.xas_e0.SetValue(lgroup.e0)
+        self.xas_step.SetValue(lgroup.edge_step)
+        self.xas_pre1.SetValue(lgroup.pre1)
+        self.xas_nor2.SetValue(lgroup.norm2)
+
+        popts1 = dict(style='solid', linewidth=3,
+                      marker='None', markersize=4)
+        popts2 = dict(style='short dashed', linewidth=2,
+                      marker='None', markersize=4)
+
+        lgroup.plot_yarrays = [(lgroup._ydat_, popts1, lgroup.plot_ylabel)]
+        if out.startswith('raw data with'):
+            lgroup.plot_yarrays = [(lgroup.pre_edge,  popts2, 'pre edge'),
+                                   (lgroup.post_edge, popts2, 'post edge'),
+                                   (lgroup._ydat_,    popts1, lgroup.plot_ylabel)]
+        elif out.startswith('pre'):
+            self.larch('%s.pre_edge_sub = %s.norm * %s.edge_step' %
+                       (gname, gname, gname))
+            lgroup.plot_yarrays = [(lgroup.pre_edge_sub, popts1,
+                                    'pre edge subtracted XAFS')]
+        elif out.startswith('norm'):
+            lgroup.plot_yarrays = [(lgroup.norm, popts1, 'normalized XAFS')]
+
+        lgroup.plot_ymarkers = []
+        if self.xas_showe0.IsChecked():
+            y4e0 = lgroup.plot_yarrays[-1][0]
+            ie0 = index_of(lgroup._xdat_, lgroup.e0)
+            lgroup.plot_ymarkers = [(lgroup.e0, y4e0[ie0], {'label': 'e0'})]
+        return
+
+    def init_larch(self):
+        t0 = time.time()
+        from larch.wxlib import inputhook
+        self.larch = Interpreter()
+        self.larch.symtable.set_symbol('_sys.wx.wxapp', wx.GetApp())
+        self.larch.symtable.set_symbol('_sys.wx.parent', self)
+
+        self.SetStatusText('ready')
+        self.datagroups = self.larch.symtable
+        self.title.SetLabel('')
+
+    def write_message(self, s, panel=0):
+        """write a message to the Status Bar"""
+        self.SetStatusText(s, panel)
+
+    def get_data(self, group, arrayname, correct=False):
+        if hasattr(group, 'get_data'):
+            return group.get_data(arrayname, correct=correct)
+        return getattr(group, arrayname, None)
+
+    def onXASChoice(self, evt=None, **kws):
+        if self.groupname is None:
+            return
+        self.xas_process(self.groupname, **kws)
+        self.onPlot(opt='new', use_plot_yarrays=True)
+
+    def onColumnChoices(self, evt=None):
+        """column selections changed ..
+        recalculate _xdat_ and _ydat_
+        arrays for this larch group"""
+
+        dtcorr = self.dtcorr.IsChecked()
+        ix  = self.xarr.GetSelection()
+        x   = self.xarr.GetStringSelection()
+        xop = self.xop.GetStringSelection()
+        op1 = self.yops[0].GetStringSelection()
+        op2 = self.yops[1].GetStringSelection()
+        op3 = self.yops[2].GetStringSelection()
+        y1  = self.yarr[0].GetStringSelection()
+        y2  = self.yarr[1].GetStringSelection()
+        y3  = self.yarr[2].GetStringSelection()
+
+        try:
+            gname = self.groupname
+            lgroup = getattr(self.larch.symtable, gname)
+        except:
+            gname = SCANGROUP
+            lgroup = getattr(self.larch.symtable, gname)
+
+        xlabel = x
+        try:
+            xunits = lgroup.array_units[ix]
+        except:
+            xunits = ''
+        if xop != '':
+            xlabel = "%s(%s)" % (xop, xlabel)
+        if xunits != '':
+            xlabel = '%s (%s)' % (xlabel, xunits)
+
+        ylabel = y1
+        if y2 == '':
+            y2, op2 = '1.0', '*'
+        else:
+            ylabel = "%s%s%s" % (ylabel, op2, y2)
+        if y3 == '':
+            y3, op3 = '1.0', '*'
+        else:
+            ylabel = "(%s)%s%s" % (ylabel, op3, y3)
+
+        if op1 != '':
+            ylabel = "%s(%s)" % (op1, ylabel)
+
+        if y1 in ('0.0', '1.0'):
+            y1 = float(yl1)
+        else:
+            y1 = self.get_data(lgroup, y1, correct=dtcorr)
+        if y2 in ('0.0', '1.0'):
+            y2 = float(y2)
+        else:
+            y2 = self.get_data(lgroup, y2, correct=dtcorr)
+        if y3 in ('0.0', '1.0'):
+            y3 = float(y3)
+        else:
+            y3 = self.get_data(lgroup, y3, correct=dtcorr)
+        if x not in ('0', '1'):
+            x = self.get_data(lgroup, x)
+        lgroup._x  = x
+        lgroup._y1 = y1
+        lgroup._y2 = y2
+        lgroup._y3 = y3
+        self.larch("%s._xdat_ = %s(%s._x)" % (gname, xop, gname))
+        self.larch("%s._ydat_ = %s((%s._y1 %s %s._y2) %s %s._y3)"  %
+                   (gname, op1, gname, op2, gname, op3, gname))
+
+        try:
+            npts = min(len(lgroup._xdat_), len(lgroup._ydat_))
+        except AttributeError:
+            print( 'Erro calculating arrays (npts not correct)')
+            return
+
+        del lgroup._x, lgroup._y1, lgroup._y2, lgroup._y3
+
+        lgroup.plot_xlabel = xlabel
+        lgroup.plot_ylabel = ylabel
+        lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
+        lgroup._ydat_ = np.array( lgroup._ydat_[:npts])
+        if (self.nb.GetCurrentPage() == self.xas_panel):
+            self.xas_process(self.groupname, new_mu=True)
+
+        self.onPlot()
+
+    def onPlot(self, evt=None, opt='new', npts=None,
+               use_plot_yarrays=False):
+        # 'new', 'New Window'),
+        # 'left', 'Left Axis'),
+        # 'right', 'Right Axis')):
+        # 'update',  from scan
+
+           
+        try:
+            self.plotframe.Show()
+        except: #  wx.PyDeadObjectError
+            self.plotframe = PlotFrame(None, size=(650, 400))
+            self.plotframe.Show()
+            self.plotpanel = self.plotframe.panel
+
+
+        side = 'left'
+        update = False
+        plotcmd = self.plotpanel.plot
+        if opt in ('left', 'right'):
+            side = opt
+            plotcmd = self.plotpanel.oplot
+        elif opt == 'update'  and npts > 4:
+            plotcmd = self.plotpanel.update_line
+            update = True
+
+        popts = {'side': side}
+
+        try:
+            gname = self.groupname
+            lgroup = getattr(self.larch.symtable, gname)
+        except:
+            gname = SCANGROUP
+            lgroup = getattr(self.larch.symtable, gname)
+            return
+
+        if not hasattr(lgroup, '_xdat_'):
+            self.onColumnChoices()
+
+        lgroup._xdat_ = np.array( lgroup._xdat_[:npts])
+        plot_yarrays = [(lgroup._ydat_, {}, None)]
+
+        if use_plot_yarrays and hasattr(lgroup, 'plot_yarrays'):
+            plot_yarrays = lgroup.plot_yarrays
+        #for yarr in plot_yarrays:
+        #    yarr = np.array(yarr[:npts])
+
+        path, fname = os.path.split(lgroup.filename)
+        popts['label'] = "%s: %s" % (fname, lgroup.plot_ylabel)
+        if side == 'right':
+            popts['y2label'] = lgroup.plot_ylabel
+        else:
+            popts['ylabel'] = lgroup.plot_ylabel
+
+        if plotcmd == self.plotpanel.plot:
+            popts['title'] = fname
+
+        if update:
+            self.plotpanel.set_xlabel(lgroup.plot_xlabel)
+            self.plotpanel.set_ylabel(lgroup.plot_ylabel)
+            for itrace, yarr, label in enumerate(plot_yarrays):
+                plotcmd(itrace, lgroup._xdat_, yarr[0], draw=True,
+                        update_limits=((npts < 5) or (npts % 5 == 0)),
+                        **yarr[1])
+                self.plotpanel.set_xylims((
+                    min(lgroup._xdat_), max(lgroup._xdat_),
+                    min(yarr), max(yarr)))
+
+        else:
+            for yarr in plot_yarrays:
+                popts.update(yarr[1])
+                if yarr[2] is not None:
+                    popts['label'] = yarr[2]
+                plotcmd(lgroup._xdat_, yarr[0], **popts)
+                plotcmd = self.plotpanel.oplot
+            if hasattr(lgroup, 'plot_ymarkers'):
+                for x, y, opts in lgroup.plot_ymarkers:
+                    popts = {'marker': 'o', 'markersize': 4}
+                    popts.update(opts)
+                    self.plotpanel.oplot([x], [y], **popts)
+            self.plotpanel.canvas.draw()
+
+    def ShowFile(self, evt=None, filename=None, **kws):
+        if filename is None and evt is not None:
+            filename = evt.GetString()
+        key = filename
+        if filename in self.filemap:
+            key = self.filemap[filename]
+
+        if key == SCANGROUP:
+            #array_labels = [fix_filename(s.name) for s in self.scandb.get_scandata()]
+            title = filename
+        elif hasattr(self.datagroups, key):
+            data = getattr(self.datagroups, key)
+            title = data.filename
+            if hasattr(data, 'array_labels'):
+                array_labels = data.array_labels[:]
+            elif hasattr(data, 'column_labels'):
+                array_labels = data.column_labels[:]
+            else:
+                array_labels = []
+                for attr in dir(data):
+                    if isinstance(getattr(data, attr), np.ndarray):
+                        array_labels.append(attr)
+
+
+        self.groupname = key
+        xcols  = array_labels[:]
+        ycols  = array_labels[:]
+        y2cols = array_labels[:] + ['1.0', '0.0', '']
+        ncols  = len(xcols)
+        self.title.SetLabel(title)
+
+        _xarr = self.xarr.GetStringSelection()
+        if len(_xarr) < 1:
+            _xarr = xcols[0]
+
+        _yarr = [[], [], []]
+        for j in range(3):
+            _yarr[j] = self.yarr[j].GetStringSelection()
+
+        self.xarr.SetItems(xcols)
+        self.xarr.SetStringSelection(_xarr)
+        for j in range(3):
+            if j == 0:
+                self.yarr[j].SetItems(ycols)
+                if ycols[0] == _xarr and len(ycols)> 1:
+                    self.yarr[j].SetStringSelection(ycols[1])
+            else:
+                self.yarr[j].SetItems(y2cols)
+                self.yarr[j].SetStringSelection(_yarr[j])
+
+        inb = 0
+        for colname in xcols:
+            if 'energ' in colname.lower():
+                inb = 1
+        self.nb.SetSelection(inb)
+        if inb == 1:
+            self.InitializeXASPanel()
+
+    def createMenus(self):
+        # ppnl = self.plotpanel
+        self.menubar = wx.MenuBar()
+        #
+        fmenu = wx.Menu()
+        pmenu = wx.Menu()
+        MenuItem(self, fmenu, "&Open Data File\tCtrl+O",
+                 "Read Scan File",  self.onReadScan)
+
+        fmenu.AppendSeparator()
+        MenuItem(self, fmenu, "&Quit\tCtrl+Q", "Quit program", self.onClose)
+
+        self.menubar.Append(fmenu, "&File")
+
+        # fmenu.AppendSeparator()
+        # MenuItem(self, fmenu, "&Copy\tCtrl+C",
+        #          "Copy Figure to Clipboard", self.onClipboard)
+        # MenuItem(self, fmenu, "&Save\tCtrl+S", "Save Figure", self.onSaveFig)
+        # MenuItem(self, fmenu, "&Print\tCtrl+P", "Print Figure", self.onPrint)
+        # MenuItem(self, fmenu, "Page Setup", "Print Page Setup", self.onPrintSetup)
+        # MenuItem(self, fmenu, "Preview", "Print Preview", self.onPrintPreview)
+        #
+
+        # MenuItem(self, pmenu, "Configure\tCtrl+K",
+        #         "Configure Plot", self.onConfigurePlot)
+        #MenuItem(self, pmenu, "Unzoom\tCtrl+Z", "Unzoom Plot", self.onUnzoom)
+        ##pmenu.AppendSeparator()
+        #MenuItem(self, pmenu, "Toggle Legend\tCtrl+L",
+        #         "Toggle Legend on Plot", self.onToggleLegend)
+        #MenuItem(self, pmenu, "Toggle Grid\tCtrl+G",
+        #         "Toggle Grid on Plot", self.onToggleGrid)
+        # self.menubar.Append(pmenu, "Plot Options")
+        self.SetMenuBar(self.menubar)
+
+
+    def onAbout(self,evt):
+        dlg = wx.MessageDialog(self, self._about,"About Epics StepScan",
+                               wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
+
+    def onClose(self,evt):
+        save_workdir('scanviewer.dat')
+        try:
+            self.plotframe.Destroy()
+        except:
+            pass
+        for nam in dir(self.larch.symtable._sys.wx):
+            obj = getattr(self.larch.symtable._sys.wx, nam)
+            del obj
+
+        self.Destroy()
+
+    def onReadScan(self, evt=None):
+        dlg = wx.FileDialog(self, message="Load Column Data File",
+                            defaultDir=os.getcwd(),
+                            wildcard=FILE_WILDCARDS, style=wx.OPEN)
+        if dlg.ShowModal() == wx.ID_OK:
+            path = dlg.GetPath()
+            path = path.replace('\\', '/')
+            if path in self.filemap:
+                if wx.ID_YES != popup(self, "Re-read file '%s'?" % path,
+                                      'Re-read file?'):
+                    return
+
+            gname = 's001'
+            count, maxcount = 1, 999
+            while hasattr(self.datagroups, gname) and count < maxcount:
+                count += 1
+                gname = 's%3.3i' % count
+
+            if hasattr(self.datagroups, gname):
+                gname = randname()
+
+            parent, fname = os.path.split(path)
+            fh = open(path, 'r')
+            line1 = fh.readline().lower()
+            fh.close()
+            if 'epics scan' in line1:
+                self.larch("%s = read_gsescan('%s')" % (gname, path))
+            elif 'xdi' in line1:
+                self.larch("%s = read_xdi('%s')" % (gname, path))
+            else:
+                self.larch("%s = read_ascii('%s')" % (gname, path))
+
+            self.larch("%s.path  = '%s'"     % (gname, path))
+            self.filelist.Append(fname)
+            self.filemap[fname] = gname
+
+            self.ShowFile(filename=fname)
+
+        dlg.Destroy()
+
+class ScanViewer(wx.App, wx.lib.mixins.inspection.InspectionMixin):
+    def __init__(self, **kws):
+        wx.App.__init__(self, **kws)
+
+    def run(self):
+        self.MainLoop()
+
+    def createApp(self):
+        frame = ScanViewerFrame()
+        frame.Show()
+        self.SetTopWindow(frame)
+
+    def OnInit(self):
+        self.createApp()
+        return True
+
+if __name__ == "__main__":
+    ScanViewer().MainLoop()
+
