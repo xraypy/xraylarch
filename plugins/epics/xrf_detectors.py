@@ -9,6 +9,76 @@ from epics.wx import EpicsFunction, DelayedEpicsCallback
 from larch_plugins.xrf import MCA, ROI, Environment
 from larch_plugins.epics.xspress3 import Xspress3
 
+
+def save_gsemcafile(filename, mcas, rois, environ=None):
+    """save GSECARS-style MCA file
+
+    rois = self._xsp3.get_rois()
+    realtime = self._xsp3.AcquireTime * self._xsp3.ArrayCounter_RBV
+    nelem = len(self._xsp3.mcas)
+    mcas = [self.get_mca(mca=i+1, with_rois=False) for i in range(nelem)]
+    
+    npts = len(mcas[0].counts)
+    nrois = len(rois[0])
+    nelem = len(mcas)
+    """    
+    nelem = len(mcas)
+    npts  = len(mcas[0].counts)
+    nrois = len(rois[0])
+    
+    s_rtime = " ".join(["%.4f" % m.real_time for m in mcas])
+    s_off   = " ".join(["%.6f" % m.offset    for m in mcas])
+    s_quad  = " ".join(["%.6f" % m.quad      for m in mcas])
+    s_slope = " ".join(["%.6f" % m.slope     for m in mcas])
+    s_rois  = " ".join(["%i"   % nrois       for m in mcas])
+    
+    buff = []
+    buff.append('VERSION:    3.1')
+    buff.append('ELEMENTS:   %i' % nelem)
+    buff.append('DATE:       %s' % time.ctime())
+    buff.append('CHANNELS:   %i' % npts)
+    buff.append('REAL_TIME:  %s' % s_rtime)
+    buff.append('LIVE_TIME:  %s' % s_rtime)
+    buff.append('CAL_OFFSET: %s' % s_off)
+    buff.append('CAL_SLOPE:  %s' % s_slope)
+    buff.append('CAL_QUAD:   %s' % s_quad)
+
+    # Write ROIS  in channel units
+    buff.append('ROIS:       %s' % s_rois)
+    for iroi, roi in enumerate(rois[0]):
+        name = [roi.name]
+        left = ['%i' % roi.left]
+        right = ['%i' % roi.right]
+        for other in rois[1:]:
+            name.append(other[iroi].name)
+            left.append('%i' % other[iroi].left)
+            right.append('%i' % other[iroi].right)
+        name = '& '.join(name)
+        left = '& '.join(left)
+        right = '& '.join(right)
+        buff.append('ROI_%i_LEFT:  %s' % (iroi, left))
+        buff.append('ROI_%i_RIGHT: %s' % (iroi, right))
+        buff.append('ROI_%i_LABEL: %s' % (iroi, name))
+
+    # environment
+    if environ is None:
+        environ = []
+    for addr, val, desc in environ:
+        buff.append('ENVIRONMENT: %s="%s" (%s)' % (addr, val, desc))
+
+    # data
+    buff.append('DATA: ')
+    for i in range(npts):
+        x = ['%i' % m.counts[i] for m in mcas]
+        buff.append("%s" % ' '.join(x))
+
+    # write file
+    buff.append('')
+    fp = open(filename, 'w')
+    fp.write("\n".join(buff))
+    fp.close()
+
+
 class Epics_Xspress3(object):
     """multi-element MCA detector using Quantum Xspress3 electronics 3-1-10
     """
@@ -95,6 +165,7 @@ class Epics_Xspress3(object):
         thismca = MCA(counts=counts, offset=0.0, slope=0.01)
         thismca.energy = self.get_energy()
         thismca.counts = counts
+        thismca.quad   = 0.0        
         thismca.rois = []
         if with_rois:
             for eroi in emca.rois:
@@ -197,61 +268,15 @@ class Epics_Xspress3(object):
         * filename: output file name
         """
         rois = self._xsp3.get_rois()
-        realtime = self._xsp3.AcquireTime * self._xsp3.ArrayCounter_RBV
         nelem = len(self._xsp3.mcas)
-        mca1 = self.get_mca(mca=1)
-        npts = len(mca1.counts)
-        nrois = len(rois[0])
-        fp = open(filename, 'w')
-        fp.write('VERSION:    3.1\n')
-        fp.write('ELEMENTS:   %i\n' % nelem)
-        fp.write('DATE:       %s\n' % time.ctime())
-        fp.write('CHANNELS:   %i\n' % npts)
-
-        s_rtime = " ".join(["%.4f" % realtime for i in range(nelem)])
-        s_off   = " ".join(["0.000"          for i in range(nelem)])
-        s_quad  = " ".join(["0.000"          for i in range(nelem)])
-        s_slope = " ".join(["0.010"          for i in range(nelem)])
-        s_rois  = " ".join(["%i" % nrois     for i in range(nelem)])
-
-        fp.write('REAL_TIME:  %s\n' % s_rtime)
-        fp.write('LIVE_TIME:  %s\n' % s_rtime)
-        fp.write('CAL_OFFSET: %s\n' % s_off)
-        fp.write('CAL_SLOPE:  %s\n' % s_slope)
-        fp.write('CAL_QUAD:   %s\n' % s_quad)
-
-        # Write ROIS  in channel units
-        fp.write('ROIS:       %s\n' % s_rois)
-        for iroi, roi in enumerate(rois[0]):
-            name = [roi.name]
-            left = ['%i' % roi.left]
-            right = ['%i' % roi.right]
-            for other in rois[1:]:
-                name.append(other[iroi].name)
-                left.append('%i' % other[iroi].left)
-                right.append('%i' % other[iroi].right)
-            name = '& '.join(name)
-            left = '& '.join(left)
-            right = '& '.join(right)
-            fp.write('ROI_%i_LEFT:  %s\n' % (iroi, left))
-            fp.write('ROI_%i_RIGHT: %s\n' % (iroi, right))
-            fp.write('ROI_%i_LABEL: %s\n' % (iroi, name))
-
-        # environment
-        if environ is None:
-            environ = []
-        for addr, val, desc in environ:
-            fp.write('ENVIRONMENT: %s="%s" (%s)\n' % (addr, val, desc))
-
-
-        # data
-        fp.write('DATA: \n')
         mcas = [self.get_mca(mca=i+1, with_rois=False) for i in range(nelem)]
-        for i in range(npts):
-            x = ['%i' % m.counts[i] for m in mcas]
-            fp.write("%s\n" % ' '.join(x))
-        fp.close()
 
+        realtime = self._xsp3.AcquireTime * self._xsp3.ArrayCounter_RBV
+        for m in mcas:
+            m.real_time = realtime
+            m.live_time = realtime
+
+        save_gsemcafile(filename, mcas, rois, environ=environ)
 
 class Epics_MultiXMAP(object):
     """multi-element MCA detector using XIA xMAP electronics
@@ -352,6 +377,8 @@ class Epics_MultiXMAP(object):
         thismca = MCA(counts=counts, offset=emca.CALO, slope=emca.CALS)
         thismca.energy = emca.get_energy()
         thismca.counts = counts
+        thismca.real_time = emca.ERTM
+        thismca.live_time = emca.ELTM
         thismca.rois = []
         if with_rois:
             for eroi in emca.rois:
@@ -396,3 +423,18 @@ class Epics_MultiXMAP(object):
 
     def save_mca(self, fname):
         buff = self._xmap
+
+    def save_mcafile(self, filename, environ=None):
+        """write MultiChannel MCA file
+
+        Parameters:
+        -----------
+        * filename: output file name
+        """
+        nelem = len(self.mcas)
+        rois = self._xmap.get_rois()
+        mcas = [self.get_mca(mca=i+1, with_rois=False) for i in range(nelem)]
+
+
+        save_gsemcafile(filename, mcas, rois, environ=environ)
+
