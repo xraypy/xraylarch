@@ -248,7 +248,7 @@ class xrayDB(object):
                 f0 += s * np.exp(-e*q*q)
             return f0
 
-    def _getChantler(self, element, energy, column='f1', smoothing=1):
+    def _getChantler(self, element, energy, column='f1', smoothing=0):
         """return energy-dependent data from Chantler table
         columns: f1, f2, mu_photo, mu_incoh, mu_total
         """
@@ -276,8 +276,8 @@ class xrayDB(object):
                 out = UnivariateSpline(te, ty, s=smoothing)(energy)
             else:
                 out = np.exp(np.interp(np.log(energy),
-                                        np.log(te),
-                                        np.log(ty)))
+                                       np.log(te),
+                                       np.log(ty)))
             if isinstance(out, np.ndarray) and len(out) == 1:
                 return out[0]
             return out
