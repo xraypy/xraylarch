@@ -95,11 +95,11 @@ def PointerCol(name, other=None, keyid='id', **kws):
     return Column("%s_%s" % (name, keyid), None,
                   ForeignKey('%s.%s' % (other, keyid)), **kws)
 
-def NamedTable(tablename, metadata, keyid='id', nameid='name',
+def NamedTable(tablename, metadata, keyid='id', nameid='name', name_unique=True,
                name=True, notes=True, with_pv=False, with_use=False, cols=None):
     args  = [Column(keyid, Integer, primary_key=True)]
     if name:
-        args.append(StrCol(nameid, size=512, nullable=False, unique=True))
+        args.append(StrCol(nameid, size=512, nullable=False, unique=name_unique))
     if notes:
         args.append(StrCol('notes'))
     if with_pv:
@@ -309,7 +309,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                             cols=[IntCol('show', default=1),
                                   IntCol('display_order', default=0)])
 
-    position  = NamedTable('positions', metadata,
+    position  = NamedTable('positions', metadata, name_unique=False,
                            cols=[Column('modify_time', DateTime),
                                  PointerCol('instruments')])
 

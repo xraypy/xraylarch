@@ -852,6 +852,35 @@ class ScanDB(object):
                       (time.time() - t0) < timeout)
 
     ### Instrument Functions
+    def add_instrument(self, name, pvs=None, notes=None,
+                       attributes=None, **kws):
+        """add instrument
+        notes and attributes optional
+        returns Instruments instance"""
+        kws['notes'] = notes
+        kws['attributes'] = attributes
+        name = name.strip()
+        inst = self.get_instrument(name)
+        if inst is None:
+            out = self.__addRow(Instruments, ('name',), (name,), **kws)
+            inst = self.get_instrument(name)
+        cls, jtable = self.get_table('instrument_pv')
+        if pvs is not None:
+            pvlist = []
+            for pvname in pvs:
+                thispv = self.get_pvrow(pvname)
+                if thispv is None:
+                    thispv = self.add_pv(pvname)
+                pvlist.append(thispv)
+            for dorder, pv in enumerate(pvlist):
+                data = {'display_order': dorder, 'pvs_id': pv.id,
+                        'instruments_id': inst.id}
+                jtable.insert().execute(**data)
+
+        self.session.add(inst)
+        self.commit()
+        return inst
+
     def get_all_instruments(self):
         """return instrument list
         """
@@ -909,7 +938,7 @@ class ScanDB(object):
         posname = posname.strip()
         pos  = self.get_position(posname, inst)
         if pos is None:
-            pos = Position()
+            pos = Positions()
             pos.name = posname
             pos.instrument = inst
             pos.date = datetime.now()
@@ -928,16 +957,16 @@ class ScanDB(object):
 
         pos_pvs = []
         for name in pvnames:
+            pvrow =  self.get_pvrow(name)
             ppv = Position_PV()
-            ppv.pv = self.get_pv(name)
+            ppv.pvs_id = pvrow.id
             ppv.notes = "'%s' / '%s'" % (inst.name, posname)
             ppv.value = values[name]
             pos_pvs.append(ppv)
         pos.pvs = pos_pvs
 
         tab = self.tables['position_pv']
-        self.conn.execute(tab.delete().where(tab.c.position_id == None))
-
+        self.conn.execute(tab.delete().where(tab.c.positions_id == None))
         self.session.add(pos)
         self.commit()
 
@@ -947,6 +976,43 @@ class ScanDB(object):
             return all([p.put_complete for p in self.restoring_pvs])
         return True
 
+    def rename_position(self, oldname, newname, instrument=None):
+        """rename a position"""
+        pos = self.get_position(oldname, instrument=instrument)
+        if pos is not None:
+            pos.name = newname
+            self.commit()
+
+    def get_position(self, name, instrument=None):
+        """return position from namea and instrument
+        """
+        inst = None
+        if instrument is not None:
+            inst = self.get_instrument(instrument)
+
+        filter = (Positions.name==name)
+        if inst is not None:
+            filter = and_(filter, Positions.instrument_id==inst.id)
+
+        out =  self.query(Positions).filter(filter).all()
+        return None_or_one(out, 'get_position expected 1 or None Position')
+
+    def get_position_pv(self, name, instrument=None):
+        """return position from namea and instrument
+        """
+        inst = None
+        if instrument is not None:
+            inst = self.get_instrument(instrument)
+
+        filter = (Positions.name==name)
+        if inst is not None:
+            filter = and_(filter, Positions.instrument_id==inst.id)
+
+        out =  self.query(Positions).filter(filter).all()
+        return None_or_one(out, 'get_position expected 1 or None Position')
+
+
+    
     def restore_position(self, posname, inst, wait=False, timeout=5.0,
                          exclude_pvs=None):
         """
