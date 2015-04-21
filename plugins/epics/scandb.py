@@ -473,7 +473,7 @@ class ScanDB(object):
         self.session.add(row)
         return row
 
-    # scan data
+    ### scan data
     def get_scandata(self, **kws):
         return self.getall('scandata', orderby='id', **kws)
 
@@ -506,7 +506,7 @@ class ScanDB(object):
             return
         self.session.execute(table.delete().where(table.c.id != 0))
 
-    # positioners
+    ### positioners
     def get_positioners(self, **kws):
         return self.getall('scanpositioners', orderby='id', **kws)
 
@@ -581,7 +581,7 @@ class ScanDB(object):
             self.add_pv(epv)
         return row
 
-    # detectors
+    ### detectors
     def get_detector(self, name):
         """return detector by name"""
         return self.getrow('scandetectors', name, one_or_none=True)
@@ -602,7 +602,7 @@ class ScanDB(object):
         self.session.add(row)
         return row
 
-    # counters -- simple, non-triggered PVs to add to detectors
+    ### counters -- simple, non-triggered PVs to add to detectors
     def get_counters(self, **kws):
         return self.getall('scancounters', orderby='id', **kws)
 
@@ -626,7 +626,7 @@ class ScanDB(object):
         self.add_pv(pvname, notes=name)
         return row
 
-    # extra pvs: pvs recorded at breakpoints of scans
+    ### extra pvs: pvs recorded at breakpoints of scans
     def get_extrapvs(self, **kws):
         return self.getall('extrapvs', orderby='id', **kws)
 
@@ -742,7 +742,7 @@ class ScanDB(object):
         """
         pass
 
-    # commands -- a more complex interface
+    ### commands -- a more complex interface
     def get_commands(self, status=None, reverse=False,
                      requested_since=None, **kws):
         """return command by status"""
@@ -850,6 +850,144 @@ class ScanDB(object):
             time.sleep(0.25)
             paused = (self.get_info('request_pause', as_bool=True) and
                       (time.time() - t0) < timeout)
+
+    ### Instrument Functions
+    def get_all_instruments(self):
+        """return instrument list
+        """
+        return [f for f in self.query(Instruments).order_by(Instruments.display_order)]
+
+    def get_instrument(self, name):
+        """return instrument by name
+        """
+        if isinstance(name, Instruments):
+            return name
+        out = self.query(Instruments).filter(Instruments.name==name).all()
+        return None_or_one(out, 'get_instrument expected 1 or None Instrument')
+
+
+    def remove_position(self, posname, inst):
+        inst = self.get_instrument(inst)
+        if inst is None:
+            raise ScanDBException('remove_position needs valid instrument')
+
+        posname = posname.strip()
+        pos  = self.get_position(posname, inst)
+        if pos is None:
+            raise ScanDBException("Postion '%s' not found for '%s'" %
+                                        (posname, inst.name))
+
+        tab = self.tables['position_pv']
+        self.conn.execute(tab.delete().where(tab.c.position_id==pos.id))
+        self.conn.execute(tab.delete().where(tab.c.position_id==None))
+
+        tabl = self.tables['positions']
+        self.conn.execute(tabl.delete().where(tabl.c.id==pos.id))
+
+        self.commit()
+
+    def remove_instrument(self, inst):
+        inst = self.get_instrument(inst)
+        if inst is None:
+            raise ScanDBException('Save Postion needs valid instrument')
+
+        tab = self.tables['instruments']
+        self.conn.execute(tab.delete().where(tab.c.id==inst.id))
+
+        for tablename in ('position', 'instrument_pv', 'instrument_precommand',
+                          'instrument_postcommand'):
+            tab = self.tables[tablename]
+            self.conn.execute(tab.delete().where(tab.c.instrument_id==inst.id))
+
+    def save_position(self, posname, inst, values, **kw):
+        """save position for instrument
+        """
+        inst = self.get_instrument(inst)
+        if inst is None:
+            raise ScanDBException('Save Postion needs valid instrument')
+
+        posname = posname.strip()
+        pos  = self.get_position(posname, inst)
+        if pos is None:
+            pos = Position()
+            pos.name = posname
+            pos.instrument = inst
+            pos.date = datetime.now()
+
+        pvnames = [pv.name for pv in inst.pvs]
+
+        # check for missing pvs in values
+        missing_pvs = []
+        for pv in pvnames:
+            if pv not in values:
+                missing_pvs.append(pv)
+
+        if len(missing_pvs) > 0:
+            raise ScanDBException('save_position: missing pvs:\n %s' %
+                                        missing_pvs)
+
+        pos_pvs = []
+        for name in pvnames:
+            ppv = Position_PV()
+            ppv.pv = self.get_pv(name)
+            ppv.notes = "'%s' / '%s'" % (inst.name, posname)
+            ppv.value = values[name]
+            pos_pvs.append(ppv)
+        pos.pvs = pos_pvs
+
+        tab = self.tables['position_pv']
+        self.conn.execute(tab.delete().where(tab.c.position_id == None))
+
+        self.session.add(pos)
+        self.commit()
+
+    def restore_complete(self):
+        "return whether last restore_position has completed"
+        if len(self.restoring_pvs) > 0:
+            return all([p.put_complete for p in self.restoring_pvs])
+        return True
+
+    def restore_position(self, posname, inst, wait=False, timeout=5.0,
+                         exclude_pvs=None):
+        """
+        restore named position for instrument
+        """
+        inst = self.get_instrument(inst)
+        if inst is None:
+            raise ScanDBException('restore_postion needs valid instrument')
+
+        posname = posname.strip()
+        pos  = self.get_position(posname, inst)
+        if pos is None:
+            raise ScanDBException(
+                "restore_postion  position '%s' not found" % posname)
+
+        if exclude_pvs is None:
+            exclude_pvs = []
+
+        pv_vals = []
+        for pvpos in pos.pvs:
+            pvname = pvpos.pv.name
+            if pvname not in exclude_pvs:
+                thispv = epics.PV(pvname)
+                pv_vals.append((thispv, str(pvpos.value)))
+
+        epics.ca.poll()
+        # put values without waiting
+        for thispv, val in pv_vals:
+            if not thispv.connected:
+                thispv.wait_for_connection(timeout=timeout)
+            try:
+                thispv.put(val)
+            except:
+                pass
+
+        if wait:
+            for thispv, val in pv_vals:
+                try:
+                    thispv.put(val, wait=True)
+                except:
+                    pass
 
 
 if __name__ == '__main__':
