@@ -5,7 +5,7 @@ REM This includes 64-bit Windows!
 
 
 REM Location of anaconda environment
-set ANAPY=C:\Users\xas_user\AppData\Local\Continuum\Anaconda\envs\py279
+set ANAPY=C:\Users\xas_user\AppData\Local\Continuum\Anaconda\
 
 REM Add gnuwin32 for unix tools
 
