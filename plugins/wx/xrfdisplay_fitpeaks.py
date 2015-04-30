@@ -20,8 +20,8 @@ from larch_plugins.xrf import (xrf_background, xrf_calib_fitrois,
                                xrf_calib_compute, xrf_calib_apply)
 
 from larch_plugins.xray import material_mu, material_get
+from larch_plugins.wx import ParameterPanel
 
-from parameter import ParameterPanel
 try:
     from collections import OrderedDict
 except ImportError:
