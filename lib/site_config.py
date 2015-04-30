@@ -84,6 +84,10 @@ if 'LARCHDIR' in os.environ:
 else:
     larchdir = nativedir(abspath(join(home_dir, larchdir)))
 
+##
+## names (and loading order) for core plugin modules
+core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
+
 # frozen executables, as from cx_freeze, will have
 # these paths to be altered...
 if hasattr(sys, 'frozen'):
