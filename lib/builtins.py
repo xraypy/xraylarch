@@ -281,11 +281,15 @@ def _addplugin(plugin, _larch=None, **kws):
     if _larch is None:
         raise Warning("cannot add plugins. larch broken?")
     write = _larch.writer.write
-    errmsg = 'is (not!) a valid larch plugin\n'
+    errmsg = 'is not a valid larch plugin\n'
     pjoin = os.path.join
-    # print("ADD PLUGIN ", plugin)
     path = site_config.plugins_path
     _sysconf = _larch.symtable._sys.config
+    if not hasattr(_larch.symtable._sys, 'import_ok'):
+        _larch.symtable._sys.import_ok  = True
+    if not _larch.symtable._sys.import_ok:
+        return
+
     if not hasattr(_sysconf, 'plugin_paths'):
         _sysconf.plugin_paths = site_config.plugins_path
 
@@ -295,6 +299,8 @@ def _addplugin(plugin, _larch=None, **kws):
                 False, (fh, modpath, desc) for imported modules
                 None, None for Not Found
         """
+        if not _larch.symtable._sys.import_ok:
+            return
 
         if plugin == '__init__':
             return None, None
@@ -314,6 +320,7 @@ def _addplugin(plugin, _larch=None, **kws):
 
     def on_error(msg):
         _larch.raise_exception(None, exc=ImportError, msg=msg)
+        _larch.symtable._sys.import_ok = False
 
     def _check_requirements(ppath):
         """check for requirements.txt, return True only if all
@@ -353,6 +360,9 @@ def _addplugin(plugin, _larch=None, **kws):
         fh = None
         if plugin == '__init__':
             return
+        if not _larch.symtable._sys.import_ok:
+            return
+
         if path is None:
             try:
                 path = _larch.symtable._sys.config.plugins_path
@@ -391,16 +401,17 @@ def _addplugin(plugin, _larch=None, **kws):
 
                 retvals = []
                 for fname in filelist:
+                    if not _larch.symtable._sys.import_ok:
+                        return
                     try:
                         ret =  _plugin_file(fname[:-3], path=[mod])
                     except:
                         err, exc, tback = sys.exc_info()
-                        write(traceback.print_tb(tback))
                         write('Warning: %s is =not= a valid plugin\n' %
                               pjoin(mod, fname))
                         write("   error:  %s\n" % (repr(sys.exc_info()[1])))
-
                         ret = False
+                        _larch.symtable._sys.import_ok = False
                     retvals.append(ret)
                 retval = all(retvals)
         else:
@@ -414,11 +425,15 @@ def _addplugin(plugin, _larch=None, **kws):
                 offset = getattr(exc, 'offset', 0)
                 etext  = getattr(exc, 'text', '')
                 emsg   = getattr(exc, 'message', '')
-                write(traceback.print_tb(tback))
+                try:
+                    write(traceback.print_tb(tback))
+                except:
+                    pass
                 write("""Python Error at plugin '%s', line %d
   %s %s^
 %s: %s\n""" % (modpath, lineno, etext, ' '*offset, err.__name__, emsg))
                 retval = False
+                _larch.symtable._sys.import_ok = False
 
         if _larch.error:
             retval = False
