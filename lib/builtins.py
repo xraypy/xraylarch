@@ -382,7 +382,7 @@ def _addplugin(plugin, _larch=None, **kws):
         if is_pkg:
             if _check_requirements(plugin):
                 filelist = []
-                if PLUGINSTXT in os.listdir(mod):
+                if PLUGINSTXT in sorted(os.listdir(mod)):
                     pfile = os.path.abspath(os.path.join(mod, PLUGINSTXT))
                     try:
                         with open(pfile, 'r') as pluginsfile:
@@ -395,7 +395,7 @@ def _addplugin(plugin, _larch=None, **kws):
                         write("Warning:: Error reading plugin file:\n %s\n" %
                               pfile)
                 if len(filelist) == 0:
-                    for fname in os.listdir(mod):
+                    for fname in sorted(os.listdir(mod)):
                         if fname.endswith('.py') and len(fname) > 3:
                             filelist.append(fname)
 
