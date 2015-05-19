@@ -665,16 +665,16 @@ class ScanDB(object):
             table.update(whereclause=where).execute(notes=notes,
                                                     is_monitor=ismon)
         thispv = self.query(table).filter(cls.name == name).one()
-        self.connect_pvs(names=[name])                    
+        self.connect_pvs(names=[name])
         return thispv
 
     def get_pvrow(self, name):
         """return db row for a PV"""
         if len(name) < 2:
             return
-
         cls, table = self.get_table('pvs')
-        return self.query(table).filter(table.c.name == name).one()
+        out = table.select().where(table.c.name == name).execute().fetchall()
+        return None_or_one(out, 'get_pvrow expected 1 or None PV')
 
     def get_pv(self, name):
         """return pv object from known PVs"""
@@ -697,7 +697,7 @@ class ScanDB(object):
             if name not in self.pvs:
                 self.pvs[name] = epics.PV(name)
                 _connect.append(name)
-        
+
         for name in _connect:
             connected, count = False, 0
             while not connected:
@@ -710,7 +710,7 @@ class ScanDB(object):
         pvname = normalize_pvname(pvname)
         if pvname not in self.pvs:
             pv = self.add_pv(pvname, monitor=True)
-        
+
 
         #cls, table = self.get_table('monitorvalues')
         #mval = cls()
@@ -722,7 +722,7 @@ class ScanDB(object):
 
     def get_monitorvalues(self, pvname, start_date=None, end_date=None):
         """get (value, time) pairs for a monitorpvs given a time range
-        
+
         pvname = normalize_pvname(pvname)
         if pvname not in self.pvs:
             pv = self.add_monitorpv(pvname)
@@ -863,7 +863,7 @@ class ScanDB(object):
         if inst is None:
             out = self.__addRow(Instruments, ('name',), (name,), **kws)
             inst = self.get_instrument(name)
-        cls, jtable = self.get_table('instrument_pv')
+        cls, jointable = self.get_table('instrument_pv')
         if pvs is not None:
             pvlist = []
             for pvname in pvs:
@@ -874,7 +874,7 @@ class ScanDB(object):
             for dorder, pv in enumerate(pvlist):
                 data = {'display_order': dorder, 'pvs_id': pv.id,
                         'instruments_id': inst.id}
-                jtable.insert().execute(**data)
+                jointable.insert().execute(**data)
 
         self.session.add(inst)
         self.commit()
@@ -892,8 +892,7 @@ class ScanDB(object):
             return name
         cls, table = self.get_table('instruments')
         out = self.query(cls).filter(cls.name==name).all()
-        return None_or_one(out, 'get_instrument expected 1 or None Instrument')
-
+        return None_or_one(out, 'get_instrument expected 1 or None Instruments')
 
     def remove_position(self, instname, posname):
         inst = self.get_instrument(instname)
@@ -931,10 +930,9 @@ class ScanDB(object):
     def save_position(self, instname, posname,  values, **kw):
         """save position for instrument
         """
-        print 'S POS ', instname, posname
         inst = self.get_instrument(instname)
 
-        
+
         if inst is None:
             raise ScanDBException('Save Postion needs valid instrument')
 
@@ -946,8 +944,7 @@ class ScanDB(object):
             pos.name = posname
             pos.instrument = inst
             pos.date = datetime.now()
-        print '-S -- position ', pos
-        
+
         pvnames = [pv.name for pv in inst.pvs]
 
         # check for missing pvs in values
@@ -960,7 +957,7 @@ class ScanDB(object):
             raise ScanDBException('save_position: missing pvs:\n %s' %
                                         missing_pvs)
 
-        ppos_cls, ppos_table = self.get_table('position_pv')        
+        ppos_cls, ppos_table = self.get_table('position_pv')
         pos_pvs = []
         for name in pvnames:
             pvrow =  self.get_pvrow(name)
@@ -969,12 +966,12 @@ class ScanDB(object):
             ppv.notes = "'%s' / '%s'" % (inst.name, posname)
             ppv.value = values[name]
             pos_pvs.append(ppv)
-        
+
         #pos.pvs = pos_pvs
 
         print 'POS PVS ', pos_pvs
-        print ppv
-        
+        # print ppv
+
         pos.pvs = pos_pvs
         tab = self.tables['position_pv']
         self.conn.execute(tab.delete().where(tab.c.positions_id == None))
@@ -994,7 +991,7 @@ class ScanDB(object):
             vals[pv.name] = epics.caget(pv.name)
 
         self.save_position(instname, posname,  vals)
-        
+
     def restore_complete(self):
         "return whether last restore_position has completed"
         if len(self.restoring_pvs) > 0:
