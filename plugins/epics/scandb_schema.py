@@ -115,7 +115,7 @@ class _BaseTable(object):
     def __repr__(self):
         name = self.__class__.__name__
         fields = ['%s' % getattr(self, 'name', 'UNNAMED'),
-                  'id=%d' % getattr(self, 'id', 'NOID')]
+                  'id=%s' % repr(getattr(self, 'id', 'NOID'))]
         return "<%s(%s)>" % (name, ', '.join(fields))
 
 class Info(_BaseTable):
