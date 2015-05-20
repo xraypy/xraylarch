@@ -854,6 +854,28 @@ class ScanDB(object):
             paused = (self.get_info('request_pause', as_bool=True) and
                       (time.time() - t0) < timeout)
 
+class InstrumentDB(object):
+    """Instruments/Positions class using a scandb instance"""
+
+    def __init__(self, scandb):
+        self.scandb = scandb
+
+    def __addRow(self, table, argnames, argvals, **kws):
+        """add generic row"""
+        table = table()
+        for name, val in zip(argnames, argvals):
+            setattr(table, name, val)
+        for key, val in kws.items():
+            if key == 'attributes':
+                val = json_encode(val)
+            setattr(table, key, val)
+        try:
+            self.scandb.session.add(table)
+        except IntegrityError, msg:
+            self.scandb.session.rollback()
+            raise Warning('Could not add data to table %s\n%s' % (table, msg))
+
+
     ### Instrument Functions
     def add_instrument(self, name, pvs=None, notes=None,
                        attributes=None, **kws):
@@ -867,35 +889,38 @@ class ScanDB(object):
         if inst is None:
             out = self.__addRow(Instruments, ('name',), (name,), **kws)
             inst = self.get_instrument(name)
-        cls, jointable = self.get_table('instrument_pv')
+        cls, jointable = self.scandb.get_table('instrument_pv')
         if pvs is not None:
             pvlist = []
             for pvname in pvs:
-                thispv = self.get_pvrow(pvname)
+                thispv = self.scandb.get_pvrow(pvname)
                 if thispv is None:
-                    thispv = self.add_pv(pvname)
+                    thispv = self.scandb.add_pv(pvname)
                 pvlist.append(thispv)
             for dorder, pv in enumerate(pvlist):
                 data = {'display_order': dorder, 'pvs_id': pv.id,
                         'instruments_id': inst.id}
                 jointable.insert().execute(**data)
 
-        self.session.add(inst)
-        self.commit()
+        self.scandb.session.add(inst)
+        self.scandb.commit()
         return inst
 
     def get_all_instruments(self):
         """return instrument list
         """
-        return [f for f in self.query(Instruments).order_by(Instruments.display_order)]
+        cls, table = self.get_table('instruments')
+        q = self.scandb.query(cls).filter(cls.name==name
+                                          ).order_by(cls.display_order)
+        return [f for f in q.all()]
 
     def get_instrument(self, name):
         """return instrument by name
         """
         if isinstance(name, Instruments):
             return name
-        cls, table = self.get_table('instruments')
-        out = self.query(cls).filter(cls.name==name).all()
+        cls, table = self.scandb.get_table('instruments')
+        out = self.scandb.query(cls).filter(cls.name==name).all()
         return None_or_one(out, 'get_instrument expected 1 or None Instruments')
 
     def remove_position(self, instname, posname):
@@ -909,27 +934,26 @@ class ScanDB(object):
             raise ScanDBException("Postion '%s' not found for '%s'" %
                                         (posname, inst.name))
 
-        tab = self.tables['position_pv']
-        self.conn.execute(tab.delete().where(tab.c.positions_id==pos.id))
-        self.conn.execute(tab.delete().where(tab.c.positions_id==None))
+        cls, tab = self.scandb.get_table('position_pv')
+        self.scandb.conn.execute(tab.delete().where(tab.c.positions_id==pos.id))
+        self.scandb.conn.execute(tab.delete().where(tab.c.positions_id==None))
 
-        tabl = self.tables['positions']
-        self.conn.execute(tabl.delete().where(tabl.c.id==pos.id))
-
-        self.commit()
+        cls, ptab = self.tables['positions']
+        self.scandb.conn.execute(ptab.delete().where(ptab.c.id==pos.id))
+        self.scandb.commit()
 
     def remove_instrument(self, inst):
         inst = self.get_instrument(inst)
         if inst is None:
             raise ScanDBException('Save Postion needs valid instrument')
 
-        tab = self.tables['instruments']
-        self.conn.execute(tab.delete().where(tab.c.id==inst.id))
+        tab = self.scandb.tables['instruments']
+        self.scandb.conn.execute(tab.delete().where(tab.c.id==inst.id))
 
         for tablename in ('position', 'instrument_pv', 'instrument_precommand',
                           'instrument_postcommand'):
-            tab = self.tables[tablename]
-            self.conn.execute(tab.delete().where(tab.c.instrument.id==inst.id))
+            tab = self.scandb.tables[tablename]
+            self.scandb.conn.execute(tab.delete().where(tab.c.instrument.id==inst.id))
 
     def save_position(self, instname, posname,  values, **kw):
         """save position for instrument
@@ -942,7 +966,7 @@ class ScanDB(object):
 
         posname = posname.strip()
         pos  = self.get_position(instname, posname)
-        pos_cls, pos_table = self.get_table('positions')
+        pos_cls, pos_table = self.scandb.get_table('positions')
         if pos is None:
             pos = pos_cls()
             pos.name = posname
@@ -961,10 +985,10 @@ class ScanDB(object):
             raise ScanDBException('save_position: missing pvs:\n %s' %
                                         missing_pvs)
 
-        ppos_cls, ppos_table = self.get_table('position_pv')
+        ppos_cls, ppos_table = self.scandb.get_table('position_pv')
         pos_pvs = []
         for name in pvnames:
-            pvrow =  self.get_pvrow(name)
+            pvrow =  self.scandb.get_pvrow(name)
             ppv = ppos_cls()
             ppv.pvs_id = pvrow.id
             ppv.notes = "'%s' / '%s'" % (inst.name, posname)
@@ -972,11 +996,10 @@ class ScanDB(object):
             pos_pvs.append(ppv)
 
         pos.pvs = pos_pvs
-        tab = self.tables['position_pv']
-        self.conn.execute(tab.delete().where(tab.c.positions_id == None))
-        self.session.add(pos)
-        self.commit()
-
+        tab = self.scandb.tables['position_pv']
+        self.scandb.conn.execute(tab.delete().where(tab.c.positions_id == None))
+        self.scandb.session.add(pos)
+        self.scandb.commit()
 
     def save_current_position(self, instname, posname):
         """save current values for an instrument to posname
@@ -984,11 +1007,9 @@ class ScanDB(object):
         inst = self.get_instrument(instname)
         if inst is None:
             raise ScanDBException('Save Postion needs valid instrument')
-
         vals = {}
         for pv in inst.pvs:
             vals[pv.name] = epics.caget(pv.name)
-
         self.save_position(instname, posname,  vals)
 
     def restore_complete(self):
@@ -1002,7 +1023,7 @@ class ScanDB(object):
         pos = self.get_position(inst, oldname)
         if pos is not None:
             pos.name = newname
-            self.commit()
+            self.scandb.commit()
 
     def get_position(self, instname, posname):
         """return position from namea and instrument
@@ -1014,7 +1035,7 @@ class ScanDB(object):
         filter = and_(cls.name==posname,
                       cls.instruments_id==inst.id)
 
-        out = self.query(cls).filter(filter).all()
+        out = self.scandb.query(cls).filter(filter).all()
         return None_or_one(out, 'get_position expected 1 or None Position')
 
     def get_positionlist(self, isntname):
@@ -1022,7 +1043,7 @@ class ScanDB(object):
         """
         inst = self.get_instrument(instname)
         cls, table = self.get_table('positions')
-        out = self.query(cls).filter(cls.instruments_id==inst.id).all()
+        out = self.scandb.query(cls).filter(cls.instruments_id==inst.id).all()
         return None_or_one(out, 'get_position expected 1 or None Position')
 
 
@@ -1030,10 +1051,10 @@ class ScanDB(object):
         """return position from namea and instrument
         """
         inst = self.get_instrument(instname)
-        cls, table = self.get_table('positions')
+        cls, table = self.scandb.get_table('positions')
         filter = and_(cls.name==posname,
                       cls.instruments_id==inst.id)
-        out =  self.query(cls).filter(filter).all()
+        out =  self.scandb.query(cls).filter(filter).all()
         return None_or_one(out, 'get_position expected 1 or None Position')
 
     def restore_position(self, instname, posname, wait=False, timeout=5.0,
