@@ -967,11 +967,6 @@ class ScanDB(object):
             ppv.value = values[name]
             pos_pvs.append(ppv)
 
-        #pos.pvs = pos_pvs
-
-        print 'POS PVS ', pos_pvs
-        # print ppv
-
         pos.pvs = pos_pvs
         tab = self.tables['position_pv']
         self.conn.execute(tab.delete().where(tab.c.positions_id == None))
