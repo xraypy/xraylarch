@@ -199,7 +199,7 @@ class Position_PV(_BaseTable):
     name, notes, pv, value = None, None, None, None
     def __repr__(self):
         name = self.__class__.__name__
-        fields = ['%s=%s' % (getattr(self, 'pv', '?'),
+        fields = ['%s=%s' % (getattr(self, 'pvs_id', '?'),
                              getattr(self, 'value', '?'))]
         return "<%s(%s)>" % (name, ', '.join(fields))
 
