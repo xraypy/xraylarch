@@ -27,7 +27,7 @@ from sqlalchemy.dialects import sqlite, postgresql
 
 import epics
 
-from larch import use_plugin_path
+from larch import use_plugin_path, ValidateLarchPlugin
 use_plugin_path('io')
 from fileutils import strip_quotes, asciikeys
 use_plugin_path('epics')
@@ -38,6 +38,10 @@ from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            SlewScanPositioners, Positions, Position_PV,
                            Instruments, Instrument_PV,
                            Instrument_Precommands, Instrument_Postcommands)
+
+
+MODNAME = '_scan'
+SCANDB_NAME = '%s._scandb' % MODNAME
 
 
 def normalize_pvname(name):
@@ -1075,7 +1079,22 @@ class ScanDB(object):
                     pass
 
 
-if __name__ == '__main__':
-    dbname = 'Test.sdb'
-    create_scandb(dbname)
-    print '''%s  created and initialized.''' % dbname
+@ValidateLarchPlugin
+def connect_scandb(dbname=None, server='postgresql',
+                   _larch=None, **kwargs):
+    if (_larch.symtable.has_symbol(SCANDB_NAME) and
+        _larch.symtable.get_symbol(SCANDB_NAME) is not None):
+        return _larch.symtable.get_symbol(SCANDB_NAME)
+    scandb = ScanDB(dbname=dbname, server=server, **kwargs)
+    _larch.symtable.set_symbol(SCANDB_NAME, scandb)
+    return scandb
+
+def initializeLarchPlugin(_larch=None):
+    """initialize _scan"""
+    if not _larch.symtable.has_group(MODNAME):
+        g = Group()
+        g.__doc__ = MODDOC
+        _larch.symtable.set_symbol(MODNAME, g)
+
+def registerLarchPlugin():
+    return (MODNAME, {'connect_scandb': connect_scandb})
