@@ -909,7 +909,7 @@ class InstrumentDB(object):
     def get_all_instruments(self):
         """return instrument list
         """
-        cls, table = self.get_table('instruments')
+        cls, table = self.scandb.get_table('instruments')
         q = self.scandb.query(cls).filter(cls.name==name
                                           ).order_by(cls.display_order)
         return [f for f in q.all()]
@@ -938,7 +938,7 @@ class InstrumentDB(object):
         self.scandb.conn.execute(tab.delete().where(tab.c.positions_id==pos.id))
         self.scandb.conn.execute(tab.delete().where(tab.c.positions_id==None))
 
-        cls, ptab = self.tables['positions']
+        cls, ptab = self.scandb.get_tables('positions')
         self.scandb.conn.execute(ptab.delete().where(ptab.c.id==pos.id))
         self.scandb.commit()
 
@@ -1030,7 +1030,7 @@ class InstrumentDB(object):
         """
         inst = self.get_instrument(instname)
 
-        cls, table = self.get_table('positions')
+        cls, table = self.scandb.get_table('positions')
 
         filter = and_(cls.name==posname,
                       cls.instruments_id==inst.id)
@@ -1042,7 +1042,7 @@ class InstrumentDB(object):
         """return list of position names for an instrument
         """
         inst = self.get_instrument(instname)
-        cls, table = self.get_table('positions')
+        cls, table = self.scandb.get_table('positions')
         out = self.scandb.query(cls).filter(cls.instruments_id==inst.id).all()
         return None_or_one(out, 'get_position expected 1 or None Position')
 
