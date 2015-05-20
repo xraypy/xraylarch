@@ -104,13 +104,12 @@ from detectors import (Counter, ArrayCounter, DeviceCounter, Trigger,
 from datafile import ASCIIScanFile
 from positioner import Positioner
 
-from scandb import ScanDB, ScanDBException, ScanDBAbort
+from scandb import ScanDBException, ScanDBAbort
 
 use_plugin_path('io')
 from fileutils import fix_varname
 
 MODNAME = '_scan'
-SCANDB_NAME = '%s._scandb' % MODNAME
 
 MIN_POLL_TIME = 1.e-3
 
@@ -980,9 +979,7 @@ class XAFS_Scan(LarchStepScan):
         return  Group(buffer='\n'.join(buff),
                       start_theta=theta[0]-the0,
                       start_width=width[0]-wid0,
-                      theta=theta,
-                      energy=energy,
-                      width=width)
+                      theta=theta, energy=energy, width=width)
 
 @ValidateLarchPlugin
 def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
@@ -1099,16 +1096,6 @@ def scan_from_db(name, filename='scan.001', _larch=None):
     return scan_from_json(scandef.text,
                           filename=filename, rois=rois,
                           _larch=_larch)
-
-@ValidateLarchPlugin
-def connect_scandb(dbname=None, server='postgresql',
-                   _larch=None, **kwargs):
-    if (_larch.symtable.has_symbol(SCANDB_NAME) and
-        _larch.symtable.get_symbol(SCANDB_NAME) is not None):
-        return _larch.symtable.get_symbol(SCANDB_NAME)
-    scandb = ScanDB(dbname=dbname, server=server, **kwargs)
-    _larch.symtable.set_symbol(SCANDB_NAME, scandb)
-    return scandb
 
 
 @ValidateLarchPlugin
