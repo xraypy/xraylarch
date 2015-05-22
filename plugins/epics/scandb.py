@@ -42,6 +42,7 @@ from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
 
 MODNAME = '_scan'
 SCANDB_NAME = '%s._scandb' % MODNAME
+INSTDB_NAME = '%s._instdb' % MODNAME
 
 
 def normalize_pvname(name):
@@ -938,9 +939,13 @@ class InstrumentDB(object):
         self.scandb.conn.execute(tab.delete().where(tab.c.positions_id==pos.id))
         self.scandb.conn.execute(tab.delete().where(tab.c.positions_id==None))
 
-        cls, ptab = self.scandb.get_tables('positions')
+        cls, ptab = self.scandb.get_table('positions')
         self.scandb.conn.execute(ptab.delete().where(ptab.c.id==pos.id))
         self.scandb.commit()
+
+    def remove_all_positions(self, instname):
+        for posname in self.get_positionlist(instname):
+            self.remove_position(instname, posname)
 
     def remove_instrument(self, inst):
         inst = self.get_instrument(inst)
@@ -959,8 +964,6 @@ class InstrumentDB(object):
         """save position for instrument
         """
         inst = self.get_instrument(instname)
-
-
         if inst is None:
             raise ScanDBException('Save Postion needs valid instrument')
 
@@ -1029,33 +1032,19 @@ class InstrumentDB(object):
         """return position from namea and instrument
         """
         inst = self.get_instrument(instname)
-
         cls, table = self.scandb.get_table('positions')
-
         filter = and_(cls.name==posname,
                       cls.instruments_id==inst.id)
-
         out = self.scandb.query(cls).filter(filter).all()
         return None_or_one(out, 'get_position expected 1 or None Position')
 
-    def get_positionlist(self, isntname):
+    def get_positionlist(self, instname):
         """return list of position names for an instrument
         """
         inst = self.get_instrument(instname)
         cls, table = self.scandb.get_table('positions')
         out = self.scandb.query(cls).filter(cls.instruments_id==inst.id).all()
-        return None_or_one(out, 'get_position expected 1 or None Position')
-
-
-    def get_position_pv(self, isntname, posname):
-        """return position from namea and instrument
-        """
-        inst = self.get_instrument(instname)
-        cls, table = self.scandb.get_table('positions')
-        filter = and_(cls.name==posname,
-                      cls.instruments_id==inst.id)
-        out =  self.scandb.query(cls).filter(filter).all()
-        return None_or_one(out, 'get_position expected 1 or None Position')
+        return [p.name for p in out]
 
     def restore_position(self, instname, posname, wait=False, timeout=5.0,
                          exclude_pvs=None):
@@ -1107,7 +1096,9 @@ def connect_scandb(dbname=None, server='postgresql',
         _larch.symtable.get_symbol(SCANDB_NAME) is not None):
         return _larch.symtable.get_symbol(SCANDB_NAME)
     scandb = ScanDB(dbname=dbname, server=server, **kwargs)
+    instdb = InstrumentDB(scandb)
     _larch.symtable.set_symbol(SCANDB_NAME, scandb)
+    _larch.symtable.set_symbol(INSTDB_NAME, instdb)
     return scandb
 
 def initializeLarchPlugin(_larch=None):
