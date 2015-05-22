@@ -1193,7 +1193,6 @@ def registerLarchPlugin():
     return (MODNAME, {'scan_from_json': scan_from_json,
                       'scan_from_db':   scan_from_db,
                       'make_xafs_scan': make_xafs_scan,
-                      'connect_scandb':    connect_scandb,
                       'do_scan': do_scan,
                       'do_slewscan': do_slewscan,
                       'do_fastmap':  do_slewscan,
