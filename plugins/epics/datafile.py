@@ -254,7 +254,7 @@ class ASCIIScanFile(ScanFile):
                     desc = "%s.%s" % (desc[:isp], desc[isp+1:])
                 else:
                     desc = '%s.Value' % desc
-                desc = desc.fix_filename(desc)
+                desc = fix_filename(desc)
             out.append("%s %s: %s %s %s" % (COM1, desc, val, SEP, pvname))
 
         out.append('%s ExtraPVs.End: here' % COM1)
