@@ -259,10 +259,10 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
     cnts   = NamedTable('scancounters', metadata, with_pv=True, with_use=True)
     det    = NamedTable('scandetectors', metadata, with_pv=True, with_use=True,
                         cols=[StrCol('kind',   size=128),
-                              StrCol('options', size=2048)])
+                              StrCol('options')])
 
     scans = NamedTable('scandefs', metadata,
-                       cols=[StrCol('text', size=4096),
+                       cols=[StrCol('text'),
                              StrCol('type'),
                              Column('modify_time', DateTime),
                              Column('last_used_time', DateTime)])
