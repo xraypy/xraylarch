@@ -960,7 +960,7 @@ class InstrumentDB(object):
             tab = self.scandb.tables[tablename]
             self.scandb.conn.execute(tab.delete().where(tab.c.instrument.id==inst.id))
 
-    def save_position(self, instname, posname,  values, **kw):
+    def save_position(self, instname, posname, values, image=None, **kw):
         """save position for instrument
         """
         inst = self.get_instrument(instname)
@@ -974,10 +974,13 @@ class InstrumentDB(object):
             pos = pos_cls()
             pos.name = posname
             pos.instrument = inst
-            pos.date = datetime.now()
+            pos.modify_time = datetime.now()
+            if image is not None:
+                pos.image = image
 
-        pvnames = [pv.name for pv in inst.pvs]
-
+        pvnames = [str(pv.name) for pv in inst.pvs]
+        print 'SAVE_Position: ', pvnames
+        print 'SAVE_Position: ', values
         # check for missing pvs in values
         missing_pvs = []
         for pv in pvnames:
