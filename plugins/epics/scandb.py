@@ -153,7 +153,7 @@ class ScanDB(object):
         must be a sqlite db file, with tables named
         'postioners', 'detectors', and 'scans'
         """
-        if server == 'sqlite':
+        if server.startswith('sqlite'):
             if not os.path.exists(dbname):
                 return False
         else:
@@ -352,7 +352,7 @@ class ScanDB(object):
 
     def check_hostpid(self):
         """check whether hostname and process ID match current config"""
-        if self.server != 'sqlite':
+        if not self.server.startswith('sqlite'):
             return True
         db_host_name = self.get_info('host_name', default='')
         db_process_id  = self.get_info('process_id', default='0')
@@ -911,9 +911,7 @@ class InstrumentDB(object):
         """return instrument list
         """
         cls, table = self.scandb.get_table('instruments')
-        q = self.scandb.query(cls).filter(cls.name==name
-                                          ).order_by(cls.display_order)
-        return [f for f in q.all()]
+        return self.scandb.query(cls).order_by(cls.display_order).all()
 
     def get_instrument(self, name):
         """return instrument by name
