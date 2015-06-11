@@ -107,6 +107,7 @@ class ScanDB(object):
     """
     def __init__(self, dbname=None, server='sqlite', create=False, **kws):
         self.dbname = dbname
+        if server == 'sqlite3': server = 'sqlite'
         self.server = server
         self.tables = None
         self.engine = None
