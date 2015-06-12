@@ -1573,10 +1573,13 @@ class MapViewerFrame(wx.Frame):
                 t0 = time.time()
                 self.h5convert_irow = irow
                 rowdat = xrm_map.read_rowdata(irow)
-                t1 = time.time()
-                xrm_map.add_rowdata(rowdat)
-                t2 = time.time()
-                irow  = irow + 1
+                if rowdat.read_ok:
+                    t1 = time.time()
+                    xrm_map.add_rowdata(rowdat)
+                    t2 = time.time()
+                    irow  = irow + 1
+                else:
+                    break
                 try:
                     wx.Yield()
                 except:
