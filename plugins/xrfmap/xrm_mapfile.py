@@ -188,19 +188,27 @@ class GSEXRM_MapRow:
 
         # reading can fail with IOError, generally meaning the file isn't
         # ready for read.  Try again for up to 5 seconds
-        ascii_ok, t0 = False, time.time()
-        while not ascii_ok:
+        t0 = time.time()
+        sis_ok, xps_ok = False, False
+        gdata, sdata = [], []
+        while not (sis_ok and xps_ok):
             try:
-                shead, sdata = readASCII(os.path.join(folder, sisfile))
                 ghead, gdata = readASCII(os.path.join(folder, xpsfile))
-                ascii_ok = len(gdata) > 1 and len(sdata) > 1
+                xps_ok = len(gdata) > 1
             except IOError:
                 if (time.time() - t0) > 5.0:
                     break
-                time.sleep(1.0)
+                time.sleep(0.25)
+            try:
+                shead, sdata = readASCII(os.path.join(folder, sisfile))
+                sis_ok = len(sdata) > 1
+            except IOError:
+                if (time.time() - t0) > 5.0:
+                    break
+                time.sleep(0.25)
 
-        if not ascii_ok:
-            print 'Failed to read SIS/XPS Gathering data for %s' % self.xmapfile
+        if not(sis_ok and xps_ok):
+            print 'Failed to read ASCII data for %s (SIS: %i, XPS: %i)' % (self.xmapfile, len(sdata), len(gdata))
             return
                 
         self.sishead = shead
