@@ -171,11 +171,13 @@ class GSEXRM_MapRow:
                  nrows_expected=None,
                  npts=None,  irow=None, dtime=None):
 
+        self.read_ok = False
         self.nrows_expected = nrows_expected
-        xrf_reader = read_xmap_netcdf
-        if xmapfile.startswith('xsp'):
-            xrf_reader = read_xsp3_hdf5
-        # print 'MapRow: ', xrf_reader, xmapfile, self.nrows_expected
+        xrf_reader = read_xsp3_hdf5
+        if not xmapfile.startswith('xsp'):
+            xrf_reader = read_xmap_netcdf
+
+        # print 'MapRow: expect %i rows' % self.nrows_expected
 
         self.npts = npts
         self.irow = irow
@@ -198,9 +200,8 @@ class GSEXRM_MapRow:
                 time.sleep(1.0)
 
         if not ascii_ok:
-            print( 'Failed to read SIS/XPS Gathering data for %s' % self.xmapfile)
+            print 'Failed to read SIS/XPS Gathering data for %s' % self.xmapfile
             return
-
                 
         self.sishead = shead
         if dtime is not None:  dtime.add('maprow: read ascii files')
@@ -293,6 +294,7 @@ class GSEXRM_MapRow:
         self.livetime = self.livetime.transpose()
         self.realtime = self.realtime.transpose()
         self.counts   = self.counts.swapaxes(0, 1)
+        self.read_ok = True
 
 class GSEXRM_Detector(object):
     """Detector class, representing 1 detector element (real or virtual)
@@ -707,13 +709,16 @@ class GSEXRM_MapFile(object):
                              filename=self.filename, status='reading')
                 row = self.read_rowdata(irow)
                 # self.dt.add('  == read row data')
-                if row is not None:
-                    self.add_rowdata(row, verbose=verbose)
-                # self.dt.add('  == added row data')
                 if hasattr(callback, '__call__'):
                     callback(row=irow, maxrow=nrows,
                              filename=self.filename, status='complete')
-                irow  = irow + 1
+
+                if row.read_ok:
+                    self.add_rowdata(row, verbose=verbose)
+                    irow  = irow + 1
+                else:
+                    print("==Warning: Read failed at row %i" % irow)
+                    break
             # self.dt.show()
         self.resize_arrays(self.last_row+1)
         self.h5root.flush()
