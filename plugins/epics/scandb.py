@@ -959,7 +959,7 @@ class InstrumentDB(object):
             tab = self.scandb.tables[tablename]
             self.scandb.conn.execute(tab.delete().where(tab.c.instrument.id==inst.id))
 
-    def save_position(self, instname, posname, values, image=None, **kw):
+    def save_position(self, instname, posname, values, image=None, notes=None, **kw):
         """save position for instrument
         """
         inst = self.get_instrument(instname)
@@ -976,10 +976,13 @@ class InstrumentDB(object):
             pos.modify_time = datetime.now()
             if image is not None:
                 pos.image = image
+            if notes is not None:
+                pos.notes = notes
 
         pvnames = [str(pv.name) for pv in inst.pvs]
         print 'SAVE_Position: ', pvnames
         print 'SAVE_Position: ', values
+        print 'SAVE_Position: ', notes
         # check for missing pvs in values
         missing_pvs = []
         for pv in pvnames:
@@ -1006,7 +1009,7 @@ class InstrumentDB(object):
         self.scandb.session.add(pos)
         self.scandb.commit()
 
-    def save_current_position(self, instname, posname):
+    def save_current_position(self, instname, posname, image=None, notes=None):
         """save current values for an instrument to posname
         """
         inst = self.get_instrument(instname)
@@ -1015,7 +1018,7 @@ class InstrumentDB(object):
         vals = {}
         for pv in inst.pvs:
             vals[pv.name] = epics.caget(pv.name)
-        self.save_position(instname, posname,  vals)
+        self.save_position(instname, posname,  vals, image=image, notes=notes)
 
     def restore_complete(self):
         "return whether last restore_position has completed"
