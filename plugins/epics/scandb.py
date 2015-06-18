@@ -980,9 +980,9 @@ class InstrumentDB(object):
                 pos.notes = notes
 
         pvnames = [str(pv.name) for pv in inst.pvs]
-        print 'SAVE_Position: ', pvnames
-        print 'SAVE_Position: ', values
-        print 'SAVE_Position: ', notes
+        #print 'SAVE_Position: ', pvnames
+        #print 'SAVE_Position: ', values
+        #print 'SAVE_Position: ', notes
         # check for missing pvs in values
         missing_pvs = []
         for pv in pvnames:
