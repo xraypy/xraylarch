@@ -969,20 +969,20 @@ class InstrumentDB(object):
         posname = posname.strip()
         pos  = self.get_position(instname, posname)
         pos_cls, pos_table = self.scandb.get_table('positions')
+
         if pos is None:
             pos = pos_cls()
             pos.name = posname
             pos.instrument = inst
-            pos.modify_time = datetime.now()
-            if image is not None:
-                pos.image = image
-            if notes is not None:
-                pos.notes = notes
-
+            
+        pos.modify_time = datetime.now()
+        if image is not None:
+            pos.image = image
+        if notes is not None:
+            pos.notes = notes
+                
         pvnames = [str(pv.name) for pv in inst.pvs]
-        #print 'SAVE_Position: ', pvnames
-        #print 'SAVE_Position: ', values
-        #print 'SAVE_Position: ', notes
+
         # check for missing pvs in values
         missing_pvs = []
         for pv in pvnames:
@@ -993,7 +993,11 @@ class InstrumentDB(object):
             raise ScanDBException('save_position: missing pvs:\n %s' %
                                         missing_pvs)
 
-        ppos_cls, ppos_table = self.scandb.get_table('position_pv')
+        ppos_cls, ppos_tab = self.scandb.get_table('position_pv')
+        doexec = self.scandb.conn.execute
+        doexec(ppos_tab.delete().where(ppos_tab.c.positions_id == None))
+        doexec(ppos_tab.delete().where(ppos_tab.c.positions_id == pos.id))
+
         pos_pvs = []
         for name in pvnames:
             pvrow =  self.scandb.get_pvrow(name)
@@ -1004,8 +1008,7 @@ class InstrumentDB(object):
             pos_pvs.append(ppv)
 
         pos.pvs = pos_pvs
-        tab = self.scandb.tables['position_pv']
-        self.scandb.conn.execute(tab.delete().where(tab.c.positions_id == None))
+
         self.scandb.session.add(pos)
         self.scandb.commit()
 
