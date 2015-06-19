@@ -191,7 +191,7 @@ class Instruments(_BaseTable):
 
 class Positions(_BaseTable):
     "position table"
-    pvs, date, name, notes = None, None, None, None
+    pvs, date, name, notes, image = None, None, None, None, None
     instrument, instrument_id = None, None
 
 class Position_PV(_BaseTable):
@@ -238,6 +238,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
 
     engine  = get_dbengine(dbname, server=server, create=create, **kws)
     metadata =  MetaData(engine)
+    print(" --- create ", engine, metadata)
     info = Table('info', metadata,
                  Column('keyname', Text, primary_key=True, unique=True),
                  StrCol('notes'),
@@ -311,6 +312,7 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
 
     position  = NamedTable('positions', metadata, name_unique=False,
                            cols=[Column('modify_time', DateTime),
+                                 StrCol('image'),                                 
                                  PointerCol('instruments')])
 
     instrument_precommand = NamedTable('instrument_precommands', metadata,
@@ -338,7 +340,6 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
                         StrCol('value'))
 
     metadata.create_all()
-
     session = sessionmaker(bind=engine)()
 
     # add some initial data:
