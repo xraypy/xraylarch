@@ -23,8 +23,9 @@ class EscanData:
                   'scan began at', 'scan ended at',
                   'column labels', 'scan regions','data')
 
-    def __init__(self,fname=None,**args):
+    def __init__(self, fname=None, bad=None, **args):
         self.filename    = fname
+        self.bad_channels = bad
         self.clear_data()
 
         self.progress    = None
@@ -52,7 +53,6 @@ class EscanData:
         self.env_desc    = []
         self.env_addr    = []
         self.env_val     = []
-
         self.pos         = []
         self.det         = []
 
@@ -80,6 +80,8 @@ class EscanData:
 
         self.x = numpy.array(0)
         self.y = numpy.array(0)
+        if self.bad_channels is None:
+            self.bad_channels = []
         gc.collect()
 
 
@@ -309,10 +311,10 @@ class EscanData:
                 o = [i]
                 self.sums_list.append(o)
             else:
-                self.sums[isum] = self.sums[isum] + self.det[i][:]
-
-                o.append(i)
-                self.sums_list[isum] = o
+                if i not in self.bad_channels:
+                    self.sums[isum] = self.sums[isum] + self.det[i][:]
+                    o.append(i)
+                    self.sums_list[isum] = o
             if 'inputcountrate' in thisname.lower():
                 icr.append(self.det[i][:])
                 self.correct_deadtime = True
@@ -370,11 +372,15 @@ class EscanData:
 
         if self.correct_deadtime:
             idet = -1
+            nmca = -1
             for label,pvname in zip(self.det_desc,self.det_addr):
                 idet = idet + 1
                 if 'mca' in pvname:
-                    nmca = int(pvname.split('mca')[1].split('.')[0]) -1
-                    self.det_corr[idet,:] *= self.dt_factor[nmca,:]
+                    nmca = nmca + 1 # int(pvname.split('mca')[1].split('.')[0]) -1
+                    if idet in self.bad_channels:
+                        self.det_corr[idet,:] *= 0
+                    else:
+                        self.det_corr[idet,:] *= self.dt_factor[nmca,:]                    
 
             isum = -1
             for sumlist in self.sums_list:
@@ -382,11 +388,10 @@ class EscanData:
                 if isinstance(sumlist, (list,tuple)):
                     self.sums_corr[isum] = self.det_corr[sumlist[0]]
                     for i in sumlist[1:]:
-                        if i > 0:
-                            self.sums_corr[isum] = self.sums_corr[isum] + self.det_corr[i]
+                        if i > 0 and i not in self.bad_channels:
+                            self.sums_corr[isum] += self.det_corr[i]
                 else:
                     self.sums_corr[isum] = self.det_corr[sumlist]
-
         return
 
     def read_ascii(self,fname=None):
@@ -769,9 +774,9 @@ TWO_THETA:   10.0000000 10.0000000 10.0000000 10.0000000"""
         fout.close()
 
 @ValidateLarchPlugin
-def gsescan_group(fname, _larch=None, **kws):
+def gsescan_group(fname, _larch=None, bad=None, **kws):
     """simple mapping of EscanData file to larch groups"""
-    escan = EscanData(fname)
+    escan = EscanData(fname, bad=bad)
     if escan.status is not None:
         raise ValueError('Not a valid Escan Data file')
 
@@ -917,8 +922,7 @@ def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=N
 
     return sg
 
-
 def registerLarchPlugin():
     return ('_io', {'read_gsescan': gsescan_group,
                     'gsescan_dtcorrect': gsescan_deadtime_correct,
-    })
+                    })
