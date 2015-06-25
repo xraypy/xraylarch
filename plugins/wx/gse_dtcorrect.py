@@ -65,7 +65,7 @@ class DTCorrectFrame(wx.Frame):
         self.larch = _larch
         self.subframes = {}
 
-        self.SetSize((380, 180))
+        self.SetMinSize((380, 380))
         self.SetFont(Font(10))
 
         self.config = {'chdir_on_fileopen': True}
@@ -104,32 +104,46 @@ class DTCorrectFrame(wx.Frame):
                         'Could not create directory %s' % dirname,
                         "could not create directory")
                     return
+            badchans = self.badchans_wid.GetValue().strip()
+            bad_channels = []
+            if len(badchans)  > 0:
+                bad_channels = [int(i.strip()) for i in badchans.split(',')]
+
+            print ' Bad Channels : ', bad_channels
             for fname in dlg.GetFilenames():
                 corr_fcn = gsescan_deadtime_correct
                 if is_GSEXDI(fname):
                     corr_fcn = gsexdi_deadtime_correct
-                corr_fcn(fname, roiname, subdir=dirname, _larch=self.larch)
+                corr_fcn(fname, roiname, subdir=dirname, bad=bad_channels,
+                         _larch=self.larch)
 
     def createMainPanel(self):
         panel = wx.Panel(self)
         sizer = wx.GridBagSizer(5, 4)
 
-        lab1 = SimpleText(panel, ' Element / ROI Name')
-        lab2 = SimpleText(panel, ' Output Folder:')
-        lab3 = SimpleText(panel, ' Select Files:')
+        lab_roi = SimpleText(panel, ' Element / ROI Name')
+        lab_out = SimpleText(panel, ' Output Folder:')
+        lab_bad = SimpleText(panel, ' Bad Channels:')
+        lab_sel = SimpleText(panel, ' Select Files:')
+
         self.roi_wid = wx.TextCtrl(panel, -1, '', size=(200, -1))
         self.dir_wid = wx.TextCtrl(panel, -1, 'DT_Corrected', size=(200, -1))
+        self.badchans_wid = wx.TextCtrl(panel, -1, ' ', size=(200, -1))
+
         self.sel_wid = Button(panel, 'Browse', size=(100, -1),
                                 action=self.onBrowse)
 
         ir = 0
-        sizer.Add(lab1,         (ir, 0), (1, 1), LCEN, 2)
+        sizer.Add(lab_roi,       (ir, 0), (1, 1), LCEN, 2)
         sizer.Add(self.roi_wid, (ir, 1), (1, 1), LCEN, 2)
         ir += 1
-        sizer.Add(lab2,          (ir, 0), (1, 1), LCEN, 2)
+        sizer.Add(lab_out,       (ir, 0), (1, 1), LCEN, 2)
         sizer.Add(self.dir_wid,  (ir, 1), (1, 1), LCEN, 2)
         ir += 1
-        sizer.Add(lab3,          (ir, 0), (1, 1), LCEN, 2)
+        sizer.Add(lab_bad,            (ir, 0), (1, 1), LCEN, 2)
+        sizer.Add(self.badchans_wid,  (ir, 1), (1, 1), LCEN, 2)        
+        ir += 1
+        sizer.Add(lab_sel,       (ir, 0), (1, 1), LCEN, 2)
         sizer.Add(self.sel_wid,  (ir, 1), (1, 1), LCEN, 2)
 
         pack(panel, sizer)
