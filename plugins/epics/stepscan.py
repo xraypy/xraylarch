@@ -320,11 +320,20 @@ class LarchStepScan(object):
             self.datafile.write_data(breakpoint=breakpoint)
         return out
 
+
     def pre_scan(self, **kws):
         if self.debug: print('Stepscan PRE SCAN ')
         for (desc, pv) in self.extra_pvs:
             pv.connect()
-        return [m(scan=self) for m in self.pre_scan_methods]
+        out = [m(scan=self) for m in self.pre_scan_methods]
+        prescan_proc = None
+        try:
+            prescan_proc = self._larch.symtable.get_symbol('pre_scan_command')
+        except NameError:
+            pass
+        if prescan_proc is not None:
+            out.append( prescan_proc(scan=self) )
+        return out
 
     def post_scan(self):
         if self.debug: print('Stepscan POST SCAN ')
