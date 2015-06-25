@@ -823,10 +823,11 @@ GSE_header_BMD = ['# XDI/1.0  GSE/1.0',
 
 
 @ValidateLarchPlugin
-def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=None):
+def gsescan_deadtime_correct(fname, channelname, subdir='DT_Corrected',
+                             bad=None, _larch=None):
     """convert GSE ESCAN fluorescence XAFS scans to dead time corrected files"""
     try:
-       sg = gsescan_group(fname, _larch=_larch)
+       sg = gsescan_group(fname, bad=bad, _larch=_larch)
     except:
       print('%s is not a valid ESCAN file' % fname)
       return
