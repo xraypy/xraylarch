@@ -17,7 +17,7 @@ use_plugin_path('xrfmap')
 from xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
 
 @ValidateLarchPlugin
-def read_gsexdi(fname, _larch=None, nmca=4, **kws):
+def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     """Read GSE XDI Scan Data to larch group,
     summing ROI data for MCAs and apply deadtime corrections
     """
@@ -27,6 +27,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, **kws):
     group._xdi = xdi
     group.filename = fname
     group.npts = xdi.npts
+    group.bad_channels = bad
     group.dtc_taus = XSPRESS3_TAUS
     if _larch.symtable.has_symbol('_sys.gsecars.xspress3_taus'):
         group.dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
@@ -130,13 +131,14 @@ def is_GSEXDI(filename):
 
 
 @ValidateLarchPlugin
-def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected', _larch=None):
+def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected', 
+                            bad=None, _larch=None):
     """convert GSE XDI fluorescence XAFS scans to dead time corrected files"""
     if not is_GSEXDI(fname):
         print("'%s' is not a GSE XDI scan file\n" % fname)
         return
 
-    xdi = read_gsexdi(fname, _larch=_larch)
+    xdi = read_gsexdi(fname, bad=bad, _larch=_larch)
     out = Group()
     out.orig_filename = fname
     for attr in ('energy', 'i0', 'i1', 'i2',
