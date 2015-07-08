@@ -94,6 +94,9 @@ class MapImageFrame(ImageFrame):
             self.panel.xdata = kws['x']
         if 'y' in kws:
             self.panel.ydata = kws['y']
+        if self.panel.conf.auto_contrast:
+            self.set_contrast_levels()
+
 
     def prof_motion(self, event=None):
         if not event.inaxes or self.zoom_ini is None:
@@ -254,16 +257,6 @@ class MapImageFrame(ImageFrame):
         elif 2 == event.GetInt():
             self.panel.cursor_mode = 'prof'
 
-    def enhance_constrast(self, level):
-        map = self.map
-        if level == 1:  # 'Stretch Contrast'
-            # Contrast stretching
-            p02 = np.percentile(map,  2)
-            p98 = np.percentile(map, 98)
-            map = exposure.rescale_intensity(map, in_range=(p02, p98))
-        elif level == 2: #     'Histogram Equalization',
-            map = exposure.equalize_hist(map.astype('int'))
-        self.cmap = map
 
     def report_leftdown(self, event=None):
         if event is None:
@@ -308,28 +301,6 @@ class MapImageFrame(ImageFrame):
     def report_motion(self, event=None):
         return
 
-    def onContrastMode(self, event=None):
-        contrast =  event.GetInt()
-        if not HAS_SKIMAGE:
-            return
-        if self.map is None:
-            self.map = self.panel.conf.data
-
-        map = self.map
-        if contrast > 0:
-            self.cmap = None
-            _thread = Thread(target=self.enhance_constrast, args=(contrast,))
-            _thread.start()
-            while self.cmap is None:
-                time.sleep(0.1)
-                try:
-                    wx.Yield()
-                except:
-                    pass
-            _thread.join()
-            map = self.cmap
-        ImageFrame.display(self, map)
-        self.cmap = None
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
