@@ -10,8 +10,7 @@ import numpy as np
 from larch import Group, ValidateLarchPlugin, use_plugin_path
 from larch.utils import OrderedDict
 
-
-from larch_plugins.io import XDIFile, iso8601_time
+from larch_plugins.io import XDIFile, XDIFileException, iso8601_time
 
 use_plugin_path('xrfmap')
 from xsp3_hdf5 import XSPRESS3_TAUS, estimate_icr
@@ -21,9 +20,10 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
     """Read GSE XDI Scan Data to larch group,
     summing ROI data for MCAs and apply deadtime corrections
     """
-    xdi = XDIFile(str(fname))
     group = _larch.symtable.create_group()
     group.__name__ ='GSE XDI Data file %s' % fname
+    xdi = XDIFile(str(fname))
+
     group._xdi = xdi
     group.filename = fname
     group.npts = xdi.npts
@@ -138,9 +138,14 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
         print("'%s' is not a GSE XDI scan file\n" % fname)
         return
 
-    xdi = read_gsexdi(fname, bad=bad, _larch=_larch)
     out = Group()
     out.orig_filename = fname
+    try:
+        xdi = read_gsexdi(fname, bad=bad, _larch=_larch)     
+    except:
+        print 'Could not read XDI file ', fname
+        return 
+
     for attr in ('energy', 'i0', 'i1', 'i2',
                  'counttime',  'scan_start_time', 'scan_end_time'):
         if hasattr(xdi, attr):
