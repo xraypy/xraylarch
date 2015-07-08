@@ -25,7 +25,7 @@ from wxmplot.imagepanel import ImagePanel
 from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex
 
-from wxutils import (SimpleText, Button, Popup)
+from wxutils import (SimpleText, TextCtrl, Button, Popup)
 
 HAS_SKIMAGE = False
 try:
@@ -292,15 +292,13 @@ class MapImageFrame(ImageFrame):
             else:
                 dval = "%.4g" % dval
             if pan.xdata is not None and pan.ydata is not None:
-                self.this_point = (pan.xlab, pan.xdata[ix],
-                                   pan.ylab, pan.ydata[iy])
+                self.this_point = (pan.xdata[ix], pan.ydata[iy])
 
             msg = "Pixel [%i, %i], %s, Intensity=%s " % (ix, iy, pos, dval)
         self.panel.write_message(msg, panel=0)
 
     def report_motion(self, event=None):
         return
-
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
@@ -324,11 +322,53 @@ class MapImageFrame(ImageFrame):
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
         if isGSECARS_Domain():
+            self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
+            label   = SimpleText(panel, label='Position name:', 
+                                 size=(-1, -1))
+            sbutton = Button(panel, 'Save Position', size=(100, -1),
+                             action=self.onSavePixelPosition)
+            mbutton = Button(panel, 'Move to Position', size=(100, -1),
+                             action=self.onMoveToPixel)
 
-            s = Button(panel, 'Move to Pixel', size=(140, -1),
-                       action=self.onMoveToPixel)
-            sizer.Add(s, (irow+1, 1), (1, 2), labstyle, 3)
+            sizer.Add(label,         (irow+1, 0), (1, 1), labstyle, 3)
+            sizer.Add(self.pos_name, (irow+1, 1), (1, 3), labstyle, 3)
+            sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
+            sizer.Add(mbutton,       (irow+3, 0), (1, 2), labstyle, 3)
+            sbutton.Disable()
 
     def onMoveToPixel(self, event=None):
         if self.this_point is not None and self.move_callback is not None:
             self.move_callback(*self.this_point)
+
+    def onSavePixelPosition(self, event=None):
+        if self.this_point is not None:
+
+            xrfmap = self.xrmfile.xrfmap
+            pos_addrs = [str(x) for x in xrfmap['config/positioners'].keys()]
+            pos_label = [str(x.value) for x in xrfmap['config/positioners'].values()]
+            env_names = list(xrfmap['config/environ/name'])
+            env_vals  = list(xrfmap['config/environ/value'])
+            env_addrs = list(xrfmap['config/environ/address'])
+            spos1 = str(xrfmap['config/scan/pos1'].value)
+            spos2 = str(xrfmap['config/scan/pos2'].value)
+
+            position = {}
+            for p in pos_addrs:
+                position[p] = None
+
+            position[spos1] = self.this_point[0]
+            position[spos2] = self.this_point[1]
+
+            for name, addr, val in zip(env_names, env_addrs, env_vals):
+                name = str(name).lower()
+                addr = str(addr)
+                if addr.endswith('.VAL'):
+                    addr = addr[:-4]
+                if addr in pos_addrs and position[addr] is None:
+                    position[addr] = float(val)
+
+            for key, val in position.items():
+                print key, val
+                
+            print 'Position Not Saved Yet! '
+
