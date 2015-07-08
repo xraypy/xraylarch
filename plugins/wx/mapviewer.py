@@ -1245,7 +1245,7 @@ class MapViewerFrame(wx.Frame):
             self.xrfdisplay.panel.clear()
             self.xrfdisplay.panel.reset_config()
 
-    def onMoveToPixel(self, pos1, val1, pos2, val2):
+    def onMoveToPixel(self, xval, yval):
         if not HAS_EPICS:
             return
 
@@ -1253,15 +1253,17 @@ class MapViewerFrame(wx.Frame):
         pos_addrs = [str(x) for x in xrfmap['config/positioners'].keys()]
         pos_label = [str(x.value) for x in xrfmap['config/positioners'].values()]
 
-        i1 = pos_label.index(pos1)
-        i2 = pos_label.index(pos2)
-        msg = "%s = %.4f, %s = %.4f?" % (pos_label[i1], val1,
-                                         pos_label[i2], val2)
+        pos1 = str(xrfmap['config/scan/pos1'].value)
+        pos2 = str(xrfmap['config/scan/pos2'].value)
+        i1 = pos_addrs.index(pos1)
+        i2 = pos_addrs.index(pos2)
+        msg = "%s(%s) = %.4f, %s(%s) = %.4f?" % (pos_label[i1], pos_addrs[i1], xval,
+                                                 pos_label[i2], pos_addrs[i2], yval)
         move = Popup(self, "Really move stages to\n   %s?" % msg,
                      'move stages to pixel?', style=wx.YES_NO)
         if move:
-            caput(pos_addrs[i1], val1)
-            caput(pos_addrs[i2], val2)
+            caput(pos_addrs[i1], xval)
+            caput(pos_addrs[i2], yval)
 
     def add_imdisplay(self, title, det=None):
         on_lasso = partial(self.lassoHandler, det=det)
