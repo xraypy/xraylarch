@@ -28,8 +28,6 @@ from wxmplot.colors import rgb2hex
 
 from wxutils import (SimpleText, TextCtrl, Button, Popup)
 
-except ImportError:
-    pass
 
 CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to zoom to rectangular box'),
