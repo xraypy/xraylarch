@@ -1047,8 +1047,10 @@ class InstrumentDB(object):
         """
         inst = self.get_instrument(instname)
         cls, table = self.scandb.get_table('positions')
-        out = self.scandb.query(cls).filter(cls.instruments_id==inst.id).all()
-        return [p.name for p in out]
+        q = self.scandb.query(cls)
+        q = q.filter(cls.instruments_id==inst.id)
+        q = q.order_by(cls.modify_time)
+        return [p.name for p in q.all()]
 
     def restore_position(self, instname, posname, wait=False, timeout=5.0,
                          exclude_pvs=None):
