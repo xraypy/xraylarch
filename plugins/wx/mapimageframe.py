@@ -19,6 +19,7 @@ from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 
 import larch
+from larch_plugins.epics import pv_fullname
 
 from wxmplot import ImageFrame, PlotFrame
 from wxmplot.imagepanel import ImagePanel
@@ -26,12 +27,6 @@ from wxmplot.imageconf import ColorMap_List, Interp_List
 from wxmplot.colors import rgb2hex
 
 from wxutils import (SimpleText, TextCtrl, Button, Popup)
-
-HAS_SKIMAGE = False
-try:
-    import skimage
-    from skimage import exposure
-    HAS_SKIMAGE = True
 
 except ImportError:
     pass
@@ -42,7 +37,6 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                                'Left-Drag to select points freehand'),
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
-
 
 def isGSECARS_Domain():
     return 'cars.aps.anl.gov' in socket.getfqdn().lower()
@@ -323,7 +317,7 @@ class MapImageFrame(ImageFrame):
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
         if isGSECARS_Domain():
             self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
-            label   = SimpleText(panel, label='Position name:', 
+            label   = SimpleText(panel, label='Position name:',
                                  size=(-1, -1))
             sbutton = Button(panel, 'Save Position', size=(100, -1),
                              action=self.onSavePixelPosition)
@@ -342,33 +336,24 @@ class MapImageFrame(ImageFrame):
 
     def onSavePixelPosition(self, event=None):
         if self.this_point is not None:
-
-            xrfmap = self.xrmfile.xrfmap
-            pos_addrs = [str(x) for x in xrfmap['config/positioners'].keys()]
-            pos_label = [str(x.value) for x in xrfmap['config/positioners'].values()]
-            env_names = list(xrfmap['config/environ/name'])
-            env_vals  = list(xrfmap['config/environ/value'])
-            env_addrs = list(xrfmap['config/environ/address'])
-            spos1 = str(xrfmap['config/scan/pos1'].value)
-            spos2 = str(xrfmap['config/scan/pos2'].value)
+            pvn  = pv_fullname
+            mapconf    = self.xrmfile.xrfmap['config']
+            pos_addrs = [pvn(x) for x in mapconf['positioners']]
+            env_addrs = [pvn(x) for x in mapconf['environ/address']]
+            env_vals  = [str(x) for x in mapconf['environ/value']]
 
             position = {}
             for p in pos_addrs:
                 position[p] = None
 
-            position[spos1] = self.this_point[0]
-            position[spos2] = self.this_point[1]
+            position[pvn(mapconf['scan/pos1'].value)] = self.this_point[0]
+            position[pvn(mapconf['scan/pos2'].value)] = self.this_point[1]
 
-            for name, addr, val in zip(env_names, env_addrs, env_vals):
-                name = str(name).lower()
-                addr = str(addr)
-                if addr.endswith('.VAL'):
-                    addr = addr[:-4]
+            for addr, val in zip(env_addrs, env_vals):
                 if addr in pos_addrs and position[addr] is None:
                     position[addr] = float(val)
 
             for key, val in position.items():
                 print key, val
-                
-            print 'Position Not Saved Yet! '
 
+            print 'Position Not Saved Yet! Need DB connection'
