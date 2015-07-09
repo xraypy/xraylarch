@@ -580,7 +580,7 @@ class XRFDisplayFrame(wx.Frame):
         names = [str(r.name.lower()) for r in self.mca.rois]
         if str(roiname.lower()) in names:
             msg = "Overwrite Definition of ROI {:s}?".format(roiname)
-            if Popup(self, msg, 'Overwrite ROI?', style=wx.YES_NO) != wx.ID_YES:
+            if (wx.ID_YES != Popup(self, msg, 'Overwrite ROI?', style=wx.YES_NO)):
                 return False
 
         left, right  = self.xmarker_left, self.xmarker_right
@@ -600,7 +600,7 @@ class XRFDisplayFrame(wx.Frame):
     def onConfirmDelROI(self, event=None):
         roiname = self.wids['roiname'].GetValue()
         msg = "Delete ROI {:s}?".format(roiname)
-        if Popup(self, msg,   'Delete ROI?', style=wx.YES_NO) == wx.ID_YES:
+        if (wx.ID_YES == Popup(self, msg,   'Delete ROI?', style=wx.YES_NO)):
             self.onDelROI()
 
     def onRenameROI(self, event=None):
@@ -1265,8 +1265,8 @@ class XRFDisplayFrame(wx.Frame):
             read = True
             path = dlg.GetPath().replace('\\', '/')
             if path in self.filemap:
-                read = Popup(self, "Re-read file '%s'?" % path, 'Re-read file?',
-                             style=wx.YES_NO)
+                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path, 
+                                           'Re-read file?', style=wx.YES_NO))
         dlg.Destroy()
 
         if read:
