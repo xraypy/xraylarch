@@ -123,8 +123,25 @@ pv_doc = """PV(pvname)
 
 def nullfcn(*args, **kwargs): return None
 
-plugins = {'PV': nullfcn, 'caget': nullfcn, 'caput': nullfcn, 'cainfo': nullfcn,
-           'pv_units': nullfcn, 'pv_fullname': nullfcn}
+def pv_fullname(name):
+    """ make sure an Epics PV name ends with .VAL or .SOMETHING!
+    
+    Parameters
+    ----------
+       pvname:   name of PV
+
+    Returns
+    -------
+       string with full PV name
+
+    """
+    name = str(name)
+    if '.' not in name:
+        name = "%s.VAL" % name
+    return name
+    
+plugins = {'PV': nullfcn, 'caget': nullfcn, 'caput': nullfcn, 
+           'cainfo': nullfcn, 'pv_units': nullfcn}
 
 try:
     import epics
@@ -166,25 +183,10 @@ else:
             units = default
         return units
 
-    def pv_fullname(name):
-        """ make sure an Epics PV name ends with .VAL or .SOMETHING!
+    plugins = {'PV': PV, 'caget': caget, 'caput': caput, 
+               'cainfo': cainfo, 'pv_units': pv_units}
 
-    Parameters
-    ----------
-       pvname:   name of PV
-
-    Returns
-    -------
-       string with full PV name
-
-    """
-        name = str(name)
-        if '.' not in name:
-            name = "%s.VAL" % name
-        return name
-
-    plugins = {'PV': PV, 'caget': caget, 'caput': caput, 'cainfo': cainfo,
-               'pv_units': pv_units, 'pv_fullname': pv_fullname}
+plugins['pv_fullname'] = pv_fullname
 
 def initializeLarchPlugin(_larch=None):
     """initialize _epics"""
