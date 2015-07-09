@@ -26,11 +26,13 @@ from sqlalchemy.orm.exc import  NoResultFound
 from sqlalchemy.dialects import sqlite, postgresql
 
 import epics
+import larch
 
 from larch import use_plugin_path, ValidateLarchPlugin
 use_plugin_path('io')
 from fileutils import strip_quotes, asciikeys
 use_plugin_path('epics')
+from epics_plugins import pv_fullname
 from scandb_schema import get_dbengine, create_scandb, map_scandb
 from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
                            Macros, Commands, ScanData, ScanPositioners,
@@ -43,12 +45,6 @@ from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
 MODNAME = '_scan'
 SCANDB_NAME = '%s._scandb' % MODNAME
 INSTDB_NAME = '%s._instdb' % MODNAME
-
-
-def normalize_pvname(name):
-    if  '.' not in name:
-        name = "%s.VAL"
-    return name
 
 class ScanDBException(Exception):
     """Scan Exception: General Errors"""
@@ -541,12 +537,12 @@ class ScanDB(object):
         """add positioner"""
         cls, table = self.get_table('scanpositioners')
         name = name.strip()
-        drivepv = normalize_pvname(drivepv)
+        drivepv = pv_fullname(drivepv)
         if readpv is not None:
-            readpv = normalize_pvname(readpv)
+            readpv = pv_fullname(readpv)
         epvlist = []
         if extrapvs is not None:
-            epvlist = [normalize_pvname(p) for p in extrapvs]
+            epvlist = [pv_fullname(p) for p in extrapvs]
         kws.update({'notes': notes, 'drivepv': drivepv,
                     'readpv': readpv, 'extrapvs':json.dumps(epvlist)})
 
@@ -568,12 +564,12 @@ class ScanDB(object):
         """add slewscan positioner"""
         cls, table = self.get_table('slewscanpositioners')
         name = name.strip()
-        drivepv = normalize_pvname(drivepv)
+        drivepv = pv_fullname(drivepv)
         if readpv is not None:
-            readpv = normalize_pvname(readpv)
+            readpv = pv_fullname(readpv)
         epvlist = []
         if extrapvs is not None:
-            epvlist = [normalize_pvname(p) for p in extrapvs]
+            epvlist = [pv_fullname(p) for p in extrapvs]
         kws.update({'notes': notes, 'drivepv': drivepv,
                     'readpv': readpv, 'extrapvs':json.dumps(evpvlist)})
 
@@ -600,7 +596,7 @@ class ScanDB(object):
         """add detector"""
         cls, table = self.get_table('scandetectors')
         name = name.strip()
-        pvname = normalize_pvname(pvname)
+        pvname = pv_fullname(pvname)
         kws.update({'pvname': pvname,
                     'kind': kind, 'options': options})
         row = self.__addRow(cls, ('name',), (name,), **kws)
@@ -623,7 +619,7 @@ class ScanDB(object):
     def add_counter(self, name, pvname, **kws):
         """add counter (non-triggered detector)"""
         cls, table = self.get_table('scancounters')
-        pvname = normalize_pvname(pvname)
+        pvname = pv_fullname(pvname)
         name = name.strip()
         kws.update({'pvname': pvname})
         row = self.__addRow(cls, ('name',), (name,), **kws)
@@ -648,7 +644,7 @@ class ScanDB(object):
         """add extra pv (recorded at breakpoints in scans"""
         cls, table = self.get_table('extrapvs')
         name = name.strip()
-        pvname = normalize_pvname(pvname)
+        pvname = pv_fullname(pvname)
         kws.update({'pvname': pvname, 'use': int(use)})
         row = self.__addRow(cls, ('name',), (name,), **kws)
         self.session.add(row)
@@ -660,7 +656,7 @@ class ScanDB(object):
         """add pv to PV table if not already there """
         if len(name) < 2:
             return
-        name = normalize_pvname(name)
+        name = pv_fullname(name)
         cls, table = self.get_table('pvs')
         vals  = self.query(table).filter(table.c.name == name).all()
         ismon = {False:0, True:1}[monitor]
@@ -685,7 +681,7 @@ class ScanDB(object):
     def get_pv(self, name):
         """return pv object from known PVs"""
         if len(name) > 2:
-            name = normalize_pvname(name)
+            name = pv_fullname(name)
             if name in self.pvs:
                 return self.pvs[name]
 
@@ -697,7 +693,7 @@ class ScanDB(object):
 
         _connect = []
         for name in names:
-            name = normalize_pvname(name)
+            name = pv_fullname(name)
             if len(name) < 2:
                 continue
             if name not in self.pvs:
@@ -713,7 +709,7 @@ class ScanDB(object):
 
     def record_monitorpv(self, pvname, value):
         """save value for monitor pvs
-        pvname = normalize_pvname(pvname)
+        pvname = pv_fullname(pvname)
         if pvname not in self.pvs:
             pv = self.add_pv(pvname, monitor=True)
 
@@ -729,7 +725,7 @@ class ScanDB(object):
     def get_monitorvalues(self, pvname, start_date=None, end_date=None):
         """get (value, time) pairs for a monitorpvs given a time range
 
-        pvname = normalize_pvname(pvname)
+        pvname = pv_fullname(pvname)
         if pvname not in self.pvs:
             pv = self.add_monitorpv(pvname)
             # self.pvs[pvname] = pv.id
@@ -974,13 +970,13 @@ class InstrumentDB(object):
             pos = pos_cls()
             pos.name = posname
             pos.instrument = inst
-            
+
         pos.modify_time = datetime.now()
         if image is not None:
             pos.image = image
         if notes is not None:
             pos.notes = notes
-                
+
         pvnames = [str(pv.name) for pv in inst.pvs]
 
         # check for missing pvs in values
