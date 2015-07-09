@@ -1259,9 +1259,9 @@ class MapViewerFrame(wx.Frame):
         i2 = pos_addrs.index(pos2)
         msg = "%s(%s) = %.4f, %s(%s) = %.4f?" % (pos_label[i1], pos_addrs[i1], xval,
                                                  pos_label[i2], pos_addrs[i2], yval)
-        move = Popup(self, "Really move stages to\n   %s?" % msg,
-                     'move stages to pixel?', style=wx.YES_NO)
-        if move:
+
+        if (wx.ID_YES == Popup(self, "Really move stages to\n   %s?" % msg,
+                               'move stages to pixel?', style=wx.YES_NO)):
             caput(pos_addrs[i1], xval)
             caput(pos_addrs[i2], yval)
 
@@ -1502,8 +1502,8 @@ class MapViewerFrame(wx.Frame):
             read = True
             path = dlg.GetPath().replace('\\', '/')
             if path in self.filemap:
-                read = Popup(self, "Re-read file '%s'?" % path, 'Re-read file?',
-                             style=wx.YES_NO)
+                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path, 
+                                           'Re-read file?', style=wx.YES_NO))
 
         dlg.Destroy()
 
@@ -1601,8 +1601,9 @@ class MapViewerFrame(wx.Frame):
         this is important!! HDF5 files can be corrupted.
         """
         if not self.filemap[fname].check_hostid():
-            if Popup(self, NOT_OWNER_MSG % fname,
-                     'Not Owner of HDF5 File', style=wx.YES_NO):
+            if (wx.ID_YES == Popup(self, NOT_OWNER_MSG % fname,
+                                   'Not Owner of HDF5 File', 
+                                   style=wx.YES_NO)):
                 self.filemap[fname].claim_hostid()
         return self.filemap[fname].check_hostid()
 
