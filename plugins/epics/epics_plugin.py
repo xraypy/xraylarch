@@ -3,7 +3,7 @@
 Use Epics Channel Access
 """
 
-MODDOC = '''
+MODDOC = """
 Functions for Epics Channel Access, using pyepics interface.
 For further details, consult the pyepics documentation
 
@@ -24,7 +24,11 @@ For further details, consult the pyepics documentation
   PV(pvname)
            create a Process Variable object with get()/put()
            and several other methods.
-'''
+  pv_units(pvname)
+           return units for PV
+  pv_fullname(pvname)
+           return fullname (that is, including '.VAL' if needed) for PV
+"""
 
 caget_doc = """caget(pvname, as_string=False, use_numpy=True, timeout=None)
 
@@ -50,7 +54,7 @@ caget_doc = """caget(pvname, as_string=False, use_numpy=True, timeout=None)
     Notes
     ------
       1. The default timeout is 0.5 sec for scalar PVs.
-
+%s
 """
 
 caput_doc = """caput(pvname, value, wait=False, timeout=60)
@@ -78,6 +82,7 @@ caput_doc = """caput(pvname, value, wait=False, timeout=60)
     -----
      1.  waiting may take a long time, as it waits for all processing
          to complete (motor move, detector acquire to finish, etc).
+%s
 """
 
 cainfo_doc = """cainfo(pvname, print_out=True)
@@ -97,8 +102,8 @@ cainfo_doc = """cainfo(pvname, print_out=True)
     Examples
     --------
       cainfo('xx.VAL')
-
-    """
+%s    
+   """
 
 pv_doc = """PV(pvname)
 
@@ -118,10 +123,24 @@ pv_doc = """PV(pvname)
     Notes
     -----
       A PV has many attributes and methods.  Consult the documentation.
+%s
 """
 
 
-def nullfcn(*args, **kwargs): return None
+def nullfcn(*args, **kwargs): 
+    return None
+
+def caget(pvname, _larch=None, **kws):
+    return nullfcn(pvname, **kws)
+
+def caput(pvname, value, _larch=None, **kws):
+    return nullfcn(pvname, value, **kws)
+
+def cainfo(pvname, print_out=True, _larch=None):
+    return nullfcn(pvname, print_out=print_out)
+
+def PV(pvname, _larch=None, **kws):
+    return nullfcn(pvname, **kws)
 
 def pv_fullname(name):
     """ make sure an Epics PV name ends with .VAL or .SOMETHING!
@@ -139,31 +158,9 @@ def pv_fullname(name):
     if '.' not in name:
         name = "%s.VAL" % name
     return name
-    
-plugins = {'PV': nullfcn, 'caget': nullfcn, 'caput': nullfcn, 
-           'cainfo': nullfcn, 'pv_units': nullfcn}
 
-try:
-    import epics
-except:
-    pass
-else:
-    def caget(pvname, _larch=None, **kws):
-        return epics.caget(pvname, **kws)
-    def caput(pvname, value, _larch=None, **kws):
-        return epics.caput(pvname, value, **kws)
-    def cainfo(pvname, print_out=True, _larch=None):
-        return epics.cainfo(pvname, print_out=print_out)
-    def PV(pvname, _larch=None, **kws):
-        return epics.get_pv(pvname, **kws)
-
-    caget.__doc__ = caget_doc
-    caput.__doc__ = caput_doc
-    cainfo.__doc__ = cainfo_doc
-    PV.__doc__ = pv_doc
-
-    def pv_units(pv, default=''):
-        """get units for pv object, with optional default value
+def pv_units(pv, default=''):
+    """get units for pv object, with optional default value
 
     Parameters
     ----------
@@ -175,22 +172,53 @@ else:
        string with units
 
     """
-        try:
-            units = pv.units
-        except:
-            units = ''
-        if units in (None, ''):
-            units = default
-        return units
+    try:
+        units = pv.units
+    except:
+        units = ''
+    if units in (None, ''):
+        units = default
+    return units
 
-    plugins = {'PV': PV, 'caget': caget, 'caput': caput, 
-               'cainfo': cainfo, 'pv_units': pv_units}
 
-plugins['pv_fullname'] = pv_fullname
+msg = """
+    !!! WARNING: !!!
+    ---------------- 
+       epics not installed!  Function will return None!
+"""
+
+try:
+    import epics
+    msg = ''
+except:
+    pass
+else:
+    def caget(pvname, _larch=None, **kws):
+        return epics.caget(pvname, **kws)
+
+    def caput(pvname, value, _larch=None, **kws):
+        return epics.caput(pvname, value, **kws)
+
+    def cainfo(pvname, print_out=True, _larch=None):
+        return epics.cainfo(pvname, print_out=print_out)
+
+    def PV(pvname, _larch=None, **kws):
+        return epics.get_pv(pvname, **kws)
+
+caget.__doc__ = caget_doc % msg
+caput.__doc__ = caput_doc % msg
+cainfo.__doc__ = cainfo_doc % msg
+PV.__doc__ = pv_doc % msg
 
 def initializeLarchPlugin(_larch=None):
     """initialize _epics"""
     _larch.symtable._epics.__doc__ = MODDOC
 
 def registerLarchPlugin():
-    return ('_epics', plugins)
+    return ('_epics', {'PV': PV, 
+                       'caget': caget, 
+                       'caput': caput, 
+                       'cainfo': cainfo, 
+                       'pv_units': pv_units,
+                       'pv_fullname': pv_fullname})
+
