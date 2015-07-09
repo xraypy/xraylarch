@@ -178,9 +178,9 @@ else:
        string with full PV name
 
     """
-
-        if  '.' not in name:
-            name = "%s.VAL"
+        name = str(name)
+        if '.' not in name:
+            name = "%s.VAL" % name
         return name
 
     plugins = {'PV': PV, 'caget': caget, 'caput': caput, 'cainfo': cainfo,
