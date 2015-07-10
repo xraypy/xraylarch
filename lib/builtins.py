@@ -290,8 +290,8 @@ def _addplugin(plugin, _larch=None, **kws):
     if not _larch.symtable._sys.import_ok:
         return
 
-    if not hasattr(_sysconf, 'plugin_paths'):
-        _sysconf.plugin_paths = site_config.plugins_path
+    if not hasattr(_sysconf, 'plugins_path'):
+        _sysconf.plugins_path = site_config.plugins_path
 
     def _find_plugin(plugin, p_path):
         """find the plugin from path
