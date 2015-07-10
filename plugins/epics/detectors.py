@@ -641,7 +641,7 @@ class Xspress3Counter(DeviceCounter):
             roidata[roiname.lower().strip()] = (False, roiname, -1, -1)
         if len(roidata) < 4:
             roidata['ocr'] = (True, 'OutputCounts', 25, nmax-25)
-        for iroi in range(1, self.nrois+1):
+        for iroi in range(self.nrois):
             label = caget("%smca1.R%iNM" % (prefix, iroi))
             slab = label.lower().strip()
             if slab in roidata and not roidata[slab][0]:
