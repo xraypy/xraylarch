@@ -84,6 +84,7 @@ if 'LARCHDIR' in os.environ:
 else:
     larchdir = nativedir(abspath(join(home_dir, larchdir)))
 
+user_larchdir = larchdir
 ##
 ## names (and loading order) for core plugin modules
 core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
@@ -154,8 +155,8 @@ def make_larchdirs():
 
 modules_path = []
 plugins_path = []
-_path = [larchdir]
-
+_path = [user_larchdir, larchdir]
+print(" SITE CONFIG  " , _path)
 if 'LARCHPATH' in os.environ:
     _path.extend([nativedir(s) for s in os.environ['LARCHPATH'].split(':')])
 
