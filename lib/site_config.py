@@ -156,7 +156,7 @@ def make_larchdirs():
 modules_path = []
 plugins_path = []
 _path = [user_larchdir, larchdir]
-print(" SITE CONFIG  " , _path)
+# print(" SITE CONFIG  " , _path)
 if 'LARCHPATH' in os.environ:
     _path.extend([nativedir(s) for s in os.environ['LARCHPATH'].split(':')])
 
