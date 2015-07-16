@@ -2,8 +2,14 @@
 import sys
 import os
 import time
-from  epics import Device, caget, caput, poll
-from epics.devices.mca import MCA, ROI, OrderedDict
+
+try:
+    from  epics import Device, caget, caput, poll
+    from epics.devices.mca import MCA, ROI, OrderedDict
+    HAS_EPICS = True
+except ImportError:
+    HAS_EPICS = False
+
 import numpy
 
 from ConfigParser import ConfigParser
