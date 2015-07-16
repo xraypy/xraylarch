@@ -25,21 +25,29 @@ from sqlalchemy.orm.exc import  NoResultFound
 # needed for py2exe?
 from sqlalchemy.dialects import sqlite, postgresql
 
-import epics
 import larch
 
 from larch import use_plugin_path, ValidateLarchPlugin
+
 use_plugin_path('io')
 from fileutils import strip_quotes, asciikeys
-use_plugin_path('epics')
-from epics_plugin import pv_fullname
-from scandb_schema import get_dbengine, create_scandb, map_scandb
-from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
-                           Macros, Commands, ScanData, ScanPositioners,
-                           ScanCounters, ScanDetectors, ScanDefs,
-                           SlewScanPositioners, Positions, Position_PV,
-                           Instruments, Instrument_PV,
-                           Instrument_Precommands, Instrument_Postcommands)
+
+try:
+    import epics
+    use_plugin_path('epics')
+    from epics_plugin import pv_fullname
+    from scandb_schema import get_dbengine, create_scandb, map_scandb
+    from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
+                               Macros, Commands, ScanData, ScanPositioners,
+                               ScanCounters, ScanDetectors, ScanDefs,
+                               SlewScanPositioners, Positions, Position_PV,
+                               Instruments, Instrument_PV,
+                               Instrument_Precommands, Instrument_Postcommands)
+
+    HAS_EPICS = True
+except:
+    HAS_EPICS = False
+
 
 
 MODNAME = '_scan'
