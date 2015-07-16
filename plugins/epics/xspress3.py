@@ -9,7 +9,8 @@ try:
     HAS_EPICS = True
 except ImportError:
     HAS_EPICS = False
-
+    Device = object
+    
 import numpy
 
 from ConfigParser import ConfigParser
