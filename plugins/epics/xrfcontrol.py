@@ -41,8 +41,11 @@ from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
                               FILE_WILDCARDS, CalibrationFrame)
 
 larch.use_plugin_path('epics')
-from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3
-from scandb import ScanDB
+try:
+    from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3
+    from scandb import ScanDB
+except:
+    pass
 
 
 class DetectorSelectDialog(wx.Dialog):
