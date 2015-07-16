@@ -7,15 +7,14 @@ try:
     from epics.devices.mca import  MultiXMAP
     from epics.devices.struck import Struck
     from epics.wx import EpicsFunction, DelayedEpicsCallback
+    from larch_plugins.epics.xspress3 import Xspress3
     HAS_EPICS = True
-except ImportError:
+except (NameError, ImportError):
     HAS_EPICS = False
-
+    EpicsFunction = lambda fcn: fcn
+    DelayedEpicsCallback = lambda fcn: fcn
 
 from larch_plugins.xrf import MCA, ROI, Environment
-
-from larch_plugins.epics.xspress3 import Xspress3
-
 
 def save_gsemcafile(filename, mcas, rois, environ=None):
     """save GSECARS-style MCA file
