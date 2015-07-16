@@ -1,12 +1,19 @@
 import time
 import numpy as np
 from functools import partial
-import epics
-from epics.devices.mca import  MultiXMAP
-from epics.devices.struck import Struck
-from epics.wx import EpicsFunction, DelayedEpicsCallback
+
+try:
+    import epics
+    from epics.devices.mca import  MultiXMAP
+    from epics.devices.struck import Struck
+    from epics.wx import EpicsFunction, DelayedEpicsCallback
+    HAS_EPICS = True
+except ImportError:
+    HAS_EPICS = False
+
 
 from larch_plugins.xrf import MCA, ROI, Environment
+
 from larch_plugins.epics.xspress3 import Xspress3
 
 
