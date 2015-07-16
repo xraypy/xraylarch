@@ -1193,6 +1193,34 @@ def do_slewscan(scanname, filename='scan.001', comments='',
 def make_xafs_scan(label=None, e0=0, _larch=None, **kws):
     return XAFS_Scan(label=label, e0=e0, _larch=_larch, **kws)
 
+@ValidateLarchPlugin
+def get_dbinfo(key, default=None, as_int=False, as_bool=False,
+               full_row=False, _larch=None, **kws):
+    """get a value for a keyword in the scan info table,
+    where most status information is kept.
+    
+    Arguments
+    ---------
+     key        name of data to look up
+     default    (default None) value to return if key is not found
+     as_int     (default False) convert to integer
+     as_bool    (default False) convert to bool
+     full_row   (default False) return full row, not just value
+
+    Notes
+    -----   
+     1.  if this key doesn't exist, it will be added with the default
+         value and the default value will be returned.
+     2.  the full row will include notes, create_time, modify_time
+
+    """
+    if _larch.symtable._scan._scandb is None:
+        print('need to connect to scandb!')
+        return
+    get_info = _larch.symtable._scan._scandb.get_info
+    return get_info(key, default=default, full_row=full_row,
+                    as_int=as_int, as_bool=as_bool, **kws)
+
 def initializeLarchPlugin(_larch=None):
     """initialize _scan"""
     if not _larch.symtable.has_group(MODNAME):
@@ -1207,4 +1235,5 @@ def registerLarchPlugin():
                       'do_scan': do_scan,
                       'do_slewscan': do_slewscan,
                       'do_fastmap':  do_slewscan,
+                      'get_dbinfo': get_dbinfo,                       
                       })
