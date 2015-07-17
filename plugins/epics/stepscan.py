@@ -924,9 +924,9 @@ class XAFS_Scan(LarchStepScan):
         if use_k:
             en_arr = [e0 + ktoe(v) for v in en_arr]
         elif relative:
-            en_arr = [e0 +    v    for v in en_arr]            
+            en_arr = [e0 +    v    for v in en_arr]
 
-        # check that all energy values in this region are 
+        # check that all energy values in this region are
         # greater than previously defined regions
         en_arr.sort()
         min_energy = min_estep
@@ -1091,16 +1091,24 @@ def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
     return scan
 
 @ValidateLarchPlugin
-def scan_from_db(name, filename='scan.001', _larch=None):
+def scan_from_db(name, filename='scan.001', timeout=5.0, _larch=None):
     """(PRIVATE)
 
     get scan definition from ScanDB
+
+    timeout is for db lookup
     """
     if _larch.symtable._scan._scandb is None:
         return
     sdb = _larch.symtable._scan._scandb
     rois = json.loads(sdb.get_info('rois'))
-    scandef = sdb.get_scandef(name)
+    t0 = time.time()
+    while time.time()-t0 < timeout:
+        scandef = sdb.get_scandef(name)
+        if scandef is not None:
+            break
+        time.sleep(0.25)
+
     if scandef is None:
         raise ScanDBException("no scan definition '%s' found" % name)
 
@@ -1198,7 +1206,7 @@ def get_dbinfo(key, default=None, as_int=False, as_bool=False,
                full_row=False, _larch=None, **kws):
     """get a value for a keyword in the scan info table,
     where most status information is kept.
-    
+
     Arguments
     ---------
      key        name of data to look up
@@ -1208,7 +1216,7 @@ def get_dbinfo(key, default=None, as_int=False, as_bool=False,
      full_row   (default False) return full row, not just value
 
     Notes
-    -----   
+    -----
      1.  if this key doesn't exist, it will be added with the default
          value and the default value will be returned.
      2.  the full row will include notes, create_time, modify_time
@@ -1235,5 +1243,5 @@ def registerLarchPlugin():
                       'do_scan': do_scan,
                       'do_slewscan': do_slewscan,
                       'do_fastmap':  do_slewscan,
-                      'get_dbinfo': get_dbinfo,                       
+                      'get_dbinfo': get_dbinfo,
                       })
