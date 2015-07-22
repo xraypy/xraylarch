@@ -17,13 +17,13 @@ Needed Visualizations:
          lasso in correlations:  show XRF spectra, enhance map points
 """
 
-VERSION = '8 (28-October-2014)'
+VERSION = '9 (22-July-2015)'
 
 import os
 import sys
 import time
 import json
-
+import socket
 from functools import partial
 from threading import Thread
 
@@ -113,6 +113,11 @@ has already been read.
 
 DETCHOICES = ['sum', '1', '2', '3', '4']
 FRAMESTYLE = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL
+
+def isGSECARS_Domain():
+    return 'cars.aps.anl.gov' in socket.getfqdn().lower()
+
+DBCONN = None
 
 
 
@@ -1121,6 +1126,24 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_irow = 0
         self.h5convert_nrow = 0
         read_workdir('gsemap.dat')
+
+        self.at_beamline = isGSECARS_Domain()
+        self.scandb = None
+        self.instdb = None
+        self.inst_name = None
+
+        if self.at_beamline:
+            if True: # try:
+                sys.path.insert(0, '//cars5/Data/xas_user/bin')
+                from scan_credentials import conn as DBCONN
+                from larch_plugins.epics import ScanDB, InstrumentDB
+                self.scandb = ScanDB(**DBCONN)
+            else: # except:
+                print 'Error getting scandb '
+        if self.scandb is not None:
+            self.instdb = InstrumentDB(self.scandb)
+            self.inst_name = 'IDE_SampleStage'
+
         # self.onFolderSelect(evt=None)
 
     def CloseFile(self, filename, event=None):
@@ -1270,7 +1293,10 @@ class MapViewerFrame(wx.Frame):
         imframe = MapImageFrame(output_title=title,
                                 lasso_callback=on_lasso,
                                 cursor_labels = self.cursor_menulabels,
-                                move_callback=self.onMoveToPixel)
+                                move_callback=self.onMoveToPixel,
+                                at_beamline=self.at_beamline,
+                                instdb=self.instdb, inst_name=self.inst_name)
+
         self.im_displays.append(imframe)
 
     def display_map(self, map, title='', info='', x=None, y=None,
@@ -1295,7 +1321,10 @@ class MapViewerFrame(wx.Frame):
                 imd = MapImageFrame(output_title=title,
                                     lasso_callback=lasso_cb,
                                     cursor_labels = self.cursor_menulabels,
-                                    move_callback=self.onMoveToPixel)
+                                    move_callback=self.onMoveToPixel,
+                                    at_beamline=self.at_beamline,
+                                    instdb=self.instdb, inst_name=self.inst_name)
+
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                             subtitles=subtitles, det=det, xrmfile=xrmfile)
                 displayed = True
