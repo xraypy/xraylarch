@@ -7,7 +7,7 @@ import os
 import time
 from threading import Thread
 import socket
-
+from collections import OrderedDict
 from functools import partial
 import wx
 try:
@@ -36,23 +36,25 @@ CURSOR_MENULABELS = {'zoom':  ('Zoom to Rectangle\tCtrl+B',
                      'prof':  ('Select Line Profile\tCtrl+K',
                                'Left-Drag to select like for profile')}
 
-def isGSECARS_Domain():
-    return 'cars.aps.anl.gov' in socket.getfqdn().lower()
 
 class MapImageFrame(ImageFrame):
     """
     MatPlotlib Image Display on a wx.Frame, using ImagePanel
     """
 
-    def __init__(self, parent=None, size=None,
-                 lasso_callback=None, move_callback=None,
-                 mode='intensity',
+    def __init__(self, parent=None, size=None, mode='intensity',
+                 lasso_callback=None, move_callback=None,                 
                  show_xsections=False, cursor_labels=None,
+                 at_beamline=False, instdb=None,  inst_name=None,
                  output_title='Image',   **kws):
+
 
         self.det = None
         self.xrmfile = None
         self.map = None
+        self.at_beamline = at_beamline
+        self.instdb = instdb
+        self.inst_name = inst_name
 
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
@@ -313,20 +315,24 @@ class MapImageFrame(ImageFrame):
                                 1, wx.RA_SPECIFY_COLS)
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
-        if isGSECARS_Domain():
-            self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
-            label   = SimpleText(panel, label='Position name:',
-                                 size=(-1, -1))
-            sbutton = Button(panel, 'Save Position', size=(100, -1),
-                             action=self.onSavePixelPosition)
+        if self.at_beamline:
+            
+            if self.instdb is not None:
+                
+                self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
+                label   = SimpleText(panel, label='Position name:',
+                                     size=(-1, -1))
+                sbutton = Button(panel, 'Save Position', size=(100, -1),
+                                 action=self.onSavePixelPosition)
+                sbutton.Disable()
+                sizer.Add(label,         (irow+1, 0), (1, 1), labstyle, 3)
+                sizer.Add(self.pos_name, (irow+1, 1), (1, 3), labstyle, 3)
+                sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
+                irow  = irow + 2
+                
             mbutton = Button(panel, 'Move to Position', size=(100, -1),
-                             action=self.onMoveToPixel)
-
-            sizer.Add(label,         (irow+1, 0), (1, 1), labstyle, 3)
-            sizer.Add(self.pos_name, (irow+1, 1), (1, 3), labstyle, 3)
-            sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
-            sizer.Add(mbutton,       (irow+3, 0), (1, 2), labstyle, 3)
-            sbutton.Disable()
+                                 action=self.onMoveToPixel)
+            sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
 
     def onMoveToPixel(self, event=None):
         if self.this_point is not None and self.move_callback is not None:
@@ -340,18 +346,26 @@ class MapImageFrame(ImageFrame):
             env_addrs = [pvn(x) for x in mapconf['environ/address']]
             env_vals  = [str(x) for x in mapconf['environ/value']]
 
-            position = {}
+            position = OrderedDict()
             for p in pos_addrs:
                 position[p] = None
 
             position[pvn(mapconf['scan/pos1'].value)] = self.this_point[0]
             position[pvn(mapconf['scan/pos2'].value)] = self.this_point[1]
 
+
             for addr, val in zip(env_addrs, env_vals):
                 if addr in pos_addrs and position[addr] is None:
                     position[addr] = float(val)
 
-            for key, val in position.items():
-                print key, val
+            pos_name = self.pos_name.GetValue().strip()
+            print 'Save Position to DB '
+            print pos_name
+            print self.instdb, self.inst_name
+            print position
 
-            print 'Position Not Saved Yet! Need DB connection'
+            if len(pos_name) > 0 and self.instdb is not None: 
+                print  "from map: '%s'" % self.title
+                self.instdb.save_position(self.inst_name, pos_name, position,
+                                           notes="from map: '%s'" % self.title)
+           
