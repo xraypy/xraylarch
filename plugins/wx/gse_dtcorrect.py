@@ -33,7 +33,7 @@ from wxutils import (SimpleText, FloatCtrl, pack, Button, Popup,
                      CEN, RCEN, LCEN, FRAMESTYLE, Font)
 
 CEN |=  wx.ALL
-FILE_WILDCARDS = "Scan Data Files(*.0*,*.dat,*.xdi)|*.0*;*.dat;*.xdi|All files (*.*)|*.*"
+FILE_WILDCARDS = "Scan Data Files(*.0*,*.1*,*.dat,*.xdi)|*.0*;*.1*;*.dat;*.xdi|All files (*.*)|*.*"
 FNB_STYLE = flat_nb.FNB_NO_X_BUTTON|flat_nb.FNB_SMART_TABS|flat_nb.FNB_NO_NAV_BUTTONS
 
 
