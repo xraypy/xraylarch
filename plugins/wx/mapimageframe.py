@@ -7,7 +7,6 @@ import os
 import time
 from threading import Thread
 import socket
-import json
 from collections import OrderedDict
 from functools import partial
 import wx
@@ -18,9 +17,6 @@ except:
 import numpy as np
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-
-import larch
-from larch_plugins.epics import pv_fullname
 
 from wxmplot import ImageFrame, PlotFrame
 from wxmplot.imagepanel import ImagePanel
@@ -45,17 +41,18 @@ class MapImageFrame(ImageFrame):
 
     def __init__(self, parent=None, size=None, mode='intensity',
                  lasso_callback=None, move_callback=None,                 
+                 save_callback=None,  at_beamline=False, 
                  show_xsections=False, cursor_labels=None,
-                 at_beamline=False, instdb=None,  inst_name=None,
                  output_title='Image',   **kws):
 
+        # instdb=None,  inst_name=None,
 
         self.det = None
         self.xrmfile = None
         self.map = None
         self.at_beamline = at_beamline
-        self.instdb = instdb
-        self.inst_name = inst_name
+        self.move_callback = move_callback
+        self.save_callback = save_callback
 
         ImageFrame.__init__(self, parent=parent, size=size,
                             lasso_callback=lasso_callback,
@@ -68,7 +65,7 @@ class MapImageFrame(ImageFrame):
         self.panel.report_leftdown = self.report_leftdown
         self.panel.report_motion   = self.report_motion
 
-        self.move_callback = move_callback
+
         self.prof_plotter = None
         self.zoom_ini =  None
         self.lastpoint = [None, None]
@@ -233,16 +230,16 @@ class MapImageFrame(ImageFrame):
         if x is None or y is None:
             return
 
-        this_point = 0, 0, 0, 0, 0
+        _point = 0, 0, 0, 0, 0
         for ix, iy in self.prof_dat[1]:
             if (int(x) == ix and not self.prof_dat[0] or
                 int(x) == iy and self.prof_dat[0]):
-                this_point = (ix, iy,
+                _point = (ix, iy,
                               self.panel.xdata[ix],
                               self.panel.ydata[iy],
                               self.panel.conf.data[iy, ix])
 
-        msg = "Pixel [%i, %i], X, Y = [%.4f, %.4f], Intensity= %g" % this_point
+        msg = "Pixel [%i, %i], X, Y = [%.4f, %.4f], Intensity= %g" % _point
         write(msg,  panel=0)
 
     def onCursorMode(self, event=None):
@@ -287,7 +284,7 @@ class MapImageFrame(ImageFrame):
             else:
                 dval = "%.4g" % dval
             if pan.xdata is not None and pan.ydata is not None:
-                self.this_point = (pan.xdata[ix], pan.ydata[iy])
+                self.this_point = (ix, iy)
 
             msg = "Pixel [%i, %i], %s, Intensity=%s " % (ix, iy, pos, dval)
         self.panel.write_message(msg, panel=0)
@@ -297,6 +294,7 @@ class MapImageFrame(ImageFrame):
 
     def onLasso(self, data=None, selected=None, mask=None, **kws):
         if hasattr(self.lasso_callback , '__call__'):
+
             self.lasso_callback(data=data, selected=selected, mask=mask,
                                 xoff=self.xoff, yoff=self.yoff,
                                 det=self.det, xrmfile=self.xrmfile, **kws)
@@ -317,14 +315,12 @@ class MapImageFrame(ImageFrame):
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
         if self.at_beamline:
-            
-            if self.instdb is not None:
-                
+            if self.save_callback is not None:
                 self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
                 label   = SimpleText(panel, label='Position name:',
                                      size=(-1, -1))
                 sbutton = Button(panel, 'Save Position', size=(100, -1),
-                                 action=self.onSavePixelPosition)
+                                 action=self.onSavePixel)
                 sizer.Add(label,         (irow+1, 0), (1, 1), labstyle, 3)
                 sizer.Add(self.pos_name, (irow+1, 1), (1, 3), labstyle, 3)
                 sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
@@ -336,30 +332,16 @@ class MapImageFrame(ImageFrame):
 
     def onMoveToPixel(self, event=None):
         if self.this_point is not None and self.move_callback is not None:
-            self.move_callback(*self.this_point)
+            p1 = float(self.panel.xdata[self.this_point[0]])
+            p2 = float(self.panel.ydata[self.this_point[1]])
+            self.move_callback(p1, p2)
 
-    def onSavePixelPosition(self, event=None):
-        if self.this_point is not None:
-            pvn  = pv_fullname
-            mapconf    = self.xrmfile.xrfmap['config']
-            pos_addrs = [pvn(x) for x in mapconf['positioners']]
-            env_addrs = [pvn(x) for x in mapconf['environ/address']]
-            env_vals  = [str(x) for x in mapconf['environ/value']]
+    def onSavePixel(self, event=None):
+        if self.this_point is not None and self.save_callback is not None:
+            name  = str(self.pos_name.GetValue().strip())
+            ix, iy = self.this_point
+            x = float(self.panel.xdata[ix])
+            y = float(self.panel.ydata[iy])
+            self.save_callback(name, ix, iy, x=x, y=y, 
+                               title=self.title, datafile=self.xrmfile)
 
-            position = {}
-            for p in pos_addrs:
-                position[p] = None
-
-            position[pvn(mapconf['scan/pos1'].value)] = float(self.this_point[0])
-            position[pvn(mapconf['scan/pos2'].value)] = float(self.this_point[1])
-
-            for addr, val in zip(env_addrs, env_vals):
-                if addr in pos_addrs and position[addr] is None:
-                    position[addr] = float(val)
-
-            pos_name = str(self.pos_name.GetValue().strip())
-            notes = {'source': self.title}
-            if len(pos_name) > 0 and self.instdb is not None: 
-                self.instdb.save_position(self.inst_name, pos_name, position,
-                                          notes=json.dumps(notes))
-           
