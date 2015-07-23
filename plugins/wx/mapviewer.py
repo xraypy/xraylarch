@@ -1098,12 +1098,13 @@ class MapViewerFrame(wx.Frame):
     cursor_menulabels = {'lasso': ('Select Points for XRF Spectra\tCtrl+X',
                                    'Left-Drag to select points for XRF Spectra')}
 
-    def __init__(self, conffile=None,  _larch=None, **kwds):
+    def __init__(self, conffile=None,  use_scandb=False, _larch=None, **kwds):
 
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, None, -1, size=(700, 450),  **kwds)
 
         self.data = None
+        self.use_scandb = use_scandb
         self.filemap = {}
         self.im_displays = []
         self.plot_displays = []
@@ -1133,10 +1134,10 @@ class MapViewerFrame(wx.Frame):
         self.h5convert_nrow = 0
         read_workdir('gsemap.dat')
 
-        self.at_beamline = isGSECARS_Domain()
         self.scandb = None
         self.instdb = None
         self.inst_name = None
+        self.move_callback = None
 
     def CloseFile(self, filename, event=None):
         if filename in self.filemap:
@@ -1298,7 +1299,7 @@ class MapViewerFrame(wx.Frame):
                 p.update_xrfmap(xrfmap)
             
         # next, save file into database
-        if self.at_beamline and self.instdb is not None:
+        if self.use_scandb and self.instdb is not None:
             pvn  = pv_fullname
             conf = xrfmap['config']
             pos_addrs = [pvn(tval) for tval in conf['positioners']]
@@ -1337,9 +1338,8 @@ class MapViewerFrame(wx.Frame):
         imframe = MapImageFrame(output_title=title,
                                 lasso_callback=on_lasso,
                                 cursor_labels = self.cursor_menulabels,
-                                move_callback=self.onMoveToPixel,
-                                save_callback=self.onSavePixel,
-                                at_beamline=self.at_beamline)
+                                move_callback=self.move_callback,
+                                save_callback=self.onSavePixel)
 
         self.im_displays.append(imframe)
 
@@ -1365,9 +1365,8 @@ class MapViewerFrame(wx.Frame):
                 imd = MapImageFrame(output_title=title,
                                     lasso_callback=lasso_cb,
                                     cursor_labels = self.cursor_menulabels,
-                                    move_callback=self.onMoveToPixel,
-                                    save_callback=self.onSavePixel,
-                                    at_beamline=self.at_beamline)
+                                    move_callback=self.move_callback,
+                                    save_callback=self.onSavePixel)
 
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                             subtitles=subtitles, det=det, xrmfile=xrmfile)
@@ -1392,7 +1391,8 @@ class MapViewerFrame(wx.Frame):
         except:
             pass
 
-        if self.at_beamline:
+        if isGSECARS_Domain():
+            self.move_callback = self.onMoveToPixel
             try:
                 sys.path.insert(0, '//cars5/Data/xas_user/bin')
                 from scan_credentials import conn as DBCONN
@@ -1404,6 +1404,7 @@ class MapViewerFrame(wx.Frame):
                 self.inst_name = 'IDE_SampleStage'
             except:
                 print 'Could not connect to ScanDB'
+                self.use_scandb = False
 
     def ShowFile(self, evt=None, filename=None,  **kws):
         if filename is None and evt is not None:
@@ -1694,14 +1695,15 @@ class MapViewerFrame(wx.Frame):
         return self.filemap[fname].check_hostid()
 
 class MapViewer(wx.App):
-    def __init__(self, **kws):
+    def __init__(self, use_scandb=False, **kws):
+        self.use_scandb = use_scandb
         wx.App.__init__(self, **kws)
 
     def run(self):
         self.MainLoop()
 
     def createApp(self):
-        frame = MapViewerFrame()
+        frame = MapViewerFrame(use_scandb=self.use_scandb)
         frame.Show()
         self.SetTopWindow(frame)
 
