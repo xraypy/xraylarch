@@ -973,11 +973,10 @@ class InstrumentDB(object):
         posname = posname.strip()
         pos  = self.get_position(instname, posname)
         pos_cls, pos_table = self.scandb.get_table('positions')
-
         if pos is None:
             pos = pos_cls()
             pos.name = posname
-            pos.instrument = inst
+            pos.instruments_id = inst.id
 
         pos.modify_time = datetime.now()
         if image is not None:
@@ -1008,13 +1007,13 @@ class InstrumentDB(object):
             ppv = ppos_cls()
             ppv.pvs_id = pvrow.id
             ppv.notes = "'%s' / '%s'" % (inst.name, posname)
-            ppv.value = values[name]
+            ppv.value = float(values[name])
             pos_pvs.append(ppv)
 
         pos.pvs = pos_pvs
-
         self.scandb.session.add(pos)
         self.scandb.commit()
+
 
     def save_current_position(self, instname, posname, image=None, notes=None):
         """save current values for an instrument to posname
