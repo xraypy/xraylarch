@@ -7,6 +7,7 @@ import os
 import time
 from threading import Thread
 import socket
+import json
 from collections import OrderedDict
 from functools import partial
 import wx
@@ -324,7 +325,6 @@ class MapImageFrame(ImageFrame):
                                      size=(-1, -1))
                 sbutton = Button(panel, 'Save Position', size=(100, -1),
                                  action=self.onSavePixelPosition)
-                sbutton.Disable()
                 sizer.Add(label,         (irow+1, 0), (1, 1), labstyle, 3)
                 sizer.Add(self.pos_name, (irow+1, 1), (1, 3), labstyle, 3)
                 sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
@@ -346,26 +346,20 @@ class MapImageFrame(ImageFrame):
             env_addrs = [pvn(x) for x in mapconf['environ/address']]
             env_vals  = [str(x) for x in mapconf['environ/value']]
 
-            position = OrderedDict()
+            position = {}
             for p in pos_addrs:
                 position[p] = None
 
-            position[pvn(mapconf['scan/pos1'].value)] = self.this_point[0]
-            position[pvn(mapconf['scan/pos2'].value)] = self.this_point[1]
-
+            position[pvn(mapconf['scan/pos1'].value)] = float(self.this_point[0])
+            position[pvn(mapconf['scan/pos2'].value)] = float(self.this_point[1])
 
             for addr, val in zip(env_addrs, env_vals):
                 if addr in pos_addrs and position[addr] is None:
                     position[addr] = float(val)
 
-            pos_name = self.pos_name.GetValue().strip()
-            print 'Save Position to DB '
-            print pos_name
-            print self.instdb, self.inst_name
-            print position
-
+            pos_name = str(self.pos_name.GetValue().strip())
+            notes = {'source': self.title}
             if len(pos_name) > 0 and self.instdb is not None: 
-                print  "from map: '%s'" % self.title
                 self.instdb.save_position(self.inst_name, pos_name, position,
-                                           notes="from map: '%s'" % self.title)
+                                          notes=json.dumps(notes))
            
