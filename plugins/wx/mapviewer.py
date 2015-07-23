@@ -1132,20 +1132,6 @@ class MapViewerFrame(wx.Frame):
         self.instdb = None
         self.inst_name = None
 
-        if self.at_beamline:
-            if True: # try:
-                sys.path.insert(0, '//cars5/Data/xas_user/bin')
-                from scan_credentials import conn as DBCONN
-                from larch_plugins.epics import ScanDB, InstrumentDB
-                self.scandb = ScanDB(**DBCONN)
-            else: # except:
-                print 'Error getting scandb '
-        if self.scandb is not None:
-            self.instdb = InstrumentDB(self.scandb)
-            self.inst_name = 'IDE_SampleStage'
-
-        # self.onFolderSelect(evt=None)
-
     def CloseFile(self, filename, event=None):
         if filename in self.filemap:
             self.filemap[filename].close()
@@ -1347,6 +1333,19 @@ class MapViewerFrame(wx.Frame):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
         except:
             pass
+
+        if self.at_beamline:
+            try:
+                sys.path.insert(0, '//cars5/Data/xas_user/bin')
+                from scan_credentials import conn as DBCONN
+                from larch_plugins.epics.scandb import connect_scandb
+                DBCONN['_larch'] = self.larch
+                connect_scandb(**DBCONN)
+                self.scandb = self.larch.symtable._scan._scandb
+                self.instdb = self.larch.symtable._scan._instdb
+                self.inst_name = 'IDE_SampleStage'
+            except:
+                print 'Could not connect to ScanDB'
 
     def ShowFile(self, evt=None, filename=None,  **kws):
         if filename is None and evt is not None:
