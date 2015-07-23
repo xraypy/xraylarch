@@ -40,8 +40,7 @@ class MapImageFrame(ImageFrame):
     """
 
     def __init__(self, parent=None, size=None, mode='intensity',
-                 lasso_callback=None, move_callback=None,                 
-                 save_callback=None,  at_beamline=False, 
+                 lasso_callback=None, move_callback=None, save_callback=None,  
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
 
@@ -50,7 +49,6 @@ class MapImageFrame(ImageFrame):
         self.det = None
         self.xrmfile = None
         self.map = None
-        self.at_beamline = at_beamline
         self.move_callback = move_callback
         self.save_callback = save_callback
 
@@ -314,20 +312,20 @@ class MapImageFrame(ImageFrame):
                                 1, wx.RA_SPECIFY_COLS)
         zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
-        if self.at_beamline:
-            if self.save_callback is not None:
-                self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
-                label   = SimpleText(panel, label='Position name:',
-                                     size=(-1, -1))
-                sbutton = Button(panel, 'Save Position', size=(100, -1),
-                                 action=self.onSavePixel)
-                sizer.Add(label,         (irow+1, 0), (1, 1), labstyle, 3)
-                sizer.Add(self.pos_name, (irow+1, 1), (1, 3), labstyle, 3)
-                sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
-                irow  = irow + 2
-                
+        if self.save_callback is not None:
+            self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
+            label   = SimpleText(panel, label='Position name:',
+                                 size=(-1, -1))
+            sbutton = Button(panel, 'Save Position', size=(100, -1),
+                             action=self.onSavePixel)
+            sizer.Add(label,         (irow+1, 0), (1, 1), labstyle, 3)
+            sizer.Add(self.pos_name, (irow+1, 1), (1, 3), labstyle, 3)
+            sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
+
+        if self.move_callback is not None:
             mbutton = Button(panel, 'Move to Position', size=(100, -1),
                                  action=self.onMoveToPixel)
+            irow  = irow + 2
             sizer.Add(mbutton,       (irow+1, 0), (1, 2), labstyle, 3)
 
     def onMoveToPixel(self, event=None):
