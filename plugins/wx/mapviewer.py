@@ -70,7 +70,7 @@ from larch_plugins.wx.xrfdisplay import XRFDisplayFrame
 from larch_plugins.wx.mapimageframe import MapImageFrame
 
 from larch_plugins.io import nativepath
-
+from larch_plugins.epics import pv_fullname
 from larch_plugins.xrfmap import (GSEXRM_MapFile, GSEXRM_FileStatus,
                                   GSEXRM_Exception, GSEXRM_NotOwner)
 
@@ -793,7 +793,8 @@ WARNING: This cannot be undone!
 
 
         self.desc  = wx.TextCtrl(pane, -1,   '', size=(200, -1))
-        self.info  = wx.StaticText(pane, -1, '', size=(250, -1))
+        self.info1 = wx.StaticText(pane, -1, '', size=(250, -1))
+        self.info2 = wx.StaticText(pane, -1, '', size=(250, -1))
 
         self.onmap = Button(pane, 'Show on Map', size=(135, -1),
                             action=self.onShow)
@@ -822,20 +823,21 @@ WARNING: This cannot be undone!
         def txt(s):
             return SimpleText(pane, s)
         sizer.Add(txt('Map Areas'),         (0, 0), (1, 1), ALL_CEN, 2)
-        sizer.Add(self.info,                (0, 1), (1, 4), ALL_LEFT, 2)
-        sizer.Add(txt('Area: '),            (1, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.choice,              (1, 1), (1, 3), ALL_LEFT, 2)
-        sizer.Add(self.delete,              (1, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(txt('New Label: '),       (2, 0), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.desc,                (2, 1), (1, 3), ALL_LEFT, 2)
-        sizer.Add(self.update,              (2, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(self.onmap,               (3, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.clear,               (3, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.onstats,             (3, 4), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrf,                 (4, 0), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.xrf2,                (4, 2), (1, 2), ALL_LEFT, 2)
-        sizer.Add(self.onreport,            (4, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(legend,                   (5, 1), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.info1,               (0, 1), (1, 4), ALL_LEFT, 2)
+        sizer.Add(self.info2,               (1, 1), (1, 4), ALL_LEFT, 2)
+        sizer.Add(txt('Area: '),            (2, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.choice,              (2, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.delete,              (2, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(txt('New Label: '),       (3, 0), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.desc,                (3, 1), (1, 3), ALL_LEFT, 2)
+        sizer.Add(self.update,              (3, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(self.onmap,               (4, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.clear,               (4, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.onstats,             (4, 4), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf,                 (5, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.xrf2,                (5, 2), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.onreport,            (5, 4), (1, 1), ALL_LEFT, 2)
+        sizer.Add(legend,                   (6, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
 
         # main sizer
@@ -1003,6 +1005,7 @@ WARNING: This cannot be undone!
         aname = self._getarea()
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
         npix = len(area.value[np.where(area.value)])
+        yvals, xvals = np.where(area.value)
         pixtime = self.owner.current_file.pixeltime
         dtime = npix*pixtime
         try:
@@ -1011,15 +1014,18 @@ WARNING: This cannot be undone!
         except:
             pass
 
-        info_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds"
-        self.info.SetLabel(info_fmt%(npix, int(round(1000.0*pixtime)), dtime))
+        info1_fmt = "%i Pixels, %i ms/pixel, %.3f total seconds"
+        info2_fmt = " Range (pixels)   X : [%i:%i],  Y : [%i:%i] "
+
+        self.info1.SetLabel(info1_fmt%(npix, int(round(1000.0*pixtime)), dtime))
+        self.info2.SetLabel(info2_fmt%(xvals.min(), xvals.max(), 
+                                       yvals.min(), yvals.max()))
 
         self.desc.SetValue(area.attrs['description'])
         self.report.DeleteAllItems()
         self.report_data = []
         if 'roistats' in area.attrs:
            self.show_stats()
-
 
     def onShowStats(self, event=None):
         if self.report is None:
@@ -1273,6 +1279,58 @@ class MapViewerFrame(wx.Frame):
                                'move stages to pixel?', style=wx.YES_NO)):
             caput(pos_addrs[i1], xval)
             caput(pos_addrs[i2], yval)
+    
+    def onSavePixel(self, name, ix, iy, x=None, y=None, title=None, datafile=None):
+        "save pixel as area, and perhaps to scandb"
+        if len(name) < 1: 
+            return
+        if datafile is None:
+            datafile = self.current_file
+        xrfmap  = datafile.xrfmap
+
+        # first, create 1-pixel maks for area, and save that
+        ny, nx, npos = xrfmap['positions/pos'].shape
+        tmask = np.zeros((ny, nx)).astype(bool)
+        tmask[iy, ix] = True
+        datafile.add_area(tmask, name=name)
+        for p in self.nbpanels:
+            if hasattr(p, 'update_xrfmap'):
+                p.update_xrfmap(xrfmap)
+            
+        # next, save file into database
+        if self.at_beamline and self.instdb is not None:
+            pvn  = pv_fullname
+            conf = xrfmap['config']
+            pos_addrs = [pvn(tval) for tval in conf['positioners']]
+            env_addrs = [pvn(tval) for tval in conf['environ/address']]
+            env_vals  = [str(tval) for tval in conf['environ/value']]
+
+            position = {}
+            for p in pos_addrs:
+                position[p] = None
+
+            if x is None:
+                x = float(datafile.get_pos(0, mean=True)[ix])
+            if y is None:
+                y = float(datafile.get_pos(1, mean=True)[iy])
+                
+            position[pvn(conf['scan/pos1'].value)] = x
+            position[pvn(conf['scan/pos2'].value)] = y
+
+            for addr, val in zip(env_addrs, env_vals):
+                if addr in pos_addrs and position[addr] is None:
+                    position[addr] = float(val)
+
+            if title is None: 
+                title = '%s: %s' % (datafile.filename, name)
+
+            notes = {'source': title}
+            self.instdb.save_position(self.inst_name, name, position,
+                                      notes=json.dumps(notes))
+           
+
+            
+
 
     def add_imdisplay(self, title, det=None):
         on_lasso = partial(self.lassoHandler, det=det)
@@ -1280,8 +1338,8 @@ class MapViewerFrame(wx.Frame):
                                 lasso_callback=on_lasso,
                                 cursor_labels = self.cursor_menulabels,
                                 move_callback=self.onMoveToPixel,
-                                at_beamline=self.at_beamline,
-                                instdb=self.instdb, inst_name=self.inst_name)
+                                save_callback=self.onSavePixel,
+                                at_beamline=self.at_beamline)
 
         self.im_displays.append(imframe)
 
@@ -1308,8 +1366,8 @@ class MapViewerFrame(wx.Frame):
                                     lasso_callback=lasso_cb,
                                     cursor_labels = self.cursor_menulabels,
                                     move_callback=self.onMoveToPixel,
-                                    at_beamline=self.at_beamline,
-                                    instdb=self.instdb, inst_name=self.inst_name)
+                                    save_callback=self.onSavePixel,
+                                    at_beamline=self.at_beamline)
 
                 imd.display(map, title=title, x=x, y=y, xoff=xoff, yoff=yoff,
                             subtitles=subtitles, det=det, xrmfile=xrmfile)
