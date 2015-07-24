@@ -12,7 +12,7 @@ import json
 import numpy as np
 from scipy.interpolate import interp1d, splrep, splev, UnivariateSpline
 from sqlalchemy import MetaData, create_engine
-from sqlalchemy.orm import sessionmaker,  mapper, clear_mappers
+from sqlalchemy.orm import sessionmaker,  mapper
 from sqlalchemy.pool import SingletonThreadPool
 
 # needed for py2exe?
@@ -173,10 +173,7 @@ class xrayDB(object):
         self.metadata =  MetaData(self.engine)
         self.metadata.reflect()
         tables = self.tables = self.metadata.tables
-        try:
-            clear_mappers()
-        except:
-            pass
+
         mapper(ChantlerTable,            tables['Chantler'])
         mapper(WaasmaierTable,           tables['Waasmaier'])
         mapper(KeskiRahkonenKrauseTable, tables['KeskiRahkonen_Krause'])
@@ -498,7 +495,6 @@ class xrayDB(object):
         tab = ScatteringTable
         if kind == 'photo':
             tab = PhotoAbsorptionTable
-
         row = self.query(tab).filter(tab.element==element.title()).all()
         if len(row) > 0:
             row = row[0]

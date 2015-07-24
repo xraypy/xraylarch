@@ -15,7 +15,7 @@ from sqlalchemy import (MetaData, and_, create_engine, text, func,
                         Table, Column, ColumnDefault, ForeignKey,
                         Integer, Float, String, Text, DateTime)
 
-from sqlalchemy.orm import sessionmaker, mapper, clear_mappers, relationship
+from sqlalchemy.orm import sessionmaker, mapper, relationship
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
 from sqlalchemy.pool import SingletonThreadPool
@@ -376,11 +376,6 @@ def map_scandb(metadata):
     classes = {}
     map_props = {}
     keyattrs = {}
-    try:
-        clear_mappers()
-    except:
-        logging.exception("error clearing mappers")
-
 
     for cls in (Info, Status, PVs, PVTypes, MonitorValues, Macros, ExtraPVs,
                 Commands, ScanData, ScanPositioners, ScanCounters,
