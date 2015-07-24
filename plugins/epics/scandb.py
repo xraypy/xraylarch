@@ -1082,7 +1082,7 @@ class InstrumentDB(object):
             pvname = pvpos.pv.name
             if pvname not in exclude_pvs:
                 thispv = epics.PV(pvname)
-                pv_vals.append((thispv, str(pvpos.value)))
+                pv_vals.append((thispv, float(pvpos.value)))
 
         epics.ca.poll()
         # put values without waiting
