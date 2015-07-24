@@ -1107,11 +1107,18 @@ def connect_scandb(dbname=None, server='postgresql',
                    _larch=None, **kwargs):
     if (_larch.symtable.has_symbol(SCANDB_NAME) and
         _larch.symtable.get_symbol(SCANDB_NAME) is not None):
-        return _larch.symtable.get_symbol(SCANDB_NAME)
-    scandb = ScanDB(dbname=dbname, server=server, **kwargs)
-    instdb = InstrumentDB(scandb)
-    _larch.symtable.set_symbol(SCANDB_NAME, scandb)
-    _larch.symtable.set_symbol(INSTDB_NAME, instdb)
+        scandb = _larch.symtable.get_symbol(SCANDB_NAME)
+    else:
+        scandb = ScanDB(dbname=dbname, server=server, **kwargs)
+        _larch.symtable.set_symbol(SCANDB_NAME, scandb)
+
+    if (_larch.symtable.has_symbol(INSTDB_NAME) and
+        _larch.symtable.get_symbol(INSTDB_NAME) is not None):
+        instdb = _larch.symtable.get_symbol(INSTDB_NAME)
+    else:
+        instdb = InstrumentDB(scandb)
+        _larch.symtable.set_symbol(INSTDB_NAME, instdb)
+
     return scandb
 
 def initializeLarchPlugin(_larch=None):
