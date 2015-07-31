@@ -718,6 +718,7 @@ def get_detector(prefix, kind=None, label=None, **kws):
     dtypes = {'scaler': ScalerDetector,
               'motor': MotorDetector,
               'area': AreaDetector,
+              'areadetector': AreaDetector,
               'mca': McaDetector,
               'med': MultiMcaDetector,
               'multimca': MultiMcaDetector,
