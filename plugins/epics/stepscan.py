@@ -766,17 +766,21 @@ class LarchStepScan(object):
             txt.append('step2 = %.4f' % (arr[1]-arr[0]))
 
         txt.append('#------------------#')
-        use_xrd = any([isinstance(det, AreaDetector) for det in self.detectors])
-        # for det in self.detectors:
-        #     print( ' Detectors ', det, isinstance(det, AreaDetector))
-        # print(" USE XRD? ", use_xrd)
+        txt.append('[xrd_ad]')
+        xrd_det = None
+        for det in self.detectors:
+            if isinstance(det, AreaDetector):
+                xrd_det = det
 
-        if use_xrd:
-            txt.append('[xrd_ad]')
+        if xrd_det is None:
+            txt.append('use = False')
+        else:
             txt.append('use = True')
             txt.append('type = PEDET1')
-            txt.append('prefix = 13PE1:')
-            txt.append('prefix = HDF51:')
+            txt.append('prefix = %s' % det.prefix)
+            txt.append('fileplugin = netCDF1:')
+            # txt.append('fileplugin = %s' % det.file_plugin)
+
 
         f = open(sname, 'w')
         f.write('\n'.join(txt))
