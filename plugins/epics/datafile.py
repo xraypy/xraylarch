@@ -260,6 +260,25 @@ class ASCIIScanFile(ScanFile):
         out.append('%s ExtraPVs.End: here' % COM1)
         self.write_lines(out)
 
+    def write_scanparams(self):
+        "write scan parameters"
+        out = ['%s ScanParameters.Start: Scan.Member: Value' % COM1]
+        s = self.scan
+        out.append('%s ScanParameters.ScanType: %s' % (COM1, s.scantype))
+        regfmt = '%9.3f, %9.3f, %9.3f  %s  %.2f'
+        if s.scantype.lower().startswith('xafs'):
+            out.append('%s ScanParameters.E0: %.3f' % (COM1, s.e0))
+            out.append('%s ScanParameters.Legend:  Start, Stop, Step, K-space, Time' % COM1)
+            for ireg, reg in enumerate(s.regions):
+                start, stop, npts, rel, e0, use_k, dt0, dt1, dtw = reg
+                step = abs(stop-start)/(npts-1.0)
+                regtxt = regfmt % (start, stop, step, repr(use_k), dt0)
+                if dt1 is not None:
+                    regtxt = '%s .. %.2f (weight=%i)' % (regtxt, dt1, dtw)
+                out.append('%s ScanParameters.Region%i:  %s' % (COM1, ireg+1, regtxt))
+        out.append('%s ScanParameters.End: here' % COM1)
+        self.write_lines(out)
+
     def write_timestamp(self, label='Now'):
         "write timestamp"
         self.write_lines(["%s Scan.%s: %s" % (COM1, label,
@@ -318,6 +337,8 @@ class ASCIIScanFile(ScanFile):
             return
         self.write_timestamp(label='end_time')
         self.write_extrapvs()
+        self.write_scanparams()
+
         if breakpoint == 0:
             self.write_comments()
         out = ["%s %s" % (COM1, COM3), self.column_label]
