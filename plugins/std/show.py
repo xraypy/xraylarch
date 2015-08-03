@@ -61,8 +61,8 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
     members = dir(group)
     out = ['== %s: %i symbols ==' % (title, len(members))]
     for item in members:
-        if (item.startswith('__') and item.endswith('__') and
-            not with_private):
+        if item.startswith('__') and not with_private:
+		#item.endswith('__') and# not with_private):
             continue
         obj = getattr(group, item)
         dval = None
