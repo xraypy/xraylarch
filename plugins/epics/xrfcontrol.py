@@ -40,6 +40,7 @@ import larch
 from larch_plugins.wx import (PeriodicTablePanel, XRFDisplayFrame,
                               FILE_WILDCARDS, CalibrationFrame)
 
+ROI_WILDCARD = 'Data files (*.dat)|*.dat|ROI files (*.roi)|*.roi|All files (*.*)|*.*'
 larch.use_plugin_path('epics')
 try:
     from larch_plugins.epics import Epics_MultiXMAP, Epics_Xspress3
@@ -264,10 +265,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.needs_newplot = False
 
     def onSaveROIs(self, event=None, **kws):
-        wildcard = ' ROI files (*.roi)|*.roi|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message="Save ROI File",
                             defaultDir=os.getcwd(),
-                            wildcard=wildcard,
+                            wildcard=ROI_WILDCARD,
                             style = wx.SAVE|wx.CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -276,10 +276,9 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.det.save_rois(roifile)
 
     def onRestoreROIs(self, event=None, **kws):
-        wildcard = ' ROI files (*.roi)|*.roi|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message="Read ROI File",
                             defaultDir=os.getcwd(),
-                            wildcard=wildcard,
+                            wildcard=ROI_WILDCARD,
                             style = wx.OPEN|wx.CHANGE_DIR)
 
         if dlg.ShowModal() == wx.ID_OK:
@@ -502,6 +501,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.needs_newplot = True
 
     def onStart(self, event=None, dtime=None, **kws):
+        print 'onStart ', self.det
         if dtime is not None:
             self.wids['dwelltime'].SetValue("%.1f" % dtime)
             self.det.set_dwelltime(dtime=dtime)
