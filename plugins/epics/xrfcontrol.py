@@ -501,7 +501,6 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
         self.needs_newplot = True
 
     def onStart(self, event=None, dtime=None, **kws):
-        print 'onStart ', self.det
         if dtime is not None:
             self.wids['dwelltime'].SetValue("%.1f" % dtime)
             self.det.set_dwelltime(dtime=dtime)
