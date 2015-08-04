@@ -88,8 +88,8 @@ def save_gsemcafile(filename, mcas, rois, environ=None):
 class Epics_Xspress3(object):
     """multi-element MCA detector using Quantum Xspress3 electronics 3-1-10
     """
-    MAX_FRAMES    = 4000
     MIN_FRAMETIME = 0.20
+    MAX_FRAMES    = 10000
 
     def __init__(self, prefix=None, nmca=4, **kws):
         self.nmca = nmca
@@ -101,11 +101,21 @@ class Epics_Xspress3(object):
         self.connected = False
         self.elapsed_real = None
         self.elapsed_textwidget = None
-        self.frametime = self.MIN_FRAMETIME
+
         self.needs_refresh = False
         self._xsp3 = None
         if self.prefix is not None:
             self.connect()
+
+        # determine max frames 
+        self.frametime = self.MIN_FRAMETIME
+        rbv = 0
+        while rbv != self.MAX_FRAMES:
+            self.MAX_FRAMES -= 50
+            self._xsp3.NumImages = self.MAX_FRAMES
+            rbv = self._xsp3.NumImages_RBV
+            if self.MAX_FRAMES < 1000:
+                break
 
     # @EpicsFunction
     def connect(self):
