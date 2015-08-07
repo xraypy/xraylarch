@@ -58,11 +58,9 @@ class shell(cmd.Cmd):
                                    numpy.__version__)
 
         writer = sys.stdout
-       
         if not quiet:
             writer.write("%s\n" % banner_msg)
 
-        print 'SHELL ', writer
         self.larch  = Interpreter(writer=writer)
         self.input  = InputText(prompt=self.ps1, _larch=self.larch)
         self.prompt = self.ps1
