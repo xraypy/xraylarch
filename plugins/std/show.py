@@ -14,7 +14,6 @@ try:
     from termcolor import colored
     if os.name == 'nt':
         import colorama
-        colorama.init(convert=True)
     HAS_TERMCOLOR = True
 except:
     pass
@@ -127,7 +126,6 @@ def group2dict(group, _larch=None):
 def dict2group(d, _larch=None):
     "return group created from a dictionary"
     return Group(**d)
-
 
 
 @ValidateLarchPlugin
