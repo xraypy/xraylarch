@@ -131,8 +131,8 @@ def dict2group(d, _larch=None):
 
 
 @ValidateLarchPlugin
-def show(sym=None, _larch=None, with_private=False, with_color=True, color='cyan', 
-            truncate=True, with_methods=True, **kws):
+def _show(sym=None, _larch=None, with_private=False, with_color=True, 
+          color='cyan', truncate=True, with_methods=True, **kws):
     """show group members:
     Options
     -------
@@ -209,7 +209,7 @@ def initializeLarchPlugin(_larch=None):
         _larch.symtable._sys.valid_commands.extend(cmds)
 
 def registerLarchPlugin():
-    return ('_builtin', {'show': show, 'get': _get,
+    return ('_builtin', {'show': _show, 'get': _get,
                          'group2dict': group2dict,
                          'dict2group': dict2group,
                          'show_tree': show_tree, 
