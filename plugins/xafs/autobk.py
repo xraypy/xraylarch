@@ -122,14 +122,15 @@ def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
         return
 
     # get array indices for rkbg and e0: irbkg, ie0
-    ie0 = index_nearest(energy, e0)
+    ie0 = index_of(energy, e0)
     rgrid = np.pi/(kstep*nfft)
     if rbkg < 2*rgrid: rbkg = 2*rgrid
     irbkg = int(1.01 + rbkg/rgrid)
 
     # save ungridded k (kraw) and grided k (kout)
     # and ftwin (*k-weighting) for FT in residual
-    kraw = np.sqrt(ETOK*(energy[ie0:] - e0))
+    enpe = energy[ie0:] - e0
+    kraw = np.sign(enpe)*np.sqrt(ETOK*abs(enpe))
     if kmax is None:
         kmax = max(kraw)
     else:
