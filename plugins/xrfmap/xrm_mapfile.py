@@ -782,6 +782,9 @@ class GSEXRM_MapFile(object):
 
         total = None
         # self.dt.add('add_rowdata b4 adding mcas')
+        # print(" ROW ", thisrow, len(mcas), 
+        #       row.dtfactor.shape, row.realtime.shape, row.counts.shape)
+
         for imca, grp in enumerate(mcas):
             grp['dtfactor'][thisrow, :]  = row.dtfactor[imca, :]
             grp['realtime'][thisrow, :]  = row.realtime[imca, :]
@@ -1206,7 +1209,7 @@ class GSEXRM_MapFile(object):
         stop  = mapconf['scan']['stop1']
         step  = mapconf['scan']['step1']
         span = abs(stop-start)
-        self.npts = int(abs(step*1.01 + span)/step)
+        self.npts = int(abs(abs(step)*1.01 + span)/abs(step))
 
         try:
             self.xrfdet_type = mapconf['xrf']['type'].lower()

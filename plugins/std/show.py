@@ -2,10 +2,21 @@
 """
   Larch show() function
 """
+import os
 import sys
 import types
 import numpy
 from larch import Group, ValidateLarchPlugin
+
+
+HAS_TERMCOLOR = False
+try:
+    from termcolor import colored
+    if os.name == 'nt':
+        import colorama
+    HAS_TERMCOLOR = True
+except:
+    pass
 
 @ValidateLarchPlugin
 def _get(sym=None, _larch=None, **kws):
@@ -29,7 +40,7 @@ def _get(sym=None, _larch=None, **kws):
     return group
 
 @ValidateLarchPlugin
-def _show(sym=None, _larch=None, with_private=False, **kws):
+def _show_old(sym=None, _larch=None, with_private=False, **kws):
     """display group members.
     Options
     -------
@@ -79,7 +90,6 @@ def _show(sym=None, _larch=None, with_private=False, **kws):
 
     _larch.writer.write("%s\n" % '\n'.join(out))
 
-
 @ValidateLarchPlugin
 def show_tree(group, _larch=None, indent=0, groups_shown=None, **kws):
     """show members of a Group, with a tree structure for sub-groups
@@ -118,6 +128,78 @@ def dict2group(d, _larch=None):
     return Group(**d)
 
 
+@ValidateLarchPlugin
+def _show(sym=None, _larch=None, with_private=False, with_color=True, 
+          color='cyan', truncate=True, with_methods=True, **kws):
+    """show group members:
+    Options
+    -------
+    with_private:  show 'private' members ('__private__') if True
+    with_color:    show alternating lines in color if True and color is available.
+    truncate:      truncate representation of lengthy lists and tuples if True
+    with_methods:  suppress display of methods if False
+
+    """
+    with_color = with_color and HAS_TERMCOLOR
+
+    if sym is None:
+        sym = '_main'
+    group = None
+    symtable = _larch.symtable
+    title = sym
+    if symtable.isgroup(sym):
+        group = sym
+        title = repr(sym)[1:-1]
+    elif isinstance(sym, types.ModuleType):
+        group = sym
+        title = sym.__name__
+
+    if group is None:
+        _larch.writer.write("%s\n" % repr(sym))
+        return
+    if title.startswith(symtable.top_group):
+        title = title[6:]
+
+    if group == symtable:
+        title = 'Group _main'
+
+    ## these are the 8 allowed colors in termcolor
+    if (not color in ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')):
+        color = 'cyan'
+
+    members = dir(group)
+    out = ['== %s: %i symbols ==' % (title, len(members))]
+    count = 0
+    for item in members:
+        if (item.startswith('__') and item.endswith('__') and
+            not with_private):
+            continue
+        obj = getattr(group, item)
+        if (callable(obj) and not with_methods):
+            continue
+        count = count+1
+        dval = None
+        if isinstance(obj, numpy.ndarray):
+            if len(obj) > 10 or len(obj.shape)>1:
+                dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
+                                                         repr(obj.dtype))
+        if ((isinstance(obj, list) or isinstance(obj, tuple)) and truncate):
+            if len(repr(obj)) > 50:
+                dval = "[%s, %s, ... %s, %s]" % (repr(obj[0]), repr(obj[1]),
+                                                 repr(obj[-2]), repr(obj[-1]))
+        if dval is None:
+            dval = repr(obj)
+        if ((not with_color) or (count % 2)):
+            string = '  %s: %s' % (item, dval)
+        else:
+            string = colored('  %s: %s' % (item, dval), color)
+        out.append(string)
+
+    if not with_methods:
+        out[0] = '== %s: %i methods, %i attributes ==' % (title, len(members)-count, count)
+    _larch.writer.write("%s\n" % '\n'.join(out))
+
+
 def initializeLarchPlugin(_larch=None):
     """initialize show and friends"""
     cmds = ['show', 'show_tree']
@@ -128,4 +210,5 @@ def registerLarchPlugin():
     return ('_builtin', {'show': _show, 'get': _get,
                          'group2dict': group2dict,
                          'dict2group': dict2group,
-                         'show_tree': show_tree})
+                         'show_tree': show_tree, 
+                         'show_simple': _show_old})
