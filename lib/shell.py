@@ -14,6 +14,16 @@ BANNER = """  Larch %s  M. Newville, T. Trainor -- %s
   using python %s, numpy %s
 """
 
+HAS_COLORAMA = False
+try:
+    from termcolor import colored
+    if os.name == 'nt':
+        import colorama
+        colorama.init(convert=True)
+        HAS_COLORAMA = True
+except:
+    pass
+
 class shell(cmd.Cmd):
     ps1    = "larch> "
     ps2    = ".....> "
@@ -47,10 +57,11 @@ class shell(cmd.Cmd):
                                    '%i.%i.%i' % sys.version_info[:3],
                                    numpy.__version__)
 
+        writer = sys.stdout
         if not quiet:
-            sys.stdout.write("%s\n" % banner_msg)
+            writer.write("%s\n" % banner_msg)
 
-        self.larch  = Interpreter()
+        self.larch  = Interpreter(writer=writer)
         self.input  = InputText(prompt=self.ps1, _larch=self.larch)
         self.prompt = self.ps1
 
