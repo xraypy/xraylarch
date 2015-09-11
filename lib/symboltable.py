@@ -65,7 +65,7 @@ class Group(object):
         return [key for key in cls_members + dict_keys
                 if (not key.startswith('_SymbolTable_') and
                     not key.startswith('_Group_') and
-                    not key.startswith(cname) and
+                    not key.startswith('_%s_' % cname) and
                     not (key.startswith('__') and key.endswith('__')) and
                     key not in self.__private)]
 
