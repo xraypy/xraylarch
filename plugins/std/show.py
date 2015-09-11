@@ -18,6 +18,8 @@ try:
 except:
     pass
 
+TERMCOLOR_COLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
+
 @ValidateLarchPlugin
 def _get(sym=None, _larch=None, **kws):
     """get object from symbol table from symbol name:
@@ -127,10 +129,9 @@ def dict2group(d, _larch=None):
     "return group created from a dictionary"
     return Group(**d)
 
-
 @ValidateLarchPlugin
 def _show(sym=None, _larch=None, with_private=False, with_color=True, 
-          color='cyan', truncate=True, with_methods=True, **kws):
+          color=None, truncate=True, with_methods=True, **kws):
     """show group members:
     Options
     -------
@@ -146,6 +147,8 @@ def _show(sym=None, _larch=None, with_private=False, with_color=True,
         sym = '_main'
     group = None
     symtable = _larch.symtable
+    display  = symtable._sys.display
+    with_color = with_color and display.use_color
     title = sym
     if symtable.isgroup(sym):
         group = sym
@@ -164,8 +167,15 @@ def _show(sym=None, _larch=None, with_private=False, with_color=True,
         title = 'Group _main'
 
     ## these are the 8 allowed colors in termcolor
-    if (not color in ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')):
-        color = 'cyan'
+    color1 = display.colors.foreground
+    color2 = display.colors.foreground2
+    if color is not None:
+        color2 = color
+
+    if color1 not in TERMCOLOR_COLORS:
+        color1 = None
+    if color2 not in TERMCOLOR_COLORS:
+        color1 = 'cyan'
 
     members = dir(group)
     out = ['== %s: %i symbols ==' % (title, len(members))]
@@ -189,25 +199,73 @@ def _show(sym=None, _larch=None, with_private=False, with_color=True,
                                                  repr(obj[-2]), repr(obj[-1]))
         if dval is None:
             dval = repr(obj)
-        if ((not with_color) or (count % 2)):
-            string = '  %s: %s' % (item, dval)
-        else:
-            string = colored('  %s: %s' % (item, dval), color)
-        out.append(string)
+
+        sout = '  %s: %s' % (item, dval)
+        if with_color:
+            col = {0: color1, 1: color2}[count % 2]
+            if col is not None:
+                sout = colored('  %s: %s' % (item, dval), col)
+        out.append(sout)
 
     if not with_methods:
         out[0] = '== %s: %i methods, %i attributes ==' % (title, len(members)-count, count)
     _larch.writer.write("%s\n" % '\n'.join(out))
 
 
+@ValidateLarchPlugin
+def set_terminal(style='dark', terminal=None, use_color=True, _larch=None):
+    """configure terminal settings
+
+    style
+    use_color
+    terminal
+
+    """
+    style = style.lower()
+    symtable = _larch.symtable
+    display = symtable._sys.display
+    display.use_color = use_color
+    if style == 'dark':
+        display.colors.background = 'black'
+        display.colors.foreground = 'white'
+        display.colors.foreground2 = 'cyan'
+    elif style == 'light':
+        display.colors.background = 'white'
+        display.colors.foreground = 'grey'
+        display.colors.foreground2 = 'cyan'
+    if terminal is not None:
+        display.terminal = terminal
+
+def initialize_sys_display(_larch=None):
+    """initialize the _sys.display group, holding runtime data
+     on display (colors, terminals, etc).
+    """
+    if _larch is None:
+        return
+    symtable = _larch.symtable
+    if not symtable.has_group('_sys.display'):
+        symtable.new_group('_sys.display')
+    display = symtable._sys.display
+    display.colors = Group(background='black',
+                           foreground='white',
+                           foreground2='cyan',
+                           error='red',
+                           comment='green')
+    display.use_color = True
+    display.terminal = 'xterm'
+
 def initializeLarchPlugin(_larch=None):
     """initialize show and friends"""
     cmds = ['show', 'show_tree']
     if _larch is not None:
         _larch.symtable._sys.valid_commands.extend(cmds)
+        initialize_sys_display(_larch=_larch)
+
 
 def registerLarchPlugin():
-    return ('_builtin', {'show': _show, 'get': _get,
+    return ('_builtin', {'show': _show,
+                         'get': _get,
+                         'set_terminal': set_terminal,
                          'group2dict': group2dict,
                          'dict2group': dict2group,
                          'show_tree': show_tree, 
