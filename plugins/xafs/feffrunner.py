@@ -4,6 +4,7 @@ from   os.path   import realpath, isdir, isfile, join, basename, dirname
 from   distutils.spawn import find_executable
 from shutil import copy, move
 import subprocess
+import re
 
 from larch import (Group, Parameter, isParameter, param_value,
                    isNamedClass, Interpreter)
@@ -73,6 +74,8 @@ class FeffRunner(Group):
         self.verbose  = verbose
         self.repo     = repo
         self.resolved = None
+        self.threshold = []
+        self.chargetransfer = []
 
 
     def __repr__(self):
@@ -183,11 +186,31 @@ class FeffRunner(Group):
         if self.verbose: print header
         f.write(header)
         process=subprocess.Popen(program, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        flag = False
+        thislist = []
         while True:
             line = process.stdout.readline()
             if not line:
                 break
             if self.verbose: print ':'+line.rstrip()
+            ## snarf threshold energy
+            pattern = re.compile('mu_(new|old)=\s+(-?\d\.\d+)')
+            match = pattern.search(line)
+            if match != None:
+                self.threshold.append(match.group(2))
+            ## snarf charge transfer
+            if line.strip().startswith('Charge transfer'):
+                thislist = []
+                flag = True
+            elif line.strip().startswith('SCF ITERATION'):
+                self.chargetransfer.append(list(thislist))
+                flag = False
+            elif line.strip().startswith('Done with module 1'):
+                self.chargetransfer.append(list(thislist))
+                flag = False
+            elif flag:
+                this = line.split()
+                thislist.append(this[1])
             f.write(line)
         f.close
 
