@@ -21,7 +21,7 @@ except:
 TERMCOLOR_COLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
 
 @ValidateLarchPlugin
-def _get(sym=None, _larch=None, **kws):
+def get(sym=None, _larch=None, **kws):
     """get object from symbol table from symbol name:
 
     >>> g = group(a = 1,  b=2.3, z = 'a string')
@@ -41,56 +41,6 @@ def _get(sym=None, _larch=None, **kws):
         group = symtable._lookup(sym, create=False)
     return group
 
-@ValidateLarchPlugin
-def _show_old(sym=None, _larch=None, with_private=False, **kws):
-    """display group members.
-    Options
-    -------
-    with_private:  show 'private' members ('__private__')
-
-    See Also:  show_tree()
-    """
-    if sym is None:
-        sym = '_main'
-    group = None
-    symtable = _larch.symtable
-    title = sym
-    if symtable.isgroup(sym):
-        group = sym
-        title = repr(sym)[1:-1]
-    elif isinstance(sym, types.ModuleType):
-        group = sym
-        title = sym.__name__
-
-    if group is None:
-        _larch.writer.write("%s\n" % repr(sym))
-        return
-    if title.startswith(symtable.top_group):
-        title = title[6:]
-
-    if group == symtable:
-        title = 'Group _main'
-
-    members = dir(group)
-    out = ['== %s: %i symbols ==' % (title, len(members))]
-    for item in members:
-        if item.startswith('__') and not with_private:
-		#item.endswith('__') and# not with_private):
-            continue
-        obj = getattr(group, item)
-        dval = None
-        if isinstance(obj, numpy.ndarray):
-            if len(obj) > 10 or len(obj.shape)>1:
-                dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
-                                                         repr(obj.dtype))
-        if dval is None:
-            dval = repr(obj)
-        out.append('  %s: %s' % (item, dval))
-#         if not (item.startswith('_Group__') or
-#                 item == '__name__' or item == '_larch' or
-#                 item.startswith('_SymbolTable__')):
-
-    _larch.writer.write("%s\n" % '\n'.join(out))
 
 @ValidateLarchPlugin
 def show_tree(group, _larch=None, indent=0, groups_shown=None, **kws):
@@ -130,7 +80,7 @@ def dict2group(d, _larch=None):
     return Group(**d)
 
 @ValidateLarchPlugin
-def _show(sym=None, _larch=None, with_private=False, with_color=True, 
+def show(sym=None, _larch=None, with_private=False, with_color=True,
           color=None, truncate=True, with_methods=True, **kws):
     """show group members:
     Options
@@ -263,10 +213,9 @@ def initializeLarchPlugin(_larch=None):
 
 
 def registerLarchPlugin():
-    return ('_builtin', {'show': _show,
-                         'get': _get,
+    return ('_builtin', {'show': show,
+                         'get': get,
                          'set_terminal': set_terminal,
                          'group2dict': group2dict,
                          'dict2group': dict2group,
-                         'show_tree': show_tree, 
-                         'show_simple': _show_old})
+                         'show_tree': show_tree})
