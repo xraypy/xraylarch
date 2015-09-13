@@ -8,16 +8,6 @@ import types
 import numpy
 from larch import Group, ValidateLarchPlugin
 
-
-HAS_TERMCOLOR = False
-try:
-    from termcolor import colored
-    if os.name == 'nt':
-        import colorama
-    HAS_TERMCOLOR = True
-except:
-    pass
-
 TERMCOLOR_COLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
 
 @ValidateLarchPlugin
@@ -81,7 +71,7 @@ def dict2group(d, _larch=None):
 
 @ValidateLarchPlugin
 def show(sym=None, _larch=None, with_private=False, with_color=True,
-          color=None, truncate=True, with_methods=True, **kws):
+          color=None, color2=None, truncate=True, with_methods=True, **kws):
     """show group members:
     Options
     -------
@@ -91,14 +81,13 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
     with_methods:  suppress display of methods if False
 
     """
-    with_color = with_color and HAS_TERMCOLOR
-
     if sym is None:
         sym = '_main'
     group = None
     symtable = _larch.symtable
     display  = symtable._sys.display
     with_color = with_color and display.use_color
+
     title = sym
     if symtable.isgroup(sym):
         group = sym
@@ -116,28 +105,39 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
     if group == symtable:
         title = 'Group _main'
 
-    ## these are the 8 allowed colors in termcolor
-    color1 = display.colors.foreground
-    color2 = display.colors.foreground2
-    if color is not None:
-        color2 = color
-
-    if color1 not in TERMCOLOR_COLORS:
-        color1 = None
-    if color2 not in TERMCOLOR_COLORS:
-        color1 = 'cyan'
+    ## set colors for output
+    col1, col2 = None, None
+    if with_color:
+        if color  is None:
+            col1 = display.colors.foreground
+        else:
+            col1 = color
+        if color2 is None:
+            col2 = display.colors.foreground2
+        else:
+            col2 = color2
+    _colors = {1: col1, 0: col2}
 
     members = dir(group)
-    out = ['== %s: %i symbols ==' % (title, len(members))]
-    count = 0
+    dmembers = []
+    nmethods = 0
     for item in members:
         if (item.startswith('__') and item.endswith('__') and
             not with_private):
             continue
         obj = getattr(group, item)
-        if (callable(obj) and not with_methods):
-            continue
-        count = count+1
+        if callable(obj):
+            nmethods +=1
+            if not with_methods:
+                continue
+        dmembers.append((item, obj))
+    write = _larch.writer.write
+
+    title_fmt = '== %s: %i methods, %i attributes ==\n'
+    write(title_fmt % (title, nmethods, len(dmembers)-nmethods))
+
+    count = 0
+    for item, obj in dmembers:
         dval = None
         if isinstance(obj, numpy.ndarray):
             if len(obj) > 10 or len(obj.shape)>1:
@@ -149,17 +149,11 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
                                                  repr(obj[-2]), repr(obj[-1]))
         if dval is None:
             dval = repr(obj)
+        count += 1
+        col = _colors[count % 2]
+        write('  %s: %s\n' % (item, dval), color=col)
 
-        sout = '  %s: %s' % (item, dval)
-        if with_color:
-            col = {0: color1, 1: color2}[count % 2]
-            if col is not None:
-                sout = colored('  %s: %s' % (item, dval), col)
-        out.append(sout)
-
-    if not with_methods:
-        out[0] = '== %s: %i methods, %i attributes ==' % (title, len(members)-count, count)
-    _larch.writer.write("%s\n" % '\n'.join(out))
+    _larch.writer.flush()
 
 
 @ValidateLarchPlugin
