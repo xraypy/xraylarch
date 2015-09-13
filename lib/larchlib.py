@@ -14,15 +14,15 @@ from .utils import Closure
 from .symboltable import Group
 from .site_config import larchdir
 
-VALID_ERRORCOLORS = ('grey', 'red', 'green', 'yellow',
-                     'blue', 'magenta', 'cyan', 'white')
-HAS_COLORTERM = False
-
+HAS_TERMCOLOR = False
 try:
     from termcolor import colored
-    HAS_COLORTERM = (os.name != 'nt')
-except:
-    pass
+    if os.name == 'nt':
+        import colorama
+        colorama.init()
+    HAS_TERMCOLOR = True
+except ImportError:
+    HAS_TERMCOLOR = False
 
 class LarchPluginException(Exception):
     """Exception with Larch Plugin"""
@@ -32,7 +32,6 @@ class LarchPluginException(Exception):
 
     def __str__(self):
         return "\n%s" % (self.msg)
-
 
 class Empty:
     def __nonzero__(self): return False
@@ -93,13 +92,7 @@ class LarchExceptionHolder:
         if exc_name in (None, 'None'):
             exc_name = 'UnknownError'
 
-        # print("E>>GET ERROR ", exc_name, e_type, e_val)
-        # print("E>> FNAME :" , self.fname, self.lineno)
-        # print("E>> TB :" , e_tb, len(self.tback))
         out = []
-        #if len(self.tback) > 0:
-        #    out.append(self.tback)
-
         call_expr = None
         call_fname = None
         call_lineno = None
@@ -194,26 +187,70 @@ class LarchExceptionHolder:
             out.append('  %s' % call_expr)
             if call_fname is not None and call_lineno is not None:
                 out.append('file %s, line %i' % (call_fname, call_lineno))
-        if HAS_COLORTERM and getattr(self.symtable._sys, 'color_exceptions', True):
-            color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
-            if color not in VALID_ERRORCOLORS:
-                color = 'red'
-            attrs = []
-            if getattr(self.symtable._sys, 'errortext_bold', True):
-                attrs.append('bold')
 
-            if getattr(self.symtable._sys, 'errortext_dark', False):
-                attrs.append('dark')
+        return (exc_name, '\n'.join(out))
 
-            if getattr(self.symtable._sys, 'errortext_underline', False):
-                attrs.append('underline')
-            if getattr(self.symtable._sys, 'errortext_blink', False):
-                attrs.append('blink')
-            if getattr(self.symtable._sys, 'errortext_reverse', False):
-                attrs.append('reverse')
-            return (exc_name, colored('\n'.join(out), color, attrs=attrs))
-        else:
-            return (exc_name, '\n'.join(out))
+class StdWriter(object):
+    """Standard writer method for Larch,
+    to be used in place of sys.stdout
+
+    supports methods:
+      write(text, color=None, bkg=None, bold=Fals, reverse=False)
+      flush()
+    """
+    valid_termcolors = ('grey', 'red', 'green', 'yellow',
+                        'blue', 'magenta', 'cyan', 'white')
+
+    termcolor_attrs = ('bold', 'underline', 'blink', 'reverse')
+    def __init__(self, stdout=None, has_color=True):
+        if stdout is None:
+            stdout = sys.stdout
+        self.has_color = has_color and HAS_TERMCOLOR
+        self.writer = stdout
+
+    def _getcolor(self, color=None):
+        if self.has_color and color in self.valid_termcolors:
+            return color
+        return None
+
+    def write(self, text, color=None, bkg=None, **kws):
+        """write text to writer
+        write('hello', color='red', bkg='grey', bold=True, blink=True)
+        """
+        attrs = []
+        for key, val in kws.items():
+            if val and (key in self.termcolor_attrs):
+                attrs.append(key)
+        color = self._getcolor(color)
+        if color is not None:
+            bkg = self._getcolor(bkg)
+            if bkg is not None:
+                bkg= 'on_%s' % bkg
+            text = colored(text, color, on_color=bkg, attrs=attrs)
+        self.writer.write(text)
+
+#
+#         if HAS_TERMCOLOR and getattr(self.symtable._sys, 'color_exceptions', True):
+#             color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
+#             if color not in VALID_TERMCOLORS:
+#                 color = 'red'
+#             attrs = []
+#             if getattr(self.symtable._sys, 'errortext_bold', True):
+#                 attrs.append('bold')
+#
+#             if getattr(self.symtable._sys, 'errortext_dark', False):
+#                 attrs.append('dark')
+#
+#             if getattr(self.symtable._sys, 'errortext_underline', False):
+#                 attrs.append('underline')
+#             if getattr(self.symtable._sys, 'errortext_blink', False):
+#                 attrs.append('blink')
+#             if getattr(self.symtable._sys, 'errortext_reverse', False):
+#                 attrs.append('reverse')
+#             out = colored('\n'.join(out), color, attrs=attrs))
+
+    def flush(self):
+        self.writer.flush()
 
 
 class Procedure(object):
