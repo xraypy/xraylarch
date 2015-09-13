@@ -58,6 +58,7 @@ class shell(cmd.Cmd):
         self.prompt = self.ps1
 
         self.larch.run_init_scripts()
+        self.termcolor_opts = self.larch.symtable._builtin.get_termcolor_opts
 
     def __del__(self, *args):
         self.__write_history()
@@ -100,6 +101,8 @@ class shell(cmd.Cmd):
 
     def default(self, text):
         text = text.strip()
+        write = self.larch.writer.write
+
         if text in ('quit', 'exit', 'EOF'):
             if text in ('quit', 'exit'):
                 try:
@@ -131,24 +134,27 @@ class shell(cmd.Cmd):
                     continue
                 ret = self.larch.eval(block, fname=fname, lineno=lineno)
                 if self.larch.error:
+                    eopts = self.termcolor_opts('error', _larch=self.larch)
                     err = self.larch.error.pop(0)
                     if err.fname is not None:
                         fname = err.fname
                         if err.lineno is not None:
                             lineno = err.lineno
                     if err.tback is not None:
-                        sys.stdout.write(err.tback)
-                    sys.stdout.write("%s\n" % err.get_error(fname=fname, lineno=lineno)[1])
+                        write(err.tback, **eopts)
+                    write("%s\n" % err.get_error(fname=fname, lineno=lineno)[1], **eopts)
                     for err in self.larch.error:
                         if self.debug or ((err.fname != fname or err.lineno != lineno)
                                           and err.lineno > 0 and lineno > 0):
-                            sys.stdout.write("%s\n" % (err.get_error()[1]))
+                            write("%s\n" % (err.get_error()[1]), **eopts)
                         self.input.clear()
                     self.prompt = self.ps1
                     break
                 elif ret is not None:
-                    sys.stdout.write("%s\n" % repr(ret))
+                    write("%s\n" % repr(ret))
                 self.prompt = self.ps1
+            self.larch.writer.flush()
+
 
 if __name__ == '__main__':
     fout = open('larch.out', 'w')
