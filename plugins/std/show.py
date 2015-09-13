@@ -86,6 +86,7 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
     group = None
     symtable = _larch.symtable
     display  = symtable._sys.display
+    get_termcolor_opts = symtable._builtin.get_termcolor_opts
     with_color = with_color and display.use_color
 
     title = sym
@@ -106,17 +107,15 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
         title = 'Group _main'
 
     ## set colors for output
-    col1, col2 = None, None
+    colopts1 = get_termcolor_opts('foreground', _larch=_larch)
+    colopts2 = get_termcolor_opts('foreground2', _larch=_larch)
     if with_color:
-        if color  is None:
-            col1 = display.colors.foreground
-        else:
-            col1 = color
-        if color2 is None:
-            col2 = display.colors.foreground2
-        else:
-            col2 = color2
-    _colors = {1: col1, 0: col2}
+        if color is not None:
+            colopts1['color'] = color
+        if color2 is not None:
+            colopts2['color'] = color2
+
+    _copts = {1: colopts1, 0: colopts2}
 
     members = dir(group)
     dmembers = []
@@ -150,15 +149,14 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
         if dval is None:
             dval = repr(obj)
         count += 1
-        col = _colors[count % 2]
-        write('  %s: %s\n' % (item, dval), color=col)
-
+        copts = _copts[count % 2]
+        write('  %s: %s\n' % (item, dval), **copts)
     _larch.writer.flush()
 
 
 @ValidateLarchPlugin
-def set_terminal(style='dark', terminal=None, use_color=True, _larch=None):
-    """configure terminal settings
+def set_termcolor(style='dark', terminal=None, use_color=True, _larch=None):
+    """configure terminal and termcolor settings
 
     style
     use_color
@@ -180,6 +178,17 @@ def set_terminal(style='dark', terminal=None, use_color=True, _larch=None):
     if terminal is not None:
         display.terminal = terminal
 
+
+def get_termcolor_opts(dtype, _larch=None):
+    """ get color options suitable for color output"""
+    out = {'color': None}
+    display  = _larch.symtable._sys.display
+    if display.use_color:
+        out['color'] = getattr(display.colors, dtype, None)
+        for attr in getattr(display.colors, '%s_attrs' % dtype, []):
+            out[attr] = True
+    return out
+
 def initialize_sys_display(_larch=None):
     """initialize the _sys.display group, holding runtime data
      on display (colors, terminals, etc).
@@ -190,11 +199,17 @@ def initialize_sys_display(_larch=None):
     if not symtable.has_group('_sys.display'):
         symtable.new_group('_sys.display')
     display = symtable._sys.display
-    display.colors = Group(background='black',
-                           foreground='white',
-                           foreground2='cyan',
-                           error='red',
-                           comment='green')
+
+    defaults = dict(background='black', foreground='white',
+                    foreground2='cyan', error='red', comment='green')
+
+    display.colors = Group()
+
+    for key, val in defaults.items():
+        setattr(display.colors, key, val)
+        setattr(display.colors, "%s_attrs" % key, [])
+
+    display.colors.error_attrs = ['bold']
     display.use_color = True
     display.terminal = 'xterm'
 
@@ -209,7 +224,8 @@ def initializeLarchPlugin(_larch=None):
 def registerLarchPlugin():
     return ('_builtin', {'show': show,
                          'get': get,
-                         'set_terminal': set_terminal,
+                         'get_termcolor_opts': get_termcolor_opts,
+                         'set_termcolor': set_termcolor,
                          'group2dict': group2dict,
                          'dict2group': dict2group,
                          'show_tree': show_tree})
