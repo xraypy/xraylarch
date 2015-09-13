@@ -107,8 +107,8 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
         title = 'Group _main'
 
     ## set colors for output
-    colopts1 = get_termcolor_opts('foreground', _larch=_larch)
-    colopts2 = get_termcolor_opts('foreground2', _larch=_larch)
+    colopts1 = get_termcolor_opts('text', _larch=_larch)
+    colopts2 = get_termcolor_opts('text2', _larch=_larch)
     if with_color:
         if color is not None:
             colopts1['color'] = color
@@ -153,34 +153,13 @@ def show(sym=None, _larch=None, with_private=False, with_color=True,
         write('  %s: %s\n' % (item, dval), **copts)
     _larch.writer.flush()
 
-
 @ValidateLarchPlugin
-def set_termcolor(style='dark', terminal=None, use_color=True, _larch=None):
-    """configure terminal and termcolor settings
-
-    style
-    use_color
-    terminal
-
-    """
-    style = style.lower()
-    symtable = _larch.symtable
-    display = symtable._sys.display
-    display.use_color = use_color
-    if style == 'dark':
-        display.colors.background = 'black'
-        display.colors.foreground = 'white'
-        display.colors.foreground2 = 'cyan'
-    elif style == 'light':
-        display.colors.background = 'white'
-        display.colors.foreground = 'grey'
-        display.colors.foreground2 = 'cyan'
-    if terminal is not None:
-        display.terminal = terminal
-
-
 def get_termcolor_opts(dtype, _larch=None):
-    """ get color options suitable for color output"""
+    """ get color options suitable for passing to
+    larch's writer.write() for color output
+
+    first argument should be string of
+    'text', 'text2', 'error', 'comment'"""
     out = {'color': None}
     display  = _larch.symtable._sys.display
     if display.use_color:
@@ -200,11 +179,9 @@ def initialize_sys_display(_larch=None):
         symtable.new_group('_sys.display')
     display = symtable._sys.display
 
-    defaults = dict(background='black', foreground='white',
-                    foreground2='cyan', error='red', comment='green')
-
+    defaults = dict(text='grey', text2='cyan',
+                    error='red', comment='green')
     display.colors = Group()
-
     for key, val in defaults.items():
         setattr(display.colors, key, val)
         setattr(display.colors, "%s_attrs" % key, [])
@@ -225,7 +202,6 @@ def registerLarchPlugin():
     return ('_builtin', {'show': show,
                          'get': get,
                          'get_termcolor_opts': get_termcolor_opts,
-                         'set_termcolor': set_termcolor,
                          'group2dict': group2dict,
                          'dict2group': dict2group,
                          'show_tree': show_tree})
