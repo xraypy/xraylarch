@@ -12,9 +12,7 @@ from .site_config import history_file, show_site_config
 from .version import __version__, __date__
 
 BANNER = """  Larch %s  M. Newville, T. Trainor -- %s
-  using python %s, numpy %s
-"""
-
+  using python %s, numpy %s"""
 
 class shell(cmd.Cmd):
     ps1    = "larch> "
@@ -45,18 +43,15 @@ class shell(cmd.Cmd):
         self.stdout = sys.stdout
 
         if banner_msg is None:
-            banner_msg = BANNER % (__version__, __date__,
-                                   '%i.%i.%i' % sys.version_info[:3],
-                                   numpy.__version__)
-
-
+            banner_msg = 'Larch, Simple Shell'
         self.larch  = Interpreter()
         self.input  = InputText(prompt=self.ps1, _larch=self.larch)
         self.prompt = self.ps1
 
         writer = self.larch.writer
         if not quiet:
-            writer.write("%s\n" % banner_msg, color='blue', bold=True)
+            writer.write(banner_msg, color='red', bold=True)
+            writer.write("\n")
 
         self.larch.run_init_scripts()
         self.termcolor_opts = self.larch.symtable._builtin.get_termcolor_opts
