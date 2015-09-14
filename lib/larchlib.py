@@ -18,6 +18,7 @@ HAS_TERMCOLOR = False
 try:
     from termcolor import colored
     if os.name == 'nt':
+        os.environ.pop('TERM')
         import colorama
         colorama.init()
     HAS_TERMCOLOR = True
