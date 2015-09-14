@@ -17,7 +17,8 @@ import numpy
 from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
-from .larchlib import LarchExceptionHolder, Procedure, ReturnedNone
+from .larchlib import (LarchExceptionHolder, ReturnedNone,
+                       Procedure, StdWriter)
 from .fitting  import isParameter
 from .utils import Closure
 
@@ -90,7 +91,8 @@ class Interpreter:
                        'while')
 
     def __init__(self, symtable=None, writer=None, with_plugins=True):
-        self.writer = writer or sys.stdout
+        self.writer = writer or StdWriter()
+        self.writer._larch = self
 
         if symtable is None:
             symtable = SymbolTable(larch=self)
@@ -142,7 +144,7 @@ class Interpreter:
                 if os.path.isdir(pdir):
                     builtins._addplugin(pdir, _larch=self)
                     loaded_plugins.append(pname)
-                
+
             for pname in sorted(os.listdir(plugins_dir)):
                 if pname not in loaded_plugins:
                     pdir = os.path.join(plugins_dir, pname)

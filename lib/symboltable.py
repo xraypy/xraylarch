@@ -134,7 +134,6 @@ class SymbolTable(Group):
 
     def __init__(self, larch=None):
         Group.__init__(self, name=self.top_group)
-        # self.__writer = writer  or sys.stdout.write
         self._larch = larch
         self._sys = None
         setattr(self, self.top_group, self)

@@ -8,18 +8,10 @@ import types
 import numpy
 from larch import Group, ValidateLarchPlugin
 
-
-HAS_TERMCOLOR = False
-try:
-    from termcolor import colored
-    if os.name == 'nt':
-        import colorama
-    HAS_TERMCOLOR = True
-except:
-    pass
+TERMCOLOR_COLORS = ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')
 
 @ValidateLarchPlugin
-def _get(sym=None, _larch=None, **kws):
+def get(sym=None, _larch=None, **kws):
     """get object from symbol table from symbol name:
 
     >>> g = group(a = 1,  b=2.3, z = 'a string')
@@ -39,56 +31,6 @@ def _get(sym=None, _larch=None, **kws):
         group = symtable._lookup(sym, create=False)
     return group
 
-@ValidateLarchPlugin
-def _show_old(sym=None, _larch=None, with_private=False, **kws):
-    """display group members.
-    Options
-    -------
-    with_private:  show 'private' members ('__private__')
-
-    See Also:  show_tree()
-    """
-    if sym is None:
-        sym = '_main'
-    group = None
-    symtable = _larch.symtable
-    title = sym
-    if symtable.isgroup(sym):
-        group = sym
-        title = repr(sym)[1:-1]
-    elif isinstance(sym, types.ModuleType):
-        group = sym
-        title = sym.__name__
-
-    if group is None:
-        _larch.writer.write("%s\n" % repr(sym))
-        return
-    if title.startswith(symtable.top_group):
-        title = title[6:]
-
-    if group == symtable:
-        title = 'Group _main'
-
-    members = dir(group)
-    out = ['== %s: %i symbols ==' % (title, len(members))]
-    for item in members:
-        if item.startswith('__') and not with_private:
-		#item.endswith('__') and# not with_private):
-            continue
-        obj = getattr(group, item)
-        dval = None
-        if isinstance(obj, numpy.ndarray):
-            if len(obj) > 10 or len(obj.shape)>1:
-                dval = "array<shape=%s, type=%s>" % (repr(obj.shape),
-                                                         repr(obj.dtype))
-        if dval is None:
-            dval = repr(obj)
-        out.append('  %s: %s' % (item, dval))
-#         if not (item.startswith('_Group__') or
-#                 item == '__name__' or item == '_larch' or
-#                 item.startswith('_SymbolTable__')):
-
-    _larch.writer.write("%s\n" % '\n'.join(out))
 
 @ValidateLarchPlugin
 def show_tree(group, _larch=None, indent=0, groups_shown=None, **kws):
@@ -127,10 +69,9 @@ def dict2group(d, _larch=None):
     "return group created from a dictionary"
     return Group(**d)
 
-
 @ValidateLarchPlugin
-def _show(sym=None, _larch=None, with_private=False, with_color=True, 
-          color='cyan', truncate=True, with_methods=True, **kws):
+def show(sym=None, _larch=None, with_private=False, with_color=True,
+          color=None, color2=None, truncate=True, with_methods=True, **kws):
     """show group members:
     Options
     -------
@@ -140,12 +81,14 @@ def _show(sym=None, _larch=None, with_private=False, with_color=True,
     with_methods:  suppress display of methods if False
 
     """
-    with_color = with_color and HAS_TERMCOLOR
-
     if sym is None:
         sym = '_main'
     group = None
     symtable = _larch.symtable
+    display  = symtable._sys.display
+    get_termcolor_opts = symtable._builtin.get_termcolor_opts
+    with_color = with_color and display.use_color
+
     title = sym
     if symtable.isgroup(sym):
         group = sym
@@ -163,21 +106,37 @@ def _show(sym=None, _larch=None, with_private=False, with_color=True,
     if group == symtable:
         title = 'Group _main'
 
-    ## these are the 8 allowed colors in termcolor
-    if (not color in ('grey', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white')):
-        color = 'cyan'
+    ## set colors for output
+    colopts1 = get_termcolor_opts('text', _larch=_larch)
+    colopts2 = get_termcolor_opts('text2', _larch=_larch)
+    if with_color:
+        if color is not None:
+            colopts1['color'] = color
+        if color2 is not None:
+            colopts2['color'] = color2
+
+    _copts = {1: colopts1, 0: colopts2}
 
     members = dir(group)
-    out = ['== %s: %i symbols ==' % (title, len(members))]
-    count = 0
+    dmembers = []
+    nmethods = 0
     for item in members:
         if (item.startswith('__') and item.endswith('__') and
             not with_private):
             continue
         obj = getattr(group, item)
-        if (callable(obj) and not with_methods):
-            continue
-        count = count+1
+        if callable(obj):
+            nmethods +=1
+            if not with_methods:
+                continue
+        dmembers.append((item, obj))
+    write = _larch.writer.write
+
+    title_fmt = '== %s: %i methods, %i attributes ==\n'
+    write(title_fmt % (title, nmethods, len(dmembers)-nmethods))
+
+    count = 0
+    for item, obj in dmembers:
         dval = None
         if isinstance(obj, numpy.ndarray):
             if len(obj) > 10 or len(obj.shape)>1:
@@ -189,26 +148,60 @@ def _show(sym=None, _larch=None, with_private=False, with_color=True,
                                                  repr(obj[-2]), repr(obj[-1]))
         if dval is None:
             dval = repr(obj)
-        if ((not with_color) or (count % 2)):
-            string = '  %s: %s' % (item, dval)
-        else:
-            string = colored('  %s: %s' % (item, dval), color)
-        out.append(string)
+        count += 1
+        copts = _copts[count % 2]
+        write('  %s: %s\n' % (item, dval), **copts)
+    _larch.writer.flush()
 
-    if not with_methods:
-        out[0] = '== %s: %i methods, %i attributes ==' % (title, len(members)-count, count)
-    _larch.writer.write("%s\n" % '\n'.join(out))
+@ValidateLarchPlugin
+def get_termcolor_opts(dtype, _larch=None):
+    """ get color options suitable for passing to
+    larch's writer.write() for color output
 
+    first argument should be string of
+    'text', 'text2', 'error', 'comment'"""
+    out = {'color': None}
+    display  = _larch.symtable._sys.display
+    if display.use_color:
+        out['color'] = getattr(display.colors, dtype, None)
+        for attr in getattr(display.colors, '%s_attrs' % dtype, []):
+            out[attr] = True
+    return out
+
+def initialize_sys_display(_larch=None):
+    """initialize the _sys.display group, holding runtime data
+     on display (colors, terminals, etc).
+    """
+    if _larch is None:
+        return
+    symtable = _larch.symtable
+    if not symtable.has_group('_sys.display'):
+        symtable.new_group('_sys.display')
+    display = symtable._sys.display
+
+    defaults = dict(text=None, text2='cyan',
+                    error='red', comment='green')
+    display.colors = Group()
+    for key, val in defaults.items():
+        setattr(display.colors, key, val)
+        setattr(display.colors, "%s_attrs" % key, [])
+
+    display.colors.error_attrs = ['bold']
+    display.use_color = True
+    display.terminal = 'xterm'
 
 def initializeLarchPlugin(_larch=None):
     """initialize show and friends"""
     cmds = ['show', 'show_tree']
     if _larch is not None:
         _larch.symtable._sys.valid_commands.extend(cmds)
+        initialize_sys_display(_larch=_larch)
+
 
 def registerLarchPlugin():
-    return ('_builtin', {'show': _show, 'get': _get,
+    return ('_builtin', {'show': show,
+                         'get': get,
+                         'get_termcolor_opts': get_termcolor_opts,
                          'group2dict': group2dict,
                          'dict2group': dict2group,
-                         'show_tree': show_tree, 
-                         'show_simple': _show_old})
+                         'show_tree': show_tree})
