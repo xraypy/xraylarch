@@ -40,7 +40,7 @@ COMMONTYPES = [int, float, complex, bool, str, dict, list, tuple, numpy.ndarray]
 if sys.version[0] == '2':
     COMMONTYPES.append(unicode)
 COMMONTYPES =  tuple(COMMONTYPES)
-    
+
 H5TYPES = ()
 try:
     import h5py
@@ -60,7 +60,7 @@ DOCTYPES = ('BuiltinFunctionType', 'BuiltinMethodType', 'ClassType',
 
 def rst2html(text):
     return "<br>".join(text.split('\n'))
-    
+
 
 class FillingTree(wx.TreeCtrl):
     """FillingTree based on TreeCtrl."""
@@ -94,7 +94,7 @@ class FillingTree(wx.TreeCtrl):
         self.Bind(wx.EVT_TREE_ITEM_EXPANDING, self.OnItemExpanding, id=self.GetId())
         self.Bind(wx.EVT_TREE_ITEM_COLLAPSED, self.OnItemCollapsed, id=self.GetId())
         self.Bind(wx.EVT_TREE_SEL_CHANGED, self.OnSelChanged, id=self.GetId())
-        self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnItemActivated, id=self.GetId())
+        # self.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.OnItemActivated, id=self.GetId())
         self.Bind(wx.EVT_RIGHT_DOWN, self.OnSelChanged, id=self.GetId() )
         if not self.static:
             dispatcher.connect(receiver=self.push, signal='Interpreter.push')
@@ -415,7 +415,6 @@ class Filling(wx.SplitterWindow):
         config.WriteInt('View/Zoom/Filling', self.text.GetZoom())
 
 
-
 class FillingFrame(wx.Frame):
     """Frame containing the namespace tree component."""
 
@@ -427,12 +426,13 @@ class FillingFrame(wx.Frame):
                  rootLabel=None, rootIsNamespace=False, static=False):
         """Create FillingFrame instance."""
         wx.Frame.__init__(self, parent, id, title, pos, size, style)
-        intro = 'Larch Data Tree (borrowed from PyFilling)'
+        intro = 'Larch Data Tree'
         self.CreateStatusBar()
         self.SetStatusText(intro)
 #         import images
 #         self.SetIcon(images.getPyIcon())
-        self.filling = Filling(parent=self, rootObject=rootObject,
+        self.filling = Filling(parent=self,
+                               rootObject=rootObject,
                                rootLabel=rootLabel,
                                rootIsNamespace=rootIsNamespace,
                                static=static)
