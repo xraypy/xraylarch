@@ -92,6 +92,7 @@ class Interpreter:
 
     def __init__(self, symtable=None, writer=None, with_plugins=True):
         self.writer = writer or StdWriter()
+        self.writer._larch = self
 
         if symtable is None:
             symtable = SymbolTable(larch=self)
