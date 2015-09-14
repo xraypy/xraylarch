@@ -12,6 +12,9 @@ import wx
 import time
 import os
 
+from larch.wxlib.larchfilling import Filling
+
+
 MODNAME = '_sys.wx'
 DEF_CHOICES = [('All Files', '*.*')]
 
@@ -81,7 +84,7 @@ class wxLarchTimer(wx.MiniFrame):
        print(" ..")
 
 # @SafeWxCall
-def _gcd(wxparent=None, _larch=None, **kws):
+def gcd(wxparent=None, _larch=None, **kws):
     """Directory Browser to Change Directory"""
     dlg = wx.DirDialog(None, 'Choose Directory',
                        defaultPath = os.getcwd(),
@@ -93,10 +96,42 @@ def _gcd(wxparent=None, _larch=None, **kws):
     return os.getcwd()
 
 
+class DataBrowserFrame(wx.Frame):
+    """Frame containing the Filling for Data browser."""
+    name = 'Filling Frame'
+    def __init__(self, parent=None, id=-1, title='Larch Data Tree',
+                 pos=wx.DefaultPosition, size=(650, 450),
+                 style=wx.DEFAULT_FRAME_STYLE, _larch=None):
+        """Create FillingFrame instance."""
+        wx.Frame.__init__(self, parent, id, title, pos, size, style)
+        self.CreateStatusBar()
+        self.SetStatusText('')
+
+        self.filling = Filling(parent=self, rootObject=_larch.symtable,
+                               rootLabel='_main', rootIsNamespace=False,
+                               static=False)
+
+        self.filling.tree.setStatusText = self.SetStatusText
+        self.filling.tree.display()
+        self.root = self.filling.tree.GetRootItem()
+        self.filling.tree.Expand(self.root)
+        self.Show()
+        self.Raise()
+
+    def redraw(self):
+        self.filling.tree.Collapse(self.root)
+        self.filling.tree.Expand(self.root)
+
+def databrowser(_larch=None, **kws):
+    """show DataBrowser window for exploring Larch Groups and Data"""
+    
+    return DataBrowserFrame(parent=None, _larch=_larch)
+
+
 # @SafeWxCall
-def _fileprompt(mode='open', multi=True, message = None,
+def fileprompt(mode='open', multi=True, message = None,
                 fname=None, choices=None, _larch=None, **kws):
-    """Bring up File Browser for opening or saving file.
+    """show File Browser for opening or saving file.
     Returns name of selected file.
 
     options:
@@ -107,7 +142,7 @@ def _fileprompt(mode='open', multi=True, message = None,
        choices:  list of (title, fileglob) to restrict choices
 
     > x = fileprompt(choices=(('All Files', '*.*'), ('Python Files', '*.py')))
-       
+
     """
     symtable = ensuremod(_larch)
 
@@ -118,7 +153,7 @@ def _fileprompt(mode='open', multi=True, message = None,
         except:
             pass
     symtable.set_symbol("%s.default_filename" % MODNAME, fname)
-    
+
     if choices is None or len(choices) < 1:
         choices = DEF_CHOICES
         try:
@@ -164,7 +199,7 @@ def _fileprompt(mode='open', multi=True, message = None,
     return path
 
 def registerLarchPlugin():
-    return (MODNAME, {'gcd': _gcd,
-                      'fileprompt': _fileprompt,
+    return (MODNAME, {'gcd': gcd,
+                      'databrowser': databrowser,
+                      'fileprompt': fileprompt,
                       'wx_update': _wxupdate})
-
