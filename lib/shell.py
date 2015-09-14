@@ -6,23 +6,13 @@ import sys
 import numpy
 
 from .interpreter import Interpreter
+from .larchlib import StdWriter
 from .inputText import InputText
 from .site_config import history_file, show_site_config
 from .version import __version__, __date__
 
 BANNER = """  Larch %s  M. Newville, T. Trainor -- %s
-  using python %s, numpy %s
-"""
-
-HAS_COLORAMA = False
-try:
-    from termcolor import colored
-    if os.name == 'nt':
-        import colorama
-        colorama.init(convert=True)
-        HAS_COLORAMA = True
-except:
-    pass
+  using python %s, numpy %s"""
 
 class shell(cmd.Cmd):
     ps1    = "larch> "
@@ -53,19 +43,18 @@ class shell(cmd.Cmd):
         self.stdout = sys.stdout
 
         if banner_msg is None:
-            banner_msg = BANNER % (__version__, __date__,
-                                   '%i.%i.%i' % sys.version_info[:3],
-                                   numpy.__version__)
-
-        writer = sys.stdout
-        if not quiet:
-            writer.write("%s\n" % banner_msg)
-
-        self.larch  = Interpreter(writer=writer)
+            banner_msg = 'Larch, Simple Shell'
+        self.larch  = Interpreter()
         self.input  = InputText(prompt=self.ps1, _larch=self.larch)
         self.prompt = self.ps1
 
+        writer = self.larch.writer
+        if not quiet:
+            writer.write(banner_msg, color='red', bold=True)
+            writer.write("\n")
+
         self.larch.run_init_scripts()
+        self.termcolor_opts = self.larch.symtable._builtin.get_termcolor_opts
 
     def __del__(self, *args):
         self.__write_history()
@@ -108,6 +97,8 @@ class shell(cmd.Cmd):
 
     def default(self, text):
         text = text.strip()
+        write = self.larch.writer.write
+
         if text in ('quit', 'exit', 'EOF'):
             if text in ('quit', 'exit'):
                 try:
@@ -139,24 +130,28 @@ class shell(cmd.Cmd):
                     continue
                 ret = self.larch.eval(block, fname=fname, lineno=lineno)
                 if self.larch.error:
+                    eopts = self.termcolor_opts('error', _larch=self.larch)
                     err = self.larch.error.pop(0)
                     if err.fname is not None:
                         fname = err.fname
                         if err.lineno is not None:
                             lineno = err.lineno
                     if err.tback is not None:
-                        sys.stdout.write(err.tback)
-                    sys.stdout.write("%s\n" % err.get_error(fname=fname, lineno=lineno)[1])
+                        write(err.tback, **eopts)
+                    write("%s\n" % err.get_error(fname=fname, lineno=lineno)[1], **eopts)
                     for err in self.larch.error:
                         if self.debug or ((err.fname != fname or err.lineno != lineno)
                                           and err.lineno > 0 and lineno > 0):
-                            sys.stdout.write("%s\n" % (err.get_error()[1]))
+                            write("%s\n" % (err.get_error()[1]), **eopts)
                         self.input.clear()
                     self.prompt = self.ps1
                     break
                 elif ret is not None:
-                    sys.stdout.write("%s\n" % repr(ret))
+                    wopts = self.termcolor_opts('text', _larch=self.larch)
+                    write("%s\n" % repr(ret), **wopts)
                 self.prompt = self.ps1
+            self.larch.writer.flush()
+
 
 if __name__ == '__main__':
     fout = open('larch.out', 'w')
