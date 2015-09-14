@@ -202,11 +202,13 @@ class StdWriter(object):
                         'blue', 'magenta', 'cyan', 'white')
 
     termcolor_attrs = ('bold', 'underline', 'blink', 'reverse')
-    def __init__(self, stdout=None, has_color=True):
+    def __init__(self, stdout=None, has_color=True, _larch=None):
         if stdout is None:
             stdout = sys.stdout
         self.has_color = has_color and HAS_TERMCOLOR
         self.writer = stdout
+        self._larch = _larch
+        self.termcolor_opts = None
 
     def _getcolor(self, color=None):
         if self.has_color and color in self.valid_termcolors:
@@ -221,6 +223,21 @@ class StdWriter(object):
         for key, val in kws.items():
             if val and (key in self.termcolor_attrs):
                 attrs.append(key)
+        if self.termcolor_opts is None:
+            try:
+                fcn = self._larch.symtable._builtin.get_termcolor_opts
+                self.termcolor_opts = fcn
+            except:
+                pass
+        if color is None:
+            color_opts = {'color': None}
+            if callable(self.termcolor_opts) and self._larch is not None:
+                color_opts = self.termcolor_opts('text', _larch=self._larch)
+            color = color_opts.pop('color')
+            for key in color_opts.keys():
+                if key in self.termcolor_attrs:
+                    attrs.append('%s' % key)
+
         color = self._getcolor(color)
         if color is not None:
             bkg = self._getcolor(bkg)
