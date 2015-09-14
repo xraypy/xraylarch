@@ -229,26 +229,6 @@ class StdWriter(object):
             text = colored(text, color, on_color=bkg, attrs=attrs)
         self.writer.write(text)
 
-#
-#         if HAS_TERMCOLOR and getattr(self.symtable._sys, 'color_exceptions', True):
-#             color = getattr(self.symtable._sys, 'errortext_color', 'red').lower()
-#             if color not in VALID_TERMCOLORS:
-#                 color = 'red'
-#             attrs = []
-#             if getattr(self.symtable._sys, 'errortext_bold', True):
-#                 attrs.append('bold')
-#
-#             if getattr(self.symtable._sys, 'errortext_dark', False):
-#                 attrs.append('dark')
-#
-#             if getattr(self.symtable._sys, 'errortext_underline', False):
-#                 attrs.append('underline')
-#             if getattr(self.symtable._sys, 'errortext_blink', False):
-#                 attrs.append('blink')
-#             if getattr(self.symtable._sys, 'errortext_reverse', False):
-#                 attrs.append('reverse')
-#             out = colored('\n'.join(out), color, attrs=attrs))
-
     def flush(self):
         self.writer.flush()
 
