@@ -179,7 +179,7 @@ def initialize_sys_display(_larch=None):
         symtable.new_group('_sys.display')
     display = symtable._sys.display
 
-    defaults = dict(text='grey', text2='cyan',
+    defaults = dict(text=None, text2='cyan',
                     error='red', comment='green')
     display.colors = Group()
     for key, val in defaults.items():
