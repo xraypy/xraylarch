@@ -2,15 +2,19 @@
 """
 Enable wxPython to be used interacive by setting PyOS_InputHook.
 
-Authors:  Robin Dunn, Brian Granger, Ondrej Certik
+based on inputhook.py and inputhookwx.py from IPython,
+which has several authors, including
+   Robin Dunn, Brian Granger, Ondrej Certik
 
-tweaked by M Newville, based on reading modified inputhookwx from IPython
+tweaked by M Newville for larch
 """
 
 import sys
 import time
-from timeit import default_timer as clock
 import signal
+from select import select
+from ctypes import c_void_p, c_int, cast, CFUNCTYPE, pythonapi
+import larch
 
 if not hasattr(sys, 'frozen'):
     try:
@@ -20,21 +24,12 @@ if not hasattr(sys, 'frozen'):
         pass
 
 import wx
-from time import sleep
-from select import select
-from ctypes import c_void_p, c_int, cast, CFUNCTYPE, pythonapi
-import larch
 
-def stdin_ready():
-    inp, out, err = select([sys.stdin],[],[],0)
-    return bool(inp)
-
-if sys.platform == 'win32':
-    from msvcrt import kbhit as stdin_ready
 
 POLLTIME = 10 # milliseconds
 ON_INTERRUPT = None
 WXLARCH_SYM = None
+WXLARCH_INP = None
 UPDATE_GROUPNAME = '_sys.wx'
 UPDATE_GROUP = None
 UPDATE_VAR = 'force_wxupdate'
@@ -55,33 +50,70 @@ def clear_update_request():
     if UPDATE_GROUP is not None:
         setattr(UPDATE_GROUP, UPDATE_VAR, False)
 
+clock = time.time
+sleep = time.sleep
+
+def onCtrlC(*args, **kws):
+    global WXLARCH_SYM
+    WXLARCH_SYM.set_symbol('_sys.wx.keyboard_interrupt', True)
+    raise KeyboardInterrupt
+    return 0
+
+def capture_CtrlC():
+    signal.signal(signal.SIGINT, onCtrlC)
+
+def ignore_CtrlC():
+    signal.signal(signal.SIGINT, signal.SIG_IGN)
+
+def allow_idle():
+    # allow idle (needed for Mac OS X)
+    pass
+
+def stdin_ready():
+    inp, out, err = select([sys.stdin],[],[],0)
+    return bool(inp)
+
+if sys.platform == 'win32':
+    from msvcrt import kbhit as stdin_ready
+    clock = time.clock
+    def ignore_CtrlC():
+        pass
+elif sys.platform == 'darwin':
+    from allow_idle_macosx import allow_idle
+
+
 class EventLoopRunner(object):
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, app):
+        self.app = app
 
     def run(self, poll_time=None):
-        global ID_TIMER
         if poll_time is None:
             poll_time = POLLTIME
+        self.t0 = clock()
         self.evtloop = wx.EventLoop()
-        self.timer = wx.Timer(self.parent, ID_TIMER)
-        wx.EVT_TIMER(self.parent, ID_TIMER, self.check_stdin)
+        self.timer = wx.Timer()
+        self.app.Bind(wx.EVT_TIMER, self.check_stdin)
         self.timer.Start(poll_time)
         self.evtloop.Run()
 
     def check_stdin(self, event=None):
-        if stdin_ready() or update_requested():
-            self.timer.Stop()
-            self.evtloop.Exit()
-            del self.timer, self.evtloop
-            clear_update_request()
+        # print 'Get In ', clock()-self.t0, stdin_ready()
+        try:
+            if (stdin_ready() or update_requested() or
+                (clock() - self.t0) > 5):
+                self.timer.Stop()
+                self.evtloop.Exit()
+                del self.timer, self.evtloop
+                clear_update_request()
+        except KeyboardInterrupt:
+            print 'Captured Ctrl-C!'
 
 def inputhook_wx():
     """Run the wx event loop by processing pending events only.
 
-    This is like inputhook_wx1, but it keeps processing pending events
-    until stdin is ready.  After processing all pending events, a call to
-    time.sleep is inserted.  This is needed, otherwise, CPU usage is at 100%.
+    This keeps processing pending events until stdin is ready.
+    After processing all pending events, a call to time.sleep is inserted.
+    This is needed, otherwise, CPU usage is at 100%.
     This sleep time should be tuned though for best performance.
     """
     # We need to protect against a user pressing Control-C when IPython is
@@ -105,11 +137,12 @@ def inputhook_wx():
                 # low.  However, if sleep to long, GUI response is poor.
                 used_time = clock() - t
                 ptime = 0.001
-                if used_time > 0.25: ptime = 0.05
-                if used_time > 5.00: ptime = 0.50
-                time.sleep(ptime)
+                if used_time >  0.10: ptime = 0.05
+                if used_time >  3.00: ptime = 0.25
+                if used_time > 30.00: ptime = 1.00
+                sleep(ptime)
             del ea
-            clear_update_request()            
+            clear_update_request()
     except KeyboardInterrupt:
         if hasattr(ON_INTERRUPT, '__call__'):
             ON_INTERRUPT()
@@ -133,17 +166,16 @@ def inputhook_darwin():
         app = wx.GetApp()
         if app is not None:
             assert wx.Thread_IsMain()
-            eloop = EventLoopRunner(parent=app)
+            eloop = EventLoopRunner(app)
             ptime = POLLTIME
             if update_requested():
                 ptime /= 10
             eloop.run(poll_time=ptime)
     except KeyboardInterrupt:
+        print(" See KeyboardInterrupt from darwin hook")
         if hasattr(ON_INTERRUPT, '__call__'):
             ON_INTERRUPT()
     return 0
-
-
 
 if sys.platform == 'darwin':
     # On OSX, evtloop.Pending() always returns True, regardless of there being
@@ -151,14 +183,18 @@ if sys.platform == 'darwin':
     # inputhook as those depend on a pending/dispatch loop.
     inputhook_wx = inputhook_darwin
 
-input_hook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
+capture_CtrlC()
 cback = CFUNCTYPE(c_int)(inputhook_wx)
-input_hook.value = cast(cback, c_void_p).value
+py_inphook = c_void_p.in_dll(pythonapi, 'PyOS_InputHook')
+py_inphook.value = cast(cback, c_void_p).value
+
+# import for Darwin!
+allow_idle()
 
 def ping(timeout=0.001):
     "ping wx"
     try:
-        t0 = time.time()
+        t0 = clock()
         app = wx.GetApp()
         if app is not None:
             assert wx.Thread_IsMain()
@@ -167,11 +203,10 @@ def ping(timeout=0.001):
             # will also deal with pending or posted wx events.)
             evtloop = wx.EventLoop()
             ea = wx.EventLoopActivator(evtloop)
-            # t0 = time.time()
-            #while time.time()-t0 < timeout:
-            #    evtloop.Dispatch()
+            t0 = clock()
+            while clock()-t0 < timeout:
+                evtloop.Dispatch()
             app.ProcessIdle()
             del ea
     except:
         pass
-
