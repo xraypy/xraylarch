@@ -18,9 +18,13 @@ HAS_TERMCOLOR = False
 try:
     from termcolor import colored
     if os.name == 'nt':
-        os.environ.pop('TERM')
-        import colorama
-        colorama.init()
+        # HACK (hopefully temporary):
+        # disable color output for Windows command terminal
+        # because it interferes with wx event loop.
+        import CannotUseTermcolorOnWindowsWithWx
+        # os.environ.pop('TERM')
+        # import colorama
+        # colorama.init()
     HAS_TERMCOLOR = True
 except ImportError:
     HAS_TERMCOLOR = False
