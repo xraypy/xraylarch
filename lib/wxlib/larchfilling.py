@@ -33,6 +33,7 @@ import inspect
 from wx.py import introspect
 from larch.symboltable import SymbolTable, Group
 from larch.utils import Closure
+from wxutils import Button, pack
 
 VERSION = '0.9.5(Larch)'
 
@@ -370,14 +371,25 @@ class Filling(wx.SplitterWindow):
         """Create a Filling instance."""
         wx.SplitterWindow.__init__(self, parent, id, pos, size, style, name)
 
-        self.tree = FillingTree(parent=self, rootObject=rootObject,
+        leftpanel = wx.Panel(self)
+        leftsizer = wx.BoxSizer(wx.VERTICAL)
+
+        self.refresh = Button(leftpanel, 'Refresh', size=(125, -1),
+                              action=self.onRefresh)
+        
+        self.tree = FillingTree(parent=leftpanel, rootObject=rootObject,
                                 rootLabel=rootLabel,
                                 rootIsNamespace=rootIsNamespace,
                                 static=static)
+
+        leftsizer.Add(self.refresh, 0, wx.ALIGN_TOP, 1)
+        leftsizer.Add(self.tree, 1, wx.EXPAND|wx.ALL, 1)
+        pack(leftpanel, leftsizer)
+                
         # self.text = FillingRST(parent=self, static=static)
         self.text = FillingText(parent=self, static=static)
 
-        wx.FutureCall(1, self.SplitVertically, self.tree, self.text, 200)
+        wx.FutureCall(1, self.SplitVertically, leftpanel, self.text, 200)
 
         self.SetMinimumPaneSize(1)
 
@@ -398,11 +410,50 @@ class Filling(wx.SplitterWindow):
             self.tree.display()
 
     def OnChanged(self, event):
-        #this is important: do not evaluate this event=> otherwise, splitterwindow behaves strange
+        #this is important: do not evaluate this event=>
+        # otherwise, splitterwindow behaves strange
         #event.Skip()
         pass
 
+    def onRefresh(self, evt=None):
+        """ refesh data tree, preserving current selection"""
+        root = self.tree.GetRootItem()
+        this = self.tree.GetFocusedItem()
+        parents = [self.tree.GetItemText(this)]
+        while True:
+            try:
+                this = self.tree.GetItemParent(this)
+                if this == root:
+                    break
+                parents.append(self.tree.GetItemText(this))
+            except:
+                break
+        self.tree.Collapse(root)
+        self.tree.Expand(root)
+        node = root
 
+        def get_node_by_name(node, name):
+            nodecount = self.tree.GetChildrenCount(node)
+            item, cookie = self.tree.GetFirstChild(node)
+            if self.tree.GetItemText(item) == name:
+                return item
+            while nodecount > 1:
+                nodecount -= 1
+                item, cookie = self.tree.GetNextChild(item, cookie)
+                if self.tree.GetItemText(item) == name:
+                    return item
+
+        while len(parents) > 0:
+            self.tree.Expand(node)
+            name = parents.pop()
+            node = get_node_by_name(node, name)
+        try:
+            self.tree.Expand(node)
+            self.tree.SelectItem(node)
+        except:
+            pass
+        
+            
     def LoadSettings(self, config):
         pos = config.ReadInt('Sash/FillingPos', 200)
         wx.FutureCall(250, self.SetSashPosition, pos)
