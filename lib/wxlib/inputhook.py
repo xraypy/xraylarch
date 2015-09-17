@@ -55,7 +55,10 @@ sleep = time.sleep
 
 def onCtrlC(*args, **kws):
     global WXLARCH_SYM
-    WXLARCH_SYM.set_symbol('_sys.wx.keyboard_interrupt', True)
+    try:
+        WXLARCH_SYM.set_symbol('_sys.wx.keyboard_interrupt', True)
+    except AttributeError:
+        pass
     raise KeyboardInterrupt
     return 0
 
