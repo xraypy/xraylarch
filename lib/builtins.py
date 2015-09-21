@@ -269,7 +269,7 @@ def _help(*args, **kws):
         helper.addtext('cannot start help system!')
     else:
         for a in args:
-            helper.help(a.strip())
+            helper.help(a)
 
     if helper._larch is not None:
         helper._larch.writer.write("%s\n" % helper.getbuffer())
