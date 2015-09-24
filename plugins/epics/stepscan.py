@@ -486,7 +486,7 @@ class LarchStepScan(object):
         self.set_info('request_pause', 0)
         self.set_info('request_resume', 0)
 
-    def run(self, filename=None, comments=None):
+    def run(self, filename=None, comments=None, debug=False):
         """ run the actual scan:
            Verify, Save original positions,
            Setup output files and messenger thread,
@@ -494,7 +494,7 @@ class LarchStepScan(object):
            Loop over points
            run post_scan methods
         """
-        self.dtimer = dtimer = debugtime()
+        self.dtimer = dtimer = debugtime(verbose=debug)
 
         self.complete = False
         if filename is not None:
@@ -503,6 +503,19 @@ class LarchStepScan(object):
             self.comments = comments
         self.pos_settle_time = max(MIN_POLL_TIME, self.pos_settle_time)
         self.det_settle_time = max(MIN_POLL_TIME, self.det_settle_time)
+
+        server  = self.scandb.get_info('server_fileroot')
+        workdir = self.scandb.get_info('user_folder')
+        for det in self.detectors:
+            froot = server
+            if hasattr(det, 'fileroot') and len(det.fileroot) > 0:
+                froot = det.fileroot
+            basedir = os.path.join(froot, workdir)
+            if isinstance(det, AreaDetector):
+                fpre = "%s%s" % (det.prefix, det.file_plugin)
+                tmppv = PV("%s:FilePath"  % fpre)
+                val = tmppv.get(as_string=True)
+                tmppv.put(basedir)
 
         ts_start = time.time()
         if not self.verify_scan():
