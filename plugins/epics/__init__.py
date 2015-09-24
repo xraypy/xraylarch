@@ -6,3 +6,4 @@ from .xrf_detectors import Epics_MultiXMAP, Epics_Xspress3
 # from .stepscan import LarchStepScan
 from .xrfcontrol import EpicsXRFApp
 from .scandb import ScanDB, InstrumentDB
+from .stepscan_utils import EpicsScanDB
