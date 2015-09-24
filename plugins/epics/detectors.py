@@ -12,6 +12,7 @@ from larch.utils.ordereddict import OrderedDict
 
 DET_DEFAULT_OPTS = {'scaler': {'use_calc': True, 'nchans': 8},
                     'areadetector': {'file_plugin': 'TIFF1',
+                                     'filepath_base': '',
                                      'auto_increment': True},
                     'mca': {'nrois': 32, 'use_full': False,
                             'use_net': False},
