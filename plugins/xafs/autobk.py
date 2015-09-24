@@ -41,11 +41,11 @@ def __resid(pars, ncoefs=1, knots=None, order=3, irbkg=1, nfft=2048,
     if nclamp == 0:
         return out
     # spline clamps:
-    csum = (chi*chi).sum() * nclamp / 10.0
-    return np.concatenate(
-        (out,
-         abs(clamp_lo)*chi[:nclamp]/csum,
-         abs(clamp_hi)*chi[-nclamp:]*(kout[-nclamp:]**kweight)/csum))
+    scale = (1.0 + 100*(out*out).sum())/(len(out)*nclamp)
+    scaled_chik = scale * chi * kout**kweight
+    return np.concatenate((out,
+                           abs(clamp_lo)*scaled_chik[:nclamp],
+                           abs(clamp_hi)*scaled_chik[-nclamp:]))
 
 @ValidateLarchPlugin
 def autobk(energy, mu=None, group=None, rbkg=1, nknots=None, e0=None,
