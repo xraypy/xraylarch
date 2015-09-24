@@ -55,7 +55,10 @@ sleep = time.sleep
 
 def onCtrlC(*args, **kws):
     global WXLARCH_SYM
-    WXLARCH_SYM.set_symbol('_sys.wx.keyboard_interrupt', True)
+    try:
+        WXLARCH_SYM.set_symbol('_sys.wx.keyboard_interrupt', True)
+    except AttributeError:
+        pass
     raise KeyboardInterrupt
     return 0
 
@@ -83,8 +86,8 @@ elif sys.platform == 'darwin':
 
 
 class EventLoopRunner(object):
-    def __init__(self, app):
-        self.app = app
+    def __init__(self, parent):
+        self.parent = parent
 
     def run(self, poll_time=None):
         if poll_time is None:
@@ -92,7 +95,7 @@ class EventLoopRunner(object):
         self.t0 = clock()
         self.evtloop = wx.EventLoop()
         self.timer = wx.Timer()
-        self.app.Bind(wx.EVT_TIMER, self.check_stdin)
+        self.parent.Bind(wx.EVT_TIMER, self.check_stdin)
         self.timer.Start(poll_time)
         self.evtloop.Run()
 
@@ -166,7 +169,7 @@ def inputhook_darwin():
         app = wx.GetApp()
         if app is not None:
             assert wx.Thread_IsMain()
-            eloop = EventLoopRunner(app)
+            eloop = EventLoopRunner(parent=app)
             ptime = POLLTIME
             if update_requested():
                 ptime /= 10
