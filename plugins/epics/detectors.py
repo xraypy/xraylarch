@@ -2,6 +2,7 @@
 Triggers, Counters, Detectors for Step Scan
 """
 
+import os
 import time
 from numpy import ndarray
 
@@ -305,6 +306,7 @@ class DetectorMixin(object):
         self.dwelltime = None
         self.extra_pvs = []
         self._repr_extra = ''
+        self._savevals = {}
 
     def __repr__(self):
         return "<%s: '%s', prefix='%s'%s>" % (self.__class__.__name__,
@@ -374,10 +376,11 @@ class AreaDetector(DetectorMixin):
     """very simple area detector interface...
     trigger / dwelltime, uses array counter as only counter
     """
-    trigger_suffix = 'Acquire'
-    def __init__(self, prefix, file_plugin=None, **kws):
+    trigger_suffix = 'cam1:Acquire'
+    def __init__(self, prefix, file_plugin=None, fileroot='', **kws):
         if not prefix.endswith(':'):
             prefix = "%s:" % prefix
+        self.fileroot     = fileroot
         DetectorMixin.__init__(self, prefix, **kws)
         self.dwelltime_pv = get_pv('%scam1:AcquireTime' % prefix)
         self.dwelltime    = None
@@ -386,7 +389,7 @@ class AreaDetector(DetectorMixin):
                                  label='Image Counter')]
         if file_plugin in AD_FILE_PLUGINS:
             self.file_plugin = file_plugin
-            f_counter = Counter("%s%s:FileNumebr_RBV" % (prefix, file_plugin),
+            f_counter = Counter("%s%s:FileNumber_RBV" % (prefix, file_plugin),
                                 label='File Counter')
             self.counters.append(f_counter)
         self._repr_extra = ', file_plugin=%s' % repr(file_plugin)
@@ -395,23 +398,36 @@ class AreaDetector(DetectorMixin):
         if (self.dwelltime is not None and
             isinstance(self.dwelltime_pv, PV)):
             self.dwelltime_pv.put(self.dwelltime)
-        caput("%scam1:ImageMode" % (self.prefix), 0)      # single image capture
-        caput("%scam1:ArrayCallbacks" % (self.prefix), 1) # enable callbacks
+
+        for key, val in (('cam1:ImageMode', 0),
+                         ('cam1:ArrayCallbacks', 1)):
+            pvn ="%s%s" % (self.prefix, key)
+            oval = caget(pvn)
+            caput(pvn, val)
+            self._savevals[pvn] = oval
+
         if self.file_plugin is not None:
-            fpre = "%s%s" % (sself.prefix, self.file_plugin)
+            fpre = "%s%s" % (self.prefix, self.file_plugin)
             pref = scan.filename.replace('.', '_')
+            label = self.label
+            if label is None:
+                label = pref
+            label = "%s_%s" % (label, pref)
             ext = self.file_plugin[:-1]
-            caput("%s:FileName" % fpre, pref)
+            caput("%s:FileName" % fpre, label)
             caput("%s:FileTemplate" % fpre, '%%s%%s_%%4.4d.%s' % ext)
+            caput("%s:FileNumber" % fpre, 1)
             caput("%s:EnableCallbacks" % fpre, 1)
             caput("%s:AutoIncrement" % fpre, 1)
             caput("%s:AutoSave" % fpre, 1)
 
     def post_scan(self, **kws):
         if self.file_plugin is not None:
-            fpre = "%s%s" % (sself.prefix, self.file_plugin)
+            fpre = "%s%s" % (self.prefix, self.file_plugin)
             caput("%s:EnableCallbacks" % fpre, 0)
             caput("%s:AutoSave" % fpre, 0)
+        for key, val in self._savevals.items():
+            caput(key, val)
 
 
 class McaDetector(DetectorMixin):
