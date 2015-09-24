@@ -126,6 +126,10 @@ class Info(_BaseTable):
         name = self.__class__.__name__
         return "<%s(%s='%s')>" % (name, self.keyname, str(self.value))
 
+class Messages(_BaseTable):
+    "messages table"
+    text = None
+
 class Status(_BaseTable):
     "status table"
     name, notes = None, None
@@ -238,13 +242,17 @@ def create_scandb(dbname, server='sqlite', create=True, **kws):
 
     engine  = get_dbengine(dbname, server=server, create=create, **kws)
     metadata =  MetaData(engine)
-    print(" --- create ", engine, metadata)
     info = Table('info', metadata,
                  Column('keyname', Text, primary_key=True, unique=True),
                  StrCol('notes'),
                  StrCol('value'),
                  Column('modify_time', DateTime, default=datetime.now),
                  Column('create_time', DateTime, default=datetime.now))
+
+    messages = Table('messages', metadata,
+                 Column('id', Integer, primary_key=True),
+                 StrCol('text'),
+                 Column('modify_time', DateTime, default=datetime.now))
 
     status = NamedTable('status', metadata)
     slewpos    = NamedTable('slewscanpositioners', metadata, with_use=True,
@@ -376,11 +384,10 @@ def map_scandb(metadata):
     classes = {}
     map_props = {}
     keyattrs = {}
-
-    for cls in (Info, Status, PVs, PVTypes, MonitorValues, Macros, ExtraPVs,
-                Commands, ScanData, ScanPositioners, ScanCounters,
-                ScanDetectors, ScanDefs, SlewScanPositioners, Positions,
-                Position_PV, Instruments, Instrument_PV,
+    for cls in (Info, Messages, Status, PVs, PVTypes, MonitorValues,
+                Macros, ExtraPVs, Commands, ScanData, ScanPositioners,
+                ScanCounters, ScanDetectors, ScanDefs, SlewScanPositioners,
+                Positions, Position_PV, Instruments, Instrument_PV,
                 Instrument_Precommands, Instrument_Postcommands):
 
         name = cls.__name__.lower()
@@ -414,7 +421,6 @@ def map_scandb(metadata):
             props = {'instrument': relationship(Instruments,
                                                 backref='postcommands'),
                      'command': relationship(Commands)}
-
         mapper(cls, tables[name], properties=props)
         classes[name] = cls
         map_props[name] = props
@@ -425,12 +431,14 @@ def map_scandb(metadata):
     keyattrs['position_pv'] = 'id'
     keyattrs['instrument_pv'] = 'id'
     keyattrs['monitovalues'] = 'id'
+    keyattrs['messages'] = 'id'
 
     # set onupdate and default constraints for several datetime columns
     # note use of ColumnDefault to wrap onpudate/default func
     fnow = ColumnDefault(datetime.now)
-    for tname in ('info', 'commands', 'positions','scandefs', 'scandata',
-                  'monitorvalues', 'commands'):
+
+    for tname in ('info', 'messages', 'commands', 'positions','scandefs',
+                  'scandata', 'monitorvalues', 'commands'):
         tables[tname].columns['modify_time'].onupdate =  fnow
         tables[tname].columns['modify_time'].default =  fnow
 

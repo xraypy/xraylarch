@@ -37,12 +37,14 @@ try:
     use_plugin_path('epics')
     from epics_plugin import pv_fullname
     from scandb_schema import get_dbengine, create_scandb, map_scandb
-    from scandb_schema import (Info, Status, PVs, MonitorValues, ExtraPVs,
-                               Macros, Commands, ScanData, ScanPositioners,
-                               ScanCounters, ScanDetectors, ScanDefs,
+    from scandb_schema import (Info, Messages, Status, PVs, MonitorValues,
+                               ExtraPVs, Macros, Commands, ScanData,
+                               ScanPositioners, ScanCounters,
+                               ScanDetectors, ScanDefs,
                                SlewScanPositioners, Positions, Position_PV,
                                Instruments, Instrument_PV,
-                               Instrument_Precommands, Instrument_Postcommands)
+                               Instrument_Precommands,
+                               Instrument_Postcommands)
 
     HAS_EPICS = True
 except:
@@ -325,6 +327,12 @@ class ScanDB(object):
         elif full_row:
             out = thisrow
         return out
+
+    def set_message(self, text):
+        """add message to messages table"""
+        cls, table = self.get_table('messages')
+        table.insert().execute(text=text)
+        self.commit()
 
     def set_info(self, key, value, notes=None):
         """set key / value in the info table"""
