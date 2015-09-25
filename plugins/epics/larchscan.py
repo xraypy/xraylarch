@@ -571,9 +571,6 @@ class LarchStepScan(object):
         # self.msg_thread.start()
         self.cpt = 0
         self.npts = npts
-        trigger_has_stop = False
-        for trig in self.triggers:
-            trigger_has_stop = trig.stop or trigger_has_stop
 
         t0 = time.time()
         out = [p.move_to_start(wait=True) for p in self.positioners]
@@ -624,40 +621,27 @@ class LarchStepScan(object):
                 [trig.start() for trig in self.triggers]
                 dtimer.add('Pt %i : triggers fired, (%d)' % (i, len(self.triggers)))
                 t0 = time.time()
-                time.sleep(max(0.1, self.min_dwelltime/2.0))
-                while not (all([trig.done for trig in self.triggers]) and
-                           (time.time() - t0 < self.det_maxcount_time)):
+                time.sleep(max(0.05, self.min_dwelltime/2.0))
+                while not all([trig.done for trig in self.triggers]):
+                    if (time.time() - t0 > (5.0 + 10*self.max_dwelltime)):
+                        break
                     poll(MIN_POLL_TIME, 0.1)
                 dtimer.add('Pt %i : triggers done' % i)
                 if self.look_for_interrupts():
                     break
-
-                if trigger_has_stop:
-                    for trig in self.triggers:
-                        if trig.stop is not None:
-                            trig.stop()
-                    if trig.runtime < self.min_dwelltime / 2.0:
-                        point_ok = False
-
-                    dtimer.add('Pt %i : triggers stopped(a) %s' % (i, repr(point_ok)))
+                point_ok = (all([trig.done for trig in self.triggers]) and
+                            time.time()-t0 > (0.75*self.min_dwelltime))
                 if not point_ok:
                     point_ok = True
                     poll(5*MIN_POLL_TIME, 0.25)
                     for trig in self.triggers:
-                        if trig.runtime < self.min_dwelltime / 2.0:
-                            point_ok = False
-                if not point_ok:
-                    print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
+                        point_ok = point_ok and (trig.runtime > (0.75*self.min_dwelltime))
+                        if not point_ok:
+                            print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
 
                 # wait, then read read counters and actual positions
-                poll(self.det_settle_time, 0.25)
+                poll(self.det_settle_time, 0.1)
                 dtimer.add('Pt %i : det settled done.' % i)
-                if trigger_has_stop:
-                    for trig in self.triggers:
-                        if trig.wait_for_stop is not None:
-                            trig.wait_for_stop()
-                    dtimer.add('Pt %i : triggers stopped(b) %d' % (i, len(self.triggers)))
-
                 [c.read() for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
                 # self.cdat = [c.buff[-1] for c in self.counters]
