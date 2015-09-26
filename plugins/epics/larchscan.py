@@ -101,14 +101,14 @@ try:
 except ImportError:
     HAS_EPICS = False
 
-if True: 
+try: 
     import epicsscan
     from epicsscan import (Counter, Trigger, AreaDetector, get_detector,
                            ASCIIScanFile, Positioner)
     from epicsscan.scandb import ScanDBException, ScanDBAbort
 
     HAS_EPICSSCAN = True
-else: # except ImportError:
+except ImportError:
     HAS_EPICSSCAN = False
 
 MODNAME = '_scan'
