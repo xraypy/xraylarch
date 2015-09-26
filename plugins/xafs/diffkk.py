@@ -10,7 +10,11 @@ from larch_plugins.std  import show
 from larch_plugins.math import _interp
 from larch_plugins.xray import f1f2, xray_edge, xray_line
 from larch_plugins.xafs import mback
-from larch_plugins.wx   import _newplot, _plot
+try:
+    from larch_plugins.wx   import _newplot, _plot
+    HASPLOT = True
+except:
+    HASPLOT = False
 
 pi = np.pi
 
@@ -294,6 +298,7 @@ class diffKKGroup(Group):
         """
         Make a quick-n-dirty plot of the output of the KK transform.
         """
+        if not HASPLOT: return
         _newplot(self.energy, self.f2, _larch=self._larch, label='$f_2$', xlabel='Energy (eV)', ylabel='scattering factors',
                  show_legend=True, legend_loc='lr')
         _plot(self.energy, self.fpp, _larch=self._larch, label="$f''(E)$")
