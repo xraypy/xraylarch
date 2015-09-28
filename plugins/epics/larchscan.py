@@ -91,23 +91,25 @@ import numpy as np
 
 from datetime import timedelta
 
-from epics  import PV, get_pv, poll, caput, caget
-
-
-from larch import Group, ValidateLarchPlugin, use_plugin_path
+from larch import Group, ValidateLarchPlugin
 from larch.utils import debugtime
+from larch_plugins.io import fix_varname
 
-use_plugin_path('epics')
+try:
+    from epics import PV, caget, caput, get_pv, poll
+    HAS_EPICS = True
+except ImportError:
+    HAS_EPICS = False
 
-from detectors import (Counter, ArrayCounter, DeviceCounter, Trigger,
-                       AreaDetector, get_detector)
-from datafile import ASCIIScanFile
-from positioner import Positioner
+try: 
+    import epicsscan
+    from epicsscan import (Counter, Trigger, AreaDetector, get_detector,
+                           ASCIIScanFile, Positioner)
+    from epicsscan.scandb import ScanDBException, ScanDBAbort
 
-from scandb import ScanDBException, ScanDBAbort
-
-use_plugin_path('io')
-from fileutils import fix_varname
+    HAS_EPICSSCAN = True
+except ImportError:
+    HAS_EPICSSCAN = False
 
 MODNAME = '_scan'
 
@@ -261,6 +263,8 @@ class LarchStepScan(object):
 
     def add_trigger(self, trigger, label=None, value=1):
         "add simple detector trigger"
+        if trigger is None:
+            return
         if isinstance(trigger, (str, unicode)):
             trigger = Trigger(trigger, label=label, value=value)
         if trigger not in self.triggers:
@@ -486,7 +490,7 @@ class LarchStepScan(object):
         self.set_info('request_pause', 0)
         self.set_info('request_resume', 0)
 
-    def run(self, filename=None, comments=None):
+    def run(self, filename=None, comments=None, debug=False):
         """ run the actual scan:
            Verify, Save original positions,
            Setup output files and messenger thread,
@@ -494,7 +498,7 @@ class LarchStepScan(object):
            Loop over points
            run post_scan methods
         """
-        self.dtimer = dtimer = debugtime()
+        self.dtimer = dtimer = debugtime(verbose=debug)
 
         self.complete = False
         if filename is not None:
@@ -567,17 +571,7 @@ class LarchStepScan(object):
         # self.msg_thread.start()
         self.cpt = 0
         self.npts = npts
-        trigger_has_stop = False
-        for trig in self.triggers:
-            trigger_has_stop = trig.stop or trigger_has_stop
 
-        using_array_counters = False
-        nbins = None
-        for c in self.counters:
-            if isinstance(c, ArrayCounter):
-                using_array_counters = True
-                if nbins is None:
-                    nbins = c.hi
         t0 = time.time()
         out = [p.move_to_start(wait=True) for p in self.positioners]
         self.check_outputs(out, msg='move to start, wait=True')
@@ -627,41 +621,28 @@ class LarchStepScan(object):
                 [trig.start() for trig in self.triggers]
                 dtimer.add('Pt %i : triggers fired, (%d)' % (i, len(self.triggers)))
                 t0 = time.time()
-                time.sleep(max(0.1, self.min_dwelltime/2.0))
-                while not (all([trig.done for trig in self.triggers]) and
-                           (time.time() - t0 < self.det_maxcount_time)):
+                time.sleep(max(0.05, self.min_dwelltime/2.0))
+                while not all([trig.done for trig in self.triggers]):
+                    if (time.time() - t0 > (5.0 + 10*self.max_dwelltime)):
+                        break
                     poll(MIN_POLL_TIME, 0.1)
                 dtimer.add('Pt %i : triggers done' % i)
                 if self.look_for_interrupts():
                     break
-
-                if trigger_has_stop:
-                    for trig in self.triggers:
-                        if trig.stop is not None:
-                            trig.stop()
-                    if trig.runtime < self.min_dwelltime / 2.0:
-                        point_ok = False
-
-                    dtimer.add('Pt %i : triggers stopped(a) %s' % (i, repr(point_ok)))
+                point_ok = (all([trig.done for trig in self.triggers]) and
+                            time.time()-t0 > (0.75*self.min_dwelltime))
                 if not point_ok:
                     point_ok = True
                     poll(5*MIN_POLL_TIME, 0.25)
                     for trig in self.triggers:
-                        if trig.runtime < self.min_dwelltime / 2.0:
-                            point_ok = False
-                if not point_ok:
-                    print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
+                        point_ok = point_ok and (trig.runtime > (0.75*self.min_dwelltime))
+                        if not point_ok:
+                            print('Trigger problem: ', trig, trig.runtime, self.min_dwelltime)
 
                 # wait, then read read counters and actual positions
-                poll(self.det_settle_time, 0.25)
+                poll(self.det_settle_time, 0.1)
                 dtimer.add('Pt %i : det settled done.' % i)
-                if trigger_has_stop:
-                    for trig in self.triggers:
-                        if trig.wait_for_stop is not None:
-                            trig.wait_for_stop()
-                    dtimer.add('Pt %i : triggers stopped(b) %d' % (i, len(self.triggers)))
-
-                [c.read(nbins=nbins) for c in self.counters]
+                [c.read() for c in self.counters]
                 dtimer.add('Pt %i : read counters' % i)
                 # self.cdat = [c.buff[-1] for c in self.counters]
                 self.pos_actual.append([p.current() for p in self.positioners])
@@ -1241,11 +1222,15 @@ def initializeLarchPlugin(_larch=None):
         _larch.symtable.set_symbol(MODNAME, g)
 
 def registerLarchPlugin():
-    return (MODNAME, {'scan_from_json': scan_from_json,
-                      'scan_from_db':   scan_from_db,
-                      'make_xafs_scan': make_xafs_scan,
-                      'do_scan': do_scan,
-                      'do_slewscan': do_slewscan,
-                      'do_fastmap':  do_slewscan,
-                      'get_dbinfo': get_dbinfo,
-                      })
+    symbols = {}
+    if HAS_EPICSSCAN:
+        symbols = {'scan_from_json': scan_from_json,
+                   'scan_from_db':   scan_from_db,
+                   'make_xafs_scan': make_xafs_scan,
+                   'do_scan': do_scan,
+                   'do_slewscan': do_slewscan,
+                   'do_fastmap':  do_slewscan,
+                   'get_dbinfo': get_dbinfo}
+
+    return (MODNAME, symbols)
+

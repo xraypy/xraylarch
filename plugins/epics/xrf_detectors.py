@@ -6,8 +6,8 @@ try:
     import epics
     from epics.devices.mca import  MultiXMAP
     from epics.devices.struck import Struck
+    from epics.devices.xspress3 import Xspress3
     from epics.wx import EpicsFunction, DelayedEpicsCallback
-    from larch_plugins.epics.xspress3 import Xspress3
     HAS_EPICS = True
 except (NameError, ImportError):
     HAS_EPICS = False

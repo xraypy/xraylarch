@@ -30,15 +30,29 @@ from cStringIO import StringIO
 
 
 from larch import use_plugin_path, Group
-from larch.utils.ordereddict import OrderedDict
 
+from larch.utils.ordereddict import OrderedDict
 use_plugin_path('io')
 from fileutils import get_homedir, get_timestamp
 
-use_plugin_path('epics')
-from stepscan   import LarchStepScan
-from positioner import Positioner
-from detectors  import get_detector, Counter
+
+try:
+    from epics import PV, caget, caput, get_pv, poll
+    HAS_EPICS = True
+except ImportError:
+    HAS_EPICS = False
+
+if True: 
+    use_plugin_path('epics')
+    from larch_plugins.epics.larchscan   import LarchStepScan
+
+    import epicsscan
+    from epicsscan.positioner import Positioner
+    from epicsscan.detectors  import get_detector, Counter
+    
+    HAS_EPICSSCAN = True
+else: # except ImportError:
+    HAS_EPICSSCAN = False
 
 
 class SpykConfig(object):

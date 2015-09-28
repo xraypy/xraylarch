@@ -13,7 +13,10 @@ import wx.lib.colourselect  as csel
 from wxutils import (SimpleText, FloatCtrl, Choice, Font, pack, Button,
                      Check, HyperText, HLine, GridPanel, CEN, LEFT, RIGHT)
 
-from wxmplot.colors import hexcolor
+try:
+    from wxmplot.colors import hexcolor
+except:
+    pass
 
 import larch
 
