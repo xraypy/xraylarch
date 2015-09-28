@@ -18,7 +18,7 @@ from . import builtins
 from . import site_config
 from .symboltable import SymbolTable, Group, isgroup
 from .larchlib import (LarchExceptionHolder, ReturnedNone,
-                       Procedure, StdWriter)
+                       Procedure, StdWriter, enable_plugins)
 from .fitting  import isParameter
 from .utils import Closure
 
@@ -109,8 +109,8 @@ class Interpreter:
         setattr(mathgroup, 'j', 1j)
 
         # system-specific settings
+        enable_plugins()
         site_config.system_settings()
-
         for sym in builtins.from_math:
             setattr(mathgroup, sym, getattr(math, sym))
 
