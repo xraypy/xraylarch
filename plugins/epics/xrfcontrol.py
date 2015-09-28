@@ -21,7 +21,13 @@ except:
 import wx.lib.colourselect  as csel
 import numpy as np
 import matplotlib
-from wxmplot import PlotPanel
+
+HAS_PLOT = False
+try:
+    from wxmplot import PlotPanel
+    HAS_PLOT = True
+except ImportError:
+    HAS_PLOT = False
 
 HAS_DV = False
 try:

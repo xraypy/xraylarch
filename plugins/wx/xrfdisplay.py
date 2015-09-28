@@ -22,8 +22,12 @@ import numpy as np
 import matplotlib
 from matplotlib.ticker import LogFormatter, FuncFormatter
 
-from wxmplot import PlotPanel
-
+HAS_PLOT = False
+try:
+    from wxmplot import PlotPanel
+    HAS_PLOT = True
+except ImportError:
+    pass
 HAS_DV = False
 try:
     import wx.dataview as dv
