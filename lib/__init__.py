@@ -43,4 +43,4 @@ def ValidateLarchPlugin(fcn):
     wrapper.__dict__.update(fcn.__dict__)
     return wrapper
 
-# enable_plugins()
+enable_plugins()
