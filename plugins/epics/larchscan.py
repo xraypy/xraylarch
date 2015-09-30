@@ -307,6 +307,7 @@ class LarchStepScan(object):
         self.add_trigger(det.trigger)
         for counter in det.counters:
             self.add_counter(counter)
+
         if det not in self.detectors:
             self.detectors.append(det)
         self.verified = False
@@ -485,7 +486,7 @@ class LarchStepScan(object):
         return self.abort
 
     def write(self, msg):
-        self._larch.writer.write("%s\n" % msg)
+        self._larch.writer.write(msg)
         
     def clear_interrupts(self):
         """re-set interrupt requests:
