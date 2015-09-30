@@ -336,7 +336,14 @@ class LarchStepScan(object):
         except NameError:
             pass
         if prescan_proc is not None:
-            out.append( prescan_proc(scan=self) )
+            if (isinstance(prescan_proc, Group) and
+                hasattr(prescan_proc, 'pre_scan_command')):
+                prescan_proc = prescan_proc.pre_scan_command
+            try:
+                ret = prescan_proc(scan=self)
+            except:
+                ret = None                
+            out.append(ret)
         return out
 
     def post_scan(self):
@@ -400,7 +407,7 @@ class LarchStepScan(object):
             self.set_info('filename', self.filename)
         msg = 'Point %i/%i,  time left: %s' % (cpt, npts, time_est)
         if cpt % self.message_points == 0:
-            print(msg)
+            self.write("%s\n" % msg)
         self.set_info('scan_progress', msg)
 
     def publish_scandata(self):
@@ -477,6 +484,9 @@ class LarchStepScan(object):
         self.resume = self.get_infobool('request_resume')
         return self.abort
 
+    def write(self, msg):
+        self._larch.writer.write("%s\n" % msg)
+        
     def clear_interrupts(self):
         """re-set interrupt requests:
 
@@ -510,7 +520,7 @@ class LarchStepScan(object):
 
         ts_start = time.time()
         if not self.verify_scan():
-            print('Cannot execute scan ',  self._scangroup.error_message)
+            self.write('Cannot execute scan: %s' % self._scangroup.error_message)
             self.set_info('scan_message', 'cannot execute scan')
             return
 
@@ -660,7 +670,7 @@ class LarchStepScan(object):
                 self.set_info('request_abort', 1)
                 self.abort = True
             if not point_ok:
-                print('point messed up... try again?')
+                self.write('point messed up... try again?')
                 i -= 1
 
         # scan complete
@@ -676,7 +686,7 @@ class LarchStepScan(object):
         self.datafile.write_data(breakpoint=-1, close_file=True, clear=False)
         dtimer.add('Post: file written')
         if self.look_for_interrupts():
-            print("scan aborted at point %i of %i." % (self.cpt, self.npts))
+            self.write("scan aborted at point %i of %i." % (self.cpt, self.npts))
             raise ScanDBAbort("scan aborted")
 
         # run post_scan methods
