@@ -33,7 +33,7 @@ def read_gsexdi(fname, _larch=None, nmca=4, bad=None, **kws):
         group.dtc_taus = _larch.symtable._sys.gsecars.xspress3_taus
 
     for family in ('scan', 'mono', 'facility'):
-        for key, val in xdi.attrs[family].items():
+        for key, val in xdi.attrs.get(family, {}).items():
             if '||' in val:
                 val, addr = val.split('||')
             try:
