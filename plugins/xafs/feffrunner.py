@@ -22,7 +22,7 @@ class FeffRunner(Group):
             feff.run('rdinp')
             feff.run('xsph')
                and so on to run individual parts of feff
-               ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x')
+               ('rdinp', 'pot', 'opconsat', 'xsph', 'pathfinder', 'genfmt', 'ff2x')
 
           By default, installed versions of the feff executables are
           run.  To run newly compiled versions from the feff85exafs
@@ -51,7 +51,7 @@ class FeffRunner(Group):
 
           If the value of the feffinp attribute is a file with a
           basename other than 'feff.inp', that file will be renamed to
-          'feff.inp' and care will be taken to preserve and existing
+          'feff.inp' and care will be taken to preserve an existing
           file by that name.
 
     Attributes:
@@ -59,6 +59,7 @@ class FeffRunner(Group):
         repo     -- when set to the top of the feff85exfas repository, the newly compiled executables will be used
         resolved -- the fully resolved path to the most recently run executable
         verbose  -- write screen messages if True
+        mpse     -- run opconsat after pot if True
 
     """
 
@@ -72,6 +73,7 @@ class FeffRunner(Group):
             self._larch = _larch
         self.feffinp  = feffinp
         self.verbose  = verbose
+        self.mpse     = False
         self.repo     = repo
         self.resolved = None
         self.threshold = []
@@ -106,16 +108,18 @@ class FeffRunner(Group):
         if exe == None:
             exe = ''
         else:
-            if not ((exe in ('monolithic', 'rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x')) or exe.startswith('feff')):
+            if not ((exe in ('monolithic', 'rdinp', 'pot', 'opconsat', 'xsph', 'pathfinder', 'genfmt', 'ff2x')) or exe.startswith('feff')):
                 os.chdir(here)
                 raise Exception("'%s' is not a valid executable name" % exe)
 
-        ## default behavior is to step through the feff85exafs modules
+        ## default behavior is to step through the feff85exafs modules (but not opconsat, monolithic presumes that opconsat will not be used)
         if exe.startswith('mono'): # run modules recursively
             if isfile(log): os.unlink(log)
             for m in ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x'):
                 os.chdir(here)
                 self.run(m)
+                if m == 'pot' and self.mpse:
+                    self.run('opconsat')
             return
         elif exe.startswith('feff'):
             if isfile(log): os.unlink(log)
@@ -135,7 +139,7 @@ class FeffRunner(Group):
             if self.resolved:
                 program=self.resolved
 
-        if exe in ('rdinp', 'pot', 'xsph', 'pathfinder', 'genfmt', 'ff2x'):
+        if exe in ('rdinp', 'pot', 'opconsat', 'xsph', 'pathfinder', 'genfmt', 'ff2x'):
             if self.repo == None: # step 2, try to find the installed feff85exafs module
                 self.resolved = find_executable(exe)
                 if not os.access(self.resolved, os.X_OK):
