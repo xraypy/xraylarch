@@ -19,7 +19,7 @@ parser = OptionParser(usage=usage, prog="larch",
                       version="larch command-line version 0.2")
 
 parser.add_option("-s", "--use_scandb", dest="use_scandb", action="store_true",
-                  default=False, help="use scandb, default=False")
+                  default=True, help="use scandb, default=True")
 
 (options, args) = parser.parse_args()
 
