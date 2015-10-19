@@ -232,13 +232,12 @@ class FillingTree(wx.TreeCtrl):
         if isinstance(obj, COMMONTYPES):
             text.append('Type: %s' % otype.__name__)
             text.append('Value = %s' % repr(obj))
-            try:
-                text.append('\n %s' % TYPE_HELPS[otype])
-            except KeyError:
-                pass
+
         elif isinstance(obj, Group):
             text.append('Group: %s ' % obj.__name__)
-            text.append(getattr(obj, '__doc__', repr(obj)))
+            gdoc = getattr(obj, '__doc__', None)
+            if gdoc is None: gdoc = Group.__doc__
+            text.append(gdoc)
         elif hasattr(obj, '__call__'):
             text.append('Function:')
             needs_doc = True
