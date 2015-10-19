@@ -32,7 +32,7 @@ def ValidateLarchPlugin(fcn):
     def wrapper(*args, **keywords):
         "ValidateLarchPlugin"
         if ('_larch' not in keywords or
-            not isinstance(keywords['_larch'], Interpreter)):
+            ('Interpreter' not in keywords['_larch'].__class__.__name__)):            
             raise LarchPluginException(errmsg % fcn.__name__)
         # raise Warning(errmsg % fcn.__name__)
         return fcn(*args, **keywords)
