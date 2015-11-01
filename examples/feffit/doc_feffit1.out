@@ -2,8 +2,8 @@
 [[Statistics]]
    npts, nvarys, nfree= 104, 4, 100
    chi_square         = 1005.6072
-   reduced chi_square = 89.305675
-   r-factor           = 0.0028522676
+   reduced chi_square = 89.305678
+   r-factor           = 0.0028522677
  
 [[Data]]
    fit space          = 'r'
@@ -17,16 +17,16 @@
    n_independent      = 15.260
  
 [[Variables]]
-   amp            =  0.930915 +/- 0.040101   (init=  1.000000)
-   del_e0         =  3.860820 +/- 0.525090   (init=  0.100000)
+   amp            =  0.930936 +/- 0.040207   (init=  1.000000)
+   del_e0         =  3.860734 +/- 0.525036   (init=  0.100000)
    del_r          = -0.005996 +/- 0.002679   (init=  0.000000)
-   sig2           =  0.008670 +/- 0.000315   (init=  0.002000)
+   sig2           =  0.008670 +/- 0.000317   (init=  0.002000)
  
 [[Correlations]]    (unreported correlations are <  0.100)
    amp, sig2            =  0.929 
-   del_e0, del_r        =  0.920 
+   del_e0, del_r        =  0.921 
    del_r, sig2          =  0.159 
-   amp, del_r           =  0.137 
+   amp, del_r           =  0.138 
  
 [[Paths]]
    feff.dat file = feffcu01.dat
@@ -35,8 +35,8 @@
            Cu    0.0000, -1.8016,  1.8016  1
      reff   =  2.54780
      Degen  =  12.00000
-     S02    =  0.93091 +/-  0.04010
-     E0     =  3.86082 +/-  0.52509
+     S02    =  0.93094 +/-  0.04021
+     E0     =  3.86073 +/-  0.52504
      R      =  2.54180 +/-  0.00268
      deltar = -0.00600 +/-  0.00268
      sigma2 =  0.00867 +/-  0.00032
