@@ -989,7 +989,7 @@ class XAFS_Scan(LarchStepScan):
                       theta=theta, energy=energy, width=width)
 
 @ValidateLarchPlugin
-def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
+def scan_from_json(text, filename='scan.001', current_rois=None, _larch=None):
     """(PRIVATE)
 
     creates and returns a LarchStepScan object from a json-text
@@ -1060,8 +1060,8 @@ def scan_from_json(text, filename='scan.001', rois=None, _larch=None):
                 if len(pvs2) > 0:
                     scan.add_counter(pvs2[1], label="%s_read" % label2)
     # detectors
-    if rois is None:
-        rois = sdict.get('rois', None)
+    rois = sdict.get('rois', current_rois)
+    scan.rois = rois
 
     for dpars in sdict['detectors']:
         dpars['rois'] = rois
@@ -1097,7 +1097,7 @@ def scan_from_db(name, filename='scan.001', timeout=5.0, _larch=None):
     if _larch.symtable._scan._scandb is None:
         return
     sdb = _larch.symtable._scan._scandb
-    rois = json.loads(sdb.get_info('rois'))
+    current_rois = json.loads(sdb.get_info('rois'))
     t0 = time.time()
     while time.time()-t0 < timeout:
         scandef = sdb.get_scandef(name)
@@ -1108,9 +1108,8 @@ def scan_from_db(name, filename='scan.001', timeout=5.0, _larch=None):
     if scandef is None:
         raise ScanDBException("no scan definition '%s' found" % name)
 
-    return scan_from_json(scandef.text,
-                          filename=filename, rois=rois,
-                          _larch=_larch)
+    return scan_from_json(scandef.text, filename=filename,
+                          current_rois=current_rois, _larch=_larch)
 
 
 @ValidateLarchPlugin
