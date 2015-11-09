@@ -230,8 +230,8 @@ class StdWriter(object):
                 attrs.append(key)
         if self.termcolor_opts is None:
             try:
-                fcn = self._larch.symtable._builtin.get_termcolor_opts
-                self.termcolor_opts = fcn
+                self.termcolor_opts = \
+                       self._larch.symtable._builtin.get_termcolor_opts
             except:
                 pass
         if color is None:

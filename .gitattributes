@@ -1,6 +1,10 @@
-# Auto detect text files and perform LF normalization
-* text=auto
+lmfit/_version.py export-subst
 
+# Auto detect text files and perform LF normalization
+* text=auto eol=lf
+
+*.jpg -text
+*.png -text
 
 # Standard to msysgit
 *.doc	 diff=astextplain
