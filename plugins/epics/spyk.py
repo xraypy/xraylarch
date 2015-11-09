@@ -42,16 +42,16 @@ try:
 except ImportError:
     HAS_EPICS = False
 
-if True: 
+try:
     use_plugin_path('epics')
     from larch_plugins.epics.larchscan   import LarchStepScan
 
     import epicsscan
     from epicsscan.positioner import Positioner
     from epicsscan.detectors  import get_detector, Counter
-    
+
     HAS_EPICSSCAN = True
-else: # except ImportError:
+except ImportError:
     HAS_EPICSSCAN = False
 
 
