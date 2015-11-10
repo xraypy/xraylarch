@@ -1,4 +1,6 @@
 *.pyc
+*.pyo
+
 *~
 *#
 *.bak
@@ -18,5 +20,4 @@ sandbox/
 play/
 AMAP/
 *.h5
-
 *.mca
