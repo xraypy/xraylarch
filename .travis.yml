@@ -1,29 +1,30 @@
 # Config file for automatic testing at travis-ci.org
 
 language: python
+sudo: false
 
 python:
     - 2.7
 
-env:
-  - TRAVIS_CI_TEST=1
-
 before_install:
-    - wget http://repo.continuum.io/miniconda/Miniconda3-3.5.5-Linux-x86_64.sh -O miniconda.sh
-    - chmod +x miniconda.sh
-    - ./miniconda.sh -b
-    - export PATH=/home/travis/miniconda3/bin:$PATH
-    - conda config --add channels https://conda.binstar.org/dan_blanchard
-    - conda update --yes conda
+    - wget http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+    - bash miniconda.sh -b -p $HOME/miniconda
+    - export PATH="$HOME/miniconda/bin:$PATH"
+    - hash -r
+    - conda config --set always_yes yes --set changeps1 no
+    - conda update -q conda
+    - conda info -a
+
 
 install:
-    - conda create test_env --yes pip python=$TRAVIS_PYTHON_VERSION numpy scipy  wxpython h5py dateutil matplotlib nose
+    - conda create -q -n test_env python=$TRAVIS_PYTHON_VERSION numpy scipy h5py dateutil matplotlib pandas nose sphinx
     - source activate test_env
+    - pip install termcolor
     - pip install sqlalchemy 
     - pip install wxmplot 
     - pip install wxutils
-    - python setup.py build
     - python setup.py install
+
 
 script:
     - cd tests
