@@ -8,6 +8,12 @@ lmfit/_version.py export-subst
 *.dll -text
 *.so -text
 *.dylib -text
+*.ico -text
+*.icns -text
+*.db -text
+*.exe -text
+*.pdf -text
+*.gz -text
 
 # Standard to msysgit
 *.doc	 diff=astextplain
