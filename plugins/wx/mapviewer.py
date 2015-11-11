@@ -247,7 +247,7 @@ class MapMathPanel(scrolled.ScrolledPanel):
         for wid in self.varfile.values():
             wid.SetChoices(fnames)
 
-    def onShowMap(self, evt, new=True):
+    def onShowMap(self, event=None, new=True):
         mode = self.map_mode.GetStringSelection()
         def get_expr(wid):
             val = str(wid.Value)
@@ -1283,6 +1283,7 @@ class MapViewerFrame(wx.Frame):
     
     def onSavePixel(self, name, ix, iy, x=None, y=None, title=None, datafile=None):
         "save pixel as area, and perhaps to scandb"
+        # print(" On Save Pixel ", name, ix, iy, x, y)
         if len(name) < 1: 
             return
         if datafile is None:
@@ -1326,6 +1327,7 @@ class MapViewerFrame(wx.Frame):
                 title = '%s: %s' % (datafile.filename, name)
 
             notes = {'source': title}
+            #  print(" Save Position : ", self.inst_name, name, position, notes)
             self.instdb.save_position(self.inst_name, name, position,
                                       notes=json.dumps(notes))
            
@@ -1402,8 +1404,9 @@ class MapViewerFrame(wx.Frame):
                 self.scandb = self.larch.symtable._scan._scandb
                 self.instdb = self.larch.symtable._scan._instdb
                 self.inst_name = 'IDE_SampleStage'
+                print(" Connected to scandb!")
             except:
-                print 'Could not connect to ScanDB'
+                print('Could not connect to ScanDB')
                 self.use_scandb = False
 
     def ShowFile(self, evt=None, filename=None,  **kws):
@@ -1415,6 +1418,7 @@ class MapViewerFrame(wx.Frame):
         if (self.check_ownership(filename) and
             self.filemap[filename].folder_has_newdata()):
             self.process_file(filename)
+
 
         self.current_file = self.filemap[filename]
         ny, nx, npos = self.filemap[filename].xrfmap['positions/pos'].shape
@@ -1614,6 +1618,9 @@ class MapViewerFrame(wx.Frame):
             if (filename not in self.files_in_progress and
                 self.filemap[filename].folder_has_newdata()):
                 self.process_file(filename)
+                thispanel = self.nbpanels[self.nb.GetSelection()]
+                thispanel.onShowMap(event=None, new=False)
+                # print 'Processed File ', thispanel
 
     def process_file(self, filename):
         """Request processing of map file.
@@ -1637,7 +1644,6 @@ class MapViewerFrame(wx.Frame):
             self.h5convert_thread = Thread(target=self.new_mapdata,
                                            args=(filename,))
             self.h5convert_thread.start()
-            # self.new_mapdata(filename)
 
     def onTimer(self, event):
         fname, irow, nrow = self.h5convert_fname, self.h5convert_irow, self.h5convert_nrow
