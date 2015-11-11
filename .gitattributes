@@ -5,6 +5,9 @@ lmfit/_version.py export-subst
 
 *.jpg -text
 *.png -text
+*.dll -text
+*.so -text
+*.dylib -text
 
 # Standard to msysgit
 *.doc	 diff=astextplain
