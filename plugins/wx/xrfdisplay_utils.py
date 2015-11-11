@@ -399,8 +399,8 @@ class ROI_Averager():
         self.index = -1
         self.lastval = 0
         self.toffset = time.time()
-        self.data  =  np.zeros(self.nsamples, dtype='f32')
-        self.times = -np.ones(self.nsamples, dtype='f32')
+        self.data  =  np.zeros(self.nsamples, dtype=np.float32)
+        self.times = -np.ones(self.nsamples, dtype=np.float32)
 
     def append(self, value):
         "adds value to ring buffer"
