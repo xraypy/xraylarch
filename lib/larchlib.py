@@ -415,7 +415,9 @@ def use_plugin_path(val):
 
     sys.path.insert(0, plugin_path(val))
     """
-    sys.path.insert(0, plugin_path(val))
+    ppath = plugin_path(val)
+    if ppath not in sys.path:
+        sys.path.insert(0, ppath)
 
 def enable_plugins():
     """add all available Larch plugin paths

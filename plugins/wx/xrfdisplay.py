@@ -287,7 +287,7 @@ class XRFDisplayFrame(wx.Frame):
         """mca plot window"""
         pan = PlotPanel(self, fontsize=7,
                         axisbg='#FEFEFE',
-                        axissize=[0.01, 0.11, 0.97, 0.87],
+                        # axissize=[0.01, 0.11, 0.97, 0.87],
                         output_title='test.xrf',
                         messenger=self.write_message)
         pan.conf.grid_color='#E5E5C0'
@@ -970,12 +970,8 @@ class XRFDisplayFrame(wx.Frame):
 
     def onYAxis(self, event=None):
         self.show_yaxis = self.wids['show_yaxis'].IsChecked()
-        left, bottom, width, height = self.panel.axissize
-        left, width = 0.01, 0.97
-        if self.show_yaxis: left, width = 0.08, 0.90
         ax = self.panel.axes
         ax.yaxis.set_major_formatter(FuncFormatter(self._formaty))
-        ax.set_position([left, bottom, width, height])
         ax.get_yaxis().set_visible(self.show_yaxis)
         ax.spines['right'].set_visible(False)
         ax.yaxis.set_ticks_position('left')
