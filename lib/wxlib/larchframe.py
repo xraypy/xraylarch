@@ -4,13 +4,6 @@ from __future__ import print_function
 import sys
 import os
 
-if not hasattr(sys, 'frozen'):
-    try:
-        import wxversion
-        wxversion.ensureMinimal('2.8')
-    except:
-        pass
-
 import wx
 import numpy
 import larch
@@ -170,7 +163,6 @@ class LarchFrame(wx.Frame):
 
         self.histfile = histfile
         self.BuildFrame(parent=parent, **kwds)
-        #  print( 'LarchFrame ', self.prompt , self.output, self.input)
         self.larchshell = LarchWxShell(wxparent=self,
                                        _larch = _larch,
                                        prompt = self.prompt,
@@ -249,14 +241,6 @@ class LarchFrame(wx.Frame):
         self.Refresh()
         self.SetStatusText("Ready", 0)
         self.Raise()
-
-    def onTimer(self, event=None):
-        symtable = self.larchshell.symtable
-        # print 'On Timer ', symtable, symtable.get_symbol('_builtin.force_wxupdate')
-        #if symtable.get_symbol('_builtin.force_wxupdate', create=True):
-        #    print 'Update from Timer!!'
-        #    app = wx.GetApp()
-        #    app.ProcessIdle()
 
     def BuildMenus(self):
         ID_ABOUT = wx.NewId()
@@ -397,14 +381,14 @@ class LarchFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,event=None):
-        if True: # try:
+        try:
             self.Hide()
             self.input.SaveHistory()
             self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
-        else: #except:
+        except:
             pass
 
-    def onExit(self,event=None):
+    def onExit(self, event=None):
         dlg = wx.MessageDialog(None, 'Really Quit?', 'Question',
                                wx.YES_NO | wx.NO_DEFAULT | wx.ICON_QUESTION)
         ret = dlg.ShowModal()
