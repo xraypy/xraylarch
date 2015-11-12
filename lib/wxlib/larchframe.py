@@ -56,11 +56,21 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.wx.ping',   inputhook.ping)
         self.symtable.set_symbol('_sys.wx.force_wxupdate', False)
         self.symtable.set_symbol('_sys.wx.wxapp', output)
+
+        self.symtable.set_symbol('_sys.display.colors.text', None)
+        self.symtable.set_symbol('_sys.display.colors.text2', 'blue')
+        self.symtable.set_symbol('_sys.display.colors.text2_attrs', [])
+        self.symtable.set_symbol('_sys.display.colors.text_attrs', [])        
         # self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
         self.SetPrompt()
         self.larch.run_init_scripts()
-
+        self.flush_timer = wx.Timer(wxparent)
+        self.needs_flush = True
+        wxparent.Bind(wx.EVT_TIMER, self.onFlushTimer, self.flush_timer)
+        self.flush_timer.Start(500)
+        
+        
     def onUpdate(self, event=None):
         symtable = self.symtable
         if symtable.get_symbol('_builtin.force_wxupdate', create=True):
@@ -81,7 +91,7 @@ class LarchWxShell(object):
                 self.prompt.SetForegroundColour('#000075')
             self.prompt.Refresh()
 
-    def write(self, text, color=None):
+    def write(self, text, color=None, bold=None):
         if self.output is None:
             sys.stdout.write(text)
             sys.stdout.flush()
@@ -89,17 +99,25 @@ class LarchWxShell(object):
 
         pos0 = self.output.GetLastPosition()
         self.output.WriteText(text)
+        self.needs_flush = True
         if color is not None:
             style = self.output.GetDefaultStyle()
             bgcol = style.GetBackgroundColour()
             sfont = style.GetFont()
             pos1  = self.output.GetLastPosition()
             self.output.SetStyle(pos0, pos1, wx.TextAttr(color, bgcol, sfont))
+        # self.flush()
 
+    def flush(self, *args):
         self.output.SetInsertionPoint(self.output.GetLastPosition())
         self.output.Refresh()
         self.output.Update()
+        self.needs_flush = False
 
+    def onFlushTimer(self, event=None):
+        if self.needs_flush:
+            self.flush()
+        
     def execute(self, text=None):
         if text is not None:
             if  text.startswith('help'):
@@ -152,6 +170,7 @@ class LarchFrame(wx.Frame):
 
         self.histfile = histfile
         self.BuildFrame(parent=parent, **kwds)
+        #  print( 'LarchFrame ', self.prompt , self.output, self.input)
         self.larchshell = LarchWxShell(wxparent=self,
                                        _larch = _larch,
                                        prompt = self.prompt,
@@ -162,7 +181,7 @@ class LarchFrame(wx.Frame):
             self.Bind(wx.EVT_CLOSE,  self.onExit)
         else:
             self.Bind(wx.EVT_CLOSE,  self.onClose)
-        #self.timer.Start(200)
+        # self.timer.Start(200)
         larchdir = larch.site_config.larchdir
         fico = os.path.join(larchdir, 'icons', ICON_FILE)
         if os.path.exists(fico):
@@ -378,11 +397,11 @@ class LarchFrame(wx.Frame):
         dlg.Destroy()
 
     def onClose(self,event=None):
-        try:
+        if True: # try:
             self.Hide()
             self.input.SaveHistory()
             self.larchshell.symtable.get_symbol('_plotter.close_all_displays')()
-        except:
+        else: #except:
             pass
 
     def onExit(self,event=None):
