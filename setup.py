@@ -92,22 +92,25 @@ if DEBUG:
 # this includes the larch executable files, and all the larch modules
 # and plugins
 
-bin_dir = os.path.join(larchdir, 'bin')
-ico_dir = os.path.join(larchdir, 'icons')
-mod_dir = os.path.join(larchdir, 'modules')
+larchbin_dir = os.path.join(larchdir, 'bin')
+larchico_dir = os.path.join(larchdir, 'icons')
+larchmod_dir = os.path.join(larchdir, 'modules')
 
-scripts =  glob('bin/*')
+sysbin_dir = 'script'
+scripts    =  glob('bin/*')
+
 if os.name != 'nt':
-    unix_scripts = []
+    _scripts = []
+    sysbin_dir = 'bin'
     for s in scripts:
         if not s.endswith('.bat'):
-            unix_script.append(s)
-    scripts = unix_scripts
+            _scripts.append(s)
+    scripts = _scripts
 
-data_files = [('scripts', scripts),
-              (bin_dir, glob('bin/*')),
-              (ico_dir, glob('icons/*.ic*')),
-              (mod_dir, glob('modules/*.lar') + glob('modules/*.py'))]
+data_files = [(sysbin_dir,   scripts),
+              (larchbin_dir, scripts),
+              (larchico_dir, glob('icons/*.ic*')),
+              (larchmod_dir, glob('modules/*.lar') + glob('modules/*.py'))]
 
 
 #dlls
@@ -215,7 +218,7 @@ if cmdline_args[0] == 'install':
 
     if home_stat is not None:
         fix_permissions(larchdir, stat=home_stat)
-        fix_permissions(bin_dir,  stat=home_stat)
+        fix_permissions(larchbin_dir,  stat=home_stat)
         mpl_dir = os.path.join(home_dir, '.matplotlib')
         if os.path.exists(mpl_dir):
             fix_permissions(mpl_dir,  stat=home_stat)
