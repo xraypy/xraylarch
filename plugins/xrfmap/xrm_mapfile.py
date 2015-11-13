@@ -1037,6 +1037,30 @@ class GSEXRM_MapFile(object):
         self.h5root.flush()
         return name
 
+    def export_areas(self, filename=None):
+        """export areas to datafile """
+        if filename is None:
+            filename = "%s_Areas.npz" % self.filename
+        group = self.xrfmap['areas']
+        kwargs = {}
+        for aname in group:
+            kwargs[aname] = group[aname][:]
+        np.savez(filename, **kwargs)
+        return filename
+
+    def import_areas(self, filename, overwrite=False):
+        """import areas from datafile exported by export_areas()"""
+        npzdat = np.load(filename)
+        current_areas = self.xrfmap['areas']
+        othername = os.path.split(filename)[1]
+        
+        if othername.endswith('.h5_Areas.npz'):
+            othername = othername.replace('.h5_Areas.npz', '')
+        for aname in npzdat.files:
+            mask = npzdat[aname]
+            outname = '%s_%s' % (aname, othername)
+            self.add_area(mask, name=outname, desc=outname)
+            
     def get_area(self, name=None, desc=None):
         """
         get area group by name or description
