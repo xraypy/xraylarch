@@ -770,7 +770,6 @@ class MapInfoPanel(scrolled.ScrolledPanel):
         pass
 
 
-
 class MapAreaPanel(scrolled.ScrolledPanel):
 
     label  = 'Map Areas'
@@ -779,7 +778,6 @@ class MapAreaPanel(scrolled.ScrolledPanel):
 WARNING: This cannot be undone!
 
 """
-
     def __init__(self, parent, owner, **kws):
         scrolled.ScrolledPanel.__init__(self, parent, -1,
                                         style=wx.GROW|wx.TAB_TRAVERSAL, **kws)
@@ -817,6 +815,11 @@ WARNING: This cannot be undone!
         self.update = Button(pane, 'Save Label', size=(90, -1),
                                       action=self.onLabel)
 
+        self.bexport = Button(pane, 'Export Areas', size=(135, -1),
+                             action=self.onExport)
+        self.bimport = Button(pane, 'Import Areas', size=(135, -1),
+                             action=self.onImport)
+
         legend  = wx.StaticText(pane, -1, 'Values in CPS, Time in ms',
                                 size=(200, -1))
 
@@ -834,10 +837,15 @@ WARNING: This cannot be undone!
         sizer.Add(self.onmap,               (4, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.clear,               (4, 2), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.onstats,             (4, 4), (1, 2), ALL_LEFT, 2)
+
         sizer.Add(self.xrf,                 (5, 0), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.xrf2,                (5, 2), (1, 2), ALL_LEFT, 2)
         sizer.Add(self.onreport,            (5, 4), (1, 1), ALL_LEFT, 2)
-        sizer.Add(legend,                   (6, 1), (1, 2), ALL_LEFT, 2)
+
+        sizer.Add(self.bexport,             (6, 0), (1, 2), ALL_LEFT, 2)
+        sizer.Add(self.bimport,             (6, 2), (1, 2), ALL_LEFT, 2)
+
+        sizer.Add(legend,                   (7, 1), (1, 2), ALL_LEFT, 2)
         pack(pane, sizer)
 
         # main sizer
@@ -945,8 +953,12 @@ WARNING: This cannot be undone!
         areas = xrfmap['areas']
         c = self.choice
         c.Clear()
-        self.choices =  dict([(areas[a].attrs['description'], a) for a in areas])
-        choice_labels = [areas[a].attrs['description'] for a in areas]
+        self.choices = {}
+        choice_labels = []
+        for a in areas:
+            desc = areas[a].attrs.get('description', a)
+            self.choices[desc] = a
+            choice_labels.append(desc)
 
         c.AppendItems(choice_labels)
         if len(self.choices) > 0:
@@ -1001,6 +1013,22 @@ WARNING: This cannot be undone!
     def _getarea(self):
         return self.choices[self.choice.GetStringSelection()]
 
+    def onExport(self, event=None):
+        ofile = self.owner.current_file.export_areas()
+        self.owner.message("Exported Areas to %s" % ofile)
+
+    def onImport(self, event=None):
+        wildcards = "Area Files (*_Areas.npz)|*_Areas.npz|All files (*.*)|*.*"
+        dlg = wx.FileDialog(self, message="Read Areas File",
+                            defaultDir=os.getcwd(),
+                            wildcard=wildcards, style=wx.OPEN)
+
+        if dlg.ShowModal() == wx.ID_OK:
+            fname = dlg.GetPath().replace('\\', '/')
+            self.owner.current_file.import_areas(fname)
+            self.owner.message("Imported Areas from %s" % fname)
+            self.set_area_choices(self.owner.current_file.xrfmap)
+            
     def onSelect(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
@@ -1021,7 +1049,7 @@ WARNING: This cannot be undone!
         self.info2.SetLabel(info2_fmt%(xvals.min(), xvals.max(), 
                                        yvals.min(), yvals.max()))
 
-        self.desc.SetValue(area.attrs['description'])
+        self.desc.SetValue(area.attrs.get('description', aname))
         self.report.DeleteAllItems()
         self.report_data = []
         if 'roistats' in area.attrs:
@@ -1046,10 +1074,10 @@ WARNING: This cannot be undone!
     def onShow(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
+        label = area.attrs.get('description', aname)
         if len(self.owner.im_displays) > 0:
             imd = self.owner.im_displays[-1]
-            imd.panel.add_highlight_area(area.value,
-                                         label=area.attrs['description'])
+            imd.panel.add_highlight_area(area.value, label=label)
 
     def onDelete(self, event=None):
         aname = self._getarea()
@@ -1077,7 +1105,7 @@ WARNING: This cannot be undone!
         aname = self._getarea()
         xrmfile = self.owner.current_file
         area  = xrmfile.xrfmap['areas/%s' % aname]
-        label = area.attrs['description']
+        label = area.attrs.get('description', aname)
         self._mca  = None
 
         self.owner.message("Getting XRF Spectra for area '%s'..." % aname)
