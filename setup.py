@@ -95,10 +95,20 @@ if DEBUG:
 bin_dir = os.path.join(larchdir, 'bin')
 ico_dir = os.path.join(larchdir, 'icons')
 mod_dir = os.path.join(larchdir, 'modules')
-data_files  = [('bin', glob('bin/*')),
-               (bin_dir, glob('bin/*')),
-               (ico_dir, glob('icons/*.ic*')),
-               (mod_dir, glob('modules/*.lar') + glob('modules/*.py'))]
+
+scripts =  glob('bin/*')
+if os.name != 'nt':
+    unix_scripts = []
+    for s in scripts:
+        if not s.endswith('.bat'):
+            unix_script.append(s)
+    scripts = unix_scripts
+
+data_files = [('scripts', scripts),
+              (bin_dir, glob('bin/*')),
+              (ico_dir, glob('icons/*.ic*')),
+              (mod_dir, glob('modules/*.lar') + glob('modules/*.py'))]
+
 
 #dlls
 dll_maindir = os.path.join(larchdir, 'dlls')
