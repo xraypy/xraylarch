@@ -5,14 +5,14 @@
 AppName=Larch
 AppVersion=0.9.26
 AppPublisher=Matthew Newville, GSECARS,  The University of Chicago
-AppPublisherURL=http://xraypy.github.com/xraylarch
-AppSupportURL=http://xraypy.github.com/xraylarch
-AppUpdatesURL=http://xraypy.github.com/xraylarch
+AppPublisherURL=http://xraypy.github.io/xraylarch
+AppSupportURL=http://xraypy.github.io/xraylarch
+AppUpdatesURL=http://xraypy.github.io/xraylarch
 AppCopyright=Copyright (C) 2015 Matthew Newville
-DefaultDirName={pf}\Larch
+DefaultDirName={localappdata}\larch
 DefaultGroupName=Larch
 AlwaysRestart=no
-LicenseFile=C:\Program Files\Larch\COPYING
+LicenseFile=C:\Users\Newville\AppData\Local\larch\COPYING
 
 [Tasks]
 Name: "desktopicon"; Description: "Create &desktop icons"; GroupDescription: "Additional icons:"; MinVersion: 4,4
@@ -21,11 +21,15 @@ Name: "desktopicon"; Description: "Create &desktop icons"; GroupDescription: "Ad
 Name: "{userappdata}\larch"
 
 [Files]
-Source: "C:\Program Files\Larch\*";      DestDir: "{app}";  Flags: "recursesubdirs"
-Source: "C:\Program Files\Larch\README.txt"; DestDir: "{app}"; Flags: isreadme
+Source: "C:\Users\Newville\AppData\Local\larch\*";          DestDir: "{app}"; Flags: "recursesubdirs"
+Source: "C:\Users\Newville\AppData\Local\larch\README.txt"; DestDir: "{app}"; Flags: isreadme
 
 [Icons]
-Name: "{group}\Larch"; WorkingDir: "{userappdata}\larch"; Filename: "{app}\bin\larch.exe";  IconFilename: "{app}\bin\larch.ico";
+Name: "{group}\Larch";             WorkingDir: "{userappdata}\larch"; Filename: "{app}\bin\larch_gui.exe";  IconFilename: "{app}\icons\larch.ico";
+Name: "{group}\Larch_CommandLine"; WorkingDir: "{userappdata}\larch"; Filename: "{app}\bin\larch.exe";      IconFilename: "{app}\icons\larch.ico";
+Name: "{group}\GSE MapViewer";     WorkingDir: "{userappdata}\larch"; Filename: "{app}\bin\gse_mapviewer.exe";  IconFilename: "{app}\icons\gse_xrfmap.ico";
+Name: "{group}\GSE ScanViewer";    WorkingDir: "{userappdata}\larch"; Filename: "{app}\bin\scanviewer.exe"; IconFilename: "{app}\icons\epics_scan.ico";
+; Name: "{group}\GSE XRF Display";   WorkingDir: "{userappdata}\larch"; Filename: "{app}\bin\epicsxrfdisplay.exe";  IconFilename: "{app}\icons\ptable.ico";
 
 Name: "{group}\Uninstall Larch"; Filename: "{uninstallexe}"
 
