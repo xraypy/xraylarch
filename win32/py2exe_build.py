@@ -18,23 +18,25 @@ import sys
 import os
 import shutil
 import numpy
-import numpy.oldnumeric
 import scipy
 import matplotlib
 import h5py
-import Image
+# import Image
 import sqlalchemy
 import wx
+from wx import MessageDialog
 import ctypes
 import ctypes.util
 from numpy import sort
+import cython
 
-import scipy.lib.six
+# import scipy.lib.six
 import scipy.io.netcdf
 from scipy.io.netcdf import netcdf_file
 
 from scipy.sparse.csgraph import _validation
 from scipy.special import _ufuncs, _ufuncs_cxx
+from scipy.linalg import _decomp_update, cython_blas
 
 import scipy.constants
 
@@ -61,7 +63,7 @@ except ImportError:
 
 
 extra_files = ['inno_setup.iss', '../COPYING', '../README.txt',
-               '../bin/GSEMap.ico', '../bin/larch.ico', '../bin/ptable.ico']
+               '../icons/GSEMap.ico', '../icons/larch.ico', '../icons/ptable.ico']
 scipy_dlls = ['lib/site-packages/scipy/optimize/minpack2.pyd',
               'lib/site-packages/scipy/interpolate/dftipack.pyd',
               'lib/site-packages/scipy/integrate/_quadpack.pyd',
@@ -122,43 +124,51 @@ style_xml = """
 """
 
 windows_apps = [{'script': '../bin/larch_gui',
-                 'icon_resources': [(0, '../bin/larch.ico')],
-                 # 'other_resources': [(24, 1, style_xml)],
+                 'icon_resources': [(0, '../icons/larch.ico')],
+                 'other_resources': [(24, 1, style_xml)],
                  },
                 {'script': '../bin/GSE_MapViewer',
-                 'icon_resources': [(0, '../bin/GSEMap.ico')],
-                 # 'other_resources': [(24, 1, style_xml)],
+                 'icon_resources': [(0, '../icons/gse_xrfmap.ico')],
+                 'other_resources': [(24, 1, style_xml)],
                  },
                 {'script': '../bin/EpicsXRFDisplay',
-                 'icon_resources': [(0, '../bin/ptable.ico')],
-                 # 'other_resources': [(24, 1, style_xml)],
+                 'icon_resources': [(0, '../icons/ptable.ico')],
+                 'other_resources': [(24, 1, style_xml)],
+                 },
+                {'script': '../bin/ScanViewer',
+                 'icon_resources': [(0, '../icons/epics_scan.ico')],
+                 'other_resources': [(24, 1, style_xml)],
                  },
                 ]
 console_apps = [{'script': '../bin/larch',
-                 'icon_resources': [(0, '../bin/larch.ico')]}]
+                 'icon_resources': [(0, '../icons/larch.ico')]}]
 
 
 py2exe_opts = {'optimize':1,
                'bundle_files':2,
-               'includes': ['ConfigParser', 'Image', 'ctypes',
+               'includes': ['ConfigParser',
+                            # 'Image',
+                            'ctypes',
                             'larch', 'larch.builtins', 
                             'epics', 'epics.devices', 'epics.wx', 
                             'fpformat',
                             'h5py', 'h5py._objects', 'h5py._proxy',
                             'h5py.defs', 'h5py.utils',
                             'matplotlib',
-                            'numpy', 'numpy.oldnumeric',
+                            'numpy',
                             'scipy',
-                            'scipy.lib', 
-                            'scipy.lib.six', 
+                            # 'scipy.lib', 
+                            # 'scipy.lib.six', 
                             'scipy.constants',
                             'scipy.fftpack',
                             'scipy.sparse',
                             # 'scipy.sparse.compressed',
                             # 'scipy.sparse.sparsetools',
                             'scipy.sparse.csgraph',
-                            'scipy.sparse.csgraph._validation',
-                            'scipy.special._ufuncs_cxx',
+                            'scipy.sparse.csgraph.*',
+                            'scipy.special.*', 
+                            'scipy.linalg',
+                            'scipy.linalg.*', 
                             'scipy.io.matlab.mio5_utils',
                             'scipy.io.matlab.streams',
                             'scipy.io.netcdf',
@@ -173,8 +183,9 @@ py2exe_opts = {'optimize':1,
                             'sqlalchemy.orm',
                             'sqlalchemy.pool',
                             'sqlite3',
-                            'wxutils',                            
-                            'wx', 'wx._core',
+                            'wx',
+                            'wx._core',
+                            'wx.*',
                             'wx.dataview', 'wx.richtext',
                             'wx.lib', 'wx.lib.agw',
                             'wx.lib.agw.flatnotebook',
@@ -182,9 +193,10 @@ py2exe_opts = {'optimize':1,
                             'wx.lib.mixins', 'wx.lib.mixins.inspection',
                             'wx.lib.agw.pycollapsiblepane',
                             'wx.lib.newevent', 'wx.py', 'wxmplot',
+                            'wxutils',                            
                             'wxversion', 'xdrlib', 'xml.etree',
                             'xml.etree.cElementTree'],
-               'packages': ['h5py', 'scipy.optimize', 'scipy.signal', 'scipy.io',
+               'packages': ['h5py', 'wx', 'scipy.optimize', 'scipy.signal', 'scipy.io',
                             'numpy.random', 'xml.etree', 'xml.etree.cElementTree'], 
                'excludes': ['Tkinter', '_tkinter', 'Tkconstants', 'tcl',
                             '_imagingtk', 'PIL._imagingtk', 'ImageTk',
@@ -209,7 +221,6 @@ for fname in extra_files:
         shutil.copy(fname, os.path.join('dist', name))
     except:
         pass
-
 
 if __name__ == '__main__':
     print 'usage:  python py2exe_build.py py2exe'

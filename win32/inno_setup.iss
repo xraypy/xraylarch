@@ -3,12 +3,12 @@
 
 [Setup]
 AppName=Larch
-AppVersion=0.9.14
+AppVersion=0.9.26
 AppPublisher=Matthew Newville, GSECARS,  The University of Chicago
 AppPublisherURL=http://xraypy.github.com/xraylarch
 AppSupportURL=http://xraypy.github.com/xraylarch
 AppUpdatesURL=http://xraypy.github.com/xraylarch
-AppCopyright=Copyright (C) 2012 Matthew Newville
+AppCopyright=Copyright (C) 2015 Matthew Newville
 DefaultDirName={pf}\Larch
 DefaultGroupName=Larch
 AlwaysRestart=no
