@@ -87,7 +87,7 @@ FILE_WILDCARDS = "X-ray Maps (*.h5)|*.h5|All files (*.*)|*.*"
 
 # FILE_WILDCARDS = "X-ray Maps (*.0*)|*.0&"
 
-ICON_FILE = 'GSEMap.ico'
+ICON_FILE = 'gse_xrfmap.ico'
 
 NOT_OWNER_MSG = """The File
    '%s'
