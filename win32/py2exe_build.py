@@ -63,12 +63,15 @@ except ImportError:
 
 
 extra_files = ['inno_setup.iss', '../COPYING', '../README.txt',
-               '../icons/GSEMap.ico', '../icons/larch.ico', '../icons/ptable.ico']
+               '../icons/gse_xrfmap.ico',
+               '../icons/epics_scan.ico',
+               '../icons/larch.ico',
+               '../icons/ptable.ico']
+
 scipy_dlls = ['lib/site-packages/scipy/optimize/minpack2.pyd',
               'lib/site-packages/scipy/interpolate/dftipack.pyd',
               'lib/site-packages/scipy/integrate/_quadpack.pyd',
               'lib/site-packages/numpy/fft/fftpack_lite.pyd']
-
 
 dlldir = os.path.join(sys.prefix, 'DLLs')
 for n in os.listdir(dlldir):
