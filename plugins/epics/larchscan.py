@@ -331,6 +331,10 @@ class LarchStepScan(object):
         for (desc, pv) in self.extra_pvs:
             pv.connect()
         out = [m(scan=self) for m in self.pre_scan_methods]
+        for det in self.detectors:
+            for counter in det.counters:
+                self.add_counter(counter)
+
         prescan_proc = None
         try:
             prescan_proc = self._larch.symtable.get_symbol('pre_scan_command')
@@ -394,7 +398,6 @@ class LarchStepScan(object):
         for c in self.counters:
             c.clear()
         self.pos_actual = []
-
 
     def _messenger(self, cpt, npts=0, **kws):
         time_left = (npts-cpt)* (self.pos_settle_time + self.det_settle_time)
@@ -466,6 +469,7 @@ class LarchStepScan(object):
                                          pvname=c.pv.pvname,
                                          units=units, notes='counter')
                 names.append(name)
+        self.scandb.commit()
 
     def get_infobool(self, key):
         if self.scandb is None:
@@ -532,16 +536,6 @@ class LarchStepScan(object):
         out = [p.move_to_start(wait=False) for p in self.positioners]
         self.check_outputs(out, msg='move to start')
 
-        self.datafile = self.open_output_file(filename=self.filename,
-                                              comments=self.comments)
-
-        self.datafile.write_data(breakpoint=0)
-        self.filename =  self.datafile.filename
-        dtimer.add('PRE: openend file')
-        self.clear_data()
-        if self.scandb is not None:
-            self.init_scandata()
-            self.set_info('request_abort', 0)
 
         npts = len(self.positioners[0].array)
         self.dwelltime_varys = False
@@ -571,11 +565,23 @@ class LarchStepScan(object):
         dtimer.add('PRE: cleared data')
         out = self.pre_scan()
         self.check_outputs(out, msg='pre scan')
-
         dtimer.add('PRE: pre_scan done')
+
+
+        self.datafile = self.open_output_file(filename=self.filename,
+                                              comments=self.comments)
+
+        self.filename =  self.datafile.filename
+        self.clear_data()
+        self.datafile.write_data(breakpoint=0)
+
         if self.scandb is not None:
+            self.init_scandata()
+            self.set_info('request_abort', 0)
             self.set_info('scan_time_estimate', time_est)
             self.set_info('scan_total_points', npts)
+
+        dtimer.add('PRE: openend file')
 
         self.set_info('scan_progress', 'starting scan')
         #self.msg_thread = ScanMessenger(func=self._messenger, npts=npts, cpt=0)
@@ -702,7 +708,8 @@ class LarchStepScan(object):
         #      self.msg_thread.cpt = None
         #      self.msg_thread.join()
 
-        self.set_info('scan_progress', 'scan complete. Wrote %s' % self.filename)
+        self.set_info('scan_progress', 
+                      'scan complete. Wrote %s' % self.datafile.filename)
         ts_exit = time.time()
         self.exittime = ts_exit - ts_loop
         self.runtime  = ts_exit - ts_start
