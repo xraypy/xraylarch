@@ -1426,7 +1426,7 @@ class MapViewerFrame(wx.Frame):
             try:
                 sys.path.insert(0, '//cars5/Data/xas_user/bin')
                 from scan_credentials import conn as DBCONN
-                from larch_plugins.epics.scandb import connect_scandb
+                from larch_plugins.epics.scandb_plugin import connect_scandb
                 DBCONN['_larch'] = self.larch
                 connect_scandb(**DBCONN)
                 self.scandb = self.larch.symtable._scan._scandb
