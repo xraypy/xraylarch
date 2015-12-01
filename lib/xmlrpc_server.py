@@ -45,10 +45,14 @@ class LarchServer(SimpleXMLRPCServer):
         self.register_function(self.get_messages,  'get_messages')
         self.register_function(self.len_messages,  'len_messages')
 
-    def write(self, text):
+    def write(self, text, **kws):
         self.out_buffer.append(text)
         if self.local_echo:
-            print( text)
+            sys.stdout.write(text)
+
+    def flush(self):
+        if self.local_echo:
+            sys.stdout.flush()
 
     def get_messages(self):
         if self.local_echo:
