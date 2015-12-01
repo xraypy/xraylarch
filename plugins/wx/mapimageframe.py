@@ -213,6 +213,8 @@ class MapImageFrame(ImageFrame):
         self.prof_plotter.Show()
         self.zoom_ini = None
 
+        self.zoom_mode.SetSelection(0)
+        self.panel.cursor_mode = 'zoom'
 
     def prof_report_coords(self, event=None):
         """override report leftdown for profile plotter"""
@@ -243,12 +245,13 @@ class MapImageFrame(ImageFrame):
         msg = "Pixel [%i, %i], X, Y = [%.4f, %.4f], Intensity= %g" % _point
         write(msg,  panel=0)
 
-    def onCursorMode(self, event=None):
-        self.panel.cursor_mode = 'zoom'
-        if 1 == event.GetInt():
-            self.panel.cursor_mode = 'lasso'
-        elif 2 == event.GetInt():
-            self.panel.cursor_mode = 'prof'
+    def onCursorMode(self, event=None, mode='zoom'):
+        self.panel.cursor_mode = mode
+        if event is not None:
+            if 1 == event.GetInt():
+                self.panel.cursor_mode = 'lasso'
+            elif 2 == event.GetInt():
+                self.panel.cursor_mode = 'prof'
 
 
     def report_leftdown(self, event=None):
@@ -300,6 +303,9 @@ class MapImageFrame(ImageFrame):
                                 xoff=self.xoff, yoff=self.yoff,
                                 det=self.det, xrmfile=self.xrmfile, **kws)
 
+        self.zoom_mode.SetSelection(0)
+        self.panel.cursor_mode = 'zoom'
+
     def CustomConfig(self, panel, sizer, irow):
         """config panel for left-hand-side of frame"""
         conf = self.panel.conf
@@ -307,14 +313,14 @@ class MapImageFrame(ImageFrame):
         lsizer = sizer
         labstyle = wx.ALIGN_LEFT|wx.LEFT|wx.TOP|wx.EXPAND
 
-        zoom_mode = wx.RadioBox(panel, -1, "Cursor Mode:",
-                                wx.DefaultPosition, wx.DefaultSize,
-                                ('Zoom to Rectangle',
-                                 'Pick Area for XRF Spectrum',
-                                 'Show Line Profile'),
-                                1, wx.RA_SPECIFY_COLS)
-        zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
-        sizer.Add(zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
+        self.zoom_mode = wx.RadioBox(panel, -1, "Cursor Mode:",
+                                     wx.DefaultPosition, wx.DefaultSize,
+                                     ('Zoom to Rectangle',
+                                      'Pick Area for XRF Spectrum',
+                                      'Show Line Profile'),
+                                     1, wx.RA_SPECIFY_COLS)
+        self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
+        sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
         if self.save_callback is not None:
             self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
             label   = SimpleText(panel, label='Position name:',
