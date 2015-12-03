@@ -322,14 +322,16 @@ class MapImageFrame(ImageFrame):
         self.zoom_mode.Bind(wx.EVT_RADIOBOX, self.onCursorMode)
         sizer.Add(self.zoom_mode,  (irow, 0), (1, 4), labstyle, 3)
         if self.save_callback is not None:
-            self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1))
-            label   = SimpleText(panel, label='Position name:',
+            self.pos_name = wx.TextCtrl(panel, -1, '',  size=(175, -1),
+                                        style=wx.TE_PROCESS_ENTER)
+            self.pos_name.Bind(wx.EVT_TEXT_ENTER, self.onSavePixel)
+            label   = SimpleText(panel, label='Save Position:',
                                  size=(-1, -1))
-            sbutton = Button(panel, 'Save Position', size=(100, -1),
-                             action=self.onSavePixel)
-            sizer.Add(label,         (irow+1, 0), (1, 1), labstyle, 3)
-            sizer.Add(self.pos_name, (irow+1, 1), (1, 3), labstyle, 3)
-            sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
+            # sbutton = Button(panel, 'Save Position', size=(100, -1),
+            #                  action=self.onSavePixel)
+            sizer.Add(label,         (irow+1, 0), (1, 2), labstyle, 3)
+            sizer.Add(self.pos_name, (irow+1, 2), (1, 2), labstyle, 3)
+            # sizer.Add(sbutton,       (irow+2, 0), (1, 2), labstyle, 3)
 
         if self.move_callback is not None:
             mbutton = Button(panel, 'Move to Position', size=(100, -1),
@@ -345,7 +347,8 @@ class MapImageFrame(ImageFrame):
 
     def onSavePixel(self, event=None):
         if self.this_point is not None and self.save_callback is not None:
-            name  = str(self.pos_name.GetValue().strip())
+            name  = str(event.GetString().strip())
+            # name  = str(self.pos_name.GetValue().strip())
             ix, iy = self.this_point
             x = float(self.panel.xdata[ix])
             y = float(self.panel.ydata[iy])
