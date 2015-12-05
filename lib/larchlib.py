@@ -423,8 +423,7 @@ def enable_plugins():
     """add all available Larch plugin paths
     """
     if 'larch_plugins' not in sys.modules:
-        topdir = os.path.abspath(larchdir)
-        sys.path.insert(0, topdir)
+        sys.path.insert(1, os.path.abspath(larchdir))
         import plugins
         sys.modules['larch_plugins'] = plugins
     return sys.modules['larch_plugins']
