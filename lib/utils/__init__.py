@@ -6,6 +6,7 @@ except ImportError:
         from .ordereddict import OrderedDict
     except:
         pass
+from .paths import nativepath, get_homedir
 from .closure import Closure
 from .debugtime import debugtime
 from .strutils import (fixName, isValidName, isNumber,
