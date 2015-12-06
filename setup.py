@@ -71,14 +71,10 @@ if not deps_ok:
 if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
     time.sleep(0.2)
 
-
 from lib import version
-
 # system-wide larchdir
 larchdir = os.path.join(sys.exec_prefix, 'share', 'larch')
 
-
-DEBUG = True
 if DEBUG:
     print("##  Settings  (Debug mode) ## ")
     print(" larchdir: ",  larchdir)
@@ -208,19 +204,6 @@ def fix_permissions(dirname, stat=None):
 
 if cmdline_args[0] == 'install':
     remove_cruft(larchdir, historical_cruft)
-    #
-    #     home_dir = site_config.get_homedir()
-    #     try:
-    #         home_stat = os.stat(home_dir)
-    #     except:
-    #         home_stat = None
-    #
-    #     if home_stat is not None:
-    #         fix_permissions(larchdir, stat=home_stat)
-    #         mpl_dir = os.path.join(home_dir, '.matplotlib')
-    #         if os.path.exists(mpl_dir):
-    #             fix_permissions(mpl_dir,  stat=home_stat)
-    #
 
 if deps_ok and not os.path.exists('.deps'):
     f = open('.deps', 'w')
