@@ -21,7 +21,6 @@ recommended_modules = {'basic analysis': required_modules,
 
 # files that may be left from earlier installs) and should be removed
 historical_cruft = []
-
 modules_imported = {}
 missing = []
 deps_ok = False
@@ -73,12 +72,13 @@ if os.environ.get('TRAVIS_CI_TEST', '0') == '1':
     time.sleep(0.2)
 
 
-from lib import site_config, version
+from lib import version
 
-# read installation locations from lib/site_configdata.py
-larchdir = site_config.larchdir
+# system-wide larchdir
+larchdir = os.path.join(sys.exec_prefix, 'share', 'larch')
 
 
+DEBUG = True
 if DEBUG:
     print("##  Settings  (Debug mode) ## ")
     print(" larchdir: ",  larchdir)
@@ -92,7 +92,6 @@ if DEBUG:
 # this includes the larch executable files, and all the larch modules
 # and plugins
 
-larchbin_dir = os.path.join(larchdir, 'bin')
 larchico_dir = os.path.join(larchdir, 'icons')
 larchmod_dir = os.path.join(larchdir, 'modules')
 
@@ -108,7 +107,6 @@ if os.name != 'nt':
     scripts = _scripts
 
 data_files = [(sysbin_dir,   scripts),
-              (larchbin_dir, scripts),
               (larchico_dir, glob('icons/*.ic*')),
               (larchmod_dir, glob('modules/*.lar') + glob('modules/*.py'))]
 
@@ -153,7 +151,6 @@ for pdir in pluginpaths:
             pfiles.append(fname)
     data_files.append((os.path.join(larchdir, pdir), pfiles))
 
-site_config.make_larchdirs()
 
 # now we have all the data files, so we can run setup
 setup(name = 'larch',
@@ -169,6 +166,8 @@ setup(name = 'larch',
       packages = ['larch', 'larch.utils', 'larch.wxlib',
                   'larch.fitting', 'larch.fitting.uncertainties'],
       data_files  = data_files)
+
+
 
 def remove_cruft(basedir, filelist):
     """remove files from base directory"""
@@ -209,20 +208,20 @@ def fix_permissions(dirname, stat=None):
 
 if cmdline_args[0] == 'install':
     remove_cruft(larchdir, historical_cruft)
+    #
+    #     home_dir = site_config.get_homedir()
+    #     try:
+    #         home_stat = os.stat(home_dir)
+    #     except:
+    #         home_stat = None
+    #
+    #     if home_stat is not None:
+    #         fix_permissions(larchdir, stat=home_stat)
+    #         mpl_dir = os.path.join(home_dir, '.matplotlib')
+    #         if os.path.exists(mpl_dir):
+    #             fix_permissions(mpl_dir,  stat=home_stat)
+    #
 
-    home_dir = site_config.get_homedir()
-    try:
-        home_stat = os.stat(home_dir)
-    except:
-        home_stat = None
-
-    if home_stat is not None:
-        fix_permissions(larchdir, stat=home_stat)
-        fix_permissions(larchbin_dir,  stat=home_stat)
-        mpl_dir = os.path.join(home_dir, '.matplotlib')
-        if os.path.exists(mpl_dir):
-            fix_permissions(mpl_dir,  stat=home_stat)
-    
 if deps_ok and not os.path.exists('.deps'):
     f = open('.deps', 'w')
     f.write('1\n')
