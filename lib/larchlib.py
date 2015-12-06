@@ -12,7 +12,7 @@ import ctypes
 import ctypes.util
 from .utils import Closure
 from .symboltable import Group
-from .site_config import larchdir
+from .site_config import larchdir, usr_larchdir
 
 HAS_TERMCOLOR = False
 try:
@@ -510,7 +510,7 @@ def read_workdir(conffile):
     """
 
     try:
-        w_file = os.path.join(larchdir, conffile)
+        w_file = os.path.join(usr_larchdir, conffile)
         if os.path.exists(w_file):
             line = open(w_file, 'r').readlines()
             workdir = line[0][:-1]
@@ -527,7 +527,7 @@ def save_workdir(conffile):
     """
 
     try:
-        w_file = os.path.join(larchdir, conffile)
+        w_file = os.path.join(usr_larchdir, conffile)
         fh = open(w_file, 'w')
         fh.write("%s\n" % os.getcwd())
         fh.close()
