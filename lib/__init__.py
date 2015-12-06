@@ -21,7 +21,7 @@ from .fitting import Minimizer, Parameter, isParameter, param_value
 from .shell import shell
 from .interpreter import Interpreter
 from .inputText import InputText
-from .utils import Closure, fixName
+from .utils import Closure, fixName, nativepath, get_homedir
 from .version import __date__, __version__
 
 def ValidateLarchPlugin(fcn):
@@ -32,9 +32,8 @@ def ValidateLarchPlugin(fcn):
     def wrapper(*args, **keywords):
         "ValidateLarchPlugin"
         if ('_larch' not in keywords or
-            ('Interpreter' not in keywords['_larch'].__class__.__name__)):            
+            ('Interpreter' not in keywords['_larch'].__class__.__name__)):
             raise LarchPluginException(errmsg % fcn.__name__)
-        # raise Warning(errmsg % fcn.__name__)
         return fcn(*args, **keywords)
     wrapper.__doc__ = fcn.__doc__
     wrapper.__name__ = fcn.__name__
