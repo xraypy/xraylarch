@@ -47,7 +47,7 @@ Anaconda prompt (Windows) and type ::
     larch_makeicons 
 
 This will install all the software needed to run Larch and all its
-components.  The `larch_desktop_icons` command will create a Folder called
+components.  The `larch_makeicons` command will create a Folder called
 *Larch* on your desktop that includes shortcuts (Windows) or small Apps (Mac
 OSX) to run the following Larch programs:
    
