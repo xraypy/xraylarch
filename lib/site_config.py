@@ -8,83 +8,31 @@ site configuration for larch:
 """
 from __future__ import print_function
 
-import os
-HAS_PWD = True
-try:
-    import pwd
-except ImportError:
-    HAS_PWD = False
 import sys
-from . import site_configdata
+import os
+from os.path import exists, abspath, join
+from .utils import get_homedir, nativepath
 
-def unixdir(f):
-    return f.replace('\\', '/')
+def pjoin(*args):
+    return nativepath(join(*args))
 
-def windir(d):
-    "ensure path uses windows delimiters"
-    if d.startswith('//'): d = d[1:]
-    d = d.replace('/','\\')
-    return d
+##
+# set system-wide and local larch folders
+#   larchdir     = sys.exec_prefix + 'share' + 'larch'
+#   usr_larchdir = get_homedir() + '.larch' (#unix)
+#                = get_homedir() + 'larch'  (#win)
+##
 
-def nativedir(d):
-    "ensure path uses delimiters for current OS"
-    if os.name == 'nt':
-        return windir(d)
-    return unixdir(d)
-
-def join(*args):
-    return nativedir(os.path.join(*args))
-
-exists = os.path.exists
-abspath = os.path.abspath
-curdir = abspath('.')
-
-def get_homedir():
-    "determine home directory"
-    def check(method, s):
-        try:
-            if method(s) not in (None, s):
-                return method(s)
-        except KeyError:
-            print('error looking up %s' % s)
-            print(sys.exc_info[1])
-        return None
-
-    # sudo case!
-    username = os.environ.get("SUDO_USER", None)
-    if HAS_PWD and username is not None:
-        home_dir = pwd.getpwnam(username).pw_dir
-    else:
-        home_dir = check(os.path.expanduser, '~')
-    if home_dir is  None:
-        for var in ('$HOME', '$USERPROFILE', '$ALLUSERSPROFILE', '$HOMEPATH'):
-            home_dir = check(os.path.expandvars, var)
-            if home_dir is not None: break
-
-    if home_dir is None:
-        home_dir = os.path.abspath('.')
-    return nativedir(home_dir)
-
-# set larch install directories
-# on unix, these would be
-#   larchdir =  $USER/.larch
-#
-# on windows, these would be
-#   larchdir = $USER/larch
-
-larchdir = site_configdata.larchdir
-if os.name == 'nt' and larchdir.startswith('.'):
-    larchdir = larchdir[1:]
-
+larchdir = pjoin(sys.exec_prefix, 'share', 'larch')
 home_dir = get_homedir()
-larchdir = join(home_dir, larchdir)
+
+usr_larchdir = pjoin(home_dir, '.larch')
+if os.name == 'nt':
+    usr_larchdir = pjoin(home_dir, 'larch')
 
 if 'LARCHDIR' in os.environ:
-    larchdir = nativedir(os.environ['LARCHDIR'])
-else:
-    larchdir = nativedir(abspath(join(home_dir, larchdir)))
+    usr_larchdir = nativepath(os.environ['LARCHDIR'])
 
-user_larchdir = larchdir
 ##
 ## names (and loading order) for core plugin modules
 core_plugins = ('std', 'math', 'io', 'wx', 'xray', 'xrf', 'xafs')
@@ -103,108 +51,97 @@ if hasattr(sys, 'frozen'):
     elif sys.platform.lower().startswith('darwin'):
         tdir, exe = os.path.split(sys.executable)
         toplevel, bindir = os.path.split(tdir)
-        larchdir = join(toplevel, 'Resources', 'larch')
-
-
-def make_larchdirs():
-    "create users .larch directories"
-    files = {'init.lar': '# put startup larch commands here\n',
-             'history.lar': '# history of larch commands will be placed here\n'}
-    subdirs = {'matplotlib': '# matplotlib may put files here...\n',
-               'dlls':       '# put dlls here \n',
-               'modules':    '# put custom larch or python modules here \n'}
-
-    def make_dir(dname):
-        if exists(dname): return True
-        try:
-            os.mkdir(dname)
-            return True
-        except OSError:
-            print('Error trying to create %s' % dname)
-            print(sys.exc_info()[1])
-        except TypeError:
-            print('Error trying to create %s' % dname)
-            print(sys.exc_info()[1])
-        return False
-
-    def write_file(fname, text):
-        if os.path.exists(fname):
-            return True
-        try:
-            f = open(fname, 'w')
-            f.write(text)
-            f.close()
-            return True
-        except:
-            print('Error trying to open %s' % fname)
-            print(sys.exc_info()[1])
-        return False
-
-    if not make_dir(larchdir):
-        return
-    for fname, text in files.items():
-        fname = join(larchdir, fname)
-        write_file(fname, text)
-
-    for sdir, text in subdirs.items():
-        sdir = join(larchdir, sdir)
-        if not make_dir(sdir):
-            break
-        fname = join(sdir, 'README')
-        write_file(fname, text)
+        larchdir = pjoin(toplevel, 'Resources', 'larch')
 
 modules_path = []
 plugins_path = []
-_path = [user_larchdir, larchdir]
-# print(" SITE CONFIG  " , _path)
+_path = [usr_larchdir, larchdir]
+
 if 'LARCHPATH' in os.environ:
-    _path.extend([nativedir(s) for s in os.environ['LARCHPATH'].split(':')])
+    _path.extend([nativepath(s) for s in os.environ['LARCHPATH'].split(':')])
 
 for pth in _path:
-    mdir = join(pth, 'modules')
+    mdir = pjoin(pth, 'modules')
     if exists(mdir) and mdir not in modules_path:
         modules_path.append(mdir)
 
-    pdir = join(pth, 'plugins')
+    pdir = pjoin(pth, 'plugins')
     if exists(pdir) and pdir not in plugins_path:
         plugins_path.append(pdir)
 
 # initialization larch files to be run on startup
-init_files = [join(larchdir, 'init.lar')]
+init_files = [pjoin(usr_larchdir, 'init.lar')]
 
 if 'LARCHSTARTUP' in os.environ:
     startup = os.environ['LARCHSTARTUP']
     if exists(startup):
-        init_files = [nativedir(startup)]
+        init_files = [nativepath(startup)]
 
 # history file:
-history_file = join(larchdir, 'history.lar')
+history_file = pjoin(usr_larchdir, 'history.lar')
+
+def make_user_larchdirs():
+    """create user's larch directories"""
+    files = {'init.lar':             'put custom startup larch commands:',
+             'history.lar':          'history of larch commands:',
+             'history_larchgui.lar': 'history of larch_gui commands:',
+             }
+    subdirs = {'matplotlib': 'matplotlib may put files here',
+               'dlls':       'put dlls here',
+               'modules':    'put custom larch or python modules here',
+               'plugins':    'put custom larch plugins here'}
+
+    def make_dir(dname):
+        if not exists(dname):
+            try:
+                os.mkdir(dname)
+            except (OSError, TypeError):
+                print(sys.exc_info()[1])
+
+    def write_file(fname, text):
+        if not exists(fname):
+            try:
+                f = open(fname, 'w')
+                f.write('# %s\n' % text)
+                f.close()
+            except:
+                print(sys.exc_info()[1])
+
+    make_dir(usr_larchdir)
+    for fname, text in files.items():
+        write_file(pjoin(usr_larchdir, fname), text)
+
+    for sdir, text in subdirs.items():
+        sdir = pjoin(usr_larchdir, sdir)
+        make_dir(sdir)
+        write_file(pjoin(sdir, 'README'), text)
 
 def show_site_config():
-    is_frozen = repr(getattr(sys, 'frozen', None))
     print( """===  Larch Configuration
   sys executable:       %s
-  sys frozen:           %s
-  users home directory: %s
+  sys is frozen:        %s
+  system larch dir:     %s
   users larch dir:      %s
   users history_file:   %s
   users startup files:  %s
   modules search path:  %s
   plugins search path:  %s
 ========================
-""" % (sys.executable, is_frozen, home_dir, larchdir,
+""" % (sys.executable, repr(getattr(sys, 'frozen', False)),
+       larchdir, usr_larchdir,
        history_file, init_files,
        modules_path, plugins_path))
 
 def system_settings():
-    """set system-specific settings, such as
-    Environmental Variables.
-
+    """set system-specific Environmental Variables, and make sure
+    that the user larchdirs exist.
     This is run by the interpreter on startup."""
     # ubuntu / unity hack
     if sys.platform.lower().startswith('linux'):
         if 'ubuntu' in os.uname()[3].lower():
             os.environ['UBUNTU_MENUPROXY'] = '0'
+    make_user_larchdirs()
+
 
 if __name__ == '__main__':
     show_site_config()
