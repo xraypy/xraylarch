@@ -19,7 +19,7 @@ Downloads are available from the
 at sourceforge.net, from the
 `larch pages at cars.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_,
 or from  the
-`larch pages at github.com <http://github.com/xraypy/xraylarch>`_. 
+`larch pages at github.com <http://github.com/xraypy/xraylarch>`_.
 
 Recommended download options are:
 
@@ -134,4 +134,4 @@ documentation, and all material associated with Larch are distributed under
 the BSD License:
 
 
-.. literalinclude:: ../../COPYING
+.. literalinclude:: ../../LICENSE

@@ -1,8 +1,8 @@
-include README.txt COPYING INSTALL  MANIFEST.in PKG-INFO 
+include README.txt LICENSE INSTALL  MANIFEST.in PKG-INFO
 include setup.py publish_docs.sh
 exclude *.pyc core.* *~ *.pdf .deps sandbox
 recursive-include lib *.py
-recursive-include tests *.py 
+recursive-include tests *.py
 recursive-include doc *
 recursive-exclude doc/_build *
 recursive-include modules *
