@@ -1,0 +1,52 @@
+package:
+  name: xraylarch
+  version: "0.9.27"
+
+source:
+  git_rev: 0.9.27
+  git_url:  https://github.com/xraypy/xraylarch.git
+
+requirements:
+  build:
+    - python
+    - setuptools
+    - numpy
+    - scipy
+    - matplotlib
+    - h5py
+    - sqlalchemy
+    - pyepics
+    - wxpython
+    - wxmplot
+    - wxutils
+
+  run:
+    - python
+    - numpy
+    - scipy
+    - matplotlib
+    - h5py
+    - sqlalchemy
+    - termcolor
+    - pyepics
+    - wxpython
+    - wxmplot
+    - wxutils
+
+test:
+  imports:
+    - larch
+
+about:
+  home: http://xraypy.github.io/xraylarch/
+  license: MIT
+  summary: 'Data Analysis Tools for X-ray Spectroscopy'
+
+
+build:
+  osx_is_app: True
+
+app:
+  entry: pythonw larch_gui
+  icon: larchcone1.png
+  summary: "X-ray Larch"
