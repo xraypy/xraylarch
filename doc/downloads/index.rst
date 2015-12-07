@@ -2,38 +2,61 @@
 Downloading and Installation
 ====================================
 
-.. _larch-0.9.24.tar.gz (sf.net):       http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.24.tar.gz/download
-.. _larch-0.9.24.tar.gz (CARS):         http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.24.tar.gz
-.. _LarchInstaller_0.9.24.exe (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/LarchInstaller_0.9.24.exe/download
-.. _LarchInstaller_0.9.24.exe (CARS):   http://cars.uchicago.edu/xraylarch/downloads/LarchInstaller_0.9.24.exe
+.. _larch-0.9.27.tar.gz (sf.net):       http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.27.tar.gz/download
+.. _larch-0.9.27.tar.gz (CARS):         http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.27.tar.gz
+.. _LarchInstaller_0.9.27.exe (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/LarchInstaller_0.9.27.exe/download
+.. _LarchInstaller_0.9.27.exe (CARS):   http://cars.uchicago.edu/xraylarch/downloads/LarchInstaller_0.9.27.exe
 .. _larch github repository:            http://github.com/xraypy/xraylarch
+.. _anaconda python:                    http://www.continuum.io
+
+The latest version of Larch is 0.9.27 (December 2015).  Larch is in
+active development, so there many be bugs and unintended features, and
+there are definitely some missing desired features.  Still, most of
+what is in Larch is working, stable, and ready for use.
 
 
-Larch is still in active development, and all releases should be considered
-**beta** releases.  That is, these **beta** releases are working, but have
-not been rigorously or extensively tested, and probably contain some bugs
-and unintended features.
+There are several ways to download and install Larch.  Starting with
+Larch 0.9.27, the **recommended** way to run Larch is with `Anaconda
+Python <http://www.continuum.io/>`_ (version 2.7: Note that Larch does
+not yet work with Python 3. series).  For Windows, a binary installer
+is available, though it is not updated as often as the source code or
+Anaconda package.  In addition, Larch can be installed from its source
+code. Each of these is described in more detail below.
 
-Downloads are available from the
-`larch pages at sourceforge.net <http://sourceforge.net/projects/xraylarch>`_
-at sourceforge.net, from the
-`larch pages at cars.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_,
-or from  the
-`larch pages at github.com <http://github.com/xraypy/xraylarch>`_.
 
-Recommended download options are:
+Using Anaconda Python 2.7
+================================
 
-  +---------+-----------------+-----------+-------------------------------------------------------+
-  | Status  | Download Type   | Platforms |   Download / Command                                  |
-  +=========+=================+===========+=======================================================+
-  | Beta    | Source tarball  | All       |  `larch-0.9.24.tar.gz (CARS)`_  or                    |
-  |         |                 |           |  `larch-0.9.24.tar.gz (sf.net)`_                      |
-  +---------+-----------------+-----------+-------------------------------------------------------+
-  | Beta    | Win32 Installer | Windows   |  `LarchInstaller_0.9.24.exe (CARS)`_  or              |
-  |         |                 |           |  `LarchInstaller_0.9.24.exe (sf.net)`_                |
-  +---------+-----------------+-----------+-------------------------------------------------------+
-  | Devel   | Source kit      | All       | git clone http://github.com/xraypy/xraylarch.git      |
-  +---------+-----------------+-----------+-------------------------------------------------------+
+`Anaconda Python <http://www.continuum.io/>`_ provides a free and
+well-supported version of Python for scientific work with many useful
+packages included.  By default, Anaconda Python installs into your own home
+folder and does not require extra permissions to install, upgrade, or
+remove components.  Anaconda includes a robust package manager called
+*conda* that makes it easy to update to the latest versions of Larch when
+you are ready.  
+
+
+So, begin by installing the latest version of Anaconda Python 2.7 from
+their `download anaconda python <http://www.continuum.io/downloads>`_ site.
+Once that is installed, you can open a Terminal (Linux or Mac OSX) or the
+Anaconda prompt (Windows) and type ::
+
+    conda install -yc https://conda.anaconda.org/newville xraylarch
+
+    # on Windows or Mac OSX
+    larch_makeicons 
+
+This will install all the software needed to run Larch and all its
+components.  The `larch_desktop_icons` command will create a Folder called
+*Larch* on your desktop that includes shortcuts (Windows) or small Apps (Mac
+OSX) to run the following Larch programs:
+   
+   * `larch`  -- simplest command-line interface.
+   * `larch_gui` -- Enhanced command-line interface with GUI data browser.
+   * `xrfdisplay` -- Display XRF Spectrum.
+   * `gse_mapviewer` -- XRF Mapviewer for GSECARS XRF Map data.
+   * `gse_scanviewer` -- Simple XAFS and Scan viewer for GSECARS data.
+
 
 
 Binary Installation (Windows)
@@ -45,6 +68,33 @@ testing of this GUI has been fairly minimal.  If you try this out, please
 send positive and negative feedback to the Ifeffit mailing list.
 
 
+
+
+Downloads are available from the
+   `larch pages at cars.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_,
+with a mirror site at sourceforge.net:
+   `larch pages at sourceforge.net <http://sourceforge.net/projects/xraylarch>`_.
+
+Source code 
+or from  the
+`larch pages at github.com <http://github.com/xraypy/xraylarch>`_.
+
+Recommended download options are:
+
+  +---------+-----------------+-----------+-------------------------------------------------------+
+  | Status  | Download Type   | Platforms |   Download / Command                                  |
+  +=========+=================+===========+=======================================================+
+  | Beta    | Source tarball  | All       |  `larch-0.9.27.tar.gz (CARS)`_  or                    |
+  |         |                 |           |  `larch-0.9.27.tar.gz (sf.net)`_                      |
+  +---------+-----------------+-----------+-------------------------------------------------------+
+  | Beta    | Win32 Installer | Windows   |  `LarchInstaller_0.9.27.exe (CARS)`_  or              |
+  |         |                 |           |  `LarchInstaller_0.9.27.exe (sf.net)`_                |
+  +---------+-----------------+-----------+-------------------------------------------------------+
+  | Devel   | Source kit      | All       | git clone http://github.com/xraypy/xraylarch.git      |
+  +---------+-----------------+-----------+-------------------------------------------------------+
+
+
+
 Source Installation
 =========================
 
@@ -53,7 +103,7 @@ recommended for people interested in programming with Larch on Windows.
 
 
 Prerequisites
-~~~~~~~~~~~~~~~
+----------------------
 
 Larch requires Python version 2.6.4 or higher.  Support for Python 3.X is partial, in
 that the core of Larch does work, and numpy, and scipy, and matplotlib have all been
@@ -69,7 +119,7 @@ You can either download the tarball above, or use the development version from t
    git clone http://github.com/xraypy/xraylarch.git
 
 Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 Installation from source on any platform is::
 
