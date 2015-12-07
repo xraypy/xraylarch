@@ -91,7 +91,7 @@ if DEBUG:
 larchico_dir = os.path.join(larchdir, 'icons')
 larchmod_dir = os.path.join(larchdir, 'modules')
 
-sysbin_dir = 'script'
+sysbin_dir = 'Scripts'
 scripts    =  glob('bin/*')
 
 if os.name != 'nt':
