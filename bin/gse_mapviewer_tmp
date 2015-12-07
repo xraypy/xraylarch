@@ -1,0 +1,27 @@
+#!/usr/bin/env python
+"""
+Viewer App for GSE XRF Maps
+"""
+import os
+import sys
+from optparse import OptionParser
+import larch
+from larch_plugins.wx import MapViewer
+
+
+from optparse import OptionParser
+
+__extra__ = ''
+
+usage = "usage: %prog [options] file(s)"
+
+parser = OptionParser(usage=usage, prog="larch",
+                      version="larch command-line version 0.2")
+
+parser.add_option("-s", "--use_scandb", dest="use_scandb", action="store_true",
+                  default=True, help="use scandb, default=True")
+
+(options, args) = parser.parse_args()
+
+os.chdir(larch.site_config.home_dir)
+MapViewer(use_scandb=options.use_scandb).run()
