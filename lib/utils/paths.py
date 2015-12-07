@@ -9,7 +9,7 @@ except ImportError:
 def unixpath(d):
     return d.replace('\\', '/')
 
-def windpath(d):
+def winpath(d):
     "ensure path uses windows delimiters"
     if d.startswith('//'): d = d[1:]
     d = d.replace('/','\\')
