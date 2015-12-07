@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+
+# Install a Folder name Larch to Desktop, 
+# full of shortcuts (Windows) or Apps (Mac)
+# for Anaconda2 Python installs
+
+
+from __future__ import print_function
+
+import os
+import sys
+from larch import get_homedir
+
+root = sys.exec_prefix
+home = get_homedir()
+
+##  Desktop/Larch folder
+top_folder = os.path.join(home, 'Desktop', 'Larch')
+if not (os.path.exists(top_folder) and os.path.isdir(top_folder)):
+    try:
+        os.mkdir(top_folder)
+    except:
+        pass
+    
+if not (os.path.exists(top_folder) and os.path.isdir(top_folder)):
+    print("Warning: could not create Desktop Folder name 'Larch'")
+    sys.exit(1)
+##
+
+if os.name == 'nt':
+    apps = (('Larch',           'larch.bat',          'larch.ico',      'Larch Command Line'),
+            ('Larch GUI',       'larch_gui.bat',      'larch.ico',      'Larch GUI'),
+            ('GSE Mapviewer',   'gse_mapviewer.bat',  'gse_xrfmap.ico', 'GSE MapViewer'),
+            ('GSE ScanViewer',  'gse_scanviewer.bat', 'epics_scan.ico', 'GSE ScanViewer'),
+            ('XRF Display',     'xrfdisplay.bat',     'ptable.ico',     'XRF Display'))
+
+
+    from win32com.client import Dispatch
+    from win32com.shell import shell
+
+    def make_shortcut(name, script, desc, icon=None):
+        """create windows shortcut"""
+        path   = os.path.join(home, 'Desktop', 'Larch', name) +  '.lnk'
+        target = os.path.join(root, 'Scripts', script)
+        if icon is not None:
+            icon = os.path.join(root, 'share', 'larch', 'icons', icon)
+            
+        shell = Dispatch('WScript.Shell')
+        shortcut = shell.CreateShortCut(path)
+        shortcut.Targetpath = target
+        shortcut.WorkingDirectory = home
+        shortcut.WindowStyle = 0
+        shortcut.Description = desc
+        if icon is not None:
+            shortcut.IconLocation = icon
+        shortcut.save()
+
+             
+    for name, script, icon, desc  in apps:
+        make_shortcut(name, script, desc, icon)
