@@ -33,14 +33,6 @@ def get_homedir():
             pass
         return None
 
-    # For Windows, ask for parent of Roaming 'Application Data' directory
-    if os.name == 'nt':
-        try:
-            from win32com.shell import shellcon, shell
-            homedir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
-        except ImportError:
-            pass
-
     # for Unixes, allow for sudo case
     susername = os.environ.get("SUDO_USER", None)
     if HAS_PWD and susername is not None and homedir is None:
@@ -56,6 +48,14 @@ def get_homedir():
             homedir = check(os.path.expandvars, var)
             if homedir is not None:
                 break
+
+    # For Windows, ask for parent of Roaming 'Application Data' directory
+    if homedir is None and os.name == 'nt':
+        try:
+            from win32com.shell import shellcon, shell
+            homedir = shell.SHGetFolderPath(0, shellcon.CSIDL_APPDATA, 0, 0)
+        except ImportError:
+            pass
 
     # finally, use current folder
     if homedir is None:
