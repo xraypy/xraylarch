@@ -30,7 +30,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Application Stub</string>
 	<key>CFBundleIconFile</key>
-	<string>AutomatorApplet</string>
+	<string>gse_xrfmap</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.apple.automator.gse_mapviewer</string>
 	<key>CFBundleInfoDictionaryVersion</key>
