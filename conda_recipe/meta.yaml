@@ -39,14 +39,8 @@ test:
 
 about:
   home: http://xraypy.github.io/xraylarch/
-  license: MIT
+  license: BSD
   summary: 'Data Analysis Tools for X-ray Spectroscopy'
-
 
 build:
   osx_is_app: True
-
-app:
-  entry: pythonw larch_gui
-  icon: larchcone1.png
-  summary: "X-ray Larch"
