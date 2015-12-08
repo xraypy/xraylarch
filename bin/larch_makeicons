@@ -54,7 +54,24 @@ elif os.name == 'nt':
     def make_shortcut(name, script, desc, icon=None):
         """create windows shortcut"""
         path   = os.path.join(home, 'Desktop', 'Larch', name) +  '.lnk'
+        pyexe  = os.path.join(root, 'python.exe')
         target = os.path.join(root, 'Scripts', script)
+        # add several checks for valid ways to run each script, including 
+        # accounting for Anaconda's automagic renaming and creation of exes.
+        target_exe = '%s.exe' % target
+        target_bat = '%s.bat' % target
+        target_spy = '%s-script.py' % target
+
+        if os.path.exists(target_exe):
+            target = target_exe
+        elif os.path.exists(target):
+            if os.path.exists(target_bat):
+                target = target_bat
+            else:
+                target = "%s %s" % (pyexe, target)                
+        elif os.path.exists(target_spy):
+            target = "%s %s" % (pyexe, target_spy)
+
         if icon is not None:
             icon = os.path.join(root, 'share', 'larch', 'icons', icon)
 
