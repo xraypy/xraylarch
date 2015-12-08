@@ -30,7 +30,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Application Stub</string>
 	<key>CFBundleIconFile</key>
-	<string>AutomatorApplet</string>
+	<string>larch</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.apple.automator.larch_gui</string>
 	<key>CFBundleInfoDictionaryVersion</key>
