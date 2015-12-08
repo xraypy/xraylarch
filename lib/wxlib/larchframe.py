@@ -6,20 +6,14 @@ import os
 
 import wx
 import numpy
+import scipy
+import matplotlib
 import larch
 
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from . import inputhook
 
-header = ('=' * 60)
-BANNER = """%s
-  Larch %s (%s) M. Newville, T. Trainor
-  using python %s, numpy %s, wx version %s
-%s
-"""  %  (header, larch.__version__, larch.__date__,
-         '%i.%i.%i' % sys.version_info[:3],
-         numpy.__version__, wx.__version__, header)
 
 ICON_FILE = 'larch.ico'
 
@@ -221,7 +215,7 @@ class LarchFrame(wx.Frame):
         nbook.SetBackgroundColour('#E9E9EA')
         self.SetBackgroundColour('#E9EEE0')
 
-        self.output = wx.TextCtrl(nbook, -1,  BANNER,
+        self.output = wx.TextCtrl(nbook, -1,  larch.make_banner(),
                              style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
 
         self.output.CanCopy()

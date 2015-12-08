@@ -9,10 +9,7 @@ from .interpreter import Interpreter
 from .larchlib import StdWriter
 from .inputText import InputText
 from .site_config import history_file, show_site_config
-from .version import __version__, __date__
-
-BANNER = """  Larch %s  M. Newville, T. Trainor -- %s
-  using python %s, numpy %s"""
+from .version import __version__, __date__, make_banner
 
 class shell(cmd.Cmd):
     ps1    = "larch> "
@@ -43,7 +40,7 @@ class shell(cmd.Cmd):
         self.stdout = sys.stdout
 
         if banner_msg is None:
-            banner_msg = 'Larch, Simple Shell'
+            banner_msg = make_banner()
         self.larch  = Interpreter()
         self.input  = InputText(prompt=self.ps1, _larch=self.larch)
         self.prompt = self.ps1

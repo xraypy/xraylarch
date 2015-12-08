@@ -20,8 +20,6 @@ import sys
 import numpy
 from optparse import OptionParser
 
-__extra__ = ''
-
 usage = "usage: %prog [options] file(s)"
 
 parser = OptionParser(usage=usage, prog="larch",
@@ -53,7 +51,6 @@ parser.add_option("-c", "--echo", dest="echo", action="store_true",
 if options.debug:
     try:
         import lib as larch
-        __extra__ = '%s\n   ===> DEBUG, using lib as larch <===' % __extra__
         larch.site_config.show_site_config()
     except ImportError:
         import larch
@@ -75,18 +72,6 @@ if not options.nowx:
     except ImportError:
         HAS_WX = False
 
-BANNER = """  Larch %s (%s) M. Newville and the Larch Development Team
-  using python %s, numpy %s"""  %  (larch.__version__, larch.__date__,
-                                         '%i.%i.%i' % sys.version_info[:3],
-                                         numpy.__version__)
-if HAS_WX:
-    BANNER = "%s, wx-enabled, wx version %s" % (BANNER, wx.__version__)
-else:
-    BANNER = "%s, NO wx graphics!" % BANNER
-
-if len(__extra__)  > 0:
-    BANNER = "%s %s" % (BANNER, __extra__)
-
 
 if options.server_mode:
     from larch.xmlrpc_server import LarchServer
@@ -96,7 +81,7 @@ if options.server_mode:
     s.run()
     sys.exit()
 
-shell = larch.shell(banner_msg=BANNER, quiet=options.quiet)
+shell = larch.shell(quiet=options.quiet)
 
 def onCtrlC(*args, **kws):
     return 0

@@ -22,7 +22,7 @@ from .shell import shell
 from .interpreter import Interpreter
 from .inputText import InputText
 from .utils import Closure, fixName, nativepath, get_homedir
-from .version import __date__, __version__
+from .version import __date__, __version__, make_banner
 
 def ValidateLarchPlugin(fcn):
     """function decorator to ensure that _larch is included in keywords,
