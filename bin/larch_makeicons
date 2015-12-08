@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Install a Folder name Larch to Desktop, 
+# Install a Folder name Larch to Desktop,
 # full of shortcuts (Windows) or Apps (Mac)
 # for Anaconda2 Python installs
 
@@ -9,25 +9,38 @@ from __future__ import print_function
 
 import os
 import sys
+from glob import glob
 from larch import get_homedir
+import shutil
 
 root = sys.exec_prefix
 home = get_homedir()
-
 ##  Desktop/Larch folder
 top_folder = os.path.join(home, 'Desktop', 'Larch')
+
 if not (os.path.exists(top_folder) and os.path.isdir(top_folder)):
     try:
         os.mkdir(top_folder)
     except:
         pass
-    
+
 if not (os.path.exists(top_folder) and os.path.isdir(top_folder)):
     print("Warning: could not create Desktop Folder name 'Larch'")
     sys.exit(1)
 ##
 
-if os.name == 'nt':
+if sys.platform == 'darwin':
+    appdir = os.path.join(root, 'share', 'larch', 'apps')
+    appfiles = glob("%s/*.app" % appdir)
+    for app in appfiles:
+        _, aname = os.path.split(app)
+        dest = os.path.join(top_folder, aname)
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
+        shutil.copytree(app, dest)
+
+
+elif os.name == 'nt':
     apps = (('Larch',           'larch.bat',          'larch.ico',      'Larch Command Line'),
             ('Larch GUI',       'larch_gui.bat',      'larch.ico',      'Larch GUI'),
             ('GSE Mapviewer',   'gse_mapviewer.bat',  'gse_xrfmap.ico', 'GSE MapViewer'),
@@ -44,7 +57,7 @@ if os.name == 'nt':
         target = os.path.join(root, 'Scripts', script)
         if icon is not None:
             icon = os.path.join(root, 'share', 'larch', 'icons', icon)
-            
+
         shell = Dispatch('WScript.Shell')
         shortcut = shell.CreateShortCut(path)
         shortcut.Targetpath = target
@@ -55,6 +68,6 @@ if os.name == 'nt':
             shortcut.IconLocation = icon
         shortcut.save()
 
-             
+
     for name, script, icon, desc  in apps:
         make_shortcut(name, script, desc, icon)
