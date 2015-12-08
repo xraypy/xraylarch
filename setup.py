@@ -7,6 +7,7 @@ import time
 import os
 import sys
 import site
+import shutil
 from glob import glob
 
 DEBUG = False
@@ -94,6 +95,15 @@ larchmod_dir = os.path.join(larchdir, 'modules')
 sysbin_dir = 'Scripts'
 scripts    =  glob('bin/*')
 
+mac_apps = []
+_scripts = []
+for s in scripts:
+    if s.endswith('.app'):
+        mac_apps.append(s)
+    else:
+        _scripts.append(s)
+scripts = _scripts
+
 if os.name != 'nt':
     _scripts = []
     sysbin_dir = 'bin'
@@ -105,7 +115,6 @@ if os.name != 'nt':
 data_files = [(sysbin_dir,   scripts),
               (larchico_dir, glob('icons/*.ic*')),
               (larchmod_dir, glob('modules/*.lar') + glob('modules/*.py'))]
-
 
 #dlls
 dll_maindir = os.path.join(larchdir, 'dlls')
@@ -163,6 +172,19 @@ setup(name = 'larch',
                   'larch.fitting', 'larch.fitting.uncertainties'],
       data_files  = data_files)
 
+if cmdline_args[0] == 'install' and sys.platform == 'darwin':
+    dest = os.path.join(larchdir, 'apps')
+    try:
+        os.mkdir(apps)
+    except:
+        pass
+    for app in mac_apps:
+        _, aname = os.path.split(app)
+        adest = os.path.join(dest, aname)
+        if os.path.exists(adest):
+            shutil.rmtree(adest)
+
+        shutil.copytree(app, adest)
 
 
 def remove_cruft(basedir, filelist):
@@ -170,7 +192,6 @@ def remove_cruft(basedir, filelist):
     def remove_file(base, fname):
         fullname = os.path.join(base, fname)
         if os.path.exists(fullname):
-            print(" Unlink ", fullname)
             try:
                 os.unlink(fullname)
             except:
