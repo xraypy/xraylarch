@@ -30,7 +30,7 @@
 	<key>CFBundleExecutable</key>
 	<string>Application Stub</string>
 	<key>CFBundleIconFile</key>
-	<string>ptable</string>
+	<string>AutomatorApplet</string>
 	<key>CFBundleIdentifier</key>
 	<string>com.apple.automator.xrfdisplay</string>
 	<key>CFBundleInfoDictionaryVersion</key>

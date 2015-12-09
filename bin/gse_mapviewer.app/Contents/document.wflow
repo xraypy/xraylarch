@@ -59,7 +59,22 @@
 				<key>ActionParameters</key>
 				<dict>
 					<key>COMMAND_STRING</key>
-					<string>$HOME/anaconda2/bin/pythonw $HOME/anaconda2/bin/gse_mapviewer
+					<string>APP=gse_mapviewer
+PYEXE=pythonw
+
+if [ -d ~/anaconda ] ; then
+   PYENV=~/anaconda
+else
+   if [ -d ~/anaconda2 ] ; then
+      PYENV=~/anaconda2
+   else
+      if [ -d ~/anaconda3 ] ; then
+         PYENV=~/anaconda3
+      fi
+   fi
+fi
+
+$PYENV/bin/$PYEXE $PYENV/bin/$APP
 </string>
 					<key>CheckedForUserDefaultShell</key>
 					<true/>
@@ -170,8 +185,6 @@
 						<string>4</string>
 					</dict>
 				</dict>
-				<key>conversionLabel</key>
-				<integer>0</integer>
 				<key>isViewVisible</key>
 				<true/>
 				<key>location</key>
