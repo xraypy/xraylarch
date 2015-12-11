@@ -9,18 +9,20 @@ Downloading and Installation
 .. _larch github repository:            http://github.com/xraypy/xraylarch
 
 The latest version of Larch is 0.9.27 (December 2015).  Larch is in
-active development, so there many be bugs and unintended features, and
+active development, so there may be bugs and unintended features, and
 there are definitely some missing desired features.  Still, most of
 what is in Larch is working, stable, and ready for use.
 
 
 There are several ways to download and install Larch.  Starting with Larch
-0.9.27, the **recommended** way to run Larch is with `Anaconda Python
-<http://www.continuum.io/>`_ (version 2.7: Note that Larch does not yet
-work with Python 3. series).  For Windows, a binary installer may be
-available soon, though this is not updated as often as the source code or
-Anaconda package.  In addition, Larch can be installed from its source
-code. Each of these is described in more detail below.
+0.9.27, the **recommended** way to install and run Larch on Windows and Mac
+OS X is with `Anaconda Python <http://www.continuum.io/>`_ (version 2.7:
+Note that Larch does not yet work with Python 3. series).  For Windows, a
+binary installer may be available soon, though this is not updated as often
+as the source code or Anaconda package.  In addition, Larch can be
+installed from its source code, which works easily on most modern Linux
+systems.
+
 
 
 Using Anaconda Python 2.7
