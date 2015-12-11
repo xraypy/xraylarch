@@ -15,11 +15,11 @@ there are definitely some missing desired features.  Still, most of
 what is in Larch is working, stable, and ready for use.
 
 
-There are several ways to download and install Larch.  Starting with
-Larch 0.9.27, the **recommended** way to run Larch is with `Anaconda
-Python <http://www.continuum.io/>`_ (version 2.7: Note that Larch does
-not yet work with Python 3. series).  For Windows, a binary installer
-is available, though it is not updated as often as the source code or
+There are several ways to download and install Larch.  Starting with Larch
+0.9.27, the **recommended** way to run Larch is with `Anaconda Python
+<http://www.continuum.io/>`_ (version 2.7: Note that Larch does not yet
+work with Python 3. series).  For Windows, a binary installer may be
+available soon, though this is not updated as often as the source code or
 Anaconda package.  In addition, Larch can be installed from its source
 code. Each of these is described in more detail below.
 
@@ -33,23 +33,23 @@ packages included.  By default, Anaconda Python installs into your own home
 folder and does not require extra permissions to install, upgrade, or
 remove components.  Anaconda includes a robust package manager called
 *conda* that makes it easy to update to the latest versions of Larch when
-you are ready.  
+you are ready.
 
 So, begin by installing the latest version of Anaconda Python 2.7 from
 their `download anaconda python <http://www.continuum.io/downloads>`_ site.
 Once that is installed, you can open a Terminal (Linux or Mac OSX) or the
 Anaconda prompt (Windows) and type ::
 
-    conda install -yc https://conda.anaconda.org/newville xraylarch
+    conda install -yc newville xraylarch
 
     # on Windows or Mac OSX
-    larch_makeicons 
+    larch_makeicons
 
 This will install all the software needed to run Larch and all its
 components.  The `larch_makeicons` command will create a Folder called
 *Larch* on your desktop that includes shortcuts (Windows) or small Apps (Mac
 OSX) to run the following Larch programs:
-   
+
    * `larch`  -- simplest command-line interface.
    * `larch_gui` -- Enhanced command-line interface with GUI data browser.
    * `xrfdisplay` -- Display XRF Spectrum.
@@ -58,7 +58,7 @@ OSX) to run the following Larch programs:
 
 An advantage of using Anaconda is that updates can be installed with::
 
-    conda update -yc https://conda.anaconda.org/newville xraylarch
+    conda update -yc newville xraylarch
 
 
 Binary Installation (Windows)
@@ -78,8 +78,8 @@ Source Installation
 Larch can be installed from source code.  If not using Anaconda, this is
 necessary for Linux, and can be done for other systems as well.
 
-The latest downloads will be available at   `larch pages at cars.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_,
-with a mirror site at sourceforge.net:   `larch pages at sourceforge.net <http://sourceforge.net/projects/xraylarch>`_.
+The latest releases of the source code will be available from
+`xraylarch releases https://github.com/xraypy/xraylarch/releases`_.
 
 In addition, you can use `git` to grab the latest development version of
 the source code::
@@ -87,18 +87,18 @@ the source code::
 
 
 
-
 Prerequisites
 ----------------------
 
-Larch requires Python version 2.7.9 or higher.  Support for Python 3.X is
+Larch requires Python version 2.7.1 or higher.  Support for Python 3.X is
 partial, in that the core of Larch does work, and numpy, and scipy, h5py,
 and matplotlib have all been ported to Python 3.X.  But the testing for
 Python 3.X has been minimal, and the graphical interfaces, based on
 wxWidgets, has not yet been ported to Python 3.X.
 
-Numpy, scipy, matplotlib, h5py, and wxPython are all required for Larch.
-These are easily installed as standard packages on almost all platforms.
+The following Python packages are all required for Larch: numpy, scipy,
+matplotlib, h5py, sqlalchemy, and wxpython.  These are easily installed as
+standard packages on almost all platforms.
 
 Installation
 ---------------------
