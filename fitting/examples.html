@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.6. Fit Examples &mdash; larch 0.9.24 documentation</title>
+    <title>7.6. Fit Examples &mdash; larch 0.9.27 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.24',
+        VERSION:     '0.9.27',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="7.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
     <link rel="prev" title="7.5. Some Builtin Line-shape Functions" href="lineshapes.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -47,7 +47,7 @@
 	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
     </td>
     <td width=8%>
-	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	<a href="../installation/index.html" style="color: #772211"> Install</a>
 	</td>
     <td width=8%>
 	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,11 +87,11 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -108,13 +108,15 @@
                         title="previous chapter">7.5. Some Builtin Line-shape Functions</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="fitpeaks.html"
-                        title="next chapter">7.7. Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/fitting/examples.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+                        title="next chapter">7.7. Simplified Peak Fitting with <code class="docutils literal"><span class="pre">fit_peak()</span></code></a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/fitting/examples.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -133,7 +135,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="fit-examples">
 <h1>7.6. Fit Examples<a class="headerlink" href="#fit-examples" title="Permalink to this headline">¶</a></h1>
@@ -196,20 +198,20 @@ kinds of data.  The script to do the fit looks like this:</p>
 <p>This fitting script consists  of several components, which we'll go over in
 some detail.</p>
 <blockquote>
-<div><p>1 <strong>create mock data</strong>:  Here we use the builtin <tt class="xref py py-func docutils literal"><span class="pre">_math.gaussian()</span></tt>
+<div><p>1 <strong>create mock data</strong>:  Here we use the builtin <code class="xref py py-func docutils literal"><span class="pre">_math.gaussian()</span></code>
 function to create the model function.  We also add simulated noise to
-the model data with the <tt class="xref py py-func docutils literal"><span class="pre">random.normal()</span></tt> function from numpy.</p>
+the model data with the <code class="xref py py-func docutils literal"><span class="pre">random.normal()</span></code> function from numpy.</p>
 <p>2. <strong>create a group of fit parameters</strong>:  Here we create a group with
-several components, all defined by the <a class="reference internal" href="parameters.html#_math.guess" title="_math.guess"><tt class="xref py py-func docutils literal"><span class="pre">_math.guess()</span></tt></a> function to
+several components, all defined by the <a class="reference internal" href="parameters.html#_math.guess" title="_math.guess"><code class="xref py py-func docutils literal"><span class="pre">_math.guess()</span></code></a> function to
 create variable Parameters.  Two of the parameters have a lower bound
 set.   We also calculate the initial value for the model using the
 initial guesses for the parameter values.</p>
 <p>3. <strong>define objective function for fit residual</strong>: As above, this
 function will receive the group of fit parameters as the first argument,
 and may also receive other arguments as specified in the call to
-<a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a>.  This function returns the residual of the fit
+<a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></code></a>.  This function returns the residual of the fit
 (data - model).</p>
-<p>4. <strong>perform fit</strong>.  Here we call <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><tt class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></tt></a>  with
+<p>4. <strong>perform fit</strong>.  Here we call <a class="reference internal" href="minimize.html#_math.minimize" title="_math.minimize"><code class="xref py py-func docutils literal"><span class="pre">_math.minimize()</span></code></a>  with
 arguments of the objective function, the parameter group, and any
 additional positional arguments to the objective function (keyword/value
 arguments can also be supplied).   When this has completed, we calculate
@@ -220,7 +222,7 @@ fit.</p>
 report of the fit statistics, best fit values, uncertainties and
 correlations between variables.</p>
 </div></blockquote>
-<p>The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt> will look like this:</p>
+<p>The printed output from <code class="docutils literal"><span class="pre">fit_report(params)</span></code> will look like this:</p>
 <div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
 [[Statistics]]    Fit succeeded,  method = &#39;leastsq&#39;.
    Message from fit    = Fit succeeded.
@@ -243,9 +245,9 @@ correlations between variables.</p>
 </pre></div>
 </div>
 <p>And the plot of data and fit will look like this:</p>
-<div class="figure align-center" id="fig-fit1">
-<a class="reference external image-reference" href="../_images/fit_example1.png"><img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 65%;" /></a>
-<p class="caption"><strong>Figure 7.1:</strong> Simple fit to mock data</p>
+<div class="figure align-center" id="id1">
+<span id="fig-fit1"></span><a class="reference external image-reference" href="../_images/fit_example1.png"><img alt="../_images/fit_example1.png" src="../_images/fit_example1.png" style="width: 65%;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> Simple fit to mock data</span></p>
 </div>
 </div>
 <div class="section" id="example-2-fitting-xanes-pre-edge-peaks">
@@ -342,8 +344,8 @@ error-function.</li>
 </div>
 <p>First, we read in the data and do some XAFS-specific preprocessing step.
 Also note that we limit the range of the data from the full data set using
-the <tt class="docutils literal"><span class="pre">index_of</span></tt> function.  The objective function <tt class="docutils literal"><span class="pre">resid()</span></tt> is very
-simple, calling <tt class="docutils literal"><span class="pre">make_models()</span></tt> which creates the model of two Gaussian
+the <code class="docutils literal"><span class="pre">index_of</span></code> function.  The objective function <code class="docutils literal"><span class="pre">resid()</span></code> is very
+simple, calling <code class="docutils literal"><span class="pre">make_models()</span></code> which creates the model of two Gaussian
 peaks, an error function, and an offset.  There are 10 parameters for the
 fit.  We're fitting the spectra with two Gaussian functions and an error
 function.  It is often observed that if the centroids of peak functions such
@@ -376,20 +378,20 @@ so they can't go too far astray.</p>
 </div>
 <p>and the plots of the resulting best-fit and components look like these:</p>
 <div class="figure compound align-center" id="fig-fit2">
-<div style="width: 45%" class="subfigure align-center" id="fig-fit2a">
-<a class="reference external image-reference" href="../_images/fit_example2a1.png"><img alt="../_images/fit_example2a1.png" src="../_images/fit_example2a1.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> fit with residual.</p>
+<div style="width: 45%" class="subfigure align-center" id="id2">
+<span id="fig-fit2a"></span><a class="reference external image-reference" href="../_images/fit_example2a1.png"><img alt="../_images/fit_example2a1.png" src="../_images/fit_example2a1.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(a)</strong> fit with residual.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="fig-fit2b">
-<a class="reference external image-reference" href="../_images/fit_example2a2.png"><img alt="../_images/fit_example2a2.png" src="../_images/fit_example2a2.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> fit with individual components.</p>
+<div style="width: 45%" class="subfigure align-center" id="id3">
+<span id="fig-fit2b"></span><a class="reference external image-reference" href="../_images/fit_example2a2.png"><img alt="../_images/fit_example2a2.png" src="../_images/fit_example2a2.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(c)</strong> fit with individual components.</span></p>
 </div>
-<p class="caption"><strong>Figure 7.2:</strong> Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions
-and an Error function.</p>
+<p class="caption"><span class="caption-text"><strong>Figure 7.3:</strong> Fit to Fe K-edge pre-edge and edge with 2 Gaussian functions
+and an Error function.</span></p>
 </div><p id="fig-fit2">and we see the fit is pretty good.</p>
 <p>Looking more closely, however, there is a hint in the data and the residual
 that we may have missed a third peak at around E = 7122 eV.  We can add
-this by simply adding another peak function to the <tt class="docutils literal"><span class="pre">make_models()</span></tt>
+this by simply adding another peak function to the <code class="docutils literal"><span class="pre">make_models()</span></code>
 function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="k">def</span> <span class="nf">make_model</span><span class="p">(</span><span class="n">pars</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">components</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;make model of spectra: 2 peak functions, 1 erf function, offset&quot;&quot;&quot;</span>
@@ -446,19 +448,19 @@ function:</p>
 values for the energy center and amplitude for the error function have both
 moved significantly, as can be seen in the plots for this fit:</p>
 <div class="figure compound align-center" id="fig-fit3">
-<div style="width: 45%" class="subfigure align-center" id="fig-fit3a">
-<a class="reference external image-reference" href="../_images/fit_example2b1.png"><img alt="../_images/fit_example2b1.png" src="../_images/fit_example2b1.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> fit with residual.</p>
+<div style="width: 45%" class="subfigure align-center" id="id4">
+<span id="fig-fit3a"></span><a class="reference external image-reference" href="../_images/fit_example2b1.png"><img alt="../_images/fit_example2b1.png" src="../_images/fit_example2b1.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(e)</strong> fit with residual.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="fig-fit3b">
-<a class="reference external image-reference" href="../_images/fit_example2b2.png"><img alt="../_images/fit_example2b2.png" src="../_images/fit_example2b2.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> fit with individual components.</p>
+<div style="width: 45%" class="subfigure align-center" id="id5">
+<span id="fig-fit3b"></span><a class="reference external image-reference" href="../_images/fit_example2b2.png"><img alt="../_images/fit_example2b2.png" src="../_images/fit_example2b2.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(i)</strong> fit with individual components.</span></p>
 </div>
-<p class="caption"><strong>Figure 7.3:</strong> Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions
-and an Error function.</p>
+<p class="caption"><span class="caption-text"><strong>Figure 7.4:</strong> Fit to Fe K-edge pre-edge and edge with 3 Gaussian functions
+and an Error function.</span></p>
 </div><p id="fig-fit3">Finally for this example, we can replace the Gaussian peak shapes with
 other functional forms.   To use the Voigt function shown in the previous
-section, we simply change <tt class="docutils literal"><span class="pre">make_models()</span></tt> to use:</p>
+section, we simply change <code class="docutils literal"><span class="pre">make_models()</span></code> to use:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">p1</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp1</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen1</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid1</span><span class="p">)</span>
 <span class="n">p2</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp2</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen2</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid2</span><span class="p">)</span>
 <span class="n">p3</span> <span class="o">=</span> <span class="n">pars</span><span class="o">.</span><span class="n">amp3</span> <span class="o">*</span> <span class="n">voigt</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">cen3</span><span class="p">,</span> <span class="n">pars</span><span class="o">.</span><span class="n">wid3</span><span class="p">)</span>
@@ -494,16 +496,16 @@ section, we simply change <tt class="docutils literal"><span class="pre">make_mo
 <span class="math">\(\chi^2\)</span> reduces by another 10%, which suggests a real improvement.
 For completeness,  the plots from this fit look like this:</p>
 <div class="figure compound align-center" id="fig-fit4">
-<div style="width: 45%" class="subfigure align-center" id="fig-fit4a">
-<a class="reference external image-reference" href="../_images/fit_example2c1.png"><img alt="../_images/fit_example2c1.png" src="../_images/fit_example2c1.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> fit with residual.</p>
+<div style="width: 45%" class="subfigure align-center" id="id6">
+<span id="fig-fit4a"></span><a class="reference external image-reference" href="../_images/fit_example2c1.png"><img alt="../_images/fit_example2c1.png" src="../_images/fit_example2c1.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(k)</strong> fit with residual.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="fig-fit4b">
-<a class="reference external image-reference" href="../_images/fit_example2c2.png"><img alt="../_images/fit_example2c2.png" src="../_images/fit_example2c2.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> fit with individual components.</p>
+<div style="width: 45%" class="subfigure align-center" id="id7">
+<span id="fig-fit4b"></span><a class="reference external image-reference" href="../_images/fit_example2c2.png"><img alt="../_images/fit_example2c2.png" src="../_images/fit_example2c2.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(a)</strong> fit with individual components.</span></p>
 </div>
-<p class="caption"><strong>Figure 7.4:</strong> Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
-and an Error function.</p>
+<p class="caption"><span class="caption-text"><strong>Figure 7.5:</strong> Fit to Fe K-edge pre-edge and edge with 3 Voigt functions
+and an Error function.</span></p>
 </div><p id="fig-fit4">It's difficult to see a dramatic difference in fit quality for this data,
 but the ability to explore fitting with different lineshapes like this is
 still a useful test of the robustness of the fit.</p>
@@ -518,7 +520,7 @@ result with lowest misfit statistics as the most likely results.  Though
 this method should be used with some caution, it is a standard and very
 simple approach to XANES analysis.</p>
 <p>The example here is borrowed from Bruce Ravel's data and tutorials, and
-based on the work published by <span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">6</a><span>]</span></span>, The goal here is not
+based on the work published by <span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">9</a><span>]</span></span>, The goal here is not
 to repeat the whole of that analysis, but to present the mechanics of the
 fitting approach.  Essentially, we're asserting that a particular measured
 spectrum is made of a linear combination of 2 or more other spectra.  We
@@ -533,21 +535,21 @@ which we'll call <em>unknown.dat</em> for the unknown spectrum and <em>s1.dat</e
 <em>s2.dat</em>, ..., <em>s6.dat</em> for the spectra on 6 different standards. It is
 not important for the discussion here what these spectra represent, but
 they are XANES data taken at the Au L3 edge on various Au compounds.</p>
-<p>A visual inspection of the spectra (see Figure <a href="#fig-fit5">7.5</a>)
+<p>A visual inspection of the spectra (see Figure <a href="#fig-fit5">7.6</a>)
 suggests that <em>s2</em> is probably a major component of the unknown, though the
 peak around 11950 eV is a feature that only <em>s1</em> has, so it too may be an
 important component.</p>
 <div class="figure compound align-center" id="fig-fit5">
-<div style="width: 45%" class="subfigure align-center" id="fig-fit5a">
-<a class="reference external image-reference" href="../_images/fit_example3a.png"><img alt="../_images/fit_example3a.png" src="../_images/fit_example3a.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> components used for linear combinations.</p>
+<div style="width: 45%" class="subfigure align-center" id="id8">
+<span id="fig-fit5a"></span><a class="reference external image-reference" href="../_images/fit_example3a.png"><img alt="../_images/fit_example3a.png" src="../_images/fit_example3a.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(c)</strong> components used for linear combinations.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="fig-fit5b">
-<a class="reference external image-reference" href="../_images/fit_example3b.png"><img alt="../_images/fit_example3b.png" src="../_images/fit_example3b.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> fit and residual with components <em>s1</em> and <em>s2</em>.</p>
+<div style="width: 45%" class="subfigure align-center" id="id9">
+<span id="fig-fit5b"></span><a class="reference external image-reference" href="../_images/fit_example3b.png"><img alt="../_images/fit_example3b.png" src="../_images/fit_example3b.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 8.34:</strong> fit and residual with components <em>s1</em> and <em>s2</em>.</span></p>
 </div>
-<p class="caption"><strong>Figure 7.5:</strong> Linear Combination Fit of gold XANES in cyanobacteria, after
-<span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">6</a><span>]</span></span>.</p>
+<p class="caption"><span class="caption-text"><strong>Figure 7.6:</strong> Linear Combination Fit of gold XANES in cyanobacteria, after
+<span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">9</a><span>]</span></span>.</span></p>
 </div><p id="fig-fit5">To quantitatively fit these spectra, we read in all the data, and then
 create a single group <em>dat</em> that will contain all the data we need.  It
 turns out (and a common issue for XAFS data), the scans here do not have
@@ -630,7 +632,7 @@ be 0.  For a two component fit, this would not be necessary, but we'll be
 expanding this shortly.  We place bounds of [0, 1] on all the parameters,
 and we use a constraint to ensure that the parameters add to 1.0.   Also
 note that we define an uncertainty in the data that we use to scale the
-<tt class="docutils literal"><span class="pre">data</span> <span class="pre">-</span> <span class="pre">model</span></tt> returned by the fit.   This is somewhat arbitrarily chosen
+<code class="docutils literal"><span class="pre">data</span> <span class="pre">-</span> <span class="pre">model</span></code> returned by the fit.   This is somewhat arbitrarily chosen
 to be 0.001, that is 0.1% of the typical data value.  The
 results of this fit are:</p>
 <div class="highlight-python"><div class="highlight"><pre>===================== FIT RESULTS =====================
@@ -649,7 +651,7 @@ results of this fit are:</p>
 =======================================================
 </pre></div>
 </div>
-<p>and the result for this fit is shown in Figure <a href="#fig-fit5">7.5</a>.
+<p>and the result for this fit is shown in Figure <a href="#fig-fit5">7.6</a>.
 This demonstrates the use of simple constraints for Parameters in fits:
 we've used an algebraic expression to ensure that the weights for the two
 components in the fit add to 1.</p>
@@ -778,14 +780,14 @@ scripting features of larch:</p>
 <div><ol class="loweralpha simple">
 <li>We make a new copy of the Parameter Group for each fit -- this way we
 can (with some care) switch back and forth between fitting models.  Note
-that we add the non-Parameter <tt class="docutils literal"><span class="pre">note</span></tt> member to this group that give a
+that we add the non-Parameter <code class="docutils literal"><span class="pre">note</span></code> member to this group that give a
 brief description of the fit.  Of course, we could add anything else we
 wanted.</li>
-<li>We set <tt class="docutils literal"><span class="pre">amp1.vary</span></tt> and <tt class="docutils literal"><span class="pre">amp2.vary</span></tt> to <tt class="docutils literal"><span class="pre">True</span></tt> and set one of the
-other amplitude parameter's expression to <tt class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">amp1</span> <span class="pre">-</span> <span class="pre">amp2</span></tt> to impose
+<li>We set <code class="docutils literal"><span class="pre">amp1.vary</span></code> and <code class="docutils literal"><span class="pre">amp2.vary</span></code> to <code class="docutils literal"><span class="pre">True</span></code> and set one of the
+other amplitude parameter's expression to <code class="docutils literal"><span class="pre">1</span> <span class="pre">-</span> <span class="pre">amp1</span> <span class="pre">-</span> <span class="pre">amp2</span></code> to impose
 the desired constraint.</li>
 <li>The loop over Parameter groups runs the fit for each set of
-Parameters, and checks for the lowest value of <tt class="docutils literal"><span class="pre">chi_reduced</span></tt>.</li>
+Parameters, and checks for the lowest value of <code class="docutils literal"><span class="pre">chi_reduced</span></code>.</li>
 </ol>
 </div></blockquote>
 <p>The output of running this gives:</p>
@@ -818,16 +820,16 @@ Best Fit:   3 component fit:  s1, s2, s5
 </div>
 <p>and the output plots for the best model look like this:</p>
 <div class="figure compound align-center" id="fig-fit6">
-<div style="width: 45%" class="subfigure align-center" id="fig-fit6a">
-<a class="reference external image-reference" href="../_images/fit_example3c1.png"><img alt="../_images/fit_example3c1.png" src="../_images/fit_example3c1.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> linear combination fit and residual.</p>
+<div style="width: 45%" class="subfigure align-center" id="id10">
+<span id="fig-fit6a"></span><a class="reference external image-reference" href="../_images/fit_example3c1.png"><img alt="../_images/fit_example3c1.png" src="../_images/fit_example3c1.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(a)</strong> linear combination fit and residual.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="fig-fit6b">
-<a class="reference external image-reference" href="../_images/fit_example3c2.png"><img alt="../_images/fit_example3c2.png" src="../_images/fit_example3c2.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> weighted contribution from individual components.</p>
+<div style="width: 45%" class="subfigure align-center" id="id11">
+<span id="fig-fit6b"></span><a class="reference external image-reference" href="../_images/fit_example3c2.png"><img alt="../_images/fit_example3c2.png" src="../_images/fit_example3c2.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(c)</strong> weighted contribution from individual components.</span></p>
 </div>
-<p class="caption"><strong>Figure 7.6:</strong> Linear Combination XANES Fit of gold components in cyanobacteria with
-species <em>s1</em>, <em>s2</em>, and <em>s5</em>.</p>
+<p class="caption"><span class="caption-text"><strong>Figure 7.7:</strong> Linear Combination XANES Fit of gold components in cyanobacteria with
+species <em>s1</em>, <em>s2</em>, and <em>s5</em>.</span></p>
 </div><p id="fig-fit6">Of course, we aren't necessarily done here as we haven't exhausted all
 possible combinations of components.  Included in the examples
 (<em>examples/fitting/doc_examples3/fit3.lar</em>), but not reprinted here, is a
@@ -899,34 +901,34 @@ that are:</p>
 </div>
 <p>The plots resulting from both sets of Parameters are shown:</p>
 <div class="figure compound align-center" id="fig-fit7">
-<div style="width: 45%" class="subfigure align-center" id="fig-fit7a">
-<a class="reference external image-reference" href="../_images/fit_example3d1.png"><img alt="../_images/fit_example3d1.png" src="../_images/fit_example3d1.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> linear combination fit and residual.</p>
+<div style="width: 45%" class="subfigure align-center" id="id12">
+<span id="fig-fit7a"></span><a class="reference external image-reference" href="../_images/fit_example3d1.png"><img alt="../_images/fit_example3d1.png" src="../_images/fit_example3d1.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(e)</strong> linear combination fit and residual.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="fig-fit7b">
-<a class="reference external image-reference" href="../_images/fit_example3d2.png"><img alt="../_images/fit_example3d2.png" src="../_images/fit_example3d2.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> weighted contribution from individual components.</p>
+<div style="width: 45%" class="subfigure align-center" id="id13">
+<span id="fig-fit7b"></span><a class="reference external image-reference" href="../_images/fit_example3d2.png"><img alt="../_images/fit_example3d2.png" src="../_images/fit_example3d2.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(g)</strong> weighted contribution from individual components.</span></p>
 </div>
-<p class="caption"><strong>Figure 7.7:</strong> Linear Combination XANES Fit of gold components in cyanobacteria
-with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s6</em>.</p>
+<p class="caption"><span class="caption-text"><strong>Figure 7.8:</strong> Linear Combination XANES Fit of gold components in cyanobacteria
+with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s6</em>.</span></p>
 </div><div class="figure compound align-center" id="fig-fit8">
-<div style="width: 45%" class="subfigure align-center" id="fig-fit8a">
-<a class="reference external image-reference" href="../_images/fit_example3e1.png"><img alt="../_images/fit_example3e1.png" src="../_images/fit_example3e1.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(a)</strong> linear combination fit and residual.</p>
+<div style="width: 45%" class="subfigure align-center" id="id14">
+<span id="fig-fit8a"></span><a class="reference external image-reference" href="../_images/fit_example3e1.png"><img alt="../_images/fit_example3e1.png" src="../_images/fit_example3e1.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(i)</strong> linear combination fit and residual.</span></p>
 </div>
-<div style="width: 45%" class="subfigure align-center" id="fig-fit8b">
-<a class="reference external image-reference" href="../_images/fit_example3e2.png"><img alt="../_images/fit_example3e2.png" src="../_images/fit_example3e2.png" style="width: 100%;" /></a>
-<p class="caption"><strong>(b)</strong> weighted contribution from individual components.</p>
+<div style="width: 45%" class="subfigure align-center" id="id15">
+<span id="fig-fit8b"></span><a class="reference external image-reference" href="../_images/fit_example3e2.png"><img alt="../_images/fit_example3e2.png" src="../_images/fit_example3e2.png" style="width: 100%;" /></a>
+<p class="caption"><span class="caption-text"><strong>(c)</strong> weighted contribution from individual components.</span></p>
 </div>
-<p class="caption"><strong>Figure 7.8:</strong> Linear Combination XANES Fit of gold components in cyanobacteria
-with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em>.</p>
+<p class="caption"><span class="caption-text"><strong>Figure 7.9:</strong> Linear Combination XANES Fit of gold components in cyanobacteria
+with species <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em>.</span></p>
 </div><p id="fig-fit8">From the plots alone, it is difficult to tell which of these fits is
 better, and it is probably best to say that these are both good fits.  This
 implies that component <em>s3</em> is important even if at a very small fraction,
 and that either component <em>s5</em> or <em>s6</em> (which aren't that different
-spectroscopically or chemically (see Figure <a href="#fig-fit5">7.5</a>) is present.
+spectroscopically or chemically (see Figure <a href="#fig-fit5">7.6</a>) is present.
 Of course, the analysis here is not meant to be definitive, and there are
-many more checks that could be done.  To be clear, <span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">6</a><span>]</span></span>
+many more checks that could be done.  To be clear, <span class="citation"><a class="reference internal" href="../biblio.html#citation-lengke2006">Lengke, Ravel, Fleet, Wagner, Gordon and Southam</a><span> </span><span>[</span><a class="reference internal" href="../biblio.html#citation-lengke2006">9</a><span>]</span></span>
 looked at many more unknown spectra, and also adjusted the energy ranges of
 the fits, and concludedd that <em>s1</em>, <em>s2</em>, <em>s3</em>, and <em>s5</em> were the best
 components, with concentrations of the components very similar to the ones
@@ -940,7 +942,7 @@ found here.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -960,12 +962,12 @@ found here.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

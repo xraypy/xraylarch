@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>7.8. Advanced Confidence Intervals and Chi-square maps &mdash; larch 0.9.24 documentation</title>
+    <title>7.8. Advanced Confidence Intervals and Chi-square maps &mdash; larch 0.9.27 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.24',
+        VERSION:     '0.9.27',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="7. Fitting and Modeling Data" href="index.html" />
     <link rel="next" title="8. XAFS Analysis" href="../xafs/index.html" />
     <link rel="prev" title="7.7. Simplified Peak Fitting with fit_peak()" href="fitpeaks.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -47,7 +47,7 @@
 	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
     </td>
     <td width=8%>
-	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	<a href="../installation/index.html" style="color: #772211"> Install</a>
 	</td>
     <td width=8%>
 	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,11 +87,11 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -105,16 +105,18 @@
 
   <h4>Previous topic</h4>
   <p class="topless"><a href="fitpeaks.html"
-                        title="previous chapter">7.7. Simplified Peak Fitting with <tt class="docutils literal"><span class="pre">fit_peak()</span></tt></a></p>
+                        title="previous chapter">7.7. Simplified Peak Fitting with <code class="docutils literal"><span class="pre">fit_peak()</span></code></a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../xafs/index.html"
                         title="next chapter">8. XAFS Analysis</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/fitting/confidence.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/fitting/confidence.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -133,14 +135,14 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="advanced-confidence-intervals-and-chi-square-maps">
 <h1>7.8. Advanced Confidence Intervals and Chi-square maps<a class="headerlink" href="#advanced-confidence-intervals-and-chi-square-maps" title="Permalink to this headline">¶</a></h1>
 <p>Having good estimates for uncertainties in fitted parameters is important
 for any scientific analysis.  One of principle attractions to using the
 Levenberg-Marquardt algorithm that is the default fitting mechanism with
-the <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt> function is that it will automatically calculate
+the <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code> function is that it will automatically calculate
 estimates of parameter uncertainties and correlations.  This is very
 convenient and generally reliable, but it should be made clear that the
 basic assumptions made when these uncertainties are estimated are not
@@ -155,18 +157,18 @@ many (perhaps most) cases, they do not provide much better insight than the
 automatic method.</p>
 <dl class="function">
 <dt id="confidence_intervals">
-<tt class="descname">confidence_intervals</tt><big>(</big><em>minimizer</em>, <em>sigmas=(1</em>, <em>2</em>, <em>3)</em>, <em>prob_func=None</em>, <em>maxiter=200</em><big>)</big><a class="headerlink" href="#confidence_intervals" title="Permalink to this definition">¶</a></dt>
+<code class="descname">confidence_intervals</code><span class="sig-paren">(</span><em>minimizer</em>, <em>sigmas=(1</em>, <em>2</em>, <em>3)</em>, <em>prob_func=None</em>, <em>maxiter=200</em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_intervals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate confidence intervals for the parameters from a given fit.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>minimizer</strong> -- the minimizer object returned by <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt>.</li>
+<li><strong>minimizer</strong> -- the minimizer object returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</li>
 <li><strong>sigmas</strong> -- list of sigma-levels to find parameter values for.</li>
-<li><strong>prob_func</strong> -- <tt class="docutils literal"><span class="pre">None</span></tt> or callable function to calculate the
+<li><strong>prob_func</strong> -- <code class="docutils literal"><span class="pre">None</span></code> or callable function to calculate the
 probability from the optimized chi-square. By default,
-<tt class="xref py py-func docutils literal"><span class="pre">f_compare()</span></tt>, the standard F-test, is used.</li>
+<code class="xref py py-func docutils literal"><span class="pre">f_compare()</span></code>, the standard F-test, is used.</li>
 </ul>
 </td>
 </tr>
@@ -183,13 +185,13 @@ other parameters until it finds the parameter values that increase sigma by
 the levels indicated.</p>
 <dl class="function">
 <dt id="confidence_report">
-<tt class="descname">confidence_report</tt><big>(</big><em>conf_values</em><big>)</big><a class="headerlink" href="#confidence_report" title="Permalink to this definition">¶</a></dt>
-<dd><p>Convert the output of <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><tt class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></tt></a> into a printable report.</p>
+<code class="descname">confidence_report</code><span class="sig-paren">(</span><em>conf_values</em><span class="sig-paren">)</span><a class="headerlink" href="#confidence_report" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the output of <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></code></a> into a printable report.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>conf_values</strong> -- confidence values returned by <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><tt class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></tt></a>.</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>conf_values</strong> -- confidence values returned by <a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></code></a>.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">a string containing the report, which can be printed or stored.</td>
 </tr>
@@ -199,7 +201,7 @@ the levels indicated.</p>
 
 <dl class="function">
 <dt id="f_test">
-<tt class="descname">f_test</tt><big>(</big><em>ndata</em>, <em>nparams</em>, <em>chisquare</em>, <em>chisquare0</em>, <em>nfix=1</em><big>)</big><a class="headerlink" href="#f_test" title="Permalink to this definition">¶</a></dt>
+<code class="descname">f_test</code><span class="sig-paren">(</span><em>ndata</em>, <em>nparams</em>, <em>chisquare</em>, <em>chisquare0</em>, <em>nfix=1</em><span class="sig-paren">)</span><a class="headerlink" href="#f_test" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the standard F-test value for the probability that one fit is
 better than another.</p>
 </dd></dl>
@@ -238,7 +240,7 @@ section.</p>
 <span class="c">## end of examples/fitting/doc_example_conf1.lar</span>
 </pre></div>
 </div>
-<p>The printed output from <tt class="docutils literal"><span class="pre">fit_report(params)</span></tt> will include this:</p>
+<p>The printed output from <code class="docutils literal"><span class="pre">fit_report(params)</span></code> will include this:</p>
 <div class="highlight-python"><div class="highlight"><pre>[[Variables]]
    amp            =  12.129867 +/- 0.124722 (init=  5.000000)
    cen            =  1.476822 +/- 0.017266 (init=  2.000000)
@@ -253,7 +255,7 @@ section.</p>
 </pre></div>
 </div>
 <p>while the output from the much more explicit search done in
-<a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><tt class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></tt></a> and reported by <a class="reference internal" href="#confidence_report" title="confidence_report"><tt class="xref py py-func docutils literal"><span class="pre">confidence_report()</span></tt></a> will be:</p>
+<a class="reference internal" href="#confidence_intervals" title="confidence_intervals"><code class="xref py py-func docutils literal"><span class="pre">confidence_intervals()</span></code></a> and reported by <a class="reference internal" href="#confidence_report" title="confidence_report"><code class="xref py py-func docutils literal"><span class="pre">confidence_report()</span></code></a> will be:</p>
 <div class="highlight-python"><div class="highlight"><pre># Confidence Interval Report
 # Sigmas:          -3         -2         -1          0          1          2          3
 # Percentiles:  -99.730    -95.450    -68.269      0.000     68.269     95.450     99.730
@@ -268,7 +270,7 @@ section.</p>
     -best     -0.052057   -0.03452  -0.017248          0   0.017249   0.034524   0.052068
 </pre></div>
 </div>
-<p>The automatic error estimates given from <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt> are meant to be
+<p>The automatic error estimates given from <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code> are meant to be
 1-<span class="math">\(\sigma\)</span> uncertainties.   Comparing the two methods we find:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -377,9 +379,9 @@ newplot (dat.x, dat.y, label=&#39;data&#39;, marker=&#39;o&#39;, linewidth=0)
 </div>
 <p>You can see that the correlations between <strong>all 6 pairs of variables</strong> is
 above 90%.  The resulting plot of the best-fit looks fairly reasonable:</p>
-<div class="figure align-center" id="fit-conf1">
-<a class="reference external image-reference" href="../_images/fit_example_conf2.png"><img alt="../_images/fit_example_conf2.png" src="../_images/fit_example_conf2.png" style="width: 65%;" /></a>
-<p class="caption"><strong>Figure 7.11:</strong> Fit to double exponential function.</p>
+<div class="figure align-center" id="id1">
+<span id="fit-conf1"></span><a class="reference external image-reference" href="../_images/fit_example_conf2.png"><img alt="../_images/fit_example_conf2.png" src="../_images/fit_example_conf2.png" style="width: 65%;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> Fit to double exponential function.</span></p>
 </div>
 <p>But if we we ask for the more thorough investigation of the confidence
 intervals in these parameters with:</p>
@@ -455,25 +457,25 @@ correlations, the full report above hints at a less than ideal case.</p>
 and visualizing a map of the chi-square (<span class="math">\(\chi^2\)</span>) statistic.  This
 can be helpful to determine if the automatically calculated uncertainties
 and correlation are reasonable, and to look for pathological cases.  The
-<a class="reference internal" href="#chi2_map" title="chi2_map"><tt class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></tt></a> function will calculate a map of <span class="math">\(\chi^2\)</span> for a pair
+<a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></code></a> function will calculate a map of <span class="math">\(\chi^2\)</span> for a pair
 of variable parameters by brute force.</p>
 <dl class="function">
 <dt id="chi2_map">
-<tt class="descname">chi2_map</tt><big>(</big><em>minimizer</em>, <em>xname</em>, <em>yname</em>, <em>nx=11</em>, <em>ny=11</em>, <em>sigmas=5</em>, <em>xrange=None</em>, <em>yrange=None</em><big>)</big><a class="headerlink" href="#chi2_map" title="Permalink to this definition">¶</a></dt>
+<code class="descname">chi2_map</code><span class="sig-paren">(</span><em>minimizer</em>, <em>xname</em>, <em>yname</em>, <em>nx=11</em>, <em>ny=11</em>, <em>sigmas=5</em>, <em>xrange=None</em>, <em>yrange=None</em><span class="sig-paren">)</span><a class="headerlink" href="#chi2_map" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a chi-square map for two parameters in a fit</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>minimizer</strong> -- the minimizer object returned by <tt class="xref py py-func docutils literal"><span class="pre">minimize()</span></tt>.</li>
+<li><strong>minimizer</strong> -- the minimizer object returned by <code class="xref py py-func docutils literal"><span class="pre">minimize()</span></code>.</li>
 <li><strong>xname</strong> -- name of variable for x-axis</li>
 <li><strong>yname</strong> -- name of variable for y-axis</li>
 <li><strong>nx</strong> -- number of steps in x [11]</li>
 <li><strong>ny</strong> -- number of steps in y [11]</li>
 <li><strong>sigmas</strong> -- extent of x, y values to calculate, in <span class="math">\(\sigma\)</span></li>
-<li><strong>xrange</strong> -- explicit x range of calculations [x.best +/- <tt class="docutils literal"><span class="pre">sigmas</span></tt> * x.stderr]</li>
-<li><strong>yrange</strong> -- explicit y range of calculations [y.best +/- <tt class="docutils literal"><span class="pre">sigmas</span></tt> * y.stderr]</li>
+<li><strong>xrange</strong> -- explicit x range of calculations [x.best +/- <code class="docutils literal"><span class="pre">sigmas</span></code> * x.stderr]</li>
+<li><strong>yrange</strong> -- explicit y range of calculations [y.best +/- <code class="docutils literal"><span class="pre">sigmas</span></code> * y.stderr]</li>
 </ul>
 </td>
 </tr>
@@ -482,14 +484,14 @@ of variable parameters by brute force.</p>
 </tr>
 </tbody>
 </table>
-<p>The <tt class="docutils literal"><span class="pre">xrange</span></tt> and <tt class="docutils literal"><span class="pre">yrange</span></tt> arguments can be used to fully dictate the x
+<p>The <code class="docutils literal"><span class="pre">xrange</span></code> and <code class="docutils literal"><span class="pre">yrange</span></code> arguments can be used to fully dictate the x
 and y values to use.  By default, the x and y values are automatically
-determined from <tt class="docutils literal"><span class="pre">nx</span></tt>, <tt class="docutils literal"><span class="pre">ny</span></tt>, and <tt class="docutils literal"><span class="pre">sigmas</span></tt>, with the <tt class="docutils literal"><span class="pre">sigmas</span></tt> argument
+determined from <code class="docutils literal"><span class="pre">nx</span></code>, <code class="docutils literal"><span class="pre">ny</span></code>, and <code class="docutils literal"><span class="pre">sigmas</span></code>, with the <code class="docutils literal"><span class="pre">sigmas</span></code> argument
 sets how far from the best value to extend the ranges.</p>
 </dd></dl>
 
 <p>As an example usage, we return to the first example of the &quot;well-behaved&quot;
-fit, and run <a class="reference internal" href="#chi2_map" title="chi2_map"><tt class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></tt></a> on a pair of variables with low correlation
+fit, and run <a class="reference internal" href="#chi2_map" title="chi2_map"><code class="xref py py-func docutils literal"><span class="pre">chi2_map()</span></code></a> on a pair of variables with low correlation
 and a pair with high correlation:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">x1</span><span class="p">,</span> <span class="n">y1</span><span class="p">,</span> <span class="n">chi2_ampcen</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s">&#39;amp&#39;</span><span class="p">,</span> <span class="s">&#39;cen&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
 <span class="n">x2</span><span class="p">,</span> <span class="n">y2</span><span class="p">,</span> <span class="n">chi2_ampwid</span> <span class="o">=</span> <span class="n">chi2_map</span><span class="p">(</span><span class="n">mout</span><span class="p">,</span> <span class="s">&#39;amp&#39;</span><span class="p">,</span> <span class="s">&#39;wid&#39;</span><span class="p">,</span> <span class="n">nx</span><span class="o">=</span><span class="mi">21</span><span class="p">,</span> <span class="n">ny</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
@@ -505,11 +507,11 @@ and a pair with high correlation:</p>
 <div style="width: 45%" class="subfigure align-center" id="fig-chi2map1b">
 <a class="reference external image-reference" href="../_images/fit_example_conf3b.png"><img alt="../_images/fit_example_conf3b.png" src="../_images/fit_example_conf3b.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.12:</strong> Chi-square maps for two pairs of variables for the fit to Gaussian
+<p class="caption"><span class="caption-text"><strong>Figure 7.16:</strong> Chi-square maps for two pairs of variables for the fit to Gaussian
 data.  With the best-fit chi-square value of 0.5134, the contour map
 for relatively uncorrelated parameters <em>amp</em> and <em>cen</em> is shown on the
 left, while that for the more highlycorrelated parameters <em>amp</em> and
-<em>wid</em> is shown on the right.</p>
+<em>wid</em> is shown on the right.</span></p>
 </div><p id="fig-chi2map1">The circular map for the uncorrelated parameters <em>amp</em> and <em>cen</em>
 and the elliptical map for the highly correlated parameters <em>amp</em> and <em>wid</em>
 are exactly as would be expected, and what the automated estimate of
@@ -530,10 +532,10 @@ exponential, we calculate the chi-square maps as:</p>
 <div style="width: 45%" class="subfigure align-center" id="fig-chi2map2b">
 <a class="reference external image-reference" href="../_images/fit_example_conf4b.png"><img alt="../_images/fit_example_conf4b.png" src="../_images/fit_example_conf4b.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 7.13:</strong> Chi-square maps for two pairs of variables for the fit to Double
+<p class="caption"><span class="caption-text"><strong>Figure 7.17:</strong> Chi-square maps for two pairs of variables for the fit to Double
 Exponential.  With the best-fit chi-square value of 0.1913, the contour
 map for <em>a1 and *a2</em> is shown on the left, while that for <em>a1</em> and <em>t2</em>
-is shown on the right.</p>
+is shown on the right.</span></p>
 </div><p id="fig-chi2map2">Here, the values of chi-square quickly grow very large away from the ideal
 fit.  More importantly, the maps are not remotely elliptical.</p>
 <p>Finally, it should be emphasized that while all the tests in this section
@@ -550,7 +552,7 @@ correlation, or when nearing a final analysis.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -570,12 +572,12 @@ correlation, or when nearing a final analysis.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >7. Fitting and Modeling Data</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

@@ -45,7 +45,7 @@ data handling, and general-purpose data modeling.
 .. toctree::
    :maxdepth: 1
 
-   downloads/index.rst
+   installation/index.rst
    overview/index.rst
    community.rst
    tutorial/index.rst

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>8.4. XAFS: Fourier Transforms for XAFS &mdash; larch 0.9.24 documentation</title>
+    <title>8.4. XAFS: Fourier Transforms for XAFS &mdash; larch 0.9.27 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.24',
+        VERSION:     '0.9.27',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="8. XAFS Analysis" href="index.html" />
     <link rel="next" title="8.5. XAFS: Wavelet Transforms for XAFS" href="wavelets.html" />
     <link rel="prev" title="8.3. XAFS: Post-edge Background Subtraction" href="autobk.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -47,7 +47,7 @@
 	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
     </td>
     <td width=8%>
-	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	<a href="../installation/index.html" style="color: #772211"> Install</a>
 	</td>
     <td width=8%>
 	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,11 +87,11 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -99,7 +99,7 @@
 <li><a class="reference internal" href="#overview-of-xafs-fourier-transforms">8.4.1. Overview of XAFS Fourier transforms</a></li>
 <li><a class="reference internal" href="#forward-xafs-fourier-transforms">8.4.2. Forward XAFS Fourier transforms (<span class="math">\(k{\rightarrow}R\)</span>)</a></li>
 <li><a class="reference internal" href="#reverse-xafs-fourier-transforms">8.4.3. Reverse XAFS Fourier transforms (<span class="math">\(R{\rightarrow}q\)</span>)</a></li>
-<li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">8.4.4. <tt class="docutils literal"><span class="pre">ftwindow()</span></tt>: Generating Fourier transform windows</a></li>
+<li><a class="reference internal" href="#ftwindow-generating-fourier-transform-windows">8.4.4. <code class="docutils literal"><span class="pre">ftwindow()</span></code>: Generating Fourier transform windows</a></li>
 <li><a class="reference internal" href="#catalog-of-fourier-transform-window">8.4.5. Catalog of Fourier transform window</a></li>
 <li><a class="reference internal" href="#examples-forward-xafs-fourier-transforms">8.4.6. Examples: Forward XAFS Fourier transforms</a></li>
 <li><a class="reference internal" href="#examples-reverse-xafs-fourier-transforms-fourier-filtering">8.4.7. Examples: Reverse XAFS Fourier transforms, Fourier Filtering</a></li>
@@ -113,12 +113,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="wavelets.html"
                         title="next chapter">8.5. XAFS: Wavelet Transforms for XAFS</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/xafs/xafsft.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/xafs/xafsft.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -137,7 +139,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-_xafs">
 <span id="xafs-fourier-transforms-for-xafs"></span><span id="xafs-ft-sec"></span><h1>8.4. XAFS: Fourier Transforms for XAFS<a class="headerlink" href="#module-_xafs" title="Permalink to this headline">¶</a></h1>
@@ -146,7 +148,7 @@ XAFS. Consequently, many of the XAFS functions in Larch use XAFS Fourier
 transforms as part of their processing, and many of the functions
 parameters and arguments described here have names and meanings used
 throughout the XAFS functionality of Larch.  For example, both
-<a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a> and <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a> rely on XAFS Fourier transforms, and use
+<a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a> and <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a> rely on XAFS Fourier transforms, and use
 the XAFS Fourier transform function described here.</p>
 <div class="section" id="overview-of-xafs-fourier-transforms">
 <h2>8.4.1. Overview of XAFS Fourier transforms<a class="headerlink" href="#overview-of-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
@@ -182,7 +184,7 @@ the discrete sampling of energy and <span class="math">\(k\)</span> values of th
 allows Fast Fourier Transform techniques to be used.  It does change the
 definitions of the transforms used somewhat. First, the <span class="math">\(\chi(k)\)</span>
 data must be on <em>uniformly spaced</em> set of <span class="math">\(k\)</span> values.  The default
-<span class="math">\(k\)</span> spacing used in Larch (including as output from <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><tt class="xref py py-func docutils literal"><span class="pre">autobk()</span></tt></a>)
+<span class="math">\(k\)</span> spacing used in Larch (including as output from <a class="reference internal" href="autobk.html#_xafs.autobk" title="_xafs.autobk"><code class="xref py py-func docutils literal"><span class="pre">autobk()</span></code></a>)
 is <span class="math">\(\delta k\)</span> = 0.05 <span class="math">\(\rm\AA^{-1}\)</span>.  Second, the array size for
 <span class="math">\(\chi(k)\)</span> used in the Fourier transform should be a power of 2. The
 default used in Larch is <span class="math">\(N_{\rm fft}\)</span> = 2048.   Together, these
@@ -230,10 +232,10 @@ concerned about the differences of the real and imaginary parts of
 <h2>8.4.2. Forward XAFS Fourier transforms (<span class="math">\(k{\rightarrow}R\)</span>)<a class="headerlink" href="#forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
 <p>The forward Fourier transform converts <span class="math">\(\chi(k)\)</span> to <span class="math">\(\chi(R)\)</span>
 and is of primary importance for XAFS analysis.  In Larch, this is
-encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a> function.</p>
+encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a> function.</p>
 <dl class="function">
 <dt id="_xafs.xftf">
-<tt class="descclassname">_xafs.</tt><tt class="descname">xftf</tt><big>(</big><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.xftf" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">xftf</code><span class="sig-paren">(</span><em>k</em>, <em>chi=None</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftf" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a forward XAFS Fourier transform, from <span class="math">\(\chi(k)\)</span> to
 <span class="math">\(\chi(R)\)</span>, using common XAFS conventions.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -256,12 +258,12 @@ encapsulated in the <a class="reference internal" href="#_xafs.xftf" title="_xaf
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">None</span></tt> -- outputs are written to supplied group.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">None</span></code> -- outputs are written to supplied group.</p>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">k</span></tt> and <tt class="docutils literal"><span class="pre">chi</span></tt>.
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">k</span></code> and <code class="docutils literal"><span class="pre">chi</span></code>.
 The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -279,7 +281,7 @@ The following data is put into the output group:</p>
 <td>window <span class="math">\(\Omega(k)\)</span> (length of input chi(k)).</td>
 </tr>
 <tr class="row-odd"><td>r</td>
-<td>uniform array of <span class="math">\(R\)</span>, out to <tt class="docutils literal"><span class="pre">rmax_out</span></tt>.</td>
+<td>uniform array of <span class="math">\(R\)</span>, out to <code class="docutils literal"><span class="pre">rmax_out</span></code>.</td>
 </tr>
 <tr class="row-even"><td>chir</td>
 <td>complex array of <span class="math">\(\tilde\chi(R)\)</span>.</td>
@@ -299,19 +301,19 @@ The following data is put into the output group:</p>
 </tbody>
 </table>
 </div></blockquote>
-<p>It is expected that the input <tt class="docutils literal"><span class="pre">k</span></tt> be a uniformly spaced array of
-values with spacing <tt class="docutils literal"><span class="pre">kstep</span></tt>, starting a 0.  If it is not, the <tt class="docutils literal"><span class="pre">k</span></tt>
-and <tt class="docutils literal"><span class="pre">chi</span></tt> data will be linearly interpolated onto the proper grid.</p>
+<p>It is expected that the input <code class="docutils literal"><span class="pre">k</span></code> be a uniformly spaced array of
+values with spacing <code class="docutils literal"><span class="pre">kstep</span></code>, starting a 0.  If it is not, the <code class="docutils literal"><span class="pre">k</span></code>
+and <code class="docutils literal"><span class="pre">chi</span></code> data will be linearly interpolated onto the proper grid.</p>
 <p>The FT window parameters are explained in more detail in the discussion of
-<a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><tt class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></tt></a>.</p>
+<a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_xafs.xftf_fast">
-<tt class="descclassname">_xafs.</tt><tt class="descname">xftf_fast</tt><big>(</big><em>chi</em>, <em>nfft=2048</em>, <em>kstep=0.05</em><big>)</big><a class="headerlink" href="#_xafs.xftf_fast" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">xftf_fast</code><span class="sig-paren">(</span><em>chi</em>, <em>nfft=2048</em>, <em>kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftf_fast" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a forward XAFS Fourier transform, from <span class="math">\(\chi(k)\)</span> to
 <span class="math">\(\chi(R)\)</span>, using common XAFS conventions.  This version demands
-<tt class="docutils literal"><span class="pre">chi</span></tt> to include any weighting and windowing, and so to represent
+<code class="docutils literal"><span class="pre">chi</span></code> to include any weighting and windowing, and so to represent
 <span class="math">\(\chi(k)k^w\Omega(k)\)</span> on a uniform <span class="math">\(k\)</span> grid. It returns
 the complex array of <span class="math">\(\chi(R)\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -342,7 +344,7 @@ complex.  By convention, the real part of <span class="math">\(\chi(q)\)</span> 
 the explicitly real <span class="math">\(\chi(k)\)</span>.</p>
 <dl class="function">
 <dt id="_xafs.xftr">
-<tt class="descclassname">_xafs.</tt><tt class="descname">xftr</tt><big>(</big><em>r</em>, <em>chir</em>, <em>group=None</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.xftr" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">xftr</code><span class="sig-paren">(</span><em>r</em>, <em>chir</em>, <em>group=None</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftr" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a reverse XAFS Fourier transform, from <span class="math">\(\chi(R)\)</span> to
 <span class="math">\(\chi(q)\)</span>.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -365,12 +367,12 @@ the explicitly real <span class="math">\(\chi(k)\)</span>.</p>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><tt class="docutils literal"><span class="pre">None</span></tt> -- outputs are written to supplied group.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last"><code class="docutils literal"><span class="pre">None</span></code> -- outputs are written to supplied group.</p>
 </td>
 </tr>
 </tbody>
 </table>
-<p>Follows the First Argument Group convention, using group members named <tt class="docutils literal"><span class="pre">r</span></tt> and <tt class="docutils literal"><span class="pre">chir</span></tt>.
+<p>Follows the First Argument Group convention, using group members named <code class="docutils literal"><span class="pre">r</span></code> and <code class="docutils literal"><span class="pre">chir</span></code>.
 The following data is put into the output group:</p>
 <blockquote>
 <div><table border="1" class="docutils">
@@ -388,7 +390,7 @@ The following data is put into the output group:</p>
 <td>window <span class="math">\(\Omega(R)\)</span> (length of input chi(R)).</td>
 </tr>
 <tr class="row-odd"><td>q</td>
-<td>uniform array of <span class="math">\(k\)</span>, out to <tt class="docutils literal"><span class="pre">qmax_out</span></tt>.</td>
+<td>uniform array of <span class="math">\(k\)</span>, out to <code class="docutils literal"><span class="pre">qmax_out</span></code>.</td>
 </tr>
 <tr class="row-even"><td>chiq</td>
 <td>complex array of <span class="math">\(\tilde\chi(k)\)</span>.</td>
@@ -408,22 +410,22 @@ The following data is put into the output group:</p>
 </tbody>
 </table>
 </div></blockquote>
-<p>In analogy with <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>, it is expected that the input <tt class="docutils literal"><span class="pre">r</span></tt> be a
+<p>In analogy with <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>, it is expected that the input <code class="docutils literal"><span class="pre">r</span></code> be a
 uniformly spaced array of values starting a 0.</p>
-<p>The input <tt class="docutils literal"><span class="pre">chir</span></tt> array can be either the complex <span class="math">\(\chi(R)\)</span> array
-as output to <tt class="docutils literal"><span class="pre">Group.chir</span></tt> from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>, or one of the real or
-imaginary parts of the <span class="math">\(\chi(R)\)</span> as output to <tt class="docutils literal"><span class="pre">Group.chir_re</span></tt> or
-<tt class="docutils literal"><span class="pre">Group.chir_im</span></tt>.</p>
+<p>The input <code class="docutils literal"><span class="pre">chir</span></code> array can be either the complex <span class="math">\(\chi(R)\)</span> array
+as output to <code class="docutils literal"><span class="pre">Group.chir</span></code> from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>, or one of the real or
+imaginary parts of the <span class="math">\(\chi(R)\)</span> as output to <code class="docutils literal"><span class="pre">Group.chir_re</span></code> or
+<code class="docutils literal"><span class="pre">Group.chir_im</span></code>.</p>
 <p>The FT window parameters are explained in more detail in the discussion of
-<a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><tt class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></tt></a>.</p>
+<a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></code></a>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="_xafs.xftr_fast">
-<tt class="descclassname">_xafs.</tt><tt class="descname">xftr_fast</tt><big>(</big><em>chir</em>, <em>nfft=2048</em>, <em>kstep=0.05</em><big>)</big><a class="headerlink" href="#_xafs.xftr_fast" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">xftr_fast</code><span class="sig-paren">(</span><em>chir</em>, <em>nfft=2048</em>, <em>kstep=0.05</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.xftr_fast" title="Permalink to this definition">¶</a></dt>
 <dd><p>perform a reverse XAFS Fourier transform, from <span class="math">\(\chi(R)\)</span> to
 <span class="math">\(\chi(q)\)</span>, using common XAFS conventions.  This version demands
-<tt class="docutils literal"><span class="pre">chir</span></tt> be  the complex <span class="math">\(\chi(R)\)</span> as created from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>.
+<code class="docutils literal"><span class="pre">chir</span></code> be  the complex <span class="math">\(\chi(R)\)</span> as created from <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>.
 It returns the complex array of <span class="math">\(\chi(q)\)</span> without putting any
 values into a group.</p>
 <table class="docutils field-list" frame="void" rules="none">
@@ -446,7 +448,7 @@ values into a group.</p>
 
 </div>
 <div class="section" id="ftwindow-generating-fourier-transform-windows">
-<h2>8.4.4. <a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><tt class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></tt></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
+<h2>8.4.4. <a class="reference internal" href="#_xafs.ftwindow" title="_xafs.ftwindow"><code class="xref py py-func docutils literal"><span class="pre">ftwindow()</span></code></a>: Generating Fourier transform windows<a class="headerlink" href="#ftwindow-generating-fourier-transform-windows" title="Permalink to this headline">¶</a></h2>
 <p>As mentioned above, a Fourier transform window will smooth the resulting
 Fourier transformed spectrum, removing ripple and ringing in it that would
 result from a sudden truncation data at the end of it range.  There is an
@@ -454,7 +456,7 @@ extensive literature on such windows, and a lot of choices and parameters
 available for constructing windows.  A sampling of windows is shown below.</p>
 <dl class="function">
 <dt id="_xafs.ftwindow">
-<tt class="descclassname">_xafs.</tt><tt class="descname">ftwindow</tt><big>(</big><em>x</em>, <em>xmin=0</em>, <em>xmax=None</em>, <em>dk=1</em>, <em>...</em><big>)</big><a class="headerlink" href="#_xafs.ftwindow" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">_xafs.</code><code class="descname">ftwindow</code><span class="sig-paren">(</span><em>x</em>, <em>xmin=0</em>, <em>xmax=None</em>, <em>dk=1</em>, <em>...</em><span class="sig-paren">)</span><a class="headerlink" href="#_xafs.ftwindow" title="Permalink to this definition">¶</a></dt>
 <dd><p>create a Fourier transform window array.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -475,10 +477,10 @@ available for constructing windows.  A sampling of windows is shown below.</p>
 </tr>
 </tbody>
 </table>
-<p>Note that if <tt class="docutils literal"><span class="pre">dx</span></tt> is specified but <tt class="docutils literal"><span class="pre">dx2</span></tt> is not, <tt class="docutils literal"><span class="pre">dx2</span></tt> will
-generally take the same value as <tt class="docutils literal"><span class="pre">dx</span></tt>.</p>
-<p>The window type must be one of those listed in the <a class="reference internal" href="#xafs-ftwin-table"><em>Table of
-Fourier Transform Window Types</em></a>.</p>
+<p>Note that if <code class="docutils literal"><span class="pre">dx</span></code> is specified but <code class="docutils literal"><span class="pre">dx2</span></code> is not, <code class="docutils literal"><span class="pre">dx2</span></code> will
+generally take the same value as <code class="docutils literal"><span class="pre">dx</span></code>.</p>
+<p>The window type must be one of those listed in the <a class="reference internal" href="#xafs-ftwin-table"><span>Table of
+Fourier Transform Window Types</span></a>.</p>
 </dd></dl>
 
 <blockquote id="xafs-ftwin-table">
@@ -520,14 +522,14 @@ Fourier Transform Window Types</em></a>.</p>
 <p>In general, the window arrays have a value that gradually increases from 0
 up to 1 at the low-k end, may stay with a value 1 over some central
 portion, and then tapers down to 0 at the high-k end.  The meaning of the
-<tt class="docutils literal"><span class="pre">dx</span></tt> and <tt class="docutils literal"><span class="pre">dx2</span></tt>, and even <tt class="docutils literal"><span class="pre">xmin</span></tt>, and <tt class="docutils literal"><span class="pre">xmax</span></tt> varies a bit for the
+<code class="docutils literal"><span class="pre">dx</span></code> and <code class="docutils literal"><span class="pre">dx2</span></code>, and even <code class="docutils literal"><span class="pre">xmin</span></code>, and <code class="docutils literal"><span class="pre">xmax</span></code> varies a bit for the
 different window types.  The Hanning, Parzen, and Welch windows share a
-convention that the windows taper up from 0 to 1 between <tt class="docutils literal"><span class="pre">xmin-dx/2</span></tt> and
-<tt class="docutils literal"><span class="pre">xmin+dx/2</span></tt>, and then taper down from 1 to 0 between <tt class="docutils literal"><span class="pre">xmax-dx2/2</span></tt> and
-<tt class="docutils literal"><span class="pre">xmax+dx2/2</span></tt>.</p>
+convention that the windows taper up from 0 to 1 between <code class="docutils literal"><span class="pre">xmin-dx/2</span></code> and
+<code class="docutils literal"><span class="pre">xmin+dx/2</span></code>, and then taper down from 1 to 0 between <code class="docutils literal"><span class="pre">xmax-dx2/2</span></code> and
+<code class="docutils literal"><span class="pre">xmax+dx2/2</span></code>.</p>
 <p>The conventions for the Kaiser, Gaussian, and Sine window types is a bit
 more complicated, and is best given explicitly.  In the formulas below,
-<tt class="docutils literal"><span class="pre">dx</span></tt> written as <span class="math">\(dx\)</span> and <tt class="docutils literal"><span class="pre">dx2</span></tt> as <span class="math">\(dx_2\)</span>.  We
+<code class="docutils literal"><span class="pre">dx</span></code> written as <span class="math">\(dx\)</span> and <code class="docutils literal"><span class="pre">dx2</span></code> as <span class="math">\(dx_2\)</span>.  We
 define <span class="math">\(x_i = x_{\rm min} - dx/2\)</span>, <span class="math">\(x_f = x_{\rm max} +
 dx_2/2\)</span>, and <span class="math">\(x_0 = (x_f + x_i)/2\)</span>, as the beginning, end, and
 center of the widows.  For the Gaussian window, the form is:</p>
@@ -548,7 +550,7 @@ The Kaiser-Bessel window is slightly more complicated:</p>
 <h2>8.4.5. Catalog of Fourier transform window<a class="headerlink" href="#catalog-of-fourier-transform-window" title="Permalink to this headline">¶</a></h2>
 <p>Here, we give a series of example windows, to illustrate the different
 window types and the effect of the various parameters.  The meanings of
-<tt class="docutils literal"><span class="pre">xmin</span></tt>, <tt class="docutils literal"><span class="pre">xmax</span></tt>, <tt class="docutils literal"><span class="pre">dx</span></tt> and <tt class="docutils literal"><span class="pre">dx2</span></tt> are identical for the Hanning, Parzen and
+<code class="docutils literal"><span class="pre">xmin</span></code>, <code class="docutils literal"><span class="pre">xmax</span></code>, <code class="docutils literal"><span class="pre">dx</span></code> and <code class="docutils literal"><span class="pre">dx2</span></code> are identical for the Hanning, Parzen and
 Welch windows, and illustrated in the two following figures.</p>
 <div class="figure compound align-center" id="fig-xafsft1">
 <div style="width: 45%" class="subfigure" id="fig-xafsft1a">
@@ -557,11 +559,11 @@ Welch windows, and illustrated in the two following figures.</p>
 <div style="width: 45%" class="subfigure" id="fig-xafsft1b">
 <a class="reference external image-reference" href="../_images/ftwin_example2.png"><img alt="../_images/ftwin_example2.png" src="../_images/ftwin_example2.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 8.5:</strong> Fourier Transform window examples and illustration of parameter meaning
+<p class="caption"><span class="caption-text"><strong>Figure 8.11:</strong> Fourier Transform window examples and illustration of parameter meaning
 for the Hanning, Parzen, and Welch windows.  Note that
 <span class="math">\(\Omega(x=x_{\rm min}) = \Omega(x=x_{\rm max}) = 0.5\)</span>, and that
-the meaning of <tt class="docutils literal"><span class="pre">dx</span></tt> is to control the taper over which the window
-changes from 0 to 1.  Here, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</p>
+the meaning of <code class="docutils literal"><span class="pre">dx</span></code> is to control the taper over which the window
+changes from 0 to 1.  Here, <code class="docutils literal"><span class="pre">xmin=5</span></code> and <code class="docutils literal"><span class="pre">xmax=15</span></code>.</span></p>
 </div><p id="fig-xafsft1">Some more window functions:</p>
 <div class="figure compound align-center" id="fig-xafsft2">
 <div style="width: 45%" class="subfigure" id="fig-xafsft2a">
@@ -570,18 +572,18 @@ changes from 0 to 1.  Here, <tt class="docutils literal"><span class="pre">xmin=
 <div style="width: 45%" class="subfigure" id="fig-xafsft2b">
 <a class="reference external image-reference" href="../_images/ftwin_example4.png"><img alt="../_images/ftwin_example4.png" src="../_images/ftwin_example4.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 8.6:</strong> Fourier Transform window examples and illustration of parameter
+<p class="caption"><span class="caption-text"><strong>Figure 8.12:</strong> Fourier Transform window examples and illustration of parameter
 meaning.  On the left, a comparison of Welch, Parzen, and Hanning with
-the same parameters is shown.  On the right, the effect of <tt class="docutils literal"><span class="pre">dx2</span></tt> is
-shown as a different amount of taper on the high- and low-<tt class="docutils literal"><span class="pre">x</span></tt> end of
-the window.  As before, <tt class="docutils literal"><span class="pre">xmin=5</span></tt> and <tt class="docutils literal"><span class="pre">xmax=15</span></tt>.</p>
+the same parameters is shown.  On the right, the effect of <code class="docutils literal"><span class="pre">dx2</span></code> is
+shown as a different amount of taper on the high- and low-<code class="docutils literal"><span class="pre">x</span></code> end of
+the window.  As before, <code class="docutils literal"><span class="pre">xmin=5</span></code> and <code class="docutils literal"><span class="pre">xmax=15</span></code>.</span></p>
 </div><p id="fig-xafsft2">The Gaussian, Sine, and Kaiser-Bessel windows are illustrated next. These
-go to 1 at the average of <tt class="docutils literal"><span class="pre">xmin</span></tt> and <tt class="docutils literal"><span class="pre">xmax</span></tt>, but do not stay at 1 over
+go to 1 at the average of <code class="docutils literal"><span class="pre">xmin</span></code> and <code class="docutils literal"><span class="pre">xmax</span></code>, but do not stay at 1 over
 a central portion of the window -- they taper continuously.  The Gaussian
 window is a simple Gaussian function, and is not truncated according to
-<tt class="docutils literal"><span class="pre">xmin</span></tt> and <tt class="docutils literal"><span class="pre">xmax</span></tt>, and the <tt class="docutils literal"><span class="pre">dx</span></tt> parameter sets the width.  The Sine
-and Kaiser-Bessel windows both go to zero at  <tt class="docutils literal"><span class="pre">xmin-dx/2</span></tt> and <tt class="docutils literal"><span class="pre">xmax</span> <span class="pre">+</span>
-<span class="pre">dx/2</span></tt>.  For very large values of <tt class="docutils literal"><span class="pre">dx</span></tt>, the Kaiser-Bessel window
+<code class="docutils literal"><span class="pre">xmin</span></code> and <code class="docutils literal"><span class="pre">xmax</span></code>, and the <code class="docutils literal"><span class="pre">dx</span></code> parameter sets the width.  The Sine
+and Kaiser-Bessel windows both go to zero at  <code class="docutils literal"><span class="pre">xmin-dx/2</span></code> and <code class="docutils literal"><span class="pre">xmax</span> <span class="pre">+</span>
+<span class="pre">dx/2</span></code>.  For very large values of <code class="docutils literal"><span class="pre">dx</span></code>, the Kaiser-Bessel window
 approaches a nearly Gaussian lineshape.</p>
 <div class="figure compound align-center" id="fig-xafsft3">
 <div style="width: 45%" class="subfigure" id="fig-xafsft3a">
@@ -590,10 +592,10 @@ approaches a nearly Gaussian lineshape.</p>
 <div style="width: 45%" class="subfigure" id="fig-xafsft3b">
 <a class="reference external image-reference" href="../_images/ftwin_example6.png"><img alt="../_images/ftwin_example6.png" src="../_images/ftwin_example6.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 8.7:</strong> Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
+<p class="caption"><span class="caption-text"><strong>Figure 8.13:</strong> Fourier Transform windows. On the left, a comparison of Kaiser-Bessel,
 Sine, and Gaussian windows with the same parameters is shown.  On the
-right, the effect of <tt class="docutils literal"><span class="pre">dx</span></tt> is shown for the Kaiser-Bessel window, and
-a closer comparison to a Gaussian window is made.</p>
+right, the effect of <code class="docutils literal"><span class="pre">dx</span></code> is shown for the Kaiser-Bessel window, and
+a closer comparison to a Gaussian window is made.</span></p>
 </div></div>
 <div class="section" id="examples-forward-xafs-fourier-transforms">
 <span id="fig-xafsft3"></span><h2>8.4.6. Examples: Forward XAFS Fourier transforms<a class="headerlink" href="#examples-forward-xafs-fourier-transforms" title="Permalink to this headline">¶</a></h2>
@@ -603,8 +605,8 @@ of different windows types, and Fourier filtering to <span class="math">\(\chi(q
 use a single XAFS dataset from FeO for all these examples, with a
 well-separated first and second shell.  The full scripts to generate the
 figures shown here are included in the <em>examples/xafs/</em> folder.</p>
-<p>We start with a comparison of a small value of <tt class="docutils literal"><span class="pre">dk</span></tt> and a larger value.
-A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a>, changing on <tt class="docutils literal"><span class="pre">dk</span></tt> would look like:</p>
+<p>We start with a comparison of a small value of <code class="docutils literal"><span class="pre">dk</span></code> and a larger value.
+A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a>, changing on <code class="docutils literal"><span class="pre">dk</span></code> would look like:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
 
@@ -621,10 +623,10 @@ A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs
 <div style="width: 45%" class="subfigure" id="fig-xafsft4b">
 <a class="reference external image-reference" href="../_images/xft_example2.png"><img alt="../_images/xft_example2.png" src="../_images/xft_example2.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 8.8:</strong> Comparison of the effect of different values of <tt class="docutils literal"><span class="pre">dk</span></tt> on real XAFS
-Fourier transforms.  Increasing <tt class="docutils literal"><span class="pre">dk</span></tt> reduces peak heights and tends
-to broaden peaks, but the effects are rather small.</p>
-</div><p id="fig-xafsft4">A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><tt class="xref py py-func docutils literal"><span class="pre">xftf()</span></tt></a> with consistent parameters, but different
+<p class="caption"><span class="caption-text"><strong>Figure 8.14:</strong> Comparison of the effect of different values of <code class="docutils literal"><span class="pre">dk</span></code> on real XAFS
+Fourier transforms.  Increasing <code class="docutils literal"><span class="pre">dk</span></code> reduces peak heights and tends
+to broaden peaks, but the effects are rather small.</span></p>
+</div><p id="fig-xafsft4">A script that runs <a class="reference internal" href="#_xafs.xftf" title="_xafs.xftf"><code class="xref py py-func docutils literal"><span class="pre">xftf()</span></code></a> with consistent parameters, but different
 window types:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="n">xftf</span><span class="p">(</span><span class="n">dat1</span><span class="o">.</span><span class="n">k</span><span class="p">,</span> <span class="n">dat1</span><span class="o">.</span><span class="n">chi</span><span class="p">,</span> <span class="n">kmin</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">kmax</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">dk</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">window</span><span class="o">=</span><span class="s">&#39;hanning&#39;</span><span class="p">,</span>
      <span class="n">kweight</span><span class="o">=</span><span class="n">kweight</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="n">dat1</span><span class="p">)</span>
@@ -654,8 +656,8 @@ window types:</p>
 <div style="width: 45%" class="subfigure" id="fig-xafsft-winsb">
 <a class="reference external image-reference" href="../_images/xft_example4.psng"><img alt="../_images/xft_example4.png" src="../_images/xft_example4.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 8.9:</strong> Comparison of the effect of different window types on real XAFS Fourier
-transforms.</p>
+<p class="caption"><span class="caption-text"><strong>Figure 8.15:</strong> Comparison of the effect of different window types on real XAFS Fourier
+transforms.</span></p>
 </div><p id="fig-xafsft_wins">We now turn our attention to the different components of the Fourier
 transform.  As above, it is most common to plot the magnitude of the
 Fourier transform.  But, as the transformed <span class="math">\(\chi(R)\)</span> is complex, it
@@ -670,11 +672,11 @@ below:</p>
 </pre></div>
 </div>
 <p>which results in</p>
-<div class="figure align-center" id="fig-xafsft-ri">
-<a class="reference external image-reference" href="../_images/xft_example5.png"><img alt="../_images/xft_example5.png" src="../_images/xft_example5.png" style="width: 65%;" /></a>
-<p class="caption"><strong>Figure 8.10:</strong> The real and imaginary components of the XAFS Fourier transform.</p>
+<div class="figure align-center" id="id1">
+<span id="fig-xafsft-ri"></span><a class="reference external image-reference" href="../_images/xft_example5.png"><img alt="../_images/xft_example5.png" src="../_images/xft_example5.png" style="width: 65%;" /></a>
+<p class="caption"><span class="caption-text"><strong>Figure 10.1:</strong> The real and imaginary components of the XAFS Fourier transform.</span></p>
 </div>
-<p>In fact, in the analysis discussed with <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><tt class="xref py py-func docutils literal"><span class="pre">feffit()</span></tt></a>, the real and
+<p>In fact, in the analysis discussed with <a class="reference internal" href="feffit.html#_xafs.feffit" title="_xafs.feffit"><code class="xref py py-func docutils literal"><span class="pre">feffit()</span></code></a>, the real and
 imaginary components are used, not simply the magnitude.</p>
 </div>
 <div class="section" id="examples-reverse-xafs-fourier-transforms-fourier-filtering">
@@ -692,11 +694,11 @@ the spectra, or the first two shells, and compare the resulting filtered
 <div style="width: 45%" class="subfigure" id="fig-xafsft-filterb">
 <a class="reference external image-reference" href="../_images/xft_example7.png"><img alt="../_images/xft_example7.png" src="../_images/xft_example7.png" style="width: 100%;" /></a>
 </div>
-<p class="caption"><strong>Figure 8.11:</strong> Reverse XAFS Fourier transform, or Fourier filtering.  Here, one can
+<p class="caption"><span class="caption-text"><strong>Figure 8.18:</strong> Reverse XAFS Fourier transform, or Fourier filtering.  Here, one can
 see the effect of different window sizes on the Fourier filtered
 spectrum.  Including the first two peaks or shells reproduces most of
-the original spectrum, with only high-frequency components removed.</p>
-</div><p id="fig_xafsft_filter">Note that it is <tt class="docutils literal"><span class="pre">chiq_re</span></tt> that is compared to the k-weighted <tt class="docutils literal"><span class="pre">chi</span></tt>
+the original spectrum, with only high-frequency components removed.</span></p>
+</div><p id="fig_xafsft_filter">Note that it is <code class="docutils literal"><span class="pre">chiq_re</span></code> that is compared to the k-weighted <code class="docutils literal"><span class="pre">chi</span></code>
 array.</p>
 </div>
 </div>
@@ -707,7 +709,7 @@ array.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -727,12 +729,12 @@ array.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >8. XAFS Analysis</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>4.7. Tutorial: Running Larch Scripts, and Modules &mdash; larch 0.9.24 documentation</title>
+    <title>4.7. Tutorial: Running Larch Scripts, and Modules &mdash; larch 0.9.27 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.24',
+        VERSION:     '0.9.27',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,8 +24,8 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="up" title="4. Larch Tutorial" href="index.html" />
     <link rel="next" title="4.8. Tutorial: Builtin Functions" href="builtins.html" />
     <link rel="prev" title="4.6. Tutorial: Writing Functions or Procedures" href="procedures.html" />
@@ -35,7 +35,7 @@
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -47,7 +47,7 @@
 	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
     </td>
     <td width=8%>
-	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	<a href="../installation/index.html" style="color: #772211"> Install</a>
 	</td>
     <td width=8%>
 	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
@@ -67,7 +67,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -87,16 +87,16 @@
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U">4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">4.7. Tutorial: Running Larch Scripts, and Modules</a><ul>
-<li><a class="reference internal" href="#running-a-larch-script-with-run">4.7.1. Running a larch script with <tt class="docutils literal"><span class="pre">run()</span></tt></a></li>
+<li><a class="reference internal" href="#running-a-larch-script-with-run">4.7.1. Running a larch script with <code class="docutils literal"><span class="pre">run()</span></code></a></li>
 <li><a class="reference internal" href="#importing-a-larch-script-as-a-module">4.7.2. Importing a Larch Script as a Module</a></li>
 </ul>
 </li>
@@ -108,12 +108,14 @@
   <h4>Next topic</h4>
   <p class="topless"><a href="builtins.html"
                         title="next chapter">4.8. Tutorial: Builtin Functions</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/tutorial/modules.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/modules.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -132,7 +134,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="tutorial-running-larch-scripts-and-modules">
 <span id="tutorial-modules-section"></span><h1>4.7. Tutorial: Running Larch Scripts, and Modules<a class="headerlink" href="#tutorial-running-larch-scripts-and-modules" title="Permalink to this headline">¶</a></h1>
@@ -147,8 +149,8 @@ it into Larch.  The distinction can be subtle, and has to with where the
 variables &quot;live&quot; within your larch session.  We'll discuss both
 possibilities and their differences here.</p>
 <div class="section" id="running-a-larch-script-with-run">
-<h2>4.7.1. Running a larch script with <a class="reference internal" href="builtins.html#run" title="run"><tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt></a><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this headline">¶</a></h2>
-<p>If you have a Larch script, you can run it with the built-in <a class="reference internal" href="builtins.html#run" title="run"><tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt></a>
+<h2>4.7.1. Running a larch script with <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a><a class="headerlink" href="#running-a-larch-script-with-run" title="Permalink to this headline">¶</a></h2>
+<p>If you have a Larch script, you can run it with the built-in <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a>
 function:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="c"># file myscript.lar</span>
 <span class="k">print</span> <span class="s">&#39;hello from myscript.lar!&#39;</span>
@@ -175,19 +177,19 @@ hello from myscript.lar!
 <p>Again, the script can contain any Larch code, including procedure
 definitions.  After running the script, any variables assigned in the
 script will exist in your larch session.  For example, running the above
-script, there will be variables <tt class="docutils literal"><span class="pre">name</span></tt>, <tt class="docutils literal"><span class="pre">phi</span></tt>, and <tt class="docutils literal"><span class="pre">i</span></tt> (and <tt class="docutils literal"><span class="pre">i</span></tt>
+script, there will be variables <code class="docutils literal"><span class="pre">name</span></code>, <code class="docutils literal"><span class="pre">phi</span></code>, and <code class="docutils literal"><span class="pre">i</span></code> (and <code class="docutils literal"><span class="pre">i</span></code>
 will hold the value 4), and you can access these:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print i, name, phi
 4 Fred 1.61803398875
 </pre></div>
 </div>
-<p>These variables are held in the &quot;top-level namespace&quot;, <tt class="docutils literal"><span class="pre">_main</span></tt>, about which
+<p>These variables are held in the &quot;top-level namespace&quot;, <code class="docutils literal"><span class="pre">_main</span></code>, about which
 we'll see more below.</p>
 </div>
 <div class="section" id="importing-a-larch-script-as-a-module">
 <h2>4.7.2. Importing a Larch Script as a Module<a class="headerlink" href="#importing-a-larch-script-as-a-module" title="Permalink to this headline">¶</a></h2>
 <p>The alternative method for using the script above is to <strong>import</strong> it,
-using the <tt class="docutils literal"><span class="pre">import</span></tt> statement:</p>
+using the <code class="docutils literal"><span class="pre">import</span></code> statement:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; import myscript
 0 0.0
 1 1.0
@@ -198,23 +200,23 @@ using the <tt class="docutils literal"><span class="pre">import</span></tt> stat
 </div>
 <p>Notice a few differences: First, the '.lar' suffix was removed.  Second,
 the name is not in quotes.  The content of the file is still run, and the
-<tt class="docutils literal"><span class="pre">print</span></tt> statements still prints output.  But now the variables <tt class="docutils literal"><span class="pre">name</span></tt>,
-<tt class="docutils literal"><span class="pre">phi</span></tt>, and <tt class="docutils literal"><span class="pre">i</span></tt> are held in a group named <tt class="docutils literal"><span class="pre">myscript</span></tt>.  Compared to the
-<a class="reference internal" href="builtins.html#run" title="run"><tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt></a> function above, this provides better organization, as the
+<code class="docutils literal"><span class="pre">print</span></code> statements still prints output.  But now the variables <code class="docutils literal"><span class="pre">name</span></code>,
+<code class="docutils literal"><span class="pre">phi</span></code>, and <code class="docutils literal"><span class="pre">i</span></code> are held in a group named <code class="docutils literal"><span class="pre">myscript</span></code>.  Compared to the
+<a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a> function above, this provides better organization, as the
 variable names are not in the top-level group, but in their own group,
 named after the name of the module.</p>
-<p>The <tt class="docutils literal"><span class="pre">import</span></tt> statement is more versatile than the <a class="reference internal" href="builtins.html#run" title="run"><tt class="xref py py-func docutils literal"><span class="pre">run()</span></tt></a> function,
-and has three important differences.  First, the <tt class="docutils literal"><span class="pre">import</span></tt> statement looks
-for files with extensions of <tt class="docutils literal"><span class="pre">.lar</span></tt> or <tt class="docutils literal"><span class="pre">.py</span></tt>, so that you can import
-either larch scripts or any python module with the <tt class="docutils literal"><span class="pre">import</span> <span class="pre">statement</span></tt>.
+<p>The <code class="docutils literal"><span class="pre">import</span></code> statement is more versatile than the <a class="reference internal" href="builtins.html#run" title="run"><code class="xref py py-func docutils literal"><span class="pre">run()</span></code></a> function,
+and has three important differences.  First, the <code class="docutils literal"><span class="pre">import</span></code> statement looks
+for files with extensions of <code class="docutils literal"><span class="pre">.lar</span></code> or <code class="docutils literal"><span class="pre">.py</span></code>, so that you can import
+either larch scripts or any python module with the <code class="docutils literal"><span class="pre">import</span> <span class="pre">statement</span></code>.
 This is a subtle but highly important point: <strong>any python module</strong> can be
 imported directly into Larch.</p>
 <p>Second, you can control what is actually imported, and where it goes.  For
-the above example with <tt class="docutils literal"><span class="pre">import</span> <span class="pre">myscript</span></tt>, a group called <tt class="docutils literal"><span class="pre">myscript</span></tt> was
-created, with variables <tt class="docutils literal"><span class="pre">name</span></tt>, <tt class="docutils literal"><span class="pre">phi</span></tt>, and <tt class="docutils literal"><span class="pre">i</span></tt>.  If you want the
+the above example with <code class="docutils literal"><span class="pre">import</span> <span class="pre">myscript</span></code>, a group called <code class="docutils literal"><span class="pre">myscript</span></code> was
+created, with variables <code class="docutils literal"><span class="pre">name</span></code>, <code class="docutils literal"><span class="pre">phi</span></code>, and <code class="docutils literal"><span class="pre">i</span></code>.  If you want the
 group called something else, or you want to not import everything, but only
 selected elements (perhaps only one procedure or piece of data), you can
-use variations on the standard Python <tt class="docutils literal"><span class="pre">import</span></tt> statement like:</p>
+use variations on the standard Python <code class="docutils literal"><span class="pre">import</span></code> statement like:</p>
 <div class="highlight-python"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">myscript</span> <span class="kn">as</span> <span class="nn">mx</span>
 
 <span class="kn">from</span> <span class="nn">myscript</span> <span class="kn">import</span> <span class="n">name</span><span class="p">,</span> <span class="n">phi</span>
@@ -222,22 +224,20 @@ use variations on the standard Python <tt class="docutils literal"><span class="
 <span class="kn">from</span> <span class="nn">myscript</span> <span class="kn">import</span> <span class="n">name</span> <span class="k">as</span> <span class="n">my_name</span>
 </pre></div>
 </div>
-<p>The first of these will create a group <tt class="docutils literal"><span class="pre">mx</span></tt> with elements <tt class="docutils literal"><span class="pre">name</span></tt>,
-<tt class="docutils literal"><span class="pre">phi</span></tt>, and <tt class="docutils literal"><span class="pre">i</span></tt>.  The second will copy the values of <tt class="docutils literal"><span class="pre">name</span></tt> and
-<tt class="docutils literal"><span class="pre">phi</span></tt> into the top group, and the last will copy the value of <tt class="docutils literal"><span class="pre">name</span></tt> to
-the variable <tt class="docutils literal"><span class="pre">my_name</span></tt> in the top group.</p>
-<p>The third important feature of <tt class="docutils literal"><span class="pre">import</span></tt> is that it will search for
+<p>The first of these will create a group <code class="docutils literal"><span class="pre">mx</span></code> with elements <code class="docutils literal"><span class="pre">name</span></code>,
+<code class="docutils literal"><span class="pre">phi</span></code>, and <code class="docutils literal"><span class="pre">i</span></code>.  The second will copy the values of <code class="docutils literal"><span class="pre">name</span></code> and
+<code class="docutils literal"><span class="pre">phi</span></code> into the top group, and the last will copy the value of <code class="docutils literal"><span class="pre">name</span></code> to
+the variable <code class="docutils literal"><span class="pre">my_name</span></code> in the top group.</p>
+<p>The third important feature of <code class="docutils literal"><span class="pre">import</span></code> is that it will search for
 modules outside of the current working directory.  For this, there is a
 <strong>search path</strong> used to find larch modules.  The search path is held in the
-system variable <tt class="docutils literal"><span class="pre">_sys.path</span></tt>, and can thus be set during a larch session.
+system variable <code class="docutils literal"><span class="pre">_sys.path</span></code>, and can thus be set during a larch session.
 By default, this starts with the current working directory ('.'), and is
-then followed by the user's Larch module directory, typically
-<tt class="docutils literal"><span class="pre">$HOME/.larch/modules</span></tt> on Unix or Mac OSX or <tt class="docutils literal"><span class="pre">$USER\larch\modules</span></tt> on
-Windows, and then the system-wide Larch module directory, which will depend
-on installation details but will typically be <tt class="docutils literal"><span class="pre">/usr/share/larch/modules</span></tt>
-on Unix and Mac OSX and <tt class="docutils literal"><span class="pre">C:\Program</span> <span class="pre">Files\larch\modules</span></tt> on Windows.  If
-a file with the <tt class="docutils literal"><span class="pre">.lar</span></tt> extension is not found in one of these three
-places, the standard Python rules for importing modules will be used.</p>
+then followed by the user's Larch module directory, which will typically
+<code class="docutils literal"><span class="pre">$HOME/.larch/modules</span></code> on Unix or Mac OSX or <code class="docutils literal"><span class="pre">$USER\larch\modules</span></code> on
+Windows.  If a file with the <code class="docutils literal"><span class="pre">.lar</span></code> extension is not found in one of
+these three places, the standard Python rules for importing modules will be
+used.</p>
 </div>
 </div>
 
@@ -247,7 +247,7 @@ places, the standard Python rules for importing modules will be used.</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -267,12 +267,12 @@ places, the standard Python rules for importing modules will be used.</p>
    <li><a href="../xrf/index.html">XRF Analysis</a>|</li>
    <li><a href="../devel/index.html">Scripting</a>]</li>
 
-          <li><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="index.html" >4. Larch Tutorial</a> &raquo;</li> 
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>

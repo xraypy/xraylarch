@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>3. Larch: Motivation and Overview &mdash; larch 0.9.24 documentation</title>
+    <title>3. Larch: Motivation and Overview &mdash; larch 0.9.27 documentation</title>
     
     <link rel="stylesheet" href="../_static/larchdoc.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
-        VERSION:     '0.9.24',
+        VERSION:     '0.9.27',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,17 +24,17 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
-    <link rel="top" title="larch 0.9.24 documentation" href="../index.html" />
+    <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="larch 0.9.27 documentation" href="../index.html" />
     <link rel="next" title="2. Larch Community and Support" href="../community.html" />
-    <link rel="prev" title="1. Downloading and Installation" href="../downloads/index.html" />
+    <link rel="prev" title="1. Downloading and Installation" href="../installation/index.html" />
   <script type="text/x-mathjax-config">
      MathJax.Hub.Config({ "TeX": {Macros: {AA : "{\\unicode{x212B}}"}},
                          "HTML-CSS": {scale: 90}});
   </script>
 
   </head>
-  <body>
+  <body role="document">
 <div style=" color: #c5daba;  text-align: left; height:85px; padding: 0px">
 <table border=1>
   <tr>
@@ -46,7 +46,7 @@
 	<font size=+3><a href="../index.html" style="color: #772211">Larch</a></font>
     </td>
     <td width=8%>
-	<a href="../downloads/index.html" style="color: #772211"> Download</a>
+	<a href="../installation/index.html" style="color: #772211"> Install</a>
 	</td>
     <td width=8%>
 	<a href="http://github.com/xraypy/xraylarch" style="color: #772211"> Develop</a>
@@ -66,7 +66,7 @@
    </tr></table>
 </div>
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -76,7 +76,7 @@
           <a href="../community.html" title="2. Larch Community and Support"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="../downloads/index.html" title="1. Downloading and Installation"
+          <a href="../installation/index.html" title="1. Downloading and Installation"
              accesskey="P">previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -89,7 +89,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="../index.html">Table Of Contents</a></h3>
   <ul>
@@ -101,17 +101,19 @@
 </ul>
 
   <h4>Previous topic</h4>
-  <p class="topless"><a href="../downloads/index.html"
+  <p class="topless"><a href="../installation/index.html"
                         title="previous chapter">1. Downloading and Installation</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="../community.html"
                         title="next chapter">2. Larch Community and Support</a></p>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/overview/index.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/overview/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
       <input type="text" name="q" />
@@ -130,7 +132,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="larch-motivation-and-overview">
 <h1>3. Larch: Motivation and Overview<a class="headerlink" href="#larch-motivation-and-overview" title="Permalink to this headline">¶</a></h1>
@@ -214,10 +216,10 @@ as with:</p>
 <span class="n">larch</span><span class="o">&gt;</span> <span class="n">plot</span><span class="p">(</span><span class="n">my_group</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">my_group</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">my_group</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The Group <tt class="docutils literal"><span class="pre">my_group</span></tt> holds data for <tt class="docutils literal"><span class="pre">x</span></tt>, <tt class="docutils literal"><span class="pre">y</span></tt>, and <tt class="docutils literal"><span class="pre">title</span></tt>.  Here,
-the <tt class="docutils literal"><span class="pre">range()</span></tt> function gives an array of 11 elements ([0, 1, 2, ..., 10])
-that will be held by <tt class="docutils literal"><span class="pre">my_group.x</span></tt>.  You can see the contents of a group
-with the <a class="reference internal" href="../tutorial/builtins.html#show" title="show"><tt class="xref py py-func docutils literal"><span class="pre">show()</span></tt></a> function:</p>
+<p>The Group <code class="docutils literal"><span class="pre">my_group</span></code> holds data for <code class="docutils literal"><span class="pre">x</span></code>, <code class="docutils literal"><span class="pre">y</span></code>, and <code class="docutils literal"><span class="pre">title</span></code>.  Here,
+the <code class="docutils literal"><span class="pre">range()</span></code> function gives an array of 11 elements ([0, 1, 2, ..., 10])
+that will be held by <code class="docutils literal"><span class="pre">my_group.x</span></code>.  You can see the contents of a group
+with the <a class="reference internal" href="../tutorial/builtins.html#show" title="show"><code class="xref py py-func docutils literal"><span class="pre">show()</span></code></a> function:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; show(my_group)
 == Group 0x6e15970: 4 symbols ==
   scale: 10.2
@@ -227,7 +229,7 @@ with the <a class="reference internal" href="../tutorial/builtins.html#show" tit
 </pre></div>
 </div>
 <p>which shows that this group has 4 components, and lists the components.
-As the <tt class="docutils literal"><span class="pre">x</span></tt> and <tt class="docutils literal"><span class="pre">y</span></tt> members hold array, the size and datatype of the
+As the <code class="docutils literal"><span class="pre">x</span></code> and <code class="docutils literal"><span class="pre">y</span></code> members hold array, the size and datatype of the
 array is shown.  Doing:</p>
 <div class="highlight-python"><div class="highlight"><pre>larch&gt; print my_group.y
 [  0.           8.58300405   9.27483375   1.43942408  -7.71938545
@@ -235,7 +237,7 @@ array is shown.  Doing:</p>
   -5.54901533]
 </pre></div>
 </div>
-<p>will show the array elements.  The <tt class="xref py py-func docutils literal"><span class="pre">plot()</span></tt> function will show a graph
+<p>will show the array elements.  The <code class="xref py py-func docutils literal"><span class="pre">plot()</span></code> function will show a graph
 of y(x).</p>
 <p>Since much of what Larch is used for is modeling or fitting small data
 sets, another key organizing principle is the <strong>Parameter</strong>.  This holds a
@@ -280,7 +282,7 @@ and analysis steps that Ifeffit can do, including:</p>
       </div>
       <div class="clearer"></div>
     </div>
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -290,7 +292,7 @@ and analysis steps that Ifeffit can do, including:</p>
           <a href="../community.html" title="2. Larch Community and Support"
              >next</a> |</li>
         <li class="right" >
-          <a href="../downloads/index.html" title="1. Downloading and Installation"
+          <a href="../installation/index.html" title="1. Downloading and Installation"
              >previous</a> |</li>
    <li>[<a href="../data/index.html">Reading Data</a>|</li>
    <li><a href="../plotting/index.html">Plotting</a>|</li>
@@ -302,9 +304,9 @@ and analysis steps that Ifeffit can do, including:</p>
  
       </ul>
     </div>
-    <div class="footer">
+    <div class="footer" role="contentinfo">
         &copy; Copyright Matthew Newville, The University of Chicago, 2012.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.3.1.
     </div>
   </body>
 </html>
