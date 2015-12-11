@@ -8,7 +8,7 @@ Table of Contents
    :maxdepth: 3
    :numbered:
 
-   downloads/index.rst
+   installation/index.rst
    community.rst
    overview/index.rst
    tutorial/index.rst

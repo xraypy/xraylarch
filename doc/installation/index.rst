@@ -7,7 +7,6 @@ Downloading and Installation
 .. _LarchInstaller_0.9.27.exe (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/LarchInstaller_0.9.27.exe/download
 .. _LarchInstaller_0.9.27.exe (CARS):   http://cars.uchicago.edu/xraylarch/downloads/LarchInstaller_0.9.27.exe
 .. _larch github repository:            http://github.com/xraypy/xraylarch
-.. _anaconda python:                    http://www.continuum.io
 
 The latest version of Larch is 0.9.27 (December 2015).  Larch is in
 active development, so there many be bugs and unintended features, and
@@ -79,7 +78,7 @@ Larch can be installed from source code.  If not using Anaconda, this is
 necessary for Linux, and can be done for other systems as well.
 
 The latest releases of the source code will be available from
-`xraylarch releases https://github.com/xraypy/xraylarch/releases`_.
+`xraylarch releases <https://github.com/xraypy/xraylarch/releases>`_.
 
 In addition, you can use `git` to grab the latest development version of
 the source code::
