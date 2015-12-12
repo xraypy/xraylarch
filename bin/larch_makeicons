@@ -15,6 +15,7 @@ import shutil
 
 root = sys.exec_prefix
 home = get_homedir()
+
 ##  Desktop/Larch folder
 top_folder = os.path.join(home, 'Desktop', 'Larch')
 
@@ -28,8 +29,48 @@ if not (os.path.exists(top_folder) and os.path.isdir(top_folder)):
     print("Warning: could not create Desktop Folder name 'Larch'")
     sys.exit(1)
 ##
+## shortcuts/apps to make
+##        Name              py script        icon name         description     is GUI App
+apps = (('Larch',          'larch',          'larch',      'Larch Command Line', False),
+        ('Larch GUI',      'larch_gui',      'larch',      'Larch GUI',       True),
+        ('GSE Mapviewer',  'gse_mapviewer',  'gse_xrfmap', 'GSE MapViewer',   True),
+        ('GSE ScanViewer', 'gse_scanviewer', 'epics_scan', 'GSE ScanViewer',  True),
+        ('XRF Display',    'xrfdisplay',     'ptable',     'XRF Display', True))
+
+mac_script_header = """#!/bin/bash
+## Run X-ray Larch script with anaconda or system Python
+
+APP={0}
+PYEXE=pythonw
+PYBIN=/usr/bin
+if      [ -d ~/anaconda2/bin ] ; then  PYBIN=~/anaconda2/bin
+else if [ -d ~/anaconda/bin  ] ; then  PYBIN=~/anaconda/bin
+fi fi
+"""
+
+mac_script_gui = """
+$PYBIN/$PYEXE $PYBIN/$APP
+"""
+
+mac_script_terminal = """
+osascript -e 'tell application "Terminal" to do script "'$PYBIN/$APP'"'
+"""
+
+mac_info = """<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+  <key>CFBundleGetInfoString</key> <string>{0}</string>
+  <key>CFBundleName</key> <string>{0}</string>
+  <key>CFBundleExecutable</key> <string>{0}</string>
+  <key>CFBundleIconFile</key> <string>{0}</string>
+  <key>CFBundlePackageType</key> <string>APPL</string>
+  </dict>
+</plist>
+"""
 
 if sys.platform == 'darwin':
+    old = '''
     appdir = os.path.join(root, 'share', 'larch', 'apps')
     appfiles = glob("%s/*.app" % appdir)
     for app in appfiles:
@@ -38,25 +79,50 @@ if sys.platform == 'darwin':
         if os.path.exists(dest):
             shutil.rmtree(dest)
         shutil.copytree(app, dest)
+    '''
+    def make_shortcut(name, script, desc, icon, isgui):
+        """create minimal Mac App"""
+        dest = os.path.join(top_folder, name + '.app')
+        if os.path.exists(dest):
+            shutil.rmtree(dest)
+        os.mkdir(dest)
+        os.mkdir(os.path.join(dest, 'Contents'))
+        os.mkdir(os.path.join(dest, 'Contents', 'MacOS'))
+        os.mkdir(os.path.join(dest, 'Contents', 'Resources'))
+        script_name = os.path.join(dest, 'Contents', 'MacOS', name)
+
+        fout = open(script_name, 'w')
+        fout.write(mac_script_header.format(script))
+        if isgui:
+            fout.write(mac_script_gui)
+        else:
+            fout.write("\n%s\n" % mac_script_terminal)
+
+        fout.close()
+        os.chmod(script_name, 493) ## 0755 / octal 755 / rwxr-xr-x
+
+        info_plist = os.path.join(dest, 'Contents', 'Info.plist')
+        fout = open(info_plist, 'w')
+        fout.write(mac_info.format(name))
+        fout.close()
+
+
+        icon_dest = os.path.join(dest, 'Contents', 'Resources', name + '.icns')
+        icon_src  = os.path.join(root, 'share', 'larch', 'icons', icon + '.icns')
+        shutil.copy(icon_src, icon_dest)
 
 
 elif os.name == 'nt':
-    apps = (('Larch',          'larch',          'larch.ico',      'Larch Command Line'),
-            ('Larch GUI',      'larch_gui',      'larch.ico',      'Larch GUI'),
-            ('GSE Mapviewer',  'gse_mapviewer',  'gse_xrfmap.ico', 'GSE MapViewer'),
-            ('GSE ScanViewer', 'gse_scanviewer', 'epics_scan.ico', 'GSE ScanViewer'),
-            ('XRF Display',    'xrfdisplay',     'ptable.ico',     'XRF Display'))
-
 
     from win32com.client import Dispatch
     from win32com.shell import shell
 
-    def make_shortcut(name, script, desc, icon=None):
+    def make_shortcut(name, script, desc, icon, isgui):
         """create windows shortcut"""
         path   = os.path.join(home, 'Desktop', 'Larch', name) +  '.lnk'
         pyexe  = os.path.join(root, 'python.exe')
         target = os.path.join(root, 'Scripts', script)
-        # add several checks for valid ways to run each script, including 
+        # add several checks for valid ways to run each script, including
         # accounting for Anaconda's automagic renaming and creation of exes.
         target_exe = '%s.exe' % target
         target_bat = '%s.bat' % target
@@ -68,12 +134,11 @@ elif os.name == 'nt':
             if os.path.exists(target_bat):
                 target = target_bat
             else:
-                target = "%s %s" % (pyexe, target)                
+                target = "%s %s" % (pyexe, target)
         elif os.path.exists(target_spy):
             target = "%s %s" % (pyexe, target_spy)
 
-        if icon is not None:
-            icon = os.path.join(root, 'share', 'larch', 'icons', icon)
+        icon = os.path.join(root, 'share', 'larch', 'icons', icon + '.ico')
 
         shell = Dispatch('WScript.Shell')
         shortcut = shell.CreateShortCut(path)
@@ -81,10 +146,9 @@ elif os.name == 'nt':
         shortcut.WorkingDirectory = home
         shortcut.WindowStyle = 0
         shortcut.Description = desc
-        if icon is not None:
-            shortcut.IconLocation = icon
+        shortcut.IconLocation = icon
         shortcut.save()
 
 
-    for name, script, icon, desc  in apps:
-        make_shortcut(name, script, desc, icon)
+for name, script, icon, desc, isgui  in apps:
+    make_shortcut(name, script, desc, icon, isgui)
