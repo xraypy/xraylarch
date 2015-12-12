@@ -2,11 +2,13 @@
 Downloading and Installation
 ====================================
 
-.. _larch-0.9.27.tar.gz (sf.net):       http://sourceforge.net/projects/xraylarch/files/larch-0.9/larch-0.9.27.tar.gz/download
-.. _larch-0.9.27.tar.gz (CARS):         http://cars.uchicago.edu/xraylarch/downloads/larch-0.9.27.tar.gz
-.. _LarchInstaller_0.9.27.exe (sf.net): http://sourceforge.net/projects/xraylarch/files/larch-0.9/LarchInstaller_0.9.27.exe/download
-.. _LarchInstaller_0.9.27.exe (CARS):   http://cars.uchicago.edu/xraylarch/downloads/LarchInstaller_0.9.27.exe
-.. _larch github repository:            http://github.com/xraypy/xraylarch
+.. _Larch Repository (github.com):               http://github.com/xraypy/xraylarch
+.. _Anaconda Python:                             http://www.continuum.io/
+.. _Anaconda Downloads:                          http://www.continuum.io/downloads
+.. _Larch Downloads (cars.uchicago.edu):         http://cars.uchicago.edu/xraylarch/downloads
+.. _Larch Docs and Examples (cars.uchicago.edu): http://cars.uchicago.edu/xraylarch/downloads/docs
+.. _Larch Releases (github.com):                 https://github.com/xraypy/xraylarch/releases
+
 
 The latest version of Larch is 0.9.27 (December 2015).  Larch is in
 active development, so there may be bugs and unintended features, and
@@ -16,19 +18,17 @@ what is in Larch is working, stable, and ready for use.
 
 There are several ways to download and install Larch.  Starting with Larch
 0.9.27, the **recommended** way to install and run Larch on Windows and Mac
-OS X is with `Anaconda Python <http://www.continuum.io/>`_ (version 2.7:
-Note that Larch does not yet work with Python 3. series).  For Windows, a
-binary installer may be available soon, though this is not updated as often
-as the source code or Anaconda package.  In addition, Larch can be
-installed from its source code, which works easily on most modern Linux
-systems.
+OS X is with `Anaconda Python`_ (version 2.7).  Note that Larch does not yet
+work with Python 3. series).  For Windows, a binary installer may be
+available soon, though this is not updated as often as the source code or
+Anaconda package.  In addition, Larch can be installed from its source
+code, which works easily on most modern Linux systems.
 
 
-
-Using Anaconda Python 2.7
+Using Anaconda Python
 ================================
 
-`Anaconda Python <http://www.continuum.io/>`_ provides a free and
+`Anaconda Python`_ provides a free and
 well-supported version of Python for scientific work with many useful
 packages included.  By default, Anaconda Python installs into your own home
 folder and does not require extra permissions to install, upgrade, or
@@ -37,9 +37,8 @@ remove components.  Anaconda includes a robust package manager called
 you are ready.
 
 So, begin by installing the latest version of Anaconda Python 2.7 from
-their `download anaconda python <http://www.continuum.io/downloads>`_ site.
-Once that is installed, you can open a Terminal (Linux or Mac OSX) or the
-Anaconda prompt (Windows) and type ::
+their `Anaconda Downloads`_ site.  Once that is installed, you can open a
+Terminal (Linux or Mac OSX) or the Anaconda prompt (Windows) and type ::
 
     conda install -yc newville xraylarch
 
@@ -62,16 +61,16 @@ An advantage of using Anaconda is that updates can be installed with::
     conda update -yc newville xraylarch
 
 
-Binary Installation (Windows)
+Windows Binary Installation
 ================================
 
 The binary installer for Windows provides working executables for the Larch
 programs.   These are likely to be slightly out-of-date from the source
 code and the Anaconda package.
 
+Downloads are available at the `Larch Downloads (cars.uchicago.edu)`_
+or at `Larch releases (github.com)`_.
 
-Downloads are available from the   `larch pages at cars.uchicago.edu <http://cars.uchicago.edu/xraylarch>`_,
-with a mirror site at sourceforge.net:   `larch pages at sourceforge.net <http://sourceforge.net/projects/xraylarch>`_.
 
 Source Installation
 =========================
@@ -79,13 +78,11 @@ Source Installation
 Larch can be installed from source code.  If not using Anaconda, this is
 necessary for Linux, and can be done for other systems as well.
 
-The latest releases of the source code will be available from
-`xraylarch releases <https://github.com/xraypy/xraylarch/releases>`_.
+The latest releases of the source code will be available from `Larch
+releases (github.com)`_.  In addition, you can use `git` to grab the latest
+development version of the source code::
 
-In addition, you can use `git` to grab the latest development version of
-the source code::
    git clone http://github.com/xraypy/xraylarch.git
-
 
 
 Prerequisites
@@ -107,6 +104,15 @@ Installation
 After unpacking the source distribution kit, installation from source on any platform is::
 
    python setup.py install
+
+
+Documentation and Examples
+================================
+
+A zip file of the latest documentation and examples is available at `Larch
+Docs and Examples (cars.uchicago.edu)`_
+
+The source kit includes sources for documentation and examples.
 
 
 Acknowledgements
