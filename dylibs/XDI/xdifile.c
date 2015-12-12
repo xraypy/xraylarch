@@ -230,7 +230,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
     }
   }
 
-  /* find number of header lines, 
+  /* find number of header lines,
      nheader= index of first line that does not start with '#'
   */
   for (i = 1; i < ilen ; i++) {
@@ -248,7 +248,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
   mode = 0; /*  metadata (Family.Member: Value) mode */
   for (i = 1; i < nheader; i++) {
-    xdifile->error_lineno = i; 
+    xdifile->error_lineno = i;
     strcpy(xdifile->error_line, textlines[i]);
 
     if (strncmp(textlines[i], TOK_COMM, 1) == 0)  {
@@ -355,12 +355,12 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
 	/* OUTER ARRAY VALUE */
 	} else if (strcasecmp(mkey, TOK_OUTER_VAL) == 0) {
-	  if (0 != xdi_strtod(mval, &dval)) { 
+	  if (0 != xdi_strtod(mval, &dval)) {
 	    strcpy(xdifile->error_message, "non-numeric outer array value: ");
 	    strcat(xdifile->error_message, mkey);
 	    free(mval);
 	    return ERR_NONNUMERIC;
-	  }	
+	  }
 	  outer_arr0 = dval ;
 
 	}
@@ -411,7 +411,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   npts_ = ilen - nheader + 1;
 
   nouter = npts_ - 1;
-  if (nouter < 1) {nouter = 1;}  
+  if (nouter < 1) {nouter = 1;}
   outer_arr = calloc(nouter, sizeof(double));
   outer_pts = calloc(nouter, sizeof(long));
   outer_arr[0] = outer_arr0;
@@ -419,7 +419,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
   COPY_STRING(line, textlines[i]);
   ncols = make_words(line, words, MAX_WORDS);
- 
+
   strcpy(xdifile->comments, comments);
   COPY_STRING(xdifile->filename, filename);
 
@@ -442,13 +442,13 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 
   /* check for mono d-spacing if angle is given but not energy*/
   if ((has_angle == 1)  && (has_energy == 0) && (xdifile->dspacing < 0)) {
-    strcpy(xdifile->error_message, "no mono.d_spacing given with angle array");    
+    strcpy(xdifile->error_message, "no mono.d_spacing given with angle array");
     iret = WRN_NODSPACE;
   }
 
   /* set size of data arrays */
   xdifile->array = calloc(ncols, sizeof(double *));
-  if (npts_ < 0) {npts_ = 0;}  
+  if (npts_ < 0) {npts_ = 0;}
   for (j = 0; j < ncols; j++) {
     xdifile->array[j] = calloc(npts_+1, sizeof(double));
     if (0 != xdi_strtod(words[j], &dval)) {
@@ -492,7 +492,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
 	  free(outer_arr);
 	  free(outer_pts);
 	  return ERR_NONNUMERIC;
-	}	
+	}
 	outer_arr[iouter] = dval;
 	outer_pts[iouter] = ipt;
 	++iouter;
@@ -541,7 +541,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   }
 
   /* success */
-  xdifile->error_lineno = 0; 
+  xdifile->error_lineno = 0;
   strcpy(xdifile->error_line, "");
 
   xdifile->npts = ipt;
@@ -549,7 +549,7 @@ XDI_readfile(char *filename, XDIFile *xdifile) {
   xdifile->narrays = ncols;
   xdifile->narray_labels = min(ncols, maxcol);
   xdifile->nmetadata = ndict+1;
-  if (iouter < 1) {iouter = 1;}  
+  if (iouter < 1) {iouter = 1;}
   xdifile->outer_array    = calloc(iouter, sizeof(double));
   xdifile->outer_breakpts = calloc(iouter, sizeof(long));
   for (j= 0; j < iouter; j++) {
@@ -821,7 +821,7 @@ int xdi_is_datestring(char *inp) {
   int regex_status;
   struct slre_cap caps[6];
   int year, month, day, hour, minute, sec;
-  char word[4] = {'\0'};
+  char word[5] = {'\0'};
   regex_status = slre_match("^(\\d\\d\\d\\d)-(\\d\\d?)-(\\d\\d?)[T ](\\d\\d?):(\\d\\d):(\\d\\d).*$",
 			    inp, strlen(inp), caps, 6, 0);
 			    /* SLRE_INT, sizeof(sec), &year, */
@@ -846,9 +846,9 @@ int xdi_is_datestring(char *inp) {
   sprintf(word, "%.*s", caps[5].len, caps[5].ptr);
   sec = atoi(word);
 
-  if ((year   < 1900) || 
+  if ((year   < 1900) ||
       (month  < 1)    || (month  > 12) ||
-      (day    < 1)    || (day    > 31) ||  
+      (day    < 1)    || (day    > 31) ||
       (hour   < 0)    || (hour   > 23) ||
       (minute < 0)    || (minute > 59) ||
       (sec    < 0)    || (sec    > 59))  {
@@ -867,7 +867,7 @@ int XDI_validate_scan(XDIFile *xdifile, char *name, char *value) {
   strcpy(xdifile->error_message, "");
 
   if (strcasecmp(name, "start_time") == 0) {
-    err = xdi_is_datestring(value); 
+    err = xdi_is_datestring(value);
     if (err==WRN_DATE_FORMAT) { strcpy(xdifile->error_message, "invalid timestamp: format should be ISO 8601 (YYYY-MM-DD HH:MM:SS)"); }
     if (err==WRN_DATE_RANGE)  { strcpy(xdifile->error_message, "invalid timestamp: date out of valid range"); }
 
