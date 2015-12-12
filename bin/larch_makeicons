@@ -53,7 +53,7 @@ $PYBIN/$PYEXE $PYBIN/$APP
 """
 
 mac_script_terminal = """
-osascript -e 'tell application "Terminal" to do script "'$PYBIN/$APP'"'
+osascript -e 'tell application "Terminal" to do script "'$PYBIN/$PYEXE\ $PYBIN/$APP'"'
 """
 
 mac_info = """<?xml version="1.0" encoding="UTF-8"?>
