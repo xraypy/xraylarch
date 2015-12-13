@@ -71,7 +71,7 @@ def getFileStatus(filename, root=None, folder=None):
         if s is not None:
             status, top, vers = s, root, v
     else:
-        # print 'Root was None ', fh.items()
+        # print( 'Root was None ', fh.items())
         for name, group in fh.items():
             s, v = test_h5group(group, folder=folder)
             if s is not None:
@@ -177,7 +177,7 @@ class GSEXRM_MapRow:
         if not xmapfile.startswith('xsp'):
             xrf_reader = read_xmap_netcdf
 
-        # print 'MapRow: expect %i rows' % self.nrows_expected
+        # print('MapRow: expect %i rows' % self.nrows_expected)
 
         self.npts = npts
         self.irow = irow
@@ -208,9 +208,9 @@ class GSEXRM_MapRow:
                 time.sleep(0.25)
 
         if not(sis_ok and xps_ok):
-            print 'Failed to read ASCII data for %s (SIS: %i, XPS: %i)' % (self.xmapfile, len(sdata), len(gdata))
+            print('Failed to read ASCII data for %s (SIS: %i, XPS: %i)' % (self.xmapfile, len(sdata), len(gdata)))
             return
-                
+
         self.sishead = shead
         if dtime is not None:  dtime.add('maprow: read ascii files')
         t0 = time.time()
@@ -247,11 +247,11 @@ class GSEXRM_MapRow:
         snpts, nscalers = sdata.shape
         xnpts, nmca, nchan = self.counts.shape
         # npts = min(gnpts, xnpts, snpts)
-        # print '  MapRow: ', self.npts, npts, gnpts, snpts, xnpts
+        # print('  MapRow: ', self.npts, npts, gnpts, snpts, xnpts)
         if self.npts is None:
             self.npts = min(gnpts, xnpts) - 1
         if snpts < self.npts:  # extend struck data if needed
-            print '     extending SIS data!', snpts, self.npts
+            print('     extending SIS data!', snpts, self.npts)
             sdata = list(sdata)
             for i in range(self.npts+1-snpts):
                 sdata.append(sdata[snpts-1])
@@ -508,7 +508,7 @@ class GSEXRM_MapFile(object):
                 if len(flines) < 3:
                     os.unlink(self.filename)
                 self.status =  GSEXRM_FileStatus.err_notfound
-            except IOError, ValueError:
+            except (IOError, ValueError):
                 pass
 
         if (self.status in (GSEXRM_FileStatus.err_notfound,
@@ -782,7 +782,7 @@ class GSEXRM_MapFile(object):
 
         total = None
         # self.dt.add('add_rowdata b4 adding mcas')
-        # print(" ROW ", thisrow, len(mcas), 
+        # print(" ROW ", thisrow, len(mcas),
         #       row.dtfactor.shape, row.realtime.shape, row.counts.shape)
 
         for imca, grp in enumerate(mcas):
@@ -993,7 +993,7 @@ class GSEXRM_MapFile(object):
                 realmca_groups.append(g)
             elif g.attrs.get('type', '').startswith('virtual mca'):
                 virtmca_groups.append(g)
-        # print 'resize arrays ', realmca_groups
+        # print('resize arrays ', realmca_groups)
         oldnrow, npts, nchan = realmca_groups[0]['counts'].shape
         for g in realmca_groups:
             g['counts'].resize((nrow, npts, nchan))
@@ -1053,14 +1053,14 @@ class GSEXRM_MapFile(object):
         npzdat = np.load(filename)
         current_areas = self.xrfmap['areas']
         othername = os.path.split(filename)[1]
-        
+
         if othername.endswith('.h5_Areas.npz'):
             othername = othername.replace('.h5_Areas.npz', '')
         for aname in npzdat.files:
             mask = npzdat[aname]
             outname = '%s_%s' % (aname, othername)
             self.add_area(mask, name=outname, desc=outname)
-            
+
     def get_area(self, name=None, desc=None):
         """
         get area group by name or description
@@ -1185,10 +1185,10 @@ class GSEXRM_MapFile(object):
         self.masterfile = os.path.join(nativepath(self.folder),
                                        self.MasterFile)
         mtime = int(os.stat(self.masterfile).st_mtime)
-        #print "READ MASTER ", self.masterfile
+        #print("READ MASTER ", self.masterfile)
         #if mtime <= self.masterfile_mtime:
-        #    print "could skip reading master file, mtime too soon"
-        #    print mtime, self.masterfile_mtime , abs(mtime- self.masterfile_mtime )
+        #    print("could skip reading master file, mtime too soon")
+        #    print(mtime, self.masterfile_mtime , abs(mtime- self.masterfile_mtime ))
         #    # return
         self.masterfile_mtime = mtime
         try:
@@ -1238,7 +1238,7 @@ class GSEXRM_MapFile(object):
         try:
             self.xrfdet_type = mapconf['xrf']['type'].lower()
         except:
-            print 'Could not read xrf type'
+            print( 'Could not read xrf type')
 
 
         pos1 = scanconf['pos1']

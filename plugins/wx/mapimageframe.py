@@ -43,7 +43,7 @@ class MapImageFrame(ImageFrame):
     """
 
     def __init__(self, parent=None, size=None, mode='intensity',
-                 lasso_callback=None, move_callback=None, save_callback=None,  
+                 lasso_callback=None, move_callback=None, save_callback=None,
                  show_xsections=False, cursor_labels=None,
                  output_title='Image',   **kws):
 
@@ -271,7 +271,7 @@ class MapImageFrame(ImageFrame):
             iy >= 0 and iy < conf.data.shape[0]):
             pos = ''
             pan = self.panel
-            # print 'has xdata? ', pan.xdata is not None, pan.ydata is not None
+            # print( 'has xdata? ', pan.xdata is not None, pan.ydata is not None)
             labs, vals = [], []
             if pan.xdata is not None:
                 labs.append(pan.xlab)
@@ -352,6 +352,5 @@ class MapImageFrame(ImageFrame):
             ix, iy = self.this_point
             x = float(self.panel.xdata[ix])
             y = float(self.panel.ydata[iy])
-            self.save_callback(name, ix, iy, x=x, y=y, 
+            self.save_callback(name, ix, iy, x=x, y=y,
                                title=self.title, datafile=self.xrmfile)
-

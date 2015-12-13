@@ -27,6 +27,8 @@ TODO
 - [] atan_gamma_fdmnes: define atan_gamma as in FDMNES
 """
 
+from __future__ import print_function
+
 __author__ = "Mauro Rovezzi"
 __email__ = "mauro.rovezzi@gmail.com"
 __credits__ = ""
@@ -65,7 +67,7 @@ def get_ene_index(ene, cen, hwhm):
             ene_imax = min(np.where(ene > (cen+hwhm))[0])
         return ene_imin, ene_imax
     except:
-        print 'index not found for {0} +/- {1}'.format(cen, hwhm)
+        print('index not found for {0} +/- {1}'.format(cen, hwhm))
         return None, None
 
 def lin_gamma(ene, fwhm=1.0, linbroad=None):
@@ -108,7 +110,7 @@ def atan_gamma(ene, gamma_hole, gamma_max=15., e0=0, eslope=1.):
     \Gamma(E) = \Gamma_{hole} + \Gamma_{max} * ( \arctan( \frac{E-E_{0}}{E_{slope}} ) / \pi + 1/2) )
     """
     if (eslope == 0):
-        print 'Warning: eslope cannot be zero, using default value of 1'
+        print('Warning: eslope cannot be zero, using default value of 1')
         eslope = 1.
     return gamma_hole + gamma_max * ( ( np.arctan( (ene - e0) / eslope ) / np.pi ) + 0.5 )
 
@@ -134,7 +136,7 @@ def conv(e, mu, kernel='gaussian', fwhm_e=None, efermi=None):
         ief = np.argmin(np.abs(e-efermi))
         f[0:ief] *= 0
     if e.shape != fwhm_e.shape:
-        print "Error: 'fwhm_e' does not have the same shape of 'e'"
+        print("Error: 'fwhm_e' does not have the same shape of 'e'")
         return 0
     # linar fit upper part of the spectrum to avoid border effects
     # polyfit => pf
@@ -277,10 +279,10 @@ class FdmnesConv(object):
         """ write a simple fdmfile.txt to enable the convolution
         first makes a copy of previous fdmfile.txt if not already done """
         if os.path.exists('fdmfile.bak'):
-            print 'fdmfile.bak exists, good'
+            print('fdmfile.bak exists, good')
         else:
             subprocess.call('cp fdmfile.txt fdmfile.bak', shell=True)
-            print 'copied fdmfile.txt to fmdfile.bak'
+            print('copied fdmfile.txt to fmdfile.bak')
         #
         s = Template('!fdmfile.txt automatically created by ${creator} on ${today} (for convolution)\n\
 !--------------------------------------------------------------------!\n\
@@ -330,7 +332,7 @@ ${gauss_sel}${gaussian} !Gaussian conv for experimental res\n\
         try:
             subprocess.call('fdmnes', shell=True)
         except OSError:
-            print "check 'fdmnes' executable exists!"
+            print("check 'fdmnes' executable exists!")
 
 def registerLarchPlugin():
     return (MODNAME, {'glinbroad': glinbroad})

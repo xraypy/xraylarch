@@ -605,7 +605,7 @@ class TriColorMapPanel(GridPanel):
         if i0min < 1: i0min = 1.0
         i0map[np.where(i0map<i0min)] = i0min
         i0map = 1.0 * i0map / i0map.max()
-        # print 'I0 map : ', i0map.min(), i0map.max(), i0map.mean()
+        # print( 'I0 map : ', i0map.min(), i0map.max(), i0map.mean())
 
         pref, fname = os.path.split(datafile.filename)
         title = '%s: (R, G, B) = (%s, %s, %s)' % (fname, r, g, b)
@@ -1007,7 +1007,7 @@ WARNING: This cannot be undone!
             fout.write("\n".join(buff))
             fout.close()
         except IOError:
-            print "could not write %s" % outfile
+            print("could not write %s" % outfile)
 
 
     def _getarea(self):
@@ -1028,7 +1028,7 @@ WARNING: This cannot be undone!
             self.owner.current_file.import_areas(fname)
             self.owner.message("Imported Areas from %s" % fname)
             self.set_area_choices(self.owner.current_file.xrfmap)
-            
+
     def onSelect(self, event=None):
         aname = self._getarea()
         area  = self.owner.current_file.xrfmap['areas/%s' % aname]
@@ -1046,7 +1046,7 @@ WARNING: This cannot be undone!
         info2_fmt = " Range (pixels)   X : [%i:%i],  Y : [%i:%i] "
 
         self.info1.SetLabel(info1_fmt%(npix, int(round(1000.0*pixtime)), dtime))
-        self.info2.SetLabel(info2_fmt%(xvals.min(), xvals.max(), 
+        self.info2.SetLabel(info2_fmt%(xvals.min(), xvals.max(),
                                        yvals.min(), yvals.max()))
 
         self.desc.SetValue(area.attrs.get('description', aname))
@@ -1237,14 +1237,14 @@ class MapViewerFrame(wx.Frame):
     def lassoHandler(self, mask=None, det=None, xrmfile=None,
                      xoff=0, yoff=0, **kws):
         ny, nx, npos = xrmfile.xrfmap['positions/pos'].shape
-        # print 'lasso handler ', mask.shape, ny, nx
+        # print('lasso handler ', mask.shape, ny, nx)
         if (xoff>0 or yoff>0) or mask.shape != (ny, nx):
             ym, xm = mask.shape
             tmask = np.zeros((ny, nx)).astype(bool)
             for iy in range(ym):
                 tmask[iy+yoff, xoff:xoff+xm] = mask[iy]
             mask = tmask
-            # print 'shifted mask!'
+            # print('shifted mask!')
 
         kwargs = dict(xrmfile=xrmfile, xoff=xoff, yoff=yoff)
         mca_thread = Thread(target=self.get_mca_area,
@@ -1308,11 +1308,11 @@ class MapViewerFrame(wx.Frame):
                                'move stages to pixel?', style=wx.YES_NO)):
             caput(pos_addrs[i1], xval)
             caput(pos_addrs[i2], yval)
-    
+
     def onSavePixel(self, name, ix, iy, x=None, y=None, title=None, datafile=None):
         "save pixel as area, and perhaps to scandb"
         # print(" On Save Pixel ", name, ix, iy, x, y)
-        if len(name) < 1: 
+        if len(name) < 1:
             return
         if datafile is None:
             datafile = self.current_file
@@ -1326,7 +1326,7 @@ class MapViewerFrame(wx.Frame):
         for p in self.nbpanels:
             if hasattr(p, 'update_xrfmap'):
                 p.update_xrfmap(xrfmap)
-            
+
         # next, save file into database
         if self.use_scandb and self.instdb is not None:
             pvn  = pv_fullname
@@ -1343,7 +1343,7 @@ class MapViewerFrame(wx.Frame):
                 x = float(datafile.get_pos(0, mean=True)[ix])
             if y is None:
                 y = float(datafile.get_pos(1, mean=True)[iy])
-                
+
             position[pvn(conf['scan/pos1'].value)] = x
             position[pvn(conf['scan/pos2'].value)] = y
 
@@ -1351,16 +1351,16 @@ class MapViewerFrame(wx.Frame):
                 if addr in pos_addrs and position[addr] is None:
                     position[addr] = float(val)
 
-            if title is None: 
+            if title is None:
                 title = '%s: %s' % (datafile.filename, name)
 
             notes = {'source': title}
             #  print(" Save Position : ", self.inst_name, name, position, notes)
             self.instdb.save_position(self.inst_name, name, position,
                                       notes=json.dumps(notes))
-           
 
-            
+
+
 
 
     def add_imdisplay(self, title, det=None):
@@ -1621,7 +1621,7 @@ class MapViewerFrame(wx.Frame):
             read = True
             path = dlg.GetPath().replace('\\', '/')
             if path in self.filemap:
-                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path, 
+                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
                                            'Re-read file?', style=wx.YES_NO))
 
         dlg.Destroy()
@@ -1648,7 +1648,7 @@ class MapViewerFrame(wx.Frame):
                 self.process_file(filename)
                 thispanel = self.nbpanels[self.nb.GetSelection()]
                 thispanel.onShowMap(event=None, new=False)
-                # print 'Processed File ', thispanel
+                # print('Processed File ', thispanel)
 
     def process_file(self, filename):
         """Request processing of map file.
@@ -1723,7 +1723,7 @@ class MapViewerFrame(wx.Frame):
         """
         if not self.filemap[fname].check_hostid():
             if (wx.ID_YES == Popup(self, NOT_OWNER_MSG % fname,
-                                   'Not Owner of HDF5 File', 
+                                   'Not Owner of HDF5 File',
                                    style=wx.YES_NO)):
                 self.filemap[fname].claim_hostid()
         return self.filemap[fname].check_hostid()

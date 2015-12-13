@@ -165,7 +165,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def ConnectScanDB(self, **kws):
         self.scandb = ScanDB(**kws)
-        print "Scandb ", self.scandb
+        # print "Scandb ", self.scandb
         if self.scandb is not None:
             basedir = self.scandb.get_info('user_folder')
             fileroot = self.scandb.get_info('server_fileroot')
@@ -184,7 +184,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
 
     def onSaveMCAFile(self, event=None, **kws):
         tmp = '''
-        print 'SaveMCA File'
+        # print 'SaveMCA File'
         deffile = ''
         if hasattr(self.mca, 'sourcefile'):
             deffile = "%s%s" % (deffile, getattr(self.mca, 'sourcefile'))
@@ -578,7 +578,7 @@ class EpicsXRFDisplayFrame(XRFDisplayFrame):
                                               callback=self.onSetCalib)
 
     def onSetCalib(self, offset, slope, mca=None):
-        print 'XRFControl Set Energy Calibratione' , offset, slope, mca
+        print('XRFControl Set Energy Calibratione' , offset, slope, mca)
 
     def onClose(self, event=None):
         self.onStop()
