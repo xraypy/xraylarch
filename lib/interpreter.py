@@ -677,38 +677,27 @@ class Interpreter:
             not isinstance(func, (type, types.ClassType)) ):
             msg = "'%s' is not callable!!" % (func)
             self.raise_exception(node, exc=TypeError, msg=msg)
-        args = [self.run(targ) for targ in node.args]
 
-        if node.starargs is not None:
-            args = args + list(self.run(node.starargs))
+        args = [self.run(targ) for targ in node.args]
+        starargs = getattr(node, 'starargs', None)
+        if starargs is not None:
+            args = args + self.run(starargs)
 
         keywords = {}
         for key in node.keywords:
             if not isinstance(key, ast.keyword):
                 msg = "keyword error in function call '%s'" % (func)
-                self.raise_exception(node, exc=TypeError, msg=msg)
-
+                self.raise_exception(node, msg=msg)
             keywords[key.arg] = self.run(key.value)
-        if node.kwargs is not None:
-            keywords.update(self.run(node.kwargs))
 
-        self.func = func
+        kwargs = getattr(node, 'kwargs', None)
+        if kwargs is not None:
+            keywords.update(self.run(kwargs))
 
-        # cast Parameters to floats for the many numpy ufuncs.
-        if isinstance(func, numpy.ufunc):
-            for i, arg in enumerate(args):
-                if isParameter(arg):
-                    args[i] = arg.value
-
-        out = func(*args, **keywords)
-        self.func = None
-
-        return out
-
-        # try:
-        # except:
-        #     self.raise_exception(node, exc=RuntimeError, func=func,
-        #                msg = "Error running %s" % (func))
+        try:
+            return func(*args, **keywords)
+        except:
+            self.raise_exception(node, msg="Error running %s" % (func))
 
     def on_functiondef(self, node):
         "define procedures"
