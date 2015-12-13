@@ -109,7 +109,7 @@ class DTCorrectFrame(wx.Frame):
             if len(badchans)  > 0:
                 bad_channels = [int(i.strip()) for i in badchans.split(',')]
 
-            print ' Bad Channels : ', bad_channels
+            print( ' Bad Channels : ', bad_channels)
             for fname in dlg.GetFilenames():
                 corr_fcn = gsescan_deadtime_correct
                 if is_GSEXDI(fname):
@@ -141,7 +141,7 @@ class DTCorrectFrame(wx.Frame):
         sizer.Add(self.dir_wid,  (ir, 1), (1, 1), LCEN, 2)
         ir += 1
         sizer.Add(lab_bad,            (ir, 0), (1, 1), LCEN, 2)
-        sizer.Add(self.badchans_wid,  (ir, 1), (1, 1), LCEN, 2)        
+        sizer.Add(self.badchans_wid,  (ir, 1), (1, 1), LCEN, 2)
         ir += 1
         sizer.Add(lab_sel,       (ir, 0), (1, 1), LCEN, 2)
         sizer.Add(self.sel_wid,  (ir, 1), (1, 1), LCEN, 2)

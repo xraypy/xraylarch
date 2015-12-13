@@ -192,7 +192,7 @@ class Spyk(Group):
 
     def save_config(self, filename=None):
         "save Spyk configuration file"
-        print 'save spyk config....'
+        print( 'save spyk config....')
 
     def add_motors(self, **motors):
         """add motors as keyword=value pairs: label=EpicsPVName"""
@@ -328,7 +328,7 @@ class Spyk(Group):
 
         # add print statement at end of each row
         def show_meshstatus(breakpoint=None):
-            print 'finished row  %i of %i' % (1+(breakpoint/npts1), npts2)
+            print('finished row  %i of %i' % (1+(breakpoint/npts1), npts2))
             time.sleep(0.25)
         self._scan.at_break_methods.append(show_meshstatus)
         self._run(dtime)

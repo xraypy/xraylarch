@@ -109,7 +109,7 @@ class EventLoopRunner(object):
                 del self.timer, self.evtloop
                 clear_update_request()
         except KeyboardInterrupt:
-            print 'Captured Ctrl-C!'
+            print('Captured Ctrl-C!')
 
 def inputhook_wx():
     """Run the wx event loop by processing pending events only.

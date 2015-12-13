@@ -567,20 +567,20 @@ class XRFDisplayFrame(wx.Frame):
         roiname = self.wids['roiname'].GetValue()
         if len(roiname) < 1:
             roiname = 'ROI 1'
-            names = [str(r.name.lower()) for r in self.mca.rois]            
+            names = [str(r.name.lower()) for r in self.mca.rois]
             if str(roiname.lower()) in names:
                 ix = 1
                 while str(roiname.lower()) in names:
                     roiname = "ROI %i" % (ix)
                     ix += 1
         return roiname
-       
+
     def onNewROI(self, event=None):
         if (self.xmarker_left is None or
             self.xmarker_right is None or self.mca is None):
             return
         roiname = self.get_roiname()
-            
+
         names = [str(r.name.lower()) for r in self.mca.rois]
         if str(roiname.lower()) in names:
             msg = "Overwrite Definition of ROI {:s}?".format(roiname)
@@ -915,7 +915,7 @@ class XRFDisplayFrame(wx.Frame):
         view_emax = view_mid + view_range/2.0
         for label, eev, frac, ilevel, flevel in majors:
             e = float(eev) * 0.001
-            # print 'Major ', label, eev, e, frac, ilevel, flevel
+            # print( 'Major ', label, eev, e, frac, ilevel, flevel)
             if (e >= erange[0] and e <= erange[1]):
                 l = vline(e, color= self.conf.major_elinecolor,
                           linewidth=1.50, zorder=-5)
@@ -1242,7 +1242,6 @@ class XRFDisplayFrame(wx.Frame):
         self.SetStatusText(s, panel)
 
     def onAbout(self, event=None):
-        print 'On About  ', event
         dlg = wx.MessageDialog(self,
                                """XRF Spectral Viewer
                                Matt Newville <newville @ cars.uchicago.edu>
@@ -1265,7 +1264,7 @@ class XRFDisplayFrame(wx.Frame):
             read = True
             path = dlg.GetPath().replace('\\', '/')
             if path in self.filemap:
-                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path, 
+                read = (wx.ID_YES == Popup(self, "Re-read file '%s'?" % path,
                                            'Re-read file?', style=wx.YES_NO))
         dlg.Destroy()
 

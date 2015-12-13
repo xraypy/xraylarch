@@ -384,7 +384,7 @@ class ROI_Averager():
 
        roi_buff = ROI_Averager('13SDD1:mca1.R12',  nsamples=11)
        while True:
-            print roi_buff.average()
+            print( roi_buff.average())
 
        typically, the ROIs update at a fixed 10 Hz, so 11 samples
        gives the ROI intensity integrated over the previous second

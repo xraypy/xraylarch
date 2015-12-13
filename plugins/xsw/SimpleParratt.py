@@ -179,7 +179,7 @@ def reflectivity(eV0=14000.0, th_deg=[], mat=[], thick=[], den=[], rough=[], tag
         TransFY=1.0;    TransFYList=[]
         EFI_atTH=[]     # EFI as a function of depth at current th
         EFI = 0
-        #print depth_num
+        #print( depth_num)
         for depth in depths:
             # calculate e-field intensity at each depth
             xx=FilmThick-depth
@@ -209,7 +209,7 @@ def reflectivity(eV0=14000.0, th_deg=[], mat=[], thick=[], den=[], rough=[], tag
         fp.write(out)
     fp.close()
     #for layer in layers:
-    #    print layer.tag, layer.composition, layer.thickness, layer.rms, layer.density
+    #    print( layer.tag, layer.composition, layer.thickness, layer.rms, layer.density)
     return ListOut  #list of [[th1, refl1], [th2, refl2] ...]
 
 
@@ -222,6 +222,3 @@ if __name__=='__main__':
     a=time.clock()
     reflectivity()
     print(time.clock()-a, 'seconds')
-
-
-

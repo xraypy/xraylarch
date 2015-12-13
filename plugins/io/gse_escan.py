@@ -189,14 +189,14 @@ class EscanData:
                     if 'mca' in a:
                          w = a.split('mca')[1]
                          self.det_mcas[idet] = int(w)
-            print 'MCAS: ' , mca, self.det_mcas
+            print('MCAS: ' , mca, self.det_mcas)
             for idet, nam in enumerate(self.det_desc):
                 name1 = nam.strip().lower()
-                print idet, name, name1, mca, self.det_mcas[idet]
+                # print( idet, name, name1, mca, self.det_mcas[idet])
                 if name == name1 and mca == self.det_mcas[idet]:
                     i = idet
                     break
-            print 'GETARRAY with mca in name: ', name, mca,  ' --> ', i
+            # print('GETARRAY with mca in name: ', name, mca,  ' --> ', i)
             arr = self.det
             if correct: arr = self.det_corr
         elif name in self.sums_names:
@@ -380,7 +380,7 @@ class EscanData:
                     if idet in self.bad_channels:
                         self.det_corr[idet,:] *= 0
                     else:
-                        self.det_corr[idet,:] *= self.dt_factor[nmca,:]                    
+                        self.det_corr[idet,:] *= self.dt_factor[nmca,:]
 
             isum = -1
             for sumlist in self.sums_list:

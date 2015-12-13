@@ -166,7 +166,7 @@ class GSEMCA_File(Group):
         counts =  np.array(counts)
         ## Data has been read, now store in MCA objects
         sum_mca = None
-    
+
         for tag in ('real_time', 'live_time', 'cal_offset',
                     'cal_slope', 'cal_quad'):
             val = getattr(head, tag)
@@ -280,12 +280,12 @@ class GSEMCA_File(Group):
 
         # don't assume number of ROIS is same for all elements
         nrois = max([len(r) for r in rois])
-        print 'NROIS ' , nrois, [len(r) for r in rois]
+        # print 'NROIS ' , nrois, [len(r) for r in rois]
         for ir, r in enumerate(rois):
             if len(r) < nrois:
                 for i in range(nrois - len(r)):
                     r.append(ROI(name='', left=0, right=0))
-        print 'NROIS ' , nrois, [len(r) for r in rois]
+        # print( 'NROIS ' , nrois, [len(r) for r in rois])
         for i in range(len(rois[0])):
             names = ' &  '.join([r[i].name  for r in rois])
             left  = ' '.join(['%i' % r[i].left  for r in rois])

@@ -131,7 +131,7 @@ def is_GSEXDI(filename):
 
 
 @ValidateLarchPlugin
-def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected', 
+def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
                             bad=None, _larch=None):
     """convert GSE XDI fluorescence XAFS scans to dead time corrected files"""
     if not is_GSEXDI(fname):
@@ -141,10 +141,10 @@ def gsexdi_deadtime_correct(fname, channelname, subdir='DT_Corrected',
     out = Group()
     out.orig_filename = fname
     try:
-        xdi = read_gsexdi(fname, bad=bad, _larch=_larch)     
+        xdi = read_gsexdi(fname, bad=bad, _larch=_larch)
     except:
-        print 'Could not read XDI file ', fname
-        return 
+        print('Could not read XDI file ', fname)
+        return
 
     for attr in ('energy', 'i0', 'i1', 'i2',
                  'counttime',  'scan_start_time', 'scan_end_time'):

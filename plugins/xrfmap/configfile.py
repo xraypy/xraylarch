@@ -10,7 +10,7 @@ if sys.version[0] == '2':
 elif sys.version[0] == '3':
     from configparser import  ConfigParser
     from io import StringIO
-    
+
 from larch.utils import OrderedDict
 
 
@@ -112,7 +112,7 @@ class FastMapConfig(object):
 
     def _process_data(self):
         for sect,opts in conf_sects.items():
-            # if sect == 'scan': print opts
+            # if sect == 'scan': print( opts)
             if not self.cp.has_section(sect):
                 continue
             bools = opts.get('bools',[])
@@ -199,4 +199,3 @@ if __name__ == "__main__":
     a.Read('xmap.001.ini')
     print( a.config['scan'])
     a.SaveScanParams('xmap.002.ini')
-

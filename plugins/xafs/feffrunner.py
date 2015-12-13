@@ -187,7 +187,7 @@ class FeffRunner(Group):
 
         f = open(log, 'a')
         header = "\n======= running module %s ====================================================\n" % exe
-        if self.verbose: print header
+        if self.verbose: print(header)
         f.write(header)
         process=subprocess.Popen(program, shell=False, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
         flag = False
@@ -196,7 +196,7 @@ class FeffRunner(Group):
             line = process.stdout.readline()
             if not line:
                 break
-            if self.verbose: print ':'+line.rstrip()
+            if self.verbose: print( ':'+line.rstrip())
             ## snarf threshold energy
             pattern = re.compile('mu_(new|old)=\s+(-?\d\.\d+)')
             match = pattern.search(line)
