@@ -881,6 +881,7 @@ class XAFS_Scan(LarchStepScan):
         self.regions = []
         super(self.__class__, self).__init__(_larch=_larch, **kws)
 
+        self.is_qxafs = False
         self.scantype = 'xafs'
         self.dwelltime = []
         self.energy_pos = None
@@ -949,11 +950,30 @@ class XAFS_Scan(LarchStepScan):
         if self.energy_pos is not None:
             self.energy_pos.array = np.array(self.energies)
 
-    def make_XPS_trajectory(self, height=25.0, dspace=3.1355, reverse=True,
-                            theta_offset=0, width_offset=0,
+
+class QXAFS_Scan(XAFS_Scan):
+    """QuickXAFS Scan"""
+
+    def __init__(self, label=None, energy_pv=None, read_pv=None,
+                 extra_pvs=None, e0=0, _larch=None, **kws):
+
+        XAFS_Scan.__init__(self, label=label, energy_pv=energy_pv,
+                           read_pv=read_pv, extra_pvs=extra_pvs, e0=e0,
+                           _larch=_larch, **kws)
+
+        self.is_qxafs = True
+
+    def make_XPS_trajectory(self, reverse=False, 
                             theta_accel=0.25, width_accel=0.25):
         """this method builds the text of a Trajectory script for
         a Newport XPS Controller based on the energies and dwelltimes"""
+
+        qconf  = json.loads(self.scandb.get_config('QXAFS').notes)
+
+        dspace = caget(qconf['dspace_pv'])
+        height = caget(qconf['height_pv'])
+        th_off = caget(qconf['theta_motor'] + '.OFF')
+        wd_off = caget(qconf['width_motor'] + '.OFF')
 
         energy = np.array(self.energies)
         times  = np.array(self.dwelltime)
@@ -966,8 +986,8 @@ class XAFS_Scan(LarchStepScan):
         theta[1:-1] = traw[1:-1]/2.0 + traw[:-2]/4.0 + traw[2:]/4.0
         width  = height / (2.0 * np.cos(theta/RAD2DEG))
 
-        width -= width_offset
-        theta -= theta_offset
+        width -= wd_off
+        theta -= th_off
 
         tvelo = np.gradient(theta)/times
         wvelo = np.gradient(width)/times
@@ -1007,9 +1027,20 @@ def scan_from_json(text, filename='scan.001', current_rois=None, _larch=None):
     #
     # create positioners
     if sdict['type'] == 'xafs':
-        scan  = XAFS_Scan(energy_pv=sdict['energy_drive'],
-                          read_pv=sdict['energy_read'],
-                          e0=sdict['e0'], _larch=_larch)
+        min_dtime = sdict['dwelltime']
+        if isinstance(dtime, np.ndarray):
+            min_dtime = min(dtime)
+
+        is_qxafs = sdict.get('is_qxafs', False) or (min_dtime < 0.45)
+        kwargs = dict(energy_pv=sdict['energy_drive'],
+                      read_pv=sdict['energy_read'],
+                      e0=sdict['e0'], _larch=_larch)
+
+        if is_qxafs:
+            scan = QXAFS_Scan(**kwargs)
+        else:
+            scan = XAFS_Scan(**kwargs)
+
         t_kw  = sdict['time_kw']
         t_max = sdict['max_time']
         nreg  = len(sdict['regions'])
