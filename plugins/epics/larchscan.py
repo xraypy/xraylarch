@@ -879,7 +879,7 @@ class XAFS_Scan(LarchStepScan):
         self.e0 = e0
         self.energies = []
         self.regions = []
-        super(self.__class__, self).__init__(_larch=_larch, **kws)
+        LarchStepScan.__init__(self, _larch=_larch, **kws)
 
         self.is_qxafs = False
         self.scantype = 'xafs'
@@ -951,25 +951,31 @@ class XAFS_Scan(LarchStepScan):
             self.energy_pos.array = np.array(self.energies)
 
 
-class QXAFS_Scan(XAFS_Scan):
+class QXAFS_Scan(XAFS_Scan): # (LarchStepScan):
     """QuickXAFS Scan"""
 
     def __init__(self, label=None, energy_pv=None, read_pv=None,
                  extra_pvs=None, e0=0, _larch=None, **kws):
 
+        self.label = label
+        self.e0 = e0
+        self.energies = []
+        self.regions = []
         XAFS_Scan.__init__(self, label=label, energy_pv=energy_pv,
-                           read_pv=read_pv, extra_pvs=extra_pvs, e0=e0,
+                           read_pv=read_pv, e0=e0, extra_pvs=extra_pvs,
                            _larch=_larch, **kws)
 
         self.is_qxafs = True
+        self.scantype = 'xafs'
+        self.set_energy_pv(energy_pv, read_pv=read_pv, extra_pvs=extra_pvs)
 
     def make_XPS_trajectory(self, reverse=False, 
-                            theta_accel=0.25, width_accel=0.25):
+                            theta_accel=0.25, width_accel=0.25, **kws):
         """this method builds the text of a Trajectory script for
         a Newport XPS Controller based on the energies and dwelltimes"""
 
-        qconf  = json.loads(self.scandb.get_config('QXAFS').notes)
-
+        qconf  = self.scandb.get_config('QXAFS')
+        qconf  = json.loads(qconf[0].notes)
         dspace = caget(qconf['dspace_pv'])
         height = caget(qconf['height_pv'])
         th_off = caget(qconf['theta_motor'] + '.OFF')
@@ -1013,10 +1019,12 @@ class QXAFS_Scan(XAFS_Scan):
         return  Group(buffer='\n'.join(buff),
                       start_theta=theta[0]-the0,
                       start_width=width[0]-wid0,
-                      theta=theta, energy=energy, width=width)
+                      theta=theta, tvelo=tvelo,   times=times,
+                      energy=energy, width=width, wvelo=wvelo)
 
 @ValidateLarchPlugin
-def scan_from_json(text, filename='scan.001', current_rois=None, _larch=None):
+def scan_from_json(text, filename='scan.001', current_rois=None, 
+                   is_qxafs=False, _larch=None):
     """(PRIVATE)
 
     creates and returns a LarchStepScan object from a json-text
@@ -1028,10 +1036,11 @@ def scan_from_json(text, filename='scan.001', current_rois=None, _larch=None):
     # create positioners
     if sdict['type'] == 'xafs':
         min_dtime = sdict['dwelltime']
-        if isinstance(dtime, np.ndarray):
+        if isinstance(min_dtime, np.ndarray):
             min_dtime = min(dtime)
-
-        is_qxafs = sdict.get('is_qxafs', False) or (min_dtime < 0.45)
+        is_qxafs = (is_qxafs or 
+                    sdict.get('is_qxafs', False) or 
+                    (min_dtime < 0.45))
         kwargs = dict(energy_pv=sdict['energy_drive'],
                       read_pv=sdict['energy_read'],
                       e0=sdict['e0'], _larch=_larch)
@@ -1125,7 +1134,8 @@ def scan_from_json(text, filename='scan.001', current_rois=None, _larch=None):
     return scan
 
 @ValidateLarchPlugin
-def scan_from_db(name, filename='scan.001', timeout=5.0, _larch=None):
+def scan_from_db(name, filename='scan.001', timeout=5.0, is_qxafs=False, 
+                 _larch=None):
     """(PRIVATE)
 
     get scan definition from ScanDB
@@ -1147,6 +1157,7 @@ def scan_from_db(name, filename='scan.001', timeout=5.0, _larch=None):
         raise ScanDBException("no scan definition '%s' found" % name)
 
     return scan_from_json(scandef.text, filename=filename,
+                          is_qxafs=is_qxafs,
                           current_rois=current_rois, _larch=_larch)
 
 
