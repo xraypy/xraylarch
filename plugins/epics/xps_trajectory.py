@@ -47,6 +47,7 @@ class XPSTrajectory(object):
         self.user   = user
         self.passwd = passwd
         self.group  = group
+        self.port  = port
         self.timeout = timeout
         self.traj_file = None
         positioners = positioners.replace(',', ' ').split()
@@ -72,14 +73,13 @@ class XPSTrajectory(object):
                                                  self.timeout)
         ret = self.xps.Login(self.ssid, self.user, self.passwd)
         self.trajectories = {}
-
         self.ftpconn = ftplib.FTP()
 
         self.nlines_out = 0
 
-        self.xps.GroupMotionDisable(self.ssid, self.group_name)
+        self.xps.GroupMotionDisable(self.ssid, self.group)
         time.sleep(0.1)
-        self.xps.GroupMotionEnable(self.ssid, self.group_name)
+        self.xps.GroupMotionEnable(self.ssid, self.group)
 
         for i in range(64):
             self.xps.EventExtendedRemove(self.ssid,i)
@@ -94,27 +94,14 @@ class XPSTrajectory(object):
         if self.traj_file is None:
             print("no trajectory file given... may need to upload")
 
-        r = self.xps.GatheringReset(self.ssid)
-        r = self.xps.GatheringConfigurationSet(self.ssid, self.gather_outputs)
-        r = self.xps.MultipleAxesPVTPulseOutputSet(self.ssid, self.group,
+        r1 = self.xps.GatheringReset(self.ssid)
+        r2 = self.xps.GatheringConfigurationSet(self.ssid, self.gather_outputs)
+        r3 = self.xps.MultipleAxesPVTPulseOutputSet(self.ssid, self.group,
                                                      1, npulses+1, dtime)
-        r = self.xps.MultipleAxesPVTVerification(self.ssid,
+        r4 = self.xps.MultipleAxesPVTVerification(self.ssid,
                                                    self.group,
                                                    self.traj_file)
-
-        buffer = ('Always', '%s.PVT.TrajectoryPulse' % group,)
-        r = self.xps.EventExtendedConfigurationTriggerSet(self.ssid,
-                                                            buffer,
-                                                            ('0','0'), ('0','0'),
-                                                            ('0','0'), ('0','0'))
-
-        events = ('GatheringOneData',),
-        r = self.xps.EventExtendedConfigurationActionSet(self.ssid,
-                                                           events, 
-                                                           ('',),('',),
-                                                           ('',),('',))
-        self.event_id, m = self.xps.EventExtendedStart(self.ssid)
-        return self.event_id
+        # print("SetupTrajectory ", r1, r2, r3, r4)
 
     def RunTrajectory(self, traj_file=None):
         """run trajectory just after it has been set up with SetupTrajectory()"""
@@ -122,6 +109,20 @@ class XPSTrajectory(object):
             self.traj_file = traj_file
         if self.traj_file is None:
             print("no trajectory file given... may need to upload")
+
+        buffer = ('Always', '%s.PVT.TrajectoryPulse' % self.group,)
+        r1 = self.xps.EventExtendedConfigurationTriggerSet(self.ssid,
+                                                          buffer,
+                                                          ('0','0'), ('0','0'),
+                                                          ('0','0'), ('0','0'))
+
+        r2 = self.xps.EventExtendedConfigurationActionSet(self.ssid,
+                                                         ('GatheringOneData',), 
+                                                         ('',), ('',),
+                                                         ('',), ('',))
+
+        self.event_id, m = self.xps.EventExtendedStart(self.ssid)
+        # print(" EXECUTE TRAJECTORY ", self.ssid, self.group, self.traj_file, self.event_id)
         return  self.xps.MultipleAxesPVTExecution(self.ssid,
                                                   self.group,
                                                   self.traj_file, 1)
@@ -129,9 +130,8 @@ class XPSTrajectory(object):
 
     def EndTrajectory(self):
         """clear trajectory setup"""
-        ret = self.xps.EventExtendedRemove(self.ssid, self.event_id)
-        ret = self.xps.GatheringStop(self.ssid)
-        
+        r1 = self.xps.EventExtendedRemove(self.ssid, self.event_id)
+        r2 = self.xps.GatheringStop(self.ssid)
         
     def ftp_connect(self):
         self.ftpconn.connect(self.host)
@@ -145,11 +145,10 @@ class XPSTrajectory(object):
 
     def upload_trajectoryFile(self, fname,  data):
         self.ftp_connect()
-        self.ftpconn.cwd(traj_folder)
+        self.ftpconn.cwd(self.traj_folder)
         self.ftpconn.storbinary('STOR %s' %fname, StringIO(data))
         self.ftp_disconnect()
         self.traj_file = fname
-        # print 'Uploaded trajectory: ', fname
 
     def make_template(self):
         # line1
@@ -221,7 +220,7 @@ class XPSTrajectory(object):
         """run trajectory in PVT mode"""
         traj = self.trajectories.get(name, None)
         if traj is None:
-            print 'Cannot find trajectory named %s' %  name
+            print('Cannot find trajectory named %s' %  name)
             return
 
         traj_file = '%s.trj'  % name
@@ -237,7 +236,7 @@ class XPSTrajectory(object):
         self.gather_outputs = []
         gather_titles = []
         for out in gather_outputs:
-            self.gather_outputs.append('%s.%s.%s' % (self.group_name, axis, out))
+            self.gather_outputs.append('%s.%s.%s' % (self.group, axis, out))
             gather_titles.append('%s.%s' % (axis, out))
 
         self.gather_titles  = "%s\n#%s\n" % (gather_titles,
@@ -248,13 +247,13 @@ class XPSTrajectory(object):
 
         ret = self.xps.GatheringReset(self.ssid)
         self.xps.GatheringConfigurationSet(self.ssid, self.gather_outputs)
-        # print " Group Name ", self.group_name
+        # print " Group Name ", self.group
 
-        ret = self.xps.MultipleAxesPVTPulseOutputSet(self.ssid, self.group_name,
+        ret = self.xps.MultipleAxesPVTPulseOutputSet(self.ssid, self.group,
                                                      1, 3, dtime)
-        ret = self.xps.MultipleAxesPVTVerification(self.ssid, self.group_name, traj_file)
+        ret = self.xps.MultipleAxesPVTVerification(self.ssid, self.group, traj_file)
 
-        buffer = ('Always', '%s.PVT.TrajectoryPulse' % self.group_name,)
+        buffer = ('Always', '%s.PVT.TrajectoryPulse' % self.group,)
         ret = self.xps.EventExtendedConfigurationTriggerSet(self.ssid, buffer,
                                                           ('0','0'), ('0','0'),
                                                           ('0','0'), ('0','0'))
@@ -264,7 +263,7 @@ class XPSTrajectory(object):
 
         eventID, m = self.xps.EventExtendedStart(self.ssid)
 
-        ret = self.xps.MultipleAxesPVTExecution(self.ssid, self.group_name, traj_file, 1)
+        ret = self.xps.MultipleAxesPVTExecution(self.ssid, self.group, traj_file, 1)
         ret = self.xps.EventExtendedRemove(self.ssid, eventID)
         ret = self.xps.GatheringStop(self.ssid)
 
