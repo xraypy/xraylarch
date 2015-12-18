@@ -207,7 +207,7 @@ class LarchFrame(wx.Frame):
     def BuildFrame(self, parent=None, **kwds):
         wx.Frame.__init__(self, parent, -1, size=(800, 850),
                           style= wx.DEFAULT_FRAME_STYLE)
-        self.SetTitle('LarchGUI (devel)')
+        self.SetTitle('LarchGUI')
         ofont = self.GetFont()
 
         sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
@@ -362,7 +362,7 @@ class LarchFrame(wx.Frame):
 
     def onAbout(self, event=None):
         about_msg =  """LarchGui:
-        %s""" % (BANNER)
+        %s""" % (larch.make_banner())
 
         dlg = wx.MessageDialog(self, about_msg,
                                "About LarchGui", wx.OK | wx.ICON_INFORMATION)
