@@ -373,15 +373,15 @@ class Filling(wx.SplitterWindow):
         leftpanel = wx.Panel(self)
         leftsizer = wx.BoxSizer(wx.VERTICAL)
 
-        self.refresh = Button(leftpanel, 'Refresh', size=(125, -1),
-                              action=self.onRefresh)
+        # self.refresh = Button(leftpanel, 'Refresh', size=(125, -1),
+        #                       action=self.onRefresh)
         
         self.tree = FillingTree(parent=leftpanel, rootObject=rootObject,
                                 rootLabel=rootLabel,
                                 rootIsNamespace=rootIsNamespace,
                                 static=static)
 
-        leftsizer.Add(self.refresh, 0, wx.ALIGN_TOP, 1)
+        # leftsizer.Add(self.refresh, 0, wx.ALIGN_TOP, 1)
         leftsizer.Add(self.tree, 1, wx.EXPAND|wx.ALL, 1)
         pack(leftpanel, leftsizer)
                 
