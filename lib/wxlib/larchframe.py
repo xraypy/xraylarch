@@ -10,6 +10,8 @@ import scipy
 import matplotlib
 import larch
 
+from wxutils import (Button, MenuItem, Choice)
+
 from .readlinetextctrl import ReadlineTextCtrl
 from .larchfilling import Filling
 from . import inputhook
@@ -61,6 +63,7 @@ class LarchWxShell(object):
     def onUpdate(self, event=None):
         symtable = self.symtable
         if symtable.get_symbol('_builtin.force_wxupdate', create=True):
+            print("on Update!")
             app = wx.GetApp()
             evtloop = wx.EventLoop()
             while evtloop.Pending():
@@ -133,7 +136,6 @@ class LarchWxShell(object):
         while len(self.inptext) > 0:
             block, fname, lineno = self.inptext.get()
             ret = self.larch.eval(block, fname=fname, lineno=lineno)
-            self.input.SetFocus()
             self.symtable.set_symbol('_sys.wx.force_wxupdate', True)
             if hasattr(ret, '__call__') and not isinstance(ret,type):
                 try:
@@ -244,56 +246,57 @@ class LarchFrame(wx.Frame):
         self.Raise()
 
     def BuildMenus(self):
-        ID_ABOUT = wx.NewId()
-        ID_CLOSE = wx.NewId()
-        ID_EXIT  = wx.NewId()
-        ID_FREAD = wx.NewId()
-        ID_PREAD = wx.NewId()
-        ID_FSAVE = wx.NewId()
-        ID_CHDIR = wx.NewId()
-        ID_CLEAR = wx.NewId()
-
-        ID_PSETUP  = wx.NewId()
-        ID_PREVIEW = wx.NewId()
-        ID_PRINT = wx.NewId()
-
         fmenu = wx.Menu()
-        fmenu.Append(ID_FREAD, "&Read ASCII Data File\tCtrl+O",
-                     "Read Data File")
-        fmenu.Append(ID_PREAD, "&Read and Run Larch Script\tCtrl+R",
-                     "Read and Execute a Larch Script")
-        fmenu.Append(ID_FSAVE, "&Save Session History\tCtrl+S",
-                     "Save Session History to File")
-        fmenu.Append(ID_CHDIR, 'Change Working Directory\tCtrl+W',
-                     'Change Directory')
-
-        fmenu.Append(ID_CLEAR, 'Clear Input\tCtrl+D', 'Clear Input')
-
-        #fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
-        #fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
-        # fmenu.Append(ID_PRINT, "&Print\tCtrl+P", "Print Plot")
+        MenuItem(self, fmenu, "&Read ASCII Data File\tCtrl+O",
+                 "Read Data File", self.onReadData)
+        MenuItem(self, fmenu, "&Read and Run Larch Script\tCtrl+R",
+                 "Read and Execute a Larch Script", self.onRunScript)
+        MenuItem(self, fmenu, "&Save Session History\tCtrl+S",
+                 "Save Session History to File", self.onSaveHistory)
+        MenuItem(self, fmenu, 'Change Working Directory\tCtrl+W',
+                 'Change Directory', self.onChangeDir)
+        MenuItem(self, fmenu, 'Clear Input\tCtrl+D',
+                 'Clear Input', self.onClearInput)
 
         fmenu.AppendSeparator()
-        fmenu.Append(ID_CLOSE, "Close Display", "Close display")
-        fmenu.Append(ID_EXIT,  "E&xit", "Terminate the program")
+        MenuItem(self, fmenu, 'Close Display', 'Close display', self.onClose)
+        MenuItem(self, fmenu, 'E&xit', 'End program', self.onExit)
+
+        # fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
+        # fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
+        # fmenu.Append(ID_PRINT, "&Print\tCtrl+P", "Print Plot")
+
+
+        vmenu = wx.Menu()
+        MenuItem(self, vmenu, 'Map Viewer', 'GSECARS Map Viewer',
+                 self.onMapviewer)
+        MenuItem(self, vmenu, 'Scan Viewer', 'GSECARS Scan Viewer',
+                 self.onScanviewer)
+
+        MenuItem(self, vmenu, 'XRF Spectra Viewer', 'XRF Spectra Viewer', 
+                 self.onXRFviewer)
 
         hmenu = wx.Menu()
-        hmenu.Append(ID_ABOUT, "&About",
-                     "More information about this program")
+        MenuItem(self, hmenu, '&About',
+                 'Information about this program',  self.onAbout)
+        
         menuBar = wx.MenuBar()
-        menuBar.Append(fmenu, "&File");
-        # menuBar.Append(vmenu, "&Viewers");
-        menuBar.Append(hmenu, "&Help");
+        menuBar.Append(fmenu, '&File')
+        menuBar.Append(vmenu, 'Applications')
+        menuBar.Append(hmenu, '&Help')
         self.SetMenuBar(menuBar)
 
-        self.Bind(wx.EVT_MENU,  self.onReadData,   id=ID_FREAD)
-        self.Bind(wx.EVT_MENU,  self.onRunScript,   id=ID_PREAD)
-        self.Bind(wx.EVT_MENU,  self.onSaveHistory, id=ID_FSAVE)
-        self.Bind(wx.EVT_MENU,  self.onAbout, id=ID_ABOUT)
-        self.Bind(wx.EVT_MENU,  self.onClose, id=ID_CLOSE)
-        self.Bind(wx.EVT_MENU,  self.onExit, id=ID_EXIT)
-        self.Bind(wx.EVT_MENU,  self.onChangeDir, id=ID_CHDIR)
-        self.Bind(wx.EVT_MENU,  self.onClearInput, id=ID_CLEAR)
+    def onMapviewer(self, event=None):
+        self.larchshell.execute("mapviewer()")
+
+    def onScanviewer(self, event=None):
+        self.larchshell.execute("scanviewer()")
+
+    def onXRFviewer(self, event=None):
+        self.larchshell.execute("xrf_plot()")
+
+    def onClearInput(self, event=None):
+        self.larchshell.clear_input()
 
     def onClearInput(self, event=None):
         self.larchshell.clear_input()
