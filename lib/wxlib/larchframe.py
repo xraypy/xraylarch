@@ -173,6 +173,12 @@ class LarchFrame(wx.Frame):
         if os.path.exists(fico):
             self.SetIcon(wx.Icon(fico, wx.BITMAP_TYPE_ICO))
 
+        self.larchshell.write(larch.make_banner(), color='blue', bold=True)
+        root = self.datapanel.tree.GetRootItem()
+        self.datapanel.tree.Expand(root)
+
+
+
 
     def InputPanel(self, parent):
         panel = wx.Panel(parent, -1)
@@ -186,8 +192,7 @@ class LarchFrame(wx.Frame):
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
 
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
-        self.input.notebooks = self.nbook
-
+        
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         sizer.Add(self.prompt,  0, wx.BOTTOM|wx.CENTER)
@@ -197,9 +202,9 @@ class LarchFrame(wx.Frame):
         return panel
 
     def BuildFrame(self, parent=None, **kwds):
-        wx.Frame.__init__(self, parent, -1, size=(725, 525),
+        wx.Frame.__init__(self, parent, -1, size=(800, 850),
                           style= wx.DEFAULT_FRAME_STYLE)
-        self.SetTitle('LarchGUI')
+        self.SetTitle('LarchGUI (devel)')
         ofont = self.GetFont()
 
         sfont = wx.Font(11,  wx.SWISS, wx.NORMAL, wx.BOLD, False)
@@ -210,25 +215,24 @@ class LarchFrame(wx.Frame):
         self.SetStatusText("Larch initializing...", 0)
 
         self.BuildMenus()
+        self.splitter = splitter = wx.SplitterWindow(self, style=wx.SP_LIVE_UPDATE)
+        splitter.SetMinimumPaneSize(150)
 
-        self.nbook = nbook = wx.Notebook(self, -1, style=wx.BK_DEFAULT)
-        nbook.SetBackgroundColour('#E9E9EA')
         self.SetBackgroundColour('#E9EEE0')
 
-        self.output = wx.TextCtrl(nbook, -1,  larch.make_banner(),
-                             style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
+        self.output = wx.TextCtrl(splitter, -1,  '', 
+                                  style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
 
         self.output.CanCopy()
         self.output.SetInsertionPointEnd()
         self.output.SetDefaultStyle(wx.TextAttr('black', 'white', sfont))
 
-        self.datapanel = Filling(nbook,  rootLabel='_main')
-        nbook.AddPage(self.output,      'Output Buffer', select=1)
-        nbook.AddPage(self.datapanel,   'Browser')
+        self.datapanel = Filling(splitter,  rootLabel='_main')
+        splitter.SplitHorizontally(self.datapanel, self.output, 0.5)
 
         sizer = wx.BoxSizer(wx.VERTICAL)
         opts = dict(flag=wx.ALIGN_CENTER_VERTICAL|wx.ALL|wx.EXPAND, border=2)
-        sizer.Add(nbook,  1, **opts)
+        sizer.Add(splitter,  1, **opts)
         sizer.Add(self.InputPanel(self),  0, **opts)
 
         self.SetSizer(sizer)
@@ -333,27 +337,7 @@ class LarchFrame(wx.Frame):
         else:
             self.input.AddToHistory(text)
             wx.CallAfter(self.larchshell.execute, text)
-            wx.CallAfter(self.datapanel.tree.display)
-
-    def onResize(self, event=None):
-        size = event.GetSize()
-        nsize = self.notebooks.GetSize()
-        self.notebooks.SetSize(size)
-        self.notebooks.Refresh()
-        nsize = self.notebooks.GetSize()
-
-        # self.notebooks.SetBestFittingSize()
-        self.notebooks.Refresh()
-        nsize = self.notebooks.GetSize()
-
-        for k in range(self.notebooks.GetPageCount()):
-            p = self.notebooks.GetPage(k)
-            try:
-                p.SetSize(size)
-            except:
-                print( 'cannot set size')
-            p.Refresh()
-        event.Skip()
+            wx.CallAfter(self.datapanel.onRefresh)
 
     def onChangeDir(self, event=None):
         dlg = wx.DirDialog(None, 'Choose a Working Directory',
