@@ -68,6 +68,7 @@ class LarchWxShell(object):
             app.ProcessIdle()
         symtable.set_symbol('_builtin.force_wxupdate', False)
 
+
     def SetPrompt(self, partial=False):
         if self.prompt is not None:
             if partial:
@@ -100,6 +101,10 @@ class LarchWxShell(object):
         self.output.Refresh()
         self.output.Update()
         self.needs_flush = False
+
+    def clear_input(self):
+        self.inptext.clear()
+        self.SetPrompt()
 
     def onFlushTimer(self, event=None):
         if self.needs_flush:
@@ -178,8 +183,6 @@ class LarchFrame(wx.Frame):
         self.datapanel.tree.Expand(root)
 
 
-
-
     def InputPanel(self, parent):
         panel = wx.Panel(parent, -1)
         pstyle = wx.ALIGN_CENTER|wx.ALIGN_RIGHT
@@ -248,6 +251,7 @@ class LarchFrame(wx.Frame):
         ID_PREAD = wx.NewId()
         ID_FSAVE = wx.NewId()
         ID_CHDIR = wx.NewId()
+        ID_CLEAR = wx.NewId()
 
         ID_PSETUP  = wx.NewId()
         ID_PREVIEW = wx.NewId()
@@ -262,6 +266,9 @@ class LarchFrame(wx.Frame):
                      "Save Session History to File")
         fmenu.Append(ID_CHDIR, 'Change Working Directory\tCtrl+W',
                      'Change Directory')
+
+        fmenu.Append(ID_CLEAR, 'Clear Input\tCtrl+D', 'Clear Input')
+
         #fmenu.Append(ID_PSETUP, 'Page Setup...', 'Printer Setup')
         #fmenu.Append(ID_PREVIEW, 'Print Preview...', 'Print Preview')
         # fmenu.Append(ID_PRINT, "&Print\tCtrl+P", "Print Plot")
@@ -286,7 +293,11 @@ class LarchFrame(wx.Frame):
         self.Bind(wx.EVT_MENU,  self.onClose, id=ID_CLOSE)
         self.Bind(wx.EVT_MENU,  self.onExit, id=ID_EXIT)
         self.Bind(wx.EVT_MENU,  self.onChangeDir, id=ID_CHDIR)
+        self.Bind(wx.EVT_MENU,  self.onClearInput, id=ID_CLEAR)
 
+    def onClearInput(self, event=None):
+        self.larchshell.clear_input()
+                                       
     def onReadData(self, event=None):
         wildcard = 'Data file (*.dat)|*.dat|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Open Data File',
