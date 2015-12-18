@@ -126,7 +126,8 @@ class InputText:
 
     def __init__(self, prompt=None, interactive=True, input=None,
                  filename=None, _larch=None):
-        self.prompt = prompt or self.ps1
+        if prompt is not None:
+            self.ps1 = prompt 
         self.input = None
         self._larch = _larch
         self.interactive = interactive
@@ -134,19 +135,8 @@ class InputText:
         self.filename = filename or '<stdin>'
         if interactive:
             self.input = input or self.__defaultInput
-        self._fifo     = [[], []]
-        self.block     = []
-        self.keys      = []
-        self.current   = None
-        self.endkeys   = ()
-        self.friends   = ()
-        self.parens = dict(zip(OPENS, CLOSES))
-        self.delims = []
-        self.eos = ''
-        self.in_string   = False
-        self.input_buff  = []
-        self.input_complete = True
-
+        self.clear()
+        
     def readfile(self, fname):
         fh = open(fname, 'r')
         self.put(fh.read(), filename=fname, lineno=0)
@@ -325,8 +315,20 @@ class InputText:
 
     def clear(self):
         "clear the input"
+        self.prompt = self.ps1
         self._fifo  = [[], []]
-
+        self.block  = []
+        self.keys   = []
+        self.current = None
+        self.endkeys = ()
+        self.friends = ()
+        self.parens = dict(zip(OPENS, CLOSES))
+        self.delims = []
+        self.eos = ''
+        self.in_string   = False
+        self.input_buff  = []
+        self.input_complete = True
+            
     def __isCommand(self, key, word2):
         """ decide if a keyword and next word are of the form
           'command arg, ...'
