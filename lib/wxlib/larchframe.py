@@ -49,7 +49,7 @@ class LarchWxShell(object):
         self.symtable.set_symbol('_sys.display.colors.text', None)
         self.symtable.set_symbol('_sys.display.colors.text2', 'blue')
         self.symtable.set_symbol('_sys.display.colors.text2_attrs', [])
-        self.symtable.set_symbol('_sys.display.colors.text_attrs', [])        
+        self.symtable.set_symbol('_sys.display.colors.text_attrs', [])
         # self.symtable.set_symbol('_sys.wx.parent', wx.GetApp().GetTopWindow())
 
         self.SetPrompt()
@@ -58,8 +58,8 @@ class LarchWxShell(object):
         self.needs_flush = True
         wxparent.Bind(wx.EVT_TIMER, self.onFlushTimer, self.flush_timer)
         self.flush_timer.Start(500)
-        
-        
+
+
     def onUpdate(self, event=None):
         symtable = self.symtable
         if symtable.get_symbol('_builtin.force_wxupdate', create=True):
@@ -112,7 +112,7 @@ class LarchWxShell(object):
     def onFlushTimer(self, event=None):
         if self.needs_flush:
             self.flush()
-        
+
     def execute(self, text=None):
         if text is not None:
             if  text.startswith('help'):
@@ -197,7 +197,7 @@ class LarchFrame(wx.Frame):
                                  style=wx.ALIGN_LEFT|wx.TE_PROCESS_ENTER)
 
         self.input.Bind(wx.EVT_TEXT_ENTER, self.onText)
-        
+
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
         sizer.Add(self.prompt,  0, wx.BOTTOM|wx.CENTER)
@@ -207,7 +207,7 @@ class LarchFrame(wx.Frame):
         return panel
 
     def BuildFrame(self, parent=None, **kwds):
-        wx.Frame.__init__(self, parent, -1, size=(800, 850),
+        wx.Frame.__init__(self, parent, -1, size=(750, 725),
                           style= wx.DEFAULT_FRAME_STYLE)
         self.SetTitle('LarchGUI')
         ofont = self.GetFont()
@@ -225,7 +225,7 @@ class LarchFrame(wx.Frame):
 
         self.SetBackgroundColour('#E9EEE0')
 
-        self.output = wx.TextCtrl(splitter, -1,  '', 
+        self.output = wx.TextCtrl(splitter, -1,  '',
                                   style=wx.TE_MULTILINE|wx.TE_RICH|wx.TE_READONLY)
 
         self.output.CanCopy()
@@ -273,13 +273,13 @@ class LarchFrame(wx.Frame):
         MenuItem(self, vmenu, 'Scan Viewer', 'GSECARS Scan Viewer',
                  self.onScanviewer)
 
-        MenuItem(self, vmenu, 'XRF Spectra Viewer', 'XRF Spectra Viewer', 
+        MenuItem(self, vmenu, 'XRF Spectra Viewer', 'XRF Spectra Viewer',
                  self.onXRFviewer)
 
         hmenu = wx.Menu()
         MenuItem(self, hmenu, '&About',
                  'Information about this program',  self.onAbout)
-        
+
         menuBar = wx.MenuBar()
         menuBar.Append(fmenu, '&File')
         menuBar.Append(vmenu, 'Applications')
@@ -300,7 +300,7 @@ class LarchFrame(wx.Frame):
 
     def onClearInput(self, event=None):
         self.larchshell.clear_input()
-                                       
+
     def onReadData(self, event=None):
         wildcard = 'Data file (*.dat)|*.dat|All files (*.*)|*.*'
         dlg = wx.FileDialog(self, message='Open Data File',
